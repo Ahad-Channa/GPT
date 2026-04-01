@@ -1,10 +1,11 @@
 import { useState, useRef, useEffect } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
-import { FiLogOut, FiHexagon, FiUser } from 'react-icons/fi';
+import { FiLogOut, FiUser, FiSettings, FiZap, FiChevronDown } from 'react-icons/fi';
 import { useNavigate } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const Header = () => {
-  const { currentUser, mongoUser, logout } = useAuth();
+  const { currentUser, mongoUser, logout, isAdmin } = useAuth();
   const navigate = useNavigate();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
@@ -20,74 +21,113 @@ const Header = () => {
   }, []);
 
   return (
-    <header className="h-[90px] bg-black/20 backdrop-blur-2xl border-b border-white/[0.04] flex items-center justify-between px-8 sticky top-0 z-40">
-      
-      {/* Mobile Brand Placeholder */}
-      <div className="flex items-center gap-3 cursor-pointer" onClick={() => navigate('/dashboard')}>
-        <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-cyan-400 to-violet-500 flex items-center justify-center">
-            <span className="font-bold text-white text-sm">N</span>
-        </div>
-      </div>
+    <header className="sticky top-0 z-40 w-full border-b border-white/[0.06] backdrop-blur-xl bg-[#080b14]/80">
+      <div className="max-w-7xl mx-auto px-4 md:px-8 h-[66px] flex items-center justify-between">
 
-      <div className="hidden md:block">
-         {/* Blank space where title used to be, to maintain distribution */}
-      </div>
-
-      {/* Right Side Tools */}
-      <div className="flex items-center gap-6">
-        
-        {/* Wallet Balance Pill */}
-        <div className="flex items-center gap-3 bg-white/[0.03] border border-white/10 rounded-full pl-2 pr-5 py-1.5 hover:bg-white/[0.06] hover:border-cyan-500/30 transition-all cursor-pointer group">
-          <div className="w-8 h-8 rounded-full bg-cyan-500/20 flex items-center justify-center text-cyan-400 group-hover:scale-110 transition-transform">
-             <FiHexagon className="text-sm fill-cyan-400/20" />
+        {/* Brand */}
+        <button
+          id="header-brand-logo"
+          onClick={() => navigate('/dashboard')}
+          className="flex items-center gap-3 group"
+        >
+          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center shadow-glow group-hover:shadow-glow-lg transition-shadow">
+            <FiZap className="text-white text-sm" />
           </div>
-          <span className="font-bold text-slate-100 tracking-wide">
-            {mongoUser?.walletBalance?.toFixed(2) || '0.00'}
-          </span>
-        </div>
+          <div className="flex flex-col leading-none">
+            <span className="text-sm font-bold font-display text-white tracking-tight">GPT</span>
+            <span className="text-[10px] text-slate-500 tracking-widest uppercase font-mono">Platform</span>
+          </div>
+        </button>
 
-        {/* Vertical Divider */}
-        <div className="w-px h-8 bg-white/10"></div>
-
-        {/* Profile Details */}
+        {/* Right Controls */}
         <div className="flex items-center gap-4">
-          <div className="flex flex-col items-end">
-             <span className="text-sm font-semibold text-slate-200">
-               {mongoUser?.displayName || 'Authorized User'}
-             </span>
-             <span className="text-[11px] font-bold text-violet-400 tracking-widest uppercase">
-               VIP Level {mongoUser?.vipLevel || 1}
-             </span>
+
+          {/* Balance Chip */}
+          <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white/[0.04] border border-white/[0.07] text-sm">
+            <FiZap className="text-indigo-400 text-xs" />
+            <span className="text-slate-400 text-[11px] font-mono tracking-widest">BAL</span>
+            <span className="font-semibold text-white font-mono text-sm">
+              {mongoUser?.walletBalance?.toFixed(2) ?? '0.00'}
+            </span>
+            <span className="text-indigo-400 text-[10px] font-mono">PTS</span>
           </div>
 
-          <div className="relative inline-flex" ref={dropdownRef}>
-            <div 
-              onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-              className="w-11 h-11 rounded-2xl bg-gradient-to-br from-cyan-500 to-violet-600 p-[2px] shadow-lg cursor-pointer hover:scale-105 transition-transform"
-            >
-              <img 
-                src={currentUser?.photoURL || 'https://api.dicebear.com/7.x/avataaars/svg?seed=Felix'} 
-                alt="Avatar" 
-                className="w-full h-full rounded-2xl object-cover bg-[#08080c]"
-              />
-            </div>
+          <div className="h-5 w-px bg-white/[0.08] hidden sm:block" />
 
-            {/* Profile & Logout Dropdown Menu */}
-            <div 
-              className={`absolute right-0 top-14 transition-all duration-300 bg-[#12121a] border border-white/10 text-slate-300 text-sm font-semibold p-2.5 rounded-2xl shadow-2xl flex flex-col min-w-[160px] ${
-                isDropdownOpen ? 'opacity-100 pointer-events-auto translate-y-0' : 'opacity-0 pointer-events-none translate-y-2'
-              }`}
+          {/* Avatar + Dropdown */}
+          <div className="relative" ref={dropdownRef}>
+            <button
+              id="header-profile-menu"
+              onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+              className="flex items-center gap-2.5 px-2 py-1.5 rounded-xl hover:bg-white/[0.05] transition-colors group"
             >
-               <div onClick={() => { setIsDropdownOpen(false); navigate('/dashboard/profile'); }} className="px-3 py-2.5 hover:bg-white/5 hover:text-cyan-400 cursor-pointer rounded-lg flex items-center gap-3 transition-colors mb-1">
-                  <FiUser className="text-lg" /> Profile
-               </div>
-               <div onClick={() => { setIsDropdownOpen(false); logout(); }} className="px-3 py-2.5 hover:bg-red-500/10 hover:text-red-400 cursor-pointer rounded-lg flex items-center gap-3 transition-colors">
-                  <FiLogOut className="text-lg" /> Disconnect
-               </div>
-            </div>
+              <div className="w-8 h-8 rounded-lg overflow-hidden border border-white/10 flex-shrink-0">
+                <img
+                  src={currentUser?.photoURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=${mongoUser?.displayName || 'Felix'}`}
+                  alt="Avatar"
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              <div className="hidden md:flex flex-col items-start leading-none">
+                <span className="text-xs font-semibold text-slate-200">
+                  {mongoUser?.displayName || 'User'}
+                </span>
+                <span className="text-[10px] text-indigo-400 font-mono tracking-widest">
+                  RANK {mongoUser?.vipLevel || 1}
+                </span>
+              </div>
+              <FiChevronDown
+                className={`text-slate-500 text-xs transition-transform duration-200 ${isDropdownOpen ? 'rotate-180' : ''}`}
+              />
+            </button>
+
+            <AnimatePresence>
+              {isDropdownOpen && (
+                <motion.div
+                  initial={{ opacity: 0, y: 6, scale: 0.97 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: 6, scale: 0.97 }}
+                  transition={{ duration: 0.15 }}
+                  className="absolute right-0 top-14 w-48 glass-card shadow-card border border-white/[0.08] overflow-hidden z-50"
+                >
+                  {/* Balance (mobile) */}
+                  <div className="sm:hidden px-4 py-3 border-b border-white/[0.06] flex items-center gap-2">
+                    <FiZap className="text-indigo-400 text-xs" />
+                    <span className="text-slate-300 text-xs font-mono">
+                      {mongoUser?.walletBalance?.toFixed(2) ?? '0.00'} PTS
+                    </span>
+                  </div>
+
+                  <button
+                    id="header-profile-link"
+                    onClick={() => { setIsDropdownOpen(false); navigate('/dashboard/profile'); }}
+                    className="w-full text-left px-4 py-3 text-sm text-slate-300 hover:bg-white/[0.05] hover:text-white transition-colors flex items-center gap-3 border-b border-white/[0.04]"
+                  >
+                    <FiUser className="text-indigo-400" /> Profile
+                  </button>
+
+                  {isAdmin && (
+                    <button
+                      id="header-admin-link"
+                      onClick={() => { setIsDropdownOpen(false); navigate('/admin'); }}
+                      className="w-full text-left px-4 py-3 text-sm text-amber-400 hover:bg-amber-500/[0.08] hover:text-amber-300 transition-colors flex items-center gap-3 border-b border-white/[0.04]"
+                    >
+                      <FiSettings className="text-amber-400" /> Admin Panel
+                    </button>
+                  )}
+
+                  <button
+                    id="header-logout-btn"
+                    onClick={() => { setIsDropdownOpen(false); logout(); }}
+                    className="w-full text-left px-4 py-3 text-sm text-red-400 hover:bg-red-500/[0.08] hover:text-red-300 transition-colors flex items-center gap-3"
+                  >
+                    <FiLogOut /> Sign Out
+                  </button>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
         </div>
-
       </div>
     </header>
   );

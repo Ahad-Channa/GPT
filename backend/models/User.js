@@ -26,6 +26,10 @@ const userSchema = new mongoose.Schema(
       enum: ['user', 'moderator', 'admin'],
       default: 'user',
     },
+    adminPermissions: [{
+      type: String,
+      enum: ['manage_users', 'manage_withdrawals', 'manage_support', 'manage_offerwalls', 'manage_admins'],
+    }],
     // Core Wallet configuration
     walletBalance: {
       type: Number,

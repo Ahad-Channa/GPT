@@ -26,9 +26,11 @@ if (process.env.MONGODB_URI && !process.env.MONGODB_URI.includes('<username>')) 
 // Application routes configurations
 const authRoutes = require('./routes/auth');
 const walletRoutes = require('./routes/wallet');
+const adminRoutes = require('./routes/admin');
 
 app.use('/api/auth', authRoutes);
 app.use('/api/wallet', walletRoutes);
+app.use('/api/admin', adminRoutes);
 
 // Base Route
 app.get('/', (req, res) => {

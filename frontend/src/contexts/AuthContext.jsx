@@ -6,7 +6,8 @@ import {
     GoogleAuthProvider,
     createUserWithEmailAndPassword,
     signInWithEmailAndPassword,
-    sendEmailVerification
+    sendEmailVerification,
+    updateProfile
 } from 'firebase/auth';
 import { auth, googleProvider } from '../config/firebase';
 
@@ -29,6 +30,13 @@ export const AuthProvider = ({ children }) => {
                 }
             });
             const data = await res.json();
+            if (data.isBanned || (data.success && data.user?.isBanned)) {
+                alert("Your account has been banned due to violations of our terms. Please contact support.");
+                await signOut(auth);
+                setMongoUser(null);
+                setCurrentUser(null);
+                return;
+            }
             if (data.success) {
                 setMongoUser(data.user);
             }
@@ -48,13 +56,20 @@ export const AuthProvider = ({ children }) => {
         }
     };
 
-    const registerWithEmail = async (email, password) => {
+    const registerWithEmail = async (email, password, displayName) => {
         try {
             const result = await createUserWithEmailAndPassword(auth, email, password);
+            
+            if (displayName) {
+                await updateProfile(result.user, { displayName });
+                // Reload to reflect changes before sync
+                await result.user.reload();
+            }
+
             // Send verification email to ensure "email is real or not"
-            await sendEmailVerification(result.user);
-            await syncWithMongo(result.user);
-            return result.user;
+            await sendEmailVerification(auth.currentUser);
+            await syncWithMongo(auth.currentUser);
+            return auth.currentUser;
         } catch (error) {
             console.error("Email Registration Error", error);
             throw error;
@@ -91,9 +106,15 @@ export const AuthProvider = ({ children }) => {
         return () => unsubscribe();
     }, []);
 
+    const isAdmin = mongoUser?.role === 'admin';
+    const isPrimaryAdmin = mongoUser?.email === import.meta.env.VITE_PRIMARY_ADMIN_EMAIL;
+
     const value = {
         currentUser,
         mongoUser,
+        setMongoUser,
+        isAdmin,
+        isPrimaryAdmin,
         loginWithGoogle,
         registerWithEmail,
         loginWithEmail,

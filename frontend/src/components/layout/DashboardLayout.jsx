@@ -2,13 +2,29 @@ import Header from './Header';
 
 const DashboardLayout = ({ children }) => {
   return (
-    <div className="flex flex-col min-h-screen bg-[#08080c] font-sans selection:bg-cyan-500/30 overflow-x-hidden relative">
+    <div className="relative min-h-screen bg-[#080b14] text-gray-300 overflow-x-hidden">
+      {/* Ambient Background Glows */}
+      <div className="ambient-bg" aria-hidden="true" />
+
+      {/* Sticky Header */}
       <Header />
-      <main className="flex-1 w-full max-w-7xl mx-auto p-4 md:p-8 2xl:p-12 relative z-0 flex flex-col">
+
+      {/* Main Content */}
+      <main className="relative z-10 w-full max-w-7xl mx-auto px-4 md:px-8 2xl:px-12 py-8 md:py-12 flex flex-col">
         {children}
       </main>
-      <footer className="w-full border-t border-white/[0.04] py-8 mt-auto text-center text-slate-500 text-sm">
-         <p>&copy; {new Date().getFullYear()} GPT. All rights reserved.</p>
+
+      {/* Footer */}
+      <footer className="relative z-10 border-t border-white/[0.05] py-8 mt-auto">
+        <div className="max-w-7xl mx-auto px-8 flex flex-col sm:flex-row items-center justify-between gap-3">
+          <p className="text-slate-600 text-xs font-mono tracking-widest uppercase">
+            &copy; {new Date().getFullYear()} GPT Platform
+          </p>
+          <div className="flex items-center gap-2">
+            <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" />
+            <span className="text-slate-600 text-xs font-mono">All Systems Operational</span>
+          </div>
+        </div>
       </footer>
     </div>
   );

@@ -10,10 +10,13 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "formik": "^2.4.9",
     "framer-motion": "^12.38.0",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
-    "react-icons": "^5.6.0"
+    "react-hot-toast": "^2.6.0",
+    "react-icons": "^5.6.0",
+    "yup": "^1.7.1"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.4",

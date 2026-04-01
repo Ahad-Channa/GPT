@@ -1,4 +1,5 @@
 const admin = require('../config/firebase');
+const User = require('../models/User');
 
 const verifyToken = async (req, res, next) => {
   const token = req.headers.authorization?.split('Bearer ')[1];
@@ -15,6 +16,13 @@ const verifyToken = async (req, res, next) => {
     }
 
     const decodedToken = await admin.auth().verifyIdToken(token);
+    
+    // Check if user is banned
+    const userRecord = await User.findOne({ firebaseUid: decodedToken.uid });
+    if (userRecord && userRecord.isBanned) {
+      return res.status(403).json({ success: false, error: 'Forbidden: Account has been banned', isBanned: true });
+    }
+
     req.user = decodedToken;
     next();
   } catch (error) {
