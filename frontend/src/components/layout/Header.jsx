@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
-import { FiLogOut, FiUser, FiSettings, FiZap, FiChevronDown } from 'react-icons/fi';
+import { FiLogOut, FiUser, FiSettings, FiZap, FiChevronDown, FiCreditCard } from 'react-icons/fi';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -42,15 +42,19 @@ const Header = () => {
         {/* Right Controls */}
         <div className="flex items-center gap-4">
 
-          {/* Balance Chip */}
-          <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white/[0.04] border border-white/[0.07] text-sm">
+          {/* Balance Chip — click to go to Wallet */}
+          <button
+            id="header-balance-chip"
+            onClick={() => navigate('/dashboard/wallet')}
+            className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white/[0.04] border border-white/[0.07] text-sm hover:bg-white/[0.07] hover:border-blue-500/30 transition-all"
+          >
             <FiZap className="text-indigo-400 text-xs" />
             <span className="text-slate-400 text-[11px] font-mono tracking-widest">BAL</span>
             <span className="font-semibold text-white font-mono text-sm">
-              {mongoUser?.walletBalance?.toFixed(2) ?? '0.00'}
+              {mongoUser?.walletBalance?.toLocaleString() ?? '0'}
             </span>
             <span className="text-indigo-400 text-[10px] font-mono">PTS</span>
-          </div>
+          </button>
 
           <div className="h-5 w-px bg-white/[0.08] hidden sm:block" />
 
@@ -104,6 +108,14 @@ const Header = () => {
                     className="w-full text-left px-4 py-3 text-sm text-slate-300 hover:bg-white/[0.05] hover:text-white transition-colors flex items-center gap-3 border-b border-white/[0.04]"
                   >
                     <FiUser className="text-indigo-400" /> Profile
+                  </button>
+
+                  <button
+                    id="header-wallet-link"
+                    onClick={() => { setIsDropdownOpen(false); navigate('/dashboard/wallet'); }}
+                    className="w-full text-left px-4 py-3 text-sm text-slate-300 hover:bg-white/[0.05] hover:text-white transition-colors flex items-center gap-3 border-b border-white/[0.04]"
+                  >
+                    <FiCreditCard className="text-blue-400" /> Wallet
                   </button>
 
                   {isAdmin && (

@@ -61,7 +61,7 @@ router.put('/profile', verifyToken, async (req, res) => {
     const user = await User.findOneAndUpdate(
       { firebaseUid: req.user.uid },
       { displayName },
-      { new: true }
+      { returnDocument: 'after' }
     );
 
     if (!user) {

@@ -1,7 +1,7 @@
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import {
-  FiGrid, FiUsers, FiShield, FiArrowRight, FiLogOut, FiZap, FiDollarSign, FiActivity
+  FiGrid, FiUsers, FiShield, FiArrowRight, FiLogOut, FiZap, FiDollarSign, FiActivity, FiSliders
 } from 'react-icons/fi';
 import './Admin.css';
 
@@ -15,11 +15,12 @@ const AdminLayout = () => {
   };
 
   const navItems = [
-    { to: '/admin',             end: true, icon: FiGrid,       label: 'Overview'      },
+    { to: '/admin',             end: true,  icon: FiGrid,       label: 'Overview'      },
     { to: '/admin/users',       end: false, icon: FiUsers,      label: 'Users'         },
     { to: '/admin/withdrawals', end: false, icon: FiDollarSign, label: 'Withdrawals'   },
-    ...(isPrimaryAdmin ? [{ to: '/admin/admins', end: false, icon: FiShield,   label: 'Staff'     }] : []),
-    ...(isPrimaryAdmin ? [{ to: '/admin/logs',   end: false, icon: FiActivity, label: 'Audit Log' }] : []),
+    ...(isPrimaryAdmin ? [{ to: '/admin/admins',   end: false, icon: FiShield,   label: 'Staff'     }] : []),
+    ...(isPrimaryAdmin ? [{ to: '/admin/logs',     end: false, icon: FiActivity, label: 'Audit Log' }] : []),
+    ...(isPrimaryAdmin ? [{ to: '/admin/settings', end: false, icon: FiSliders,  label: 'Settings', accent: true }] : []),
   ];
 
   return (
@@ -42,17 +43,18 @@ const AdminLayout = () => {
         <nav className="admin-nav">
           <span className="admin-nav-label">Management</span>
 
-          {navItems.map(({ to, end, icon: Icon, label }) => (
+          {navItems.map(({ to, end, icon: Icon, label, accent }) => (
             <NavLink
               key={to}
               to={to}
               end={end}
               className={({ isActive }) =>
-                `admin-nav-item ${isActive ? 'active' : ''}`
+                `admin-nav-item ${isActive ? 'active' : ''} ${accent ? 'settings-item' : ''}`
               }
             >
-              <Icon className="admin-nav-icon" />
+              <Icon className="admin-nav-icon" style={accent ? { color: '#fbbf24' } : {}} />
               {label}
+              {accent && <span style={{ marginLeft: 'auto', fontSize: '0.6rem', background: 'rgba(234,179,8,0.15)', color: '#fbbf24', border: '1px solid rgba(234,179,8,0.25)', borderRadius: '4px', padding: '1px 6px', fontWeight: 700, letterSpacing: '0.05em' }}>ROOT</span>}
             </NavLink>
           ))}
 

@@ -206,3 +206,49 @@
   background: linear-gradient(90deg, transparent, rgba(255,255,255,0.06), transparent);
   margin: 2rem 0;
 }
+
+/* ─── Additional Badge Variants ─────────────────────────────── */
+.badge-indigo {
+  background: rgba(99,102,241,0.12);
+  color: #818cf8;
+  border: 1px solid rgba(99,102,241,0.25);
+  border-radius: 6px;
+  padding: 2px 8px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.badge-violet {
+  background: rgba(139,92,246,0.12);
+  color: #a78bfa;
+  border: 1px solid rgba(139,92,246,0.25);
+  border-radius: 6px;
+  padding: 2px 8px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.badge-orange {
+  background: rgba(249,115,22,0.12);
+  color: #fb923c;
+  border: 1px solid rgba(249,115,22,0.25);
+  border-radius: 6px;
+  padding: 2px 8px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* ─── Shadow Glow Utilities ─────────────────────────────────── */
+.shadow-glow {
+  box-shadow: 0 4px 20px rgba(37, 99, 235, 0.2);
+}
+.shadow-glow-lg {
+  box-shadow: 0 6px 30px rgba(37, 99, 235, 0.35);
+}
+.shadow-card {
+  box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+}

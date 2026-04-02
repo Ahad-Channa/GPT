@@ -21,6 +21,11 @@ const adminLogSchema = new mongoose.Schema(
         'APPROVE_WITHDRAWAL',
         'REJECT_WITHDRAWAL',
         'COMPLETE_WITHDRAWAL',
+        'UPDATE_SETTINGS',
+        'ATTEMPT_BAN_PRIMARY_ADMIN',
+        'ATTEMPT_BALANCE_PRIMARY_ADMIN',
+        'ATTEMPT_EDIT_PERMISSIONS_PRIMARY_ADMIN',
+        'ATTEMPT_REVOKE_PRIMARY_ADMIN',
       ],
     },
     targetUserId: {
