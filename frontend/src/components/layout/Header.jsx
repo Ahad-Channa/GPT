@@ -90,9 +90,8 @@ const Header = () => {
                 <motion.div
                   initial={{ opacity: 0, y: 6, scale: 0.97 }}
                   animate={{ opacity: 1, y: 0, scale: 1 }}
-                  exit={{ opacity: 0, y: 6, scale: 0.97 }}
                   transition={{ duration: 0.15 }}
-                  className="absolute right-0 top-14 w-48 glass-card shadow-card border border-white/[0.08] overflow-hidden z-50"
+                  className="absolute right-0 top-14 w-48 bg-[#0b101e] shadow-card border border-white/[0.08] overflow-hidden z-50 rounded-xl"
                 >
                   {/* Balance (mobile) */}
                   <div className="sm:hidden px-4 py-3 border-b border-white/[0.06] flex items-center gap-2">

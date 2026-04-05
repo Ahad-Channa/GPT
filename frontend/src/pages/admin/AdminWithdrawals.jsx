@@ -24,6 +24,8 @@ const AdminWithdrawals = () => {
   const [loading,       setLoading]       = useState(true);
   const [filter,        setFilter]        = useState('pending');
   const [pagination,    setPagination]    = useState({ page: 1, totalPages: 1 });
+  const [approveTarget, setApproveTarget] = useState(null);
+  const [approveNote,   setApproveNote]   = useState('');
   const [rejectTarget,  setRejectTarget]  = useState(null);
   const [rejectReason,  setRejectReason]  = useState('');
   const [rejectError,   setRejectError]   = useState('');
@@ -52,18 +54,19 @@ const AdminWithdrawals = () => {
     fetchWithdrawals(1, filter);
   }, [filter, fetchWithdrawals]);
 
-  const handleApprove = async (id) => {
-    if (!window.confirm('Approve this withdrawal? This action is permanent.')) return;
-    setActionLoading(id);
+  const handleApproveSubmit = async () => {
+    setActionLoading(approveTarget._id);
     try {
       const token = await currentUser.getIdToken();
-      const res = await fetch(`http://localhost:5000/api/admin/withdrawals/${id}/approve`, {
+      const res = await fetch(`http://localhost:5000/api/admin/withdrawals/${approveTarget._id}/approve`, {
         method: 'PUT',
         headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ note: approveNote }),
       });
       const data = await res.json();
       if (!data.success) throw new Error(data.error);
       toast.success('Withdrawal approved successfully');
+      setApproveTarget(null);
       fetchWithdrawals(pagination.page, filter);
     } catch (err) {
       toast.error(err.message || 'Failed to approve withdrawal');
@@ -216,7 +219,7 @@ const AdminWithdrawals = () => {
                           <div style={{ display: 'flex', gap: '0.4rem' }}>
                             <button
                               className="action-btn success"
-                              onClick={() => handleApprove(w._id)}
+                              onClick={() => { setApproveTarget(w); setApproveNote(''); }}
                               disabled={!!actionLoading}
                               style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}
                             >
@@ -261,6 +264,50 @@ const AdminWithdrawals = () => {
           </div>
         )}
       </div>
+
+      {/* ── Approve Modal ─────────────────────── */}
+      {approveTarget && (
+        <div
+          className="admin-modal-overlay"
+          onClick={(e) => { if (e.target === e.currentTarget) setApproveTarget(null); }}
+        >
+          <div className="admin-modal">
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.25rem' }}>
+              <h3>Approve Withdrawal</h3>
+              <button
+                onClick={() => setApproveTarget(null)}
+                style={{ background: 'none', border: 'none', color: '#64748b', cursor: 'pointer', padding: 0, fontSize: '18px' }}
+              >
+                <FiX />
+              </button>
+            </div>
+            <p style={{ marginBottom: '1rem' }}>
+              Confirm processing payout to <strong style={{ color: '#cbd5e1' }}>{approveTarget.userId?.displayName || approveTarget.userId?.email}</strong>.
+              <br />
+              <span style={{ color: '#94a3b8', fontSize: '0.82rem' }}>
+                Please ensure you have successfully sent the funds to {approveTarget.method} destination: <strong style={{color: '#fff'}}>{approveTarget.payoutDestination}</strong>.
+              </span>
+            </p>
+            <textarea
+              value={approveNote}
+              onChange={(e) => setApproveNote(e.target.value)}
+              placeholder="Optional Note / Transaction Reference (e.g. TxHash, PayPal ID)..."
+            />
+            <div className="admin-modal-actions">
+              <button className="action-btn" onClick={() => setApproveTarget(null)}>Cancel</button>
+              <button
+                className="action-btn success"
+                onClick={handleApproveSubmit}
+                disabled={!!actionLoading}
+                style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}
+              >
+                {actionLoading ? <FiLoader style={{ animation: 'spin 1s linear infinite' }} /> : <FiCheck />}
+                Confirm Approval
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ── Reject Modal ─────────────────────── */}
       {rejectTarget && (

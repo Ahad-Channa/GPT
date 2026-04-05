@@ -54,13 +54,15 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess }) => {
 
   const overlayRef = useRef(null);
 
-  const { withdrawalFeePercent, coinsPerUSD, withdrawalMethods = [], exchangeRates } = settings;
+  const { coinsPerUSD, withdrawalMethods = [], exchangeRates } = settings;
 
   const selectedMethod = method ? withdrawalMethods.find((m) => m.id === method) : null;
   const selectedConfig = method ? METHOD_CONFIG[method] : null;
 
+  const methodFeePercent = selectedMethod?.feePercent ?? (settings.withdrawalFeePercent || 0);
+
   const amountNum = Number(amount) || 0;
-  const feeCoins  = Math.ceil(amountNum * (withdrawalFeePercent / 100));
+  const feeCoins  = Math.ceil(amountNum * (methodFeePercent / 100));
   const youReceive = Math.max(0, amountNum - feeCoins);  // displayed amount after fee (no extra deduction)
   const totalDeducted = amountNum + feeCoins;
 
@@ -249,7 +251,7 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess }) => {
                     style={{ paddingLeft: '1rem', paddingRight: '5rem' }}
                   />
                   <button
-                    onClick={() => setAmount(String(Math.floor(balance / (1 + withdrawalFeePercent / 100))))}
+                    onClick={() => setAmount(String(Math.floor(balance / (1 + methodFeePercent / 100))))}
                     className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-blue-400 font-semibold hover:text-blue-300 bg-blue-500/10 px-2 py-0.5 rounded-md transition-colors"
                   >
                     MAX
@@ -297,7 +299,7 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess }) => {
                       <span className="text-white">{amountNum.toLocaleString()} {CURRENCY_NAME}</span>
                     </div>
                     <div className="flex justify-between text-slate-400">
-                      <span>Processing fee ({withdrawalFeePercent}%)</span>
+                      <span>Processing fee ({methodFeePercent}%)</span>
                       <span className="text-orange-400">−{feeCoins.toLocaleString()} {CURRENCY_NAME}</span>
                     </div>
                     <div className="h-px bg-white/[0.06] my-1" />

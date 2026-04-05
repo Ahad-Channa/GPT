@@ -1,7 +1,7 @@
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import {
-  FiGrid, FiUsers, FiShield, FiArrowRight, FiLogOut, FiZap, FiDollarSign, FiActivity, FiSliders
+  FiGrid, FiUsers, FiShield, FiArrowRight, FiLogOut, FiZap, FiDollarSign, FiActivity, FiSliders, FiBox, FiTag, FiStar
 } from 'react-icons/fi';
 import './Admin.css';
 
@@ -18,6 +18,9 @@ const AdminLayout = () => {
     { to: '/admin',             end: true,  icon: FiGrid,       label: 'Overview'      },
     { to: '/admin/users',       end: false, icon: FiUsers,      label: 'Users'         },
     { to: '/admin/withdrawals', end: false, icon: FiDollarSign, label: 'Withdrawals'   },
+    ...(isPrimaryAdmin || mongoUser?.adminPermissions?.includes('manage_offerwalls') ? [{ to: '/admin/offerwalls', end: false, icon: FiBox, label: 'Offerwalls' }] : []),
+    ...(isPrimaryAdmin || mongoUser?.adminPermissions?.includes('manage_offerwalls') ? [{ to: '/admin/promocodes', end: false, icon: FiTag, label: 'Promo Codes' }] : []),
+    ...(isPrimaryAdmin || mongoUser?.adminPermissions?.includes('manage_offerwalls') ? [{ to: '/admin/featured-offers', end: false, icon: FiStar, label: 'Featured Offers' }] : []),
     ...(isPrimaryAdmin ? [{ to: '/admin/admins',   end: false, icon: FiShield,   label: 'Staff'     }] : []),
     ...(isPrimaryAdmin ? [{ to: '/admin/logs',     end: false, icon: FiActivity, label: 'Audit Log' }] : []),
     ...(isPrimaryAdmin ? [{ to: '/admin/settings', end: false, icon: FiSliders,  label: 'Settings', accent: true }] : []),

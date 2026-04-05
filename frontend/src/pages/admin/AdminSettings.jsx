@@ -76,7 +76,6 @@ const AdminSettings = () => {
   const [loading,  setLoading]  = useState(true);
 
   // Local editable state — separate from settings so we can cancel
-  const [fee,     setFee]     = useState('');
   const [cpusd,   setCpusd]   = useState('');
   const [methods, setMethods] = useState([]);
 
@@ -98,7 +97,6 @@ const AdminSettings = () => {
       if (!data.success) throw new Error(data.error);
       setSettings(data.settings);
       // Populate local edit state
-      setFee(String(data.settings.withdrawalFeePercent));
       setCpusd(String(data.settings.coinsPerUSD));
       setMethods(JSON.parse(JSON.stringify(data.settings.withdrawalMethods))); // deep copy
       setDirty(false);
@@ -125,14 +123,15 @@ const AdminSettings = () => {
     setError('');
     setSuccess('');
 
-    const feeNum   = Number(fee);
     const cpusdNum = Number(cpusd);
 
-    if (isNaN(feeNum)  || feeNum < 0   || feeNum > 50)  return setError('Fee must be between 0% and 50%.');
     if (isNaN(cpusdNum) || cpusdNum <= 0)                return setError('Coins per USD must be a positive number.');
     for (const m of methods) {
       if (isNaN(Number(m.minUSD)) || Number(m.minUSD) <= 0) {
         return setError(`Minimum for "${m.label}" must be a positive number.`);
+      }
+      if (isNaN(Number(m.feePercent)) || Number(m.feePercent) < 0 || Number(m.feePercent) > 100) {
+        return setError(`Fee % for "${m.label}" must be between 0 and 100.`);
       }
     }
 
@@ -143,9 +142,8 @@ const AdminSettings = () => {
         method: 'PUT',
         headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          withdrawalFeePercent: feeNum,
           coinsPerUSD: cpusdNum,
-          withdrawalMethods: methods.map((m) => ({ ...m, minUSD: Number(m.minUSD) })),
+          withdrawalMethods: methods.map((m) => ({ ...m, minUSD: Number(m.minUSD), feePercent: Number(m.feePercent) })),
         }),
       });
       const data = await res.json();
@@ -166,7 +164,6 @@ const AdminSettings = () => {
   /* ── Cancel / discard changes ───────────────── */
   const handleDiscard = () => {
     if (!settings) return;
-    setFee(String(settings.withdrawalFeePercent));
     setCpusd(String(settings.coinsPerUSD));
     setMethods(JSON.parse(JSON.stringify(settings.withdrawalMethods)));
     setDirty(false);
@@ -242,28 +239,7 @@ const AdminSettings = () => {
             </div>
           </div>
 
-          {/* Withdrawal Fee % */}
-          <Field
-            label="Withdrawal Fee %"
-            hint="Applied to every withdrawal. User pays this on top of their requested amount."
-          >
-            <NumberInput
-              value={fee}
-              onChange={(v) => { setFee(v); markDirty(); }}
-              min={0}
-              max={50}
-              step={0.5}
-              suffix="%"
-            />
-            {/* Live preview */}
-            {fee && !isNaN(Number(fee)) && (
-              <div style={{ marginTop: '0.6rem', padding: '0.6rem 0.9rem', background: 'rgba(245,158,11,0.07)', border: '1px solid rgba(245,158,11,0.18)', borderRadius: '10px', fontSize: '0.75rem', color: '#94a3b8', fontFamily: 'monospace' }}>
-                Example: Withdraw 1,000 Coins →
-                <span style={{ color: '#f59e0b', fontWeight: 600 }}> {Math.ceil(1000 * (Number(fee) / 100))} fee</span>,
-                deduct <span style={{ color: '#f87171', fontWeight: 600 }}>{1000 + Math.ceil(1000 * (Number(fee) / 100))} total</span>
-              </div>
-            )}
-          </Field>
+          {/* (Global fee removed, now per-method) */}
 
           {/* Coins per USD */}
           <Field
@@ -351,19 +327,36 @@ const AdminSettings = () => {
                     </button>
                   </div>
 
-                  {/* Minimum USD input */}
-                  <div>
-                    <label style={{ display: 'block', fontSize: '0.68rem', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: '0.35rem' }}>
-                      Minimum USD
-                    </label>
-                    <NumberInput
-                      value={m.minUSD}
-                      onChange={(v) => updateMethod(m.id, 'minUSD', v)}
-                      min={0.01}
-                      step={0.5}
-                      prefix="$"
-                      disabled={!m.enabled}
-                    />
+                  <div style={{ display: 'flex', gap: '1rem' }}>
+                    {/* Minimum USD input */}
+                    <div style={{ flex: 1 }}>
+                      <label style={{ display: 'block', fontSize: '0.68rem', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: '0.35rem' }}>
+                        Minimum USD
+                      </label>
+                      <NumberInput
+                        value={m.minUSD}
+                        onChange={(v) => updateMethod(m.id, 'minUSD', v)}
+                        min={0.01}
+                        step={0.5}
+                        prefix="$"
+                        disabled={!m.enabled}
+                      />
+                    </div>
+                    {/* Fee % input */}
+                    <div style={{ flex: 1 }}>
+                      <label style={{ display: 'block', fontSize: '0.68rem', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: '0.35rem' }}>
+                        Processing Fee %
+                      </label>
+                      <NumberInput
+                        value={m.feePercent}
+                        onChange={(v) => updateMethod(m.id, 'feePercent', v)}
+                        min={0}
+                        max={100}
+                        step={0.5}
+                        suffix="%"
+                        disabled={!m.enabled}
+                      />
+                    </div>
                   </div>
                 </motion.div>
               );

@@ -27,10 +27,14 @@ if (process.env.MONGODB_URI && !process.env.MONGODB_URI.includes('<username>')) 
 const authRoutes = require('./routes/auth');
 const walletRoutes = require('./routes/wallet');
 const adminRoutes = require('./routes/admin');
+const offerwallRoutes = require('./routes/offerwalls');
+const customOffersRoutes = require('./routes/customOffers');
 
 app.use('/api/auth', authRoutes);
 app.use('/api/wallet', walletRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/offerwalls', offerwallRoutes);
+app.use('/api/custom-offers', customOffersRoutes);
 
 // Base Route
 app.get('/', (req, res) => {

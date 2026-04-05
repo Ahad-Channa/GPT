@@ -12,10 +12,93 @@ import {
   FiCheckCircle,
   FiRefreshCw,
   FiInfo,
+  FiGift,
 } from 'react-icons/fi';
 
 const container = { hidden: {}, show: { transition: { staggerChildren: 0.07 } } };
 const item      = { hidden: { opacity: 0, y: 18 }, show: { opacity: 1, y: 0, transition: { duration: 0.38 } } };
+
+const PromoCodeRedeem = ({ onSuccess }) => {
+  const { currentUser } = useAuth();
+  const [code, setCode] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState({ text: '', type: '' });
+
+  const handleRedeem = async (e) => {
+    e.preventDefault();
+    if (!code.trim()) return;
+
+    setLoading(true);
+    setMessage({ text: '', type: '' });
+
+    try {
+      const token = await currentUser.getIdToken();
+      const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/wallet/redeem-promo`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({ code })
+      });
+      const data = await res.json();
+      
+      if (data.success) {
+        setMessage({ text: `+${data.coinsEarned} Coins added to your wallet!`, type: 'success' });
+        setCode('');
+        if (onSuccess) onSuccess(data.newBalance);
+      } else {
+        setMessage({ text: data.error || 'Failed to redeem code', type: 'error' });
+      }
+    } catch (err) {
+      setMessage({ text: 'Network error. Try again later.', type: 'error' });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <motion.div variants={item} className="glass-card p-6 border border-fuchsia-500/20 bg-gradient-to-r from-fuchsia-500/5 to-transparent">
+      <div className="flex items-center gap-3 mb-4">
+        <div className="w-10 h-10 rounded-xl bg-fuchsia-500/10 flex items-center justify-center border border-fuchsia-500/20">
+          <FiGift className="text-fuchsia-400" />
+        </div>
+        <div>
+          <h2 className="text-lg font-bold font-display text-white">Redeem Promo Code</h2>
+          <p className="text-sm text-slate-400">Have a code? Enter it below to claim free coins.</p>
+        </div>
+      </div>
+      
+      <form onSubmit={handleRedeem} className="flex flex-col sm:flex-row gap-3">
+        <input
+          type="text"
+          value={code}
+          onChange={(e) => setCode(e.target.value.toUpperCase())}
+          placeholder="ENTER CODE HERE"
+          className="bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-fuchsia-500/50 focus:ring-1 focus:ring-fuchsia-500/50 flex-1 uppercase font-mono tracking-wider"
+          disabled={loading}
+        />
+        <button
+          type="submit"
+          disabled={loading || !code.trim()}
+          className="btn-primary bg-gradient-to-r from-fuchsia-500 to-violet-600 hover:from-fuchsia-400 hover:to-violet-500 px-6 py-3 rounded-xl font-semibold disabled:opacity-50"
+          style={{ boxShadow: '0 0 15px rgba(217,70,239,0.2)' }}
+        >
+          {loading ? 'Redeeming...' : 'Redeem'}
+        </button>
+      </form>
+      
+      {message.text && (
+        <motion.p 
+          initial={{ opacity: 0, y: -5 }} animate={{ opacity: 1, y: 0 }}
+          className={`mt-3 text-sm font-medium ${message.type === 'success' ? 'text-emerald-400' : 'text-rose-400'}`}
+        >
+          {message.text}
+        </motion.p>
+      )}
+    </motion.div>
+  );
+};
 
 const Wallet = () => {
   const { currentUser, mongoUser, setMongoUser } = useAuth();
@@ -119,10 +202,6 @@ const Wallet = () => {
                 <span className="text-xs font-mono text-slate-400">1 USD =</span>
                 <span className="text-xs font-mono font-bold text-blue-400">{settings.coinsPerUSD} {CURRENCY_NAME}</span>
               </div>
-              <div className="flex items-center gap-2 bg-white/[0.04] border border-white/[0.07] rounded-lg px-3 py-1.5">
-                <span className="text-xs font-mono text-slate-400">Payout Fee</span>
-                <span className="text-xs font-mono font-bold text-orange-400">{settings.withdrawalFeePercent}%</span>
-              </div>
             </div>
           )}
         </motion.div>
@@ -177,7 +256,7 @@ const Wallet = () => {
             <div className="text-xs text-slate-400 space-y-0.5 leading-relaxed">
               <p>
                 <span className="text-white font-semibold">How payouts work: </span>
-                Submit a request for a supported method. A <span className="text-orange-400 font-semibold">{settings.withdrawalFeePercent}% processing fee</span> is applied automatically.
+                Submit a request for a supported method. <span className="text-orange-400 font-semibold">Processing fees apply based on the payout method</span>.
                 Payouts are reviewed and processed by our team within 1–3 business days.
               </p>
               <p className="text-slate-500">
@@ -196,6 +275,9 @@ const Wallet = () => {
             onStatsLoaded={setHistoryStats}
           />
         </motion.div>
+
+        {/* ── Promo Code Redeemer ───────────────────────────────── */}
+        <PromoCodeRedeem onSuccess={handleWithdrawSuccess} />
 
       </motion.div>
 

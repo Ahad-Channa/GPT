@@ -4,6 +4,7 @@ const https = require('https');
 const User = require('../models/User');
 const Transaction = require('../models/Transaction');
 const Settings = require('../models/Settings');
+const PromoCode = require('../models/PromoCode');
 const { verifyToken } = require('../middlewares/authMiddleware');
 
 /* ─────────────────────────────────────────────────────────────────
@@ -77,6 +78,7 @@ router.get('/settings', verifyToken, async (req, res) => {
       success: true,
       withdrawalFeePercent: settings.withdrawalFeePercent,
       withdrawalMethods: settings.withdrawalMethods.filter((m) => m.enabled),
+      offerwalls: settings.offerwallProviders.filter((p) => p.enabled),
       coinsPerUSD: settings.coinsPerUSD,
       exchangeRates: { ltcUSD: ltcRateUSD },
     });
@@ -189,7 +191,8 @@ router.post('/withdraw', verifyToken, async (req, res) => {
     }
 
     // --- 3. Compute minimum in coins + fetch live rate if needed ---
-    const { coinsPerUSD, withdrawalFeePercent } = settings;
+    const { coinsPerUSD } = settings;
+    const feePercent = methodConfig.feePercent !== undefined ? methodConfig.feePercent : (settings.withdrawalFeePercent || 0);
     let ltcRateUSD = null;
     let exchangeRateSnapshot = {};
 
@@ -208,7 +211,7 @@ router.post('/withdraw', verifyToken, async (req, res) => {
     }
 
     // --- 4. Calculate fee ---
-    const feeCoins = Math.ceil(amountNum * (withdrawalFeePercent / 100));
+    const feeCoins = Math.ceil(amountNum * (feePercent / 100));
     const totalDeduction = amountNum + feeCoins; // total coins deducted from balance
 
     // --- 5. Load user ---
@@ -245,7 +248,7 @@ router.post('/withdraw', verifyToken, async (req, res) => {
       method,
       payoutDestination,
       metadata: {
-        feePercent: withdrawalFeePercent,
+        feePercent,
         coinsPerUSD,
         exchangeRateSnapshot,
         ...(ltcRateUSD && {
@@ -268,6 +271,92 @@ router.post('/withdraw', verifyToken, async (req, res) => {
 });
 
 /* ─────────────────────────────────────────────────────────────────
+   GET /api/wallet/daily-bonus-status
+   Polling endpoint for daily bonus state.
+───────────────────────────────────────────────────────────────── */
+router.get('/daily-bonus-status', verifyToken, async (req, res) => {
+  try {
+    const user = await User.findOne({ firebaseUid: req.user.uid });
+    if (!user) return res.status(404).json({ success: false, error: 'User not found' });
+
+    const settings = await Settings.getSingleton();
+    const rd = settings.rewardEngine;
+    
+    let streak = user.dailyBonusStreak || 0;
+    const now = new Date();
+    
+    // Check if already claimed today
+    let alreadyClaimed = false;
+    let nextClaimAt = null;
+    if (user.lastDailyBonusClaim) {
+      if (user.lastDailyBonusClaim.toDateString() === now.toDateString()) {
+        alreadyClaimed = true;
+        const tomorrow = new Date(now);
+        tomorrow.setDate(now.getDate() + 1);
+        tomorrow.setHours(0, 0, 0, 0);
+        nextClaimAt = tomorrow.toISOString();
+      } else {
+        const yesterday = new Date(now);
+        yesterday.setDate(now.getDate() - 1);
+        // if not claimed yesterday, streak breaks to 0 (will become 1 on next claim if resetting, or just 0 now)
+        if (user.lastDailyBonusClaim.toDateString() !== yesterday.toDateString()) {
+           streak = 0;
+        }
+      }
+    }
+
+    const nextStreakToClaim = alreadyClaimed ? streak + 1 : streak + 1;
+    let dayIndex = (nextStreakToClaim - 1) % rd.dailyBonusMaxStreak;
+    if (streak >= rd.dailyBonusMaxStreak && rd.dailyBonusAfterMax === 'hold') {
+       dayIndex = rd.dailyBonusMaxStreak - 1;
+    }
+
+    let earnedToday = 0;
+    if (!alreadyClaimed) {
+      const startOfToday = new Date(now);
+      startOfToday.setHours(0, 0, 0, 0);
+      
+      const earnedResult = await Transaction.aggregate([
+        { $match: { 
+            userId: user._id, 
+            amount: { $gt: 0 },
+            transactionType: { $ne: 'daily_bonus' },
+            createdAt: { $gte: startOfToday }
+        } },
+        { $group: { _id: null, total: { $sum: "$amount" } } }
+      ]);
+      earnedToday = earnedResult.length > 0 ? earnedResult[0].total : 0;
+    }
+
+    const required = rd.dailyBonusEarnGate[dayIndex] || 1000;
+    const gateUnlocked = earnedToday >= required;
+    const rewardToday = rd.dailyBonusReward[dayIndex] || 100;
+    
+    let nextDayIndex = dayIndex + 1;
+    if (nextDayIndex >= rd.dailyBonusMaxStreak) {
+       nextDayIndex = rd.dailyBonusAfterMax === 'hold' ? rd.dailyBonusMaxStreak - 1 : 0;
+    }
+    const rewardTomorrow = rd.dailyBonusReward[nextDayIndex] || 100;
+
+    res.status(200).json({
+      success: true,
+      alreadyClaimed,
+      gateUnlocked,
+      earned: earnedToday,
+      required: required,
+      streak: alreadyClaimed ? streak : streak + 1,
+      dayIndex,
+      rewardToday,
+      rewardTomorrow,
+      nextClaimAt
+    });
+  } catch (error) {
+    console.error('[/api/wallet/daily-bonus-status] Error:', error);
+    res.status(500).json({ success: false, error: 'Failed to fetch status' });
+  }
+});
+
+/* ─────────────────────────────────────────────────────────────────
    POST /api/wallet/daily-bonus
    Securely credits daily progression bonus using Atomic Mongo locks
 ───────────────────────────────────────────────────────────────── */
@@ -285,10 +374,11 @@ router.post('/daily-bonus', verifyToken, async (req, res) => {
       }
     }
 
-    // 2. Progression streak math
-    const rewardBase = 50;
-    let streak = user.dailyBonusStreak || 0;
+    const settings = await Settings.getSingleton();
+    const rd = settings.rewardEngine;
 
+    // 2. Progression streak math
+    let streak = user.dailyBonusStreak || 0;
     if (user.lastDailyBonusClaim) {
       const yesterday = new Date(now);
       yesterday.setDate(now.getDate() - 1);
@@ -301,9 +391,38 @@ router.post('/daily-bonus', verifyToken, async (req, res) => {
       streak = 1;
     }
 
-    const rewardAmount = rewardBase + streak * 10;
+    let dayIndex = (streak - 1) % rd.dailyBonusMaxStreak;
+    if (streak > rd.dailyBonusMaxStreak && rd.dailyBonusAfterMax === 'hold') {
+       dayIndex = rd.dailyBonusMaxStreak - 1;
+    }
 
-    // 3. ATOMIC Update ($inc) + Optimistic locking to prevent spam-click duplicate claims
+    // 3. EARN GATE
+    const startOfToday = new Date(now);
+    startOfToday.setHours(0, 0, 0, 0);
+    const earnedResult = await Transaction.aggregate([
+      { $match: { 
+          userId: user._id, 
+          amount: { $gt: 0 },
+          transactionType: { $ne: 'daily_bonus' },
+          createdAt: { $gte: startOfToday }
+      } },
+      { $group: { _id: null, total: { $sum: "$amount" } } }
+    ]);
+    const earnedToday = earnedResult.length > 0 ? earnedResult[0].total : 0;
+    const requiredEarn = rd.dailyBonusEarnGate[dayIndex] || 1000;
+
+    if (earnedToday < requiredEarn) {
+      return res.status(200).json({
+         success: false,
+         gateRequired: true,
+         earned: earnedToday,
+         required: requiredEarn
+      });
+    }
+
+    const rewardAmount = rd.dailyBonusReward[dayIndex] || 100;
+
+    // 4. ATOMIC Update ($inc) + Optimistic locking to prevent spam-click duplicate claims
     const updatedUser = await User.findOneAndUpdate(
       { _id: user._id, lastDailyBonusClaim: user.lastDailyBonusClaim },
       {
@@ -317,7 +436,7 @@ router.post('/daily-bonus', verifyToken, async (req, res) => {
       return res.status(409).json({ success: false, error: 'Claim concurrent conflict. Try again.' });
     }
 
-    // 4. Archive Transaction
+    // 5. Archive Transaction
     await Transaction.create({
       userId: user._id,
       transactionType: 'daily_bonus',
@@ -333,10 +452,131 @@ router.post('/daily-bonus', verifyToken, async (req, res) => {
       rewardAmount,
       streak,
       balance: updatedUser.walletBalance,
+      nextClaimAt: new Date(new Date().setHours(24,0,0,0)).toISOString()
     });
   } catch (error) {
     console.error('[/api/wallet/daily-bonus] Error:', error);
     res.status(500).json({ success: false, error: 'Failed to process daily claim' });
+  }
+});
+
+/* ─────────────────────────────────────────────────────────────────
+   POST /api/wallet/redeem-promo
+   Body: { code: "PROMO25" }
+───────────────────────────────────────────────────────────────── */
+router.post('/redeem-promo', verifyToken, async (req, res) => {
+  try {
+    const { code } = req.body;
+    if (!code) return res.status(400).json({ success: false, error: 'Code is required' });
+
+    const user = await User.findOne({ firebaseUid: req.user.uid });
+    if (!user) return res.status(404).json({ success: false, error: 'User not found' });
+
+    const normalizedCode = code.trim().toUpperCase();
+
+    // Find and check code validity
+    const promo = await PromoCode.findOne({ code: normalizedCode, isActive: true });
+    if (!promo) {
+      return res.status(400).json({ success: false, error: 'Invalid code' });
+    }
+
+    if (promo.expiresAt && new Date() > promo.expiresAt) {
+      return res.status(400).json({ success: false, error: 'Code expired' });
+    }
+
+    if (promo.usedBy.includes(user._id)) {
+      return res.status(400).json({ success: false, error: 'Already redeemed' });
+    }
+
+    if (promo.maxUses !== 0 && promo.usedCount >= promo.maxUses) {
+      return res.status(400).json({ success: false, error: 'Code fully used' });
+    }
+
+    // Atomic update
+    const updatedPromo = await PromoCode.findOneAndUpdate(
+      { 
+        _id: promo._id, 
+        isActive: true,
+        $or: [
+          { maxUses: 0 },
+          { usedCount: { $lt: promo.maxUses > 0 ? promo.maxUses : 999999999 } }
+        ],
+        usedBy: { $ne: user._id }
+      },
+      {
+        $inc: { usedCount: 1 },
+        $push: { usedBy: user._id }
+      },
+      { new: true }
+    );
+
+    if (!updatedPromo) {
+      return res.status(400).json({ success: false, error: 'Code no longer available or already redeemed' });
+    }
+
+    const updatedUser = await User.findOneAndUpdate(
+      { _id: user._id },
+      { $inc: { walletBalance: promo.rewardCoins } },
+      { new: true }
+    );
+
+    await Transaction.create({
+      userId: user._id,
+      transactionType: 'promo_code',
+      amount: promo.rewardCoins,
+      balanceAfter: updatedUser.walletBalance,
+      description: `Promo Code: ${normalizedCode}`,
+      status: 'completed',
+    });
+
+    res.status(200).json({
+      success: true,
+      coinsEarned: promo.rewardCoins,
+      newBalance: updatedUser.walletBalance
+    });
+  } catch (error) {
+    console.error('[/api/wallet/redeem-promo] Error:', error);
+    res.status(500).json({ success: false, error: 'Failed to redeem promo code' });
+  }
+});
+
+/* ─────────────────────────────────────────────────────────────────
+   GET /api/wallet/dashboard-stats
+   Fetch lifetime stats for the dashboard (e.g. Total Offers Completed)
+───────────────────────────────────────────────────────────────── */
+router.get('/dashboard-stats', verifyToken, async (req, res) => {
+  try {
+    const user = await User.findOne({ firebaseUid: req.user.uid });
+    if (!user) return res.status(404).json({ success: false, error: 'User not found' });
+
+    // Aggregate to count and sum offer_reward transactions
+    const result = await Transaction.aggregate([
+      { 
+        $match: { 
+          userId: user._id, 
+          transactionType: 'offer_reward',
+          status: 'completed'
+        } 
+      },
+      { 
+        $group: { 
+          _id: null, 
+          count: { $sum: 1 },
+          totalEarned: { $sum: '$amount' }
+        } 
+      }
+    ]);
+
+    const stats = result.length > 0 ? result[0] : { count: 0, totalEarned: 0 };
+
+    res.status(200).json({
+      success: true,
+      totalTasksCompleted: stats.count,
+      totalCoinsFromOffers: stats.totalEarned
+    });
+  } catch (error) {
+    console.error('[/api/wallet/dashboard-stats] Error:', error);
+    res.status(500).json({ success: false, error: 'Failed to fetch dashboard stats' });
   }
 });
 

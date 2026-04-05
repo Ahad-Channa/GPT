@@ -1,12 +1,23 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
-import { FiCopy, FiSearch } from 'react-icons/fi';
+import { FiCopy, FiSearch, FiX, FiCheck, FiLoader, FiMessageSquare } from 'react-icons/fi';
+import toast from 'react-hot-toast';
 
 const AdminUsers = () => {
   const { currentUser } = useAuth();
   const [users,   setUsers]   = useState([]);
   const [search,  setSearch]  = useState('');
   const [loading, setLoading] = useState(false);
+  const [actionLoading, setActionLoading] = useState(false);
+
+  // Modals state
+  const [banTarget,     setBanTarget]     = useState(null);
+  const [banReason,     setBanReason]     = useState('');
+  const [banError,      setBanError]      = useState('');
+  const [balanceTarget, setBalanceTarget] = useState(null);
+  const [balanceAmount, setBalanceAmount] = useState('');
+  const [balanceReason, setBalanceReason] = useState('');
+  const [balanceError,  setBalanceError]  = useState('');
 
   useEffect(() => { fetchUsers(); }, [search]);
 
@@ -23,33 +34,62 @@ const AdminUsers = () => {
     setLoading(false);
   };
 
-  const toggleBan = async (userId, currentState) => {
-    if (!window.confirm(`${currentState ? 'Unban' : 'Ban'} this user?`)) return;
+  const handleBanSubmit = async () => {
+    // Reason is required when banning (not when unbanning)
+    if (!banTarget.isBanned && !banReason.trim()) {
+      setBanError('A reason is required when banning a user.');
+      return;
+    }
+    setActionLoading(true);
     try {
       const token = await currentUser.getIdToken();
-      const res = await fetch(`http://localhost:5000/api/admin/users/${userId}/ban`, {
+      const res = await fetch(`http://localhost:5000/api/admin/users/${banTarget._id}/ban`, {
         method: 'PUT',
         headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ isBanned: !currentState, reason: 'Admin Action' }),
+        body: JSON.stringify({ isBanned: !banTarget.isBanned, reason: banReason }),
       });
-      if (res.ok) fetchUsers();
-    } catch (err) { console.error(err); }
+      const data = await res.json();
+      if (data.success) {
+        toast.success(banTarget.isBanned ? 'User unbanned successfully.' : 'User banned successfully.');
+        fetchUsers();
+        setBanTarget(null);
+      } else {
+        setBanError(data.error || 'Action failed.');
+      }
+    } catch (err) {
+      setBanError('Unexpected error. Please try again.');
+      console.error(err);
+    }
+    setActionLoading(false);
   };
 
-  const adjustBalance = async (userId) => {
-    const amountStr = window.prompt('Enter amount to adjust (negative to deduct):');
-    if (!amountStr) return;
-    const amount = Number(amountStr);
-    if (isNaN(amount)) { alert('Invalid amount'); return; }
+  const handleBalanceSubmit = async () => {
+    const amount = Number(balanceAmount);
+    if (isNaN(amount) || balanceAmount === '') { setBalanceError('Please enter a valid amount.'); return; }
+    if (amount === 0) { setBalanceError('Amount cannot be zero.'); return; }
+    if (!balanceReason.trim()) { setBalanceError('A reason is required for balance adjustments.'); return; }
+    setActionLoading(true);
     try {
       const token = await currentUser.getIdToken();
-      const res = await fetch(`http://localhost:5000/api/admin/users/${userId}/balance`, {
+      const res = await fetch(`http://localhost:5000/api/admin/users/${balanceTarget._id}/balance`, {
         method: 'PUT',
         headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ amount, reason: 'Admin Manual Correction' }),
+        body: JSON.stringify({ amount, reason: balanceReason }),
       });
-      if (res.ok) fetchUsers();
-    } catch (err) { console.error(err); }
+      const data = await res.json();
+      if (data.success) {
+        const sign = amount > 0 ? '+' : '';
+        toast.success(`Balance adjusted: ${sign}${amount.toLocaleString()} Coins`);
+        fetchUsers();
+        setBalanceTarget(null);
+      } else {
+        setBalanceError(data.error || 'Action failed.');
+      }
+    } catch (err) {
+      setBalanceError('Unexpected error. Please try again.');
+      console.error(err);
+    }
+    setActionLoading(false);
   };
 
   const copyToClipboard = (text) => {
@@ -136,10 +176,10 @@ const AdminUsers = () => {
                   </td>
                   <td>
                     <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap' }}>
-                      <button className="action-btn" onClick={() => adjustBalance(u._id)}>Adjust Bal</button>
+                      <button className="action-btn" onClick={() => { setBalanceTarget(u); setBalanceAmount(''); setBalanceReason(''); setBalanceError(''); }}>Adjust Bal</button>
                       <button
                         className={`action-btn ${u.isBanned ? 'success' : 'danger'}`}
-                        onClick={() => toggleBan(u._id, u.isBanned)}
+                        onClick={() => { setBanTarget(u); setBanReason(''); setBanError(''); }}
                       >
                         {u.isBanned ? 'Unban' : 'Ban'}
                       </button>
@@ -151,6 +191,112 @@ const AdminUsers = () => {
           </table>
         </div>
       </div>
+
+      {/* ── Ban/Unban Modal ─────────────────────── */}
+      {banTarget && (
+        <div className="admin-modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) setBanTarget(null); }}>
+          <div className="admin-modal">
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.25rem' }}>
+              <h3>{banTarget.isBanned ? 'Unban User' : 'Ban User'}</h3>
+              <button onClick={() => setBanTarget(null)} style={{ background: 'none', border: 'none', color: '#64748b', cursor: 'pointer', padding: 0, fontSize: '18px' }}>
+                <FiX />
+              </button>
+            </div>
+            <p style={{ marginBottom: '1rem', color: '#94a3b8', fontSize: '0.9rem' }}>
+              User: <strong style={{ color: '#fff' }}>{banTarget.email}</strong>
+            </p>
+            <label style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', fontSize: '0.75rem', color: '#94a3b8', marginBottom: '0.4rem' }}>
+              <FiMessageSquare size={12} />
+              {banTarget.isBanned ? 'Reason for unbanning' : 'Reason for ban'}
+              {!banTarget.isBanned && <span style={{ color: '#f87171' }}>*</span>}
+            </label>
+            <textarea
+              value={banReason}
+              onChange={(e) => { setBanReason(e.target.value); setBanError(''); }}
+              placeholder={banTarget.isBanned
+                ? 'Reason for reinstating this user (optional)…'
+                : 'Why is this user being banned? (required)'}
+              style={{ borderColor: banError ? 'rgba(248,113,113,0.4)' : undefined }}
+            />
+            {banError && (
+              <p style={{ color: '#f87171', fontSize: '0.8rem', marginTop: '-0.75rem', marginBottom: '1rem' }}>
+                {banError}
+              </p>
+            )}
+            <div className="admin-modal-actions">
+              <button className="action-btn" onClick={() => setBanTarget(null)}>Cancel</button>
+              <button
+                className={`action-btn ${banTarget.isBanned ? 'success' : 'danger'}`}
+                onClick={handleBanSubmit}
+                disabled={actionLoading}
+                style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}
+              >
+                {actionLoading ? <FiLoader style={{ animation: 'spin 1s linear infinite' }} /> : <FiCheck />}
+                Confirm {banTarget.isBanned ? 'Unban' : 'Ban'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Adjust Balance Modal ─────────────────────── */}
+      {balanceTarget && (
+        <div className="admin-modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) setBalanceTarget(null); }}>
+          <div className="admin-modal">
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.25rem' }}>
+              <h3>Adjust Balance</h3>
+              <button onClick={() => setBalanceTarget(null)} style={{ background: 'none', border: 'none', color: '#64748b', cursor: 'pointer', padding: 0, fontSize: '18px' }}>
+                <FiX />
+              </button>
+            </div>
+            <p style={{ marginBottom: '1rem', color: '#94a3b8', fontSize: '0.9rem' }}>
+              User: <strong style={{ color: '#fff' }}>{balanceTarget.email}</strong>
+              <span style={{ marginLeft: '0.5rem', fontFamily: 'monospace', color: '#818cf8' }}>
+                ({balanceTarget.walletBalance.toLocaleString()} Coins)
+              </span>
+            </p>
+            <label style={{ display: 'block', fontSize: '0.75rem', color: '#94a3b8', marginBottom: '0.35rem' }}>
+              Amount <span style={{ color: '#f87171' }}>*</span>
+              <span style={{ color: '#475569', marginLeft: '0.4rem' }}>(use negative to deduct, e.g. -500)</span>
+            </label>
+            <input
+              type="number"
+              className="admin-input"
+              style={{ marginBottom: '0.85rem', width: '100%', boxSizing: 'border-box', borderColor: balanceError && !balanceAmount ? 'rgba(248,113,113,0.4)' : undefined }}
+              value={balanceAmount}
+              onChange={(e) => { setBalanceAmount(e.target.value); setBalanceError(''); }}
+              placeholder="e.g. 500 or -200"
+            />
+            <label style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', fontSize: '0.75rem', color: '#94a3b8', marginBottom: '0.4rem' }}>
+              <FiMessageSquare size={12} />
+              Reason / Context <span style={{ color: '#f87171' }}>*</span>
+            </label>
+            <textarea
+              value={balanceReason}
+              onChange={(e) => { setBalanceReason(e.target.value); setBalanceError(''); }}
+              placeholder="Why is this balance being adjusted? (e.g. Bonus reward, correction, refund…)"
+              style={{ borderColor: balanceError && !balanceReason.trim() ? 'rgba(248,113,113,0.4)' : undefined }}
+            />
+            {balanceError && (
+              <p style={{ color: '#f87171', fontSize: '0.8rem', marginTop: '-0.75rem', marginBottom: '1rem' }}>
+                {balanceError}
+              </p>
+            )}
+            <div className="admin-modal-actions">
+              <button className="action-btn" onClick={() => setBalanceTarget(null)}>Cancel</button>
+              <button
+                className="action-btn primary"
+                onClick={handleBalanceSubmit}
+                disabled={actionLoading}
+                style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}
+              >
+                {actionLoading ? <FiLoader style={{ animation: 'spin 1s linear infinite' }} /> : <FiCheck />}
+                Apply Adjustment
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

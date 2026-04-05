@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { FiActivity, FiRefreshCw, FiSearch, FiChevronDown, FiChevronUp } from 'react-icons/fi';
+import { FiActivity, FiRefreshCw, FiSearch, FiChevronDown, FiChevronUp, FiMessageSquare } from 'react-icons/fi';
 import { useAuth } from '../../contexts/AuthContext';
 
 // ── Action metadata: label, colour class, description ────────────────────────
@@ -30,6 +30,7 @@ const fmt = (iso) => {
 const LogRow = ({ log }) => {
   const [open, setOpen] = useState(false);
   const meta = ACTION_META[log.action] || { label: log.action, color: 'log-badge--info', desc: '' };
+  const hasNote = !!(log.details?.reason || log.details?.note);
 
   return (
     <>
@@ -38,7 +39,14 @@ const LogRow = ({ log }) => {
           {fmt(log.createdAt)}
         </td>
         <td>
-          <span className={`log-badge ${meta.color}`}>{meta.label}</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
+            <span className={`log-badge ${meta.color}`}>{meta.label}</span>
+            {hasNote && (
+              <span title="Has context / note" style={{ display: 'inline-flex', alignItems: 'center', color: '#818cf8', flexShrink: 0 }}>
+                <FiMessageSquare size={11} />
+              </span>
+            )}
+          </div>
         </td>
         <td>
           <span style={{ color: '#e2e8f0', fontWeight: 500 }}>
@@ -58,8 +66,15 @@ const LogRow = ({ log }) => {
             </>
           ) : <span style={{ color: '#475569' }}>—</span>}
         </td>
-        <td style={{ textAlign: 'right', paddingRight: '1rem' }}>
-          {open ? <FiChevronUp style={{ color: '#475569' }} /> : <FiChevronDown style={{ color: '#475569' }} />}
+        <td style={{ textAlign: 'right', paddingRight: '1rem', maxWidth: '220px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+          {hasNote ? (
+            <span style={{ marginRight: '0.8rem', fontStyle: 'italic', fontSize: '0.8rem', color: '#cbd5e1' }}>
+              {log.details.reason || log.details.note}
+            </span>
+          ) : (
+            <span style={{ marginRight: '0.8rem', fontSize: '0.8rem', color: '#475569' }}>—</span>
+          )}
+          {open ? <FiChevronUp style={{ color: '#475569', display: 'inline-block', verticalAlign: 'middle' }} /> : <FiChevronDown style={{ color: '#475569', display: 'inline-block', verticalAlign: 'middle' }} />}
         </td>
       </tr>
       {open && (
@@ -67,6 +82,16 @@ const LogRow = ({ log }) => {
           <td colSpan={5}>
             <div className="log-detail-box">
               <p className="log-detail-desc">{meta.desc}</p>
+              {hasNote && (
+                <div style={{ marginBottom: '1rem', padding: '0.6rem 0.8rem', background: 'rgba(30,41,59,0.5)', borderRadius: '6px', borderLeft: '3px solid #818cf8', border: '1px solid rgba(255,255,255,0.05)' }}>
+                  <span style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', fontSize: '0.65rem', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '0.35rem' }}>
+                    <FiMessageSquare size={10} /> Context / Reason
+                  </span>
+                  <p style={{ margin: 0, color: '#e2e8f0', fontSize: '0.85rem', lineHeight: '1.4' }}>
+                    {log.details.reason || log.details.note}
+                  </p>
+                </div>
+              )}
               <pre className="log-detail-json">
                 {JSON.stringify(log.details, null, 2)}
               </pre>
@@ -109,6 +134,8 @@ const AdminLogs = () => {
 
   // Apply client-side search + action filter
   const visible = logs.filter(l => {
+    const hasNote = !!(l.details?.reason || l.details?.note);
+    if (activeFilter === 'HAS_NOTE') return hasNote;
     const matchAction = activeFilter === 'ALL' || l.action === activeFilter;
     const q = search.toLowerCase();
     const matchSearch = !q
@@ -116,7 +143,9 @@ const AdminLogs = () => {
       || l.adminId?.displayName?.toLowerCase().includes(q)
       || l.targetUserId?.email?.toLowerCase().includes(q)
       || l.targetUserId?.displayName?.toLowerCase().includes(q)
-      || l.action?.toLowerCase().includes(q);
+      || l.action?.toLowerCase().includes(q)
+      || l.details?.reason?.toLowerCase().includes(q)
+      || l.details?.note?.toLowerCase().includes(q);
     return matchAction && matchSearch;
   });
 
@@ -166,6 +195,13 @@ const AdminLogs = () => {
           >
             All
           </button>
+          <button
+            className={`filter-pill ${activeFilter === 'HAS_NOTE' ? 'active' : ''}`}
+            onClick={() => setActiveFilter('HAS_NOTE')}
+            style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}
+          >
+            <FiMessageSquare size={11} /> Has Notes
+          </button>
           {ALL_ACTIONS.map(action => (
             <button
               key={action}
@@ -188,7 +224,9 @@ const AdminLogs = () => {
                 <th>Action</th>
                 <th>Admin</th>
                 <th>Target User</th>
-                <th style={{ textAlign: 'right', paddingRight: '1rem' }}>Details</th>
+                <th style={{ textAlign: 'right', paddingRight: '1rem' }}>
+                  Notes / Details
+                </th>
               </tr>
             </thead>
             <tbody>

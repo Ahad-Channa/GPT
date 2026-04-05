@@ -3,7 +3,10 @@ const router = express.Router();
 const User = require('../models/User');
 const Transaction = require('../models/Transaction');
 const Settings = require('../models/Settings');
+const PromoCode = require('../models/PromoCode');
 const AdminLog = require('../models/AdminLog');
+const CustomOffer = require('../models/CustomOffer');
+const CustomOfferSubmission = require('../models/CustomOfferSubmission');
 const adminFirebase = require('../config/firebase');
 const { verifyToken } = require('../middlewares/authMiddleware');
 const { requireAdmin, requirePrimaryAdmin, requirePermission } = require('../middlewares/adminMiddleware');
@@ -140,13 +143,19 @@ router.get('/withdrawals', requirePermission('manage_withdrawals'), async (req, 
 // PUT approve a withdrawal
 router.put('/withdrawals/:id/approve', requirePermission('manage_withdrawals'), async (req, res) => {
   try {
+    const { note } = req.body;
     const tx = await Transaction.findById(req.params.id).populate('userId', 'email displayName');
     if (!tx) return res.status(404).json({ success: false, error: 'Withdrawal not found' });
     if (tx.transactionType !== 'withdrawal') return res.status(400).json({ success: false, error: 'Not a withdrawal transaction' });
     if (tx.status !== 'pending') return res.status(400).json({ success: false, error: `Cannot approve a ${tx.status} withdrawal` });
 
     tx.status = 'completed';
-    tx.metadata = { ...tx.metadata, approvedBy: req.dbUser.email, approvedAt: new Date().toISOString() };
+    tx.metadata = { 
+      ...tx.metadata, 
+      approvedBy: req.dbUser.email, 
+      approvedAt: new Date().toISOString(),
+      ...(note && { note }) 
+    };
     await tx.save();
 
     await createLog(req.dbUser._id, 'APPROVE_WITHDRAWAL', tx.userId._id, {
@@ -154,6 +163,7 @@ router.put('/withdrawals/:id/approve', requirePermission('manage_withdrawals'), 
       amount: tx.amount,
       method: tx.method,
       destination: tx.payoutDestination,
+      ...(note && { note })
     });
 
     res.json({ success: true, transaction: tx });
@@ -216,7 +226,28 @@ router.put('/withdrawals/:id/reject', requirePermission('manage_withdrawals'), a
 router.get('/settings', requirePermission('manage_withdrawals'), async (req, res) => {
   try {
     const settings = await Settings.getSingleton();
-    res.json({ success: true, settings });
+    
+    // Dynamically set secretConfigured
+    const providers = settings.offerwallProviders.map(p => {
+      const pObj = p.toObject ? p.toObject() : p;
+      const envSecretMap = {
+        cpx:       'CPX_HASH_KEY',
+        adgem:     'ADGEM_API_KEY',
+        lootably:  'LOOTABLY_SECRET',
+        torox:     'TOROX_SECRET',
+        primeearn: 'PRIMEEARN_SECRET',
+        ayet:      'AYET_SECRET',
+        adtowall:  'ADTOWALL_SECRET',
+        revu:      'REVU_SECRET',
+      };
+      pObj.secretConfigured = !!process.env[envSecretMap[p.id]];
+      return pObj;
+    });
+
+    const settingsObj = settings.toObject ? settings.toObject() : settings;
+    settingsObj.offerwallProviders = providers;
+
+    res.json({ success: true, settings: settingsObj });
   } catch (error) {
     res.status(500).json({ success: false, error: 'Failed to fetch settings' });
   }
@@ -225,39 +256,246 @@ router.get('/settings', requirePermission('manage_withdrawals'), async (req, res
 // PUT update platform settings
 router.put('/settings', requirePermission('manage_withdrawals'), async (req, res) => {
   try {
-    const { withdrawalFeePercent, withdrawalMethods, coinsPerUSD } = req.body;
+    const { withdrawalFeePercent, withdrawalMethods, coinsPerUSD, rewardEngine } = req.body;
     const settings = await Settings.getSingleton();
 
     if (withdrawalFeePercent !== undefined) {
       const fee = Number(withdrawalFeePercent);
-      if (isNaN(fee) || fee < 0 || fee > 50) {
-        return res.status(400).json({ success: false, error: 'Fee must be between 0% and 50%' });
+      if (!isNaN(fee) && fee >= 0 && fee <= 50) {
+        settings.withdrawalFeePercent = fee;
       }
-      settings.withdrawalFeePercent = fee;
     }
 
     if (coinsPerUSD !== undefined) {
       const rate = Number(coinsPerUSD);
-      if (isNaN(rate) || rate <= 0) {
-        return res.status(400).json({ success: false, error: 'coinsPerUSD must be a positive number' });
+      if (!isNaN(rate) && rate > 0) {
+        settings.coinsPerUSD = rate;
       }
-      settings.coinsPerUSD = rate;
     }
 
     if (withdrawalMethods !== undefined && Array.isArray(withdrawalMethods)) {
       settings.withdrawalMethods = withdrawalMethods;
     }
 
+    if (rewardEngine !== undefined) {
+      settings.rewardEngine = { ...settings.rewardEngine, ...rewardEngine };
+    }
+
     await settings.save();
 
     await createLog(req.dbUser._id, 'ADJUST_BALANCE', null, {
       action: 'UPDATE_SETTINGS',
-      changes: { withdrawalFeePercent, coinsPerUSD, withdrawalMethods },
+      changes: { withdrawalFeePercent, coinsPerUSD, withdrawalMethods, rewardEngine },
     });
 
     res.json({ success: true, settings });
   } catch (error) {
     res.status(500).json({ success: false, error: 'Failed to update settings' });
+  }
+});
+
+// ----------------------------------------------------
+// OFFERWALLS SECTION
+// ----------------------------------------------------
+
+router.put('/offerwalls/:providerId', requirePermission('manage_offerwalls'), async (req, res) => {
+  try {
+    const { enabled, conversionRatio } = req.body;
+    const settings = await Settings.getSingleton();
+    
+    const provider = settings.offerwallProviders.find(p => p.id === req.params.providerId);
+    if (!provider) return res.status(404).json({ success: false, error: 'Provider not found' });
+
+    if (enabled !== undefined) provider.enabled = Boolean(enabled);
+    if (conversionRatio !== undefined) {
+       const ratio = Number(conversionRatio);
+       if (!isNaN(ratio) && ratio > 0) provider.conversionRatio = ratio;
+    }
+
+    await settings.save();
+    
+    await createLog(req.dbUser._id, 'UPDATE_OFFERWALL', null, { 
+       providerId: provider.id, enabled, conversionRatio 
+    });
+
+    res.json({ success: true, provider });
+  } catch (error) {
+    res.status(500).json({ success: false, error: 'Failed to update offerwall provider' });
+  }
+});
+
+// ----------------------------------------------------
+// PROMO CODES SECTION
+// ----------------------------------------------------
+
+router.get('/promo-codes', requirePermission('manage_offerwalls'), async (req, res) => {
+  try {
+    const { page = 1, limit = 20 } = req.query;
+    const [codes, total] = await Promise.all([
+      PromoCode.find()
+        .sort({ createdAt: -1 })
+        .skip((parseInt(page) - 1) * parseInt(limit))
+        .limit(parseInt(limit)),
+      PromoCode.countDocuments()
+    ]);
+
+    res.json({ success: true, codes, total, totalPages: Math.ceil(total / limit) });
+  } catch (error) {
+    res.status(500).json({ success: false, error: 'Failed to fetch promo codes' });
+  }
+});
+
+router.post('/promo-codes', requirePermission('manage_offerwalls'), async (req, res) => {
+  try {
+    const { code, rewardCoins, maxUses, expiresAt } = req.body;
+    
+    const newCode = new PromoCode({
+      code: code.trim().toUpperCase(),
+      rewardCoins: Number(rewardCoins),
+      maxUses: Number(maxUses) || 0,
+      expiresAt: expiresAt ? new Date(expiresAt) : null,
+      createdBy: req.dbUser._id,
+    });
+    
+    await newCode.save();
+    await createLog(req.dbUser._id, 'CREATE_PROMO', null, { code: newCode.code, rewardCoins });
+
+    res.status(201).json({ success: true, code: newCode });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.code === 11000 ? 'Promo code already exists' : 'Failed to create promo code' });
+  }
+});
+
+router.put('/promo-codes/:id', requirePermission('manage_offerwalls'), async (req, res) => {
+  try {
+    const { isActive, rewardCoins, expiresAt } = req.body;
+    const upd = {};
+    if (isActive !== undefined) upd.isActive = Boolean(isActive);
+    if (rewardCoins !== undefined) upd.rewardCoins = Number(rewardCoins);
+    if (expiresAt !== undefined) upd.expiresAt = expiresAt === null ? null : new Date(expiresAt);
+
+    const promo = await PromoCode.findByIdAndUpdate(req.params.id, upd, { new: true });
+    if (!promo) return res.status(404).json({ success: false, error: 'Promo not found' });
+    
+    await createLog(req.dbUser._id, 'EDIT_PROMO', null, { codeId: promo._id, ...upd });
+
+    res.json({ success: true, code: promo });
+  } catch (error) {
+    res.status(500).json({ success: false, error: 'Failed to update promo code' });
+  }
+});
+
+router.delete('/promo-codes/:id', requirePermission('manage_offerwalls'), async (req, res) => {
+  try {
+    const promo = await PromoCode.findByIdAndDelete(req.params.id);
+    if (!promo) return res.status(404).json({ success: false, error: 'Promo not found' });
+
+    await createLog(req.dbUser._id, 'DELETE_PROMO', null, { code: promo.code });
+
+    res.json({ success: true });
+  } catch (error) {
+    res.status(500).json({ success: false, error: 'Failed to delete promo code' });
+  }
+});
+
+// ----------------------------------------------------
+// CUSTOM OFFERS SECTION
+// ----------------------------------------------------
+
+router.get('/custom-offers', requirePermission('manage_offerwalls'), async (req, res) => {
+  try {
+    const offers = await CustomOffer.find().sort({ createdAt: -1 });
+    res.json({ success: true, offers });
+  } catch (error) {
+    res.status(500).json({ success: false, error: 'Failed to fetch custom offers' });
+  }
+});
+
+router.post('/custom-offers', requirePermission('manage_offerwalls'), async (req, res) => {
+  try {
+    const { title, description, rewardAmount, externalLink, trackingType, expirationDate } = req.body;
+    const newOffer = new CustomOffer({
+      title, description, rewardAmount, externalLink, trackingType, expirationDate: expirationDate || null
+    });
+    await newOffer.save();
+    res.status(201).json({ success: true, offer: newOffer });
+  } catch (error) {
+    res.status(500).json({ success: false, error: 'Failed to create custom offer' });
+  }
+});
+
+router.put('/custom-offers/:id', requirePermission('manage_offerwalls'), async (req, res) => {
+  try {
+    const upd = { ...req.body };
+    const offer = await CustomOffer.findByIdAndUpdate(req.params.id, upd, { new: true });
+    if (!offer) return res.status(404).json({ success: false, error: 'Offer not found' });
+    res.json({ success: true, offer });
+  } catch (error) {
+    res.status(500).json({ success: false, error: 'Failed to update custom offer' });
+  }
+});
+
+router.delete('/custom-offers/:id', requirePermission('manage_offerwalls'), async (req, res) => {
+  try {
+    const offer = await CustomOffer.findByIdAndDelete(req.params.id);
+    if (!offer) return res.status(404).json({ success: false, error: 'Offer not found' });
+    res.json({ success: true });
+  } catch (error) {
+    res.status(500).json({ success: false, error: 'Failed to delete custom offer' });
+  }
+});
+
+// GET all submissions
+router.get('/custom-offers/submissions/all', requirePermission('manage_offerwalls'), async (req, res) => {
+  try {
+    const submissions = await CustomOfferSubmission.find()
+      .populate('userId', 'email displayName')
+      .populate('offerId', 'title rewardAmount')
+      .sort({ createdAt: -1 });
+    res.json({ success: true, submissions });
+  } catch (error) {
+    res.status(500).json({ success: false, error: 'Failed to fetch submissions' });
+  }
+});
+
+// Update submission status (approve/reject)
+router.put('/custom-offers/submissions/:id', requirePermission('manage_offerwalls'), async (req, res) => {
+  try {
+    const { status, adminNote } = req.body;
+    const submission = await CustomOfferSubmission.findById(req.params.id)
+      .populate('userId')
+      .populate('offerId');
+      
+    if (!submission) return res.status(404).json({ success: false, error: 'Submission not found' });
+
+    if (submission.status !== 'pending') {
+      return res.status(400).json({ success: false, error: `Cannot change status of a ${submission.status} submission` });
+    }
+
+    submission.status = status;
+    if (adminNote) submission.adminNote = adminNote;
+    await submission.save();
+
+    if (status === 'approved') {
+      // Credit the user
+      const amountNum = Number(submission.offerId.rewardAmount);
+      const user = await User.findById(submission.userId._id);
+      user.walletBalance += amountNum;
+      await user.save();
+
+      await Transaction.create({
+        userId: user._id,
+        transactionType: 'offer_reward',
+        amount: amountNum,
+        balanceAfter: user.walletBalance,
+        description: `Offer Reward: ${submission.offerId.title}`,
+        status: 'completed',
+      });
+    }
+
+    res.json({ success: true, submission });
+  } catch (error) {
+    res.status(500).json({ success: false, error: 'Failed to update submission' });
   }
 });
 
@@ -337,11 +575,12 @@ router.post('/create-admin-credentials', requirePrimaryAdmin, async (req, res) =
 
 router.delete('/admins/:id', requirePrimaryAdmin, async (req, res) => {
   try {
+    const { reason } = req.body;
     const adminToUpdate = await User.findById(req.params.id);
     if (!adminToUpdate) return res.status(404).json({ success: false, error: 'Admin not found' });
 
     if (adminToUpdate.email === process.env.PRIMARY_ADMIN_EMAIL) {
-      await createLog(req.dbUser._id, 'ATTEMPT_REVOKE_PRIMARY_ADMIN', adminToUpdate._id, {});
+      await createLog(req.dbUser._id, 'ATTEMPT_REVOKE_PRIMARY_ADMIN', adminToUpdate._id, { reason: reason || 'N/A' });
       return res.status(403).json({ success: false, error: 'Cannot modify primary admin' });
     }
 
@@ -351,7 +590,7 @@ router.delete('/admins/:id', requirePrimaryAdmin, async (req, res) => {
       { returnDocument: 'after' }
     );
     if (!adminUser) return res.status(404).json({ success: false, error: 'Admin not found' });
-    await createLog(req.dbUser._id, 'REVOKE_ADMIN', adminUser._id, {});
+    await createLog(req.dbUser._id, 'REVOKE_ADMIN', adminUser._id, { reason: reason || 'No reason provided' });
     res.json({ success: true, user: adminUser });
   } catch (error) {
     res.status(500).json({ success: false, error: 'Failed to revoke admin status' });

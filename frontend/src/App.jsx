@@ -6,6 +6,7 @@ import Login from './pages/Login';
 import Landing from './pages/Landing';
 import Profile from './pages/Profile';
 import Wallet from './pages/Wallet';
+import Earn from './pages/Earn';
 import AdminLayout from './pages/admin/AdminLayout';
 import AdminOverview from './pages/admin/AdminOverview';
 import AdminUsers from './pages/admin/AdminUsers';
@@ -13,6 +14,9 @@ import AdminStaff from './pages/admin/AdminStaff';
 import AdminWithdrawals from './pages/admin/AdminWithdrawals';
 import AdminLogs from './pages/admin/AdminLogs';
 import AdminSettings from './pages/admin/AdminSettings';
+import AdminOfferwalls from './pages/admin/AdminOfferwalls';
+import AdminPromoCodes from './pages/admin/AdminPromoCodes';
+import AdminCustomOffers from './pages/admin/AdminCustomOffers';
 
 const PrivateRoute = ({ children }) => {
   const { currentUser } = useAuth();
@@ -71,6 +75,14 @@ function App() {
           </PrivateRoute>
         } 
       />
+      <Route 
+        path="/dashboard/earn" 
+        element={
+          <PrivateRoute>
+            <Earn />
+          </PrivateRoute>
+        } 
+      />
       
       {/* Admin Routes */}
       <Route 
@@ -85,6 +97,9 @@ function App() {
         <Route path="users" element={<AdminUsers />} />
         <Route path="admins" element={<AdminStaff />} />
         <Route path="withdrawals" element={<AdminWithdrawals />} />
+        <Route path="offerwalls" element={<AdminOfferwalls />} />
+        <Route path="promocodes" element={<AdminPromoCodes />} />
+        <Route path="featured-offers" element={<AdminCustomOffers />} />
         <Route path="logs" element={<AdminLogs />} />
         <Route path="settings" element={<AdminSettings />} />
       </Route>
