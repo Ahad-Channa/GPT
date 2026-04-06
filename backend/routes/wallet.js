@@ -584,4 +584,47 @@ router.get('/dashboard-stats', verifyToken, async (req, res) => {
   }
 });
 
+/* ─────────────────────────────────────────────────────────────────
+   POST /api/wallet/history/:id/submit-proof
+   Allows user to submit proof (text/image) for a specific transaction
+   that is in 'hold' or 'pending' state.
+───────────────────────────────────────────────────────────────── */
+router.post('/history/:id/submit-proof', verifyToken, async (req, res) => {
+  try {
+    const { proofText, proofImage } = req.body;
+    const user = await User.findOne({ firebaseUid: req.user.uid });
+    if (!user) return res.status(404).json({ success: false, error: 'User not found' });
+
+    const transaction = await Transaction.findOne({ _id: req.params.id, userId: user._id });
+    if (!transaction) return res.status(404).json({ success: false, error: 'Transaction not found' });
+
+    if (!['hold', 'pending', 'rejected'].includes(transaction.status)) { // added rejected in case admin rejected proof and asked to resubmit
+      return res.status(400).json({ success: false, error: 'Proof submission is not allowed for this transaction status.' });
+    }
+
+    // Attach proof to metadata
+    const metadata = transaction.metadata || {};
+    metadata.userProof = {
+      text: proofText || '',
+      imageUrl: proofImage || '',
+      submittedAt: new Date().toISOString()
+    };
+    
+    transaction.metadata = metadata;
+    // If it was hold or rejected, change to pending so admin knows it's ready for review
+    if (['hold', 'rejected'].includes(transaction.status)) {
+      transaction.status = 'pending';
+    }
+
+    // Must mark modified for Mixed types
+    transaction.markModified('metadata');
+    await transaction.save();
+
+    res.status(200).json({ success: true, message: 'Proof submitted successfully', transaction });
+  } catch (error) {
+    console.error('[/api/wallet/history/:id/submit-proof] Error:', error);
+    res.status(500).json({ success: false, error: 'Failed to submit proof' });
+  }
+});
+
 module.exports = router;

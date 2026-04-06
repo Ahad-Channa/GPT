@@ -8,6 +8,7 @@ const customOfferSchema = new mongoose.Schema(
     externalLink: { type: String, required: true },
     isActive: { type: Boolean, default: true },
     expirationDate: { type: Date, default: null },
+    icon: { type: String, default: null },
     trackingType: { 
       type: String, 
       enum: ['click', 'manual_approval'], 

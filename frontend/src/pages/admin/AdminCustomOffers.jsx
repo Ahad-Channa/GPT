@@ -33,6 +33,7 @@ const CreateOfferModal = ({ onClose, onCreated, token }) => {
     externalLink: '',
     trackingType: 'manual_approval',
     expirationDate: '',
+    icon: '',
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -79,50 +80,62 @@ const CreateOfferModal = ({ onClose, onCreated, token }) => {
         initial={{ scale: 0.95, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         exit={{ scale: 0.95, opacity: 0 }}
-        className="w-full max-w-xl bg-[#0f1728] border border-white/[0.1] rounded-2xl shadow-2xl overflow-hidden"
+        className="w-full max-w-xl bg-[#0f1728] border border-white/[0.1] rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-center gap-3 px-6 py-5 border-b border-white/[0.07] bg-gradient-to-r from-amber-500/[0.06] to-transparent">
-          <div className="w-9 h-9 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center">
-            <FiStar className="text-amber-400 text-base" />
+        <div className="flex items-center gap-3 px-5 py-4 border-b border-white/[0.07] bg-gradient-to-r from-amber-500/[0.06] to-transparent shrink-0">
+          <div className="w-8 h-8 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center">
+            <FiStar className="text-amber-400 text-sm" />
           </div>
           <div>
-            <h3 className="text-white font-bold font-display">Create Featured Offer</h3>
-            <p className="text-slate-500 text-xs mt-0.5">Add a new offer for users to complete</p>
+            <h3 className="text-white font-bold font-display text-sm">Create Featured Offer</h3>
+            <p className="text-slate-500 text-[11px] mt-0.5">Add a new offer for users to complete</p>
           </div>
         </div>
 
-        <form onSubmit={handleSubmit} className="px-6 py-5 space-y-4">
+        <form onSubmit={handleSubmit} className="px-5 py-4 space-y-3 overflow-y-auto custom-scrollbar relative">
           {/* Title */}
           <div>
-            <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Title *</label>
+            <label className="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Title *</label>
             <input
               value={form.title}
               onChange={set('title')}
               placeholder="e.g. Sign up for CryptoGame and reach Level 5"
               required
-              className="w-full bg-slate-900 border border-white/[0.08] rounded-xl px-4 py-2.5 text-white text-sm placeholder-slate-600 focus:outline-none focus:border-amber-500/40 focus:ring-1 focus:ring-amber-500/20"
+              className="w-full bg-slate-900 border border-white/[0.08] rounded-xl px-3 py-2 text-white text-sm placeholder-slate-600 focus:outline-none focus:border-amber-500/40 focus:ring-1 focus:ring-amber-500/20"
             />
           </div>
 
           {/* Description */}
           <div>
-            <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Description *</label>
+            <label className="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Description *</label>
             <textarea
               value={form.description}
               onChange={set('description')}
               placeholder="Describe the steps needed to complete and earn the reward..."
-              rows={3}
+              rows={2}
               required
-              className="w-full bg-slate-900 border border-white/[0.08] rounded-xl px-4 py-2.5 text-white text-sm placeholder-slate-600 focus:outline-none focus:border-amber-500/40 focus:ring-1 focus:ring-amber-500/20 resize-none"
+              className="w-full bg-slate-900 border border-white/[0.08] rounded-xl px-3 py-2 text-white text-sm placeholder-slate-600 focus:outline-none focus:border-amber-500/40 focus:ring-1 focus:ring-amber-500/20 resize-none"
+            />
+          </div>
+
+          {/* Icon URL */}
+          <div>
+            <label className="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Icon / Image URL</label>
+            <input
+              type="text"
+              value={form.icon}
+              onChange={set('icon')}
+              placeholder="e.g. https://.../icon.png or fa-solid fa-gamepad"
+              className="w-full bg-slate-900 border border-white/[0.08] rounded-xl px-3 py-2 text-white text-sm placeholder-slate-600 focus:outline-none focus:border-amber-500/40 focus:ring-1 focus:ring-amber-500/20"
             />
           </div>
 
           {/* Reward + External Link (2 cols) */}
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Reward (Coins) *</label>
+              <label className="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Reward (Coins) *</label>
               <input
                 type="number"
                 min="1"
@@ -130,40 +143,40 @@ const CreateOfferModal = ({ onClose, onCreated, token }) => {
                 onChange={set('rewardAmount')}
                 placeholder="e.g. 500"
                 required
-                className="w-full bg-slate-900 border border-white/[0.08] rounded-xl px-4 py-2.5 text-white text-sm placeholder-slate-600 focus:outline-none focus:border-amber-500/40 focus:ring-1 focus:ring-amber-500/20"
+                className="w-full bg-slate-900 border border-white/[0.08] rounded-xl px-3 py-2 text-white text-sm placeholder-slate-600 focus:outline-none focus:border-amber-500/40 focus:ring-1 focus:ring-amber-500/20"
               />
             </div>
             <div>
-              <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Expiry Date</label>
+              <label className="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Expiry Date</label>
               <input
                 type="datetime-local"
                 value={form.expirationDate}
                 onChange={set('expirationDate')}
-                className="w-full bg-slate-900 border border-white/[0.08] rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-amber-500/40 focus:ring-1 focus:ring-amber-500/20"
+                className="w-full bg-slate-900 border border-white/[0.08] rounded-xl px-3 py-2 text-white text-sm focus:outline-none focus:border-amber-500/40 focus:ring-1 focus:ring-amber-500/20"
               />
             </div>
           </div>
 
           {/* External Link */}
           <div>
-            <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">External Link *</label>
+            <label className="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">External Link *</label>
             <input
               type="url"
               value={form.externalLink}
               onChange={set('externalLink')}
               placeholder="https://..."
               required
-              className="w-full bg-slate-900 border border-white/[0.08] rounded-xl px-4 py-2.5 text-white text-sm placeholder-slate-600 focus:outline-none focus:border-amber-500/40 focus:ring-1 focus:ring-amber-500/20"
+              className="w-full bg-slate-900 border border-white/[0.08] rounded-xl px-3 py-2 text-white text-sm placeholder-slate-600 focus:outline-none focus:border-amber-500/40 focus:ring-1 focus:ring-amber-500/20"
             />
           </div>
 
           {/* Tracking Type */}
           <div>
-            <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Tracking Type</label>
+            <label className="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Tracking Type</label>
             <select
               value={form.trackingType}
               onChange={set('trackingType')}
-              className="w-full bg-slate-900 border border-white/[0.08] rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-amber-500/40 focus:ring-1 focus:ring-amber-500/20"
+              className="w-full bg-slate-900 border border-white/[0.08] rounded-xl px-3 py-2 text-white text-sm focus:outline-none focus:border-amber-500/40 focus:ring-1 focus:ring-amber-500/20"
             >
               <option className="bg-slate-900" value="manual_approval">Manual Approval (user submits proof)</option>
               <option className="bg-slate-900" value="click">Click Tracking (auto-credit on click)</option>
@@ -171,19 +184,19 @@ const CreateOfferModal = ({ onClose, onCreated, token }) => {
           </div>
 
           {error && (
-            <div className="flex items-center gap-2 p-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 text-sm">
+            <div className="flex items-center gap-2 p-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 text-sm shrink-0">
               <FiAlertTriangle className="flex-shrink-0" /> {error}
             </div>
           )}
 
-          <div className="flex items-center justify-end gap-3 pt-2">
-            <button type="button" onClick={onClose} className="px-4 py-2 text-slate-400 hover:text-white text-sm font-semibold transition-colors">
+          <div className="flex items-center justify-end gap-3 pt-1 shrink-0 pb-2">
+            <button type="button" onClick={onClose} className="px-4 py-1.5 text-slate-400 hover:text-white text-sm font-semibold transition-colors">
               Cancel
             </button>
             <button
               type="submit"
               disabled={loading}
-              className="flex items-center gap-2 px-5 py-2 rounded-xl bg-amber-500/20 border border-amber-500/30 text-amber-300 font-semibold text-sm hover:bg-amber-500/30 disabled:opacity-50 transition-all"
+              className="flex items-center gap-2 px-5 py-1.5 rounded-xl bg-amber-500/20 border border-amber-500/30 text-amber-300 font-semibold text-sm hover:bg-amber-500/30 disabled:opacity-50 transition-all"
             >
               {loading ? <FiLoader className="animate-spin" /> : <FiPlus />}
               {loading ? 'Creating...' : 'Create Offer'}

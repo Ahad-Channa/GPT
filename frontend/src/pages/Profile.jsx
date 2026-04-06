@@ -5,8 +5,9 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   FiZap, FiStar, FiMail, FiCalendar, FiEdit2, FiCheck, FiX, FiShield,
   FiActivity, FiUser, FiArrowDownCircle, FiCheckCircle, FiClock,
-  FiInbox, FiLoader, FiTrendingUp, FiChevronDown
+  FiInbox, FiLoader, FiTrendingUp, FiChevronDown, FiPlayCircle
 } from 'react-icons/fi';
+import { FeaturedOfferCard, FeaturedOfferModal } from '../components/offers/OfferCards';
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
@@ -224,12 +225,37 @@ const Profile = () => {
   const [editName,   setEditName]   = useState('');
   const [error,      setError]      = useState('');
   const [loading,    setLoading]    = useState(false);
-  const [activeTab,  setActiveTab]  = useState('profile'); // 'profile' | 'offers' | 'withdrawals'
+  const [activeTab,  setActiveTab]  = useState('profile'); // 'profile' | 'started_offers' | 'offers' | 'withdrawals'
   const [token,      setToken]      = useState(null);
+  const [customOffers, setCustomOffers] = useState([]);
+  const [loadingOffers, setLoadingOffers] = useState(false);
+  const [selectedStartedOffer, setSelectedStartedOffer] = useState(null);
 
   useEffect(() => {
     if (currentUser) currentUser.getIdToken().then(setToken);
   }, [currentUser]);
+
+  const fetchCustomOffers = async () => {
+    if (!token) return;
+    setLoadingOffers(true);
+    try {
+      const res = await fetch(`${API}/api/custom-offers`, { headers: { Authorization: `Bearer ${token}` } });
+      const data = await res.json();
+      if (data.success) {
+        setCustomOffers(data.offers);
+      }
+    } catch (err) {
+      console.error('Failed to fetch custom offers:', err);
+    } finally {
+      setLoadingOffers(false);
+    }
+  };
+
+  useEffect(() => {
+    if (activeTab === 'started_offers' && token) {
+      fetchCustomOffers();
+    }
+  }, [activeTab, token]);
 
   // History hooks (only fetches when token is ready)
   const offers = useHistory(activeTab === 'offers' ? token : null, 'offer_reward');
@@ -282,6 +308,7 @@ const Profile = () => {
         {/* ─── Tab Bar ─────────────────────────────────────── */}
         <div className="flex flex-wrap gap-2 p-1 bg-white/[0.02] border border-white/[0.06] rounded-2xl w-fit">
           <TabBtn active={activeTab === 'profile'}     onClick={() => setActiveTab('profile')}     icon={FiUser}           label="Profile" />
+          <TabBtn active={activeTab === 'started_offers'} onClick={() => setActiveTab('started_offers')} icon={FiPlayCircle} label="Started Offers" />
           <TabBtn active={activeTab === 'clicks'}      onClick={() => setActiveTab('clicks')}      icon={FiZap}            label="Click History" />
           <TabBtn active={activeTab === 'offers'}      onClick={() => setActiveTab('offers')}      icon={FiCheckCircle}    label="Offer History" />
           <TabBtn active={activeTab === 'chargebacks'} onClick={() => setActiveTab('chargebacks')} icon={FiShield}         label="Chargebacks" />
@@ -562,6 +589,68 @@ const Profile = () => {
           )}
 
 
+          {/* ══ STARTED OFFERS TAB ══ */}
+          {activeTab === 'started_offers' && (
+            <motion.div
+              key="started_offers"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -6 }}
+              className="glass-card p-6"
+            >
+              <div className="flex items-center justify-between mb-6">
+                <div>
+                  <h2 className="text-base font-bold font-display text-white flex items-center gap-2">
+                    <FiPlayCircle className="text-amber-400" /> Active Offers
+                  </h2>
+                  <p className="text-xs text-slate-500 mt-0.5">Submit proof for featured offers you have started.</p>
+                </div>
+              </div>
+
+              {loadingOffers ? (
+                <div className="flex justify-center py-10"><FiLoader className="animate-spin text-2xl text-indigo-500" /></div>
+              ) : (
+                (() => {
+                  const startedOffers = customOffers.filter(o => o.submissionStatus === 'started' || o.submissionStatus === 'rejected');
+                  if (startedOffers.length === 0) {
+                    return (
+                      <div className="py-14 flex flex-col items-center gap-3 text-center">
+                        <div className="w-12 h-12 rounded-2xl bg-white/[0.03] border border-white/[0.07] flex items-center justify-center">
+                          <FiInbox className="text-slate-600 text-xl" />
+                        </div>
+                        <p className="text-slate-500 text-sm">No active offers. Browse the Earn page to start new offers!</p>
+                      </div>
+                    );
+                  }
+                  return (
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                      {startedOffers.map(offer => (
+                        <FeaturedOfferCard
+                          key={offer._id}
+                          offer={offer}
+                          onClick={() => setSelectedStartedOffer(offer)}
+                        />
+                      ))}
+                    </div>
+                  );
+                })()
+              )}
+            </motion.div>
+          )}
+
+        </AnimatePresence>
+
+        <AnimatePresence>
+          {selectedStartedOffer && (
+            <FeaturedOfferModal
+              offer={selectedStartedOffer}
+              onClose={() => setSelectedStartedOffer(null)}
+              onProofSubmitted={() => {
+                fetchCustomOffers();
+                setSelectedStartedOffer(null);
+              }}
+            />
+          )}
         </AnimatePresence>
       </motion.div>
     </DashboardLayout>

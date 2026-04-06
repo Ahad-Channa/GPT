@@ -4,179 +4,12 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { FiZap, FiTrendingUp, FiCheckCircle, FiClock, FiStar, FiArrowRight, FiLock, FiUnlock, FiMonitor, FiInbox } from 'react-icons/fi';
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ProviderCard, OfferwallCard, FeaturedOfferCard } from '../components/offers/OfferCards';
+import { ProviderCard, OfferwallCard, FeaturedOfferCard, FeaturedOfferModal } from '../components/offers/OfferCards';
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
 const container = { hidden: {}, show: { transition: { staggerChildren: 0.08 } } };
 const item = { hidden: { opacity: 0, y: 16 }, show: { opacity: 1, y: 0, transition: { duration: 0.4 } } };
-
-const DailyBonusCard = () => {
-  const { currentUser } = useAuth();
-  const [status, setStatus] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [claiming, setClaiming] = useState(false);
-  const [timeLeft, setTimeLeft] = useState('');
-
-  const fetchStatus = async () => {
-    try {
-      const token = await currentUser?.getIdToken();
-      const res = await fetch(`${API}/api/wallet/daily-bonus-status`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      const data = await res.json();
-      if (data.success) {
-        setStatus(data);
-      }
-    } catch (err) {
-      console.error('Failed to fetch daily bonus status', err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    if (currentUser) fetchStatus();
-  }, [currentUser]);
-
-  useEffect(() => {
-    if (!status?.nextClaimAt || !status.alreadyClaimed) return;
-    
-    const target = new Date(status.nextClaimAt).getTime();
-    const interval = setInterval(() => {
-      const now = new Date().getTime();
-      const distance = target - now;
-      if (distance < 0) {
-        clearInterval(interval);
-        setTimeLeft('00:00:00');
-        fetchStatus();
-        return;
-      }
-      const h = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-      const m = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-      const s = Math.floor((distance % (1000 * 60)) / 1000);
-      setTimeLeft(`${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`);
-    }, 1000);
-    return () => clearInterval(interval);
-  }, [status]);
-
-  const claimBonus = async () => {
-    setClaiming(true);
-    try {
-      const token = await currentUser?.getIdToken();
-      const res = await fetch(`${API}/api/wallet/daily-bonus`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`
-        }
-      });
-      const data = await res.json();
-      if (data.success) {
-        fetchStatus();
-      }
-    } catch (err) {
-      console.error('Failed to claim bonus', err);
-    } finally {
-      setClaiming(false);
-    }
-  };
-
-  if (loading || !status) {
-    return (
-      <div className="glass-card p-6 animate-pulse">
-        <div className="h-4 bg-white/10 rounded w-1/4 mb-4"></div>
-        <div className="h-8 bg-white/10 rounded w-1/2 mb-4"></div>
-      </div>
-    );
-  }
-
-  if (status.alreadyClaimed) {
-    return (
-      <motion.div variants={item} className="glass-card p-6 border border-emerald-500/20">
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div>
-            <h2 className="text-xl font-bold font-display text-white flex items-center gap-2">
-              <FiClock className="text-emerald-400" /> Come back in {timeLeft || '...'}
-            </h2>
-            <p className="text-sm text-slate-400 mt-1">
-              Streak: Day {status.streak} | Claimed today ✓
-            </p>
-            <p className="text-sm text-indigo-300 mt-1">
-              Next bonus: {status.rewardTomorrow} coins (Day {status.dayIndex + 2 > 7 ? 1 : status.dayIndex + 2})
-            </p>
-          </div>
-          <div className="flex-shrink-0">
-             <div className="w-16 h-16 rounded-full bg-emerald-500/10 flex items-center justify-center border border-emerald-500/20">
-               <FiCheckCircle className="text-emerald-400 text-2xl" />
-             </div>
-          </div>
-        </div>
-      </motion.div>
-    );
-  }
-
-  if (status.gateUnlocked) {
-    return (
-      <motion.div variants={item} className="glass-card p-6 border border-amber-500/50 bg-gradient-to-r from-amber-500/10 to-transparent">
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div>
-            <h2 className="text-xl font-bold font-display text-white flex items-center gap-2">
-              <FiUnlock className="text-amber-400" /> Daily Requirement Met!
-            </h2>
-            <p className="text-sm text-slate-300 mt-1">
-              Streak Day {status.streak}
-            </p>
-            <p className="text-sm text-amber-300 font-medium mt-1">
-              Tomorrow: Day {status.dayIndex + 2 > 7 ? 1 : status.dayIndex + 2} will be {status.rewardTomorrow} coins
-            </p>
-          </div>
-          <button
-            onClick={claimBonus}
-            disabled={claiming}
-            className="flex-shrink-0 btn-primary px-8 py-3 text-lg animate-pulse"
-            style={{ boxShadow: '0 0 20px rgba(245,158,11,0.4)' }}
-          >
-            {claiming ? 'Claiming...' : `Claim ${status.rewardToday} Coins!`}
-          </button>
-        </div>
-      </motion.div>
-    );
-  }
-
-  const progressPercent = Math.min(100, Math.floor((status.earned / status.required) * 100));
-  
-  return (
-    <motion.div variants={item} className="glass-card p-6">
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-4">
-        <div>
-          <h2 className="text-xl font-bold font-display text-white flex items-center gap-2">
-            <FiLock className="text-slate-400" /> Daily Bonus Locked
-          </h2>
-          <p className="text-sm text-slate-400 mt-1">
-            Earn {status.earned} / {status.required} coins today to unlock
-          </p>
-        </div>
-        <div className="text-right">
-          <p className="text-sm text-slate-300">Streak: Day {status.streak}</p>
-          <p className="text-sm text-indigo-300 font-medium mt-1">
-            Today's bonus: {status.rewardToday} coins
-          </p>
-        </div>
-      </div>
-      <div className="w-full bg-white/5 rounded-full h-3 overflow-hidden border border-white/10">
-        <div 
-          className="bg-gradient-to-r from-indigo-500 to-violet-500 h-full rounded-full transition-all duration-1000"
-          style={{ width: `${progressPercent}%` }}
-        />
-      </div>
-      <p className="text-xs text-right mt-2 text-indigo-400 font-mono font-bold">
-        {progressPercent}%
-      </p>
-    </motion.div>
-  );
-};
-
 const TabButton = ({ active, onClick, icon: Icon, label, count }) => (
   <button
     onClick={onClick}
@@ -214,6 +47,7 @@ const Home = () => {
   
   const [activeProvider, setActiveProvider] = useState(null);
   const [filter, setFilter] = useState('all');
+  const [selectedOffer, setSelectedOffer] = useState(null);
 
   const featuredRef = useRef(null);
   const gamingRef = useRef(null);
@@ -317,27 +151,7 @@ const Home = () => {
     <DashboardLayout>
       <motion.div variants={container} initial="hidden" animate="show" className="space-y-8 pb-10">
 
-        {/* ─── Greeting Banner ──────────────────────────────── */}
-        <motion.div variants={item} className="glass-card p-8 relative overflow-hidden">
-          <div className="absolute -top-10 -right-10 w-48 h-48 bg-indigo-600/10 rounded-full blur-3xl pointer-events-none" />
-          <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-6">
-            <div>
-              <p className="text-indigo-400 text-xs font-semibold tracking-widest uppercase mb-2">Dashboard Overview</p>
-              <h1 className="text-3xl md:text-4xl font-bold font-display text-white mb-2">
-                Welcome back, <span className="gradient-text">{displayName}</span> 👋
-              </h1>
-              <p className="text-slate-400 text-sm">Discover top earnings opportunities and track your progress.</p>
-            </div>
-            <div className="flex-shrink-0 flex flex-col items-start sm:items-end">
-              <span className="badge-violet mb-2">Rank {vipLevel}</span>
-              <p className="text-3xl font-bold font-mono text-white">{balance}</p>
-              <p className="text-indigo-400 text-xs font-mono tracking-widest">PTS BALANCE</p>
-            </div>
-          </div>
-        </motion.div>
 
-        {/* ─── Daily Bonus ──────────────────────────────────── */}
-        <DailyBonusCard />
 
         {/* ─── Quick Jump Tabs ───────────────────────────── */}
         <motion.div variants={item} className="sticky top-4 z-20">
@@ -370,9 +184,9 @@ const Home = () => {
                    <p className="text-sm text-slate-400">High-reward direct tasks. Manual approval required.</p>
                  </div>
                </div>
-               <div className="space-y-4">
+               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
                  {customOffers.map(offer => (
-                    <FeaturedOfferCard key={offer._id} offer={offer} userId={mongoUser?._id} token={token} />
+                    <FeaturedOfferCard key={offer._id} offer={offer} onClick={() => setSelectedOffer(offer)} />
                  ))}
                </div>
             </motion.section>
@@ -432,6 +246,16 @@ const Home = () => {
           
         </div>
       </motion.div>
+
+      <AnimatePresence>
+        {selectedOffer && (
+          <FeaturedOfferModal
+            offer={selectedOffer}
+            token={token}
+            onClose={() => setSelectedOffer(null)}
+          />
+        )}
+      </AnimatePresence>
     </DashboardLayout>
   );
 };

@@ -31,6 +31,45 @@ router.get('/', verifyToken, async (req, res) => {
   }
 });
 
+// POST /api/custom-offers/:id/start (User) - Start a custom offer
+router.post('/:id/start', verifyToken, async (req, res) => {
+  try {
+    const user = await User.findOne({ firebaseUid: req.user.uid });
+    if (!user) return res.status(404).json({ success: false, error: 'User not found' });
+
+    const offer = await CustomOffer.findById(req.params.id);
+    if (!offer || !offer.isActive) {
+      return res.status(404).json({ success: false, error: 'Offer not found or inactive' });
+    }
+
+    const existing = await CustomOfferSubmission.findOne({ offerId: offer._id, userId: user._id });
+    if (existing) {
+      // If already started or pending, just return it
+      return res.status(200).json({ success: true, submission: existing, message: 'Offer already started' });
+    }
+
+    // Create a 'started' submission
+    const submission = await CustomOfferSubmission.create({
+      offerId: offer._id,
+      userId: user._id,
+      status: 'started'
+    });
+
+    // Save user activity log for clicking/starting the offer
+    await require('../models/UserActivityLog').create({
+      userId: user._id,
+      actionType: 'click_offer',
+      targetId: offer._id,
+      metadata: { offerTitle: offer.title, sourceType: 'featured_offer' }
+    });
+
+    res.status(201).json({ success: true, submission, message: 'Offer started successfully' });
+  } catch (error) {
+    console.error('[/api/custom-offers/:id/start] Error:', error);
+    res.status(500).json({ success: false, error: 'Failed to start offer' });
+  }
+});
+
 // POST /api/custom-offers/:id/submit (User) - Submit proof for a custom offer
 router.post('/:id/submit', verifyToken, async (req, res) => {
   try {
@@ -45,46 +84,32 @@ router.post('/:id/submit', verifyToken, async (req, res) => {
 
     // Check if already submitted
     const existing = await CustomOfferSubmission.findOne({ offerId: offer._id, userId: user._id });
-    if (existing && existing.status !== 'rejected') {
+    
+    if (!existing) {
+      return res.status(400).json({ success: false, error: 'You must start the offer first before submitting proof.' });
+    }
+
+    if (existing.status === 'pending' || existing.status === 'approved') {
       return res.status(400).json({ success: false, error: 'You have already submitted this offer' });
     }
 
-    if (existing && existing.status === 'rejected') {
+    if (existing.status === 'rejected' || existing.status === 'started') {
       existing.proofText = proofText || '';
       existing.proofImage = proofImage || '';
       existing.status = 'pending';
       existing.adminNote = '';
       await existing.save();
 
-      // Save user activity log for the resubmission
+      // Save user activity log for the resubmission/submission
       await require('../models/UserActivityLog').create({
         userId: user._id,
         actionType: 'proof_submit',
         targetId: offer._id,
-        metadata: { offerTitle: offer.title, isResubmission: true }
+        metadata: { offerTitle: offer.title, isResubmission: existing.status === 'rejected' }
       });
 
-      return res.status(200).json({ success: true, submission: existing, message: 'Proof resubmitted successfully' });
+      return res.status(200).json({ success: true, submission: existing, message: 'Proof submitted successfully' });
     }
-
-    // If trackingType is 'click', we could auto-approve or just track. For now, we do manual_approval based.
-    const submission = await CustomOfferSubmission.create({
-      offerId: offer._id,
-      userId: user._id,
-      proofText: proofText || '',
-      proofImage: proofImage || '',
-      status: offer.trackingType === 'click' ? 'approved' : 'pending' // Just a naive auto-approve for click type for now
-    });
-
-    // Save user activity log for the submission
-    await require('../models/UserActivityLog').create({
-      userId: user._id,
-      actionType: 'proof_submit',
-      targetId: offer._id,
-      metadata: { offerTitle: offer.title }
-    });
-
-    res.status(201).json({ success: true, submission, message: 'Proof submitted successfully' });
   } catch (error) {
     console.error('[/api/custom-offers/:id/submit] Error:', error);
     res.status(500).json({ success: false, error: 'Failed to submit proof' });

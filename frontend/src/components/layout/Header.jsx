@@ -1,8 +1,122 @@
 import { useState, useRef, useEffect } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
-import { FiLogOut, FiUser, FiSettings, FiZap, FiChevronDown, FiCreditCard, FiGrid } from 'react-icons/fi';
+import { FiLogOut, FiUser, FiSettings, FiZap, FiChevronDown, FiCreditCard, FiGrid, FiLock, FiUnlock, FiClock, FiCheckCircle } from 'react-icons/fi';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
+
+const API = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+
+const DailyBonusChip = () => {
+  const { currentUser } = useAuth();
+  const [status, setStatus] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [claiming, setClaiming] = useState(false);
+  const [timeLeft, setTimeLeft] = useState('');
+
+  const fetchStatus = async () => {
+    try {
+      const token = await currentUser?.getIdToken();
+      const res = await fetch(`${API}/api/wallet/daily-bonus-status`, { headers: { Authorization: `Bearer ${token}` } });
+      const data = await res.json();
+      if (data.success) setStatus(data);
+    } catch (err) { } finally { setLoading(false); }
+  };
+
+  useEffect(() => { if (currentUser) fetchStatus(); }, [currentUser]);
+
+  useEffect(() => {
+    if (!status?.nextClaimAt || !status.alreadyClaimed) return;
+    const target = new Date(status.nextClaimAt).getTime();
+    const interval = setInterval(() => {
+      const now = new Date().getTime();
+      const distance = target - now;
+      if (distance < 0) {
+        clearInterval(interval);
+        setTimeLeft('00:00:00');
+        fetchStatus();
+        return;
+      }
+      const h = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      const m = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+      const s = Math.floor((distance % (1000 * 60)) / 1000);
+      setTimeLeft(`${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`);
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [status]);
+
+  const claimBonus = async () => {
+    setClaiming(true);
+    try {
+      const token = await currentUser?.getIdToken();
+      const res = await fetch(`${API}/api/wallet/daily-bonus`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        }
+      });
+      const data = await res.json();
+      if (data.success) fetchStatus();
+    } catch (err) {
+      console.error('Failed to claim bonus', err);
+    } finally {
+      setClaiming(false);
+    }
+  };
+
+  if (loading || !status) {
+    return (
+      <div className="hidden lg:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white/[0.04] border border-white/[0.07] animate-pulse h-[34px] w-24"></div>
+    );
+  }
+
+  if (status.alreadyClaimed) {
+    return (
+      <div className="hidden lg:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-sm">
+        <FiClock className="text-emerald-400 text-xs" />
+        <span className="text-emerald-300 text-[11px] font-mono tracking-widest">{timeLeft || '...'}</span>
+      </div>
+    );
+  }
+
+  if (status.gateUnlocked) {
+    return (
+      <button
+        onClick={claimBonus}
+        disabled={claiming}
+        className="hidden lg:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-amber-500/20 border border-amber-500/40 text-sm hover:bg-amber-500/30 transition-all shadow-glow disabled:opacity-50"
+      >
+        <FiUnlock className="text-amber-400 text-xs animate-pulse" />
+        <span className="text-amber-400 text-[11px] font-bold tracking-widest uppercase">
+          {claiming ? 'WAIT...' : 'CLAIM'}
+        </span>
+      </button>
+    );
+  }
+
+  const progressPercent = Math.min(100, Math.floor((status.earned / status.required) * 100));
+
+  return (
+    <div className="hidden lg:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white/[0.04] border border-white/[0.07] text-sm group relative">
+      <FiLock className="text-slate-400 text-xs" />
+      <div className="w-16 h-1.5 bg-white/10 rounded-full overflow-hidden">
+        <div 
+          className="bg-indigo-400 h-full rounded-full transition-all duration-1000"
+          style={{ width: `${progressPercent}%` }}
+        />
+      </div>
+      
+      {/* Tooltip */}
+      <div className="absolute top-10 right-0 w-48 p-3 rounded-xl bg-[#0b101e] border border-white/[0.08] shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">
+        <p className="text-xs text-slate-300 mb-2">Earn <span className="font-bold text-white">{status.required - status.earned}</span> more coins today to unlock your daily bonus.</p>
+        <div className="flex justify-between items-center text-[10px] font-mono text-slate-400">
+          <span>{status.earned}</span>
+          <span>{status.required}</span>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 const Header = () => {
   const { currentUser, mongoUser, logout, isAdmin } = useAuth();
@@ -40,7 +154,9 @@ const Header = () => {
         </button>
 
         {/* Right Controls */}
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3 lg:gap-4">
+
+          <DailyBonusChip />
 
           {/* Balance Chip — click to go to Wallet */}
           <button
