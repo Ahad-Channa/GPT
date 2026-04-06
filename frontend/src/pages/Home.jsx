@@ -1,23 +1,12 @@
 import DashboardLayout from '../components/layout/DashboardLayout';
 import { useAuth } from '../contexts/AuthContext';
-import { motion } from 'framer-motion';
-import { FiZap, FiTrendingUp, FiCheckCircle, FiClock, FiStar, FiArrowRight, FiLock, FiUnlock } from 'react-icons/fi';
-import { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { FiZap, FiTrendingUp, FiCheckCircle, FiClock, FiStar, FiArrowRight, FiLock, FiUnlock, FiMonitor, FiInbox } from 'react-icons/fi';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { ProviderCard, OfferwallCard, FeaturedOfferCard } from '../components/offers/OfferCards';
 
-const quickActions = [
-  { icon: FiCheckCircle, label: 'Complete a Survey', color: 'from-indigo-500 to-violet-600', glow: 'rgba(99,102,241,0.2)', path: '/dashboard/earn' },
-  { icon: FiTrendingUp, label: 'Watch a Video', color: 'from-cyan-500 to-blue-600', glow: 'rgba(6,182,212,0.2)' },
-  { icon: FiStar,       label: 'Daily Bonus',    color: 'from-amber-500 to-orange-600', glow: 'rgba(245,158,11,0.2)' },
-  { icon: FiZap,        label: 'Refer a Friend', color: 'from-violet-500 to-fuchsia-600', glow: 'rgba(124,58,237,0.2)' },
-];
-
-const recentActivity = [
-  { action: 'Survey Completed', pts: '+50', time: '2m ago', status: 'success' },
-  { action: 'Daily Login Bonus', pts: '+10', time: '1h ago', status: 'success' },
-  { action: 'Video Watched', pts: '+25', time: '3h ago', status: 'success' },
-  { action: 'Referral Reward', pts: '+100', time: '1d ago', status: 'success' },
-];
+const API = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
 const container = { hidden: {}, show: { transition: { staggerChildren: 0.08 } } };
 const item = { hidden: { opacity: 0, y: 16 }, show: { opacity: 1, y: 0, transition: { duration: 0.4 } } };
@@ -32,7 +21,7 @@ const DailyBonusCard = () => {
   const fetchStatus = async () => {
     try {
       const token = await currentUser?.getIdToken();
-      const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/wallet/daily-bonus-status`, {
+      const res = await fetch(`${API}/api/wallet/daily-bonus-status`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       const data = await res.json();
@@ -60,7 +49,7 @@ const DailyBonusCard = () => {
       if (distance < 0) {
         clearInterval(interval);
         setTimeLeft('00:00:00');
-        fetchStatus(); // re-fetch when timer hits 0
+        fetchStatus();
         return;
       }
       const h = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
@@ -75,7 +64,7 @@ const DailyBonusCard = () => {
     setClaiming(true);
     try {
       const token = await currentUser?.getIdToken();
-      const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/wallet/daily-bonus`, {
+      const res = await fetch(`${API}/api/wallet/daily-bonus`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -84,7 +73,6 @@ const DailyBonusCard = () => {
       });
       const data = await res.json();
       if (data.success) {
-        // Optional: you could dispatch an event or refresh context balance here
         fetchStatus();
       }
     } catch (err) {
@@ -103,7 +91,6 @@ const DailyBonusCard = () => {
     );
   }
 
-  // State 3: Already Claimed
   if (status.alreadyClaimed) {
     return (
       <motion.div variants={item} className="glass-card p-6 border border-emerald-500/20">
@@ -129,7 +116,6 @@ const DailyBonusCard = () => {
     );
   }
 
-  // State 2: Gate Met (Claimable)
   if (status.gateUnlocked) {
     return (
       <motion.div variants={item} className="glass-card p-6 border border-amber-500/50 bg-gradient-to-r from-amber-500/10 to-transparent">
@@ -158,7 +144,6 @@ const DailyBonusCard = () => {
     );
   }
 
-  // State 1: Gate Not Met
   const progressPercent = Math.min(100, Math.floor((status.earned / status.required) * 100));
   
   return (
@@ -179,7 +164,6 @@ const DailyBonusCard = () => {
           </p>
         </div>
       </div>
-      {/* Progress Bar */}
       <div className="w-full bg-white/5 rounded-full h-3 overflow-hidden border border-white/10">
         <div 
           className="bg-gradient-to-r from-indigo-500 to-violet-500 h-full rounded-full transition-all duration-1000"
@@ -193,6 +177,27 @@ const DailyBonusCard = () => {
   );
 };
 
+const TabButton = ({ active, onClick, icon: Icon, label, count }) => (
+  <button
+    onClick={onClick}
+    className={`relative flex items-center gap-2 px-5 py-2.5 rounded-xl font-semibold text-sm transition-all duration-200 ${
+      active
+        ? 'bg-indigo-500/20 text-indigo-300 border border-indigo-500/40'
+        : 'text-slate-400 hover:text-slate-200 border border-transparent hover:border-white/10 hover:bg-white/[0.03]'
+    }`}
+  >
+    <Icon className="text-base" />
+    {label}
+    {count !== undefined && count > 0 && (
+      <span className={`ml-1 px-1.5 py-0.5 rounded-full text-[10px] font-bold ${
+        active ? 'bg-indigo-500/30 text-indigo-200' : 'bg-white/10 text-slate-400'
+      }`}>
+        {count}
+      </span>
+    )}
+  </button>
+);
+
 const Home = () => {
   const { mongoUser, currentUser } = useAuth();
   const navigate = useNavigate();
@@ -200,13 +205,31 @@ const Home = () => {
   const balance = mongoUser?.walletBalance?.toFixed(2) ?? '0.00';
   const vipLevel = mongoUser?.vipLevel ?? 1;
   const [tasksDone, setTasksDone] = useState('...');
+  
+  const [settings, setSettings] = useState(null);
+  const [customOffers, setCustomOffers] = useState([]);
+  const [loadingSettings, setLoadingSettings] = useState(true);
+  const [loadingOffers, setLoadingOffers] = useState(true);
+  const [token, setToken] = useState(null);
+  
+  const [activeProvider, setActiveProvider] = useState(null);
+  const [filter, setFilter] = useState('all');
+
+  const featuredRef = useRef(null);
+  const gamingRef = useRef(null);
+  const surveysRef = useRef(null);
+
+  useEffect(() => {
+    if (currentUser) {
+      currentUser.getIdToken().then(setToken);
+    }
+  }, [currentUser]);
 
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const token = await currentUser?.getIdToken();
         if (!token) return;
-        const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/wallet/dashboard-stats`, {
+        const res = await fetch(`${API}/api/wallet/dashboard-stats`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         const data = await res.json();
@@ -217,25 +240,93 @@ const Home = () => {
         console.error('Failed to fetch dashboard stats', err);
       }
     };
-    if (currentUser) fetchStats();
-  }, [currentUser]);
+    if (token) fetchStats();
+  }, [token]);
+  
+  useEffect(() => {
+    if (!token) return;
+    const fetchSettings = async () => {
+      try {
+        const res = await fetch(`${API}/api/wallet/settings`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const data = await res.json();
+        if (data.success) setSettings(data);
+      } catch (err) {
+        console.error('Failed to load earn settings:', err);
+      } finally {
+        setLoadingSettings(false);
+      }
+    };
+    fetchSettings();
+  }, [token]);
+
+  useEffect(() => {
+    if (!token) return;
+    const fetchOffers = async () => {
+      try {
+        const res = await fetch(`${API}/api/custom-offers`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const data = await res.json();
+        if (data.success) setCustomOffers(data.offers);
+      } catch (err) {
+        console.error('Failed to load featured offers:', err);
+      } finally {
+        setLoadingOffers(false);
+      }
+    };
+    fetchOffers();
+  }, [token]);
+
+  const scrollTo = (ref, filterType) => {
+    setFilter(filterType);
+    if (filterType === 'all' && ref) {
+      ref.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  };
+
+  const enabledProviders = settings?.offerwalls || [];
+  const surveyProviders = enabledProviders.filter(p => p.category === 'surveys');
+  const gamingProviders = enabledProviders.filter(p => p.category === 'gaming' || p.category === 'mixed');
+
+  const tabs = [
+    { id: 'all', label: 'All Operations', icon: FiZap },
+    { id: 'featured', label: 'Featured Offers', icon: FiStar, count: customOffers.length, ref: featuredRef },
+    { id: 'gaming', label: 'Gaming & Apps', icon: FiMonitor, count: gamingProviders.length, ref: gamingRef },
+    { id: 'surveys', label: 'Surveys', icon: FiCheckCircle, count: surveyProviders.length, ref: surveysRef },
+  ];
+
+  if (activeProvider) {
+    return (
+      <DashboardLayout>
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-4">
+          <button
+            onClick={() => setActiveProvider(null)}
+            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white/[0.05] hover:bg-white/[0.1] text-slate-300 transition-all font-semibold text-sm w-fit"
+          >
+            <span className="text-lg">←</span> Back to Dashboard
+          </button>
+          <OfferwallCard provider={activeProvider} userId={mongoUser?._id} />
+        </motion.div>
+      </DashboardLayout>
+    );
+  }
 
   return (
     <DashboardLayout>
-      <motion.div variants={container} initial="hidden" animate="show" className="space-y-8">
+      <motion.div variants={container} initial="hidden" animate="show" className="space-y-8 pb-10">
 
         {/* ─── Greeting Banner ──────────────────────────────── */}
         <motion.div variants={item} className="glass-card p-8 relative overflow-hidden">
-          {/* Decorative glow */}
           <div className="absolute -top-10 -right-10 w-48 h-48 bg-indigo-600/10 rounded-full blur-3xl pointer-events-none" />
-
           <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-6">
             <div>
-              <p className="text-indigo-400 text-xs font-semibold tracking-widest uppercase mb-2">Dashboard</p>
+              <p className="text-indigo-400 text-xs font-semibold tracking-widest uppercase mb-2">Dashboard Overview</p>
               <h1 className="text-3xl md:text-4xl font-bold font-display text-white mb-2">
                 Welcome back, <span className="gradient-text">{displayName}</span> 👋
               </h1>
-              <p className="text-slate-400 text-sm">Here's what's happening with your account today.</p>
+              <p className="text-slate-400 text-sm">Discover top earnings opportunities and track your progress.</p>
             </div>
             <div className="flex-shrink-0 flex flex-col items-start sm:items-end">
               <span className="badge-violet mb-2">Rank {vipLevel}</span>
@@ -245,88 +336,101 @@ const Home = () => {
           </div>
         </motion.div>
 
-        {/* ─── Stats Row ────────────────────────────────────── */}
-        <motion.div variants={item} className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          {[
-            { label: 'Balance', value: balance, unit: 'PTS', color: 'text-indigo-400', icon: FiZap },
-            { label: 'Tasks Done', value: tasksDone, unit: 'Lifetime', color: 'text-cyan-400', icon: FiCheckCircle },
-            { label: 'Streak',  value: mongoUser?.dailyBonusStreak || '0',   unit: 'Days',  color: 'text-amber-400', icon: FiTrendingUp },
-            { label: 'VIP Rank', value: `Lvl ${vipLevel}`, unit: 'Status', color: 'text-violet-400', icon: FiStar },
-          ].map((stat, i) => (
-            <div key={i} className="stat-card">
-              <div className="flex items-start justify-between mb-4">
-                <p className="text-xs text-slate-500 font-semibold tracking-wide uppercase">{stat.label}</p>
-                <stat.icon className={`${stat.color} text-sm`} />
-              </div>
-              <p className={`text-2xl font-bold ${stat.color} font-mono`}>{stat.value}</p>
-              <p className="text-xs text-slate-600 mt-1">{stat.unit}</p>
-            </div>
-          ))}
-        </motion.div>
-
-        {/* ─── Daily Bonus Card ───────────────────────────── */}
+        {/* ─── Daily Bonus ──────────────────────────────────── */}
         <DailyBonusCard />
 
-        {/* ─── Quick Actions + Recent Activity ─────────────── */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* ─── Quick Jump Tabs ───────────────────────────── */}
+        <motion.div variants={item} className="sticky top-4 z-20">
+          <div className="flex flex-wrap gap-2 p-1.5 bg-slate-900/60 backdrop-blur-xl border border-white/[0.06] rounded-2xl w-fit shadow-2xl">
+            {tabs.map(tab => (
+              <TabButton
+                key={tab.id}
+                active={filter === tab.id}
+                onClick={() => scrollTo(tab.ref, tab.id)}
+                icon={tab.icon}
+                label={tab.label}
+                count={tab.count}
+              />
+            ))}
+          </div>
+        </motion.div>
 
-          {/* Quick Actions */}
-          <motion.div variants={item} className="glass-card p-6">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-base font-bold font-display text-white">Quick Actions</h2>
-              <span className="badge-cyan">Earn More</span>
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              {quickActions.map((action, i) => (
-                <button
-                  key={i}
-                  onClick={() => action.path && navigate(action.path)}
-                  className="group flex flex-col items-start gap-3 p-4 rounded-2xl border border-white/[0.06] bg-white/[0.02] hover:border-white/[0.15] hover:bg-white/[0.04] transition-all text-left"
-                >
-                  <div
-                    className={`w-10 h-10 rounded-xl bg-gradient-to-br ${action.color} flex items-center justify-center transition-transform group-hover:-translate-y-0.5`}
-                    style={{ boxShadow: `0 6px 16px ${action.glow}` }}
-                  >
-                    <action.icon className="text-white text-sm" />
-                  </div>
-                  <span className="text-sm font-medium text-slate-300 group-hover:text-white transition-colors leading-snug">
-                    {action.label}
-                  </span>
-                </button>
-              ))}
-            </div>
-          </motion.div>
+        {/* ─── MAIN CONTENT ─────────────────────────────────── */}
+        <div className="space-y-12">
+          
+          {/* Section 1: Featured Offers */}
+          {(filter === 'all' || filter === 'featured') && customOffers.length > 0 && (
+            <motion.section ref={featuredRef} variants={item} className="space-y-4 pt-4">
+               <div className="flex items-center gap-3 mb-2">
+                 <div className="w-10 h-10 rounded-xl bg-amber-500/10 flex items-center justify-center border border-amber-500/20">
+                    <FiStar className="text-amber-400 text-xl" />
+                 </div>
+                 <div>
+                   <h2 className="text-2xl font-bold font-display text-white">Featured Offers</h2>
+                   <p className="text-sm text-slate-400">High-reward direct tasks. Manual approval required.</p>
+                 </div>
+               </div>
+               <div className="space-y-4">
+                 {customOffers.map(offer => (
+                    <FeaturedOfferCard key={offer._id} offer={offer} userId={mongoUser?._id} token={token} />
+                 ))}
+               </div>
+            </motion.section>
+          )}
 
-          {/* Recent Activity */}
-          <motion.div variants={item} className="glass-card p-6">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-base font-bold font-display text-white">Recent Activity</h2>
-              <button className="text-indigo-400 text-xs font-semibold flex items-center gap-1 hover:text-indigo-300 transition-colors">
-                View All <FiArrowRight className="text-xs" />
-              </button>
-            </div>
-            <div className="space-y-3">
-              {recentActivity.map((act, i) => (
-                <div
-                  key={i}
-                  className="flex items-center justify-between py-3 border-b border-white/[0.04] last:border-0"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="w-2 h-2 rounded-full bg-emerald-500" />
-                    <div>
-                      <p className="text-sm text-slate-200 font-medium">{act.action}</p>
-                      <p className="text-xs text-slate-600 flex items-center gap-1 mt-0.5">
-                        <FiClock className="text-[10px]" /> {act.time}
-                      </p>
-                    </div>
-                  </div>
-                  <span className="text-emerald-400 font-mono font-bold text-sm">{act.pts}</span>
-                </div>
-              ))}
-            </div>
-          </motion.div>
+          {/* Section 2: Gaming or App Offers */}
+          {(filter === 'all' || filter === 'gaming') && (
+            <motion.section ref={gamingRef} variants={item} className="space-y-4 pt-4">
+               <div className="flex items-center gap-3 mb-2">
+                 <div className="w-10 h-10 rounded-xl bg-cyan-500/10 flex items-center justify-center border border-cyan-500/20">
+                    <FiMonitor className="text-cyan-400 text-xl" />
+                 </div>
+                 <div>
+                   <h2 className="text-2xl font-bold font-display text-white">Gaming & App Offers</h2>
+                   <p className="text-sm text-slate-400">Play games to earn large amounts of points.</p>
+                 </div>
+               </div>
+               {loadingSettings ? (
+                  <div className="glass-card p-8 flex justify-center"><div className="w-8 h-8 rounded-full border-2 border-cyan-500 border-t-transparent animate-spin" /></div>
+               ) : gamingProviders.length === 0 ? (
+                  <div className="glass-card p-8 border border-white/[0.05] flex items-center gap-3 opacity-50"><FiInbox className="text-slate-500" /> <span className="text-slate-400 text-sm">No gaming offerwalls active.</span></div>
+               ) : (
+                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    {gamingProviders.map(provider => (
+                      <ProviderCard key={provider.id} provider={provider} onClick={() => setActiveProvider(provider)} />
+                    ))}
+                 </div>
+               )}
+            </motion.section>
+          )}
+
+          {/* Section 3: Surveys */}
+          {(filter === 'all' || filter === 'surveys') && (
+            <motion.section ref={surveysRef} variants={item} className="space-y-4 pt-4">
+               <div className="flex items-center gap-3 mb-2">
+                 <div className="w-10 h-10 rounded-xl bg-indigo-500/10 flex items-center justify-center border border-indigo-500/20">
+                    <FiCheckCircle className="text-indigo-400 text-xl" />
+                 </div>
+                 <div>
+                   <h2 className="text-2xl font-bold font-display text-white">Surveys</h2>
+                   <p className="text-sm text-slate-400">Share your opinion for quick and easy rewards.</p>
+                 </div>
+               </div>
+               {loadingSettings ? (
+                  <div className="glass-card p-8 flex justify-center"><div className="w-8 h-8 rounded-full border-2 border-indigo-500 border-t-transparent animate-spin" /></div>
+               ) : surveyProviders.length === 0 ? (
+                  <div className="glass-card p-8 border border-white/[0.05] flex items-center gap-3 opacity-50"><FiInbox className="text-slate-500" /> <span className="text-slate-400 text-sm">No survey offerwalls active.</span></div>
+               ) : (
+                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    {surveyProviders.map(provider => (
+                      <ProviderCard key={provider.id} provider={provider} onClick={() => setActiveProvider(provider)} />
+                    ))}
+                 </div>
+               )}
+            </motion.section>
+          )}
+          
         </div>
-
       </motion.div>
     </DashboardLayout>
   );

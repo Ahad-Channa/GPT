@@ -102,7 +102,7 @@ const CreateOfferModal = ({ onClose, onCreated, token }) => {
               onChange={set('title')}
               placeholder="e.g. Sign up for CryptoGame and reach Level 5"
               required
-              className="w-full bg-white/[0.04] border border-white/[0.08] rounded-xl px-4 py-2.5 text-white text-sm placeholder-slate-600 focus:outline-none focus:border-amber-500/40 focus:ring-1 focus:ring-amber-500/20"
+              className="w-full bg-slate-900 border border-white/[0.08] rounded-xl px-4 py-2.5 text-white text-sm placeholder-slate-600 focus:outline-none focus:border-amber-500/40 focus:ring-1 focus:ring-amber-500/20"
             />
           </div>
 
@@ -115,7 +115,7 @@ const CreateOfferModal = ({ onClose, onCreated, token }) => {
               placeholder="Describe the steps needed to complete and earn the reward..."
               rows={3}
               required
-              className="w-full bg-white/[0.04] border border-white/[0.08] rounded-xl px-4 py-2.5 text-white text-sm placeholder-slate-600 focus:outline-none focus:border-amber-500/40 focus:ring-1 focus:ring-amber-500/20 resize-none"
+              className="w-full bg-slate-900 border border-white/[0.08] rounded-xl px-4 py-2.5 text-white text-sm placeholder-slate-600 focus:outline-none focus:border-amber-500/40 focus:ring-1 focus:ring-amber-500/20 resize-none"
             />
           </div>
 
@@ -130,7 +130,7 @@ const CreateOfferModal = ({ onClose, onCreated, token }) => {
                 onChange={set('rewardAmount')}
                 placeholder="e.g. 500"
                 required
-                className="w-full bg-white/[0.04] border border-white/[0.08] rounded-xl px-4 py-2.5 text-white text-sm placeholder-slate-600 focus:outline-none focus:border-amber-500/40 focus:ring-1 focus:ring-amber-500/20"
+                className="w-full bg-slate-900 border border-white/[0.08] rounded-xl px-4 py-2.5 text-white text-sm placeholder-slate-600 focus:outline-none focus:border-amber-500/40 focus:ring-1 focus:ring-amber-500/20"
               />
             </div>
             <div>
@@ -139,7 +139,7 @@ const CreateOfferModal = ({ onClose, onCreated, token }) => {
                 type="datetime-local"
                 value={form.expirationDate}
                 onChange={set('expirationDate')}
-                className="w-full bg-white/[0.04] border border-white/[0.08] rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-amber-500/40 focus:ring-1 focus:ring-amber-500/20"
+                className="w-full bg-slate-900 border border-white/[0.08] rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-amber-500/40 focus:ring-1 focus:ring-amber-500/20"
               />
             </div>
           </div>
@@ -153,7 +153,7 @@ const CreateOfferModal = ({ onClose, onCreated, token }) => {
               onChange={set('externalLink')}
               placeholder="https://..."
               required
-              className="w-full bg-white/[0.04] border border-white/[0.08] rounded-xl px-4 py-2.5 text-white text-sm placeholder-slate-600 focus:outline-none focus:border-amber-500/40 focus:ring-1 focus:ring-amber-500/20"
+              className="w-full bg-slate-900 border border-white/[0.08] rounded-xl px-4 py-2.5 text-white text-sm placeholder-slate-600 focus:outline-none focus:border-amber-500/40 focus:ring-1 focus:ring-amber-500/20"
             />
           </div>
 
@@ -163,10 +163,10 @@ const CreateOfferModal = ({ onClose, onCreated, token }) => {
             <select
               value={form.trackingType}
               onChange={set('trackingType')}
-              className="w-full bg-white/[0.04] border border-white/[0.08] rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-amber-500/40 focus:ring-1 focus:ring-amber-500/20"
+              className="w-full bg-slate-900 border border-white/[0.08] rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-amber-500/40 focus:ring-1 focus:ring-amber-500/20"
             >
-              <option value="manual_approval">Manual Approval (user submits proof)</option>
-              <option value="click">Click Tracking (auto-credit on click)</option>
+              <option className="bg-slate-900" value="manual_approval">Manual Approval (user submits proof)</option>
+              <option className="bg-slate-900" value="click">Click Tracking (auto-credit on click)</option>
             </select>
           </div>
 
@@ -200,12 +200,20 @@ const SubmissionRow = ({ sub, onAction, token }) => {
   const [loading, setLoading] = useState(false);
 
   const act = async (status) => {
+    let adminNote = undefined;
+    
+    if (status === 'rejected') {
+      const reason = window.prompt("Reason for rejection: (Saved in audit logs)");
+      if (reason === null) return; // Cancelled
+      adminNote = reason;
+    }
+
     setLoading(true);
     try {
       const res = await fetch(`${API}/api/admin/custom-offers/submissions/${sub._id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ status }),
+        body: JSON.stringify({ status, adminNote }),
       });
       const data = await res.json();
       if (data.success) onAction(sub._id, status);
@@ -236,6 +244,20 @@ const SubmissionRow = ({ sub, onAction, token }) => {
           <p className="text-xs text-slate-500 mt-1 italic truncate">
             Proof: "{sub.proofText}"
           </p>
+        )}
+        {sub.proofImage && (
+          <div className="mt-2">
+            <a href={sub.proofImage} target="_blank" rel="noopener noreferrer" className="text-indigo-400 hover:text-indigo-300 transition-colors text-xs font-medium flex items-center gap-1">
+              <span className="w-1.5 h-1.5 bg-indigo-400 rounded-full inline-block animate-pulse"></span>
+              View Uploaded Image Proof
+            </a>
+          </div>
+        )}
+        {sub.adminNote && (
+          <div className="mt-2 p-2 rounded bg-white/[0.04] border border-white/[0.08] text-xs text-slate-300 w-fit">
+            <span className="font-semibold text-rose-400 block mb-0.5">Admin Note:</span>
+            <p className="italic">"{sub.adminNote}"</p>
+          </div>
         )}
       </div>
       {sub.status === 'pending' && (
@@ -271,6 +293,7 @@ const AdminCustomOffers = () => {
   const [loading, setLoading] = useState(true);
   const [showCreate, setShowCreate] = useState(false);
   const [activeView, setActiveView] = useState('offers'); // 'offers' | 'submissions'
+  const [submissionFilter, setSubmissionFilter] = useState('pending'); // 'all' | 'pending' | 'approved' | 'rejected'
   const [refreshSub, setRefreshSub] = useState(0);
 
   useEffect(() => {
@@ -457,6 +480,9 @@ const AdminCustomOffers = () => {
                       <p className="text-sm text-slate-400 mb-2 leading-relaxed">{offer.description}</p>
                       <div className="flex flex-wrap items-center gap-3 text-xs text-slate-500">
                         <span className="text-emerald-400 font-bold font-mono">+{offer.rewardAmount?.toLocaleString()} Coins</span>
+                        <span className="px-2 py-0.5 rounded-md bg-white/[0.04] border border-white/[0.08] text-slate-300">
+                          {offer.clicks || 0} Click{(offer.clicks !== 1) ? 's' : ''}
+                        </span>
                         <a href={offer.externalLink} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-indigo-400 hover:text-indigo-300 transition-colors">
                           <FiExternalLink className="text-[10px]" /> View Link
                         </a>
@@ -499,7 +525,12 @@ const AdminCustomOffers = () => {
         )}
 
         {/* ─── SUBMISSIONS VIEW ─── */}
-        {activeView === 'submissions' && (
+        {activeView === 'submissions' && (() => {
+          const filteredSubmissions = submissionFilter === 'all' 
+            ? submissions 
+            : submissions.filter(s => s.status === submissionFilter);
+            
+          return (
           <motion.div
             key="submissions"
             initial={{ opacity: 0, y: 10 }}
@@ -507,8 +538,8 @@ const AdminCustomOffers = () => {
             exit={{ opacity: 0, y: -6 }}
             className="bg-white/[0.02] border border-white/[0.06] rounded-2xl overflow-hidden"
           >
-            <div className="flex items-center justify-between px-5 py-4 border-b border-white/[0.06]">
-              <h2 className="text-sm font-bold text-white">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 px-5 py-4 border-b border-white/[0.06]">
+              <h2 className="text-sm font-bold text-white flex items-center">
                 User Submissions
                 {pendingCount > 0 && (
                   <span className="ml-2 px-2 py-0.5 rounded-full text-[10px] bg-amber-500/20 text-amber-400 border border-amber-500/20">
@@ -516,23 +547,36 @@ const AdminCustomOffers = () => {
                   </span>
                 )}
               </h2>
-              <span className="text-xs text-slate-500">{submissions.length} total</span>
+              
+              <div className="flex items-center gap-2">
+                <select 
+                  value={submissionFilter}
+                  onChange={(e) => setSubmissionFilter(e.target.value)}
+                  className="bg-slate-900 border border-white/[0.08] rounded-xg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-indigo-500/40"
+                >
+                  <option className="bg-slate-900" value="all">All Submissions</option>
+                  <option className="bg-slate-900" value="pending">Pending</option>
+                  <option className="bg-slate-900" value="approved">Approved</option>
+                  <option className="bg-slate-900" value="rejected">Rejected</option>
+                </select>
+                <span className="text-xs text-slate-500">{filteredSubmissions.length} showing</span>
+              </div>
             </div>
 
-            {submissions.length === 0 ? (
+            {filteredSubmissions.length === 0 ? (
               <div className="p-16 text-center flex flex-col items-center gap-3">
                 <FiInbox className="text-slate-600 text-3xl" />
-                <p className="text-slate-500 text-sm">No submissions yet. Users will appear here after submitting proof.</p>
+                <p className="text-slate-500 text-sm">No submissions found for the current filter.</p>
               </div>
             ) : (
               <div className="px-5 divide-y divide-white/[0.04]">
-                {submissions.map((sub) => (
+                {filteredSubmissions.map((sub) => (
                   <SubmissionRow key={sub._id} sub={sub} onAction={handleSubmissionAction} token={token} />
                 ))}
               </div>
             )}
           </motion.div>
-        )}
+        )})()}
       </AnimatePresence>
 
       {/* Create Modal */}

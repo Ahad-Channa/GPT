@@ -106,7 +106,11 @@ router.get('/history', verifyToken, async (req, res) => {
 
     const query = { userId: user._id };
     if (type !== 'all') {
-      query.transactionType = type;
+      if (type === 'chargeback') {
+        query.status = 'reversed';
+      } else {
+        query.transactionType = type;
+      }
     }
 
     const [transactions, total, earnedResult, withdrawnResult, pendingCount] = await Promise.all([

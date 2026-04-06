@@ -18,6 +18,7 @@ const transactionSchema = new mongoose.Schema(
         'admin_adjustment',    // Admin Adjustment
         'promo_code',          // Promo Code
         'leaderboard_reward',  // Leaderboard Reward
+        'chargeback',          // Chargeback deduct
       ],
       required: true,
     },
@@ -35,13 +36,32 @@ const transactionSchema = new mongoose.Schema(
       type: Number,
       required: true,
     },
+    // Fraud tracking / Advanced relation linking
+    sourceType: {
+      type: String,
+      enum: ['offer', 'referral', 'daily_bonus', 'withdrawal', 'chargeback', 'leaderboard', 'admin', 'promo'],
+      default: null,
+    },
+    sourceId: {
+      type: mongoose.Schema.Types.ObjectId,
+      default: null,
+    },
+    linkedTransactionId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Transaction',
+      default: null, // Used to link referral_reward/chargeback to the original offer_reward
+    },
+    holdUntil: {
+      type: Date,
+      default: null,
+    },
     description: {
       type: String,
       required: true,
     },
     status: {
       type: String,
-      enum: ['pending', 'completed', 'failed', 'rejected'],
+      enum: ['pending', 'completed', 'failed', 'rejected', 'hold', 'reversed'],
       default: 'completed',
     },
     // Withdrawal-specific fields

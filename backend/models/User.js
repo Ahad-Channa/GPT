@@ -34,7 +34,6 @@ const userSchema = new mongoose.Schema(
     walletBalance: {
       type: Number,
       default: 0,
-      min: 0,
     },
     // Progression tracking
     xp: {
@@ -56,6 +55,24 @@ const userSchema = new mongoose.Schema(
     isBanned: {
       type: Boolean,
       default: false,
+    },
+    // Referrals and Fraud
+    referredBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      default: null,
+    },
+    referralEarnings: {
+      type: Number,
+      default: 0,
+    },
+    fraudFlag: {
+      type: Number,
+      default: 0,
+    },
+    referralPercentage: {
+      type: Number,
+      default: null, // If null, fallback to global settings
     },
   },
   { timestamps: true }

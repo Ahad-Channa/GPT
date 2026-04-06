@@ -8,8 +8,23 @@ const User = require('../models/User');
 // GET /api/custom-offers (Public/User) - Get active custom offers
 router.get('/', verifyToken, async (req, res) => {
   try {
+    const user = await User.findOne({ firebaseUid: req.user.uid });
     const offers = await CustomOffer.find({ isActive: true });
-    res.status(200).json({ success: true, offers });
+    
+    // Attach user submission status to each offer so frontend knows if it's pending/approved/rejected
+    let offersWithStatus = offers.map(o => ({ ...o.toObject(), submissionStatus: null, adminNote: null }));
+    if (user) {
+      const submissions = await CustomOfferSubmission.find({ userId: user._id });
+      offersWithStatus = offersWithStatus.map(offer => {
+        const sub = submissions.find(s => s.offerId.toString() === offer._id.toString());
+        if (sub) {
+          return { ...offer, submissionStatus: sub.status, adminNote: sub.adminNote };
+        }
+        return offer;
+      });
+    }
+
+    res.status(200).json({ success: true, offers: offersWithStatus });
   } catch (error) {
     console.error('[/api/custom-offers] Error:', error);
     res.status(500).json({ success: false, error: 'Failed to fetch offers' });
@@ -19,7 +34,7 @@ router.get('/', verifyToken, async (req, res) => {
 // POST /api/custom-offers/:id/submit (User) - Submit proof for a custom offer
 router.post('/:id/submit', verifyToken, async (req, res) => {
   try {
-    const { proofText } = req.body;
+    const { proofText, proofImage } = req.body;
     const user = await User.findOne({ firebaseUid: req.user.uid });
     if (!user) return res.status(404).json({ success: false, error: 'User not found' });
 
@@ -30,8 +45,26 @@ router.post('/:id/submit', verifyToken, async (req, res) => {
 
     // Check if already submitted
     const existing = await CustomOfferSubmission.findOne({ offerId: offer._id, userId: user._id });
-    if (existing) {
+    if (existing && existing.status !== 'rejected') {
       return res.status(400).json({ success: false, error: 'You have already submitted this offer' });
+    }
+
+    if (existing && existing.status === 'rejected') {
+      existing.proofText = proofText || '';
+      existing.proofImage = proofImage || '';
+      existing.status = 'pending';
+      existing.adminNote = '';
+      await existing.save();
+
+      // Save user activity log for the resubmission
+      await require('../models/UserActivityLog').create({
+        userId: user._id,
+        actionType: 'proof_submit',
+        targetId: offer._id,
+        metadata: { offerTitle: offer.title, isResubmission: true }
+      });
+
+      return res.status(200).json({ success: true, submission: existing, message: 'Proof resubmitted successfully' });
     }
 
     // If trackingType is 'click', we could auto-approve or just track. For now, we do manual_approval based.
@@ -39,7 +72,16 @@ router.post('/:id/submit', verifyToken, async (req, res) => {
       offerId: offer._id,
       userId: user._id,
       proofText: proofText || '',
+      proofImage: proofImage || '',
       status: offer.trackingType === 'click' ? 'approved' : 'pending' // Just a naive auto-approve for click type for now
+    });
+
+    // Save user activity log for the submission
+    await require('../models/UserActivityLog').create({
+      userId: user._id,
+      actionType: 'proof_submit',
+      targetId: offer._id,
+      metadata: { offerTitle: offer.title }
     });
 
     res.status(201).json({ success: true, submission, message: 'Proof submitted successfully' });

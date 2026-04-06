@@ -48,6 +48,27 @@ const TabButton = ({ active, onClick, icon: Icon, label, count }) => (
   </button>
 );
 
+// --- Provider Grid Card Component
+const ProviderCard = ({ provider, onClick }) => (
+  <motion.div
+    variants={item}
+    onClick={onClick}
+    className="glass-card p-6 cursor-pointer hover:border-indigo-500/40 hover:bg-white/[0.03] transition-all flex flex-col items-center justify-center gap-4 group h-48"
+  >
+    <div className="w-16 h-16 rounded-2xl bg-white/[0.05] flex items-center justify-center group-hover:scale-110 group-hover:bg-indigo-500/10 transition-all">
+      {provider.imageUrl ? (
+        <img src={provider.imageUrl} alt={provider.label} className="w-10 h-10 object-contain" />
+      ) : (
+        <FiMonitor className="text-3xl text-indigo-400 group-hover:text-amber-400 transition-colors" />
+      )}
+    </div>
+    <div className="text-center">
+      <h3 className="text-white font-semibold text-lg">{provider.label}</h3>
+      <p className="text-slate-400 text-xs mt-1">Earn Coins</p>
+    </div>
+  </motion.div>
+);
+
 // --- Single Offerwall Iframe Card
 const OfferwallCard = ({ provider, userId }) => {
   const url = buildProviderUrl(provider, userId);
@@ -85,11 +106,25 @@ const OfferwallCard = ({ provider, userId }) => {
 const FeaturedOfferCard = ({ offer, userId, token, onSubmitted }) => {
   const [submitting, setSubmitting] = useState(false);
   const [proof, setProof] = useState('');
+  const [proofImage, setProofImage] = useState('');
   const [showProofForm, setShowProofForm] = useState(false);
-  const [alreadySubmitted, setAlreadySubmitted] = useState(false);
+  const [alreadySubmitted, setAlreadySubmitted] = useState(offer.submissionStatus === 'pending' || offer.submissionStatus === 'approved');
   const [result, setResult] = useState(null);
 
   const isExpired = offer.expirationDate && new Date(offer.expirationDate) < new Date();
+  const isRejected = offer.submissionStatus === 'rejected';
+
+  // Convert uploaded image to Base64
+  const handleImageUpload = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setProofImage(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -98,7 +133,7 @@ const FeaturedOfferCard = ({ offer, userId, token, onSubmitted }) => {
       const res = await fetch(`${API}/api/custom-offers/${offer._id}/submit`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ proofText: proof }),
+        body: JSON.stringify({ proofText: proof, proofImage }),
       });
       const data = await res.json();
       if (data.success) {
@@ -185,6 +220,15 @@ const FeaturedOfferCard = ({ offer, userId, token, onSubmitted }) => {
                 <FiCheckCircle className="text-sm" /> Proof Submitted
               </span>
             )}
+            
+            {isRejected && !alreadySubmitted && (
+              <span className="flex flex-col gap-1 text-sm bg-rose-500/10 border border-rose-500/20 p-2.5 rounded-xl text-rose-400 max-w-sm">
+                <span className="font-semibold flex items-center gap-1.5">
+                  <FiInbox className="text-sm" /> Submission Rejected. Please fix and resubmit.
+                </span>
+                {offer.adminNote && <span className="italic text-xs opacity-90 mt-1">"{offer.adminNote}"</span>}
+              </span>
+            )}
           </div>
 
           {/* Proof Form */}
@@ -200,15 +244,37 @@ const FeaturedOfferCard = ({ offer, userId, token, onSubmitted }) => {
                 <textarea
                   value={proof}
                   onChange={(e) => setProof(e.target.value)}
-                  placeholder="Describe your completion or paste a screenshot URL / transaction ID..."
+                  placeholder="Describe your completion or paste a screenshot URL / transaction ID... (Optional if you upload an image)"
                   rows={3}
                   className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-slate-500 text-sm focus:outline-none focus:border-amber-500/40 focus:ring-1 focus:ring-amber-500/30 resize-none"
-                  required
                 />
-                <div className="flex items-center gap-3 mt-2">
+                
+                <div className="mt-3">
+                  <label className="block text-sm font-semibold text-slate-300 mb-1">
+                    Upload Image Proof (Optional)
+                  </label>
+                  <label className="cursor-pointer flex items-center justify-center w-full py-3 px-4 border border-dashed border-white/20 rounded-xl bg-white/5 hover:bg-white/10 transition-colors">
+                    <span className="text-sm text-slate-400">
+                      {proofImage ? "Image selected" : "Click to select image"}
+                    </span>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImageUpload}
+                      className="hidden"
+                    />
+                  </label>
+                  {proofImage && (
+                    <div className="mt-2 text-center">
+                      <img src={proofImage} alt="Proof preview" className="h-20 object-contain mx-auto rounded" />
+                    </div>
+                  )}
+                </div>
+
+                <div className="flex items-center gap-3 mt-4">
                   <button
                     type="submit"
-                    disabled={submitting || !proof.trim()}
+                    disabled={submitting || (!proof.trim() && !proofImage)}
                     className="flex items-center gap-2 px-5 py-2 rounded-xl bg-amber-500/20 border border-amber-500/30 text-amber-300 font-semibold text-sm hover:bg-amber-500/30 disabled:opacity-50 transition-all"
                   >
                     {submitting ? <FiLoader className="animate-spin text-sm" /> : <FiSend className="text-sm" />}
@@ -216,7 +282,10 @@ const FeaturedOfferCard = ({ offer, userId, token, onSubmitted }) => {
                   </button>
                   <button
                     type="button"
-                    onClick={() => setShowProofForm(false)}
+                    onClick={() => {
+                        setShowProofForm(false);
+                        setProofImage('');
+                    }}
                     className="text-slate-500 text-sm hover:text-slate-300 transition-colors"
                   >
                     Cancel
@@ -245,11 +314,17 @@ const FeaturedOfferCard = ({ offer, userId, token, onSubmitted }) => {
 const Earn = () => {
   const { mongoUser, currentUser } = useAuth();
   const [activeTab, setActiveTab] = useState('surveys');
+  const [activeProvider, setActiveProvider] = useState(null);
   const [settings, setSettings] = useState(null);
   const [customOffers, setCustomOffers] = useState([]);
   const [loadingSettings, setLoadingSettings] = useState(true);
   const [loadingOffers, setLoadingOffers] = useState(true);
   const [token, setToken] = useState(null);
+
+  // Clear active provider when changing tabs
+  useEffect(() => {
+    setActiveProvider(null);
+  }, [activeTab]);
 
   // Fetch token once
   useEffect(() => {
@@ -364,6 +439,18 @@ const Earn = () => {
             transition={{ duration: 0.25 }}
             className="space-y-6"
           >
+            {activeProvider ? (
+              <div className="space-y-4">
+                <button
+                  onClick={() => setActiveProvider(null)}
+                  className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white/[0.05] hover:bg-white/[0.1] text-slate-300 transition-all font-semibold text-sm w-fit"
+                >
+                  <span className="text-lg">←</span> Back to Providers
+                </button>
+                <OfferwallCard provider={activeProvider} userId={mongoUser?._id} />
+              </div>
+            ) : (
+              <>
             {/* ─── SURVEYS TAB ─── */}
             {activeTab === 'surveys' && (
               <>
@@ -375,10 +462,12 @@ const Earn = () => {
                 ) : surveyProviders.length === 0 ? (
                   renderEmptyState('Surveys')
                 ) : (
-                  surveyProviders.map(provider => (
-                    <OfferwallCard key={provider.id} provider={provider} userId={mongoUser?._id} />
-                  ))
-                )}
+                  <motion.div variants={container} initial="hidden" animate="show" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    {surveyProviders.map(provider => (
+                      <ProviderCard key={provider.id} provider={provider} onClick={() => setActiveProvider(provider)} />
+                    ))}
+                  </motion.div>
+                  )}
               </>
             )}
 
@@ -393,10 +482,12 @@ const Earn = () => {
                 ) : gamingProviders.length === 0 ? (
                   renderEmptyState('Gaming & App Offers')
                 ) : (
-                  gamingProviders.map(provider => (
-                    <OfferwallCard key={provider.id} provider={provider} userId={mongoUser?._id} />
-                  ))
-                )}
+                  <motion.div variants={container} initial="hidden" animate="show" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    {gamingProviders.map(provider => (
+                      <ProviderCard key={provider.id} provider={provider} onClick={() => setActiveProvider(provider)} />
+                    ))}
+                  </motion.div>
+                  )}
               </>
             )}
 
@@ -437,6 +528,8 @@ const Earn = () => {
                 )}
               </>
             )}
+              </>
+            )}
           </motion.div>
         </AnimatePresence>
 
@@ -446,3 +539,4 @@ const Earn = () => {
 };
 
 export default Earn;
+

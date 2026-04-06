@@ -59,7 +59,21 @@ const settingsSchema = new mongoose.Schema(
         default: 'reset'
       }
     },
-    // Block B — Offerwall Provider Registry
+    // Block B — Referral System Config
+    referralConfig: {
+      holdDays: {
+        type: Number,
+        default: 30, // Default 30 days hold
+        min: 0,
+      },
+      globalPercentage: {
+        type: Number,
+        default: 5,  // 5% standard reward
+        min: 0,
+        max: 100,
+      }
+    },
+    // Block C — Offerwall Provider Registry
     offerwallProviders: {
       type: [
         {

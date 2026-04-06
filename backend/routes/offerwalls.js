@@ -86,10 +86,12 @@ const handlePostback = async (providerId, req, res, params) => {
     );
 
     // 11. Create Transaction
-    await Transaction.create({
+    const offerTx = await Transaction.create({
       userId: user._id,
       transactionType: 'offer_reward',
+      sourceType: 'offer',
       amount: platformCoins,
+      balanceAfter: updatedUser.walletBalance,
       description: `${provider.label} Offer Reward`,
       status: 'completed',
       externalId,
@@ -99,6 +101,43 @@ const handlePostback = async (providerId, req, res, params) => {
         conversionRatio: provider.conversionRatio,
       },
     });
+
+    // 12. Referral Logic (create in hold status)
+    if (updatedUser.referredBy) {
+      const referrer = await User.findById(updatedUser.referredBy);
+      if (referrer) {
+        const holdDays = settings.referralConfig?.holdDays ?? 30;
+        const globalPct = settings.referralConfig?.globalPercentage ?? 5;
+        const pct = updatedUser.referralPercentage !== null && updatedUser.referralPercentage !== undefined 
+          ? updatedUser.referralPercentage 
+          : globalPct;
+        const refAmount = Math.floor(platformCoins * (pct / 100));
+        
+        if (refAmount > 0) {
+          const holdDate = new Date();
+          holdDate.setDate(holdDate.getDate() + holdDays);
+
+          // We don't add to walletBalance yet because it's on hold. We just increment referralEarnings tracker.
+          await User.updateOne(
+            { _id: referrer._id },
+            { $inc: { referralEarnings: refAmount } }
+          );
+
+          await Transaction.create({
+            userId: referrer._id,
+            transactionType: 'referral_reward',
+            sourceType: 'referral',
+            sourceId: offerTx._id,
+            linkedTransactionId: offerTx._id,
+            amount: refAmount,
+            balanceAfter: referrer.walletBalance, // Unchanged right now since it's on hold
+            description: `Referral Reward from Offer`,
+            status: 'hold',
+            holdUntil: holdDate,
+          });
+        }
+      }
+    }
 
     // 12. Return "1"
     return res.status(200).send('1');

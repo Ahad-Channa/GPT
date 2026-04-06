@@ -81,9 +81,29 @@ const HistoryList = ({ transactions, loading, error, hasMore, onLoadMore, loadin
     <div>
       <div className="divide-y divide-white/[0.04]">
         {transactions.map((tx) => {
-          const cfg    = TX_TYPE_LABEL[tx.transactionType] || { label: tx.transactionType, color: 'text-slate-400' };
-          const isDebit = tx.amount < 0;
-          const dotClass = STATUS_DOT[tx.status] || STATUS_DOT.completed;
+          const isActivity = !!tx.actionType;
+          let label = '';
+          let color = 'text-slate-400';
+          let isDebit = false;
+          let dotClass = STATUS_DOT.completed;
+          let description = '';
+          let amountStr = '';
+          
+          if (isActivity) {
+            label = tx.actionType.replace('_', ' ').toUpperCase();
+            color = 'text-cyan-400';
+            dotClass = 'bg-cyan-400';
+            description = `${tx.actionType} on target ${tx.targetId || 'unknown'}`;
+            amountStr = 'Log';
+          } else {
+            const cfg = TX_TYPE_LABEL[tx.transactionType] || { label: tx.transactionType, color: 'text-slate-400' };
+            label = cfg.label;
+            color = cfg.color;
+            isDebit = tx.amount < 0;
+            dotClass = STATUS_DOT[tx.status] || STATUS_DOT.completed;
+            description = tx.description;
+            amountStr = `${isDebit ? '' : '+'}${Math.abs(tx.amount).toLocaleString()}`;
+          }
 
           return (
             <div key={tx._id} className="flex items-center gap-3 py-3 hover:bg-white/[0.01] transition-colors">
@@ -92,24 +112,27 @@ const HistoryList = ({ transactions, loading, error, hasMore, onLoadMore, loadin
 
               {/* Description */}
               <div className="flex-1 min-w-0">
-                <p className="text-sm text-slate-200 font-medium truncate">{tx.description}</p>
+                <p className="text-sm text-slate-200 font-medium truncate">{description}</p>
                 <div className="flex items-center gap-2 mt-0.5">
-                  <span className={`text-[10px] font-semibold ${cfg.color}`}>{cfg.label}</span>
+                  <span className={`text-[10px] font-semibold ${color}`}>{label}</span>
                   <span className="text-[10px] text-slate-600">{timeAgo(tx.createdAt)}</span>
-                  {tx.method && (
+                  {!isActivity && tx.method && (
                     <span className="text-[10px] text-slate-600 capitalize">· via {tx.method}</span>
                   )}
-                  {tx.status !== 'completed' && (
+                  {!isActivity && tx.status !== 'completed' && (
                     <span className={`text-[10px] font-mono ${tx.status === 'pending' ? 'text-amber-400' : 'text-rose-400'}`}>
                       · {tx.status}
                     </span>
+                  )}
+                  {isActivity && tx.ipAddress && (
+                    <span className="text-[10px] text-slate-600">· {tx.ipAddress}</span>
                   )}
                 </div>
               </div>
 
               {/* Amount */}
               <span className={`text-sm font-bold font-mono flex-shrink-0 ${isDebit ? 'text-rose-400' : 'text-emerald-400'}`}>
-                {isDebit ? '' : '+'}{Math.abs(tx.amount).toLocaleString()}
+                {amountStr}
               </span>
             </div>
           );
@@ -133,8 +156,8 @@ const HistoryList = ({ transactions, loading, error, hasMore, onLoadMore, loadin
 };
 
 // ── useHistory hook (reusable per type filter)
-const useHistory = (token, type) => {
-  const [transactions, setTransactions] = useState([]);
+const useHistory = (token, type, endpoint = '/api/wallet/history') => {
+  const [dataList, setDataList] = useState([]);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -147,13 +170,17 @@ const useHistory = (token, type) => {
     try {
       if (pg === 1) setLoading(true); else setLoadingMore(true);
       setError('');
-      const params = new URLSearchParams({ page: pg, limit: 15, type });
-      const res = await fetch(`${API}/api/wallet/history?${params}`, {
+      const params = new URLSearchParams({ page: pg, limit: 15 });
+      if (type) params.append('type', type);
+
+      const res = await fetch(`${API}${endpoint}?${params}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
       if (!data.success) throw new Error(data.error);
-      setTransactions((prev) => append ? [...prev, ...data.transactions] : data.transactions);
+
+      const items = data.transactions || data.logs || [];
+      setDataList((prev) => append ? [...prev, ...items] : items);
       setHasMore(data.pagination.hasMore);
       setPage(pg);
       if (pg === 1 && data.stats) {
@@ -169,11 +196,11 @@ const useHistory = (token, type) => {
 
   useEffect(() => {
     if (token) fetchPage(1);
-  }, [token, type]);
+  }, [token, type, endpoint]);
 
   const loadMore = () => fetchPage(page + 1, true);
 
-  return { transactions, loading, loadingMore, error, hasMore, loadMore, totalEarned };
+  return { dataList, loading, loadingMore, error, hasMore, loadMore, totalEarned };
 };
 
 // ── Tab Button
@@ -206,7 +233,8 @@ const Profile = () => {
 
   // History hooks (only fetches when token is ready)
   const offers = useHistory(activeTab === 'offers' ? token : null, 'offer_reward');
-  const withdrawals = useHistory(activeTab === 'withdrawals' ? token : null, 'withdrawal');
+  const chargebacks = useHistory(activeTab === 'chargebacks' ? token : null, 'chargeback');
+  const clicks = useHistory(activeTab === 'clicks' ? token : null, null, '/api/activity/history');
 
   const handleEditClick = () => {
     setEditName(mongoUser?.displayName || '');
@@ -252,10 +280,11 @@ const Profile = () => {
         </div>
 
         {/* ─── Tab Bar ─────────────────────────────────────── */}
-        <div className="flex gap-2 p-1 bg-white/[0.02] border border-white/[0.06] rounded-2xl w-fit">
+        <div className="flex flex-wrap gap-2 p-1 bg-white/[0.02] border border-white/[0.06] rounded-2xl w-fit">
           <TabBtn active={activeTab === 'profile'}     onClick={() => setActiveTab('profile')}     icon={FiUser}           label="Profile" />
-          <TabBtn active={activeTab === 'offers'}      onClick={() => setActiveTab('offers')}      icon={FiCheckCircle}   label="Offer History" />
-          <TabBtn active={activeTab === 'withdrawals'} onClick={() => setActiveTab('withdrawals')} icon={FiArrowDownCircle} label="Withdrawal History" />
+          <TabBtn active={activeTab === 'clicks'}      onClick={() => setActiveTab('clicks')}      icon={FiZap}            label="Click History" />
+          <TabBtn active={activeTab === 'offers'}      onClick={() => setActiveTab('offers')}      icon={FiCheckCircle}    label="Offer History" />
+          <TabBtn active={activeTab === 'chargebacks'} onClick={() => setActiveTab('chargebacks')} icon={FiShield}         label="Chargebacks" />
         </div>
 
         {/* ─── Tab Content ─────────────────────────────────── */}
@@ -425,6 +454,72 @@ const Profile = () => {
             </motion.div>
           )}
 
+          {/* ══ MOUSE CLICKS TAB ══ */}
+          {activeTab === 'clicks' && (
+            <motion.div
+              key="clicks"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -6 }}
+              className="glass-card overflow-hidden"
+            >
+              {/* Header */}
+              <div className="flex items-center justify-between px-6 py-5 border-b border-white/[0.06] bg-gradient-to-r from-cyan-500/[0.04] to-transparent">
+                <div>
+                  <h2 className="text-base font-bold font-display text-white flex items-center gap-2">
+                    <FiZap className="text-cyan-400" /> Click History
+                  </h2>
+                  <p className="text-xs text-slate-500 mt-0.5">Your recent interactions with offers and features</p>
+                </div>
+              </div>
+
+              <div className="px-6 py-4">
+                <HistoryList
+                  transactions={clicks.dataList}
+                  loading={clicks.loading}
+                  error={clicks.error}
+                  hasMore={clicks.hasMore}
+                  onLoadMore={clicks.loadMore}
+                  loadingMore={clicks.loadingMore}
+                  emptyMessage="No click history yet. Start exploring offers!"
+                />
+              </div>
+            </motion.div>
+          )}
+
+          {/* ══ CHARGEBACKS TAB ══ */}
+          {activeTab === 'chargebacks' && (
+            <motion.div
+              key="chargebacks"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -6 }}
+              className="glass-card overflow-hidden"
+            >
+              {/* Header */}
+              <div className="flex items-center justify-between px-6 py-5 border-b border-white/[0.06] bg-gradient-to-r from-rose-500/[0.04] to-transparent">
+                <div>
+                  <h2 className="text-base font-bold font-display text-white flex items-center gap-2">
+                    <FiShield className="text-rose-400" /> Chargebacks & Reversals
+                  </h2>
+                  <p className="text-xs text-slate-500 mt-0.5">Reversed transactions due to chargebacks or compliance flags</p>
+                </div>
+              </div>
+              
+              <div className="px-6 py-4">
+                <HistoryList
+                  transactions={chargebacks.dataList}
+                  loading={chargebacks.loading}
+                  error={chargebacks.error}
+                  hasMore={chargebacks.hasMore}
+                  onLoadMore={chargebacks.loadMore}
+                  loadingMore={chargebacks.loadingMore}
+                  emptyMessage="No chargebacks found on your account."
+                />
+              </div>
+            </motion.div>
+          )}
+
           {/* ══ OFFER HISTORY TAB ══ */}
           {activeTab === 'offers' && (
             <motion.div
@@ -454,7 +549,7 @@ const Profile = () => {
 
               <div className="px-6 py-4">
                 <HistoryList
-                  transactions={offers.transactions}
+                  transactions={offers.dataList}
                   loading={offers.loading}
                   error={offers.error}
                   hasMore={offers.hasMore}
@@ -466,62 +561,7 @@ const Profile = () => {
             </motion.div>
           )}
 
-          {/* ══ WITHDRAWAL HISTORY TAB ══ */}
-          {activeTab === 'withdrawals' && (
-            <motion.div
-              key="withdrawals"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -6 }}
-              className="glass-card overflow-hidden"
-            >
-              {/* Header */}
-              <div className="flex items-center justify-between px-6 py-5 border-b border-white/[0.06] bg-gradient-to-r from-rose-500/[0.04] to-transparent">
-                <div>
-                  <h2 className="text-base font-bold font-display text-white flex items-center gap-2">
-                    <FiArrowDownCircle className="text-rose-400" /> Withdrawal History
-                  </h2>
-                  <p className="text-xs text-slate-500 mt-0.5">All payout requests — includes method, amount, and status</p>
-                </div>
-              </div>
 
-              {/* Legend */}
-              <div className="px-6 pt-4 pb-2 flex flex-wrap gap-3">
-                {[
-                  { dot: 'bg-emerald-400', label: 'Completed' },
-                  { dot: 'bg-amber-400 animate-pulse', label: 'Pending Review' },
-                  { dot: 'bg-rose-400', label: 'Rejected / Refunded' },
-                ].map(({ dot, label }) => (
-                  <div key={label} className="flex items-center gap-1.5 text-xs text-slate-500">
-                    <span className={`w-2 h-2 rounded-full ${dot}`} />
-                    {label}
-                  </div>
-                ))}
-              </div>
-
-              <div className="px-6 py-2 pb-4">
-                <HistoryList
-                  transactions={withdrawals.transactions}
-                  loading={withdrawals.loading}
-                  error={withdrawals.error}
-                  hasMore={withdrawals.hasMore}
-                  onLoadMore={withdrawals.loadMore}
-                  loadingMore={withdrawals.loadingMore}
-                  emptyMessage="No withdrawal requests yet. Once you submit a payout, it will appear here."
-                />
-              </div>
-
-              {/* Info note */}
-              {!withdrawals.loading && withdrawals.transactions.length > 0 && (
-                <div className="mx-6 mb-5 flex items-start gap-2 p-3 rounded-xl bg-blue-500/[0.05] border border-blue-500/[0.12]">
-                  <FiClock className="text-blue-400 text-xs mt-0.5 flex-shrink-0" />
-                  <p className="text-xs text-slate-500 leading-relaxed">
-                    Withdrawals are reviewed within 1–3 business days. Rejected requests are automatically refunded to your wallet.
-                  </p>
-                </div>
-              )}
-            </motion.div>
-          )}
         </AnimatePresence>
       </motion.div>
     </DashboardLayout>

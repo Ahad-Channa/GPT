@@ -30,6 +30,13 @@ const adminLogSchema = new mongoose.Schema(
         'ATTEMPT_BALANCE_PRIMARY_ADMIN',
         'ATTEMPT_EDIT_PERMISSIONS_PRIMARY_ADMIN',
         'ATTEMPT_REVOKE_PRIMARY_ADMIN',
+        'CREATE_CUSTOM_OFFER',
+        'UPDATE_CUSTOM_OFFER',
+        'DELETE_CUSTOM_OFFER',
+        'APPROVE_CUSTOM_OFFER',
+        'REJECT_CUSTOM_OFFER',
+        'PROCESS_CHARGEBACK',
+        'PROCESS_CHARGEBACK_CASCADED'
       ],
     },
     targetUserId: {

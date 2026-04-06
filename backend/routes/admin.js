@@ -58,7 +58,7 @@ router.put('/users/:id/ban', requirePermission('manage_users'), async (req, res)
     const { isBanned } = req.body;
     const userToUpdate = await User.findById(req.params.id);
     if (!userToUpdate) return res.status(404).json({ success: false, error: 'User not found' });
-    
+
     if (userToUpdate.email === process.env.PRIMARY_ADMIN_EMAIL) {
       await createLog(req.dbUser._id, 'ATTEMPT_BAN_PRIMARY_ADMIN', userToUpdate._id, { reason: req.body.reason || 'Unauthorized access attempt' });
       return res.status(403).json({ success: false, error: 'Cannot modify primary admin' });
@@ -150,11 +150,11 @@ router.put('/withdrawals/:id/approve', requirePermission('manage_withdrawals'), 
     if (tx.status !== 'pending') return res.status(400).json({ success: false, error: `Cannot approve a ${tx.status} withdrawal` });
 
     tx.status = 'completed';
-    tx.metadata = { 
-      ...tx.metadata, 
-      approvedBy: req.dbUser.email, 
+    tx.metadata = {
+      ...tx.metadata,
+      approvedBy: req.dbUser.email,
       approvedAt: new Date().toISOString(),
-      ...(note && { note }) 
+      ...(note && { note })
     };
     await tx.save();
 
@@ -226,19 +226,19 @@ router.put('/withdrawals/:id/reject', requirePermission('manage_withdrawals'), a
 router.get('/settings', requirePermission('manage_withdrawals'), async (req, res) => {
   try {
     const settings = await Settings.getSingleton();
-    
+
     // Dynamically set secretConfigured
     const providers = settings.offerwallProviders.map(p => {
       const pObj = p.toObject ? p.toObject() : p;
       const envSecretMap = {
-        cpx:       'CPX_HASH_KEY',
-        adgem:     'ADGEM_API_KEY',
-        lootably:  'LOOTABLY_SECRET',
-        torox:     'TOROX_SECRET',
+        cpx: 'CPX_HASH_KEY',
+        adgem: 'ADGEM_API_KEY',
+        lootably: 'LOOTABLY_SECRET',
+        torox: 'TOROX_SECRET',
         primeearn: 'PRIMEEARN_SECRET',
-        ayet:      'AYET_SECRET',
-        adtowall:  'ADTOWALL_SECRET',
-        revu:      'REVU_SECRET',
+        ayet: 'AYET_SECRET',
+        adtowall: 'ADTOWALL_SECRET',
+        revu: 'REVU_SECRET',
       };
       pObj.secretConfigured = !!process.env[envSecretMap[p.id]];
       return pObj;
@@ -302,20 +302,20 @@ router.put('/offerwalls/:providerId', requirePermission('manage_offerwalls'), as
   try {
     const { enabled, conversionRatio } = req.body;
     const settings = await Settings.getSingleton();
-    
+
     const provider = settings.offerwallProviders.find(p => p.id === req.params.providerId);
     if (!provider) return res.status(404).json({ success: false, error: 'Provider not found' });
 
     if (enabled !== undefined) provider.enabled = Boolean(enabled);
     if (conversionRatio !== undefined) {
-       const ratio = Number(conversionRatio);
-       if (!isNaN(ratio) && ratio > 0) provider.conversionRatio = ratio;
+      const ratio = Number(conversionRatio);
+      if (!isNaN(ratio) && ratio > 0) provider.conversionRatio = ratio;
     }
 
     await settings.save();
-    
-    await createLog(req.dbUser._id, 'UPDATE_OFFERWALL', null, { 
-       providerId: provider.id, enabled, conversionRatio 
+
+    await createLog(req.dbUser._id, 'UPDATE_OFFERWALL', null, {
+      providerId: provider.id, enabled, conversionRatio
     });
 
     res.json({ success: true, provider });
@@ -348,7 +348,7 @@ router.get('/promo-codes', requirePermission('manage_offerwalls'), async (req, r
 router.post('/promo-codes', requirePermission('manage_offerwalls'), async (req, res) => {
   try {
     const { code, rewardCoins, maxUses, expiresAt } = req.body;
-    
+
     const newCode = new PromoCode({
       code: code.trim().toUpperCase(),
       rewardCoins: Number(rewardCoins),
@@ -356,7 +356,7 @@ router.post('/promo-codes', requirePermission('manage_offerwalls'), async (req, 
       expiresAt: expiresAt ? new Date(expiresAt) : null,
       createdBy: req.dbUser._id,
     });
-    
+
     await newCode.save();
     await createLog(req.dbUser._id, 'CREATE_PROMO', null, { code: newCode.code, rewardCoins });
 
@@ -376,7 +376,7 @@ router.put('/promo-codes/:id', requirePermission('manage_offerwalls'), async (re
 
     const promo = await PromoCode.findByIdAndUpdate(req.params.id, upd, { new: true });
     if (!promo) return res.status(404).json({ success: false, error: 'Promo not found' });
-    
+
     await createLog(req.dbUser._id, 'EDIT_PROMO', null, { codeId: promo._id, ...upd });
 
     res.json({ success: true, code: promo });
@@ -404,8 +404,22 @@ router.delete('/promo-codes/:id', requirePermission('manage_offerwalls'), async 
 
 router.get('/custom-offers', requirePermission('manage_offerwalls'), async (req, res) => {
   try {
-    const offers = await CustomOffer.find().sort({ createdAt: -1 });
-    res.json({ success: true, offers });
+    const offers = await CustomOffer.find().sort({ createdAt: -1 }).lean();
+    
+    const clickCounts = await require('../models/UserActivityLog').aggregate([
+      { $match: { actionType: 'click_offer', sourceType: 'featured_offer' } },
+      { $group: { _id: '$sourceId', count: { $sum: 1 } } }
+    ]);
+    
+    const clicksMap = {};
+    clickCounts.forEach(c => clicksMap[c._id.toString()] = c.count);
+    
+    const offersWithClicks = offers.map(o => ({
+      ...o,
+      clicks: clicksMap[o._id.toString()] || 0
+    }));
+
+    res.json({ success: true, offers: offersWithClicks });
   } catch (error) {
     res.status(500).json({ success: false, error: 'Failed to fetch custom offers' });
   }
@@ -418,34 +432,36 @@ router.post('/custom-offers', requirePermission('manage_offerwalls'), async (req
       title, description, rewardAmount, externalLink, trackingType, expirationDate: expirationDate || null
     });
     await newOffer.save();
-    res.status(201).json({ success: true, offer: newOffer });
-  } catch (error) {
-    res.status(500).json({ success: false, error: 'Failed to create custom offer' });
-  }
-});
+      await createLog(req.dbUser._id, 'CREATE_CUSTOM_OFFER', null, `Created custom offer: ${title}`);
+      res.status(201).json({ success: true, offer: newOffer });
+    } catch (error) {
+      res.status(500).json({ success: false, error: 'Failed to create custom offer' });
+    }
+  });
 
-router.put('/custom-offers/:id', requirePermission('manage_offerwalls'), async (req, res) => {
-  try {
-    const upd = { ...req.body };
-    const offer = await CustomOffer.findByIdAndUpdate(req.params.id, upd, { new: true });
-    if (!offer) return res.status(404).json({ success: false, error: 'Offer not found' });
-    res.json({ success: true, offer });
-  } catch (error) {
-    res.status(500).json({ success: false, error: 'Failed to update custom offer' });
-  }
-});
+  router.put('/custom-offers/:id', requirePermission('manage_offerwalls'), async (req, res) => {
+    try {
+      const upd = { ...req.body };
+      const offer = await CustomOffer.findByIdAndUpdate(req.params.id, upd, { new: true });
+      if (!offer) return res.status(404).json({ success: false, error: 'Offer not found' });
+      await createLog(req.dbUser._id, 'UPDATE_CUSTOM_OFFER', null, `Updated custom offer: ${offer.title} (Active: ${offer.isActive})`);
+      res.json({ success: true, offer });
+    } catch (error) {
+      res.status(500).json({ success: false, error: 'Failed to update custom offer' });
+    }
+  });
 
-router.delete('/custom-offers/:id', requirePermission('manage_offerwalls'), async (req, res) => {
-  try {
-    const offer = await CustomOffer.findByIdAndDelete(req.params.id);
-    if (!offer) return res.status(404).json({ success: false, error: 'Offer not found' });
-    res.json({ success: true });
-  } catch (error) {
-    res.status(500).json({ success: false, error: 'Failed to delete custom offer' });
-  }
-});
+  router.delete('/custom-offers/:id', requirePermission('manage_offerwalls'), async (req, res) => {
+    try {
+      const offer = await CustomOffer.findByIdAndDelete(req.params.id);
+      if (!offer) return res.status(404).json({ success: false, error: 'Offer not found' });
+      await createLog(req.dbUser._id, 'DELETE_CUSTOM_OFFER', null, `Deleted custom offer: ${offer.title}`);
+      res.json({ success: true });
+    } catch (error) {
+      res.status(500).json({ success: false, error: 'Failed to delete custom offer' });
+    }
+  });
 
-// GET all submissions
 router.get('/custom-offers/submissions/all', requirePermission('manage_offerwalls'), async (req, res) => {
   try {
     const submissions = await CustomOfferSubmission.find()
@@ -465,7 +481,7 @@ router.put('/custom-offers/submissions/:id', requirePermission('manage_offerwall
     const submission = await CustomOfferSubmission.findById(req.params.id)
       .populate('userId')
       .populate('offerId');
-      
+
     if (!submission) return res.status(404).json({ success: false, error: 'Submission not found' });
 
     if (submission.status !== 'pending') {
@@ -476,41 +492,38 @@ router.put('/custom-offers/submissions/:id', requirePermission('manage_offerwall
     if (adminNote) submission.adminNote = adminNote;
     await submission.save();
 
-    if (status === 'approved') {
-      // Credit the user
-      const amountNum = Number(submission.offerId.rewardAmount);
       const user = await User.findById(submission.userId._id);
-      user.walletBalance += amountNum;
-      await user.save();
 
-      await Transaction.create({
-        userId: user._id,
-        transactionType: 'offer_reward',
-        amount: amountNum,
-        balanceAfter: user.walletBalance,
-        description: `Offer Reward: ${submission.offerId.title}`,
-        status: 'completed',
-      });
+      if (status === 'approved') {
+        // Credit the user
+        const amountNum = Number(submission.offerId.rewardAmount);
+        user.walletBalance += amountNum;
+        await user.save();
+
+        await Transaction.create({
+          userId: user._id,
+          transactionType: 'offer_reward',
+          amount: amountNum,
+          balanceAfter: user.walletBalance,
+          description: `Offer Reward: ${submission.offerId.title}`,
+          status: 'completed',
+        });
+
+        await createLog(req.dbUser._id, 'APPROVE_CUSTOM_OFFER', user._id, `Approved submission for offer: ${submission.offerId.title}`);
+      } else if (status === 'rejected') {
+        await createLog(
+          req.dbUser._id,
+          'REJECT_CUSTOM_OFFER',
+          user._id,
+          `Rejected submission for offer: ${submission.offerId.title}. Reason: ${adminNote || 'No reason provided'}`
+        );
+      }
+
+      res.json({ success: true, submission });
+    } catch (error) {
+      res.status(500).json({ success: false, error: 'Failed to update submission' });
     }
-
-    res.json({ success: true, submission });
-  } catch (error) {
-    res.status(500).json({ success: false, error: 'Failed to update submission' });
-  }
-});
-
-// ----------------------------------------------------
-// STAFF SECTION (Requires Primary Admin)
-// ----------------------------------------------------
-
-router.get('/admins', requirePrimaryAdmin, async (req, res) => {
-  try {
-    const admins = await User.find({ role: 'admin' }).select('-__v');
-    res.json({ success: true, admins });
-  } catch (error) {
-    res.status(500).json({ success: false, error: 'Failed to fetch admins' });
-  }
-});
+  });
 
 router.post('/admins', requirePrimaryAdmin, async (req, res) => {
   try {
@@ -529,7 +542,7 @@ router.put('/admins/:id/permissions', requirePrimaryAdmin, async (req, res) => {
     const { permissions } = req.body;
     const adminToUpdate = await User.findById(req.params.id);
     if (!adminToUpdate) return res.status(404).json({ success: false, error: 'Admin not found' });
-    
+
     if (adminToUpdate.email === process.env.PRIMARY_ADMIN_EMAIL) {
       await createLog(req.dbUser._id, 'ATTEMPT_EDIT_PERMISSIONS_PRIMARY_ADMIN', adminToUpdate._id, { permissions });
       return res.status(403).json({ success: false, error: 'Cannot modify primary admin' });
@@ -610,6 +623,67 @@ router.get('/logs', requirePrimaryAdmin, async (req, res) => {
     res.json({ success: true, logs });
   } catch (error) {
     res.status(500).json({ success: false, error: 'Failed to fetch logs' });
+  }
+});
+
+// ----------------------------------------------------
+// CHARGEBACK SECTION
+// ----------------------------------------------------
+router.post('/chargebacks/:transactionId/process', requirePermission('manage_offerwalls'), async (req, res) => {
+  try {
+    const parentTx = await Transaction.findById(req.params.transactionId);
+    if (!parentTx) return res.status(404).json({ success: false, error: 'Transaction not found' });
+    if (parentTx.status === 'reversed') return res.status(400).json({ success: false, error: 'Transaction already reversed' });
+
+    // Reverse the parent transaction amount
+    await User.findByIdAndUpdate(parentTx.userId, {
+      $inc: { walletBalance: -Math.abs(parentTx.amount) }
+    });
+
+    parentTx.status = 'reversed';
+    await parentTx.save();
+
+    await createLog(req.dbUser._id, 'PROCESS_CHARGEBACK', parentTx.userId, {
+      txId: parentTx._id,
+      amount: -Math.abs(parentTx.amount),
+    });
+
+    // 2. Cascade reverse linked transactions (e.g. referrals, bonuses derived from this)
+    const linkedTxs = await Transaction.find({ linkedTransactionId: parentTx._id, status: { $ne: 'reversed' } });
+    for (const linkedTx of linkedTxs) {
+      if (linkedTx.transactionType === 'referral_reward') {
+        // If it was still on hold, just reverse and deduct from referralEarnings (not wallet balance)
+        if (linkedTx.status === 'hold') {
+          await User.findByIdAndUpdate(linkedTx.userId, {
+            $inc: { referralEarnings: -linkedTx.amount }
+          });
+        } else {
+          // If it was already completed (paid out), deduct from walletBalance AND referralEarnings
+          await User.findByIdAndUpdate(linkedTx.userId, {
+            $inc: { walletBalance: -linkedTx.amount, referralEarnings: -linkedTx.amount }
+          });
+        }
+      } else {
+        // Generic daily bonus or leaderboard refund derived from this offer
+        await User.findByIdAndUpdate(linkedTx.userId, {
+          $inc: { walletBalance: -linkedTx.amount }
+        });
+      }
+      
+      linkedTx.status = 'reversed';
+      await linkedTx.save();
+      
+      await createLog(req.dbUser._id, 'PROCESS_CHARGEBACK_CASCADED', linkedTx.userId, {
+        txId: linkedTx._id,
+        parentTxId: parentTx._id,
+        amount: -linkedTx.amount,
+      });
+    }
+
+    res.json({ success: true, message: 'Chargeback processed and cascaded', transaction: parentTx, linkedCount: linkedTxs.length });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ success: false, error: 'Failed to process chargeback' });
   }
 });
 

@@ -2,9 +2,9 @@ import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import toast from 'react-hot-toast';
-import { 
-  FiBox, FiToggleLeft, FiToggleRight, FiSave, 
-  FiAlertCircle, FiCheckCircle, FiLoader, FiAlertTriangle 
+import {
+  FiBox, FiToggleLeft, FiToggleRight, FiSave,
+  FiAlertCircle, FiCheckCircle, FiLoader, FiAlertTriangle
 } from 'react-icons/fi';
 
 const NumberInput = ({ value, onChange, min, max, step = 1, prefix, suffix, disabled }) => (
@@ -199,7 +199,7 @@ const AdminOfferwalls = () => {
       });
       const data = await res.json();
       if (!data.success) throw new Error(data.error);
-      
+
       setProviders(prev => prev.map(p => p.id === providerId ? { ...p, enabled, conversionRatio } : p));
       toast.success(`${providerId} updated!`);
     } catch (err) {
@@ -254,11 +254,11 @@ const AdminOfferwalls = () => {
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '1.25rem' }}>
         {providers.map(provider => (
-          <ProviderCard 
-            key={provider.id} 
-            provider={provider} 
-            onUpdate={updateProvider} 
-            loadingProvider={loadingProvider} 
+          <ProviderCard
+            key={provider.id}
+            provider={provider}
+            onUpdate={updateProvider}
+            loadingProvider={loadingProvider}
           />
         ))}
       </div>

@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
-import { FiLogOut, FiUser, FiSettings, FiZap, FiChevronDown, FiCreditCard } from 'react-icons/fi';
+import { FiLogOut, FiUser, FiSettings, FiZap, FiChevronDown, FiCreditCard, FiGrid } from 'react-icons/fi';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -103,6 +103,14 @@ const Header = () => {
 
                   <button
                     id="header-profile-link"
+                    onClick={() => { setIsDropdownOpen(false); navigate('/dashboard'); }}
+                    className="w-full text-left px-4 py-3 text-sm text-slate-300 hover:bg-white/[0.05] hover:text-white transition-colors flex items-center gap-3 border-b border-white/[0.04]"
+                  >
+                    <FiGrid className="text-violet-400" /> Dashboard
+                  </button>
+
+                  <button
+                    id="header-profile-link-nav"
                     onClick={() => { setIsDropdownOpen(false); navigate('/dashboard/profile'); }}
                     className="w-full text-left px-4 py-3 text-sm text-slate-300 hover:bg-white/[0.05] hover:text-white transition-colors flex items-center gap-3 border-b border-white/[0.04]"
                   >

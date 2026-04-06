@@ -13,6 +13,11 @@ const ACTION_META = {
   CREATE_ADMIN:         { label: 'Create Admin',        color: 'log-badge--info',    desc: 'New admin account created/promoted'  },
   REVOKE_ADMIN:         { label: 'Revoke Admin',        color: 'log-badge--danger',  desc: 'Admin privileges revoked'            },
   EDIT_PERMISSIONS:     { label: 'Edit Permissions',    color: 'log-badge--warning', desc: 'Admin permissions edited'            },
+  CREATE_CUSTOM_OFFER:  { label: 'Create Custom Offer', color: 'log-badge--info',    desc: 'Created a new custom offer'          },
+  UPDATE_CUSTOM_OFFER:  { label: 'Update Custom Offer', color: 'log-badge--warning', desc: 'Updated a custom offer'              },
+  DELETE_CUSTOM_OFFER:  { label: 'Delete Custom Offer', color: 'log-badge--danger',  desc: 'Deleted a custom offer'              },
+  APPROVE_CUSTOM_OFFER: { label: 'Approve Submission',  color: 'log-badge--success', desc: 'Approved custom offer proof'         },
+  REJECT_CUSTOM_OFFER:  { label: 'Reject Submission',   color: 'log-badge--danger',  desc: 'Rejected custom offer proof'         },
 };
 
 const ALL_ACTIONS = Object.keys(ACTION_META);
@@ -30,7 +35,14 @@ const fmt = (iso) => {
 const LogRow = ({ log }) => {
   const [open, setOpen] = useState(false);
   const meta = ACTION_META[log.action] || { label: log.action, color: 'log-badge--info', desc: '' };
-  const hasNote = !!(log.details?.reason || log.details?.note);
+  
+  let noteText = '';
+  if (typeof log.details === 'string') {
+    noteText = log.details;
+  } else if (log.details && (log.details.reason || log.details.note)) {
+    noteText = log.details.reason || log.details.note;
+  }
+  const hasNote = !!noteText;
 
   return (
     <>
@@ -68,8 +80,8 @@ const LogRow = ({ log }) => {
         </td>
         <td style={{ textAlign: 'right', paddingRight: '1rem', maxWidth: '220px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
           {hasNote ? (
-            <span style={{ marginRight: '0.8rem', fontStyle: 'italic', fontSize: '0.8rem', color: '#cbd5e1' }}>
-              {log.details.reason || log.details.note}
+            <span style={{ marginRight: '0.8rem', fontStyle: 'italic', fontSize: '0.8rem', color: '#cbd5e1' }} title={noteText}>
+              {noteText}
             </span>
           ) : (
             <span style={{ marginRight: '0.8rem', fontSize: '0.8rem', color: '#475569' }}>—</span>
@@ -88,7 +100,7 @@ const LogRow = ({ log }) => {
                     <FiMessageSquare size={10} /> Context / Reason
                   </span>
                   <p style={{ margin: 0, color: '#e2e8f0', fontSize: '0.85rem', lineHeight: '1.4' }}>
-                    {log.details.reason || log.details.note}
+                    {noteText}
                   </p>
                 </div>
               )}
@@ -134,7 +146,14 @@ const AdminLogs = () => {
 
   // Apply client-side search + action filter
   const visible = logs.filter(l => {
-    const hasNote = !!(l.details?.reason || l.details?.note);
+    let noteText = '';
+    if (typeof l.details === 'string') {
+      noteText = l.details;
+    } else if (l.details && (l.details.reason || l.details.note)) {
+      noteText = l.details.reason || l.details.note;
+    }
+    const hasNote = !!noteText;
+
     if (activeFilter === 'HAS_NOTE') return hasNote;
     const matchAction = activeFilter === 'ALL' || l.action === activeFilter;
     const q = search.toLowerCase();
@@ -144,8 +163,7 @@ const AdminLogs = () => {
       || l.targetUserId?.email?.toLowerCase().includes(q)
       || l.targetUserId?.displayName?.toLowerCase().includes(q)
       || l.action?.toLowerCase().includes(q)
-      || l.details?.reason?.toLowerCase().includes(q)
-      || l.details?.note?.toLowerCase().includes(q);
+      || noteText.toLowerCase().includes(q);
     return matchAction && matchSearch;
   });
 
