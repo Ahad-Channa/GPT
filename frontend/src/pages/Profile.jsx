@@ -5,9 +5,9 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   FiZap, FiStar, FiMail, FiCalendar, FiEdit2, FiCheck, FiX, FiShield,
   FiActivity, FiUser, FiArrowDownCircle, FiCheckCircle, FiClock,
-  FiInbox, FiLoader, FiTrendingUp, FiChevronDown, FiPlayCircle
+  FiInbox, FiLoader, FiTrendingUp, FiChevronDown, FiPlayCircle,
+  FiSend, FiExternalLink
 } from 'react-icons/fi';
-import { FeaturedOfferCard, FeaturedOfferModal } from '../components/offers/OfferCards';
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
@@ -218,18 +218,195 @@ const TabBtn = ({ active, onClick, icon: Icon, label }) => (
   </button>
 );
 
+// ── Clicked Offer Row (inline proof upload per offer)
+const ClickedOfferRow = ({ offer, token, onRefresh }) => {
+  const [open, setOpen] = useState(false);
+  const [proof, setProof] = useState('');
+  const [proofImage, setProofImage] = useState(null);
+  const [submitting, setSubmitting] = useState(false);
+  const [result, setResult] = useState(null);
+
+  const isRejected = offer.submissionStatus === 'rejected';
+  const iconEmoji = offer.icon && !offer.icon.startsWith('http') && !offer.icon.includes('/') ? offer.icon : null;
+  const iconUrl   = offer.coverImage || (offer.icon && !iconEmoji ? offer.icon : null);
+
+  const handleImage = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onloadend = () => setProofImage(reader.result);
+    reader.readAsDataURL(file);
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setSubmitting(true);
+    try {
+      const res = await fetch(`${API}/api/custom-offers/${offer._id}/submit`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ proofText: proof, proofImage }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setResult({ type: 'success', message: 'Proof submitted! Awaiting admin review.' });
+        setOpen(false);
+        onRefresh();
+      } else {
+        setResult({ type: 'error', message: data.error || 'Submission failed.' });
+      }
+    } catch {
+      setResult({ type: 'error', message: 'Network error. Please try again.' });
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  return (
+    <div className="px-6 py-4">
+      {/* Row header */}
+      <div className="flex items-center gap-3">
+        {/* Icon / cover thumb */}
+        <div className="w-10 h-10 rounded-xl overflow-hidden bg-gradient-to-br from-amber-900/30 to-indigo-900/30 flex-shrink-0 flex items-center justify-center border border-white/[0.07]">
+          {iconUrl ? (
+            <img src={iconUrl} alt={offer.title} className="w-full h-full object-cover" />
+          ) : iconEmoji ? (
+            <span className="text-xl">{iconEmoji}</span>
+          ) : (
+            <FiStar className="text-amber-400/60" />
+          )}
+        </div>
+
+        {/* Title + meta */}
+        <div className="flex-1 min-w-0">
+          <p className="text-sm font-semibold text-white truncate">{offer.title}</p>
+          <div className="flex items-center gap-2 mt-0.5">
+            <span className="text-[10px] font-mono text-amber-400">+{offer.rewardAmount?.toLocaleString()} Coins</span>
+            {isRejected && (
+              <span className="text-[10px] font-semibold text-rose-400 px-1.5 py-0.5 bg-rose-500/10 rounded-full border border-rose-500/20 animate-pulse">
+                Rejected — resubmit
+              </span>
+            )}
+          </div>
+        </div>
+
+        {/* Actions */}
+        <div className="flex items-center gap-2 flex-shrink-0">
+          {offer.externalLink && (
+            <a
+              href={offer.externalLink}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="p-1.5 rounded-lg text-slate-500 hover:text-indigo-300 hover:bg-white/[0.05] transition-colors"
+              title="Go to offer"
+            >
+              <FiExternalLink className="text-sm" />
+            </a>
+          )}
+          <button
+            onClick={() => { setOpen(o => !o); setResult(null); }}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+              open
+                ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
+                : 'bg-white/[0.05] text-slate-300 border border-white/[0.08] hover:border-amber-500/30 hover:text-amber-300'
+            }`}
+          >
+            <FiSend className="text-[11px]" />
+            {isRejected ? 'Resubmit Proof' : 'Submit Proof'}
+          </button>
+        </div>
+      </div>
+
+      {/* Rejection note */}
+      {isRejected && offer.adminNote && (
+        <p className="mt-2 ml-13 text-xs text-rose-400/80 italic pl-[52px]">
+          Admin note: "{offer.adminNote}"
+        </p>
+      )}
+
+      {/* Result banner */}
+      {result && (
+        <div className={`mt-3 ml-[52px] p-2.5 rounded-xl border text-xs font-medium ${
+          result.type === 'success'
+            ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400'
+            : 'bg-rose-500/10 border-rose-500/20 text-rose-400'
+        }`}>
+          {result.type === 'success' && <FiCheckCircle className="inline mr-1" />}
+          {result.message}
+        </div>
+      )}
+
+      {/* Inline proof form (expandable) */}
+      <AnimatePresence>
+        {open && (
+          <motion.form
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            onSubmit={handleSubmit}
+            className="overflow-hidden mt-3 ml-[52px]"
+          >
+            <div className="bg-slate-900/60 border border-white/[0.07] rounded-xl p-4 space-y-3">
+              <textarea
+                value={proof}
+                onChange={e => setProof(e.target.value)}
+                placeholder="Describe your completion (transaction ID, username, steps taken…)"
+                rows={3}
+                className="w-full bg-[#0b101e] border border-white/[0.08] rounded-xl px-3 py-2.5 text-white text-sm placeholder-slate-600 focus:outline-none focus:border-amber-500/40 focus:ring-1 focus:ring-amber-500/20 resize-none"
+              />
+
+              {/* Image upload */}
+              <label className="cursor-pointer flex items-center gap-2 py-2.5 px-3 border border-dashed border-white/[0.12] rounded-xl bg-[#0b101e] hover:bg-white/[0.03] transition-colors">
+                <FiSend className="text-amber-400/60 text-sm" />
+                <span className="text-xs text-slate-400 font-medium">
+                  {proofImage ? '✓ Image selected — click to change' : 'Attach screenshot (optional)'}
+                </span>
+                <input type="file" accept="image/*" onChange={handleImage} className="hidden" />
+              </label>
+
+              {proofImage && (
+                <div className="rounded-xl overflow-hidden border border-white/[0.08]">
+                  <img src={proofImage} alt="Proof preview" className="max-h-24 object-contain mx-auto" />
+                </div>
+              )}
+
+              <div className="flex gap-2 pt-1">
+                <button
+                  type="submit"
+                  disabled={submitting || (!proof.trim() && !proofImage)}
+                  className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 text-white font-bold text-xs shadow-lg shadow-amber-500/20 disabled:opacity-40 transition-all hover:shadow-amber-500/30"
+                >
+                  {submitting ? <FiLoader className="animate-spin" /> : <FiSend />}
+                  {submitting ? 'Sending…' : 'Send Proof'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setOpen(false)}
+                  className="px-4 py-2 rounded-xl border border-white/[0.08] text-slate-400 text-xs font-semibold hover:text-white hover:bg-white/[0.04] transition-colors"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </motion.form>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+};
+
 // ══════════════════════════════════════════════════════════════════
 const Profile = () => {
+
   const { currentUser, mongoUser, setMongoUser } = useAuth();
   const [isEditing,  setIsEditing]  = useState(false);
   const [editName,   setEditName]   = useState('');
   const [error,      setError]      = useState('');
   const [loading,    setLoading]    = useState(false);
-  const [activeTab,  setActiveTab]  = useState('profile'); // 'profile' | 'started_offers' | 'offers' | 'withdrawals'
+  const [activeTab,  setActiveTab]  = useState('started_offers');
   const [token,      setToken]      = useState(null);
   const [customOffers, setCustomOffers] = useState([]);
   const [loadingOffers, setLoadingOffers] = useState(false);
-  const [selectedStartedOffer, setSelectedStartedOffer] = useState(null);
 
   useEffect(() => {
     if (currentUser) currentUser.getIdToken().then(setToken);
@@ -297,189 +474,147 @@ const Profile = () => {
       <motion.div
         initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
-        className="max-w-5xl mx-auto w-full space-y-6"
+        className="max-w-5xl mx-auto w-full space-y-8"
       >
-        {/* Page Header */}
-        <div>
-          <p className="text-indigo-400 text-xs font-semibold tracking-widest uppercase mb-1">Account</p>
-          <h1 className="text-3xl font-bold font-display text-white">Your Profile</h1>
-        </div>
+        {/* ─── HERO HEADER ───────────────────────────────── */}
+        <div className="relative rounded-[2rem] overflow-hidden bg-[#0c101b] border border-white/[0.03] shadow-card pb-6">
+          {/* Cover Banner */}
+          <div className="h-40 sm:h-52 w-full bg-gradient-to-r from-indigo-900 via-indigo-600 to-violet-800 relative overflow-hidden">
+            <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI4IiBoZWlnaHQ9IjgiPgo8cmVjdCB3aWR0aD0iOCIgaGVpZ2h0PSI4IiBmaWxsPSIjZmZmIiBmaWxsLW9wYWNpdHk9IjAuMDUiLz4KPC9zdmc+')] opacity-20" />
+            <div className="absolute inset-0 bg-gradient-to-b from-transparent to-[#0c101b]/90" />
+          </div>
 
-        {/* ─── Tab Bar ─────────────────────────────────────── */}
-        <div className="flex flex-wrap gap-2 p-1 bg-white/[0.02] border border-white/[0.06] rounded-2xl w-fit">
-          <TabBtn active={activeTab === 'profile'}     onClick={() => setActiveTab('profile')}     icon={FiUser}           label="Profile" />
-          <TabBtn active={activeTab === 'started_offers'} onClick={() => setActiveTab('started_offers')} icon={FiPlayCircle} label="Started Offers" />
-          <TabBtn active={activeTab === 'clicks'}      onClick={() => setActiveTab('clicks')}      icon={FiZap}            label="Click History" />
-          <TabBtn active={activeTab === 'offers'}      onClick={() => setActiveTab('offers')}      icon={FiCheckCircle}    label="Offer History" />
-          <TabBtn active={activeTab === 'chargebacks'} onClick={() => setActiveTab('chargebacks')} icon={FiShield}         label="Chargebacks" />
-        </div>
-
-        {/* ─── Tab Content ─────────────────────────────────── */}
-        <AnimatePresence mode="wait">
-
-          {/* ══ PROFILE TAB ══ */}
-          {activeTab === 'profile' && (
-            <motion.div
-              key="profile"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -6 }}
-              className="grid grid-cols-1 md:grid-cols-12 gap-6"
-            >
-              {/* ─── Identity Card ──────────────────────────── */}
-              <div className="md:col-span-4 glass-card p-7 relative overflow-hidden">
-                <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-indigo-500 via-violet-500 to-transparent" />
-
-                {/* Avatar */}
-                <div className="w-20 h-20 rounded-2xl overflow-hidden border-2 border-white/10 mb-6 shadow-glow">
+          <div className="px-6 sm:px-10 relative">
+            {/* Overlapping Avatar & User Info */}
+            <div className="flex flex-col sm:flex-row gap-6 sm:items-end -mt-16 sm:-mt-20">
+              <div className="relative shrink-0">
+                <div className="w-28 h-28 sm:w-32 sm:h-32 rounded-[2rem] overflow-hidden border-4 border-[#0c101b] bg-[#111827] shadow-glow-lg z-10 relative">
                   <img
-                    src={currentUser?.photoURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=${mongoUser?.displayName || 'Felix'}`}
+                    src={currentUser?.photoURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=${mongoUser?.displayName || 'Avatar'}`}
                     alt="Avatar"
                     className="w-full h-full object-cover"
                   />
                 </div>
-
-                <p className="text-[10px] font-semibold text-slate-600 tracking-widest uppercase mb-2">Username</p>
-
-                {isEditing ? (
-                  <div className="flex flex-col mb-4">
-                    <div className="flex gap-2 mb-2">
-                      <input
-                        type="text"
-                        value={editName}
-                        onChange={(e) => setEditName(e.target.value)}
-                        className="flex-1 bg-white/[0.04] border border-white/[0.12] rounded-xl px-3 py-2 text-slate-100 text-sm outline-none focus:border-indigo-500/60 focus:ring-2 focus:ring-indigo-500/15 transition-all"
-                        placeholder="USERNAME"
-                        disabled={loading}
-                        autoFocus
-                      />
-                      <button
-                        onClick={handleSave}
-                        disabled={loading}
-                        title="Save"
-                        className="w-9 h-9 rounded-xl border border-white/[0.1] bg-white/[0.03] hover:bg-indigo-500/20 hover:border-indigo-500/40 text-indigo-400 transition-all flex items-center justify-center"
-                      >
-                        <FiCheck size={15} />
-                      </button>
-                      <button
-                        onClick={() => setIsEditing(false)}
-                        disabled={loading}
-                        title="Cancel"
-                        className="w-9 h-9 rounded-xl border border-white/[0.1] bg-white/[0.03] hover:bg-red-500/20 hover:border-red-500/40 text-red-400 transition-all flex items-center justify-center"
-                      >
-                        <FiX size={15} />
-                      </button>
-                    </div>
-                    {error && <p className="text-red-400 text-xs">{error}</p>}
-                  </div>
-                ) : (
-                  <div className="flex items-center justify-between group mb-4">
-                    <h2 className="text-xl font-bold font-display text-white">
-                      {mongoUser?.displayName || 'Anonymous'}
-                    </h2>
-                    <button
-                      onClick={handleEditClick}
-                      title="Edit Username"
-                      className="w-8 h-8 rounded-xl border border-white/[0.08] bg-transparent hover:bg-white/[0.05] hover:border-indigo-500/30 text-slate-500 hover:text-indigo-400 opacity-0 group-hover:opacity-100 transition-all flex items-center justify-center"
-                    >
-                      <FiEdit2 size={13} />
-                    </button>
-                  </div>
-                )}
-
-                <div className="h-px bg-white/[0.05] my-5" />
-
-                <div className="space-y-3">
-                  <div>
-                    <p className="text-[10px] font-semibold text-slate-600 tracking-widest uppercase mb-1">Email</p>
-                    <div className="flex items-center gap-2 text-slate-400 text-sm">
-                      <FiMail className="text-indigo-400 flex-shrink-0" />
-                      <span className="truncate">{currentUser?.email}</span>
-                    </div>
-                  </div>
-                  <div>
-                    <p className="text-[10px] font-semibold text-slate-600 tracking-widest uppercase mb-1">Member Since</p>
-                    <div className="flex items-center gap-2 text-slate-400 text-sm">
-                      <FiCalendar className="text-indigo-400 flex-shrink-0" />
-                      <span>
-                        {mongoUser?.createdAt
-                          ? new Date(mongoUser.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
-                          : 'N/A'}
-                      </span>
-                    </div>
-                  </div>
+                {/* VIP Level Ring / Badge */}
+                <div className="absolute -bottom-2 -right-2 bg-gradient-to-br from-amber-400 to-orange-500 text-[#0c101b] font-black text-xs px-3 py-1 rounded-xl border-4 border-[#0c101b] shadow-lg z-20">
+                  LVL {mongoUser?.vipLevel || 1}
                 </div>
               </div>
 
-              {/* ─── Stats Panel ────────────────────────────── */}
-              <div className="md:col-span-8 flex flex-col gap-6">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                  {/* Balance */}
-                  <div className="stat-card group">
-                    <div className="flex items-start justify-between mb-6">
-                      <p className="text-xs text-slate-500 font-semibold tracking-wide uppercase">Liquid Balance</p>
-                      <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center shadow-glow">
-                        <FiZap className="text-white text-sm" />
+              <div className="flex-1 pb-1 sm:pb-3">
+                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4">
+                  <div>
+                    {isEditing ? (
+                      <div className="flex flex-col mb-1">
+                        <div className="flex gap-2 mb-2">
+                          <input
+                            type="text"
+                            value={editName}
+                            onChange={(e) => setEditName(e.target.value)}
+                            className="w-full max-w-[200px] bg-white/[0.04] border border-white/[0.12] rounded-xl px-3 py-2 text-white text-sm outline-none focus:border-indigo-500/60 focus:ring-2 focus:ring-indigo-500/15 transition-all"
+                            placeholder="Username"
+                            disabled={loading}
+                            autoFocus
+                          />
+                          <button onClick={handleSave} disabled={loading} className="w-9 h-9 rounded-xl border border-white/[0.1] bg-white/[0.03] hover:bg-emerald-500/20 hover:border-emerald-500/40 text-emerald-400 transition-all flex items-center justify-center">
+                            <FiCheck size={15} />
+                          </button>
+                          <button onClick={() => setIsEditing(false)} disabled={loading} className="w-9 h-9 rounded-xl border border-white/[0.1] bg-white/[0.03] hover:bg-red-500/20 hover:border-red-500/40 text-red-400 transition-all flex items-center justify-center">
+                            <FiX size={15} />
+                          </button>
+                        </div>
+                        {error && <p className="text-red-400 text-xs">{error}</p>}
                       </div>
-                    </div>
-                    <p className="text-3xl font-bold text-white font-mono">
-                      {mongoUser?.walletBalance?.toFixed(2) || '0.00'}
-                    </p>
-                    <p className="text-indigo-400 text-xs font-mono tracking-widest mt-1">PLATFORM POINTS</p>
-                  </div>
-
-                  {/* VIP */}
-                  <div className="stat-card group">
-                    <div className="flex items-start justify-between mb-6">
-                      <p className="text-xs text-slate-500 font-semibold tracking-wide uppercase">Platform Rank</p>
-                      <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center" style={{ boxShadow: '0 6px 16px rgba(245,158,11,0.2)' }}>
-                        <FiStar className="text-white text-sm" />
+                    ) : (
+                      <div className="flex items-center gap-3 group">
+                        <h1 className="text-2xl sm:text-3xl font-black text-white font-display tracking-tight hover:text-indigo-200 transition-colors">
+                          {mongoUser?.displayName || 'Anonymous'}
+                        </h1>
+                        <button
+                          onClick={handleEditClick}
+                          title="Edit Username"
+                          className="w-8 h-8 rounded-xl border border-white/[0.08] bg-white/[0.02] hover:bg-white/[0.08] text-slate-400 hover:text-white transition-all flex items-center justify-center opacity-0 group-hover:opacity-100"
+                        >
+                          <FiEdit2 size={13} />
+                        </button>
                       </div>
-                    </div>
-                    <p className="text-3xl font-bold text-white font-mono">
-                      <span className="text-sm text-amber-400 font-semibold mr-1">LVL</span>
-                      {mongoUser?.vipLevel || 1}
-                    </p>
-                    <p className="text-amber-400/70 text-xs font-mono tracking-widest mt-1">VIP STATUS</p>
-                  </div>
-                </div>
-
-                {/* Streak */}
-                <div className="glass-card p-5 flex items-center gap-4">
-                  <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center" style={{ boxShadow: '0 6px 16px rgba(124,58,237,0.2)' }}>
-                    <FiActivity className="text-white text-base" />
-                  </div>
-                  <div className="flex-1">
-                    <p className="text-xs font-semibold text-slate-500 tracking-widest uppercase mb-0.5">Daily Streak</p>
-                    <p className="text-base font-bold text-white">
-                      {mongoUser?.dailyBonusStreak || 0} Day{(mongoUser?.dailyBonusStreak || 0) !== 1 ? 's' : ''}
-                    </p>
-                  </div>
-                  <span className={`px-3 py-1 rounded-xl text-xs font-bold border ${
-                    (mongoUser?.dailyBonusStreak || 0) >= 7
-                      ? 'bg-amber-500/10 text-amber-400 border-amber-500/20'
-                      : 'bg-violet-500/10 text-violet-400 border-violet-500/20'
-                  }`}>
-                    {(mongoUser?.dailyBonusStreak || 0) >= 7 ? '🔥 Max Streak' : 'Active'}
-                  </span>
-                </div>
-
-                {/* Account Status */}
-                <div className="glass-card p-6 flex items-center justify-between">
-                  <div className="flex items-center gap-4">
-                    <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center" style={{ boxShadow: '0 6px 16px rgba(16,185,129,0.2)' }}>
-                      <FiShield className="text-white text-base" />
-                    </div>
-                    <div>
-                      <p className="text-xs font-semibold text-slate-500 tracking-widest uppercase mb-0.5">Account Status</p>
-                      <p className="text-sm font-semibold text-white">Verified & Active</p>
+                    )}
+                    <div className="flex items-center gap-4 mt-2 text-xs sm:text-sm text-slate-400 font-medium">
+                      <div className="flex items-center gap-1.5"><FiMail className="text-indigo-400" /> {currentUser?.email}</div>
+                      <div className="flex items-center gap-1.5"><FiCalendar className="text-indigo-400" /> Joined {mongoUser?.createdAt ? new Date(mongoUser.createdAt).toLocaleDateString('en-US', { month: 'short', year: 'numeric' }) : 'N/A'}</div>
                     </div>
                   </div>
-                  <span className="badge-emerald">Active</span>
+                  {/* Account Status Pill */}
+                  <div className="hidden sm:inline-flex items-center gap-2 px-3 py-1.5 bg-emerald-500/10 border border-emerald-500/20 rounded-full text-emerald-400 text-xs font-bold uppercase tracking-wider">
+                    <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" /> Verified
+                  </div>
                 </div>
               </div>
-            </motion.div>
-          )}
+            </div>
+
+            {/* ─── Glass Ribbon Stats ─────────────────────── */}
+            <div className="mt-8 grid grid-cols-2 lg:grid-cols-4 gap-3">
+              {/* Balance */}
+              <div className="bg-white/[0.02] border border-white/[0.05] rounded-2xl p-4 flex items-center gap-4 hover:border-indigo-500/30 transition-colors">
+                <div className="w-10 h-10 rounded-[14px] bg-gradient-to-br from-indigo-500 to-blue-600 flex items-center justify-center shadow-[0_0_15px_rgba(79,70,229,0.3)] shrink-0">
+                  <FiZap className="text-white text-lg" />
+                </div>
+                <div>
+                  <p className="text-[10px] sm:text-xs font-bold text-slate-500 tracking-widest uppercase mb-0.5">Liquid Balance</p>
+                  <p className="text-lg sm:text-xl font-black text-white font-mono">{mongoUser?.walletBalance?.toFixed(2) || '0.00'}</p>
+                </div>
+              </div>
+              
+              {/* VIP Level */}
+              <div className="bg-white/[0.02] border border-white/[0.05] rounded-2xl p-4 flex items-center gap-4 hover:border-amber-500/30 transition-colors">
+                <div className="w-10 h-10 rounded-[14px] bg-gradient-to-br from-amber-500 to-orange-500 flex items-center justify-center shadow-[0_0_15px_rgba(245,158,11,0.3)] shrink-0">
+                  <FiStar className="text-white text-lg" />
+                </div>
+                <div>
+                  <p className="text-[10px] sm:text-xs font-bold text-slate-500 tracking-widest uppercase mb-0.5">Platform Rank</p>
+                  <p className="text-lg sm:text-xl font-black text-white font-mono">
+                    <span className="text-amber-400 text-sm font-semibold mr-1">LVL</span>{mongoUser?.vipLevel || 1}
+                  </p>
+                </div>
+              </div>
+
+              {/* Streak */}
+              <div className="bg-white/[0.02] border border-white/[0.05] rounded-2xl p-4 flex items-center gap-4 hover:border-rose-500/30 transition-colors">
+                <div className="w-10 h-10 rounded-[14px] bg-gradient-to-br from-rose-500 to-pink-600 flex items-center justify-center shadow-[0_0_15px_rgba(244,63,94,0.3)] shrink-0">
+                  <FiActivity className="text-white text-lg" />
+                </div>
+                <div>
+                  <p className="text-[10px] sm:text-xs font-bold text-slate-500 tracking-widest uppercase mb-0.5">Daily Streak</p>
+                  <p className="text-lg sm:text-xl font-black text-white font-mono">{mongoUser?.dailyBonusStreak || 0} <span className="text-sm font-semibold text-slate-300">Days</span></p>
+                </div>
+              </div>
+
+              {/* Status */}
+              <div className="bg-white/[0.02] border border-white/[0.05] rounded-2xl p-4 flex items-center gap-4 hover:border-emerald-500/30 transition-colors">
+                <div className="w-10 h-10 rounded-[14px] bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center shadow-[0_0_15px_rgba(16,185,129,0.3)] shrink-0">
+                  <FiShield className="text-white text-lg" />
+                </div>
+                <div>
+                  <p className="text-[10px] sm:text-xs font-bold text-slate-500 tracking-widest uppercase mb-0.5">Security</p>
+                  <p className="text-[13px] sm:text-sm font-bold text-emerald-400">Protected</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* ─── Segmented Pill Navigation ─────────────────── */}
+        <div className="flex p-1.5 bg-[#080b14] border border-white/[0.05] rounded-2xl w-full overflow-x-auto custom-scrollbar">
+          <div className="flex gap-1 min-w-max">
+            <TabBtn active={activeTab === 'started_offers'} onClick={() => setActiveTab('started_offers')} icon={FiPlayCircle} label="Started Offers" />
+            <TabBtn active={activeTab === 'clicks'}      onClick={() => setActiveTab('clicks')}      icon={FiZap}            label="Click History" />
+            <TabBtn active={activeTab === 'offers'}      onClick={() => setActiveTab('offers')}      icon={FiCheckCircle}    label="Offer History" />
+            <TabBtn active={activeTab === 'chargebacks'} onClick={() => setActiveTab('chargebacks')} icon={FiShield}         label="Chargebacks" />
+          </div>
+        </div>
+
+        {/* ─── Tab Content ─────────────────────────────────── */}
+        <AnimatePresence mode="wait">
 
           {/* ══ MOUSE CLICKS TAB ══ */}
           {activeTab === 'clicks' && (
@@ -589,68 +724,54 @@ const Profile = () => {
           )}
 
 
-          {/* ══ STARTED OFFERS TAB ══ */}
+          {/* ══ STARTED OFFERS (CLICKED OFFERS) TAB ══ */}
           {activeTab === 'started_offers' && (
             <motion.div
               key="started_offers"
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -6 }}
-              className="glass-card p-6"
+              className="glass-card overflow-hidden"
             >
-              <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center justify-between px-6 py-5 border-b border-white/[0.06] bg-gradient-to-r from-amber-500/[0.04] to-transparent">
                 <div>
                   <h2 className="text-base font-bold font-display text-white flex items-center gap-2">
-                    <FiPlayCircle className="text-amber-400" /> Active Offers
+                    <FiPlayCircle className="text-amber-400" /> Clicked Offers
                   </h2>
-                  <p className="text-xs text-slate-500 mt-0.5">Submit proof for featured offers you have started.</p>
+                  <p className="text-xs text-slate-500 mt-0.5">Featured offers you have started — submit proof to earn your reward.</p>
                 </div>
               </div>
 
               {loadingOffers ? (
                 <div className="flex justify-center py-10"><FiLoader className="animate-spin text-2xl text-indigo-500" /></div>
-              ) : (
-                (() => {
-                  const startedOffers = customOffers.filter(o => o.submissionStatus === 'started' || o.submissionStatus === 'rejected');
-                  if (startedOffers.length === 0) {
-                    return (
-                      <div className="py-14 flex flex-col items-center gap-3 text-center">
-                        <div className="w-12 h-12 rounded-2xl bg-white/[0.03] border border-white/[0.07] flex items-center justify-center">
-                          <FiInbox className="text-slate-600 text-xl" />
-                        </div>
-                        <p className="text-slate-500 text-sm">No active offers. Browse the Earn page to start new offers!</p>
-                      </div>
-                    );
-                  }
+              ) : (() => {
+                const startedOffers = customOffers.filter(o => o.submissionStatus === 'started' || o.submissionStatus === 'rejected');
+                if (startedOffers.length === 0) {
                   return (
-                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                      {startedOffers.map(offer => (
-                        <FeaturedOfferCard
-                          key={offer._id}
-                          offer={offer}
-                          onClick={() => setSelectedStartedOffer(offer)}
-                        />
-                      ))}
+                    <div className="py-14 flex flex-col items-center gap-3 text-center">
+                      <div className="w-12 h-12 rounded-2xl bg-white/[0.03] border border-white/[0.07] flex items-center justify-center">
+                        <FiInbox className="text-slate-600 text-xl" />
+                      </div>
+                      <p className="text-slate-500 text-sm">No clicked offers yet. Browse the Earn page to start new offers!</p>
                     </div>
                   );
-                })()
-              )}
+                }
+                return (
+                  <div className="divide-y divide-white/[0.04]">
+                    {startedOffers.map(offer => (
+                      <ClickedOfferRow
+                        key={offer._id}
+                        offer={offer}
+                        token={token}
+                        onRefresh={fetchCustomOffers}
+                      />
+                    ))}
+                  </div>
+                );
+              })()}
             </motion.div>
           )}
 
-        </AnimatePresence>
-
-        <AnimatePresence>
-          {selectedStartedOffer && (
-            <FeaturedOfferModal
-              offer={selectedStartedOffer}
-              onClose={() => setSelectedStartedOffer(null)}
-              onProofSubmitted={() => {
-                fetchCustomOffers();
-                setSelectedStartedOffer(null);
-              }}
-            />
-          )}
         </AnimatePresence>
       </motion.div>
     </DashboardLayout>

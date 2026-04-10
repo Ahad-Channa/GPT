@@ -9,6 +9,7 @@ const customOfferSchema = new mongoose.Schema(
     isActive: { type: Boolean, default: true },
     expirationDate: { type: Date, default: null },
     icon: { type: String, default: null },
+    coverImage: { type: String, default: null }, // URL displayed as card cover image
     trackingType: { 
       type: String, 
       enum: ['click', 'manual_approval'], 

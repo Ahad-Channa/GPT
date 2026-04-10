@@ -18,7 +18,7 @@ const Sidebar = () => {
     { name: 'Offers', icon: <FiTarget />, path: '/dashboard/offers' },
     { name: 'Withdraw', icon: <FiRepeat />, path: '/dashboard/withdraw' },
     { name: 'Rewards', icon: <FiGift />, path: '/dashboard/rewards' },
-    { name: 'Leaders', icon: <FiAward />, path: '/dashboard/leaders', badge: 'LIVE' },
+    { name: 'Leaderboard', icon: <FiAward />, path: '/dashboard/leaderboard', badge: 'LIVE' },
     { name: 'Coupons', icon: <FiTag />, path: '/dashboard/coupons' },
     { name: 'Affiliates', icon: <FiUsers />, path: '/dashboard/affiliates' },
     { name: 'Support', icon: <FiHelpCircle />, path: '/dashboard/faq' },

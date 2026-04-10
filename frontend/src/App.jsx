@@ -7,6 +7,7 @@ import Landing from './pages/Landing';
 import Profile from './pages/Profile';
 import Wallet from './pages/Wallet';
 import Earn from './pages/Earn';
+import Leaderboard from './pages/Leaderboard';
 import AdminLayout from './pages/admin/AdminLayout';
 import AdminOverview from './pages/admin/AdminOverview';
 import AdminUsers from './pages/admin/AdminUsers';
@@ -17,6 +18,7 @@ import AdminSettings from './pages/admin/AdminSettings';
 import AdminOfferwalls from './pages/admin/AdminOfferwalls';
 import AdminPromoCodes from './pages/admin/AdminPromoCodes';
 import AdminCustomOffers from './pages/admin/AdminCustomOffers';
+import AdminLeaderboard from './pages/admin/AdminLeaderboard';
 
 const PrivateRoute = ({ children }) => {
   const { currentUser } = useAuth();
@@ -83,6 +85,14 @@ function App() {
           </PrivateRoute>
         } 
       />
+      <Route 
+        path="/dashboard/leaderboard" 
+        element={
+          <PrivateRoute>
+            <Leaderboard />
+          </PrivateRoute>
+        } 
+      />
       
       {/* Admin Routes */}
       <Route 
@@ -100,6 +110,7 @@ function App() {
         <Route path="offerwalls" element={<AdminOfferwalls />} />
         <Route path="promocodes" element={<AdminPromoCodes />} />
         <Route path="featured-offers" element={<AdminCustomOffers />} />
+        <Route path="leaderboard" element={<AdminLeaderboard />} />
         <Route path="logs" element={<AdminLogs />} />
         <Route path="settings" element={<AdminSettings />} />
       </Route>

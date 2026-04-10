@@ -24,7 +24,14 @@ const Badge = ({ status }) => {
   );
 };
 
-// ── Create Offer Modal ────────────────────────────────────────────────────────
+const PRESET_ICONS = [
+  '🎮', '🏆', '💰', '🎯', '🎁', '💎', '🔥', '⚡',
+  '🚀', '📱', '🛒', '🎵', '💪', '🌟', '🎲', '📺',
+];
+
+// Returns true if the icon value is a URL/image path, false if emoji/text
+const isIconUrl = (icon) => icon && (icon.startsWith('http') || icon.startsWith('data:') || icon.includes('/') || icon.startsWith('fa-'));
+
 const CreateOfferModal = ({ onClose, onCreated, token }) => {
   const [form, setForm] = useState({
     title: '',
@@ -34,6 +41,7 @@ const CreateOfferModal = ({ onClose, onCreated, token }) => {
     trackingType: 'manual_approval',
     expirationDate: '',
     icon: '',
+    coverImage: '',
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -120,16 +128,56 @@ const CreateOfferModal = ({ onClose, onCreated, token }) => {
             />
           </div>
 
-          {/* Icon URL */}
+          {/* Icon Picker */}
           <div>
-            <label className="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Icon / Image URL</label>
+            <label className="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-2">Icon</label>
+            {/* Preset grid */}
+            <div className="grid grid-cols-8 gap-1.5 p-2 bg-slate-900 border border-white/[0.08] rounded-xl mb-2">
+              {PRESET_ICONS.map((emoji) => (
+                <button
+                  key={emoji}
+                  type="button"
+                  onClick={() => setForm(f => ({ ...f, icon: f.icon === emoji ? '' : emoji }))}
+                  className={`h-9 rounded-lg text-xl flex items-center justify-center transition-all ${
+                    form.icon === emoji
+                      ? 'bg-amber-500/30 border border-amber-500/50 scale-110 shadow-[0_0_8px_rgba(245,158,11,0.3)]'
+                      : 'hover:bg-white/[0.06] border border-transparent'
+                  }`}
+                  title={emoji}
+                >
+                  {emoji}
+                </button>
+              ))}
+            </div>
+            {/* Custom URL override */}
+            <div className="relative">
+              <input
+                type="text"
+                value={isIconUrl(form.icon) ? form.icon : ''}
+                onChange={(e) => setForm(f => ({ ...f, icon: e.target.value }))}
+                placeholder="Or paste an image URL to override..."
+                className="w-full bg-slate-900 border border-white/[0.08] rounded-xl px-3 py-2 text-white text-sm placeholder-slate-600 focus:outline-none focus:border-amber-500/40 focus:ring-1 focus:ring-amber-500/20"
+              />
+            </div>
+          </div>
+
+          {/* Cover Image URL */}
+          <div>
+            <label className="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">
+              Cover Image URL <span className="normal-case text-slate-600 font-normal">(shown on card — recommended)</span>
+            </label>
             <input
               type="text"
-              value={form.icon}
-              onChange={set('icon')}
-              placeholder="e.g. https://.../icon.png or fa-solid fa-gamepad"
+              value={form.coverImage}
+              onChange={set('coverImage')}
+              placeholder="https://.../banner.jpg"
               className="w-full bg-slate-900 border border-white/[0.08] rounded-xl px-3 py-2 text-white text-sm placeholder-slate-600 focus:outline-none focus:border-amber-500/40 focus:ring-1 focus:ring-amber-500/20"
             />
+            {form.coverImage && (
+              <div className="mt-2 rounded-xl overflow-hidden border border-white/[0.08] h-20">
+                <img src={form.coverImage} alt="Preview" className="w-full h-full object-cover" onError={(e) => e.target.style.display='none'} />
+              </div>
+            )}
           </div>
 
           {/* Reward + External Link (2 cols) */}

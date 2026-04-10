@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
-import { FiLogOut, FiUser, FiSettings, FiZap, FiChevronDown, FiCreditCard, FiGrid, FiLock, FiUnlock, FiClock, FiCheckCircle } from 'react-icons/fi';
+import { FiLogOut, FiUser, FiSettings, FiZap, FiChevronDown, FiCreditCard, FiGrid, FiLock, FiUnlock, FiClock, FiCheckCircle, FiTrendingUp } from 'react-icons/fi';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -74,7 +74,10 @@ const DailyBonusChip = () => {
     return (
       <div className="hidden lg:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-sm">
         <FiClock className="text-emerald-400 text-xs" />
-        <span className="text-emerald-300 text-[11px] font-mono tracking-widest">{timeLeft || '...'}</span>
+        <div className="flex flex-col leading-none">
+          <span className="text-[9px] text-emerald-500/70 font-semibold uppercase tracking-widest">Daily Bonus</span>
+          <span className="text-emerald-300 text-[11px] font-mono tracking-widest">{timeLeft || '...'}</span>
+        </div>
       </div>
     );
   }
@@ -87,9 +90,12 @@ const DailyBonusChip = () => {
         className="hidden lg:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-amber-500/20 border border-amber-500/40 text-sm hover:bg-amber-500/30 transition-all shadow-glow disabled:opacity-50"
       >
         <FiUnlock className="text-amber-400 text-xs animate-pulse" />
-        <span className="text-amber-400 text-[11px] font-bold tracking-widest uppercase">
-          {claiming ? 'WAIT...' : 'CLAIM'}
-        </span>
+        <div className="flex flex-col leading-none">
+          <span className="text-[9px] text-amber-500/70 font-semibold uppercase tracking-widest">Daily Bonus</span>
+          <span className="text-amber-400 text-[11px] font-bold tracking-widest uppercase">
+            {claiming ? 'WAIT...' : 'CLAIM NOW'}
+          </span>
+        </div>
       </button>
     );
   }
@@ -98,20 +104,23 @@ const DailyBonusChip = () => {
 
   return (
     <div className="hidden lg:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white/[0.04] border border-white/[0.07] text-sm group relative">
-      <FiLock className="text-slate-400 text-xs" />
-      <div className="w-16 h-1.5 bg-white/10 rounded-full overflow-hidden">
-        <div 
-          className="bg-indigo-400 h-full rounded-full transition-all duration-1000"
-          style={{ width: `${progressPercent}%` }}
-        />
+      <FiLock className="text-slate-400 text-xs flex-shrink-0" />
+      <div className="flex flex-col leading-none gap-1">
+        <span className="text-[9px] text-slate-500 font-semibold uppercase tracking-widest">Daily Bonus</span>
+        <div className="w-16 h-1.5 bg-white/10 rounded-full overflow-hidden">
+          <div 
+            className="bg-indigo-400 h-full rounded-full transition-all duration-1000"
+            style={{ width: `${progressPercent}%` }}
+          />
+        </div>
       </div>
       
       {/* Tooltip */}
-      <div className="absolute top-10 right-0 w-48 p-3 rounded-xl bg-[#0b101e] border border-white/[0.08] shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">
-        <p className="text-xs text-slate-300 mb-2">Earn <span className="font-bold text-white">{status.required - status.earned}</span> more coins today to unlock your daily bonus.</p>
+      <div className="absolute top-11 right-0 w-52 p-3 rounded-xl bg-[#0b101e] border border-white/[0.08] shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">
+        <p className="text-xs text-slate-300 mb-2">Earn <span className="font-bold text-white">{status.required - status.earned}</span> more coins today to unlock your Daily Bonus.</p>
         <div className="flex justify-between items-center text-[10px] font-mono text-slate-400">
-          <span>{status.earned}</span>
-          <span>{status.required}</span>
+          <span>{status.earned} earned</span>
+          <span>{status.required} needed</span>
         </div>
       </div>
     </div>
@@ -158,7 +167,15 @@ const Header = () => {
 
           <DailyBonusChip />
 
-          {/* Balance Chip — click to go to Wallet */}
+          {/* Leaderboard Chip */}
+          <button
+            id="header-leaderboard-chip"
+            onClick={() => navigate('/dashboard/leaderboard')}
+            className="hidden lg:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white/[0.04] border border-white/[0.07] text-sm hover:bg-indigo-500/[0.08] hover:border-indigo-500/30 transition-all"
+          >
+            <FiTrendingUp className="text-indigo-400 text-xs" />
+            <span className="text-[9px] text-slate-500 font-semibold uppercase tracking-widest">Leaderboard</span>
+          </button>
           <button
             id="header-balance-chip"
             onClick={() => navigate('/dashboard/wallet')}

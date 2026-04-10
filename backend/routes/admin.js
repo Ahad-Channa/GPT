@@ -427,9 +427,12 @@ router.get('/custom-offers', requirePermission('manage_offerwalls'), async (req,
 
 router.post('/custom-offers', requirePermission('manage_offerwalls'), async (req, res) => {
   try {
-    const { title, description, rewardAmount, externalLink, trackingType, expirationDate } = req.body;
+    const { title, description, rewardAmount, externalLink, trackingType, expirationDate, icon, coverImage } = req.body;
     const newOffer = new CustomOffer({
-      title, description, rewardAmount, externalLink, trackingType, expirationDate: expirationDate || null
+      title, description, rewardAmount, externalLink, trackingType,
+      expirationDate: expirationDate || null,
+      icon: icon || null,
+      coverImage: coverImage || null,
     });
     await newOffer.save();
       await createLog(req.dbUser._id, 'CREATE_CUSTOM_OFFER', null, `Created custom offer: ${title}`);
@@ -684,6 +687,89 @@ router.post('/chargebacks/:transactionId/process', requirePermission('manage_off
   } catch (error) {
     console.error(error);
     res.status(500).json({ success: false, error: 'Failed to process chargeback' });
+  }
+});
+
+// ----------------------------------------------------
+// LEADERBOARD SECTION
+// ----------------------------------------------------
+const LeaderboardCycle = require('../models/Leaderboard');
+const { resetLeaderboard } = require('./leaderboard');
+
+// GET leaderboard config
+router.get('/leaderboard-config', requirePrimaryAdmin, async (req, res) => {
+  try {
+    const settings = await Settings.getSingleton();
+    res.json({ success: true, leaderboardConfig: settings.leaderboardConfig });
+  } catch (error) {
+    res.status(500).json({ success: false, error: 'Failed to fetch leaderboard config' });
+  }
+});
+
+// PUT update leaderboard config (enable/disable + rewards + visible/rewarded ranks)
+router.put('/leaderboard-config', requirePrimaryAdmin, async (req, res) => {
+  try {
+    const { daily, weekly, monthly } = req.body;
+    const settings = await Settings.getSingleton();
+
+    ['daily', 'weekly', 'monthly'].forEach(period => {
+      const incoming = req.body[period];
+      if (!incoming) return;
+      if (incoming.enabled !== undefined)       settings.leaderboardConfig[period].enabled       = Boolean(incoming.enabled);
+      if (incoming.visibleSlots !== undefined)   settings.leaderboardConfig[period].visibleSlots   = Math.max(5, Math.min(100, Number(incoming.visibleSlots) || 25));
+      if (incoming.rewardedRanks !== undefined)  settings.leaderboardConfig[period].rewardedRanks  = Math.max(0, Math.min(100, Number(incoming.rewardedRanks) || 3));
+      if (incoming.rewardTiers !== undefined && Array.isArray(incoming.rewardTiers)) {
+        settings.leaderboardConfig[period].rewardTiers = incoming.rewardTiers.map(v => Math.max(0, Number(v) || 0));
+      }
+    });
+
+    settings.markModified('leaderboardConfig');
+    await settings.save();
+
+    await createLog(req.dbUser._id, 'UPDATE_LEADERBOARD_CONFIG', null, { daily, weekly, monthly });
+
+    res.json({ success: true, leaderboardConfig: settings.leaderboardConfig });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ success: false, error: 'Failed to update leaderboard config' });
+  }
+});
+
+// POST manually trigger a leaderboard reset
+router.post('/leaderboard-reset/:period', requirePrimaryAdmin, async (req, res) => {
+  try {
+    const { period } = req.params;
+    if (!['daily', 'weekly', 'monthly'].includes(period)) {
+      return res.status(400).json({ success: false, error: 'Invalid period' });
+    }
+    const result = await resetLeaderboard(period);
+    await createLog(req.dbUser._id, 'MANUAL_LEADERBOARD_RESET', null, { period, result });
+    res.json({ success: true, result });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ success: false, error: 'Failed to reset leaderboard' });
+  }
+});
+
+// GET leaderboard history (past cycles)
+router.get('/leaderboard-history', requirePrimaryAdmin, async (req, res) => {
+  try {
+    const { period, page = 1, limit = 20 } = req.query;
+    const query = { status: 'completed' };
+    if (period && ['daily', 'weekly', 'monthly'].includes(period)) query.period = period;
+
+    const [cycles, total] = await Promise.all([
+      LeaderboardCycle.find(query)
+        .sort({ cycleEnd: -1 })
+        .skip((parseInt(page) - 1) * parseInt(limit))
+        .limit(parseInt(limit))
+        .lean(),
+      LeaderboardCycle.countDocuments(query),
+    ]);
+
+    res.json({ success: true, cycles, total, totalPages: Math.ceil(total / parseInt(limit)) });
+  } catch (error) {
+    res.status(500).json({ success: false, error: 'Failed to fetch leaderboard history' });
   }
 });
 
