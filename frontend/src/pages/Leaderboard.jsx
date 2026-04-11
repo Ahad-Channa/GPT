@@ -71,7 +71,7 @@ function useCountdown(targetIso) {
 }
 
 // ─── Single leaderboard row ───────────────────────────────────────────────────
-function RankRow({ entry, rank, currentUserId, color }) {
+function RankRow({ entry, rank, currentUserId, color, reward }) {
   const isMe = entry.userId === currentUserId || entry.userId?.toString() === currentUserId?.toString();
   const medal = rank <= 3 ? MEDALS[rank - 1] : null;
   const medalColor = rank <= 3 ? MEDAL_COLORS[rank - 1] : color;
@@ -114,7 +114,7 @@ function RankRow({ entry, rank, currentUserId, color }) {
       </div>
 
       {/* Name + coins */}
-      <div style={{ flex: 1, minWidth: 0 }}>
+      <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: '2px' }}>
         <div style={{
           fontSize: '14px', fontWeight: 600,
           color: isMe ? color : '#e2e8f0',
@@ -130,6 +130,11 @@ function RankRow({ entry, rank, currentUserId, color }) {
             }}>YOU</span>
           )}
         </div>
+        {reward > 0 && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '11px', color: '#fbbf24', fontWeight: 600 }}>
+            <FiAward style={{ fontSize: '12px' }} /> Prize: {reward.toLocaleString()} coins
+          </div>
+        )}
       </div>
 
       {/* Coins earned */}
@@ -198,15 +203,19 @@ function PeriodPanel({ period, data, currentUserId }) {
           </div>
         ) : (
           <motion.div variants={container} initial="hidden" animate="show" style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-            {rankings.map((entry, i) => (
-              <RankRow
-                key={entry.userId}
-                entry={entry}
-                rank={i + 1}
-                currentUserId={currentUserId}
-                color={meta.color}
-              />
-            ))}
+            {rankings.map((entry, i) => {
+              const reward = i < (data?.rewardedRanks || 0) ? (data?.rewardTiers?.[i] || 0) : 0;
+              return (
+                <RankRow
+                  key={entry.userId}
+                  entry={entry}
+                  rank={i + 1}
+                  currentUserId={currentUserId}
+                  color={meta.color}
+                  reward={reward}
+                />
+              );
+            })}
           </motion.div>
         )}
       </div>
@@ -230,7 +239,7 @@ const Leaderboard = () => {
       const data = await res.json();
       if (data.success) {
         setLeaderboard(data.leaderboard);
-        const first = ['allTime', 'daily', 'weekly', 'monthly'].find(p => data.leaderboard[p]?.enabled);
+        const first = ['daily', 'weekly', 'monthly', 'allTime'].find(p => data.leaderboard[p]?.enabled);
         if (first && !activeTab) setActiveTab(p => p || first);
       }
     } catch (err) {
@@ -247,7 +256,7 @@ const Leaderboard = () => {
   }, [fetchLeaderboard]);
 
   const enabledPeriods = leaderboard
-    ? ['allTime', 'daily', 'weekly', 'monthly'].filter(p => leaderboard[p]?.enabled)
+    ? ['daily', 'weekly', 'monthly', 'allTime'].filter(p => leaderboard[p]?.enabled)
     : [];
 
   return (

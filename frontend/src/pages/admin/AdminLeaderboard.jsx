@@ -96,6 +96,60 @@ function PeriodCard({ period, config, onSave, onReset, saving, resetting }) {
         <p style={{ fontSize: '10px', color: '#475569', margin: '4px 0 0' }}>How many ranks users will see on the leaderboard (e.g. 5, 20, 25)</p>
       </div>
 
+      {/* Rewarded Ranks control */}
+      <div style={{ marginBottom: '20px' }}>
+        <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', color: '#94a3b8', fontWeight: 600, marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+          🏆 Rewarded Ranks
+        </label>
+        <div style={{ maxWidth: '280px', display: 'flex', alignItems: 'center', gap: '8px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '10px', padding: '8px 12px', marginBottom: '12px' }}>
+          <input
+            type="number"
+            min="0"
+            max="100"
+            value={local.rewardedRanks !== undefined ? local.rewardedRanks : 3}
+            onChange={e => {
+              const count = Number(e.target.value);
+              set('rewardedRanks', count);
+              // Ensure rewardTiers array size matches
+              const newTiers = [...(local.rewardTiers || [])];
+              if (newTiers.length < count) {
+                while (newTiers.length < count) newTiers.push(0);
+              } else if (newTiers.length > count) {
+                newTiers.length = count;
+              }
+              set('rewardTiers', newTiers);
+            }}
+            style={{ background: 'none', border: 'none', outline: 'none', color: '#fff', fontSize: '14px', fontWeight: 600, width: '100%', fontFamily: 'monospace' }}
+          />
+          <span style={{ fontSize: '10px', color: '#64748b', fontWeight: 600, whiteSpace: 'nowrap' }}>RANKS</span>
+        </div>
+        
+        {/* Dynamic Reward Tiers */}
+        {(local.rewardedRanks || 0) > 0 && (
+          <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px', padding: '16px', display: 'grid', gap: '12px', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))' }}>
+            {Array.from({ length: local.rewardedRanks || 0 }).map((_, idx) => (
+              <div key={idx}>
+                <label style={{ display: 'block', fontSize: '10px', color: '#94a3b8', fontWeight: 600, marginBottom: '4px' }}>Rank #{idx + 1} Reward</label>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', padding: '6px 10px' }}>
+                  <input
+                    type="number"
+                    min="0"
+                    value={local.rewardTiers?.[idx] || 0}
+                    onChange={e => {
+                      const newTiers = [...(local.rewardTiers || [])];
+                      newTiers[idx] = Number(e.target.value);
+                      set('rewardTiers', newTiers);
+                    }}
+                    style={{ background: 'none', border: 'none', outline: 'none', color: '#fbbf24', fontSize: '13px', fontWeight: 600, width: '100%', fontFamily: 'monospace' }}
+                  />
+                  <span style={{ fontSize: '9px', color: '#64748b' }}>COINS</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
       {/* Actions */}
       <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
         <button
