@@ -1,6 +1,9 @@
 const express = require('express');
 const router = express.Router();
 const User = require('../models/User');
+const Transaction = require('../models/Transaction');
+const CustomOfferSubmission = require('../models/CustomOfferSubmission');
+const UserActivityLog = require('../models/UserActivityLog');
 const { verifyToken } = require('../middlewares/authMiddleware');
 
 // POST /api/auth/sync
@@ -47,20 +50,25 @@ router.post('/sync', verifyToken, async (req, res) => {
 // Allows a user to update their display name with basic validation
 router.put('/profile', verifyToken, async (req, res) => {
   try {
-    const { displayName } = req.body;
+    const { displayName, avatarUrl } = req.body;
     
     // Basic username validation (3-20 characters, alphanumeric, dashes, underscores)
     const nameRegex = /^[a-zA-Z0-9_-]{3,20}$/;
-    if (!displayName || !nameRegex.test(displayName)) {
+    if (displayName && !nameRegex.test(displayName)) {
       return res.status(400).json({ 
         success: false, 
         error: 'Username must be 3-20 characters long and can only contain letters, numbers, dashes, and underscores.' 
       });
     }
 
+    const updateFields = {};
+    if (displayName) updateFields.displayName = displayName;
+    if (avatarUrl) updateFields.avatarUrl = avatarUrl;
+
     const user = await User.findOneAndUpdate(
       { firebaseUid: req.user.uid },
-      { displayName },
+      updateFields,
+
       { returnDocument: 'after' }
     );
 
@@ -72,6 +80,28 @@ router.put('/profile', verifyToken, async (req, res) => {
   } catch (error) {
     console.error('[/api/auth/profile] Update Error:', error);
     res.status(500).json({ success: false, error: 'Database Update Error.' });
+  }
+});
+
+// DELETE /api/auth/account
+// Deletes the user and related data
+router.delete('/account', verifyToken, async (req, res) => {
+  try {
+    const user = await User.findOne({ firebaseUid: req.user.uid });
+    if (!user) return res.status(404).json({ success: false, error: 'User not found' });
+
+    // Delete related data
+    await Transaction.deleteMany({ user: user._id });
+    await CustomOfferSubmission.deleteMany({ user: user._id });
+    await UserActivityLog.deleteMany({ user: user._id });
+
+    // Delete user
+    await User.findOneAndDelete({ firebaseUid: req.user.uid });
+
+    res.status(200).json({ success: true, message: 'Account deleted successfully' });
+  } catch (error) {
+    console.error('[/api/auth/account] Deletion Error:', error);
+    res.status(500).json({ success: false, error: 'Account Deletion Error.' });
   }
 });
 

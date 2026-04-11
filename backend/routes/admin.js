@@ -86,6 +86,9 @@ router.put('/users/:id/balance', requirePermission('manage_users'), async (req, 
     const amountNum = Number(amount);
     const prevBalance = user.walletBalance;
     user.walletBalance = Math.max(0, user.walletBalance + amountNum);
+    if (amountNum > 0) {
+      user.totalEarned = (user.totalEarned || 0) + amountNum;
+    }
     await user.save();
 
     // Create a transaction record for admin balance adjustments
@@ -405,15 +408,15 @@ router.delete('/promo-codes/:id', requirePermission('manage_offerwalls'), async 
 router.get('/custom-offers', requirePermission('manage_offerwalls'), async (req, res) => {
   try {
     const offers = await CustomOffer.find().sort({ createdAt: -1 }).lean();
-    
+
     const clickCounts = await require('../models/UserActivityLog').aggregate([
       { $match: { actionType: 'click_offer', sourceType: 'featured_offer' } },
       { $group: { _id: '$sourceId', count: { $sum: 1 } } }
     ]);
-    
+
     const clicksMap = {};
     clickCounts.forEach(c => clicksMap[c._id.toString()] = c.count);
-    
+
     const offersWithClicks = offers.map(o => ({
       ...o,
       clicks: clicksMap[o._id.toString()] || 0
@@ -435,35 +438,35 @@ router.post('/custom-offers', requirePermission('manage_offerwalls'), async (req
       coverImage: coverImage || null,
     });
     await newOffer.save();
-      await createLog(req.dbUser._id, 'CREATE_CUSTOM_OFFER', null, `Created custom offer: ${title}`);
-      res.status(201).json({ success: true, offer: newOffer });
-    } catch (error) {
-      res.status(500).json({ success: false, error: 'Failed to create custom offer' });
-    }
-  });
+    await createLog(req.dbUser._id, 'CREATE_CUSTOM_OFFER', null, `Created custom offer: ${title}`);
+    res.status(201).json({ success: true, offer: newOffer });
+  } catch (error) {
+    res.status(500).json({ success: false, error: 'Failed to create custom offer' });
+  }
+});
 
-  router.put('/custom-offers/:id', requirePermission('manage_offerwalls'), async (req, res) => {
-    try {
-      const upd = { ...req.body };
-      const offer = await CustomOffer.findByIdAndUpdate(req.params.id, upd, { new: true });
-      if (!offer) return res.status(404).json({ success: false, error: 'Offer not found' });
-      await createLog(req.dbUser._id, 'UPDATE_CUSTOM_OFFER', null, `Updated custom offer: ${offer.title} (Active: ${offer.isActive})`);
-      res.json({ success: true, offer });
-    } catch (error) {
-      res.status(500).json({ success: false, error: 'Failed to update custom offer' });
-    }
-  });
+router.put('/custom-offers/:id', requirePermission('manage_offerwalls'), async (req, res) => {
+  try {
+    const upd = { ...req.body };
+    const offer = await CustomOffer.findByIdAndUpdate(req.params.id, upd, { new: true });
+    if (!offer) return res.status(404).json({ success: false, error: 'Offer not found' });
+    await createLog(req.dbUser._id, 'UPDATE_CUSTOM_OFFER', null, `Updated custom offer: ${offer.title} (Active: ${offer.isActive})`);
+    res.json({ success: true, offer });
+  } catch (error) {
+    res.status(500).json({ success: false, error: 'Failed to update custom offer' });
+  }
+});
 
-  router.delete('/custom-offers/:id', requirePermission('manage_offerwalls'), async (req, res) => {
-    try {
-      const offer = await CustomOffer.findByIdAndDelete(req.params.id);
-      if (!offer) return res.status(404).json({ success: false, error: 'Offer not found' });
-      await createLog(req.dbUser._id, 'DELETE_CUSTOM_OFFER', null, `Deleted custom offer: ${offer.title}`);
-      res.json({ success: true });
-    } catch (error) {
-      res.status(500).json({ success: false, error: 'Failed to delete custom offer' });
-    }
-  });
+router.delete('/custom-offers/:id', requirePermission('manage_offerwalls'), async (req, res) => {
+  try {
+    const offer = await CustomOffer.findByIdAndDelete(req.params.id);
+    if (!offer) return res.status(404).json({ success: false, error: 'Offer not found' });
+    await createLog(req.dbUser._id, 'DELETE_CUSTOM_OFFER', null, `Deleted custom offer: ${offer.title}`);
+    res.json({ success: true });
+  } catch (error) {
+    res.status(500).json({ success: false, error: 'Failed to delete custom offer' });
+  }
+});
 
 router.get('/custom-offers/submissions/all', requirePermission('manage_offerwalls'), async (req, res) => {
   try {
@@ -495,38 +498,39 @@ router.put('/custom-offers/submissions/:id', requirePermission('manage_offerwall
     if (adminNote) submission.adminNote = adminNote;
     await submission.save();
 
-      const user = await User.findById(submission.userId._id);
+    const user = await User.findById(submission.userId._id);
 
-      if (status === 'approved') {
-        // Credit the user
-        const amountNum = Number(submission.offerId.rewardAmount);
-        user.walletBalance += amountNum;
-        await user.save();
+    if (status === 'approved') {
+      // Credit the user
+      const amountNum = Number(submission.offerId.rewardAmount);
+      user.walletBalance += amountNum;
+      user.totalEarned = (user.totalEarned || 0) + amountNum;
+      await user.save();
 
-        await Transaction.create({
-          userId: user._id,
-          transactionType: 'offer_reward',
-          amount: amountNum,
-          balanceAfter: user.walletBalance,
-          description: `Offer Reward: ${submission.offerId.title}`,
-          status: 'completed',
-        });
+      await Transaction.create({
+        userId: user._id,
+        transactionType: 'offer_reward',
+        amount: amountNum,
+        balanceAfter: user.walletBalance,
+        description: `Offer Reward: ${submission.offerId.title}`,
+        status: 'completed',
+      });
 
-        await createLog(req.dbUser._id, 'APPROVE_CUSTOM_OFFER', user._id, `Approved submission for offer: ${submission.offerId.title}`);
-      } else if (status === 'rejected') {
-        await createLog(
-          req.dbUser._id,
-          'REJECT_CUSTOM_OFFER',
-          user._id,
-          `Rejected submission for offer: ${submission.offerId.title}. Reason: ${adminNote || 'No reason provided'}`
-        );
-      }
-
-      res.json({ success: true, submission });
-    } catch (error) {
-      res.status(500).json({ success: false, error: 'Failed to update submission' });
+      await createLog(req.dbUser._id, 'APPROVE_CUSTOM_OFFER', user._id, `Approved submission for offer: ${submission.offerId.title}`);
+    } else if (status === 'rejected') {
+      await createLog(
+        req.dbUser._id,
+        'REJECT_CUSTOM_OFFER',
+        user._id,
+        `Rejected submission for offer: ${submission.offerId.title}. Reason: ${adminNote || 'No reason provided'}`
+      );
     }
-  });
+
+    res.json({ success: true, submission });
+  } catch (error) {
+    res.status(500).json({ success: false, error: 'Failed to update submission' });
+  }
+});
 
 router.post('/admins', requirePrimaryAdmin, async (req, res) => {
   try {
@@ -672,10 +676,10 @@ router.post('/chargebacks/:transactionId/process', requirePermission('manage_off
           $inc: { walletBalance: -linkedTx.amount }
         });
       }
-      
+
       linkedTx.status = 'reversed';
       await linkedTx.save();
-      
+
       await createLog(req.dbUser._id, 'PROCESS_CHARGEBACK_CASCADED', linkedTx.userId, {
         txId: linkedTx._id,
         parentTxId: parentTx._id,
@@ -715,9 +719,9 @@ router.put('/leaderboard-config', requirePrimaryAdmin, async (req, res) => {
     ['daily', 'weekly', 'monthly'].forEach(period => {
       const incoming = req.body[period];
       if (!incoming) return;
-      if (incoming.enabled !== undefined)       settings.leaderboardConfig[period].enabled       = Boolean(incoming.enabled);
-      if (incoming.visibleSlots !== undefined)   settings.leaderboardConfig[period].visibleSlots   = Math.max(5, Math.min(100, Number(incoming.visibleSlots) || 25));
-      if (incoming.rewardedRanks !== undefined)  settings.leaderboardConfig[period].rewardedRanks  = Math.max(0, Math.min(100, Number(incoming.rewardedRanks) || 3));
+      if (incoming.enabled !== undefined) settings.leaderboardConfig[period].enabled = Boolean(incoming.enabled);
+      if (incoming.visibleSlots !== undefined) settings.leaderboardConfig[period].visibleSlots = Math.max(5, Math.min(100, Number(incoming.visibleSlots) || 25));
+      if (incoming.rewardedRanks !== undefined) settings.leaderboardConfig[period].rewardedRanks = Math.max(0, Math.min(100, Number(incoming.rewardedRanks) || 3));
       if (incoming.rewardTiers !== undefined && Array.isArray(incoming.rewardTiers)) {
         settings.leaderboardConfig[period].rewardTiers = incoming.rewardTiers.map(v => Math.max(0, Number(v) || 0));
       }

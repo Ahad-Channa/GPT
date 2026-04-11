@@ -81,7 +81,7 @@ const handlePostback = async (providerId, req, res, params) => {
     // 10. Atomic: User.findOneAndUpdate $inc walletBalance by platformCoins
     const updatedUser = await User.findOneAndUpdate(
       { _id: user._id },
-      { $inc: { walletBalance: platformCoins } },
+      { $inc: { walletBalance: platformCoins, totalEarned: platformCoins } },
       { new: true }
     );
 

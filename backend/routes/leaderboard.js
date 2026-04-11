@@ -85,6 +85,7 @@ async function getLiveRankings(period, limit = 50) {
         _id: 0,
         userId: '$_id',
         displayName: '$user.displayName',
+        avatarUrl: '$user.avatarUrl',
         avatar: '$user.photoURL',
         coinsEarned: 1,
       },
@@ -123,6 +124,7 @@ async function resetLeaderboard(period) {
       const user = await User.findById(entry.userId);
       if (user) {
         user.walletBalance += reward;
+        user.totalEarned = (user.totalEarned || 0) + reward;
         await user.save();
 
         await Transaction.create({

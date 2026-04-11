@@ -6,8 +6,72 @@ import {
   FiZap, FiStar, FiMail, FiCalendar, FiEdit2, FiCheck, FiX, FiShield,
   FiActivity, FiUser, FiArrowDownCircle, FiCheckCircle, FiClock,
   FiInbox, FiLoader, FiTrendingUp, FiChevronDown, FiPlayCircle,
-  FiSend, FiExternalLink
+  FiSend, FiExternalLink, FiSettings, FiTrash2, FiAlertTriangle, FiRefreshCw
 } from 'react-icons/fi';
+
+const PREDEFINED_AVATARS = [
+  'https://api.dicebear.com/7.x/avataaars/svg?seed=Felix',
+  'https://api.dicebear.com/7.x/avataaars/svg?seed=Aneka',
+  'https://api.dicebear.com/7.x/avataaars/svg?seed=Jocelyn',
+  'https://api.dicebear.com/7.x/avataaars/svg?seed=Avery',
+  'https://api.dicebear.com/7.x/avataaars/svg?seed=Oliver',
+  'https://api.dicebear.com/7.x/avataaars/svg?seed=Mason',
+  'https://api.dicebear.com/7.x/avataaars/svg?seed=Wyatt',
+  'https://api.dicebear.com/7.x/avataaars/svg?seed=Jack',
+  'https://api.dicebear.com/7.x/avataaars/svg?seed=Lily',
+  'https://api.dicebear.com/7.x/avataaars/svg?seed=Zoe',
+  'https://api.dicebear.com/7.x/avataaars/svg?seed=Chloe',
+  'https://api.dicebear.com/7.x/avataaars/svg?seed=Mia',
+  'https://api.dicebear.com/7.x/bottts/svg?seed=Robo1',
+  'https://api.dicebear.com/7.x/bottts/svg?seed=Robo2',
+  'https://api.dicebear.com/7.x/bottts/svg?seed=Robo3',
+  'https://api.dicebear.com/7.x/fun-emoji/svg?seed=Happy',
+  'https://api.dicebear.com/7.x/fun-emoji/svg?seed=Cool',
+  'https://api.dicebear.com/7.x/fun-emoji/svg?seed=Wink',
+  'https://api.dicebear.com/7.x/shapes/svg?seed=Shape1',
+  'https://api.dicebear.com/7.x/shapes/svg?seed=Shape2',
+  // More Avatars added
+  'https://api.dicebear.com/7.x/bottts/svg?seed=Robo4',
+  'https://api.dicebear.com/7.x/bottts/svg?seed=Robo5',
+  'https://api.dicebear.com/7.x/bottts/svg?seed=Robo6',
+  'https://api.dicebear.com/7.x/lorelei/svg?seed=Bella',
+  'https://api.dicebear.com/7.x/lorelei/svg?seed=Luna',
+  'https://api.dicebear.com/7.x/lorelei/svg?seed=Lucy',
+  'https://api.dicebear.com/7.x/lorelei/svg?seed=Molly',
+  'https://api.dicebear.com/7.x/lorelei/svg?seed=Daisy',
+  'https://api.dicebear.com/7.x/lorelei/svg?seed=Sadie',
+  'https://api.dicebear.com/7.x/micah/svg?seed=Caleb',
+  'https://api.dicebear.com/7.x/micah/svg?seed=Elijah',
+  'https://api.dicebear.com/7.x/micah/svg?seed=Isaiah',
+  'https://api.dicebear.com/7.x/micah/svg?seed=Josiah',
+  'https://api.dicebear.com/7.x/micah/svg?seed=Noah',
+  'https://api.dicebear.com/7.x/adventurer/svg?seed=Hunter',
+  'https://api.dicebear.com/7.x/adventurer/svg?seed=Chase',
+  'https://api.dicebear.com/7.x/adventurer/svg?seed=Ryder',
+  'https://api.dicebear.com/7.x/adventurer/svg?seed=Gage',
+  'https://api.dicebear.com/7.x/adventurer/svg?seed=Zane',
+  'https://api.dicebear.com/7.x/pixel-art/svg?seed=Pixel1',
+  'https://api.dicebear.com/7.x/pixel-art/svg?seed=Pixel2',
+  'https://api.dicebear.com/7.x/pixel-art/svg?seed=Pixel3',
+  'https://api.dicebear.com/7.x/pixel-art/svg?seed=Pixel4',
+  'https://api.dicebear.com/7.x/open-peeps/svg?seed=Peep1',
+  'https://api.dicebear.com/7.x/open-peeps/svg?seed=Peep2',
+  'https://api.dicebear.com/7.x/open-peeps/svg?seed=Peep3',
+  'https://api.dicebear.com/7.x/open-peeps/svg?seed=Peep4',
+  'https://api.dicebear.com/7.x/thumbs/svg?seed=Thumb1',
+  'https://api.dicebear.com/7.x/thumbs/svg?seed=Thumb2',
+  'https://api.dicebear.com/7.x/rings/svg?seed=Ring1',
+  'https://api.dicebear.com/7.x/rings/svg?seed=Ring2',
+  'https://api.dicebear.com/7.x/avataaars/svg?seed=Grayson',
+  'https://api.dicebear.com/7.x/avataaars/svg?seed=Levi',
+  'https://api.dicebear.com/7.x/avataaars/svg?seed=Isaac',
+  'https://api.dicebear.com/7.x/bottts/svg?seed=Robo7',
+  'https://api.dicebear.com/7.x/bottts/svg?seed=Robo8',
+  'https://api.dicebear.com/7.x/fun-emoji/svg?seed=Cry',
+  'https://api.dicebear.com/7.x/fun-emoji/svg?seed=Laugh',
+  'https://api.dicebear.com/7.x/fun-emoji/svg?seed=Tired',
+  'https://api.dicebear.com/7.x/shapes/svg?seed=Shape3',
+];
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
@@ -395,14 +459,259 @@ const ClickedOfferRow = ({ offer, token, onRefresh }) => {
   );
 };
 
+// ── Settings & Delete Account Modal
+const SettingsModal = ({ isOpen, onClose, mongoUser, token, setMongoUser, logout }) => {
+  const [displayName, setDisplayName] = useState(mongoUser?.displayName || '');
+  const [avatarUrl, setAvatarUrl] = useState(mongoUser?.avatarUrl || '');
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
+  const [deletePhase, setDeletePhase] = useState(0); 
+  const [showMoreAvatars, setShowMoreAvatars] = useState(false);
+  const [customStyle, setCustomStyle] = useState('avataaars');
+  const [customSeed, setCustomSeed] = useState('');
+
+  const displayedAvatars = showMoreAvatars ? PREDEFINED_AVATARS : PREDEFINED_AVATARS.slice(0, 20);
+
+  useEffect(() => {
+    if (isOpen) {
+       setDisplayName(mongoUser?.displayName || '');
+       setAvatarUrl(mongoUser?.avatarUrl || '');
+       setDeletePhase(0);
+       setError('');
+       setSuccess('');
+    }
+  }, [isOpen, mongoUser]);
+
+  if (!isOpen) return null;
+
+  const handleSave = async () => {
+    const nameRegex = /^[a-zA-Z0-9_-]{3,20}$/;
+    if (!nameRegex.test(displayName)) {
+      setError('Username must be 3–20 characters: letters, numbers, dashes, underscores.');
+      return;
+    }
+    setSaving(true);
+    setError('');
+    setSuccess('');
+    try {
+      const res = await fetch(`${API}/api/auth/profile`, {
+        method: 'PUT',
+        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ displayName, avatarUrl })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setMongoUser(data.user);
+        setSuccess('Profile updated successfully!');
+      } else {
+        setError(data.error || 'Failed to update profile');
+      }
+    } catch {
+      setError('Network error.');
+    }
+    setSaving(false);
+  };
+
+  const handleDelete = async () => {
+    if (deletePhase === 0) {
+      setDeletePhase(1);
+      return;
+    }
+    if (deletePhase === 1) {
+      setDeletePhase(2);
+      try {
+        const res = await fetch(`${API}/api/auth/account`, {
+          method: 'DELETE',
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        if (res.ok) {
+           await logout();
+           window.location.href = '/';
+        } else {
+           const d = await res.json();
+           setError(d.error || 'Failed to delete account');
+           setDeletePhase(0);
+        }
+      } catch {
+         setError('Network error');
+         setDeletePhase(0);
+      }
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+      <motion.div 
+        initial={{ scale: 0.95, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        className="bg-[#0c101b] border border-white/[0.08] rounded-[2rem] w-full max-w-2xl max-h-[90vh] overflow-y-auto custom-scrollbar relative shadow-glow-lg"
+      >
+        <button onClick={onClose} className="absolute top-6 right-6 text-slate-400 hover:text-white transition-colors bg-white/5 rounded-full p-2">
+          <FiX size={20} />
+        </button>
+
+        <div className="p-8 space-y-8">
+          <div>
+            <h2 className="text-2xl font-black text-white flex items-center gap-2 font-display">
+              <FiSettings className="text-indigo-400" /> Account Settings
+            </h2>
+            <p className="text-slate-400 text-sm mt-1">Manage your identity, avatars, and account security</p>
+          </div>
+
+          {(error || success) && (
+            <div className={`p-4 rounded-xl text-sm font-medium ${error ? 'bg-rose-500/10 text-rose-400 border border-rose-500/20' : 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'}`}>
+              {error || success}
+            </div>
+          )}
+
+          <div className="space-y-4">
+            <h3 className="text-sm font-bold text-slate-300 uppercase tracking-wider">Display Name</h3>
+            <input
+              type="text"
+              value={displayName}
+              onChange={e => setDisplayName(e.target.value)}
+              className="w-full bg-[#151b2b] border border-white/[0.08] rounded-xl px-4 py-3 text-white focus:outline-none focus:border-indigo-500/50 transition-colors"
+              placeholder="Username"
+            />
+          </div>
+
+          <div className="space-y-4">
+            <h3 className="text-sm font-bold text-slate-300 uppercase tracking-wider">Choose Avatar</h3>
+            <div className="grid grid-cols-4 sm:grid-cols-5 gap-3">
+              {displayedAvatars.map((url, i) => (
+                <button
+                  key={i}
+                  onClick={() => setAvatarUrl(url)}
+                  className={`w-14 h-14 sm:w-16 sm:h-16 rounded-xl overflow-hidden border-2 transition-all ${avatarUrl === url ? 'border-indigo-500 shadow-[0_0_15px_rgba(79,70,229,0.4)] scale-105' : 'border-transparent hover:border-white/20 hover:scale-105'} bg-[#151b2b]`}
+                >
+                  <img src={url} alt={`Avatar ${i+1}`} className="w-full h-full object-cover" />
+                </button>
+              ))}
+            </div>
+            
+            {!showMoreAvatars && PREDEFINED_AVATARS.length > 20 && (
+              <div className="flex justify-center mt-3">
+                <button 
+                  onClick={() => setShowMoreAvatars(true)} 
+                  className="flex items-center gap-2 text-xs text-indigo-400 hover:text-indigo-300 font-semibold transition-colors"
+                >
+                  <FiArrowDownCircle size={14} /> Show more avatars ({PREDEFINED_AVATARS.length - 20} more)
+                </button>
+              </div>
+            )}
+            
+            <div className="mt-6 border border-white/[0.08] bg-[#151b2b] rounded-xl p-4">
+              <div className="flex justify-between items-center mb-3">
+                <h4 className="text-xs font-bold text-slate-300 uppercase tracking-wider">Or random avatar generator:</h4>
+                <p className="text-[10px] text-slate-500">Not AI - just a random hash seed!</p>
+              </div>
+              <div className="flex flex-col sm:flex-row gap-4 items-end">
+                <div className="w-16 h-16 rounded-xl overflow-hidden border-2 border-indigo-500 shadow-[0_0_15px_rgba(79,70,229,0.4)] flex-shrink-0 bg-[#0c101b]">
+                  {customSeed ? (
+                    <img src={`https://api.dicebear.com/7.x/${customStyle}/svg?seed=${customSeed}`} alt="Custom Preview" className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center text-white/20 text-xl font-black">?</div>
+                  )}
+                </div>
+                
+                <div className="flex-1 space-y-2 w-full">
+                  <div className="flex gap-2">
+                    <select 
+                      value={customStyle} 
+                      onChange={(e) => setCustomStyle(e.target.value)}
+                      className="bg-[#0c101b] border border-white/[0.08] rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-500/50 min-w-[100px]"
+                    >
+                       <option value="avataaars">Avataaars</option>
+                       <option value="bottts">Bottts</option>
+                       <option value="fun-emoji">Emoji</option>
+                       <option value="lorelei">Lorelei</option>
+                       <option value="micah">Micah</option>
+                       <option value="shapes">Shapes</option>
+                       <option value="pixel-art">Pixel Art</option>
+                       <option value="adventurer">Adventurer</option>
+                       <option value="open-peeps">Open Peeps</option>
+                    </select>
+                    <input 
+                      type="text" 
+                      placeholder="Enter random text/name..." 
+                      value={customSeed}
+                      onChange={(e) => setCustomSeed(e.target.value)}
+                      className="flex-1 min-w-0 bg-[#0c101b] border border-white/[0.08] rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-500/50"
+                    />
+                    <button
+                      onClick={() => setCustomSeed(Math.random().toString(36).substring(7))}
+                      className="px-3 py-2 rounded-xl bg-white/[0.05] hover:bg-white/[0.1] text-white transition-colors"
+                      title="Shuffle Seed"
+                    >
+                      <FiRefreshCw size={14} />
+                    </button>
+                  </div>
+                </div>
+                
+                <button 
+                  onClick={() => {
+                    if(customSeed) {
+                      setAvatarUrl(`https://api.dicebear.com/7.x/${customStyle}/svg?seed=${customSeed}`);
+                    }
+                  }}
+                  disabled={!customSeed}
+                  className="px-4 py-2 rounded-xl bg-indigo-500/10 text-indigo-400 text-xs font-bold hover:bg-indigo-500/20 disabled:opacity-50 whitespace-nowrap transition-colors"
+                >
+                  Use Custom
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div className="pt-4 flex justify-end">
+             <button
+                onClick={handleSave}
+                disabled={saving}
+                className="flex items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-indigo-500 to-violet-600 text-white font-bold hover:shadow-glow transition-all disabled:opacity-50"
+             >
+                {saving ? <FiLoader className="animate-spin" /> : <FiCheck />}
+                {saving ? 'Saving...' : 'Save Profile'}
+             </button>
+          </div>
+
+          <div className="mt-12 pt-8 border-t border-white/[0.08]">
+             <h3 className="text-base font-bold text-rose-400 flex items-center gap-2 mb-2">
+               <FiAlertTriangle /> Danger Zone
+             </h3>
+             <p className="text-slate-400 text-sm mb-4">Deleting your account is permanent. All associated data will be wiped.</p>
+             
+             {deletePhase === 0 && (
+                <button
+                  onClick={handleDelete}
+                  className="px-5 py-2.5 rounded-xl border border-rose-500/40 text-rose-400 font-semibold hover:bg-rose-500/10 transition-colors text-sm"
+                >
+                  Delete Account...
+                </button>
+             )}
+             {deletePhase === 1 && (
+                <div className="bg-rose-500/10 border border-rose-500/30 p-4 rounded-xl flex items-center justify-between flex-wrap gap-4">
+                   <p className="text-rose-300 font-medium text-sm">Are you absolutely sure?</p>
+                   <div className="flex items-center gap-3">
+                      <button onClick={() => setDeletePhase(0)} className="text-slate-400 hover:text-white text-sm font-semibold">Cancel</button>
+                      <button onClick={handleDelete} className="bg-rose-600 hover:bg-rose-500 text-white px-4 py-2 rounded-lg text-sm font-bold shadow-lg shadow-rose-900/50 transition-colors">
+                        Yes, delete my account
+                      </button>
+                   </div>
+                </div>
+             )}
+          </div>
+        </div>
+      </motion.div>
+    </div>
+  );
+};
+
 // ══════════════════════════════════════════════════════════════════
 const Profile = () => {
 
-  const { currentUser, mongoUser, setMongoUser } = useAuth();
-  const [isEditing,  setIsEditing]  = useState(false);
-  const [editName,   setEditName]   = useState('');
-  const [error,      setError]      = useState('');
-  const [loading,    setLoading]    = useState(false);
+  const { currentUser, mongoUser, setMongoUser, logout } = useAuth();
+  const [showSettings, setShowSettings] = useState(false);
   const [activeTab,  setActiveTab]  = useState('started_offers');
   const [token,      setToken]      = useState(null);
   const [customOffers, setCustomOffers] = useState([]);
@@ -439,38 +748,18 @@ const Profile = () => {
   const chargebacks = useHistory(activeTab === 'chargebacks' ? token : null, 'chargeback');
   const clicks = useHistory(activeTab === 'clicks' ? token : null, null, '/api/activity/history');
 
-  const handleEditClick = () => {
-    setEditName(mongoUser?.displayName || '');
-    setError('');
-    setIsEditing(true);
-  };
 
-  const handleSave = async () => {
-    const nameRegex = /^[a-zA-Z0-9_-]{3,20}$/;
-    if (!nameRegex.test(editName)) {
-      setError('3–20 characters: letters, numbers, dashes, underscores only.');
-      return;
-    }
-    setLoading(true);
-    setError('');
-    try {
-      const tok = await currentUser.getIdToken();
-      const res = await fetch(`${API}/api/auth/profile`, {
-        method: 'PUT',
-        headers: { Authorization: `Bearer ${tok}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ displayName: editName }),
-      });
-      const data = await res.json();
-      if (res.ok) { setMongoUser(data.user); setIsEditing(false); }
-      else { setError(data.error || 'Failed to update profile'); }
-    } catch {
-      setError('An error occurred while saving.');
-    }
-    setLoading(false);
-  };
 
   return (
     <DashboardLayout>
+      <SettingsModal 
+        isOpen={showSettings} 
+        onClose={() => setShowSettings(false)} 
+        mongoUser={mongoUser} 
+        token={token} 
+        setMongoUser={setMongoUser} 
+        logout={logout} 
+      />
       <motion.div
         initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
@@ -490,7 +779,7 @@ const Profile = () => {
               <div className="relative shrink-0">
                 <div className="w-28 h-28 sm:w-32 sm:h-32 rounded-[2rem] overflow-hidden border-4 border-[#0c101b] bg-[#111827] shadow-glow-lg z-10 relative">
                   <img
-                    src={currentUser?.photoURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=${mongoUser?.displayName || 'Avatar'}`}
+                    src={mongoUser?.avatarUrl || currentUser?.photoURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=${mongoUser?.displayName || 'Avatar'}`}
                     alt="Avatar"
                     className="w-full h-full object-cover"
                   />
@@ -504,42 +793,20 @@ const Profile = () => {
               <div className="flex-1 pb-1 sm:pb-3">
                 <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4">
                   <div>
-                    {isEditing ? (
-                      <div className="flex flex-col mb-1">
-                        <div className="flex gap-2 mb-2">
-                          <input
-                            type="text"
-                            value={editName}
-                            onChange={(e) => setEditName(e.target.value)}
-                            className="w-full max-w-[200px] bg-white/[0.04] border border-white/[0.12] rounded-xl px-3 py-2 text-white text-sm outline-none focus:border-indigo-500/60 focus:ring-2 focus:ring-indigo-500/15 transition-all"
-                            placeholder="Username"
-                            disabled={loading}
-                            autoFocus
-                          />
-                          <button onClick={handleSave} disabled={loading} className="w-9 h-9 rounded-xl border border-white/[0.1] bg-white/[0.03] hover:bg-emerald-500/20 hover:border-emerald-500/40 text-emerald-400 transition-all flex items-center justify-center">
-                            <FiCheck size={15} />
-                          </button>
-                          <button onClick={() => setIsEditing(false)} disabled={loading} className="w-9 h-9 rounded-xl border border-white/[0.1] bg-white/[0.03] hover:bg-red-500/20 hover:border-red-500/40 text-red-400 transition-all flex items-center justify-center">
-                            <FiX size={15} />
-                          </button>
-                        </div>
-                        {error && <p className="text-red-400 text-xs">{error}</p>}
-                      </div>
-                    ) : (
                       <div className="flex items-center gap-3 group">
                         <h1 className="text-2xl sm:text-3xl font-black text-white font-display tracking-tight hover:text-indigo-200 transition-colors">
                           {mongoUser?.displayName || 'Anonymous'}
                         </h1>
                         <button
-                          onClick={handleEditClick}
-                          title="Edit Username"
-                          className="w-8 h-8 rounded-xl border border-white/[0.08] bg-white/[0.02] hover:bg-white/[0.08] text-slate-400 hover:text-white transition-all flex items-center justify-center opacity-0 group-hover:opacity-100"
+                          onClick={() => setShowSettings(true)}
+                          title="Account Settings"
+                          className="w-10 h-10 rounded-xl border border-white/[0.08] bg-white/[0.02] hover:bg-white/[0.08] text-slate-400 hover:text-white transition-all flex items-center justify-center opacity-0 group-hover:opacity-100"
                         >
-                          <FiEdit2 size={13} />
+                          <FiSettings size={18} />
                         </button>
                       </div>
-                    )}
-                    <div className="flex items-center gap-4 mt-2 text-xs sm:text-sm text-slate-400 font-medium">
+                    <div className="flex flex-wrap items-center gap-4 mt-2 text-xs sm:text-sm text-slate-400 font-medium">
+                      <div className="flex items-center gap-1.5"><FiUser className="text-indigo-400" /> ID: <span className="font-mono">{mongoUser?._id}</span></div>
                       <div className="flex items-center gap-1.5"><FiMail className="text-indigo-400" /> {currentUser?.email}</div>
                       <div className="flex items-center gap-1.5"><FiCalendar className="text-indigo-400" /> Joined {mongoUser?.createdAt ? new Date(mongoUser.createdAt).toLocaleDateString('en-US', { month: 'short', year: 'numeric' }) : 'N/A'}</div>
                     </div>
@@ -554,14 +821,14 @@ const Profile = () => {
 
             {/* ─── Glass Ribbon Stats ─────────────────────── */}
             <div className="mt-8 grid grid-cols-2 lg:grid-cols-4 gap-3">
-              {/* Balance */}
+              {/* Total Earned */}
               <div className="bg-white/[0.02] border border-white/[0.05] rounded-2xl p-4 flex items-center gap-4 hover:border-indigo-500/30 transition-colors">
                 <div className="w-10 h-10 rounded-[14px] bg-gradient-to-br from-indigo-500 to-blue-600 flex items-center justify-center shadow-[0_0_15px_rgba(79,70,229,0.3)] shrink-0">
                   <FiZap className="text-white text-lg" />
                 </div>
                 <div>
-                  <p className="text-[10px] sm:text-xs font-bold text-slate-500 tracking-widest uppercase mb-0.5">Liquid Balance</p>
-                  <p className="text-lg sm:text-xl font-black text-white font-mono">{mongoUser?.walletBalance?.toFixed(2) || '0.00'}</p>
+                  <p className="text-[10px] sm:text-xs font-bold text-slate-500 tracking-widest uppercase mb-0.5">Total Earned</p>
+                  <p className="text-lg sm:text-xl font-black text-white font-mono">{mongoUser?.totalEarned?.toFixed(2) || '0.00'}</p>
                 </div>
               </div>
               

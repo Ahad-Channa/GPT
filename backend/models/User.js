@@ -36,6 +36,10 @@ const userSchema = new mongoose.Schema(
       default: 0,
     },
     // Progression tracking
+    totalEarned: {
+      type: Number,
+      default: 0,
+    },
     xp: {
       type: Number,
       default: 0,

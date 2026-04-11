@@ -26,7 +26,7 @@ async function getLitecoinRate() {
       hostname: 'api.coingecko.com',
       path: '/api/v3/simple/price?ids=litecoin&vs_currencies=usd',
       method: 'GET',
-      headers: { 
+      headers: {
         Accept: 'application/json',
         'User-Agent': 'GPT-WalletTracker-Backend/1.0.0'
       },
@@ -120,11 +120,13 @@ router.get('/history', verifyToken, async (req, res) => {
         .limit(limit),
       Transaction.countDocuments(query),
       Transaction.aggregate([
-        { $match: { 
-            userId: user._id, 
+        {
+          $match: {
+            userId: user._id,
             amount: { $gt: 0 },
             description: { $not: /^Withdrawal Refund/ }
-        } },
+          }
+        },
         { $group: { _id: null, total: { $sum: "$amount" } } }
       ]),
       Transaction.aggregate([
@@ -285,10 +287,10 @@ router.get('/daily-bonus-status', verifyToken, async (req, res) => {
 
     const settings = await Settings.getSingleton();
     const rd = settings.rewardEngine;
-    
+
     let streak = user.dailyBonusStreak || 0;
     const now = new Date();
-    
+
     // Check if already claimed today
     let alreadyClaimed = false;
     let nextClaimAt = null;
@@ -304,7 +306,7 @@ router.get('/daily-bonus-status', verifyToken, async (req, res) => {
         yesterday.setDate(now.getDate() - 1);
         // if not claimed yesterday, streak breaks to 0 (will become 1 on next claim if resetting, or just 0 now)
         if (user.lastDailyBonusClaim.toDateString() !== yesterday.toDateString()) {
-           streak = 0;
+          streak = 0;
         }
       }
     }
@@ -312,21 +314,23 @@ router.get('/daily-bonus-status', verifyToken, async (req, res) => {
     const nextStreakToClaim = alreadyClaimed ? streak + 1 : streak + 1;
     let dayIndex = (nextStreakToClaim - 1) % rd.dailyBonusMaxStreak;
     if (streak >= rd.dailyBonusMaxStreak && rd.dailyBonusAfterMax === 'hold') {
-       dayIndex = rd.dailyBonusMaxStreak - 1;
+      dayIndex = rd.dailyBonusMaxStreak - 1;
     }
 
     let earnedToday = 0;
     if (!alreadyClaimed) {
       const startOfToday = new Date(now);
       startOfToday.setHours(0, 0, 0, 0);
-      
+
       const earnedResult = await Transaction.aggregate([
-        { $match: { 
-            userId: user._id, 
+        {
+          $match: {
+            userId: user._id,
             amount: { $gt: 0 },
             transactionType: { $ne: 'daily_bonus' },
             createdAt: { $gte: startOfToday }
-        } },
+          }
+        },
         { $group: { _id: null, total: { $sum: "$amount" } } }
       ]);
       earnedToday = earnedResult.length > 0 ? earnedResult[0].total : 0;
@@ -335,10 +339,10 @@ router.get('/daily-bonus-status', verifyToken, async (req, res) => {
     const required = rd.dailyBonusEarnGate[dayIndex] || 1000;
     const gateUnlocked = earnedToday >= required;
     const rewardToday = rd.dailyBonusReward[dayIndex] || 100;
-    
+
     let nextDayIndex = dayIndex + 1;
     if (nextDayIndex >= rd.dailyBonusMaxStreak) {
-       nextDayIndex = rd.dailyBonusAfterMax === 'hold' ? rd.dailyBonusMaxStreak - 1 : 0;
+      nextDayIndex = rd.dailyBonusAfterMax === 'hold' ? rd.dailyBonusMaxStreak - 1 : 0;
     }
     const rewardTomorrow = rd.dailyBonusReward[nextDayIndex] || 100;
 
@@ -397,19 +401,21 @@ router.post('/daily-bonus', verifyToken, async (req, res) => {
 
     let dayIndex = (streak - 1) % rd.dailyBonusMaxStreak;
     if (streak > rd.dailyBonusMaxStreak && rd.dailyBonusAfterMax === 'hold') {
-       dayIndex = rd.dailyBonusMaxStreak - 1;
+      dayIndex = rd.dailyBonusMaxStreak - 1;
     }
 
     // 3. EARN GATE
     const startOfToday = new Date(now);
     startOfToday.setHours(0, 0, 0, 0);
     const earnedResult = await Transaction.aggregate([
-      { $match: { 
-          userId: user._id, 
+      {
+        $match: {
+          userId: user._id,
           amount: { $gt: 0 },
           transactionType: { $ne: 'daily_bonus' },
           createdAt: { $gte: startOfToday }
-      } },
+        }
+      },
       { $group: { _id: null, total: { $sum: "$amount" } } }
     ]);
     const earnedToday = earnedResult.length > 0 ? earnedResult[0].total : 0;
@@ -417,10 +423,10 @@ router.post('/daily-bonus', verifyToken, async (req, res) => {
 
     if (earnedToday < requiredEarn) {
       return res.status(200).json({
-         success: false,
-         gateRequired: true,
-         earned: earnedToday,
-         required: requiredEarn
+        success: false,
+        gateRequired: true,
+        earned: earnedToday,
+        required: requiredEarn
       });
     }
 
@@ -430,7 +436,7 @@ router.post('/daily-bonus', verifyToken, async (req, res) => {
     const updatedUser = await User.findOneAndUpdate(
       { _id: user._id, lastDailyBonusClaim: user.lastDailyBonusClaim },
       {
-        $inc: { walletBalance: rewardAmount },
+        $inc: { walletBalance: rewardAmount, totalEarned: rewardAmount },
         $set: { lastDailyBonusClaim: now, dailyBonusStreak: streak },
       },
       { returnDocument: 'after' }
@@ -456,7 +462,7 @@ router.post('/daily-bonus', verifyToken, async (req, res) => {
       rewardAmount,
       streak,
       balance: updatedUser.walletBalance,
-      nextClaimAt: new Date(new Date().setHours(24,0,0,0)).toISOString()
+      nextClaimAt: new Date(new Date().setHours(24, 0, 0, 0)).toISOString()
     });
   } catch (error) {
     console.error('[/api/wallet/daily-bonus] Error:', error);
@@ -498,8 +504,8 @@ router.post('/redeem-promo', verifyToken, async (req, res) => {
 
     // Atomic update
     const updatedPromo = await PromoCode.findOneAndUpdate(
-      { 
-        _id: promo._id, 
+      {
+        _id: promo._id,
         isActive: true,
         $or: [
           { maxUses: 0 },
@@ -520,7 +526,7 @@ router.post('/redeem-promo', verifyToken, async (req, res) => {
 
     const updatedUser = await User.findOneAndUpdate(
       { _id: user._id },
-      { $inc: { walletBalance: promo.rewardCoins } },
+      { $inc: { walletBalance: promo.rewardCoins, totalEarned: promo.rewardCoins } },
       { new: true }
     );
 
@@ -555,19 +561,19 @@ router.get('/dashboard-stats', verifyToken, async (req, res) => {
 
     // Aggregate to count and sum offer_reward transactions
     const result = await Transaction.aggregate([
-      { 
-        $match: { 
-          userId: user._id, 
+      {
+        $match: {
+          userId: user._id,
           transactionType: 'offer_reward',
           status: 'completed'
-        } 
+        }
       },
-      { 
-        $group: { 
-          _id: null, 
+      {
+        $group: {
+          _id: null,
           count: { $sum: 1 },
           totalEarned: { $sum: '$amount' }
-        } 
+        }
       }
     ]);
 
@@ -609,7 +615,7 @@ router.post('/history/:id/submit-proof', verifyToken, async (req, res) => {
       imageUrl: proofImage || '',
       submittedAt: new Date().toISOString()
     };
-    
+
     transaction.metadata = metadata;
     // If it was hold or rejected, change to pending so admin knows it's ready for review
     if (['hold', 'rejected'].includes(transaction.status)) {

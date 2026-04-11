@@ -29,7 +29,7 @@ const settingsSchema = new mongoose.Schema(
       ],
       default: [
         { id: 'litecoin', label: 'Litecoin', minUSD: 1.0, feePercent: 5, enabled: true, icon: 'Ł' },
-        { id: 'paypal',   label: 'PayPal',   minUSD: 5.0, feePercent: 5, enabled: true, icon: '💳' },
+        { id: 'paypal', label: 'PayPal', minUSD: 5.0, feePercent: 5, enabled: true, icon: '💳' },
         { id: 'giftcard', label: 'Gift Card', minUSD: 10.0, feePercent: 5, enabled: true, icon: '🎁' },
       ],
     },
@@ -104,8 +104,8 @@ const settingsSchema = new mongoose.Schema(
     // Now supports N-rank visible slots and N-rank reward tiers (independently configurable)
     leaderboardConfig: {
       daily: {
-        enabled:       { type: Boolean, default: false },
-        visibleSlots:  { type: Number, default: 25, min: 5, max: 100 },  // how many ranks show on the public board
+        enabled: { type: Boolean, default: false },
+        visibleSlots: { type: Number, default: 25, min: 5, max: 100 },  // how many ranks show on the public board
         rewardedRanks: { type: Number, default: 3, min: 0, max: 100 },   // how many top ranks receive rewards
         // Flexible reward tiers — array index = rank-1 (index 0 = rank 1)
         rewardTiers: {
@@ -114,8 +114,8 @@ const settingsSchema = new mongoose.Schema(
         },
       },
       weekly: {
-        enabled:       { type: Boolean, default: false },
-        visibleSlots:  { type: Number, default: 25, min: 5, max: 100 },
+        enabled: { type: Boolean, default: false },
+        visibleSlots: { type: Number, default: 25, min: 5, max: 100 },
         rewardedRanks: { type: Number, default: 3, min: 0, max: 100 },
         rewardTiers: {
           type: [Number],
@@ -123,8 +123,8 @@ const settingsSchema = new mongoose.Schema(
         },
       },
       monthly: {
-        enabled:       { type: Boolean, default: false },
-        visibleSlots:  { type: Number, default: 25, min: 5, max: 100 },
+        enabled: { type: Boolean, default: false },
+        visibleSlots: { type: Number, default: 25, min: 5, max: 100 },
         rewardedRanks: { type: Number, default: 3, min: 0, max: 100 },
         rewardTiers: {
           type: [Number],

@@ -106,7 +106,7 @@ function RankRow({ entry, rank, currentUserId, color, reward }) {
         display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden',
       }}>
         <img
-          src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${entry.displayName}`}
+          src={entry.avatarUrl || entry.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${entry.displayName}`}
           alt={entry.displayName}
           style={{ width: '100%', height: '100%', objectFit: 'cover' }}
           onError={e => { e.target.style.display = 'none'; }}
