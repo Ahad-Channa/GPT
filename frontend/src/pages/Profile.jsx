@@ -716,10 +716,27 @@ const Profile = () => {
   const [token,      setToken]      = useState(null);
   const [customOffers, setCustomOffers] = useState([]);
   const [loadingOffers, setLoadingOffers] = useState(false);
+  const [profileStats, setProfileStats] = useState({ totalTasksCompleted: 0, earnings30Days: 0 });
 
   useEffect(() => {
     if (currentUser) currentUser.getIdToken().then(setToken);
   }, [currentUser]);
+
+  useEffect(() => {
+    if (token) {
+      fetch(`${API}/api/wallet/dashboard-stats`, { headers: { Authorization: `Bearer ${token}` } })
+        .then(res => res.json())
+        .then(data => {
+          if (data.success) {
+            setProfileStats({
+              totalTasksCompleted: data.totalTasksCompleted,
+              earnings30Days: data.earnings30Days
+            });
+          }
+        })
+        .catch(console.error);
+    }
+  }, [token]);
 
   const fetchCustomOffers = async () => {
     if (!token) return;
@@ -845,25 +862,25 @@ const Profile = () => {
                 </div>
               </div>
 
-              {/* Streak */}
-              <div className="bg-white/[0.02] border border-white/[0.05] rounded-2xl p-4 flex items-center gap-4 hover:border-rose-500/30 transition-colors">
-                <div className="w-10 h-10 rounded-[14px] bg-gradient-to-br from-rose-500 to-pink-600 flex items-center justify-center shadow-[0_0_15px_rgba(244,63,94,0.3)] shrink-0">
-                  <FiActivity className="text-white text-lg" />
+              {/* Completed Offers */}
+              <div className="bg-white/[0.02] border border-white/[0.05] rounded-2xl p-4 flex items-center gap-4 hover:border-emerald-500/30 transition-colors">
+                <div className="w-10 h-10 rounded-[14px] bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center shadow-[0_0_15px_rgba(16,185,129,0.3)] shrink-0">
+                  <FiCheckCircle className="text-white text-lg" />
                 </div>
                 <div>
-                  <p className="text-[10px] sm:text-xs font-bold text-slate-500 tracking-widest uppercase mb-0.5">Daily Streak</p>
-                  <p className="text-lg sm:text-xl font-black text-white font-mono">{mongoUser?.dailyBonusStreak || 0} <span className="text-sm font-semibold text-slate-300">Days</span></p>
+                  <p className="text-[10px] sm:text-xs font-bold text-slate-500 tracking-widest uppercase mb-0.5">Total Offers</p>
+                  <p className="text-lg sm:text-xl font-black text-white font-mono">{profileStats.totalTasksCompleted} <span className="text-sm font-semibold text-slate-300">Offers</span></p>
                 </div>
               </div>
 
-              {/* Status */}
-              <div className="bg-white/[0.02] border border-white/[0.05] rounded-2xl p-4 flex items-center gap-4 hover:border-emerald-500/30 transition-colors">
-                <div className="w-10 h-10 rounded-[14px] bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center shadow-[0_0_15px_rgba(16,185,129,0.3)] shrink-0">
-                  <FiShield className="text-white text-lg" />
+              {/* 30-Day Earnings */}
+              <div className="bg-white/[0.02] border border-white/[0.05] rounded-2xl p-4 flex items-center gap-4 hover:border-violet-500/30 transition-colors">
+                <div className="w-10 h-10 rounded-[14px] bg-gradient-to-br from-violet-500 to-fuchsia-600 flex items-center justify-center shadow-[0_0_15px_rgba(139,92,246,0.3)] shrink-0">
+                  <FiTrendingUp className="text-white text-lg" />
                 </div>
                 <div>
-                  <p className="text-[10px] sm:text-xs font-bold text-slate-500 tracking-widest uppercase mb-0.5">Security</p>
-                  <p className="text-[13px] sm:text-sm font-bold text-emerald-400">Protected</p>
+                  <p className="text-[10px] sm:text-xs font-bold text-slate-500 tracking-widest uppercase mb-0.5">30-Day Earnings</p>
+                  <p className="text-[13px] sm:text-sm font-bold text-emerald-400 font-mono">{profileStats.earnings30Days?.toFixed(2)} <span className="text-sm font-semibold text-slate-300">Coins</span></p>
                 </div>
               </div>
             </div>
@@ -875,7 +892,7 @@ const Profile = () => {
           <div className="flex gap-1 min-w-max">
             <TabBtn active={activeTab === 'started_offers'} onClick={() => setActiveTab('started_offers')} icon={FiPlayCircle} label="Started Offers" />
             <TabBtn active={activeTab === 'clicks'}      onClick={() => setActiveTab('clicks')}      icon={FiZap}            label="Click History" />
-            <TabBtn active={activeTab === 'offers'}      onClick={() => setActiveTab('offers')}      icon={FiCheckCircle}    label="Offer History" />
+            <TabBtn active={activeTab === 'offers'}      onClick={() => setActiveTab('offers')}      icon={FiCheckCircle}    label="Completed Offers" />
             <TabBtn active={activeTab === 'chargebacks'} onClick={() => setActiveTab('chargebacks')} icon={FiShield}         label="Chargebacks" />
           </div>
         </div>
@@ -949,7 +966,7 @@ const Profile = () => {
             </motion.div>
           )}
 
-          {/* ══ OFFER HISTORY TAB ══ */}
+          {/* ══ COMPLETED OFFERS TAB ══ */}
           {activeTab === 'offers' && (
             <motion.div
               key="offers"
@@ -962,7 +979,7 @@ const Profile = () => {
               <div className="flex items-center justify-between px-6 py-5 border-b border-white/[0.06] bg-gradient-to-r from-indigo-500/[0.04] to-transparent">
                 <div>
                   <h2 className="text-base font-bold font-display text-white flex items-center gap-2">
-                    <FiCheckCircle className="text-indigo-400" /> Offer History
+                    <FiCheckCircle className="text-indigo-400" /> Completed Offers
                   </h2>
                   <p className="text-xs text-slate-500 mt-0.5">All completed offerwall and featured offer rewards</p>
                 </div>

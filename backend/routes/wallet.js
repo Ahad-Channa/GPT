@@ -577,12 +577,35 @@ router.get('/dashboard-stats', verifyToken, async (req, res) => {
       }
     ]);
 
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+    const result30 = await Transaction.aggregate([
+      {
+        $match: {
+          userId: user._id,
+          amount: { $gt: 0 },
+          status: 'completed',
+          createdAt: { $gte: thirtyDaysAgo },
+          description: { $not: /^Withdrawal Refund/ }
+        }
+      },
+      {
+        $group: {
+          _id: null,
+          totalEarned: { $sum: '$amount' }
+        }
+      }
+    ]);
+
     const stats = result.length > 0 ? result[0] : { count: 0, totalEarned: 0 };
+    const stats30 = result30.length > 0 ? result30[0] : { totalEarned: 0 };
 
     res.status(200).json({
       success: true,
       totalTasksCompleted: stats.count,
-      totalCoinsFromOffers: stats.totalEarned
+      totalCoinsFromOffers: stats.totalEarned,
+      earnings30Days: stats30.totalEarned
     });
   } catch (error) {
     console.error('[/api/wallet/dashboard-stats] Error:', error);
