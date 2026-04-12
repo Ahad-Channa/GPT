@@ -21,6 +21,10 @@ const userSchema = new mongoose.Schema(
     avatarUrl: {
       type: String,
     },
+    isPrivate: {
+      type: Boolean,
+      default: false,
+    },
     role: {
       type: String,
       enum: ['user', 'moderator', 'admin'],

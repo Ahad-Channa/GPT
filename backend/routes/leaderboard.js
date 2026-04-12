@@ -92,7 +92,36 @@ async function getLiveRankings(period, limit = 50) {
     },
   ]);
 
-  return results.map((r, i) => ({ rank: i + 1, ...r }));
+  let rankings = results.map((r, i) => ({ rank: i + 1, ...r }));
+
+  // Pad the leaderboard with active users who haven't earned anything this period
+  if (rankings.length < limit) {
+    const earnedUserIds = rankings.map(r => r.userId);
+    const needed = limit - rankings.length;
+
+    const User = require('../models/User'); // ensure it's loaded if not at top-level
+    const paddingUsers = await User.find({
+      _id: { $nin: earnedUserIds },
+      role: { $ne: 'admin' }, // don't show admins on leaderboard by default
+      isBanned: false
+    })
+      .sort({ totalEarned: -1 }) // Sort 0-earners by who has overall more lifetime earnings, to keep best users on top of bottom lists
+      .limit(needed)
+      .lean();
+
+    for (const u of paddingUsers) {
+      rankings.push({
+        rank: rankings.length + 1,
+        userId: u._id,
+        displayName: u.displayName,
+        avatarUrl: u.avatarUrl,
+        avatar: u.photoURL,
+        coinsEarned: 0
+      });
+    }
+  }
+
+  return rankings;
 }
 
 // ─── Shared reset-and-reward function (called by cron + manual endpoint) ──────
@@ -103,7 +132,7 @@ async function resetLeaderboard(period) {
   if (!cfg?.enabled) return { skipped: true, reason: `${period} leaderboard is disabled` };
 
   const cycleStart = getPeriodStart(period);
-  const cycleEnd   = getPeriodEnd(period);
+  const cycleEnd = getPeriodEnd(period);
 
   // How many ranks get rewarded
   const rewardedRanks = cfg.rewardedRanks || 3;
@@ -175,7 +204,7 @@ router.get('/', verifyToken, async (req, res) => {
 
     for (const period of periods) {
       const periodCfg = cfg[period];
-      
+
       // allTime doesn't need to be strictly enabled via settings, but let's allow it or force true
       if (period !== 'allTime' && !periodCfg?.enabled) {
         result[period] = { enabled: false };

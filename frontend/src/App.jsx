@@ -8,6 +8,7 @@ import Profile from './pages/Profile';
 import Wallet from './pages/Wallet';
 import Earn from './pages/Earn';
 import Leaderboard from './pages/Leaderboard';
+import PublicProfile from './pages/PublicProfile';
 import AdminLayout from './pages/admin/AdminLayout';
 import AdminOverview from './pages/admin/AdminOverview';
 import AdminUsers from './pages/admin/AdminUsers';
@@ -90,6 +91,14 @@ function App() {
         element={
           <PrivateRoute>
             <Leaderboard />
+          </PrivateRoute>
+        } 
+      />
+      <Route 
+        path="/user/:id" 
+        element={
+          <PrivateRoute>
+            <PublicProfile />
           </PrivateRoute>
         } 
       />

@@ -32,6 +32,7 @@ const offerwallRoutes = require('./routes/offerwalls');
 const customOffersRoutes = require('./routes/customOffers');
 const activityRoutes = require('./routes/activity');
 const { router: leaderboardRoutes, resetLeaderboard } = require('./routes/leaderboard');
+const publicRoutes = require('./routes/public');
 
 app.use('/api/auth', authRoutes);
 app.use('/api/wallet', walletRoutes);
@@ -40,6 +41,7 @@ app.use('/api/offerwalls', offerwallRoutes);
 app.use('/api/custom-offers', customOffersRoutes);
 app.use('/api/activity', activityRoutes);
 app.use('/api/leaderboard', leaderboardRoutes);
+app.use('/api/public', publicRoutes);
 
 // Base Route
 app.get('/', (req, res) => {

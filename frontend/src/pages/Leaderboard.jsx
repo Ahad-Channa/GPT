@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import DashboardLayout from '../components/layout/DashboardLayout';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -72,6 +73,7 @@ function useCountdown(targetIso) {
 
 // ─── Single leaderboard row ───────────────────────────────────────────────────
 function RankRow({ entry, rank, currentUserId, color, reward }) {
+  const navigate = useNavigate();
   const isMe = entry.userId === currentUserId || entry.userId?.toString() === currentUserId?.toString();
   const medal = rank <= 3 ? MEDALS[rank - 1] : null;
   const medalColor = rank <= 3 ? MEDAL_COLORS[rank - 1] : color;
@@ -79,13 +81,16 @@ function RankRow({ entry, rank, currentUserId, color, reward }) {
   return (
     <motion.div
       variants={item}
+      onClick={() => navigate(`/user/${entry.userId}`)}
       style={{
         display: 'flex', alignItems: 'center', gap: '14px',
         padding: '12px 16px', borderRadius: '12px',
         background: isMe ? `${color}12` : rank <= 3 ? 'rgba(255,255,255,0.03)' : 'transparent',
         border: isMe ? `1px solid ${color}30` : rank <= 3 ? '1px solid rgba(255,255,255,0.06)' : '1px solid transparent',
         transition: 'background 0.2s',
+        cursor: 'pointer',
       }}
+      whileHover={{ scale: 1.01, backgroundColor: 'rgba(255,255,255,0.06)' }}
     >
       {/* Rank badge */}
       <div style={{
@@ -155,6 +160,11 @@ function PeriodPanel({ period, data, currentUserId }) {
   const rankings = data?.rankings || [];
   const myRankIdx = rankings.findIndex(r => r.userId === currentUserId || r.userId?.toString() === currentUserId?.toString());
 
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 20;
+  const totalPages = Math.ceil(rankings.length / itemsPerPage);
+  const paginatedRankings = rankings.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column' }}>
 
@@ -202,21 +212,59 @@ function PeriodPanel({ period, data, currentUserId }) {
             No entries yet this period. Start earning to get on the board!
           </div>
         ) : (
-          <motion.div variants={container} initial="hidden" animate="show" style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-            {rankings.map((entry, i) => {
-              const reward = i < (data?.rewardedRanks || 0) ? (data?.rewardTiers?.[i] || 0) : 0;
-              return (
-                <RankRow
-                  key={entry.userId}
-                  entry={entry}
-                  rank={i + 1}
-                  currentUserId={currentUserId}
-                  color={meta.color}
-                  reward={reward}
-                />
-              );
-            })}
-          </motion.div>
+          <>
+            <motion.div variants={container} initial="hidden" animate="show" style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+              {paginatedRankings.map((entry, idx) => {
+                const globalIndex = (currentPage - 1) * itemsPerPage + idx;
+                const reward = globalIndex < (data?.rewardedRanks || 0) ? (data?.rewardTiers?.[globalIndex] || 0) : 0;
+                return (
+                  <RankRow
+                    key={`${entry.userId}-${globalIndex}`}
+                    entry={entry}
+                    rank={globalIndex + 1}
+                    currentUserId={currentUserId}
+                    color={meta.color}
+                    reward={reward}
+                  />
+                );
+              })}
+            </motion.div>
+
+            {totalPages > 1 && (
+              <div style={{ 
+                display: 'flex', justifyContent: 'space-between', alignItems: 'center', 
+                marginTop: '20px', padding: '10px 0', borderTop: '1px solid rgba(255,255,255,0.05)'
+              }}>
+                <button
+                  onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                  disabled={currentPage === 1}
+                  style={{
+                    padding: '8px 16px', borderRadius: '8px', 
+                    background: currentPage === 1 ? 'rgba(255,255,255,0.02)' : 'rgba(255,255,255,0.08)',
+                    color: currentPage === 1 ? '#475569' : '#e2e8f0', cursor: currentPage === 1 ? 'not-allowed' : 'pointer',
+                    border: 'none', transition: 'background 0.2s', fontWeight: 600
+                  }}
+                >
+                  &lt; Prev
+                </button>
+                <div style={{ fontSize: '12px', color: '#94a3b8', fontWeight: 500 }}>
+                  Page {currentPage} of {totalPages}
+                </div>
+                <button
+                  onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                  disabled={currentPage === totalPages}
+                  style={{
+                    padding: '8px 16px', borderRadius: '8px', 
+                    background: currentPage === totalPages ? 'rgba(255,255,255,0.02)' : 'rgba(255,255,255,0.08)',
+                    color: currentPage === totalPages ? '#475569' : '#e2e8f0', cursor: currentPage === totalPages ? 'not-allowed' : 'pointer',
+                    border: 'none', transition: 'background 0.2s', fontWeight: 600
+                  }}
+                >
+                  Next &gt;
+                </button>
+              </div>
+            )}
+          </>
         )}
       </div>
     </div>

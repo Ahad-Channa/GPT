@@ -470,6 +470,7 @@ const SettingsModal = ({ isOpen, onClose, mongoUser, token, setMongoUser, logout
   const [showMoreAvatars, setShowMoreAvatars] = useState(false);
   const [customStyle, setCustomStyle] = useState('avataaars');
   const [customSeed, setCustomSeed] = useState('');
+  const [isPrivate, setIsPrivate] = useState(mongoUser?.isPrivate || false);
 
   const displayedAvatars = showMoreAvatars ? PREDEFINED_AVATARS : PREDEFINED_AVATARS.slice(0, 20);
 
@@ -477,6 +478,7 @@ const SettingsModal = ({ isOpen, onClose, mongoUser, token, setMongoUser, logout
     if (isOpen) {
        setDisplayName(mongoUser?.displayName || '');
        setAvatarUrl(mongoUser?.avatarUrl || '');
+       setIsPrivate(mongoUser?.isPrivate || false);
        setDeletePhase(0);
        setError('');
        setSuccess('');
@@ -498,7 +500,7 @@ const SettingsModal = ({ isOpen, onClose, mongoUser, token, setMongoUser, logout
       const res = await fetch(`${API}/api/auth/profile`, {
         method: 'PUT',
         headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ displayName, avatarUrl })
+        body: JSON.stringify({ displayName, avatarUrl, isPrivate })
       });
       const data = await res.json();
       if (res.ok) {
@@ -564,6 +566,25 @@ const SettingsModal = ({ isOpen, onClose, mongoUser, token, setMongoUser, logout
               {error || success}
             </div>
           )}
+
+          <div className="space-y-4">
+            <div className="flex items-center justify-between bg-[#151b2b] border border-white/[0.08] p-4 rounded-xl">
+              <div>
+                <h3 className="text-sm font-bold text-slate-300 uppercase tracking-wider flex items-center gap-2">
+                  <FiShield className="text-indigo-400" /> Private Profile
+                </h3>
+                <p className="text-xs text-slate-400 mt-1 max-w-sm">
+                  Hide specific offer details (like survey names) from other users on your public profile and the live earning feed.
+                </p>
+              </div>
+              <button
+                onClick={() => setIsPrivate(!isPrivate)}
+                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${isPrivate ? 'bg-indigo-500' : 'bg-slate-700'}`}
+              >
+                <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${isPrivate ? 'translate-x-6' : 'translate-x-1'}`} />
+              </button>
+            </div>
+          </div>
 
           <div className="space-y-4">
             <h3 className="text-sm font-bold text-slate-300 uppercase tracking-wider">Display Name</h3>

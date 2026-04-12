@@ -50,7 +50,7 @@ router.post('/sync', verifyToken, async (req, res) => {
 // Allows a user to update their display name with basic validation
 router.put('/profile', verifyToken, async (req, res) => {
   try {
-    const { displayName, avatarUrl } = req.body;
+    const { displayName, avatarUrl, isPrivate } = req.body;
     
     // Basic username validation (3-20 characters, alphanumeric, dashes, underscores)
     const nameRegex = /^[a-zA-Z0-9_-]{3,20}$/;
@@ -64,6 +64,7 @@ router.put('/profile', verifyToken, async (req, res) => {
     const updateFields = {};
     if (displayName) updateFields.displayName = displayName;
     if (avatarUrl) updateFields.avatarUrl = avatarUrl;
+    if (typeof isPrivate === 'boolean') updateFields.isPrivate = isPrivate;
 
     const user = await User.findOneAndUpdate(
       { firebaseUid: req.user.uid },
