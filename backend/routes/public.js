@@ -55,8 +55,17 @@ router.get('/user/:id', async (req, res) => {
       createdAt: user.createdAt,
     };
 
-    // Fetch the user's latest 15 credited offers
-    let recentActiveOffers = await Transaction.find({
+    // If the profile is private — return a complete blackout. No stats, no history, nothing.
+    if (publicProfile.isPrivate) {
+      return res.status(200).json({
+        success: true,
+        profile: { isPrivate: true },
+        recentActiveOffers: [],
+      });
+    }
+
+    // Fetch the user's latest 15 credited offers (public profiles only)
+    const recentActiveOffers = await Transaction.find({
       userId: user._id,
       transactionType: 'offer_reward',
       status: { $in: ['completed', 'hold'] },
@@ -65,11 +74,6 @@ router.get('/user/:id', async (req, res) => {
       .sort({ createdAt: -1 })
       .limit(15)
       .lean();
-
-    // If the profile is private, scrub the transactions
-    if (publicProfile.isPrivate) {
-      recentActiveOffers = recentActiveOffers.map(scrubTransaction);
-    }
 
     res.status(200).json({ 
       success: true, 

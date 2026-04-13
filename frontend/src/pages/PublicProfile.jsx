@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import DashboardLayout from '../components/layout/DashboardLayout';
 import { motion } from 'framer-motion';
-import { FiUser, FiStar, FiClock, FiShield, FiAlertTriangle } from 'react-icons/fi';
+import { FiUser, FiStar, FiClock, FiShield, FiAlertTriangle, FiLock } from 'react-icons/fi';
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
@@ -71,6 +71,23 @@ const PublicProfile = () => {
           <Link to="/leaderboard" className="px-6 py-3 rounded-xl bg-indigo-500/10 text-indigo-400 font-bold hover:bg-indigo-500/20 transition-colors">
             Back to Leaderboard
           </Link>
+        </div>
+      </DashboardLayout>
+    );
+  }
+
+  // Private profile — show only a lock screen, nothing else
+  if (profile.isPrivate) {
+    return (
+      <DashboardLayout>
+        <div className="flex flex-col items-center justify-center py-40 text-center px-4">
+          <div className="w-20 h-20 rounded-3xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center mb-6">
+            <FiLock className="text-3xl text-indigo-400" />
+          </div>
+          <h2 className="text-2xl font-black text-white mb-3 tracking-tight">This profile is private.</h2>
+          <p className="text-slate-500 text-sm max-w-xs">
+            This user has chosen to keep their profile private.
+          </p>
         </div>
       </DashboardLayout>
     );
