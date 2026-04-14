@@ -6,6 +6,8 @@ const Transaction = require('../models/Transaction');
 const Settings = require('../models/Settings');
 const PromoCode = require('../models/PromoCode');
 const { verifyToken } = require('../middlewares/authMiddleware');
+const notify = require('../utils/notify');
+const { notifyAdmins } = require('../utils/adminNotify');
 
 /* ─────────────────────────────────────────────────────────────────
    UTILITY: Fetch live USD rates via CoinGecko (free, no key needed)
@@ -262,6 +264,23 @@ router.post('/withdraw', verifyToken, async (req, res) => {
           estimatedLTC: (amountNum / coinsPerUSD / ltcRateUSD).toFixed(8),
         }),
       },
+    });
+
+    await notify(
+      user._id,
+      'withdrawal_submitted',
+      'Withdrawal Pending',
+      `Your withdrawal of ${amountNum} coins is pending review.`,
+      { amount: amountNum, transactionId: transaction._id }
+    );
+
+    // Add admin notification
+    await notifyAdmins({
+      category: 'withdrawals',
+      type: 'withdrawal_requested',
+      message: `User ${user.username} requested a withdrawal of ${amountNum} Coins via ${methodConfig.label}.`,
+      permissionRequired: 'manage_withdrawals',
+      metadata: { userId: user._id, transactionId: transaction._id }
     });
 
     res.status(201).json({
@@ -648,6 +667,15 @@ router.post('/history/:id/submit-proof', verifyToken, async (req, res) => {
     // Must mark modified for Mixed types
     transaction.markModified('metadata');
     await transaction.save();
+
+    // Add admin notification
+    await notifyAdmins({
+      category: 'offerwalls', // or maybe 'users' or 'security'? offerwalls is fine if it's offers
+      type: 'proof_submitted',
+      message: `User ${user.username} submitted proof for transaction ${transaction.description}.`,
+      permissionRequired: 'manage_offerwalls', 
+      metadata: { userId: user._id, transactionId: transaction._id }
+    });
 
     res.status(200).json({ success: true, message: 'Proof submitted successfully', transaction });
   } catch (error) {

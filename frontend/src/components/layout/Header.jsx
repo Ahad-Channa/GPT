@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
-import { FiLogOut, FiUser, FiSettings, FiZap, FiChevronDown, FiCreditCard, FiGrid, FiLock, FiUnlock, FiClock, FiCheckCircle, FiTrendingUp } from 'react-icons/fi';
+import { useNotifications } from '../../contexts/NotificationContext';
+import { FiLogOut, FiUser, FiSettings, FiZap, FiChevronDown, FiCreditCard, FiGrid, FiLock, FiUnlock, FiClock, FiCheckCircle, FiTrendingUp, FiBell } from 'react-icons/fi';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -129,6 +130,7 @@ const DailyBonusChip = () => {
 
 const Header = () => {
   const { currentUser, mongoUser, logout, isAdmin } = useAuth();
+  const { unreadCount, togglePanel } = useNotifications();
   const navigate = useNavigate();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
@@ -176,6 +178,8 @@ const Header = () => {
             <FiTrendingUp className="text-indigo-400 text-xs" />
             <span className="text-[9px] text-slate-500 font-semibold uppercase tracking-widest">Leaderboard</span>
           </button>
+          
+          {/* Balance Chip */}
           <button
             id="header-balance-chip"
             onClick={() => navigate('/dashboard/wallet')}
@@ -190,6 +194,18 @@ const Header = () => {
           </button>
 
           <div className="h-5 w-px bg-white/[0.08] hidden sm:block" />
+
+          {/* Notifications */}
+          <button
+            id="header-notifications-btn"
+            onClick={togglePanel}
+            className="relative flex items-center justify-center w-8 h-8 md:w-10 md:h-10 rounded-xl bg-white/[0.04] border border-white/[0.07] hover:bg-white/[0.08] transition-colors"
+          >
+            <FiBell className="text-slate-300 text-sm md:text-base" />
+            {unreadCount > 0 && (
+              <span className="absolute top-1.5 right-1.5 md:top-2 md:right-2.5 w-2 h-2 bg-indigo-500 rounded-full shadow-[0_0_8px_rgba(99,102,241,0.8)]" />
+            )}
+          </button>
 
           {/* Avatar + Dropdown */}
           <div className="relative" ref={dropdownRef}>

@@ -10,6 +10,9 @@ const CustomOfferSubmission = require('../models/CustomOfferSubmission');
 const adminFirebase = require('../config/firebase');
 const { verifyToken } = require('../middlewares/authMiddleware');
 const { requireAdmin, requirePrimaryAdmin, requirePermission } = require('../middlewares/adminMiddleware');
+const notify = require('../utils/notify');
+const { notifyAdmins } = require('../utils/adminNotify');
+const AdminNotification = require('../models/AdminNotification');
 
 // === ADMIN ROUTES ENTRY POINT ===
 router.use(verifyToken, requireAdmin);
@@ -66,6 +69,11 @@ router.put('/users/:id/ban', requirePermission('manage_users'), async (req, res)
 
     const user = await User.findByIdAndUpdate(req.params.id, { isBanned }, { returnDocument: 'after' });
     await createLog(req.dbUser._id, isBanned ? 'BAN_USER' : 'UNBAN_USER', user._id, { reason: req.body.reason || 'No reason provided' });
+    
+    if (isBanned) {
+      await notify(user._id, 'account_banned', 'Account Suspended', 'Your account has been suspended by an administrator.');
+    }
+
     res.json({ success: true, user });
   } catch (error) {
     res.status(500).json({ success: false, error: 'Failed to update user ban status' });
@@ -102,6 +110,9 @@ router.put('/users/:id/balance', requirePermission('manage_users'), async (req, 
     });
 
     await createLog(req.dbUser._id, 'ADJUST_BALANCE', user._id, { amount, reason, prevBalance, newBalance: user.walletBalance });
+    
+    await notify(user._id, 'admin_adjustment', 'Balance Adjustment', `An admin has adjusted your balance by ${amountNum > 0 ? '+' : ''}${amountNum} coins. Reason: ${reason || 'N/A'}`, { amount: amountNum });
+
     res.json({ success: true, user });
   } catch (error) {
     res.status(500).json({ success: false, error: 'Failed to adjust balance' });
@@ -168,6 +179,8 @@ router.put('/withdrawals/:id/approve', requirePermission('manage_withdrawals'), 
       destination: tx.payoutDestination,
       ...(note && { note })
     });
+    
+    await notify(tx.userId._id, 'withdrawal_approved', 'Withdrawal Approved!', `Your payout of ${Math.abs(tx.amount)} coins has been approved.`, { txId: tx._id });
 
     res.json({ success: true, transaction: tx });
   } catch (error) {
@@ -214,6 +227,8 @@ router.put('/withdrawals/:id/reject', requirePermission('manage_withdrawals'), a
       refundAmount,
       reason: reason || 'No reason provided',
     });
+    
+    await notify(tx.userId._id, 'withdrawal_rejected', 'Withdrawal Rejected', `Your withdrawal of ${Math.abs(tx.amount)} coins was rejected. ${refundAmount} coins refunded.`, { txId: tx._id, refundAmount });
 
     res.json({ success: true, transaction: tx, refundAmount });
   } catch (error) {
@@ -517,6 +532,7 @@ router.put('/custom-offers/submissions/:id', requirePermission('manage_offerwall
       });
 
       await createLog(req.dbUser._id, 'APPROVE_CUSTOM_OFFER', user._id, `Approved submission for offer: ${submission.offerId.title}`);
+      await notify(user._id, 'offer_approved', 'Custom Offer Approved!', `Your submission for '${submission.offerId.title}' was approved! +${amountNum} coins.`, { offerId: submission.offerId._id });
     } else if (status === 'rejected') {
       await createLog(
         req.dbUser._id,
@@ -524,6 +540,7 @@ router.put('/custom-offers/submissions/:id', requirePermission('manage_offerwall
         user._id,
         `Rejected submission for offer: ${submission.offerId.title}. Reason: ${adminNote || 'No reason provided'}`
       );
+      await notify(user._id, 'offer_rejected', 'Custom Offer Rejected', `Your submission for '${submission.offerId.title}' was rejected.`, { offerId: submission.offerId._id });
     }
 
     res.json({ success: true, submission });
@@ -618,7 +635,7 @@ router.delete('/admins/:id', requirePrimaryAdmin, async (req, res) => {
 });
 
 // ----------------------------------------------------
-// LOGS SECTION
+// LOGS & ANNOUNCEMENTS SECTION
 // ----------------------------------------------------
 router.get('/logs', requirePrimaryAdmin, async (req, res) => {
   try {
@@ -630,6 +647,30 @@ router.get('/logs', requirePrimaryAdmin, async (req, res) => {
     res.json({ success: true, logs });
   } catch (error) {
     res.status(500).json({ success: false, error: 'Failed to fetch logs' });
+  }
+});
+
+// POST /api/admin/announcements
+router.post('/announcements', requirePrimaryAdmin, async (req, res) => {
+  try {
+    const { title, message, targetAll, targetUserIds } = req.body;
+    
+    if (targetAll) {
+      // Find all valid users to receive the announcement
+      const users = await User.find({}).select('_id');
+      for (const u of users) {
+        await notify(u._id, 'announcement', title, message);
+      }
+    } else if (targetUserIds && Array.isArray(targetUserIds)) {
+      for (const id of targetUserIds) {
+        await notify(id, 'announcement', title, message);
+      }
+    }
+
+    await createLog(req.dbUser._id, 'SEND_ANNOUNCEMENT', null, { title, targetCount: targetAll ? 'all' : targetUserIds.length });
+    res.json({ success: true, message: 'Announcements sent' });
+  } catch (error) {
+    res.status(500).json({ success: false, error: 'Failed to send announcements' });
   }
 });
 
@@ -653,6 +694,16 @@ router.post('/chargebacks/:transactionId/process', requirePermission('manage_off
     await createLog(req.dbUser._id, 'PROCESS_CHARGEBACK', parentTx.userId, {
       txId: parentTx._id,
       amount: -Math.abs(parentTx.amount),
+    });
+    
+    await notify(parentTx.userId, 'chargeback', 'Transaction Reversed', `A transaction was reversed and -${Math.abs(parentTx.amount)} coins were deducted.`, { txId: parentTx._id, amount: -Math.abs(parentTx.amount) });
+
+    await notifyAdmins({
+      category: 'security',
+      type: 'chargeback_processed',
+      message: `Chargeback processed by ${req.dbUser.displayName || req.dbUser.email} for transaction ${parentTx._id}.`,
+      permissionRequired: 'manage_offerwalls',
+      metadata: { transactionId: parentTx._id, userId: parentTx.userId }
     });
 
     // 2. Cascade reverse linked transactions (e.g. referrals, bonuses derived from this)
@@ -774,6 +825,90 @@ router.get('/leaderboard-history', requirePrimaryAdmin, async (req, res) => {
     res.json({ success: true, cycles, total, totalPages: Math.ceil(total / parseInt(limit)) });
   } catch (error) {
     res.status(500).json({ success: false, error: 'Failed to fetch leaderboard history' });
+  }
+});
+
+// ----------------------------------------------------
+// OVERVIEW & NOTIFICATIONS
+// ----------------------------------------------------
+
+router.get('/overview-stats', async (req, res) => {
+  try {
+    const totalUsers = await User.countDocuments();
+    const bannedUsers = await User.countDocuments({ isBanned: true });
+    
+    // Total pending withdrawals
+    const pendingWithdrawalObj = await Transaction.aggregate([
+      { $match: { transactionType: 'withdrawal', status: 'pending' } },
+      { $group: { _id: null, total: { $sum: '$amount' } } }
+    ]);
+    const totalPendingWithdrawal = pendingWithdrawalObj.length > 0 ? Math.abs(pendingWithdrawalObj[0].total) : 0;
+    
+    // Total pending custom offers
+    const pendingOffers = await CustomOfferSubmission.countDocuments({ status: 'pending' });
+
+    // Economy - total user balance
+    const economyObj = await User.aggregate([
+      { $group: { _id: null, total: { $sum: '$walletBalance' } } }
+    ]);
+    const economyTotal = economyObj.length > 0 ? economyObj[0].total : 0;
+
+    res.json({
+      success: true,
+      stats: {
+        totalUsers,
+        bannedUsers,
+        totalPendingWithdrawal,
+        pendingOffers,
+        economyTotal
+      }
+    });
+  } catch(e) {
+    res.status(500).json({ success: false, error: 'Failed to fetch overview stats' });
+  }
+});
+
+router.get('/notifications', async (req, res) => {
+  try {
+    const notifs = await AdminNotification.find({ adminId: req.dbUser._id })
+      .sort({ createdAt: -1 })
+      .limit(50);
+    res.json({ success: true, notifications: notifs });
+  } catch(e) {
+    res.status(500).json({ success: false, error: 'Failed to fetch notifications' });
+  }
+});
+
+router.get('/notifications/counts', async (req, res) => {
+  try {
+    const counts = await AdminNotification.aggregate([
+      { $match: { adminId: req.dbUser._id, read: false } },
+      { $group: { _id: '$category', count: { $sum: 1 } } }
+    ]);
+    const countsMap = {};
+    counts.forEach(c => countsMap[c._id] = c.count);
+    
+    res.json({ success: true, counts: countsMap });
+  } catch(e) {
+    res.status(500).json({ success: false, error: 'Failed to fetch counts' });
+  }
+});
+
+router.post('/notifications/mark-read', async (req, res) => {
+  try {
+    const { category, notificationIds } = req.body;
+    const query = { adminId: req.dbUser._id, read: false };
+    
+    if (category && category !== 'all') {
+      query.category = category;
+    } else if (notificationIds && notificationIds.length > 0) {
+      query._id = { $in: notificationIds };
+    }
+    
+    await AdminNotification.updateMany(query, { $set: { read: true } });
+    res.json({ success: true });
+  } catch(e) {
+    res.status(500).json({ success: false, error: 'Failed to mark read' });
   }
 });
 

@@ -11,6 +11,7 @@ import Leaderboard from './pages/Leaderboard';
 import PublicProfile from './pages/PublicProfile';
 import AdminLayout from './pages/admin/AdminLayout';
 import AdminOverview from './pages/admin/AdminOverview';
+import AdminNotifications from './pages/admin/AdminNotifications';
 import AdminUsers from './pages/admin/AdminUsers';
 import AdminStaff from './pages/admin/AdminStaff';
 import AdminWithdrawals from './pages/admin/AdminWithdrawals';
@@ -20,6 +21,7 @@ import AdminOfferwalls from './pages/admin/AdminOfferwalls';
 import AdminPromoCodes from './pages/admin/AdminPromoCodes';
 import AdminCustomOffers from './pages/admin/AdminCustomOffers';
 import AdminLeaderboard from './pages/admin/AdminLeaderboard';
+import NotificationPanel from './components/NotificationPanel';
 
 const PrivateRoute = ({ children }) => {
   const { currentUser } = useAuth();
@@ -51,6 +53,7 @@ function App() {
           }
         }} 
       />
+      <NotificationPanel />
       <Routes>
       <Route path="/" element={currentUser ? <Navigate to="/dashboard" replace /> : <Landing />} />
       <Route path="/login" element={currentUser ? <Navigate to="/dashboard" replace /> : <Login />} />
@@ -113,6 +116,7 @@ function App() {
         }
       >
         <Route index element={<AdminOverview />} />
+        <Route path="notifications" element={<AdminNotifications />} />
         <Route path="users" element={<AdminUsers />} />
         <Route path="admins" element={<AdminStaff />} />
         <Route path="withdrawals" element={<AdminWithdrawals />} />

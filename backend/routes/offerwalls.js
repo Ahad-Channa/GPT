@@ -4,6 +4,8 @@ const router = express.Router();
 const Settings = require('../models/Settings');
 const User = require('../models/User');
 const Transaction = require('../models/Transaction');
+const notify = require('../utils/notify');
+const { notifyAdmins } = require('../utils/adminNotify');
 
 const PROVIDER_SECRET_MAP = {
   cpx:       'CPX_HASH_KEY',
@@ -102,7 +104,25 @@ const handlePostback = async (providerId, req, res, params) => {
       },
     });
 
-    // 12. Referral Logic (create in hold status)
+    // 12. Send Offer Reward Notification
+    await notify(
+      user._id,
+      'offer_reward',
+      'Offer Credited',
+      `You earned +${platformCoins} coins from ${provider.label}.`,
+      { amount: platformCoins, providerId }
+    );
+
+    // Add Admin Notification
+    await notifyAdmins({
+      category: 'offerwalls',
+      type: 'offer_completed',
+      message: `User ${user.displayName || user._id} completed an offer on ${provider.label} for ${platformCoins} Coins.`,
+      permissionRequired: 'manage_offerwalls',
+      metadata: { userId: user._id, transactionId: offerTx._id, providerId }
+    });
+
+    // 13. Referral Logic (create in hold status)
     if (updatedUser.referredBy) {
       const referrer = await User.findById(updatedUser.referredBy);
       if (referrer) {
@@ -135,6 +155,14 @@ const handlePostback = async (providerId, req, res, params) => {
             status: 'hold',
             holdUntil: holdDate,
           });
+
+          await notify(
+            referrer._id,
+            'referral_earning',
+            'Referral Earning!',
+            `You earned +${refAmount} coins from ${user.displayName || 'a referral'}'s offer.`,
+            { amount: refAmount, sourceUserId: user._id }
+          );
         }
       }
     }

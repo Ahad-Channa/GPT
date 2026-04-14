@@ -5,6 +5,7 @@ const Transaction = require('../models/Transaction');
 const User = require('../models/User');
 const Settings = require('../models/Settings');
 const LeaderboardCycle = require('../models/Leaderboard');
+const notify = require('../utils/notify');
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -165,6 +166,8 @@ async function resetLeaderboard(period) {
           status: 'completed',
           sourceType: 'leaderboard',
         });
+        
+        await notify(user._id, 'leaderboard_reward', 'Leaderboard Reward!', `Congratulations! You placed #${entry.rank} on the ${period} leaderboard and won ${reward} coins.`, { period, rank: entry.rank, reward });
       }
     }
     winners.push({

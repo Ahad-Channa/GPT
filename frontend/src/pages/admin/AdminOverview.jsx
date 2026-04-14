@@ -1,22 +1,47 @@
 import { useState, useEffect } from 'react';
-import { FiUsers, FiDollarSign, FiActivity } from 'react-icons/fi';
+import { useAuth } from '../../contexts/AuthContext';
+import { FiUsers, FiDollarSign, FiActivity, FiBriefcase, FiAlertCircle } from 'react-icons/fi';
+import toast from 'react-hot-toast';
 
 const AdminOverview = () => {
-  const [stats, setStats] = useState({ users: 0, pendingWithdrawals: 0, totalBalance: 0 });
+  const { currentUser } = useAuth();
+  const [stats, setStats] = useState({
+    totalUsers: 0,
+    bannedUsers: 0,
+    totalPendingWithdrawal: 0,
+    pendingOffers: 0,
+    economyTotal: 0
+  });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    setTimeout(() => {
-      setStats({ users: 142, pendingWithdrawals: 5, totalBalance: 45000 });
-      setLoading(false);
-    }, 800);
+    fetchStats();
   }, []);
+
+  const fetchStats = async () => {
+    try {
+      const token = await currentUser.getIdToken();
+      const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/admin/overview-stats`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const data = await res.json();
+      if (data.success) {
+        setStats(data.stats);
+      } else {
+        toast.error('Failed to load overview stats');
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error('Error fetching overview stats');
+    }
+    setLoading(false);
+  };
 
   const statCards = [
     {
       label: 'Total Users',
-      value: stats.users,
-      unit: 'Registered',
+      value: stats.totalUsers,
+      unit: `+${stats.bannedUsers} Banned`,
       icon: FiUsers,
       color: '#818cf8',
       glow: 'rgba(99,102,241,0.2)',
@@ -24,17 +49,26 @@ const AdminOverview = () => {
     },
     {
       label: 'Pending Withdrawals',
-      value: stats.pendingWithdrawals,
-      unit: 'Awaiting Review',
+      value: stats.totalPendingWithdrawal.toLocaleString(),
+      unit: 'Coins Awaiting Review',
       icon: FiActivity,
       color: '#fbbf24',
       glow: 'rgba(234,179,8,0.2)',
       gradient: 'linear-gradient(135deg, #d97706, #b45309)',
     },
     {
+      label: 'Pending Offers',
+      value: stats.pendingOffers,
+      unit: 'User Submissions',
+      icon: FiBriefcase,
+      color: '#f87171',
+      glow: 'rgba(239,68,68,0.2)',
+      gradient: 'linear-gradient(135deg, #dc2626, #991b1b)',
+    },
+    {
       label: 'Economy Balance',
-      value: `${stats.totalBalance.toLocaleString()}`,
-      unit: 'Platform Points',
+      value: `${stats.economyTotal.toLocaleString()}`,
+      unit: 'Total Coins in Circulation',
       icon: FiDollarSign,
       color: '#34d399',
       glow: 'rgba(16,185,129,0.2)',

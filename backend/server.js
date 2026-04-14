@@ -33,6 +33,7 @@ const customOffersRoutes = require('./routes/customOffers');
 const activityRoutes = require('./routes/activity');
 const { router: leaderboardRoutes, resetLeaderboard } = require('./routes/leaderboard');
 const publicRoutes = require('./routes/public');
+const notificationsRoutes = require('./routes/notifications');
 
 app.use('/api/auth', authRoutes);
 app.use('/api/wallet', walletRoutes);
@@ -42,6 +43,7 @@ app.use('/api/custom-offers', customOffersRoutes);
 app.use('/api/activity', activityRoutes);
 app.use('/api/leaderboard', leaderboardRoutes);
 app.use('/api/public', publicRoutes);
+app.use('/api/notifications', notificationsRoutes);
 
 // Base Route
 app.get('/', (req, res) => {
@@ -52,8 +54,10 @@ app.get('/api/health', (req, res) => {
   res.status(200).json({ status: 'ok', timestamp: new Date() });
 });
 
-// ─── Cron Jobs: Auto-reset leaderboards ───────────────────────────────────────
+// ─── Cron Jobs: Auto-reset leaderboards & Scheduled tasks ─────────────────────
 // All times are UTC
+
+require('./utils/streakWarningJob');
 
 // Daily: every day at midnight UTC
 cron.schedule('0 0 * * *', async () => {

@@ -5,6 +5,8 @@ const Transaction = require('../models/Transaction');
 const CustomOfferSubmission = require('../models/CustomOfferSubmission');
 const UserActivityLog = require('../models/UserActivityLog');
 const { verifyToken } = require('../middlewares/authMiddleware');
+const notify = require('../utils/notify');
+const { notifyAdmins } = require('../utils/adminNotify');
 
 // POST /api/auth/sync
 // Validates Firebase token. If user doesn't exist in MongoDB, inserts them securely.
@@ -28,6 +30,34 @@ router.post('/sync', verifyToken, async (req, res) => {
       await user.save();
       isNewUser = true;
       console.log(`Registration success: ${email} synchronized via Firebase.`);
+
+      // Send Welcome Notification
+      await notify(
+        user._id,
+        'welcome',
+        'Welcome!',
+        'Welcome to the platform! Start earning coins by completing tasks.'
+      );
+
+      // Support for future tracking: if the user creation somehow sets a referredBy (e.g., via middleware or future req.body parsing)
+      if (user.referredBy) {
+        await notify(
+          user.referredBy,
+          'referral_signup',
+          'New Referral!',
+          `${user.displayName} joined using your referral link!`,
+          { newUserId: user._id }
+        );
+
+        // Add admin notification
+        await notifyAdmins({
+          category: 'users',
+          type: 'referral_signup',
+          message: `User ${user.displayName} signed up via a referral link.`,
+          permissionRequired: 'manage_users',
+          metadata: { userId: user._id, referrerId: user.referredBy }
+        });
+      }
     } else if (isPrimaryAdmin && user.role !== 'admin') {
       // Auto-promote if they are set as primary admin in .env but not in db
       user.role = 'admin';
