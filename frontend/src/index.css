@@ -252,3 +252,9 @@
 .shadow-card {
   box-shadow: 0 20px 60px rgba(0,0,0,0.4);
 }
+
+/* ─── Spin Keyframe (loading spinners) ───────────────────────── */
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}

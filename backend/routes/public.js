@@ -45,21 +45,24 @@ router.get('/user/:id', async (req, res) => {
     }
 
     // Only return safe public info
+    const isPrivate = !!user.isPrivate;
+
     const publicProfile = {
       _id: user._id,
       displayName: user.displayName,
       avatarUrl: user.avatarUrl,
       vipLevel: user.vipLevel || 1,
-      totalEarned: user.totalEarned || 0,
-      isPrivate: !!user.isPrivate,
+      isPrivate,
       createdAt: user.createdAt,
+      // totalEarned only exposed for public profiles
+      ...(isPrivate ? {} : { totalEarned: user.totalEarned || 0 }),
     };
 
-    // If the profile is private — return a complete blackout. No stats, no history, nothing.
-    if (publicProfile.isPrivate) {
+    // If private — return profile card data but NO earnings/history
+    if (isPrivate) {
       return res.status(200).json({
         success: true,
-        profile: { isPrivate: true },
+        profile: publicProfile,
         recentActiveOffers: [],
       });
     }

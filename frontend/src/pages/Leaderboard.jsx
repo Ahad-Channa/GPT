@@ -1,11 +1,11 @@
 import { useState, useEffect, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import DashboardLayout from '../components/layout/DashboardLayout';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   FiTrendingUp, FiAward, FiLock, FiRefreshCw
 } from 'react-icons/fi';
+import PublicProfileModal from '../components/PublicProfileModal';
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
@@ -72,8 +72,7 @@ function useCountdown(targetIso) {
 }
 
 // ─── Single leaderboard row ───────────────────────────────────────────────────
-function RankRow({ entry, rank, currentUserId, color, reward }) {
-  const navigate = useNavigate();
+function RankRow({ entry, rank, currentUserId, color, reward, onProfileClick }) {
   const isMe = entry.userId === currentUserId || entry.userId?.toString() === currentUserId?.toString();
   const medal = rank <= 3 ? MEDALS[rank - 1] : null;
   const medalColor = rank <= 3 ? MEDAL_COLORS[rank - 1] : color;
@@ -81,7 +80,7 @@ function RankRow({ entry, rank, currentUserId, color, reward }) {
   return (
     <motion.div
       variants={item}
-      onClick={() => navigate(`/user/${entry.userId}`)}
+      onClick={() => onProfileClick(entry.userId)}
       style={{
         display: 'flex', alignItems: 'center', gap: '14px',
         padding: '12px 16px', borderRadius: '12px',
@@ -154,7 +153,7 @@ function RankRow({ entry, rank, currentUserId, color, reward }) {
 }
 
 // ─── Period panel ─────────────────────────────────────────────────────────────
-function PeriodPanel({ period, data, currentUserId }) {
+function PeriodPanel({ period, data, currentUserId, onProfileClick }) {
   const meta = PERIOD_META[period];
   const countdown = useCountdown(data?.cycleEnd);
   const rankings = data?.rankings || [];
@@ -225,6 +224,7 @@ function PeriodPanel({ period, data, currentUserId }) {
                     currentUserId={currentUserId}
                     color={meta.color}
                     reward={reward}
+                    onProfileClick={onProfileClick}
                   />
                 );
               })}
@@ -274,6 +274,7 @@ function PeriodPanel({ period, data, currentUserId }) {
 // ─── Main Leaderboard page ────────────────────────────────────────────────────
 const Leaderboard = () => {
   const { currentUser, mongoUser } = useAuth();
+  const [activeProfileId, setActiveProfileId] = useState(null);
   const [leaderboard, setLeaderboard] = useState(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState(null);
@@ -417,6 +418,7 @@ const Leaderboard = () => {
                     period={activeTab}
                     data={leaderboard[activeTab]}
                     currentUserId={mongoUser?._id}
+                    onProfileClick={(uid) => setActiveProfileId(uid)}
                   />
                 </motion.div>
               )}
@@ -424,6 +426,16 @@ const Leaderboard = () => {
           </>
         )}
       </motion.div>
+
+      {/* Public Profile Modal */}
+      <AnimatePresence>
+        {activeProfileId && (
+          <PublicProfileModal
+            userId={activeProfileId}
+            onClose={() => setActiveProfileId(null)}
+          />
+        )}
+      </AnimatePresence>
     </DashboardLayout>
   );
 };
