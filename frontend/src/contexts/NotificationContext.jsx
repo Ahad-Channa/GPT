@@ -1,9 +1,37 @@
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import { useAuth } from './AuthContext';
 
 const NotificationContext = createContext();
 
 export const useNotifications = () => useContext(NotificationContext);
+
+// Synthesized "coin/cash" sound effect for earning notifications
+const playCoinSound = () => {
+    try {
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        if (!AudioContext) return;
+        const ctx = new AudioContext();
+        const osc = ctx.createOscillator();
+        const gainNode = ctx.createGain();
+        
+        osc.type = 'sine';
+        // Frequency sweep for coin sound: B5 (987.77) to E6 (1318.51)
+        osc.frequency.setValueAtTime(987.77, ctx.currentTime);
+        osc.frequency.setValueAtTime(1318.51, ctx.currentTime + 0.1);
+        
+        gainNode.gain.setValueAtTime(0, ctx.currentTime);
+        gainNode.gain.linearRampToValueAtTime(0.3, ctx.currentTime + 0.05);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.4);
+        
+        osc.connect(gainNode);
+        gainNode.connect(ctx.destination);
+        
+        osc.start(ctx.currentTime);
+        osc.stop(ctx.currentTime + 0.5);
+    } catch(e) { 
+        console.error('Audio play error', e); 
+    }
+};
 
 export const NotificationProvider = ({ children }) => {
     const { currentUser } = useAuth();
@@ -11,10 +39,14 @@ export const NotificationProvider = ({ children }) => {
     const [unreadCount, setUnreadCount] = useState(0);
     const [isPanelOpen, setIsPanelOpen] = useState(false);
 
+    // Store previous notifications to detect new earnings
+    const prevNotifsRef = useRef([]);
+
     const fetchNotifications = useCallback(async () => {
         if (!currentUser) {
             setNotifications([]);
             setUnreadCount(0);
+            prevNotifsRef.current = [];
             return;
         }
 
@@ -27,7 +59,28 @@ export const NotificationProvider = ({ children }) => {
             const data = await res.json();
 
             if (data.success) {
-                setNotifications(data.notifications);
+                const incoming = data.notifications;
+                
+                // Detect new earning notifications
+                if (prevNotifsRef.current.length > 0) {
+                    const prevIds = new Set(prevNotifsRef.current.map(n => n._id));
+                    const newEarningNotifs = incoming.filter(
+                        n => !prevIds.has(n._id) && (
+                             n.type === 'offer_reward' || 
+                             n.type === 'offer_approved' || 
+                             n.type === 'leaderboard_reward' || 
+                             n.type === 'referral_earning' ||
+                             (n.type === 'admin_adjustment' && n.metadata?.amount > 0)
+                        )
+                    );
+                    
+                    if (newEarningNotifs.length > 0) {
+                        playCoinSound();
+                    }
+                }
+                
+                prevNotifsRef.current = incoming;
+                setNotifications(incoming);
                 setUnreadCount(data.unreadCount);
             }
         } catch (error) {

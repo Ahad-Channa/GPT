@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import {
-  FiGrid, FiUsers, FiShield, FiArrowRight, FiLogOut, FiZap, FiDollarSign, FiActivity, FiSliders, FiBox, FiTag, FiStar, FiTrendingUp, FiBell
+  FiGrid, FiUsers, FiShield, FiArrowRight, FiLogOut, FiZap, FiDollarSign, FiActivity, FiSliders, FiBox, FiTag, FiStar, FiTrendingUp, FiMessageSquare
 } from 'react-icons/fi';
 import './Admin.css';
 
@@ -52,6 +52,7 @@ const AdminLayout = () => {
     ...(isPrimaryAdmin || mongoUser?.adminPermissions?.includes('manage_offerwalls') ? [{ to: '/admin/featured-offers', end: false, icon: FiStar, label: 'Featured Offers' }] : []),
     ...(isPrimaryAdmin ? [{ to: '/admin/leaderboard', end: false, icon: FiTrendingUp, label: 'Leaderboard' }] : []),
     ...(isPrimaryAdmin ? [{ to: '/admin/admins',   end: false, icon: FiShield,   label: 'Staff'     }] : []),
+    ...(isPrimaryAdmin ? [{ to: '/admin/announcements', end: false, icon: FiMessageSquare, label: 'Announcements' }] : []),
     ...(isPrimaryAdmin ? [{ to: '/admin/logs',     end: false, icon: FiActivity, label: 'Audit Log', badgeKey: 'security' }] : []),
     ...(isPrimaryAdmin ? [{ to: '/admin/settings', end: false, icon: FiSliders,  label: 'Settings', accent: true }] : []),
   ];
@@ -134,39 +135,7 @@ const AdminLayout = () => {
         <header className="admin-header">
           <h3>GPT Management Console</h3>
           <div className="admin-user-info" style={{ display: 'flex', alignItems: 'center', gap: '1.25rem' }}>
-            {/* Notification Bell */}
-            <div 
-              onClick={() => navigate('/admin/notifications')}
-              style={{
-                position: 'relative',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                width: '36px',
-                height: '36px',
-                borderRadius: '50%',
-                background: 'rgba(255,255,255,0.05)',
-                transition: 'background 0.2s'
-              }}
-              onMouseOver={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.1)'}
-              onMouseOut={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
-              title="Notifications"
-            >
-              <FiBell size={18} color="#cbd5e1" />
-              {totalUnread > 0 && (
-                <span style={{
-                  position: 'absolute',
-                  top: '8px',
-                  right: '8px',
-                  width: '8px',
-                  height: '8px',
-                  background: '#ef4444',
-                  borderRadius: '50%',
-                  boxShadow: '0 0 8px rgba(239,68,68,0.8)'
-                }} />
-              )}
-            </div>
+
             {isPrimaryAdmin && <span className="super-badge">Primary Admin</span>}
           </div>
         </header>

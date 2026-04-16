@@ -11,7 +11,7 @@ import Leaderboard from './pages/Leaderboard';
 import PublicProfile from './pages/PublicProfile';
 import AdminLayout from './pages/admin/AdminLayout';
 import AdminOverview from './pages/admin/AdminOverview';
-import AdminNotifications from './pages/admin/AdminNotifications';
+import AdminAnnouncements from './pages/admin/AdminAnnouncements';
 import AdminUsers from './pages/admin/AdminUsers';
 import AdminStaff from './pages/admin/AdminStaff';
 import AdminWithdrawals from './pages/admin/AdminWithdrawals';
@@ -116,7 +116,7 @@ function App() {
         }
       >
         <Route index element={<AdminOverview />} />
-        <Route path="notifications" element={<AdminNotifications />} />
+        <Route path="announcements" element={<AdminAnnouncements />} />
         <Route path="users" element={<AdminUsers />} />
         <Route path="admins" element={<AdminStaff />} />
         <Route path="withdrawals" element={<AdminWithdrawals />} />
