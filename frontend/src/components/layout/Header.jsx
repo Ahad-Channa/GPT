@@ -4,6 +4,7 @@ import { useNotifications } from '../../contexts/NotificationContext';
 import { FiLogOut, FiUser, FiSettings, FiZap, FiChevronDown, FiCreditCard, FiGrid, FiLock, FiUnlock, FiClock, FiCheckCircle, FiTrendingUp, FiBell } from 'react-icons/fi';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
+import LiveEarningsTicker from '../LiveEarningsTicker';
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
@@ -163,6 +164,11 @@ const Header = () => {
             <span className="text-[10px] text-slate-500 tracking-widest uppercase font-mono">Platform</span>
           </div>
         </button>
+
+        {/* Live Earnings Ticker */}
+        <div className="flex-1 hidden lg:flex justify-end mr-6">
+          <LiveEarningsTicker />
+        </div>
 
         {/* Right Controls */}
         <div className="flex items-center gap-3 lg:gap-4">

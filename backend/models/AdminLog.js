@@ -35,6 +35,10 @@ const adminLogSchema = new mongoose.Schema(
         'DELETE_CUSTOM_OFFER',
         'APPROVE_CUSTOM_OFFER',
         'REJECT_CUSTOM_OFFER',
+        'CUSTOM_OFFER_APPROVE',
+        'CUSTOM_OFFER_REJECT',
+        'TRANSACTION_PROOF_APPROVE',
+        'TRANSACTION_PROOF_REJECT',
         'PROCESS_CHARGEBACK',
         'PROCESS_CHARGEBACK_CASCADED'
       ],

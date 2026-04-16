@@ -2,15 +2,16 @@ const express = require('express');
 const router = express.Router();
 const User = require('../models/User');
 const Transaction = require('../models/Transaction');
+const Settings = require('../models/Settings');
 
 // ── Obfuscator Helper ────────────────────────────────────────────────────────
 // Sanitizes transaction descriptions for private profiles.
 function scrubTransaction(tx) {
   let doc = tx._doc || tx; // Handle both mongoose docs and lean docs
-  
+
   // Create a copy to avoid modifying the original if it's cached
   let scrubbed = { ...doc };
-  
+
   // Obfuscate the description (hide precise offer title)
   if (scrubbed.method && scrubbed.method !== 'none') {
     scrubbed.description = `Earned from ${scrubbed.method}`;
@@ -19,12 +20,12 @@ function scrubTransaction(tx) {
   } else {
     scrubbed.description = `Completed an Offer`;
   }
-  
+
   // Remove sensitive metadata that might contain tracking IDs or names
   if (scrubbed.metadata) {
     scrubbed.metadata = { offerwall: scrubbed.metadata.offerwall };
   }
-  
+
   return scrubbed;
 }
 
@@ -33,7 +34,7 @@ function scrubTransaction(tx) {
 router.get('/user/:id', async (req, res) => {
   try {
     const userId = req.params.id;
-    
+
     // Check if ID is a valid ObjectId
     if (!userId.match(/^[0-9a-fA-F]{24}$/)) {
       return res.status(404).json({ success: false, error: 'User not found' });
@@ -78,10 +79,10 @@ router.get('/user/:id', async (req, res) => {
       .limit(15)
       .lean();
 
-    res.status(200).json({ 
-      success: true, 
-      profile: publicProfile, 
-      recentActiveOffers 
+    res.status(200).json({
+      success: true,
+      profile: publicProfile,
+      recentActiveOffers
     });
 
   } catch (err) {
@@ -108,9 +109,9 @@ router.get('/recent-earnings', async (req, res) => {
     recentEarnings = recentEarnings.map(tx => {
       // If the user was deleted, handle gracefully
       if (!tx.userId) {
-         tx.userId = { displayName: 'Unknown', avatarUrl: '', isPrivate: true };
+        tx.userId = { displayName: 'Unknown', avatarUrl: '', isPrivate: true };
       }
-      
+
       let processedTx = tx;
       if (tx.userId.isPrivate) {
         processedTx = scrubTransaction(tx);
@@ -123,6 +124,32 @@ router.get('/recent-earnings', async (req, res) => {
   } catch (err) {
     console.error('[/api/public/recent-earnings] Error:', err);
     res.status(500).json({ success: false, error: 'Failed to fetch recent earnings' });
+  }
+});
+
+// ── GET /api/public/stats ───────────────────────────────────────────────────────
+// Returns global stats: total users and total amount paid out (approved withdrawals)
+router.get('/stats', async (req, res) => {
+  try {
+    const totalUsers = await User.countDocuments();
+
+    // Sum up all approved (completed) withdrawals
+    const withdrawalStats = await Transaction.aggregate([
+      { $match: { transactionType: 'withdrawal', status: 'completed' } },
+      { $group: { _id: null, total: { $sum: '$amount' } } }
+    ]);
+
+    // Amount will be negative in the DB for withdrawals, so we use Math.abs
+    const totalPaidOutCoins = withdrawalStats.length > 0 ? Math.abs(withdrawalStats[0].total) : 0;
+
+    // Convert to USD using the global coinsPerUSD setting
+    const settings = await Settings.findOne({}) || { coinsPerUSD: 1000 };
+    const totalPaidOutUSD = Number((totalPaidOutCoins / settings.coinsPerUSD).toFixed(2));
+
+    res.status(200).json({ success: true, totalUsers, totalPaidOut: totalPaidOutUSD });
+  } catch (err) {
+    console.error('[/api/public/stats] Error:', err);
+    res.status(500).json({ success: false, error: 'Failed to fetch public stats' });
   }
 });
 

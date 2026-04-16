@@ -1,6 +1,9 @@
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { FiGithub, FiTwitter, FiDisc, FiArrowRight } from 'react-icons/fi';
+import { FiGithub, FiTwitter, FiDisc, FiArrowRight, FiUsers, FiDollarSign } from 'react-icons/fi';
+
+const API = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
 /* ─── Floating Orb ─────────────────────────────────────────── */
 const Orb = ({ style, color, size = 16 }) => (
@@ -22,6 +25,27 @@ const Orb = ({ style, color, size = 16 }) => (
 ═══════════════════════════════════════════════════════════ */
 const Landing = () => {
   const navigate = useNavigate();
+  const [stats, setStats] = useState({ totalUsers: 0, totalPaidOut: 0 });
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const res = await fetch(`${API}/api/public/stats`);
+        const data = await res.json();
+        if (data.success) {
+          setStats({
+            totalUsers: data.totalUsers || 0,
+            totalPaidOut: data.totalPaidOut || 0
+          });
+        }
+      } catch(e) {
+        console.error('Failed to fetch public stats', e);
+      }
+    };
+    fetchStats();
+    const intv = setInterval(fetchStats, 60000); // refresh every minute
+    return () => clearInterval(intv);
+  }, []);
 
   return (
     <div
@@ -172,6 +196,33 @@ const Landing = () => {
           >
             Explore Rewards
           </button>
+        </motion.div>
+        {/* Global Statistics */}
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.5 }}
+          className="mt-20 flex flex-col sm:flex-row items-center justify-center gap-6 sm:gap-12 pb-24"
+        >
+          <div className="flex flex-col flex-1 max-w-[200px] items-center text-center p-4 rounded-3xl bg-white/[0.01] border border-white/[0.05] shadow-card">
+            <div className="w-10 h-10 mb-3 rounded-full bg-blue-500/10 flex items-center justify-center border border-blue-500/20">
+              <FiUsers className="text-blue-400" size={18} />
+            </div>
+            <span className="text-2xl sm:text-3xl font-bold font-mono text-white mb-1">
+               {stats.totalUsers.toLocaleString()}
+            </span>
+            <span className="text-xs text-slate-500 uppercase tracking-widest font-semibold">Registered Users</span>
+          </div>
+
+          <div className="flex flex-col flex-1 max-w-[200px] items-center text-center p-4 rounded-3xl bg-white/[0.01] border border-white/[0.05] shadow-card">
+            <div className="w-10 h-10 mb-3 rounded-full bg-emerald-500/10 flex items-center justify-center border border-emerald-500/20">
+              <FiDollarSign className="text-emerald-400" size={18} />
+            </div>
+            <span className="text-2xl sm:text-3xl font-bold font-mono text-white mb-1 flex items-center">
+              ${stats.totalPaidOut.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            </span>
+            <span className="text-xs text-slate-500 uppercase tracking-widest font-semibold">Total Paid Out</span>
+          </div>
         </motion.div>
       </main>
 

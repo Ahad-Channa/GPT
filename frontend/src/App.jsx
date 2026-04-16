@@ -22,6 +22,7 @@ import AdminOfferwalls from './pages/admin/AdminOfferwalls';
 import AdminPromoCodes from './pages/admin/AdminPromoCodes';
 import AdminCustomOffers from './pages/admin/AdminCustomOffers';
 import AdminLeaderboard from './pages/admin/AdminLeaderboard';
+import AdminProofs from './pages/admin/AdminProofs';
 import NotificationPanel from './components/NotificationPanel';
 
 const PrivateRoute = ({ children }) => {
@@ -132,6 +133,7 @@ function App() {
         <Route path="offerwalls" element={<AdminOfferwalls />} />
         <Route path="promocodes" element={<AdminPromoCodes />} />
         <Route path="featured-offers" element={<AdminCustomOffers />} />
+        <Route path="proofs" element={<AdminProofs />} />
         <Route path="leaderboard" element={<AdminLeaderboard />} />
         <Route path="logs" element={<AdminLogs />} />
         <Route path="settings" element={<AdminSettings />} />

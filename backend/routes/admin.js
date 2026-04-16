@@ -569,16 +569,15 @@ router.put('/custom-offers/submissions/:id', requirePermission('manage_offerwall
         status: 'completed',
       });
 
-      await createLog(req.dbUser._id, 'APPROVE_CUSTOM_OFFER', user._id, `Approved submission for offer: ${submission.offerId.title}`);
+      await createLog(req.dbUser._id, 'APPROVE_CUSTOM_OFFER', user._id, { offerTitle: submission.offerId.title, submissionId: submission._id });
       await notify(user._id, 'offer_approved', 'Custom Offer Approved!', `Your submission for '${submission.offerId.title}' was approved! +${amountNum} coins.`, { offerId: submission.offerId._id });
     } else if (status === 'rejected') {
-      await createLog(
-        req.dbUser._id,
-        'REJECT_CUSTOM_OFFER',
-        user._id,
-        `Rejected submission for offer: ${submission.offerId.title}. Reason: ${adminNote || 'No reason provided'}`
-      );
-      await notify(user._id, 'offer_rejected', 'Custom Offer Rejected', `Your submission for '${submission.offerId.title}' was rejected.`, { offerId: submission.offerId._id });
+      await createLog(req.dbUser._id, 'REJECT_CUSTOM_OFFER', user._id, {
+        offerTitle: submission.offerId.title,
+        submissionId: submission._id,
+        reason: adminNote || 'No reason provided',
+      });
+      await notify(user._id, 'offer_rejected', 'Custom Offer Rejected', `Your submission for '${submission.offerId.title}' was rejected.${adminNote ? ' Reason: ' + adminNote : ''}`, { offerId: submission.offerId._id });
     }
 
     res.json({ success: true, submission });
@@ -947,6 +946,158 @@ router.post('/notifications/mark-read', async (req, res) => {
     res.json({ success: true });
   } catch(e) {
     res.status(500).json({ success: false, error: 'Failed to mark read' });
+  }
+});
+
+// ----------------------------------------------------
+// UNIFIED PROOFS HUB (Custom Offers & Wallet Transactions)
+// ----------------------------------------------------
+
+router.get('/proofs', requirePermission('manage_offerwalls'), async (req, res) => {
+  try {
+    // 1. Get Custom Offer Submissions that are 'pending'
+    const pendingCustomOfferSubs = await CustomOfferSubmission.find({ status: 'pending' })
+      .populate('userId', 'displayName email avatarUrl')
+      .populate('offerId', 'title rewardAmount')
+      .sort({ updatedAt: 1 })
+      .lean();
+
+    const customOfferProofs = pendingCustomOfferSubs.map(sub => ({
+      _id: sub._id,
+      type: 'custom_offer',
+      status: sub.status,
+      user: sub.userId,
+      offerTitle: sub.offerId ? sub.offerId.title : 'Unknown Offer',
+      rewardAmount: sub.offerId ? sub.offerId.rewardAmount : 0,
+      proofText: sub.proofText,
+      proofImage: sub.proofImage,
+      submittedAt: sub.updatedAt,
+    }));
+
+    // 2. Get Transaction Proofs (metadata.userProof exists, status is pending)
+    const pendingTxs = await Transaction.find({ 
+      status: 'pending',
+      'metadata.userProof': { $exists: true } 
+    })
+      .populate('userId', 'displayName email avatarUrl')
+      .sort({ updatedAt: 1 })
+      .lean();
+
+    const transactionProofs = pendingTxs.map(tx => ({
+      _id: tx._id,
+      type: 'transaction',
+      status: tx.status,
+      user: tx.userId,
+      offerTitle: tx.description || 'General Offer',
+      rewardAmount: tx.amount,
+      proofText: tx.metadata.userProof.text || '',
+      proofImage: tx.metadata.userProof.imageUrl || '',
+      submittedAt: tx.metadata.userProof.submittedAt || tx.updatedAt,
+    }));
+
+    // 3. Combine and Sort by submission date (oldest first for fairness)
+    const allProofs = [...customOfferProofs, ...transactionProofs].sort(
+      (a, b) => new Date(a.submittedAt) - new Date(b.submittedAt)
+    );
+
+    res.status(200).json({ success: true, proofs: allProofs });
+  } catch (error) {
+    console.error('[/api/admin/proofs] Error:', error);
+    res.status(500).json({ success: false, error: 'Failed to fetch proofs' });
+  }
+});
+
+router.post('/proofs/:type/:id/:action', requirePermission('manage_offerwalls'), async (req, res) => {
+  try {
+    const { type, id, action } = req.params;
+    const { reason } = req.body; // usually for rejection
+
+    if (!['approve', 'reject'].includes(action)) {
+      return res.status(400).json({ success: false, error: 'Invalid action' });
+    }
+
+    if (type === 'custom_offer') {
+      // The logic for this is mostly existing in /custom-offers/submissions/:id/:action 
+      // but we can re-implement the short version here for completeness or just update it
+      const submission = await CustomOfferSubmission.findById(id).populate('offerId');
+      if (!submission) return res.status(404).json({ success: false, error: 'Submission not found' });
+      if (submission.status !== 'pending') return res.status(400).json({ success: false, error: 'Not in pending state' });
+
+      if (action === 'approve') {
+        submission.status = 'approved';
+        // Credit user
+        const user = await User.findById(submission.userId);
+        if (user) {
+          user.walletBalance = (user.walletBalance || 0) + submission.offerId.rewardAmount;
+          user.totalEarned = (user.totalEarned || 0) + submission.offerId.rewardAmount;
+          await user.save();
+
+          await Transaction.create({
+            userId: user._id,
+            amount: submission.offerId.rewardAmount,
+            balanceAfter: user.walletBalance,
+            transactionType: 'custom_offer_reward',
+            description: `Reward for custom offer: ${submission.offerId.title}`,
+            status: 'completed'
+          });
+          
+          await notify(user._id, 'offer_credited', 'Offer Approved', `Your proof for "${submission.offerId.title}" was approved! +${submission.offerId.rewardAmount} coins.`);
+        }
+      } else {
+        submission.status = 'rejected';
+        submission.adminNote = reason || 'Your submission did not meet the requirements.';
+        await notify(submission.userId, 'offer_rejected', 'Offer Rejected', `Your proof for "${submission.offerId.title}" was rejected. Reason: ${submission.adminNote}`);
+      }
+      
+      await submission.save();
+      await createLog(req.dbUser._id, `CUSTOM_OFFER_${action.toUpperCase()}`, submission.userId, {
+        offerId: submission.offerId._id,
+        offerTitle: submission.offerId.title,
+        ...(action === 'reject' && { reason: reason?.trim() || 'No reason provided' }),
+      });
+      
+      return res.json({ success: true, message: `Proof ${action}d successfully` });
+
+    } else if (type === 'transaction') {
+      const tx = await Transaction.findById(id);
+      if (!tx || tx.status !== 'pending') return res.status(404).json({ success: false, error: 'Transaction not found or not pending' });
+
+      const user = await User.findById(tx.userId);
+      if (!user) return res.status(404).json({ success: false, error: 'User not found' });
+
+      if (action === 'approve') {
+        tx.status = 'completed';
+        user.walletBalance = (user.walletBalance || 0) + tx.amount;
+        user.totalEarned = (user.totalEarned || 0) + tx.amount;
+        await user.save();
+        tx.balanceAfter = user.walletBalance;
+        await tx.save();
+
+        await notify(user._id, 'offer_credited', 'Proof Approved', `Your manual proof for "${tx.description}" was approved! +${tx.amount} coins.`);
+      } else {
+        tx.status = 'rejected';
+        tx.metadata = tx.metadata || {};
+        tx.metadata.adminNote = reason || 'Proof did not meet requirements.';
+        tx.markModified('metadata');
+        await tx.save();
+
+        await notify(user._id, 'offer_rejected', 'Proof Rejected', `Your manual proof for "${tx.description}" was rejected. Reason: ${tx.metadata.adminNote}`);
+      }
+
+      await createLog(req.dbUser._id, `TRANSACTION_PROOF_${action.toUpperCase()}`, tx.userId, {
+        txId: tx._id,
+        description: tx.description,
+        ...(action === 'reject' && { reason: reason?.trim() || 'No reason provided' }),
+      });
+      return res.json({ success: true, message: `Proof ${action}d successfully` });
+      
+    } else {
+      return res.status(400).json({ success: false, error: 'Invalid proof type' });
+    }
+    
+  } catch (error) {
+    console.error('[/api/admin/proofs/:type/:id/:action] Error:', error);
+    res.status(500).json({ success: false, error: 'Failed to process proof' });
   }
 });
 
