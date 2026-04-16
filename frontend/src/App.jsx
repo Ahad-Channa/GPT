@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { useAuth } from './contexts/AuthContext';
@@ -30,6 +31,14 @@ const PrivateRoute = ({ children }) => {
 
 function App() {
   const { currentUser, isAdmin } = useAuth();
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const ref = params.get('ref');
+    if (ref) {
+      localStorage.setItem('ref', ref);
+    }
+  }, []);
 
   return (
     <>

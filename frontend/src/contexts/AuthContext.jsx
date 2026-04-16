@@ -23,11 +23,14 @@ export const AuthProvider = ({ children }) => {
     const syncWithMongo = async (user) => {
         try {
             const token = await user.getIdToken();
+            const ref = localStorage.getItem('ref');
             const res = await fetch('http://localhost:5000/api/auth/sync', {
                 method: 'POST',
                 headers: {
-                    'Authorization': `Bearer ${token}`
-                }
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(ref ? { ref } : {})
             });
             const data = await res.json();
             if (data.isBanned || (data.success && data.user?.isBanned)) {

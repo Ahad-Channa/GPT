@@ -13,6 +13,7 @@ const { notifyAdmins } = require('../utils/adminNotify');
 router.post('/sync', verifyToken, async (req, res) => {
   try {
     const { uid, email, name, picture } = req.user;
+    const { ref } = req.body || {};
     
     let user = await User.findOne({ firebaseUid: uid });
     let isNewUser = false;
@@ -25,6 +26,7 @@ router.post('/sync', verifyToken, async (req, res) => {
         email: email,
         displayName: name || email.split('@')[0],
         avatarUrl: picture || '',
+        ...(ref && { referredBy: ref }),
         ...(isPrimaryAdmin && { role: 'admin', adminPermissions: allPermissions })
       });
       await user.save();

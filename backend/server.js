@@ -58,6 +58,7 @@ app.get('/api/health', (req, res) => {
 // All times are UTC
 
 require('./utils/streakWarningJob');
+require('./utils/referralHoldJob');
 
 // Daily: every day at midnight UTC
 cron.schedule('0 0 * * *', async () => {

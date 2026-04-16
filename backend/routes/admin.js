@@ -119,6 +119,34 @@ router.put('/users/:id/balance', requirePermission('manage_users'), async (req, 
   }
 });
 
+router.put('/users/:id/referral', requirePermission('manage_users'), async (req, res) => {
+  try {
+    const { referralPercentage } = req.body;
+    const userToUpdate = await User.findById(req.params.id);
+    if (!userToUpdate) return res.status(404).json({ success: false, error: 'User not found' });
+
+    if (userToUpdate.email === process.env.PRIMARY_ADMIN_EMAIL) {
+       return res.status(403).json({ success: false, error: 'Cannot modify primary admin' });
+    }
+
+    let val = null; // Unset it by passing null/undefined/empty
+    if (referralPercentage !== '' && referralPercentage !== null && referralPercentage !== undefined) {
+       val = Number(referralPercentage);
+       if (isNaN(val) || val < 0 || val > 100) {
+         return res.status(400).json({ success: false, error: 'Invalid referral percentage' });
+       }
+    }
+
+    const user = await User.findByIdAndUpdate(req.params.id, { referralPercentage: val }, { returnDocument: 'after' });
+    await createLog(req.dbUser._id, 'ADJUST_REFERRAL_PCT', user._id, { referralPercentage: val });
+    
+    res.json({ success: true, user });
+  } catch (error) {
+    res.status(500).json({ success: false, error: 'Failed to update user referral setting' });
+  }
+});
+
+
 // ----------------------------------------------------
 // WITHDRAWALS SECTION
 // ----------------------------------------------------
@@ -274,8 +302,18 @@ router.get('/settings', requirePermission('manage_withdrawals'), async (req, res
 // PUT update platform settings
 router.put('/settings', requirePermission('manage_withdrawals'), async (req, res) => {
   try {
-    const { withdrawalFeePercent, withdrawalMethods, coinsPerUSD, rewardEngine } = req.body;
+    const { withdrawalFeePercent, withdrawalMethods, coinsPerUSD, rewardEngine, referralConfig } = req.body;
     const settings = await Settings.getSingleton();
+
+    if (referralConfig !== undefined) {
+      if (referralConfig.globalPercentage !== undefined) {
+        settings.referralConfig.globalPercentage = Number(referralConfig.globalPercentage);
+      }
+      if (referralConfig.holdDays !== undefined) {
+        settings.referralConfig.holdDays = Number(referralConfig.holdDays);
+      }
+      settings.markModified('referralConfig');
+    }
 
     if (withdrawalFeePercent !== undefined) {
       const fee = Number(withdrawalFeePercent);

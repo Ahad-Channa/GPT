@@ -19,6 +19,10 @@ const AdminUsers = () => {
   const [balanceReason, setBalanceReason] = useState('');
   const [balanceError,  setBalanceError]  = useState('');
 
+  const [refTarget, setRefTarget] = useState(null);
+  const [refAmount, setRefAmount] = useState('');
+  const [refError,  setRefError]  = useState('');
+
   useEffect(() => { fetchUsers(); }, [search]);
 
   const fetchUsers = async () => {
@@ -87,6 +91,33 @@ const AdminUsers = () => {
       }
     } catch (err) {
       setBalanceError('Unexpected error. Please try again.');
+      console.error(err);
+    }
+    setActionLoading(false);
+  };
+
+  const handleRefSubmit = async () => {
+    const amount = refAmount === '' ? null : Number(refAmount);
+    if (amount !== null && (isNaN(amount) || amount < 0 || amount > 100)) { setRefError('Please enter a valid percentage between 0 and 100.'); return; }
+    
+    setActionLoading(true);
+    try {
+      const token = await currentUser.getIdToken();
+      const res = await fetch(`http://localhost:5000/api/admin/users/${refTarget._id}/referral`, {
+        method: 'PUT',
+        headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ referralPercentage: amount }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        toast.success(amount === null ? 'Referral percentage override removed' : `Referral percentage overridden: ${amount}%`);
+        fetchUsers();
+        setRefTarget(null);
+      } else {
+        setRefError(data.error || 'Action failed.');
+      }
+    } catch (err) {
+      setRefError('Unexpected error. Please try again.');
       console.error(err);
     }
     setActionLoading(false);
@@ -177,6 +208,7 @@ const AdminUsers = () => {
                   <td>
                     <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap' }}>
                       <button className="action-btn" onClick={() => { setBalanceTarget(u); setBalanceAmount(''); setBalanceReason(''); setBalanceError(''); }}>Adjust Bal</button>
+                      <button className="action-btn" onClick={() => { setRefTarget(u); setRefAmount(u.referralPercentage !== null && u.referralPercentage !== undefined ? String(u.referralPercentage) : ''); setRefError(''); }}>Ref %</button>
                       <button
                         className={`action-btn ${u.isBanned ? 'success' : 'danger'}`}
                         onClick={() => { setBanTarget(u); setBanReason(''); setBanError(''); }}
@@ -292,6 +324,54 @@ const AdminUsers = () => {
               >
                 {actionLoading ? <FiLoader style={{ animation: 'spin 1s linear infinite' }} /> : <FiCheck />}
                 Apply Adjustment
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Adjust Referral Percentage Modal ─────────────────────── */}
+      {refTarget && (
+        <div className="admin-modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) setRefTarget(null); }}>
+          <div className="admin-modal">
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.25rem' }}>
+              <h3>Override Referral %</h3>
+              <button onClick={() => setRefTarget(null)} style={{ background: 'none', border: 'none', color: '#64748b', cursor: 'pointer', padding: 0, fontSize: '18px' }}>
+                <FiX />
+              </button>
+            </div>
+            <p style={{ marginBottom: '1rem', color: '#94a3b8', fontSize: '0.9rem' }}>
+              User: <strong style={{ color: '#fff' }}>{refTarget.email}</strong>
+            </p>
+            <label style={{ display: 'block', fontSize: '0.75rem', color: '#94a3b8', marginBottom: '0.35rem' }}>
+              Specific Percentage <span style={{ color: '#f87171' }}>*</span>
+              <span style={{ color: '#475569', marginLeft: '0.4rem' }}>(leave empty to use global setting)</span>
+            </label>
+            <input
+              type="number"
+              className="admin-input"
+              style={{ marginBottom: '0.85rem', width: '100%', boxSizing: 'border-box', borderColor: refError ? 'rgba(248,113,113,0.4)' : undefined }}
+              value={refAmount}
+              onChange={(e) => { setRefAmount(e.target.value); setRefError(''); }}
+              placeholder="e.g. 10"
+              min={0}
+              max={100}
+            />
+            {refError && (
+              <p style={{ color: '#f87171', fontSize: '0.8rem', marginTop: '-0.75rem', marginBottom: '1rem' }}>
+                {refError}
+              </p>
+            )}
+            <div className="admin-modal-actions">
+              <button className="action-btn" onClick={() => setRefTarget(null)}>Cancel</button>
+              <button
+                className="action-btn primary"
+                onClick={handleRefSubmit}
+                disabled={actionLoading}
+                style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}
+              >
+                {actionLoading ? <FiLoader style={{ animation: 'spin 1s linear infinite' }} /> : <FiCheck />}
+                Apply Override
               </button>
             </div>
           </div>

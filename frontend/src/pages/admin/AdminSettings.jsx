@@ -78,6 +78,8 @@ const AdminSettings = () => {
   // Local editable state — separate from settings so we can cancel
   const [cpusd,   setCpusd]   = useState('');
   const [methods, setMethods] = useState([]);
+  const [refHoldDays, setRefHoldDays] = useState('');
+  const [refGlobalPct, setRefGlobalPct] = useState('');
 
   const [saving,   setSaving]  = useState(false);
   const [dirty,    setDirty]   = useState(false);
@@ -99,6 +101,8 @@ const AdminSettings = () => {
       // Populate local edit state
       setCpusd(String(data.settings.coinsPerUSD));
       setMethods(JSON.parse(JSON.stringify(data.settings.withdrawalMethods))); // deep copy
+      setRefHoldDays(String(data.settings.referralConfig?.holdDays ?? 30));
+      setRefGlobalPct(String(data.settings.referralConfig?.globalPercentage ?? 5));
       setDirty(false);
     } catch (err) {
       setError(err.message || 'Failed to load settings');
@@ -126,6 +130,9 @@ const AdminSettings = () => {
     const cpusdNum = Number(cpusd);
 
     if (isNaN(cpusdNum) || cpusdNum <= 0)                return setError('Coins per USD must be a positive number.');
+    if (isNaN(Number(refHoldDays)) || Number(refHoldDays) < 0) return setError('Referral Hold Days must be 0 or greater.');
+    if (isNaN(Number(refGlobalPct)) || Number(refGlobalPct) < 0 || Number(refGlobalPct) > 100) return setError('Referral Global Percentage must be between 0 and 100.');
+
     for (const m of methods) {
       if (isNaN(Number(m.minUSD)) || Number(m.minUSD) <= 0) {
         return setError(`Minimum for "${m.label}" must be a positive number.`);
@@ -144,6 +151,10 @@ const AdminSettings = () => {
         body: JSON.stringify({
           coinsPerUSD: cpusdNum,
           withdrawalMethods: methods.map((m) => ({ ...m, minUSD: Number(m.minUSD), feePercent: Number(m.feePercent) })),
+          referralConfig: {
+            holdDays: Number(refHoldDays),
+            globalPercentage: Number(refGlobalPct)
+          }
         }),
       });
       const data = await res.json();
@@ -166,6 +177,8 @@ const AdminSettings = () => {
     if (!settings) return;
     setCpusd(String(settings.coinsPerUSD));
     setMethods(JSON.parse(JSON.stringify(settings.withdrawalMethods)));
+    setRefHoldDays(String(settings.referralConfig?.holdDays ?? 30));
+    setRefGlobalPct(String(settings.referralConfig?.globalPercentage ?? 5));
     setDirty(false);
     setError('');
     setSuccess('');
@@ -260,7 +273,45 @@ const AdminSettings = () => {
           </Field>
         </div>
 
-        {/* ── Section 2: Withdrawal Methods ──────── */}
+      {/* ── Section 3: Referrals ────────────── */}
+      <div className="admin-card" style={{ marginBottom: 0 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '1.5rem', paddingBottom: '1rem', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+          <div style={{ width: 32, height: 32, borderRadius: 10, background: 'linear-gradient(135deg,#c026d3,#86198f)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <FiPercent style={{ color: 'white', fontSize: 14 }} />
+          </div>
+          <div>
+            <h3 style={{ color: 'white', fontSize: '0.9rem', fontWeight: 700, margin: 0 }}>Referral System</h3>
+            <p style={{ color: '#64748b', fontSize: '0.72rem', margin: 0 }}>Settings for global referral tracking</p>
+          </div>
+        </div>
+
+        <Field
+          label="Global Referral Percentage"
+          hint="The default percentage of earnings users make from their active referrals."
+        >
+          <NumberInput
+            value={refGlobalPct}
+            onChange={(v) => { setRefGlobalPct(v); markDirty(); }}
+            min={0}
+            max={100}
+            suffix="%"
+          />
+        </Field>
+
+        <Field
+          label="Holds Duration (Days)"
+          hint="Number of days before referral earnings are officially credited to wallet."
+        >
+          <NumberInput
+            value={refHoldDays}
+            onChange={(v) => { setRefHoldDays(v); markDirty(); }}
+            min={0}
+            suffix="Days"
+          />
+        </Field>
+      </div>
+
+      {/* ── Section 2: Withdrawal Methods ──────── */}
         <div className="admin-card" style={{ marginBottom: 0 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '1.5rem', paddingBottom: '1rem', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
             <div style={{ width: 32, height: 32, borderRadius: 10, background: 'linear-gradient(135deg,#059669,#0d9488)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>

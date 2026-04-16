@@ -61,22 +61,75 @@ const handlePostback = async (providerId, req, res, params) => {
 
     // 6. Convert: platformCoins = Math.floor(providerUnits * provider.conversionRatio)
     const platformCoins = Math.floor(parseFloat(providerUnits) * provider.conversionRatio);
-    if (isNaN(platformCoins) || platformCoins <= 0) {
+    if (isNaN(platformCoins) || platformCoins === 0) {
       return res.status(200).send('1'); // bad amount, silently ignore
     }
 
     // 7. Build externalId = `${providerId}:${transactionId}`
     const externalId = `${providerId}:${transactionId}`;
 
-    // 8. Check Transaction.findOne({ externalId }) — if exists → return "1"
-    const existingTx = await Transaction.findOne({ externalId });
-    if (existingTx) {
+    // Find User early to support chargebacks
+    const user = await User.findById(userId);
+    if (!user) {
       return res.status(200).send('1');
     }
 
-    // 9. Find User by userId → if not found → return "1"
-    const user = await User.findById(userId);
-    if (!user) {
+    // CHARGEBACK HANDLING: If the offerwall returns negative, it's reversing an offer.
+    if (platformCoins < 0) {
+      const originalTxId = req.query.original_transaction_id || externalId;
+      // Try to find original by the provided ID, or match exact amount logically
+      let originalTx = await Transaction.findOne({ externalId: originalTxId });
+      if (!originalTx) {
+        originalTx = await Transaction.findOne({
+          userId: user._id,
+          transactionType: 'offer_reward',
+          'metadata.providerId': providerId,
+          amount: Math.abs(platformCoins),
+          status: 'completed'
+        }).sort({ createdAt: -1 });
+      }
+
+      if (originalTx && originalTx.status !== 'reversed') {
+        const { notifyAdmins } = require('../utils/adminNotify'); // require locally to prevent circular dep initially or rely on file top require
+        // Ensure cascading chargeback logic runs exactly like manual admin chargebacks
+        originalTx.status = 'reversed';
+        await originalTx.save();
+
+        await User.findByIdAndUpdate(user._id, {
+          $inc: { walletBalance: -Math.abs(originalTx.amount) }
+        });
+
+        // Search for linked referrals or bonuses
+        const linkedTxs = await Transaction.find({ linkedTransactionId: originalTx._id, status: { $ne: 'reversed' } });
+        for (const linkedTx of linkedTxs) {
+          if (linkedTx.transactionType === 'referral_reward') {
+            if (linkedTx.status === 'hold') {
+              await User.findByIdAndUpdate(linkedTx.userId, { $inc: { referralEarnings: -linkedTx.amount } });
+            } else {
+              await User.findByIdAndUpdate(linkedTx.userId, { $inc: { walletBalance: -linkedTx.amount, referralEarnings: -linkedTx.amount } });
+            }
+          } else {
+            await User.findByIdAndUpdate(linkedTx.userId, { $inc: { walletBalance: -linkedTx.amount } });
+          }
+          linkedTx.status = 'reversed';
+          await linkedTx.save();
+        }
+
+        // Send notifications
+        await notify(user._id, 'chargeback', 'Offer Chargebacked', `An offer was automatically reversed: -${Math.abs(originalTx.amount)} coins`, { amount: -Math.abs(originalTx.amount) });
+        await notifyAdmins({
+          category: 'security',
+          type: 'chargeback_processed',
+          message: `Auto-chargeback triggered by ${provider.label} for user ${user.displayName || user._id}`,
+          permissionRequired: 'manage_offerwalls'
+        });
+      }
+      return res.status(200).send('1');
+    }
+
+    // 8. Normal Positive Postback: Check Transaction.findOne({ externalId }) — if exists → return "1"
+    const existingTx = await Transaction.findOne({ externalId });
+    if (existingTx) {
       return res.status(200).send('1');
     }
 
