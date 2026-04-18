@@ -223,7 +223,7 @@ const HistoryList = ({ transactions, loading, error, hasMore, onLoadMore, loadin
 };
 
 // ── useHistory hook (reusable per type filter)
-const useHistory = (token, type, endpoint = '/api/wallet/history') => {
+const useHistory = (token, type, endpoint = '/wallet/history') => {
   const [dataList, setDataList] = useState([]);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(false);
@@ -791,7 +791,7 @@ const Profile = () => {
   // History hooks (only fetches when token is ready)
   const offers = useHistory(activeTab === 'offers' ? token : null, 'offer_reward');
   const chargebacks = useHistory(activeTab === 'chargebacks' ? token : null, 'chargeback');
-  const clicks = useHistory(activeTab === 'clicks' ? token : null, null, '/api/activity/history');
+  const clicks = useHistory(activeTab === 'clicks' ? token : null, null, '/activity/history');
   const referrals = useHistory(activeTab === 'referrals' ? token : null, 'referral_reward');
 
 
