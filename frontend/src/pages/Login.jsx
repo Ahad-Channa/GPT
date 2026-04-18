@@ -108,9 +108,10 @@ const Field = ({ label, name, type, placeholder, icon: Icon, formik, loading, ex
    Login / Register Page
 ═══════════════════════════════════════════════════════════ */
 const Login = () => {
-  const { loginWithGoogle, loginWithEmail, registerWithEmail } = useAuth();
+  const { loginWithGoogle, loginWithEmail, registerWithEmail, resetPassword } = useAuth();
   const navigate = useNavigate();
   const [isRegistering, setIsRegistering] = useState(false);
+  const [isForgotPassword, setIsForgotPassword] = useState(false);
   const [loading, setLoading] = useState(false);
 
   const handleGoogleLogin = async () => {
@@ -125,8 +126,10 @@ const Login = () => {
 
   const validationSchema = Yup.object().shape({
     email: Yup.string().email('Invalid email address').required('Email is required'),
-    password: Yup.string().min(8, 'At least 8 characters').required('Password is required'),
-    ...(isRegistering && {
+    ...(!isForgotPassword && {
+      password: Yup.string().min(8, 'At least 8 characters').required('Password is required')
+    }),
+    ...(isRegistering && !isForgotPassword && {
       displayName: Yup.string()
         .min(3, 'At least 3 characters').max(20, 'Max 20 characters')
         .matches(/^[a-zA-Z0-9_-]+$/, 'Letters, numbers, dashes & underscores only')
@@ -141,6 +144,25 @@ const Login = () => {
     validateOnBlur: true,
     onSubmit: async (values, { setFieldError }) => {
       setLoading(true);
+      if (isForgotPassword) {
+        const tid = toast.loading('Sending reset link...');
+        try {
+          await resetPassword(values.email);
+          toast.success('Password reset link sent to your email!', { id: tid });
+          setIsForgotPassword(false);
+          formik.resetForm();
+        } catch (error) {
+          if (error.code === 'auth/user-not-found') {
+            toast.error('No account found with this email.', { id: tid });
+            setFieldError('email', 'Email not found');
+          } else {
+            toast.error(error.message || 'Something went wrong.', { id: tid });
+          }
+        }
+        setLoading(false);
+        return;
+      }
+
       const tid = toast.loading(isRegistering ? 'Creating account...' : 'Signing in...');
       try {
         if (isRegistering) {
@@ -168,7 +190,11 @@ const Login = () => {
   });
 
   const switchTab = (register) => {
-    if (register !== isRegistering) { setIsRegistering(register); formik.resetForm(); }
+    if (register !== isRegistering || isForgotPassword) { 
+      setIsRegistering(register); 
+      setIsForgotPassword(false);
+      formik.resetForm(); 
+    }
   };
 
   /* ── Shared button style matching landing page ─────────── */
@@ -353,12 +379,12 @@ const Login = () => {
               fontSize: '1.55rem', fontWeight: 800, color: 'white',
               fontFamily: "'Outfit', Inter, sans-serif", lineHeight: 1.2, marginBottom: '0.35rem',
             }}>
-              {isRegistering ? 'Create your account' : 'Welcome back'}
+              {isForgotPassword ? 'Reset Password' : (isRegistering ? 'Create your account' : 'Welcome back')}
             </h1>
             <p style={{ fontSize: '0.83rem', color: 'rgba(255,255,255,0.35)' }}>
-              {isRegistering
-                ? 'Sign up below or continue with Google'
-                : 'Sign in below or continue with Google'}
+              {isForgotPassword
+                ? 'Enter your email to receive a password reset link'
+                : (isRegistering ? 'Sign up below or continue with Google' : 'Sign in below or continue with Google')}
             </p>
           </div>
 
@@ -366,7 +392,7 @@ const Login = () => {
           <form onSubmit={formik.handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
             {/* Username — sign up only */}
             <AnimatePresence mode="popLayout">
-              {isRegistering && (
+              {isRegistering && !isForgotPassword && (
                 <motion.div
                   key="username"
                   initial={{ opacity: 0, height: 0 }}
@@ -384,21 +410,35 @@ const Login = () => {
             <Field name="email" type="email" label="EMAIL ADDRESS" placeholder="you@email.com"
               icon={FiMail} formik={formik} loading={loading} />
 
-            <Field
-              name="password" type="password" label="PASSWORD" placeholder="At least 8 characters"
-              icon={FiLock} formik={formik} loading={loading}
-              extra={!isRegistering && (
-                <button type="button"
-                  style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '0.72rem',
-                    color: 'rgba(37,99,235,0.9)', fontWeight: 600 }}>
-                  Forgot Password?
-                </button>
+            <AnimatePresence mode="popLayout">
+              {!isForgotPassword && (
+                <motion.div
+                  key="password"
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  exit={{ opacity: 0, height: 0 }}
+                  transition={{ duration: 0.22 }}
+                  style={{ overflow: 'hidden' }}
+                >
+                  <Field
+                    name="password" type="password" label="PASSWORD" placeholder="At least 8 characters"
+                    icon={FiLock} formik={formik} loading={loading}
+                    extra={!isRegistering && (
+                      <button type="button"
+                        onClick={() => { setIsForgotPassword(true); formik.resetForm(); }}
+                        style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '0.72rem',
+                          color: 'rgba(37,99,235,0.9)', fontWeight: 600 }}>
+                        Forgot Password?
+                      </button>
+                    )}
+                  />
+                </motion.div>
               )}
-            />
+            </AnimatePresence>
 
             {/* Password hints (sign up) */}
             <AnimatePresence>
-              {isRegistering && (
+              {isRegistering && !isForgotPassword && (
                 <motion.div
                   key="hints"
                   initial={{ opacity: 0 }}
@@ -436,54 +476,65 @@ const Login = () => {
               onMouseEnter={e => { if (!loading) { e.currentTarget.style.transform = 'scale(1.02)'; e.currentTarget.style.opacity = '0.92'; }}}
               onMouseLeave={e => { e.currentTarget.style.transform = 'scale(1)'; e.currentTarget.style.opacity = loading ? '0.6' : '1'; }}
             >
-              {loading ? 'Please wait...' : (isRegistering ? 'Create Account' : 'Sign In')}
+              {loading ? 'Please wait...' : (isForgotPassword ? 'Send Reset Link' : (isRegistering ? 'Create Account' : 'Sign In'))}
               {!loading && <FiArrowRight size={15} />}
             </button>
           </form>
 
           {/* ── Divider ── */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', margin: '1.4rem 0' }}>
-            <div style={{ flex: 1, height: '1px', background: 'rgba(255,255,255,0.07)' }} />
-            <span style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.25)', whiteSpace: 'nowrap' }}>
-              or continue with
-            </span>
-            <div style={{ flex: 1, height: '1px', background: 'rgba(255,255,255,0.07)' }} />
-          </div>
+          {!isForgotPassword && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', margin: '1.4rem 0' }}>
+              <div style={{ flex: 1, height: '1px', background: 'rgba(255,255,255,0.07)' }} />
+              <span style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.25)', whiteSpace: 'nowrap' }}>
+                or continue with
+              </span>
+              <div style={{ flex: 1, height: '1px', background: 'rgba(255,255,255,0.07)' }} />
+            </div>
+          )}
 
           {/* ── Google button ── */}
-          <button
-            onClick={handleGoogleLogin}
-            disabled={loading}
-            style={{
-              width: '100%',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '10px',
-              padding: '0.75rem 1.5rem',
-              borderRadius: '999px',
-              border: '1px solid rgba(255,255,255,0.12)',
-              background: 'rgba(255,255,255,0.04)',
-              color: 'rgba(255,255,255,0.75)',
-              fontSize: '0.875rem',
-              fontWeight: 500,
-              cursor: loading ? 'not-allowed' : 'pointer',
-              opacity: loading ? 0.5 : 1,
-              transition: 'all 0.2s',
-            }}
-            onMouseEnter={e => { if (!loading) { e.currentTarget.style.background = 'rgba(255,255,255,0.08)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.22)'; e.currentTarget.style.color = 'white'; }}}
-            onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.04)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.12)'; e.currentTarget.style.color = 'rgba(255,255,255,0.75)'; }}
-          >
-            <FcGoogle size={18} />
-            Continue with Google
-          </button>
+          {!isForgotPassword && (
+            <button
+              onClick={handleGoogleLogin}
+              disabled={loading}
+              style={{
+                width: '100%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '10px',
+                padding: '0.75rem 1.5rem',
+                borderRadius: '999px',
+                border: '1px solid rgba(255,255,255,0.12)',
+                background: 'rgba(255,255,255,0.04)',
+                color: 'rgba(255,255,255,0.75)',
+                fontSize: '0.875rem',
+                fontWeight: 500,
+                cursor: loading ? 'not-allowed' : 'pointer',
+                opacity: loading ? 0.5 : 1,
+                transition: 'all 0.2s',
+              }}
+              onMouseEnter={e => { if (!loading) { e.currentTarget.style.background = 'rgba(255,255,255,0.08)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.22)'; e.currentTarget.style.color = 'white'; }}}
+              onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.04)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.12)'; e.currentTarget.style.color = 'rgba(255,255,255,0.75)'; }}
+            >
+              <FcGoogle size={18} />
+              Continue with Google
+            </button>
+          )}
 
           {/* ── Bottom switch link ── */}
           <p style={{ textAlign: 'center', marginTop: '1.5rem', fontSize: '0.82rem', color: 'rgba(255,255,255,0.3)' }}>
-            {isRegistering ? 'Already have an account? ' : "Don't have an account? "}
+            {isForgotPassword ? '' : (isRegistering ? 'Already have an account? ' : "Don't have an account? ")}
             <button
               type="button"
-              onClick={() => switchTab(!isRegistering)}
+              onClick={() => {
+                if (isForgotPassword) {
+                  setIsForgotPassword(false);
+                  formik.resetForm();
+                } else {
+                  switchTab(!isRegistering);
+                }
+              }}
               style={{
                 background: 'none', border: 'none', cursor: 'pointer', padding: 0,
                 background: 'linear-gradient(90deg, #2563eb, #0ea5e9)',
@@ -491,7 +542,7 @@ const Login = () => {
                 backgroundClip: 'text', fontWeight: 600, fontSize: '0.82rem',
               }}
             >
-              {isRegistering ? 'Sign in' : 'Sign up'}
+              {isForgotPassword ? 'Back to sign in' : (isRegistering ? 'Sign in' : 'Sign up')}
             </button>
           </p>
 

@@ -2,14 +2,14 @@ import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { FiDollarSign, FiStar, FiActivity } from 'react-icons/fi';
 
-const API = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
 const LiveEarningsTicker = () => {
   const [earnings, setEarnings] = useState([]);
 
   const fetchEarnings = async () => {
     try {
-      const res = await fetch(`${API}/api/public/recent-earnings`);
+      const res = await fetch(`${API}/public/recent-earnings`);
       const data = await res.json();
       if (data.success) {
         setEarnings(data.recentEarnings || []);

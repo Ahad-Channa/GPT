@@ -6,7 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import LiveEarningsTicker from '../LiveEarningsTicker';
 
-const API = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
 const DailyBonusChip = () => {
   const { currentUser } = useAuth();
@@ -18,7 +18,7 @@ const DailyBonusChip = () => {
   const fetchStatus = async () => {
     try {
       const token = await currentUser?.getIdToken();
-      const res = await fetch(`${API}/api/wallet/daily-bonus-status`, { headers: { Authorization: `Bearer ${token}` } });
+      const res = await fetch(`${API}/wallet/daily-bonus-status`, { headers: { Authorization: `Bearer ${token}` } });
       const data = await res.json();
       if (data.success) setStatus(data);
     } catch (err) { } finally { setLoading(false); }
@@ -50,7 +50,7 @@ const DailyBonusChip = () => {
     setClaiming(true);
     try {
       const token = await currentUser?.getIdToken();
-      const res = await fetch(`${API}/api/wallet/daily-bonus`, {
+      const res = await fetch(`${API}/wallet/daily-bonus`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

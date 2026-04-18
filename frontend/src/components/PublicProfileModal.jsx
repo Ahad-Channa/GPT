@@ -5,7 +5,7 @@ import {
   FiAward, FiTrendingUp, FiZap
 } from 'react-icons/fi';
 
-const API = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
 function timeAgo(dateStr) {
   const diff = Date.now() - new Date(dateStr).getTime();
@@ -49,7 +49,7 @@ const PublicProfileModal = ({ userId, onClose }) => {
     try {
       setLoading(true);
       setError('');
-      const res = await fetch(`${API}/api/public/user/${userId}`);
+      const res = await fetch(`${API}/public/user/${userId}`);
       const data = await res.json();
       if (data.success) {
         setProfile(data.profile);

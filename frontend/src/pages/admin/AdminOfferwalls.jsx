@@ -173,7 +173,7 @@ const AdminOfferwalls = () => {
       setLoading(true);
       setError('');
       const token = await currentUser.getIdToken();
-      const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/admin/settings`, {
+      const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/admin/settings`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       const data = await res.json();
@@ -192,7 +192,7 @@ const AdminOfferwalls = () => {
     try {
       setLoadingProvider(providerId);
       const token = await currentUser.getIdToken();
-      const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/admin/offerwalls/${providerId}`, {
+      const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/admin/offerwalls/${providerId}`, {
         method: 'PUT',
         headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
         body: JSON.stringify({ enabled, conversionRatio })

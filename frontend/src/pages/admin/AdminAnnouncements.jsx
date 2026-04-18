@@ -23,7 +23,7 @@ const AdminAnnouncements = () => {
     setLoading(true);
     try {
       const token = await currentUser.getIdToken();
-      const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/admin/announcements`, {
+      const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/admin/announcements`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,

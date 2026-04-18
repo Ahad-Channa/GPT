@@ -52,7 +52,7 @@ export const NotificationProvider = ({ children }) => {
 
         try {
             const token = await currentUser.getIdToken();
-            const res = await fetch('http://localhost:5000/api/notifications', {
+            const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/notifications`, {
                 headers: { 'Authorization': `Bearer ${token}` },
                 cache: 'no-store'
             });
@@ -101,7 +101,7 @@ export const NotificationProvider = ({ children }) => {
         
         try {
             const token = await currentUser.getIdToken();
-            await fetch('http://localhost:5000/api/notifications/mark-read', {
+            await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/notifications/mark-read`, {
                 method: 'POST',
                 headers: { 
                     'Authorization': `Bearer ${token}`,
@@ -121,7 +121,7 @@ export const NotificationProvider = ({ children }) => {
         
         try {
             const token = await currentUser.getIdToken();
-            const res = await fetch(`http://localhost:5000/api/notifications/${id}`, {
+            const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/notifications/${id}`, {
                 method: 'DELETE',
                 headers: { 'Authorization': `Bearer ${token}` }
             });

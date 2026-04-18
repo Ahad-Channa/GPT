@@ -71,7 +71,7 @@ const TransactionHistory = ({ refreshKey = 0, onStatsLoaded }) => {
 
       const token = await currentUser.getIdToken();
       const params = new URLSearchParams({ page, limit: 20, type });
-      const res = await fetch(`http://localhost:5000/api/wallet/history?${params}`, {
+      const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/wallet/history?${params}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();

@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FiMonitor, FiInbox, FiStar, FiZap, FiExternalLink, FiCheckCircle, FiSend, FiLoader } from 'react-icons/fi';
 
-const API = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
 const item = { hidden: { opacity: 0, y: 16 }, show: { opacity: 1, y: 0, transition: { duration: 0.4 } } };
 
@@ -154,7 +154,7 @@ export const FeaturedOfferModal = ({ offer, token, onClose, onSubmitted }) => {
       return;
     }
     try {
-      const res = await fetch(`${API}/api/custom-offers/${offer._id}/start`, {
+      const res = await fetch(`${API}/custom-offers/${offer._id}/start`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }
       });
@@ -172,7 +172,7 @@ export const FeaturedOfferModal = ({ offer, token, onClose, onSubmitted }) => {
     e.preventDefault();
     setSubmitting(true);
     try {
-      const res = await fetch(`${API}/api/custom-offers/${offer._id}/submit`, {
+      const res = await fetch(`${API}/custom-offers/${offer._id}/submit`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({ proofText: proof, proofImage }),

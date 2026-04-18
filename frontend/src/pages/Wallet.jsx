@@ -33,7 +33,7 @@ const PromoCodeRedeem = ({ onSuccess }) => {
 
     try {
       const token = await currentUser.getIdToken();
-      const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/wallet/redeem-promo`, {
+      const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/wallet/redeem-promo`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -114,7 +114,7 @@ const Wallet = () => {
       try {
         setSettingsLoad(true);
         const token = await currentUser.getIdToken();
-        const res = await fetch('http://localhost:5000/api/wallet/settings', {
+        const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/wallet/settings`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         const data = await res.json();

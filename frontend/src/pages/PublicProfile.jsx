@@ -4,7 +4,7 @@ import DashboardLayout from '../components/layout/DashboardLayout';
 import { motion } from 'framer-motion';
 import { FiStar, FiClock, FiShield, FiAlertTriangle, FiLock } from 'react-icons/fi';
 
-const API = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
 const container = { hidden: {}, show: { transition: { staggerChildren: 0.05 } } };
 const item = { hidden: { opacity: 0, y: 14 }, show: { opacity: 1, y: 0, transition: { duration: 0.3 } } };
@@ -32,7 +32,7 @@ const PublicProfile = () => {
     const fetchProfile = async () => {
       try {
         setLoading(true);
-        const res = await fetch(`${API}/api/public/user/${id}`);
+        const res = await fetch(`${API}/public/user/${id}`);
         const data = await res.json();
         if (data.success) {
           setProfile(data.profile);

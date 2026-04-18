@@ -23,7 +23,7 @@ const AdminLayout = () => {
     if (!currentUser) return;
     try {
       const token = await currentUser.getIdToken();
-      const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/admin/notifications/counts`, {
+      const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/admin/notifications/counts`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       const data = await res.json();

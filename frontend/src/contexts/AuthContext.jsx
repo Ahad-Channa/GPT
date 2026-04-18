@@ -7,6 +7,9 @@ import {
     createUserWithEmailAndPassword,
     signInWithEmailAndPassword,
     sendEmailVerification,
+    sendPasswordResetEmail,
+    confirmPasswordReset,
+    verifyPasswordResetCode,
     updateProfile
 } from 'firebase/auth';
 import { auth, googleProvider } from '../config/firebase';
@@ -24,7 +27,7 @@ export const AuthProvider = ({ children }) => {
         try {
             const token = await user.getIdToken();
             const ref = localStorage.getItem('ref');
-            const res = await fetch('http://localhost:5000/api/auth/sync', {
+            const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/auth/sync`, {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${token}`,
@@ -90,6 +93,25 @@ export const AuthProvider = ({ children }) => {
         }
     };
 
+    const resetPassword = async (email) => {
+        try {
+            await sendPasswordResetEmail(auth, email);
+        } catch (error) {
+            console.error("Password Reset Error", error);
+            throw error;
+        }
+    };
+
+    const confirmResetPassword = async (oobCode, newPassword) => {
+        try {
+            // Optional: verify the code first if needed, but confirm directly does both
+            await confirmPasswordReset(auth, oobCode, newPassword);
+        } catch (error) {
+            console.error("Confirm Password Reset Error", error);
+            throw error;
+        }
+    };
+
     const logout = () => {
         setMongoUser(null);
         return signOut(auth);
@@ -121,6 +143,8 @@ export const AuthProvider = ({ children }) => {
         loginWithGoogle,
         registerWithEmail,
         loginWithEmail,
+        resetPassword,
+        confirmResetPassword,
         logout
     };
 

@@ -20,7 +20,7 @@ const AdminPromoCodes = () => {
     try {
       setLoading(true);
       const token = await currentUser.getIdToken();
-      const res = await fetch(`http://localhost:5000/api/admin/promo-codes?page=${p}&limit=20`, {
+      const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/admin/promo-codes?page=${p}&limit=20`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       const data = await res.json();
@@ -44,7 +44,7 @@ const AdminPromoCodes = () => {
     setCreating(true);
     try {
       const token = await currentUser.getIdToken();
-      const res = await fetch('http://localhost:5000/api/admin/promo-codes', {
+      const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/admin/promo-codes`, {
         method: 'POST',
         headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -71,7 +71,7 @@ const AdminPromoCodes = () => {
   const handleToggleActive = async (id, currentStatus) => {
     try {
       const token = await currentUser.getIdToken();
-      const res = await fetch(`http://localhost:5000/api/admin/promo-codes/${id}`, {
+      const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/admin/promo-codes/${id}`, {
         method: 'PUT',
         headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
         body: JSON.stringify({ isActive: !currentStatus })
@@ -90,7 +90,7 @@ const AdminPromoCodes = () => {
     if (!window.confirm('Delete this promo code permanently?')) return;
     try {
       const token = await currentUser.getIdToken();
-      const res = await fetch(`http://localhost:5000/api/admin/promo-codes/${id}`, {
+      const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/admin/promo-codes/${id}`, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${token}` }
       });

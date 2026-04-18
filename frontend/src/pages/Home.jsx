@@ -6,7 +6,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ProviderCard, OfferwallCard, FeaturedOfferCard, FeaturedOfferModal } from '../components/offers/OfferCards';
 
-const API = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
 const container = { hidden: {}, show: { transition: { staggerChildren: 0.08 } } };
 const item = { hidden: { opacity: 0, y: 16 }, show: { opacity: 1, y: 0, transition: { duration: 0.4 } } };
@@ -46,7 +46,7 @@ const PlatformStats = () => {
 
   useEffect(() => {
     const fetch1 = () =>
-      fetch(`${API}/api/public/stats`)
+      fetch(`${API}/public/stats`)
         .then((r) => r.json())
         .then((d) => { if (d.success) setStats({ totalUsers: d.totalUsers, totalPaidOut: d.totalPaidOut }); })
         .catch(() => {});
@@ -165,7 +165,7 @@ const Home = () => {
     const fetchStats = async () => {
       try {
         if (!token) return;
-        const res = await fetch(`${API}/api/wallet/dashboard-stats`, {
+        const res = await fetch(`${API}/wallet/dashboard-stats`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         const data = await res.json();
@@ -183,7 +183,7 @@ const Home = () => {
     if (!token) return;
     const fetchSettings = async () => {
       try {
-        const res = await fetch(`${API}/api/wallet/settings`, {
+        const res = await fetch(`${API}/wallet/settings`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         const data = await res.json();
@@ -201,7 +201,7 @@ const Home = () => {
     if (!token) return;
     const fetchOffers = async () => {
       try {
-        const res = await fetch(`${API}/api/custom-offers`, {
+        const res = await fetch(`${API}/custom-offers`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         const data = await res.json();

@@ -36,7 +36,7 @@ const AdminWithdrawals = () => {
       setLoading(true);
       const token = await currentUser.getIdToken();
       const params = new URLSearchParams({ page, limit: 20, status });
-      const res = await fetch(`http://localhost:5000/api/admin/withdrawals?${params}`, {
+      const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/admin/withdrawals?${params}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
@@ -58,7 +58,7 @@ const AdminWithdrawals = () => {
     setActionLoading(approveTarget._id);
     try {
       const token = await currentUser.getIdToken();
-      const res = await fetch(`http://localhost:5000/api/admin/withdrawals/${approveTarget._id}/approve`, {
+      const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/admin/withdrawals/${approveTarget._id}/approve`, {
         method: 'PUT',
         headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
         body: JSON.stringify({ note: approveNote }),
@@ -80,7 +80,7 @@ const AdminWithdrawals = () => {
     setActionLoading(rejectTarget._id);
     try {
       const token = await currentUser.getIdToken();
-      const res = await fetch(`http://localhost:5000/api/admin/withdrawals/${rejectTarget._id}/reject`, {
+      const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/admin/withdrawals/${rejectTarget._id}/reject`, {
         method: 'PUT',
         headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
         body: JSON.stringify({ reason: rejectReason }),

@@ -35,7 +35,7 @@ const AdminStaff = () => {
     setLoading(true);
     try {
       const token = await currentUser.getIdToken();
-      const res = await fetch(`http://localhost:5000/api/admin/admins`, {
+      const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/admin/admins`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       const data = await res.json();
@@ -50,7 +50,7 @@ const AdminStaff = () => {
     if (!newAdminId) return alert('Enter User ID');
     try {
       const token = await currentUser.getIdToken();
-      const res = await fetch(`http://localhost:5000/api/admin/admins`, {
+      const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/admin/admins`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -78,7 +78,7 @@ const AdminStaff = () => {
 
     try {
       const token = await currentUser.getIdToken();
-      const res = await fetch(`http://localhost:5000/api/admin/create-admin-credentials`, {
+      const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/admin/create-admin-credentials`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -112,7 +112,7 @@ const AdminStaff = () => {
     if (!window.confirm("Are you sure you want to completely revoke this admin's access?")) return;
     try {
       const token = await currentUser.getIdToken();
-      const res = await fetch(`http://localhost:5000/api/admin/admins/${adminId}`, {
+      const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/admin/admins/${adminId}`, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${token}` }
       });
@@ -125,7 +125,7 @@ const AdminStaff = () => {
   const updatePermissions = async (adminId, permissions) => {
     try {
       const token = await currentUser.getIdToken();
-      const res = await fetch(`http://localhost:5000/api/admin/admins/${adminId}/permissions`, {
+      const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/admin/admins/${adminId}/permissions`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`,

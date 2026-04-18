@@ -75,7 +75,7 @@ const PREDEFINED_AVATARS = [
   'https://api.dicebear.com/7.x/shapes/svg?seed=Shape3',
 ];
 
-const API = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
 const TX_TYPE_LABEL = {
   offer_reward:       { label: 'Offer Reward',    color: 'text-indigo-400'  },
@@ -308,7 +308,7 @@ const ClickedOfferRow = ({ offer, token, onRefresh }) => {
     e.preventDefault();
     setSubmitting(true);
     try {
-      const res = await fetch(`${API}/api/custom-offers/${offer._id}/submit`, {
+      const res = await fetch(`${API}/custom-offers/${offer._id}/submit`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({ proofText: proof, proofImage }),
@@ -499,7 +499,7 @@ const SettingsModal = ({ isOpen, onClose, mongoUser, token, setMongoUser, logout
     setError('');
     setSuccess('');
     try {
-      const res = await fetch(`${API}/api/auth/profile`, {
+      const res = await fetch(`${API}/auth/profile`, {
         method: 'PUT',
         headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
         body: JSON.stringify({ displayName, avatarUrl, isPrivate })
@@ -525,7 +525,7 @@ const SettingsModal = ({ isOpen, onClose, mongoUser, token, setMongoUser, logout
     if (deletePhase === 1) {
       setDeletePhase(2);
       try {
-        const res = await fetch(`${API}/api/auth/account`, {
+        const res = await fetch(`${API}/auth/account`, {
           method: 'DELETE',
           headers: { Authorization: `Bearer ${token}` }
         });
@@ -752,7 +752,7 @@ const Profile = () => {
 
   useEffect(() => {
     if (token) {
-      fetch(`${API}/api/wallet/dashboard-stats`, { headers: { Authorization: `Bearer ${token}` } })
+      fetch(`${API}/wallet/dashboard-stats`, { headers: { Authorization: `Bearer ${token}` } })
         .then(res => res.json())
         .then(data => {
           if (data.success) {
@@ -770,7 +770,7 @@ const Profile = () => {
     if (!token) return;
     setLoadingOffers(true);
     try {
-      const res = await fetch(`${API}/api/custom-offers`, { headers: { Authorization: `Bearer ${token}` } });
+      const res = await fetch(`${API}/custom-offers`, { headers: { Authorization: `Bearer ${token}` } });
       const data = await res.json();
       if (data.success) {
         setCustomOffers(data.offers);

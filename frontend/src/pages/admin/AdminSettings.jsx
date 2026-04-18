@@ -92,7 +92,7 @@ const AdminSettings = () => {
       setLoading(true);
       setError('');
       const token = await currentUser.getIdToken();
-      const res = await fetch('http://localhost:5000/api/admin/settings', {
+      const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/admin/settings`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
@@ -145,7 +145,7 @@ const AdminSettings = () => {
     setSaving(true);
     try {
       const token = await currentUser.getIdToken();
-      const res = await fetch('http://localhost:5000/api/admin/settings', {
+      const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/admin/settings`, {
         method: 'PUT',
         headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
         body: JSON.stringify({

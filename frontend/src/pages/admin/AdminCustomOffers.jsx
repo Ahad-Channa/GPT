@@ -8,7 +8,7 @@ import {
 } from 'react-icons/fi';
 import ImageModal from '../../components/ImageModal';
 
-const API = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
 const STATUS_COLORS = {
   pending:  { text: 'text-amber-400',  bg: 'bg-amber-500/10',  border: 'border-amber-500/20'  },
@@ -54,7 +54,7 @@ const CreateOfferModal = ({ onClose, onCreated, token }) => {
     setError('');
     setLoading(true);
     try {
-      const res = await fetch(`${API}/api/admin/custom-offers`, {
+      const res = await fetch(`${API}/admin/custom-offers`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({
@@ -275,7 +275,7 @@ const AdminCustomOffers = () => {
   const fetchOffers = useCallback(async (t) => {
     if (!t) return;
     try {
-      const res = await fetch(`${API}/api/admin/custom-offers`, {
+      const res = await fetch(`${API}/admin/custom-offers`, {
         headers: { Authorization: `Bearer ${t}` },
       });
       const data = await res.json();
@@ -293,7 +293,7 @@ const AdminCustomOffers = () => {
 
   const toggleOffer = async (offer) => {
     try {
-      const res = await fetch(`${API}/api/admin/custom-offers/${offer._id}`, {
+      const res = await fetch(`${API}/admin/custom-offers/${offer._id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({ isActive: !offer.isActive }),
@@ -310,7 +310,7 @@ const AdminCustomOffers = () => {
   const deleteOffer = async (id) => {
     if (!window.confirm('Are you sure you want to permanently delete this offer?')) return;
     try {
-      const res = await fetch(`${API}/api/admin/custom-offers/${id}`, {
+      const res = await fetch(`${API}/admin/custom-offers/${id}`, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${token}` },
       });

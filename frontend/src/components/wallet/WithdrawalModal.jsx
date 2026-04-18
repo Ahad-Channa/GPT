@@ -98,7 +98,7 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess }) => {
 
     try {
       const token = await currentUser.getIdToken();
-      const res = await fetch('http://localhost:5000/api/wallet/withdraw', {
+      const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/wallet/withdraw`, {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${token}`,

@@ -8,7 +8,7 @@ import {
 } from 'react-icons/fi';
 import { ProviderCard, OfferwallCard, FeaturedOfferCard, FeaturedOfferModal } from '../components/offers/OfferCards';
 
-const API = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
 const container = { hidden: {}, show: { transition: { staggerChildren: 0.08 } } };
 const item = { hidden: { opacity: 0, y: 16 }, show: { opacity: 1, y: 0, transition: { duration: 0.4 } } };
@@ -66,7 +66,7 @@ const Earn = () => {
     if (!token) return;
     const fetchSettings = async () => {
       try {
-        const res = await fetch(`${API}/api/wallet/settings`, {
+        const res = await fetch(`${API}/wallet/settings`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         const data = await res.json();
@@ -85,7 +85,7 @@ const Earn = () => {
     if (!token) return;
     const fetchOffers = async () => {
       try {
-        const res = await fetch(`${API}/api/custom-offers`, {
+        const res = await fetch(`${API}/custom-offers`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         const data = await res.json();

@@ -7,7 +7,7 @@ import {
 } from 'react-icons/fi';
 import PublicProfileModal from '../components/PublicProfileModal';
 
-const API = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
 const container = { hidden: {}, show: { transition: { staggerChildren: 0.04 } } };
 const item = { hidden: { opacity: 0, y: 14 }, show: { opacity: 1, y: 0, transition: { duration: 0.3 } } };
@@ -282,7 +282,7 @@ const Leaderboard = () => {
   const fetchLeaderboard = useCallback(async () => {
     try {
       const token = await currentUser?.getIdToken();
-      const res = await fetch(`${API}/api/leaderboard`, {
+      const res = await fetch(`${API}/leaderboard`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();

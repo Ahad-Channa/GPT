@@ -4,6 +4,7 @@ import { Toaster } from 'react-hot-toast';
 import { useAuth } from './contexts/AuthContext';
 import Home from './pages/Home';
 import Login from './pages/Login';
+import ResetPassword from './pages/ResetPassword';
 import Landing from './pages/Landing';
 import Profile from './pages/Profile';
 import Wallet from './pages/Wallet';
@@ -67,6 +68,7 @@ function App() {
       <Routes>
       <Route path="/" element={currentUser ? <Navigate to="/dashboard" replace /> : <Landing />} />
       <Route path="/login" element={currentUser ? <Navigate to="/dashboard" replace /> : <Login />} />
+      <Route path="/reset-password" element={<ResetPassword />} />
       <Route 
         path="/dashboard" 
         element={

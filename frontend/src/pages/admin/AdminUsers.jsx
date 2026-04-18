@@ -29,7 +29,7 @@ const AdminUsers = () => {
     setLoading(true);
     try {
       const token = await currentUser.getIdToken();
-      const res   = await fetch(`http://localhost:5000/api/admin/users?search=${search}`, {
+      const res   = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/admin/users?search=${search}`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       const data = await res.json();
@@ -47,7 +47,7 @@ const AdminUsers = () => {
     setActionLoading(true);
     try {
       const token = await currentUser.getIdToken();
-      const res = await fetch(`http://localhost:5000/api/admin/users/${banTarget._id}/ban`, {
+      const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/admin/users/${banTarget._id}/ban`, {
         method: 'PUT',
         headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
         body: JSON.stringify({ isBanned: !banTarget.isBanned, reason: banReason }),
@@ -75,7 +75,7 @@ const AdminUsers = () => {
     setActionLoading(true);
     try {
       const token = await currentUser.getIdToken();
-      const res = await fetch(`http://localhost:5000/api/admin/users/${balanceTarget._id}/balance`, {
+      const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/admin/users/${balanceTarget._id}/balance`, {
         method: 'PUT',
         headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
         body: JSON.stringify({ amount, reason: balanceReason }),
@@ -103,7 +103,7 @@ const AdminUsers = () => {
     setActionLoading(true);
     try {
       const token = await currentUser.getIdToken();
-      const res = await fetch(`http://localhost:5000/api/admin/users/${refTarget._id}/referral`, {
+      const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/admin/users/${refTarget._id}/referral`, {
         method: 'PUT',
         headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
         body: JSON.stringify({ referralPercentage: amount }),

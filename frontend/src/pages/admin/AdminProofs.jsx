@@ -6,7 +6,7 @@ import {
 } from 'react-icons/fi';
 import ImageModal from '../../components/ImageModal';
 
-const API = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
 // ── Custom Rejection Reason Popup ────────────────────────────────────────────
 const RejectReasonModal = ({ proofTitle, onConfirm, onCancel }) => {
@@ -131,7 +131,7 @@ const ProofRow = ({ proof, onAction, token, onError }) => {
   const submitAction = async (actionStatus, reason) => {
     setLoading(true);
     try {
-      const res = await fetch(`${API}/api/admin/proofs/${type}/${_id}/${actionStatus}`, {
+      const res = await fetch(`${API}/admin/proofs/${type}/${_id}/${actionStatus}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({ reason }),
@@ -250,7 +250,7 @@ const AdminProofs = () => {
     if (!t) return;
     setError(null);
     try {
-      const res = await fetch(`${API}/api/admin/proofs`, {
+      const res = await fetch(`${API}/admin/proofs`, {
         headers: { Authorization: `Bearer ${t}` },
       });
       const data = await res.json();

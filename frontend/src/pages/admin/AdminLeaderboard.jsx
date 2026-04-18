@@ -3,7 +3,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { FiTrendingUp, FiToggleLeft, FiToggleRight, FiSave, FiRotateCcw, FiClock, FiChevronDown, FiChevronUp, FiAlertCircle, FiEye } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 
-const API = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
 const PERIOD_LABELS = { daily: 'Daily', weekly: 'Weekly', monthly: 'Monthly' };
 const PERIOD_COLORS = {
@@ -280,7 +280,7 @@ const AdminLeaderboard = () => {
   const fetchConfig = useCallback(async () => {
     try {
       const token = await getToken();
-      const res = await fetch(`${API}/api/admin/leaderboard-config`, {
+      const res = await fetch(`${API}/admin/leaderboard-config`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
@@ -296,7 +296,7 @@ const AdminLeaderboard = () => {
     setHistoryLoading(true);
     try {
       const token = await getToken();
-      const res = await fetch(`${API}/api/admin/leaderboard-history?limit=30`, {
+      const res = await fetch(`${API}/admin/leaderboard-history?limit=30`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
@@ -314,7 +314,7 @@ const AdminLeaderboard = () => {
     setSaving(prev => ({ ...prev, [period]: true }));
     try {
       const token = await getToken();
-      const res = await fetch(`${API}/api/admin/leaderboard-config`, {
+      const res = await fetch(`${API}/admin/leaderboard-config`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({ [period]: values }),
@@ -336,7 +336,7 @@ const AdminLeaderboard = () => {
     setResetting(prev => ({ ...prev, [period]: true }));
     try {
       const token = await getToken();
-      const res = await fetch(`${API}/api/admin/leaderboard-reset/${period}`, {
+      const res = await fetch(`${API}/admin/leaderboard-reset/${period}`, {
         method: 'POST',
         headers: { Authorization: `Bearer ${token}` },
       });

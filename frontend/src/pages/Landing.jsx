@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { FiGithub, FiTwitter, FiDisc, FiArrowRight, FiUsers, FiDollarSign } from 'react-icons/fi';
 
-const API = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
 /* ─── Floating Orb ─────────────────────────────────────────── */
 const Orb = ({ style, color, size = 16 }) => (
@@ -30,7 +30,7 @@ const Landing = () => {
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const res = await fetch(`${API}/api/public/stats`);
+        const res = await fetch(`${API}/public/stats`);
         const data = await res.json();
         if (data.success) {
           setStats({
