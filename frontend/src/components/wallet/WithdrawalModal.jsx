@@ -63,7 +63,7 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess }) => {
 
   const amountNum = Number(amount) || 0;
   const feeCoins  = Math.ceil(amountNum * (methodFeePercent / 100));
-  const youReceive = Math.max(0, amountNum - feeCoins);  // displayed amount after fee (no extra deduction)
+  const youReceive = amountNum;
   const totalDeducted = amountNum + feeCoins;
 
   const minimumCoins = selectedMethod ? selectedMethod.minUSD * coinsPerUSD : 0;

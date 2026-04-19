@@ -10,6 +10,7 @@ import Profile from './pages/Profile';
 import Wallet from './pages/Wallet';
 import Earn from './pages/Earn';
 import Leaderboard from './pages/Leaderboard';
+import DailyBonus from './pages/DailyBonus';
 import PublicProfile from './pages/PublicProfile';
 import AdminLayout from './pages/admin/AdminLayout';
 import AdminOverview from './pages/admin/AdminOverview';
@@ -106,6 +107,14 @@ function App() {
         element={
           <PrivateRoute>
             <Leaderboard />
+          </PrivateRoute>
+        } 
+      />
+      <Route 
+        path="/dashboard/daily-bonus" 
+        element={
+          <PrivateRoute>
+            <DailyBonus />
           </PrivateRoute>
         } 
       />

@@ -624,66 +624,17 @@ const SettingsModal = ({ isOpen, onClose, mongoUser, token, setMongoUser, logout
               </div>
             )}
             
-            <div className="mt-6 border border-white/[0.08] bg-[#151b2b] rounded-xl p-4">
-              <div className="flex justify-between items-center mb-3">
-                <h4 className="text-xs font-bold text-slate-300 uppercase tracking-wider">Or random avatar generator:</h4>
-                <p className="text-[10px] text-slate-500">Not AI - just a random hash seed!</p>
+            <div className="mt-6 border border-white/[0.08] bg-[#151b2b] rounded-xl p-4 flex flex-col sm:flex-row items-center gap-4 justify-between">
+              <div className="flex-1">
+                <h4 className="text-xs font-bold text-slate-300 uppercase tracking-wider mb-1">Random Avatar Generator</h4>
+                <p className="text-[10px] text-slate-500">Pick out an avatar perfectly unique to you with our custom random generator.</p>
               </div>
-              <div className="flex flex-col sm:flex-row gap-4 items-end">
-                <div className="w-16 h-16 rounded-xl overflow-hidden border-2 border-indigo-500 shadow-[0_0_15px_rgba(79,70,229,0.4)] flex-shrink-0 bg-[#0c101b]">
-                  {customSeed ? (
-                    <img src={`https://api.dicebear.com/7.x/${customStyle}/svg?seed=${customSeed}`} alt="Custom Preview" className="w-full h-full object-cover" />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center text-white/20 text-xl font-black">?</div>
-                  )}
-                </div>
-                
-                <div className="flex-1 space-y-2 w-full">
-                  <div className="flex gap-2">
-                    <select 
-                      value={customStyle} 
-                      onChange={(e) => setCustomStyle(e.target.value)}
-                      className="bg-[#0c101b] border border-white/[0.08] rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-500/50 min-w-[100px]"
-                    >
-                       <option value="avataaars">Avataaars</option>
-                       <option value="bottts">Bottts</option>
-                       <option value="fun-emoji">Emoji</option>
-                       <option value="lorelei">Lorelei</option>
-                       <option value="micah">Micah</option>
-                       <option value="shapes">Shapes</option>
-                       <option value="pixel-art">Pixel Art</option>
-                       <option value="adventurer">Adventurer</option>
-                       <option value="open-peeps">Open Peeps</option>
-                    </select>
-                    <input 
-                      type="text" 
-                      placeholder="Enter random text/name..." 
-                      value={customSeed}
-                      onChange={(e) => setCustomSeed(e.target.value)}
-                      className="flex-1 min-w-0 bg-[#0c101b] border border-white/[0.08] rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-500/50"
-                    />
-                    <button
-                      onClick={() => setCustomSeed(Math.random().toString(36).substring(7))}
-                      className="px-3 py-2 rounded-xl bg-white/[0.05] hover:bg-white/[0.1] text-white transition-colors"
-                      title="Shuffle Seed"
-                    >
-                      <FiRefreshCw size={14} />
-                    </button>
-                  </div>
-                </div>
-                
-                <button 
-                  onClick={() => {
-                    if(customSeed) {
-                      setAvatarUrl(`https://api.dicebear.com/7.x/${customStyle}/svg?seed=${customSeed}`);
-                    }
-                  }}
-                  disabled={!customSeed}
-                  className="px-4 py-2 rounded-xl bg-indigo-500/10 text-indigo-400 text-xs font-bold hover:bg-indigo-500/20 disabled:opacity-50 whitespace-nowrap transition-colors"
-                >
-                  Use Custom
-                </button>
-              </div>
+              <button
+                onClick={() => setAvatarUrl(`https://api.dicebear.com/7.x/avataaars/svg?seed=${Math.random().toString(36).substring(7)}`)}
+                className="px-6 py-2.5 rounded-xl bg-indigo-500/10 text-indigo-400 text-xs font-bold hover:bg-indigo-500/20 transition-colors flex items-center gap-2"
+              >
+                <FiRefreshCw size={14} /> Generate Random
+              </button>
             </div>
           </div>
 
@@ -846,7 +797,7 @@ const Profile = () => {
                         <button
                           onClick={() => setShowSettings(true)}
                           title="Account Settings"
-                          className="w-10 h-10 rounded-xl border border-white/[0.08] bg-white/[0.02] hover:bg-white/[0.08] text-slate-400 hover:text-white transition-all flex items-center justify-center opacity-0 group-hover:opacity-100"
+                          className="w-10 h-10 rounded-xl border border-white/[0.08] bg-white/[0.02] hover:bg-white/[0.08] text-slate-400 hover:text-white transition-all flex items-center justify-center opacity-100"
                         >
                           <FiSettings size={18} />
                         </button>

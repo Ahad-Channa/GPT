@@ -141,6 +141,26 @@ export const NotificationProvider = ({ children }) => {
     const togglePanel = () => setIsPanelOpen(prev => !prev);
     const closePanel = () => setIsPanelOpen(false);
 
+    const dismissAllNotifications = async () => {
+        if (!currentUser) return;
+        
+        try {
+            const token = await currentUser.getIdToken();
+            const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/notifications`, {
+                method: 'DELETE',
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const data = await res.json();
+            
+            if (data.success) {
+                setNotifications([]);
+                setUnreadCount(0);
+            }
+        } catch (error) {
+            console.error("Failed to dismiss all notifications:", error);
+        }
+    };
+
     const value = {
         notifications,
         unreadCount,
@@ -149,6 +169,7 @@ export const NotificationProvider = ({ children }) => {
         closePanel,
         markAsRead,
         dismissNotification,
+        dismissAllNotifications,
         refresh: fetchNotifications
     };
 

@@ -53,6 +53,43 @@ function getPeriodEnd(period) {
  * Sums positive transactions (earnings) per user since cycleStart.
  */
 async function getLiveRankings(period, limit = 50) {
+  if (period === 'allTime') {
+    const users = await User.find({ role: { $ne: 'admin' }, isBanned: false, totalEarned: { $gt: 0 } })
+      .sort({ totalEarned: -1 })
+      .limit(limit)
+      .lean();
+    
+    let rankings = users.map((u, i) => ({
+      rank: i + 1,
+      userId: u._id,
+      displayName: u.displayName,
+      avatarUrl: u.avatarUrl,
+      avatar: u.photoURL,
+      coinsEarned: u.totalEarned || 0
+    }));
+
+    if (rankings.length < limit) {
+      const needed = limit - rankings.length;
+      const paddingUsers = await User.find({
+        role: { $ne: 'admin' },
+        isBanned: false,
+        totalEarned: { $in: [0, null, undefined] }
+      }).limit(needed).lean();
+      
+      for (const u of paddingUsers) {
+        rankings.push({
+          rank: rankings.length + 1,
+          userId: u._id,
+          displayName: u.displayName,
+          avatarUrl: u.avatarUrl,
+          avatar: u.photoURL,
+          coinsEarned: 0
+        });
+      }
+    }
+    return rankings;
+  }
+
   const cycleStart = getPeriodStart(period);
 
   const results = await Transaction.aggregate([
@@ -205,13 +242,13 @@ router.get('/', verifyToken, async (req, res) => {
 
     const result = {};
 
-    for (const period of periods) {
+    await Promise.all(periods.map(async (period) => {
       const periodCfg = cfg[period];
 
       // allTime doesn't need to be strictly enabled via settings, but let's allow it or force true
       if (period !== 'allTime' && !periodCfg?.enabled) {
         result[period] = { enabled: false };
-        continue;
+        return;
       }
 
       const visibleSlots = period === 'allTime' ? 50 : (periodCfg?.visibleSlots || 25);
@@ -229,7 +266,7 @@ router.get('/', verifyToken, async (req, res) => {
         rewardTiers: rewardTiersArr,
         rankings,
       };
-    }
+    }));
 
     res.json({ success: true, leaderboard: result });
   } catch (err) {

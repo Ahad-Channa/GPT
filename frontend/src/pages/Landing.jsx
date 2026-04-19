@@ -208,7 +208,7 @@ const Landing = () => {
             <div className="w-10 h-10 mb-3 rounded-full bg-blue-500/10 flex items-center justify-center border border-blue-500/20">
               <FiUsers className="text-blue-400" size={18} />
             </div>
-            <span className="text-2xl sm:text-3xl font-bold font-mono text-white mb-1">
+            <span className="text-2xl sm:text-3xl font-bold font-sans text-white mb-1">
                {stats.totalUsers.toLocaleString()}
             </span>
             <span className="text-xs text-slate-500 uppercase tracking-widest font-semibold">Registered Users</span>
@@ -218,7 +218,7 @@ const Landing = () => {
             <div className="w-10 h-10 mb-3 rounded-full bg-emerald-500/10 flex items-center justify-center border border-emerald-500/20">
               <FiDollarSign className="text-emerald-400" size={18} />
             </div>
-            <span className="text-2xl sm:text-3xl font-bold font-mono text-white mb-1 flex items-center">
+            <span className="text-2xl sm:text-3xl font-bold font-sans text-white mb-1 flex items-center">
               ${stats.totalPaidOut.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
             </span>
             <span className="text-xs text-slate-500 uppercase tracking-widest font-semibold">Total Paid Out</span>

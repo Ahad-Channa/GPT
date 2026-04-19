@@ -75,7 +75,7 @@ const PromoCodeRedeem = ({ onSuccess }) => {
           value={code}
           onChange={(e) => setCode(e.target.value.toUpperCase())}
           placeholder="ENTER CODE HERE"
-          className="bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-fuchsia-500/50 focus:ring-1 focus:ring-fuchsia-500/50 flex-1 uppercase font-mono tracking-wider"
+          className="bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-fuchsia-500/50 focus:ring-1 focus:ring-fuchsia-500/50 flex-1 uppercase font-sans tracking-wider"
           disabled={loading}
         />
         <button
@@ -162,13 +162,13 @@ const Wallet = () => {
                 <span className="text-base">{CURRENCY_SYMBOL}</span> Available Balance
               </p>
               <div className="flex items-baseline gap-3">
-                <p className="text-6xl font-bold font-mono text-white tracking-tighter">
+                <p className="text-6xl font-bold font-sans text-white tracking-tighter">
                   {balance.toLocaleString()}
                 </p>
-                <span className="text-blue-400 font-mono text-lg font-semibold">{CURRENCY_NAME}</span>
+                <span className="text-blue-400 font-sans text-lg font-semibold">{CURRENCY_NAME}</span>
               </div>
               {settings && !settingsLoad && (
-                <p className="text-slate-500 text-xs font-mono mt-2">
+                <p className="text-slate-500 text-xs font-sans mt-2">
                   ≈ ${(balance / settings.coinsPerUSD).toFixed(2)} USD
                   {settings.exchangeRates?.ltcUSD && (
                     <span className="text-slate-600 ml-2">
@@ -194,13 +194,13 @@ const Wallet = () => {
           {settings?.exchangeRates?.ltcUSD && (
             <div className="relative z-10 mt-6 pt-5 border-t border-white/[0.06] flex flex-wrap gap-4">
               <div className="flex items-center gap-2 bg-white/[0.04] border border-white/[0.07] rounded-lg px-3 py-1.5">
-                <span className="text-xs font-mono text-slate-400">LTC/USD</span>
-                <span className="text-xs font-mono font-bold text-amber-400">${settings.exchangeRates.ltcUSD.toLocaleString()}</span>
+                <span className="text-xs font-sans text-slate-400">LTC/USD</span>
+                <span className="text-xs font-sans font-bold text-amber-400">${settings.exchangeRates.ltcUSD.toLocaleString()}</span>
                 <span className="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-pulse" />
               </div>
               <div className="flex items-center gap-2 bg-white/[0.04] border border-white/[0.07] rounded-lg px-3 py-1.5">
-                <span className="text-xs font-mono text-slate-400">1 USD =</span>
-                <span className="text-xs font-mono font-bold text-blue-400">{settings.coinsPerUSD} {CURRENCY_NAME}</span>
+                <span className="text-xs font-sans text-slate-400">1 USD =</span>
+                <span className="text-xs font-sans font-bold text-blue-400">{settings.coinsPerUSD} {CURRENCY_NAME}</span>
               </div>
             </div>
           )}
@@ -243,7 +243,7 @@ const Wallet = () => {
                 <p className="text-xs text-slate-500 font-semibold tracking-wide uppercase">{stat.label}</p>
                 <stat.icon className={`${stat.color} text-sm`} />
               </div>
-              <p className={`text-2xl font-bold font-mono ${stat.color}`}>{stat.value}</p>
+              <p className={`text-2xl font-bold font-sans ${stat.color}`}>{stat.value}</p>
               {stat.suffix && <p className="text-xs text-slate-600 mt-1">{stat.suffix}</p>}
             </div>
           ))}

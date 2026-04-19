@@ -1,4 +1,5 @@
 import Header from './Header';
+import LiveEarningsBar from '../LiveEarningsBar';
 
 const DashboardLayout = ({ children }) => {
   return (
@@ -8,6 +9,9 @@ const DashboardLayout = ({ children }) => {
 
       {/* Sticky Header */}
       <Header />
+
+      {/* Live Earnings Ticker */}
+      <LiveEarningsBar />
 
       {/* Main Content */}
       <main className="relative z-10 w-full max-w-7xl mx-auto px-4 md:px-8 2xl:px-12 py-8 md:py-12 flex flex-col">

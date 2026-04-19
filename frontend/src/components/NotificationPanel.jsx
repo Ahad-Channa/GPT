@@ -1,7 +1,30 @@
 import React, { useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { IoClose, IoNotificationsOutline, IoTrashOutline } from 'react-icons/io5';
+import { FiGift, FiCheckCircle, FiAward, FiUsers, FiDollarSign, FiMessageSquare, FiInfo, FiAlertCircle } from 'react-icons/fi';
 import { useNotifications } from '../contexts/NotificationContext';
+
+const getNotificationIcon = (type) => {
+    switch (type) {
+        case 'offer_reward':
+        case 'offer_approved':
+            return <FiCheckCircle className="text-emerald-400 mt-0.5" size={18} />;
+        case 'leaderboard_reward':
+            return <FiAward className="text-amber-400 mt-0.5" size={18} />;
+        case 'referral_earning':
+            return <FiUsers className="text-cyan-400 mt-0.5" size={18} />;
+        case 'admin_adjustment':
+        case 'daily_bonus':
+            return <FiGift className="text-indigo-400 mt-0.5" size={18} />;
+        case 'global_announcement':
+        case 'admin_announcement':
+            return <FiMessageSquare className="text-violet-400 mt-0.5" size={18} />;
+        case 'offer_rejected':
+            return <FiAlertCircle className="text-rose-400 mt-0.5" size={18} />;
+        default:
+            return <FiInfo className="text-blue-400 mt-0.5" size={18} />;
+    }
+};
 
 export default function NotificationPanel() {
     const { 
@@ -9,7 +32,8 @@ export default function NotificationPanel() {
         isPanelOpen, 
         closePanel, 
         markAsRead, 
-        dismissNotification 
+        dismissNotification,
+        dismissAllNotifications
     } = useNotifications();
     const panelRef = useRef(null);
 
@@ -65,12 +89,26 @@ export default function NotificationPanel() {
                                 <IoNotificationsOutline size={24} />
                                 <h2 className="text-lg font-bold">Notifications</h2>
                             </div>
-                            <button 
-                                onClick={closePanel}
-                                className="text-gray-400 hover:text-white transition-colors"
-                            >
-                                <IoClose size={24} />
-                            </button>
+                            <div className="flex items-center gap-3">
+                                {notifications.length > 0 && (
+                                    <button 
+                                        onClick={() => {
+                                            if (window.confirm('Clear all notifications?')) {
+                                                dismissAllNotifications();
+                                            }
+                                        }}
+                                        className="text-xs font-semibold text-gray-400 hover:text-red-400 transition-colors"
+                                    >
+                                        Clear All
+                                    </button>
+                                )}
+                                <button 
+                                    onClick={closePanel}
+                                    className="text-gray-400 hover:text-white transition-colors"
+                                >
+                                    <IoClose size={24} />
+                                </button>
+                            </div>
                         </div>
 
                         {/* Content */}
@@ -98,8 +136,9 @@ export default function NotificationPanel() {
                                             <div className="absolute top-4 left-4 w-2 h-2 rounded-full bg-indigo-500" />
                                         )}
                                         
-                                        <div className={`flex justify-between items-start gap-4 ${!notif.isRead ? 'pl-4' : ''}`}>
-                                            <div>
+                                        <div className={`flex justify-between items-start gap-3 ${!notif.isRead ? 'pl-4' : ''}`}>
+                                            {getNotificationIcon(notif.type)}
+                                            <div className="flex-1 min-w-0">
                                                 <h3 className="font-semibold mb-1 text-sm">{notif.title}</h3>
                                                 <p className="text-sm text-gray-400 leading-relaxed mb-2">
                                                     {notif.message}

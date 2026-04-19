@@ -4,12 +4,12 @@ import { useNotifications } from '../../contexts/NotificationContext';
 import { FiLogOut, FiUser, FiSettings, FiZap, FiChevronDown, FiCreditCard, FiGrid, FiLock, FiUnlock, FiClock, FiCheckCircle, FiTrendingUp, FiBell } from 'react-icons/fi';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import LiveEarningsTicker from '../LiveEarningsTicker';
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
 const DailyBonusChip = () => {
   const { currentUser } = useAuth();
+  const navigate = useNavigate();
   const [status, setStatus] = useState(null);
   const [loading, setLoading] = useState(true);
   const [claiming, setClaiming] = useState(false);
@@ -74,41 +74,43 @@ const DailyBonusChip = () => {
 
   if (status.alreadyClaimed) {
     return (
-      <div className="hidden lg:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-sm">
+      <button 
+        onClick={() => navigate('/dashboard/daily-bonus')}
+        className="hidden lg:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-sm hover:bg-emerald-500/20 transition-all text-left"
+      >
         <FiClock className="text-emerald-400 text-xs" />
         <div className="flex flex-col leading-none">
-          <span className="text-[9px] text-emerald-500/70 font-semibold uppercase tracking-widest">Daily Bonus</span>
-          <span className="text-emerald-300 text-[11px] font-mono tracking-widest">{timeLeft || '...'}</span>
+          <span className="text-[9px] text-emerald-500/70 font-semibold uppercase tracking-widest hover:text-emerald-400">Daily Bonus</span>
+          <span className="text-emerald-300 text-[11px] font-sans font-medium tracking-widest">{timeLeft || '...'}</span>
         </div>
-      </div>
+      </button>
     );
   }
 
   if (status.gateUnlocked) {
     return (
-      <button
-        onClick={claimBonus}
-        disabled={claiming}
-        className="hidden lg:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-amber-500/20 border border-amber-500/40 text-sm hover:bg-amber-500/30 transition-all shadow-glow disabled:opacity-50"
-      >
+      <div className="hidden lg:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-amber-500/20 border border-amber-500/40 text-sm hover:bg-amber-500/30 transition-all shadow-glow">
         <FiUnlock className="text-amber-400 text-xs animate-pulse" />
         <div className="flex flex-col leading-none">
-          <span className="text-[9px] text-amber-500/70 font-semibold uppercase tracking-widest">Daily Bonus</span>
-          <span className="text-amber-400 text-[11px] font-bold tracking-widest uppercase">
+          <button onClick={() => navigate('/dashboard/daily-bonus')} className="text-[9px] text-amber-500/70 font-semibold uppercase tracking-widest hover:text-amber-400 text-left">Daily Bonus</button>
+          <button onClick={claimBonus} disabled={claiming} className="text-amber-400 text-[11px] font-bold tracking-widest uppercase text-left hover:text-white transition-colors disabled:opacity-50">
             {claiming ? 'WAIT...' : 'CLAIM NOW'}
-          </span>
+          </button>
         </div>
-      </button>
+      </div>
     );
   }
 
   const progressPercent = Math.min(100, Math.floor((status.earned / status.required) * 100));
 
   return (
-    <div className="hidden lg:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white/[0.04] border border-white/[0.07] text-sm group relative">
+    <button 
+      onClick={() => navigate('/dashboard/daily-bonus')}
+      className="hidden lg:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white/[0.04] border border-white/[0.07] text-sm hover:bg-white/10 transition-all group relative text-left"
+    >
       <FiLock className="text-slate-400 text-xs flex-shrink-0" />
       <div className="flex flex-col leading-none gap-1">
-        <span className="text-[9px] text-slate-500 font-semibold uppercase tracking-widest">Daily Bonus</span>
+        <span className="text-[9px] text-slate-500 font-semibold uppercase tracking-widest group-hover:text-white transition-colors">Daily Bonus</span>
         <div className="w-16 h-1.5 bg-white/10 rounded-full overflow-hidden">
           <div 
             className="bg-indigo-400 h-full rounded-full transition-all duration-1000"
@@ -118,14 +120,15 @@ const DailyBonusChip = () => {
       </div>
       
       {/* Tooltip */}
-      <div className="absolute top-11 right-0 w-52 p-3 rounded-xl bg-[#0b101e] border border-white/[0.08] shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">
+      <div className="absolute top-11 right-0 w-52 p-3 rounded-xl bg-[#0b101e] border border-white/[0.08] shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 text-left">
         <p className="text-xs text-slate-300 mb-2">Earn <span className="font-bold text-white">{status.required - status.earned}</span> more coins today to unlock your Daily Bonus.</p>
-        <div className="flex justify-between items-center text-[10px] font-mono text-slate-400">
+        <div className="flex justify-between items-center text-[10px] font-sans font-medium text-slate-400">
           <span>{status.earned} earned</span>
           <span>{status.required} needed</span>
         </div>
+        <p className="text-[9px] text-indigo-400 mt-2 font-bold uppercase text-center w-full">Click for details</p>
       </div>
-    </div>
+    </button>
   );
 };
 
@@ -153,7 +156,7 @@ const Header = () => {
         {/* Brand */}
         <button
           id="header-brand-logo"
-          onClick={() => navigate('/dashboard')}
+          onClick={() => navigate('/')}
           className="flex items-center gap-3 group"
         >
           <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center shadow-glow group-hover:shadow-glow-lg transition-shadow">
@@ -165,15 +168,22 @@ const Header = () => {
           </div>
         </button>
 
-        {/* Live Earnings Ticker */}
-        <div className="flex-1 hidden lg:flex justify-end mr-6">
-          <LiveEarningsTicker />
-        </div>
+
 
         {/* Right Controls */}
         <div className="flex items-center gap-3 lg:gap-4">
 
           <DailyBonusChip />
+
+          {/* Earn Button */}
+          <button
+            id="header-earn-btn"
+            onClick={() => navigate('/dashboard/earn')}
+            className="hidden lg:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-gradient-to-r from-amber-500/10 to-orange-500/10 border border-amber-500/30 text-amber-400 text-sm hover:bg-amber-500/20 hover:border-amber-500/50 transition-all font-bold shadow-[0_0_15px_rgba(245,158,11,0.15)]"
+          >
+            <FiZap className="text-amber-400 text-xs" />
+            <span>Earn</span>
+          </button>
 
           {/* Leaderboard Chip */}
           <button
@@ -185,18 +195,14 @@ const Header = () => {
             <span className="text-[9px] text-slate-500 font-semibold uppercase tracking-widest">Leaderboard</span>
           </button>
           
-          {/* Balance Chip */}
+          {/* Withdraw Button */}
           <button
-            id="header-balance-chip"
+            id="header-withdraw-btn"
             onClick={() => navigate('/dashboard/wallet')}
-            className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white/[0.04] border border-white/[0.07] text-sm hover:bg-white/[0.07] hover:border-blue-500/30 transition-all"
+            className="hidden sm:flex items-center gap-2 px-4 py-1.5 rounded-xl bg-gradient-to-r from-emerald-500/10 to-emerald-500/5 border border-emerald-500/20 text-emerald-400 text-sm hover:bg-emerald-500/20 hover:border-emerald-500/40 transition-all font-bold shadow-glow"
           >
-            <FiZap className="text-indigo-400 text-xs" />
-            <span className="text-slate-400 text-[11px] font-mono tracking-widest">BAL</span>
-            <span className="font-semibold text-white font-mono text-sm">
-              {mongoUser?.walletBalance?.toLocaleString() ?? '0'}
-            </span>
-            <span className="text-indigo-400 text-[10px] font-mono">PTS</span>
+            <FiCreditCard className="text-emerald-400 text-sm" />
+            <span>Withdraw</span>
           </button>
 
           <div className="h-5 w-px bg-white/[0.08] hidden sm:block" />
@@ -227,12 +233,12 @@ const Header = () => {
                   className="w-full h-full object-cover"
                 />
               </div>
-              <div className="hidden md:flex flex-col items-start leading-none">
+              <div className="hidden md:flex flex-col items-start leading-none gap-1">
                 <span className="text-xs font-semibold text-slate-200">
                   {mongoUser?.displayName || 'User'}
                 </span>
-                <span className="text-[10px] text-indigo-400 font-mono tracking-widest">
-                  RANK {mongoUser?.vipLevel || 1}
+                <span className="text-[11px] text-amber-400 font-bold font-sans tracking-widest flex items-center gap-1">
+                  {mongoUser?.walletBalance?.toLocaleString() ?? '0'} <img src="/coin.png" className="w-3 h-3 drop-shadow-md" alt="C" onError={(e) => e.target.style.display='none'}/>
                 </span>
               </div>
               <FiChevronDown
@@ -257,27 +263,11 @@ const Header = () => {
                   </div>
 
                   <button
-                    id="header-profile-link"
-                    onClick={() => { setIsDropdownOpen(false); navigate('/dashboard'); }}
-                    className="w-full text-left px-4 py-3 text-sm text-slate-300 hover:bg-white/[0.05] hover:text-white transition-colors flex items-center gap-3 border-b border-white/[0.04]"
-                  >
-                    <FiGrid className="text-violet-400" /> Dashboard
-                  </button>
-
-                  <button
                     id="header-profile-link-nav"
                     onClick={() => { setIsDropdownOpen(false); navigate('/dashboard/profile'); }}
                     className="w-full text-left px-4 py-3 text-sm text-slate-300 hover:bg-white/[0.05] hover:text-white transition-colors flex items-center gap-3 border-b border-white/[0.04]"
                   >
-                    <FiUser className="text-indigo-400" /> Profile
-                  </button>
-
-                  <button
-                    id="header-wallet-link"
-                    onClick={() => { setIsDropdownOpen(false); navigate('/dashboard/wallet'); }}
-                    className="w-full text-left px-4 py-3 text-sm text-slate-300 hover:bg-white/[0.05] hover:text-white transition-colors flex items-center gap-3 border-b border-white/[0.04]"
-                  >
-                    <FiCreditCard className="text-blue-400" /> Wallet
+                    <FiUser className="text-indigo-400" /> My Profile
                   </button>
 
                   {isAdmin && (

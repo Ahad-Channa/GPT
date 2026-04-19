@@ -11,107 +11,6 @@ const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 const container = { hidden: {}, show: { transition: { staggerChildren: 0.08 } } };
 const item = { hidden: { opacity: 0, y: 16 }, show: { opacity: 1, y: 0, transition: { duration: 0.4 } } };
 
-// ── Animated count-up hook ────────────────────────────────────────────────────
-const useCountUp = (target, duration = 1800) => {
-  const [value, setValue] = useState(0);
-  const raf = useRef(null);
-  const startRef = useRef(null);
-  const prevTarget = useRef(0);
-
-  useEffect(() => {
-    if (target === 0) return;
-    const from = prevTarget.current;
-    prevTarget.current = target;
-    const start = performance.now();
-    startRef.current = start;
-
-    const tick = (now) => {
-      const elapsed = now - start;
-      const progress = Math.min(elapsed / duration, 1);
-      // Ease-out cubic
-      const eased = 1 - Math.pow(1 - progress, 3);
-      setValue(Math.round(from + (target - from) * eased));
-      if (progress < 1) raf.current = requestAnimationFrame(tick);
-    };
-    raf.current = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(raf.current);
-  }, [target, duration]);
-
-  return value;
-};
-
-// ── Platform Stats Banner ─────────────────────────────────────────────────────
-const PlatformStats = () => {
-  const [stats, setStats] = useState({ totalUsers: 0, totalPaidOut: 0 });
-
-  useEffect(() => {
-    const fetch1 = () =>
-      fetch(`${API}/public/stats`)
-        .then((r) => r.json())
-        .then((d) => { if (d.success) setStats({ totalUsers: d.totalUsers, totalPaidOut: d.totalPaidOut }); })
-        .catch(() => {});
-
-    fetch1();
-    // Re-poll every 60 seconds so numbers stay fresh
-    const interval = setInterval(fetch1, 60_000);
-    return () => clearInterval(interval);
-  }, []);
-
-  const users  = useCountUp(stats.totalUsers, 1600);
-  const paid   = useCountUp(stats.totalPaidOut, 2000);
-
-  const statItems = [
-    {
-      icon: FiUsers,
-      label: 'Registered Users',
-      value: users.toLocaleString(),
-      accent: 'indigo',
-      glow: 'shadow-[0_0_24px_rgba(99,102,241,0.18)]',
-      iconBg: 'bg-indigo-500/10 border-indigo-500/20',
-      iconColor: 'text-indigo-400',
-      valueColor: 'text-indigo-200',
-    },
-    {
-      icon: FiDollarSign,
-      label: 'Total Paid Out',
-      value: `$${paid.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
-      accent: 'emerald',
-      glow: 'shadow-[0_0_24px_rgba(16,185,129,0.15)]',
-      iconBg: 'bg-emerald-500/10 border-emerald-500/20',
-      iconColor: 'text-emerald-400',
-      valueColor: 'text-emerald-200',
-    },
-  ];
-
-  return (
-    <motion.div variants={item} className="grid grid-cols-2 gap-4">
-      {statItems.map(({ icon: Icon, label, value, glow, iconBg, iconColor, valueColor }) => (
-        <div
-          key={label}
-          className={`relative flex items-center gap-4 px-5 py-4 rounded-2xl border border-white/[0.06] bg-white/[0.025] backdrop-blur-sm overflow-hidden ${glow} transition-all hover:border-white/10`}
-        >
-          {/* Background gradient blob */}
-          <div className="absolute inset-0 opacity-[0.03] bg-gradient-to-br from-white to-transparent pointer-events-none" />
-
-          <div className={`w-11 h-11 rounded-xl flex items-center justify-center border flex-shrink-0 ${iconBg}`}>
-            <Icon className={`text-xl ${iconColor}`} />
-          </div>
-
-          <div className="min-w-0">
-            <p className="text-xs text-slate-500 font-medium mb-0.5 uppercase tracking-wider">{label}</p>
-            <p className={`text-2xl font-bold font-display tabular-nums ${valueColor}`}>{value}</p>
-          </div>
-
-          {/* Live pulse dot */}
-          <div className="absolute top-3 right-3 flex items-center gap-1">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-          </div>
-        </div>
-      ))}
-    </motion.div>
-  );
-};
-
 const TabButton = ({ active, onClick, icon: Icon, label, count }) => (
   <button
     onClick={onClick}
@@ -140,6 +39,7 @@ const Home = () => {
   const balance = mongoUser?.walletBalance?.toFixed(2) ?? '0.00';
   const vipLevel = mongoUser?.vipLevel ?? 1;
   const [tasksDone, setTasksDone] = useState('...');
+  const [globalStats, setGlobalStats] = useState({ totalUsers: 0, totalPaidOut: 0 });
   
   const [settings, setSettings] = useState(null);
   const [customOffers, setCustomOffers] = useState([]);
@@ -176,7 +76,19 @@ const Home = () => {
         console.error('Failed to fetch dashboard stats', err);
       }
     };
+    const fetchGlobalStats = async () => {
+      try {
+        const res = await fetch(`${API}/public/stats`);
+        const data = await res.json();
+        if (data.success) {
+          setGlobalStats({ totalUsers: data.totalUsers, totalPaidOut: data.totalPaidOut });
+        }
+      } catch (err) {
+        console.error('Failed to fetch global stats', err);
+      }
+    };
     if (token) fetchStats();
+    fetchGlobalStats();
   }, [token]);
   
   useEffect(() => {
@@ -253,10 +165,40 @@ const Home = () => {
     <DashboardLayout>
       <motion.div variants={container} initial="hidden" animate="show" className="space-y-8 pb-10">
 
+        {/* ─── Platform Stats ───────────────────────────── */}
+        <motion.div variants={item} className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+           {/* Total Users Card */}
+           <div className="glass-card relative overflow-hidden p-6 sm:p-8 flex items-center gap-5 group border border-white/[0.05] hover:border-white/[0.08] transition-colors bg-gradient-to-br from-white/[0.02] to-transparent">
+             <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-[0.08] transition-opacity translate-x-4 -translate-y-4">
+               <FiUsers className="text-8xl text-blue-500" />
+             </div>
+             <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-500/20 to-blue-600/5 border border-blue-500/20 flex items-center justify-center shadow-[0_0_30px_rgba(59,130,246,0.15)] relative z-10 shrink-0">
+               <FiUsers className="text-blue-400 text-2xl" />
+             </div>
+             <div className="relative z-10">
+                <p className="text-sm text-slate-400 font-semibold uppercase tracking-widest mb-1 shadow-black/50 drop-shadow-sm">Total Members</p>
+                <div className="text-3xl sm:text-4xl font-bold text-white font-sans tracking-tight shadow-black/50 drop-shadow-sm">
+                  {globalStats.totalUsers.toLocaleString()}
+                </div>
+             </div>
+           </div>
 
-
-        {/* ─── Platform Trust Stats ──────────────────────── */}
-        <PlatformStats />
+           {/* Paid Out Card */}
+           <div className="glass-card relative overflow-hidden p-6 sm:p-8 flex items-center gap-5 group border border-white/[0.05] hover:border-white/[0.08] transition-colors bg-gradient-to-br from-white/[0.02] to-transparent">
+             <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-[0.08] transition-opacity translate-x-4 -translate-y-4">
+               <FiDollarSign className="text-8xl text-emerald-500" />
+             </div>
+             <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-emerald-500/20 to-emerald-600/5 border border-emerald-500/20 flex items-center justify-center shadow-[0_0_30px_rgba(16,185,129,0.15)] relative z-10 shrink-0">
+               <FiDollarSign className="text-emerald-400 text-2xl" />
+             </div>
+             <div className="relative z-10">
+                <p className="text-sm text-slate-400 font-semibold uppercase tracking-widest mb-1 shadow-black/50 drop-shadow-sm">Total Paid Out</p>
+                <div className="text-3xl sm:text-4xl font-bold text-emerald-400 font-sans tracking-tight shadow-black/50 drop-shadow-md">
+                  ${globalStats.totalPaidOut.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                </div>
+             </div>
+           </div>
+        </motion.div>
 
         {/* ─── Quick Jump Tabs ───────────────────────────── */}
         <motion.div variants={item} className="sticky top-4 z-20">

@@ -69,4 +69,21 @@ router.delete('/:id', verifyToken, async (req, res) => {
   }
 });
 
+// DELETE /api/notifications
+// Dismiss all notifications for the user
+router.delete('/', verifyToken, async (req, res) => {
+  try {
+    const User = require('../models/User');
+    const user = await User.findOne({ firebaseUid: req.user.uid });
+    if (!user) return res.status(404).json({ success: false, error: 'User not found' });
+
+    await Notification.deleteMany({ userId: user._id });
+    
+    res.status(200).json({ success: true, message: 'All notifications cleared' });
+  } catch (error) {
+    console.error('[/api/notifications DELETE] Error:', error);
+    res.status(500).json({ success: false, error: 'Failed to clear all notifications' });
+  }
+});
+
 module.exports = router;

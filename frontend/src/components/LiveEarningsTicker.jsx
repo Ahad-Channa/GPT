@@ -12,7 +12,7 @@ const LiveEarningsTicker = () => {
       const res = await fetch(`${API}/public/recent-earnings`);
       const data = await res.json();
       if (data.success) {
-        setEarnings(data.recentEarnings || []);
+        setEarnings(data.earnings || []);
       }
     } catch (e) {
       console.error('Failed to fetch recent earnings', e);
@@ -45,15 +45,15 @@ const LiveEarningsTicker = () => {
           {[...earnings, ...earnings].map((earning, i) => (
             <div key={`${earning._id || i}-${i}`} className="flex items-center gap-2 py-1 text-xs">
               <div className="flex items-center gap-1.5 bg-white/[0.04] px-2 py-1 rounded-md border border-white/[0.04]">
-                {earning.user.avatarUrl ? (
-                  <img src={earning.user.avatarUrl} alt="User Avatar" className="w-4 h-4 rounded-full" />
+                {earning.userId?.avatarUrl ? (
+                  <img src={earning.userId.avatarUrl} alt="User Avatar" className="w-4 h-4 rounded-full" />
                 ) : (
                   <div className="w-4 h-4 rounded-full bg-indigo-500/20 text-indigo-400 flex items-center justify-center text-[8px] font-bold">
-                    {earning.user.displayName?.charAt(0)?.toUpperCase() || '?'}
+                    {earning.userId?.displayName?.charAt(0)?.toUpperCase() || '?'}
                   </div>
                 )}
                 <span className="text-slate-300 font-medium truncate max-w-[80px]">
-                  {earning.user.displayName || 'Hidden User'}
+                  {earning.userId?.displayName || 'Hidden User'}
                 </span>
               </div>
               <span className="text-slate-500">earned</span>
@@ -61,7 +61,7 @@ const LiveEarningsTicker = () => {
                 +{earning.amount?.toLocaleString()} <img src="/coin.png" className="w-3 h-3 ml-1 drop-shadow-md" alt="C" onError={(e) => e.target.style.display='none'}/>
               </span>
               <span className="text-slate-500 truncate max-w-[120px]">
-                from {earning.title || 'Offer'}
+                {earning.description ? earning.description : 'from an offer'}
               </span>
             </div>
           ))}

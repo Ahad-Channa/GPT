@@ -133,14 +133,14 @@ router.get('/stats', async (req, res) => {
   try {
     const totalUsers = await User.countDocuments();
 
-    // Sum up all approved (completed) withdrawals
+    // Sum up all approved (completed) withdrawals using the absolute value of amount
+    // to correctly tally both legacy (positive) and newer (negative) withdrawal records.
     const withdrawalStats = await Transaction.aggregate([
       { $match: { transactionType: 'withdrawal', status: 'completed' } },
-      { $group: { _id: null, total: { $sum: '$amount' } } }
+      { $group: { _id: null, total: { $sum: { $abs: '$amount' } } } }
     ]);
 
-    // Amount will be negative in the DB for withdrawals, so we use Math.abs
-    const totalPaidOutCoins = withdrawalStats.length > 0 ? Math.abs(withdrawalStats[0].total) : 0;
+    const totalPaidOutCoins = withdrawalStats.length > 0 ? withdrawalStats[0].total : 0;
 
     // Convert to USD using the global coinsPerUSD setting
     const settings = await Settings.findOne({}) || { coinsPerUSD: 1000 };
