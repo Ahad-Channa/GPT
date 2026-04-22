@@ -11,6 +11,7 @@ const notify = require('../utils/notify');
 
 /**
  * Get the UTC start of the current period window.
+ * Used as a fallback when no lastResetAt has been stored yet.
  */
 function getPeriodStart(period) {
   if (period === 'allTime') return new Date(0); // Epoch
@@ -48,9 +49,21 @@ function getPeriodEnd(period) {
   }
 }
 
+// ─── Real earning types ───────────────────────────────────────────────────────
+// These are the ONLY types that count toward leaderboard rankings.
+// Excluded: daily_bonus, promo_code, leaderboard_reward (bonuses, not real work).
+// Included: admin_adjustment DOES count — admins use it to credit real completed work.
+const REAL_EARNING_TYPES = [
+  'offer_reward',
+  'custom_offer_reward',
+  'referral_reward',
+  'admin_adjustment',
+];
+
 /**
  * Aggregate live rankings for a single period.
- * Sums positive transactions (earnings) per user since cycleStart.
+ * Returns only users with real earnings > 0, padded with 0-earners for display.
+ * The padding users are clearly marked coinsEarned: 0.
  */
 async function getLiveRankings(period, limit = 50) {
   if (period === 'allTime') {
@@ -58,14 +71,14 @@ async function getLiveRankings(period, limit = 50) {
       .sort({ totalEarned: -1 })
       .limit(limit)
       .lean();
-    
+
     let rankings = users.map((u, i) => ({
       rank: i + 1,
       userId: u._id,
       displayName: u.displayName,
       avatarUrl: u.avatarUrl,
       avatar: u.photoURL,
-      coinsEarned: u.totalEarned || 0
+      coinsEarned: u.totalEarned || 0,
     }));
 
     if (rankings.length < limit) {
@@ -73,9 +86,9 @@ async function getLiveRankings(period, limit = 50) {
       const paddingUsers = await User.find({
         role: { $ne: 'admin' },
         isBanned: false,
-        totalEarned: { $in: [0, null, undefined] }
+        totalEarned: { $in: [0, null, undefined] },
       }).limit(needed).lean();
-      
+
       for (const u of paddingUsers) {
         rankings.push({
           rank: rankings.length + 1,
@@ -83,29 +96,17 @@ async function getLiveRankings(period, limit = 50) {
           displayName: u.displayName,
           avatarUrl: u.avatarUrl,
           avatar: u.photoURL,
-          coinsEarned: 0
+          coinsEarned: 0,
         });
       }
     }
     return rankings;
   }
 
+  // ── Use stored lastResetAt as cycle start (prevents bleed from previous cycle) ──
   const settings = await Settings.getSingleton();
-  // Use the stored lastResetAt for this period (set on each reset) so earnings
-  // from the previous cycle don't bleed into the new one.
-  // Fall back to getPeriodStart() only if no reset has ever been recorded.
   const storedReset = settings.leaderboardConfig?.[period]?.lastResetAt;
   const cycleStart = storedReset ? new Date(storedReset) : getPeriodStart(period);
-
-  // ── REAL EARNINGS ONLY ───────────────────────────────────────────────────────
-  // offer_reward        : offerwall / survey rewards (auto-credited)
-  // custom_offer_reward : featured offer proof approved
-  // referral_reward     : referral commission from a referred user's earnings
-  // admin_adjustment    : admin manually credits for real completed work
-  //
-  // EXCLUDED (bonuses / non-real):
-  //   daily_bonus, promo_code, leaderboard_reward
-  const REAL_EARNING_TYPES = ['offer_reward', 'custom_offer_reward', 'referral_reward', 'admin_adjustment'];
 
   const results = await Transaction.aggregate([
     {
@@ -147,18 +148,17 @@ async function getLiveRankings(period, limit = 50) {
 
   let rankings = results.map((r, i) => ({ rank: i + 1, ...r }));
 
-  // Pad the leaderboard with active users who haven't earned anything this period
+  // Pad with 0-earner users for display purposes only (they never receive rewards)
   if (rankings.length < limit) {
     const earnedUserIds = rankings.map(r => r.userId);
     const needed = limit - rankings.length;
 
-    const User = require('../models/User'); // ensure it's loaded if not at top-level
     const paddingUsers = await User.find({
       _id: { $nin: earnedUserIds },
-      role: { $ne: 'admin' }, // don't show admins on leaderboard by default
-      isBanned: false
+      role: { $ne: 'admin' },
+      isBanned: false,
     })
-      .sort({ totalEarned: -1 }) // Sort 0-earners by who has overall more lifetime earnings, to keep best users on top of bottom lists
+      .sort({ totalEarned: -1 })
       .limit(needed)
       .lean();
 
@@ -169,7 +169,7 @@ async function getLiveRankings(period, limit = 50) {
         displayName: u.displayName,
         avatarUrl: u.avatarUrl,
         avatar: u.photoURL,
-        coinsEarned: 0
+        coinsEarned: 0,
       });
     }
   }
@@ -184,21 +184,25 @@ async function resetLeaderboard(period) {
   const cfg = settings.leaderboardConfig?.[period];
   if (!cfg?.enabled) return { skipped: true, reason: `${period} leaderboard is disabled` };
 
-  const cycleStart = getPeriodStart(period);
-  const cycleEnd = getPeriodEnd(period);
+  // Use the same lastResetAt-based cycle start as getLiveRankings.
+  // This ensures the snapshot reflects the REAL cycle window.
+  const storedReset = cfg.lastResetAt;
+  const cycleStart = storedReset ? new Date(storedReset) : getPeriodStart(period);
+  const cycleEnd = new Date(); // the actual moment of reset = end of this cycle
 
-  // How many ranks get rewarded
   const rewardedRanks = cfg.rewardedRanks || 3;
-  // Reward tiers array — index 0 = rank 1
   const rewardTiersArr = cfg.rewardTiers || [];
 
-  // Get top N users (at least rewardedRanks, but also visible slots for the snapshot)
   const fetchLimit = Math.max(rewardedRanks, cfg.visibleSlots || 25);
-  const top = await getLiveRankings(period, fetchLimit);
+  const allRankings = await getLiveRankings(period, fetchLimit);
+
+  // ── CRITICAL GUARD: never reward 0-earners ────────────────────────────────
+  // Padded 0-earner entries exist only for display; they must never win prizes.
+  const earnersOnly = allRankings.filter(e => e.coinsEarned > 0);
 
   const winners = [];
 
-  for (const entry of top) {
+  for (const entry of earnersOnly) {
     const rankIndex = entry.rank - 1; // 0-based
     const reward = rankIndex < rewardedRanks ? (rewardTiersArr[rankIndex] || 0) : 0;
 
@@ -218,10 +222,18 @@ async function resetLeaderboard(period) {
           status: 'completed',
           sourceType: 'leaderboard',
         });
-        
-        await notify(user._id, 'leaderboard_reward', 'Leaderboard Reward!', `Congratulations! You placed #${entry.rank} on the ${period} leaderboard and won ${reward} coins.`, { period, rank: entry.rank, reward });
+
+        await notify(
+          user._id,
+          'leaderboard_reward',
+          'Leaderboard Reward!',
+          `Congratulations! You placed #${entry.rank} on the ${period} leaderboard and won ${reward} coins.`,
+          { period, rank: entry.rank, reward }
+        );
       }
     }
+
+    // Only real earners appear in the historical snapshot
     winners.push({
       rank: entry.rank,
       userId: entry.userId,
@@ -231,7 +243,7 @@ async function resetLeaderboard(period) {
     });
   }
 
-  // Save completed cycle record
+  // Save cycle record with the ACTUAL window timestamps
   await LeaderboardCycle.create({
     period,
     cycleStart,
@@ -242,18 +254,23 @@ async function resetLeaderboard(period) {
     rewardedRanks,
   });
 
-  // ── Store the reset timestamp so the new cycle starts from NOW ──────────────
-  // This prevents pre-reset earnings from contaminating the new cycle.
+  // Persist the reset time so the next cycle starts cleanly from NOW
   try {
     await Settings.findOneAndUpdate(
       { _singleton: 'platform_settings' },
-      { $set: { [`leaderboardConfig.${period}.lastResetAt`]: new Date() } }
+      { $set: { [`leaderboardConfig.${period}.lastResetAt`]: cycleEnd } }
     );
   } catch (e) {
     console.warn('[leaderboard] Failed to persist lastResetAt:', e.message);
   }
 
-  return { success: true, period, winnersCount: winners.length, rewardedRanks, totalPaid: winners.reduce((s, w) => s + w.rewardPaid, 0) };
+  return {
+    success: true,
+    period,
+    winnersCount: winners.length,
+    rewardedRanks,
+    totalPaid: winners.reduce((s, w) => s + w.rewardPaid, 0),
+  };
 }
 
 module.exports.resetLeaderboard = resetLeaderboard;
@@ -271,7 +288,6 @@ router.get('/', verifyToken, async (req, res) => {
     await Promise.all(periods.map(async (period) => {
       const periodCfg = cfg[period];
 
-      // allTime doesn't need to be strictly enabled via settings, but let's allow it or force true
       if (period !== 'allTime' && !periodCfg?.enabled) {
         result[period] = { enabled: false };
         return;
