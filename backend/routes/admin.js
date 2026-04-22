@@ -56,6 +56,24 @@ router.get('/users', requirePermission('manage_users'), async (req, res) => {
   }
 });
 
+// GET a single user's transaction history (for admin detail view)
+router.get('/users/:id/transactions', requirePermission('manage_users'), async (req, res) => {
+  try {
+    const { limit = 50 } = req.query;
+    const [user, txs] = await Promise.all([
+      User.findById(req.params.id).select('-__v'),
+      Transaction.find({ userId: req.params.id })
+        .sort({ createdAt: -1 })
+        .limit(parseInt(limit))
+        .lean(),
+    ]);
+    if (!user) return res.status(404).json({ success: false, error: 'User not found' });
+    res.json({ success: true, user, transactions: txs });
+  } catch (error) {
+    res.status(500).json({ success: false, error: 'Failed to fetch user transactions' });
+  }
+});
+
 router.put('/users/:id/ban', requirePermission('manage_users'), async (req, res) => {
   try {
     const { isBanned } = req.body;

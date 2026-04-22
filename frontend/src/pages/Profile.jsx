@@ -740,10 +740,33 @@ const Profile = () => {
   }, [activeTab, token]);
 
   // History hooks (only fetches when token is ready)
-  const offers = useHistory(activeTab === 'offers' ? token : null, 'offer_reward');
+  const offerRewards = useHistory(activeTab === 'offer_rewards' ? token : null, 'offer_reward');
   const chargebacks = useHistory(activeTab === 'chargebacks' ? token : null, 'chargeback');
-  const clicks = useHistory(activeTab === 'clicks' ? token : null, null, '/activity/history');
   const referrals = useHistory(activeTab === 'referrals' ? token : null, 'referral_reward');
+
+  // Completed custom offer submissions (approved)
+  const [completedOffers, setCompletedOffers] = useState([]);
+  const [loadingCompleted, setLoadingCompleted] = useState(false);
+
+  const fetchCompletedOffers = async () => {
+    if (!token) return;
+    setLoadingCompleted(true);
+    try {
+      const res = await fetch(`${API}/custom-offers`, { headers: { Authorization: `Bearer ${token}` } });
+      const data = await res.json();
+      if (data.success) {
+        setCompletedOffers(data.offers.filter(o => o.submissionStatus === 'approved'));
+      }
+    } catch (err) {
+      console.error('Failed to fetch completed offers:', err);
+    } finally {
+      setLoadingCompleted(false);
+    }
+  };
+
+  useEffect(() => {
+    if (activeTab === 'completed_offers' && token) fetchCompletedOffers();
+  }, [activeTab, token]);
 
 
 
@@ -870,47 +893,83 @@ const Profile = () => {
         {/* ─── Segmented Pill Navigation ─────────────────── */}
         <div className="flex p-1.5 bg-[#080b14] border border-white/[0.05] rounded-2xl w-full overflow-x-auto custom-scrollbar">
           <div className="flex gap-1 min-w-max">
-            <TabBtn active={activeTab === 'started_offers'} onClick={() => setActiveTab('started_offers')} icon={FiPlayCircle} label="Started Offers" />
-            <TabBtn active={activeTab === 'clicks'}      onClick={() => setActiveTab('clicks')}      icon={FiZap}            label="Click History" />
-            <TabBtn active={activeTab === 'offers'}      onClick={() => setActiveTab('offers')}      icon={FiCheckCircle}    label="Completed Offers" />
-            <TabBtn active={activeTab === 'referrals'}   onClick={() => setActiveTab('referrals')}   icon={FiUsers}          label="Referrals" />
-            <TabBtn active={activeTab === 'chargebacks'} onClick={() => setActiveTab('chargebacks')} icon={FiShield}         label="Chargebacks" />
+            <TabBtn active={activeTab === 'started_offers'}   onClick={() => setActiveTab('started_offers')}   icon={FiPlayCircle}   label="Started Offers" />
+            <TabBtn active={activeTab === 'completed_offers'} onClick={() => setActiveTab('completed_offers')} icon={FiCheckCircle}  label="Completed Offers" />
+            <TabBtn active={activeTab === 'offer_rewards'}    onClick={() => setActiveTab('offer_rewards')}    icon={FiZap}          label="Offerwall Rewards" />
+            <TabBtn active={activeTab === 'referrals'}        onClick={() => setActiveTab('referrals')}        icon={FiUsers}        label="Referrals" />
+            <TabBtn active={activeTab === 'chargebacks'}      onClick={() => setActiveTab('chargebacks')}      icon={FiShield}       label="Chargebacks" />
           </div>
         </div>
 
         {/* ─── Tab Content ─────────────────────────────────── */}
         <AnimatePresence mode="wait">
 
-          {/* ══ MOUSE CLICKS TAB ══ */}
-          {activeTab === 'clicks' && (
+          {/* ══ COMPLETED OFFERS TAB (approved custom offer submissions) ══ */}
+          {activeTab === 'completed_offers' && (
             <motion.div
-              key="clicks"
+              key="completed_offers"
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -6 }}
               className="glass-card overflow-hidden"
             >
               {/* Header */}
-              <div className="flex items-center justify-between px-6 py-5 border-b border-white/[0.06] bg-gradient-to-r from-cyan-500/[0.04] to-transparent">
+              <div className="flex items-center justify-between px-6 py-5 border-b border-white/[0.06] bg-gradient-to-r from-emerald-500/[0.04] to-transparent">
                 <div>
                   <h2 className="text-base font-bold font-display text-white flex items-center gap-2">
-                    <FiZap className="text-cyan-400" /> Click History
+                    <FiCheckCircle className="text-emerald-400" /> Completed Offers
                   </h2>
-                  <p className="text-xs text-slate-500 mt-0.5">Your recent interactions with offers and features</p>
+                  <p className="text-xs text-slate-500 mt-0.5">Featured offers approved &amp; rewards received in your wallet</p>
                 </div>
+                {completedOffers.length > 0 && (
+                  <div className="flex items-center gap-2 px-3 py-1.5 bg-emerald-500/10 border border-emerald-500/20 rounded-xl">
+                    <FiCheckCircle className="text-emerald-400 text-xs" />
+                    <span className="text-emerald-300 font-mono font-bold text-sm">{completedOffers.length} Completed</span>
+                  </div>
+                )}
               </div>
 
-              <div className="px-6 py-4">
-                <HistoryList
-                  transactions={clicks.dataList}
-                  loading={clicks.loading}
-                  error={clicks.error}
-                  hasMore={clicks.hasMore}
-                  onLoadMore={clicks.loadMore}
-                  loadingMore={clicks.loadingMore}
-                  emptyMessage="No click history yet. Start exploring offers!"
-                />
-              </div>
+              {loadingCompleted ? (
+                <div className="flex justify-center py-10"><FiLoader className="animate-spin text-2xl text-emerald-500" /></div>
+              ) : completedOffers.length === 0 ? (
+                <div className="py-14 flex flex-col items-center gap-3 text-center">
+                  <div className="w-12 h-12 rounded-2xl bg-white/[0.03] border border-white/[0.07] flex items-center justify-center">
+                    <FiInbox className="text-slate-600 text-xl" />
+                  </div>
+                  <p className="text-slate-500 text-sm">No completed offers yet. Finish a started offer to earn your reward!</p>
+                </div>
+              ) : (
+                <div className="divide-y divide-white/[0.04]">
+                  {completedOffers.map(offer => {
+                    const iconEmoji = offer.icon && !offer.icon.startsWith('http') && !offer.icon.includes('/') ? offer.icon : null;
+                    const iconUrl   = offer.coverImage || (offer.icon && !iconEmoji ? offer.icon : null);
+                    return (
+                      <div key={offer._id} className="px-6 py-4 flex items-center gap-3 hover:bg-white/[0.01] transition-colors">
+                        {/* Icon */}
+                        <div className="w-10 h-10 rounded-xl overflow-hidden bg-gradient-to-br from-emerald-900/30 to-indigo-900/30 flex-shrink-0 flex items-center justify-center border border-white/[0.07]">
+                          {iconUrl ? (
+                            <img src={iconUrl} alt={offer.title} className="w-full h-full object-cover" />
+                          ) : iconEmoji ? (
+                            <span className="text-xl">{iconEmoji}</span>
+                          ) : (
+                            <FiCheckCircle className="text-emerald-400/60" />
+                          )}
+                        </div>
+                        {/* Info */}
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-semibold text-white truncate">{offer.title}</p>
+                          <div className="flex items-center gap-2 mt-0.5">
+                            <span className="text-[10px] font-semibold text-emerald-400 px-1.5 py-0.5 bg-emerald-500/10 rounded-full border border-emerald-500/20">✓ Reward Received</span>
+                            <span className="text-[10px] text-slate-600">{offer.updatedAt ? new Date(offer.updatedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : ''}</span>
+                          </div>
+                        </div>
+                        {/* Amount */}
+                        <span className="text-sm font-bold font-mono text-emerald-400 flex-shrink-0">+{offer.rewardAmount?.toLocaleString()} Coins</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
             </motion.div>
           )}
 
@@ -947,10 +1006,10 @@ const Profile = () => {
             </motion.div>
           )}
 
-          {/* ══ COMPLETED OFFERS TAB ══ */}
-          {activeTab === 'offers' && (
+          {/* ══ OFFERWALL REWARDS TAB (wallet transactions from offerwalls) ══ */}
+          {activeTab === 'offer_rewards' && (
             <motion.div
-              key="offers"
+              key="offer_rewards"
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -6 }}
@@ -960,15 +1019,15 @@ const Profile = () => {
               <div className="flex items-center justify-between px-6 py-5 border-b border-white/[0.06] bg-gradient-to-r from-indigo-500/[0.04] to-transparent">
                 <div>
                   <h2 className="text-base font-bold font-display text-white flex items-center gap-2">
-                    <FiCheckCircle className="text-indigo-400" /> Completed Offers
+                    <FiZap className="text-indigo-400" /> Offerwall Rewards
                   </h2>
-                  <p className="text-xs text-slate-500 mt-0.5">All completed offerwall and featured offer rewards</p>
+                  <p className="text-xs text-slate-500 mt-0.5">Credits from offerwall surveys &amp; auto-credited tasks</p>
                 </div>
-                {offers.totalEarned > 0 && (
+                {offerRewards.totalEarned > 0 && (
                   <div className="flex items-center gap-2 px-3 py-1.5 bg-indigo-500/10 border border-indigo-500/20 rounded-xl">
                     <FiTrendingUp className="text-indigo-400 text-xs" />
                     <span className="text-indigo-300 font-mono font-bold text-sm">
-                      +{offers.totalEarned.toLocaleString()} Coins Lifetime
+                      +{offerRewards.totalEarned.toLocaleString()} Coins Lifetime
                     </span>
                   </div>
                 )}
@@ -976,13 +1035,13 @@ const Profile = () => {
 
               <div className="px-6 py-4">
                 <HistoryList
-                  transactions={offers.dataList}
-                  loading={offers.loading}
-                  error={offers.error}
-                  hasMore={offers.hasMore}
-                  onLoadMore={offers.loadMore}
-                  loadingMore={offers.loadingMore}
-                  emptyMessage="No offer rewards yet. Complete surveys or featured offers to start earning!"
+                  transactions={offerRewards.dataList}
+                  loading={offerRewards.loading}
+                  error={offerRewards.error}
+                  hasMore={offerRewards.hasMore}
+                  onLoadMore={offerRewards.loadMore}
+                  loadingMore={offerRewards.loadingMore}
+                  emptyMessage="No offerwall rewards yet. Complete surveys to start earning!"
                 />
               </div>
             </motion.div>
