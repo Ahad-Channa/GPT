@@ -168,13 +168,15 @@ const Wallet = () => {
                 <span className="text-blue-400 font-sans text-lg font-semibold">{CURRENCY_NAME}</span>
               </div>
               {settings && !settingsLoad && (
-                <p className="text-slate-500 text-xs font-sans mt-2">
-                  ≈ ${(balance / settings.coinsPerUSD).toFixed(2)} USD
+                <p className="text-slate-500 text-xs font-sans mt-2 flex items-center gap-1.5 flex-wrap">
+                  <span className="text-slate-600">~</span>
+                  <span className="text-slate-400 font-mono">${(balance / settings.coinsPerUSD).toFixed(2)} USD</span>
                   {settings.exchangeRates?.ltcUSD && (
-                    <span className="text-slate-600 ml-2">
-                      · {(balance / settings.coinsPerUSD / settings.exchangeRates.ltcUSD).toFixed(6)} LTC
+                    <span className="text-slate-600">
+                      · ~{(balance / settings.coinsPerUSD / settings.exchangeRates.ltcUSD).toFixed(6)} LTC
                     </span>
                   )}
+                  <span className="text-slate-700 text-[10px] italic">(approximate — actual payout may slightly differ)</span>
                 </p>
               )}
             </div>
@@ -192,16 +194,17 @@ const Wallet = () => {
 
           {/* Live Rate Chip */}
           {settings?.exchangeRates?.ltcUSD && (
-            <div className="relative z-10 mt-6 pt-5 border-t border-white/[0.06] flex flex-wrap gap-4">
+            <div className="relative z-10 mt-6 pt-5 border-t border-white/[0.06] flex flex-wrap gap-4 items-center">
               <div className="flex items-center gap-2 bg-white/[0.04] border border-white/[0.07] rounded-lg px-3 py-1.5">
                 <span className="text-xs font-sans text-slate-400">LTC/USD</span>
-                <span className="text-xs font-sans font-bold text-amber-400">${settings.exchangeRates.ltcUSD.toLocaleString()}</span>
+                <span className="text-xs font-sans font-bold text-amber-400">~${settings.exchangeRates.ltcUSD.toLocaleString()}</span>
                 <span className="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-pulse" />
               </div>
               <div className="flex items-center gap-2 bg-white/[0.04] border border-white/[0.07] rounded-lg px-3 py-1.5">
                 <span className="text-xs font-sans text-slate-400">1 USD =</span>
                 <span className="text-xs font-sans font-bold text-blue-400">{settings.coinsPerUSD} {CURRENCY_NAME}</span>
               </div>
+              <span className="text-[10px] text-slate-600 italic">Live rate via CoinGecko · refreshed every 5 min · approximate only</span>
             </div>
           )}
         </motion.div>

@@ -90,12 +90,27 @@ async function getLiveRankings(period, limit = 50) {
     return rankings;
   }
 
-  const cycleStart = getPeriodStart(period);
+  const settings = await Settings.getSingleton();
+  // Use the stored lastResetAt for this period (set on each reset) so earnings
+  // from the previous cycle don't bleed into the new one.
+  // Fall back to getPeriodStart() only if no reset has ever been recorded.
+  const storedReset = settings.leaderboardConfig?.[period]?.lastResetAt;
+  const cycleStart = storedReset ? new Date(storedReset) : getPeriodStart(period);
+
+  // ── REAL EARNINGS ONLY ───────────────────────────────────────────────────────
+  // offer_reward        : offerwall / survey rewards (auto-credited)
+  // custom_offer_reward : featured offer proof approved
+  // referral_reward     : referral commission from a referred user's earnings
+  // admin_adjustment    : admin manually credits for real completed work
+  //
+  // EXCLUDED (bonuses / non-real):
+  //   daily_bonus, promo_code, leaderboard_reward
+  const REAL_EARNING_TYPES = ['offer_reward', 'custom_offer_reward', 'referral_reward', 'admin_adjustment'];
 
   const results = await Transaction.aggregate([
     {
       $match: {
-        transactionType: { $in: ['offer_reward', 'daily_bonus', 'referral_reward', 'promo_code', 'leaderboard_reward', 'admin_adjustment'] },
+        transactionType: { $in: REAL_EARNING_TYPES },
         amount: { $gt: 0 },
         status: { $in: ['completed', 'hold'] },
         createdAt: { $gte: cycleStart },
@@ -226,6 +241,17 @@ async function resetLeaderboard(period) {
     rewardTiers: rewardTiersArr,
     rewardedRanks,
   });
+
+  // ── Store the reset timestamp so the new cycle starts from NOW ──────────────
+  // This prevents pre-reset earnings from contaminating the new cycle.
+  try {
+    await Settings.findOneAndUpdate(
+      { _singleton: 'platform_settings' },
+      { $set: { [`leaderboardConfig.${period}.lastResetAt`]: new Date() } }
+    );
+  } catch (e) {
+    console.warn('[leaderboard] Failed to persist lastResetAt:', e.message);
+  }
 
   return { success: true, period, winnersCount: winners.length, rewardedRanks, totalPaid: winners.reduce((s, w) => s + w.rewardPaid, 0) };
 }

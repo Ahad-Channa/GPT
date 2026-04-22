@@ -105,31 +105,24 @@ const settingsSchema = new mongoose.Schema(
     leaderboardConfig: {
       daily: {
         enabled: { type: Boolean, default: false },
-        visibleSlots: { type: Number, default: 25, min: 5, max: 100 },  // how many ranks show on the public board
-        rewardedRanks: { type: Number, default: 3, min: 0, max: 100 },   // how many top ranks receive rewards
-        // Flexible reward tiers — array index = rank-1 (index 0 = rank 1)
-        rewardTiers: {
-          type: [Number],
-          default: [5000, 2500, 1000],
-        },
+        visibleSlots: { type: Number, default: 25, min: 5, max: 100 },
+        rewardedRanks: { type: Number, default: 3, min: 0, max: 100 },
+        rewardTiers: { type: [Number], default: [5000, 2500, 1000] },
+        lastResetAt: { type: Date, default: null },
       },
       weekly: {
         enabled: { type: Boolean, default: false },
         visibleSlots: { type: Number, default: 25, min: 5, max: 100 },
         rewardedRanks: { type: Number, default: 3, min: 0, max: 100 },
-        rewardTiers: {
-          type: [Number],
-          default: [20000, 10000, 5000],
-        },
+        rewardTiers: { type: [Number], default: [20000, 10000, 5000] },
+        lastResetAt: { type: Date, default: null },
       },
       monthly: {
         enabled: { type: Boolean, default: false },
         visibleSlots: { type: Number, default: 25, min: 5, max: 100 },
         rewardedRanks: { type: Number, default: 3, min: 0, max: 100 },
-        rewardTiers: {
-          type: [Number],
-          default: [100000, 50000, 25000],
-        },
+        rewardTiers: { type: [Number], default: [100000, 50000, 25000] },
+        lastResetAt: { type: Date, default: null },
       },
     },
   },
