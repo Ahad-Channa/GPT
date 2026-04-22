@@ -310,27 +310,26 @@ router.get('/daily-bonus-status', verifyToken, async (req, res) => {
     let streak = user.dailyBonusStreak || 0;
     const now = new Date();
 
-    // Check if already claimed today
+    // ── 24-hour cooldown (not midnight-based) ──────────────────────
     let alreadyClaimed = false;
     let nextClaimAt = null;
+
     if (user.lastDailyBonusClaim) {
-      if (user.lastDailyBonusClaim.toDateString() === now.toDateString()) {
+      const msSinceClaim = now.getTime() - new Date(user.lastDailyBonusClaim).getTime();
+      const TWENTY_FOUR_H = 24 * 60 * 60 * 1000;
+
+      if (msSinceClaim < TWENTY_FOUR_H) {
+        // Still within 24-hour cooldown
         alreadyClaimed = true;
-        const tomorrow = new Date(now);
-        tomorrow.setDate(now.getDate() + 1);
-        tomorrow.setHours(0, 0, 0, 0);
-        nextClaimAt = tomorrow.toISOString();
-      } else {
-        const yesterday = new Date(now);
-        yesterday.setDate(now.getDate() - 1);
-        // if not claimed yesterday, streak breaks to 0 (will become 1 on next claim if resetting, or just 0 now)
-        if (user.lastDailyBonusClaim.toDateString() !== yesterday.toDateString()) {
-          streak = 0;
-        }
+        nextClaimAt = new Date(new Date(user.lastDailyBonusClaim).getTime() + TWENTY_FOUR_H).toISOString();
+      } else if (msSinceClaim >= 48 * 60 * 60 * 1000) {
+        // More than 48 hours — streak broken
+        streak = 0;
       }
+      // Between 24h and 48h = eligible to claim, streak intact
     }
 
-    const nextStreakToClaim = alreadyClaimed ? streak + 1 : streak + 1;
+    const nextStreakToClaim = streak + 1;
     let dayIndex = (nextStreakToClaim - 1) % rd.dailyBonusMaxStreak;
     if (streak >= rd.dailyBonusMaxStreak && rd.dailyBonusAfterMax === 'hold') {
       dayIndex = rd.dailyBonusMaxStreak - 1;
@@ -338,19 +337,23 @@ router.get('/daily-bonus-status', verifyToken, async (req, res) => {
 
     let earnedToday = 0;
     if (!alreadyClaimed) {
-      const startOfToday = new Date(now);
-      startOfToday.setHours(0, 0, 0, 0);
+      // Count real earnings since the last claim (or last 24h window if never claimed)
+      const windowStart = user.lastDailyBonusClaim
+        ? new Date(user.lastDailyBonusClaim)
+        : new Date(now.getTime() - 24 * 60 * 60 * 1000);
 
       const earnedResult = await Transaction.aggregate([
         {
           $match: {
             userId: user._id,
             amount: { $gt: 0 },
-            transactionType: { $ne: 'daily_bonus' },
-            createdAt: { $gte: startOfToday }
+            // Only count real offer/survey/referral earnings — NOT daily bonus itself
+            transactionType: { $nin: ['daily_bonus', 'promo_code', 'admin_adjustment'] },
+            status: 'completed',
+            createdAt: { $gte: windowStart }
           }
         },
-        { $group: { _id: null, total: { $sum: "$amount" } } }
+        { $group: { _id: null, total: { $sum: '$amount' } } }
       ]);
       earnedToday = earnedResult.length > 0 ? earnedResult[0].total : 0;
     }
@@ -370,8 +373,8 @@ router.get('/daily-bonus-status', verifyToken, async (req, res) => {
       alreadyClaimed,
       gateUnlocked,
       earned: earnedToday,
-      required: required,
-      streak: alreadyClaimed ? streak : streak + 1,
+      required,
+      streak: alreadyClaimed ? streak : nextStreakToClaim,
       dayIndex,
       rewardToday,
       rewardTomorrow,
@@ -393,25 +396,28 @@ router.post('/daily-bonus', verifyToken, async (req, res) => {
     if (!user) return res.status(404).json({ success: false, error: 'User not found' });
 
     const now = new Date();
+    const TWENTY_FOUR_H = 24 * 60 * 60 * 1000;
 
-    // 1. Verify availability
+    // 1. Verify 24-hour cooldown
     if (user.lastDailyBonusClaim) {
-      if (user.lastDailyBonusClaim.toDateString() === now.toDateString()) {
-        return res.status(400).json({ success: false, error: 'Daily bonus already claimed today' });
+      const msSinceClaim = now.getTime() - new Date(user.lastDailyBonusClaim).getTime();
+      if (msSinceClaim < TWENTY_FOUR_H) {
+        return res.status(400).json({ success: false, error: 'Daily bonus already claimed. Come back in 24 hours.' });
       }
     }
 
     const settings = await Settings.getSingleton();
     const rd = settings.rewardEngine;
 
-    // 2. Progression streak math
+    // 2. Streak math — break streak if more than 48h have passed since last claim
     let streak = user.dailyBonusStreak || 0;
     if (user.lastDailyBonusClaim) {
-      const yesterday = new Date(now);
-      yesterday.setDate(now.getDate() - 1);
-      if (user.lastDailyBonusClaim.toDateString() === yesterday.toDateString()) {
+      const msSinceClaim = now.getTime() - new Date(user.lastDailyBonusClaim).getTime();
+      if (msSinceClaim < 48 * 60 * 60 * 1000) {
+        // Within 48h = continue streak
         streak += 1;
       } else {
+        // More than 48h = streak broken, start fresh
         streak = 1;
       }
     } else {
@@ -423,19 +429,22 @@ router.post('/daily-bonus', verifyToken, async (req, res) => {
       dayIndex = rd.dailyBonusMaxStreak - 1;
     }
 
-    // 3. EARN GATE
-    const startOfToday = new Date(now);
-    startOfToday.setHours(0, 0, 0, 0);
+    // 3. EARN GATE — only count REAL earnings (not daily_bonus, promo_code, admin_adjustment)
+    const windowStart = user.lastDailyBonusClaim
+      ? new Date(user.lastDailyBonusClaim)
+      : new Date(now.getTime() - TWENTY_FOUR_H);
+
     const earnedResult = await Transaction.aggregate([
       {
         $match: {
           userId: user._id,
           amount: { $gt: 0 },
-          transactionType: { $ne: 'daily_bonus' },
-          createdAt: { $gte: startOfToday }
+          transactionType: { $nin: ['daily_bonus', 'promo_code', 'admin_adjustment'] },
+          status: 'completed',
+          createdAt: { $gte: windowStart }
         }
       },
-      { $group: { _id: null, total: { $sum: "$amount" } } }
+      { $group: { _id: null, total: { $sum: '$amount' } } }
     ]);
     const earnedToday = earnedResult.length > 0 ? earnedResult[0].total : 0;
     const requiredEarn = rd.dailyBonusEarnGate[dayIndex] || 1000;
@@ -451,7 +460,7 @@ router.post('/daily-bonus', verifyToken, async (req, res) => {
 
     const rewardAmount = rd.dailyBonusReward[dayIndex] || 100;
 
-    // 4. ATOMIC Update ($inc) + Optimistic locking to prevent spam-click duplicate claims
+    // 4. ATOMIC update — optimistic lock prevents race-condition double-claims
     const updatedUser = await User.findOneAndUpdate(
       { _id: user._id, lastDailyBonusClaim: user.lastDailyBonusClaim },
       {
@@ -475,13 +484,15 @@ router.post('/daily-bonus', verifyToken, async (req, res) => {
       status: 'completed',
     });
 
+    const nextClaimAt = new Date(now.getTime() + TWENTY_FOUR_H).toISOString();
+
     res.status(200).json({
       success: true,
       message: `Claimed +${rewardAmount} Coins!`,
       rewardAmount,
       streak,
       balance: updatedUser.walletBalance,
-      nextClaimAt: new Date(new Date().setHours(24, 0, 0, 0)).toISOString()
+      nextClaimAt
     });
   } catch (error) {
     console.error('[/api/wallet/daily-bonus] Error:', error);

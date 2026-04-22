@@ -285,6 +285,16 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess }) => {
                   className="premium-input w-full"
                   style={{ paddingLeft: '1rem' }}
                 />
+                {/* ⚠️ Per-method irreversibility warning */}
+                <div className="mt-2 flex items-start gap-2 p-2.5 rounded-lg bg-rose-500/[0.07] border border-rose-500/20">
+                  <FiAlertCircle className="text-rose-400 text-xs flex-shrink-0 mt-0.5" />
+                  <p className="text-rose-300/80 text-[11px] leading-relaxed">
+                    {method === 'litecoin'
+                      ? 'Please double-check your LTC wallet address. Once the payout is processed, this action cannot be reversed. We are not responsible for lost rewards due to an incorrect address.'
+                      : 'Please make sure you enter the correct email address. Once the payout is processed, this action cannot be reversed. We are not responsible for lost rewards due to incorrect information.'
+                    }
+                  </p>
+                </div>
               </div>
 
               {/* Fee preview */}
