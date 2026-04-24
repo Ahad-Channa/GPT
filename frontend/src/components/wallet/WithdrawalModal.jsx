@@ -172,7 +172,7 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess }) => {
           </button>
         </div>
 
-        <div className="p-6 space-y-4 overflow-y-auto">
+        <div className="p-6 space-y-4 overflow-y-auto custom-scrollbar max-h-[75vh]">
 
           {/* ── STEP 1: Select Method ─────────────────────────── */}
           {step === 1 && (
@@ -203,7 +203,6 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess }) => {
                         <p className="text-sm font-semibold text-white">{m.label}</p>
                         <p className="text-xs text-slate-500 mt-0.5">
                           Min: {minCoins.toLocaleString()} {CURRENCY_NAME}
-                          <span className="text-slate-600 ml-1">≈ ${m.minUSD} USD</span>
                         </p>
                       </div>
                       <FiArrowRight className="text-slate-600 text-sm flex-shrink-0" />
@@ -258,8 +257,7 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess }) => {
                 </div>
                 {amount && !meetsMinimum && (
                   <p className="text-red-400 text-xs mt-1.5 flex items-center gap-1">
-                    <FiAlertCircle className="text-xs" />
-                    Minimum is {minimumCoins.toLocaleString()} {CURRENCY_NAME} (${selectedMethod.minUSD} USD)
+                    Minimum is {minimumCoins.toLocaleString()} {CURRENCY_NAME}
                   </p>
                 )}
                 {amount && !hasEnoughBalance && meetsMinimum && (
@@ -304,24 +302,16 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess }) => {
                   </p>
                   <div className="space-y-1.5 text-xs font-mono">
                     <div className="flex justify-between text-slate-400">
-                      <span>Requested</span>
+                      <span>Amount you receive</span>
                       <span className="text-white">{amountNum.toLocaleString()} {CURRENCY_NAME}</span>
                     </div>
                     <div className="flex justify-between text-slate-400">
                       <span>Processing fee ({methodFeePercent}%)</span>
-                      <span className="text-orange-400">−{feeCoins.toLocaleString()} {CURRENCY_NAME}</span>
+                      <span className="text-orange-400">+{feeCoins.toLocaleString()} {CURRENCY_NAME}</span>
                     </div>
                     <div className="h-px bg-white/[0.06] my-1" />
                     <div className="flex justify-between font-bold">
-                      <span className="text-slate-300">You receive</span>
-                      <span className="text-emerald-400">{youReceive.toLocaleString()} {CURRENCY_NAME}</span>
-                    </div>
-                    <div className="flex justify-between text-slate-500">
-                      <span>≈ USD value</span>
-                      <span>${receiveUSD.toFixed(2)}</span>
-                    </div>
-                    <div className="flex justify-between text-slate-500 pt-1 border-t border-white/[0.05]">
-                      <span>Total deducted from balance</span>
+                      <span className="text-slate-300">Total deducted from balance</span>
                       <span className="text-red-400">{totalDeducted.toLocaleString()} {CURRENCY_NAME}</span>
                     </div>
                   </div>
@@ -358,9 +348,9 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess }) => {
                 {[
                   { label: 'Method',      value: selectedMethod.label },
                   { label: 'Destination', value: destination, mono: true, truncate: true },
-                  { label: 'Amount',      value: `${amountNum.toLocaleString()} ${CURRENCY_NAME}`, mono: true },
-                  { label: 'Fee',         value: `${feeCoins.toLocaleString()} ${CURRENCY_NAME}`, mono: true, accent: 'text-orange-400' },
-                  { label: 'You receive', value: `${youReceive.toLocaleString()} ${CURRENCY_NAME}`, mono: true, accent: 'text-emerald-400', bold: true },
+                  { label: 'Amount you receive', value: `${amountNum.toLocaleString()} ${CURRENCY_NAME}`, mono: true, accent: 'text-emerald-400', bold: true },
+                  { label: 'Processing fee', value: `+${feeCoins.toLocaleString()} ${CURRENCY_NAME}`, mono: true, accent: 'text-orange-400' },
+                  { label: 'Total Deducted', value: `${totalDeducted.toLocaleString()} ${CURRENCY_NAME}`, mono: true, accent: 'text-red-400', bold: true },
                 ].map(({ label, value, mono, accent, bold, truncate }) => (
                   <div key={label} className="flex items-center justify-between px-4 py-3">
                     <span className="text-xs text-slate-500">{label}</span>

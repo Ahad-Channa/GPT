@@ -7,6 +7,8 @@ import Login from './pages/Login';
 import ResetPassword from './pages/ResetPassword';
 import Landing from './pages/Landing';
 import Profile from './pages/Profile';
+
+import Affiliates from './pages/Affiliates';
 import Wallet from './pages/Wallet';
 import Earn from './pages/Earn';
 import Leaderboard from './pages/Leaderboard';
@@ -67,7 +69,7 @@ function App() {
       />
       <NotificationPanel />
       <Routes>
-      <Route path="/" element={currentUser ? <Navigate to="/dashboard" replace /> : <Landing />} />
+      <Route path="/" element={<Landing />} />
       <Route path="/login" element={currentUser ? <Navigate to="/dashboard" replace /> : <Login />} />
       <Route path="/reset-password" element={<ResetPassword />} />
       <Route 
@@ -123,6 +125,14 @@ function App() {
         element={
           <PrivateRoute>
             <PublicProfile />
+          </PrivateRoute>
+        } 
+      />
+      <Route 
+        path="/dashboard/affiliates" 
+        element={
+          <PrivateRoute>
+            <Affiliates />
           </PrivateRoute>
         } 
       />

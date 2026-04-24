@@ -182,13 +182,8 @@ const Wallet = () => {
           </div>
 
           {/* Live Rate Chip */}
-          {settings?.exchangeRates?.ltcUSD && (
+          {settings && (
             <div className="relative z-10 mt-6 pt-5 border-t border-white/[0.06] flex flex-wrap gap-4 items-center">
-              <div className="flex items-center gap-2 bg-white/[0.04] border border-white/[0.07] rounded-lg px-3 py-1.5">
-                <span className="text-xs font-sans text-slate-400">LTC/USD</span>
-                <span className="text-xs font-sans font-bold text-amber-400">~${settings.exchangeRates.ltcUSD.toLocaleString()}</span>
-                <span className="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-pulse" />
-              </div>
               <div className="flex items-center gap-2 bg-white/[0.04] border border-white/[0.07] rounded-lg px-3 py-1.5">
                 <span className="text-xs font-sans text-slate-400">1 USD =</span>
                 <span className="text-xs font-sans font-bold text-blue-400">{settings.coinsPerUSD} {CURRENCY_NAME}</span>

@@ -17,6 +17,8 @@ const userSchema = new mongoose.Schema(
     displayName: {
       type: String,
       trim: true,
+      unique: true,
+      sparse: true,
     },
     avatarUrl: {
       type: String,

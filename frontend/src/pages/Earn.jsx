@@ -135,11 +135,8 @@ const Earn = () => {
               Complete surveys, play games, and discover featured offers to earn coins.
             </p>
           </div>
-          <div className="flex items-center gap-2 px-4 py-2 bg-emerald-500/10 border border-emerald-500/20 rounded-xl">
-            <FiCheckCircle className="text-emerald-400" />
-            <span className="text-emerald-400 font-medium text-sm">Rewards sent instantly</span>
-          </div>
         </motion.div>
+
 
         {/* Tab Bar */}
         <motion.div variants={item}>

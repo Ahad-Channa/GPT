@@ -21,17 +21,28 @@ router.post('/sync', verifyToken, async (req, res) => {
     const allPermissions = ['manage_users', 'manage_withdrawals', 'manage_support', 'manage_offerwalls', 'manage_admins'];
 
     if (!user) {
+      let baseName = (name || email.split('@')[0] || 'user').replace(/[^a-zA-Z0-9_-]/g, '');
+      if (baseName.length < 3) baseName = 'user' + Math.floor(Math.random() * 10000);
+      let uniqueName = baseName;
+      let nameExists = await User.findOne({ displayName: new RegExp(`^${uniqueName}$`, 'i') });
+      let counter = 1;
+      while (nameExists) {
+        uniqueName = `${baseName}${counter}`;
+        nameExists = await User.findOne({ displayName: new RegExp(`^${uniqueName}$`, 'i') });
+        counter++;
+      }
+
       user = new User({
         firebaseUid: uid,
         email: email,
-        displayName: name || email.split('@')[0],
+        displayName: uniqueName,
         avatarUrl: picture || '',
         ...(ref && { referredBy: ref }),
         ...(isPrimaryAdmin && { role: 'admin', adminPermissions: allPermissions })
       });
       await user.save();
       isNewUser = true;
-      console.log(`Registration success: ${email} synchronized via Firebase.`);
+      console.log(`Registration success: ${email} synchronized via Firebase. Assigned username: ${uniqueName}`);
 
       // Send Welcome Notification
       await notify(
@@ -94,14 +105,23 @@ router.put('/profile', verifyToken, async (req, res) => {
     }
 
     const updateFields = {};
-    if (displayName) updateFields.displayName = displayName;
+    if (displayName) {
+      // Check for uniqueness (case-insensitive)
+      const nameExists = await User.findOne({ 
+        displayName: new RegExp(`^${displayName}$`, 'i'),
+        firebaseUid: { $ne: req.user.uid }
+      });
+      if (nameExists) {
+        return res.status(400).json({ success: false, error: 'Username is already taken.' });
+      }
+      updateFields.displayName = displayName;
+    }
     if (avatarUrl) updateFields.avatarUrl = avatarUrl;
     if (typeof isPrivate === 'boolean') updateFields.isPrivate = isPrivate;
 
     const user = await User.findOneAndUpdate(
       { firebaseUid: req.user.uid },
       updateFields,
-
       { returnDocument: 'after' }
     );
 
@@ -111,6 +131,9 @@ router.put('/profile', verifyToken, async (req, res) => {
 
     res.status(200).json({ success: true, user });
   } catch (error) {
+    if (error.code === 11000) {
+      return res.status(400).json({ success: false, error: 'Username is already taken.' });
+    }
     console.error('[/api/auth/profile] Update Error:', error);
     res.status(500).json({ success: false, error: 'Database Update Error.' });
   }

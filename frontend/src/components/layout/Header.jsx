@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useNotifications } from '../../contexts/NotificationContext';
-import { FiLogOut, FiUser, FiSettings, FiZap, FiChevronDown, FiCreditCard, FiGrid, FiLock, FiUnlock, FiClock, FiCheckCircle, FiTrendingUp, FiBell } from 'react-icons/fi';
+import { FiLogOut, FiUser, FiSettings, FiZap, FiChevronDown, FiCreditCard, FiGrid, FiLock, FiUnlock, FiClock, FiCheckCircle, FiTrendingUp, FiBell, FiUsers } from 'react-icons/fi';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -68,7 +68,7 @@ const DailyBonusChip = () => {
 
   if (loading || !status) {
     return (
-      <div className="hidden lg:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white/[0.04] border border-white/[0.07] animate-pulse h-[34px] w-24"></div>
+      <div className="hidden lg:flex items-center gap-2 px-4 py-1.5 rounded-xl bg-white/[0.04] border border-white/[0.07] animate-pulse h-[34px] w-24"></div>
     );
   }
 
@@ -76,28 +76,24 @@ const DailyBonusChip = () => {
     return (
       <button 
         onClick={() => navigate('/dashboard/daily-bonus')}
-        className="hidden lg:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-sm hover:bg-emerald-500/20 transition-all text-left"
+        className="hidden lg:flex items-center gap-2 px-4 py-1.5 rounded-xl bg-white/[0.04] border border-white/[0.07] text-sm hover:bg-white/[0.08] transition-all font-semibold text-slate-300"
       >
-        <FiClock className="text-emerald-400 text-xs" />
-        <div className="flex flex-col leading-none">
-          <span className="text-[9px] text-emerald-500/70 font-semibold uppercase tracking-widest hover:text-emerald-400">Daily Bonus</span>
-          <span className="text-emerald-300 text-[11px] font-sans font-medium tracking-widest">{timeLeft || '...'}</span>
-        </div>
+        <FiClock className="text-slate-400 text-sm" />
+        <span>{timeLeft || '...'}</span>
       </button>
     );
   }
 
   if (status.gateUnlocked) {
     return (
-      <div className="hidden lg:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-amber-500/20 border border-amber-500/40 text-sm hover:bg-amber-500/30 transition-all shadow-glow">
-        <FiUnlock className="text-amber-400 text-xs animate-pulse" />
-        <div className="flex flex-col leading-none">
-          <button onClick={() => navigate('/dashboard/daily-bonus')} className="text-[9px] text-amber-500/70 font-semibold uppercase tracking-widest hover:text-amber-400 text-left">Daily Bonus</button>
-          <button onClick={claimBonus} disabled={claiming} className="text-amber-400 text-[11px] font-bold tracking-widest uppercase text-left hover:text-white transition-colors disabled:opacity-50">
-            {claiming ? 'WAIT...' : 'CLAIM NOW'}
-          </button>
-        </div>
-      </div>
+      <button 
+        onClick={claimBonus} 
+        disabled={claiming}
+        className="hidden lg:flex items-center gap-2 px-4 py-1.5 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-sm hover:bg-indigo-500/20 transition-all font-semibold text-indigo-400"
+      >
+        <FiUnlock className="text-indigo-400 text-sm" />
+        <span>{claiming ? 'Wait...' : 'Claim Bonus'}</span>
+      </button>
     );
   }
 
@@ -106,27 +102,24 @@ const DailyBonusChip = () => {
   return (
     <button 
       onClick={() => navigate('/dashboard/daily-bonus')}
-      className="hidden lg:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white/[0.04] border border-white/[0.07] text-sm hover:bg-white/10 transition-all group relative text-left"
+      className="hidden lg:flex items-center gap-2 px-4 py-1.5 rounded-xl bg-white/[0.04] border border-white/[0.07] text-sm hover:bg-white/10 transition-all group relative font-semibold text-slate-300"
     >
-      <FiLock className="text-slate-400 text-xs flex-shrink-0" />
-      <div className="flex flex-col leading-none gap-1">
-        <span className="text-[9px] text-slate-500 font-semibold uppercase tracking-widest group-hover:text-white transition-colors">Daily Bonus</span>
-        <div className="w-16 h-1.5 bg-white/10 rounded-full overflow-hidden">
+      <FiLock className="text-slate-400 text-sm flex-shrink-0" />
+      <span>Daily Bonus</span>
+      
+      {/* Tooltip */}
+      <div className="absolute top-11 right-0 w-52 p-3 rounded-xl bg-[#0b101e] border border-white/[0.08] shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 text-left font-normal">
+        <p className="text-xs text-slate-300 mb-2">Earn <span className="font-bold text-white">{status.required - status.earned}</span> more coins today to unlock.</p>
+        <div className="w-full h-1.5 bg-white/10 rounded-full overflow-hidden mb-2">
           <div 
             className="bg-indigo-400 h-full rounded-full transition-all duration-1000"
             style={{ width: `${progressPercent}%` }}
           />
         </div>
-      </div>
-      
-      {/* Tooltip */}
-      <div className="absolute top-11 right-0 w-52 p-3 rounded-xl bg-[#0b101e] border border-white/[0.08] shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 text-left">
-        <p className="text-xs text-slate-300 mb-2">Earn <span className="font-bold text-white">{status.required - status.earned}</span> more coins today to unlock your Daily Bonus.</p>
         <div className="flex justify-between items-center text-[10px] font-sans font-medium text-slate-400">
           <span>{status.earned} earned</span>
           <span>{status.required} needed</span>
         </div>
-        <p className="text-[9px] text-indigo-400 mt-2 font-bold uppercase text-center w-full">Click for details</p>
       </div>
     </button>
   );
@@ -162,7 +155,7 @@ const Header = () => {
           <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center shadow-glow group-hover:shadow-glow-lg transition-shadow">
             <FiZap className="text-white text-sm" />
           </div>
-          <div className="flex flex-col leading-none">
+          <div className="flex flex-col leading-none text-left">
             <span className="text-sm font-bold font-display text-white tracking-tight">GPT</span>
             <span className="text-[10px] text-slate-500 tracking-widest uppercase font-mono">Platform</span>
           </div>
@@ -173,33 +166,42 @@ const Header = () => {
         {/* Right Controls */}
         <div className="flex items-center gap-3 lg:gap-4">
 
-          <DailyBonusChip />
-
-          {/* Earn Button */}
+          {/* Earn Button (First on left) */}
           <button
             id="header-earn-btn"
-            onClick={() => navigate('/dashboard/earn')}
-            className="hidden lg:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-gradient-to-r from-amber-500/10 to-orange-500/10 border border-amber-500/30 text-amber-400 text-sm hover:bg-amber-500/20 hover:border-amber-500/50 transition-all font-bold shadow-[0_0_15px_rgba(245,158,11,0.15)]"
+            onClick={() => navigate('/dashboard')}
+            className="hidden lg:flex items-center gap-2 px-4 py-1.5 rounded-xl bg-white/[0.04] border border-white/[0.07] text-sm hover:bg-white/[0.08] hover:border-white/[0.15] transition-all font-semibold text-slate-300"
           >
-            <FiZap className="text-amber-400 text-xs" />
             <span>Earn</span>
           </button>
+
+          <DailyBonusChip />
 
           {/* Leaderboard Chip */}
           <button
             id="header-leaderboard-chip"
             onClick={() => navigate('/dashboard/leaderboard')}
-            className="hidden lg:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white/[0.04] border border-white/[0.07] text-sm hover:bg-indigo-500/[0.08] hover:border-indigo-500/30 transition-all"
+            className="hidden lg:flex items-center gap-2 px-4 py-1.5 rounded-xl bg-white/[0.04] border border-white/[0.07] text-sm hover:bg-white/[0.08] hover:border-white/[0.15] transition-all font-semibold text-slate-300"
           >
-            <FiTrendingUp className="text-indigo-400 text-xs" />
-            <span className="text-[9px] text-slate-500 font-semibold uppercase tracking-widest">Leaderboard</span>
+            <FiTrendingUp className="text-slate-400 text-sm" />
+            <span>Leaderboard</span>
+          </button>
+
+          {/* Affiliates Button */}
+          <button
+            id="header-affiliates-btn"
+            onClick={() => navigate('/dashboard/affiliates')}
+            className="hidden lg:flex items-center gap-2 px-4 py-1.5 rounded-xl bg-white/[0.04] border border-white/[0.07] text-sm hover:bg-white/[0.08] hover:border-white/[0.15] transition-all font-semibold text-slate-300"
+          >
+            <FiUsers className="text-slate-400 text-sm" />
+            <span>Affiliates</span>
           </button>
           
           {/* Withdraw Button */}
           <button
             id="header-withdraw-btn"
             onClick={() => navigate('/dashboard/wallet')}
-            className="hidden sm:flex items-center gap-2 px-4 py-1.5 rounded-xl bg-gradient-to-r from-emerald-500/10 to-emerald-500/5 border border-emerald-500/20 text-emerald-400 text-sm hover:bg-emerald-500/20 hover:border-emerald-500/40 transition-all font-bold shadow-glow"
+            className="hidden sm:flex items-center gap-2 px-4 py-1.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-sm hover:bg-emerald-500/20 hover:border-emerald-500/40 transition-all font-bold"
           >
             <FiCreditCard className="text-emerald-400 text-sm" />
             <span>Withdraw</span>

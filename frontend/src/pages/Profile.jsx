@@ -492,7 +492,7 @@ const SettingsModal = ({ isOpen, onClose, mongoUser, token, setMongoUser, logout
   const handleSave = async () => {
     const nameRegex = /^[a-zA-Z0-9_-]{3,20}$/;
     if (!nameRegex.test(displayName)) {
-      setError('Username must be 3–20 characters: letters, numbers, dashes, underscores.');
+      setError('Invalid username format.');
       return;
     }
     setSaving(true);
@@ -742,7 +742,6 @@ const Profile = () => {
   // History hooks (only fetches when token is ready)
   const offerRewards = useHistory(activeTab === 'offer_rewards' ? token : null, 'offer_reward');
   const chargebacks = useHistory(activeTab === 'chargebacks' ? token : null, 'chargeback');
-  const referrals = useHistory(activeTab === 'referrals' ? token : null, 'referral_reward');
 
   // Completed custom offer submissions (approved)
   const [completedOffers, setCompletedOffers] = useState([]);
@@ -896,7 +895,6 @@ const Profile = () => {
             <TabBtn active={activeTab === 'started_offers'}   onClick={() => setActiveTab('started_offers')}   icon={FiPlayCircle}   label="Started Offers" />
             <TabBtn active={activeTab === 'completed_offers'} onClick={() => setActiveTab('completed_offers')} icon={FiCheckCircle}  label="Completed Offers" />
             <TabBtn active={activeTab === 'offer_rewards'}    onClick={() => setActiveTab('offer_rewards')}    icon={FiZap}          label="Offerwall Rewards" />
-            <TabBtn active={activeTab === 'referrals'}        onClick={() => setActiveTab('referrals')}        icon={FiUsers}        label="Referrals" />
             <TabBtn active={activeTab === 'chargebacks'}      onClick={() => setActiveTab('chargebacks')}      icon={FiShield}       label="Chargebacks" />
           </div>
         </div>
@@ -1046,66 +1044,6 @@ const Profile = () => {
               </div>
             </motion.div>
           )}
-
-          {/* ══ REFERRALS TAB ══ */}
-          {activeTab === 'referrals' && (
-            <motion.div
-              key="referrals"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -6 }}
-              className="glass-card overflow-hidden"
-            >
-              {/* Header with Invite Link */}
-              <div className="px-6 py-6 border-b border-white/[0.06] bg-gradient-to-r from-cyan-500/[0.04] to-transparent flex flex-col gap-4">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                  <div>
-                    <h2 className="text-base font-bold font-display text-white flex items-center gap-2">
-                      <FiUsers className="text-cyan-400" /> Referrals
-                    </h2>
-                    <p className="text-xs text-slate-500 mt-0.5">Invite friends and earn a percentage of their earnings forever!</p>
-                  </div>
-                  {referrals.totalEarned > 0 && (
-                    <div className="flex items-center gap-2 px-3 py-1.5 bg-cyan-500/10 border border-cyan-500/20 rounded-xl">
-                      <FiTrendingUp className="text-cyan-400 text-xs" />
-                      <span className="text-cyan-300 font-mono font-bold text-sm">
-                        +{referrals.totalEarned.toLocaleString()} Coins Lifetime
-                      </span>
-                    </div>
-                  )}
-                </div>
-
-                <div className="p-4 bg-white/[0.02] border border-white/[0.05] rounded-xl flex items-center justify-between gap-4">
-                  <div className="flex-1 overflow-hidden">
-                    <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Your Referral Link</p>
-                    <p className="text-sm text-cyan-200 font-mono truncate">
-                      {window.location.origin}/?ref={mongoUser?._id}
-                    </p>
-                  </div>
-                  <button 
-                    onClick={() => copyToClipboard(`${window.location.origin}/?ref=${mongoUser?._id}`)}
-                    className="w-10 h-10 flex items-center justify-center rounded-xl bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 transition-colors shrink-0"
-                    title="Copy Link"
-                  >
-                    <FiCopy size={16} />
-                  </button>
-                </div>
-              </div>
-
-              <div className="px-6 py-4">
-                <HistoryList
-                  transactions={referrals.dataList}
-                  loading={referrals.loading}
-                  error={referrals.error}
-                  hasMore={referrals.hasMore}
-                  onLoadMore={referrals.loadMore}
-                  loadingMore={referrals.loadingMore}
-                  emptyMessage="No referral earnings yet. Share your link to start earning!"
-                />
-              </div>
-            </motion.div>
-          )}
-
 
           {/* ══ STARTED OFFERS (CLICKED OFFERS) TAB ══ */}
           {activeTab === 'started_offers' && (

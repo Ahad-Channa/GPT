@@ -28,14 +28,14 @@ const Sidebar = () => {
     <aside className="w-72 bg-[#08080c] border-r border-white/5 hidden md:flex flex-col h-full relative z-30">
 
       {/* Brand */}
-      <div className="p-8 flex items-center gap-3">
-        <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-cyan-400 to-violet-500 flex items-center justify-center shadow-[0_0_15px_rgba(34,211,238,0.2)]">
-          <span className="font-bold text-white text-sm">N</span>
+      <Link to="/" className="p-8 flex items-center gap-3 group">
+        <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center shadow-[0_0_15px_rgba(99,102,241,0.2)] group-hover:shadow-[0_0_20px_rgba(99,102,241,0.4)] transition-all">
+          <span className="font-bold text-white text-sm">GPT</span>
         </div>
-        <span className="text-xl font-bold tracking-tight text-white">
-          GPT<span className="text-slate-500 font-medium tracking-normal">Platform</span>
+        <span className="text-xl font-bold tracking-tight text-white flex flex-col leading-none">
+          GPT<span className="text-[10px] text-slate-500 font-medium tracking-widest uppercase mt-0.5">Platform</span>
         </span>
-      </div>
+      </Link>
 
       {/* Navigation */}
       <nav className="flex-1 px-4 py-2 space-y-2 overflow-y-auto">
