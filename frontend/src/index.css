@@ -7,10 +7,22 @@
     background-color: #080b14;
     color: #c8d6ef;
     font-family: 'Inter', system-ui, sans-serif;
+    font-feature-settings: 'cv01' 0, 'zero' 0; /* Disable slashed zeros in Inter and others */
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     overflow-x: hidden;
     overflow-y: scroll;
+  }
+
+  .clean-numbers {
+    font-family: 'Inter', system-ui, sans-serif !important;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .font-mono {
+    font-family: 'Inter', system-ui, sans-serif !important;
+    font-variant-numeric: tabular-nums !important;
+    font-feature-settings: 'zero' 0 !important;
   }
 
   ::selection {

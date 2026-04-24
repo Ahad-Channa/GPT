@@ -71,10 +71,9 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess }) => {
   const meetsMinimum = amountNum >= minimumCoins;
   const isValidAmount = amountNum > 0 && meetsMinimum && hasEnoughBalance;
 
-  // USD/LTC estimates
+  // USD estimates
   const amountUSD = amountNum / coinsPerUSD;
   const receiveUSD = youReceive / coinsPerUSD;
-  const receiveLTC = exchangeRates?.ltcUSD ? (receiveUSD / exchangeRates.ltcUSD).toFixed(8) : null;
 
   // Close on overlay click
   const handleOverlayClick = (e) => {
@@ -135,14 +134,14 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess }) => {
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.95, y: 12 }}
         transition={{ duration: 0.2 }}
-        className="relative w-full max-w-md glass-card overflow-hidden"
+        className="relative w-full max-w-md glass-card overflow-hidden flex flex-col max-h-[90vh]"
         style={{ border: '1px solid rgba(255,255,255,0.1)', boxShadow: '0 25px 80px rgba(0,0,0,0.5)' }}
       >
         {/* Top accent */}
         <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-blue-500/50 to-transparent" />
 
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-white/[0.06]">
+        <div className="flex items-center justify-between p-6 border-b border-white/[0.06] shrink-0">
           <div className="flex items-center gap-3">
             {step > 1 && step < 4 && (
               <button
@@ -173,7 +172,7 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess }) => {
           </button>
         </div>
 
-        <div className="p-6 space-y-4">
+        <div className="p-6 space-y-4 overflow-y-auto">
 
           {/* ── STEP 1: Select Method ─────────────────────────── */}
           {step === 1 && (
@@ -321,12 +320,6 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess }) => {
                       <span>≈ USD value</span>
                       <span>${receiveUSD.toFixed(2)}</span>
                     </div>
-                    {method === 'litecoin' && receiveLTC && (
-                      <div className="flex justify-between text-slate-500">
-                        <span>≈ LTC (@ ${exchangeRates.ltcUSD?.toLocaleString()})</span>
-                        <span className="text-amber-400">{receiveLTC} LTC</span>
-                      </div>
-                    )}
                     <div className="flex justify-between text-slate-500 pt-1 border-t border-white/[0.05]">
                       <span>Total deducted from balance</span>
                       <span className="text-red-400">{totalDeducted.toLocaleString()} {CURRENCY_NAME}</span>
@@ -368,7 +361,6 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess }) => {
                   { label: 'Amount',      value: `${amountNum.toLocaleString()} ${CURRENCY_NAME}`, mono: true },
                   { label: 'Fee',         value: `${feeCoins.toLocaleString()} ${CURRENCY_NAME}`, mono: true, accent: 'text-orange-400' },
                   { label: 'You receive', value: `${youReceive.toLocaleString()} ${CURRENCY_NAME}`, mono: true, accent: 'text-emerald-400', bold: true },
-                  ...(method === 'litecoin' && receiveLTC ? [{ label: '≈ LTC', value: `${receiveLTC} LTC`, mono: true, accent: 'text-amber-400' }] : []),
                 ].map(({ label, value, mono, accent, bold, truncate }) => (
                   <div key={label} className="flex items-center justify-between px-4 py-3">
                     <span className="text-xs text-slate-500">{label}</span>

@@ -167,18 +167,7 @@ const Wallet = () => {
                 </p>
                 <span className="text-blue-400 font-sans text-lg font-semibold">{CURRENCY_NAME}</span>
               </div>
-              {settings && !settingsLoad && (
-                <p className="text-slate-500 text-xs font-sans mt-2 flex items-center gap-1.5 flex-wrap">
-                  <span className="text-slate-600">~</span>
-                  <span className="text-slate-400 font-mono">${(balance / settings.coinsPerUSD).toFixed(2)} USD</span>
-                  {settings.exchangeRates?.ltcUSD && (
-                    <span className="text-slate-600">
-                      · ~{(balance / settings.coinsPerUSD / settings.exchangeRates.ltcUSD).toFixed(6)} LTC
-                    </span>
-                  )}
-                  <span className="text-slate-700 text-[10px] italic">(approximate — actual payout may slightly differ)</span>
-                </p>
-              )}
+
             </div>
 
             <button
@@ -204,7 +193,6 @@ const Wallet = () => {
                 <span className="text-xs font-sans text-slate-400">1 USD =</span>
                 <span className="text-xs font-sans font-bold text-blue-400">{settings.coinsPerUSD} {CURRENCY_NAME}</span>
               </div>
-              <span className="text-[10px] text-slate-600 italic">Live rate via CoinGecko · refreshed every 5 min · approximate only</span>
             </div>
           )}
         </motion.div>
@@ -261,11 +249,6 @@ const Wallet = () => {
                 <span className="text-white font-semibold">How payouts work: </span>
                 Submit a request for a supported method. <span className="text-orange-400 font-semibold">Processing fees apply based on the payout method</span>.
                 Payouts are reviewed and processed by our team within 1–3 business days.
-              </p>
-              <p className="text-slate-500">
-                Minimums — Litecoin: ${settings.withdrawalMethods?.find(m => m.id === 'litecoin')?.minUSD ?? 1}/USD ·
-                PayPal: ${settings.withdrawalMethods?.find(m => m.id === 'paypal')?.minUSD ?? 5}/USD ·
-                Gift Card: ${settings.withdrawalMethods?.find(m => m.id === 'giftcard')?.minUSD ?? 10}/USD
               </p>
             </div>
           </motion.div>
