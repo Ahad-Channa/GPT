@@ -143,7 +143,7 @@ function RankRow({ entry, rank, currentUserId, color, reward, onProfileClick }) 
 
       {/* Coins earned */}
       <div style={{ textAlign: 'right', flexShrink: 0 }}>
-        <div style={{ fontSize: '14px', fontWeight: 700, color: rank <= 3 ? medalColor : '#e2e8f0', fontFamily: 'monospace' }}>
+        <div style={{ fontSize: '14px', fontWeight: 800, color: rank <= 3 ? medalColor : '#e2e8f0', fontVariantNumeric: 'tabular-nums' }}>
           {entry.coinsEarned.toLocaleString()}
         </div>
         <div style={{ fontSize: '10px', color: '#64748b' }}>coins</div>
@@ -183,7 +183,7 @@ function PeriodPanel({ period, data, currentUserId, onProfileClick }) {
           {period !== 'allTime' && (
             <div style={{ textAlign: 'right' }}>
               <div style={{ fontSize: '10px', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: 600 }}>Resets in</div>
-              <div style={{ fontSize: '16px', fontWeight: 800, color: meta.color, fontFamily: 'monospace' }}>{countdown || '...'}</div>
+              <div style={{ fontSize: '16px', fontWeight: 800, color: meta.color, fontVariantNumeric: 'tabular-nums' }}>{countdown || '...'}</div>
             </div>
           )}
 

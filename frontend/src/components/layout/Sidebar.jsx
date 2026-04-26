@@ -45,16 +45,25 @@ const Sidebar = () => {
             <Link
               key={item.name}
               to={item.path}
-              className={`flex items-center justify-between px-4 py-3.5 rounded-2xl transition-all duration-300 group ${isActive
-                  ? 'bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 shadow-[inset_0_0_20px_rgba(6,182,212,0.05)]'
-                  : 'text-slate-400 hover:bg-white/5 hover:text-slate-200 border border-transparent'
+              className={`flex items-center justify-between px-4 py-3.5 rounded-2xl transition-all duration-300 group ${
+                item.name === 'Earn'
+                  ? isActive
+                    ? 'bg-gradient-to-r from-cyan-500 to-blue-500 text-white shadow-[0_0_15px_rgba(6,182,212,0.4)] border border-cyan-400/50'
+                    : 'bg-gradient-to-r from-cyan-500/10 to-blue-500/10 text-cyan-400 border border-cyan-500/20 hover:from-cyan-500/20 hover:to-blue-500/20 shadow-[0_0_10px_rgba(6,182,212,0.1)] hover:shadow-[0_0_15px_rgba(6,182,212,0.2)]'
+                  : isActive
+                    ? 'bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 shadow-[inset_0_0_20px_rgba(99,102,241,0.05)]'
+                    : 'text-slate-400 hover:bg-white/5 hover:text-slate-200 border border-transparent'
                 }`}
             >
               <div className="flex items-center gap-4">
-                <span className={`text-[18px] transition-transform duration-300 group-hover:scale-110 ${isActive ? 'text-cyan-400' : 'text-slate-500 group-hover:text-slate-300'}`}>
+                <span className={`text-[18px] transition-transform duration-300 group-hover:scale-110 ${
+                  item.name === 'Earn'
+                    ? isActive ? 'text-white' : 'text-cyan-400'
+                    : isActive ? 'text-indigo-400' : 'text-slate-500 group-hover:text-slate-300'
+                }`}>
                   {item.icon}
                 </span>
-                <span className="font-medium text-sm tracking-wide">{item.name}</span>
+                <span className={`font-medium text-sm tracking-wide ${item.name === 'Earn' && !isActive ? 'text-cyan-400' : ''}`}>{item.name}</span>
               </div>
 
               {item.badge && (

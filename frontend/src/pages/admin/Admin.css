@@ -59,7 +59,9 @@
   color: #fbbf24;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  font-family: ui-monospace, monospace;
+  font-family: 'Inter', system-ui, sans-serif;
+  font-variant-numeric: normal;
+  font-feature-settings: 'cv01' 0, 'zero' 0;
 }
 
 /* ── Nav ─────────────────────────────────────── */
@@ -233,7 +235,9 @@
 .admin-stat-value {
   font-size: 2rem;
   font-weight: 700;
-  font-family: ui-monospace, monospace;
+  font-family: 'Inter', system-ui, sans-serif;
+  font-variant-numeric: normal;
+  font-feature-settings: 'cv01' 0, 'zero' 0;
   color: white;
 }
 

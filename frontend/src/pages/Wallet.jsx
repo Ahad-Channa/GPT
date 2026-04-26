@@ -144,7 +144,6 @@ const Wallet = () => {
 
         {/* ── Page Header ───────────────────────────────────────── */}
         <motion.div variants={item}>
-          <p className="text-blue-400 text-xs font-semibold tracking-widest uppercase mb-1">Finance</p>
           <h1 className="text-3xl font-bold font-display text-white">Your Wallet</h1>
           <p className="text-slate-500 text-sm mt-1">Manage your {CURRENCY_NAME}, track activity, and request payouts.</p>
         </motion.div>

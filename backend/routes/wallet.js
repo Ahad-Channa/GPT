@@ -91,6 +91,54 @@ router.get('/settings', verifyToken, async (req, res) => {
 });
 
 /* ─────────────────────────────────────────────────────────────────
+   GET /api/wallet/affiliate-stats
+   Returns: totalAffiliates, totalAffiliateEarnings, last30DaysEarnings
+───────────────────────────────────────────────────────────────── */
+router.get('/affiliate-stats', verifyToken, async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ success: false, error: 'User not found' });
+    }
+
+    const totalAffiliates = await User.countDocuments({ referredBy: userId });
+    
+    // Calculate last 30 days earnings from referrals
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+    const thirtyDaysStats = await Transaction.aggregate([
+      {
+        $match: {
+          userId: user._id,
+          transactionType: 'referral_reward',
+          createdAt: { $gte: thirtyDaysAgo }
+        }
+      },
+      {
+        $group: {
+          _id: null,
+          total: { $sum: '$amount' }
+        }
+      }
+    ]);
+
+    const last30DaysEarnings = thirtyDaysStats.length > 0 ? thirtyDaysStats[0].total : 0;
+
+    res.status(200).json({
+      success: true,
+      totalAffiliates,
+      totalAffiliateEarnings: user.referralEarnings || 0,
+      last30DaysEarnings
+    });
+  } catch (error) {
+    console.error('[/api/wallet/affiliate-stats] Error:', error);
+    res.status(500).json({ success: false, error: 'Failed to fetch affiliate stats' });
+  }
+});
+
+/* ─────────────────────────────────────────────────────────────────
    GET /api/wallet/history
    Query params:
      page    (default 1)

@@ -55,7 +55,9 @@ function App() {
             color: '#fff',
             border: '1px solid rgba(255,255,255,0.15)',
             borderRadius: '2px',
-            fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace',
+            fontFamily: "'Inter', system-ui, sans-serif",
+            fontFeatureSettings: '"cv01" 0, "zero" 0',
+            fontVariantNumeric: 'normal',
             fontSize: '12px',
             textTransform: 'uppercase'
           },

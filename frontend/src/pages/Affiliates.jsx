@@ -161,6 +161,37 @@ const useHistory = (token, type, endpoint = '/wallet/history') => {
   return { dataList, loading, loadingMore, error, hasMore, loadMore, totalEarned };
 };
 
+const useAffiliateStats = (token) => {
+  const [stats, setStats] = useState({ totalAffiliates: 0, totalAffiliateEarnings: 0, last30DaysEarnings: 0 });
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!token) return;
+    const fetchStats = async () => {
+      try {
+        const res = await fetch(`${API}/wallet/affiliate-stats`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        const data = await res.json();
+        if (data.success) {
+          setStats({
+            totalAffiliates: data.totalAffiliates,
+            totalAffiliateEarnings: data.totalAffiliateEarnings,
+            last30DaysEarnings: data.last30DaysEarnings
+          });
+        }
+      } catch (err) {
+        console.error('Failed to fetch affiliate stats', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchStats();
+  }, [token]);
+
+  return { stats, loading };
+};
+
 const Affiliates = () => {
   const { currentUser, mongoUser } = useAuth();
   const [token, setToken] = useState(null);
@@ -170,6 +201,7 @@ const Affiliates = () => {
   }, [currentUser]);
 
   const referrals = useHistory(token, 'referral_reward');
+  const { stats, loading: statsLoading } = useAffiliateStats(token);
 
   const copyToClipboard = (text) => {
     navigator.clipboard.writeText(text);
@@ -179,44 +211,86 @@ const Affiliates = () => {
   return (
     <DashboardLayout>
       <motion.div
-        initial={{ opacity: 0, y: 16 }}
+        initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         className="max-w-5xl mx-auto w-full space-y-8"
       >
-        <div className="glass-card overflow-hidden">
-          <div className="px-6 py-6 border-b border-white/[0.06] bg-gradient-to-r from-cyan-500/[0.04] to-transparent flex flex-col gap-4">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-              <div>
-                <h2 className="text-xl font-bold font-display text-white flex items-center gap-2">
-                  <FiUsers className="text-cyan-400" /> Affiliate Program
-                </h2>
-                <p className="text-sm text-slate-400 mt-1">Invite friends and earn a percentage of their earnings forever!</p>
-              </div>
+        {/* Header Section */}
+        <div className="text-center space-y-4">
+          <div className="w-20 h-20 mx-auto rounded-full bg-cyan-500/10 flex items-center justify-center border border-cyan-500/20 shadow-[0_0_30px_rgba(6,182,212,0.15)]">
+            <FiUsers className="text-4xl text-cyan-400" />
+          </div>
+          <h1 className="text-3xl sm:text-4xl font-bold font-display text-white">Affiliate Program</h1>
+          <p className="text-slate-400 max-w-lg mx-auto text-sm sm:text-base">
+            Invite friends and earn a percentage of their earnings forever! The more you invite, the more you earn.
+          </p>
+        </div>
 
+        {/* Stats Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="glass-card p-6 relative overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/5 to-transparent pointer-events-none" />
+            <h3 className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-2">Total Affiliates</h3>
+            <div className="text-4xl font-black text-white">
+              {statsLoading ? <span className="animate-pulse">...</span> : stats.totalAffiliates}
             </div>
-
-            <div className="mt-4 p-5 bg-[#0b101e] border border-white/[0.08] rounded-xl flex flex-col sm:flex-row items-center justify-between gap-4 relative overflow-hidden">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-cyan-500/10 rounded-full blur-3xl -mr-10 -mt-10 pointer-events-none" />
-              
-              <div className="flex-1 overflow-hidden w-full z-10">
-                <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Your Unique Referral Link</p>
-                <div className="flex items-center w-full bg-[#151b2b] border border-white/[0.08] rounded-lg">
-                  <p className="text-sm text-cyan-200 font-mono truncate px-4 py-3 flex-1 select-all">
-                    {window.location.origin}/?ref={mongoUser?._id}
-                  </p>
-                  <button 
-                    onClick={() => copyToClipboard(`${window.location.origin}/?ref=${mongoUser?._id}`)}
-                    className="h-full px-5 flex items-center justify-center border-l border-white/[0.08] bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 font-bold text-sm transition-colors shrink-0 gap-2"
-                  >
-                    <FiCopy size={16} /> <span className="hidden sm:inline">Copy</span>
-                  </button>
-                </div>
-              </div>
-            </div>
+            <p className="text-xs text-slate-500 mt-2">Active referred users</p>
           </div>
 
-          <div className="px-6 py-6">
-            <h3 className="text-base font-bold text-white mb-4">Earnings History</h3>
+          <div className="glass-card p-6 relative overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/5 to-transparent pointer-events-none" />
+            <h3 className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-2">Lifetime Earnings</h3>
+            <div className="flex items-center gap-2">
+              <div className="text-4xl font-black text-emerald-400">
+                {statsLoading ? <span className="animate-pulse">...</span> : stats.totalAffiliateEarnings.toLocaleString(undefined, { maximumFractionDigits: 2 })}
+              </div>
+              <img src="/coin.png" alt="Coins" className="w-6 h-6 drop-shadow-md" onError={(e) => e.target.style.display='none'}/>
+            </div>
+            <p className="text-xs text-slate-500 mt-2">Total coins earned from referrals</p>
+          </div>
+
+          <div className="glass-card p-6 relative overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/5 to-transparent pointer-events-none" />
+            <h3 className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-2">30-Day Earnings</h3>
+            <div className="flex items-center gap-2">
+              <div className="text-4xl font-black text-indigo-400">
+                {statsLoading ? <span className="animate-pulse">...</span> : stats.last30DaysEarnings.toLocaleString(undefined, { maximumFractionDigits: 2 })}
+              </div>
+              <img src="/coin.png" alt="Coins" className="w-6 h-6 drop-shadow-md" onError={(e) => e.target.style.display='none'}/>
+            </div>
+            <p className="text-xs text-slate-500 mt-2">Coins earned in the last 30 days</p>
+          </div>
+        </div>
+
+        {/* Referral Link Section */}
+        <div className="glass-card p-6 sm:p-10 text-center relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-64 h-64 bg-cyan-500/10 rounded-full blur-3xl -mr-20 -mt-20 pointer-events-none" />
+          <div className="absolute bottom-0 left-0 w-64 h-64 bg-indigo-500/10 rounded-full blur-3xl -ml-20 -mb-20 pointer-events-none" />
+          
+          <h2 className="text-xl sm:text-2xl font-bold text-white mb-2 relative z-10">Your Unique Referral Link</h2>
+          <p className="text-slate-400 text-sm mb-6 relative z-10">Share this link anywhere to start earning passive income.</p>
+          
+          <div className="max-w-2xl mx-auto flex flex-col sm:flex-row items-center w-full bg-[#0b101e] border border-white/[0.08] rounded-xl overflow-hidden relative z-10 shadow-lg">
+            <p className="text-sm sm:text-base text-cyan-200 font-mono truncate px-4 py-4 flex-1 select-all w-full text-center sm:text-left">
+              {window.location.origin}/?ref={mongoUser?._id}
+            </p>
+            <button 
+              onClick={() => copyToClipboard(`${window.location.origin}/?ref=${mongoUser?._id}`)}
+              className="w-full sm:w-auto px-8 py-4 flex items-center justify-center bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-400 hover:to-blue-400 text-white font-bold text-sm transition-all shrink-0 gap-2 shadow-[0_0_20px_rgba(6,182,212,0.3)] hover:shadow-[0_0_30px_rgba(6,182,212,0.5)]"
+            >
+              <FiCopy size={18} /> <span>Copy Link</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Earnings History */}
+        <div className="glass-card overflow-hidden">
+          <div className="px-6 py-5 border-b border-white/[0.06] bg-white/[0.02]">
+            <h3 className="text-lg font-bold text-white flex items-center gap-2">
+              <FiTrendingUp className="text-emerald-400" /> Recent Referral Earnings
+            </h3>
+          </div>
+          <div className="px-6 py-2">
             <HistoryList
               transactions={referrals.dataList}
               loading={referrals.loading}
@@ -228,6 +302,7 @@ const Affiliates = () => {
             />
           </div>
         </div>
+
       </motion.div>
     </DashboardLayout>
   );

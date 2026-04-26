@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { FiGithub, FiTwitter, FiDisc, FiArrowRight, FiUsers, FiDollarSign } from 'react-icons/fi';
+import { useAuth } from '../contexts/AuthContext';
+import Header from '../components/layout/Header';
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
@@ -25,6 +27,7 @@ const Orb = ({ style, color, size = 16 }) => (
 ═══════════════════════════════════════════════════════════ */
 const Landing = () => {
   const navigate = useNavigate();
+  const { currentUser } = useAuth();
   const [stats, setStats] = useState({ totalUsers: 0, totalPaidOut: 0 });
 
   useEffect(() => {
@@ -49,7 +52,7 @@ const Landing = () => {
 
   return (
     <div
-      className="relative min-h-screen overflow-hidden"
+      className="relative min-h-screen overflow-hidden flex flex-col"
       style={{
         background: 'radial-gradient(ellipse 80% 60% at 15% 50%, #0a0a1a 0%, #000000 60%)',
         fontFamily: "'Inter', system-ui, sans-serif",
@@ -74,54 +77,60 @@ const Landing = () => {
       <Orb color="#0284c7"  size={22} style={{ top: '75%', right: '25%',opacity: 0.35, filter: 'blur(6px)' }} />
 
       {/* ─── Navbar ─────────────────────────────────────────────── */}
-      <nav className="relative z-20 max-w-7xl mx-auto px-8 py-5 flex items-center justify-between">
-        {/* Logo */}
-        <motion.div
-          initial={{ opacity: 0, y: -8 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="flex items-center gap-2.5"
-        >
-          <span className="text-white font-bold text-xl tracking-tight" style={{ fontFamily: "'Outfit', Inter, sans-serif" }}>
-            GPT Platform
-          </span>
-        </motion.div>
+      {currentUser ? (
+        <div className="relative z-50">
+          <Header />
+        </div>
+      ) : (
+        <nav className="relative z-20 max-w-7xl mx-auto px-8 py-5 flex items-center justify-between w-full">
+          {/* Logo */}
+          <motion.div
+            initial={{ opacity: 0, y: -8 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="flex items-center gap-2.5"
+          >
+            <span className="text-white font-bold text-xl tracking-tight" style={{ fontFamily: "'Outfit', Inter, sans-serif" }}>
+              GPT Platform
+            </span>
+          </motion.div>
 
-        {/* Nav Links */}
-        <motion.div
-          initial={{ opacity: 0, y: -8 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.05 }}
-          className="hidden md:flex items-center gap-8 text-sm text-gray-400"
-        >
-          {['Platform', 'Services', 'Payouts', 'Roadmap', 'About'].map(link => (
-            <a
-              key={link}
-              href={`#${link.toLowerCase()}`}
-              className="hover:text-white transition-colors duration-200"
-            >
-              {link}
-            </a>
-          ))}
-        </motion.div>
+          {/* Nav Links */}
+          <motion.div
+            initial={{ opacity: 0, y: -8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.05 }}
+            className="hidden md:flex items-center gap-8 text-sm text-gray-400"
+          >
+            {['Platform', 'Services', 'Payouts', 'Roadmap', 'About'].map(link => (
+              <a
+                key={link}
+                href={`#${link.toLowerCase()}`}
+                className="hover:text-white transition-colors duration-200"
+              >
+                {link}
+              </a>
+            ))}
+          </motion.div>
 
-        {/* Social icons + CTA */}
-        <motion.div
-          initial={{ opacity: 0, y: -8 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-          className="flex items-center gap-5"
-        >
-          {/* Social Icons */}
-          <div className="hidden sm:flex items-center gap-4 text-gray-500">
-            <a href="#" className="hover:text-white transition-colors"><FiGithub size={17} /></a>
-            <a href="#" className="hover:text-white transition-colors"><FiDisc size={17} /></a>
-            <a href="#" className="hover:text-white transition-colors"><FiTwitter size={17} /></a>
-          </div>
-        </motion.div>
-      </nav>
+          {/* Social icons + CTA */}
+          <motion.div
+            initial={{ opacity: 0, y: -8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            className="flex items-center gap-5"
+          >
+            {/* Social Icons */}
+            <div className="hidden sm:flex items-center gap-4 text-gray-500">
+              <a href="#" className="hover:text-white transition-colors"><FiGithub size={17} /></a>
+              <a href="#" className="hover:text-white transition-colors"><FiDisc size={17} /></a>
+              <a href="#" className="hover:text-white transition-colors"><FiTwitter size={17} /></a>
+            </div>
+          </motion.div>
+        </nav>
+      )}
 
       {/* ─── Hero ───────────────────────────────────────────────── */}
-      <main className="relative z-10 max-w-4xl mx-auto px-6 pt-20 pb-0 text-center">
+      <main className="relative z-10 max-w-4xl mx-auto px-6 pt-20 pb-0 text-center flex-1">
 
         {/* Main Headline */}
         <motion.div
@@ -172,7 +181,7 @@ const Landing = () => {
           className="flex flex-col sm:flex-row items-center justify-center gap-4"
         >
           <button
-            onClick={() => navigate('/login')}
+            onClick={() => navigate(currentUser ? '/dashboard' : '/login')}
             className="flex items-center gap-2 px-8 py-3 text-sm font-semibold text-white transition-all duration-200 hover:opacity-90 hover:scale-[1.03]"
             style={{
               background: 'linear-gradient(90deg, #1d4ed8 0%, #2563eb 50%, #0ea5e9 100%)',
@@ -182,10 +191,11 @@ const Landing = () => {
               cursor: 'pointer',
             }}
           >
-            Get Started <FiArrowRight size={14} />
+            {currentUser ? 'Go to Earn' : 'Get Started'} <FiArrowRight size={14} />
           </button>
 
           <button
+            onClick={() => currentUser ? navigate('/dashboard/wallet') : undefined}
             className="flex items-center gap-2 px-8 py-3 text-sm font-semibold text-white transition-all duration-200 hover:bg-white/[0.08]"
             style={{
               background: 'transparent',
@@ -194,7 +204,7 @@ const Landing = () => {
               cursor: 'pointer',
             }}
           >
-            Explore Rewards
+            {currentUser ? 'Withdraw Rewards' : 'Explore Rewards'}
           </button>
         </motion.div>
         {/* Global Statistics */}

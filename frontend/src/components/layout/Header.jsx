@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useNotifications } from '../../contexts/NotificationContext';
-import { FiLogOut, FiUser, FiSettings, FiZap, FiChevronDown, FiCreditCard, FiGrid, FiLock, FiUnlock, FiClock, FiCheckCircle, FiTrendingUp, FiBell, FiUsers } from 'react-icons/fi';
+import { FiLogOut, FiUser, FiSettings, FiZap, FiChevronDown, FiCreditCard, FiGrid, FiLock, FiUnlock, FiClock, FiCheckCircle, FiTrendingUp, FiBell, FiUsers, FiGift, FiDollarSign } from 'react-icons/fi';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -89,10 +89,11 @@ const DailyBonusChip = () => {
       <button 
         onClick={claimBonus} 
         disabled={claiming}
-        className="hidden lg:flex items-center gap-2 px-4 py-1.5 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-sm hover:bg-indigo-500/20 transition-all font-semibold text-indigo-400"
+        className="hidden lg:flex items-center gap-2 px-5 py-1.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-white font-bold text-sm transition-all shadow-[0_0_15px_rgba(245,158,11,0.4)] hover:shadow-[0_0_25px_rgba(245,158,11,0.6)] border border-amber-400/50 relative overflow-hidden group"
       >
-        <FiUnlock className="text-indigo-400 text-sm" />
-        <span>{claiming ? 'Wait...' : 'Claim Bonus'}</span>
+        <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out" />
+        <FiGift className="text-white text-sm relative z-10" />
+        <span className="relative z-10">{claiming ? 'Wait...' : 'Claim Bonus!'}</span>
       </button>
     );
   }
@@ -170,9 +171,11 @@ const Header = () => {
           <button
             id="header-earn-btn"
             onClick={() => navigate('/dashboard')}
-            className="hidden lg:flex items-center gap-2 px-4 py-1.5 rounded-xl bg-white/[0.04] border border-white/[0.07] text-sm hover:bg-white/[0.08] hover:border-white/[0.15] transition-all font-semibold text-slate-300"
+            className="hidden lg:flex items-center gap-2 px-6 py-1.5 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-400 hover:to-blue-400 text-white font-bold text-sm transition-all shadow-[0_0_15px_rgba(6,182,212,0.4)] hover:shadow-[0_0_25px_rgba(6,182,212,0.6)] border border-cyan-400/50 relative overflow-hidden group"
           >
-            <span>Earn</span>
+            <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out" />
+            <FiDollarSign className="text-white text-[16px] relative z-10" />
+            <span className="relative z-10 tracking-wide text-[15px]">Earn</span>
           </button>
 
           <DailyBonusChip />

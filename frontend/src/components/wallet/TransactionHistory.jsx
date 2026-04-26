@@ -5,7 +5,7 @@ import { CURRENCY_NAME } from '../../config/platform';
 import {
   FiZap, FiStar, FiUsers, FiArrowDownCircle, FiShield,
   FiTag, FiAward, FiFilter, FiRefreshCw, FiLoader,
-  FiInbox, FiChevronDown,
+  FiInbox, FiChevronDown, FiChevronLeft, FiChevronRight,
 } from 'react-icons/fi';
 
 /* ─── Transaction type config ─────────────────────────────────────
@@ -64,13 +64,13 @@ const TransactionHistory = ({ refreshKey = 0, onStatsLoaded }) => {
   const [filter,       setFilter]       = useState('all');
   const [error,        setError]        = useState('');
 
-  const fetchTransactions = useCallback(async (page = 1, type = 'all', append = false) => {
+  const fetchTransactions = useCallback(async (page = 1, type = 'all') => {
     try {
-      if (page === 1) setLoading(true); else setLoadingMore(true);
+      setLoading(true);
       setError('');
 
       const token = await currentUser.getIdToken();
-      const params = new URLSearchParams({ page, limit: 20, type });
+      const params = new URLSearchParams({ page, limit: 10, type });
       const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/wallet/history?${params}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -78,7 +78,7 @@ const TransactionHistory = ({ refreshKey = 0, onStatsLoaded }) => {
 
       if (!data.success) throw new Error(data.error);
 
-      setTransactions((prev) => append ? [...prev, ...data.transactions] : data.transactions);
+      setTransactions(data.transactions);
       setPagination(data.pagination);
 
       // Get actual stats from the backend for the first page
@@ -89,17 +89,24 @@ const TransactionHistory = ({ refreshKey = 0, onStatsLoaded }) => {
       setError(err.message || 'Failed to load transactions');
     } finally {
       setLoading(false);
-      setLoadingMore(false);
     }
   }, [currentUser, onStatsLoaded]);
 
   // Refetch when refreshKey changes (e.g. after a withdrawal) or filter changes
   useEffect(() => {
-    fetchTransactions(1, filter, false);
+    fetchTransactions(1, filter);
   }, [filter, refreshKey, fetchTransactions]);
 
-  const handleLoadMore = () => {
-    fetchTransactions(pagination.page + 1, filter, true);
+  const handlePrevPage = () => {
+    if (pagination.page > 1) {
+      fetchTransactions(pagination.page - 1, filter);
+    }
+  };
+
+  const handleNextPage = () => {
+    if (pagination.hasMore) {
+      fetchTransactions(pagination.page + 1, filter);
+    }
   };
 
   const handleFilterChange = (val) => {
@@ -232,26 +239,33 @@ const TransactionHistory = ({ refreshKey = 0, onStatsLoaded }) => {
         )}
       </div>
 
-      {/* ── Load More ──────────────────────────────────────── */}
-      {!loading && pagination.hasMore && (
-        <div className="p-4 border-t border-white/[0.04] flex justify-center">
+      {/* ── Pagination ─────────────────────────────────────── */}
+      {!loading && transactions.length > 0 && (pagination.hasMore || pagination.page > 1) && (
+        <div className="p-4 border-t border-white/[0.04] flex justify-between items-center">
           <button
-            id="tx-load-more"
-            onClick={handleLoadMore}
-            disabled={loadingMore}
-            className="flex items-center gap-2 text-xs text-blue-400 hover:text-blue-300 font-medium transition-colors disabled:opacity-50"
+            onClick={handlePrevPage}
+            disabled={pagination.page <= 1}
+            className="w-8 h-8 flex items-center justify-center rounded-lg bg-white/[0.04] text-slate-400 hover:text-white hover:bg-white/[0.08] transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
           >
-            {loadingMore ? (
-              <><FiLoader className="animate-spin" /> Loading...</>
-            ) : (
-              <><FiChevronDown /> Load more transactions</>
-            )}
+            <FiChevronLeft className="text-base" />
+          </button>
+          
+          <p className="text-[10px] text-slate-500 font-mono tracking-widest uppercase">
+            Page {pagination.page} of {pagination.totalPages}
+          </p>
+
+          <button
+            onClick={handleNextPage}
+            disabled={!pagination.hasMore}
+            className="w-8 h-8 flex items-center justify-center rounded-lg bg-white/[0.04] text-slate-400 hover:text-white hover:bg-white/[0.08] transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+          >
+            <FiChevronRight className="text-base" />
           </button>
         </div>
       )}
 
       {/* ── Footer summary ─────────────────────────────────── */}
-      {!loading && transactions.length > 0 && !pagination.hasMore && (
+      {!loading && transactions.length > 0 && !pagination.hasMore && pagination.page === 1 && (
         <div className="p-4 border-t border-white/[0.04] text-center">
           <p className="text-[10px] text-slate-600 font-mono tracking-widest uppercase">
             All {pagination.total} transactions shown

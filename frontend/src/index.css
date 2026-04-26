@@ -16,13 +16,14 @@
 
   .clean-numbers {
     font-family: 'Inter', system-ui, sans-serif !important;
-    font-variant-numeric: tabular-nums;
+    font-variant-numeric: normal;
+    font-feature-settings: 'cv01' 0, 'zero' 0;
   }
 
   .font-mono {
     font-family: 'Inter', system-ui, sans-serif !important;
-    font-variant-numeric: tabular-nums !important;
-    font-feature-settings: 'zero' 0 !important;
+    font-variant-numeric: normal !important;
+    font-feature-settings: 'cv01' 0, 'zero' 0 !important;
   }
 
   ::selection {
