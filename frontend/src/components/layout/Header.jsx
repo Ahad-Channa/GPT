@@ -1,7 +1,8 @@
 import { useState, useRef, useEffect } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useNotifications } from '../../contexts/NotificationContext';
-import { FiLogOut, FiUser, FiSettings, FiZap, FiChevronDown, FiCreditCard, FiGrid, FiLock, FiUnlock, FiClock, FiCheckCircle, FiTrendingUp, FiBell, FiUsers, FiGift, FiDollarSign } from 'react-icons/fi';
+import { useDailyBonus } from '../../contexts/DailyBonusContext';
+import { FiLogOut, FiUser, FiSettings, FiZap, FiChevronDown, FiCreditCard, FiLock, FiClock, FiTrendingUp, FiBell, FiUsers, FiGift, FiDollarSign } from 'react-icons/fi';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -10,34 +11,16 @@ const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 const DailyBonusChip = () => {
   const { currentUser } = useAuth();
   const navigate = useNavigate();
-  const [status, setStatus] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const { status, loading, fetchStatus } = useDailyBonus();
   const [claiming, setClaiming] = useState(false);
   const [timeLeft, setTimeLeft] = useState('');
-
-  const fetchStatus = async () => {
-    try {
-      const token = await currentUser?.getIdToken();
-      const res = await fetch(`${API}/wallet/daily-bonus-status`, { headers: { Authorization: `Bearer ${token}` } });
-      const data = await res.json();
-      if (data.success) setStatus(data);
-    } catch (err) { } finally { setLoading(false); }
-  };
-
-  useEffect(() => { if (currentUser) fetchStatus(); }, [currentUser]);
 
   useEffect(() => {
     if (!status?.nextClaimAt || !status.alreadyClaimed) return;
     const target = new Date(status.nextClaimAt).getTime();
     const interval = setInterval(() => {
-      const now = new Date().getTime();
-      const distance = target - now;
-      if (distance < 0) {
-        clearInterval(interval);
-        setTimeLeft('00:00:00');
-        fetchStatus();
-        return;
-      }
+      const distance = target - Date.now();
+      if (distance < 0) { clearInterval(interval); setTimeLeft('00:00:00'); fetchStatus(); return; }
       const h = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
       const m = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
       const s = Math.floor((distance % (1000 * 60)) / 1000);
@@ -52,10 +35,7 @@ const DailyBonusChip = () => {
       const token = await currentUser?.getIdToken();
       const res = await fetch(`${API}/wallet/daily-bonus`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`
-        }
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }
       });
       const data = await res.json();
       if (data.success) fetchStatus();
@@ -67,59 +47,74 @@ const DailyBonusChip = () => {
   };
 
   if (loading || !status) {
-    return (
-      <div className="hidden lg:flex items-center gap-2 px-4 py-1.5 rounded-xl bg-white/[0.04] border border-white/[0.07] animate-pulse h-[34px] w-24"></div>
-    );
+    return <div className="hidden lg:flex items-center gap-2 px-4 py-1.5 rounded-xl bg-white/[0.04] border border-white/[0.07] animate-pulse h-[34px] w-28" />;
   }
 
+  // Already claimed — countdown
   if (status.alreadyClaimed) {
     return (
-      <button 
+      <button
         onClick={() => navigate('/dashboard/daily-bonus')}
-        className="hidden lg:flex items-center gap-2 px-4 py-1.5 rounded-xl bg-white/[0.04] border border-white/[0.07] text-sm hover:bg-white/[0.08] transition-all font-semibold text-slate-300"
+        className="hidden lg:flex items-center gap-2 px-4 py-1.5 rounded-xl bg-white/[0.04] border border-white/[0.07] text-sm hover:bg-white/[0.08] transition-all font-semibold text-slate-400"
       >
-        <FiClock className="text-slate-400 text-sm" />
+        <FiClock className="text-slate-500 text-sm" />
         <span>{timeLeft || '...'}</span>
       </button>
     );
   }
 
+  // Gate unlocked — very prominent pulsing claim button
   if (status.gateUnlocked) {
     return (
-      <button 
-        onClick={claimBonus} 
+      <button
+        onClick={claimBonus}
         disabled={claiming}
-        className="hidden lg:flex items-center gap-2 px-5 py-1.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-white font-bold text-sm transition-all shadow-[0_0_15px_rgba(245,158,11,0.4)] hover:shadow-[0_0_25px_rgba(245,158,11,0.6)] border border-amber-400/50 relative overflow-hidden group"
+        className="hidden lg:flex relative items-center gap-2 px-5 py-1.5 rounded-xl font-bold text-sm text-white
+          bg-gradient-to-r from-amber-400 to-orange-500
+          border border-amber-300/60
+          shadow-[0_0_18px_rgba(245,158,11,0.7),0_0_40px_rgba(245,158,11,0.3)]
+          hover:shadow-[0_0_28px_rgba(245,158,11,0.9),0_0_60px_rgba(245,158,11,0.5)]
+          disabled:opacity-60 overflow-hidden group"
+        style={{ animation: 'bonusPulse 1.8s ease-in-out infinite' }}
       >
-        <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out" />
+        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-600" />
         <FiGift className="text-white text-sm relative z-10" />
-        <span className="relative z-10">{claiming ? 'Wait...' : 'Claim Bonus!'}</span>
+        <span className="relative z-10">{claiming ? 'Claiming…' : '🎁 Claim Bonus!'}</span>
       </button>
     );
   }
 
+  // Gate locked — button with inline progress bar
   const progressPercent = Math.min(100, Math.floor((status.earned / status.required) * 100));
 
   return (
-    <button 
+    <button
       onClick={() => navigate('/dashboard/daily-bonus')}
-      className="hidden lg:flex items-center gap-2 px-4 py-1.5 rounded-xl bg-white/[0.04] border border-white/[0.07] text-sm hover:bg-white/10 transition-all group relative font-semibold text-slate-300"
+      className="hidden lg:flex flex-col justify-center px-3 py-1 rounded-xl bg-white/[0.04] border border-white/[0.07] hover:bg-white/[0.08] hover:border-white/[0.15] transition-all group relative overflow-visible"
+      style={{ minWidth: '128px', height: '34px' }}
     >
-      <FiLock className="text-slate-400 text-sm flex-shrink-0" />
-      <span>Daily Bonus</span>
-      
-      {/* Tooltip */}
-      <div className="absolute top-11 right-0 w-52 p-3 rounded-xl bg-[#0b101e] border border-white/[0.08] shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 text-left font-normal">
-        <p className="text-xs text-slate-300 mb-2">Earn <span className="font-bold text-white">{status.required - status.earned}</span> more coins today to unlock.</p>
+      <div className="flex items-center gap-1.5 mb-0.5">
+        <FiLock className="text-slate-500 text-[10px] flex-shrink-0" />
+        <span className="font-semibold text-slate-300 text-xs">Daily Bonus</span>
+        <span className="ml-auto text-[10px] text-indigo-400 font-bold">{progressPercent}%</span>
+      </div>
+      <div className="w-full h-1 bg-white/[0.07] rounded-full overflow-hidden">
+        <div
+          className="h-full bg-gradient-to-r from-indigo-500 to-violet-400 rounded-full transition-all duration-700"
+          style={{ width: `${progressPercent}%` }}
+        />
+      </div>
+      {/* Hover tooltip */}
+      <div className="absolute top-11 right-0 w-52 p-3 rounded-xl bg-[#0b101e] border border-white/[0.08] shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 text-left">
+        <p className="text-xs text-slate-300 mb-2">
+          Earn <span className="font-bold text-white">{(status.required - status.earned).toLocaleString()}</span> more coins to unlock.
+        </p>
         <div className="w-full h-1.5 bg-white/10 rounded-full overflow-hidden mb-2">
-          <div 
-            className="bg-indigo-400 h-full rounded-full transition-all duration-1000"
-            style={{ width: `${progressPercent}%` }}
-          />
+          <div className="bg-indigo-400 h-full rounded-full" style={{ width: `${progressPercent}%` }} />
         </div>
-        <div className="flex justify-between items-center text-[10px] font-sans font-medium text-slate-400">
-          <span>{status.earned} earned</span>
-          <span>{status.required} needed</span>
+        <div className="flex justify-between text-[10px] text-slate-400">
+          <span>{status.earned.toLocaleString()} earned</span>
+          <span>{status.required.toLocaleString()} needed</span>
         </div>
       </div>
     </button>

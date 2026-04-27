@@ -27,14 +27,16 @@ const NumberInput = ({ value, onChange, min, max, step = 1, prefix, suffix, disa
         paddingLeft: prefix ? '2rem' : '1rem',
         paddingRight: suffix ? '3rem' : '1rem',
         width: '100%',
-        fontFamily: 'ui-monospace, monospace',
+        fontFamily: "'Inter', system-ui, sans-serif",
+        fontFeatureSettings: "'zero' 0",
+        fontVariantNumeric: 'normal',
         fontSize: '1rem',
         fontWeight: 600,
         color: '#e2e8f0',
       }}
     />
     {suffix && (
-      <span style={{ position: 'absolute', right: '0.75rem', color: '#64748b', fontSize: '0.82rem', pointerEvents: 'none', fontFamily: 'monospace' }}>
+      <span style={{ position: 'absolute', right: '0.75rem', color: '#64748b', fontSize: '0.82rem', pointerEvents: 'none', fontFamily: "'Inter', system-ui, sans-serif" }}>
         {suffix}
       </span>
     )}
@@ -153,7 +155,7 @@ const ProviderCard = ({ provider, onUpdate, loadingProvider }) => {
         )}
       </div>
       {Number(ratio) > 0 && enabled && (
-        <div style={{ fontSize: '0.75rem', color: '#94a3b8', marginTop: '0.5rem', fontFamily: 'monospace' }}>
+        <div style={{ fontSize: '0.75rem', color: '#94a3b8', marginTop: '0.5rem', fontFamily: "'Inter', system-ui, sans-serif", fontFeatureSettings: "'zero' 0" }}>
           <strong>Formula:</strong> 1.00 Network Unit &times; {Number(ratio) || 1} = <span style={{ color: '#60a5fa' }}>{Math.round(1 * (Number(ratio) || 1))} Coins given to user</span>.
         </div>
       )}

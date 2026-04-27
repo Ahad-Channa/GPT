@@ -2,6 +2,11 @@
 @tailwind components;
 @tailwind utilities;
 
+@keyframes bonusPulse {
+  0%, 100% { box-shadow: 0 0 18px rgba(245,158,11,0.7), 0 0 40px rgba(245,158,11,0.3); }
+  50%       { box-shadow: 0 0 32px rgba(245,158,11,1),   0 0 70px rgba(245,158,11,0.55); }
+}
+
 @layer base {
   body {
     background-color: #080b14;

@@ -96,14 +96,18 @@ router.get('/settings', verifyToken, async (req, res) => {
 ───────────────────────────────────────────────────────────────── */
 router.get('/affiliate-stats', verifyToken, async (req, res) => {
   try {
-    const userId = req.user.id;
-    const user = await User.findById(userId);
+    // Always load settings first so referralPercentage is always available
+    const settings = await Settings.getSingleton();
+    const globalPct = settings.referralConfig?.globalPercentage ?? 5;
+
+    // Use firebaseUid (consistent with all other wallet routes)
+    const user = await User.findOne({ firebaseUid: req.user.uid });
     if (!user) {
       return res.status(404).json({ success: false, error: 'User not found' });
     }
 
-    const totalAffiliates = await User.countDocuments({ referredBy: userId });
-    
+    const totalAffiliates = await User.countDocuments({ referredBy: user._id });
+
     // Calculate last 30 days earnings from referrals
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
@@ -126,11 +130,17 @@ router.get('/affiliate-stats', verifyToken, async (req, res) => {
 
     const last30DaysEarnings = thirtyDaysStats.length > 0 ? thirtyDaysStats[0].total : 0;
 
+    // Use user's personal override if set, otherwise the global platform setting
+    const effectivePct = (user.referralPercentage != null)
+      ? user.referralPercentage
+      : globalPct;
+
     res.status(200).json({
       success: true,
       totalAffiliates,
       totalAffiliateEarnings: user.referralEarnings || 0,
-      last30DaysEarnings
+      last30DaysEarnings,
+      referralPercentage: effectivePct,
     });
   } catch (error) {
     console.error('[/api/wallet/affiliate-stats] Error:', error);

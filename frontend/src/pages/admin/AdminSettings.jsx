@@ -54,14 +54,16 @@ const NumberInput = ({ value, onChange, min, max, step = 1, prefix, suffix, disa
         paddingLeft: prefix ? '2rem' : '1rem',
         paddingRight: suffix ? '3rem' : '1rem',
         width: '100%',
-        fontFamily: 'ui-monospace, monospace',
+        fontFamily: "'Inter', system-ui, sans-serif",
+        fontFeatureSettings: "'zero' 0",
+        fontVariantNumeric: 'normal',
         fontSize: '1rem',
         fontWeight: 600,
         color: '#e2e8f0',
       }}
     />
     {suffix && (
-      <span style={{ position: 'absolute', right: '0.75rem', color: '#64748b', fontSize: '0.82rem', pointerEvents: 'none', fontFamily: 'monospace' }}>
+      <span style={{ position: 'absolute', right: '0.75rem', color: '#64748b', fontSize: '0.82rem', pointerEvents: 'none', fontFamily: "'Inter', system-ui, sans-serif" }}>
         {suffix}
       </span>
     )}
@@ -266,7 +268,7 @@ const AdminSettings = () => {
               suffix="per $1"
             />
             {cpusd && !isNaN(Number(cpusd)) && (
-              <div style={{ marginTop: '0.6rem', padding: '0.6rem 0.9rem', background: 'rgba(59,130,246,0.07)', border: '1px solid rgba(59,130,246,0.18)', borderRadius: '10px', fontSize: '0.75rem', color: '#94a3b8', fontFamily: 'monospace' }}>
+              <div style={{ marginTop: '0.6rem', padding: '0.6rem 0.9rem', background: 'rgba(59,130,246,0.07)', border: '1px solid rgba(59,130,246,0.18)', borderRadius: '10px', fontSize: '0.75rem', color: '#94a3b8', fontFamily: "'Inter', system-ui, sans-serif", fontFeatureSettings: "'zero' 0" }}>
                 1,000 Coins = <span style={{ color: '#60a5fa', fontWeight: 600 }}>${(1000 / Number(cpusd)).toFixed(2)} USD</span>
               </div>
             )}
@@ -354,7 +356,7 @@ const AdminSettings = () => {
                       <div>
                         <p style={{ color: 'white', fontWeight: 600, fontSize: '0.85rem', margin: 0 }}>{m.label}</p>
                         {!isNaN(minCoins) && Number(cpusd) > 0 && (
-                          <p style={{ color: '#475569', fontSize: '0.68rem', margin: 0, fontFamily: 'monospace' }}>
+                          <p style={{ color: '#475569', fontSize: '0.68rem', margin: 0, fontFamily: "'Inter', system-ui, sans-serif", fontFeatureSettings: "'zero' 0" }}>
                             Min: {Math.round(minCoins).toLocaleString()} Coins
                           </p>
                         )}

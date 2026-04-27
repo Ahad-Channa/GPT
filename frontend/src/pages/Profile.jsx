@@ -5,7 +5,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   FiZap, FiStar, FiMail, FiCalendar, FiEdit2, FiCheck, FiX, FiShield,
-  FiActivity, FiUser, FiArrowDownCircle, FiCheckCircle, FiClock,
+  FiActivity, FiArrowDownCircle, FiCheckCircle, FiClock,
   FiInbox, FiLoader, FiTrendingUp, FiChevronDown, FiPlayCircle,
   FiSend, FiExternalLink, FiSettings, FiTrash2, FiAlertTriangle, FiRefreshCw,
   FiUsers, FiCopy
@@ -784,107 +784,129 @@ const Profile = () => {
         animate={{ opacity: 1, y: 0 }}
         className="max-w-5xl mx-auto w-full space-y-8"
       >
-        {/* ─── HERO HEADER ───────────────────────────────── */}
-        <div className="relative rounded-[2rem] overflow-hidden bg-[#0c101b] border border-white/[0.03] shadow-card pb-6">
-          {/* Cover Banner */}
-          <div className="h-40 sm:h-52 w-full bg-gradient-to-r from-indigo-900 via-indigo-600 to-violet-800 relative overflow-hidden">
-            <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI4IiBoZWlnaHQ9IjgiPgo8cmVjdCB3aWR0aD0iOCIgaGVpZ2h0PSI4IiBmaWxsPSIjZmZmIiBmaWxsLW9wYWNpdHk9IjAuMDUiLz4KPC9zdmc+')] opacity-20" />
-            <div className="absolute inset-0 bg-gradient-to-b from-transparent to-[#0c101b]/90" />
-          </div>
+        {/* ─── PREMIUM PROFILE HERO ─────────────────────────────── */}
+        <div className="relative rounded-[2rem] overflow-hidden border border-white/[0.06] bg-[#0c101b] shadow-card">
 
-          <div className="px-6 sm:px-10 relative">
-            {/* Overlapping Avatar & User Info */}
-            <div className="flex flex-col sm:flex-row gap-6 sm:items-end -mt-16 sm:-mt-20">
-              <div className="relative shrink-0">
-                <div className="w-28 h-28 sm:w-32 sm:h-32 rounded-[2rem] overflow-hidden border-4 border-[#0c101b] bg-[#111827] shadow-glow-lg z-10 relative">
-                  <img
-                    src={mongoUser?.avatarUrl || currentUser?.photoURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=${mongoUser?.displayName || 'Avatar'}`}
-                    alt="Avatar"
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-                {/* VIP Level Ring / Badge */}
-                <div className="absolute -bottom-2 -right-2 bg-gradient-to-br from-amber-400 to-orange-500 text-[#0c101b] font-black text-xs px-3 py-1 rounded-xl border-4 border-[#0c101b] shadow-lg z-20">
-                  LVL {mongoUser?.vipLevel || 1}
-                </div>
-              </div>
+          {/* Thin accent strip — replaces the huge banner */}
+          <div className="h-1.5 w-full bg-gradient-to-r from-indigo-600 via-violet-500 to-fuchsia-500" />
 
-              <div className="flex-1 pb-1 sm:pb-3">
-                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4">
-                  <div>
-                      <div className="flex items-center gap-3 group">
-                        <h1 className="text-2xl sm:text-3xl font-black text-white font-display tracking-tight hover:text-indigo-200 transition-colors">
-                          {mongoUser?.displayName || 'Anonymous'}
-                        </h1>
-                        <button
-                          onClick={() => setShowSettings(true)}
-                          title="Account Settings"
-                          className="w-10 h-10 rounded-xl border border-white/[0.08] bg-white/[0.02] hover:bg-white/[0.08] text-slate-400 hover:text-white transition-all flex items-center justify-center opacity-100"
-                        >
-                          <FiSettings size={18} />
-                        </button>
-                      </div>
-                    <div className="flex flex-wrap items-center gap-4 mt-2 text-xs sm:text-sm text-slate-400 font-medium">
-                      <div className="flex items-center gap-1.5"><FiUser className="text-indigo-400" /> ID: <span className="font-mono">{mongoUser?._id}</span></div>
-                      <div className="flex items-center gap-1.5"><FiMail className="text-indigo-400" /> {currentUser?.email}</div>
-                      <div className="flex items-center gap-1.5"><FiCalendar className="text-indigo-400" /> Joined {mongoUser?.createdAt ? new Date(mongoUser.createdAt).toLocaleDateString('en-US', { month: 'short', year: 'numeric' }) : 'N/A'}</div>
+          <div className="p-6 sm:p-8">
+            <div className="flex flex-col sm:flex-row gap-6 sm:gap-8">
+
+              {/* ── Left column: avatar + identity ── */}
+              <div className="flex flex-col sm:flex-row gap-5 flex-1 min-w-0">
+                {/* Avatar */}
+                <div className="relative shrink-0 self-start">
+                  <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl overflow-hidden border-2 border-white/[0.1] bg-[#111827] shadow-[0_0_30px_rgba(99,102,241,0.2)]">
+                    <img
+                      src={mongoUser?.avatarUrl || currentUser?.photoURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=${mongoUser?.displayName || 'Avatar'}`}
+                      alt="Avatar"
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  {/* Level badge */}
+                  <div className="absolute -bottom-2 -right-2 bg-gradient-to-br from-amber-400 to-orange-500 text-[#0c101b] font-black text-[10px] px-2 py-0.5 rounded-lg border-2 border-[#0c101b] shadow-md z-10">
+                    LVL {mongoUser?.vipLevel || 1}
+                  </div>
+                </div>
+
+                {/* Identity block */}
+                <div className="flex-1 min-w-0 space-y-3">
+                  {/* Name row */}
+                  <div className="flex items-center gap-3 flex-wrap">
+                    <h1 className="text-2xl sm:text-3xl font-black text-white font-display tracking-tight leading-none">
+                      {mongoUser?.displayName || 'Anonymous'}
+                    </h1>
+                    <div className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-emerald-500/10 border border-emerald-500/20 rounded-full text-emerald-400 text-[10px] font-bold uppercase tracking-wider">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" /> Active
                     </div>
+                    <button
+                      onClick={() => setShowSettings(true)}
+                      title="Account Settings"
+                      className="ml-auto sm:ml-0 w-8 h-8 rounded-xl border border-white/[0.08] bg-white/[0.03] hover:bg-white/[0.08] text-slate-400 hover:text-white transition-all flex items-center justify-center"
+                    >
+                      <FiSettings size={15} />
+                    </button>
                   </div>
-                  {/* Account Status Pill */}
-                  <div className="hidden sm:inline-flex items-center gap-2 px-3 py-1.5 bg-emerald-500/10 border border-emerald-500/20 rounded-full text-emerald-400 text-xs font-bold uppercase tracking-wider">
-                    <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" /> Verified
-                  </div>
-                </div>
-              </div>
-            </div>
 
-            {/* ─── Glass Ribbon Stats ─────────────────────── */}
-            <div className="mt-8 grid grid-cols-2 lg:grid-cols-4 gap-3">
-              {/* Total Earned */}
-              <div className="bg-white/[0.02] border border-white/[0.05] rounded-2xl p-4 flex items-center gap-4 hover:border-indigo-500/30 transition-colors">
-                <div className="w-10 h-10 rounded-[14px] bg-gradient-to-br from-indigo-500 to-blue-600 flex items-center justify-center shadow-[0_0_15px_rgba(79,70,229,0.3)] shrink-0">
-                  <FiZap className="text-white text-lg" />
-                </div>
-                <div>
-                  <p className="text-[10px] sm:text-xs font-bold text-slate-500 tracking-widest uppercase mb-0.5">Total Earned</p>
-                  <p className="text-lg sm:text-xl font-black text-white font-mono">{mongoUser?.totalEarned?.toFixed(2) || '0.00'}</p>
+                  {/* Meta pills */}
+                  <div className="flex flex-wrap gap-2">
+                    <div className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white/[0.03] border border-white/[0.07] rounded-xl text-xs text-slate-400 font-medium">
+                      <FiMail className="text-indigo-400 text-[11px]" />
+                      <span className="truncate max-w-[160px]">{currentUser?.email}</span>
+                    </div>
+                    <div className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white/[0.03] border border-white/[0.07] rounded-xl text-xs text-slate-400 font-medium">
+                      <FiCalendar className="text-indigo-400 text-[11px]" />
+                      Joined {mongoUser?.createdAt ? new Date(mongoUser.createdAt).toLocaleDateString('en-US', { month: 'short', year: 'numeric' }) : 'N/A'}
+                    </div>
+                    <button
+                      onClick={() => copyToClipboard(`${window.location.origin}/dashboard?ref=${mongoUser?._id}`)}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white/[0.03] border border-white/[0.07] hover:border-cyan-500/30 hover:bg-cyan-500/[0.05] rounded-xl text-xs text-slate-400 hover:text-cyan-400 font-medium transition-all"
+                    >
+                      <FiCopy className="text-[11px]" />
+                      Copy Referral Link
+                    </button>
+                  </div>
                 </div>
               </div>
-              
-              {/* VIP Level */}
-              <div className="bg-white/[0.02] border border-white/[0.05] rounded-2xl p-4 flex items-center gap-4 hover:border-amber-500/30 transition-colors">
-                <div className="w-10 h-10 rounded-[14px] bg-gradient-to-br from-amber-500 to-orange-500 flex items-center justify-center shadow-[0_0_15px_rgba(245,158,11,0.3)] shrink-0">
-                  <FiStar className="text-white text-lg" />
-                </div>
-                <div>
-                  <p className="text-[10px] sm:text-xs font-bold text-slate-500 tracking-widest uppercase mb-0.5">Platform Rank</p>
-                  <p className="text-lg sm:text-xl font-black text-white font-mono">
-                    <span className="text-amber-400 text-sm font-semibold mr-1">LVL</span>{mongoUser?.vipLevel || 1}
+
+              {/* ── Right column: 4 stat tiles in 2×2 grid ── */}
+              <div className="grid grid-cols-2 gap-3 shrink-0 sm:w-72">
+                {/* Total Earned */}
+                <div className="bg-white/[0.02] border border-white/[0.05] hover:border-indigo-500/30 rounded-2xl p-4 transition-colors">
+                  <div className="flex items-center gap-2 mb-2">
+                    <div className="w-7 h-7 rounded-xl bg-indigo-500/15 flex items-center justify-center">
+                      <FiZap className="text-indigo-400 text-xs" />
+                    </div>
+                    <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Earned</p>
+                  </div>
+                  <p className="text-xl font-black text-white tabular-nums leading-none">
+                    {(mongoUser?.totalEarned || 0).toLocaleString()}
                   </p>
+                  <p className="text-[10px] text-slate-600 mt-0.5">coins lifetime</p>
+                </div>
+
+                {/* VIP Level */}
+                <div className="bg-white/[0.02] border border-white/[0.05] hover:border-amber-500/30 rounded-2xl p-4 transition-colors">
+                  <div className="flex items-center gap-2 mb-2">
+                    <div className="w-7 h-7 rounded-xl bg-amber-500/15 flex items-center justify-center">
+                      <FiStar className="text-amber-400 text-xs" />
+                    </div>
+                    <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Rank</p>
+                  </div>
+                  <p className="text-xl font-black text-white leading-none">
+                    <span className="text-amber-400 text-xs font-semibold mr-1">LVL</span>{mongoUser?.vipLevel || 1}
+                  </p>
+                  <p className="text-[10px] text-slate-600 mt-0.5">platform level</p>
+                </div>
+
+                {/* Completed Offers */}
+                <div className="bg-white/[0.02] border border-white/[0.05] hover:border-emerald-500/30 rounded-2xl p-4 transition-colors">
+                  <div className="flex items-center gap-2 mb-2">
+                    <div className="w-7 h-7 rounded-xl bg-emerald-500/15 flex items-center justify-center">
+                      <FiCheckCircle className="text-emerald-400 text-xs" />
+                    </div>
+                    <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Offers</p>
+                  </div>
+                  <p className="text-xl font-black text-white leading-none tabular-nums">{profileStats.totalTasksCompleted}</p>
+                  <p className="text-[10px] text-slate-600 mt-0.5">completed</p>
+                </div>
+
+                {/* 30-Day Earnings */}
+                <div className="bg-white/[0.02] border border-white/[0.05] hover:border-violet-500/30 rounded-2xl p-4 transition-colors">
+                  <div className="flex items-center gap-2 mb-2">
+                    <div className="w-7 h-7 rounded-xl bg-violet-500/15 flex items-center justify-center">
+                      <FiTrendingUp className="text-violet-400 text-xs" />
+                    </div>
+                    <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">30 Days</p>
+                  </div>
+                  <p className="text-xl font-black text-emerald-400 leading-none tabular-nums">
+                    {(profileStats.earnings30Days || 0).toLocaleString()}
+                  </p>
+                  <p className="text-[10px] text-slate-600 mt-0.5">coins earned</p>
                 </div>
               </div>
 
-              {/* Completed Offers */}
-              <div className="bg-white/[0.02] border border-white/[0.05] rounded-2xl p-4 flex items-center gap-4 hover:border-emerald-500/30 transition-colors">
-                <div className="w-10 h-10 rounded-[14px] bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center shadow-[0_0_15px_rgba(16,185,129,0.3)] shrink-0">
-                  <FiCheckCircle className="text-white text-lg" />
-                </div>
-                <div>
-                  <p className="text-[10px] sm:text-xs font-bold text-slate-500 tracking-widest uppercase mb-0.5">Total Offers</p>
-                  <p className="text-lg sm:text-xl font-black text-white font-mono">{profileStats.totalTasksCompleted} <span className="text-sm font-semibold text-slate-300">Offers</span></p>
-                </div>
-              </div>
-
-              {/* 30-Day Earnings */}
-              <div className="bg-white/[0.02] border border-white/[0.05] rounded-2xl p-4 flex items-center gap-4 hover:border-violet-500/30 transition-colors">
-                <div className="w-10 h-10 rounded-[14px] bg-gradient-to-br from-violet-500 to-fuchsia-600 flex items-center justify-center shadow-[0_0_15px_rgba(139,92,246,0.3)] shrink-0">
-                  <FiTrendingUp className="text-white text-lg" />
-                </div>
-                <div>
-                  <p className="text-[10px] sm:text-xs font-bold text-slate-500 tracking-widest uppercase mb-0.5">30-Day Earnings</p>
-                  <p className="text-[13px] sm:text-sm font-bold text-emerald-400 font-mono">{profileStats.earnings30Days?.toFixed(2)} <span className="text-sm font-semibold text-slate-300">Coins</span></p>
-                </div>
-              </div>
             </div>
           </div>
         </div>

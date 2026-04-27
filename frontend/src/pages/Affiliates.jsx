@@ -162,7 +162,7 @@ const useHistory = (token, type, endpoint = '/wallet/history') => {
 };
 
 const useAffiliateStats = (token) => {
-  const [stats, setStats] = useState({ totalAffiliates: 0, totalAffiliateEarnings: 0, last30DaysEarnings: 0 });
+  const [stats, setStats] = useState({ totalAffiliates: 0, totalAffiliateEarnings: 0, last30DaysEarnings: 0, referralPercentage: null });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -177,7 +177,8 @@ const useAffiliateStats = (token) => {
           setStats({
             totalAffiliates: data.totalAffiliates,
             totalAffiliateEarnings: data.totalAffiliateEarnings,
-            last30DaysEarnings: data.last30DaysEarnings
+            last30DaysEarnings: data.last30DaysEarnings,
+            referralPercentage: data.referralPercentage ?? null,
           });
         }
       } catch (err) {
@@ -222,7 +223,15 @@ const Affiliates = () => {
           </div>
           <h1 className="text-3xl sm:text-4xl font-bold font-display text-white">Affiliate Program</h1>
           <p className="text-slate-400 max-w-lg mx-auto text-sm sm:text-base">
-            Invite friends and earn a percentage of their earnings forever! The more you invite, the more you earn.
+            Invite friends and earn{' '}
+            {statsLoading ? (
+              <span className="inline-block w-8 h-3.5 bg-white/10 rounded animate-pulse align-middle" />
+            ) : (
+              <span className="text-cyan-400 font-bold">
+                {stats.referralPercentage != null ? `${stats.referralPercentage}%` : '5%'}
+              </span>
+            )}{' '}
+            of their earnings — forever! The more you invite, the more you earn.
           </p>
         </div>
 

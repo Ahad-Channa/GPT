@@ -145,24 +145,24 @@ const UserDetailModal = ({ user, onClose, currentUser }) => {
                 }}
               >
                 <p style={{ fontSize: '0.67rem', fontWeight: 700, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.05em', margin: '0 0 4px' }}>{label}</p>
-                <p style={{ fontSize: '0.95rem', fontWeight: 700, color, margin: 0, fontFamily: 'monospace' }}>{value}</p>
+                <p style={{ fontSize: '0.95rem', fontWeight: 700, color, margin: 0, fontFamily: "'Inter', system-ui, sans-serif", fontFeatureSettings: "'zero' 0", fontVariantNumeric: 'normal' }}>{value}</p>
               </div>
             ))}
 
             {/* User ID row — full width */}
             <div style={{ gridColumn: '1 / -1', background: '#151d2e', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '0.875rem', padding: '0.875rem 1rem' }}>
               <p style={{ fontSize: '0.67rem', fontWeight: 700, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.05em', margin: '0 0 4px' }}>User ID (MongoDB)</p>
-              <p style={{ fontSize: '0.78rem', fontFamily: 'monospace', color: '#64748b', margin: 0 }}>{user._id}</p>
+              <p style={{ fontSize: '0.78rem', fontFamily: "'Inter', system-ui, sans-serif", fontFeatureSettings: "'zero' 0", color: '#64748b', margin: 0 }}>{user._id}</p>
             </div>
             <div style={{ gridColumn: '1 / -1', background: '#151d2e', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '0.875rem', padding: '0.875rem 1rem' }}>
               <p style={{ fontSize: '0.67rem', fontWeight: 700, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.05em', margin: '0 0 4px' }}>Firebase UID</p>
-              <p style={{ fontSize: '0.78rem', fontFamily: 'monospace', color: '#64748b', margin: 0 }}>{user.firebaseUid}</p>
+              <p style={{ fontSize: '0.78rem', fontFamily: "'Inter', system-ui, sans-serif", fontFeatureSettings: "'zero' 0", color: '#64748b', margin: 0 }}>{user.firebaseUid}</p>
             </div>
 
             {/* Referral link */}
             <div style={{ gridColumn: '1 / -1', background: 'rgba(34,211,238,0.05)', border: '1px solid rgba(34,211,238,0.15)', borderRadius: '0.875rem', padding: '0.875rem 1rem' }}>
               <p style={{ fontSize: '0.67rem', fontWeight: 700, color: '#22d3ee', textTransform: 'uppercase', letterSpacing: '0.05em', margin: '0 0 4px' }}>User's Referral Link</p>
-              <p style={{ fontSize: '0.78rem', fontFamily: 'monospace', color: '#94a3b8', margin: 0, wordBreak: 'break-all' }}>
+              <p style={{ fontSize: '0.78rem', fontFamily: "'Inter', system-ui, sans-serif", fontFeatureSettings: "'zero' 0", color: '#94a3b8', margin: 0, wordBreak: 'break-all' }}>
                 {window.location.origin}/?ref={user._id}
               </p>
             </div>
@@ -216,7 +216,7 @@ const UserDetailModal = ({ user, onClose, currentUser }) => {
                         </div>
                       </div>
                       <span style={{
-                        fontSize: '0.85rem', fontWeight: 700, fontFamily: 'monospace', flexShrink: 0,
+                        fontSize: '0.85rem', fontWeight: 700, fontFamily: "'Inter', system-ui, sans-serif", fontFeatureSettings: "'zero' 0", fontVariantNumeric: 'normal', flexShrink: 0,
                         color: tx.amount < 0 ? '#f87171' : '#34d399',
                       }}>
                         {tx.amount > 0 ? '+' : ''}{tx.amount?.toLocaleString()}
@@ -412,7 +412,7 @@ const AdminUsers = () => {
                 <tr key={u._id}>
                   <td>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                      <span style={{ fontSize: '0.75rem', color: '#475569', fontFamily: 'monospace' }}>
+                      <span style={{ fontSize: '0.75rem', color: '#475569', fontFamily: "'Inter', system-ui, sans-serif", fontFeatureSettings: "'zero' 0" }}>
                         {u._id.substring(0, 10)}...
                       </span>
                       <button
@@ -432,7 +432,7 @@ const AdminUsers = () => {
                       : <span style={{ color: '#475569' }}>{u.role}</span>
                     }
                   </td>
-                  <td style={{ fontFamily: 'monospace', color: '#818cf8' }}>{(u.walletBalance || 0).toLocaleString()}</td>
+                  <td style={{ fontFamily: "'Inter', system-ui, sans-serif", fontFeatureSettings: "'zero' 0", fontVariantNumeric: 'normal', color: '#818cf8' }}>{(u.walletBalance || 0).toLocaleString()}</td>
                   <td>
                     {u.isBanned
                       ? <span style={{ color: '#f87171', fontSize: '0.75rem', fontWeight: 600 }}>● Banned</span>
@@ -534,7 +534,7 @@ const AdminUsers = () => {
             </div>
             <p style={{ marginBottom: '1rem', color: '#94a3b8', fontSize: '0.9rem' }}>
               User: <strong style={{ color: '#fff' }}>{balanceTarget.email}</strong>
-              <span style={{ marginLeft: '0.5rem', fontFamily: 'monospace', color: '#818cf8' }}>
+              <span style={{ marginLeft: '0.5rem', fontFamily: "'Inter', system-ui, sans-serif", fontFeatureSettings: "'zero' 0", color: '#818cf8' }}>
                 ({(balanceTarget.walletBalance || 0).toLocaleString()} Coins)
               </span>
             </p>

@@ -9,7 +9,17 @@
   min-height: 100vh;
   background: #080b14;
   font-family: 'Inter', system-ui, sans-serif;
+  font-feature-settings: 'cv01' 0, 'zero' 0;
+  font-variant-numeric: normal;
   color: #c8d6ef;
+}
+
+/* ── Global: force normal (non-slashed) zeros everywhere in admin ── */
+.admin-layout *,
+.admin-layout *::before,
+.admin-layout *::after {
+  font-feature-settings: 'cv01' 0, 'zero' 0 !important;
+  font-variant-numeric: normal !important;
 }
 
 /* ── Sidebar ─────────────────────────────────── */
@@ -50,7 +60,7 @@
   font-size: 0.85rem;
   font-weight: 700;
   color: white;
-  font-family: 'Outfit', 'Inter', system-ui, sans-serif;
+  font-family: 'Inter', system-ui, sans-serif;
   line-height: 1.2;
 }
 
@@ -158,7 +168,7 @@
   font-size: 0.9rem;
   font-weight: 600;
   color: #e2e8f0;
-  font-family: 'Outfit', 'Inter', system-ui, sans-serif;
+  font-family: 'Inter', system-ui, sans-serif;
 }
 
 .admin-user-info {
@@ -177,7 +187,7 @@
   font-size: 1.5rem;
   font-weight: 700;
   color: white;
-  font-family: 'Outfit', 'Inter', system-ui, sans-serif;
+  font-family: 'Inter', system-ui, sans-serif;
   margin-bottom: 0.25rem;
 }
 
@@ -398,7 +408,7 @@
   font-size: 1.1rem;
   font-weight: 700;
   color: white;
-  font-family: 'Outfit', 'Inter', system-ui, sans-serif;
+  font-family: 'Inter', system-ui, sans-serif;
   margin-bottom: 0.5rem;
 }
 
