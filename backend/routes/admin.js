@@ -1059,7 +1059,7 @@ router.post('/proofs/:type/:id/:action', requirePermission('manage_offerwalls'),
             status: 'completed'
           });
           
-          await notify(user._id, 'offer_credited', 'Offer Approved', `Your proof for "${submission.offerId.title}" was approved! +${submission.offerId.rewardAmount} coins.`);
+          await notify(user._id, 'offer_approved', 'Offer Approved', `Your proof for "${submission.offerId.title}" was approved! +${submission.offerId.rewardAmount} coins.`);
         }
       } else {
         submission.status = 'rejected';
@@ -1091,7 +1091,7 @@ router.post('/proofs/:type/:id/:action', requirePermission('manage_offerwalls'),
         tx.balanceAfter = user.walletBalance;
         await tx.save();
 
-        await notify(user._id, 'offer_credited', 'Proof Approved', `Your manual proof for "${tx.description}" was approved! +${tx.amount} coins.`);
+        await notify(user._id, 'offer_approved', 'Proof Approved', `Your manual proof for "${tx.description}" was approved! +${tx.amount} coins.`);
       } else {
         tx.status = 'rejected';
         tx.metadata = tx.metadata || {};

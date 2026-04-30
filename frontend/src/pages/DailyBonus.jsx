@@ -175,7 +175,7 @@ export default function DailyBonus() {
               <div className="text-5xl font-black text-white">{status.streak} <span className="text-2xl text-slate-500 font-normal">days</span></div>
             </div>
             <p className="text-sm text-slate-400 mt-2">
-              Don&apos;t miss a day! If you don&apos;t claim your bonus within 48 hours, your streak resets to 0.
+              Don&apos;t miss a day! If you don&apos;t claim your bonus within 48 hours, your streak resets to 1. The streak runs up to 30 days and resets after completion.
             </p>
           </div>
 
@@ -190,6 +190,35 @@ export default function DailyBonus() {
                 </div>
               </div>
               <FiLock className="text-3xl text-slate-600" />
+            </div>
+          </div>
+        </div>
+
+        {/* Milestones */}
+        <div className="glass-card p-6">
+          <h3 className="text-lg font-bold text-white mb-4">Special Streak Rewards</h3>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div className="bg-white/[0.02] border border-white/5 rounded-xl p-4 text-center flex flex-col items-center">
+              <div className="text-sm text-slate-400 mb-1">Day 10</div>
+              <div className="flex items-center gap-1">
+                <span className="text-2xl font-bold text-amber-400">500</span>
+                <img src="/coin.png" className="w-5 h-5 drop-shadow-sm" alt="Coins" onError={(e) => e.target.style.display='none'} />
+              </div>
+            </div>
+            <div className="bg-white/[0.02] border border-white/5 rounded-xl p-4 text-center flex flex-col items-center">
+              <div className="text-sm text-slate-400 mb-1">Day 20</div>
+              <div className="flex items-center gap-1">
+                <span className="text-2xl font-bold text-amber-400">1,000</span>
+                <img src="/coin.png" className="w-5 h-5 drop-shadow-sm" alt="Coins" onError={(e) => e.target.style.display='none'} />
+              </div>
+            </div>
+            <div className="bg-white/[0.02] border border-amber-500/20 rounded-xl p-4 text-center flex flex-col items-center relative overflow-hidden">
+              <div className="absolute inset-0 bg-amber-500/5 pointer-events-none" />
+              <div className="text-sm text-amber-300/80 mb-1 font-semibold">Day 30 (Max)</div>
+              <div className="flex items-center gap-1">
+                <span className="text-2xl font-bold text-amber-400 drop-shadow-md">2,500</span>
+                <img src="/coin.png" className="w-5 h-5 drop-shadow-sm" alt="Coins" onError={(e) => e.target.style.display='none'} />
+              </div>
             </div>
           </div>
         </div>

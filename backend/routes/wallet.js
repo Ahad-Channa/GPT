@@ -168,6 +168,8 @@ router.get('/history', verifyToken, async (req, res) => {
     if (type !== 'all') {
       if (type === 'chargeback') {
         query.status = 'reversed';
+      } else if (type.includes(',')) {
+        query.transactionType = { $in: type.split(',') };
       } else {
         query.transactionType = type;
       }
@@ -387,11 +389,22 @@ router.get('/daily-bonus-status', verifyToken, async (req, res) => {
       // Between 24h and 48h = eligible to claim, streak intact
     }
 
-    const nextStreakToClaim = streak + 1;
-    let dayIndex = (nextStreakToClaim - 1) % rd.dailyBonusMaxStreak;
-    if (streak >= rd.dailyBonusMaxStreak && rd.dailyBonusAfterMax === 'hold') {
-      dayIndex = rd.dailyBonusMaxStreak - 1;
+    let nextStreakToClaim = streak + 1;
+    if (nextStreakToClaim > 30) {
+      nextStreakToClaim = 1;
     }
+
+    // Dynamic reward calculations for 30-day streak
+    const getRewardForDay = (streakDay) => {
+      if (streakDay === 10) return 500;
+      if (streakDay === 20) return 1000;
+      if (streakDay === 30) return 2500;
+      return 100 + ((streakDay - 1) * 10);
+    };
+
+    const getGateForDay = (streakDay) => {
+      return 1000; // Flat earn gate, can be adjusted
+    };
 
     let earnedToday = 0;
     if (!alreadyClaimed) {
@@ -416,15 +429,15 @@ router.get('/daily-bonus-status', verifyToken, async (req, res) => {
       earnedToday = earnedResult.length > 0 ? earnedResult[0].total : 0;
     }
 
-    const required = rd.dailyBonusEarnGate[dayIndex] || 1000;
+    const required = getGateForDay(nextStreakToClaim);
     const gateUnlocked = earnedToday >= required;
-    const rewardToday = rd.dailyBonusReward[dayIndex] || 100;
+    const rewardToday = getRewardForDay(nextStreakToClaim);
 
-    let nextDayIndex = dayIndex + 1;
-    if (nextDayIndex >= rd.dailyBonusMaxStreak) {
-      nextDayIndex = rd.dailyBonusAfterMax === 'hold' ? rd.dailyBonusMaxStreak - 1 : 0;
+    let nextDayStreak = nextStreakToClaim + 1;
+    if (nextDayStreak > 30) {
+      nextDayStreak = 1;
     }
-    const rewardTomorrow = rd.dailyBonusReward[nextDayIndex] || 100;
+    const rewardTomorrow = getRewardForDay(nextDayStreak);
 
     res.status(200).json({
       success: true,
@@ -433,7 +446,6 @@ router.get('/daily-bonus-status', verifyToken, async (req, res) => {
       earned: earnedToday,
       required,
       streak: alreadyClaimed ? streak : nextStreakToClaim,
-      dayIndex,
       rewardToday,
       rewardTomorrow,
       nextClaimAt
@@ -482,10 +494,21 @@ router.post('/daily-bonus', verifyToken, async (req, res) => {
       streak = 1;
     }
 
-    let dayIndex = (streak - 1) % rd.dailyBonusMaxStreak;
-    if (streak > rd.dailyBonusMaxStreak && rd.dailyBonusAfterMax === 'hold') {
-      dayIndex = rd.dailyBonusMaxStreak - 1;
+    if (streak > 30) {
+      streak = 1;
     }
+
+    // Dynamic reward calculations for 30-day streak
+    const getRewardForDay = (streakDay) => {
+      if (streakDay === 10) return 500;
+      if (streakDay === 20) return 1000;
+      if (streakDay === 30) return 2500;
+      return 100 + ((streakDay - 1) * 10);
+    };
+
+    const getGateForDay = (streakDay) => {
+      return 1000; // Flat earn gate
+    };
 
     // 3. EARN GATE — only count REAL earnings (not daily_bonus, promo_code, admin_adjustment)
     const windowStart = user.lastDailyBonusClaim
@@ -505,7 +528,7 @@ router.post('/daily-bonus', verifyToken, async (req, res) => {
       { $group: { _id: null, total: { $sum: '$amount' } } }
     ]);
     const earnedToday = earnedResult.length > 0 ? earnedResult[0].total : 0;
-    const requiredEarn = rd.dailyBonusEarnGate[dayIndex] || 1000;
+    const requiredEarn = getGateForDay(streak);
 
     if (earnedToday < requiredEarn) {
       return res.status(200).json({
@@ -516,7 +539,7 @@ router.post('/daily-bonus', verifyToken, async (req, res) => {
       });
     }
 
-    const rewardAmount = rd.dailyBonusReward[dayIndex] || 100;
+    const rewardAmount = getRewardForDay(streak);
 
     // 4. ATOMIC update — optimistic lock prevents race-condition double-claims
     const updatedUser = await User.findOneAndUpdate(
@@ -652,7 +675,7 @@ router.get('/dashboard-stats', verifyToken, async (req, res) => {
       {
         $match: {
           userId: user._id,
-          transactionType: 'offer_reward',
+          transactionType: { $in: ['offer_reward', 'custom_offer_reward'] },
           status: 'completed'
         }
       },
@@ -686,14 +709,33 @@ router.get('/dashboard-stats', verifyToken, async (req, res) => {
       }
     ]);
 
+    const resultLifetime = await Transaction.aggregate([
+      {
+        $match: {
+          userId: user._id,
+          amount: { $gt: 0 },
+          status: 'completed',
+          description: { $not: /^Withdrawal Refund/ }
+        }
+      },
+      {
+        $group: {
+          _id: null,
+          totalEarned: { $sum: '$amount' }
+        }
+      }
+    ]);
+
     const stats = result.length > 0 ? result[0] : { count: 0, totalEarned: 0 };
     const stats30 = result30.length > 0 ? result30[0] : { totalEarned: 0 };
+    const statsLifetime = resultLifetime.length > 0 ? resultLifetime[0] : { totalEarned: 0 };
 
     res.status(200).json({
       success: true,
       totalTasksCompleted: stats.count,
       totalCoinsFromOffers: stats.totalEarned,
-      earnings30Days: stats30.totalEarned
+      earnings30Days: stats30.totalEarned,
+      totalEarnedLifetime: statsLifetime.totalEarned
     });
   } catch (error) {
     console.error('[/api/wallet/dashboard-stats] Error:', error);

@@ -52,7 +52,6 @@ router.get('/user/:id', async (req, res) => {
       _id: user._id,
       displayName: user.displayName,
       avatarUrl: user.avatarUrl,
-      vipLevel: user.vipLevel || 1,
       isPrivate,
       createdAt: user.createdAt,
       // totalEarned only exposed for public profiles

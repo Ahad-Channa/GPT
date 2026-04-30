@@ -34,13 +34,6 @@ const PERIOD_META = {
     border: 'rgba(245,158,11,0.2)',
     description: 'Resets on the 1st of each month',
   },
-  allTime: {
-    label: 'All Time',
-    color: '#f43f5e',
-    bg: 'rgba(244,63,94,0.08)',
-    border: 'rgba(244,63,94,0.2)',
-    description: 'Top earners of all time',
-  },
 };
 
 const MEDALS = ['🥇', '🥈', '🥉'];
@@ -288,7 +281,7 @@ const Leaderboard = () => {
       const data = await res.json();
       if (data.success) {
         setLeaderboard(data.leaderboard);
-        const first = ['daily', 'weekly', 'monthly', 'allTime'].find(p => data.leaderboard[p]?.enabled);
+        const first = ['daily', 'weekly', 'monthly'].find(p => data.leaderboard[p]?.enabled);
         if (first && !activeTab) setActiveTab(p => p || first);
       }
     } catch (err) {
@@ -305,7 +298,7 @@ const Leaderboard = () => {
   }, [fetchLeaderboard]);
 
   const enabledPeriods = leaderboard
-    ? ['daily', 'weekly', 'monthly', 'allTime'].filter(p => leaderboard[p]?.enabled)
+    ? ['daily', 'weekly', 'monthly'].filter(p => leaderboard[p]?.enabled)
     : [];
 
   return (

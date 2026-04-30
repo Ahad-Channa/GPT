@@ -12,6 +12,7 @@ const transactionSchema = new mongoose.Schema(
       type: String,
       enum: [
         'offer_reward',        // Offer Reward
+        'custom_offer_reward', // Custom Offer Reward
         'daily_bonus',         // Daily Bonus
         'referral_reward',     // Referral Reward
         'withdrawal',          // Withdrawal

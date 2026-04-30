@@ -102,10 +102,6 @@ const PublicProfile = () => {
               </h1>
 
               <div className="flex flex-wrap items-center justify-center md:justify-start gap-4 text-sm font-medium">
-                <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
-                  <FiStar /> Level {profile.vipLevel || 1}
-                </div>
-
                 {/* Total Earned — only shown for public profiles */}
                 {!profile.isPrivate && typeof profile.totalEarned !== 'undefined' && (
                   <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-amber-500/10 text-amber-400 border border-amber-500/20">

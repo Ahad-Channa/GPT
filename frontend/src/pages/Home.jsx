@@ -37,7 +37,6 @@ const Home = () => {
   const navigate = useNavigate();
   const displayName = mongoUser?.displayName || 'User';
   const balance = mongoUser?.walletBalance?.toFixed(2) ?? '0.00';
-  const vipLevel = mongoUser?.vipLevel ?? 1;
   const [tasksDone, setTasksDone] = useState('...');
   const [globalStats, setGlobalStats] = useState({ totalUsers: 0, totalPaidOut: 0 });
   

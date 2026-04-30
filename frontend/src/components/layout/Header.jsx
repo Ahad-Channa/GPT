@@ -2,7 +2,8 @@ import { useState, useRef, useEffect } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useNotifications } from '../../contexts/NotificationContext';
 import { useDailyBonus } from '../../contexts/DailyBonusContext';
-import { FiLogOut, FiUser, FiSettings, FiZap, FiChevronDown, FiCreditCard, FiLock, FiClock, FiTrendingUp, FiBell, FiUsers, FiGift, FiDollarSign } from 'react-icons/fi';
+import { FiLogOut, FiUser, FiSettings, FiZap, FiChevronDown, FiCreditCard, FiLock, FiClock, FiBell, FiUsers, FiGift, FiDollarSign } from 'react-icons/fi';
+import { FaTrophy } from 'react-icons/fa6';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -179,9 +180,9 @@ const Header = () => {
           <button
             id="header-leaderboard-chip"
             onClick={() => navigate('/dashboard/leaderboard')}
-            className="hidden lg:flex items-center gap-2 px-4 py-1.5 rounded-xl bg-white/[0.04] border border-white/[0.07] text-sm hover:bg-white/[0.08] hover:border-white/[0.15] transition-all font-semibold text-slate-300"
+            className="group hidden lg:flex items-center gap-2 px-4 py-1.5 rounded-xl bg-white/[0.04] border border-white/[0.07] text-sm hover:bg-white/[0.08] hover:border-white/[0.15] hover:shadow-[0_0_15px_rgba(251,191,36,0.15)] transition-all font-semibold text-slate-300 hover:text-amber-50"
           >
-            <FiTrendingUp className="text-slate-400 text-sm" />
+            <FaTrophy className="text-slate-400 text-sm transition-all duration-300 group-hover:text-amber-400 group-hover:drop-shadow-[0_0_8px_rgba(251,191,36,0.8)]" />
             <span>Leaderboard</span>
           </button>
 

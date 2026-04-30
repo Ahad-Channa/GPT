@@ -79,6 +79,7 @@ const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
 const TX_TYPE_LABEL = {
   offer_reward:       { label: 'Offer Reward',    color: 'text-indigo-400'  },
+  custom_offer_reward:{ label: 'Custom Offer',    color: 'text-indigo-400'  },
   daily_bonus:        { label: 'Daily Bonus',      color: 'text-amber-400'   },
   promo_code:         { label: 'Promo Code',       color: 'text-emerald-400' },
   referral_reward:    { label: 'Referral',         color: 'text-cyan-400'    },
@@ -690,7 +691,7 @@ const Profile = () => {
   const [token,      setToken]      = useState(null);
   const [customOffers, setCustomOffers] = useState([]);
   const [loadingOffers, setLoadingOffers] = useState(false);
-  const [profileStats, setProfileStats] = useState({ totalTasksCompleted: 0, earnings30Days: 0 });
+  const [profileStats, setProfileStats] = useState({ totalTasksCompleted: 0, earnings30Days: 0, totalEarnedLifetime: 0 });
 
   const copyToClipboard = (text) => {
     navigator.clipboard.writeText(text);
@@ -709,7 +710,8 @@ const Profile = () => {
           if (data.success) {
             setProfileStats({
               totalTasksCompleted: data.totalTasksCompleted,
-              earnings30Days: data.earnings30Days
+              earnings30Days: data.earnings30Days,
+              totalEarnedLifetime: data.totalEarnedLifetime
             });
           }
         })
@@ -740,7 +742,7 @@ const Profile = () => {
   }, [activeTab, token]);
 
   // History hooks (only fetches when token is ready)
-  const offerRewards = useHistory(activeTab === 'offer_rewards' ? token : null, 'offer_reward');
+  const offerRewards = useHistory(activeTab === 'offer_rewards' ? token : null, 'offer_reward,custom_offer_reward');
   const chargebacks = useHistory(activeTab === 'chargebacks' ? token : null, 'chargeback');
 
   // Completed custom offer submissions (approved)
@@ -804,10 +806,6 @@ const Profile = () => {
                       className="w-full h-full object-cover"
                     />
                   </div>
-                  {/* Level badge */}
-                  <div className="absolute -bottom-2 -right-2 bg-gradient-to-br from-amber-400 to-orange-500 text-[#0c101b] font-black text-[10px] px-2 py-0.5 rounded-lg border-2 border-[#0c101b] shadow-md z-10">
-                    LVL {mongoUser?.vipLevel || 1}
-                  </div>
                 </div>
 
                 {/* Identity block */}
@@ -861,23 +859,9 @@ const Profile = () => {
                     <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Earned</p>
                   </div>
                   <p className="text-xl font-black text-white tabular-nums leading-none">
-                    {(mongoUser?.totalEarned || 0).toLocaleString()}
+                    {Math.max(mongoUser?.totalEarned || 0, profileStats.totalEarnedLifetime || 0).toLocaleString()}
                   </p>
                   <p className="text-[10px] text-slate-600 mt-0.5">coins lifetime</p>
-                </div>
-
-                {/* VIP Level */}
-                <div className="bg-white/[0.02] border border-white/[0.05] hover:border-amber-500/30 rounded-2xl p-4 transition-colors">
-                  <div className="flex items-center gap-2 mb-2">
-                    <div className="w-7 h-7 rounded-xl bg-amber-500/15 flex items-center justify-center">
-                      <FiStar className="text-amber-400 text-xs" />
-                    </div>
-                    <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Rank</p>
-                  </div>
-                  <p className="text-xl font-black text-white leading-none">
-                    <span className="text-amber-400 text-xs font-semibold mr-1">LVL</span>{mongoUser?.vipLevel || 1}
-                  </p>
-                  <p className="text-[10px] text-slate-600 mt-0.5">platform level</p>
                 </div>
 
                 {/* Completed Offers */}

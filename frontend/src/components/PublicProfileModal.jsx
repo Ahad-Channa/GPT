@@ -226,17 +226,6 @@ const PublicProfileModal = ({ userId, onClose }) => {
 
                     {/* Badge row */}
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-                      {/* Level */}
-                      <span style={{
-                        display: 'inline-flex', alignItems: 'center', gap: '5px',
-                        padding: '4px 10px', borderRadius: '8px',
-                        background: 'rgba(99,102,241,0.12)',
-                        border: '1px solid rgba(99,102,241,0.25)',
-                        color: '#818cf8', fontSize: '12px', fontWeight: 600,
-                      }}>
-                        <FiStar size={11} /> Level {profile.vipLevel || 1}
-                      </span>
-
                       {/* Total Earned — public only */}
                       {!profile.isPrivate && typeof profile.totalEarned !== 'undefined' && (
                         <span style={{

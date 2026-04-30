@@ -127,7 +127,6 @@ const UserDetailModal = ({ user, onClose, currentUser }) => {
               { label: 'Wallet Balance', value: `${(user.walletBalance || 0).toLocaleString()} Coins`, color: '#818cf8' },
               { label: 'Total Earned', value: `${(user.totalEarned || 0).toLocaleString()} Coins`, color: '#34d399' },
               { label: 'Referral Earnings', value: `${(user.referralEarnings || 0).toLocaleString()} Coins`, color: '#22d3ee' },
-              { label: 'VIP Level', value: `Level ${user.vipLevel || 1}`, color: '#fbbf24' },
               { label: 'Daily Streak', value: `${user.dailyBonusStreak || 0} days`, color: '#fb923c' },
               { label: 'Fraud Flag', value: user.fraudFlag || 0, color: user.fraudFlag > 0 ? '#f87171' : '#475569' },
               { label: 'Referral %', value: user.referralPercentage !== null && user.referralPercentage !== undefined ? `${user.referralPercentage}% (override)` : 'Global default', color: '#94a3b8' },

@@ -9,6 +9,7 @@ import {
   FiUsers,
   FiHelpCircle
 } from 'react-icons/fi';
+import { FaTrophy } from 'react-icons/fa6';
 
 const Sidebar = () => {
   const location = useLocation();
@@ -18,7 +19,7 @@ const Sidebar = () => {
     { name: 'Offers', icon: <FiTarget />, path: '/dashboard/offers' },
     { name: 'Withdraw', icon: <FiRepeat />, path: '/dashboard/withdraw' },
     { name: 'Rewards', icon: <FiGift />, path: '/dashboard/rewards' },
-    { name: 'Leaderboard', icon: <FiAward />, path: '/dashboard/leaderboard', badge: 'LIVE' },
+    { name: 'Leaderboard', icon: <FaTrophy className="transition-all duration-300 group-hover:drop-shadow-[0_0_8px_rgba(251,191,36,0.8)] group-hover:text-amber-400" />, path: '/dashboard/leaderboard', badge: 'LIVE' },
     { name: 'Coupons', icon: <FiTag />, path: '/dashboard/coupons' },
     { name: 'Affiliates', icon: <FiUsers />, path: '/dashboard/affiliates' },
     { name: 'Support', icon: <FiHelpCircle />, path: '/dashboard/faq' },

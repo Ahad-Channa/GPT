@@ -17,6 +17,7 @@ import {
 ───────────────────────────────────────────────────────────────── */
 const TX_TYPES = {
   offer_reward:       { label: 'Offer Reward',       icon: FiZap,            color: 'text-indigo-400',  badge: 'badge-indigo',   sign: '+' },
+  custom_offer_reward:{ label: 'Custom Offer',       icon: FiZap,            color: 'text-indigo-400',  badge: 'badge-indigo',   sign: '+' },
   daily_bonus:        { label: 'Daily Bonus',         icon: FiStar,           color: 'text-amber-400',   badge: 'badge-amber',    sign: '+' },
   referral_reward:    { label: 'Referral Reward',     icon: FiUsers,          color: 'text-cyan-400',    badge: 'badge-cyan',     sign: '+' },
   withdrawal:         { label: 'Withdrawal',          icon: FiArrowDownCircle,color: 'text-red-400',     badge: 'badge-red',      sign:  '' },
@@ -35,6 +36,7 @@ const STATUS_COLORS = {
 const FILTER_OPTIONS = [
   { value: 'all',              label: 'All Activity' },
   { value: 'offer_reward',     label: 'Offer Rewards' },
+  { value: 'custom_offer_reward', label: 'Custom Offers' },
   { value: 'daily_bonus',      label: 'Daily Bonus' },
   { value: 'referral_reward',  label: 'Referrals' },
   { value: 'withdrawal',       label: 'Withdrawals' },
