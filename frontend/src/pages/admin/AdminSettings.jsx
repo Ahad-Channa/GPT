@@ -82,6 +82,8 @@ const AdminSettings = () => {
   const [methods, setMethods] = useState([]);
   const [refHoldDays, setRefHoldDays] = useState('');
   const [refGlobalPct, setRefGlobalPct] = useState('');
+  const [earnGate, setEarnGate] = useState([]);
+  const [earnReward, setEarnReward] = useState([]);
 
   const [saving,   setSaving]  = useState(false);
   const [dirty,    setDirty]   = useState(false);
@@ -105,6 +107,10 @@ const AdminSettings = () => {
       setMethods(JSON.parse(JSON.stringify(data.settings.withdrawalMethods))); // deep copy
       setRefHoldDays(String(data.settings.referralConfig?.holdDays ?? 30));
       setRefGlobalPct(String(data.settings.referralConfig?.globalPercentage ?? 5));
+      setEarnGate(data.settings.rewardEngine?.dailyBonusEarnGate ?? Array(30).fill(1000));
+      setEarnReward(data.settings.rewardEngine?.dailyBonusReward ?? Array.from({length: 30}, (_, i) => {
+        if (i+1===10) return 500; if(i+1===20) return 1000; if(i+1===30) return 2500; return 100+(i*10);
+      }));
       setDirty(false);
     } catch (err) {
       setError(err.message || 'Failed to load settings');
@@ -156,6 +162,10 @@ const AdminSettings = () => {
           referralConfig: {
             holdDays: Number(refHoldDays),
             globalPercentage: Number(refGlobalPct)
+          },
+          rewardEngine: {
+            dailyBonusEarnGate: earnGate.map(Number),
+            dailyBonusReward: earnReward.map(Number),
           }
         }),
       });
@@ -181,6 +191,10 @@ const AdminSettings = () => {
     setMethods(JSON.parse(JSON.stringify(settings.withdrawalMethods)));
     setRefHoldDays(String(settings.referralConfig?.holdDays ?? 30));
     setRefGlobalPct(String(settings.referralConfig?.globalPercentage ?? 5));
+    setEarnGate(settings.rewardEngine?.dailyBonusEarnGate ?? Array(30).fill(1000));
+    setEarnReward(settings.rewardEngine?.dailyBonusReward ?? Array.from({length: 30}, (_, i) => {
+      if (i+1===10) return 500; if(i+1===20) return 1000; if(i+1===30) return 2500; return 100+(i*10);
+    }));
     setDirty(false);
     setError('');
     setSuccess('');
@@ -313,6 +327,56 @@ const AdminSettings = () => {
         </Field>
       </div>
 
+      {/* ── Section 4: Daily Bonus ────────────── */}
+      <div className="admin-card" style={{ marginBottom: 0 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '1.5rem', paddingBottom: '1rem', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+          <div style={{ width: 32, height: 32, borderRadius: 10, background: 'linear-gradient(135deg,#10b981,#047857)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <FiRefreshCw style={{ color: 'white', fontSize: 14 }} />
+          </div>
+          <div>
+            <h3 style={{ color: 'white', fontSize: '0.9rem', fontWeight: 700, margin: 0 }}>Daily Bonus System</h3>
+            <p style={{ color: '#64748b', fontSize: '0.72rem', margin: 0 }}>Configure requirements & rewards for Day 1–30</p>
+          </div>
+        </div>
+
+        <div style={{ maxHeight: '350px', overflowY: 'auto', paddingRight: '0.5rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '50px 1fr 1fr', gap: '0.5rem', marginBottom: '0.5rem', padding: '0 0.5rem' }}>
+            <div style={{ fontSize: '0.75rem', fontWeight: 600, color: '#94a3b8', textTransform: 'uppercase' }}>Day</div>
+            <div style={{ fontSize: '0.75rem', fontWeight: 600, color: '#94a3b8', textTransform: 'uppercase' }}>Earn Gate (Coins)</div>
+            <div style={{ fontSize: '0.75rem', fontWeight: 600, color: '#94a3b8', textTransform: 'uppercase' }}>Reward (Coins)</div>
+          </div>
+          {Array.from({ length: 30 }).map((_, i) => (
+            <div key={`day-${i}`} style={{ display: 'grid', gridTemplateColumns: '50px 1fr 1fr', gap: '0.5rem', alignItems: 'center', background: 'rgba(255,255,255,0.02)', padding: '0.5rem', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.05)' }}>
+              <div style={{ fontSize: '0.85rem', color: '#e2e8f0', fontWeight: 600, textAlign: 'center' }}>{i + 1}</div>
+              <input
+                type="number"
+                value={earnGate[i] ?? 1000}
+                onChange={(e) => {
+                  const newGate = [...earnGate];
+                  newGate[i] = Number(e.target.value);
+                  setEarnGate(newGate);
+                  markDirty();
+                }}
+                className="admin-input"
+                style={{ width: '100%', fontSize: '0.85rem', padding: '0.4rem 0.6rem' }}
+              />
+              <input
+                type="number"
+                value={earnReward[i] ?? 100}
+                onChange={(e) => {
+                  const newReward = [...earnReward];
+                  newReward[i] = Number(e.target.value);
+                  setEarnReward(newReward);
+                  markDirty();
+                }}
+                className="admin-input"
+                style={{ width: '100%', fontSize: '0.85rem', padding: '0.4rem 0.6rem' }}
+              />
+            </div>
+          ))}
+        </div>
+      </div>
+      
       {/* ── Section 2: Withdrawal Methods ──────── */}
         <div className="admin-card" style={{ marginBottom: 0 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '1.5rem', paddingBottom: '1rem', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>

@@ -43,11 +43,16 @@ const settingsSchema = new mongoose.Schema(
     rewardEngine: {
       dailyBonusEarnGate: {
         type: [Number],
-        default: [1000, 1200, 1400, 1600, 1800, 2000, 2200]
+        default: Array(30).fill(1000)
       },
       dailyBonusReward: {
         type: [Number],
-        default: [100, 120, 140, 160, 180, 200, 220]
+        default: Array.from({length: 30}, (_, i) => {
+          if (i + 1 === 10) return 500;
+          if (i + 1 === 20) return 1000;
+          if (i + 1 === 30) return 2500;
+          return 100 + (i * 10);
+        })
       },
       dailyBonusMaxStreak: {
         type: Number,

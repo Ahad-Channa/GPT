@@ -383,10 +383,10 @@ router.get('/daily-bonus-status', verifyToken, async (req, res) => {
         alreadyClaimed = true;
         nextClaimAt = new Date(new Date(user.lastDailyBonusClaim).getTime() + TWENTY_FOUR_H).toISOString();
       } else if (msSinceClaim >= 48 * 60 * 60 * 1000) {
-        // More than 48 hours — streak broken
+        // More than 48 hours (i.e. >24h wait + >24h window) — streak broken
         streak = 0;
       }
-      // Between 24h and 48h = eligible to claim, streak intact
+      // Between 24h and 48h = eligible to claim (24 hour window), streak intact
     }
 
     let nextStreakToClaim = streak + 1;
@@ -396,6 +396,10 @@ router.get('/daily-bonus-status', verifyToken, async (req, res) => {
 
     // Dynamic reward calculations for 30-day streak
     const getRewardForDay = (streakDay) => {
+      // Use dynamic settings if available, else falback to default
+      const rd = settings?.rewardEngine?.dailyBonusReward;
+      if (rd && rd.length >= streakDay) return rd[streakDay - 1];
+
       if (streakDay === 10) return 500;
       if (streakDay === 20) return 1000;
       if (streakDay === 30) return 2500;
@@ -403,6 +407,9 @@ router.get('/daily-bonus-status', verifyToken, async (req, res) => {
     };
 
     const getGateForDay = (streakDay) => {
+      const rd = settings?.rewardEngine?.dailyBonusEarnGate;
+      if (rd && rd.length >= streakDay) return rd[streakDay - 1];
+
       return 1000; // Flat earn gate, can be adjusted
     };
 
@@ -433,11 +440,16 @@ router.get('/daily-bonus-status', verifyToken, async (req, res) => {
     const gateUnlocked = earnedToday >= required;
     const rewardToday = getRewardForDay(nextStreakToClaim);
 
-    let nextDayStreak = nextStreakToClaim + 1;
+    let nextDayStreak = alreadyClaimed ? nextStreakToClaim : (nextStreakToClaim + 1);
     if (nextDayStreak > 30) {
       nextDayStreak = 1;
     }
     const rewardTomorrow = getRewardForDay(nextDayStreak);
+    
+    // special rewards for display
+    const rewardDay10 = getRewardForDay(10);
+    const rewardDay20 = getRewardForDay(20);
+    const rewardDay30 = getRewardForDay(30);
 
     res.status(200).json({
       success: true,
@@ -448,6 +460,9 @@ router.get('/daily-bonus-status', verifyToken, async (req, res) => {
       streak: alreadyClaimed ? streak : nextStreakToClaim,
       rewardToday,
       rewardTomorrow,
+      rewardDay10,
+      rewardDay20,
+      rewardDay30,
       nextClaimAt
     });
   } catch (error) {
@@ -479,15 +494,15 @@ router.post('/daily-bonus', verifyToken, async (req, res) => {
     const settings = await Settings.getSingleton();
     const rd = settings.rewardEngine;
 
-    // 2. Streak math — break streak if more than 48h have passed since last claim
+    // 2. Streak math — break streak if more than 48h have passed since last claim (meaning the 24h window closed)
     let streak = user.dailyBonusStreak || 0;
     if (user.lastDailyBonusClaim) {
       const msSinceClaim = now.getTime() - new Date(user.lastDailyBonusClaim).getTime();
       if (msSinceClaim < 48 * 60 * 60 * 1000) {
-        // Within 48h = continue streak
+        // Within 48h (since last claim) = continue streak
         streak += 1;
       } else {
-        // More than 48h = streak broken, start fresh
+        // missed the 24h window = streak broken, start fresh
         streak = 1;
       }
     } else {

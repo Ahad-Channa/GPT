@@ -40,7 +40,8 @@ router.get('/users', requirePermission('manage_users'), async (req, res) => {
         { email: { $regex: search, $options: 'i' } },
         { displayName: { $regex: search, $options: 'i' } },
         { firebaseUid: { $regex: search, $options: 'i' } },
-      ];
+        { _id: search.length === 24 ? search : null } // Allows search by Object ID 
+      ].filter(Boolean); // Ignore the null if search string isn't valid Object ID
     }
 
     const users = await User.find(query)
