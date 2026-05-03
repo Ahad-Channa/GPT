@@ -1,7 +1,12 @@
 import { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { FiGithub, FiTwitter, FiDisc, FiArrowRight, FiUsers, FiDollarSign, FiZap } from 'react-icons/fi';
+import { 
+  FiGithub, FiTwitter, FiDisc, FiArrowRight, FiUsers, FiDollarSign, FiZap, 
+  FiCheckCircle, FiTrendingUp, FiGift, FiLayers, FiActivity, FiShield, 
+  FiChevronDown, FiPlayCircle, FiStar, FiAward
+} from 'react-icons/fi';
+import { FaPaypal, FaAmazon, FaBitcoin } from 'react-icons/fa';
 import { useAuth } from '../contexts/AuthContext';
 import Header from '../components/layout/Header';
 
@@ -14,15 +19,15 @@ const CyberGrid = () => (
       className="absolute inset-0"
       style={{
         backgroundImage: `
-          linear-gradient(to right, #4f46e5 1px, transparent 1px),
-          linear-gradient(to bottom, #4f46e5 1px, transparent 1px)
+          linear-gradient(to right, rgba(99, 102, 241, 0.4) 1px, transparent 1px),
+          linear-gradient(to bottom, rgba(99, 102, 241, 0.4) 1px, transparent 1px)
         `,
         backgroundSize: '40px 40px',
         transform: 'perspective(500px) rotateX(60deg) translateY(-100px) translateZ(-200px)',
         transformOrigin: 'top center',
       }}
     />
-    <div className="absolute inset-0 bg-gradient-to-t from-[#03060d] via-transparent to-[#03060d]" />
+    <div className="absolute inset-0 bg-gradient-to-t from-brand-dark via-brand-dark/80 to-transparent" />
   </div>
 );
 
@@ -30,16 +35,7 @@ const Landing = () => {
   const navigate = useNavigate();
   const { currentUser } = useAuth();
   const [stats, setStats] = useState({ totalUsers: 0, totalPaidOut: 0 });
-
-  // Fake payouts for the ticker
-  const payouts = [
-    { user: 'Alex99', amount: '$5.50', method: 'PayPal' },
-    { user: 'CryptoKing', amount: '$12.00', method: 'Litecoin' },
-    { user: 'SarahJ', amount: '$10.00', method: 'Steam' },
-    { user: 'GamerX', amount: '$25.00', method: 'Visa' },
-    { user: 'MikeT', amount: '$2.50', method: 'PayPal' },
-    { user: 'Elena', amount: '$50.00', method: 'Bitcoin' },
-  ];
+  const [activeFaq, setActiveFaq] = useState(null);
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -57,207 +53,294 @@ const Landing = () => {
       }
     };
     fetchStats();
-    const intv = setInterval(fetchStats, 60000); // refresh every minute
+    const intv = setInterval(fetchStats, 60000);
     return () => clearInterval(intv);
   }, []);
 
-  return (
-    <div
-      className="relative min-h-screen overflow-hidden flex flex-col"
-      style={{
-        background: '#03060d', // Ultra dark
-        fontFamily: "'Inter', system-ui, sans-serif",
-      }}
-    >
-      <CyberGrid />
-      
-      {/* Top Gradient Highlight */}
-      <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-indigo-500 to-transparent opacity-50" />
+  const scrollToSection = (id) => {
+    const element = document.getElementById(id);
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
 
-      {/* Navbar */}
+  const faqs = [
+    {
+      q: "How do I earn money?",
+      a: "By completing offers, surveys, and tasks on the platform."
+    },
+    {
+      q: "When do I get paid?",
+      a: "Rewards can be instant or take some time depending on the offer."
+    },
+    {
+      q: "Is it free to use?",
+      a: "Yes, completely free."
+    },
+    {
+      q: "Why was my reward not credited?",
+      a: "This can happen due to tracking issues. You can contact the offerwall support."
+    },
+    {
+      q: "What is the minimum payout?",
+      a: "Our minimum payout starts at just $0.50, depending on the chosen reward method."
+    }
+  ];
+
+  const features = [
+    { icon: <FiLayers />, title: "Multiple Offerwalls", desc: "Access many earning opportunities in one place" },
+    { icon: <FiZap />, title: "Fast Payouts", desc: "Withdraw your earnings quickly and securely" },
+    { icon: <FiGift />, title: "Daily Bonus", desc: "Earn extra rewards every day you stay active" },
+    { icon: <FiTrendingUp />, title: "VIP Progress", desc: "Level up and unlock better rewards" },
+    { icon: <FiUsers />, title: "Referral System", desc: "Invite friends and earn a percentage of their earnings" },
+    { icon: <FiActivity />, title: "Live Activity", desc: "See real-time earnings across the platform" },
+  ];
+
+  return (
+    <div className="relative min-h-screen overflow-x-hidden bg-brand-dark text-[#c8d6ef] font-sans selection:bg-brand-accent/30 selection:text-white">
+      <CyberGrid />
+      <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-brand-accent to-transparent opacity-50" />
+      <div className="ambient-bg" />
+
+      {/* Conditional Header */}
       {currentUser ? (
         <div className="relative z-50">
           <Header />
         </div>
       ) : (
-        <nav className="relative z-20 max-w-7xl mx-auto px-8 py-5 flex items-center justify-between w-full border-b border-white/[0.05]">
-          {/* Logo */}
-          <motion.div
-            initial={{ opacity: 0, y: -8 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="flex items-center gap-2.5"
-          >
-            <div className="w-8 h-8 bg-indigo-500 rounded-sm flex items-center justify-center transform rotate-45 border border-indigo-400">
-              <FiZap className="text-white text-lg transform -rotate-45" />
-            </div>
-            <span className="text-white font-bold text-xl tracking-tight" style={{ fontFamily: "'Outfit', Inter, sans-serif" }}>
-              GPT Platform
-            </span>
-          </motion.div>
+        <nav className="fixed top-0 left-0 right-0 z-50 bg-brand-dark/80 backdrop-blur-md border-b border-brand-border">
+          <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+            <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} className="flex items-center gap-2.5">
+              <div className="w-8 h-8 bg-gradient-brand rounded-md flex items-center justify-center transform rotate-3 shadow-glow">
+                <FiZap className="text-white text-lg transform -rotate-3" />
+              </div>
+              <span className="font-display font-bold text-xl tracking-tight text-white">GPT Platform</span>
+            </motion.div>
 
-          {/* Nav Links */}
-          <motion.div
-            initial={{ opacity: 0, y: -8 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.05 }}
-            className="hidden md:flex items-center gap-8 text-sm text-gray-400"
-          >
-            {['Platform', 'Services', 'Payouts', 'Roadmap', 'About'].map(link => (
-              <a
-                key={link}
-                href={`#${link.toLowerCase()}`}
-                className="hover:text-white transition-colors duration-200"
-              >
-                {link}
-              </a>
-            ))}
-          </motion.div>
+            <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }} className="hidden md:flex items-center gap-8 text-sm text-[#c8d6ef] font-medium">
+              <button onClick={() => scrollToSection('earn')} className="hover:text-white transition-all">Earn</button>
+              <button onClick={() => scrollToSection('how-it-works')} className="hover:text-white transition-all">How it Works</button>
+              <button onClick={() => scrollToSection('features')} className="hover:text-white transition-all">Features</button>
+              <button onClick={() => scrollToSection('faq')} className="hover:text-white transition-all">FAQ</button>
+            </motion.div>
 
-          {/* Social icons + CTA */}
-          <motion.div
-            initial={{ opacity: 0, y: -8 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-            className="flex items-center gap-5"
-          >
-            {/* Social Icons */}
-            <div className="hidden sm:flex items-center gap-4 text-gray-500">
-              <a href="#" className="hover:text-white transition-colors"><FiGithub size={17} /></a>
-              <a href="#" className="hover:text-white transition-colors"><FiDisc size={17} /></a>
-              <a href="#" className="hover:text-white transition-colors"><FiTwitter size={17} /></a>
-            </div>
-            <button 
-              onClick={() => navigate('/login')} 
-              className="px-6 py-2 bg-indigo-600 text-white text-sm font-bold uppercase tracking-widest hover:bg-indigo-500 transition-all relative overflow-hidden group rounded-sm"
-            >
-              <div className="absolute inset-0 w-full h-full bg-white/20 -translate-x-full group-hover:translate-x-full transition-transform duration-500 ease-in-out skew-x-12" />
-              Login
-            </button>
-          </motion.div>
+            <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="flex items-center gap-4">
+              <button onClick={() => navigate('/login')} className="hidden sm:block text-sm font-bold text-[#c8d6ef] hover:text-white uppercase tracking-wider">
+                Login
+              </button>
+              <button onClick={() => navigate('/register')} className="btn-glow px-6 py-2 text-sm uppercase tracking-widest rounded-lg">
+                Sign Up
+              </button>
+            </motion.div>
+          </div>
         </nav>
       )}
 
-      {/* Live Payouts Ticker */}
-      {!currentUser && (
-        <div className="relative z-20 w-full border-b border-white/[0.05] bg-white/[0.02] overflow-hidden flex">
-          <div className="flex py-2 animate-[marquee_20s_linear_infinite] whitespace-nowrap">
-            {[...payouts, ...payouts, ...payouts].map((p, i) => (
-              <div key={i} className="flex items-center gap-2 px-6 text-xs font-mono">
-                <span className="text-emerald-400">{p.amount}</span>
-                <span className="text-slate-500">paid to</span>
-                <span className="text-slate-300 font-semibold">{p.user}</span>
-                <span className="text-slate-600">via</span>
-                <span className="text-indigo-400">{p.method}</span>
-                <span className="mx-4 text-slate-800">|</span>
-              </div>
-            ))}
+      {/* 2. Hero Section */}
+      <section className="relative z-10 pt-32 pb-20 px-6 max-w-7xl mx-auto flex flex-col items-center text-center mt-10 lg:mt-20">
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }} className="max-w-4xl">
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 glass-card mb-8 font-mono text-xs text-brand-cyan shadow-glow-cyan">
+            <span className="w-2 h-2 rounded-full bg-brand-cyan animate-pulse"></span>
+            Live and Paying Users
           </div>
-        </div>
-      )}
-
-      <style>{`
-        @keyframes marquee {
-          0% { transform: translateX(0); }
-          100% { transform: translateX(-33.33%); }
-        }
-      `}</style>
-
-      {/* Hero Section */}
-      <main className="relative z-10 max-w-7xl mx-auto px-6 py-20 flex-1 flex flex-col lg:flex-row items-center justify-between gap-12">
-        
-        {/* Left Column: Typography */}
-        <div className="flex-1 max-w-2xl text-center lg:text-left">
-          <motion.div 
-            initial={{ opacity: 0, x: -30 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.6 }}
-            className="inline-flex items-center justify-center lg:justify-start gap-2 px-3 py-1 bg-white/[0.03] border border-white/10 rounded-sm mb-6 font-mono text-xs text-indigo-400 mx-auto lg:mx-0"
-          >
-            <div className="w-1.5 h-1.5 bg-indigo-500 rounded-full animate-ping" />
-            PLATFORM ONLINE
-          </motion.div>
-
-          <motion.h1
-            initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.1 }}
-            className="font-black uppercase leading-[1.1] mb-6 text-white tracking-tighter"
-            style={{ fontSize: 'clamp(3rem, 7vw, 5.5rem)' }}
-          >
-            Earn Real<br/>
-            Money.<br/>
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-500 to-emerald-400">
-              Instantly.
+          <h1 className="text-5xl md:text-7xl font-display font-black uppercase tracking-tighter leading-tight mb-6 text-white">
+            Earn Money Online <br />
+            <span className="text-transparent bg-clip-text bg-gradient-brand">
+              Simple, Fast & Real
             </span>
-          </motion.h1>
-
-          <motion.p
-            initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.6, delay: 0.2 }}
-            className="text-slate-400 text-lg mb-10 leading-relaxed max-w-md mx-auto lg:mx-0 border-l-2 border-indigo-500/50 pl-4"
-          >
-            Complete simple tasks, surveys and offers. Earn points and redeem for Crypto, PayPal, Gift Cards, Discord Nitro & more.
-          </motion.p>
-
-          <motion.div
-            initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.3 }}
-            className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4"
-          >
-            <button
-              onClick={() => navigate(currentUser ? '/dashboard' : '/login')}
-              className="flex items-center justify-center gap-4 bg-white text-black px-8 py-4 font-black uppercase tracking-widest hover:bg-indigo-500 hover:text-white transition-colors group w-full sm:w-auto"
-            >
-              {currentUser ? 'Go to Earn' : 'Get Started'}
-              <FiArrowRight className="transform group-hover:translate-x-1 transition-transform" />
+          </h1>
+          <p className="text-lg md:text-xl text-[#c8d6ef]/80 max-w-2xl mx-auto mb-10 leading-relaxed font-sans">
+            Complete offers, surveys, and tasks to earn real rewards. Join thousands of users already earning every day.
+          </p>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16">
+            <button onClick={() => navigate('/register')} className="w-full sm:w-auto btn-glow px-8 py-4 uppercase tracking-widest flex items-center justify-center gap-2 group">
+              Start Earning
+              <FiArrowRight className="group-hover:translate-x-1 transition-transform" />
             </button>
-          </motion.div>
-        </div>
+            <button onClick={() => navigate('/login')} className="w-full sm:w-auto glass-card px-8 py-4 text-white font-bold uppercase tracking-widest hover:bg-white/5 transition-all flex items-center justify-center gap-2">
+              Sign Up Free
+            </button>
+          </div>
 
-        {/* Right Column: Cyber Stats Cards */}
-        <motion.div 
-          initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.8, delay: 0.4 }}
-          className="flex-1 w-full max-w-lg relative mt-12 lg:mt-0"
-        >
-          {/* Glowing backdrop */}
-          <div className="absolute inset-0 bg-indigo-500/20 blur-[100px] rounded-full pointer-events-none" />
-          
-          <div className="grid grid-cols-1 gap-4 relative z-10">
-            {/* Stat Box 1 */}
-            <div className="bg-[#0a0f1c] border border-indigo-500/30 p-6 flex items-center justify-between shadow-[0_0_30px_rgba(79,70,229,0.15)] transform translate-x-0 lg:translate-x-8">
-              <div>
-                <div className="text-slate-500 font-mono text-xs mb-1 uppercase">Registered Users</div>
-                <div className="text-4xl font-black text-white tracking-tighter">{stats.totalUsers.toLocaleString()}</div>
-              </div>
-              <div className="w-12 h-12 bg-indigo-500/10 flex items-center justify-center border border-indigo-500/50">
-                <FiUsers className="text-indigo-500 text-xl" />
-              </div>
+          <div className="grid grid-cols-2 md:grid-cols-2 gap-6 max-w-2xl mx-auto">
+            <div className="stat-card">
+              <div className="text-3xl md:text-4xl font-black text-white clean-numbers">{stats.totalUsers.toLocaleString()}</div>
+              <div className="text-sm font-mono text-brand-accent uppercase tracking-wider mt-1">Total Users</div>
             </div>
-
-            {/* Stat Box 2 */}
-            <div className="bg-[#0a0f1c] border border-emerald-500/30 p-6 flex items-center justify-between shadow-[0_0_30px_rgba(16,185,129,0.15)] transform translate-x-0 lg:-translate-x-4">
-              <div>
-                <div className="text-slate-500 font-mono text-xs mb-1 uppercase">Total Paid Out</div>
-                <div className="text-4xl font-black text-emerald-400 tracking-tighter">
-                  ${stats.totalPaidOut.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                </div>
-              </div>
-              <div className="w-12 h-12 bg-emerald-500/10 flex items-center justify-center border border-emerald-500/50">
-                <FiDollarSign className="text-emerald-500 text-xl" />
-              </div>
+            <div className="stat-card">
+              <div className="text-3xl md:text-4xl font-black text-brand-cyan clean-numbers">${stats.totalPaidOut.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+              <div className="text-sm font-mono text-brand-cyan/80 uppercase tracking-wider mt-1">Total Paid</div>
             </div>
-            
-            {/* Stat Box 3 */}
-            <div className="bg-[#0a0f1c] border border-white/10 p-6 flex items-center justify-between transform translate-x-0 lg:translate-x-12 opacity-80">
-               <div>
-                <div className="text-slate-500 font-mono text-xs mb-1 uppercase">Platform Status</div>
-                <div className="text-2xl font-bold text-white tracking-tight flex items-center gap-2">
-                  <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" /> ONLINE
-                </div>
-              </div>
-              <div className="w-12 h-12 bg-white/5 flex items-center justify-center border border-white/10">
-                <FiZap className="text-slate-400 text-xl" />
-              </div>
-            </div>
-
           </div>
         </motion.div>
+      </section>
 
-      </main>
+      {/* 3. How It Works */}
+      <section id="how-it-works" className="relative z-10 py-24 bg-brand-darker border-y border-brand-border">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl md:text-4xl font-display font-black uppercase tracking-tight mb-4 text-white">How It Works</h2>
+            <div className="w-16 h-1 bg-brand-accent mx-auto rounded-full"></div>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div className="glass-card p-8 relative group hover:border-brand-accent/50 transition-colors">
+              <div className="absolute -top-6 left-8 w-12 h-12 bg-gradient-brand rounded-xl flex items-center justify-center font-black text-xl text-white shadow-glow transform -rotate-6 group-hover:rotate-0 transition-transform">1</div>
+              <FiUsers className="text-4xl text-brand-accent mb-6 mt-4" />
+              <h3 className="text-xl font-bold mb-3 uppercase tracking-wide text-white">Sign Up</h3>
+              <p className="text-[#c8d6ef]/80">Create your free account in seconds and get instant access to the platform.</p>
+            </div>
+            <div className="glass-card p-8 relative group hover:border-brand-cyan/50 transition-colors">
+              <div className="absolute -top-6 left-8 w-12 h-12 bg-gradient-to-br from-brand-cyan to-blue-500 rounded-xl flex items-center justify-center font-black text-xl text-white shadow-glow-cyan transform rotate-3 group-hover:rotate-0 transition-transform">2</div>
+              <FiCheckCircle className="text-4xl text-brand-cyan mb-6 mt-4" />
+              <h3 className="text-xl font-bold mb-3 uppercase tracking-wide text-white">Complete Tasks</h3>
+              <p className="text-[#c8d6ef]/80">Choose from hundreds of offers, surveys, and apps to complete at your own pace.</p>
+            </div>
+            <div className="glass-card p-8 relative group hover:border-brand-violet/50 transition-colors">
+              <div className="absolute -top-6 left-8 w-12 h-12 bg-gradient-to-br from-brand-violet to-purple-600 rounded-xl flex items-center justify-center font-black text-xl text-white shadow-glow transform -rotate-3 group-hover:rotate-0 transition-transform">3</div>
+              <FiDollarSign className="text-4xl text-brand-violet mb-6 mt-4" />
+              <h3 className="text-xl font-bold mb-3 uppercase tracking-wide text-white">Earn Rewards</h3>
+              <p className="text-[#c8d6ef]/80">Get coins and convert them into real money, crypto, or gift cards instantly.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* 4. Features Section */}
+      <section id="features" className="relative z-10 py-24 px-6 max-w-7xl mx-auto">
+        <div className="text-center mb-16">
+          <h2 className="text-3xl md:text-4xl font-display font-black uppercase tracking-tight mb-4 text-white">Why Choose Us</h2>
+          <div className="w-16 h-1 bg-brand-accent mx-auto rounded-full"></div>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {features.map((f, i) => (
+            <div key={i} className="flex items-start gap-4 p-6 glass-card hover:bg-white/[0.04] transition-colors">
+              <div className="w-12 h-12 shrink-0 bg-brand-accent/10 border border-brand-accent/30 rounded-xl flex items-center justify-center text-brand-accent text-xl shadow-[inset_0_0_12px_rgba(99,102,241,0.2)]">
+                {f.icon}
+              </div>
+              <div>
+                <h4 className="font-bold text-lg mb-1 text-white">{f.title}</h4>
+                <p className="text-sm text-[#c8d6ef]/80 leading-relaxed">{f.desc}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* 5. Earnings Section */}
+      <section id="earn" className="relative z-10 py-24 bg-gradient-to-b from-brand-darker to-brand-dark">
+        <div className="max-w-4xl mx-auto px-6 text-center">
+          <h2 className="text-3xl md:text-4xl font-display font-black uppercase tracking-tight mb-8 text-white">Start Earning Coins By:</h2>
+          <div className="flex flex-wrap justify-center gap-4 mb-8">
+            <div className="badge-indigo px-6 py-3 text-sm flex items-center gap-2">
+              <FiActivity /> Surveys
+            </div>
+            <div className="badge-violet px-6 py-3 text-sm flex items-center gap-2">
+              <FiPlayCircle /> Apps & Games
+            </div>
+            <div className="badge-cyan px-6 py-3 text-sm flex items-center gap-2">
+              <FiStar /> Featured Offers
+            </div>
+          </div>
+          <p className="text-[#c8d6ef]/60 italic font-mono text-sm">"Some offers can reward up to high payouts depending on completion."</p>
+        </div>
+      </section>
+
+      {/* 6. Trust Section */}
+      <section className="relative z-10 py-16 border-y border-brand-border bg-brand-accent/5">
+        <div className="max-w-6xl mx-auto px-6 flex flex-col md:flex-row justify-around items-center gap-8 text-center">
+          <div className="flex flex-col items-center">
+            <div className="w-12 h-12 bg-brand-card border border-brand-border rounded-full flex items-center justify-center mb-3">
+              <FiUsers className="text-brand-accent text-xl" />
+            </div>
+            <h4 className="font-bold uppercase tracking-wide text-white">Real users earning daily</h4>
+          </div>
+          <div className="hidden md:block w-px h-16 bg-brand-border"></div>
+          <div className="flex flex-col items-center">
+            <div className="w-12 h-12 bg-brand-card border border-brand-border rounded-full flex items-center justify-center mb-3">
+              <FiShield className="text-brand-accent text-xl" />
+            </div>
+            <h4 className="font-bold uppercase tracking-wide text-white">Secure and reliable platform</h4>
+          </div>
+          <div className="hidden md:block w-px h-16 bg-brand-border"></div>
+          <div className="flex flex-col items-center">
+            <div className="w-12 h-12 bg-brand-card border border-brand-border rounded-full flex items-center justify-center mb-3">
+              <FiAward className="text-brand-accent text-xl" />
+            </div>
+            <h4 className="font-bold uppercase tracking-wide text-white">Transparent reward system</h4>
+          </div>
+        </div>
+      </section>
+
+      {/* 7. FAQ Section */}
+      <section id="faq" className="relative z-10 py-24 px-6 max-w-3xl mx-auto">
+        <div className="text-center mb-16">
+          <h2 className="text-3xl md:text-4xl font-display font-black uppercase tracking-tight mb-4 text-white">Frequently Asked Questions</h2>
+          <div className="w-16 h-1 bg-brand-accent mx-auto rounded-full"></div>
+        </div>
+        <div className="space-y-4">
+          {faqs.map((faq, index) => (
+            <div key={index} className="glass-card overflow-hidden">
+              <button 
+                onClick={() => setActiveFaq(activeFaq === index ? null : index)}
+                className="w-full px-6 py-5 flex items-center justify-between text-left hover:bg-white/[0.02] transition-colors"
+              >
+                <span className="font-bold pr-4 text-white">{faq.q}</span>
+                <FiChevronDown className={`text-brand-accent transform transition-transform ${activeFaq === index ? 'rotate-180' : ''}`} />
+              </button>
+              <AnimatePresence>
+                {activeFaq === index && (
+                  <motion.div 
+                    initial={{ height: 0, opacity: 0 }} 
+                    animate={{ height: 'auto', opacity: 1 }} 
+                    exit={{ height: 0, opacity: 0 }}
+                    className="overflow-hidden"
+                  >
+                    <div className="px-6 pb-5 text-[#c8d6ef]/80 leading-relaxed border-t border-brand-border pt-4">
+                      {faq.a}
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* 8. Payment Methods Section */}
+      <section className="relative z-10 py-16 bg-[#04060b] overflow-hidden border-t border-brand-border">
+        <div className="text-center mb-10">
+          <p className="text-sm font-mono text-brand-accent/80 uppercase tracking-widest">Supported Payout Methods</p>
+        </div>
+        <div className="flex animate-marquee whitespace-nowrap opacity-50 hover:opacity-100 transition-opacity">
+          {[...Array(6)].map((_, i) => (
+            <div key={i} className="flex items-center gap-16 px-8">
+              <div className="flex items-center gap-2 text-2xl font-display font-bold text-white"><FaBitcoin className="text-[#F7931A]" /> Litecoin</div>
+              <div className="flex items-center gap-2 text-2xl font-display font-bold text-white"><FaPaypal className="text-[#00457C]" /> PayPal</div>
+              <div className="flex items-center gap-2 text-2xl font-display font-bold text-white"><FaAmazon className="text-[#FF9900]" /> Amazon</div>
+              <div className="flex items-center gap-2 text-2xl font-display font-bold text-white"><FiGift className="text-pink-500" /> Gift Cards</div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* 9. Final CTA Section */}
+      <section className="relative z-10 py-32 px-6 max-w-4xl mx-auto text-center">
+        <div className="absolute inset-0 bg-brand-accent/10 blur-[100px] rounded-full pointer-events-none" />
+        <h2 className="text-4xl md:text-6xl font-display font-black uppercase tracking-tight mb-8 relative text-white">Start Earning Today</h2>
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-6 relative">
+          <button onClick={() => navigate('/register')} className="w-full sm:w-auto btn-glow px-10 py-5 uppercase tracking-widest text-lg">
+            Sign Up
+          </button>
+          <button onClick={() => navigate('/login')} className="w-full sm:w-auto glass-card px-10 py-5 text-white font-bold uppercase tracking-widest hover:bg-white/5 transition-all">
+            Start Earning
+          </button>
+        </div>
+      </section>
+
+      {/* Footer minimal */}
+      <footer className="relative z-10 border-t border-brand-border py-8 text-center text-sm text-[#c8d6ef]/60">
+        <p>&copy; {new Date().getFullYear()} GPT Platform. All rights reserved.</p>
+      </footer>
     </div>
   );
 };

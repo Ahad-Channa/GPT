@@ -13,7 +13,9 @@ function scrubTransaction(tx) {
   let scrubbed = { ...doc };
 
   // Obfuscate the description (hide precise offer title)
-  if (scrubbed.method && scrubbed.method !== 'none') {
+  if (scrubbed.transactionType === 'withdrawal') {
+    scrubbed.description = 'Requested a Withdrawal';
+  } else if (scrubbed.method && scrubbed.method !== 'none' && scrubbed.transactionType !== 'withdrawal') {
     scrubbed.description = `Earned from ${scrubbed.method}`;
   } else if (scrubbed.metadata?.offerwall) {
     scrubbed.description = `Earned from ${scrubbed.metadata.offerwall}`;
@@ -95,9 +97,17 @@ router.get('/user/:id', async (req, res) => {
 router.get('/recent-earnings', async (req, res) => {
   try {
     let recentEarnings = await Transaction.find({
-      transactionType: 'offer_reward',
-      status: { $in: ['completed', 'hold'] },
-      amount: { $gt: 0 }
+      $or: [
+        {
+          transactionType: { $in: ['offer_reward', 'custom_offer_reward', 'daily_bonus', 'admin_adjustment', 'promo_code'] },
+          status: { $in: ['completed', 'hold'] },
+          amount: { $gt: 0 }
+        },
+        {
+          transactionType: 'withdrawal',
+          status: { $in: ['pending', 'completed'] }
+        }
+      ]
     })
       .sort({ createdAt: -1 })
       .limit(20)
