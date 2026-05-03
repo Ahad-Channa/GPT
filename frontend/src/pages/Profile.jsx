@@ -742,7 +742,6 @@ const Profile = () => {
   }, [activeTab, token]);
 
   // History hooks (only fetches when token is ready)
-  const offerRewards = useHistory(activeTab === 'offer_rewards' ? token : null, 'offer_reward,custom_offer_reward');
   const chargebacks = useHistory(activeTab === 'chargebacks' ? token : null, 'chargeback');
 
   // Completed custom offer submissions (approved)
@@ -900,7 +899,6 @@ const Profile = () => {
           <div className="flex gap-1 min-w-max">
             <TabBtn active={activeTab === 'started_offers'}   onClick={() => setActiveTab('started_offers')}   icon={FiPlayCircle}   label="Started Offers" />
             <TabBtn active={activeTab === 'completed_offers'} onClick={() => setActiveTab('completed_offers')} icon={FiCheckCircle}  label="Completed Offers" />
-            <TabBtn active={activeTab === 'offer_rewards'}    onClick={() => setActiveTab('offer_rewards')}    icon={FiZap}          label="Offerwall Rewards" />
             <TabBtn active={activeTab === 'chargebacks'}      onClick={() => setActiveTab('chargebacks')}      icon={FiShield}       label="Chargebacks" />
           </div>
         </div>
@@ -1010,46 +1008,7 @@ const Profile = () => {
             </motion.div>
           )}
 
-          {/* ══ OFFERWALL REWARDS TAB (wallet transactions from offerwalls) ══ */}
-          {activeTab === 'offer_rewards' && (
-            <motion.div
-              key="offer_rewards"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -6 }}
-              className="glass-card overflow-hidden"
-            >
-              {/* Header */}
-              <div className="flex items-center justify-between px-6 py-5 border-b border-white/[0.06] bg-gradient-to-r from-indigo-500/[0.04] to-transparent">
-                <div>
-                  <h2 className="text-base font-bold font-display text-white flex items-center gap-2">
-                    <FiZap className="text-indigo-400" /> Offerwall Rewards
-                  </h2>
-                  <p className="text-xs text-slate-500 mt-0.5">Credits from offerwall surveys &amp; auto-credited tasks</p>
-                </div>
-                {offerRewards.totalEarned > 0 && (
-                  <div className="flex items-center gap-2 px-3 py-1.5 bg-indigo-500/10 border border-indigo-500/20 rounded-xl">
-                    <FiTrendingUp className="text-indigo-400 text-xs" />
-                    <span className="text-indigo-300 font-mono font-bold text-sm">
-                      +{offerRewards.totalEarned.toLocaleString()} Coins Lifetime
-                    </span>
-                  </div>
-                )}
-              </div>
 
-              <div className="px-6 py-4">
-                <HistoryList
-                  transactions={offerRewards.dataList}
-                  loading={offerRewards.loading}
-                  error={offerRewards.error}
-                  hasMore={offerRewards.hasMore}
-                  onLoadMore={offerRewards.loadMore}
-                  loadingMore={offerRewards.loadingMore}
-                  emptyMessage="No offerwall rewards yet. Complete surveys to start earning!"
-                />
-              </div>
-            </motion.div>
-          )}
 
           {/* ══ STARTED OFFERS (CLICKED OFFERS) TAB ══ */}
           {activeTab === 'started_offers' && (
