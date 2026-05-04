@@ -2,9 +2,8 @@ import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import DashboardLayout from '../components/layout/DashboardLayout';
 import { motion, AnimatePresence } from 'framer-motion';
-import {
-  FiTrendingUp, FiAward, FiLock, FiRefreshCw
-} from 'react-icons/fi';
+import { FiCalendar, FiLock } from 'react-icons/fi';
+import { FaCrown } from 'react-icons/fa';
 import PublicProfileModal from '../components/PublicProfileModal';
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
@@ -13,260 +12,151 @@ const container = { hidden: {}, show: { transition: { staggerChildren: 0.04 } } 
 const item = { hidden: { opacity: 0, y: 14 }, show: { opacity: 1, y: 0, transition: { duration: 0.3 } } };
 
 const PERIOD_META = {
-  daily: {
-    label: 'Daily',
-    color: '#818cf8',
-    bg: 'rgba(99,102,241,0.08)',
-    border: 'rgba(99,102,241,0.2)',
-    description: 'Resets every midnight UTC',
-  },
-  weekly: {
-    label: 'Weekly',
-    color: '#34d399',
-    bg: 'rgba(16,185,129,0.08)',
-    border: 'rgba(16,185,129,0.2)',
-    description: 'Resets every Monday midnight UTC',
-  },
-  monthly: {
-    label: 'Monthly',
-    color: '#fbbf24',
-    bg: 'rgba(245,158,11,0.08)',
-    border: 'rgba(245,158,11,0.2)',
-    description: 'Resets on the 1st of each month',
-  },
+  daily: { label: 'Daily' },
+  weekly: { label: 'Weekly' },
+  monthly: { label: 'Monthly' },
 };
 
-const MEDALS = ['🥇', '🥈', '🥉'];
-const MEDAL_COLORS = ['#fbbf24', '#94a3b8', '#cd7c3f'];
+// Simple abstract laurel branches for the title
+const LaurelLeft = () => (
+  <svg width="32" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-indigo-500 drop-shadow-[0_0_8px_rgba(99,102,241,0.5)]">
+    <path d="M18 20C18 20 8 16 8 8C8 8 13 4 18 4" strokeLinecap="round"/>
+    <path d="M12 14C12 14 5 12 5 6" strokeLinecap="round"/>
+    <path d="M14 10L18 8" strokeLinecap="round"/>
+    <path d="M9 7L12 6" strokeLinecap="round"/>
+    <path d="M10 16L12 14" strokeLinecap="round"/>
+  </svg>
+);
 
-// ─── Countdown hook ───────────────────────────────────────────────────────────
-function useCountdown(targetIso) {
-  const [display, setDisplay] = useState('');
-  useEffect(() => {
-    if (!targetIso) return;
-    const tick = () => {
-      const diff = new Date(targetIso).getTime() - Date.now();
-      if (diff <= 0) { setDisplay('Resetting…'); return; }
-      const d = Math.floor(diff / 86400000);
-      const h = Math.floor((diff % 86400000) / 3600000);
-      const m = Math.floor((diff % 3600000) / 60000);
-      const s = Math.floor((diff % 60000) / 1000);
-      setDisplay(
-        d > 0
-          ? `${d}d ${h.toString().padStart(2, '0')}h ${m.toString().padStart(2, '0')}m`
-          : `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`
-      );
-    };
-    tick();
-    const id = setInterval(tick, 1000);
-    return () => clearInterval(id);
-  }, [targetIso]);
-  return display;
-}
+const LaurelRight = () => (
+  <svg width="32" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-indigo-500 drop-shadow-[0_0_8px_rgba(99,102,241,0.5)] scale-x-[-1]">
+    <path d="M18 20C18 20 8 16 8 8C8 8 13 4 18 4" strokeLinecap="round"/>
+    <path d="M12 14C12 14 5 12 5 6" strokeLinecap="round"/>
+    <path d="M14 10L18 8" strokeLinecap="round"/>
+    <path d="M9 7L12 6" strokeLinecap="round"/>
+    <path d="M10 16L12 14" strokeLinecap="round"/>
+  </svg>
+);
 
-// ─── Single leaderboard row ───────────────────────────────────────────────────
-function RankRow({ entry, rank, currentUserId, color, reward, onProfileClick }) {
-  const isMe = entry.userId === currentUserId || entry.userId?.toString() === currentUserId?.toString();
-  const medal = rank <= 3 ? MEDALS[rank - 1] : null;
-  const medalColor = rank <= 3 ? MEDAL_COLORS[rank - 1] : color;
+const PodiumCard = ({ rank, user, onClick }) => {
+  if (!user) return <div className="w-full max-w-[240px] hidden md:block opacity-0 pointer-events-none" />; 
+  
+  const isGold = rank === 1;
+  
+  const colors = {
+    1: 'from-amber-500/10 to-[#0f172a]/80 border-amber-500/30 shadow-[0_0_30px_rgba(245,158,11,0.1)]',
+    2: 'from-indigo-400/10 to-[#0f172a]/80 border-indigo-400/30 shadow-[0_0_20px_rgba(129,140,248,0.05)]',
+    3: 'from-orange-500/10 to-[#0f172a]/80 border-orange-500/30 shadow-[0_0_20px_rgba(249,115,22,0.05)]'
+  };
+
+  const badgeColors = {
+    1: 'bg-amber-500 text-amber-900',
+    2: 'bg-slate-300 text-slate-800',
+    3: 'bg-orange-500 text-orange-950'
+  };
+
+  const textColors = {
+    1: 'text-white',
+    2: 'text-white',
+    3: 'text-white'
+  };
 
   return (
-    <motion.div
-      variants={item}
-      onClick={() => onProfileClick(entry.userId)}
-      style={{
-        display: 'flex', alignItems: 'center', gap: '14px',
-        padding: '12px 16px', borderRadius: '12px',
-        background: isMe ? `${color}12` : rank <= 3 ? 'rgba(255,255,255,0.03)' : 'transparent',
-        border: isMe ? `1px solid ${color}30` : rank <= 3 ? '1px solid rgba(255,255,255,0.06)' : '1px solid transparent',
-        transition: 'background 0.2s',
-        cursor: 'pointer',
-      }}
-      whileHover={{ scale: 1.01, backgroundColor: 'rgba(255,255,255,0.06)' }}
+    <div 
+      onClick={() => onClick(user.userId)}
+      className={`relative flex flex-col items-center bg-gradient-to-b ${colors[rank]} border bg-[#0b101e] rounded-2xl p-6 w-full max-w-[240px] cursor-pointer hover:-translate-y-2 transition-all duration-300 ${isGold ? 'scale-110 z-10 mx-2 md:mx-6' : 'z-0 mt-4 md:mt-10'}`}
     >
-      {/* Rank badge */}
-      <div style={{
-        width: '36px', height: '36px', borderRadius: '10px', flexShrink: 0,
-        background: rank <= 3 ? `${medalColor}15` : 'rgba(255,255,255,0.04)',
-        border: `1px solid ${rank <= 3 ? `${medalColor}30` : 'rgba(255,255,255,0.06)'}`,
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        fontSize: rank <= 3 ? '18px' : '13px',
-        color: rank <= 3 ? medalColor : '#64748b', fontWeight: 700,
-      }}>
-        {medal || `#${rank}`}
+      {/* Rank Badge */}
+      <div 
+        className={`absolute -left-3 -top-3 w-10 h-10 ${badgeColors[rank]} flex items-center justify-center font-black text-lg shadow-lg`} 
+        style={{ clipPath: 'polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)', zIndex: 20 }}
+      >
+        {rank}
       </div>
+
+      {isGold && (
+        <div className="absolute -top-10 text-amber-400 text-5xl drop-shadow-[0_0_15px_rgba(245,158,11,0.6)] z-20">
+          <FaCrown />
+        </div>
+      )}
 
       {/* Avatar */}
-      <div style={{
-        width: '36px', height: '36px', borderRadius: '10px', flexShrink: 0,
-        background: `${color}20`, border: `1px solid ${color}30`,
-        display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden',
-      }}>
-        <img
-          src={entry.avatarUrl || entry.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${entry.displayName}`}
-          alt={entry.displayName}
-          style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-          onError={e => { e.target.style.display = 'none'; }}
-        />
+      <div className={`w-20 h-20 rounded-full border-[3px] border-solid ${rank === 1 ? 'border-amber-400' : rank === 2 ? 'border-slate-300' : 'border-orange-500'} overflow-hidden mb-4 shadow-[0_0_15px_rgba(0,0,0,0.5)]`}>
+        <img src={user.avatarUrl || user.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.displayName}`} className="w-full h-full object-cover bg-slate-800" />
       </div>
 
-      {/* Name + coins */}
-      <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: '2px' }}>
-        <div style={{
-          fontSize: '14px', fontWeight: 600,
-          color: isMe ? color : '#e2e8f0',
-          display: 'flex', alignItems: 'center', gap: '6px',
-          overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-        }}>
-          {entry.displayName}
-          {isMe && (
-            <span style={{
-              fontSize: '10px', padding: '1px 8px', borderRadius: '20px',
-              background: `${color}20`, color, border: `1px solid ${color}30`,
-              fontWeight: 700, letterSpacing: '0.06em', flexShrink: 0,
-            }}>YOU</span>
-          )}
-        </div>
-        {reward > 0 && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '11px', color: '#fbbf24', fontWeight: 600 }}>
-            <FiAward style={{ fontSize: '12px' }} /> Prize: {reward.toLocaleString()} coins
-          </div>
-        )}
-      </div>
-
-      {/* Coins earned */}
-      <div style={{ textAlign: 'right', flexShrink: 0 }}>
-        <div style={{ fontSize: '14px', fontWeight: 800, color: rank <= 3 ? medalColor : '#e2e8f0', fontVariantNumeric: 'tabular-nums' }}>
-          {entry.coinsEarned.toLocaleString()}
-        </div>
-        <div style={{ fontSize: '10px', color: '#64748b' }}>coins</div>
-      </div>
-    </motion.div>
-  );
-}
-
-// ─── Period panel ─────────────────────────────────────────────────────────────
-function PeriodPanel({ period, data, currentUserId, onProfileClick }) {
-  const meta = PERIOD_META[period];
-  const countdown = useCountdown(data?.cycleEnd);
-  const rankings = data?.rankings || [];
-  const myRankIdx = rankings.findIndex(r => r.userId === currentUserId || r.userId?.toString() === currentUserId?.toString());
-
-  const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 20;
-  const totalPages = Math.ceil(rankings.length / itemsPerPage);
-  const paginatedRankings = rankings.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
-
-  return (
-    <div style={{ display: 'flex', flexDirection: 'column' }}>
-
-      {/* Period header */}
-      <div style={{
-        background: meta.bg, border: `1px solid ${meta.border}`,
-        borderRadius: '16px 16px 0 0', padding: '20px 24px',
-        display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px',
-      }}>
-        <div>
-          <div style={{ fontSize: '20px', fontWeight: 800, color: meta.color }}>{meta.label} Leaderboard</div>
-          <div style={{ fontSize: '12px', color: '#64748b', marginTop: '2px' }}>{meta.description}</div>
-        </div>
-
-        <div style={{ display: 'flex', gap: '20px', alignItems: 'center', flexWrap: 'wrap' }}>
-          {/* Countdown */}
-          {period !== 'allTime' && (
-            <div style={{ textAlign: 'right' }}>
-              <div style={{ fontSize: '10px', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: 600 }}>Resets in</div>
-              <div style={{ fontSize: '16px', fontWeight: 800, color: meta.color, fontVariantNumeric: 'tabular-nums' }}>{countdown || '...'}</div>
-            </div>
-          )}
-
-          {/* My rank */}
-          {myRankIdx >= 0 && (
-            <div style={{
-              padding: '6px 16px', borderRadius: '10px',
-              background: `${meta.color}15`, border: `1px solid ${meta.color}30`,
-              textAlign: 'center',
-            }}>
-              <div style={{ fontSize: '10px', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Your Rank</div>
-              <div style={{ fontSize: '18px', fontWeight: 800, color: meta.color }}>#{myRankIdx + 1}</div>
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Rankings list */}
-      <div style={{
-        background: 'rgba(255,255,255,0.015)', border: `1px solid ${meta.border}`,
-        borderTop: 'none', borderRadius: '0 0 16px 16px', padding: '16px',
-      }}>
-        {!rankings.length ? (
-          <div style={{ textAlign: 'center', padding: '40px', color: '#64748b', fontSize: '14px' }}>
-            No entries yet this period. Start earning to get on the board!
-          </div>
-        ) : (
-          <>
-            <motion.div variants={container} initial="hidden" animate="show" style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-              {paginatedRankings.map((entry, idx) => {
-                const globalIndex = (currentPage - 1) * itemsPerPage + idx;
-                const reward = globalIndex < (data?.rewardedRanks || 0) ? (data?.rewardTiers?.[globalIndex] || 0) : 0;
-                return (
-                  <RankRow
-                    key={`${entry.userId}-${globalIndex}`}
-                    entry={entry}
-                    rank={globalIndex + 1}
-                    currentUserId={currentUserId}
-                    color={meta.color}
-                    reward={reward}
-                    onProfileClick={onProfileClick}
-                  />
-                );
-              })}
-            </motion.div>
-
-            {totalPages > 1 && (
-              <div style={{ 
-                display: 'flex', justifyContent: 'space-between', alignItems: 'center', 
-                marginTop: '20px', padding: '10px 0', borderTop: '1px solid rgba(255,255,255,0.05)'
-              }}>
-                <button
-                  onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-                  disabled={currentPage === 1}
-                  style={{
-                    padding: '8px 16px', borderRadius: '8px', 
-                    background: currentPage === 1 ? 'rgba(255,255,255,0.02)' : 'rgba(255,255,255,0.08)',
-                    color: currentPage === 1 ? '#475569' : '#e2e8f0', cursor: currentPage === 1 ? 'not-allowed' : 'pointer',
-                    border: 'none', transition: 'background 0.2s', fontWeight: 600
-                  }}
-                >
-                  &lt; Prev
-                </button>
-                <div style={{ fontSize: '12px', color: '#94a3b8', fontWeight: 500 }}>
-                  Page {currentPage} of {totalPages}
-                </div>
-                <button
-                  onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-                  disabled={currentPage === totalPages}
-                  style={{
-                    padding: '8px 16px', borderRadius: '8px', 
-                    background: currentPage === totalPages ? 'rgba(255,255,255,0.02)' : 'rgba(255,255,255,0.08)',
-                    color: currentPage === totalPages ? '#475569' : '#e2e8f0', cursor: currentPage === totalPages ? 'not-allowed' : 'pointer',
-                    border: 'none', transition: 'background 0.2s', fontWeight: 600
-                  }}
-                >
-                  Next &gt;
-                </button>
-              </div>
-            )}
-          </>
-        )}
+      <div className="font-bold text-white text-lg mb-1 truncate w-full text-center">{user.displayName}</div>
+      <div className={`flex flex-col items-center justify-center font-black text-xl md:text-2xl ${textColors[rank]} leading-none mt-1`}>
+        {(user.coinsEarned || 0).toLocaleString()}
+        <span className="text-[10px] uppercase tracking-widest text-slate-400 font-bold mt-1">Coins</span>
       </div>
     </div>
   );
-}
+};
 
-// ─── Main Leaderboard page ────────────────────────────────────────────────────
+const PeriodPanel = ({ period, data, onProfileClick }) => {
+  const rankings = data?.rankings || [];
+  
+  const top3 = [rankings[1], rankings[0], rankings[2]]; // Order: 2nd, 1st, 3rd
+  const others = rankings.slice(3);
+
+  return (
+    <div className="flex flex-col items-center w-full max-w-4xl mx-auto">
+      
+      {/* Podium Section */}
+      <div className="flex flex-row items-end justify-center w-full gap-2 md:gap-0 mb-16 pt-10">
+        <PodiumCard rank={2} user={top3[0]} onClick={onProfileClick} />
+        <PodiumCard rank={1} user={top3[1]} onClick={onProfileClick} />
+        <PodiumCard rank={3} user={top3[2]} onClick={onProfileClick} />
+      </div>
+
+      {/* List Section */}
+      <div className="w-full bg-[#0b101e] border border-white/5 rounded-2xl p-4 md:p-6 shadow-2xl">
+        <div className="grid grid-cols-[60px_1fr_100px] md:grid-cols-[80px_1fr_120px] text-[11px] font-bold text-slate-500 mb-2 pb-4 border-b border-white/5 uppercase tracking-wider">
+          <div className="text-center md:text-left pl-0 md:pl-4">RANK</div>
+          <div>USER</div>
+          <div className="text-right pr-2">EARNINGS</div>
+        </div>
+
+        {!others.length && rankings.length <= 3 && (
+           <div className="text-center py-8 text-slate-500 text-sm">
+             No other users on the leaderboard yet.
+           </div>
+        )}
+
+        <motion.div variants={container} initial="hidden" animate="show" className="space-y-1">
+          {others.map((user, idx) => {
+            const currentRank = idx + 4;
+            return (
+              <motion.div 
+                variants={item}
+                key={user.userId || idx} 
+                onClick={() => onProfileClick(user.userId)}
+                className="grid grid-cols-[60px_1fr_100px] md:grid-cols-[80px_1fr_120px] items-center py-3 border-b border-white/5 last:border-0 hover:bg-white/[0.02] rounded-xl px-2 -mx-2 transition-colors cursor-pointer group"
+              >
+                <div className="font-bold text-slate-300 text-base md:text-lg text-center md:text-left pl-0 md:pl-4 group-hover:text-white transition-colors">{currentRank}</div>
+                <div className="flex items-center gap-3 md:gap-4 overflow-hidden">
+                  <div className="w-8 h-8 md:w-10 md:h-10 rounded-full overflow-hidden bg-slate-800 flex-shrink-0 border border-slate-700">
+                     <img src={user.avatarUrl || user.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.displayName}`} className="w-full h-full object-cover" />
+                  </div>
+                  <div className="font-bold text-slate-200 text-sm md:text-base truncate">{user.displayName}</div>
+                </div>
+                <div className="flex flex-col items-end justify-center font-bold text-emerald-400 text-sm md:text-base pr-2 tracking-wide leading-none">
+                  {(user.coinsEarned || 0).toLocaleString()}
+                  <span className="text-[9px] uppercase tracking-widest text-slate-500 font-bold mt-1">Coins</span>
+                </div>
+              </motion.div>
+            )
+          })}
+        </motion.div>
+      </div>
+
+    </div>
+  );
+};
+
 const Leaderboard = () => {
-  const { currentUser, mongoUser } = useAuth();
+  const { currentUser } = useAuth();
   const [activeProfileId, setActiveProfileId] = useState(null);
   const [leaderboard, setLeaderboard] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -303,93 +193,47 @@ const Leaderboard = () => {
 
   return (
     <DashboardLayout>
-      <motion.div variants={container} initial="hidden" animate="show" style={{ paddingBottom: '60px' }}>
+      <motion.div variants={container} initial="hidden" animate="show" className="pb-16 px-2 md:px-4 max-w-5xl mx-auto">
 
         {/* Page Header */}
-        <motion.div variants={item} style={{ marginBottom: '32px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-              <div style={{
-                width: '48px', height: '48px', borderRadius: '14px',
-                background: 'linear-gradient(135deg, rgba(99,102,241,0.2), rgba(139,92,246,0.2))',
-                border: '1px solid rgba(99,102,241,0.3)',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-              }}>
-                <FiTrendingUp style={{ fontSize: '22px', color: '#818cf8' }} />
-              </div>
-              <div>
-                <h1 style={{ fontSize: '28px', fontWeight: 800, color: '#fff', margin: 0 }}>Leaderboard</h1>
-                <p style={{ fontSize: '13px', color: '#64748b', margin: 0 }}>
-                  Earn more coins to climb higher. Rankings refresh every period.
-                </p>
-              </div>
-            </div>
-            
-            <button
-              onClick={() => { setLoading(true); fetchLeaderboard(); }}
-              disabled={loading}
-              style={{
-                display: 'flex', alignItems: 'center', gap: '8px',
-                background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)',
-                padding: '8px 16px', borderRadius: '12px', color: '#e2e8f0',
-                fontSize: '13px', fontWeight: 600, cursor: loading ? 'not-allowed' : 'pointer',
-                transition: 'all 0.2s'
-              }}
-            >
-              <FiRefreshCw style={{ animation: loading ? 'spin 1s linear infinite' : 'none' }} />
-              Refresh
-            </button>
+        <motion.div variants={item} className="flex flex-col items-center text-center mt-8 mb-10">
+          <div className="flex items-center justify-center gap-4 mb-2">
+            <LaurelLeft />
+            <h1 className="text-3xl md:text-5xl font-black text-white tracking-tight font-display">Leaderboard</h1>
+            <LaurelRight />
           </div>
+          <p className="text-slate-400 font-medium mt-1">Top users ranked by earnings</p>
         </motion.div>
 
         {loading ? (
-          <div style={{ display: 'flex', justifyContent: 'center', padding: '80px 0' }}>
-            <div style={{
-              width: '40px', height: '40px', borderRadius: '50%',
-              border: '3px solid rgba(99,102,241,0.2)', borderTopColor: '#818cf8',
-              animation: 'spin 0.8s linear infinite',
-            }} />
+          <div className="flex justify-center py-20">
+            <div className="w-10 h-10 border-4 border-indigo-500/20 border-t-indigo-500 rounded-full animate-spin" />
           </div>
         ) : enabledPeriods.length === 0 ? (
-          <motion.div variants={item} style={{
-            textAlign: 'center', padding: '80px 40px',
-            background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)',
-            borderRadius: '20px',
-          }}>
-            <FiLock style={{ fontSize: '48px', color: '#374151', marginBottom: '16px' }} />
-            <h2 style={{ fontSize: '20px', fontWeight: 700, color: '#94a3b8', margin: '0 0 8px' }}>
-              Leaderboard Coming Soon
-            </h2>
-            <p style={{ color: '#64748b', maxWidth: '400px', margin: '0 auto', lineHeight: 1.6 }}>
-              The leaderboard is not active yet. Check back soon!
-            </p>
+          <motion.div variants={item} className="text-center py-20 bg-white/[0.02] border border-white/[0.05] rounded-2xl max-w-2xl mx-auto">
+            <FiLock className="text-5xl text-slate-600 mx-auto mb-4" />
+            <h2 className="text-xl font-bold text-slate-300 mb-2">Leaderboard Coming Soon</h2>
+            <p className="text-slate-500 max-w-md mx-auto">The leaderboard is currently inactive. Check back later!</p>
           </motion.div>
         ) : (
           <>
-            {/* Period tabs */}
-            <motion.div variants={item} style={{ marginBottom: '28px' }}>
-              <div style={{
-                display: 'flex', gap: '8px', padding: '6px',
-                background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)',
-                borderRadius: '14px', width: 'fit-content',
-              }}>
+            {/* Period Toggles */}
+            <motion.div variants={item} className="flex justify-center mb-10">
+              <div className="flex p-1.5 bg-transparent border border-white/10 rounded-xl gap-2">
                 {enabledPeriods.map(period => {
-                  const meta = PERIOD_META[period];
                   const isActive = activeTab === period;
+                  const meta = PERIOD_META[period];
                   return (
                     <button
                       key={period}
                       onClick={() => setActiveTab(period)}
-                      style={{
-                        display: 'flex', alignItems: 'center', gap: '8px',
-                        padding: '8px 20px', borderRadius: '10px', border: 'none', cursor: 'pointer',
-                        background: isActive ? meta.bg : 'transparent',
-                        color: isActive ? meta.color : '#64748b',
-                        fontWeight: 700, fontSize: '14px', transition: 'all 0.2s',
-                        outline: isActive ? `1px solid ${meta.border}` : 'none',
-                      }}
+                      className={`flex items-center justify-center gap-2 px-6 py-2.5 rounded-lg font-bold text-sm transition-all duration-200 ${
+                        isActive 
+                          ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/20' 
+                          : 'text-slate-400 hover:text-white hover:bg-white/5'
+                      }`}
                     >
-                      <FiAward style={{ fontSize: '14px' }} />
+                      <FiCalendar className={isActive ? 'text-white' : 'text-slate-400'} />
                       {meta.label}
                     </button>
                   );
@@ -397,7 +241,7 @@ const Leaderboard = () => {
               </div>
             </motion.div>
 
-            {/* Active period content */}
+            {/* Active Period Content */}
             <AnimatePresence mode="wait">
               {activeTab && leaderboard[activeTab]?.enabled && (
                 <motion.div
@@ -410,7 +254,6 @@ const Leaderboard = () => {
                   <PeriodPanel
                     period={activeTab}
                     data={leaderboard[activeTab]}
-                    currentUserId={mongoUser?._id}
                     onProfileClick={(uid) => setActiveProfileId(uid)}
                   />
                 </motion.div>

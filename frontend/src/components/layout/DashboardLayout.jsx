@@ -1,7 +1,7 @@
 import Header from './Header';
 import LiveEarningsBar from '../LiveEarningsBar';
 
-const DashboardLayout = ({ children }) => {
+const DashboardLayout = ({ children, showLiveBar = false }) => {
   return (
     <div className="relative min-h-screen bg-[#080b14] text-gray-300 overflow-x-hidden">
       {/* Ambient Background Glows */}
@@ -11,7 +11,7 @@ const DashboardLayout = ({ children }) => {
       <Header />
 
       {/* Live Earnings Ticker */}
-      <LiveEarningsBar />
+      {showLiveBar && <LiveEarningsBar />}
 
       {/* Main Content */}
       <main className="relative z-10 w-full max-w-7xl mx-auto px-4 md:px-8 2xl:px-12 py-8 md:py-12 flex flex-col">

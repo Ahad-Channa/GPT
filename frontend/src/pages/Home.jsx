@@ -161,7 +161,7 @@ const Home = () => {
   }
 
   return (
-    <DashboardLayout>
+    <DashboardLayout showLiveBar={true}>
       <motion.div variants={container} initial="hidden" animate="show" className="space-y-8 pb-10">
 
         {/* ─── Platform Stats ───────────────────────────── */}

@@ -128,7 +128,7 @@ const Landing = () => {
               <button onClick={() => navigate('/login')} className="hidden sm:block text-sm font-bold text-[#c8d6ef] hover:text-white uppercase tracking-wider">
                 Login
               </button>
-              <button onClick={() => navigate('/register')} className="btn-glow px-6 py-2 text-sm uppercase tracking-widest rounded-lg">
+              <button onClick={() => navigate('/login?tab=register')} className="btn-glow px-6 py-2 text-sm uppercase tracking-widest rounded-lg">
                 Sign Up
               </button>
             </motion.div>
@@ -153,12 +153,12 @@ const Landing = () => {
             Complete offers, surveys, and tasks to earn real rewards. Join thousands of users already earning every day.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16">
-            <button onClick={() => navigate('/register')} className="w-full sm:w-auto btn-glow px-8 py-4 uppercase tracking-widest flex items-center justify-center gap-2 group">
+            <button onClick={() => navigate('/login?tab=register')} className="w-full sm:w-auto btn-glow px-8 py-4 uppercase tracking-widest flex items-center justify-center gap-2 group">
               Start Earning
               <FiArrowRight className="group-hover:translate-x-1 transition-transform" />
             </button>
             <button onClick={() => navigate('/login')} className="w-full sm:w-auto glass-card px-8 py-4 text-white font-bold uppercase tracking-widest hover:bg-white/5 transition-all flex items-center justify-center gap-2">
-              Sign Up Free
+              Login
             </button>
           </div>
 
@@ -347,11 +347,11 @@ const Landing = () => {
         <div className="absolute inset-0 bg-brand-accent/10 blur-[100px] rounded-full pointer-events-none" />
         <h2 className="text-4xl md:text-6xl font-display font-black uppercase tracking-tight mb-8 relative text-white">Start Earning Today</h2>
         <div className="flex flex-col sm:flex-row items-center justify-center gap-6 relative">
-          <button onClick={() => navigate('/register')} className="w-full sm:w-auto btn-glow px-10 py-5 uppercase tracking-widest text-lg">
+          <button onClick={() => navigate('/login?tab=register')} className="w-full sm:w-auto btn-glow px-10 py-5 uppercase tracking-widest text-lg">
             Sign Up
           </button>
           <button onClick={() => navigate('/login')} className="w-full sm:w-auto glass-card px-10 py-5 text-white font-bold uppercase tracking-widest hover:bg-white/5 transition-all">
-            Start Earning
+            Login
           </button>
         </div>
       </section>
