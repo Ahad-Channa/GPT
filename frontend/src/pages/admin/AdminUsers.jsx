@@ -76,7 +76,7 @@ const UserDetailModal = ({ user, onClose, currentUser }) => {
         {/* Header */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem' }}>
           <img
-            src={user.avatarUrl || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.displayName || 'User'}`}
+            src={user.avatarUrl || `/avatars/avatar1.png`}
             alt="avatar"
             style={{ width: 52, height: 52, borderRadius: '1rem', border: '2px solid rgba(99,102,241,0.4)', background: '#1e2a44' }}
           />

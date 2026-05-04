@@ -108,7 +108,7 @@ const LiveEarningsBar = () => {
                     {/* User Avatar */}
                     <div className="relative w-8 h-8 rounded-md overflow-hidden bg-brand-card border border-brand-border shrink-0 transition-transform group-hover:scale-105">
                       <img 
-                        src={tx.userId?.avatarUrl || `https://api.dicebear.com/7.x/avataaars/svg?seed=${tx.userId?.displayName || 'User'}`} 
+                        src={tx.userId?.avatarUrl || `/avatars/avatar1.png`} 
                         className="w-full h-full object-cover" 
                         alt="Avatar"
                         onError={(e) => e.target.style.display='none'}

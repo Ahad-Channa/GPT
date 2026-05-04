@@ -90,7 +90,7 @@ const PublicProfile = () => {
             {/* Avatar */}
             <div className="w-32 h-32 rounded-[2rem] overflow-hidden border-4 border-white/[0.05] shadow-xl bg-[#1a2235]">
               <img
-                src={profile.avatarUrl || `https://api.dicebear.com/7.x/avataaars/svg?seed=${profile.displayName}`}
+                src={profile.avatarUrl || `/avatars/avatar1.png`}
                 alt={profile.displayName}
                 className="w-full h-full object-cover"
               />

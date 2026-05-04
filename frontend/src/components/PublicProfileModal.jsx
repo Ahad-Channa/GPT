@@ -208,7 +208,7 @@ const PublicProfileModal = ({ userId, onClose }) => {
                     boxShadow: '0 8px 24px rgba(0,0,0,0.4)',
                   }}>
                     <img
-                      src={profile.avatarUrl || `https://api.dicebear.com/7.x/avataaars/svg?seed=${profile.displayName}`}
+                      src={profile.avatarUrl || `/avatars/avatar1.png`}
                       alt={profile.displayName}
                       style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                     />

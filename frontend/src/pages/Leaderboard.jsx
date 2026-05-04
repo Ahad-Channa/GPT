@@ -70,7 +70,7 @@ const PodiumCard = ({ rank, user, onClick }) => {
 
       {/* Avatar */}
       <div className={`w-20 h-20 md:w-24 md:h-24 rounded-full border-[3px] border-solid ${rank === 1 ? 'border-amber-400' : rank === 2 ? 'border-slate-300' : 'border-orange-500'} overflow-hidden mb-4 shadow-[0_0_15px_rgba(0,0,0,0.5)]`}>
-        <img src={user.avatarUrl || user.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.displayName}`} className="w-full h-full object-cover bg-slate-800" />
+        <img src={user.avatarUrl || user.avatar || `/avatars/avatar1.png`} className="w-full h-full object-cover bg-slate-800" />
       </div>
 
       <div className="font-bold text-white text-base md:text-lg mb-1 truncate w-full text-center">{user.displayName}</div>
@@ -125,7 +125,7 @@ const PeriodPanel = ({ period, data, onProfileClick }) => {
                 <div className="font-bold text-slate-300 text-base md:text-xl text-center md:text-left pl-0 md:pl-6 group-hover:text-white transition-colors">{currentRank}</div>
                 <div className="flex items-center gap-3 md:gap-5 overflow-hidden">
                   <div className="w-8 h-8 md:w-12 md:h-12 rounded-full overflow-hidden bg-slate-800 flex-shrink-0 border border-slate-700">
-                     <img src={user.avatarUrl || user.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.displayName}`} className="w-full h-full object-cover" />
+                     <img src={user.avatarUrl || user.avatar || `/avatars/avatar1.png`} className="w-full h-full object-cover" />
                   </div>
                   <div className="font-bold text-slate-200 text-sm md:text-lg truncate">{user.displayName}</div>
                 </div>

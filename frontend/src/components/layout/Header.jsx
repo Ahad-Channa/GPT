@@ -229,7 +229,7 @@ const Header = () => {
             >
               <div className="w-8 h-8 rounded-lg overflow-hidden border border-white/10 flex-shrink-0 bg-[#111827]">
                 <img
-                  src={mongoUser?.avatarUrl || currentUser?.photoURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=${mongoUser?.displayName || 'Felix'}`}
+                  src={mongoUser?.avatarUrl || currentUser?.photoURL || `/avatars/avatar1.png`}
                   alt="Avatar"
                   className="w-full h-full object-cover"
                 />

@@ -12,87 +12,48 @@ import {
 } from 'react-icons/fi';
 
 const PREDEFINED_AVATARS = [
-  'https://api.dicebear.com/7.x/avataaars/svg?seed=Felix',
-  'https://api.dicebear.com/7.x/avataaars/svg?seed=Aneka',
-  'https://api.dicebear.com/7.x/avataaars/svg?seed=Jocelyn',
-  'https://api.dicebear.com/7.x/avataaars/svg?seed=Avery',
-  'https://api.dicebear.com/7.x/avataaars/svg?seed=Oliver',
-  'https://api.dicebear.com/7.x/avataaars/svg?seed=Mason',
-  'https://api.dicebear.com/7.x/avataaars/svg?seed=Wyatt',
-  'https://api.dicebear.com/7.x/avataaars/svg?seed=Jack',
-  'https://api.dicebear.com/7.x/avataaars/svg?seed=Lily',
-  'https://api.dicebear.com/7.x/avataaars/svg?seed=Zoe',
-  'https://api.dicebear.com/7.x/avataaars/svg?seed=Chloe',
-  'https://api.dicebear.com/7.x/avataaars/svg?seed=Mia',
-  'https://api.dicebear.com/7.x/bottts/svg?seed=Robo1',
-  'https://api.dicebear.com/7.x/bottts/svg?seed=Robo2',
-  'https://api.dicebear.com/7.x/bottts/svg?seed=Robo3',
-  'https://api.dicebear.com/7.x/fun-emoji/svg?seed=Happy',
-  'https://api.dicebear.com/7.x/fun-emoji/svg?seed=Cool',
-  'https://api.dicebear.com/7.x/fun-emoji/svg?seed=Wink',
-  'https://api.dicebear.com/7.x/shapes/svg?seed=Shape1',
-  'https://api.dicebear.com/7.x/shapes/svg?seed=Shape2',
-  // More Avatars added
-  'https://api.dicebear.com/7.x/bottts/svg?seed=Robo4',
-  'https://api.dicebear.com/7.x/bottts/svg?seed=Robo5',
-  'https://api.dicebear.com/7.x/bottts/svg?seed=Robo6',
-  'https://api.dicebear.com/7.x/lorelei/svg?seed=Bella',
-  'https://api.dicebear.com/7.x/lorelei/svg?seed=Luna',
-  'https://api.dicebear.com/7.x/lorelei/svg?seed=Lucy',
-  'https://api.dicebear.com/7.x/lorelei/svg?seed=Molly',
-  'https://api.dicebear.com/7.x/lorelei/svg?seed=Daisy',
-  'https://api.dicebear.com/7.x/lorelei/svg?seed=Sadie',
-  'https://api.dicebear.com/7.x/micah/svg?seed=Caleb',
-  'https://api.dicebear.com/7.x/micah/svg?seed=Elijah',
-  'https://api.dicebear.com/7.x/micah/svg?seed=Isaiah',
-  'https://api.dicebear.com/7.x/micah/svg?seed=Josiah',
-  'https://api.dicebear.com/7.x/micah/svg?seed=Noah',
-  'https://api.dicebear.com/7.x/adventurer/svg?seed=Hunter',
-  'https://api.dicebear.com/7.x/adventurer/svg?seed=Chase',
-  'https://api.dicebear.com/7.x/adventurer/svg?seed=Ryder',
-  'https://api.dicebear.com/7.x/adventurer/svg?seed=Gage',
-  'https://api.dicebear.com/7.x/adventurer/svg?seed=Zane',
-  'https://api.dicebear.com/7.x/pixel-art/svg?seed=Pixel1',
-  'https://api.dicebear.com/7.x/pixel-art/svg?seed=Pixel2',
-  'https://api.dicebear.com/7.x/pixel-art/svg?seed=Pixel3',
-  'https://api.dicebear.com/7.x/pixel-art/svg?seed=Pixel4',
-  'https://api.dicebear.com/7.x/open-peeps/svg?seed=Peep1',
-  'https://api.dicebear.com/7.x/open-peeps/svg?seed=Peep2',
-  'https://api.dicebear.com/7.x/open-peeps/svg?seed=Peep3',
-  'https://api.dicebear.com/7.x/open-peeps/svg?seed=Peep4',
-  'https://api.dicebear.com/7.x/thumbs/svg?seed=Thumb1',
-  'https://api.dicebear.com/7.x/thumbs/svg?seed=Thumb2',
-  'https://api.dicebear.com/7.x/rings/svg?seed=Ring1',
-  'https://api.dicebear.com/7.x/rings/svg?seed=Ring2',
-  'https://api.dicebear.com/7.x/avataaars/svg?seed=Grayson',
-  'https://api.dicebear.com/7.x/avataaars/svg?seed=Levi',
-  'https://api.dicebear.com/7.x/avataaars/svg?seed=Isaac',
-  'https://api.dicebear.com/7.x/bottts/svg?seed=Robo7',
-  'https://api.dicebear.com/7.x/bottts/svg?seed=Robo8',
-  'https://api.dicebear.com/7.x/fun-emoji/svg?seed=Cry',
-  'https://api.dicebear.com/7.x/fun-emoji/svg?seed=Laugh',
-  'https://api.dicebear.com/7.x/fun-emoji/svg?seed=Tired',
-  'https://api.dicebear.com/7.x/shapes/svg?seed=Shape3',
+  '/avatars/avatar1.png',
+  '/avatars/avatar2.png',
+  '/avatars/avatar3.png',
+  '/avatars/avatar4.png',
+  '/avatars/avatar5.png',
+  '/avatars/avatar6.png',
+  '/avatars/avatar7.png',
+  '/avatars/avatar8.png',
+  '/avatars/avatar9.png',
+  '/avatars/avatar10.png',
+  '/avatars/avatar11.jpg',
+  '/avatars/avatar12.jpg',
+  '/avatars/avatar13.jpg',
+  '/avatars/avatar14.png',
+  '/avatars/avatar15.png',
+  '/avatars/avatar16.png',
+  '/avatars/avatar17.png',
+  '/avatars/avatar18.png',
+  '/avatars/avatar19.png',
+  '/avatars/avatar20.png',
+
+
 ];
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
 const TX_TYPE_LABEL = {
-  offer_reward:       { label: 'Offer Reward',    color: 'text-indigo-400'  },
-  custom_offer_reward:{ label: 'Custom Offer',    color: 'text-indigo-400'  },
-  daily_bonus:        { label: 'Daily Bonus',      color: 'text-amber-400'   },
-  promo_code:         { label: 'Promo Code',       color: 'text-emerald-400' },
-  referral_reward:    { label: 'Referral',         color: 'text-cyan-400'    },
-  withdrawal:         { label: 'Withdrawal',       color: 'text-rose-400'    },
-  admin_adjustment:   { label: 'Adjustment',       color: 'text-orange-400'  },
-  leaderboard_reward: { label: 'Leaderboard',      color: 'text-violet-400'  },
+  offer_reward: { label: 'Offer Reward', color: 'text-indigo-400' },
+  custom_offer_reward: { label: 'Custom Offer', color: 'text-indigo-400' },
+  daily_bonus: { label: 'Daily Bonus', color: 'text-amber-400' },
+  promo_code: { label: 'Promo Code', color: 'text-emerald-400' },
+  referral_reward: { label: 'Referral', color: 'text-cyan-400' },
+  withdrawal: { label: 'Withdrawal', color: 'text-rose-400' },
+  admin_adjustment: { label: 'Adjustment', color: 'text-orange-400' },
+  leaderboard_reward: { label: 'Leaderboard', color: 'text-violet-400' },
 };
 
 const STATUS_DOT = {
   completed: 'bg-emerald-400',
-  pending:   'bg-amber-400 animate-pulse',
-  rejected:  'bg-rose-400',
-  failed:    'bg-rose-400',
+  pending: 'bg-amber-400 animate-pulse',
+  rejected: 'bg-rose-400',
+  failed: 'bg-rose-400',
 };
 
 function timeAgo(dateStr) {
@@ -100,10 +61,10 @@ function timeAgo(dateStr) {
   const m = Math.floor(diff / 60000);
   const h = Math.floor(diff / 3600000);
   const d = Math.floor(diff / 86400000);
-  if (m < 1)  return 'Just now';
+  if (m < 1) return 'Just now';
   if (m < 60) return `${m}m ago`;
   if (h < 24) return `${h}h ago`;
-  if (d < 7)  return `${d}d ago`;
+  if (d < 7) return `${d}d ago`;
   return new Date(dateStr).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 }
 
@@ -156,7 +117,7 @@ const HistoryList = ({ transactions, loading, error, hasMore, onLoadMore, loadin
           let dotClass = STATUS_DOT.completed;
           let description = '';
           let amountStr = '';
-          
+
           if (isActivity) {
             label = tx.actionType.replace('_', ' ').toUpperCase();
             color = 'text-cyan-400';
@@ -275,11 +236,10 @@ const useHistory = (token, type, endpoint = '/wallet/history') => {
 const TabBtn = ({ active, onClick, icon: Icon, label }) => (
   <button
     onClick={onClick}
-    className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-all ${
-      active
-        ? 'bg-indigo-500/15 text-indigo-300 border border-indigo-500/30'
-        : 'text-slate-400 hover:text-slate-200 border border-transparent hover:border-white/10'
-    }`}
+    className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-all ${active
+      ? 'bg-indigo-500/15 text-indigo-300 border border-indigo-500/30'
+      : 'text-slate-400 hover:text-slate-200 border border-transparent hover:border-white/10'
+      }`}
   >
     <Icon className="text-base" /> {label}
   </button>
@@ -295,7 +255,7 @@ const ClickedOfferRow = ({ offer, token, onRefresh }) => {
 
   const isRejected = offer.submissionStatus === 'rejected';
   const iconEmoji = offer.icon && !offer.icon.startsWith('http') && !offer.icon.includes('/') ? offer.icon : null;
-  const iconUrl   = offer.coverImage || (offer.icon && !iconEmoji ? offer.icon : null);
+  const iconUrl = offer.coverImage || (offer.icon && !iconEmoji ? offer.icon : null);
 
   const handleImage = (e) => {
     const file = e.target.files[0];
@@ -372,11 +332,10 @@ const ClickedOfferRow = ({ offer, token, onRefresh }) => {
           )}
           <button
             onClick={() => { setOpen(o => !o); setResult(null); }}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
-              open
-                ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
-                : 'bg-white/[0.05] text-slate-300 border border-white/[0.08] hover:border-amber-500/30 hover:text-amber-300'
-            }`}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${open
+              ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
+              : 'bg-white/[0.05] text-slate-300 border border-white/[0.08] hover:border-amber-500/30 hover:text-amber-300'
+              }`}
           >
             <FiSend className="text-[11px]" />
             {isRejected ? 'Resubmit Proof' : 'Submit Proof'}
@@ -393,11 +352,10 @@ const ClickedOfferRow = ({ offer, token, onRefresh }) => {
 
       {/* Result banner */}
       {result && (
-        <div className={`mt-3 ml-[52px] p-2.5 rounded-xl border text-xs font-medium ${
-          result.type === 'success'
-            ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400'
-            : 'bg-rose-500/10 border-rose-500/20 text-rose-400'
-        }`}>
+        <div className={`mt-3 ml-[52px] p-2.5 rounded-xl border text-xs font-medium ${result.type === 'success'
+          ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400'
+          : 'bg-rose-500/10 border-rose-500/20 text-rose-400'
+          }`}>
           {result.type === 'success' && <FiCheckCircle className="inline mr-1" />}
           {result.message}
         </div>
@@ -469,7 +427,7 @@ const SettingsModal = ({ isOpen, onClose, mongoUser, token, setMongoUser, logout
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
-  const [deletePhase, setDeletePhase] = useState(0); 
+  const [deletePhase, setDeletePhase] = useState(0);
   const [showMoreAvatars, setShowMoreAvatars] = useState(false);
   const [customStyle, setCustomStyle] = useState('avataaars');
   const [customSeed, setCustomSeed] = useState('');
@@ -479,12 +437,12 @@ const SettingsModal = ({ isOpen, onClose, mongoUser, token, setMongoUser, logout
 
   useEffect(() => {
     if (isOpen) {
-       setDisplayName(mongoUser?.displayName || '');
-       setAvatarUrl(mongoUser?.avatarUrl || '');
-       setIsPrivate(mongoUser?.isPrivate || false);
-       setDeletePhase(0);
-       setError('');
-       setSuccess('');
+      setDisplayName(mongoUser?.displayName || '');
+      setAvatarUrl(mongoUser?.avatarUrl || '');
+      setIsPrivate(mongoUser?.isPrivate || false);
+      setDeletePhase(0);
+      setError('');
+      setSuccess('');
     }
   }, [isOpen, mongoUser]);
 
@@ -531,23 +489,23 @@ const SettingsModal = ({ isOpen, onClose, mongoUser, token, setMongoUser, logout
           headers: { Authorization: `Bearer ${token}` }
         });
         if (res.ok) {
-           await logout();
-           window.location.href = '/';
+          await logout();
+          window.location.href = '/';
         } else {
-           const d = await res.json();
-           setError(d.error || 'Failed to delete account');
-           setDeletePhase(0);
+          const d = await res.json();
+          setError(d.error || 'Failed to delete account');
+          setDeletePhase(0);
         }
       } catch {
-         setError('Network error');
-         setDeletePhase(0);
+        setError('Network error');
+        setDeletePhase(0);
       }
     }
   };
 
   return (
     <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <motion.div 
+      <motion.div
         initial={{ scale: 0.95, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         className="bg-[#0c101b] border border-white/[0.08] rounded-[2rem] w-full max-w-2xl max-h-[90vh] overflow-y-auto custom-scrollbar relative shadow-glow-lg"
@@ -609,72 +567,49 @@ const SettingsModal = ({ isOpen, onClose, mongoUser, token, setMongoUser, logout
                   onClick={() => setAvatarUrl(url)}
                   className={`w-14 h-14 sm:w-16 sm:h-16 rounded-xl overflow-hidden border-2 transition-all ${avatarUrl === url ? 'border-indigo-500 shadow-[0_0_15px_rgba(79,70,229,0.4)] scale-105' : 'border-transparent hover:border-white/20 hover:scale-105'} bg-[#151b2b]`}
                 >
-                  <img src={url} alt={`Avatar ${i+1}`} className="w-full h-full object-cover" />
+                  <img src={url} alt={`Avatar ${i + 1}`} className="w-full h-full object-cover" />
                 </button>
               ))}
             </div>
-            
-            {!showMoreAvatars && PREDEFINED_AVATARS.length > 20 && (
-              <div className="flex justify-center mt-3">
-                <button 
-                  onClick={() => setShowMoreAvatars(true)} 
-                  className="flex items-center gap-2 text-xs text-indigo-400 hover:text-indigo-300 font-semibold transition-colors"
-                >
-                  <FiArrowDownCircle size={14} /> Show more avatars ({PREDEFINED_AVATARS.length - 20} more)
-                </button>
-              </div>
-            )}
-            
-            <div className="mt-6 border border-white/[0.08] bg-[#151b2b] rounded-xl p-4 flex flex-col sm:flex-row items-center gap-4 justify-between">
-              <div className="flex-1">
-                <h4 className="text-xs font-bold text-slate-300 uppercase tracking-wider mb-1">Random Avatar Generator</h4>
-                <p className="text-[10px] text-slate-500">Pick out an avatar perfectly unique to you with our custom random generator.</p>
-              </div>
-              <button
-                onClick={() => setAvatarUrl(`https://api.dicebear.com/7.x/avataaars/svg?seed=${Math.random().toString(36).substring(7)}`)}
-                className="px-6 py-2.5 rounded-xl bg-indigo-500/10 text-indigo-400 text-xs font-bold hover:bg-indigo-500/20 transition-colors flex items-center gap-2"
-              >
-                <FiRefreshCw size={14} /> Generate Random
-              </button>
-            </div>
+
           </div>
 
           <div className="pt-4 flex justify-end">
-             <button
-                onClick={handleSave}
-                disabled={saving}
-                className="flex items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-indigo-500 to-violet-600 text-white font-bold hover:shadow-glow transition-all disabled:opacity-50"
-             >
-                {saving ? <FiLoader className="animate-spin" /> : <FiCheck />}
-                {saving ? 'Saving...' : 'Save Profile'}
-             </button>
+            <button
+              onClick={handleSave}
+              disabled={saving}
+              className="flex items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-indigo-500 to-violet-600 text-white font-bold hover:shadow-glow transition-all disabled:opacity-50"
+            >
+              {saving ? <FiLoader className="animate-spin" /> : <FiCheck />}
+              {saving ? 'Saving...' : 'Save Profile'}
+            </button>
           </div>
 
           <div className="mt-12 pt-8 border-t border-white/[0.08]">
-             <h3 className="text-base font-bold text-rose-400 flex items-center gap-2 mb-2">
-               <FiAlertTriangle /> Danger Zone
-             </h3>
-             <p className="text-slate-400 text-sm mb-4">Deleting your account is permanent. All associated data will be wiped.</p>
-             
-             {deletePhase === 0 && (
-                <button
-                  onClick={handleDelete}
-                  className="px-5 py-2.5 rounded-xl border border-rose-500/40 text-rose-400 font-semibold hover:bg-rose-500/10 transition-colors text-sm"
-                >
-                  Delete Account...
-                </button>
-             )}
-             {deletePhase === 1 && (
-                <div className="bg-rose-500/10 border border-rose-500/30 p-4 rounded-xl flex items-center justify-between flex-wrap gap-4">
-                   <p className="text-rose-300 font-medium text-sm">Are you absolutely sure?</p>
-                   <div className="flex items-center gap-3">
-                      <button onClick={() => setDeletePhase(0)} className="text-slate-400 hover:text-white text-sm font-semibold">Cancel</button>
-                      <button onClick={handleDelete} className="bg-rose-600 hover:bg-rose-500 text-white px-4 py-2 rounded-lg text-sm font-bold shadow-lg shadow-rose-900/50 transition-colors">
-                        Yes, delete my account
-                      </button>
-                   </div>
+            <h3 className="text-base font-bold text-rose-400 flex items-center gap-2 mb-2">
+              <FiAlertTriangle /> Danger Zone
+            </h3>
+            <p className="text-slate-400 text-sm mb-4">Deleting your account is permanent. All associated data will be wiped.</p>
+
+            {deletePhase === 0 && (
+              <button
+                onClick={handleDelete}
+                className="px-5 py-2.5 rounded-xl border border-rose-500/40 text-rose-400 font-semibold hover:bg-rose-500/10 transition-colors text-sm"
+              >
+                Delete Account...
+              </button>
+            )}
+            {deletePhase === 1 && (
+              <div className="bg-rose-500/10 border border-rose-500/30 p-4 rounded-xl flex items-center justify-between flex-wrap gap-4">
+                <p className="text-rose-300 font-medium text-sm">Are you absolutely sure?</p>
+                <div className="flex items-center gap-3">
+                  <button onClick={() => setDeletePhase(0)} className="text-slate-400 hover:text-white text-sm font-semibold">Cancel</button>
+                  <button onClick={handleDelete} className="bg-rose-600 hover:bg-rose-500 text-white px-4 py-2 rounded-lg text-sm font-bold shadow-lg shadow-rose-900/50 transition-colors">
+                    Yes, delete my account
+                  </button>
                 </div>
-             )}
+              </div>
+            )}
           </div>
         </div>
       </motion.div>
@@ -687,8 +622,8 @@ const Profile = () => {
 
   const { currentUser, mongoUser, setMongoUser, logout } = useAuth();
   const [showSettings, setShowSettings] = useState(false);
-  const [activeTab,  setActiveTab]  = useState('started_offers');
-  const [token,      setToken]      = useState(null);
+  const [activeTab, setActiveTab] = useState('started_offers');
+  const [token, setToken] = useState(null);
   const [customOffers, setCustomOffers] = useState([]);
   const [loadingOffers, setLoadingOffers] = useState(false);
   const [profileStats, setProfileStats] = useState({ totalTasksCompleted: 0, earnings30Days: 0, totalEarnedLifetime: 0 });
@@ -772,13 +707,13 @@ const Profile = () => {
 
   return (
     <DashboardLayout>
-      <SettingsModal 
-        isOpen={showSettings} 
-        onClose={() => setShowSettings(false)} 
-        mongoUser={mongoUser} 
-        token={token} 
-        setMongoUser={setMongoUser} 
-        logout={logout} 
+      <SettingsModal
+        isOpen={showSettings}
+        onClose={() => setShowSettings(false)}
+        mongoUser={mongoUser}
+        token={token}
+        setMongoUser={setMongoUser}
+        logout={logout}
       />
       <motion.div
         initial={{ opacity: 0, y: 16 }}
@@ -800,7 +735,7 @@ const Profile = () => {
                 <div className="relative shrink-0 self-start">
                   <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl overflow-hidden border-2 border-white/[0.1] bg-[#111827] shadow-[0_0_30px_rgba(99,102,241,0.2)]">
                     <img
-                      src={mongoUser?.avatarUrl || currentUser?.photoURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=${mongoUser?.displayName || 'Avatar'}`}
+                      src={mongoUser?.avatarUrl || currentUser?.photoURL || `/avatars/avatar1.png`}
                       alt="Avatar"
                       className="w-full h-full object-cover"
                     />
@@ -897,9 +832,9 @@ const Profile = () => {
         {/* ─── Segmented Pill Navigation ─────────────────── */}
         <div className="flex p-1.5 bg-[#080b14] border border-white/[0.05] rounded-2xl w-full overflow-x-auto custom-scrollbar">
           <div className="flex gap-1 min-w-max">
-            <TabBtn active={activeTab === 'started_offers'}   onClick={() => setActiveTab('started_offers')}   icon={FiPlayCircle}   label="Started Offers" />
-            <TabBtn active={activeTab === 'completed_offers'} onClick={() => setActiveTab('completed_offers')} icon={FiCheckCircle}  label="Completed Offers" />
-            <TabBtn active={activeTab === 'chargebacks'}      onClick={() => setActiveTab('chargebacks')}      icon={FiShield}       label="Chargebacks" />
+            <TabBtn active={activeTab === 'started_offers'} onClick={() => setActiveTab('started_offers')} icon={FiPlayCircle} label="Started Offers" />
+            <TabBtn active={activeTab === 'completed_offers'} onClick={() => setActiveTab('completed_offers')} icon={FiCheckCircle} label="Completed Offers" />
+            <TabBtn active={activeTab === 'chargebacks'} onClick={() => setActiveTab('chargebacks')} icon={FiShield} label="Chargebacks" />
           </div>
         </div>
 
@@ -944,7 +879,7 @@ const Profile = () => {
                 <div className="divide-y divide-white/[0.04]">
                   {completedOffers.map(offer => {
                     const iconEmoji = offer.icon && !offer.icon.startsWith('http') && !offer.icon.includes('/') ? offer.icon : null;
-                    const iconUrl   = offer.coverImage || (offer.icon && !iconEmoji ? offer.icon : null);
+                    const iconUrl = offer.coverImage || (offer.icon && !iconEmoji ? offer.icon : null);
                     return (
                       <div key={offer._id} className="px-6 py-4 flex items-center gap-3 hover:bg-white/[0.01] transition-colors">
                         {/* Icon */}
@@ -993,7 +928,7 @@ const Profile = () => {
                   <p className="text-xs text-slate-500 mt-0.5">Reversed transactions due to chargebacks or compliance flags</p>
                 </div>
               </div>
-              
+
               <div className="px-6 py-4">
                 <HistoryList
                   transactions={chargebacks.dataList}
