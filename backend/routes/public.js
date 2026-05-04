@@ -99,7 +99,7 @@ router.get('/recent-earnings', async (req, res) => {
     let recentEarnings = await Transaction.find({
       $or: [
         {
-          transactionType: { $in: ['offer_reward', 'custom_offer_reward', 'daily_bonus', 'admin_adjustment', 'promo_code'] },
+          transactionType: { $in: ['offer_reward', 'custom_offer_reward', 'daily_bonus', 'admin_adjustment', 'promo_code', 'leaderboard_reward'] },
           status: { $in: ['completed', 'hold'] },
           amount: { $gt: 0 }
         },
