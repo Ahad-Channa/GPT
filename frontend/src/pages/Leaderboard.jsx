@@ -17,29 +17,17 @@ const PERIOD_META = {
   monthly: { label: 'Monthly' },
 };
 
-// Simple abstract laurel branches for the title
+// Custom wheat image for the title
 const LaurelLeft = () => (
-  <svg width="32" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-indigo-500 drop-shadow-[0_0_8px_rgba(99,102,241,0.5)]">
-    <path d="M18 20C18 20 8 16 8 8C8 8 13 4 18 4" strokeLinecap="round"/>
-    <path d="M12 14C12 14 5 12 5 6" strokeLinecap="round"/>
-    <path d="M14 10L18 8" strokeLinecap="round"/>
-    <path d="M9 7L12 6" strokeLinecap="round"/>
-    <path d="M10 16L12 14" strokeLinecap="round"/>
-  </svg>
+  <img src="/wheat.png" alt="Wheat" className="w-8 h-10 md:w-12 md:h-14 object-contain filter brightness-0 invert drop-shadow-[0_0_8px_rgba(255,255,255,0.4)] scale-x-[-1]" />
 );
 
 const LaurelRight = () => (
-  <svg width="32" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-indigo-500 drop-shadow-[0_0_8px_rgba(99,102,241,0.5)] scale-x-[-1]">
-    <path d="M18 20C18 20 8 16 8 8C8 8 13 4 18 4" strokeLinecap="round"/>
-    <path d="M12 14C12 14 5 12 5 6" strokeLinecap="round"/>
-    <path d="M14 10L18 8" strokeLinecap="round"/>
-    <path d="M9 7L12 6" strokeLinecap="round"/>
-    <path d="M10 16L12 14" strokeLinecap="round"/>
-  </svg>
+  <img src="/wheat.png" alt="Wheat" className="w-8 h-10 md:w-12 md:h-14 object-contain filter brightness-0 invert drop-shadow-[0_0_8px_rgba(255,255,255,0.4)]" />
 );
 
 const PodiumCard = ({ rank, user, onClick }) => {
-  if (!user) return <div className="w-full max-w-[240px] hidden md:block opacity-0 pointer-events-none" />; 
+  if (!user) return <div className="w-full max-w-[320px] hidden md:block opacity-0 pointer-events-none" />; 
   
   const isGold = rank === 1;
   
@@ -64,7 +52,7 @@ const PodiumCard = ({ rank, user, onClick }) => {
   return (
     <div 
       onClick={() => onClick(user.userId)}
-      className={`relative flex flex-col items-center bg-gradient-to-b ${colors[rank]} border bg-[#0b101e] rounded-2xl p-6 w-full max-w-[240px] cursor-pointer hover:-translate-y-2 transition-all duration-300 ${isGold ? 'scale-110 z-10 mx-2 md:mx-6' : 'z-0 mt-4 md:mt-10'}`}
+      className={`relative flex flex-col items-center bg-gradient-to-b ${colors[rank]} border bg-[#0b101e] rounded-2xl p-5 md:p-6 w-full max-w-[240px] lg:max-w-[280px] cursor-pointer hover:-translate-y-2 transition-all duration-300 ${isGold ? 'scale-110 z-10 mx-2 md:mx-6' : 'z-0 mt-4 md:mt-8'}`}
     >
       {/* Rank Badge */}
       <div 
@@ -81,14 +69,14 @@ const PodiumCard = ({ rank, user, onClick }) => {
       )}
 
       {/* Avatar */}
-      <div className={`w-20 h-20 rounded-full border-[3px] border-solid ${rank === 1 ? 'border-amber-400' : rank === 2 ? 'border-slate-300' : 'border-orange-500'} overflow-hidden mb-4 shadow-[0_0_15px_rgba(0,0,0,0.5)]`}>
+      <div className={`w-20 h-20 md:w-24 md:h-24 rounded-full border-[3px] border-solid ${rank === 1 ? 'border-amber-400' : rank === 2 ? 'border-slate-300' : 'border-orange-500'} overflow-hidden mb-4 shadow-[0_0_15px_rgba(0,0,0,0.5)]`}>
         <img src={user.avatarUrl || user.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.displayName}`} className="w-full h-full object-cover bg-slate-800" />
       </div>
 
-      <div className="font-bold text-white text-lg mb-1 truncate w-full text-center">{user.displayName}</div>
-      <div className={`flex flex-col items-center justify-center font-black text-xl md:text-2xl ${textColors[rank]} leading-none mt-1`}>
+      <div className="font-bold text-white text-base md:text-lg mb-1 truncate w-full text-center">{user.displayName}</div>
+      <div className={`flex flex-col items-center justify-center font-black text-2xl md:text-3xl ${textColors[rank]} leading-none mt-1`}>
         {(user.coinsEarned || 0).toLocaleString()}
-        <span className="text-[10px] uppercase tracking-widest text-slate-400 font-bold mt-1">Coins</span>
+        <span className="text-[10px] md:text-xs uppercase tracking-widest text-slate-400 font-bold mt-2">Coins</span>
       </div>
     </div>
   );
@@ -101,21 +89,21 @@ const PeriodPanel = ({ period, data, onProfileClick }) => {
   const others = rankings.slice(3);
 
   return (
-    <div className="flex flex-col items-center w-full max-w-4xl mx-auto">
+    <div className="flex flex-col items-center w-full">
       
       {/* Podium Section */}
-      <div className="flex flex-row items-end justify-center w-full gap-2 md:gap-0 mb-16 pt-10">
+      <div className="flex flex-row items-end justify-center w-full gap-2 md:gap-4 mb-20 pt-12">
         <PodiumCard rank={2} user={top3[0]} onClick={onProfileClick} />
         <PodiumCard rank={1} user={top3[1]} onClick={onProfileClick} />
         <PodiumCard rank={3} user={top3[2]} onClick={onProfileClick} />
       </div>
 
       {/* List Section */}
-      <div className="w-full bg-[#0b101e] border border-white/5 rounded-2xl p-4 md:p-6 shadow-2xl">
-        <div className="grid grid-cols-[60px_1fr_100px] md:grid-cols-[80px_1fr_120px] text-[11px] font-bold text-slate-500 mb-2 pb-4 border-b border-white/5 uppercase tracking-wider">
-          <div className="text-center md:text-left pl-0 md:pl-4">RANK</div>
+      <div className="w-full bg-[#0b101e] border border-white/5 rounded-2xl p-4 md:p-8 shadow-2xl">
+        <div className="grid grid-cols-[60px_1fr_100px] md:grid-cols-[100px_1fr_160px] text-[12px] md:text-sm font-bold text-slate-500 mb-4 pb-4 border-b border-white/5 uppercase tracking-wider">
+          <div className="text-center md:text-left pl-0 md:pl-6">RANK</div>
           <div>USER</div>
-          <div className="text-right pr-2">EARNINGS</div>
+          <div className="text-right pr-2 md:pr-6">EARNINGS</div>
         </div>
 
         {!others.length && rankings.length <= 3 && (
@@ -132,18 +120,18 @@ const PeriodPanel = ({ period, data, onProfileClick }) => {
                 variants={item}
                 key={user.userId || idx} 
                 onClick={() => onProfileClick(user.userId)}
-                className="grid grid-cols-[60px_1fr_100px] md:grid-cols-[80px_1fr_120px] items-center py-3 border-b border-white/5 last:border-0 hover:bg-white/[0.02] rounded-xl px-2 -mx-2 transition-colors cursor-pointer group"
+                className="grid grid-cols-[60px_1fr_100px] md:grid-cols-[100px_1fr_160px] items-center py-4 border-b border-white/5 last:border-0 hover:bg-white/[0.02] rounded-xl px-2 md:px-4 -mx-2 md:-mx-4 transition-colors cursor-pointer group"
               >
-                <div className="font-bold text-slate-300 text-base md:text-lg text-center md:text-left pl-0 md:pl-4 group-hover:text-white transition-colors">{currentRank}</div>
-                <div className="flex items-center gap-3 md:gap-4 overflow-hidden">
-                  <div className="w-8 h-8 md:w-10 md:h-10 rounded-full overflow-hidden bg-slate-800 flex-shrink-0 border border-slate-700">
+                <div className="font-bold text-slate-300 text-base md:text-xl text-center md:text-left pl-0 md:pl-6 group-hover:text-white transition-colors">{currentRank}</div>
+                <div className="flex items-center gap-3 md:gap-5 overflow-hidden">
+                  <div className="w-8 h-8 md:w-12 md:h-12 rounded-full overflow-hidden bg-slate-800 flex-shrink-0 border border-slate-700">
                      <img src={user.avatarUrl || user.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.displayName}`} className="w-full h-full object-cover" />
                   </div>
-                  <div className="font-bold text-slate-200 text-sm md:text-base truncate">{user.displayName}</div>
+                  <div className="font-bold text-slate-200 text-sm md:text-lg truncate">{user.displayName}</div>
                 </div>
-                <div className="flex flex-col items-end justify-center font-bold text-emerald-400 text-sm md:text-base pr-2 tracking-wide leading-none">
+                <div className="flex flex-col items-end justify-center font-bold text-emerald-400 text-sm md:text-xl pr-2 md:pr-6 tracking-wide leading-none">
                   {(user.coinsEarned || 0).toLocaleString()}
-                  <span className="text-[9px] uppercase tracking-widest text-slate-500 font-bold mt-1">Coins</span>
+                  <span className="text-[9px] md:text-[11px] uppercase tracking-widest text-slate-500 font-bold mt-1.5">Coins</span>
                 </div>
               </motion.div>
             )
@@ -192,8 +180,8 @@ const Leaderboard = () => {
     : [];
 
   return (
-    <DashboardLayout>
-      <motion.div variants={container} initial="hidden" animate="show" className="pb-16 px-2 md:px-4 max-w-5xl mx-auto">
+    <DashboardLayout fullWidth={true}>
+      <motion.div variants={container} initial="hidden" animate="show" className="pb-16 px-4 md:px-8 max-w-[1600px] w-full mx-auto">
 
         {/* Page Header */}
         <motion.div variants={item} className="flex flex-col items-center text-center mt-8 mb-10">
