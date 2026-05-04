@@ -3,7 +3,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { useNotifications } from '../../contexts/NotificationContext';
 import { useDailyBonus } from '../../contexts/DailyBonusContext';
 import { FiLogOut, FiUser, FiSettings, FiZap, FiChevronDown, FiCreditCard, FiLock, FiClock, FiBell, FiUsers, FiGift, FiDollarSign } from 'react-icons/fi';
-import { FaTrophy } from 'react-icons/fa6';
+import { FaTrophy, FaCoins } from 'react-icons/fa6';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -239,7 +239,7 @@ const Header = () => {
                   {mongoUser?.displayName || 'User'}
                 </span>
                 <span className="text-[11px] text-amber-400 font-bold font-sans tracking-widest flex items-center gap-1">
-                  {mongoUser?.walletBalance?.toLocaleString() ?? '0'} <img src="/coin.png" className="w-3 h-3 drop-shadow-md" alt="C" onError={(e) => e.target.style.display='none'}/>
+                  {mongoUser?.walletBalance?.toLocaleString() ?? '0'} <FaCoins className="w-3 h-3 text-yellow-500 drop-shadow-md" />
                 </span>
               </div>
               <FiChevronDown

@@ -141,7 +141,7 @@ const Landing = () => {
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }} className="max-w-4xl">
           <div className="inline-flex items-center gap-2 px-4 py-1.5 glass-card mb-8 font-mono text-xs text-brand-cyan shadow-glow-cyan">
             <span className="w-2 h-2 rounded-full bg-brand-cyan animate-pulse"></span>
-            Live and Paying Users
+            Live
           </div>
           <h1 className="text-5xl md:text-7xl font-display font-black uppercase tracking-tighter leading-tight mb-6 text-white">
             Earn Money Online <br />
@@ -227,21 +227,40 @@ const Landing = () => {
       </section>
 
       {/* 5. Earnings Section */}
-      <section id="earn" className="relative z-10 py-24 bg-gradient-to-b from-brand-darker to-brand-dark">
-        <div className="max-w-4xl mx-auto px-6 text-center">
-          <h2 className="text-3xl md:text-4xl font-display font-black uppercase tracking-tight mb-8 text-white">Start Earning Coins By:</h2>
-          <div className="flex flex-wrap justify-center gap-4 mb-8">
-            <div className="badge-indigo px-6 py-3 text-sm flex items-center gap-2">
-              <FiActivity /> Surveys
+      <section id="earn" className="relative z-10 py-32 bg-brand-dark overflow-hidden">
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-brand-accent/10 via-transparent to-transparent pointer-events-none"></div>
+        <div className="max-w-6xl mx-auto px-6 relative z-10">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl md:text-5xl font-display font-black uppercase tracking-tight mb-4 text-white">Start Earning With</h2>
+            <div className="w-16 h-1 bg-brand-accent mx-auto rounded-full mb-6"></div>
+            <p className="text-lg text-[#c8d6ef]/80 max-w-2xl mx-auto">Multiple ways to stack your coins. Choose what works best for you.</p>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="glass-card p-8 flex flex-col items-center text-center group hover:-translate-y-2 transition-all duration-300">
+              <div className="w-16 h-16 rounded-2xl bg-indigo-500/10 border border-indigo-500/30 flex items-center justify-center mb-6 shadow-[inset_0_0_20px_rgba(99,102,241,0.2)] group-hover:scale-110 transition-transform">
+                <FiActivity className="text-3xl text-indigo-400" />
+              </div>
+              <h3 className="text-2xl font-black uppercase tracking-wide text-white mb-3">Surveys</h3>
+              <p className="text-[#c8d6ef]/70 leading-relaxed">Share your opinion on various topics and get rewarded instantly.</p>
             </div>
-            <div className="badge-violet px-6 py-3 text-sm flex items-center gap-2">
-              <FiPlayCircle /> Apps & Games
+            
+            <div className="glass-card p-8 flex flex-col items-center text-center group hover:-translate-y-2 transition-all duration-300">
+              <div className="w-16 h-16 rounded-2xl bg-violet-500/10 border border-violet-500/30 flex items-center justify-center mb-6 shadow-[inset_0_0_20px_rgba(139,92,246,0.2)] group-hover:scale-110 transition-transform">
+                <FiPlayCircle className="text-3xl text-violet-400" />
+              </div>
+              <h3 className="text-2xl font-black uppercase tracking-wide text-white mb-3">Apps & Games</h3>
+              <p className="text-[#c8d6ef]/70 leading-relaxed">Download apps or play new games. Reach milestones to earn big.</p>
             </div>
-            <div className="badge-cyan px-6 py-3 text-sm flex items-center gap-2">
-              <FiStar /> Featured Offers
+            
+            <div className="glass-card p-8 flex flex-col items-center text-center group hover:-translate-y-2 transition-all duration-300">
+              <div className="w-16 h-16 rounded-2xl bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center mb-6 shadow-[inset_0_0_20px_rgba(6,182,212,0.2)] group-hover:scale-110 transition-transform">
+                <FiStar className="text-3xl text-cyan-400" />
+              </div>
+              <h3 className="text-2xl font-black uppercase tracking-wide text-white mb-3">Featured Offers</h3>
+              <p className="text-[#c8d6ef]/70 leading-relaxed">Sign up for services or trials to earn the highest paying rewards.</p>
             </div>
           </div>
-          <p className="text-[#c8d6ef]/60 italic font-mono text-sm">"Some offers can reward up to high payouts depending on completion."</p>
         </div>
       </section>
 
@@ -309,7 +328,7 @@ const Landing = () => {
       {/* 8. Payment Methods Section */}
       <section className="relative z-10 py-16 bg-[#04060b] overflow-hidden border-t border-brand-border">
         <div className="text-center mb-10">
-          <p className="text-sm font-mono text-brand-accent/80 uppercase tracking-widest">Supported Payout Methods</p>
+          <h3 className="text-xl md:text-2xl font-display font-black uppercase tracking-wider text-white">Supported Payout Methods</h3>
         </div>
         <div className="flex animate-marquee whitespace-nowrap opacity-50 hover:opacity-100 transition-opacity">
           {[...Array(6)].map((_, i) => (
