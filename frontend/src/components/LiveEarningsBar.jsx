@@ -69,7 +69,7 @@ const LiveEarningsBar = () => {
   return (
     <>
       {/* Removed overflow-hidden so the tooltip dropdown is visible */}
-      <div className="w-full bg-brand-darker border-b border-brand-border whitespace-nowrap h-14 flex items-center relative shadow-sm z-30">
+      <div className="w-full bg-brand-darker border-b border-brand-border whitespace-nowrap h-10 flex items-center relative shadow-sm z-30">
         
         {/* Fade Gradients for smooth edges */}
         <div className="absolute right-0 w-32 h-full bg-gradient-to-l from-brand-darker to-transparent z-10 pointer-events-none" />
@@ -101,12 +101,12 @@ const LiveEarningsBar = () => {
                     animate={{ opacity: 1, x: 0, scale: 1 }}
                     exit={{ opacity: 0, scale: 0.9, transition: { duration: 0.2 } }}
                     transition={{ duration: 0.4, type: "spring", bounce: 0.3 }}
-                    className="inline-flex items-center gap-3 px-6 h-14 border-r border-brand-border/50 group cursor-pointer transition-colors hover:bg-white/[0.02] relative shrink-0" 
+                    className="inline-flex items-center gap-3 px-6 h-full border-r border-brand-border/50 group cursor-pointer transition-colors hover:bg-white/[0.02] relative shrink-0" 
                     onClick={() => tx.userId?._id && setSelectedUserId(tx.userId._id)}
                   >
                     
                     {/* User Avatar */}
-                    <div className="relative w-8 h-8 rounded-md overflow-hidden bg-brand-card border border-brand-border shrink-0 transition-transform group-hover:scale-105">
+                    <div className="relative w-8 h-8 rounded-full overflow-hidden bg-brand-card border border-brand-border shrink-0 transition-transform group-hover:scale-105">
                       <img 
                         src={tx.userId?.avatarUrl || `/avatars/avatar1.png`} 
                         className="w-full h-full object-cover" 
@@ -145,7 +145,7 @@ const LiveEarningsBar = () => {
                         ) : (
                           <div className="flex flex-col relative z-10">
                             <span className="text-[10px] font-bold text-brand-accent uppercase tracking-widest mb-1.5">{details.offerwall}</span>
-                            <span className="text-sm font-display font-bold text-white mb-2 truncate max-w-[220px]">{details.task}</span>
+                            <span className="text-sm font-display font-bold text-white mb-2 line-clamp-2 whitespace-normal break-words leading-snug max-w-[220px]">{details.task}</span>
                             <div className="flex items-center gap-1.5 bg-white/5 rounded-lg px-2.5 py-1.5 w-fit border border-white/5">
                               <span className="text-sm font-black font-mono text-brand-accent">{details.amountStr}</span>
                               <FaCoins className="w-3.5 h-3.5 text-yellow-500 drop-shadow-[0_0_5px_rgba(250,204,21,0.4)]" />

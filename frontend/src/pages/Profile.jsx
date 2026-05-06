@@ -8,33 +8,10 @@ import {
   FiActivity, FiArrowDownCircle, FiCheckCircle, FiClock,
   FiInbox, FiLoader, FiTrendingUp, FiChevronDown, FiPlayCircle,
   FiSend, FiExternalLink, FiSettings, FiTrash2, FiAlertTriangle, FiRefreshCw,
-  FiUsers, FiCopy
+  FiUsers, FiCopy, FiLock
 } from 'react-icons/fi';
 
-const PREDEFINED_AVATARS = [
-  '/avatars/avatar1.png',
-  '/avatars/avatar2.png',
-  '/avatars/avatar3.png',
-  '/avatars/avatar4.png',
-  '/avatars/avatar5.png',
-  '/avatars/avatar6.png',
-  '/avatars/avatar7.png',
-  '/avatars/avatar8.png',
-  '/avatars/avatar9.png',
-  '/avatars/avatar10.png',
-  '/avatars/avatar11.jpg',
-  '/avatars/avatar12.jpg',
-  '/avatars/avatar13.jpg',
-  '/avatars/avatar14.png',
-  '/avatars/avatar15.png',
-  '/avatars/avatar16.png',
-  '/avatars/avatar17.png',
-  '/avatars/avatar18.png',
-  '/avatars/avatar19.png',
-  '/avatars/avatar20.png',
-
-
-];
+// Avatar system is now dynamic from the backend
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
@@ -428,12 +405,26 @@ const SettingsModal = ({ isOpen, onClose, mongoUser, token, setMongoUser, logout
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [deletePhase, setDeletePhase] = useState(0);
-  const [showMoreAvatars, setShowMoreAvatars] = useState(false);
-  const [customStyle, setCustomStyle] = useState('avataaars');
-  const [customSeed, setCustomSeed] = useState('');
   const [isPrivate, setIsPrivate] = useState(mongoUser?.isPrivate || false);
 
-  const displayedAvatars = showMoreAvatars ? PREDEFINED_AVATARS : PREDEFINED_AVATARS.slice(0, 20);
+  const [avatars, setAvatars] = useState([]);
+  const [loadingAvatars, setLoadingAvatars] = useState(true);
+  const [purchasingAvatar, setPurchasingAvatar] = useState(null);
+
+  const fetchAvatars = async () => {
+    setLoadingAvatars(true);
+    try {
+      const res = await fetch(`${API}/wallet/avatars`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const data = await res.json();
+      if (data.success) setAvatars(data.avatars);
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setLoadingAvatars(false);
+    }
+  };
 
   useEffect(() => {
     if (isOpen) {
@@ -443,8 +434,46 @@ const SettingsModal = ({ isOpen, onClose, mongoUser, token, setMongoUser, logout
       setDeletePhase(0);
       setError('');
       setSuccess('');
+      fetchAvatars();
     }
   }, [isOpen, mongoUser]);
+
+  const handleAvatarClick = (avatar) => {
+    if (avatar.isUnlocked) {
+      setAvatarUrl(avatar.url);
+    } else {
+      setPurchasingAvatar(avatar);
+    }
+  };
+
+  const handlePurchaseAvatar = async () => {
+    if (!purchasingAvatar) return;
+    setSaving(true);
+    try {
+      const res = await fetch(`${API}/wallet/avatars/buy/${purchasingAvatar._id}`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const data = await res.json();
+      if (data.success) {
+        toast.success(data.message);
+        setAvatarUrl(purchasingAvatar.url);
+        setMongoUser(prev => ({ 
+          ...prev, 
+          walletBalance: data.walletBalance, 
+          unlockedAvatars: [...(prev.unlockedAvatars || []), purchasingAvatar._id] 
+        }));
+        fetchAvatars();
+        setPurchasingAvatar(null);
+      } else {
+        toast.error(data.error);
+      }
+    } catch (e) {
+      toast.error('Network error');
+    } finally {
+      setSaving(false);
+    }
+  };
 
   if (!isOpen) return null;
 
@@ -502,19 +531,23 @@ const SettingsModal = ({ isOpen, onClose, mongoUser, token, setMongoUser, logout
       }
     }
   };
-
   return (
-    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[9999] flex items-center justify-center p-4">
       <motion.div
         initial={{ scale: 0.95, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
-        className="bg-[#0c101b] border border-white/[0.08] rounded-[2rem] w-full max-w-2xl max-h-[90vh] overflow-y-auto custom-scrollbar relative shadow-glow-lg"
+        className="bg-[#0c101b] border border-white/[0.08] rounded-[2rem] w-full max-w-2xl max-h-[90vh] flex flex-col relative shadow-glow-lg"
       >
-        <button onClick={onClose} className="absolute top-6 right-6 text-slate-400 hover:text-white transition-colors bg-white/5 rounded-full p-2">
-          <FiX size={20} />
-        </button>
+        {/* Sticky close button — always visible, never scrolls away */}
+        <div className="flex-shrink-0 flex justify-end px-6 pt-6">
+          <button onClick={onClose} className="text-slate-400 hover:text-white transition-colors bg-white/5 hover:bg-white/10 rounded-full p-2">
+            <FiX size={20} />
+          </button>
+        </div>
 
-        <div className="p-8 space-y-8">
+        {/* Scrollable content */}
+        <div className="overflow-y-auto custom-scrollbar flex-1 min-h-0">
+        <div className="px-8 pb-8 space-y-8">
           <div>
             <h2 className="text-2xl font-black text-white flex items-center gap-2 font-display">
               <FiSettings className="text-indigo-400" /> Account Settings
@@ -559,19 +592,53 @@ const SettingsModal = ({ isOpen, onClose, mongoUser, token, setMongoUser, logout
           </div>
 
           <div className="space-y-4">
-            <h3 className="text-sm font-bold text-slate-300 uppercase tracking-wider">Choose Avatar</h3>
-            <div className="grid grid-cols-4 sm:grid-cols-5 gap-3">
-              {displayedAvatars.map((url, i) => (
+            <h3 className="text-sm font-bold text-slate-300 uppercase tracking-wider flex items-center gap-2">
+              Choose Avatar
+              {loadingAvatars && <FiLoader className="animate-spin text-indigo-400" />}
+            </h3>
+            <div className="grid grid-cols-4 sm:grid-cols-6 gap-3 max-h-64 overflow-y-auto custom-scrollbar p-2">
+              {avatars.map((avatar) => (
                 <button
-                  key={i}
-                  onClick={() => setAvatarUrl(url)}
-                  className={`w-14 h-14 sm:w-16 sm:h-16 rounded-xl overflow-hidden border-2 transition-all ${avatarUrl === url ? 'border-indigo-500 shadow-[0_0_15px_rgba(79,70,229,0.4)] scale-105' : 'border-transparent hover:border-white/20 hover:scale-105'} bg-[#151b2b]`}
+                  key={avatar._id}
+                  onClick={() => handleAvatarClick(avatar)}
+                  className={`relative w-14 h-14 sm:w-16 sm:h-16 rounded-full overflow-hidden border-2 transition-all ${
+                    avatarUrl === avatar.url 
+                      ? 'border-indigo-500 shadow-[0_0_15px_rgba(79,70,229,0.4)] scale-105' 
+                      : 'border-transparent hover:border-white/20 hover:scale-105'
+                  } bg-[#151b2b]`}
                 >
-                  <img src={url} alt={`Avatar ${i + 1}`} className="w-full h-full object-cover" />
+                  <img src={avatar.url} alt={avatar.name} className={`w-full h-full object-cover ${!avatar.isUnlocked ? 'opacity-40 grayscale' : ''}`} />
+                  {!avatar.isUnlocked && (
+                    <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/50">
+                      <FiLock className="text-yellow-400 drop-shadow-md" size={14} />
+                      <span className="text-yellow-400 text-[9px] font-bold mt-0.5 leading-none">{avatar.price}🪙</span>
+                    </div>
+                  )}
                 </button>
               ))}
             </div>
-
+            
+            {purchasingAvatar && (
+              <div className="bg-[#1a2133] border border-indigo-500/30 p-4 rounded-xl flex items-center justify-between mt-4">
+                <div className="flex items-center gap-4">
+                  <img src={purchasingAvatar.url} alt="Purchase preview" className="w-12 h-12 rounded-full border border-white/10" />
+                  <div>
+                    <h4 className="text-sm font-bold text-white">{purchasingAvatar.name}</h4>
+                    <p className="text-xs text-indigo-300 font-medium">{purchasingAvatar.price} Coins</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <button onClick={() => setPurchasingAvatar(null)} className="px-3 py-1.5 text-xs text-slate-400 hover:text-white transition-colors">Cancel</button>
+                  <button 
+                    onClick={handlePurchaseAvatar}
+                    disabled={saving || mongoUser?.walletBalance < purchasingAvatar.price}
+                    className="px-4 py-2 bg-indigo-500 hover:bg-indigo-600 disabled:opacity-50 text-white text-xs font-bold rounded-lg shadow-lg shadow-indigo-500/20 transition-all"
+                  >
+                    Buy & Equip
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
 
           <div className="pt-4 flex justify-end">
@@ -611,6 +678,7 @@ const SettingsModal = ({ isOpen, onClose, mongoUser, token, setMongoUser, logout
               </div>
             )}
           </div>
+        </div>
         </div>
       </motion.div>
     </div>
@@ -733,7 +801,7 @@ const Profile = () => {
               <div className="flex flex-col sm:flex-row gap-5 flex-1 min-w-0">
                 {/* Avatar */}
                 <div className="relative shrink-0 self-start">
-                  <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl overflow-hidden border-2 border-white/[0.1] bg-[#111827] shadow-[0_0_30px_rgba(99,102,241,0.2)]">
+                  <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full overflow-hidden border-2 border-white/[0.1] bg-[#111827] shadow-[0_0_30px_rgba(99,102,241,0.2)]">
                     <img
                       src={mongoUser?.avatarUrl || currentUser?.photoURL || `/avatars/avatar1.png`}
                       alt="Avatar"

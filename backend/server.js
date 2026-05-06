@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
 const cron = require('node-cron');
+const path = require('path');
 
 // Load environment variables
 dotenv.config();
@@ -16,6 +17,8 @@ const app = express();
 app.use(cors());
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ limit: '10mb', extended: true }));
+// Serve uploaded avatar images statically
+app.use('/avatars', express.static(path.join(__dirname, '../frontend/public/avatars')));
 
 // Connect to MongoDB
 // Only connect if we have a real URI, avoiding crash for empty placeholders

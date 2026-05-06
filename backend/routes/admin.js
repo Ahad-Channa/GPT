@@ -13,7 +13,25 @@ const { requireAdmin, requirePrimaryAdmin, requirePermission } = require('../mid
 const notify = require('../utils/notify');
 const { notifyAdmins } = require('../utils/adminNotify');
 const AdminNotification = require('../models/AdminNotification');
+const Avatar = require('../models/Avatar');
+const multer = require('multer');
+const path = require('path');
+const fs = require('fs');
 
+// Configure multer for Avatar uploads
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    const dir = path.join(__dirname, '../../frontend/public/avatars');
+    if (!fs.existsSync(dir)){
+      fs.mkdirSync(dir, { recursive: true });
+    }
+    cb(null, dir);
+  },
+  filename: function (req, file, cb) {
+    cb(null, Date.now() + '-' + file.originalname.replace(/[^a-zA-Z0-9.]/g, ''));
+  }
+});
+const upload = multer({ storage: storage });
 // === ADMIN ROUTES ENTRY POINT ===
 router.use(verifyToken, requireAdmin);
 
@@ -88,7 +106,7 @@ router.put('/users/:id/ban', requirePermission('manage_users'), async (req, res)
 
     const user = await User.findByIdAndUpdate(req.params.id, { isBanned }, { returnDocument: 'after' });
     await createLog(req.dbUser._id, isBanned ? 'BAN_USER' : 'UNBAN_USER', user._id, { reason: req.body.reason || 'No reason provided' });
-    
+
     if (isBanned) {
       await notify(user._id, 'account_banned', 'Account Suspended', 'Your account has been suspended by an administrator.');
     }
@@ -129,7 +147,7 @@ router.put('/users/:id/balance', requirePermission('manage_users'), async (req, 
     });
 
     await createLog(req.dbUser._id, 'ADJUST_BALANCE', user._id, { amount, reason, prevBalance, newBalance: user.walletBalance });
-    
+
     await notify(user._id, 'admin_adjustment', 'Balance Adjustment', `An admin has adjusted your balance by ${amountNum > 0 ? '+' : ''}${amountNum} coins. Reason: ${reason || 'N/A'}`, { amount: amountNum });
 
     res.json({ success: true, user });
@@ -145,20 +163,20 @@ router.put('/users/:id/referral', requirePermission('manage_users'), async (req,
     if (!userToUpdate) return res.status(404).json({ success: false, error: 'User not found' });
 
     if (userToUpdate.email === process.env.PRIMARY_ADMIN_EMAIL) {
-       return res.status(403).json({ success: false, error: 'Cannot modify primary admin' });
+      return res.status(403).json({ success: false, error: 'Cannot modify primary admin' });
     }
 
     let val = null; // Unset it by passing null/undefined/empty
     if (referralPercentage !== '' && referralPercentage !== null && referralPercentage !== undefined) {
-       val = Number(referralPercentage);
-       if (isNaN(val) || val < 0 || val > 100) {
-         return res.status(400).json({ success: false, error: 'Invalid referral percentage' });
-       }
+      val = Number(referralPercentage);
+      if (isNaN(val) || val < 0 || val > 100) {
+        return res.status(400).json({ success: false, error: 'Invalid referral percentage' });
+      }
     }
 
     const user = await User.findByIdAndUpdate(req.params.id, { referralPercentage: val }, { returnDocument: 'after' });
     await createLog(req.dbUser._id, 'ADJUST_REFERRAL_PCT', user._id, { referralPercentage: val });
-    
+
     res.json({ success: true, user });
   } catch (error) {
     res.status(500).json({ success: false, error: 'Failed to update user referral setting' });
@@ -226,7 +244,7 @@ router.put('/withdrawals/:id/approve', requirePermission('manage_withdrawals'), 
       destination: tx.payoutDestination,
       ...(note && { note })
     });
-    
+
     await notify(tx.userId._id, 'withdrawal_approved', 'Withdrawal Approved!', `Your payout of ${Math.abs(tx.amount)} coins has been approved.`, { txId: tx._id });
 
     res.json({ success: true, transaction: tx });
@@ -274,7 +292,7 @@ router.put('/withdrawals/:id/reject', requirePermission('manage_withdrawals'), a
       refundAmount,
       reason: reason || 'No reason provided',
     });
-    
+
     await notify(tx.userId._id, 'withdrawal_rejected', 'Withdrawal Rejected', `Your withdrawal of ${Math.abs(tx.amount)} coins was rejected. ${refundAmount} coins refunded.`, { txId: tx._id, refundAmount });
 
     res.json({ success: true, transaction: tx, refundAmount });
@@ -710,7 +728,7 @@ router.get('/logs', requirePrimaryAdmin, async (req, res) => {
 router.post('/announcements', requirePrimaryAdmin, async (req, res) => {
   try {
     const { title, message, targetAll, targetUserIds } = req.body;
-    
+
     if (targetAll) {
       // Find all valid users to receive the announcement
       const users = await User.find({}).select('_id');
@@ -751,7 +769,7 @@ router.post('/chargebacks/:transactionId/process', requirePermission('manage_off
       txId: parentTx._id,
       amount: -Math.abs(parentTx.amount),
     });
-    
+
     await notify(parentTx.userId, 'chargeback', 'Transaction Reversed', `A transaction was reversed and -${Math.abs(parentTx.amount)} coins were deducted.`, { txId: parentTx._id, amount: -Math.abs(parentTx.amount) });
 
     await notifyAdmins({
@@ -892,14 +910,14 @@ router.get('/overview-stats', async (req, res) => {
   try {
     const totalUsers = await User.countDocuments();
     const bannedUsers = await User.countDocuments({ isBanned: true });
-    
+
     // Total pending withdrawals
     const pendingWithdrawalObj = await Transaction.aggregate([
       { $match: { transactionType: 'withdrawal', status: 'pending' } },
       { $group: { _id: null, total: { $sum: '$amount' } } }
     ]);
     const totalPendingWithdrawal = pendingWithdrawalObj.length > 0 ? Math.abs(pendingWithdrawalObj[0].total) : 0;
-    
+
     // Total pending custom offers
     const pendingOffers = await CustomOfferSubmission.countDocuments({ status: 'pending' });
 
@@ -919,7 +937,7 @@ router.get('/overview-stats', async (req, res) => {
         economyTotal
       }
     });
-  } catch(e) {
+  } catch (e) {
     res.status(500).json({ success: false, error: 'Failed to fetch overview stats' });
   }
 });
@@ -930,7 +948,7 @@ router.get('/notifications', async (req, res) => {
       .sort({ createdAt: -1 })
       .limit(50);
     res.json({ success: true, notifications: notifs });
-  } catch(e) {
+  } catch (e) {
     res.status(500).json({ success: false, error: 'Failed to fetch notifications' });
   }
 });
@@ -943,9 +961,9 @@ router.get('/notifications/counts', async (req, res) => {
     ]);
     const countsMap = {};
     counts.forEach(c => countsMap[c._id] = c.count);
-    
+
     res.json({ success: true, counts: countsMap });
-  } catch(e) {
+  } catch (e) {
     res.status(500).json({ success: false, error: 'Failed to fetch counts' });
   }
 });
@@ -954,16 +972,16 @@ router.post('/notifications/mark-read', async (req, res) => {
   try {
     const { category, notificationIds } = req.body;
     const query = { adminId: req.dbUser._id, read: false };
-    
+
     if (category && category !== 'all') {
       query.category = category;
     } else if (notificationIds && notificationIds.length > 0) {
       query._id = { $in: notificationIds };
     }
-    
+
     await AdminNotification.updateMany(query, { $set: { read: true } });
     res.json({ success: true });
-  } catch(e) {
+  } catch (e) {
     res.status(500).json({ success: false, error: 'Failed to mark read' });
   }
 });
@@ -994,9 +1012,9 @@ router.get('/proofs', requirePermission('manage_offerwalls'), async (req, res) =
     }));
 
     // 2. Get Transaction Proofs (metadata.userProof exists, status is pending)
-    const pendingTxs = await Transaction.find({ 
+    const pendingTxs = await Transaction.find({
       status: 'pending',
-      'metadata.userProof': { $exists: true } 
+      'metadata.userProof': { $exists: true }
     })
       .populate('userId', 'displayName email avatarUrl')
       .sort({ updatedAt: 1 })
@@ -1059,7 +1077,7 @@ router.post('/proofs/:type/:id/:action', requirePermission('manage_offerwalls'),
             description: `Reward for custom offer: ${submission.offerId.title}`,
             status: 'completed'
           });
-          
+
           await notify(user._id, 'offer_approved', 'Offer Approved', `Your proof for "${submission.offerId.title}" was approved! +${submission.offerId.rewardAmount} coins.`);
         }
       } else {
@@ -1067,14 +1085,14 @@ router.post('/proofs/:type/:id/:action', requirePermission('manage_offerwalls'),
         submission.adminNote = reason || 'Your submission did not meet the requirements.';
         await notify(submission.userId, 'offer_rejected', 'Offer Rejected', `Your proof for "${submission.offerId.title}" was rejected. Reason: ${submission.adminNote}`);
       }
-      
+
       await submission.save();
       await createLog(req.dbUser._id, `CUSTOM_OFFER_${action.toUpperCase()}`, submission.userId, {
         offerId: submission.offerId._id,
         offerTitle: submission.offerId.title,
         ...(action === 'reject' && { reason: reason?.trim() || 'No reason provided' }),
       });
-      
+
       return res.json({ success: true, message: `Proof ${action}d successfully` });
 
     } else if (type === 'transaction') {
@@ -1109,14 +1127,107 @@ router.post('/proofs/:type/:id/:action', requirePermission('manage_offerwalls'),
         ...(action === 'reject' && { reason: reason?.trim() || 'No reason provided' }),
       });
       return res.json({ success: true, message: `Proof ${action}d successfully` });
-      
+
     } else {
       return res.status(400).json({ success: false, error: 'Invalid proof type' });
     }
-    
+
   } catch (error) {
     console.error('[/api/admin/proofs/:type/:id/:action] Error:', error);
     res.status(500).json({ success: false, error: 'Failed to process proof' });
+  }
+});
+
+// ==========================================
+// AVATAR MANAGEMENT
+// ==========================================
+
+// Get all avatars
+router.get('/avatars', requirePermission('manage_users'), async (req, res) => {
+  try {
+    const avatars = await Avatar.find().sort({ createdAt: -1 });
+    res.json({ success: true, avatars });
+  } catch (error) {
+    console.error('[/api/admin/avatars GET] Error:', error);
+    res.status(500).json({ success: false, error: 'Failed to fetch avatars' });
+  }
+});
+
+// Create new avatar
+router.post('/avatars', requirePermission('manage_users'), upload.single('image'), async (req, res) => {
+  try {
+    const { name, isPremium, price } = req.body;
+    let url = req.body.url;
+
+    if (req.file) {
+      url = `/avatars/${req.file.filename}`;
+    }
+
+    if (!url) {
+      return res.status(400).json({ success: false, error: 'Image file or URL is required' });
+    }
+
+    const avatar = new Avatar({
+      name: name || 'Unnamed Avatar',
+      url,
+      isPremium: isPremium === 'true' || isPremium === true,
+      price: Number(price) || 0
+    });
+
+    await avatar.save();
+    res.json({ success: true, avatar });
+  } catch (error) {
+    console.error('[/api/admin/avatars POST] Error:', error);
+    res.status(500).json({ success: false, error: 'Failed to create avatar' });
+  }
+});
+
+// Update avatar
+router.put('/avatars/:id', requirePermission('manage_users'), upload.single('image'), async (req, res) => {
+  try {
+    const { name, isPremium, price } = req.body;
+    const avatar = await Avatar.findById(req.params.id);
+    
+    if (!avatar) {
+      return res.status(404).json({ success: false, error: 'Avatar not found' });
+    }
+
+    if (name) avatar.name = name;
+    if (isPremium !== undefined) avatar.isPremium = isPremium === 'true' || isPremium === true;
+    if (price !== undefined) avatar.price = Number(price);
+    
+    if (req.file) {
+      avatar.url = `/avatars/${req.file.filename}`;
+    } else if (req.body.url) {
+      avatar.url = req.body.url;
+    }
+
+    await avatar.save();
+    res.json({ success: true, avatar });
+  } catch (error) {
+    console.error('[/api/admin/avatars PUT] Error:', error);
+    res.status(500).json({ success: false, error: 'Failed to update avatar' });
+  }
+});
+
+// Delete avatar
+router.delete('/avatars/:id', requirePermission('manage_users'), async (req, res) => {
+  try {
+    const avatar = await Avatar.findByIdAndDelete(req.params.id);
+    if (!avatar) {
+      return res.status(404).json({ success: false, error: 'Avatar not found' });
+    }
+    // Optionally delete the file if it's local
+    if (avatar.url.startsWith('/avatars/')) {
+      const filePath = path.join(__dirname, '../../frontend/public', avatar.url);
+      if (fs.existsSync(filePath)) {
+        fs.unlinkSync(filePath);
+      }
+    }
+    res.json({ success: true, message: 'Avatar deleted successfully' });
+  } catch (error) {
+    console.error('[/api/admin/avatars DELETE] Error:', error);
+    res.status(500).json({ success: false, error: 'Failed to delete avatar' });
   }
 });
 

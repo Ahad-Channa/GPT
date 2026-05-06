@@ -1,7 +1,7 @@
 import Header from './Header';
 import LiveEarningsBar from '../LiveEarningsBar';
 
-const DashboardLayout = ({ children, showLiveBar = false, fullWidth = false }) => {
+const DashboardLayout = ({ children, showLiveBar = true, fullWidth = false }) => {
   return (
     <div className="relative min-h-screen bg-[#080b14] text-gray-300 overflow-x-hidden">
       {/* Ambient Background Glows */}

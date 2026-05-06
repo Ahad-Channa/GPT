@@ -201,7 +201,7 @@ const PublicProfileModal = ({ userId, onClose }) => {
                 <div style={{ display: 'flex', alignItems: 'center', gap: '20px', flexWrap: 'wrap', position: 'relative', zIndex: 1 }}>
                   {/* Avatar */}
                   <div style={{
-                    width: '80px', height: '80px', borderRadius: '18px',
+                    width: '80px', height: '80px', borderRadius: '50%',
                     overflow: 'hidden', flexShrink: 0,
                     border: '2px solid rgba(99,102,241,0.25)',
                     background: '#1a2235',

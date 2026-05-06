@@ -78,7 +78,7 @@ const UserDetailModal = ({ user, onClose, currentUser }) => {
           <img
             src={user.avatarUrl || `/avatars/avatar1.png`}
             alt="avatar"
-            style={{ width: 52, height: 52, borderRadius: '1rem', border: '2px solid rgba(99,102,241,0.4)', background: '#1e2a44' }}
+            style={{ width: 52, height: 52, borderRadius: '50%', border: '2px solid rgba(99,102,241,0.4)', background: '#1e2a44' }}
           />
           <div>
             <h3 style={{ color: '#fff', fontWeight: 800, fontSize: '1.15rem', margin: 0 }}>

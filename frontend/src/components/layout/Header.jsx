@@ -227,7 +227,7 @@ const Header = () => {
               onClick={() => setIsDropdownOpen(!isDropdownOpen)}
               className="flex items-center gap-2.5 px-2 py-1.5 rounded-xl hover:bg-white/[0.05] transition-colors group"
             >
-              <div className="w-8 h-8 rounded-lg overflow-hidden border border-white/10 flex-shrink-0 bg-[#111827]">
+              <div className="w-8 h-8 rounded-full overflow-hidden border border-white/10 flex-shrink-0 bg-[#111827]">
                 <img
                   src={mongoUser?.avatarUrl || currentUser?.photoURL || `/avatars/avatar1.png`}
                   alt="Avatar"

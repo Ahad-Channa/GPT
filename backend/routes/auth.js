@@ -7,6 +7,7 @@ const UserActivityLog = require('../models/UserActivityLog');
 const { verifyToken } = require('../middlewares/authMiddleware');
 const notify = require('../utils/notify');
 const { notifyAdmins } = require('../utils/adminNotify');
+const Avatar = require('../models/Avatar');
 
 // POST /api/auth/sync
 // Validates Firebase token. If user doesn't exist in MongoDB, inserts them securely.
@@ -116,7 +117,16 @@ router.put('/profile', verifyToken, async (req, res) => {
       }
       updateFields.displayName = displayName;
     }
-    if (avatarUrl) updateFields.avatarUrl = avatarUrl;
+    if (avatarUrl) {
+      const avatarDoc = await Avatar.findOne({ url: avatarUrl });
+      if (avatarDoc && avatarDoc.isPremium) {
+        const currentUser = await User.findOne({ firebaseUid: req.user.uid });
+        if (!currentUser || !currentUser.unlockedAvatars || !currentUser.unlockedAvatars.includes(avatarDoc._id)) {
+          return res.status(403).json({ success: false, error: 'You do not own this premium avatar.' });
+        }
+      }
+      updateFields.avatarUrl = avatarUrl;
+    }
     if (typeof isPrivate === 'boolean') updateFields.isPrivate = isPrivate;
 
     const user = await User.findOneAndUpdate(

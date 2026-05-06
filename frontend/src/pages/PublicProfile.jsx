@@ -88,7 +88,7 @@ const PublicProfile = () => {
 
           <div className="flex flex-col md:flex-row gap-8 items-center md:items-start relative z-10 text-center md:text-left">
             {/* Avatar */}
-            <div className="w-32 h-32 rounded-[2rem] overflow-hidden border-4 border-white/[0.05] shadow-xl bg-[#1a2235]">
+            <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-white/[0.05] shadow-xl bg-[#1a2235]">
               <img
                 src={profile.avatarUrl || `/avatars/avatar1.png`}
                 alt={profile.displayName}

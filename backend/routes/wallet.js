@@ -5,6 +5,7 @@ const User = require('../models/User');
 const Transaction = require('../models/Transaction');
 const Settings = require('../models/Settings');
 const PromoCode = require('../models/PromoCode');
+const Avatar = require('../models/Avatar');
 const { verifyToken } = require('../middlewares/authMiddleware');
 const notify = require('../utils/notify');
 const { notifyAdmins } = require('../utils/adminNotify');
@@ -415,9 +416,9 @@ router.get('/daily-bonus-status', verifyToken, async (req, res) => {
 
     let earnedToday = 0;
     if (!alreadyClaimed) {
-      // Count real earnings since the last claim (or last 24h window if never claimed)
+      // Earnings only count AFTER the 24h cooldown has ended
       const windowStart = user.lastDailyBonusClaim
-        ? new Date(user.lastDailyBonusClaim)
+        ? new Date(new Date(user.lastDailyBonusClaim).getTime() + 24 * 60 * 60 * 1000)
         : new Date(now.getTime() - 24 * 60 * 60 * 1000);
 
       const earnedResult = await Transaction.aggregate([
@@ -526,8 +527,9 @@ router.post('/daily-bonus', verifyToken, async (req, res) => {
     };
 
     // 3. EARN GATE — only count REAL earnings (not daily_bonus, promo_code, admin_adjustment)
+    // Earnings only count AFTER the 24h cooldown has ended
     const windowStart = user.lastDailyBonusClaim
-      ? new Date(user.lastDailyBonusClaim)
+      ? new Date(new Date(user.lastDailyBonusClaim).getTime() + TWENTY_FOUR_H)
       : new Date(now.getTime() - TWENTY_FOUR_H);
 
     const earnedResult = await Transaction.aggregate([
@@ -807,6 +809,88 @@ router.post('/history/:id/submit-proof', verifyToken, async (req, res) => {
   } catch (error) {
     console.error('[/api/wallet/history/:id/submit-proof] Error:', error);
     res.status(500).json({ success: false, error: 'Failed to submit proof' });
+  }
+});
+
+// ==========================================
+// AVATAR SHOP
+// ==========================================
+
+// GET /api/wallet/avatars
+// Returns all avatars and sets isUnlocked flag for the user
+router.get('/avatars', verifyToken, async (req, res) => {
+  try {
+    const user = await User.findOne({ firebaseUid: req.user.uid });
+    if (!user) return res.status(404).json({ success: false, error: 'User not found' });
+
+    const avatars = await Avatar.find().sort({ createdAt: -1 });
+    const unlockedSet = new Set((user.unlockedAvatars || []).map(id => id.toString()));
+
+    const avatarsWithStatus = avatars.map(av => {
+      const isUnlocked = !av.isPremium || unlockedSet.has(av._id.toString());
+      return {
+        _id: av._id,
+        name: av.name,
+        url: av.url,
+        isPremium: av.isPremium,
+        price: av.price,
+        isUnlocked
+      };
+    });
+
+    res.json({ success: true, avatars: avatarsWithStatus });
+  } catch (error) {
+    console.error('[/api/wallet/avatars] Error:', error);
+    res.status(500).json({ success: false, error: 'Failed to fetch avatars' });
+  }
+});
+
+// POST /api/wallet/avatars/buy/:id
+// Purchases a premium avatar
+router.post('/avatars/buy/:id', verifyToken, async (req, res) => {
+  try {
+    const user = await User.findOne({ firebaseUid: req.user.uid });
+    if (!user) return res.status(404).json({ success: false, error: 'User not found' });
+
+    const avatar = await Avatar.findById(req.params.id);
+    if (!avatar) return res.status(404).json({ success: false, error: 'Avatar not found' });
+
+    // Check if already unlocked (uses .toString() for proper ObjectId comparison)
+    const alreadyOwned = (user.unlockedAvatars || []).some(
+      id => id.toString() === avatar._id.toString()
+    );
+    if (alreadyOwned) {
+      return res.status(400).json({ success: false, error: 'You already own this avatar.' });
+    }
+
+    // Only charge coins if the avatar is premium
+    if (avatar.isPremium && avatar.price > 0) {
+      if (user.walletBalance < avatar.price) {
+        return res.status(400).json({ success: false, error: `Insufficient coins. You need ${avatar.price} coins but have ${user.walletBalance}.` });
+      }
+      user.walletBalance -= avatar.price;
+
+      // Log transaction (avatar_purchase mapped to admin_adjustment type for schema compat)
+      await Transaction.create({
+        userId: user._id,
+        transactionType: 'admin_adjustment',
+        amount: -avatar.price,
+        status: 'completed',
+        description: `Avatar Purchase: ${avatar.name}`,
+        balanceAfter: user.walletBalance,
+        metadata: { avatarId: avatar._id, avatarName: avatar.name }
+      });
+    }
+
+    // Add to unlocked list
+    user.unlockedAvatars = user.unlockedAvatars || [];
+    user.unlockedAvatars.push(avatar._id);
+    await user.save();
+
+    res.json({ success: true, message: `Avatar "${avatar.name}" unlocked!`, walletBalance: user.walletBalance });
+  } catch (error) {
+    console.error('[/api/wallet/avatars/buy/:id] Error:', error);
+    res.status(500).json({ success: false, error: 'Failed to purchase avatar' });
   }
 });
 
