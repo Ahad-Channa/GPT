@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { toast } from 'react-hot-toast';
 import DashboardLayout from '../components/layout/DashboardLayout';
 import { useAuth } from '../contexts/AuthContext';
@@ -11,7 +12,261 @@ import {
   FiUsers, FiCopy, FiLock
 } from 'react-icons/fi';
 
-// Avatar system is now dynamic from the backend
+// ── Customization / Avatar Shop Modal ─────────────────────────────
+const CustomizationModal = ({ isOpen, onClose, mongoUser, token, setMongoUser }) => {
+  const [avatarUrl, setAvatarUrl] = useState(mongoUser?.avatarUrl || '');
+  const [saving, setSaving] = useState(false);
+  const [avatars, setAvatars] = useState([]);
+  const [loadingAvatars, setLoadingAvatars] = useState(true);
+  const [purchasingAvatar, setPurchasingAvatar] = useState(null);
+
+  const fetchAvatars = async () => {
+    setLoadingAvatars(true);
+    try {
+      const res = await fetch(`${API}/wallet/avatars`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const data = await res.json();
+      if (data.success) {
+        // Sort: Owned first (isUnlocked), then locked.
+        const sorted = data.avatars.sort((a, b) => {
+           if (a.isUnlocked === b.isUnlocked) return a.price - b.price;
+           return a.isUnlocked ? -1 : 1;
+        });
+        setAvatars(sorted);
+      }
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setLoadingAvatars(false);
+    }
+  };
+
+  useEffect(() => {
+    if (isOpen) {
+      setAvatarUrl(mongoUser?.avatarUrl || '');
+      setPurchasingAvatar(null);
+      fetchAvatars();
+    }
+  }, [isOpen, mongoUser]);
+
+  const handleAvatarClick = (avatar) => {
+    if (avatar.isUnlocked) {
+      setAvatarUrl(avatar.url);
+      setPurchasingAvatar(null);
+    } else {
+      setPurchasingAvatar(avatar);
+    }
+  };
+
+  const handlePurchaseAvatar = async () => {
+    if (!purchasingAvatar) return;
+    setSaving(true);
+    try {
+      const res = await fetch(`${API}/wallet/avatars/buy/${purchasingAvatar._id}`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const data = await res.json();
+      if (data.success) {
+        toast.success(data.message);
+        setAvatarUrl(purchasingAvatar.url);
+        setMongoUser(prev => ({ 
+          ...prev, 
+          walletBalance: data.walletBalance, 
+          unlockedAvatars: [...(prev.unlockedAvatars || []), purchasingAvatar._id] 
+        }));
+        
+        // Auto-equip on backend
+        await fetch(`${API}/auth/profile`, {
+          method: 'PUT',
+          headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ avatarUrl: purchasingAvatar.url })
+        });
+        
+        fetchAvatars();
+        setPurchasingAvatar(null);
+      } else {
+        toast.error(data.error);
+      }
+    } catch (e) {
+      toast.error('Network error');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleEquip = async () => {
+    setSaving(true);
+    try {
+      const res = await fetch(`${API}/auth/profile`, {
+        method: 'PUT',
+        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ avatarUrl })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setMongoUser(data.user);
+        toast.success('Avatar equipped successfully!');
+        onClose();
+      } else {
+        toast.error(data.error || 'Failed to equip avatar');
+      }
+    } catch {
+      toast.error('Network error.');
+    }
+    setSaving(false);
+  };
+
+  if (!isOpen) return null;
+
+  const ownedAvatars = avatars.filter(a => a.isUnlocked);
+  const lockedAvatars = avatars.filter(a => !a.isUnlocked);
+
+  return createPortal(
+    <div className="fixed inset-0 bg-black/80 backdrop-blur-md z-[999999] flex items-center justify-center p-4">
+      <motion.div
+        initial={{ scale: 0.95, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        className="bg-[#0c101b] border border-white/[0.08] rounded-[2rem] w-full max-w-4xl max-h-[90vh] flex flex-col relative shadow-2xl shadow-indigo-500/10"
+      >
+        <div className="flex-shrink-0 flex justify-between items-center px-8 pt-8 pb-4 border-b border-white/[0.04]">
+          <div>
+            <h2 className="text-2xl font-black text-white flex items-center gap-2 font-display tracking-tight">
+              <span className="bg-gradient-to-r from-indigo-400 to-fuchsia-400 bg-clip-text text-transparent">Avatar Shop</span>
+            </h2>
+            <p className="text-slate-400 text-sm mt-1">Customize your identity with premium avatars</p>
+          </div>
+          <button onClick={onClose} className="text-slate-400 hover:text-white transition-colors bg-white/5 hover:bg-white/10 rounded-full p-2">
+            <FiX size={20} />
+          </button>
+        </div>
+
+        <div className="overflow-y-auto custom-scrollbar flex-1 p-8">
+          {loadingAvatars ? (
+            <div className="flex flex-col items-center justify-center py-20">
+              <FiLoader className="animate-spin text-3xl text-indigo-500 mb-4" />
+              <p className="text-slate-400 text-sm">Loading collection...</p>
+            </div>
+          ) : (
+            <div className="space-y-10">
+              {/* Owned Avatars Section */}
+              {ownedAvatars.length > 0 && (
+                <section>
+                  <div className="flex items-center gap-3 mb-4">
+                    <h3 className="text-sm font-bold text-slate-300 uppercase tracking-wider">Your Collection</h3>
+                    <div className="h-px flex-1 bg-gradient-to-r from-white/10 to-transparent" />
+                  </div>
+                  <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-4">
+                    {ownedAvatars.map((avatar) => (
+                      <button
+                        key={avatar._id}
+                        onClick={() => handleAvatarClick(avatar)}
+                        className={`relative group aspect-square rounded-2xl overflow-hidden border-2 transition-all duration-300 ${
+                          avatarUrl === avatar.url 
+                            ? 'border-indigo-500 shadow-[0_0_20px_rgba(79,70,229,0.3)] scale-105 z-10' 
+                            : 'border-white/5 hover:border-white/20 hover:scale-105'
+                        } bg-[#151b2b]`}
+                      >
+                        <img src={avatar.url} alt={avatar.name} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
+                        {avatarUrl === avatar.url && (
+                          <div className="absolute inset-x-0 bottom-0 bg-indigo-500/90 py-1 text-[10px] font-bold text-white text-center backdrop-blur-sm">
+                            EQUIPPED
+                          </div>
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                </section>
+              )}
+
+              {/* Locked/Premium Avatars Section */}
+              {lockedAvatars.length > 0 && (
+                <section>
+                  <div className="flex items-center gap-3 mb-4">
+                    <h3 className="text-sm font-bold text-slate-300 uppercase tracking-wider text-amber-400/90 flex items-center gap-2">
+                      <FiStar /> Premium Shop
+                    </h3>
+                    <div className="h-px flex-1 bg-gradient-to-r from-amber-500/20 to-transparent" />
+                  </div>
+                  <div className="grid grid-cols-3 sm:grid-cols-5 md:grid-cols-7 gap-4">
+                    {lockedAvatars.map((avatar) => (
+                      <button
+                        key={avatar._id}
+                        onClick={() => handleAvatarClick(avatar)}
+                        className={`relative group aspect-square rounded-2xl overflow-hidden border-2 transition-all duration-300 ${
+                          purchasingAvatar?._id === avatar._id
+                            ? 'border-amber-500 shadow-[0_0_20px_rgba(245,158,11,0.3)] scale-105 z-10'
+                            : 'border-transparent hover:border-amber-500/30 hover:scale-105'
+                        } bg-gradient-to-b from-[#1a2133] to-[#111624]`}
+                      >
+                        <img src={avatar.url} alt={avatar.name} className="w-full h-full object-cover opacity-60 group-hover:opacity-80 transition-opacity" />
+                        <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/40 backdrop-blur-[1px] group-hover:bg-black/20 transition-all">
+                          <div className="bg-black/60 p-2 rounded-full mb-1 backdrop-blur-md border border-white/10">
+                            <FiLock className="text-amber-400" size={16} />
+                          </div>
+                          <span className="bg-amber-500/20 border border-amber-500/30 text-amber-300 text-[10px] font-bold px-2 py-0.5 rounded-full backdrop-blur-md">
+                            {avatar.price}🪙
+                          </span>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                </section>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* Action Footer */}
+        <div className="p-6 border-t border-white/[0.04] bg-[#080b14]/50 rounded-b-[2rem] flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="flex items-center gap-4">
+             <div className="flex items-center gap-2 bg-white/5 px-4 py-2 rounded-xl border border-white/10">
+                <FiZap className="text-amber-400" />
+                <span className="text-sm font-bold text-white">{mongoUser?.walletBalance?.toLocaleString() || 0} Coins</span>
+             </div>
+          </div>
+          
+          <div className="flex gap-4 w-full sm:w-auto items-center">
+            {purchasingAvatar ? (
+              <>
+                <div className="w-14 h-14 rounded-xl overflow-hidden border-2 border-amber-500/40 shadow-[0_0_15px_rgba(245,158,11,0.2)] bg-[#0b101e] flex-shrink-0 animate-fade-in-up">
+                  <img src={purchasingAvatar.url} alt={purchasingAvatar.name} className="w-full h-full object-cover" />
+                </div>
+                <div className="flex flex-1 sm:flex-none items-center gap-3 bg-amber-500/10 border border-amber-500/20 pl-4 pr-1 py-1 rounded-xl h-12">
+                  <div className="flex flex-col items-start pr-2 hidden sm:flex">
+                    <span className="text-[10px] text-amber-500/70 font-bold uppercase tracking-wider leading-none mb-0.5">Purchase</span>
+                    <span className="text-sm font-bold text-amber-400 leading-none">{purchasingAvatar.name}</span>
+                  </div>
+                  <button 
+                    onClick={handlePurchaseAvatar}
+                    disabled={saving || (mongoUser?.walletBalance || 0) < purchasingAvatar.price}
+                    className="flex-1 sm:flex-none h-full px-6 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 disabled:opacity-50 text-white text-sm font-bold rounded-lg shadow-lg shadow-amber-500/20 transition-all whitespace-nowrap flex items-center justify-center"
+                  >
+                    {saving ? 'Processing...' : `Buy for ${purchasingAvatar.price}🪙`}
+                  </button>
+                  <button onClick={() => setPurchasingAvatar(null)} className="h-full px-3 flex items-center justify-center text-slate-400 hover:text-white hover:bg-white/5 rounded-lg transition-colors">
+                     <FiX />
+                  </button>
+                </div>
+              </>
+            ) : (
+              <button
+                onClick={handleEquip}
+                disabled={saving || avatarUrl === mongoUser?.avatarUrl}
+                className="w-full sm:w-auto flex items-center justify-center gap-2 px-8 py-3 rounded-xl bg-gradient-to-r from-indigo-500 to-violet-600 text-white font-bold hover:shadow-[0_0_20px_rgba(99,102,241,0.4)] transition-all disabled:opacity-50 disabled:hover:shadow-none"
+              >
+                {saving ? <FiLoader className="animate-spin" /> : <FiCheck />}
+                {saving ? 'Equipping...' : (avatarUrl === mongoUser?.avatarUrl ? 'Equipped' : 'Equip Selected')}
+              </button>
+            )}
+          </div>
+        </div>
+      </motion.div>
+    </div>,
+    document.body
+  );
+};
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
@@ -400,80 +655,21 @@ const ClickedOfferRow = ({ offer, token, onRefresh }) => {
 // ── Settings & Delete Account Modal
 const SettingsModal = ({ isOpen, onClose, mongoUser, token, setMongoUser, logout }) => {
   const [displayName, setDisplayName] = useState(mongoUser?.displayName || '');
-  const [avatarUrl, setAvatarUrl] = useState(mongoUser?.avatarUrl || '');
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [deletePhase, setDeletePhase] = useState(0);
   const [isPrivate, setIsPrivate] = useState(mongoUser?.isPrivate || false);
 
-  const [avatars, setAvatars] = useState([]);
-  const [loadingAvatars, setLoadingAvatars] = useState(true);
-  const [purchasingAvatar, setPurchasingAvatar] = useState(null);
-
-  const fetchAvatars = async () => {
-    setLoadingAvatars(true);
-    try {
-      const res = await fetch(`${API}/wallet/avatars`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      const data = await res.json();
-      if (data.success) setAvatars(data.avatars);
-    } catch (e) {
-      console.error(e);
-    } finally {
-      setLoadingAvatars(false);
-    }
-  };
-
   useEffect(() => {
     if (isOpen) {
       setDisplayName(mongoUser?.displayName || '');
-      setAvatarUrl(mongoUser?.avatarUrl || '');
       setIsPrivate(mongoUser?.isPrivate || false);
       setDeletePhase(0);
       setError('');
       setSuccess('');
-      fetchAvatars();
     }
   }, [isOpen, mongoUser]);
-
-  const handleAvatarClick = (avatar) => {
-    if (avatar.isUnlocked) {
-      setAvatarUrl(avatar.url);
-    } else {
-      setPurchasingAvatar(avatar);
-    }
-  };
-
-  const handlePurchaseAvatar = async () => {
-    if (!purchasingAvatar) return;
-    setSaving(true);
-    try {
-      const res = await fetch(`${API}/wallet/avatars/buy/${purchasingAvatar._id}`, {
-        method: 'POST',
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      const data = await res.json();
-      if (data.success) {
-        toast.success(data.message);
-        setAvatarUrl(purchasingAvatar.url);
-        setMongoUser(prev => ({ 
-          ...prev, 
-          walletBalance: data.walletBalance, 
-          unlockedAvatars: [...(prev.unlockedAvatars || []), purchasingAvatar._id] 
-        }));
-        fetchAvatars();
-        setPurchasingAvatar(null);
-      } else {
-        toast.error(data.error);
-      }
-    } catch (e) {
-      toast.error('Network error');
-    } finally {
-      setSaving(false);
-    }
-  };
 
   if (!isOpen) return null;
 
@@ -490,7 +686,7 @@ const SettingsModal = ({ isOpen, onClose, mongoUser, token, setMongoUser, logout
       const res = await fetch(`${API}/auth/profile`, {
         method: 'PUT',
         headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ displayName, avatarUrl, isPrivate })
+        body: JSON.stringify({ displayName, isPrivate })
       });
       const data = await res.json();
       if (res.ok) {
@@ -531,8 +727,8 @@ const SettingsModal = ({ isOpen, onClose, mongoUser, token, setMongoUser, logout
       }
     }
   };
-  return (
-    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[9999] flex items-center justify-center p-4">
+  return createPortal(
+    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[999999] flex items-center justify-center p-4">
       <motion.div
         initial={{ scale: 0.95, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
@@ -591,55 +787,7 @@ const SettingsModal = ({ isOpen, onClose, mongoUser, token, setMongoUser, logout
             />
           </div>
 
-          <div className="space-y-4">
-            <h3 className="text-sm font-bold text-slate-300 uppercase tracking-wider flex items-center gap-2">
-              Choose Avatar
-              {loadingAvatars && <FiLoader className="animate-spin text-indigo-400" />}
-            </h3>
-            <div className="grid grid-cols-4 sm:grid-cols-6 gap-3 max-h-64 overflow-y-auto custom-scrollbar p-2">
-              {avatars.map((avatar) => (
-                <button
-                  key={avatar._id}
-                  onClick={() => handleAvatarClick(avatar)}
-                  className={`relative w-14 h-14 sm:w-16 sm:h-16 rounded-full overflow-hidden border-2 transition-all ${
-                    avatarUrl === avatar.url 
-                      ? 'border-indigo-500 shadow-[0_0_15px_rgba(79,70,229,0.4)] scale-105' 
-                      : 'border-transparent hover:border-white/20 hover:scale-105'
-                  } bg-[#151b2b]`}
-                >
-                  <img src={avatar.url} alt={avatar.name} className={`w-full h-full object-cover ${!avatar.isUnlocked ? 'opacity-40 grayscale' : ''}`} />
-                  {!avatar.isUnlocked && (
-                    <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/50">
-                      <FiLock className="text-yellow-400 drop-shadow-md" size={14} />
-                      <span className="text-yellow-400 text-[9px] font-bold mt-0.5 leading-none">{avatar.price}🪙</span>
-                    </div>
-                  )}
-                </button>
-              ))}
-            </div>
-            
-            {purchasingAvatar && (
-              <div className="bg-[#1a2133] border border-indigo-500/30 p-4 rounded-xl flex items-center justify-between mt-4">
-                <div className="flex items-center gap-4">
-                  <img src={purchasingAvatar.url} alt="Purchase preview" className="w-12 h-12 rounded-full border border-white/10" />
-                  <div>
-                    <h4 className="text-sm font-bold text-white">{purchasingAvatar.name}</h4>
-                    <p className="text-xs text-indigo-300 font-medium">{purchasingAvatar.price} Coins</p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  <button onClick={() => setPurchasingAvatar(null)} className="px-3 py-1.5 text-xs text-slate-400 hover:text-white transition-colors">Cancel</button>
-                  <button 
-                    onClick={handlePurchaseAvatar}
-                    disabled={saving || mongoUser?.walletBalance < purchasingAvatar.price}
-                    className="px-4 py-2 bg-indigo-500 hover:bg-indigo-600 disabled:opacity-50 text-white text-xs font-bold rounded-lg shadow-lg shadow-indigo-500/20 transition-all"
-                  >
-                    Buy & Equip
-                  </button>
-                </div>
-              </div>
-            )}
-          </div>
+
 
           <div className="pt-4 flex justify-end">
             <button
@@ -681,7 +829,8 @@ const SettingsModal = ({ isOpen, onClose, mongoUser, token, setMongoUser, logout
         </div>
         </div>
       </motion.div>
-    </div>
+    </div>,
+    document.body
   );
 };
 
@@ -690,6 +839,7 @@ const Profile = () => {
 
   const { currentUser, mongoUser, setMongoUser, logout } = useAuth();
   const [showSettings, setShowSettings] = useState(false);
+  const [showCustomization, setShowCustomization] = useState(false);
   const [activeTab, setActiveTab] = useState('started_offers');
   const [token, setToken] = useState(null);
   const [customOffers, setCustomOffers] = useState([]);
@@ -783,6 +933,13 @@ const Profile = () => {
         setMongoUser={setMongoUser}
         logout={logout}
       />
+      <CustomizationModal
+        isOpen={showCustomization}
+        onClose={() => setShowCustomization(false)}
+        mongoUser={mongoUser}
+        token={token}
+        setMongoUser={setMongoUser}
+      />
       <motion.div
         initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
@@ -820,13 +977,21 @@ const Profile = () => {
                     <div className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-emerald-500/10 border border-emerald-500/20 rounded-full text-emerald-400 text-[10px] font-bold uppercase tracking-wider">
                       <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" /> Active
                     </div>
-                    <button
-                      onClick={() => setShowSettings(true)}
-                      title="Account Settings"
-                      className="ml-auto sm:ml-0 w-8 h-8 rounded-xl border border-white/[0.08] bg-white/[0.03] hover:bg-white/[0.08] text-slate-400 hover:text-white transition-all flex items-center justify-center"
-                    >
-                      <FiSettings size={15} />
-                    </button>
+                    <div className="ml-auto sm:ml-0 flex items-center gap-2">
+                      <button
+                        onClick={() => setShowCustomization(true)}
+                        className="px-3 py-1.5 rounded-xl border border-indigo-500/30 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-300 hover:text-indigo-200 transition-all flex items-center gap-2 text-xs font-bold shadow-lg shadow-indigo-500/10"
+                      >
+                        <FiEdit2 size={12} /> Customize
+                      </button>
+                      <button
+                        onClick={() => setShowSettings(true)}
+                        title="Account Settings"
+                        className="w-8 h-8 rounded-xl border border-white/[0.08] bg-white/[0.03] hover:bg-white/[0.08] text-slate-400 hover:text-white transition-all flex items-center justify-center"
+                      >
+                        <FiSettings size={15} />
+                      </button>
+                    </div>
                   </div>
 
                   {/* Meta pills */}
