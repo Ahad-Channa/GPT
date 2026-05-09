@@ -14,8 +14,9 @@ export default function DailyBonus() {
   const [claiming, setClaiming] = useState(false);
   const [claimResult, setClaimResult] = useState(null); // { coins }
   const [timeLeft, setTimeLeft] = useState('');
+  const [expireTimeLeft, setExpireTimeLeft] = useState('');
 
-  // Countdown timer
+  // Countdown timer for next claim (cooldown)
   useEffect(() => {
     if (!status?.nextClaimAt || !status.alreadyClaimed) return;
     const target = new Date(status.nextClaimAt).getTime();
@@ -28,7 +29,22 @@ export default function DailyBonus() {
       setTimeLeft(`${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`);
     }, 1000);
     return () => clearInterval(interval);
-  }, [status]);
+  }, [status, fetchStatus]);
+
+  // Countdown timer for streak expiration
+  useEffect(() => {
+    if (!status?.expiresAt || status.alreadyClaimed) return;
+    const target = new Date(status.expiresAt).getTime();
+    const interval = setInterval(() => {
+      const distance = target - Date.now();
+      if (distance < 0) { clearInterval(interval); setExpireTimeLeft('00:00:00'); fetchStatus(); return; }
+      const h = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      const m = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+      const s = Math.floor((distance % (1000 * 60)) / 1000);
+      setExpireTimeLeft(`${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`);
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [status, fetchStatus]);
 
   const claimBonus = async () => {
     setClaiming(true);
@@ -143,6 +159,11 @@ export default function DailyBonus() {
                     </span>
                   </button>
                   <p className="text-slate-500 text-xs mt-3">You've earned enough — tap to collect!</p>
+                  {status.expiresAt && (
+                    <div className="inline-flex items-center gap-2 text-red-400 text-sm font-semibold mt-4 bg-red-500/10 py-1.5 px-3 rounded-lg border border-red-500/20">
+                      <FiClock /> Expiring in: {expireTimeLeft || '00:00:00'}
+                    </div>
+                  )}
                 </div>
               )}
             </div>
@@ -163,6 +184,11 @@ export default function DailyBonus() {
               <p className="text-sm text-slate-500">
                 Earn <span className="text-white font-bold">{remainingCoins.toLocaleString()}</span> more coins today to unlock your bonus!
               </p>
+              {status.expiresAt && (
+                <div className="inline-flex items-center justify-center gap-2 text-red-400 text-sm font-semibold mt-2 bg-red-500/10 py-1.5 px-3 rounded-lg border border-red-500/20">
+                  <FiClock /> Time to complete: {expireTimeLeft || '00:00:00'}
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -174,9 +200,6 @@ export default function DailyBonus() {
             <div className="flex items-end gap-4">
               <div className="text-5xl font-black text-white">{status.streak} <span className="text-2xl text-slate-500 font-normal">days</span></div>
             </div>
-            <p className="text-sm text-slate-400 mt-2">
-              Don&apos;t miss a day! If you don&apos;t claim your bonus within 24 hours, your streak resets to 1. The streak runs up to 30 days and resets after completion.
-            </p>
           </div>
 
           <div className="glass-card p-6">

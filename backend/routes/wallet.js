@@ -374,6 +374,7 @@ router.get('/daily-bonus-status', verifyToken, async (req, res) => {
     // ── 24-hour cooldown (not midnight-based) ──────────────────────
     let alreadyClaimed = false;
     let nextClaimAt = null;
+    let expiresAt = null;
 
     if (user.lastDailyBonusClaim) {
       const msSinceClaim = now.getTime() - new Date(user.lastDailyBonusClaim).getTime();
@@ -386,8 +387,10 @@ router.get('/daily-bonus-status', verifyToken, async (req, res) => {
       } else if (msSinceClaim >= 48 * 60 * 60 * 1000) {
         // More than 48 hours (i.e. >24h wait + >24h window) — streak broken
         streak = 0;
+      } else {
+        // Between 24h and 48h = eligible to claim (24 hour window), streak intact
+        expiresAt = new Date(new Date(user.lastDailyBonusClaim).getTime() + 48 * 60 * 60 * 1000).toISOString();
       }
-      // Between 24h and 48h = eligible to claim (24 hour window), streak intact
     }
 
     let nextStreakToClaim = streak + 1;
@@ -464,7 +467,8 @@ router.get('/daily-bonus-status', verifyToken, async (req, res) => {
       rewardDay10,
       rewardDay20,
       rewardDay30,
-      nextClaimAt
+      nextClaimAt,
+      expiresAt
     });
   } catch (error) {
     console.error('[/api/wallet/daily-bonus-status] Error:', error);

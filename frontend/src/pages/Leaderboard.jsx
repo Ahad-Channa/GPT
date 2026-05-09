@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import DashboardLayout from '../components/layout/DashboardLayout';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FiCalendar, FiLock } from 'react-icons/fi';
+import { FiCalendar, FiLock, FiClock } from 'react-icons/fi';
 import { FaCrown } from 'react-icons/fa';
 import PublicProfileModal from '../components/PublicProfileModal';
 
@@ -82,6 +82,42 @@ const PodiumCard = ({ rank, user, onClick }) => {
   );
 };
 
+const LeaderboardCountdown = ({ targetDate }) => {
+  const [timeLeft, setTimeLeft] = useState('');
+
+  useEffect(() => {
+    if (!targetDate) return;
+    
+    const calculateTimeLeft = () => {
+      const distance = new Date(targetDate).getTime() - Date.now();
+      if (distance <= 0) {
+        setTimeLeft('0d 00h 00m 00s');
+        return;
+      }
+      
+      const d = Math.floor(distance / (1000 * 60 * 60 * 24));
+      const h = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      const m = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+      const s = Math.floor((distance % (1000 * 60)) / 1000);
+      
+      setTimeLeft(`${d}d ${h.toString().padStart(2, '0')}h ${m.toString().padStart(2, '0')}m ${s.toString().padStart(2, '0')}s`);
+    };
+
+    calculateTimeLeft();
+    const interval = setInterval(calculateTimeLeft, 1000);
+    return () => clearInterval(interval);
+  }, [targetDate]);
+
+  if (!timeLeft) return null;
+
+  return (
+    <div className="flex items-center justify-center gap-2 px-6 py-2.5 bg-indigo-500/10 border border-indigo-500/20 rounded-2xl text-indigo-300 font-mono text-sm md:text-base font-bold shadow-[0_0_15px_rgba(99,102,241,0.1)] mb-8">
+      <FiClock className="text-indigo-400 text-lg" />
+      <span>Resets in: {timeLeft}</span>
+    </div>
+  );
+};
+
 const PeriodPanel = ({ period, data, onProfileClick }) => {
   const rankings = data?.rankings || [];
   
@@ -91,8 +127,11 @@ const PeriodPanel = ({ period, data, onProfileClick }) => {
   return (
     <div className="flex flex-col items-center w-full">
       
+      {/* Countdown Timer */}
+      {data?.cycleEnd && <LeaderboardCountdown targetDate={data.cycleEnd} />}
+      
       {/* Podium Section */}
-      <div className="flex flex-row items-end justify-center w-full gap-2 md:gap-4 mb-20 pt-12">
+      <div className="flex flex-row items-end justify-center w-full gap-2 md:gap-4 mb-20 pt-4">
         <PodiumCard rank={2} user={top3[0]} onClick={onProfileClick} />
         <PodiumCard rank={1} user={top3[1]} onClick={onProfileClick} />
         <PodiumCard rank={3} user={top3[2]} onClick={onProfileClick} />
