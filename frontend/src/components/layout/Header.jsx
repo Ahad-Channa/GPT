@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useNotifications } from '../../contexts/NotificationContext';
 import { useDailyBonus } from '../../contexts/DailyBonusContext';
-import { FiLogOut, FiUser, FiSettings, FiZap, FiChevronDown, FiCreditCard, FiLock, FiClock, FiBell, FiUsers, FiGift, FiDollarSign } from 'react-icons/fi';
+import { FiLogOut, FiUser, FiSettings, FiZap, FiChevronDown, FiCreditCard, FiLock, FiClock, FiBell, FiUsers, FiGift, FiDollarSign, FiMessageSquare } from 'react-icons/fi';
 import { FaTrophy, FaCoins } from 'react-icons/fa6';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -207,6 +207,15 @@ const Header = () => {
           </button>
 
           <div className="h-5 w-px bg-white/[0.08] hidden sm:block" />
+
+          {/* Live Chat Button → full page */}
+          <button
+            id="header-livechat-btn"
+            onClick={() => navigate('/dashboard/chat')}
+            className="relative flex items-center justify-center w-8 h-8 md:w-10 md:h-10 rounded-xl bg-white/[0.04] border border-white/[0.07] hover:bg-white/[0.08] transition-colors group"
+          >
+            <FiMessageSquare className="text-slate-300 text-sm md:text-base group-hover:text-indigo-400 transition-colors" />
+          </button>
 
           {/* Notifications */}
           <button

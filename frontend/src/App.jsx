@@ -14,6 +14,7 @@ import Earn from './pages/Earn';
 import Leaderboard from './pages/Leaderboard';
 import DailyBonus from './pages/DailyBonus';
 import PublicProfile from './pages/PublicProfile';
+import Chat from './pages/Chat';
 import AdminLayout from './pages/admin/AdminLayout';
 import AdminOverview from './pages/admin/AdminOverview';
 import AdminAnnouncements from './pages/admin/AdminAnnouncements';
@@ -28,6 +29,7 @@ import AdminCustomOffers from './pages/admin/AdminCustomOffers';
 import AdminLeaderboard from './pages/admin/AdminLeaderboard';
 import AdminProofs from './pages/admin/AdminProofs';
 import AdminAvatars from './pages/admin/AdminAvatars';
+import AdminChat from './pages/admin/AdminChat';
 import NotificationPanel from './components/NotificationPanel';
 
 const PrivateRoute = ({ children }) => {
@@ -132,6 +134,14 @@ function App() {
         } 
       />
       <Route 
+        path="/dashboard/chat" 
+        element={
+          <PrivateRoute>
+            <Chat />
+          </PrivateRoute>
+        } 
+      />
+      <Route 
         path="/dashboard/affiliates" 
         element={
           <PrivateRoute>
@@ -160,6 +170,7 @@ function App() {
         <Route path="featured-offers" element={<AdminCustomOffers />} />
         <Route path="proofs" element={<AdminProofs />} />
         <Route path="leaderboard" element={<AdminLeaderboard />} />
+        <Route path="chat" element={<AdminChat />} />
         <Route path="logs" element={<AdminLogs />} />
         <Route path="settings" element={<AdminSettings />} />
       </Route>
