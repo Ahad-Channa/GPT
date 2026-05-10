@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import {
-  FiGrid, FiUsers, FiShield, FiArrowRight, FiLogOut, FiZap, FiDollarSign, FiActivity, FiSliders, FiBox, FiTag, FiStar, FiTrendingUp, FiMessageSquare, FiInbox, FiImage, FiMessageCircle
+  FiGrid, FiUsers, FiShield, FiArrowRight, FiLogOut, FiZap, FiDollarSign, FiActivity, FiSliders, FiBox, FiTag, FiStar, FiTrendingUp, FiMessageSquare, FiInbox, FiImage, FiMessageCircle, FiHeadphones
 } from 'react-icons/fi';
 import './Admin.css';
 
@@ -54,6 +54,7 @@ const AdminLayout = () => {
     ...(isPrimaryAdmin ? [{ to: '/admin/leaderboard', end: false, icon: FiTrendingUp, label: 'Leaderboard' }] : []),
     ...(isPrimaryAdmin ? [{ to: '/admin/avatars', end: false, icon: FiImage, label: 'Avatars' }] : []),
     ...(isPrimaryAdmin || mongoUser?.role === 'mod' ? [{ to: '/admin/chat', end: false, icon: FiMessageCircle, label: 'Chat Moderation' }] : []),
+    ...(isPrimaryAdmin || mongoUser?.adminPermissions?.includes('manage_support') ? [{ to: '/admin/support', end: false, icon: FiHeadphones, label: 'Support', badgeKey: 'support' }] : []),
     ...(isPrimaryAdmin ? [{ to: '/admin/admins',   end: false, icon: FiShield,   label: 'Staff'     }] : []),
     ...(isPrimaryAdmin ? [{ to: '/admin/announcements', end: false, icon: FiMessageSquare, label: 'Announcements' }] : []),
     ...(isPrimaryAdmin ? [{ to: '/admin/logs',     end: false, icon: FiActivity, label: 'Audit Log', badgeKey: 'security' }] : []),

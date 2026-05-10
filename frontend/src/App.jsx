@@ -30,6 +30,7 @@ import AdminLeaderboard from './pages/admin/AdminLeaderboard';
 import AdminProofs from './pages/admin/AdminProofs';
 import AdminAvatars from './pages/admin/AdminAvatars';
 import AdminChat from './pages/admin/AdminChat';
+import AdminSupport from './pages/admin/AdminSupport';
 import NotificationPanel from './components/NotificationPanel';
 
 const PrivateRoute = ({ children }) => {
@@ -171,6 +172,7 @@ function App() {
         <Route path="proofs" element={<AdminProofs />} />
         <Route path="leaderboard" element={<AdminLeaderboard />} />
         <Route path="chat" element={<AdminChat />} />
+        <Route path="support" element={<AdminSupport />} />
         <Route path="logs" element={<AdminLogs />} />
         <Route path="settings" element={<AdminSettings />} />
       </Route>

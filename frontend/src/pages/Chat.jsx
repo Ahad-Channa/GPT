@@ -2,7 +2,8 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import io from 'socket.io-client';
 import { useAuth } from '../contexts/AuthContext';
 import Header from '../components/layout/Header';
-import { FiSend, FiTrash2, FiUsers, FiMessageSquare, FiZap } from 'react-icons/fi';
+import SupportChat from '../components/SupportChat';
+import { FiSend, FiTrash2, FiUsers, FiMessageSquare, FiZap, FiHeadphones } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
@@ -142,6 +143,7 @@ const Chat = () => {
   const [liveCount, setLiveCount]   = useState(0);
   const [deletingId, setDeletingId] = useState(null);
   const [loading, setLoading]       = useState(true);
+  const [activeTab, setActiveTab]   = useState('chat'); // 'chat' | 'support'
 
   const endRef   = useRef(null);
   const inputRef = useRef(null);
@@ -228,7 +230,7 @@ const Chat = () => {
           borderBottom: '1px solid rgba(255,255,255,0.06)',
           flexShrink: 0
         }}>
-          {/* title */}
+          {/* title + inline online count */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             <FiMessageSquare style={{ color: '#6366f1', fontSize: 16 }} />
             <span style={{ fontSize: '0.9rem', fontWeight: 700, color: '#f1f5f9' }}>
@@ -240,28 +242,44 @@ const Chat = () => {
               color: '#34d399', padding: '1px 7px', borderRadius: 100,
               fontWeight: 600, letterSpacing: '0.05em'
             }}>LIVE</span>
+            <span style={{
+              display: 'inline-flex', alignItems: 'center', gap: 5,
+              fontSize: '0.78rem', color: '#94a3b8', fontWeight: 500
+            }}>
+              <FiUsers style={{ color: '#10b981', fontSize: 13 }} />
+              <span style={{ color: '#10b981', fontWeight: 700 }}>{liveCount}</span>
+              <span>online</span>
+            </span>
           </div>
 
-          {/* online counter */}
-          <div style={{
-            display: 'flex', alignItems: 'center', gap: 6,
-            padding: '5px 12px', borderRadius: 99,
-            background: 'rgba(16,185,129,0.08)',
-            border: '1px solid rgba(16,185,129,0.2)'
-          }}>
-            <span style={{
-              width: 6, height: 6, borderRadius: '50%',
-              background: '#10b981', display: 'inline-block',
-              boxShadow: '0 0 6px #10b981',
-              animation: 'chatGlow 2s ease-in-out infinite'
-            }} />
-            <FiUsers style={{ color: '#10b981', fontSize: 12 }} />
-            <span style={{ fontSize: '0.8rem', color: '#10b981', fontWeight: 700 }}>{liveCount}</span>
-            <span style={{ fontSize: '0.72rem', color: '#475569' }}>online</span>
+          {/* Chat / Support tab switcher */}
+          <div style={{ display: 'flex', gap: 4, background: 'rgba(255,255,255,0.04)', borderRadius: 10, padding: 3 }}>
+            {[
+              { key: 'chat',    label: 'Chat',    icon: FiMessageSquare },
+              { key: 'support', label: 'Support', icon: FiHeadphones }
+            ].map(({ key, label, icon: Icon }) => {
+              const active = activeTab === key;
+              return (
+                <button key={key} onClick={() => setActiveTab(key)} style={{
+                  display: 'flex', alignItems: 'center', gap: 6,
+                  padding: '5px 14px', borderRadius: 7, border: 'none', cursor: 'pointer',
+                  fontSize: '0.78rem', fontWeight: active ? 700 : 500,
+                  background: active ? 'rgba(99,102,241,0.25)' : 'transparent',
+                  color: active ? '#a5b4fc' : '#475569',
+                  transition: 'all 0.18s'
+                }}>
+                  <Icon style={{ fontSize: 13 }} />
+                  {label}
+                </button>
+              );
+            })}
           </div>
         </div>
 
         {/* ── Body row ─────────────────────────────── */}
+        {activeTab === 'support' ? (
+          <SupportChat socket={socket} />
+        ) : (
         <div style={{ display: 'flex', flex: 1, overflow: 'hidden', minHeight: 0 }}>
 
           {/* ── Online sidebar ──────────────────────── */}
@@ -469,6 +487,7 @@ const Chat = () => {
             </div>
           </div>
         </div>
+        )} {/* end activeTab === 'support' ternary */}
       </div>
 
       <style>{`

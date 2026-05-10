@@ -54,6 +54,7 @@ const { router: leaderboardRoutes, resetLeaderboard } = require('./routes/leader
 const publicRoutes = require('./routes/public');
 const notificationsRoutes = require('./routes/notifications');
 const chatRoutes = require('./routes/chat');
+const supportRoutes = require('./routes/support');
 
 app.use('/api/auth', authRoutes);
 app.use('/api/wallet', walletRoutes);
@@ -65,6 +66,7 @@ app.use('/api/leaderboard', leaderboardRoutes);
 app.use('/api/public', publicRoutes);
 app.use('/api/notifications', notificationsRoutes);
 app.use('/api/chat', chatRoutes);
+app.use('/api/support', supportRoutes);
 
 // Base Route
 app.get('/', (req, res) => {
@@ -128,22 +130,19 @@ const broadcastLiveCount = () => {
 io.on('connection', (socket) => {
   onlineSockets.add(socket.id);
   broadcastLiveCount();
-  console.log('A user connected to live chat:', socket.id, '| Online:', onlineSockets.size);
+  console.log('A user connected:', socket.id, '| Online:', onlineSockets.size);
 
+  // ── Global live chat ────────────────────────────────────────
   socket.on('sendMessage', async (data) => {
     try {
       if (!data.userId || !data.message) return;
-
       const user = await User.findById(data.userId);
       if (!user) return;
-
       const newMsg = new ChatMessage({
         userId: user._id,
         message: data.message.trim().slice(0, 500)
       });
       await newMsg.save();
-
-      // Broadcast to everyone including the sender
       io.emit('newMessage', {
         _id: newMsg._id,
         message: newMsg.message,
@@ -160,10 +159,29 @@ io.on('connection', (socket) => {
     }
   });
 
+  // ── Support ticket rooms ─────────────────────────────────────
+  // Client emits this to subscribe to a specific ticket's real-time feed
+  socket.on('joinSupportRoom', ({ ticketId }) => {
+    if (ticketId) {
+      socket.join(`support:${ticketId}`);
+    }
+  });
+
+  socket.on('leaveSupportRoom', ({ ticketId }) => {
+    if (ticketId) {
+      socket.leave(`support:${ticketId}`);
+    }
+  });
+
+  // Admin joins a room to watch all ticket updates
+  socket.on('joinAdminSupport', () => {
+    socket.join('adminSupport');
+  });
+
   socket.on('disconnect', () => {
     onlineSockets.delete(socket.id);
     broadcastLiveCount();
-    console.log('User disconnected from live chat:', socket.id, '| Online:', onlineSockets.size);
+    console.log('User disconnected:', socket.id, '| Online:', onlineSockets.size);
   });
 });
 
