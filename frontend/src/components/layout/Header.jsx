@@ -122,7 +122,7 @@ const DailyBonusChip = () => {
   );
 };
 
-const Header = () => {
+const Header = ({ onChatToggle, chatOpen }) => {
   const { currentUser, mongoUser, logout, isAdmin } = useAuth();
   const { unreadCount, togglePanel } = useNotifications();
   const navigate = useNavigate();
@@ -208,13 +208,19 @@ const Header = () => {
 
           <div className="h-5 w-px bg-white/[0.08] hidden sm:block" />
 
-          {/* Live Chat Button → full page */}
+          {/* Live Chat Button → sidebar */}
           <button
             id="header-livechat-btn"
-            onClick={() => navigate('/dashboard/chat')}
-            className="relative flex items-center justify-center w-8 h-8 md:w-10 md:h-10 rounded-xl bg-white/[0.04] border border-white/[0.07] hover:bg-white/[0.08] transition-colors group"
+            onClick={onChatToggle}
+            className={`relative flex items-center justify-center w-8 h-8 md:w-10 md:h-10 rounded-xl border transition-colors group ${
+              chatOpen
+                ? 'bg-indigo-500/20 border-indigo-500/40'
+                : 'bg-white/[0.04] border-white/[0.07] hover:bg-white/[0.08]'
+            }`}
           >
-            <FiMessageSquare className="text-slate-300 text-sm md:text-base group-hover:text-indigo-400 transition-colors" />
+            <FiMessageSquare className={`text-sm md:text-base transition-colors ${
+              chatOpen ? 'text-indigo-400' : 'text-slate-300 group-hover:text-indigo-400'
+            }`} />
           </button>
 
           {/* Notifications */}

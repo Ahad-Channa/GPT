@@ -1,14 +1,18 @@
+import { useState } from 'react';
 import Header from './Header';
 import LiveEarningsBar from '../LiveEarningsBar';
+import ChatSidebar from '../chat/ChatSidebar';
 
 const DashboardLayout = ({ children, showLiveBar = true, fullWidth = false }) => {
+  const [chatOpen, setChatOpen] = useState(false);
+
   return (
     <div className="relative min-h-screen bg-[#080b14] text-gray-300 overflow-x-hidden">
       {/* Ambient Background Glows */}
       <div className="ambient-bg" aria-hidden="true" />
 
-      {/* Sticky Header */}
-      <Header />
+      {/* Sticky Header — passes chat toggle down */}
+      <Header onChatToggle={() => setChatOpen(o => !o)} chatOpen={chatOpen} />
 
       {/* Live Earnings Ticker */}
       {showLiveBar && <LiveEarningsBar />}
@@ -30,6 +34,9 @@ const DashboardLayout = ({ children, showLiveBar = true, fullWidth = false }) =>
           </div>
         </div>
       </footer>
+
+      {/* Chat Sidebar */}
+      <ChatSidebar isOpen={chatOpen} onClose={() => setChatOpen(false)} />
     </div>
   );
 };
