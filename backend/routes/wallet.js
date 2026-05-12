@@ -371,25 +371,29 @@ router.get('/daily-bonus-status', verifyToken, async (req, res) => {
     let streak = user.dailyBonusStreak || 0;
     const now = new Date();
 
-    // ── 24-hour cooldown (not midnight-based) ──────────────────────
+    // ── Timing constants (all within 24 hours) ────────────────────
+    // Cooldown: 20h after last claim — user must wait this long before claiming again
+    // Streak expires: 24h after last claim — must claim within this window or streak resets
+    const COOLDOWN_MS     = 20 * 60 * 60 * 1000; // 20 hours
+    const STREAK_EXPIRE_MS = 24 * 60 * 60 * 1000; // 24 hours
+
     let alreadyClaimed = false;
     let nextClaimAt = null;
     let expiresAt = null;
 
     if (user.lastDailyBonusClaim) {
       const msSinceClaim = now.getTime() - new Date(user.lastDailyBonusClaim).getTime();
-      const TWENTY_FOUR_H = 24 * 60 * 60 * 1000;
 
-      if (msSinceClaim < TWENTY_FOUR_H) {
-        // Still within 24-hour cooldown
+      if (msSinceClaim < COOLDOWN_MS) {
+        // Still within cooldown — cannot claim yet
         alreadyClaimed = true;
-        nextClaimAt = new Date(new Date(user.lastDailyBonusClaim).getTime() + TWENTY_FOUR_H).toISOString();
-      } else if (msSinceClaim >= 48 * 60 * 60 * 1000) {
-        // More than 48 hours (i.e. >24h wait + >24h window) — streak broken
+        nextClaimAt = new Date(new Date(user.lastDailyBonusClaim).getTime() + COOLDOWN_MS).toISOString();
+      } else if (msSinceClaim >= STREAK_EXPIRE_MS) {
+        // Past 24h — streak is broken, reset to 0
         streak = 0;
       } else {
-        // Between 24h and 48h = eligible to claim (24 hour window), streak intact
-        expiresAt = new Date(new Date(user.lastDailyBonusClaim).getTime() + 48 * 60 * 60 * 1000).toISOString();
+        // Between 20h and 24h = eligible to claim, streak still alive
+        expiresAt = new Date(new Date(user.lastDailyBonusClaim).getTime() + STREAK_EXPIRE_MS).toISOString();
       }
     }
 
@@ -419,10 +423,10 @@ router.get('/daily-bonus-status', verifyToken, async (req, res) => {
 
     let earnedToday = 0;
     if (!alreadyClaimed) {
-      // Earnings only count AFTER the 24h cooldown has ended
+      // Earnings only count AFTER the cooldown has ended
       const windowStart = user.lastDailyBonusClaim
-        ? new Date(new Date(user.lastDailyBonusClaim).getTime() + 24 * 60 * 60 * 1000)
-        : new Date(now.getTime() - 24 * 60 * 60 * 1000);
+        ? new Date(new Date(user.lastDailyBonusClaim).getTime() + COOLDOWN_MS)
+        : new Date(now.getTime() - STREAK_EXPIRE_MS);
 
       const earnedResult = await Transaction.aggregate([
         {
@@ -486,28 +490,30 @@ router.post('/daily-bonus', verifyToken, async (req, res) => {
     if (!user) return res.status(404).json({ success: false, error: 'User not found' });
 
     const now = new Date();
-    const TWENTY_FOUR_H = 24 * 60 * 60 * 1000;
+    // Cooldown: 20h — Streak expires: 24h
+    const COOLDOWN_MS      = 20 * 60 * 60 * 1000;
+    const STREAK_EXPIRE_MS = 24 * 60 * 60 * 1000;
 
-    // 1. Verify 24-hour cooldown
+    // 1. Verify cooldown
     if (user.lastDailyBonusClaim) {
       const msSinceClaim = now.getTime() - new Date(user.lastDailyBonusClaim).getTime();
-      if (msSinceClaim < TWENTY_FOUR_H) {
-        return res.status(400).json({ success: false, error: 'Daily bonus already claimed. Come back in 24 hours.' });
+      if (msSinceClaim < COOLDOWN_MS) {
+        return res.status(400).json({ success: false, error: 'Daily bonus already claimed. Come back later.' });
       }
     }
 
     const settings = await Settings.getSingleton();
     const rd = settings.rewardEngine;
 
-    // 2. Streak math — break streak if more than 48h have passed since last claim (meaning the 24h window closed)
+    // 2. Streak math — break streak if 24h+ have passed since last claim
     let streak = user.dailyBonusStreak || 0;
     if (user.lastDailyBonusClaim) {
       const msSinceClaim = now.getTime() - new Date(user.lastDailyBonusClaim).getTime();
-      if (msSinceClaim < 48 * 60 * 60 * 1000) {
-        // Within 48h (since last claim) = continue streak
+      if (msSinceClaim < STREAK_EXPIRE_MS) {
+        // Within 24h = continue streak
         streak += 1;
       } else {
-        // missed the 24h window = streak broken, start fresh
+        // Missed the 4h window = streak broken, start fresh
         streak = 1;
       }
     } else {
@@ -531,10 +537,10 @@ router.post('/daily-bonus', verifyToken, async (req, res) => {
     };
 
     // 3. EARN GATE — only count REAL earnings (not daily_bonus, promo_code, admin_adjustment)
-    // Earnings only count AFTER the 24h cooldown has ended
+    // Earnings only count AFTER the cooldown has ended
     const windowStart = user.lastDailyBonusClaim
-      ? new Date(new Date(user.lastDailyBonusClaim).getTime() + TWENTY_FOUR_H)
-      : new Date(now.getTime() - TWENTY_FOUR_H);
+      ? new Date(new Date(user.lastDailyBonusClaim).getTime() + COOLDOWN_MS)
+      : new Date(now.getTime() - STREAK_EXPIRE_MS);
 
     const earnedResult = await Transaction.aggregate([
       {
@@ -586,7 +592,7 @@ router.post('/daily-bonus', verifyToken, async (req, res) => {
       status: 'completed',
     });
 
-    const nextClaimAt = new Date(now.getTime() + TWENTY_FOUR_H).toISOString();
+    const nextClaimAt = new Date(now.getTime() + COOLDOWN_MS).toISOString();
 
     res.status(200).json({
       success: true,
