@@ -8,46 +8,41 @@ cron.schedule('0 * * * *', async () => {
   try {
     const now = new Date();
     
-    // Define "today" and "tomorrow" in local server time (which matches toDateString usage in wallet.js)
-    const tomorrow = new Date(now);
-    tomorrow.setDate(now.getDate() + 1);
-    tomorrow.setHours(0, 0, 0, 0);
+    // 48 hours to expire, warn at 4 hours left
+    const STREAK_EXPIRE_MS = 48 * 60 * 60 * 1000;
+    const WARNING_THRESHOLD_MS = 4 * 60 * 60 * 1000;
 
-    const hoursToReset = (tomorrow - now) / (1000 * 60 * 60);
+    // Users whose streak is expiring in 4 hours or less
+    // meaning their last claim was exactly between 44 and 48 hours ago
+    const cutoffExpired = new Date(now.getTime() - STREAK_EXPIRE_MS);
+    const cutoffWarning = new Date(now.getTime() - (STREAK_EXPIRE_MS - WARNING_THRESHOLD_MS));
 
-    // Only fire if there's less than or equal to 4 hours left
-    if (hoursToReset > 4) return;
-
-    const startOfToday = new Date(now);
-    startOfToday.setHours(0, 0, 0, 0);
-
-    const startOfYesterday = new Date(now);
-    startOfYesterday.setDate(startOfYesterday.getDate() - 1);
-    startOfYesterday.setHours(0, 0, 0, 0);
-
-    // Users whose last claim was on "yesterday", meaning they have a streak but haven't claimed today yet.
     const usersAtRisk = await User.find({
       dailyBonusStreak: { $gt: 0 },
-      lastDailyBonusClaim: { $gte: startOfYesterday, $lt: startOfToday }
+      lastDailyBonusClaim: { $gt: cutoffExpired, $lte: cutoffWarning }
     });
 
     let warnedCount = 0;
+    const last24h = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+
     for (const user of usersAtRisk) {
-      // Avoid duplicate streak warnings on the same day
+      // Avoid duplicate streak warnings in the last 24h
       const alreadyWarned = await Notification.exists({
         userId: user._id,
         type: 'streak_warning',
-        createdAt: { $gte: startOfToday }
+        createdAt: { $gte: last24h }
       });
 
       if (alreadyWarned) continue;
 
-      const hoursLeft = Math.ceil(hoursToReset);
+      const msLeft = STREAK_EXPIRE_MS - (now.getTime() - new Date(user.lastDailyBonusClaim).getTime());
+      const hoursLeft = Math.max(1, Math.ceil(msLeft / (1000 * 60 * 60)));
+
       await notify(
         user._id,
         'streak_warning',
         'Streak Expiring Soon!',
-        `Your daily bonus streak will reset in ${hoursLeft} hours. Complete offers and claim your daily reward!`,
+        `Your daily bonus streak will reset in ${hoursLeft} ${hoursLeft === 1 ? 'hour' : 'hours'}. Complete offers and claim your daily reward!`,
         { hoursLeft }
       );
       warnedCount++;

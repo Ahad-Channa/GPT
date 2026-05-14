@@ -371,11 +371,11 @@ router.get('/daily-bonus-status', verifyToken, async (req, res) => {
     let streak = user.dailyBonusStreak || 0;
     const now = new Date();
 
-    // ── Timing constants (all within 24 hours) ────────────────────
-    // Cooldown: 20h after last claim — user must wait this long before claiming again
-    // Streak expires: 24h after last claim — must claim within this window or streak resets
-    const COOLDOWN_MS     = 20 * 60 * 60 * 1000; // 20 hours
-    const STREAK_EXPIRE_MS = 24 * 60 * 60 * 1000; // 24 hours
+    // ── Timing constants (all within 48 hours) ────────────────────
+    // Cooldown: 24h after last claim — user must wait this long before claiming again
+    // Streak expires: 48h after last claim — must claim within this window or streak resets
+    const COOLDOWN_MS     = 24 * 60 * 60 * 1000; // 24 hours
+    const STREAK_EXPIRE_MS = 48 * 60 * 60 * 1000; // 48 hours
 
     let alreadyClaimed = false;
     let nextClaimAt = null;
@@ -433,8 +433,8 @@ router.get('/daily-bonus-status', verifyToken, async (req, res) => {
           $match: {
             userId: user._id,
             amount: { $gt: 0 },
-            // Only count real offer/survey/referral earnings — NOT daily bonus itself
-            transactionType: { $nin: ['daily_bonus', 'promo_code', 'admin_adjustment'] },
+            // Only count real offer/survey/referral earnings — NOT daily bonus, leaderboard, etc.
+            transactionType: { $nin: ['daily_bonus', 'promo_code', 'admin_adjustment', 'leaderboard_reward'] },
             status: 'completed',
             createdAt: { $gte: windowStart }
           }
@@ -490,9 +490,9 @@ router.post('/daily-bonus', verifyToken, async (req, res) => {
     if (!user) return res.status(404).json({ success: false, error: 'User not found' });
 
     const now = new Date();
-    // Cooldown: 20h — Streak expires: 24h
-    const COOLDOWN_MS      = 20 * 60 * 60 * 1000;
-    const STREAK_EXPIRE_MS = 24 * 60 * 60 * 1000;
+    // Cooldown: 24h — Streak expires: 48h
+    const COOLDOWN_MS      = 24 * 60 * 60 * 1000;
+    const STREAK_EXPIRE_MS = 48 * 60 * 60 * 1000;
 
     // 1. Verify cooldown
     if (user.lastDailyBonusClaim) {
@@ -547,7 +547,7 @@ router.post('/daily-bonus', verifyToken, async (req, res) => {
         $match: {
           userId: user._id,
           amount: { $gt: 0 },
-          transactionType: { $nin: ['daily_bonus', 'promo_code', 'admin_adjustment'] },
+          transactionType: { $nin: ['daily_bonus', 'promo_code', 'admin_adjustment', 'leaderboard_reward'] },
           status: 'completed',
           createdAt: { $gte: windowStart }
         }

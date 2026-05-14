@@ -122,7 +122,7 @@ export default function DailyBonus() {
                 <FiClock className="text-2xl flex-shrink-0" />
                 {cooldownTimer || '00:00:00'}
               </div>
-              <p className="text-slate-600 text-xs">Claim window: 4 hours after cooldown</p>
+              <p className="text-slate-600 text-xs">Cooldown: 24 hours</p>
             </motion.div>
 
           /* ── Gate Unlocked ── */
@@ -243,18 +243,13 @@ export default function DailyBonus() {
 
             {/* Mini day-streak pills */}
             <div className="mt-5 flex flex-wrap gap-1.5">
-              {[1,2,3,4,5,6,7].map(d => (
+              {Array.from({ length: 30 }, (_, i) => i + 1).map(d => (
                 <div key={d} className={`w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold border transition-all ${
                   d <= streak
                     ? 'bg-gradient-to-br from-indigo-500 to-violet-500 border-indigo-400/50 text-white shadow-[0_0_8px_rgba(99,102,241,0.4)]'
                     : 'bg-white/[0.03] border-white/[0.06] text-slate-600'
                 }`}>{d}</div>
               ))}
-              {streak > 7 && (
-                <div className="w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold bg-gradient-to-br from-amber-500 to-orange-500 border-amber-400/50 text-white">
-                  +{streak - 7}
-                </div>
-              )}
             </div>
           </div>
 
@@ -287,14 +282,16 @@ export default function DailyBonus() {
             {/* Timing info */}
             <div className="mt-4 grid grid-cols-2 gap-3 text-center">
               <div className="bg-white/[0.02] border border-white/5 rounded-xl p-3">
-                <p className="text-slate-600 text-xs mb-0.5">Cooldown</p>
-                <p className="text-slate-300 font-bold text-sm">20 hours</p>
+                <p className="text-slate-600 text-xs mb-0.5">Cooldown Phase</p>
+                <p className="text-slate-300 font-bold text-sm">24 hours</p>
               </div>
               <div className="bg-white/[0.02] border border-white/5 rounded-xl p-3">
-                <p className="text-slate-600 text-xs mb-0.5">Claim window</p>
-                <p className="text-slate-300 font-bold text-sm">4 hours</p>
+                <p className="text-slate-600 text-xs mb-0.5">Claim Window</p>
+                <p className="text-slate-300 font-bold text-sm">24 hours</p>
               </div>
             </div>
+
+
           </div>
         </div>
 
