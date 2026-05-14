@@ -1,10 +1,16 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Header from './Header';
 import LiveEarningsBar from '../LiveEarningsBar';
 import ChatSidebar from '../chat/ChatSidebar';
 
 const DashboardLayout = ({ children, showLiveBar = true, fullWidth = false }) => {
-  const [chatOpen, setChatOpen] = useState(false);
+  const [chatOpen, setChatOpen] = useState(() => {
+    return localStorage.getItem('chatOpen') === 'true';
+  });
+
+  useEffect(() => {
+    localStorage.setItem('chatOpen', chatOpen);
+  }, [chatOpen]);
 
   return (
     <div className="relative min-h-screen bg-[#080b14] text-gray-300 overflow-x-hidden">

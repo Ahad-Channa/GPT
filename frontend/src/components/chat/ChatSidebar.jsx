@@ -4,7 +4,8 @@ import { useAuth } from '../../contexts/AuthContext';
 import SupportChat from '../SupportChat';
 import {
   FiX, FiSend, FiTrash2, FiUsers,
-  FiMessageSquare, FiHeadphones, FiZap
+  FiMessageSquare, FiHeadphones, FiZap,
+  FiShield, FiStar
 } from 'react-icons/fi';
 import { motion, AnimatePresence } from 'framer-motion';
 import toast from 'react-hot-toast';
@@ -12,119 +13,144 @@ import toast from 'react-hot-toast';
 const API        = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 const SOCKET_URL = API.replace('/api', '');
 
-/* ─── tiny helpers ──────────────────────────────────────── */
-const getInitials = (n) => (n || '?').slice(0, 2).toUpperCase();
-const getHue      = (n) => n ? [...n].reduce((a, c) => a + c.charCodeAt(0), 0) % 360 : 210;
+import { useNavigate } from 'react-router-dom';
+import { FaCrown } from 'react-icons/fa';
 
-const AvatarCircle = ({ user, size = 30 }) => {
-  const src = user?.avatarUrl;
-  const hue = getHue(user?.displayName);
+const getInitials = (name) => (name || '?').slice(0, 2).toUpperCase();
+const getHue = (name) => name ? [...name].reduce((a, c) => a + c.charCodeAt(0), 0) % 360 : 210;
+
+const AvatarCircle = ({ user, size = 20 }) => {
+   const dName = user?.displayName || 'Unknown';
+   const photo = user?.avatarUrl || user?.photoURL || `/avatars/avatar1.png`;
+   return (
+      <div style={{
+         width: size, height: size, borderRadius: '50%', flexShrink: 0,
+         overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center',
+         background: 'transparent',
+         color: 'white', fontSize: size * 0.45, fontWeight: 'bold'
+      }}>
+         <img src={photo} alt="avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+      </div>
+   );
+};
+
+const RoleSymbol = ({ role }) => {
+  const [hover, setHover] = useState(false);
+  let icon, label, color, shift = 0;
+
+  if (role === 'owner') {
+    icon = <FaCrown size={15} />; label = 'Owner'; color = '#fbbf24';
+  } else if (role === 'admin') {
+    icon = <FiShield size={15} />; label = 'Admin'; color = '#ef4444';
+  } else if (role === 'moderator') {
+    icon = (
+      <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+        <FiStar size={15} style={{ color: '#94a3b8' }} />
+        <span style={{ 
+          background: 'rgba(56,189,248,0.15)', color: '#38bdf8', 
+          fontSize: '0.65rem', fontWeight: 'bold', padding: '1px 4px', 
+          borderRadius: '4px', border: '1px solid rgba(56,189,248,0.3)' 
+        }}>M C</span>
+      </span>
+    );
+    label = 'Moderator'; color = '#38bdf8'; shift = 10;
+  } else {
+    icon = <FiStar size={15} />; label = 'VIP Rank (Coming Soon)'; color = '#94a3b8'; shift = 45;
+  }
+
   return (
-    <div style={{
-      width: size, height: size, borderRadius: '50%', overflow: 'hidden', flexShrink: 0,
-      background: src ? 'transparent' : `hsl(${hue},50%,26%)`,
-      border: '2px solid rgba(255,255,255,0.1)',
-      display: 'flex', alignItems: 'center', justifyContent: 'center',
-      fontSize: size * 0.35, fontWeight: 700, color: 'rgba(255,255,255,0.8)', userSelect: 'none'
-    }}>
-      {src
-        ? <img src={src} alt={user?.displayName || ''} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-        : getInitials(user?.displayName)}
+    <div 
+      onMouseEnter={() => setHover(true)} 
+      onMouseLeave={() => setHover(false)}
+      style={{ position: 'relative', display: 'inline-flex', alignItems: 'center', cursor: 'default' }}
+    >
+      <span style={{ color: role === 'moderator' ? 'inherit' : color, display: 'inline-flex', alignItems: 'center' }}>
+        {icon}
+      </span>
+      {hover && (
+        <div style={{
+          position: 'absolute', bottom: '100%', left: '50%', transform: `translate(calc(-50% + ${shift}px), -8px)`,
+          background: '#0b101e', border: `1px solid ${color}80`, color: '#f8fafc',
+          padding: '5px 10px', borderRadius: '8px', fontSize: '0.75rem', fontWeight: 600,
+          whiteSpace: 'nowrap', zIndex: 9999, boxShadow: `0 4px 15px ${color}40`,
+          pointerEvents: 'none', display: 'flex', alignItems: 'center', gap: '4px'
+        }}>
+          {label}
+          <div style={{
+            position: 'absolute', top: '100%', left: `calc(50% - ${shift}px)`, transform: 'translateX(-50%)',
+            borderWidth: '5px', borderStyle: 'solid',
+            borderColor: `${color}80 transparent transparent transparent`
+          }} />
+        </div>
+      )}
     </div>
   );
 };
 
-const roleMeta = {
-  admin:     { label: 'ADMIN', color: '#fbbf24', bg: 'rgba(251,191,36,0.12)' },
-  moderator: { label: 'MOD',   color: '#38bdf8', bg: 'rgba(56,189,248,0.12)' },
-};
-
-const RoleBadge = ({ role }) => {
-  const m = roleMeta[role];
-  if (!m) return null;
-  return (
-    <span style={{
-      fontSize: '0.58rem', fontWeight: 700, letterSpacing: '0.06em',
-      padding: '1px 4px', borderRadius: 4,
-      background: m.bg, color: m.color, marginLeft: 3,
-      border: `1px solid ${m.color}30`
-    }}>{m.label}</span>
-  );
-};
-
-/* ─── message row ───────────────────────────────────────── */
-const MessageRow = ({ msg, isOwn, showAvatar, canModerate, onDelete, deletingId }) => {
+/* ─── message row (boxed style) ─────────────────────────── */
+const MessageRow = ({ msg, canModerate, onDelete, deletingId }) => {
   const [hov, setHov] = useState(false);
-  const meta      = roleMeta[msg.user?.role];
-  const nameColor = meta?.color ?? (isOwn ? '#a5b4fc' : '#94a3b8');
   const isDeleting = deletingId === msg._id;
+  const navigate = useNavigate();
 
   return (
     <div
       onMouseEnter={() => setHov(true)}
       onMouseLeave={() => setHov(false)}
       style={{
-        display: 'flex', flexDirection: isOwn ? 'row-reverse' : 'row',
-        gap: 8, marginTop: showAvatar ? 12 : 2, alignItems: 'flex-start',
-        opacity: isDeleting ? 0.45 : 1, transition: 'opacity 0.2s'
+        display: 'flex', flexDirection: 'column',
+        marginBottom: 8,
+        opacity: isDeleting ? 0.4 : 1, 
+        transition: 'border-color 0.15s, background 0.15s, opacity 0.2s, transform 0.15s',
+        padding: '10px 14px',
+        borderRadius: 10,
+        border: `1px solid ${hov ? 'rgba(255,255,255,0.08)' : 'rgba(255,255,255,0.04)'}`,
+        background: hov ? 'rgba(255,255,255,0.04)' : 'rgba(255,255,255,0.02)',
+        position: 'relative',
+        zIndex: hov ? 50 : 1
       }}
     >
-      <div style={{ width: 28, flexShrink: 0, marginTop: 1 }}>
-        {showAvatar ? <AvatarCircle user={msg.user} size={28} /> : <span style={{ display: 'block', width: 28 }} />}
-      </div>
-
-      <div style={{
-        display: 'flex', flexDirection: 'column',
-        alignItems: isOwn ? 'flex-end' : 'flex-start',
-        maxWidth: '78%', gap: 2
-      }}>
-        {showAvatar && (
-          <div style={{ display: 'flex', alignItems: 'center', flexDirection: isOwn ? 'row-reverse' : 'row', gap: 4 }}>
-            <span style={{ fontSize: '0.73rem', fontWeight: 700, color: nameColor }}>
-              {msg.user?.displayName || 'Unknown'}
-            </span>
-            <RoleBadge role={msg.user?.role} />
-            <span style={{ fontSize: '0.62rem', color: '#334155' }}>
-              {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-            </span>
-          </div>
-        )}
-
-        <div style={{ display: 'flex', alignItems: 'center', gap: 4, flexDirection: isOwn ? 'row' : 'row-reverse' }}>
-          {canModerate && (
-            <button
-              onClick={() => onDelete(msg._id)}
-              disabled={isDeleting}
-              title="Delete"
-              style={{
-                opacity: hov ? 1 : 0, transition: 'opacity 0.18s',
-                padding: '2px 4px', borderRadius: 5,
-                background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.2)',
-                color: '#f87171', cursor: 'pointer', display: 'flex', alignItems: 'center', flexShrink: 0
-              }}
+      <div style={{ display: 'inline-flex', alignItems: 'center', flexWrap: 'wrap', gap: 6, wordBreak: 'break-word', fontSize: '0.85rem' }}>
+         <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+            <RoleSymbol role={msg.user?.role} />
+            <button 
+              onClick={() => navigate(`/user/${msg.user?._id}`)}
+              style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', display: 'flex', alignItems: 'center' }}
             >
-              <FiTrash2 style={{ fontSize: 10 }} />
+              <AvatarCircle user={msg.user} size={18} />
             </button>
-          )}
-          <div style={{
-            background: isOwn
-              ? 'linear-gradient(135deg,rgba(99,102,241,0.3),rgba(139,92,246,0.2))'
-              : 'rgba(255,255,255,0.045)',
-            border: isOwn ? '1px solid rgba(99,102,241,0.28)' : '1px solid rgba(255,255,255,0.06)',
-            borderRadius: isOwn ? '12px 3px 12px 12px' : '3px 12px 12px 12px',
-            padding: '7px 11px', color: '#e2e8f0', fontSize: '0.84rem',
-            lineHeight: 1.45, wordBreak: 'break-word'
-          }}>
-            {msg.message}
-          </div>
-        </div>
-
-        {!showAvatar && hov && (
-          <span style={{ fontSize: '0.6rem', color: '#334155' }}>
-            {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-          </span>
-        )}
+         </span>
+         <button 
+           onClick={() => navigate(`/user/${msg.user?._id}`)} 
+           style={{ 
+             fontWeight: 700, color: '#e2e8f0', cursor: 'pointer', 
+             background: 'none', border: 'none', padding: 0, 
+             fontFamily: 'inherit', fontSize: 'inherit'
+           }}
+           onMouseEnter={(e) => e.target.style.textDecoration = 'underline'}
+           onMouseLeave={(e) => e.target.style.textDecoration = 'none'}
+         >
+           {msg.user?.displayName || 'Unknown'}
+         </button>
+         <span style={{ color: '#64748b' }}>:</span>
+         <span style={{ color: '#cbd5e1' }}>{msg.message}</span>
       </div>
+
+      {canModerate && hov && (
+         <button
+            onClick={() => onDelete(msg._id)}
+            disabled={isDeleting}
+            title="Delete"
+            style={{
+               position: 'absolute', right: 8, top: 8,
+               padding: '2px 4px', borderRadius: 5,
+               background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.2)',
+               color: '#f87171', cursor: 'pointer', display: 'flex', alignItems: 'center'
+            }}
+         >
+            <FiTrash2 style={{ fontSize: 10 }} />
+         </button>
+      )}
     </div>
   );
 };
@@ -382,21 +408,15 @@ const ChatSidebar = ({ isOpen, onClose }) => {
                       </p>
                     </div>
                   ) : (
-                    messages.map((msg, idx) => {
-                      const isOwn      = msg.user?._id === mongoUser?._id;
-                      const showAvatar = idx === 0 || messages[idx - 1]?.user?._id !== msg.user?._id;
-                      return (
-                        <MessageRow
-                          key={msg._id || idx}
-                          msg={msg}
-                          isOwn={isOwn}
-                          showAvatar={showAvatar}
-                          canModerate={canModerate}
-                          onDelete={deleteMessage}
-                          deletingId={deletingId}
-                        />
-                      );
-                    })
+                    messages.map((msg, idx) => (
+                      <MessageRow
+                        key={msg._id || idx}
+                        msg={msg}
+                        canModerate={canModerate}
+                        onDelete={deleteMessage}
+                        deletingId={deletingId}
+                      />
+                    ))
                   )}
                   <div ref={endRef} />
                 </div>
@@ -419,8 +439,8 @@ const ChatSidebar = ({ isOpen, onClose }) => {
                 }}>
                   {mongoUser ? (
                     <form onSubmit={sendMessage} style={{ display: 'flex', gap: 7, alignItems: 'flex-end' }}>
-                      <div style={{ paddingBottom: 2, flexShrink: 0 }}>
-                        <AvatarCircle user={mongoUser} size={28} />
+                      <div style={{ paddingBottom: 6, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', width: 28 }}>
+                        <RoleSymbol role={mongoUser.role} />
                       </div>
                       <div style={{ flex: 1, position: 'relative' }}>
                         <input
