@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { FiActivity } from 'react-icons/fi';
-import { FaCoins } from 'react-icons/fa6';
+import CoinIcon from './CoinIcon';
 import { motion, AnimatePresence } from 'framer-motion';
 import PublicProfileModal from './PublicProfileModal';
 
@@ -125,7 +125,7 @@ const LiveEarningsBar = () => {
                           {details.amountStr}
                         </span>
                         {details.isCoin && (
-                          <FaCoins className="w-3.5 h-3.5 text-yellow-500 drop-shadow-[0_0_5px_rgba(250,204,21,0.4)]" />
+                          <CoinIcon size={17} />
                         )}
                       </div>
                     </div>
@@ -148,7 +148,7 @@ const LiveEarningsBar = () => {
                             <span className="text-sm font-display font-bold text-white mb-2 line-clamp-2 whitespace-normal break-words leading-snug max-w-[220px]">{details.task}</span>
                             <div className="flex items-center gap-1.5 bg-white/5 rounded-lg px-2.5 py-1.5 w-fit border border-white/5">
                               <span className="text-sm font-black font-mono text-brand-accent">{details.amountStr}</span>
-                              <FaCoins className="w-3.5 h-3.5 text-yellow-500 drop-shadow-[0_0_5px_rgba(250,204,21,0.4)]" />
+                              <CoinIcon size={17} />
                             </div>
                           </div>
                         )}

@@ -5,6 +5,7 @@ import {
   FiEye, FiUser, FiDollarSign, FiActivity, FiGift, FiChevronDown
 } from 'react-icons/fi';
 import toast from 'react-hot-toast';
+import CoinDisplay from '../../components/CoinDisplay';
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
@@ -124,9 +125,9 @@ const UserDetailModal = ({ user, onClose, currentUser }) => {
         {tab === 'overview' && (
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
             {[
-              { label: 'Wallet Balance', value: `${(user.walletBalance || 0).toLocaleString()} Coins`, color: '#818cf8' },
-              { label: 'Total Earned', value: `${(user.totalEarned || 0).toLocaleString()} Coins`, color: '#34d399' },
-              { label: 'Referral Earnings', value: `${(user.referralEarnings || 0).toLocaleString()} Coins`, color: '#22d3ee' },
+              { label: 'Wallet Balance', value: <CoinDisplay amount={user.walletBalance || 0} size={14} compact={false} />, color: '#818cf8' },
+              { label: 'Total Earned', value: <CoinDisplay amount={user.totalEarned || 0} size={14} compact={false} />, color: '#34d399' },
+              { label: 'Referral Earnings', value: <CoinDisplay amount={user.referralEarnings || 0} size={14} compact={false} />, color: '#22d3ee' },
               { label: 'Daily Streak', value: `${user.dailyBonusStreak || 0} days`, color: '#fb923c' },
               { label: 'Fraud Flag', value: user.fraudFlag || 0, color: user.fraudFlag > 0 ? '#f87171' : '#475569' },
               { label: 'Referral %', value: user.referralPercentage !== null && user.referralPercentage !== undefined ? `${user.referralPercentage}% (override)` : 'Global default', color: '#94a3b8' },
@@ -315,7 +316,11 @@ const AdminUsers = () => {
       const data = await res.json();
       if (data.success) {
         const sign = amount > 0 ? '+' : '';
-        toast.success(`Balance adjusted: ${sign}${amount.toLocaleString()} Coins`);
+        toast.success(
+          <span style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+            Balance adjusted: {sign}<CoinDisplay amount={amount} size={12} compact={false} />
+          </span>
+        );
         fetchUsers();
         setBalanceTarget(null);
       } else {
@@ -533,8 +538,8 @@ const AdminUsers = () => {
             </div>
             <p style={{ marginBottom: '1rem', color: '#94a3b8', fontSize: '0.9rem' }}>
               User: <strong style={{ color: '#fff' }}>{balanceTarget.email}</strong>
-              <span style={{ marginLeft: '0.5rem', fontFamily: "'Inter', system-ui, sans-serif", fontFeatureSettings: "'zero' 0", color: '#818cf8' }}>
-                ({(balanceTarget.walletBalance || 0).toLocaleString()} Coins)
+              <span style={{ marginLeft: '0.5rem', fontFamily: "'Inter', system-ui, sans-serif", fontFeatureSettings: "'zero' 0", color: '#818cf8', display: 'inline-flex', alignItems: 'center', gap: '0.2rem' }}>
+                (<CoinDisplay amount={balanceTarget.walletBalance || 0} size={13} compact={false} />)
               </span>
             </p>
             <label style={{ display: 'block', fontSize: '0.75rem', color: '#94a3b8', marginBottom: '0.35rem' }}>

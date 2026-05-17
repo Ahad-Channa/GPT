@@ -5,6 +5,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { FiCalendar, FiLock, FiClock, FiGift } from 'react-icons/fi';
 import { FaCrown } from 'react-icons/fa';
 import PublicProfileModal from '../components/PublicProfileModal';
+import CoinDisplay from '../components/CoinDisplay';
+import CoinIcon from '../components/CoinIcon';
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
@@ -37,8 +39,7 @@ const PrizeBadge = ({ coins, className = '' }) => {
   if (!coins || coins <= 0) return null;
   return (
     <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg border text-xs font-bold ${className}`}>
-      <img src="/coin.png" alt="" className="w-3.5 h-3.5" onError={e => e.target.style.display='none'} />
-      {coins.toLocaleString()} prize
+      <CoinDisplay amount={coins} size={14} /> prize
     </div>
   );
 };
@@ -76,16 +77,14 @@ const PodiumCard = ({ rank, user, prize, onClick }) => {
       <div className="font-bold text-white text-base md:text-lg mb-1 truncate w-full text-center">{user.displayName}</div>
 
       <div className="flex flex-col items-center font-black text-2xl md:text-3xl text-white leading-none mt-1">
-        {(user.coinsEarned || 0).toLocaleString()}
-        <span className="text-[10px] md:text-xs uppercase tracking-widest text-slate-400 font-bold mt-2">Coins Earned</span>
+        <CoinDisplay amount={user.coinsEarned || 0} size={24} />
       </div>
 
       {/* Prize */}
       {prize > 0 && (
         <div className={`mt-3 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-sm font-bold ${c.prize}`}>
           <FiGift className="text-sm" />
-          <img src="/coin.png" alt="" className="w-4 h-4" onError={e => e.target.style.display='none'} />
-          {prize.toLocaleString()} reward
+          <CoinDisplay amount={prize} size={16} /> reward
         </div>
       )}
     </div>
@@ -134,8 +133,7 @@ const PrizeStrip = ({ rewardTiers = [], rewardedRanks = 0 }) => {
       {tiers.map((coins, i) => (
         <div key={i} className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-500/8 border border-amber-500/15 text-sm font-bold text-amber-300">
           <span>{MEDAL[i] || `#${i+1}`}</span>
-          <img src="/coin.png" alt="" className="w-4 h-4" onError={e => e.target.style.display='none'} />
-          {coins.toLocaleString()}
+          <CoinDisplay amount={coins} size={16} />
         </div>
       ))}
     </div>
@@ -199,14 +197,12 @@ const PeriodPanel = ({ data, onProfileClick }) => {
                   <div className="font-bold text-slate-200 text-sm md:text-lg truncate">{user.displayName}</div>
                 </div>
                 <div className="flex flex-col items-end justify-center font-bold text-emerald-400 text-sm md:text-xl pr-2 md:pr-4 tracking-wide leading-none">
-                  {(user.coinsEarned || 0).toLocaleString()}
-                  <span className="text-[9px] md:text-[11px] uppercase tracking-widest text-slate-500 font-bold mt-1.5">Coins</span>
+                  <CoinDisplay amount={user.coinsEarned || 0} size={18} />
                 </div>
                 <div className="flex justify-end pr-2 md:pr-6">
                   {prize > 0 ? (
                     <div className="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-400 text-xs font-bold">
-                      <img src="/coin.png" alt="" className="w-3 h-3" onError={e => e.target.style.display='none'} />
-                      {prize.toLocaleString()}
+                      <CoinDisplay amount={prize} size={12} />
                     </div>
                   ) : (
                     <span className="text-slate-700 text-xs">—</span>

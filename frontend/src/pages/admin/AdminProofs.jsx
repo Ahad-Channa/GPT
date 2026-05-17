@@ -5,6 +5,7 @@ import {
   FiCheckCircle, FiXCircle, FiLoader, FiRefreshCw, FiImage, FiInbox, FiAlertTriangle
 } from 'react-icons/fi';
 import ImageModal from '../../components/ImageModal';
+import CoinDisplay from '../../components/CoinDisplay';
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
@@ -179,7 +180,7 @@ const ProofRow = ({ proof, onAction, token, onError }) => {
           <p className="text-xs text-slate-400 mb-1">
             Offer/Task: <span className="text-white">{offerTitle}</span>
             {' · '}
-            <span className="text-emerald-400 font-bold">+{rewardAmount?.toLocaleString()} Coins</span>
+            <span className="text-emerald-400 font-bold flex items-center gap-1">+<CoinDisplay amount={rewardAmount} size={12} /></span>
             {' · '}
             <span>{new Date(submittedAt).toLocaleString()}</span>
           </p>

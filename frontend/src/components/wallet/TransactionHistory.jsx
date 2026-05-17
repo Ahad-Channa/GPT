@@ -1,11 +1,11 @@
 import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../../contexts/AuthContext';
-import { CURRENCY_NAME } from '../../config/platform';
+import CoinDisplay from '../CoinDisplay';
 import {
   FiZap, FiStar, FiUsers, FiArrowDownCircle, FiShield,
   FiTag, FiAward, FiFilter, FiRefreshCw, FiLoader,
-  FiInbox, FiChevronDown, FiChevronLeft, FiChevronRight,
+  FiInbox, FiChevronDown, FiChevronLeft, FiChevronRight, FiSettings
 } from 'react-icons/fi';
 
 /* ─── Transaction type config ─────────────────────────────────────
@@ -21,7 +21,7 @@ const TX_TYPES = {
   daily_bonus:        { label: 'Daily Bonus',         icon: FiStar,           color: 'text-amber-400',   badge: 'badge-amber',    sign: '+' },
   referral_reward:    { label: 'Referral Reward',     icon: FiUsers,          color: 'text-cyan-400',    badge: 'badge-cyan',     sign: '+' },
   withdrawal:         { label: 'Withdrawal',          icon: FiArrowDownCircle,color: 'text-red-400',     badge: 'badge-red',      sign:  '' },
-  admin_adjustment:   { label: 'Admin Adjustment',    icon: FiShield,         color: 'text-orange-400',  badge: 'badge-orange',   sign: '' },
+  admin_adjustment:   { label: 'Admin Adjustment',    icon: FiSettings,       color: 'text-orange-400',  badge: 'badge-orange',   sign: '' },
   promo_code:         { label: 'Promo Code',          icon: FiTag,            color: 'text-emerald-400', badge: 'badge-emerald',  sign: '+' },
   leaderboard_reward: { label: 'Leaderboard Reward',  icon: FiAward,          color: 'text-violet-400',  badge: 'badge-violet',   sign: '+' },
 };
@@ -72,7 +72,7 @@ const TransactionHistory = ({ refreshKey = 0, onStatsLoaded }) => {
       setError('');
 
       const token = await currentUser.getIdToken();
-      const params = new URLSearchParams({ page, limit: 10, type });
+      const params = new URLSearchParams({ page, limit: 5, type });
       const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/wallet/history?${params}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -223,7 +223,7 @@ const TransactionHistory = ({ refreshKey = 0, onStatsLoaded }) => {
                     </div>
                     <p className="text-xs text-slate-500 truncate mt-0.5">{tx.description}</p>
                     {tx.fee > 0 && (
-                      <p className="text-[10px] text-slate-600 mt-0.5">Fee: {tx.fee.toLocaleString()} {CURRENCY_NAME}</p>
+                      <p className="text-[10px] text-slate-600 mt-0.5 flex items-center gap-1">Fee: <CoinDisplay amount={tx.fee} size={10} /></p>
                     )}
                   </div>
 

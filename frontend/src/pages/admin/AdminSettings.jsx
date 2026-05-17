@@ -7,6 +7,7 @@ import {
   FiToggleRight, FiSave, FiRefreshCw, FiLoader,
   FiAlertCircle, FiCheckCircle, FiInfo, FiEdit2, FiLock,
 } from 'react-icons/fi';
+import CoinDisplay from '../../components/CoinDisplay';
 
 /* ─────────────────────────────────────────────────────────────────
    AdminSettings.jsx — Platform Fee & Withdrawal Settings
@@ -282,8 +283,8 @@ const AdminSettings = () => {
               suffix="per $1"
             />
             {cpusd && !isNaN(Number(cpusd)) && (
-              <div style={{ marginTop: '0.6rem', padding: '0.6rem 0.9rem', background: 'rgba(59,130,246,0.07)', border: '1px solid rgba(59,130,246,0.18)', borderRadius: '10px', fontSize: '0.75rem', color: '#94a3b8', fontFamily: "'Inter', system-ui, sans-serif", fontFeatureSettings: "'zero' 0" }}>
-                1,000 Coins = <span style={{ color: '#60a5fa', fontWeight: 600 }}>${(1000 / Number(cpusd)).toFixed(2)} USD</span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginTop: '0.6rem', padding: '0.6rem 0.9rem', background: 'rgba(59,130,246,0.07)', border: '1px solid rgba(59,130,246,0.18)', borderRadius: '10px', fontSize: '0.75rem', color: '#94a3b8', fontFamily: "'Inter', system-ui, sans-serif", fontFeatureSettings: "'zero' 0" }}>
+                <CoinDisplay amount={1000} size={13} compact={false} /> = <span style={{ color: '#60a5fa', fontWeight: 600 }}>${(1000 / Number(cpusd)).toFixed(2)} USD</span>
               </div>
             )}
           </Field>
@@ -342,8 +343,8 @@ const AdminSettings = () => {
         <div style={{ maxHeight: '350px', overflowY: 'auto', paddingRight: '0.5rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
           <div style={{ display: 'grid', gridTemplateColumns: '50px 1fr 1fr', gap: '0.5rem', marginBottom: '0.5rem', padding: '0 0.5rem' }}>
             <div style={{ fontSize: '0.75rem', fontWeight: 600, color: '#94a3b8', textTransform: 'uppercase' }}>Day</div>
-            <div style={{ fontSize: '0.75rem', fontWeight: 600, color: '#94a3b8', textTransform: 'uppercase' }}>Earn Gate (Coins)</div>
-            <div style={{ fontSize: '0.75rem', fontWeight: 600, color: '#94a3b8', textTransform: 'uppercase' }}>Reward (Coins)</div>
+            <div style={{ fontSize: '0.75rem', fontWeight: 600, color: '#94a3b8', textTransform: 'uppercase' }}>Earn Gate</div>
+            <div style={{ fontSize: '0.75rem', fontWeight: 600, color: '#94a3b8', textTransform: 'uppercase' }}>Reward</div>
           </div>
           {Array.from({ length: 30 }).map((_, i) => (
             <div key={`day-${i}`} style={{ display: 'grid', gridTemplateColumns: '50px 1fr 1fr', gap: '0.5rem', alignItems: 'center', background: 'rgba(255,255,255,0.02)', padding: '0.5rem', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.05)' }}>
@@ -420,9 +421,9 @@ const AdminSettings = () => {
                       <div>
                         <p style={{ color: 'white', fontWeight: 600, fontSize: '0.85rem', margin: 0 }}>{m.label}</p>
                         {!isNaN(minCoins) && Number(cpusd) > 0 && (
-                          <p style={{ color: '#475569', fontSize: '0.68rem', margin: 0, fontFamily: "'Inter', system-ui, sans-serif", fontFeatureSettings: "'zero' 0" }}>
-                            Min: {Math.round(minCoins).toLocaleString()} Coins
-                          </p>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', color: '#475569', fontSize: '0.68rem', margin: 0, fontFamily: "'Inter', system-ui, sans-serif", fontFeatureSettings: "'zero' 0" }}>
+                            <span>Min:</span> <CoinDisplay amount={Math.round(minCoins)} size={11} compact={false} />
+                          </div>
                         )}
                       </div>
                     </div>

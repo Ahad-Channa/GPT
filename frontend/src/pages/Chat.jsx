@@ -15,7 +15,7 @@ const getHue = (name) =>
   name ? [...name].reduce((a, c) => a + c.charCodeAt(0), 0) % 360 : 210;
 
 import { useNavigate } from 'react-router-dom';
-import { FaCrown } from 'react-icons/fa';
+import { FaCrown, FaBolt } from 'react-icons/fa';
 
 const AvatarCircle = ({ user, size = 20 }) => {
    const dName = user?.displayName || 'Unknown';
@@ -39,7 +39,7 @@ const RoleSymbol = ({ role }) => {
   if (role === 'owner') {
     icon = <FaCrown size={15} />; label = 'Owner'; color = '#fbbf24';
   } else if (role === 'admin') {
-    icon = <FiShield size={15} />; label = 'Admin'; color = '#ef4444';
+    icon = <FaBolt size={15} />; label = 'Admin'; color = '#ef4444';
   } else if (role === 'moderator') {
     icon = (
       <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>

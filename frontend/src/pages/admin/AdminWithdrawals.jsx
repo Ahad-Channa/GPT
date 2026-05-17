@@ -3,6 +3,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { motion } from 'framer-motion';
 import { FiX, FiRefreshCw, FiLoader, FiInbox, FiCheck, FiXCircle } from 'react-icons/fi';
 import toast from 'react-hot-toast';
+import CoinDisplay from '../../components/CoinDisplay';
 
 const STATUS_FILTERS = ['all', 'pending', 'completed', 'rejected'];
 
@@ -97,8 +98,6 @@ const AdminWithdrawals = () => {
     }
   };
 
-  const formatAmount = (amount) => `${Math.abs(amount).toLocaleString()} Coins`;
-
   return (
     <div>
       <h1 className="admin-page-title">Withdrawal Requests</h1>
@@ -189,10 +188,10 @@ const AdminWithdrawals = () => {
                         </div>
                       </td>
                       <td style={{ fontFamily: 'monospace', color: '#818cf8', fontWeight: 600, fontSize: '0.82rem' }}>
-                        {formatAmount(w.amount)}
+                        <CoinDisplay amount={Math.abs(w.amount)} size={12} compact={false} />
                       </td>
                       <td style={{ fontFamily: 'monospace', color: '#fb923c', fontSize: '0.8rem' }}>
-                        {w.fee ? `${w.fee.toLocaleString()} C` : '—'}
+                        {w.fee ? <CoinDisplay amount={w.fee} size={11} compact={false} /> : '—'}
                       </td>
                       <td>
                         <span style={{ color: method.color, fontSize: '0.78rem', fontWeight: 500 }}>
@@ -327,10 +326,10 @@ const AdminWithdrawals = () => {
             </div>
             <p style={{ marginBottom: '1rem' }}>
               Rejecting <strong style={{ color: '#cbd5e1' }}>{rejectTarget.userId?.displayName || rejectTarget.userId?.email}</strong>'s request
-              for <strong style={{ color: '#818cf8', fontFamily: 'monospace' }}>{formatAmount(rejectTarget.amount)}</strong>.
+              for <strong style={{ color: '#818cf8', fontFamily: 'monospace', display: 'inline-flex', alignItems: 'center' }}><CoinDisplay amount={Math.abs(rejectTarget.amount)} size={12} compact={false} /></strong>.
               <br />
-              <span style={{ color: '#94a3b8', fontSize: '0.82rem' }}>
-                The full amount <strong style={{ color: '#34d399' }}>{(Math.abs(rejectTarget.amount) + (rejectTarget.fee || 0)).toLocaleString()} Coins</strong> (including fee) will be refunded.
+              <span style={{ color: '#94a3b8', fontSize: '0.82rem', display: 'flex', alignItems: 'center', gap: '0.3rem', marginTop: '0.2rem' }}>
+                The full amount <strong style={{ color: '#34d399', display: 'inline-flex', alignItems: 'center' }}><CoinDisplay amount={Math.abs(rejectTarget.amount) + (rejectTarget.fee || 0)} size={12} compact={false} /></strong> (including fee) will be refunded.
               </span>
             </p>
             <textarea

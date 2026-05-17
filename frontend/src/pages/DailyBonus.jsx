@@ -4,6 +4,8 @@ import DashboardLayout from '../components/layout/DashboardLayout';
 import { useAuth } from '../contexts/AuthContext';
 import { useDailyBonus } from '../contexts/DailyBonusContext';
 import { FiGift, FiUnlock, FiLock, FiClock, FiCheckCircle, FiZap, FiAlertTriangle, FiTrendingUp } from 'react-icons/fi';
+import CoinIcon from '../components/CoinIcon';
+import CoinDisplay from '../components/CoinDisplay';
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
@@ -104,8 +106,7 @@ export default function DailyBonus() {
               {status.rewardToday}
             </span>
             <div className="flex flex-col items-start">
-              <img src="/coin.png" alt="Coins" className="w-10 h-10 sm:w-12 sm:h-12 drop-shadow-md" onError={e => e.target.style.display='none'} />
-              <span className="text-slate-500 text-xs font-mono mt-0.5">COINS</span>
+              <CoinIcon size={40} className="sm:w-12 sm:h-12 drop-shadow-md" />
             </div>
           </div>
 
@@ -136,7 +137,7 @@ export default function DailyBonus() {
                 <motion.div initial={{ opacity:0, scale:0.85 }} animate={{ opacity:1, scale:1 }}
                   className="inline-flex flex-col items-center gap-3 p-8 rounded-3xl bg-amber-500/10 border border-amber-500/25">
                   <span className="text-6xl">🎉</span>
-                  <p className="text-3xl font-black text-amber-400">+{claimResult.coins} Coins!</p>
+                  <p className="text-3xl font-black text-amber-400 flex items-center justify-center gap-2">+<CoinDisplay amount={claimResult.coins} size={28} />!</p>
                   <p className="text-slate-400 text-sm">Bonus claimed successfully.</p>
                 </motion.div>
               ) : (
@@ -174,7 +175,7 @@ export default function DailyBonus() {
             <div className="max-w-lg mx-auto space-y-6">
               <div className="flex justify-between text-sm mb-1">
                 <span className="text-slate-400 font-medium">Progress to unlock</span>
-                <span className="text-indigo-400 font-bold">{status.earned.toLocaleString()} / {status.required.toLocaleString()} Coins</span>
+                <span className="text-indigo-400 font-bold flex items-center justify-center gap-1.5">{status.earned.toLocaleString()} / <CoinDisplay amount={status.required} size={14} /></span>
               </div>
               <div className="h-5 bg-white/5 rounded-full overflow-hidden border border-white/10 relative">
                 <motion.div
@@ -188,7 +189,7 @@ export default function DailyBonus() {
                 )}
               </div>
               <p className="text-slate-400 text-base">
-                Earn <span className="text-white font-black text-lg">{remainingCoins.toLocaleString()}</span> more coins to unlock your bonus
+                Earn <span className="text-white font-black text-lg ml-1"><CoinDisplay amount={remainingCoins} size={16} /></span> more to unlock your bonus
               </p>
               {status.expiresAt && (
                 <div className="inline-flex items-center gap-2 text-red-400 text-sm font-bold bg-red-500/10 py-2 px-4 rounded-xl border border-red-500/20">
@@ -269,13 +270,12 @@ export default function DailyBonus() {
               <div className="flex-1">
                 <p className="text-sm text-slate-500 mb-1">Day {(streak % 30) + 1} Reward</p>
                 <div className="flex items-center gap-2">
-                  <span className="text-4xl font-black text-amber-400">{status.rewardTomorrow?.toLocaleString()}</span>
-                  <img src="/coin.png" className="w-7 h-7" alt="" onError={e => e.target.style.display='none'} />
+                  <span className="text-4xl font-black text-amber-400">{(status.rewardTomorrow || 0).toLocaleString()}</span>
                 </div>
               </div>
               <div className="text-right">
                 <p className="text-slate-600 text-xs">Earn gate</p>
-                <p className="text-slate-400 font-bold text-sm">{status.required?.toLocaleString()} coins</p>
+                <p className="text-slate-400 font-bold text-sm flex items-center gap-1"><CoinDisplay amount={status.required || 0} size={13} /></p>
               </div>
             </div>
 
@@ -324,7 +324,6 @@ export default function DailyBonus() {
                   <p className="text-slate-400 text-sm mb-2 font-medium">Day {day}{day === 30 ? ' (Max)' : ''}</p>
                   <div className="flex items-center justify-center gap-2">
                     <span className="text-3xl font-black" style={{ color }}>{coins.toLocaleString()}</span>
-                    <img src="/coin.png" className="w-6 h-6" alt="" onError={e => e.target.style.display='none'} />
                   </div>
                   {/* Mini progress to this milestone */}
                   <div className="mt-3 h-1.5 bg-white/5 rounded-full overflow-hidden">

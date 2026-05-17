@@ -9,8 +9,11 @@ import {
   FiActivity, FiArrowDownCircle, FiCheckCircle, FiClock,
   FiInbox, FiLoader, FiTrendingUp, FiChevronDown, FiPlayCircle,
   FiSend, FiExternalLink, FiSettings, FiTrash2, FiAlertTriangle, FiRefreshCw,
-  FiUsers, FiCopy, FiLock
+  FiUsers, FiCopy, FiLock, FiList
 } from 'react-icons/fi';
+import TransactionHistory from '../components/wallet/TransactionHistory';
+import CoinDisplay from '../components/CoinDisplay';
+import CoinIcon from '../components/CoinIcon';
 
 // ── Customization / Avatar Shop Modal ─────────────────────────────
 const CustomizationModal = ({ isOpen, onClose, mongoUser, token, setMongoUser }) => {
@@ -223,7 +226,7 @@ const CustomizationModal = ({ isOpen, onClose, mongoUser, token, setMongoUser })
           <div className="flex items-center gap-4">
              <div className="flex items-center gap-2 bg-white/5 px-4 py-2 rounded-xl border border-white/10">
                 <FiZap className="text-amber-400" />
-                <span className="text-sm font-bold text-white">{mongoUser?.walletBalance?.toLocaleString() || 0} Coins</span>
+                <CoinDisplay amount={mongoUser?.walletBalance || 0} size={14} className="text-sm font-bold text-white" />
              </div>
           </div>
           
@@ -431,7 +434,7 @@ const useHistory = (token, type, endpoint = '/wallet/history') => {
     try {
       if (pg === 1) setLoading(true); else setLoadingMore(true);
       setError('');
-      const params = new URLSearchParams({ page: pg, limit: 15 });
+      const params = new URLSearchParams({ page: pg, limit: 5 });
       if (type) params.append('type', type);
 
       const res = await fetch(`${API}${endpoint}?${params}`, {
@@ -540,7 +543,7 @@ const ClickedOfferRow = ({ offer, token, onRefresh }) => {
         <div className="flex-1 min-w-0">
           <p className="text-sm font-semibold text-white truncate">{offer.title}</p>
           <div className="flex items-center gap-2 mt-0.5">
-            <span className="text-[10px] font-mono text-amber-400">+{offer.rewardAmount?.toLocaleString()} Coins</span>
+            <span className="text-[10px] font-mono text-amber-400 flex items-center gap-1">+<CoinDisplay amount={offer.rewardAmount} size={10} /></span>
             {isRejected && (
               <span className="text-[10px] font-semibold text-rose-400 px-1.5 py-0.5 bg-rose-500/10 rounded-full border border-rose-500/20 animate-pulse">
                 Rejected — resubmit
@@ -1025,10 +1028,10 @@ const Profile = () => {
                     </div>
                     <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Earned</p>
                   </div>
-                  <p className="text-xl font-black text-white tabular-nums leading-none">
-                    {Math.max(mongoUser?.totalEarned || 0, profileStats.totalEarnedLifetime || 0).toLocaleString()}
+                  <p className="text-xl font-black text-white tabular-nums leading-none flex items-center gap-1">
+                    <CoinDisplay amount={Math.max(mongoUser?.totalEarned || 0, profileStats.totalEarnedLifetime || 0)} size={18} />
                   </p>
-                  <p className="text-[10px] text-slate-600 mt-0.5">coins lifetime</p>
+                  <p className="text-[10px] text-slate-600 mt-0.5">lifetime earned</p>
                 </div>
 
                 {/* Completed Offers */}
@@ -1051,10 +1054,10 @@ const Profile = () => {
                     </div>
                     <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">30 Days</p>
                   </div>
-                  <p className="text-xl font-black text-emerald-400 leading-none tabular-nums">
-                    {(profileStats.earnings30Days || 0).toLocaleString()}
+                  <p className="text-xl font-black text-emerald-400 leading-none tabular-nums flex items-center gap-1">
+                    <CoinDisplay amount={profileStats.earnings30Days || 0} size={18} />
                   </p>
-                  <p className="text-[10px] text-slate-600 mt-0.5">coins earned</p>
+                  <p className="text-[10px] text-slate-600 mt-0.5">last 30 days</p>
                 </div>
               </div>
 
@@ -1067,6 +1070,7 @@ const Profile = () => {
           <div className="flex gap-1 min-w-max">
             <TabBtn active={activeTab === 'started_offers'} onClick={() => setActiveTab('started_offers')} icon={FiPlayCircle} label="Started Offers" />
             <TabBtn active={activeTab === 'completed_offers'} onClick={() => setActiveTab('completed_offers')} icon={FiCheckCircle} label="Completed Offers" />
+            <TabBtn active={activeTab === 'transaction_history'} onClick={() => setActiveTab('transaction_history')} icon={FiList} label="Transaction History" />
             <TabBtn active={activeTab === 'chargebacks'} onClick={() => setActiveTab('chargebacks')} icon={FiShield} label="Chargebacks" />
           </div>
         </div>
@@ -1134,12 +1138,24 @@ const Profile = () => {
                           </div>
                         </div>
                         {/* Amount */}
-                        <span className="text-sm font-bold font-mono text-emerald-400 flex-shrink-0">+{offer.rewardAmount?.toLocaleString()} Coins</span>
+                        <span className="text-sm font-bold font-mono text-emerald-400 flex-shrink-0 flex items-center gap-1">+<CoinDisplay amount={offer.rewardAmount} size={14} /></span>
                       </div>
                     );
                   })}
                 </div>
               )}
+            </motion.div>
+          )}
+
+          {/* ══ TRANSACTION HISTORY TAB ══ */}
+          {activeTab === 'transaction_history' && (
+            <motion.div
+              key="transaction_history"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -6 }}
+            >
+              <TransactionHistory />
             </motion.div>
           )}
 

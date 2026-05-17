@@ -3,8 +3,10 @@ import { motion, AnimatePresence } from 'framer-motion';
 import DashboardLayout from '../components/layout/DashboardLayout';
 import { useAuth } from '../contexts/AuthContext';
 import WithdrawalModal from '../components/wallet/WithdrawalModal';
-import TransactionHistory from '../components/wallet/TransactionHistory';
-import { CURRENCY_NAME, CURRENCY_SYMBOL, formatCoins } from '../config/platform';
+
+import { formatCoins } from '../config/platform';
+import CoinDisplay from '../components/CoinDisplay';
+import CoinIcon from '../components/CoinIcon';
 import {
   FiArrowDownCircle,
   FiTrendingUp,
@@ -44,7 +46,7 @@ const PromoCodeRedeem = ({ onSuccess }) => {
       const data = await res.json();
       
       if (data.success) {
-        setMessage({ text: `+${data.coinsEarned} Coins added to your wallet!`, type: 'success' });
+        setMessage({ text: <span className="flex items-center gap-1">+<CoinDisplay amount={data.coinsEarned} size={12} /> added to your wallet!</span>, type: 'success' });
         setCode('');
         if (onSuccess) onSuccess(data.newBalance);
       } else {
@@ -128,6 +130,25 @@ const Wallet = () => {
     if (currentUser) fetchSettings();
   }, [currentUser]);
 
+  // Fetch history stats
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const token = await currentUser.getIdToken();
+        const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/wallet/history?page=1&limit=1&type=all`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const data = await res.json();
+        if (data.success && data.stats) {
+          setHistoryStats(data.stats);
+        }
+      } catch (err) {
+        console.error('Failed to load wallet stats:', err);
+      }
+    };
+    if (currentUser) fetchStats();
+  }, [currentUser, txRefresh]);
+
   // After successful withdrawal, refresh balance in header
   const handleWithdrawSuccess = useCallback((newBalance) => {
     if (setMongoUser) {
@@ -145,7 +166,7 @@ const Wallet = () => {
         {/* ── Page Header ───────────────────────────────────────── */}
         <motion.div variants={item}>
           <h1 className="text-3xl font-bold font-display text-white">Your Wallet</h1>
-          <p className="text-slate-500 text-sm mt-1">Manage your {CURRENCY_NAME}, track activity, and request payouts.</p>
+          <p className="text-slate-500 text-sm mt-1 flex items-center justify-center gap-1">Manage your <CoinIcon size={14}/>, track activity, and request payouts.</p>
         </motion.div>
 
         {/* ── Balance Hero Card ─────────────────────────────────── */}
@@ -157,14 +178,14 @@ const Wallet = () => {
 
           <div className="relative z-10 flex flex-col sm:flex-row sm:items-end justify-between gap-6">
             <div>
-              <p className="text-blue-400/80 text-xs font-semibold tracking-widest uppercase mb-3 flex items-center gap-1.5">
-                <span className="text-base">{CURRENCY_SYMBOL}</span> Available Balance
+              <p className="text-blue-400/80 text-xs font-semibold tracking-widest uppercase mb-3">
+                Available Balance
               </p>
               <div className="flex items-baseline gap-3">
                 <p className="text-6xl font-bold font-sans text-white tracking-tighter">
                   {balance.toLocaleString()}
                 </p>
-                <span className="text-blue-400 font-sans text-lg font-semibold">{CURRENCY_NAME}</span>
+                <CoinIcon size={20} />
               </div>
 
             </div>
@@ -185,7 +206,7 @@ const Wallet = () => {
             <div className="relative z-10 mt-6 pt-5 border-t border-white/[0.06] flex flex-wrap gap-4 items-center">
               <div className="flex items-center gap-2 bg-white/[0.04] border border-white/[0.07] rounded-lg px-3 py-1.5">
                 <span className="text-xs font-sans text-slate-400">1 USD =</span>
-                <span className="text-xs font-sans font-bold text-blue-400">{settings.coinsPerUSD} {CURRENCY_NAME}</span>
+                <span className="text-xs font-sans font-bold text-blue-400"><CoinDisplay amount={settings.coinsPerUSD} size={10} /></span>
               </div>
             </div>
           )}
@@ -196,7 +217,7 @@ const Wallet = () => {
           {[
             {
               label: 'Total Earned',
-              value: formatCoins(historyStats.totalEarned, true),
+              value: <CoinDisplay amount={historyStats.totalEarned} compact={true} size={20} />,
               icon: FiTrendingUp,
               color: 'text-emerald-400',
               bg: 'from-emerald-500/10 to-emerald-600/5',
@@ -204,7 +225,7 @@ const Wallet = () => {
             },
             {
               label: 'Total Withdrawn',
-              value: formatCoins(historyStats.totalWithdrawn, true),
+              value: <CoinDisplay amount={historyStats.totalWithdrawn} compact={true} size={20} />,
               icon: FiArrowDownCircle,
               color: 'text-blue-400',
               bg: 'from-blue-500/10 to-blue-600/5',
@@ -248,12 +269,9 @@ const Wallet = () => {
           </motion.div>
         )}
 
-        {/* ── Transaction History ───────────────────────────────── */}
-        <motion.div variants={item}>
-          <TransactionHistory
-            refreshKey={txRefresh}
-            onStatsLoaded={setHistoryStats}
-          />
+        {/* ── Transaction History (Moved to Profile) ───────────────────────────────── */}
+        <motion.div variants={item} className="hidden">
+          {/* Transaction history was moved to the profile section. */}
         </motion.div>
 
         {/* ── Promo Code Redeemer ───────────────────────────────── */}

@@ -3,7 +3,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { FiMonitor, FiInbox, FiStar, FiZap, FiExternalLink, FiCheckCircle, FiSend, FiLoader } from 'react-icons/fi';
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
-
+import CoinDisplay from '../CoinDisplay';
+import CoinIcon from '../CoinIcon';
 const item = { hidden: { opacity: 0, y: 16 }, show: { opacity: 1, y: 0, transition: { duration: 0.4 } } };
 
 export const buildProviderUrl = (provider, userId) => {
@@ -33,7 +34,7 @@ export const ProviderCard = ({ provider, onClick }) => (
     </div>
     <div className="text-center">
       <h3 className="text-white font-semibold text-lg">{provider.label}</h3>
-      <p className="text-slate-400 text-xs mt-1">Earn Coins</p>
+      <p className="text-slate-400 text-xs mt-1 flex items-center justify-center gap-1">Earn <CoinIcon size={12} /></p>
     </div>
   </motion.div>
 );
@@ -119,7 +120,7 @@ export const FeaturedOfferCard = ({ offer, onClick }) => {
         <div className="flex items-center gap-1.5">
           <FiZap className="text-amber-400 text-[11px] flex-shrink-0" />
           <span className="text-amber-400 font-bold font-mono text-[12px]">
-            {offer.rewardAmount?.toLocaleString()} Coins
+            <CoinDisplay amount={offer.rewardAmount} />
           </span>
         </div>
       </div>
@@ -239,7 +240,7 @@ export const FeaturedOfferModal = ({ offer, token, onClose, onSubmitted }) => {
               <h2 className="text-xl font-bold text-white font-display leading-tight">{offer.title}</h2>
               <div className="flex flex-wrap items-center gap-2 mt-2">
                 <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-500/20 text-amber-400 border border-amber-500/30 flex items-center gap-1">
-                  <FiZap className="text-[10px]" /> {offer.rewardAmount?.toLocaleString()} Coins
+                  <FiZap className="text-[10px]" /> <CoinDisplay amount={offer.rewardAmount} />
                 </span>
                 {isExpired && (
                   <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-rose-500/15 text-rose-400 border border-rose-500/20">

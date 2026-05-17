@@ -4,6 +4,7 @@ import {
   FiX, FiStar, FiClock, FiShield, FiAlertTriangle,
   FiAward, FiTrendingUp, FiZap
 } from 'react-icons/fi';
+import CoinIcon from './CoinIcon';
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
@@ -300,7 +301,7 @@ const PublicProfileModal = ({ userId, onClose }) => {
                     </div>
                   ) : (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                      {recentOffers.slice(0, 8).map((offer) => (
+                      {recentOffers.slice(0, 5).map((offer) => (
                         <div
                           key={offer._id}
                           style={{
@@ -336,7 +337,7 @@ const PublicProfileModal = ({ userId, onClose }) => {
                             <div style={{ fontSize: '13px', fontWeight: 700, color: '#34d399', fontFamily: 'monospace' }}>
                               +{(offer.amount || 0).toLocaleString()}
                             </div>
-                            <div style={{ fontSize: '10px', color: '#64748b' }}>Coins</div>
+                            <CoinIcon size={12} />
                           </div>
                         </div>
                       ))}

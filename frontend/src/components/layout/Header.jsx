@@ -3,7 +3,8 @@ import { useAuth } from '../../contexts/AuthContext';
 import { useNotifications } from '../../contexts/NotificationContext';
 import { useDailyBonus } from '../../contexts/DailyBonusContext';
 import { FiLogOut, FiUser, FiSettings, FiZap, FiChevronDown, FiCreditCard, FiLock, FiClock, FiBell, FiUsers, FiGift, FiDollarSign, FiMessageSquare } from 'react-icons/fi';
-import { FaTrophy, FaCoins } from 'react-icons/fa6';
+import { FaTrophy } from 'react-icons/fa6';
+import CoinDisplay from '../CoinDisplay';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -108,7 +109,7 @@ const DailyBonusChip = () => {
       {/* Hover tooltip */}
       <div className="absolute top-11 right-0 w-52 p-3 rounded-xl bg-[#0b101e] border border-white/[0.08] shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 text-left">
         <p className="text-xs text-slate-300 mb-2">
-          Earn <span className="font-bold text-white">{(status.required - status.earned).toLocaleString()}</span> more coins to unlock.
+          Earn <span className="font-bold text-white"><CoinDisplay amount={status.required - status.earned} showIcon={true} size={12} /></span> more to unlock.
         </p>
         <div className="w-full h-1.5 bg-white/10 rounded-full overflow-hidden mb-2">
           <div className="bg-indigo-400 h-full rounded-full" style={{ width: `${progressPercent}%` }} />
@@ -254,7 +255,7 @@ const Header = ({ onChatToggle, chatOpen }) => {
                   {mongoUser?.displayName || 'User'}
                 </span>
                 <span className="text-[11px] text-amber-400 font-bold font-sans tracking-widest flex items-center gap-1">
-                  {mongoUser?.walletBalance?.toLocaleString() ?? '0'} <FaCoins className="w-3 h-3 text-yellow-500 drop-shadow-md" />
+                  <CoinDisplay amount={mongoUser?.walletBalance ?? 0} size={14} className="font-bold" />
                 </span>
               </div>
               <FiChevronDown

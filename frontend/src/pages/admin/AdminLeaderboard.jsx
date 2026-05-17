@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { FiTrendingUp, FiToggleLeft, FiToggleRight, FiSave, FiRotateCcw, FiClock, FiChevronDown, FiChevronUp, FiAlertCircle, FiEye } from 'react-icons/fi';
 import toast from 'react-hot-toast';
+import CoinDisplay from '../../components/CoinDisplay';
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
@@ -142,7 +143,7 @@ function PeriodCard({ period, config, onSave, onReset, saving, resetting }) {
                     }}
                     style={{ background: 'none', border: 'none', outline: 'none', color: '#fbbf24', fontSize: '13px', fontWeight: 600, width: '100%', fontFamily: "'Inter', system-ui, sans-serif", fontFeatureSettings: "'zero' 0", fontVariantNumeric: 'normal' }}
                   />
-                  <span style={{ fontSize: '9px', color: '#64748b' }}>COINS</span>
+                  <CoinDisplay amount={local.rewardTiers?.[idx] || 0} size={9} />
                 </div>
               </div>
             ))}
@@ -227,7 +228,7 @@ function HistoryTable({ history, loading }) {
                   {topWinner ? (
                     <div>
                       <div style={{ fontWeight: 600 }}>🥇 {topWinner.displayName}</div>
-                      <div style={{ fontSize: '11px', color: '#64748b', fontFamily: "'Inter', system-ui, sans-serif", fontFeatureSettings: "'zero' 0" }}>{topWinner.coinsEarned?.toLocaleString()} coins</div>
+                      <div style={{ fontSize: '11px', color: '#64748b', display: 'inline-flex', alignItems: 'center', gap: '3px' }}><CoinDisplay amount={topWinner.coinsEarned || 0} size={11} /></div>
                     </div>
                   ) : <span style={{ color: '#374151' }}>—</span>}
                 </td>
@@ -250,7 +251,7 @@ function HistoryTable({ history, loading }) {
                         <div key={w.rank} style={{ display: 'flex', gap: '8px', alignItems: 'center', fontSize: '11px', padding: '4px 8px', background: 'rgba(255,255,255,0.02)', borderRadius: '6px' }}>
                           <span style={{ fontWeight: 700, color: periodColor[cycle.period], minWidth: '24px' }}>#{w.rank}</span>
                           <span style={{ color: '#e2e8f0', flex: 1 }}>{w.displayName}</span>
-                          <span style={{ color: '#64748b', fontFamily: "'Inter', system-ui, sans-serif", fontFeatureSettings: "'zero' 0" }}>{w.coinsEarned?.toLocaleString()} coins</span>
+                          <span style={{ color: '#64748b', display: 'inline-flex', alignItems: 'center', gap: '3px' }}><CoinDisplay amount={w.coinsEarned || 0} size={11} /></span>
                         </div>
                       ))}
                     </div>

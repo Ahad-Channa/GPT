@@ -3,6 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import DashboardLayout from '../components/layout/DashboardLayout';
 import { motion } from 'framer-motion';
 import { FiStar, FiClock, FiShield, FiAlertTriangle, FiLock } from 'react-icons/fi';
+import CoinDisplay from '../components/CoinDisplay';
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
@@ -105,7 +106,7 @@ const PublicProfile = () => {
                 {/* Total Earned — only shown for public profiles */}
                 {!profile.isPrivate && typeof profile.totalEarned !== 'undefined' && (
                   <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-amber-500/10 text-amber-400 border border-amber-500/20">
-                    Total Earned: {profile.totalEarned?.toLocaleString() || 0}
+                    Total Earned: <CoinDisplay amount={profile.totalEarned || 0} size={13} />
                   </div>
                 )}
 
@@ -159,10 +160,9 @@ const PublicProfile = () => {
                       </div>
                     </div>
                     <div className="text-right flex-shrink-0">
-                      <p className="text-sm font-bold text-emerald-400">
-                        +{(offer.amount || 0).toLocaleString()}
+                      <p className="text-sm font-bold text-emerald-400 flex items-center gap-1">
+                        +<CoinDisplay amount={offer.amount || 0} size={12} />
                       </p>
-                      <p className="text-[10px] text-slate-500">Coins</p>
                     </div>
                   </div>
                 ))

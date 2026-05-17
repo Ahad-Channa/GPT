@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { FiUsers, FiDollarSign, FiActivity, FiBriefcase, FiAlertCircle } from 'react-icons/fi';
 import toast from 'react-hot-toast';
+import CoinDisplay from '../../components/CoinDisplay';
 
 const AdminOverview = () => {
   const { currentUser } = useAuth();
@@ -49,8 +50,8 @@ const AdminOverview = () => {
     },
     {
       label: 'Pending Withdrawals',
-      value: stats.totalPendingWithdrawal.toLocaleString(),
-      unit: 'Coins Awaiting Review',
+      value: <CoinDisplay amount={stats.totalPendingWithdrawal} size={20} compact={false} />,
+      unit: 'Awaiting Review',
       icon: FiActivity,
       color: '#fbbf24',
       glow: 'rgba(234,179,8,0.2)',
@@ -67,8 +68,8 @@ const AdminOverview = () => {
     },
     {
       label: 'Economy Balance',
-      value: `${stats.economyTotal.toLocaleString()}`,
-      unit: 'Total Coins in Circulation',
+      value: <CoinDisplay amount={stats.economyTotal} size={20} compact={false} />,
+      unit: 'Total in Circulation',
       icon: FiDollarSign,
       color: '#34d399',
       glow: 'rgba(16,185,129,0.2)',

@@ -77,7 +77,7 @@ router.get('/user/:id', async (req, res) => {
       amount: { $gt: 0 }
     })
       .sort({ createdAt: -1 })
-      .limit(15)
+      .limit(5)
       .lean();
 
     res.status(200).json({

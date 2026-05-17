@@ -4,6 +4,8 @@ import { useAuth } from '../contexts/AuthContext';
 import { motion } from 'framer-motion';
 import { FiUsers, FiTrendingUp, FiCopy, FiInbox, FiLoader, FiChevronDown } from 'react-icons/fi';
 import { toast } from 'react-hot-toast';
+import CoinDisplay from '../components/CoinDisplay';
+import CoinIcon from '../components/CoinIcon';
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
@@ -128,7 +130,7 @@ const useHistory = (token, type, endpoint = '/wallet/history') => {
     try {
       if (pg === 1) setLoading(true); else setLoadingMore(true);
       setError('');
-      const params = new URLSearchParams({ page: pg, limit: 15 });
+      const params = new URLSearchParams({ page: pg, limit: 5 });
       if (type) params.append('type', type);
 
       const res = await fetch(`${API}${endpoint}?${params}`, {
@@ -251,9 +253,8 @@ const Affiliates = () => {
             <h3 className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-2">Lifetime Earnings</h3>
             <div className="flex items-center gap-2">
               <div className="text-4xl font-black text-emerald-400">
-                {statsLoading ? <span className="animate-pulse">...</span> : stats.totalAffiliateEarnings.toLocaleString(undefined, { maximumFractionDigits: 2 })}
+                {statsLoading ? <span className="animate-pulse">...</span> : <CoinDisplay amount={stats.totalAffiliateEarnings} size={24} />}
               </div>
-              <img src="/coin.png" alt="Coins" className="w-6 h-6 drop-shadow-md" onError={(e) => e.target.style.display='none'}/>
             </div>
             <p className="text-xs text-slate-500 mt-2">Total coins earned from referrals</p>
           </div>
@@ -263,9 +264,8 @@ const Affiliates = () => {
             <h3 className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-2">30-Day Earnings</h3>
             <div className="flex items-center gap-2">
               <div className="text-4xl font-black text-indigo-400">
-                {statsLoading ? <span className="animate-pulse">...</span> : stats.last30DaysEarnings.toLocaleString(undefined, { maximumFractionDigits: 2 })}
+                {statsLoading ? <span className="animate-pulse">...</span> : <CoinDisplay amount={stats.last30DaysEarnings} size={24} />}
               </div>
-              <img src="/coin.png" alt="Coins" className="w-6 h-6 drop-shadow-md" onError={(e) => e.target.style.display='none'}/>
             </div>
             <p className="text-xs text-slate-500 mt-2">Coins earned in the last 30 days</p>
           </div>

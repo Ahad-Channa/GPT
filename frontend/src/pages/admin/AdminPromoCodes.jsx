@@ -3,6 +3,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import toast from 'react-hot-toast';
 import { FiTag, FiPlus, FiTrash2, FiEdit2, FiCheck, FiX, FiLoader, FiAlertCircle } from 'react-icons/fi';
+import CoinDisplay from '../../components/CoinDisplay';
 
 const AdminPromoCodes = () => {
   const { currentUser, isPrimaryAdmin, mongoUser } = useAuth();
@@ -163,7 +164,7 @@ const AdminPromoCodes = () => {
                  return (
                   <tr key={c._id}>
                     <td><strong style={{ color: '#e2e8f0', letterSpacing: '1px' }}>{c.code}</strong></td>
-                    <td>{c.rewardCoins} Coins</td>
+                    <td style={{ display: 'flex', alignItems: 'center' }}><CoinDisplay amount={c.rewardCoins} size={12} /></td>
                     <td>{c.usedCount} {c.maxUses > 0 ? `/ ${c.maxUses}` : ''}</td>
                     <td>{c.expiresAt ? new Date(c.expiresAt).toLocaleDateString() : 'Never'}</td>
                     <td>
