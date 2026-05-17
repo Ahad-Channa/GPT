@@ -14,7 +14,8 @@ const API        = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 const SOCKET_URL = API.replace('/api', '');
 
 import { useNavigate } from 'react-router-dom';
-import { FaCrown } from 'react-icons/fa';
+import { FaCrown, FaBolt } from 'react-icons/fa';
+import PublicProfileModal from '../PublicProfileModal';
 
 const getInitials = (name) => (name || '?').slice(0, 2).toUpperCase();
 const getHue = (name) => name ? [...name].reduce((a, c) => a + c.charCodeAt(0), 0) % 360 : 210;
@@ -41,7 +42,7 @@ const RoleSymbol = ({ role }) => {
   if (role === 'owner') {
     icon = <FaCrown size={15} />; label = 'Owner'; color = '#fbbf24';
   } else if (role === 'admin') {
-    icon = <FiShield size={15} />; label = 'Admin'; color = '#ef4444';
+    icon = <FaBolt size={15} />; label = 'Admin'; color = '#ef4444';
   } else if (role === 'moderator') {
     icon = (
       <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
@@ -88,10 +89,9 @@ const RoleSymbol = ({ role }) => {
 };
 
 /* ─── message row (boxed style) ─────────────────────────── */
-const MessageRow = ({ msg, canModerate, onDelete, deletingId }) => {
+const MessageRow = ({ msg, canModerate, onDelete, deletingId, onUserClick }) => {
   const [hov, setHov] = useState(false);
   const isDeleting = deletingId === msg._id;
-  const navigate = useNavigate();
 
   return (
     <div
@@ -114,14 +114,14 @@ const MessageRow = ({ msg, canModerate, onDelete, deletingId }) => {
          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
             <RoleSymbol role={msg.user?.role} />
             <button 
-              onClick={() => navigate(`/user/${msg.user?._id}`)}
+              onClick={() => msg.user?._id && onUserClick(msg.user._id)}
               style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', display: 'flex', alignItems: 'center' }}
             >
               <AvatarCircle user={msg.user} size={18} />
             </button>
          </span>
          <button 
-           onClick={() => navigate(`/user/${msg.user?._id}`)} 
+           onClick={() => msg.user?._id && onUserClick(msg.user._id)} 
            style={{ 
              fontWeight: 700, color: '#e2e8f0', cursor: 'pointer', 
              background: 'none', border: 'none', padding: 0, 
@@ -168,9 +168,14 @@ const ChatSidebar = ({ isOpen, onClose }) => {
   const [liveCount,  setLiveCount]  = useState(0);
   const [deletingId, setDeletingId] = useState(null);
   const [loading,    setLoading]    = useState(true);
+  const [selectedUserId, setSelectedUserId] = useState(null);
+  
+  const [hasMore, setHasMore] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
 
   const endRef   = useRef(null);
   const inputRef = useRef(null);
+  const scrollContainerRef = useRef(null);
 
   const scrollToBottom = useCallback(() => {
     endRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -183,7 +188,11 @@ const ChatSidebar = ({ isOpen, onClose }) => {
       try {
         const res  = await fetch(`${API}/chat/history`);
         const data = await res.json();
-        if (data.status === 'success') setMessages(data.data);
+        if (data.status === 'success') {
+          setMessages(data.data);
+          if (data.data.length < 50) setHasMore(false);
+          setTimeout(scrollToBottom, 100);
+        }
       } catch (e) { console.error(e); }
       finally { setLoading(false); }
     })();
@@ -194,13 +203,19 @@ const ChatSidebar = ({ isOpen, onClose }) => {
     if (!isOpen) return;
     const sock = io(SOCKET_URL, { transports: ['websocket', 'polling'] });
     setSocket(sock);
-    sock.on('newMessage',     (m)       => setMessages(p => [...p, m]));
+    sock.on('newMessage',     (m)       => {
+      setMessages(p => [...p, m]);
+      const el = scrollContainerRef.current;
+      if (el) {
+        const isNearBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 150;
+        if (isNearBottom) setTimeout(scrollToBottom, 50);
+      }
+    });
     sock.on('messageDeleted', ({ _id }) => setMessages(p => p.filter(m => m._id !== _id)));
     sock.on('liveCount',      ({ count }) => setLiveCount(count));
     return () => sock.disconnect();
   }, [isOpen]);
 
-  useEffect(() => { scrollToBottom(); }, [messages]);
   useEffect(() => {
     if (isOpen && activeTab === 'chat') setTimeout(() => inputRef.current?.focus(), 350);
   }, [isOpen, activeTab]);
@@ -210,6 +225,34 @@ const ChatSidebar = ({ isOpen, onClose }) => {
     if (!newMsg.trim() || !socket || !mongoUser) return;
     socket.emit('sendMessage', { userId: mongoUser._id, message: newMsg.trim() });
     setNewMsg('');
+    setTimeout(scrollToBottom, 50);
+  };
+
+  const handleScroll = async (e) => {
+    if (activeTab !== 'chat') return;
+    if (e.target.scrollTop === 0 && hasMore && !loadingMore && messages.length > 0) {
+      setLoadingMore(true);
+      const oldestId = messages[0]._id;
+      try {
+        const res = await fetch(`${API}/chat/history?before=${oldestId}`);
+        const data = await res.json();
+        if (data.status === 'success') {
+          if (data.data.length < 50) setHasMore(false);
+          
+          const container = scrollContainerRef.current;
+          const previousScrollHeight = container?.scrollHeight;
+          
+          setMessages(prev => [...data.data, ...prev]);
+          
+          setTimeout(() => {
+            if (container) {
+              container.scrollTop = container.scrollHeight - previousScrollHeight;
+            }
+          }, 0);
+        }
+      } catch (err) { console.error(err); }
+      finally { setLoadingMore(false); }
+    }
   };
 
   const deleteMessage = async (id) => {
@@ -266,31 +309,18 @@ const ChatSidebar = ({ isOpen, onClose }) => {
               flexShrink: 0
             }}>
               {/* Left: online count */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <div style={{
-                  width: 32, height: 32, borderRadius: 9,
-                  background: 'linear-gradient(135deg,rgba(99,102,241,0.28),rgba(139,92,246,0.18))',
-                  border: '1px solid rgba(99,102,241,0.32)',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0
-                }}>
-                  <FiUsers style={{ color: '#a5b4fc', fontSize: 14 }} />
-                </div>
-                <div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                    <span style={{ fontSize: '0.85rem', fontWeight: 700, color: '#f1f5f9' }}>
-                      {liveCount}
-                    </span>
-                    <span style={{ fontSize: '0.75rem', color: '#64748b' }}>online</span>
-                    {/* live dot */}
-                    <span style={{
-                      width: 6, height: 6, borderRadius: '50%',
-                      background: '#10b981', display: 'inline-block',
-                      boxShadow: '0 0 5px #10b981',
-                      animation: 'sidebarPulse 2s ease-in-out infinite'
-                    }} />
-                  </div>
-                  <span style={{ fontSize: '0.65rem', color: '#475569' }}>Public Chat Room</span>
-                </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                <span style={{ fontSize: '0.85rem', fontWeight: 700, color: '#f1f5f9' }}>
+                  {liveCount}
+                </span>
+                <span style={{ fontSize: '0.75rem', color: '#64748b' }}>online</span>
+                {/* live dot */}
+                <span style={{
+                  width: 6, height: 6, borderRadius: '50%',
+                  background: '#10b981', display: 'inline-block',
+                  boxShadow: '0 0 5px #10b981',
+                  animation: 'sidebarPulse 2s ease-in-out infinite'
+                }} />
               </div>
 
               {/* Right: tab switcher + close */}
@@ -377,9 +407,21 @@ const ChatSidebar = ({ isOpen, onClose }) => {
               <>
                 {/* Messages */}
                 <div
+                  ref={scrollContainerRef}
+                  onScroll={handleScroll}
                   style={{ flex: 1, overflowY: 'auto', padding: '12px 14px 6px', display: 'flex', flexDirection: 'column', gap: 0 }}
                   className="custom-scrollbar"
                 >
+                  {loadingMore && (
+                    <div style={{ display: 'flex', justifyContent: 'center', padding: '10px 0' }}>
+                      <div style={{
+                        width: 18, height: 18, borderRadius: '50%',
+                        border: '2px solid rgba(99,102,241,0.35)',
+                        borderTopColor: '#6366f1',
+                        animation: 'sidebarSpin 0.8s linear infinite'
+                      }} />
+                    </div>
+                  )}
                   {loading ? (
                     <div style={{ display: 'flex', justifyContent: 'center', paddingTop: '3rem' }}>
                       <div style={{
@@ -415,6 +457,7 @@ const ChatSidebar = ({ isOpen, onClose }) => {
                         canModerate={canModerate}
                         onDelete={deleteMessage}
                         deletingId={deletingId}
+                        onUserClick={setSelectedUserId}
                       />
                     ))
                   )}
@@ -509,6 +552,15 @@ const ChatSidebar = ({ isOpen, onClose }) => {
             }
           `}</style>
         </>
+      )}
+
+      {/* Public Profile Modal */}
+      {selectedUserId && (
+        <PublicProfileModal
+          userId={selectedUserId}
+          isOpen={!!selectedUserId}
+          onClose={() => setSelectedUserId(null)}
+        />
       )}
     </AnimatePresence>
   );

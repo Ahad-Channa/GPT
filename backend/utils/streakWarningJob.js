@@ -36,14 +36,26 @@ cron.schedule('0 * * * *', async () => {
       if (alreadyWarned) continue;
 
       const msLeft = STREAK_EXPIRE_MS - (now.getTime() - new Date(user.lastDailyBonusClaim).getTime());
-      const hoursLeft = Math.max(1, Math.ceil(msLeft / (1000 * 60 * 60)));
+      
+      const totalMinutesLeft = Math.max(1, Math.floor(msLeft / (1000 * 60)));
+      const hLeft = Math.floor(totalMinutesLeft / 60);
+      const mLeft = totalMinutesLeft % 60;
+      
+      let timeLeftStr = '';
+      if (hLeft > 0 && mLeft > 0) {
+        timeLeftStr = `${hLeft} ${hLeft === 1 ? 'hour' : 'hours'} and ${mLeft} ${mLeft === 1 ? 'minute' : 'minutes'}`;
+      } else if (hLeft > 0) {
+        timeLeftStr = `${hLeft} ${hLeft === 1 ? 'hour' : 'hours'}`;
+      } else {
+        timeLeftStr = `${mLeft} ${mLeft === 1 ? 'minute' : 'minutes'}`;
+      }
 
       await notify(
         user._id,
         'streak_warning',
         'Streak Expiring Soon!',
-        `Your daily bonus streak will reset in ${hoursLeft} ${hoursLeft === 1 ? 'hour' : 'hours'}. Complete offers and claim your daily reward!`,
-        { hoursLeft }
+        `Your daily bonus streak will reset in ${timeLeftStr}. Complete offers and claim your daily reward!`,
+        { hoursLeft: hLeft, minutesLeft: mLeft }
       );
       warnedCount++;
     }

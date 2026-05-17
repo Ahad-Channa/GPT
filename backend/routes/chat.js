@@ -22,10 +22,20 @@ const requireAdmin = async (req, res, next) => {
   }
 };
 
-// GET /api/chat/history - Get the last 50 chat messages
+// GET /api/chat/history - Get the last 50 chat messages, supports pagination via 'before' query
 router.get('/history', async (req, res) => {
   try {
-    const messages = await ChatMessage.find({ isDeleted: false })
+    const { before } = req.query;
+    const query = { isDeleted: false };
+
+    if (before) {
+      const beforeMsg = await ChatMessage.findById(before);
+      if (beforeMsg) {
+        query.createdAt = { $lt: beforeMsg.createdAt };
+      }
+    }
+
+    const messages = await ChatMessage.find(query)
       .sort({ createdAt: -1 })
       .limit(50)
       .populate('userId', 'displayName avatarUrl role');
