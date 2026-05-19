@@ -10,32 +10,34 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import toast from 'react-hot-toast';
 
-const API        = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 const SOCKET_URL = API.replace('/api', '');
 
 import { useNavigate } from 'react-router-dom';
 import { FaCrown, FaBolt } from 'react-icons/fa';
 import PublicProfileModal from '../PublicProfileModal';
+import { getLevelFromEarned, getLevelLabel, TIER_STYLES } from '../../utils/vipLevels';
 
 const getInitials = (name) => (name || '?').slice(0, 2).toUpperCase();
 const getHue = (name) => name ? [...name].reduce((a, c) => a + c.charCodeAt(0), 0) % 360 : 210;
 
 const AvatarCircle = ({ user, size = 20 }) => {
-   const dName = user?.displayName || 'Unknown';
-   const photo = user?.avatarUrl || user?.photoURL || `/avatars/avatar1.png`;
-   return (
-      <div style={{
-         width: size, height: size, borderRadius: '50%', flexShrink: 0,
-         overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center',
-         background: 'transparent',
-         color: 'white', fontSize: size * 0.45, fontWeight: 'bold'
-      }}>
-         <img src={photo} alt="avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-      </div>
-   );
+  const dName = user?.displayName || 'Unknown';
+  const photo = user?.avatarUrl || user?.photoURL || `/avatars/avatar1.png`;
+  return (
+    <div style={{
+      width: size, height: size, borderRadius: '50%', flexShrink: 0,
+      overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center',
+      background: 'transparent',
+      color: 'white', fontSize: size * 0.45, fontWeight: 'bold'
+    }}>
+      <img src={photo} alt="avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+    </div>
+  );
 };
 
-const RoleSymbol = ({ role }) => {
+const RoleSymbol = ({ user }) => {
+  const role = user?.role || 'user';
   const [hover, setHover] = useState(false);
   let icon, label, color, shift = 0;
 
@@ -47,21 +49,27 @@ const RoleSymbol = ({ role }) => {
     icon = (
       <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
         <FiStar size={15} style={{ color: '#94a3b8' }} />
-        <span style={{ 
-          background: 'rgba(56,189,248,0.15)', color: '#38bdf8', 
-          fontSize: '0.65rem', fontWeight: 'bold', padding: '1px 4px', 
-          borderRadius: '4px', border: '1px solid rgba(56,189,248,0.3)' 
+        <span style={{
+          background: 'rgba(56,189,248,0.15)', color: '#38bdf8',
+          fontSize: '0.65rem', fontWeight: 'bold', padding: '1px 4px',
+          borderRadius: '4px', border: '1px solid rgba(56,189,248,0.3)'
         }}>M C</span>
       </span>
     );
     label = 'Moderator'; color = '#38bdf8'; shift = 10;
   } else {
-    icon = <FiStar size={15} />; label = 'VIP Rank (Coming Soon)'; color = '#94a3b8'; shift = 45;
+    const vipLevel = getLevelFromEarned(user?.totalEarned || 0);
+    const tierStyle = vipLevel ? TIER_STYLES[vipLevel.tier] : null;
+
+    icon = <FiStar size={15} />;
+    label = vipLevel ? `VIP: ${getLevelLabel(vipLevel)}` : 'Unranked';
+    color = tierStyle ? tierStyle.border : '#94a3b8';
+    shift = 20;
   }
 
   return (
-    <div 
-      onMouseEnter={() => setHover(true)} 
+    <div
+      onMouseEnter={() => setHover(true)}
       onMouseLeave={() => setHover(false)}
       style={{ position: 'relative', display: 'inline-flex', alignItems: 'center', cursor: 'default' }}
     >
@@ -100,7 +108,7 @@ const MessageRow = ({ msg, canModerate, onDelete, deletingId, onUserClick }) => 
       style={{
         display: 'flex', flexDirection: 'column',
         marginBottom: 8,
-        opacity: isDeleting ? 0.4 : 1, 
+        opacity: isDeleting ? 0.4 : 1,
         transition: 'border-color 0.15s, background 0.15s, opacity 0.2s, transform 0.15s',
         padding: '10px 14px',
         borderRadius: 10,
@@ -111,45 +119,45 @@ const MessageRow = ({ msg, canModerate, onDelete, deletingId, onUserClick }) => 
       }}
     >
       <div style={{ display: 'inline-flex', alignItems: 'center', flexWrap: 'wrap', gap: 6, wordBreak: 'break-word', fontSize: '0.85rem' }}>
-         <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
-            <RoleSymbol role={msg.user?.role} />
-            <button 
-              onClick={() => msg.user?._id && onUserClick(msg.user._id)}
-              style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', display: 'flex', alignItems: 'center' }}
-            >
-              <AvatarCircle user={msg.user} size={18} />
-            </button>
-         </span>
-         <button 
-           onClick={() => msg.user?._id && onUserClick(msg.user._id)} 
-           style={{ 
-             fontWeight: 700, color: '#e2e8f0', cursor: 'pointer', 
-             background: 'none', border: 'none', padding: 0, 
-             fontFamily: 'inherit', fontSize: 'inherit'
-           }}
-           onMouseEnter={(e) => e.target.style.textDecoration = 'underline'}
-           onMouseLeave={(e) => e.target.style.textDecoration = 'none'}
-         >
-           {msg.user?.displayName || 'Unknown'}
-         </button>
-         <span style={{ color: '#64748b' }}>:</span>
-         <span style={{ color: '#cbd5e1' }}>{msg.message}</span>
+        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+          <RoleSymbol user={msg.user} />
+          <button
+            onClick={() => msg.user?._id && onUserClick(msg.user._id)}
+            style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', display: 'flex', alignItems: 'center' }}
+          >
+            <AvatarCircle user={msg.user} size={18} />
+          </button>
+        </span>
+        <button
+          onClick={() => msg.user?._id && onUserClick(msg.user._id)}
+          style={{
+            fontWeight: 700, color: '#e2e8f0', cursor: 'pointer',
+            background: 'none', border: 'none', padding: 0,
+            fontFamily: 'inherit', fontSize: 'inherit'
+          }}
+          onMouseEnter={(e) => e.target.style.textDecoration = 'underline'}
+          onMouseLeave={(e) => e.target.style.textDecoration = 'none'}
+        >
+          {msg.user?.displayName || 'Unknown'}
+        </button>
+        <span style={{ color: '#64748b' }}>:</span>
+        <span style={{ color: '#cbd5e1' }}>{msg.message}</span>
       </div>
 
       {canModerate && hov && (
-         <button
-            onClick={() => onDelete(msg._id)}
-            disabled={isDeleting}
-            title="Delete"
-            style={{
-               position: 'absolute', right: 8, top: 8,
-               padding: '2px 4px', borderRadius: 5,
-               background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.2)',
-               color: '#f87171', cursor: 'pointer', display: 'flex', alignItems: 'center'
-            }}
-         >
-            <FiTrash2 style={{ fontSize: 10 }} />
-         </button>
+        <button
+          onClick={() => onDelete(msg._id)}
+          disabled={isDeleting}
+          title="Delete"
+          style={{
+            position: 'absolute', right: 8, top: 8,
+            padding: '2px 4px', borderRadius: 5,
+            background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.2)',
+            color: '#f87171', cursor: 'pointer', display: 'flex', alignItems: 'center'
+          }}
+        >
+          <FiTrash2 style={{ fontSize: 10 }} />
+        </button>
       )}
     </div>
   );
@@ -158,22 +166,22 @@ const MessageRow = ({ msg, canModerate, onDelete, deletingId, onUserClick }) => 
 /* ─── main sidebar component ────────────────────────────── */
 const ChatSidebar = ({ isOpen, onClose }) => {
   const { mongoUser, currentUser, isAdmin } = useAuth();
-  const isMod       = mongoUser?.role === 'moderator';
+  const isMod = mongoUser?.role === 'moderator';
   const canModerate = isAdmin || isMod;
 
-  const [activeTab,  setActiveTab]  = useState('chat');   // 'chat' | 'support'
-  const [messages,   setMessages]   = useState([]);
-  const [newMsg,     setNewMsg]     = useState('');
-  const [socket,     setSocket]     = useState(null);
-  const [liveCount,  setLiveCount]  = useState(0);
+  const [activeTab, setActiveTab] = useState('chat');   // 'chat' | 'support'
+  const [messages, setMessages] = useState([]);
+  const [newMsg, setNewMsg] = useState('');
+  const [socket, setSocket] = useState(null);
+  const [liveCount, setLiveCount] = useState(0);
   const [deletingId, setDeletingId] = useState(null);
-  const [loading,    setLoading]    = useState(true);
+  const [loading, setLoading] = useState(true);
   const [selectedUserId, setSelectedUserId] = useState(null);
-  
+
   const [hasMore, setHasMore] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
 
-  const endRef   = useRef(null);
+  const endRef = useRef(null);
   const inputRef = useRef(null);
   const scrollContainerRef = useRef(null);
 
@@ -186,7 +194,7 @@ const ChatSidebar = ({ isOpen, onClose }) => {
     if (!isOpen) return;
     (async () => {
       try {
-        const res  = await fetch(`${API}/chat/history`);
+        const res = await fetch(`${API}/chat/history`);
         const data = await res.json();
         if (data.status === 'success') {
           setMessages(data.data);
@@ -203,7 +211,7 @@ const ChatSidebar = ({ isOpen, onClose }) => {
     if (!isOpen) return;
     const sock = io(SOCKET_URL, { transports: ['websocket', 'polling'] });
     setSocket(sock);
-    sock.on('newMessage',     (m)       => {
+    sock.on('newMessage', (m) => {
       setMessages(p => [...p, m]);
       const el = scrollContainerRef.current;
       if (el) {
@@ -212,7 +220,7 @@ const ChatSidebar = ({ isOpen, onClose }) => {
       }
     });
     sock.on('messageDeleted', ({ _id }) => setMessages(p => p.filter(m => m._id !== _id)));
-    sock.on('liveCount',      ({ count }) => setLiveCount(count));
+    sock.on('liveCount', ({ count }) => setLiveCount(count));
     return () => sock.disconnect();
   }, [isOpen]);
 
@@ -238,12 +246,12 @@ const ChatSidebar = ({ isOpen, onClose }) => {
         const data = await res.json();
         if (data.status === 'success') {
           if (data.data.length < 50) setHasMore(false);
-          
+
           const container = scrollContainerRef.current;
           const previousScrollHeight = container?.scrollHeight;
-          
+
           setMessages(prev => [...data.data, ...prev]);
-          
+
           setTimeout(() => {
             if (container) {
               container.scrollTop = container.scrollHeight - previousScrollHeight;
@@ -260,7 +268,7 @@ const ChatSidebar = ({ isOpen, onClose }) => {
     setDeletingId(id);
     try {
       const token = await currentUser.getIdToken();
-      const res   = await fetch(`${API}/chat/messages/${id}`, {
+      const res = await fetch(`${API}/chat/messages/${id}`, {
         method: 'DELETE', headers: { Authorization: `Bearer ${token}` }
       });
       const data = await res.json();
@@ -332,8 +340,8 @@ const ChatSidebar = ({ isOpen, onClose }) => {
                   borderRadius: 9, padding: '3px'
                 }}>
                   {[
-                    { key: 'chat',    icon: FiMessageSquare, title: 'Public Chat' },
-                    { key: 'support', icon: FiHeadphones,    title: 'Support' }
+                    { key: 'chat', icon: FiMessageSquare, title: 'Public Chat' },
+                    { key: 'support', icon: FiHeadphones, title: 'Support' }
                   ].map(({ key, icon: Icon, title }) => {
                     const active = activeTab === key;
                     return (
@@ -483,7 +491,7 @@ const ChatSidebar = ({ isOpen, onClose }) => {
                   {mongoUser ? (
                     <form onSubmit={sendMessage} style={{ display: 'flex', gap: 7, alignItems: 'flex-end' }}>
                       <div style={{ paddingBottom: 6, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', width: 28 }}>
-                        <RoleSymbol role={mongoUser.role} />
+                        <RoleSymbol user={mongoUser} />
                       </div>
                       <div style={{ flex: 1, position: 'relative' }}>
                         <input
@@ -503,7 +511,7 @@ const ChatSidebar = ({ isOpen, onClose }) => {
                             caretColor: '#a5b4fc'
                           }}
                           onFocus={e => { e.target.style.borderColor = 'rgba(99,102,241,0.5)'; }}
-                          onBlur={e  => { e.target.style.borderColor = 'rgba(255,255,255,0.09)'; }}
+                          onBlur={e => { e.target.style.borderColor = 'rgba(255,255,255,0.09)'; }}
                         />
                         <button
                           type="submit"

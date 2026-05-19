@@ -16,6 +16,7 @@ const getHue = (name) =>
 
 import { useNavigate } from 'react-router-dom';
 import { FaCrown, FaBolt } from 'react-icons/fa';
+import { getLevelFromEarned, getLevelLabel, TIER_STYLES } from '../utils/vipLevels';
 
 const AvatarCircle = ({ user, size = 20 }) => {
    const dName = user?.displayName || 'Unknown';
@@ -32,7 +33,8 @@ const AvatarCircle = ({ user, size = 20 }) => {
    );
 };
 
-const RoleSymbol = ({ role }) => {
+const RoleSymbol = ({ user }) => {
+  const role = user?.role || 'user';
   const [hover, setHover] = useState(false);
   let icon, label, color, shift = 0;
 
@@ -53,7 +55,13 @@ const RoleSymbol = ({ role }) => {
     );
     label = 'Moderator'; color = '#38bdf8'; shift = 10;
   } else {
-    icon = <FiStar size={15} />; label = 'VIP Rank (Coming Soon)'; color = '#94a3b8'; shift = 45;
+    const vipLevel = getLevelFromEarned(user?.totalEarned || 0);
+    const tierStyle = vipLevel ? TIER_STYLES[vipLevel.tier] : null;
+    
+    icon = <FiStar size={15} />; 
+    label = vipLevel ? `VIP: ${getLevelLabel(vipLevel)}` : 'Unranked'; 
+    color = tierStyle ? tierStyle.border : '#94a3b8'; 
+    shift = 20;
   }
 
   return (
@@ -110,7 +118,7 @@ const MessageRow = ({ msg, canModerate, onDelete, deletingId }) => {
     >
       <div style={{ display: 'inline-flex', alignItems: 'center', flexWrap: 'wrap', gap: 6, wordBreak: 'break-word', fontSize: '0.9rem' }}>
          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
-            <RoleSymbol role={msg.user?.role} />
+            <RoleSymbol user={msg.user} />
             <button 
               onClick={() => navigate(`/user/${msg.user?._id}`)}
               style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', display: 'flex', alignItems: 'center' }}
@@ -436,7 +444,7 @@ const Chat = () => {
               {mongoUser ? (
                 <form onSubmit={sendMessage} style={{ display: 'flex', gap: 9, alignItems: 'center' }}>
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 32 }}>
-                    <RoleSymbol role={mongoUser.role} />
+                    <RoleSymbol user={mongoUser} />
                   </div>
 
                   <div style={{ flex: 1, position: 'relative' }}>
