@@ -6,6 +6,7 @@ const User = require('../models/User');
 const Settings = require('../models/Settings');
 const LeaderboardCycle = require('../models/Leaderboard');
 const notify = require('../utils/notify');
+const { emitWalletUpdate } = require('../utils/walletEvents');
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -212,6 +213,7 @@ async function resetLeaderboard(period) {
         user.walletBalance += reward;
         user.totalEarned = (user.totalEarned || 0) + reward;
         await user.save();
+        emitWalletUpdate(user.firebaseUid, user.walletBalance);
 
         await Transaction.create({
           userId: user._id,

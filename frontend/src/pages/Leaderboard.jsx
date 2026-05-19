@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import DashboardLayout from '../components/layout/DashboardLayout';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FiCalendar, FiLock, FiClock, FiGift } from 'react-icons/fi';
+import { FiCalendar, FiLock, FiClock } from 'react-icons/fi';
 import { FaCrown } from 'react-icons/fa';
 import PublicProfileModal from '../components/PublicProfileModal';
 import CoinDisplay from '../components/CoinDisplay';
@@ -83,7 +83,6 @@ const PodiumCard = ({ rank, user, prize, onClick }) => {
       {/* Prize */}
       {prize > 0 && (
         <div className={`mt-3 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-sm font-bold ${c.prize}`}>
-          <FiGift className="text-sm" />
           <CoinDisplay amount={prize} size={16} /> reward
         </div>
       )}

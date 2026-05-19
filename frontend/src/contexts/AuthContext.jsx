@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState } from 'react';
+import { createContext, useContext, useEffect, useRef, useState } from 'react';
 import { 
     onAuthStateChanged, 
     signInWithPopup, 
@@ -13,6 +13,7 @@ import {
     updateProfile
 } from 'firebase/auth';
 import { auth, googleProvider } from '../config/firebase';
+import { io } from 'socket.io-client';
 
 const AuthContext = createContext();
 
@@ -22,6 +23,7 @@ export const AuthProvider = ({ children }) => {
     const [currentUser, setCurrentUser] = useState(null);
     const [mongoUser, setMongoUser] = useState(null);
     const [loading, setLoading] = useState(true);
+    const socketRef = useRef(null);
 
     const syncWithMongo = async (user) => {
         try {
@@ -122,14 +124,37 @@ export const AuthProvider = ({ children }) => {
             setCurrentUser(user);
             if (user) {
                 await syncWithMongo(user);
+
+                // ── Socket: identify this browser tab so the server can push balance updates ──
+                const socketUrl = import.meta.env.VITE_API_URL
+                    ? import.meta.env.VITE_API_URL.replace('/api', '')
+                    : 'http://localhost:5000';
+
+                // Re-use existing socket if still connected
+                if (!socketRef.current || !socketRef.current.connected) {
+                    socketRef.current = io(socketUrl, { transports: ['websocket', 'polling'] });
+                }
+
+                socketRef.current.emit('identify', { firebaseUid: user.uid });
+
+                socketRef.current.off('walletUpdate'); // remove any stale listener first
+                socketRef.current.on('walletUpdate', ({ walletBalance }) => {
+                    setMongoUser(prev => prev ? { ...prev, walletBalance } : prev);
+                });
             } else {
                 setMongoUser(null);
+                // Disconnect socket on logout
+                if (socketRef.current) {
+                    socketRef.current.disconnect();
+                    socketRef.current = null;
+                }
             }
             setLoading(false);
         });
 
         return () => unsubscribe();
     }, []);
+
 
     const isAdmin = mongoUser?.role === 'admin';
     const isPrimaryAdmin = mongoUser?.email === import.meta.env.VITE_PRIMARY_ADMIN_EMAIL;

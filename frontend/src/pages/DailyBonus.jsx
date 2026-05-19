@@ -155,7 +155,6 @@ export default function DailyBonus() {
                     style={{ animation: 'bonusPulse 1.8s ease-in-out infinite' }}
                   >
                     <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-500 pointer-events-none" />
-                    <FiZap className="text-3xl relative z-10 drop-shadow" />
                     <span className="relative z-10">{claiming ? 'Claiming…' : '🎁 Claim Reward Now'}</span>
                   </button>
 

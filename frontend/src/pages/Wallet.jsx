@@ -166,7 +166,6 @@ const Wallet = () => {
         {/* ── Page Header ───────────────────────────────────────── */}
         <motion.div variants={item}>
           <h1 className="text-3xl font-bold font-display text-white">Your Wallet</h1>
-          <p className="text-slate-500 text-sm mt-1 flex items-center justify-center gap-1">Manage your <CoinIcon size={14}/>, track activity, and request payouts.</p>
         </motion.div>
 
         {/* ── Balance Hero Card ─────────────────────────────────── */}

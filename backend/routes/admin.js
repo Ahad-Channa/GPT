@@ -12,6 +12,7 @@ const { verifyToken } = require('../middlewares/authMiddleware');
 const { requireAdmin, requirePrimaryAdmin, requirePermission } = require('../middlewares/adminMiddleware');
 const notify = require('../utils/notify');
 const { notifyAdmins } = require('../utils/adminNotify');
+const { emitWalletUpdate } = require('../utils/walletEvents');
 const AdminNotification = require('../models/AdminNotification');
 const Avatar = require('../models/Avatar');
 const multer = require('multer');
@@ -596,6 +597,7 @@ router.put('/custom-offers/submissions/:id', requirePermission('manage_offerwall
       user.walletBalance += amountNum;
       user.totalEarned = (user.totalEarned || 0) + amountNum;
       await user.save();
+      emitWalletUpdate(user.firebaseUid, user.walletBalance);
 
       await Transaction.create({
         userId: user._id,
@@ -1068,6 +1070,7 @@ router.post('/proofs/:type/:id/:action', requirePermission('manage_offerwalls'),
           user.walletBalance = (user.walletBalance || 0) + submission.offerId.rewardAmount;
           user.totalEarned = (user.totalEarned || 0) + submission.offerId.rewardAmount;
           await user.save();
+          emitWalletUpdate(user.firebaseUid, user.walletBalance);
 
           await Transaction.create({
             userId: user._id,
@@ -1107,6 +1110,7 @@ router.post('/proofs/:type/:id/:action', requirePermission('manage_offerwalls'),
         user.walletBalance = (user.walletBalance || 0) + tx.amount;
         user.totalEarned = (user.totalEarned || 0) + tx.amount;
         await user.save();
+        emitWalletUpdate(user.firebaseUid, user.walletBalance);
         tx.balanceAfter = user.walletBalance;
         await tx.save();
 

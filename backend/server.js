@@ -119,6 +119,7 @@ cron.schedule('0 0 1 * *', async () => {
 // ─── Socket.io Live Chat Setup ──────────────────────────────────────────
 const ChatMessage = require('./models/ChatMessage');
 const User = require('./models/User');
+const { registerSocket } = require('./utils/walletEvents');
 
 // Track online socket connections
 const onlineSockets = new Set();
@@ -131,6 +132,12 @@ io.on('connection', (socket) => {
   onlineSockets.add(socket.id);
   broadcastLiveCount();
   console.log('A user connected:', socket.id, '| Online:', onlineSockets.size);
+
+  // ── Identity registration (wallet push) ─────────────────────────────────
+  // Client emits this immediately after connecting so we can target them by UID
+  socket.on('identify', ({ firebaseUid }) => {
+    if (firebaseUid) registerSocket(firebaseUid, socket);
+  });
 
   // ── Global live chat ────────────────────────────────────────
   socket.on('sendMessage', async (data) => {

@@ -8,6 +8,7 @@ const PromoCode = require('../models/PromoCode');
 const Avatar = require('../models/Avatar');
 const { verifyToken } = require('../middlewares/authMiddleware');
 const notify = require('../utils/notify');
+const { emitWalletUpdate } = require('../utils/walletEvents');
 const { notifyAdmins } = require('../utils/adminNotify');
 
 /* ─────────────────────────────────────────────────────────────────
@@ -465,7 +466,9 @@ router.get('/daily-bonus-status', verifyToken, async (req, res) => {
       gateUnlocked,
       earned: earnedToday,
       required,
-      streak: alreadyClaimed ? streak : nextStreakToClaim,
+      // Only show the +1 preview streak when user is in cooldown (already claimed).
+      // Before claiming, show the real DB streak so Day 1 isn't pre-marked as complete.
+      streak: alreadyClaimed ? nextStreakToClaim : streak,
       rewardToday,
       rewardTomorrow,
       rewardDay10,
@@ -581,6 +584,8 @@ router.post('/daily-bonus', verifyToken, async (req, res) => {
     if (!updatedUser) {
       return res.status(409).json({ success: false, error: 'Claim concurrent conflict. Try again.' });
     }
+    // Push live balance to browser
+    emitWalletUpdate(updatedUser.firebaseUid, updatedUser.walletBalance);
 
     // 5. Archive Transaction
     await Transaction.create({
@@ -667,6 +672,8 @@ router.post('/redeem-promo', verifyToken, async (req, res) => {
       { $inc: { walletBalance: promo.rewardCoins, totalEarned: promo.rewardCoins } },
       { new: true }
     );
+    // Push live balance to browser
+    emitWalletUpdate(updatedUser.firebaseUid, updatedUser.walletBalance);
 
     await Transaction.create({
       userId: user._id,

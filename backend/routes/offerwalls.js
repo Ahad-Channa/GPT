@@ -6,6 +6,7 @@ const User = require('../models/User');
 const Transaction = require('../models/Transaction');
 const notify = require('../utils/notify');
 const { notifyAdmins } = require('../utils/adminNotify');
+const { emitWalletUpdate } = require('../utils/walletEvents');
 
 const PROVIDER_SECRET_MAP = {
   cpx:       'CPX_HASH_KEY',
@@ -139,6 +140,8 @@ const handlePostback = async (providerId, req, res, params) => {
       { $inc: { walletBalance: platformCoins, totalEarned: platformCoins } },
       { new: true }
     );
+    // Push live balance to user's browser
+    emitWalletUpdate(user.firebaseUid, updatedUser.walletBalance);
 
     // 11. Create Transaction
     const offerTx = await Transaction.create({
