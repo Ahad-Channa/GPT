@@ -1,5 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
+import { getLevelFromEarned } from '../../utils/vipLevels';
+import VipBadge from '../VipBadge';
 import { useNotifications } from '../../contexts/NotificationContext';
 import { useDailyBonus } from '../../contexts/DailyBonusContext';
 import { FiLogOut, FiUser, FiSettings, FiZap, FiChevronDown, FiCreditCard, FiLock, FiClock, FiBell, FiUsers, FiGift, FiDollarSign, FiMessageSquare } from 'react-icons/fi';
@@ -285,6 +287,24 @@ const Header = ({ onChatToggle, chatOpen }) => {
                     className="w-full text-left px-4 py-3 text-sm text-slate-300 hover:bg-white/[0.05] hover:text-white transition-colors flex items-center gap-3 border-b border-white/[0.04]"
                   >
                     <FiUser className="text-indigo-400" /> My Profile
+                  </button>
+
+                  <button
+                    id="header-vip-link-nav"
+                    onClick={() => { setIsDropdownOpen(false); navigate('/dashboard/vip'); }}
+                    className="w-full text-left px-4 py-3 text-sm text-slate-300 hover:bg-white/[0.05] hover:text-white transition-colors flex items-center gap-3 border-b border-white/[0.04]"
+                  >
+                    <span style={{ fontSize: '0.7rem' }}>⭐</span>
+                    <span>VIP Status</span>
+                    {mongoUser?.totalEarned >= 0 && getLevelFromEarned(mongoUser.totalEarned) && (
+                      <span style={{ marginLeft: 'auto' }}>
+                        <VipBadge
+                          tier={getLevelFromEarned(mongoUser.totalEarned).tier}
+                          rank={getLevelFromEarned(mongoUser.totalEarned).rank}
+                          size="xs"
+                        />
+                      </span>
+                    )}
                   </button>
 
                   {isAdmin && (

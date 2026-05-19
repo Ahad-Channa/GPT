@@ -20,6 +20,7 @@ const transactionSchema = new mongoose.Schema(
         'promo_code',          // Promo Code
         'leaderboard_reward',  // Leaderboard Reward
         'chargeback',          // Chargeback deduct
+        'vip_reward',          // VIP Reward
       ],
       required: true,
     },
@@ -40,7 +41,7 @@ const transactionSchema = new mongoose.Schema(
     // Fraud tracking / Advanced relation linking
     sourceType: {
       type: String,
-      enum: ['offer', 'referral', 'daily_bonus', 'withdrawal', 'chargeback', 'leaderboard', 'admin', 'promo'],
+      enum: ['offer', 'referral', 'daily_bonus', 'withdrawal', 'chargeback', 'leaderboard', 'admin', 'promo', 'vip', 'system'],
       default: null,
     },
     sourceId: {

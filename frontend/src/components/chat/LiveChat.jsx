@@ -4,6 +4,8 @@ import { useAuth } from '../../contexts/AuthContext';
 import { FiX, FiSend, FiMessageSquare, FiTrash2, FiUsers, FiSmile } from 'react-icons/fi';
 import { motion, AnimatePresence } from 'framer-motion';
 import toast from 'react-hot-toast';
+import VipBadge from '../VipBadge';
+import { getLevelFromEarned } from '../../utils/vipLevels';
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 const SOCKET_URL = API.replace('/api', '');
@@ -407,6 +409,13 @@ const MessageRow = ({ msg, isOwn, isDeleting, showAvatar, canModerate, onDelete,
               {msg.user?.displayName || 'Unknown'}
             </span>
             <RoleBadge role={msg.user?.role} />
+            {msg.user?.totalEarned >= 0 && getLevelFromEarned(msg.user.totalEarned) && (
+              <VipBadge
+                tier={getLevelFromEarned(msg.user.totalEarned).tier}
+                rank={getLevelFromEarned(msg.user.totalEarned).rank}
+                size="xs"
+              />
+            )}
             <span style={{ fontSize: '0.65rem', color: '#334155' }}>
               {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
             </span>

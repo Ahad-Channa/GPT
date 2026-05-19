@@ -141,6 +141,39 @@ export const AuthProvider = ({ children }) => {
                 socketRef.current.on('walletUpdate', ({ walletBalance }) => {
                     setMongoUser(prev => prev ? { ...prev, walletBalance } : prev);
                 });
+
+                socketRef.current.off('vipLevelUp');
+                socketRef.current.on('vipLevelUp', ({ label, rewardAmount }) => {
+                    import('react-hot-toast').then(({ default: toast }) => {
+                        const msg = rewardAmount > 0
+                            ? `🎉 You reached ${label}! Claim your ${rewardAmount.toLocaleString()} coin bonus`
+                            : `🎉 You reached ${label} VIP!`;
+                        const id = toast(msg, {
+                            duration: 10000,
+                            icon: '⭐',
+                            style: {
+                                cursor: 'pointer',
+                                background: '#0b101e',
+                                border: '1px solid rgba(99,102,241,0.5)',
+                                color: '#f1f5f9',
+                                fontWeight: 600,
+                                boxShadow: '0 0 20px rgba(99,102,241,0.3)',
+                            },
+                        });
+                        // Make the toast clickable by attaching a listener after render
+                        setTimeout(() => {
+                            const toastEls = document.querySelectorAll('[data-toast]');
+                            toastEls.forEach(el => {
+                                if (!el.dataset.vipBound) {
+                                    el.dataset.vipBound = '1';
+                                    el.addEventListener('click', () => {
+                                        window.location.href = '/dashboard/vip';
+                                    }, { once: true });
+                                }
+                            });
+                        }, 300);
+                    });
+                });
             } else {
                 setMongoUser(null);
                 // Disconnect socket on logout

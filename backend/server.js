@@ -55,6 +55,7 @@ const publicRoutes = require('./routes/public');
 const notificationsRoutes = require('./routes/notifications');
 const chatRoutes = require('./routes/chat');
 const supportRoutes = require('./routes/support');
+const vipRoutes = require('./routes/vip');
 
 app.use('/api/auth', authRoutes);
 app.use('/api/wallet', walletRoutes);
@@ -67,6 +68,7 @@ app.use('/api/public', publicRoutes);
 app.use('/api/notifications', notificationsRoutes);
 app.use('/api/chat', chatRoutes);
 app.use('/api/support', supportRoutes);
+app.use('/api/vip', vipRoutes);
 
 // Base Route
 app.get('/', (req, res) => {
@@ -158,7 +160,8 @@ io.on('connection', (socket) => {
           _id: user._id,
           displayName: user.displayName,
           avatarUrl: user.avatarUrl,
-          role: user.role
+          role: user.role,
+          totalEarned: user.totalEarned
         }
       });
     } catch (err) {

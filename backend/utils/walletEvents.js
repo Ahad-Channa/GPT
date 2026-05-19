@@ -32,6 +32,11 @@ function registerSocket(firebaseUid, socket) {
  * @param {string} firebaseUid
  * @param {number} newBalance
  */
+/**
+ * Push a balance update to all open tabs for a user.
+ * @param {string} firebaseUid
+ * @param {number} newBalance
+ */
 function emitWalletUpdate(firebaseUid, newBalance) {
   const sockets = userSockets.get(firebaseUid);
   if (!sockets || sockets.size === 0) return;
@@ -40,4 +45,19 @@ function emitWalletUpdate(firebaseUid, newBalance) {
   }
 }
 
-module.exports = { registerSocket, emitWalletUpdate };
+/**
+ * Emit any event to all open tabs for a user.
+ * @param {string} firebaseUid
+ * @param {string} event
+ * @param {*} payload
+ */
+function emitToUser(firebaseUid, event, payload) {
+  const sockets = userSockets.get(firebaseUid);
+  if (!sockets || sockets.size === 0) return;
+  for (const socket of sockets) {
+    socket.emit(event, payload);
+  }
+}
+
+module.exports = { registerSocket, emitWalletUpdate, emitToUser };
+

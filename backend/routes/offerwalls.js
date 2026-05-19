@@ -6,7 +6,8 @@ const User = require('../models/User');
 const Transaction = require('../models/Transaction');
 const notify = require('../utils/notify');
 const { notifyAdmins } = require('../utils/adminNotify');
-const { emitWalletUpdate } = require('../utils/walletEvents');
+const { emitWalletUpdate, emitToUser } = require('../utils/walletEvents');
+const { processVipLevelUp } = require('../utils/vipUtils');
 
 const PROVIDER_SECRET_MAP = {
   cpx:       'CPX_HASH_KEY',
@@ -142,6 +143,8 @@ const handlePostback = async (providerId, req, res, params) => {
     );
     // Push live balance to user's browser
     emitWalletUpdate(user.firebaseUid, updatedUser.walletBalance);
+    // Check VIP level-up (fire-and-forget)
+    processVipLevelUp(user, platformCoins, emitToUser);
 
     // 11. Create Transaction
     const offerTx = await Transaction.create({

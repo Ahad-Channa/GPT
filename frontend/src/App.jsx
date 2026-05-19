@@ -31,6 +31,8 @@ import AdminProofs from './pages/admin/AdminProofs';
 import AdminAvatars from './pages/admin/AdminAvatars';
 import AdminChat from './pages/admin/AdminChat';
 import AdminSupport from './pages/admin/AdminSupport';
+import AdminVip from './pages/admin/AdminVip';
+import VipPage from './pages/VipPage';
 import NotificationPanel from './components/NotificationPanel';
 
 const PrivateRoute = ({ children }) => {
@@ -150,6 +152,14 @@ function App() {
           </PrivateRoute>
         } 
       />
+      <Route 
+        path="/dashboard/vip" 
+        element={
+          <PrivateRoute>
+            <VipPage />
+          </PrivateRoute>
+        } 
+      />
       
       {/* Admin Routes */}
       <Route 
@@ -173,6 +183,7 @@ function App() {
         <Route path="leaderboard" element={<AdminLeaderboard />} />
         <Route path="chat" element={<AdminChat />} />
         <Route path="support" element={<AdminSupport />} />
+        <Route path="vip" element={<AdminVip />} />
         <Route path="logs" element={<AdminLogs />} />
         <Route path="settings" element={<AdminSettings />} />
       </Route>

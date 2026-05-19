@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import {
-  FiGrid, FiUsers, FiShield, FiArrowRight, FiLogOut, FiZap, FiDollarSign, FiActivity, FiSliders, FiBox, FiTag, FiStar, FiTrendingUp, FiMessageSquare, FiInbox, FiImage, FiMessageCircle, FiHeadphones
+  FiGrid, FiUsers, FiShield, FiArrowRight, FiLogOut, FiZap, FiDollarSign, FiActivity, FiSliders, FiBox, FiTag, FiStar, FiTrendingUp, FiMessageSquare, FiInbox, FiImage, FiMessageCircle, FiHeadphones, FiAward
 } from 'react-icons/fi';
 import './Admin.css';
 
@@ -52,6 +52,7 @@ const AdminLayout = () => {
     ...(isPrimaryAdmin || mongoUser?.adminPermissions?.includes('manage_offerwalls') ? [{ to: '/admin/featured-offers', end: false, icon: FiStar, label: 'Featured Offers' }] : []),
     ...(isPrimaryAdmin || mongoUser?.adminPermissions?.includes('manage_offerwalls') ? [{ to: '/admin/proofs', end: false, icon: FiInbox, label: 'Proofs' }] : []),
     ...(isPrimaryAdmin ? [{ to: '/admin/leaderboard', end: false, icon: FiTrendingUp, label: 'Leaderboard' }] : []),
+    ...(isPrimaryAdmin ? [{ to: '/admin/vip',         end: false, icon: FiAward,      label: 'VIP Ranks'   }] : []),
     ...(isPrimaryAdmin ? [{ to: '/admin/avatars', end: false, icon: FiImage, label: 'Avatars' }] : []),
     ...(isPrimaryAdmin || mongoUser?.role === 'mod' ? [{ to: '/admin/chat', end: false, icon: FiMessageCircle, label: 'Chat Moderation' }] : []),
     ...(isPrimaryAdmin || mongoUser?.adminPermissions?.includes('manage_support') ? [{ to: '/admin/support', end: false, icon: FiHeadphones, label: 'Support', badgeKey: 'support' }] : []),

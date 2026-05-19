@@ -27,6 +27,7 @@ const notificationSchema = new mongoose.Schema(
         'referral_earning',
         'announcement',
         'streak_warning',
+        'vip_level_up',
       ],
       required: true,
     },
