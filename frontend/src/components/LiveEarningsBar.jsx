@@ -90,8 +90,9 @@ const LiveEarningsBar = () => {
         <div className="relative flex-1 h-full z-0">
           <div className="absolute inset-0 flex items-center">
             <AnimatePresence initial={false}>
-              {earnings.map((tx) => {
+              {earnings.map((tx, index) => {
                 const details = getDetails(tx);
+                const coinId = (index % 6) + 1;
                 
                 return (
                   <motion.div 
@@ -125,7 +126,7 @@ const LiveEarningsBar = () => {
                           {details.amountStr}
                         </span>
                         {details.isCoin && (
-                          <CoinIcon size={17} />
+                          <CoinIcon size={17} coinId={coinId} />
                         )}
                       </div>
                     </div>
@@ -148,7 +149,7 @@ const LiveEarningsBar = () => {
                             <span className="text-sm font-display font-bold text-white mb-2 line-clamp-2 whitespace-normal break-words leading-snug max-w-[220px]">{details.task}</span>
                             <div className="flex items-center gap-1.5 bg-white/5 rounded-lg px-2.5 py-1.5 w-fit border border-white/5">
                               <span className="text-sm font-black font-mono text-brand-accent">{details.amountStr}</span>
-                              <CoinIcon size={17} />
+                              <CoinIcon size={17} coinId={coinId} />
                             </div>
                           </div>
                         )}

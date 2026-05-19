@@ -114,9 +114,11 @@ const VipPage = () => {
               >
                 {currentLevel ? getLevelLabel(currentLevel) : 'No Rank'}
               </h1>
-              <div className="text-sm text-slate-400 font-medium flex items-center gap-2">
-                Total earned: <CoinDisplay amount={totalEarned || 0} size={16} />
-              </div>
+              <div className="flex flex-col gap-2">
+                <span className="text-slate-400 text-sm font-semibold inline-flex items-center gap-1.5 bg-white/[0.03] w-fit px-3 py-1.5 rounded-lg border border-white/5 shadow-inner">
+                  Total earned: <CoinDisplay amount={totalEarned || 0} size={16} />
+                </span>
+            </div>
             </div>
 
             {/* Stats */}
