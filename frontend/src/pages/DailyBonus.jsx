@@ -190,10 +190,16 @@ export default function DailyBonus() {
               <p className="text-slate-400 text-base">
                 Earn <span className="text-white font-black text-lg ml-1"><CoinDisplay amount={remainingCoins} size={16} /></span> more to unlock your bonus
               </p>
-              {status.expiresAt && (
-                <div className="inline-flex items-center gap-2 text-red-400 text-sm font-bold bg-red-500/10 py-2 px-4 rounded-xl border border-red-500/20">
-                  <FiClock /> Streak expires in: <span className="font-mono">{expireTimer || '00:00:00'}</span>
+              {status.expiresAt ? (
+                <div className={`inline-flex items-center gap-2 ${streak === 0 ? 'text-indigo-400 bg-indigo-500/10 border-indigo-500/20' : 'text-red-400 bg-red-500/10 border-red-500/20'} text-sm font-bold py-2 px-4 rounded-xl border`}>
+                  <FiClock /> {streak === 0 ? 'Timer expires in' : 'Streak expires in'}: <span className="font-mono">{expireTimer || '00:00:00'}</span>
                 </div>
+              ) : (
+                streak === 0 && (
+                  <div className="inline-flex items-center gap-2 text-indigo-400 text-sm font-bold bg-indigo-500/10 py-2 px-4 rounded-xl border border-indigo-500/20">
+                    <FiClock /> Timer starts upon your first coin earning (24h to claim)
+                  </div>
+                )
               )}
             </div>
           )}
@@ -221,11 +227,13 @@ export default function DailyBonus() {
 
             {/* Streak expiry timer — shown when user can claim (not already claimed) */}
             {!status.alreadyClaimed && status.expiresAt && (
-              <div className="mt-2 flex items-center gap-2 bg-red-500/8 border border-red-500/15 rounded-xl p-3">
-                <FiAlertTriangle className="text-red-400 text-sm flex-shrink-0" />
+              <div className={`mt-2 flex items-center gap-2 ${streak === 0 ? 'bg-indigo-500/8 border-indigo-500/15' : 'bg-red-500/8 border-red-500/15'} rounded-xl p-3`}>
+                {streak === 0 ? <FiClock className="text-indigo-400 text-sm flex-shrink-0" /> : <FiAlertTriangle className="text-red-400 text-sm flex-shrink-0" />}
                 <div>
-                  <p className="text-red-400 text-xs font-bold uppercase tracking-wide">Streak expires in</p>
-                  <p className="text-red-300 font-mono text-xl font-black">{expireTimer || '00:00:00'}</p>
+                  <p className={`${streak === 0 ? 'text-indigo-400' : 'text-red-400'} text-xs font-bold uppercase tracking-wide`}>
+                    {streak === 0 ? 'Timer expires in' : 'Streak expires in'}
+                  </p>
+                  <p className={`${streak === 0 ? 'text-indigo-300' : 'text-red-300'} font-mono text-xl font-black`">{expireTimer || '00:00:00'}</p>
                 </div>
               </div>
             )}

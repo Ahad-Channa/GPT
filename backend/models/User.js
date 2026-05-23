@@ -58,6 +58,10 @@ const userSchema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
+    dailyBonusTimerStart: {
+      type: Date,
+      default: null,
+    },
     unlockedAvatars: [{
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Avatar'

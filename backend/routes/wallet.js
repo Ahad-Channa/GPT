@@ -319,55 +319,16 @@ router.post('/withdraw', verifyToken, async (req, res) => {
       payoutDestination,
       metadata: {
         feePercent,
-        coinsPerUSD,
-        exchangeRateSnapshot,
-        ...(ltcRateUSD && {
-          estimatedUSD: (amountNum / coinsPerUSD).toFixed(4),
-          estimatedLTC: (amountNum / coinsPerUSD / ltcRateUSD).toFixed(8),
-        }),
-      },
-    });
-
-    await notify(
-      user._id,
-      'withdrawal_submitted',
-      'Withdrawal Pending',
-      `Your withdrawal of ${amountNum} coins is pending review.`,
-      { amount: amountNum, transactionId: transaction._id }
-    );
-
-    // Add admin notification
-    await notifyAdmins({
-      category: 'withdrawals',
-      type: 'withdrawal_requested',
-      message: `User ${user.username} requested a withdrawal of ${amountNum} Coins via ${methodConfig.label}.`,
-      permissionRequired: 'manage_withdrawals',
-      metadata: { userId: user._id, transactionId: transaction._id }
-    });
-
-    res.status(201).json({
-      success: true,
-      message: `Withdrawal request submitted! ${amountNum} Coins (${feeCoins} fee applied) will be sent to your ${methodConfig.label} account.`,
-      transaction,
-      newBalance: updatedUser.walletBalance,
-    });
-  } catch (error) {
-    console.error('[/api/wallet/withdraw] Error:', error);
-    res.status(500).json({ success: false, error: 'Failed to process withdrawal' });
-  }
-});
-
-/* ─────────────────────────────────────────────────────────────────
+    /* ─────────────────────────────────────────────────────────────────
    GET /api/wallet/daily-bonus-status
    Polling endpoint for daily bonus state.
-───────────────────────────────────────────────────────────────── */
+ ───────────────────────────────────────────────────────────────── */
 router.get('/daily-bonus-status', verifyToken, async (req, res) => {
   try {
     const user = await User.findOne({ firebaseUid: req.user.uid });
     if (!user) return res.status(404).json({ success: false, error: 'User not found' });
 
     const settings = await Settings.getSingleton();
-    const rd = settings.rewardEngine;
 
     let streak = user.dailyBonusStreak || 0;
     const now = new Date();
@@ -377,10 +338,12 @@ router.get('/daily-bonus-status', verifyToken, async (req, res) => {
     // Streak expires: 48h after last claim — must claim within this window or streak resets
     const COOLDOWN_MS     = 24 * 60 * 60 * 1000; // 24 hours
     const STREAK_EXPIRE_MS = 48 * 60 * 60 * 1000; // 48 hours
+    const DAY1_TIMER_MS    = 24 * 60 * 60 * 1000; // 24 hours
 
     let alreadyClaimed = false;
     let nextClaimAt = null;
     let expiresAt = null;
+    let timerExpired = false;
 
     if (user.lastDailyBonusClaim) {
       const msSinceClaim = now.getTime() - new Date(user.lastDailyBonusClaim).getTime();
@@ -390,11 +353,23 @@ router.get('/daily-bonus-status', verifyToken, async (req, res) => {
         alreadyClaimed = true;
         nextClaimAt = new Date(new Date(user.lastDailyBonusClaim).getTime() + COOLDOWN_MS).toISOString();
       } else if (msSinceClaim >= STREAK_EXPIRE_MS) {
-        // Past 24h — streak is broken, reset to 0
+        // Past 48h — streak is broken, reset to 0
         streak = 0;
       } else {
-        // Between 20h and 24h = eligible to claim, streak still alive
+        // Between 24h and 48h = eligible to claim, streak still alive
         expiresAt = new Date(new Date(user.lastDailyBonusClaim).getTime() + STREAK_EXPIRE_MS).toISOString();
+      }
+    }
+
+    // If streak is 0, check the Day 1 earning timer
+    if (streak === 0) {
+      if (user.dailyBonusTimerStart) {
+        const msSinceTimerStart = now.getTime() - new Date(user.dailyBonusTimerStart).getTime();
+        if (msSinceTimerStart >= DAY1_TIMER_MS) {
+          timerExpired = true;
+        } else {
+          expiresAt = new Date(new Date(user.dailyBonusTimerStart).getTime() + DAY1_TIMER_MS).toISOString();
+        }
       }
     }
 
@@ -405,7 +380,6 @@ router.get('/daily-bonus-status', verifyToken, async (req, res) => {
 
     // Dynamic reward calculations for 30-day streak
     const getRewardForDay = (streakDay) => {
-      // Use dynamic settings if available, else falback to default
       const rd = settings?.rewardEngine?.dailyBonusReward;
       if (rd && rd.length >= streakDay) return rd[streakDay - 1];
 
@@ -424,18 +398,24 @@ router.get('/daily-bonus-status', verifyToken, async (req, res) => {
 
     let earnedToday = 0;
     if (!alreadyClaimed) {
-      // Earnings only count AFTER the cooldown has ended
-      const windowStart = user.lastDailyBonusClaim
-        ? new Date(new Date(user.lastDailyBonusClaim).getTime() + COOLDOWN_MS)
-        : new Date(now.getTime() - STREAK_EXPIRE_MS);
+      // Determine windowStart
+      let windowStart = null;
+      if (streak > 0) {
+        windowStart = new Date(new Date(user.lastDailyBonusClaim).getTime() + COOLDOWN_MS);
+      } else {
+        // For streak 0: only count earnings since the timer started
+        windowStart = (user.dailyBonusTimerStart && !timerExpired)
+          ? new Date(user.dailyBonusTimerStart)
+          : now;
+      }
 
       const earnedResult = await Transaction.aggregate([
         {
           $match: {
             userId: user._id,
             amount: { $gt: 0 },
-            // Only count real offer/survey/referral earnings — NOT daily bonus, leaderboard, etc.
-            transactionType: { $nin: ['daily_bonus', 'promo_code', 'admin_adjustment', 'leaderboard_reward'] },
+            // Only count real offer completions
+            transactionType: { $in: ['offer_reward', 'custom_offer_reward'] },
             status: 'completed',
             createdAt: { $gte: windowStart }
           }
@@ -475,7 +455,9 @@ router.get('/daily-bonus-status', verifyToken, async (req, res) => {
       rewardDay20,
       rewardDay30,
       nextClaimAt,
-      expiresAt
+      expiresAt,
+      timerStarted: !!(user.dailyBonusTimerStart && !timerExpired && streak === 0),
+      timerStart: (user.dailyBonusTimerStart && !timerExpired && streak === 0) ? user.dailyBonusTimerStart : null,
     });
   } catch (error) {
     console.error('[/api/wallet/daily-bonus-status] Error:', error);
@@ -486,7 +468,7 @@ router.get('/daily-bonus-status', verifyToken, async (req, res) => {
 /* ─────────────────────────────────────────────────────────────────
    POST /api/wallet/daily-bonus
    Securely credits daily progression bonus using Atomic Mongo locks
-───────────────────────────────────────────────────────────────── */
+ ───────────────────────────────────────────────────────────────── */
 router.post('/daily-bonus', verifyToken, async (req, res) => {
   try {
     const user = await User.findOne({ firebaseUid: req.user.uid });
@@ -496,6 +478,7 @@ router.post('/daily-bonus', verifyToken, async (req, res) => {
     // Cooldown: 24h — Streak expires: 48h
     const COOLDOWN_MS      = 24 * 60 * 60 * 1000;
     const STREAK_EXPIRE_MS = 48 * 60 * 60 * 1000;
+    const DAY1_TIMER_MS    = 24 * 60 * 60 * 1000;
 
     // 1. Verify cooldown
     if (user.lastDailyBonusClaim) {
@@ -506,17 +489,16 @@ router.post('/daily-bonus', verifyToken, async (req, res) => {
     }
 
     const settings = await Settings.getSingleton();
-    const rd = settings.rewardEngine;
 
-    // 2. Streak math — break streak if 24h+ have passed since last claim
+    // 2. Streak math — break streak if 48h+ have passed since last claim
     let streak = user.dailyBonusStreak || 0;
     if (user.lastDailyBonusClaim) {
       const msSinceClaim = now.getTime() - new Date(user.lastDailyBonusClaim).getTime();
       if (msSinceClaim < STREAK_EXPIRE_MS) {
-        // Within 24h = continue streak
+        // Within 48h window = continue streak
         streak += 1;
       } else {
-        // Missed the 4h window = streak broken, start fresh
+        // Missed the window = streak broken, start fresh at 1
         streak = 1;
       }
     } else {
@@ -529,6 +511,9 @@ router.post('/daily-bonus', verifyToken, async (req, res) => {
 
     // Dynamic reward calculations for 30-day streak
     const getRewardForDay = (streakDay) => {
+      const rd = settings?.rewardEngine?.dailyBonusReward;
+      if (rd && rd.length >= streakDay) return rd[streakDay - 1];
+
       if (streakDay === 10) return 500;
       if (streakDay === 20) return 1000;
       if (streakDay === 30) return 2500;
@@ -536,21 +521,37 @@ router.post('/daily-bonus', verifyToken, async (req, res) => {
     };
 
     const getGateForDay = (streakDay) => {
+      const rd = settings?.rewardEngine?.dailyBonusEarnGate;
+      if (rd && rd.length >= streakDay) return rd[streakDay - 1];
+
       return 1000; // Flat earn gate
     };
 
-    // 3. EARN GATE — only count REAL earnings (not daily_bonus, promo_code, admin_adjustment)
-    // Earnings only count AFTER the cooldown has ended
-    const windowStart = user.lastDailyBonusClaim
-      ? new Date(new Date(user.lastDailyBonusClaim).getTime() + COOLDOWN_MS)
-      : new Date(now.getTime() - STREAK_EXPIRE_MS);
+    // 3. EARN GATE — only count REAL earnings
+    let windowStart = null;
+    let timerExpired = false;
+    
+    if (user.lastDailyBonusClaim && (now.getTime() - new Date(user.lastDailyBonusClaim).getTime() < STREAK_EXPIRE_MS)) {
+      windowStart = new Date(new Date(user.lastDailyBonusClaim).getTime() + COOLDOWN_MS);
+    } else {
+      // Streak is 0 or expired: check the Day 1 timer
+      if (user.dailyBonusTimerStart) {
+        const msSinceTimerStart = now.getTime() - new Date(user.dailyBonusTimerStart).getTime();
+        if (msSinceTimerStart >= DAY1_TIMER_MS) {
+          timerExpired = true;
+        }
+      }
+      windowStart = (user.dailyBonusTimerStart && !timerExpired)
+        ? new Date(user.dailyBonusTimerStart)
+        : now;
+    }
 
     const earnedResult = await Transaction.aggregate([
       {
         $match: {
           userId: user._id,
           amount: { $gt: 0 },
-          transactionType: { $nin: ['daily_bonus', 'promo_code', 'admin_adjustment', 'leaderboard_reward'] },
+          transactionType: { $in: ['offer_reward', 'custom_offer_reward'] },
           status: 'completed',
           createdAt: { $gte: windowStart }
         }
@@ -576,7 +577,11 @@ router.post('/daily-bonus', verifyToken, async (req, res) => {
       { _id: user._id, lastDailyBonusClaim: user.lastDailyBonusClaim },
       {
         $inc: { walletBalance: rewardAmount, totalEarned: rewardAmount },
-        $set: { lastDailyBonusClaim: now, dailyBonusStreak: streak },
+        $set: { 
+          lastDailyBonusClaim: now, 
+          dailyBonusStreak: streak,
+          dailyBonusTimerStart: null // Clear timer on successful claim
+        },
       },
       { returnDocument: 'after' }
     );
