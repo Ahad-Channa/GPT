@@ -1,10 +1,12 @@
 import React, { useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 import { IoClose, IoNotificationsOutline, IoTrashOutline } from 'react-icons/io5';
-import { FiGift, FiCheckCircle, FiAward, FiUsers, FiDollarSign, FiMessageSquare, FiInfo, FiAlertCircle } from 'react-icons/fi';
+import { FiGift, FiCheckCircle, FiAward, FiUsers, FiDollarSign, FiMessageSquare, FiInfo, FiAlertCircle, FiStar } from 'react-icons/fi';
 import { useNotifications } from '../contexts/NotificationContext';
+import VipBadge from './VipBadge';
 
-const getNotificationIcon = (type) => {
+const getNotificationIcon = (type, metadata) => {
     switch (type) {
         case 'offer_reward':
         case 'offer_approved':
@@ -21,10 +23,49 @@ const getNotificationIcon = (type) => {
             return <FiMessageSquare className="text-violet-400 mt-0.5" size={18} />;
         case 'offer_rejected':
             return <FiAlertCircle className="text-rose-400 mt-0.5" size={18} />;
+        case 'vip_level_up':
+            if (metadata?.tier) {
+                return (
+                    <span className="mt-0.5 flex-shrink-0">
+                        <VipBadge tier={metadata.tier} rank={metadata.rank || ''} size="xs" />
+                    </span>
+                );
+            }
+            return <FiStar className="text-amber-400 mt-0.5" size={18} />;
         default:
             return <FiInfo className="text-blue-400 mt-0.5" size={18} />;
     }
 };
+
+/**
+ * Renders notification message text, replacing the linkText (e.g. "VIP page")
+ * with a clickable anchor when metadata.link and metadata.linkText are present.
+ */
+function NotificationMessage({ message, metadata, onLinkClick }) {
+    if (!metadata?.link || !metadata?.linkText) {
+        return <p className="text-sm text-gray-400 leading-relaxed mb-2">{message}</p>;
+    }
+
+    const { linkText, link } = metadata;
+    const parts = message.split(linkText);
+
+    if (parts.length < 2) {
+        return <p className="text-sm text-gray-400 leading-relaxed mb-2">{message}</p>;
+    }
+
+    return (
+        <p className="text-sm text-gray-400 leading-relaxed mb-2">
+            {parts[0]}
+            <button
+                onClick={() => onLinkClick(link)}
+                className="text-indigo-400 hover:text-indigo-300 underline underline-offset-2 font-semibold transition-colors"
+            >
+                {linkText}
+            </button>
+            {parts.slice(1).join(linkText)}
+        </p>
+    );
+}
 
 export default function NotificationPanel() {
     const { 
@@ -36,6 +77,7 @@ export default function NotificationPanel() {
         dismissAllNotifications
     } = useNotifications();
     const panelRef = useRef(null);
+    const navigate = useNavigate();
 
     // Auto mark as read when panel opens
     useEffect(() => {
@@ -60,6 +102,11 @@ export default function NotificationPanel() {
         
         return () => document.removeEventListener("mousedown", handleClickOutside);
     }, [isPanelOpen, closePanel]);
+
+    const handleLinkClick = (path) => {
+        closePanel();
+        navigate(path);
+    };
 
     return (
         <AnimatePresence>
@@ -129,20 +176,24 @@ export default function NotificationPanel() {
                                         className={`relative group p-4 rounded-xl border transition-colors ${
                                             notif.isRead 
                                                 ? 'bg-gray-800/50 border-gray-800 text-gray-300' 
-                                                : 'bg-indigo-900/20 border-indigo-500/30 text-white'
+                                                : notif.type === 'vip_level_up'
+                                                    ? 'bg-amber-900/20 border-amber-500/30 text-white'
+                                                    : 'bg-indigo-900/20 border-indigo-500/30 text-white'
                                         }`}
                                     >
                                         {!notif.isRead && (
-                                            <div className="absolute top-4 left-4 w-2 h-2 rounded-full bg-indigo-500" />
+                                            <div className={`absolute top-4 left-4 w-2 h-2 rounded-full ${notif.type === 'vip_level_up' ? 'bg-amber-400' : 'bg-indigo-500'}`} />
                                         )}
                                         
                                         <div className={`flex justify-between items-start gap-3 ${!notif.isRead ? 'pl-4' : ''}`}>
-                                            {getNotificationIcon(notif.type)}
+                                            {getNotificationIcon(notif.type, notif.metadata)}
                                             <div className="flex-1 min-w-0">
                                                 <h3 className="font-semibold mb-1 text-sm">{notif.title}</h3>
-                                                <p className="text-sm text-gray-400 leading-relaxed mb-2">
-                                                    {notif.message}
-                                                </p>
+                                                <NotificationMessage
+                                                    message={notif.message}
+                                                    metadata={notif.metadata}
+                                                    onLinkClick={handleLinkClick}
+                                                />
                                                 <span className="text-xs text-gray-500">
                                                     {new Date(notif.createdAt).toLocaleDateString(undefined, { 
                                                         month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' 
