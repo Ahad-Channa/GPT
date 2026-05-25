@@ -33,6 +33,8 @@ import AdminChat from './pages/admin/AdminChat';
 import AdminSupport from './pages/admin/AdminSupport';
 import AdminVip from './pages/admin/AdminVip';
 import VipPage from './pages/VipPage';
+import MissionPage from './pages/MissionPage';
+import AdminMissions from './pages/admin/AdminMissions';
 import NotificationPanel from './components/NotificationPanel';
 
 const PrivateRoute = ({ children }) => {
@@ -160,6 +162,14 @@ function App() {
           </PrivateRoute>
         } 
       />
+      <Route 
+        path="/dashboard/missions" 
+        element={
+          <PrivateRoute>
+            <MissionPage />
+          </PrivateRoute>
+        } 
+      />
       
       {/* Admin Routes */}
       <Route 
@@ -172,18 +182,19 @@ function App() {
       >
         <Route index element={<AdminOverview />} />
         <Route path="announcements" element={<AdminAnnouncements />} />
-        <Route path="users" element={<AdminUsers />} />
+        <Route path="vip" element={<AdminVip />} />
+        <Route path="missions" element={<AdminMissions />} />
         <Route path="avatars" element={<AdminAvatars />} />
         <Route path="admins" element={<AdminStaff />} />
         <Route path="withdrawals" element={<AdminWithdrawals />} />
         <Route path="offerwalls" element={<AdminOfferwalls />} />
         <Route path="promocodes" element={<AdminPromoCodes />} />
+        <Route path="users" element={<AdminUsers />} />
         <Route path="featured-offers" element={<AdminCustomOffers />} />
         <Route path="proofs" element={<AdminProofs />} />
         <Route path="leaderboard" element={<AdminLeaderboard />} />
         <Route path="chat" element={<AdminChat />} />
         <Route path="support" element={<AdminSupport />} />
-        <Route path="vip" element={<AdminVip />} />
         <Route path="logs" element={<AdminLogs />} />
         <Route path="settings" element={<AdminSettings />} />
       </Route>

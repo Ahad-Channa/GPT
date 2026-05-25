@@ -21,6 +21,7 @@ const transactionSchema = new mongoose.Schema(
         'leaderboard_reward',  // Leaderboard Reward
         'chargeback',          // Chargeback deduct
         'vip_reward',          // VIP Reward
+        'mission_reward',      // Mission Reward
       ],
       required: true,
     },
@@ -41,7 +42,7 @@ const transactionSchema = new mongoose.Schema(
     // Fraud tracking / Advanced relation linking
     sourceType: {
       type: String,
-      enum: ['offer', 'referral', 'daily_bonus', 'withdrawal', 'chargeback', 'leaderboard', 'admin', 'promo', 'vip', 'system'],
+      enum: ['offer', 'referral', 'daily_bonus', 'withdrawal', 'chargeback', 'leaderboard', 'admin', 'promo', 'vip', 'mission', 'system'],
       default: null,
     },
     sourceId: {
@@ -143,6 +144,50 @@ transactionSchema.post('save', async function (doc) {
       }
     } catch (err) {
       console.error('[Transaction Hook] Error processing daily bonus timer:', err);
+    }
+  }
+
+  // ─── MISSION PROGRESS TRACKING ─────────────────────────────────────────────
+  if (doc.status === 'completed') {
+    try {
+      const { incrementMissionProgress } = require('../utils/missionUtils');
+      
+      // 1. coins_earned (any positive reward that's not a withdrawal refund)
+      if (doc.amount > 0 && !['withdrawal', 'chargeback'].includes(doc.transactionType)) {
+        await incrementMissionProgress(doc.userId, 'coins_earned', doc.amount);
+      }
+      
+      // 2. offers_completed
+      if (doc.transactionType === 'offer_reward') {
+        await incrementMissionProgress(doc.userId, 'offers_completed', 1);
+      }
+      
+      // 3. custom_offers_completed
+      if (doc.transactionType === 'custom_offer_reward') {
+        await incrementMissionProgress(doc.userId, 'custom_offers_completed', 1);
+      }
+      
+      // 4. daily_bonus_claimed
+      if (doc.transactionType === 'daily_bonus') {
+        await incrementMissionProgress(doc.userId, 'daily_bonus_claimed', 1);
+      }
+      
+      // 5. referral_earnings
+      if (doc.transactionType === 'referral_reward') {
+        await incrementMissionProgress(doc.userId, 'referral_earnings', doc.amount);
+      }
+      
+      // 6. promo_codes_used
+      if (doc.transactionType === 'promo_code') {
+        await incrementMissionProgress(doc.userId, 'promo_codes_used', 1);
+      }
+
+      // 7. withdrawals_made
+      if (doc.transactionType === 'withdrawal') {
+        await incrementMissionProgress(doc.userId, 'withdrawals_made', 1);
+      }
+    } catch (err) {
+      console.error('[Transaction Hook] Error processing mission progress:', err);
     }
   }
 });

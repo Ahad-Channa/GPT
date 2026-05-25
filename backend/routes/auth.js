@@ -71,6 +71,14 @@ router.post('/sync', verifyToken, async (req, res) => {
           permissionRequired: 'manage_users',
           metadata: { userId: user._id, referrerId: user.referredBy }
         });
+
+        // MISSION: Increment referrals_made for the referrer
+        try {
+          const { incrementMissionProgress } = require('../utils/missionUtils');
+          await incrementMissionProgress(user.referredBy, 'referrals_made', 1);
+        } catch (err) {
+          console.error('[Mission Hook] Error processing referrals_made mission:', err);
+        }
       }
     } else if (isPrimaryAdmin && user.role !== 'admin') {
       // Auto-promote if they are set as primary admin in .env but not in db

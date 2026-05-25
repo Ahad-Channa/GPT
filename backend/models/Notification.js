@@ -28,6 +28,7 @@ const notificationSchema = new mongoose.Schema(
         'announcement',
         'streak_warning',
         'vip_level_up',
+        'mission_reward',
       ],
       required: true,
     },

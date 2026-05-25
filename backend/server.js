@@ -54,6 +54,7 @@ const notificationsRoutes = require('./routes/notifications');
 const chatRoutes = require('./routes/chat');
 const supportRoutes = require('./routes/support');
 const vipRoutes = require('./routes/vip');
+const missionRoutes = require('./routes/missions');
 
 app.use('/api/auth', authRoutes);
 app.use('/api/wallet', walletRoutes);
@@ -67,6 +68,7 @@ app.use('/api/notifications', notificationsRoutes);
 app.use('/api/chat', chatRoutes);
 app.use('/api/support', supportRoutes);
 app.use('/api/vip', vipRoutes);
+app.use('/api/missions', missionRoutes);
 
 // Base Route
 app.get('/', (req, res) => {
@@ -82,6 +84,9 @@ app.get('/api/health', (req, res) => {
 
 require('./utils/streakWarningJob');
 require('./utils/referralHoldJob');
+
+// Seed mission templates (idempotent)
+const { seedMissionTemplates } = require('./utils/missionUtils');
 
 // Daily: every day at midnight UTC
 cron.schedule('0 0 * * *', async () => {
@@ -114,6 +119,23 @@ cron.schedule('0 0 1 * *', async () => {
   } catch (err) {
     console.error('[CRON] Monthly reset failed:', err);
   }
+}, { timezone: 'UTC' });
+
+// ─── Mission Reset Crons ─────────────────────────────────────────────────────
+// Missions automatically expire at period boundaries — UserMission documents
+// from old periods simply remain in DB (no claims possible, periodKey mismatch).
+// We just log the rollover so it's visible in server logs.
+
+cron.schedule('0 0 * * *', () => {
+  console.log('[CRON] Daily mission period rolled over — new periodKey active.');
+}, { timezone: 'UTC' });
+
+cron.schedule('0 0 * * 1', () => {
+  console.log('[CRON] Weekly mission period rolled over — new periodKey active.');
+}, { timezone: 'UTC' });
+
+cron.schedule('0 0 1 * *', () => {
+  console.log('[CRON] Monthly mission period rolled over — new periodKey active.');
 }, { timezone: 'UTC' });
 
 // ─── Socket.io Live Chat Setup ──────────────────────────────────────────
@@ -198,7 +220,9 @@ const PORT = process.env.PORT || 5000;
 
 // Start server AFTER MongoDB connects to prevent buffering timeouts
 connectDB()
-  .then(() => {
+  .then(async () => {
+    // Seed mission templates on startup (idempotent upsert)
+    await seedMissionTemplates();
     server.listen(PORT, () => {
       console.log(`Server runtime initiated on port ${PORT}`);
     });

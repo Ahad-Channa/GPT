@@ -4,7 +4,7 @@ import { getLevelFromEarned } from '../../utils/vipLevels';
 import VipBadge from '../VipBadge';
 import { useNotifications } from '../../contexts/NotificationContext';
 import { useDailyBonus } from '../../contexts/DailyBonusContext';
-import { FiLogOut, FiUser, FiSettings, FiZap, FiChevronDown, FiCreditCard, FiLock, FiClock, FiBell, FiUsers, FiGift, FiDollarSign, FiMessageSquare } from 'react-icons/fi';
+import { FiLogOut, FiUser, FiSettings, FiZap, FiChevronDown, FiCreditCard, FiLock, FiClock, FiBell, FiUsers, FiGift, FiDollarSign, FiMessageSquare, FiTarget } from 'react-icons/fi';
 import { FaTrophy } from 'react-icons/fa6';
 import CoinDisplay from '../CoinDisplay';
 import { useNavigate } from 'react-router-dom';
@@ -305,6 +305,15 @@ const Header = ({ onChatToggle, chatOpen }) => {
                         />
                       </span>
                     )}
+                  </button>
+
+                  <button
+                    id="header-missions-link-nav"
+                    onClick={() => { setIsDropdownOpen(false); navigate('/dashboard/missions'); }}
+                    className="w-full text-left px-4 py-3 text-sm text-slate-300 hover:bg-white/[0.05] hover:text-white transition-colors flex items-center gap-3 border-b border-white/[0.04]"
+                  >
+                    <FiTarget className="text-indigo-400" />
+                    <span>Missions</span>
                   </button>
 
                   {isAdmin && (
