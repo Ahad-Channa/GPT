@@ -139,7 +139,7 @@ function MissionCard({ mission, periodCfg, onClaim, claiming }) {
             {mission.claimed ? (
               <FiCheckCircle className="text-lg" style={{ color: periodCfg.color }} />
             ) : mission.completed ? (
-              <FiGift className="text-lg" style={{ color: periodCfg.color }} />
+              <FiTarget className="text-lg text-white" />
             ) : (
               <FiTarget className="text-slate-500 text-base" />
             )}
@@ -216,7 +216,7 @@ function MissionCard({ mission, periodCfg, onClaim, claiming }) {
             </span>
           ) : (
             <span className="flex items-center justify-center gap-2">
-              <FiGift /> Claim {mission.rewardAmount.toLocaleString()} Coins
+              Claim {mission.rewardAmount.toLocaleString()} Coins
             </span>
           )}
         </motion.button>
