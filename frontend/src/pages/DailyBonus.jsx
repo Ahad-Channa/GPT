@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import DashboardLayout from '../components/layout/DashboardLayout';
 import { useAuth } from '../contexts/AuthContext';
 import { useDailyBonus } from '../contexts/DailyBonusContext';
-import { FiGift, FiUnlock, FiLock, FiClock, FiCheckCircle, FiZap, FiAlertTriangle, FiTrendingUp } from 'react-icons/fi';
+import { FiGift, FiUnlock, FiLock, FiClock, FiCheckCircle, FiTrendingUp } from 'react-icons/fi';
 import CoinIcon from '../components/CoinIcon';
 import CoinDisplay from '../components/CoinDisplay';
 
@@ -36,12 +36,12 @@ export default function DailyBonus() {
   const [claiming, setClaiming] = useState(false);
   const [claimResult, setClaimResult] = useState(null);
 
-  const cooldownTimer  = useCountdown(status?.alreadyClaimed ? status?.nextClaimAt : null);
-  const expireTimer    = useCountdown(!status?.alreadyClaimed ? status?.expiresAt : null);
+  // Countdown to next UTC midnight (when the next day cycle opens for everyone)
+  const resetTimer = useCountdown(status?.nextClaimAt || status?.cycleResetAt || null);
 
   useEffect(() => {
-    if (cooldownTimer === '00:00:00' || expireTimer === '00:00:00') fetchStatus();
-  }, [cooldownTimer, expireTimer, fetchStatus]);
+    if (resetTimer === '00:00:00') fetchStatus();
+  }, [resetTimer, fetchStatus]);
 
   const claimBonus = async () => {
     setClaiming(true);
@@ -90,7 +90,7 @@ export default function DailyBonus() {
           <div>
             <h1 className="text-4xl sm:text-5xl font-black font-display text-white tracking-tight">Daily Bonus</h1>
             <p className="text-slate-400 max-w-xl mx-auto mt-3 text-base sm:text-lg">
-              Earn coins every day to unlock your bonus. Claim within <span className="text-indigo-400 font-bold">24 hours</span> — don't let your streak expire!
+              Earn coins every day to unlock your bonus. Everyone's day resets at <span className="text-indigo-400 font-bold">midnight UTC</span> — claim it each day to keep your streak alive!
             </p>
           </div>
         </div>
@@ -117,13 +117,13 @@ export default function DailyBonus() {
               <FiCheckCircle className="text-5xl text-emerald-400" />
               <div>
                 <h3 className="text-emerald-400 font-black text-2xl mb-1">Claimed! 🎉</h3>
-                <p className="text-emerald-500/70 text-sm">Next claim unlocks in</p>
+                <p className="text-emerald-500/70 text-sm">Next claim unlocks at midnight UTC</p>
               </div>
               <div className="flex items-center gap-3 text-emerald-300 font-mono text-3xl font-black bg-emerald-900/30 px-6 py-3 rounded-2xl border border-emerald-500/20 tracking-widest">
                 <FiClock className="text-2xl flex-shrink-0" />
-                {cooldownTimer || '00:00:00'}
+                {resetTimer || '00:00:00'}
               </div>
-              <p className="text-slate-600 text-xs">Cooldown: 24 hours</p>
+              <p className="text-slate-600 text-xs">Global reset: midnight UTC daily</p>
             </motion.div>
 
           /* ── Gate Unlocked ── */
@@ -190,17 +190,10 @@ export default function DailyBonus() {
               <p className="text-slate-400 text-base">
                 Earn <span className="text-white font-black text-lg ml-1"><CoinDisplay amount={remainingCoins} size={16} /></span> more to unlock your bonus
               </p>
-              {status.expiresAt ? (
-                <div className={`inline-flex items-center gap-2 ${streak === 0 ? 'text-indigo-400 bg-indigo-500/10 border-indigo-500/20' : 'text-red-400 bg-red-500/10 border-red-500/20'} text-sm font-bold py-2 px-4 rounded-xl border`}>
-                  <FiClock /> {streak === 0 ? 'Timer expires in' : 'Streak expires in'}: <span className="font-mono">{expireTimer || '00:00:00'}</span>
-                </div>
-              ) : (
-                streak === 0 && (
-                  <div className="inline-flex items-center gap-2 text-indigo-400 text-sm font-bold bg-indigo-500/10 py-2 px-4 rounded-xl border border-indigo-500/20">
-                    <FiClock /> Timer starts upon your first coin earning (24h to claim)
-                  </div>
-                )
-              )}
+              {/* Show time until global reset so user knows the window */}
+              <div className="inline-flex items-center gap-2 text-indigo-400 text-sm font-bold bg-indigo-500/10 py-2 px-4 rounded-xl border border-indigo-500/20">
+                <FiClock /> Day resets in: <span className="font-mono">{resetTimer || '00:00:00'}</span>
+              </div>
             </div>
           )}
         </div>
@@ -225,15 +218,13 @@ export default function DailyBonus() {
               <span className="text-2xl text-slate-500 font-normal mb-3">days</span>
             </div>
 
-            {/* Streak expiry timer — shown when user can claim (not already claimed) */}
-            {!status.alreadyClaimed && status.expiresAt && (
-              <div className={`mt-2 flex items-center gap-2 ${streak === 0 ? 'bg-indigo-500/8 border-indigo-500/15' : 'bg-red-500/8 border-red-500/15'} rounded-xl p-3`}>
-                {streak === 0 ? <FiClock className="text-indigo-400 text-sm flex-shrink-0" /> : <FiAlertTriangle className="text-red-400 text-sm flex-shrink-0" />}
+            {/* Streak active — show time until global reset only when not yet claimed */}
+            {!status.alreadyClaimed && streak > 0 && (
+              <div className="mt-2 flex items-center gap-2 bg-indigo-500/8 border border-indigo-500/15 rounded-xl p-3">
+                <FiClock className="text-indigo-400 text-sm flex-shrink-0" />
                 <div>
-                  <p className={`${streak === 0 ? 'text-indigo-400' : 'text-red-400'} text-xs font-bold uppercase tracking-wide`}>
-                    {streak === 0 ? 'Timer expires in' : 'Streak expires in'}
-                  </p>
-                  <p className={`${streak === 0 ? 'text-indigo-300' : 'text-red-300'} font-mono text-xl font-black`">{expireTimer || '00:00:00'}</p>
+                  <p className="text-indigo-400 text-xs font-bold uppercase tracking-wide">Claim before day resets</p>
+                  <p className="text-indigo-300 font-mono text-xl font-black">{resetTimer || '00:00:00'}</p>
                 </div>
               </div>
             )}
@@ -243,8 +234,8 @@ export default function DailyBonus() {
               <div className="mt-2 flex items-center gap-2 bg-indigo-500/8 border border-indigo-500/15 rounded-xl p-3">
                 <FiClock className="text-indigo-400 text-sm flex-shrink-0" />
                 <div>
-                  <p className="text-indigo-400 text-xs font-bold uppercase tracking-wide">Next claim opens in</p>
-                  <p className="text-indigo-300 font-mono text-xl font-black">{cooldownTimer || '00:00:00'}</p>
+                  <p className="text-indigo-400 text-xs font-bold uppercase tracking-wide">Next day opens in</p>
+                  <p className="text-indigo-300 font-mono text-xl font-black">{resetTimer || '00:00:00'}</p>
                 </div>
               </div>
             )}
@@ -289,12 +280,12 @@ export default function DailyBonus() {
             {/* Timing info */}
             <div className="mt-4 grid grid-cols-2 gap-3 text-center">
               <div className="bg-white/[0.02] border border-white/5 rounded-xl p-3">
-                <p className="text-slate-600 text-xs mb-0.5">Cooldown Phase</p>
-                <p className="text-slate-300 font-bold text-sm">24 hours</p>
+                <p className="text-slate-600 text-xs mb-0.5">Reset Cycle</p>
+                <p className="text-slate-300 font-bold text-sm">Midnight UTC</p>
               </div>
               <div className="bg-white/[0.02] border border-white/5 rounded-xl p-3">
-                <p className="text-slate-600 text-xs mb-0.5">Claim Window</p>
-                <p className="text-slate-300 font-bold text-sm">24 hours</p>
+                <p className="text-slate-600 text-xs mb-0.5">Earn Window</p>
+                <p className="text-slate-300 font-bold text-sm">Per UTC day</p>
               </div>
             </div>
 
