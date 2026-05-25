@@ -93,9 +93,16 @@ async function processVipLevelUp(user, added, emitToUser) {
         type:    'vip_level_up',
         title:   `🎉 You reached ${label}!`,
         message: reward > 0
-          ? `Congratulations! You've reached ${label}. Claim your ${reward.toLocaleString()} coin bonus now.`
-          : `Congratulations! You've reached ${label} VIP status!`,
-        metadata: { levelKey: lvl.key, tier: lvl.tier, rank: lvl.rank, rewardAmount: reward, link: '/dashboard/vip' },
+          ? `Congratulations! You've reached ${label} VIP status. Claim your ${reward.toLocaleString()} coin bonus on the VIP page.`
+          : `Congratulations! You've reached ${label} VIP status. Check your progress on the VIP page.`,
+        metadata: {
+          levelKey: lvl.key,
+          tier: lvl.tier,
+          rank: lvl.rank,
+          rewardAmount: reward,
+          link: '/dashboard/vip',
+          linkText: 'VIP page',
+        },
       });
 
       emitToUser(user.firebaseUid, 'vipLevelUp', {

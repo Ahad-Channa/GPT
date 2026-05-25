@@ -12,7 +12,8 @@ const { verifyToken } = require('../middlewares/authMiddleware');
 const { requireAdmin, requirePrimaryAdmin, requirePermission } = require('../middlewares/adminMiddleware');
 const notify = require('../utils/notify');
 const { notifyAdmins } = require('../utils/adminNotify');
-const { emitWalletUpdate } = require('../utils/walletEvents');
+const { emitWalletUpdate, emitToUser } = require('../utils/walletEvents');
+const { processVipLevelUp } = require('../utils/vipUtils');
 const AdminNotification = require('../models/AdminNotification');
 const Avatar = require('../models/Avatar');
 const multer = require('multer');
@@ -150,6 +151,11 @@ router.put('/users/:id/balance', requirePermission('manage_users'), async (req, 
     await createLog(req.dbUser._id, 'ADJUST_BALANCE', user._id, { amount, reason, prevBalance, newBalance: user.walletBalance });
 
     await notify(user._id, 'admin_adjustment', 'Balance Adjustment', `An admin has adjusted your balance by ${amountNum > 0 ? '+' : ''}${amountNum} coins. Reason: ${reason || 'N/A'}`, { amount: amountNum });
+
+    // Trigger VIP level-up check if coins were added (admin credits count toward VIP)
+    if (amountNum > 0) {
+      processVipLevelUp(user, amountNum, emitToUser);
+    }
 
     res.json({ success: true, user });
   } catch (error) {
@@ -610,6 +616,9 @@ router.put('/custom-offers/submissions/:id', requirePermission('manage_offerwall
 
       await createLog(req.dbUser._id, 'APPROVE_CUSTOM_OFFER', user._id, { offerTitle: submission.offerId.title, submissionId: submission._id });
       await notify(user._id, 'offer_approved', 'Custom Offer Approved!', `Your submission for '${submission.offerId.title}' was approved! +${amountNum} coins.`, { offerId: submission.offerId._id });
+
+      // Trigger VIP level-up check (custom offer rewards are real earnings)
+      processVipLevelUp(user, amountNum, emitToUser);
     } else if (status === 'rejected') {
       await createLog(req.dbUser._id, 'REJECT_CUSTOM_OFFER', user._id, {
         offerTitle: submission.offerId.title,

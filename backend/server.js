@@ -35,12 +35,10 @@ app.use(express.urlencoded({ limit: '10mb', extended: true }));
 // Serve uploaded avatar images statically
 app.use('/avatars', express.static(path.join(__dirname, '../frontend/public/avatars')));
 
-// Connect to MongoDB
-// Only connect if we have a real URI, avoiding crash for empty placeholders
-if (process.env.MONGODB_URI && !process.env.MONGODB_URI.includes('<username>')) {
-  connectDB();
-} else {
-  console.warn('MongoDB connection skipped -> Placeholder URI detected in .env');
+// Connect to MongoDB — server only starts after a successful connection
+if (!process.env.MONGODB_URI || process.env.MONGODB_URI.includes('<username>')) {
+  console.error('[Startup] MONGODB_URI is missing or still a placeholder. Server will not start.');
+  process.exit(1);
 }
 
 // Application routes configurations
@@ -198,6 +196,14 @@ io.on('connection', (socket) => {
 // Port configuration
 const PORT = process.env.PORT || 5000;
 
-server.listen(PORT, () => {
-  console.log(`Server runtime initiated on port ${PORT}`);
-});
+// Start server AFTER MongoDB connects to prevent buffering timeouts
+connectDB()
+  .then(() => {
+    server.listen(PORT, () => {
+      console.log(`Server runtime initiated on port ${PORT}`);
+    });
+  })
+  .catch((err) => {
+    console.error('[Startup] Could not connect to MongoDB, aborting.', err.message);
+    process.exit(1);
+  });

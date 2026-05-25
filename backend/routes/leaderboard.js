@@ -211,7 +211,8 @@ async function resetLeaderboard(period) {
       const user = await User.findById(entry.userId);
       if (user) {
         user.walletBalance += reward;
-        user.totalEarned = (user.totalEarned || 0) + reward;
+        // NOTE: totalEarned is intentionally NOT incremented here.
+        // Leaderboard prizes are bonuses and must not count toward VIP progress.
         await user.save();
         emitWalletUpdate(user.firebaseUid, user.walletBalance);
 

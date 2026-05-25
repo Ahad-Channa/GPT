@@ -3,6 +3,8 @@ const User = require('../models/User');
 const Transaction = require('../models/Transaction');
 const notify = require('./notify');
 const { notifyAdmins } = require('./adminNotify');
+const { emitToUser } = require('./walletEvents');
+const { processVipLevelUp } = require('./vipUtils');
 
 /**
  * Runs daily at midnight UTC
@@ -41,6 +43,9 @@ cron.schedule('0 0 * * *', async () => {
       user.walletBalance = Math.max(0, user.walletBalance + tx.amount);
       user.totalEarned = (user.totalEarned || 0) + tx.amount;
       await user.save();
+
+      // Check for VIP level-up (referral earnings count toward VIP)
+      processVipLevelUp(user, tx.amount, emitToUser);
 
       // 2. Update transaction status
       tx.status = 'completed';

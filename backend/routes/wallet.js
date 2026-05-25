@@ -579,7 +579,9 @@ router.post('/daily-bonus', verifyToken, async (req, res) => {
     const updatedUser = await User.findOneAndUpdate(
       { _id: user._id, lastDailyBonusClaim: user.lastDailyBonusClaim },
       {
-        $inc: { walletBalance: rewardAmount, totalEarned: rewardAmount },
+        // NOTE: totalEarned is intentionally NOT incremented here.
+        // Daily bonuses are not real earnings and must not count toward VIP progress.
+        $inc: { walletBalance: rewardAmount },
         $set: {
           lastDailyBonusClaim: now,
           dailyBonusStreak: streak,
@@ -677,7 +679,9 @@ router.post('/redeem-promo', verifyToken, async (req, res) => {
 
     const updatedUser = await User.findOneAndUpdate(
       { _id: user._id },
-      { $inc: { walletBalance: promo.rewardCoins, totalEarned: promo.rewardCoins } },
+      // NOTE: totalEarned is intentionally NOT incremented here.
+      // Promo codes are bonuses and must not count toward VIP progress.
+      { $inc: { walletBalance: promo.rewardCoins } },
       { new: true }
     );
     // Push live balance to browser
