@@ -2,7 +2,7 @@ import React, { useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { IoClose, IoNotificationsOutline, IoTrashOutline } from 'react-icons/io5';
-import { FiGift, FiCheckCircle, FiAward, FiUsers, FiDollarSign, FiMessageSquare, FiInfo, FiAlertCircle, FiStar } from 'react-icons/fi';
+import { FiGift, FiCheckCircle, FiAward, FiUsers, FiDollarSign, FiMessageSquare, FiInfo, FiAlertCircle, FiStar, FiTarget } from 'react-icons/fi';
 import { useNotifications } from '../contexts/NotificationContext';
 import VipBadge from './VipBadge';
 
@@ -23,6 +23,11 @@ const getNotificationIcon = (type, metadata) => {
             return <FiMessageSquare className="text-violet-400 mt-0.5" size={18} />;
         case 'offer_rejected':
             return <FiAlertCircle className="text-rose-400 mt-0.5" size={18} />;
+        case 'mission_reward':
+        case 'mission_completed':
+        case 'mission_reminder':
+        case 'mission_new':
+            return <FiTarget className="text-indigo-400 mt-0.5" size={18} />;
         case 'vip_level_up':
             if (metadata?.tier) {
                 return (

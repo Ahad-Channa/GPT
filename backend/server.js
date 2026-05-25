@@ -86,7 +86,7 @@ require('./utils/streakWarningJob');
 require('./utils/referralHoldJob');
 
 // Seed mission templates (idempotent)
-const { seedMissionTemplates } = require('./utils/missionUtils');
+const { seedMissionTemplates, notifyNewMissions, sendMissionReminders } = require('./utils/missionUtils');
 
 // Daily: every day at midnight UTC
 cron.schedule('0 0 * * *', async () => {
@@ -126,16 +126,41 @@ cron.schedule('0 0 1 * *', async () => {
 // from old periods simply remain in DB (no claims possible, periodKey mismatch).
 // We just log the rollover so it's visible in server logs.
 
-cron.schedule('0 0 * * *', () => {
+// Reminders: 2 hours before reset (22:00 UTC)
+cron.schedule('0 22 * * *', async () => {
+  console.log('[CRON] Running daily mission reminders...');
+  await sendMissionReminders('daily');
+  
+  const today = new Date();
+  // Weekly reminder: if today is Sunday (day 0)
+  if (today.getUTCDay() === 0) {
+    console.log('[CRON] Running weekly mission reminders...');
+    await sendMissionReminders('weekly');
+  }
+  
+  // Monthly reminder: if tomorrow is the 1st
+  const tomorrow = new Date(today);
+  tomorrow.setUTCDate(today.getUTCDate() + 1);
+  if (tomorrow.getUTCDate() === 1) {
+    console.log('[CRON] Running monthly mission reminders...');
+    await sendMissionReminders('monthly');
+  }
+}, { timezone: 'UTC' });
+
+// Rollovers at midnight UTC
+cron.schedule('0 0 * * *', async () => {
   console.log('[CRON] Daily mission period rolled over — new periodKey active.');
+  await notifyNewMissions('daily');
 }, { timezone: 'UTC' });
 
-cron.schedule('0 0 * * 1', () => {
+cron.schedule('0 0 * * 1', async () => {
   console.log('[CRON] Weekly mission period rolled over — new periodKey active.');
+  await notifyNewMissions('weekly');
 }, { timezone: 'UTC' });
 
-cron.schedule('0 0 1 * *', () => {
+cron.schedule('0 0 1 * *', async () => {
   console.log('[CRON] Monthly mission period rolled over — new periodKey active.');
+  await notifyNewMissions('monthly');
 }, { timezone: 'UTC' });
 
 // ─── Socket.io Live Chat Setup ──────────────────────────────────────────

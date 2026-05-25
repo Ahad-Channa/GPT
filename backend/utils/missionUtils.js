@@ -235,12 +235,80 @@ async function incrementMissionProgress(userId, trackingField, incrementBy = 1) 
             { _id: um._id },
             { $set: { completed: true } }
           );
+          
+          // Emit mission_completed notification
+          const notify = require('./notify');
+          const pLabel = period.charAt(0).toUpperCase() + period.slice(1);
+          await notify(
+            userId,
+            'mission_completed',
+            `${pLabel} Mission Completed!`,
+            `You completed a ${pLabel} Mission! Claim your ${config.rewardAmount} coins reward now.`,
+            { link: '/dashboard/missions', linkText: 'Claim now' }
+          ).catch(e => console.error('[Missions] Notify error:', e.message));
         }
       }
     }
   } catch (err) {
     // Never break main flow
     console.error('[Missions] incrementMissionProgress error:', err.message);
+  }
+}
+
+/**
+ * Sends a notification to all users active in the last 7 days.
+ */
+async function notifyNewMissions(period) {
+  try {
+    const User = require('../models/User');
+    const notify = require('./notify');
+    
+    // Find users updated in the last 7 days
+    const activeSince = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+    const users = await User.find({ updatedAt: { $gte: activeSince } }).select('_id');
+    
+    const pLabel = period.charAt(0).toUpperCase() + period.slice(1);
+    const title = `New ${pLabel} Missions!`;
+    const message = `Your ${pLabel} missions have refreshed! Complete them to earn bonus coins.`;
+    
+    const batchSize = 100;
+    for (let i = 0; i < users.length; i += batchSize) {
+      const batch = users.slice(i, i + batchSize);
+      await Promise.all(batch.map(u => notify(u._id, 'mission_new', title, message, { link: '/dashboard/missions', linkText: 'View Missions' })));
+    }
+  } catch(err) {
+    console.error('[Missions] notifyNewMissions error:', err.message);
+  }
+}
+
+/**
+ * Sends a reminder to users with unclaimed completed missions.
+ */
+async function sendMissionReminders(period) {
+  try {
+    const UserMission = require('../models/UserMission');
+    const notify = require('./notify');
+    const periodKey = getPeriodKey(period);
+    
+    const userMissions = await UserMission.find({
+      periodKey,
+      completed: true,
+      claimed: false
+    }).select('userId');
+    
+    const uniqueUserIds = [...new Set(userMissions.map(um => um.userId.toString()))];
+    
+    const pLabel = period.charAt(0).toUpperCase() + period.slice(1);
+    const title = `${pLabel} Missions Expiring Soon!`;
+    const message = `Your completed ${pLabel} missions will expire in a few hours! Claim your rewards now.`;
+    
+    const batchSize = 100;
+    for (let i = 0; i < uniqueUserIds.length; i += batchSize) {
+      const batch = uniqueUserIds.slice(i, i + batchSize);
+      await Promise.all(batch.map(uid => notify(uid, 'mission_reminder', title, message, { link: '/dashboard/missions', linkText: 'Claim now' })));
+    }
+  } catch(err) {
+    console.error('[Missions] sendMissionReminders error:', err.message);
   }
 }
 
@@ -251,4 +319,6 @@ module.exports = {
   seedMissionTemplates,
   incrementMissionProgress,
   MISSION_TEMPLATES,
+  notifyNewMissions,
+  sendMissionReminders,
 };
