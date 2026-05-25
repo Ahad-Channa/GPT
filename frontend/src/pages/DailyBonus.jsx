@@ -89,9 +89,6 @@ export default function DailyBonus() {
           </motion.div>
           <div>
             <h1 className="text-4xl sm:text-5xl font-black font-display text-white tracking-tight">Daily Bonus</h1>
-            <p className="text-slate-400 max-w-xl mx-auto mt-3 text-base sm:text-lg">
-              Earn coins every day to unlock your bonus. Everyone's day resets at <span className="text-indigo-400 font-bold">midnight UTC</span> — claim it each day to keep your streak alive!
-            </p>
           </div>
         </div>
 
@@ -277,15 +274,15 @@ export default function DailyBonus() {
               </div>
             </div>
 
-            {/* Timing info */}
+            {/* Stats info */}
             <div className="mt-4 grid grid-cols-2 gap-3 text-center">
-              <div className="bg-white/[0.02] border border-white/5 rounded-xl p-3">
-                <p className="text-slate-600 text-xs mb-0.5">Reset Cycle</p>
-                <p className="text-slate-300 font-bold text-sm">Midnight UTC</p>
+              <div className="bg-indigo-500/[0.06] border border-indigo-500/20 rounded-xl p-3">
+                <p className="text-slate-500 text-xs mb-0.5">Your Streak</p>
+                <p className="text-indigo-300 font-black text-lg tabular-nums">{streak} <span className="text-xs font-normal text-slate-500">days</span></p>
               </div>
-              <div className="bg-white/[0.02] border border-white/5 rounded-xl p-3">
-                <p className="text-slate-600 text-xs mb-0.5">Earn Window</p>
-                <p className="text-slate-300 font-bold text-sm">Per UTC day</p>
+              <div className="bg-amber-500/[0.06] border border-amber-500/20 rounded-xl p-3">
+                <p className="text-slate-500 text-xs mb-0.5">Max Bonus</p>
+                <p className="text-amber-300 font-black text-lg tabular-nums">{(status.rewardDay30 ?? 2500).toLocaleString()} <span className="text-xs font-normal text-slate-500">coins</span></p>
               </div>
             </div>
 
