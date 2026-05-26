@@ -436,6 +436,9 @@ router.get('/daily-bonus-status', verifyToken, async (req, res) => {
 
     const { streak, alreadyClaimed, nextClaimAt, windowStart } = getDailyBonusState(user, now);
 
+    // The next streak day the user will claim (or is about to claim if not yet claimed)
+    // If already claimed today: next claim is tomorrow at streak+1
+    // If not yet claimed:       next claim is today at streak+1
     let nextStreakToClaim = streak + 1;
     if (nextStreakToClaim > 30) nextStreakToClaim = 1;
 
@@ -472,11 +475,14 @@ router.get('/daily-bonus-status', verifyToken, async (req, res) => {
       earnedToday = earnedResult.length > 0 ? earnedResult[0].total : 0;
     }
 
+    // When not yet claimed: the reward/gate shown is for the upcoming claim (nextStreakToClaim)
+    // When already claimed: reward/gate shown is for tomorrow's claim (nextStreakToClaim)
     const required     = getGateForDay(nextStreakToClaim);
     const gateUnlocked = earnedToday >= required;
     const rewardToday  = getRewardForDay(nextStreakToClaim);
 
-    let nextDayStreak = alreadyClaimed ? nextStreakToClaim : (nextStreakToClaim + 1);
+    // Tomorrow's streak day (the one after the next claim)
+    let nextDayStreak = nextStreakToClaim + 1;
     if (nextDayStreak > 30) nextDayStreak = 1;
     const rewardTomorrow = getRewardForDay(nextDayStreak);
 
@@ -490,7 +496,9 @@ router.get('/daily-bonus-status', verifyToken, async (req, res) => {
       gateUnlocked,
       earned: earnedToday,
       required,
-      streak: alreadyClaimed ? nextStreakToClaim : streak,
+      // When already claimed: show the streak the user just earned (current DB value = streak)
+      // When not yet claimed: show the streak they currently have (same DB value = streak)
+      streak,
       rewardToday,
       rewardTomorrow,
       rewardDay10,
