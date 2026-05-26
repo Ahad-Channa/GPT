@@ -1091,6 +1091,8 @@ router.post('/proofs/:type/:id/:action', requirePermission('manage_offerwalls'),
           });
 
           await notify(user._id, 'offer_approved', 'Offer Approved', `Your proof for "${submission.offerId.title}" was approved! +${submission.offerId.rewardAmount} coins.`);
+          // Check VIP level-up
+          processVipLevelUp(user, submission.offerId.rewardAmount, emitToUser);
         }
       } else {
         submission.status = 'rejected';
@@ -1124,6 +1126,8 @@ router.post('/proofs/:type/:id/:action', requirePermission('manage_offerwalls'),
         await tx.save();
 
         await notify(user._id, 'offer_approved', 'Proof Approved', `Your manual proof for "${tx.description}" was approved! +${tx.amount} coins.`);
+        // Check VIP level-up
+        processVipLevelUp(user, tx.amount, emitToUser);
       } else {
         tx.status = 'rejected';
         tx.metadata = tx.metadata || {};
