@@ -62,7 +62,10 @@ function NotificationMessage({ message, metadata, onLinkClick }) {
         <p className="text-sm text-gray-400 leading-relaxed mb-2">
             {parts[0]}
             <button
-                onClick={() => onLinkClick(link)}
+                onClick={(e) => {
+                    e.stopPropagation();
+                    onLinkClick(link);
+                }}
                 className="text-indigo-400 hover:text-indigo-300 underline underline-offset-2 font-semibold transition-colors"
             >
                 {linkText}
@@ -178,7 +181,14 @@ export default function NotificationPanel() {
                                         initial={{ opacity: 0, y: 10 }}
                                         animate={{ opacity: 1, y: 0 }}
                                         exit={{ opacity: 0, scale: 0.95 }}
+                                        onClick={() => {
+                                            if (notif.metadata?.link) {
+                                                handleLinkClick(notif.metadata.link);
+                                            }
+                                        }}
                                         className={`relative group p-4 rounded-xl border transition-colors ${
+                                            notif.metadata?.link ? 'cursor-pointer hover:bg-gray-800/80' : ''
+                                        } ${
                                             notif.isRead 
                                                 ? 'bg-gray-800/50 border-gray-800 text-gray-300' 
                                                 : notif.type === 'vip_level_up'
@@ -207,7 +217,10 @@ export default function NotificationPanel() {
                                             </div>
                                             
                                             <button 
-                                                onClick={() => dismissNotification(notif._id)}
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    dismissNotification(notif._id);
+                                                }}
                                                 className="text-gray-500 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity p-1"
                                                 title="Dismiss"
                                             >
