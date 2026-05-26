@@ -55,34 +55,36 @@ const PERIOD_CONFIG = {
   },
 };
 
-// ── Countdown hook ───────────────────────────────────────────────────────────
+// ── Countdown hook ─────────────────────────────────────────────────────────
+// Returns { timeLeft: string, isExpired: boolean }
 function useCountdown(endsAt) {
-  const [timeLeft, setTimeLeft] = useState('');
+  const calc = () => {
+    if (!endsAt) return { timeLeft: '', isExpired: false };
+    const diff = new Date(endsAt).getTime() - Date.now();
+    if (diff <= 0) return { timeLeft: '00:00:00', isExpired: true };
+    const totalSec = Math.floor(diff / 1000);
+    const d = Math.floor(totalSec / 86400);
+    const h = Math.floor((totalSec % 86400) / 3600);
+    const m = Math.floor((totalSec % 3600) / 60);
+    const s = totalSec % 60;
+    const fmt = (n) => String(n).padStart(2, '0');
+    const timeLeft = d > 0
+      ? `${d}d ${fmt(h)}h ${fmt(m)}m ${fmt(s)}s`
+      : `${fmt(h)}:${fmt(m)}:${fmt(s)}`;
+    return { timeLeft, isExpired: false };
+  };
+
+  const [state, setState] = useState(calc);
 
   useEffect(() => {
+    setState(calc());
     if (!endsAt) return;
-    const target = new Date(endsAt).getTime();
-
-    const tick = () => {
-      const diff = target - Date.now();
-      if (diff <= 0) { setTimeLeft('Resetting…'); return; }
-      const h = Math.floor(diff / 3600000);
-      const m = Math.floor((diff % 3600000) / 60000);
-      const s = Math.floor((diff % 60000) / 1000);
-      if (h > 24) {
-        const d = Math.floor(h / 24);
-        setTimeLeft(`${d}d ${h % 24}h ${m}m`);
-      } else {
-        setTimeLeft(`${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`);
-      }
-    };
-
-    tick();
-    const iv = setInterval(tick, 1000);
+    const iv = setInterval(() => setState(calc()), 1000);
     return () => clearInterval(iv);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [endsAt]);
 
-  return timeLeft;
+  return state;
 }
 
 // ── MissionCard component ────────────────────────────────────────────────────
@@ -227,18 +229,25 @@ function MissionCard({ mission, periodCfg, onClaim, claiming }) {
 }
 
 // ── Period Section ──────────────────────────────────────────────────────────────────
-function PeriodSection({ data, periodKey, periodCfg, bonus, onClaim, onClaimBonus, claiming, claimingBonus }) {
-  const timeLeft = useCountdown(data?.endsAt);
+function PeriodSection({ data, periodKey, periodCfg, bonus, onClaim, onClaimBonus, claiming, claimingBonus, onExpired }) {
+  const { timeLeft, isExpired } = useCountdown(data?.endsAt);
   const missions = data?.missions || [];
   const completed = missions.filter(m => m.completed).length;
+
+  // When the period expires, notify parent to refetch fresh missions
+  useEffect(() => {
+    if (isExpired && onExpired) onExpired();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isExpired]);
 
   // Merge bonus info with mission count for the progress bar
   const bonusWithCount = bonus ? { ...bonus, totalMissions: missions.length, completedMissions: completed } : null;
 
   return (
     <div className="space-y-4">
-      {/* Period header */}
-      <div className="flex items-center justify-between">
+
+      {/* ── Period header ─────────────────────────────────── */}
+      <div className="flex items-center justify-between flex-wrap gap-3">
         <div className="flex items-center gap-2">
           <div
             className="w-8 h-8 rounded-lg flex items-center justify-center"
@@ -248,25 +257,57 @@ function PeriodSection({ data, periodKey, periodCfg, bonus, onClaim, onClaimBonu
           </div>
           <div>
             <h2 className="font-bold text-slate-100 text-base">{periodCfg.label} Missions</h2>
-            <p className="text-[11px] text-slate-500">
-              {completed}/{missions.length} completed
-            </p>
+            {!isExpired && (
+              <p className="text-[11px] text-slate-500">
+                {completed}/{missions.length} completed
+              </p>
+            )}
           </div>
         </div>
 
-        {timeLeft && (
+        {/* Fixed timer — prominent, leaderboard-style */}
+        {!isExpired && timeLeft && (
           <div
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold"
-            style={{ background: periodCfg.badgeBg, color: periodCfg.badgeText, border: `1px solid ${periodCfg.border}` }}
+            className="flex items-center gap-2 px-4 py-2 rounded-xl font-mono font-black text-sm"
+            style={{
+              background: periodCfg.badgeBg,
+              color: periodCfg.badgeText,
+              border: `1px solid ${periodCfg.border}`,
+              boxShadow: `0 0 12px ${periodCfg.glow}`,
+            }}
           >
-            <FiClock className="text-xs" />
-            {timeLeft}
+            <FiClock className="text-xs flex-shrink-0" />
+            <span>Resets in: {timeLeft}</span>
           </div>
         )}
       </div>
 
-      {/* Missions */}
-      {missions.length === 0 ? (
+      {/* ── Expired state — hide old missions, show reset notice ── */}
+      {isExpired ? (
+        <motion.div
+          initial={{ opacity: 0, scale: 0.97 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="rounded-2xl p-10 flex flex-col items-center gap-3 text-center"
+          style={{ background: 'rgba(15,23,42,0.6)', border: `1px solid ${periodCfg.border}` }}
+        >
+          <div
+            className="w-14 h-14 rounded-2xl flex items-center justify-center mb-1"
+            style={{ background: periodCfg.gradient, boxShadow: `0 0 20px ${periodCfg.glow}` }}
+          >
+            <FiClock className="text-white text-2xl" />
+          </div>
+          <p className="font-bold text-slate-100 text-base">{periodCfg.label} missions are refreshing…</p>
+          <p className="text-slate-500 text-sm max-w-xs">
+            The {periodCfg.label.toLowerCase()} period has ended. New missions will appear shortly.
+          </p>
+          <div
+            className="mt-2 px-4 py-2 rounded-xl text-xs font-bold"
+            style={{ background: periodCfg.badgeBg, color: periodCfg.badgeText, border: `1px solid ${periodCfg.border}` }}
+          >
+            Refreshing automatically…
+          </div>
+        </motion.div>
+      ) : missions.length === 0 ? (
         <div
           className="rounded-2xl p-8 flex flex-col items-center gap-3 text-center"
           style={{ background: 'rgba(15,23,42,0.5)', border: '1px solid rgba(51,65,85,0.4)' }}
@@ -276,28 +317,30 @@ function PeriodSection({ data, periodKey, periodCfg, bonus, onClaim, onClaimBonu
           <p className="text-slate-600 text-xs">Check back later or contact support.</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-          {missions.map(mission => (
-            <MissionCard
-              key={mission.configId}
-              mission={mission}
-              periodCfg={periodCfg}
-              onClaim={onClaim}
-              claiming={claiming}
-            />
-          ))}
-        </div>
-      )}
+        <>
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+            {missions.map(mission => (
+              <MissionCard
+                key={mission.configId}
+                mission={mission}
+                periodCfg={periodCfg}
+                onClaim={onClaim}
+                claiming={claiming}
+              />
+            ))}
+          </div>
 
-      {/* Period completion bonus card — shown below missions */}
-      {missions.length > 0 && bonusWithCount && (
-        <PeriodBonusCard
-          bonus={bonusWithCount}
-          period={periodKey}
-          periodCfg={periodCfg}
-          onClaim={onClaimBonus}
-          claimingBonus={claimingBonus}
-        />
+          {/* Period completion bonus card */}
+          {bonusWithCount && (
+            <PeriodBonusCard
+              bonus={bonusWithCount}
+              period={periodKey}
+              periodCfg={periodCfg}
+              onClaim={onClaimBonus}
+              claimingBonus={claimingBonus}
+            />
+          )}
+        </>
       )}
     </div>
   );
@@ -527,6 +570,7 @@ const MissionPage = () => {
               onClaimBonus={handleBonusClaim}
               claiming={claiming}
               claimingBonus={claimingBonus}
+              onExpired={fetchMissions}
             />
           </motion.div>
         </AnimatePresence>

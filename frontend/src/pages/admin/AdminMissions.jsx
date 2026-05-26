@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import toast from 'react-hot-toast';
-import { FiTarget, FiPlus, FiTrash2, FiToggleLeft, FiToggleRight, FiSave, FiRefreshCw, FiBarChart2 } from 'react-icons/fi';
+import { FiTarget, FiPlus, FiTrash2, FiToggleLeft, FiToggleRight, FiSave, FiRefreshCw, FiBarChart2, FiAward } from 'react-icons/fi';
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
@@ -205,6 +205,111 @@ function PeriodPanel({ period, templates, configs, onSave, saving }) {
   );
 }
 
+// ── Period Completion Bonus Config Panel ──────────────────────────────────────
+function PeriodBonusConfig({ config, onSave, saving }) {
+  const [local, setLocal] = useState({
+    daily:   { enabled: true,  bonusAmount: 0 },
+    weekly:  { enabled: true,  bonusAmount: 0 },
+    monthly: { enabled: true,  bonusAmount: 0 },
+  });
+
+  useEffect(() => {
+    if (config) setLocal(config);
+  }, [config]);
+
+  const update = (period, field, value) =>
+    setLocal(prev => ({ ...prev, [period]: { ...prev[period], [field]: value } }));
+
+  return (
+    <div
+      className="rounded-2xl overflow-hidden"
+      style={{ border: '1px solid rgba(245,158,11,0.3)', background: 'rgba(245,158,11,0.05)' }}
+    >
+      {/* Header */}
+      <div
+        className="flex items-center justify-between px-5 py-4 border-b"
+        style={{ borderColor: 'rgba(245,158,11,0.2)' }}
+      >
+        <div className="flex items-center gap-3">
+          <div
+            className="w-9 h-9 rounded-xl flex items-center justify-center"
+            style={{ background: 'rgba(245,158,11,0.15)', border: '1px solid rgba(245,158,11,0.3)' }}
+          >
+            <FiAward className="text-amber-400" />
+          </div>
+          <div>
+            <h3 className="font-bold text-slate-100 text-base">Period Completion Bonus</h3>
+            <p className="text-xs text-slate-500">Extra reward when user completes ALL missions in a period</p>
+          </div>
+        </div>
+        <button
+          onClick={() => onSave(local)}
+          disabled={!!saving}
+          className="flex items-center gap-2 px-4 py-2 rounded-xl font-bold text-sm disabled:opacity-50 transition-all hover:brightness-110"
+          style={{ background: '#f59e0b', color: '#1c1400', boxShadow: '0 0 12px rgba(245,158,11,0.4)' }}
+        >
+          {saving ? <><FiRefreshCw className="animate-spin text-xs" /> Saving…</> : <><FiSave className="text-xs" /> Save Bonus Config</>}
+        </button>
+      </div>
+
+      {/* Per-period rows */}
+      <div className="p-5 grid grid-cols-1 md:grid-cols-3 gap-4">
+        {['daily', 'weekly', 'monthly'].map(period => {
+          const cfg = PERIOD_COLORS[period];
+          const val = local[period] || { enabled: true, bonusAmount: 0 };
+          return (
+            <div
+              key={period}
+              className="rounded-xl p-4 space-y-3"
+              style={{ background: 'rgba(15,23,42,0.6)', border: '1px solid rgba(51,65,85,0.4)' }}
+            >
+              <div className="flex items-center justify-between">
+                <span
+                  className="text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded-md"
+                  style={{ background: `${cfg.accent}20`, color: cfg.text }}
+                >
+                  {PERIOD_LABELS[period]}
+                </span>
+                <button
+                  title={val.enabled ? 'Disable bonus' : 'Enable bonus'}
+                  onClick={() => update(period, 'enabled', !val.enabled)}
+                  style={{ color: val.enabled ? cfg.accent : '#475569' }}
+                >
+                  {val.enabled ? <FiToggleRight className="text-xl" /> : <FiToggleLeft className="text-xl" />}
+                </button>
+              </div>
+
+              <div>
+                <label className="block text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-1">
+                  Bonus Coins
+                </label>
+                <input
+                  type="number"
+                  min="0"
+                  value={val.bonusAmount}
+                  onChange={e => update(period, 'bonusAmount', Number(e.target.value))}
+                  placeholder="e.g. 500"
+                  disabled={!val.enabled}
+                  className="w-full rounded-lg px-3 py-2 text-sm font-medium bg-slate-900/80 border border-slate-700/50 text-slate-200 focus:outline-none focus:border-amber-500/60 transition-colors placeholder-slate-600 disabled:opacity-40"
+                />
+              </div>
+
+              {val.enabled && val.bonusAmount > 0 && (
+                <div
+                  className="rounded-lg px-3 py-2 text-xs italic"
+                  style={{ background: `${cfg.accent}10`, color: cfg.text, border: `1px solid ${cfg.accent}20` }}
+                >
+                  Users earn +{Number(val.bonusAmount).toLocaleString()} bonus coins for completing all {PERIOD_LABELS[period].toLowerCase()} missions
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 // ── Mission Templates Reference Table ────────────────────────────────────────
 function TemplatesTable({ templates }) {
   const [open, setOpen] = useState(false);
@@ -310,27 +415,31 @@ const AdminMissions = () => {
   const [templates, setTemplates] = useState([]);
   const [configs, setConfigs] = useState([]);
   const [stats, setStats] = useState(null);
+  const [bonusConfig, setBonusConfig] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(null); // period string when saving
+  const [saving, setSaving] = useState(null);
+  const [savingBonus, setSavingBonus] = useState(false);
 
   const fetchData = useCallback(async () => {
     try {
       const token = await currentUser.getIdToken();
       const headers = { Authorization: `Bearer ${token}` };
 
-      const [tmplRes, cfgRes, statsRes] = await Promise.all([
+      const [tmplRes, cfgRes, statsRes, bonusRes] = await Promise.all([
         fetch(`${API}/missions/admin/templates`, { headers }),
         fetch(`${API}/missions/admin/configs`, { headers }),
         fetch(`${API}/missions/admin/stats`, { headers }),
+        fetch(`${API}/missions/admin/period-bonus-config`, { headers }),
       ]);
 
-      const [tmplData, cfgData, statsData] = await Promise.all([
-        tmplRes.json(), cfgRes.json(), statsRes.json(),
+      const [tmplData, cfgData, statsData, bonusData] = await Promise.all([
+        tmplRes.json(), cfgRes.json(), statsRes.json(), bonusRes.json(),
       ]);
 
-      if (tmplData.success) setTemplates(tmplData.templates);
-      if (cfgData.success)  setConfigs(cfgData.configs);
+      if (tmplData.success)  setTemplates(tmplData.templates);
+      if (cfgData.success)   setConfigs(cfgData.configs);
       if (statsData.success) setStats(statsData.stats);
+      if (bonusData.success) setBonusConfig(bonusData.config);
     } catch (err) {
       toast.error('Failed to load mission data');
       console.error(err);
@@ -447,6 +556,34 @@ const AdminMissions = () => {
           saving={saving}
         />
       ))}
+
+      {/* Period completion bonus config */}
+      <PeriodBonusConfig
+        config={bonusConfig}
+        saving={savingBonus}
+        onSave={async (localCfg) => {
+          setSavingBonus(true);
+          try {
+            const token = await currentUser.getIdToken();
+            const res = await fetch(`${API}/missions/admin/period-bonus-config`, {
+              method: 'PUT',
+              headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+              body: JSON.stringify(localCfg),
+            });
+            const json = await res.json();
+            if (json.success) {
+              setBonusConfig(json.config);
+              toast.success('Period bonus config saved!');
+            } else {
+              toast.error(json.error || 'Failed to save');
+            }
+          } catch {
+            toast.error('Network error');
+          } finally {
+            setSavingBonus(false);
+          }
+        }}
+      />
 
       {/* Templates reference */}
       <TemplatesTable templates={templates} />
