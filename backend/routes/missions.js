@@ -144,8 +144,9 @@ router.get('/', requireAuth, async (req, res) => {
 
 /**
  * GET /api/missions/period-bonus
- * Returns period completion bonus status + amount for all 3 periods.
- * Used by MissionPage to show the bonus card.
+ * Returns period completion bonus status for all 3 periods.
+ * Also checks real-time mission completion and auto-grants the bonus
+ * if all missions are done but no PeriodBonus record exists yet.
  */
 router.get('/period-bonus', requireAuth, async (req, res) => {
   try {
@@ -154,17 +155,61 @@ router.get('/period-bonus', requireAuth, async (req, res) => {
     const bonusCfg = settings.missionCompletionBonus || {};
 
     const result = {};
+
     for (const period of ['daily', 'weekly', 'monthly']) {
       const periodKey = getPeriodKey(period);
       const cfg = bonusCfg[period] || {};
-      const record = await PeriodBonus.findOne({ userId, period, periodKey }).lean();
+
+      // Get all enabled mission configs for this period
+      const allConfigs = await MissionConfig.find({ period, isEnabled: true });
+      const totalMissions = allConfigs.length;
+
+      // Count how many the user has completed this period
+      let completedMissions = 0;
+      if (totalMissions > 0) {
+        completedMissions = await UserMission.countDocuments({
+          userId,
+          configId: { $in: allConfigs.map(c => c._id) },
+          periodKey,
+          completed: true,
+        });
+      }
+
+      const allDone = totalMissions > 0 && completedMissions >= totalMissions;
+
+      // Look for existing bonus record
+      let record = await PeriodBonus.findOne({ userId, period, periodKey }).lean();
+
+      // Auto-grant if all done, bonus configured, and no record yet
+      if (allDone && !record && cfg.enabled && cfg.bonusAmount > 0) {
+        record = await PeriodBonus.create({
+          userId,
+          period,
+          periodKey,
+          bonusAmount: cfg.bonusAmount,
+          claimed: false,
+        });
+        record = record.toObject();
+        // Fire notification (non-blocking)
+        const pLabel = period.charAt(0).toUpperCase() + period.slice(1);
+        notify(
+          userId,
+          'mission_bonus',
+          `\uD83C\uDFC6 ${pLabel} Bonus Unlocked!`,
+          `You completed all ${pLabel} missions! Claim your bonus of ${cfg.bonusAmount.toLocaleString()} coins.`,
+          { link: '/dashboard/missions', linkText: 'Claim bonus', period, bonusAmount: cfg.bonusAmount }
+        ).catch(() => {});
+      }
 
       result[period] = {
-        enabled: cfg.enabled ?? true,
-        bonusAmount: cfg.bonusAmount ?? 0,
-        unlocked: !!record,
-        claimed: record?.claimed ?? false,
-        claimable: !!record && !record.claimed && isPeriodActive(periodKey, period),
+        enabled:             cfg.enabled ?? true,
+        bonusAmount:         cfg.bonusAmount ?? 0,
+        totalMissions,
+        completedMissions,
+        allMissionsCompleted: allDone,
+        unlocked:            !!record,
+        claimed:             record?.claimed ?? false,
+        claimable:           !!record && !record?.claimed && isPeriodActive(periodKey, period),
         periodKey,
       };
     }
@@ -178,7 +223,8 @@ router.get('/period-bonus', requireAuth, async (req, res) => {
 
 /**
  * POST /api/missions/period-bonus/claim/:period
- * Claim the period completion bonus for a given period.
+ * Claim the period completion bonus. Also auto-creates the record on the fly
+ * if all missions are done but record doesn't exist yet.
  */
 router.post('/period-bonus/claim/:period', requireAuth, async (req, res) => {
   try {
@@ -189,21 +235,53 @@ router.post('/period-bonus/claim/:period', requireAuth, async (req, res) => {
       return res.status(400).json({ success: false, error: 'Invalid period' });
     }
 
-    const periodKey = getPeriodKey(period);
-    const record = await PeriodBonus.findOne({ userId: user._id, period, periodKey });
-
-    if (!record) {
-      return res.status(404).json({ success: false, error: 'Bonus not yet unlocked — complete all missions first' });
-    }
-    if (record.claimed) {
-      return res.status(400).json({ success: false, error: 'Bonus already claimed' });
-    }
-    if (!isPeriodActive(periodKey, period)) {
+    if (!isPeriodActive(getPeriodKey(period), period)) {
       return res.status(400).json({
         success: false,
         error: 'This period has expired. Bonus can no longer be claimed.',
         expired: true,
       });
+    }
+
+    const periodKey = getPeriodKey(period);
+    let record = await PeriodBonus.findOne({ userId: user._id, period, periodKey });
+
+    // If no record exists yet, check real-time if all missions are done
+    if (!record) {
+      const settings = await Settings.getSingleton();
+      const cfg = settings.missionCompletionBonus?.[period] || {};
+      if (!cfg.enabled || !cfg.bonusAmount) {
+        return res.status(400).json({ success: false, error: 'No bonus configured for this period' });
+      }
+
+      const allConfigs = await MissionConfig.find({ period, isEnabled: true });
+      if (!allConfigs.length) {
+        return res.status(400).json({ success: false, error: 'No missions configured for this period' });
+      }
+
+      const completedCount = await UserMission.countDocuments({
+        userId: user._id,
+        configId: { $in: allConfigs.map(c => c._id) },
+        periodKey,
+        completed: true,
+      });
+
+      if (completedCount < allConfigs.length) {
+        return res.status(400).json({ success: false, error: 'Complete all missions first to claim the bonus' });
+      }
+
+      // All done — create the record now
+      record = await PeriodBonus.create({
+        userId: user._id,
+        period,
+        periodKey,
+        bonusAmount: cfg.bonusAmount,
+        claimed: false,
+      });
+    }
+
+    if (record.claimed) {
+      return res.status(400).json({ success: false, error: 'Bonus already claimed' });
     }
 
     const reward = record.bonusAmount;

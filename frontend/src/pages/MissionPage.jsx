@@ -228,6 +228,143 @@ function MissionCard({ mission, periodCfg, onClaim, claiming }) {
   );
 }
 
+// ── Period Bonus Card ───────────────────────────────────────────────────────────────
+// bonus: { enabled, bonusAmount, totalMissions, completedMissions, allMissionsCompleted, unlocked, claimed, claimable }
+function PeriodBonusCard({ bonus, period, periodCfg, onClaim, claimingBonus }) {
+  if (!bonus) return null;
+
+  const {
+    enabled        = true,
+    bonusAmount    = 0,
+    totalMissions  = 0,
+    completedMissions = 0,
+    allMissionsCompleted = false,
+    claimed        = false,
+    claimable      = false,
+  } = bonus;
+
+  // Only render the card when all missions are done, or a bonus record exists
+  if (!allMissionsCompleted && !bonus.unlocked) return null;
+
+  const pct = totalMissions > 0 ? Math.min(100, Math.round((completedMissions / totalMissions) * 100)) : 0;
+  const isClaiming = claimingBonus === period;
+
+  // State helpers
+  const isNotConfigured = !enabled || !bonusAmount;
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="relative rounded-2xl p-5 overflow-hidden mt-2"
+      style={{
+        background: claimed
+          ? periodCfg.bg
+          : claimable
+          ? `linear-gradient(135deg, ${periodCfg.bg}, rgba(15,23,42,0.9))`
+          : 'rgba(15,23,42,0.5)',
+        border: `1px solid ${
+          claimable ? periodCfg.color
+          : claimed  ? periodCfg.border
+          : 'rgba(51,65,85,0.5)'
+        }`,
+        boxShadow: claimable ? `0 0 28px ${periodCfg.glow}` : 'none',
+      }}
+    >
+      {/* Shimmer for claimable */}
+      {claimable && (
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            background: `linear-gradient(90deg, transparent, ${periodCfg.glow}, transparent)`,
+            animation: 'missionShimmer 2.4s ease-in-out infinite',
+          }}
+        />
+      )}
+
+      <div className="relative z-10 flex items-center justify-between gap-4">
+        {/* Left: icon + text */}
+        <div className="flex items-center gap-3">
+          <div
+            className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0"
+            style={{
+              background: claimable || claimed ? periodCfg.gradient : 'rgba(30,41,59,0.8)',
+              border: `1px solid ${claimable || claimed ? periodCfg.border : 'rgba(51,65,85,0.4)'}`,
+              boxShadow: claimable ? `0 0 16px ${periodCfg.glow}` : 'none',
+            }}
+          >
+            {claimed
+              ? <FiCheckCircle className="text-xl" style={{ color: periodCfg.color }} />
+              : <FiAward className={`text-xl ${claimable ? 'text-white' : 'text-slate-500'}`} />}
+          </div>
+
+          <div>
+            <p className="font-bold text-sm text-slate-100">
+              🏆 Complete All Missions Bonus
+            </p>
+            <p className="text-[11px] text-slate-500 mt-0.5">
+              {claimed
+                ? 'Bonus claimed — great work!'
+                : claimable
+                ? 'All missions done! Claim your bonus reward below.'
+                : isNotConfigured
+                ? 'All missions done! Admin will set the bonus reward soon.'
+                : `Complete all ${totalMissions} missions to unlock this bonus`}
+            </p>
+          </div>
+        </div>
+
+        {/* Right: amount */}
+        {bonusAmount > 0 && (
+          <div className="flex flex-col items-end gap-1 flex-shrink-0">
+            <div className="flex items-center gap-1 font-bold text-sm" style={{ color: periodCfg.color }}>
+              <CoinDisplay amount={bonusAmount} size={13} />
+            </div>
+            {claimed && (
+              <span className="text-[10px] font-bold uppercase tracking-wider" style={{ color: periodCfg.color }}>
+                ✓ Claimed
+              </span>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* Claim button */}
+      {claimable && bonusAmount > 0 && (
+        <motion.button
+          initial={{ scale: 0.95, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.97 }}
+          onClick={() => onClaim(period)}
+          disabled={isClaiming}
+          className="relative z-10 w-full mt-4 py-2.5 rounded-xl font-bold text-sm transition-all disabled:opacity-60 disabled:pointer-events-none"
+          style={{
+            background: periodCfg.gradient,
+            color: '#fff',
+            boxShadow: `0 4px 20px ${periodCfg.glow}`,
+          }}
+        >
+          {isClaiming ? (
+            <span className="flex items-center justify-center gap-2">
+              <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+              </svg>
+              Claiming…
+            </span>
+          ) : (
+            <span className="flex items-center justify-center gap-2">
+              <FiAward />
+              Claim Bonus — +{bonusAmount.toLocaleString()} Coins
+            </span>
+          )}
+        </motion.button>
+      )}
+    </motion.div>
+  );
+}
+
 // ── Period Section ──────────────────────────────────────────────────────────────────
 function PeriodSection({ data, periodKey, periodCfg, bonus, onClaim, onClaimBonus, claiming, claimingBonus, onExpired }) {
   const { timeLeft, isExpired } = useCountdown(data?.endsAt);
@@ -239,9 +376,6 @@ function PeriodSection({ data, periodKey, periodCfg, bonus, onClaim, onClaimBonu
     if (isExpired && onExpired) onExpired();
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isExpired]);
-
-  // Merge bonus info with mission count for the progress bar
-  const bonusWithCount = bonus ? { ...bonus, totalMissions: missions.length, completedMissions: completed } : null;
 
   return (
     <div className="space-y-4">
@@ -330,16 +464,14 @@ function PeriodSection({ data, periodKey, periodCfg, bonus, onClaim, onClaimBonu
             ))}
           </div>
 
-          {/* Period completion bonus card */}
-          {bonusWithCount && (
-            <PeriodBonusCard
-              bonus={bonusWithCount}
-              period={periodKey}
-              periodCfg={periodCfg}
-              onClaim={onClaimBonus}
-              claimingBonus={claimingBonus}
-            />
-          )}
+          {/* Period completion bonus — shown below missions, uses API bonus data directly */}
+          <PeriodBonusCard
+            bonus={bonus}
+            period={periodKey}
+            periodCfg={periodCfg}
+            onClaim={onClaimBonus}
+            claimingBonus={claimingBonus}
+          />
         </>
       )}
     </div>
