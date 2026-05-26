@@ -70,6 +70,8 @@ export const NotificationProvider = ({ children }) => {
                              n.type === 'offer_approved' || 
                              n.type === 'leaderboard_reward' || 
                              n.type === 'referral_earning' ||
+                             n.type === 'vip_level_up' ||
+                             n.type === 'mission_reward' ||
                              (n.type === 'admin_adjustment' && n.metadata?.amount > 0)
                         )
                     );

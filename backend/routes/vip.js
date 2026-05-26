@@ -186,7 +186,7 @@ router.post('/claim/:levelKey', requireAuth, async (req, res) => {
     await notify(user._id, 'vip_level_up',
       `VIP Bonus Claimed!`,
       `You claimed ${reward.toLocaleString()} coins for reaching ${getLevelLabel(lvl)}.`,
-      { levelKey, rewardAmount: reward }
+      { levelKey, rewardAmount: reward, tier: lvl.tier, rank: lvl.rank }
     );
 
     // Push updated wallet balance
