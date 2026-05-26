@@ -130,6 +130,22 @@ const settingsSchema = new mongoose.Schema(
         lastResetAt: { type: Date, default: null },
       },
     },
+    // Block E — Mission Period Completion Bonus
+    // Extra reward when user completes ALL missions in a period
+    missionCompletionBonus: {
+      daily: {
+        enabled: { type: Boolean, default: true },
+        bonusAmount: { type: Number, default: 0, min: 0 },
+      },
+      weekly: {
+        enabled: { type: Boolean, default: true },
+        bonusAmount: { type: Number, default: 0, min: 0 },
+      },
+      monthly: {
+        enabled: { type: Boolean, default: true },
+        bonusAmount: { type: Number, default: 0, min: 0 },
+      },
+    },
   },
   { timestamps: true }
 );

@@ -245,8 +245,8 @@ async function incrementMissionProgress(userId, trackingField, incrementBy = 1) 
             { _id: um._id },
             { $set: { completed: true } }
           );
-          
-          // Emit mission_completed notification
+
+          // Emit individual mission_completed notification
           const notify = require('./notify');
           const pLabel = period.charAt(0).toUpperCase() + period.slice(1);
           await notify(
@@ -256,6 +256,11 @@ async function incrementMissionProgress(userId, trackingField, incrementBy = 1) 
             `You completed a ${pLabel} Mission! Claim your ${config.rewardAmount} coins reward now.`,
             { link: '/dashboard/missions', linkText: 'Claim now' }
           ).catch(e => console.error('[Missions] Notify error:', e.message));
+
+          // Check if ALL missions for this period are now complete → grant period bonus
+          await checkAndGrantPeriodBonus(userId, period).catch(e =>
+            console.error('[Missions] Period bonus check error:', e.message)
+          );
         }
       }
     }
@@ -263,6 +268,67 @@ async function incrementMissionProgress(userId, trackingField, incrementBy = 1) 
     // Never break main flow
     console.error('[Missions] incrementMissionProgress error:', err.message);
   }
+}
+
+/**
+ * Checks if ALL enabled missions for a period are completed by the user.
+ * If so, creates a PeriodBonus record (if it doesn't already exist) and notifies the user.
+ *
+ * @param {string|ObjectId} userId
+ * @param {string} period  - 'daily' | 'weekly' | 'monthly'
+ */
+async function checkAndGrantPeriodBonus(userId, period) {
+  const MissionConfig = require('../models/MissionConfig');
+  const UserMission   = require('../models/UserMission');
+  const PeriodBonus   = require('../models/PeriodBonus');
+  const Settings      = require('../models/Settings');
+  const notify        = require('./notify');
+
+  const periodKey = getPeriodKey(period);
+
+  // Get admin bonus config
+  const settings = await Settings.getSingleton();
+  const bonusCfg = settings.missionCompletionBonus?.[period];
+  if (!bonusCfg?.enabled || !bonusCfg?.bonusAmount) return; // bonus disabled or 0 coins
+
+  // Get all enabled mission configs for this period
+  const allConfigs = await MissionConfig.find({ period, isEnabled: true });
+  if (!allConfigs.length) return;
+
+  const configIds = allConfigs.map(c => c._id);
+
+  // Count how many are completed by this user this period
+  const completedCount = await UserMission.countDocuments({
+    userId,
+    configId: { $in: configIds },
+    periodKey,
+    completed: true,
+  });
+
+  // Only proceed if ALL missions are done
+  if (completedCount < allConfigs.length) return;
+
+  // Upsert PeriodBonus — only create once per user/period/periodKey
+  const existing = await PeriodBonus.findOne({ userId, period, periodKey });
+  if (existing) return; // already granted
+
+  await PeriodBonus.create({
+    userId,
+    period,
+    periodKey,
+    bonusAmount: bonusCfg.bonusAmount,
+    claimed: false,
+  });
+
+  // Notify the user
+  const pLabel = period.charAt(0).toUpperCase() + period.slice(1);
+  await notify(
+    userId,
+    'mission_bonus',
+    `🏆 ${pLabel} Bonus Unlocked!`,
+    `You completed all ${pLabel} missions! Claim your bonus of ${bonusCfg.bonusAmount.toLocaleString()} coins now.`,
+    { link: '/dashboard/missions', linkText: 'Claim bonus', period, bonusAmount: bonusCfg.bonusAmount }
+  );
 }
 
 /**
@@ -328,6 +394,7 @@ module.exports = {
   isPeriodActive,
   seedMissionTemplates,
   incrementMissionProgress,
+  checkAndGrantPeriodBonus,
   MISSION_TEMPLATES,
   notifyNewMissions,
   sendMissionReminders,

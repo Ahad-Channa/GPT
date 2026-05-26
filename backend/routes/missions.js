@@ -6,6 +6,8 @@ const User = require('../models/User');
 const MissionTemplate = require('../models/MissionTemplate');
 const MissionConfig = require('../models/MissionConfig');
 const UserMission = require('../models/UserMission');
+const PeriodBonus = require('../models/PeriodBonus');
+const Settings = require('../models/Settings');
 const Transaction = require('../models/Transaction');
 const notify = require('../utils/notify');
 const { emitWalletUpdate } = require('../utils/walletEvents');
@@ -136,6 +138,120 @@ router.get('/', requireAuth, async (req, res) => {
     res.json({ success: true, daily, weekly, monthly });
   } catch (err) {
     console.error('[Missions] GET / error:', err);
+    res.status(500).json({ success: false, error: 'Server error' });
+  }
+});
+
+/**
+ * GET /api/missions/period-bonus
+ * Returns period completion bonus status + amount for all 3 periods.
+ * Used by MissionPage to show the bonus card.
+ */
+router.get('/period-bonus', requireAuth, async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const settings = await Settings.getSingleton();
+    const bonusCfg = settings.missionCompletionBonus || {};
+
+    const result = {};
+    for (const period of ['daily', 'weekly', 'monthly']) {
+      const periodKey = getPeriodKey(period);
+      const cfg = bonusCfg[period] || {};
+      const record = await PeriodBonus.findOne({ userId, period, periodKey }).lean();
+
+      result[period] = {
+        enabled: cfg.enabled ?? true,
+        bonusAmount: cfg.bonusAmount ?? 0,
+        unlocked: !!record,
+        claimed: record?.claimed ?? false,
+        claimable: !!record && !record.claimed && isPeriodActive(periodKey, period),
+        periodKey,
+      };
+    }
+
+    res.json({ success: true, periodBonus: result });
+  } catch (err) {
+    console.error('[Missions] GET /period-bonus error:', err);
+    res.status(500).json({ success: false, error: 'Server error' });
+  }
+});
+
+/**
+ * POST /api/missions/period-bonus/claim/:period
+ * Claim the period completion bonus for a given period.
+ */
+router.post('/period-bonus/claim/:period', requireAuth, async (req, res) => {
+  try {
+    const { period } = req.params;
+    const user = req.user;
+
+    if (!['daily', 'weekly', 'monthly'].includes(period)) {
+      return res.status(400).json({ success: false, error: 'Invalid period' });
+    }
+
+    const periodKey = getPeriodKey(period);
+    const record = await PeriodBonus.findOne({ userId: user._id, period, periodKey });
+
+    if (!record) {
+      return res.status(404).json({ success: false, error: 'Bonus not yet unlocked — complete all missions first' });
+    }
+    if (record.claimed) {
+      return res.status(400).json({ success: false, error: 'Bonus already claimed' });
+    }
+    if (!isPeriodActive(periodKey, period)) {
+      return res.status(400).json({
+        success: false,
+        error: 'This period has expired. Bonus can no longer be claimed.',
+        expired: true,
+      });
+    }
+
+    const reward = record.bonusAmount;
+    if (reward <= 0) {
+      return res.status(400).json({ success: false, error: 'No bonus amount configured' });
+    }
+
+    // Credit wallet
+    const updated = await User.findByIdAndUpdate(
+      user._id,
+      { $inc: { walletBalance: reward } },
+      { new: true }
+    );
+
+    // Mark claimed
+    await PeriodBonus.updateOne(
+      { _id: record._id },
+      { $set: { claimed: true, claimedAt: new Date() } }
+    );
+
+    // Transaction log
+    await Transaction.create({
+      userId: user._id,
+      transactionType: 'mission_reward',
+      sourceType: 'mission',
+      sourceId: record._id,
+      amount: reward,
+      balanceAfter: updated.walletBalance,
+      description: `Period Completion Bonus — ${period} (all missions completed)`,
+      status: 'completed',
+      metadata: { period, periodKey, bonusType: 'period_completion' },
+    });
+
+    // Notify
+    const pLabel = period.charAt(0).toUpperCase() + period.slice(1);
+    await notify(
+      user._id,
+      'mission_reward',
+      `🏆 ${pLabel} Bonus Claimed!`,
+      `You claimed your ${pLabel} completion bonus of ${reward.toLocaleString()} coins!`,
+      { period, rewardAmount: reward }
+    );
+
+    emitWalletUpdate(user.firebaseUid, updated.walletBalance);
+
+    res.json({ success: true, rewardAmount: reward, newBalance: updated.walletBalance });
+  } catch (err) {
+    console.error('[Missions] POST /period-bonus/claim error:', err);
     res.status(500).json({ success: false, error: 'Server error' });
   }
 });
@@ -399,6 +515,51 @@ router.get('/admin/stats', requireAdmin, async (req, res) => {
     }
     res.json({ success: true, stats });
   } catch (err) {
+    res.status(500).json({ success: false, error: 'Server error' });
+  }
+});
+
+/**
+ * GET /api/missions/admin/period-bonus-config
+ * Returns current period completion bonus config from Settings.
+ */
+router.get('/admin/period-bonus-config', requireAdmin, async (req, res) => {
+  try {
+    const settings = await Settings.getSingleton();
+    res.json({ success: true, config: settings.missionCompletionBonus || {} });
+  } catch (err) {
+    res.status(500).json({ success: false, error: 'Server error' });
+  }
+});
+
+/**
+ * PUT /api/missions/admin/period-bonus-config
+ * Update period completion bonus amounts + enabled flags.
+ * Body: { daily: { enabled, bonusAmount }, weekly: {...}, monthly: {...} }
+ */
+router.put('/admin/period-bonus-config', requireAdmin, async (req, res) => {
+  try {
+    const { daily, weekly, monthly } = req.body;
+    const update = {};
+
+    for (const [period, cfg] of Object.entries({ daily, weekly, monthly })) {
+      if (!cfg) continue;
+      if (cfg.enabled !== undefined)
+        update[`missionCompletionBonus.${period}.enabled`] = Boolean(cfg.enabled);
+      if (cfg.bonusAmount !== undefined)
+        update[`missionCompletionBonus.${period}.bonusAmount`] = Math.max(0, Number(cfg.bonusAmount));
+    }
+
+    const settings = await Settings.getSingleton();
+    const updated = await Settings.findByIdAndUpdate(
+      settings._id,
+      { $set: update },
+      { new: true }
+    );
+
+    res.json({ success: true, config: updated.missionCompletionBonus });
+  } catch (err) {
+    console.error('[Missions] PUT /admin/period-bonus-config error:', err);
     res.status(500).json({ success: false, error: 'Server error' });
   }
 });

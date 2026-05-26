@@ -13,6 +13,7 @@ import {
   FiCalendar,
   FiTrendingUp,
   FiRepeat,
+  FiAward,
 } from 'react-icons/fi';
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
@@ -225,11 +226,14 @@ function MissionCard({ mission, periodCfg, onClaim, claiming }) {
   );
 }
 
-// ── Period Section ───────────────────────────────────────────────────────────
-function PeriodSection({ data, periodKey, periodCfg, onClaim, claiming }) {
+// ── Period Section ──────────────────────────────────────────────────────────────────
+function PeriodSection({ data, periodKey, periodCfg, bonus, onClaim, onClaimBonus, claiming, claimingBonus }) {
   const timeLeft = useCountdown(data?.endsAt);
   const missions = data?.missions || [];
   const completed = missions.filter(m => m.completed).length;
+
+  // Merge bonus info with mission count for the progress bar
+  const bonusWithCount = bonus ? { ...bonus, totalMissions: missions.length, completedMissions: completed } : null;
 
   return (
     <div className="space-y-4">
@@ -284,26 +288,42 @@ function PeriodSection({ data, periodKey, periodCfg, onClaim, claiming }) {
           ))}
         </div>
       )}
+
+      {/* Period completion bonus card — shown below missions */}
+      {missions.length > 0 && bonusWithCount && (
+        <PeriodBonusCard
+          bonus={bonusWithCount}
+          period={periodKey}
+          periodCfg={periodCfg}
+          onClaim={onClaimBonus}
+          claimingBonus={claimingBonus}
+        />
+      )}
     </div>
   );
 }
 
-// ── Main Page ────────────────────────────────────────────────────────────────
+// ── Main Page ──────────────────────────────────────────────────────────────────
 const MissionPage = () => {
   const { currentUser } = useAuth();
   const [data, setData] = useState(null);
+  const [periodBonus, setPeriodBonus] = useState(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('daily');
   const [claiming, setClaiming] = useState(null);
+  const [claimingBonus, setClaimingBonus] = useState(null);
 
   const fetchMissions = useCallback(async () => {
     try {
       const token = await currentUser.getIdToken();
-      const res = await fetch(`${API}/missions`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      const json = await res.json();
+      const headers = { Authorization: `Bearer ${token}` };
+      const [missionsRes, bonusRes] = await Promise.all([
+        fetch(`${API}/missions`, { headers }),
+        fetch(`${API}/missions/period-bonus`, { headers }),
+      ]);
+      const [json, bonusJson] = await Promise.all([missionsRes.json(), bonusRes.json()]);
       if (json.success) setData(json);
+      if (bonusJson.success) setPeriodBonus(bonusJson.periodBonus);
     } catch {
       toast.error('Failed to load missions');
     } finally {
@@ -336,6 +356,32 @@ const MissionPage = () => {
       toast.error('Network error');
     } finally {
       setClaiming(null);
+    }
+  };
+
+  const handleBonusClaim = async (period) => {
+    if (claimingBonus) return;
+    setClaimingBonus(period);
+    try {
+      const token = await currentUser.getIdToken();
+      const res = await fetch(`${API}/missions/period-bonus/claim/${period}`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const json = await res.json();
+      if (json.success) {
+        toast.success(`🏆 +${json.rewardAmount.toLocaleString()} bonus coins claimed!`);
+        fetchMissions();
+      } else if (json.expired) {
+        toast.error('⏰ Period expired — bonus forfeited.');
+        fetchMissions();
+      } else {
+        toast.error(json.error || 'Failed to claim bonus');
+      }
+    } catch {
+      toast.error('Network error');
+    } finally {
+      setClaimingBonus(null);
     }
   };
 
@@ -433,7 +479,8 @@ const MissionPage = () => {
           {tabs.map(tab => {
             const cfg = PERIOD_CONFIG[tab];
             const tabData = data?.[tab];
-            const claimable = (tabData?.missions || []).filter(m => m.claimable).length;
+            const claimable = (tabData?.missions || []).filter(m => m.claimable).length
+              + (periodBonus?.[tab]?.claimable ? 1 : 0);
 
             return (
               <button
@@ -475,8 +522,11 @@ const MissionPage = () => {
               data={data?.[activeTab]}
               periodKey={activeTab}
               periodCfg={PERIOD_CONFIG[activeTab]}
+              bonus={periodBonus?.[activeTab] || null}
               onClaim={handleClaim}
+              onClaimBonus={handleBonusClaim}
               claiming={claiming}
+              claimingBonus={claimingBonus}
             />
           </motion.div>
         </AnimatePresence>
