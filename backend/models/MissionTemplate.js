@@ -43,6 +43,7 @@ const missionTemplateSchema = new mongoose.Schema(
         'withdrawals_made',
         'offerwall_count',
         'promo_codes_used',
+        'surveys_completed', // NOTE: pending survey provider integration
       ],
       required: true,
     },

@@ -99,12 +99,12 @@ function getISOYear(date) {
 
 // ─── Template Seeding ──────────────────────────────────────────────────────
 
-/** 10 fixed platform-relevant mission templates */
+/** 11 fixed platform-relevant mission templates */
 const MISSION_TEMPLATES = [
   {
     key: 'complete_offers',
-    label: 'Complete Offers',
-    descriptionTemplate: 'Complete {X} offers to earn {Y} coins',
+    label: 'Complete Offerwall',
+    descriptionTemplate: 'Complete {X} offerwall offers to earn {Y} coins',
     allowedPeriods: ['daily', 'weekly', 'monthly'],
     trackingField: 'offers_completed',
   },
@@ -171,10 +171,20 @@ const MISSION_TEMPLATES = [
     allowedPeriods: ['monthly'],
     trackingField: 'withdrawals_made',
   },
+  {
+    // NOTE: Survey integration pending — connect to survey provider when ready.
+    // Set isActive: true once a survey provider (e.g. Pollfish, BitLabs) is integrated.
+    key: 'complete_surveys',
+    label: 'Complete Surveys',
+    descriptionTemplate: 'Complete {X} surveys to earn {Y} coins',
+    allowedPeriods: ['daily', 'weekly', 'monthly'],
+    trackingField: 'surveys_completed',
+    isActive: false,
+  },
 ];
 
 /**
- * Upserts all 10 mission templates into the DB (idempotent).
+ * Upserts all 11 mission templates into the DB (idempotent).
  * Called on server startup.
  */
 async function seedMissionTemplates() {
@@ -182,7 +192,7 @@ async function seedMissionTemplates() {
     for (const tmpl of MISSION_TEMPLATES) {
       await MissionTemplate.findOneAndUpdate(
         { key: tmpl.key },
-        { $setOnInsert: tmpl },
+        { $set: tmpl },
         { upsert: true, new: false }
       );
     }
