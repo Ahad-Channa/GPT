@@ -152,8 +152,8 @@ transactionSchema.post('save', async function (doc) {
     try {
       const { incrementMissionProgress } = require('../utils/missionUtils');
       
-      // 1. coins_earned (any positive reward that's not a withdrawal refund)
-      if (doc.amount > 0 && !['withdrawal', 'chargeback'].includes(doc.transactionType)) {
+      // 1. coins_earned (only from offer_reward and custom_offer_reward to avoid bonus-from-bonus)
+      if (doc.amount > 0 && ['offer_reward', 'custom_offer_reward'].includes(doc.transactionType)) {
         await incrementMissionProgress(doc.userId, 'coins_earned', doc.amount);
       }
       
@@ -185,6 +185,11 @@ transactionSchema.post('save', async function (doc) {
       // 7. withdrawals_made
       if (doc.transactionType === 'withdrawal') {
         await incrementMissionProgress(doc.userId, 'withdrawals_made', 1);
+      }
+
+      // 8. surveys_completed (tracked when offer_reward is completed via 'cpx' provider)
+      if (doc.transactionType === 'offer_reward' && doc.metadata?.providerId === 'cpx') {
+        await incrementMissionProgress(doc.userId, 'surveys_completed', 1);
       }
     } catch (err) {
       console.error('[Transaction Hook] Error processing mission progress:', err);

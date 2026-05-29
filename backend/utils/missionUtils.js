@@ -111,7 +111,7 @@ const MISSION_TEMPLATES = [
   {
     key: 'earn_coins',
     label: 'Earn Coins',
-    descriptionTemplate: 'Earn {X} coins from any source to get {Y} bonus coins',
+    descriptionTemplate: 'Earn {X} coins from any offer to get {Y} bonus coins',
     allowedPeriods: ['daily', 'weekly', 'monthly'],
     trackingField: 'coins_earned',
   },
@@ -156,6 +156,7 @@ const MISSION_TEMPLATES = [
     descriptionTemplate: 'Redeem {X} promo codes to earn {Y} coins',
     allowedPeriods: ['daily', 'weekly', 'monthly'],
     trackingField: 'promo_codes_used',
+    isActive: false,
   },
   {
     key: 'earn_from_multiple_walls',
@@ -172,14 +173,12 @@ const MISSION_TEMPLATES = [
     trackingField: 'withdrawals_made',
   },
   {
-    // NOTE: Survey integration pending — connect to survey provider when ready.
-    // Set isActive: true once a survey provider (e.g. Pollfish, BitLabs) is integrated.
     key: 'complete_surveys',
     label: 'Complete Surveys',
     descriptionTemplate: 'Complete {X} surveys to earn {Y} coins',
     allowedPeriods: ['daily', 'weekly', 'monthly'],
     trackingField: 'surveys_completed',
-    isActive: false,
+    isActive: true,
   },
 ];
 
@@ -194,6 +193,16 @@ async function seedMissionTemplates() {
         { key: tmpl.key },
         { $set: tmpl },
         { upsert: true, new: false }
+      );
+    }
+    // Also disable configs using deactivated templates
+    const inactiveTemplates = await MissionTemplate.find({ isActive: false });
+    const inactiveKeys = inactiveTemplates.map(t => t.key);
+    if (inactiveKeys.length > 0) {
+      const MissionConfig = require('../models/MissionConfig');
+      await MissionConfig.updateMany(
+        { templateKey: { $in: inactiveKeys } },
+        { $set: { isEnabled: false } }
       );
     }
     console.log('[Missions] Mission templates seeded/verified.');
