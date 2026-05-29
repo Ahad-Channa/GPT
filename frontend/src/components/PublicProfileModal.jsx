@@ -5,6 +5,8 @@ import {
   FiAward, FiTrendingUp, FiZap, FiChevronLeft, FiChevronRight
 } from 'react-icons/fi';
 import CoinIcon from './CoinIcon';
+import VipBadge from './VipBadge';
+import { getLevelFromEarned } from '../utils/vipLevels';
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
@@ -230,19 +232,25 @@ const PublicProfileModal = ({ userId, onClose }) => {
                     </div>
 
                     {/* Badge row */}
-                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-                      {/* Total Earned — public only */}
-                      {!profile.isPrivate && typeof profile.totalEarned !== 'undefined' && (
-                        <span style={{
-                          display: 'inline-flex', alignItems: 'center', gap: '5px',
-                          padding: '4px 10px', borderRadius: '8px',
-                          background: 'rgba(245,158,11,0.10)',
-                          border: '1px solid rgba(245,158,11,0.25)',
-                          color: '#fbbf24', fontSize: '12px', fontWeight: 600,
-                        }}>
-                          <FiZap size={11} /> {(profile.totalEarned || 0).toLocaleString()} earned
-                        </span>
-                      )}
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', alignItems: 'center' }}>
+                      {/* Rank & Total Earned — public only */}
+                      {!profile.isPrivate && typeof profile.totalEarned !== 'undefined' && (() => {
+                        const level = getLevelFromEarned(profile.totalEarned);
+                        return (
+                          <>
+                            {level && <VipBadge tier={level.tier} rank={level.rank} size="sm" />}
+                            <span style={{
+                              display: 'inline-flex', alignItems: 'center', gap: '5px',
+                              padding: '4px 10px', borderRadius: '8px',
+                              background: 'rgba(245,158,11,0.10)',
+                              border: '1px solid rgba(245,158,11,0.25)',
+                              color: '#fbbf24', fontSize: '12px', fontWeight: 600,
+                            }}>
+                              {(profile.totalEarned || 0).toLocaleString()} earned
+                            </span>
+                          </>
+                        );
+                      })()}
 
                       {/* Joined */}
                       {profile.createdAt && (
@@ -293,7 +301,7 @@ const PublicProfileModal = ({ userId, onClose }) => {
                     marginBottom: '16px',
                     fontSize: '14px', fontWeight: 700, color: '#fff',
                   }}>
-                    <FiAward size={15} color="#fbbf24" /> Recent Activity
+                    Recent Activity
                   </div>
 
                   {recentOffers.length === 0 ? (
