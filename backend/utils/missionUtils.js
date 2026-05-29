@@ -12,12 +12,28 @@ const MissionTemplate = require('../models/MissionTemplate');
 // ─── Period Key Helpers ─────────────────────────────────────────────────────
 
 /**
- * Returns the current period key string for a given period type.
+ * Returns the period key string for a given period type.
  * All calculations are UTC-based to match cron schedules.
+ *
+ * @param {string} period - 'daily' | 'weekly' | 'monthly'
+ * @param {Date}   date   - reference date (default: now)
+ * @param {number} offset - number of periods to add (e.g. +1 = next period, -1 = previous)
  */
-function getPeriodKey(period, date = new Date()) {
-  const d = new Date(date);
-  const year = d.getUTCFullYear();
+function getPeriodKey(period, date = new Date(), offset = 0) {
+  let d = new Date(date);
+
+  // Apply offset by shifting the reference date
+  if (offset !== 0) {
+    if (period === 'daily') {
+      d = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate() + offset));
+    } else if (period === 'weekly') {
+      d = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate() + offset * 7));
+    } else if (period === 'monthly') {
+      d = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth() + offset, 1));
+    }
+  }
+
+  const year  = d.getUTCFullYear();
   const month = String(d.getUTCMonth() + 1).padStart(2, '0');
   const day   = String(d.getUTCDate()).padStart(2, '0');
 
@@ -37,6 +53,22 @@ function getPeriodKey(period, date = new Date()) {
   }
 
   throw new Error(`Unknown period: ${period}`);
+}
+
+/**
+ * Returns an array of upcoming period keys starting from the current period.
+ * Index 0 = current period, index 1 = next period, etc.
+ *
+ * @param {string} period - 'daily' | 'weekly' | 'monthly'
+ * @param {number} count  - how many keys to return (default: 7)
+ * @returns {string[]} array of period key strings
+ */
+function getUpcomingPeriodKeys(period, count = 7) {
+  const keys = [];
+  for (let i = 0; i < count; i++) {
+    keys.push(getPeriodKey(period, new Date(), i));
+  }
+  return keys;
 }
 
 /**
@@ -400,6 +432,7 @@ async function sendMissionReminders(period) {
 
 module.exports = {
   getPeriodKey,
+  getUpcomingPeriodKeys,
   getMissionPeriodBounds,
   isPeriodActive,
   seedMissionTemplates,
