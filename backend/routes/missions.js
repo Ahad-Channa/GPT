@@ -65,38 +65,59 @@ async function buildPeriodMissions(userId, period) {
   const periodKey = getPeriodKey(period);
   const { end } = getMissionPeriodBounds(period);
 
-  // ── Step 1: check for a scheduled override for this exact period ──
-  const scheduled = await ScheduledMissionConfig.find({ period, periodKey })
-    .sort({ displayOrder: 1 })
-    .lean();
-
-  // ── Step 2: fall back to live MissionConfig if no scheduled entries ──
-  let configs;
-  let isScheduledOverride = false;
-
-  if (scheduled.length > 0) {
-    // Map scheduled entries into the same shape as MissionConfig docs
-    configs = scheduled
-      .filter(s => s.isEnabled && s.templateKey)
-      .map(s => ({
-        _id: s._id,
-        templateKey: s.templateKey,
-        period: s.period,
-        displayOrder: s.displayOrder,
-        targetValue: s.targetValue,
-        rewardAmount: s.rewardAmount,
-        isEnabled: s.isEnabled,
-        _scheduledId: s._id,   // keep reference
-      }));
-    isScheduledOverride = true;
-  } else {
-    configs = await MissionConfig.find({ period, isEnabled: true })
+  // ── Fetch both sources in parallel ──────────────────────────────────────────
+  const [liveCfgs, scheduledCfgs] = await Promise.all([
+    MissionConfig.find({ period, isEnabled: true })
       .sort({ displayOrder: 1 })
       .limit(3)
-      .lean();
+      .lean(),
+    ScheduledMissionConfig.find({ period, periodKey })
+      .sort({ displayOrder: 1 })
+      .lean(),
+  ]);
+
+  // Index scheduled entries by displayOrder for O(1) lookup
+  const schedBySlot = {};
+  for (const s of scheduledCfgs) {
+    if (s.templateKey) schedBySlot[s.displayOrder] = s;
   }
 
-  if (!configs.length) return { missions: [], periodKey, endsAt: end, isScheduledOverride };
+  // Index live configs by displayOrder
+  const liveBySlot = {};
+  for (const c of liveCfgs) liveBySlot[c.displayOrder] = c;
+
+  // ── Build resolved slot list (max 3) ────────────────────────────────────────
+  // Union of all display orders that appear in either source
+  const allOrders = [...new Set([
+    ...Object.keys(schedBySlot).map(Number),
+    ...Object.keys(liveBySlot).map(Number),
+  ])].sort((a, b) => a - b).slice(0, 3);
+
+  let hasScheduledOverride = false;
+
+  const configs = allOrders.map(order => {
+    const sched = schedBySlot[order];
+    const live  = liveBySlot[order];
+
+    // Prefer scheduled if it has a valid templateKey
+    if (sched && sched.isEnabled && sched.templateKey) {
+      hasScheduledOverride = true;
+      return {
+        _id:          sched._id,
+        templateKey:  sched.templateKey,
+        period:       sched.period,
+        displayOrder: sched.displayOrder,
+        targetValue:  sched.targetValue,
+        rewardAmount: sched.rewardAmount,
+        isEnabled:    sched.isEnabled,
+      };
+    }
+
+    // Fall back to live MissionConfig for this slot
+    return live || null;
+  }).filter(Boolean);
+
+  if (!configs.length) return { missions: [], periodKey, endsAt: end, isScheduledOverride: false };
 
   const configIds = configs.map(c => c._id);
 
@@ -120,10 +141,10 @@ async function buildPeriodMissions(userId, period) {
 
   const missions = configs.map(config => {
     const tmpl = tmplMap[config.templateKey] || {};
-    const um = umMap[config._id.toString()];
-    const progress = um?.progress || 0;
+    const um   = umMap[config._id.toString()];
+    const progress  = um?.progress  || 0;
     const completed = um?.completed || false;
-    const claimed = um?.claimed || false;
+    const claimed   = um?.claimed   || false;
 
     // Build human-readable description
     const description = (tmpl.descriptionTemplate || '')
