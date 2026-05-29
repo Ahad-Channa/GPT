@@ -3,7 +3,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import toast from 'react-hot-toast';
 import {
   FiTarget, FiTrash2, FiToggleLeft, FiToggleRight, FiSave,
-  FiRefreshCw, FiBarChart2, FiAward, FiCalendar, FiZap,
+  FiRefreshCw, FiBarChart2, FiAward, FiCalendar,
   FiClock, FiCheck, FiChevronRight,
 } from 'react-icons/fi';
 
@@ -68,7 +68,6 @@ function ApplyModeToggle({ value, onChange }) {
           color: value === 'instant' ? '#fff' : '#64748b',
         }}
       >
-        <FiZap className="text-[11px]" />
         Instant
       </button>
       <button
@@ -917,7 +916,7 @@ const AdminMissions = () => {
             color: activeTab === 'live' ? '#fff' : '#64748b',
           }}
         >
-          <FiZap className="text-xs" /> Live Config
+          Live Config
         </button>
         <button
           onClick={() => setActiveTab('schedule')}
