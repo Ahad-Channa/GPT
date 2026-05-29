@@ -539,6 +539,12 @@ router.post('/admin/configs', requireAdmin, async (req, res) => {
       { upsert: true, new: true }
     );
 
+    // ── Instant save: clear any scheduled override for the CURRENT period key ──
+    // Scheduled entries take priority over MissionConfig in buildPeriodMissions,
+    // so if a stale scheduled override exists for today it would hide the live config.
+    const currentPeriodKey = getPeriodKey(period);
+    await ScheduledMissionConfig.deleteMany({ period, periodKey: currentPeriodKey });
+
     res.json({ success: true, config });
   } catch (err) {
     if (err.code === 11000) {
