@@ -707,6 +707,21 @@ router.post('/admin/scheduled', requireAdmin, async (req, res) => {
 });
 
 /**
+ * DELETE /api/missions/admin/scheduled/period/:period/:periodKey
+ * Remove ALL scheduled entries for a given period + periodKey (clear entire slot set).
+ * MUST be defined before /admin/scheduled/:id so Express doesn't treat "period" as an ObjectId.
+ */
+router.delete('/admin/scheduled/period/:period/:periodKey', requireAdmin, async (req, res) => {
+  try {
+    const { period, periodKey } = req.params;
+    await ScheduledMissionConfig.deleteMany({ period, periodKey });
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ success: false, error: 'Server error' });
+  }
+});
+
+/**
  * DELETE /api/missions/admin/scheduled/:id
  * Remove a single scheduled mission config entry.
  */
@@ -717,20 +732,6 @@ router.delete('/admin/scheduled/:id', requireAdmin, async (req, res) => {
       return res.status(400).json({ success: false, error: 'Invalid ID' });
     }
     await ScheduledMissionConfig.findByIdAndDelete(id);
-    res.json({ success: true });
-  } catch (err) {
-    res.status(500).json({ success: false, error: 'Server error' });
-  }
-});
-
-/**
- * DELETE /api/missions/admin/scheduled/period/:period/:periodKey
- * Remove ALL scheduled entries for a given period + periodKey (clear entire slot set).
- */
-router.delete('/admin/scheduled/period/:period/:periodKey', requireAdmin, async (req, res) => {
-  try {
-    const { period, periodKey } = req.params;
-    await ScheduledMissionConfig.deleteMany({ period, periodKey });
     res.json({ success: true });
   } catch (err) {
     res.status(500).json({ success: false, error: 'Server error' });
