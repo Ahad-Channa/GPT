@@ -243,14 +243,14 @@ function PeriodBonusCard({ bonus, period, periodCfg, onClaim, claimingBonus }) {
     claimable      = false,
   } = bonus;
 
-  // Only render the card when all missions are done, or a bonus record exists
-  if (!allMissionsCompleted && !bonus.unlocked) return null;
+  // State helpers
+  const isNotConfigured = !enabled || !bonusAmount;
+
+  // Hide if not configured and not unlocked
+  if (isNotConfigured && !bonus.unlocked) return null;
 
   const pct = totalMissions > 0 ? Math.min(100, Math.round((completedMissions / totalMissions) * 100)) : 0;
   const isClaiming = claimingBonus === period;
-
-  // State helpers
-  const isNotConfigured = !enabled || !bonusAmount;
 
   return (
     <motion.div
