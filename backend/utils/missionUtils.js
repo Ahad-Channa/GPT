@@ -149,6 +149,7 @@ const MISSION_TEMPLATES = [
     descriptionTemplate: 'Claim your daily bonus {X} times to earn {Y} coins',
     allowedPeriods: ['weekly', 'monthly'],
     trackingField: 'daily_bonus_claimed',
+    isActive: false,
   },
   {
     key: 'use_promo_codes',
