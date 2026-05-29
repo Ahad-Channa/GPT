@@ -69,15 +69,27 @@ router.get('/user/:id', async (req, res) => {
       });
     }
 
-    // Fetch the user's latest 15 credited offers (public profiles only)
+    // Fetch the user's latest 100 credited activities (public profiles only)
     const recentActiveOffers = await Transaction.find({
       userId: user._id,
-      transactionType: 'offer_reward',
+      transactionType: {
+        $in: [
+          'offer_reward',
+          'custom_offer_reward',
+          'daily_bonus',
+          'referral_reward',
+          'admin_adjustment',
+          'promo_code',
+          'leaderboard_reward',
+          'vip_reward',
+          'mission_reward',
+        ]
+      },
       status: { $in: ['completed', 'hold'] },
       amount: { $gt: 0 }
     })
       .sort({ createdAt: -1 })
-      .limit(5)
+      .limit(100)
       .lean();
 
     res.status(200).json({

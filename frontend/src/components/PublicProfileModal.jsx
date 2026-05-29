@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   FiX, FiStar, FiClock, FiShield, FiAlertTriangle,
-  FiAward, FiTrendingUp, FiZap
+  FiAward, FiTrendingUp, FiZap, FiChevronLeft, FiChevronRight
 } from 'react-icons/fi';
 import CoinIcon from './CoinIcon';
 
@@ -26,11 +26,14 @@ function timeAgo(dateStr) {
  *   userId  – MongoDB _id string of the user to show
  *   onClose – callback to close the modal
  */
+const ITEMS_PER_PAGE = 5;
+
 const PublicProfileModal = ({ userId, onClose }) => {
   const [profile, setProfile] = useState(null);
   const [recentOffers, setRecentOffers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [activityPage, setActivityPage] = useState(1);
 
   // Close on ESC key
   useEffect(() => {
@@ -55,6 +58,7 @@ const PublicProfileModal = ({ userId, onClose }) => {
       if (data.success) {
         setProfile(data.profile);
         setRecentOffers(data.recentActiveOffers || []);
+        setActivityPage(1);
       } else {
         setError(data.error || 'User not found');
       }
@@ -297,52 +301,102 @@ const PublicProfileModal = ({ userId, onClose }) => {
                       textAlign: 'center', padding: '32px 0',
                       color: '#64748b', fontSize: '13px',
                     }}>
-                      No recent offers found.
+                      No recent activity found.
                     </div>
-                  ) : (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                      {recentOffers.slice(0, 5).map((offer) => (
-                        <div
-                          key={offer._id}
-                          style={{
-                            display: 'flex', alignItems: 'center',
-                            justifyContent: 'space-between', gap: '12px',
-                            padding: '10px 14px', borderRadius: '12px',
-                            background: 'rgba(255,255,255,0.025)',
-                            border: '1px solid rgba(255,255,255,0.05)',
-                          }}
-                        >
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', minWidth: 0 }}>
-                            <div style={{
-                              width: '34px', height: '34px', borderRadius: '10px',
-                              background: 'rgba(16,185,129,0.10)',
-                              border: '1px solid rgba(16,185,129,0.2)',
-                              display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
-                            }}>
-                              <FiTrendingUp size={14} color="#34d399" />
-                            </div>
-                            <div style={{ minWidth: 0 }}>
+                  ) : (() => {
+                    const totalPages = Math.ceil(recentOffers.length / ITEMS_PER_PAGE);
+                    const start = (activityPage - 1) * ITEMS_PER_PAGE;
+                    const pageOffers = recentOffers.slice(start, start + ITEMS_PER_PAGE);
+                    return (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                        {pageOffers.map((offer) => (
+                          <div
+                            key={offer._id}
+                            style={{
+                              display: 'flex', alignItems: 'center',
+                              justifyContent: 'space-between', gap: '12px',
+                              padding: '10px 14px', borderRadius: '12px',
+                              background: 'rgba(255,255,255,0.025)',
+                              border: '1px solid rgba(255,255,255,0.05)',
+                            }}
+                          >
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', minWidth: 0 }}>
                               <div style={{
-                                fontSize: '13px', fontWeight: 600, color: '#e2e8f0',
-                                overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                                width: '34px', height: '34px', borderRadius: '10px',
+                                background: 'rgba(16,185,129,0.10)',
+                                border: '1px solid rgba(16,185,129,0.2)',
+                                display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
                               }}>
-                                {offer.description}
+                                <FiTrendingUp size={14} color="#34d399" />
                               </div>
-                              <div style={{ fontSize: '11px', color: '#64748b', marginTop: '2px' }}>
-                                {timeAgo(offer.createdAt)}
+                              <div style={{ minWidth: 0 }}>
+                                <div style={{
+                                  fontSize: '13px', fontWeight: 600, color: '#e2e8f0',
+                                  overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                                }}>
+                                  {offer.description}
+                                </div>
+                                <div style={{ fontSize: '11px', color: '#64748b', marginTop: '2px' }}>
+                                  {timeAgo(offer.createdAt)}
+                                </div>
                               </div>
                             </div>
-                          </div>
-                          <div style={{ textAlign: 'right', flexShrink: 0 }}>
-                            <div style={{ fontSize: '13px', fontWeight: 700, color: '#34d399', fontFamily: 'monospace' }}>
-                              +{(offer.amount || 0).toLocaleString()}
+                            <div style={{ textAlign: 'right', flexShrink: 0 }}>
+                              <div style={{ fontSize: '13px', fontWeight: 700, color: '#34d399', fontFamily: 'monospace' }}>
+                                +{(offer.amount || 0).toLocaleString()}
+                              </div>
+                              <CoinIcon size={12} />
                             </div>
-                            <CoinIcon size={12} />
                           </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
+                        ))}
+
+                        {/* Pagination Controls */}
+                        {totalPages > 1 && (
+                          <div style={{
+                            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                            marginTop: '8px', paddingTop: '8px',
+                            borderTop: '1px solid rgba(255,255,255,0.05)',
+                          }}>
+                            <button
+                              onClick={() => setActivityPage(p => Math.max(1, p - 1))}
+                              disabled={activityPage === 1}
+                              style={{
+                                display: 'flex', alignItems: 'center', gap: '4px',
+                                padding: '5px 10px', borderRadius: '8px',
+                                background: activityPage === 1 ? 'rgba(255,255,255,0.03)' : 'rgba(99,102,241,0.10)',
+                                border: '1px solid ' + (activityPage === 1 ? 'rgba(255,255,255,0.05)' : 'rgba(99,102,241,0.25)'),
+                                color: activityPage === 1 ? '#374151' : '#818cf8',
+                                fontSize: '12px', fontWeight: 600, cursor: activityPage === 1 ? 'default' : 'pointer',
+                                transition: 'all 0.2s',
+                              }}
+                            >
+                              <FiChevronLeft size={13} /> Prev
+                            </button>
+
+                            <span style={{ fontSize: '12px', color: '#64748b', fontWeight: 500 }}>
+                              Page {activityPage} of {totalPages}
+                            </span>
+
+                            <button
+                              onClick={() => setActivityPage(p => Math.min(totalPages, p + 1))}
+                              disabled={activityPage === totalPages}
+                              style={{
+                                display: 'flex', alignItems: 'center', gap: '4px',
+                                padding: '5px 10px', borderRadius: '8px',
+                                background: activityPage === totalPages ? 'rgba(255,255,255,0.03)' : 'rgba(99,102,241,0.10)',
+                                border: '1px solid ' + (activityPage === totalPages ? 'rgba(255,255,255,0.05)' : 'rgba(99,102,241,0.25)'),
+                                color: activityPage === totalPages ? '#374151' : '#818cf8',
+                                fontSize: '12px', fontWeight: 600, cursor: activityPage === totalPages ? 'default' : 'pointer',
+                                transition: 'all 0.2s',
+                              }}
+                            >
+                              Next <FiChevronRight size={13} />
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })()}
                 </div>
               )}
 
