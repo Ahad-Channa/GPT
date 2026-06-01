@@ -5,6 +5,11 @@
  *   daily:   "2026-05-24"
  *   weekly:  "2026-W21"   (ISO week, Monday-based)
  *   monthly: "2026-05"
+ *
+ * Recurring cycle indices:
+ *   daily   → dayOfWeek  (0=Mon … 6=Sun)
+ *   weekly  → weekInCycle (0,1,2,3) — ISO week number mod 4
+ *   monthly → always 0
  */
 
 const MissionTemplate = require('../models/MissionTemplate');
@@ -127,6 +132,63 @@ function getISOYear(date) {
   const d = new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()));
   d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7));
   return d.getUTCFullYear();
+}
+
+// ─── Recurring Cycle Index Helpers ─────────────────────────────────────────
+
+/**
+ * Returns the cycleDayIndex for a given period and date.
+ *
+ *   daily   → 0=Monday … 6=Sunday  (UTC day-of-week, Monday-anchored)
+ *   weekly  → ISO week number mod 4  (0, 1, 2, 3)
+ *   monthly → always 0
+ *
+ * @param {string} period - 'daily' | 'weekly' | 'monthly'
+ * @param {Date}   date   - reference date (default: now UTC)
+ * @returns {number}
+ */
+function getCycleIndex(period, date = new Date()) {
+  if (period === 'daily') {
+    // UTC day of week: 0=Sun,1=Mon…6=Sat → shift so 0=Mon
+    const utcDay = date.getUTCDay(); // 0=Sun
+    return utcDay === 0 ? 6 : utcDay - 1; // 0=Mon … 6=Sun
+  }
+  if (period === 'weekly') {
+    return (getISOWeek(date) - 1) % 4; // 0-based, 4-week cycle
+  }
+  if (period === 'monthly') {
+    return 0;
+  }
+  throw new Error(`Unknown period: ${period}`);
+}
+
+/**
+ * Returns the number of valid cycleDayIndex values for a given period.
+ *   daily   → 7  (Mon-Sun)
+ *   weekly  → 4  (4-week cycle)
+ *   monthly → 1
+ */
+function getCycleLength(period) {
+  if (period === 'daily')   return 7;
+  if (period === 'weekly')  return 4;
+  if (period === 'monthly') return 1;
+  throw new Error(`Unknown period: ${period}`);
+}
+
+/**
+ * Human-readable label for a cycleDayIndex.
+ *   daily   → 'Monday', 'Tuesday', …
+ *   weekly  → 'Week 1', 'Week 2', …
+ *   monthly → 'Monthly'
+ */
+const DAILY_NAMES   = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
+const WEEKLY_NAMES  = ['Week 1','Week 2','Week 3','Week 4'];
+
+function getCycleLabel(period, idx) {
+  if (period === 'daily')   return DAILY_NAMES[idx]  || `Day ${idx + 1}`;
+  if (period === 'weekly')  return WEEKLY_NAMES[idx] || `Week ${idx + 1}`;
+  if (period === 'monthly') return 'Monthly Default';
+  return `Index ${idx}`;
 }
 
 // ─── Template Seeding ──────────────────────────────────────────────────────
@@ -254,26 +316,55 @@ async function seedMissionTemplates() {
  */
 async function incrementMissionProgress(userId, trackingField, incrementBy = 1) {
   try {
-    const MissionConfig  = require('../models/MissionConfig');
-    const UserMission    = require('../models/UserMission');
+    const MissionConfig          = require('../models/MissionConfig');
+    const RecurringMissionConfig = require('../models/RecurringMissionConfig');
+    const ScheduledMissionConfig = require('../models/ScheduledMissionConfig');
+    const UserMission            = require('../models/UserMission');
 
     const periods = ['daily', 'weekly', 'monthly'];
 
     for (const period of periods) {
-      const periodKey = getPeriodKey(period);
+      const periodKey  = getPeriodKey(period);
+      const cycleIndex = getCycleIndex(period);
 
-      // Find all enabled configs for this period whose template tracks this field
       const templates = await MissionTemplate.find({ trackingField, isActive: true });
       if (!templates.length) continue;
-
       const templateKeys = templates.map(t => t.key);
-      const configs = await MissionConfig.find({
-        period,
-        isEnabled: true,
-        templateKey: { $in: templateKeys },
-      });
+
+      // ── Resolve active configs (same priority as buildPeriodMissions) ──
+      // 1. Scheduled override for exact periodKey
+      const scheduled = await ScheduledMissionConfig.find({ period, periodKey })
+        .sort({ displayOrder: 1 }).lean();
+
+      let configs;
+      if (scheduled.length > 0) {
+        configs = scheduled
+          .filter(s => s.isEnabled && s.templateKey && templateKeys.includes(s.templateKey))
+          .map(s => ({ _id: s._id, templateKey: s.templateKey, targetValue: s.targetValue, rewardAmount: s.rewardAmount }));
+      } else {
+        // 2. Recurring config for this cycle index
+        const recurring = await RecurringMissionConfig.find({
+          period,
+          cycleDayIndex: cycleIndex,
+          isEnabled: true,
+          templateKey: { $in: templateKeys },
+        }).lean();
+
+        if (recurring.length > 0) {
+          configs = recurring.map(r => ({ _id: r._id, templateKey: r.templateKey, targetValue: r.targetValue, rewardAmount: r.rewardAmount }));
+        } else {
+          // 3. Legacy MissionConfig fallback
+          configs = await MissionConfig.find({
+            period,
+            isEnabled: true,
+            templateKey: { $in: templateKeys },
+          }).lean();
+        }
+      }
 
       for (const config of configs) {
+        if (!config.targetValue) continue; // skip empty/disabled slots
+
         // Upsert UserMission progress
         const um = await UserMission.findOneAndUpdate(
           { userId, configId: config._id, periodKey },
@@ -288,7 +379,6 @@ async function incrementMissionProgress(userId, trackingField, incrementBy = 1) 
             { $set: { completed: true } }
           );
 
-          // Emit individual mission_completed notification
           const notify = require('./notify');
           const pLabel = period.charAt(0).toUpperCase() + period.slice(1);
           await notify(
@@ -299,7 +389,6 @@ async function incrementMissionProgress(userId, trackingField, incrementBy = 1) 
             { link: '/dashboard/missions', linkText: 'Claim now' }
           ).catch(e => console.error('[Missions] Notify error:', e.message));
 
-          // Check if ALL missions for this period are now complete → grant period bonus
           await checkAndGrantPeriodBonus(userId, period).catch(e =>
             console.error('[Missions] Period bonus check error:', e.message)
           );
@@ -307,7 +396,6 @@ async function incrementMissionProgress(userId, trackingField, incrementBy = 1) 
       }
     }
   } catch (err) {
-    // Never break main flow
     console.error('[Missions] incrementMissionProgress error:', err.message);
   }
 }
@@ -435,6 +523,11 @@ module.exports = {
   getUpcomingPeriodKeys,
   getMissionPeriodBounds,
   isPeriodActive,
+  getCycleIndex,
+  getCycleLength,
+  getCycleLabel,
+  DAILY_NAMES,
+  WEEKLY_NAMES,
   seedMissionTemplates,
   incrementMissionProgress,
   checkAndGrantPeriodBonus,

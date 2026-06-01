@@ -6,6 +6,7 @@ const User = require('../models/User');
 const MissionTemplate = require('../models/MissionTemplate');
 const MissionConfig = require('../models/MissionConfig');
 const ScheduledMissionConfig = require('../models/ScheduledMissionConfig');
+const RecurringMissionConfig = require('../models/RecurringMissionConfig');
 const UserMission = require('../models/UserMission');
 const PeriodBonus = require('../models/PeriodBonus');
 const Settings = require('../models/Settings');
@@ -17,6 +18,9 @@ const {
   getUpcomingPeriodKeys,
   getMissionPeriodBounds,
   isPeriodActive,
+  getCycleIndex,
+  getCycleLength,
+  getCycleLabel,
 } = require('../utils/missionUtils');
 
 // ─── Auth Helpers ─────────────────────────────────────────────────────────────
@@ -58,45 +62,62 @@ const requireAdmin = async (req, res, next) => {
  * Returns array of mission objects with progress + claim status.
  *
  * Resolution order:
- *   1. ScheduledMissionConfig for this exact periodKey  ← use if any exist
- *   2. MissionConfig (always-live default)              ← fallback
+ *   1. ScheduledMissionConfig for this exact periodKey  ← spot overrides / instant
+ *   2. RecurringMissionConfig for the matching cycleIndex ← NEW repeating default
+ *   3. MissionConfig (legacy always-live default)         ← backward-compat fallback
  */
 async function buildPeriodMissions(userId, period) {
-  const periodKey = getPeriodKey(period);
-  const { end } = getMissionPeriodBounds(period);
+  const periodKey  = getPeriodKey(period);
+  const cycleIndex = getCycleIndex(period);
+  const { end }    = getMissionPeriodBounds(period);
 
-  // ── Step 1: check for a scheduled override for this exact period ──
+  // ── Step 1: exact scheduled override ──
   const scheduled = await ScheduledMissionConfig.find({ period, periodKey })
     .sort({ displayOrder: 1 })
     .lean();
 
-  // ── Step 2: fall back to live MissionConfig if no scheduled entries ──
   let configs;
   let isScheduledOverride = false;
+  let isRecurringDefault  = false;
 
   if (scheduled.length > 0) {
-    // Map scheduled entries into the same shape as MissionConfig docs
     configs = scheduled
       .filter(s => s.isEnabled && s.templateKey)
       .map(s => ({
         _id: s._id,
-        templateKey: s.templateKey,
-        period: s.period,
+        templateKey:  s.templateKey,
+        period:       s.period,
         displayOrder: s.displayOrder,
-        targetValue: s.targetValue,
+        targetValue:  s.targetValue,
         rewardAmount: s.rewardAmount,
-        isEnabled: s.isEnabled,
-        _scheduledId: s._id,   // keep reference
+        isEnabled:    s.isEnabled,
+        _scheduledId: s._id,
       }));
     isScheduledOverride = true;
   } else {
-    configs = await MissionConfig.find({ period, isEnabled: true })
+    // ── Step 2: recurring default for this cycle index ──
+    const recurring = await RecurringMissionConfig.find({
+      period,
+      cycleDayIndex: cycleIndex,
+      isEnabled: true,
+    })
       .sort({ displayOrder: 1 })
       .limit(3)
       .lean();
+
+    if (recurring.length > 0) {
+      configs = recurring.filter(r => r.templateKey && r.targetValue > 0);
+      isRecurringDefault = true;
+    } else {
+      // ── Step 3: legacy MissionConfig fallback ──
+      configs = await MissionConfig.find({ period, isEnabled: true })
+        .sort({ displayOrder: 1 })
+        .limit(3)
+        .lean();
+    }
   }
 
-  if (!configs.length) return { missions: [], periodKey, endsAt: end, isScheduledOverride };
+  if (!configs.length) return { missions: [], periodKey, endsAt: end, isScheduledOverride, isRecurringDefault };
 
   const configIds = configs.map(c => c._id);
 
@@ -121,24 +142,23 @@ async function buildPeriodMissions(userId, period) {
   const missions = configs.map(config => {
     const tmpl = tmplMap[config.templateKey] || {};
     const um = umMap[config._id.toString()];
-    const progress = um?.progress || 0;
+    const progress  = um?.progress  || 0;
     const completed = um?.completed || false;
-    const claimed = um?.claimed || false;
+    const claimed   = um?.claimed   || false;
 
-    // Build human-readable description
     const description = (tmpl.descriptionTemplate || '')
       .replace('{X}', config.targetValue)
       .replace('{Y}', config.rewardAmount.toLocaleString());
 
     return {
       userMissionId: um?._id || null,
-      configId: config._id,
-      templateKey: config.templateKey,
+      configId:      config._id,
+      templateKey:   config.templateKey,
       period,
-      label: tmpl.label || config.templateKey,
+      label:         tmpl.label || config.templateKey,
       description,
-      targetValue: config.targetValue,
-      rewardAmount: config.rewardAmount,
+      targetValue:   config.targetValue,
+      rewardAmount:  config.rewardAmount,
       progress,
       completed,
       claimed,
@@ -147,7 +167,7 @@ async function buildPeriodMissions(userId, period) {
     };
   });
 
-  return { missions, periodKey, endsAt: end, isScheduledOverride };
+  return { missions, periodKey, endsAt: end, isScheduledOverride, isRecurringDefault };
 }
 
 // ─── USER ENDPOINTS ───────────────────────────────────────────────────────────
@@ -810,4 +830,170 @@ router.put('/admin/period-bonus-config', requireAdmin, async (req, res) => {
   }
 });
 
+// ─── ADMIN RECURRING CONFIG ENDPOINTS ────────────────────────────────────────
+
+/**
+ * GET /api/missions/admin/recurring
+ * Returns all recurring mission config entries, grouped by period + cycleDayIndex.
+ * Also returns cycle metadata (labels, lengths) so the UI can render correctly.
+ */
+router.get('/admin/recurring', requireAdmin, async (req, res) => {
+  try {
+    const all = await RecurringMissionConfig.find()
+      .sort({ period: 1, cycleDayIndex: 1, displayOrder: 1 })
+      .lean();
+
+    // Enrich with template data
+    const templateKeys = [...new Set(all.map(s => s.templateKey).filter(Boolean))];
+    const templates    = await MissionTemplate.find({ key: { $in: templateKeys } }).lean();
+    const tmplMap      = {};
+    for (const t of templates) tmplMap[t.key] = t;
+
+    const enriched = all.map(r => ({ ...r, template: tmplMap[r.templateKey] || null }));
+
+    // Cycle metadata for UI
+    const cycleMeta = {
+      daily:   { length: 7,  labels: ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'] },
+      weekly:  { length: 4,  labels: ['Week 1','Week 2','Week 3','Week 4'] },
+      monthly: { length: 1,  labels: ['Monthly Default'] },
+    };
+
+    res.json({ success: true, recurring: enriched, cycleMeta });
+  } catch (err) {
+    console.error('[Missions] GET /admin/recurring error:', err);
+    res.status(500).json({ success: false, error: 'Server error' });
+  }
+});
+
+/**
+ * POST /api/missions/admin/recurring
+ * Upsert a recurring mission config slot.
+ * Body: { period, cycleDayIndex, displayOrder, templateKey, targetValue, rewardAmount, isEnabled }
+ */
+router.post('/admin/recurring', requireAdmin, async (req, res) => {
+  try {
+    const { period, cycleDayIndex, displayOrder, templateKey, targetValue, rewardAmount, isEnabled } = req.body;
+
+    if (!period || cycleDayIndex == null || !displayOrder) {
+      return res.status(400).json({ success: false, error: 'period, cycleDayIndex and displayOrder are required' });
+    }
+    if (!['daily', 'weekly', 'monthly'].includes(period)) {
+      return res.status(400).json({ success: false, error: 'Invalid period' });
+    }
+    if (displayOrder < 1 || displayOrder > 3) {
+      return res.status(400).json({ success: false, error: 'displayOrder must be 1–3' });
+    }
+
+    // Validate cycleDayIndex range
+    const maxIdx = period === 'daily' ? 6 : period === 'weekly' ? 3 : 0;
+    if (cycleDayIndex < 0 || cycleDayIndex > maxIdx) {
+      return res.status(400).json({ success: false, error: `cycleDayIndex out of range for ${period}` });
+    }
+
+    // Validate template if provided
+    if (templateKey) {
+      const template = await MissionTemplate.findOne({ key: templateKey, isActive: true });
+      if (!template) {
+        return res.status(400).json({ success: false, error: 'Template not found or inactive' });
+      }
+      if (!template.allowedPeriods.includes(period)) {
+        return res.status(400).json({
+          success: false,
+          error: `Template not allowed for ${period} missions`,
+        });
+      }
+    }
+
+    const entry = await RecurringMissionConfig.findOneAndUpdate(
+      { period, cycleDayIndex: Number(cycleDayIndex), displayOrder: Number(displayOrder) },
+      {
+        templateKey:  templateKey  || '',
+        targetValue:  Number(targetValue)  || 0,
+        rewardAmount: Number(rewardAmount) || 0,
+        isEnabled:    isEnabled !== false,
+      },
+      { upsert: true, new: true }
+    );
+
+    res.json({ success: true, entry });
+  } catch (err) {
+    console.error('[Missions] POST /admin/recurring error:', err);
+    res.status(500).json({ success: false, error: 'Server error' });
+  }
+});
+
+/**
+ * POST /api/missions/admin/recurring/batch
+ * Save all slots for a specific period + cycleDayIndex in one call.
+ * Body: { period, cycleDayIndex, slots: [{ displayOrder, templateKey, targetValue, rewardAmount, isEnabled }] }
+ */
+router.post('/admin/recurring/batch', requireAdmin, async (req, res) => {
+  try {
+    const { period, cycleDayIndex, slots } = req.body;
+
+    if (!period || cycleDayIndex == null || !Array.isArray(slots)) {
+      return res.status(400).json({ success: false, error: 'period, cycleDayIndex and slots are required' });
+    }
+    if (!['daily', 'weekly', 'monthly'].includes(period)) {
+      return res.status(400).json({ success: false, error: 'Invalid period' });
+    }
+
+    const maxIdx = period === 'daily' ? 6 : period === 'weekly' ? 3 : 0;
+    if (Number(cycleDayIndex) < 0 || Number(cycleDayIndex) > maxIdx) {
+      return res.status(400).json({ success: false, error: `cycleDayIndex out of range for ${period}` });
+    }
+
+    const ops = slots.map(slot =>
+      RecurringMissionConfig.findOneAndUpdate(
+        { period, cycleDayIndex: Number(cycleDayIndex), displayOrder: Number(slot.displayOrder) },
+        {
+          templateKey:  slot.templateKey  || '',
+          targetValue:  Number(slot.targetValue)  || 0,
+          rewardAmount: Number(slot.rewardAmount) || 0,
+          isEnabled:    slot.isEnabled !== false,
+        },
+        { upsert: true, new: true }
+      )
+    );
+
+    const saved = await Promise.all(ops);
+    res.json({ success: true, saved });
+  } catch (err) {
+    console.error('[Missions] POST /admin/recurring/batch error:', err);
+    res.status(500).json({ success: false, error: 'Server error' });
+  }
+});
+
+/**
+ * DELETE /api/missions/admin/recurring/period/:period/:cycleDayIndex
+ * Clear all recurring entries for a period + cycleDayIndex.
+ */
+router.delete('/admin/recurring/period/:period/:cycleDayIndex', requireAdmin, async (req, res) => {
+  try {
+    const { period, cycleDayIndex } = req.params;
+    await RecurringMissionConfig.deleteMany({ period, cycleDayIndex: Number(cycleDayIndex) });
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ success: false, error: 'Server error' });
+  }
+});
+
+/**
+ * DELETE /api/missions/admin/recurring/:id
+ * Delete a single recurring entry.
+ */
+router.delete('/admin/recurring/:id', requireAdmin, async (req, res) => {
+  try {
+    const { id } = req.params;
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ success: false, error: 'Invalid ID' });
+    }
+    await RecurringMissionConfig.findByIdAndDelete(id);
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ success: false, error: 'Server error' });
+  }
+});
+
 module.exports = router;
+
