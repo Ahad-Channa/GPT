@@ -640,6 +640,7 @@ const AdminMissions = () => {
   const [recurringData, setRecurringData] = useState([]);
   const [loading,       setLoading]       = useState(true);
   const [saving,        setSaving]        = useState(null);
+  const [savingBonus,   setSavingBonus]   = useState(false);
   // 'recurring' | 'instant'
   const [activeTab,     setActiveTab]     = useState('recurring');
 
@@ -656,17 +657,15 @@ const AdminMissions = () => {
         fetch(`${API}/missions/admin/recurring`,      { headers }),
       ]);
 
-      const [tmplData, cfgData, statsData, bonusData, scheduledJson, keysData, recurringJson] = await Promise.all([
+      const [tmplData, cfgData, statsData, bonusData, recurringJson] = await Promise.all([
         tmplRes.json(), cfgRes.json(), statsRes.json(), bonusRes.json(),
-        scheduledRes.json(), keysRes.json(), recurringRes.json(),
+        recurringRes.json(),
       ]);
 
       if (tmplData.success)      setTemplates(tmplData.templates);
       if (cfgData.success)       setConfigs(cfgData.configs);
       if (statsData.success)     setStats(statsData.stats);
       if (bonusData.success)     setBonusConfig(bonusData.config);
-      if (scheduledJson.success) setScheduledData(scheduledJson.scheduled);
-      if (keysData.success)      setUpcomingKeys(keysData.keys);
       if (recurringJson.success) setRecurringData(recurringJson.recurring);
     } catch (err) {
       toast.error('Failed to load mission data');
