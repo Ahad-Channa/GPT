@@ -419,12 +419,39 @@ router.post('/claim/:userMissionId', requireAuth, async (req, res) => {
       });
     }
 
-    const config = await MissionConfig.findById(um.configId);
-    if (!config || !config.isEnabled) {
-      return res.status(400).json({ success: false, error: 'Mission is no longer active' });
+    // ── Resolve config — check all 3 sources in priority order ──
+    // Scheduled override → Recurring default → Legacy MissionConfig
+    let config = null;
+    let configTemplateKey = '';
+    let configRewardAmount = 0;
+    let configTargetValue = 0;
+
+    // 1. Try ScheduledMissionConfig (has the same _id stored in configId for scheduled missions)
+    const scheduledCfg = await ScheduledMissionConfig.findById(um.configId).lean();
+    if (scheduledCfg) {
+      configTemplateKey  = scheduledCfg.templateKey;
+      configRewardAmount = scheduledCfg.rewardAmount;
+      configTargetValue  = scheduledCfg.targetValue;
+    } else {
+      // 2. Try RecurringMissionConfig
+      const recurringCfg = await RecurringMissionConfig.findById(um.configId).lean();
+      if (recurringCfg) {
+        configTemplateKey  = recurringCfg.templateKey;
+        configRewardAmount = recurringCfg.rewardAmount;
+        configTargetValue  = recurringCfg.targetValue;
+      } else {
+        // 3. Fallback to legacy MissionConfig
+        config = await MissionConfig.findById(um.configId);
+        if (!config || !config.isEnabled) {
+          return res.status(400).json({ success: false, error: 'Mission is no longer active' });
+        }
+        configTemplateKey  = config.templateKey;
+        configRewardAmount = config.rewardAmount;
+        configTargetValue  = config.targetValue;
+      }
     }
 
-    const reward = config.rewardAmount;
+    const reward = configRewardAmount;
     if (reward <= 0) {
       return res.status(400).json({ success: false, error: 'No reward configured' });
     }
@@ -447,16 +474,16 @@ router.post('/claim/:userMissionId', requireAuth, async (req, res) => {
       userId: user._id,
       transactionType: 'mission_reward',
       sourceType: 'mission',
-      sourceId: config._id,
+      sourceId: um.configId,
       amount: reward,
       balanceAfter: updated.walletBalance,
-      description: `Mission Reward — ${um.period} mission (${config.templateKey})`,
+      description: `Mission Reward — ${um.period} mission (${configTemplateKey})`,
       status: 'completed',
       metadata: {
         period: um.period,
         periodKey: um.periodKey,
-        templateKey: config.templateKey,
-        targetValue: config.targetValue,
+        templateKey: configTemplateKey,
+        targetValue: configTargetValue,
       },
     });
 
@@ -851,19 +878,53 @@ router.get('/admin/recurring', requireAdmin, async (req, res) => {
 
     const enriched = all.map(r => ({ ...r, template: tmplMap[r.templateKey] || null }));
 
-    // Cycle metadata for UI
-    const cycleMeta = {
-      daily:   { length: 7,  labels: ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'] },
-      weekly:  { length: 4,  labels: ['Week 1','Week 2','Week 3','Week 4'] },
-      monthly: { length: 1,  labels: ['Monthly Default'] },
+    // Current cycle indices (what is live RIGHT NOW)
+    const now = new Date();
+    const currentCycleIndex = {
+      daily:   getCycleIndex('daily',   now),
+      weekly:  getCycleIndex('weekly',  now),
+      monthly: getCycleIndex('monthly', now),
     };
 
-    res.json({ success: true, recurring: enriched, cycleMeta });
+    // Cycle metadata for UI
+    const cycleMeta = {
+      daily:   { length: 7, labels: ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'] },
+      weekly:  { length: 4, labels: ['Week 1','Week 2','Week 3','Week 4'] },
+      monthly: { length: 1, labels: ['Monthly Default'] },
+    };
+
+    res.json({ success: true, recurring: enriched, cycleMeta, currentCycleIndex });
   } catch (err) {
     console.error('[Missions] GET /admin/recurring error:', err);
     res.status(500).json({ success: false, error: 'Server error' });
   }
 });
+
+/**
+ * GET /api/missions/admin/recurring/current-index
+ * Returns which cycleDayIndex is currently active for each period.
+ * Used by the admin UI to highlight the "NOW" tab.
+ */
+router.get('/admin/recurring/current-index', requireAdmin, async (req, res) => {
+  try {
+    const now = new Date();
+    const currentCycleIndex = {
+      daily:   getCycleIndex('daily',   now),
+      weekly:  getCycleIndex('weekly',  now),
+      monthly: getCycleIndex('monthly', now),
+    };
+    const currentPeriodKey = {
+      daily:   getPeriodKey('daily'),
+      weekly:  getPeriodKey('weekly'),
+      monthly: getPeriodKey('monthly'),
+    };
+    res.json({ success: true, currentCycleIndex, currentPeriodKey });
+  } catch (err) {
+    res.status(500).json({ success: false, error: 'Server error' });
+  }
+});
+
+
 
 /**
  * POST /api/missions/admin/recurring

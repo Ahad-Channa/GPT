@@ -22,6 +22,26 @@ const CYCLE_META = {
   monthly: { length: 1, labels: ['Monthly Default'] },
 };
 
+// ── Compute current cycle index client-side (mirrors server logic) ──────────
+function getISOWeek(date) {
+  const d = new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()));
+  d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7));
+  const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+  return Math.ceil(((d - yearStart) / 86400000 + 1) / 7);
+}
+
+function getCurrentCycleIndex(period) {
+  const now = new Date();
+  if (period === 'daily') {
+    const utcDay = now.getUTCDay();
+    return utcDay === 0 ? 6 : utcDay - 1;
+  }
+  if (period === 'weekly') {
+    return (getISOWeek(now) - 1) % 4;
+  }
+  return 0; // monthly
+}
+
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
 const emptySlot = (displayOrder) => ({
@@ -195,12 +215,21 @@ function SlotCard({ slot, idx, templates, period, onUpdate, onClear }) {
  *
  * When saved, the configuration repeats automatically every cycle.
  */
-function RecurringPanel({ period, templates, recurringData, onSave, saving }) {
+function RecurringPanel({ period, templates, recurringData, scheduledData, currentPeriodKey, onSave, saving }) {
   const cfg    = PERIOD_COLORS[period];
   const label  = PERIOD_LABELS[period];
   const meta   = CYCLE_META[period];
 
-  const [activeIdx, setActiveIdx] = useState(0);
+  // Auto-open on the currently-active cycle index
+  const liveIdx = getCurrentCycleIndex(period);
+  const [activeIdx, setActiveIdx] = useState(liveIdx);
+
+  // Check if there's a scheduled override blocking the recurring config for the current period
+  // upcomingKeys[period] is an array; index 0 = current period key
+  const currentPK  = currentPeriodKey?.[period]?.[0];
+  const hasOverride = currentPK && (scheduledData || []).some(
+    s => s.period === period && s.periodKey === currentPK && s.templateKey
+  );
 
   // Build slots for a given cycleDayIndex from DB data
   const buildSlots = useCallback((idx) => {
@@ -222,7 +251,7 @@ function RecurringPanel({ period, templates, recurringData, onSave, saving }) {
     });
   }, [recurringData, period]);
 
-  const [slots, setSlots] = useState(() => buildSlots(0));
+  const [slots, setSlots] = useState(() => buildSlots(liveIdx));
 
   // Rebuild slots when active tab changes or data refreshes
   useEffect(() => { setSlots(buildSlots(activeIdx)); }, [activeIdx, buildSlots]);
@@ -281,38 +310,67 @@ function RecurringPanel({ period, templates, recurringData, onSave, saving }) {
         </button>
       </div>
 
+      {/* Scheduled-override WARNING */}
+      {hasOverride && activeIdx === liveIdx && (
+        <div
+          className="mx-5 mt-4 rounded-xl px-4 py-3 text-xs flex items-start gap-2"
+          style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.3)', color: '#fca5a5' }}
+        >
+          <FiZap className="shrink-0 mt-0.5 text-red-400" />
+          <span>
+            <strong className="text-red-400">Date Override Active:</strong> A specific date override exists for the current {period} period
+            (<code className="font-mono text-[10px] bg-red-900/30 px-1 py-0.5 rounded">{currentPK}</code>).
+            That override is taking priority over this recurring config.
+            Go to the <strong>Date Overrides</strong> tab and clear it to let the recurring config take effect.
+          </span>
+        </div>
+      )}
+
       {/* Cycle tabs (hidden for monthly since there's only one) */}
       {meta.length > 1 && (
-        <div
-          className="px-5 pt-4 flex flex-wrap gap-2"
-        >
+        <div className="px-5 pt-4 flex flex-wrap gap-2">
           {meta.labels.map((lbl, idx) => {
-            const done = hasData(idx);
+            const done    = hasData(idx);
+            const isLive  = idx === liveIdx;
+            const isOpen  = activeIdx === idx;
+
             return (
               <button
                 key={idx}
                 onClick={() => setActiveIdx(idx)}
                 className="rounded-xl px-4 py-2 text-xs font-bold transition-all border flex items-center gap-1.5"
                 style={{
-                  background: activeIdx === idx
+                  background: isOpen
                     ? cfg.accent
                     : done
                       ? `${cfg.accent}15`
                       : 'rgba(15,23,42,0.5)',
-                  borderColor: activeIdx === idx
+                  borderColor: isOpen
                     ? cfg.accent
                     : done
                       ? `${cfg.accent}50`
                       : 'rgba(51,65,85,0.5)',
-                  color: activeIdx === idx
+                  color: isOpen
                     ? (period === 'monthly' ? '#1c1400' : '#fff')
                     : done
                       ? cfg.text
                       : '#475569',
                 }}
               >
-                {done && activeIdx !== idx && <FiCheck className="text-[10px]" />}
+                {done && !isOpen && <FiCheck className="text-[10px]" />}
                 {lbl}
+                {isLive && (
+                  <span
+                    className="text-[9px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded-full"
+                    style={{
+                      background: isOpen ? 'rgba(255,255,255,0.25)' : `${cfg.accent}25`,
+                      color: isOpen ? '#fff' : cfg.accent,
+                      border: `1px solid ${isOpen ? 'rgba(255,255,255,0.3)' : `${cfg.accent}50`}`,
+                    }}
+                  >
+                    LIVE
+                  </span>
+                )}
               </button>
             );
           })}
@@ -327,10 +385,10 @@ function RecurringPanel({ period, templates, recurringData, onSave, saving }) {
         <FiRepeat className="shrink-0 mt-0.5" />
         <span>
           {period === 'daily' && (
-            <>Editing <strong>{CYCLE_META.daily.labels[activeIdx]}</strong> missions. These will automatically show every {CYCLE_META.daily.labels[activeIdx]} unless you override with a specific date override below.</>
+            <>Editing <strong>{CYCLE_META.daily.labels[activeIdx]}</strong> missions.{activeIdx === liveIdx && <> <strong className="text-yellow-400">(This is TODAY’s active set)</strong></>} These will automatically show every {CYCLE_META.daily.labels[activeIdx]} unless overridden.</>
           )}
           {period === 'weekly' && (
-            <>Editing <strong>{CYCLE_META.weekly.labels[activeIdx]}</strong> missions. Every 4th week this setup repeats automatically (ISO week mod 4 = {activeIdx}).</>
+            <>Editing <strong>{CYCLE_META.weekly.labels[activeIdx]}</strong> missions.{activeIdx === liveIdx && <> <strong className="text-yellow-400">(This is the CURRENT active week)</strong></>} Repeats every 4th week automatically (ISO week mod 4 = {activeIdx}).</>
           )}
           {period === 'monthly' && (
             <>These missions show <strong>every month</strong> automatically. If you update them, the new setup becomes the new default and keeps repeating.</>
@@ -1199,6 +1257,8 @@ const AdminMissions = () => {
               period={period}
               templates={templates}
               recurringData={recurringData}
+              scheduledData={scheduledData}
+              currentPeriodKey={upcomingKeys}
               onSave={handleSaveRecurring}
               saving={saving}
             />
