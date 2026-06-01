@@ -71,38 +71,6 @@ function formatPeriodKey(period, key) {
   return key;
 }
 
-// ── Apply-Mode Toggle ─────────────────────────────────────────────────────────
-function ApplyModeToggle({ value, onChange }) {
-  return (
-    <div
-      className="flex rounded-xl overflow-hidden border text-xs font-bold"
-      style={{ borderColor: 'rgba(51,65,85,0.6)' }}
-    >
-      <button
-        onClick={() => onChange('instant')}
-        className="flex items-center gap-1.5 px-3 py-1.5 transition-all"
-        style={{
-          background: value === 'instant' ? '#6366f1' : 'rgba(15,23,42,0.7)',
-          color: value === 'instant' ? '#fff' : '#64748b',
-        }}
-      >
-        <FiZap className="text-[11px]" /> Instant
-      </button>
-      <button
-        onClick={() => onChange('next_period')}
-        className="flex items-center gap-1.5 px-3 py-1.5 transition-all"
-        style={{
-          background: value === 'next_period' ? '#f59e0b' : 'rgba(15,23,42,0.7)',
-          color: value === 'next_period' ? '#1c1400' : '#64748b',
-        }}
-      >
-        <FiClock className="text-[11px]" />
-        Next Period
-      </button>
-    </div>
-  );
-}
-
 // ── Slot Card (shared between Live + Recurring + Schedule Ahead) ──────────────
 function SlotCard({ slot, idx, templates, period, onUpdate, onClear }) {
   const cfg     = PERIOD_COLORS[period];
@@ -224,13 +192,6 @@ function RecurringPanel({ period, templates, recurringData, scheduledData, curre
   const liveIdx = getCurrentCycleIndex(period);
   const [activeIdx, setActiveIdx] = useState(liveIdx);
 
-  // Check if there's a scheduled override blocking the recurring config for the current period
-  // upcomingKeys[period] is an array; index 0 = current period key
-  const currentPK  = currentPeriodKey?.[period]?.[0];
-  const hasOverride = currentPK && (scheduledData || []).some(
-    s => s.period === period && s.periodKey === currentPK && s.templateKey
-  );
-
   // Build slots for a given cycleDayIndex from DB data
   const buildSlots = useCallback((idx) => {
     return [1, 2, 3].map(order => {
@@ -310,22 +271,6 @@ function RecurringPanel({ period, templates, recurringData, scheduledData, curre
         </button>
       </div>
 
-      {/* Scheduled-override WARNING */}
-      {hasOverride && activeIdx === liveIdx && (
-        <div
-          className="mx-5 mt-4 rounded-xl px-4 py-3 text-xs flex items-start gap-2"
-          style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.3)', color: '#fca5a5' }}
-        >
-          <FiZap className="shrink-0 mt-0.5 text-red-400" />
-          <span>
-            <strong className="text-red-400">Date Override Active:</strong> A specific date override exists for the current {period} period
-            (<code className="font-mono text-[10px] bg-red-900/30 px-1 py-0.5 rounded">{currentPK}</code>).
-            That override is taking priority over this recurring config.
-            Go to the <strong>Date Overrides</strong> tab and clear it to let the recurring config take effect.
-          </span>
-        </div>
-      )}
-
       {/* Cycle tabs (hidden for monthly since there's only one) */}
       {meta.length > 1 && (
         <div className="px-5 pt-4 flex flex-wrap gap-2">
@@ -400,7 +345,6 @@ function RecurringPanel({ period, templates, recurringData, scheduledData, curre
 function PeriodPanel({ period, templates, configs, onSave, saving }) {
   const cfg   = PERIOD_COLORS[period];
   const label = PERIOD_LABELS[period];
-  const [applyMode, setApplyMode] = useState('instant');
 
   const buildSlots = () =>
     [1, 2, 3].map(order => {
@@ -446,47 +390,31 @@ function PeriodPanel({ period, templates, configs, onSave, saving }) {
           </div>
           <div>
             <h3 className="font-bold text-slate-100 text-base">{label} — Instant Override</h3>
-            <p className="text-xs text-slate-500">Apply immediately or stage for next period</p>
+            <p className="text-xs text-slate-500">Apply immediate updates to missions</p>
           </div>
         </div>
 
         <div className="flex items-center gap-3">
-          <ApplyModeToggle value={applyMode} onChange={setApplyMode} />
           <button
-            onClick={() => onSave(period, slots, applyMode)}
+            onClick={() => onSave(period, slots)}
             disabled={saving === period}
             className="flex items-center gap-2 px-4 py-2 rounded-xl font-bold text-sm disabled:opacity-50 transition-all hover:brightness-110"
             style={{
-              background: applyMode === 'next_period' ? '#f59e0b' : cfg.accent,
-              color: applyMode === 'next_period' ? '#1c1400' : '#fff',
-              boxShadow: `0 0 12px ${applyMode === 'next_period' ? 'rgba(245,158,11,0.4)' : `${cfg.accent}50`}`,
+              background: cfg.accent,
+              color: '#fff',
+              boxShadow: `0 0 12px ${cfg.accent}50`,
             }}
           >
             {saving === period ? (
               <><FiRefreshCw className="animate-spin text-xs" /> Saving…</>
             ) : (
               <>
-                {applyMode === 'next_period' ? <FiClock className="text-xs" /> : <FiZap className="text-xs" />}
-                {applyMode === 'next_period' ? `Schedule Next ${label}` : `Apply Now`}
+                <FiZap className="text-xs" /> Apply Now
               </>
             )}
           </button>
         </div>
       </div>
-
-      {/* Apply mode info banner */}
-      {applyMode === 'next_period' && (
-        <div
-          className="mx-5 mt-4 rounded-xl px-4 py-2.5 text-xs flex items-center gap-2"
-          style={{ background: 'rgba(245,158,11,0.1)', border: '1px solid rgba(245,158,11,0.25)', color: '#fcd34d' }}
-        >
-          <FiClock className="shrink-0" />
-          <span>
-            <strong>Next Period mode:</strong> Changes will take effect at the start of the <em>next</em> {period.toLowerCase()} period.
-            Users currently in progress will not be affected.
-          </span>
-        </div>
-      )}
 
       {/* Slot cards */}
       <div className="p-5 grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -501,186 +429,6 @@ function PeriodPanel({ period, templates, configs, onSave, saving }) {
             onClear={clearSlot}
           />
         ))}
-      </div>
-    </div>
-  );
-}
-
-// ── Schedule Ahead Panel ──────────────────────────────────────────────────────
-function ScheduleAheadPanel({ period, templates, upcomingKeys, scheduledData, onSaveScheduled, onClearScheduled, saving }) {
-  const cfg   = PERIOD_COLORS[period];
-  const label = PERIOD_LABELS[period];
-  const keys  = upcomingKeys?.[period] || [];
-
-  const [activeKey, setActiveKey] = useState(null);
-
-  const buildSlotsForKey = useCallback((pk) => {
-    return [1, 2, 3].map(order => {
-      const existing = (scheduledData || []).find(
-        s => s.period === period && s.periodKey === pk && s.displayOrder === order
-      );
-      if (existing) {
-        return {
-          templateKey:  existing.templateKey || '',
-          targetValue:  String(existing.targetValue || ''),
-          rewardAmount: String(existing.rewardAmount || ''),
-          isEnabled:    existing.isEnabled,
-          displayOrder: order,
-          scheduledId:  existing._id,
-        };
-      }
-      return emptySlot(order);
-    });
-  }, [scheduledData, period]);
-
-  const [editSlots, setEditSlots] = useState([]);
-
-  useEffect(() => {
-    if (activeKey) setEditSlots(buildSlotsForKey(activeKey));
-  }, [activeKey, buildSlotsForKey]);
-
-  const updateSlot = (idx, field, value) =>
-    setEditSlots(prev => prev.map((s, i) => i === idx ? { ...s, [field]: value } : s));
-
-  const clearSlot = (idx) =>
-    setEditSlots(prev => prev.map((s, i) => i === idx ? emptySlot(s.displayOrder) : s));
-
-  const hasSchedule = (pk) =>
-    (scheduledData || []).some(s => s.period === period && s.periodKey === pk && s.templateKey);
-
-  return (
-    <div
-      className="rounded-2xl overflow-hidden"
-      style={{ border: `1px solid ${cfg.border}`, background: cfg.bg }}
-    >
-      {/* Header */}
-      <div
-        className="flex items-center gap-3 px-5 py-4 border-b"
-        style={{ borderColor: cfg.border }}
-      >
-        <div
-          className="w-9 h-9 rounded-xl flex items-center justify-center"
-          style={{ background: `${cfg.accent}20`, color: cfg.accent, border: `1px solid ${cfg.accent}30` }}
-        >
-          <FiCalendar className="text-sm" />
-        </div>
-        <div>
-          <h3 className="font-bold text-slate-100 text-base">{label} — Date Overrides</h3>
-          <p className="text-xs text-slate-500">Override a specific date/week/month — takes priority over recurring config</p>
-        </div>
-      </div>
-
-      <div className="p-5 space-y-4">
-        {/* Period key list */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2">
-          {keys.map((pk, i) => {
-            const isCurrent = i === 0;
-            const scheduled = hasSchedule(pk);
-            const isOpen    = activeKey === pk;
-
-            return (
-              <button
-                key={pk}
-                onClick={() => setActiveKey(isOpen ? null : pk)}
-                className="rounded-xl px-4 py-3 text-left transition-all border hover:brightness-110"
-                style={{
-                  background: isOpen
-                    ? `${cfg.accent}25`
-                    : scheduled
-                      ? `${cfg.accent}10`
-                      : 'rgba(15,23,42,0.5)',
-                  borderColor: isOpen
-                    ? cfg.accent
-                    : scheduled
-                      ? `${cfg.accent}50`
-                      : 'rgba(51,65,85,0.5)',
-                }}
-              >
-                <div className="flex items-center justify-between mb-1">
-                  <span
-                    className="text-[10px] font-black uppercase tracking-widest"
-                    style={{ color: cfg.text }}
-                  >
-                    {isCurrent ? 'Current' : `+${i} ${period === 'daily' ? 'days' : period === 'weekly' ? 'weeks' : 'months'}`}
-                  </span>
-                  {scheduled
-                    ? <FiCheck className="text-xs" style={{ color: cfg.accent }} />
-                    : <FiChevronRight className="text-xs text-slate-600" />
-                  }
-                </div>
-                <div className="text-sm font-bold text-slate-200">
-                  {formatPeriodKey(period, pk)}
-                </div>
-                <div
-                  className="text-[10px] mt-1 font-medium"
-                  style={{ color: scheduled ? cfg.accent : '#475569' }}
-                >
-                  {scheduled ? '⚡ Custom override' : 'Using recurring default'}
-                </div>
-              </button>
-            );
-          })}
-        </div>
-
-        {/* Editor for the active slot */}
-        {activeKey && (
-          <div
-            className="rounded-2xl overflow-hidden border"
-            style={{ borderColor: cfg.border }}
-          >
-            {/* Editor header */}
-            <div
-              className="flex items-center justify-between px-5 py-4 border-b flex-wrap gap-3"
-              style={{ borderColor: cfg.border, background: `${cfg.accent}08` }}
-            >
-              <div>
-                <div className="text-xs text-slate-500 uppercase font-bold tracking-wider mb-0.5">Override Editing</div>
-                <div className="font-bold text-slate-100">{formatPeriodKey(period, activeKey)}</div>
-                <div className="text-[10px] text-slate-500 font-mono mt-0.5">{activeKey}</div>
-              </div>
-              <div className="flex items-center gap-2">
-                {hasSchedule(activeKey) && (
-                  <button
-                    onClick={() => { onClearScheduled(period, activeKey); setActiveKey(null); }}
-                    className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold text-red-400 hover:text-red-300 border border-red-500/30 hover:border-red-500/50 transition-all"
-                  >
-                    <FiTrash2 className="text-xs" /> Clear Override
-                  </button>
-                )}
-                <button
-                  onClick={() => onSaveScheduled(period, activeKey, editSlots)}
-                  disabled={saving === `${period}-${activeKey}`}
-                  className="flex items-center gap-2 px-4 py-2 rounded-xl font-bold text-sm disabled:opacity-50 transition-all hover:brightness-110"
-                  style={{
-                    background: cfg.accent,
-                    color: '#fff',
-                    boxShadow: `0 0 12px ${cfg.accent}50`,
-                  }}
-                >
-                  {saving === `${period}-${activeKey}`
-                    ? <><FiRefreshCw className="animate-spin text-xs" /> Saving…</>
-                    : <><FiSave className="text-xs" /> Save Override</>
-                  }
-                </button>
-              </div>
-            </div>
-
-            {/* Slot cards */}
-            <div className="p-5 grid grid-cols-1 md:grid-cols-3 gap-4">
-              {editSlots.map((slot, idx) => (
-                <SlotCard
-                  key={idx}
-                  slot={slot}
-                  idx={idx}
-                  templates={templates}
-                  period={period}
-                  onUpdate={updateSlot}
-                  onClear={clearSlot}
-                />
-              ))}
-            </div>
-          </div>
-        )}
       </div>
     </div>
   );
@@ -889,13 +637,10 @@ const AdminMissions = () => {
   const [configs,       setConfigs]       = useState([]);
   const [stats,         setStats]         = useState(null);
   const [bonusConfig,   setBonusConfig]   = useState(null);
-  const [scheduledData, setScheduledData] = useState([]);
   const [recurringData, setRecurringData] = useState([]);
-  const [upcomingKeys,  setUpcomingKeys]  = useState(null);
   const [loading,       setLoading]       = useState(true);
   const [saving,        setSaving]        = useState(null);
-  const [savingBonus,   setSavingBonus]   = useState(false);
-  // 'recurring' | 'instant' | 'schedule'
+  // 'recurring' | 'instant'
   const [activeTab,     setActiveTab]     = useState('recurring');
 
   const fetchData = useCallback(async () => {
@@ -903,13 +648,11 @@ const AdminMissions = () => {
       const token   = await currentUser.getIdToken();
       const headers = { Authorization: `Bearer ${token}` };
 
-      const [tmplRes, cfgRes, statsRes, bonusRes, scheduledRes, keysRes, recurringRes] = await Promise.all([
+      const [tmplRes, cfgRes, statsRes, bonusRes, recurringRes] = await Promise.all([
         fetch(`${API}/missions/admin/templates`,      { headers }),
         fetch(`${API}/missions/admin/configs`,        { headers }),
         fetch(`${API}/missions/admin/stats`,          { headers }),
         fetch(`${API}/missions/admin/period-bonus-config`, { headers }),
-        fetch(`${API}/missions/admin/scheduled`,      { headers }),
-        fetch(`${API}/missions/admin/upcoming-keys`,  { headers }),
         fetch(`${API}/missions/admin/recurring`,      { headers }),
       ]);
 
@@ -974,47 +717,12 @@ const AdminMissions = () => {
     }
   };
 
-  // ── Save Live Config (instant or next_period) ────────────────────────────
-  const handleSavePeriod = async (period, slots, applyMode = 'instant') => {
+  // ── Save Live Config ────────────────────────────
+  const handleSavePeriod = async (period, slots) => {
     setSaving(period);
     try {
       const token   = await currentUser.getIdToken();
       const headers = { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' };
-
-      if (applyMode === 'next_period') {
-        const nextKeyRes = await fetch(`${API}/missions/admin/upcoming-keys`, { headers: { Authorization: `Bearer ${token}` } });
-        const nextKeyData = await nextKeyRes.json();
-        const nextKey = nextKeyData.keys?.[period]?.[1];
-
-        if (!nextKey) throw new Error('Could not determine next period key');
-
-        const ops = slots.map(slot =>
-          fetch(`${API}/missions/admin/scheduled`, {
-            method: 'POST',
-            headers,
-            body: JSON.stringify({
-              period,
-              periodKey:    nextKey,
-              displayOrder: slot.displayOrder,
-              templateKey:  slot.templateKey || '',
-              targetValue:  Number(slot.targetValue) || 0,
-              rewardAmount: Number(slot.rewardAmount) || 0,
-              isEnabled:    slot.isEnabled,
-            }),
-          })
-        );
-
-        const results = await Promise.all(ops);
-        const failed  = results.filter(r => !r.ok);
-        if (failed.length > 0) {
-          const errJson = await failed[0].json().catch(() => ({}));
-          throw new Error(errJson.error || 'Some configs failed to schedule');
-        }
-
-        toast.success(`${PERIOD_LABELS[period]} missions scheduled for next ${period}!`, { icon: '📅' });
-        fetchData();
-        return;
-      }
 
       // Instant: upsert MissionConfig
       const ops = [];
@@ -1057,65 +765,7 @@ const AdminMissions = () => {
     }
   };
 
-  // ── Save Scheduled Config ────────────────────────────────────────────────
-  const handleSaveScheduled = async (period, periodKey, slots) => {
-    const savingKey = `${period}-${periodKey}`;
-    setSaving(savingKey);
-    try {
-      const token   = await currentUser.getIdToken();
-      const headers = { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' };
 
-      const ops = slots.map(slot =>
-        fetch(`${API}/missions/admin/scheduled`, {
-          method: 'POST',
-          headers,
-          body: JSON.stringify({
-            period,
-            periodKey,
-            displayOrder: slot.displayOrder,
-            templateKey:  slot.templateKey || '',
-            targetValue:  Number(slot.targetValue) || 0,
-            rewardAmount: Number(slot.rewardAmount) || 0,
-            isEnabled:    slot.isEnabled,
-          }),
-        })
-      );
-
-      const results = await Promise.all(ops);
-      const failed  = results.filter(r => !r.ok);
-      if (failed.length > 0) {
-        const errJson = await failed[0].json().catch(() => ({}));
-        throw new Error(errJson.error || 'Some slots failed to save');
-      }
-
-      toast.success(`Override saved for ${formatPeriodKey(period, periodKey)}!`, { icon: '📅' });
-      fetchData();
-    } catch (err) {
-      toast.error(err.message || 'Failed to save override');
-    } finally {
-      setSaving(null);
-    }
-  };
-
-  // ── Clear Scheduled Config ───────────────────────────────────────────────
-  const handleClearScheduled = async (period, periodKey) => {
-    try {
-      const token = await currentUser.getIdToken();
-      const res   = await fetch(`${API}/missions/admin/scheduled/period/${period}/${periodKey}`, {
-        method:  'DELETE',
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      const json = await res.json();
-      if (json.success) {
-        toast.success(`Override cleared — ${formatPeriodKey(period, periodKey)} will use recurring default.`);
-        fetchData();
-      } else {
-        toast.error(json.error || 'Failed to clear');
-      }
-    } catch {
-      toast.error('Network error');
-    }
-  };
 
   if (loading) {
     return (
@@ -1140,13 +790,6 @@ const AdminMissions = () => {
       color: '#6366f1',
       desc: 'Apply or stage changes now',
     },
-    {
-      id: 'schedule',
-      label: 'Date Overrides',
-      icon: <FiCalendar className="text-xs" />,
-      color: '#f59e0b',
-      desc: 'Override a specific date/week/month',
-    },
   ];
 
   return (
@@ -1158,8 +801,8 @@ const AdminMissions = () => {
             <FiTarget className="text-indigo-400 text-xl" />
             <h1 className="text-xl font-black text-slate-100">Mission Management</h1>
           </div>
-          <p className="text-slate-500 text-sm">
-            Configure recurring missions, apply instant overrides, or schedule specific date overrides.
+          <p className="text-slate-400 mt-2 text-sm max-w-2xl">
+            Configure recurring missions or apply instant overrides.
           </p>
         </div>
         <button
@@ -1203,8 +846,6 @@ const AdminMissions = () => {
               period={period}
               templates={templates}
               recurringData={recurringData}
-              scheduledData={scheduledData}
-              currentPeriodKey={upcomingKeys}
               onSave={handleSaveRecurring}
               saving={saving}
             />
@@ -1247,8 +888,7 @@ const AdminMissions = () => {
             style={{ background: 'rgba(99,102,241,0.08)', border: '1px solid rgba(99,102,241,0.2)', color: '#a5b4fc' }}
           >
             <strong>Instant Override:</strong> Use <span className="font-black text-indigo-400">⚡ Apply Now</span> to change missions immediately for the
-            current active period. Use <span className="font-black text-amber-400">🕐 Next Period</span> to stage
-            changes without disrupting users currently in progress.
+            current active period.
             <strong> Note: Instant changes do NOT affect the recurring config</strong> — they only override the live default.
           </div>
 
@@ -1259,34 +899,6 @@ const AdminMissions = () => {
               templates={templates}
               configs={configs}
               onSave={handleSavePeriod}
-              saving={saving}
-            />
-          ))}
-        </>
-      )}
-
-      {/* ── DATE OVERRIDES TAB ── */}
-      {activeTab === 'schedule' && (
-        <>
-          <div
-            className="rounded-xl px-4 py-3 text-xs leading-relaxed"
-            style={{ background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.2)', color: '#fcd34d' }}
-          >
-            <strong>Date Overrides:</strong> Override missions for a specific upcoming date, week, or month.
-            Daily shows the next <strong>7 days</strong>, Weekly shows the next <strong>7 weeks</strong>,
-            Monthly shows the next <strong>7 months</strong>. Overrides take priority over the recurring config
-            for that specific period only. Periods without an override automatically use the recurring default.
-          </div>
-
-          {['daily', 'weekly', 'monthly'].map(period => (
-            <ScheduleAheadPanel
-              key={period}
-              period={period}
-              templates={templates}
-              upcomingKeys={upcomingKeys}
-              scheduledData={scheduledData}
-              onSaveScheduled={handleSaveScheduled}
-              onClearScheduled={handleClearScheduled}
               saving={saving}
             />
           ))}

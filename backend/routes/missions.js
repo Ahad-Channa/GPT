@@ -5,7 +5,6 @@ const admin = require('../config/firebase');
 const User = require('../models/User');
 const MissionTemplate = require('../models/MissionTemplate');
 const MissionConfig = require('../models/MissionConfig');
-const ScheduledMissionConfig = require('../models/ScheduledMissionConfig');
 const RecurringMissionConfig = require('../models/RecurringMissionConfig');
 const UserMission = require('../models/UserMission');
 const PeriodBonus = require('../models/PeriodBonus');
@@ -62,62 +61,39 @@ const requireAdmin = async (req, res, next) => {
  * Returns array of mission objects with progress + claim status.
  *
  * Resolution order:
- *   1. ScheduledMissionConfig for this exact periodKey  ← spot overrides / instant
- *   2. RecurringMissionConfig for the matching cycleIndex ← NEW repeating default
- *   3. MissionConfig (legacy always-live default)         ← backward-compat fallback
+ *   1. RecurringMissionConfig for the matching cycleIndex ← NEW repeating default
+ *   2. MissionConfig (legacy always-live default)         ← backward-compat fallback
  */
 async function buildPeriodMissions(userId, period) {
   const periodKey  = getPeriodKey(period);
   const cycleIndex = getCycleIndex(period);
   const { end }    = getMissionPeriodBounds(period);
 
-  // ── Step 1: exact scheduled override ──
-  const scheduled = await ScheduledMissionConfig.find({ period, periodKey })
-    .sort({ displayOrder: 1 })
-    .lean();
-
   let configs;
-  let isScheduledOverride = false;
   let isRecurringDefault  = false;
 
-  if (scheduled.length > 0) {
-    configs = scheduled
-      .filter(s => s.isEnabled && s.templateKey)
-      .map(s => ({
-        _id: s._id,
-        templateKey:  s.templateKey,
-        period:       s.period,
-        displayOrder: s.displayOrder,
-        targetValue:  s.targetValue,
-        rewardAmount: s.rewardAmount,
-        isEnabled:    s.isEnabled,
-        _scheduledId: s._id,
-      }));
-    isScheduledOverride = true;
+  // ── Step 1: recurring default for this cycle index ──
+  const recurring = await RecurringMissionConfig.find({
+    period,
+    cycleDayIndex: cycleIndex,
+    isEnabled: true,
+  })
+    .sort({ displayOrder: 1 })
+    .limit(3)
+    .lean();
+
+  if (recurring.length > 0) {
+    configs = recurring.filter(r => r.templateKey && r.targetValue > 0);
+    isRecurringDefault = true;
   } else {
-    // ── Step 2: recurring default for this cycle index ──
-    const recurring = await RecurringMissionConfig.find({
-      period,
-      cycleDayIndex: cycleIndex,
-      isEnabled: true,
-    })
+    // ── Step 2: legacy MissionConfig fallback ──
+    configs = await MissionConfig.find({ period, isEnabled: true })
       .sort({ displayOrder: 1 })
       .limit(3)
       .lean();
-
-    if (recurring.length > 0) {
-      configs = recurring.filter(r => r.templateKey && r.targetValue > 0);
-      isRecurringDefault = true;
-    } else {
-      // ── Step 3: legacy MissionConfig fallback ──
-      configs = await MissionConfig.find({ period, isEnabled: true })
-        .sort({ displayOrder: 1 })
-        .limit(3)
-        .lean();
-    }
   }
 
-  if (!configs.length) return { missions: [], periodKey, endsAt: end, isScheduledOverride, isRecurringDefault };
+  if (!configs.length) return { missions: [], periodKey, endsAt: end, isRecurringDefault };
 
   const configIds = configs.map(c => c._id);
 
@@ -167,7 +143,7 @@ async function buildPeriodMissions(userId, period) {
     };
   });
 
-  return { missions, periodKey, endsAt: end, isScheduledOverride, isRecurringDefault };
+  return { missions, periodKey, endsAt: end, isRecurringDefault };
 }
 
 // ─── USER ENDPOINTS ───────────────────────────────────────────────────────────
@@ -419,36 +395,28 @@ router.post('/claim/:userMissionId', requireAuth, async (req, res) => {
       });
     }
 
-    // ── Resolve config — check all 3 sources in priority order ──
-    // Scheduled override → Recurring default → Legacy MissionConfig
+    // ── Resolve config — check both sources in priority order ──
+    // Recurring default → Legacy MissionConfig
     let config = null;
     let configTemplateKey = '';
     let configRewardAmount = 0;
     let configTargetValue = 0;
 
-    // 1. Try ScheduledMissionConfig (has the same _id stored in configId for scheduled missions)
-    const scheduledCfg = await ScheduledMissionConfig.findById(um.configId).lean();
-    if (scheduledCfg) {
-      configTemplateKey  = scheduledCfg.templateKey;
-      configRewardAmount = scheduledCfg.rewardAmount;
-      configTargetValue  = scheduledCfg.targetValue;
+    // 1. Try RecurringMissionConfig
+    const recurringCfg = await RecurringMissionConfig.findById(um.configId).lean();
+    if (recurringCfg) {
+      configTemplateKey  = recurringCfg.templateKey;
+      configRewardAmount = recurringCfg.rewardAmount;
+      configTargetValue  = recurringCfg.targetValue;
     } else {
-      // 2. Try RecurringMissionConfig
-      const recurringCfg = await RecurringMissionConfig.findById(um.configId).lean();
-      if (recurringCfg) {
-        configTemplateKey  = recurringCfg.templateKey;
-        configRewardAmount = recurringCfg.rewardAmount;
-        configTargetValue  = recurringCfg.targetValue;
-      } else {
-        // 3. Fallback to legacy MissionConfig
-        config = await MissionConfig.findById(um.configId);
-        if (!config || !config.isEnabled) {
-          return res.status(400).json({ success: false, error: 'Mission is no longer active' });
-        }
-        configTemplateKey  = config.templateKey;
-        configRewardAmount = config.rewardAmount;
-        configTargetValue  = config.targetValue;
+      // 2. Fallback to legacy MissionConfig
+      config = await MissionConfig.findById(um.configId);
+      if (!config || !config.isEnabled) {
+        return res.status(400).json({ success: false, error: 'Mission is no longer active' });
       }
+      configTemplateKey  = config.templateKey;
+      configRewardAmount = config.rewardAmount;
+      configTargetValue  = config.targetValue;
     }
 
     const reward = configRewardAmount;
@@ -586,11 +554,6 @@ router.post('/admin/configs', requireAdmin, async (req, res) => {
       { upsert: true, new: true }
     );
 
-    // ── Instant save: clear any scheduled override for the CURRENT period key ──
-    // Scheduled entries take priority over MissionConfig in buildPeriodMissions,
-    // so if a stale scheduled override exists for today it would hide the live config.
-    const currentPeriodKey = getPeriodKey(period);
-    await ScheduledMissionConfig.deleteMany({ period, periodKey: currentPeriodKey });
 
     res.json({ success: true, config });
   } catch (err) {
@@ -660,136 +623,7 @@ router.delete('/admin/configs/:id', requireAdmin, async (req, res) => {
   }
 });
 
-// ─── ADMIN SCHEDULED CONFIG ENDPOINTS ────────────────────────────────────────
 
-/**
- * GET /api/missions/admin/upcoming-keys
- * Returns the next 7 period keys for each period type.
- * Used by the admin UI to render the Schedule Ahead grid.
- */
-router.get('/admin/upcoming-keys', requireAdmin, async (req, res) => {
-  try {
-    const keys = {
-      daily: getUpcomingPeriodKeys('daily', 7),
-      weekly: getUpcomingPeriodKeys('weekly', 7),
-      monthly: getUpcomingPeriodKeys('monthly', 7),
-    };
-    res.json({ success: true, keys });
-  } catch (err) {
-    res.status(500).json({ success: false, error: 'Server error' });
-  }
-});
-
-/**
- * GET /api/missions/admin/scheduled
- * Returns all scheduled mission configs, enriched with template info.
- * Grouped by period + periodKey for UI convenience.
- */
-router.get('/admin/scheduled', requireAdmin, async (req, res) => {
-  try {
-    const all = await ScheduledMissionConfig.find()
-      .sort({ period: 1, periodKey: 1, displayOrder: 1 })
-      .lean();
-
-    // Enrich with template data
-    const templateKeys = [...new Set(all.map(s => s.templateKey).filter(Boolean))];
-    const templates = await MissionTemplate.find({ key: { $in: templateKeys } }).lean();
-    const tmplMap = {};
-    for (const t of templates) tmplMap[t.key] = t;
-
-    const enriched = all.map(s => ({ ...s, template: tmplMap[s.templateKey] || null }));
-
-    res.json({ success: true, scheduled: enriched });
-  } catch (err) {
-    res.status(500).json({ success: false, error: 'Server error' });
-  }
-});
-
-/**
- * POST /api/missions/admin/scheduled
- * Create or update a scheduled mission config entry for a specific periodKey.
- * Body: { period, periodKey, displayOrder, templateKey, targetValue, rewardAmount, isEnabled }
- *
- * Also accepts applyMode='next_period' from the main configs endpoint.
- */
-router.post('/admin/scheduled', requireAdmin, async (req, res) => {
-  try {
-    const { period, periodKey, displayOrder, templateKey, targetValue, rewardAmount, isEnabled } = req.body;
-
-    if (!period || !periodKey || !displayOrder) {
-      return res.status(400).json({ success: false, error: 'period, periodKey and displayOrder are required' });
-    }
-    if (!['daily', 'weekly', 'monthly'].includes(period)) {
-      return res.status(400).json({ success: false, error: 'Invalid period' });
-    }
-    if (displayOrder < 1 || displayOrder > 3) {
-      return res.status(400).json({ success: false, error: 'displayOrder must be 1–3' });
-    }
-
-    // Validate template if provided
-    if (templateKey) {
-      const template = await MissionTemplate.findOne({ key: templateKey, isActive: true });
-      if (!template) {
-        return res.status(400).json({ success: false, error: 'Template not found or inactive' });
-      }
-      if (!template.allowedPeriods.includes(period)) {
-        return res.status(400).json({
-          success: false,
-          error: `Template not allowed for ${period} missions`,
-        });
-      }
-    }
-
-    // Upsert: one slot per period + periodKey + displayOrder
-    const entry = await ScheduledMissionConfig.findOneAndUpdate(
-      { period, periodKey, displayOrder: Number(displayOrder) },
-      {
-        templateKey: templateKey || '',
-        targetValue: Number(targetValue) || 0,
-        rewardAmount: Number(rewardAmount) || 0,
-        isEnabled: isEnabled !== false,
-      },
-      { upsert: true, new: true }
-    );
-
-    res.json({ success: true, entry });
-  } catch (err) {
-    console.error('[Missions] POST /admin/scheduled error:', err);
-    res.status(500).json({ success: false, error: 'Server error' });
-  }
-});
-
-/**
- * DELETE /api/missions/admin/scheduled/period/:period/:periodKey
- * Remove ALL scheduled entries for a given period + periodKey (clear entire slot set).
- * MUST be defined before /admin/scheduled/:id so Express doesn't treat "period" as an ObjectId.
- */
-router.delete('/admin/scheduled/period/:period/:periodKey', requireAdmin, async (req, res) => {
-  try {
-    const { period, periodKey } = req.params;
-    await ScheduledMissionConfig.deleteMany({ period, periodKey });
-    res.json({ success: true });
-  } catch (err) {
-    res.status(500).json({ success: false, error: 'Server error' });
-  }
-});
-
-/**
- * DELETE /api/missions/admin/scheduled/:id
- * Remove a single scheduled mission config entry.
- */
-router.delete('/admin/scheduled/:id', requireAdmin, async (req, res) => {
-  try {
-    const { id } = req.params;
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({ success: false, error: 'Invalid ID' });
-    }
-    await ScheduledMissionConfig.findByIdAndDelete(id);
-    res.json({ success: true });
-  } catch (err) {
-    res.status(500).json({ success: false, error: 'Server error' });
-  }
-});
 
 /**
  * GET /api/missions/admin/stats

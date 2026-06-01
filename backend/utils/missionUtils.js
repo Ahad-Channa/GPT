@@ -318,7 +318,6 @@ async function incrementMissionProgress(userId, trackingField, incrementBy = 1) 
   try {
     const MissionConfig          = require('../models/MissionConfig');
     const RecurringMissionConfig = require('../models/RecurringMissionConfig');
-    const ScheduledMissionConfig = require('../models/ScheduledMissionConfig');
     const UserMission            = require('../models/UserMission');
 
     const periods = ['daily', 'weekly', 'monthly'];
@@ -332,35 +331,25 @@ async function incrementMissionProgress(userId, trackingField, incrementBy = 1) 
       const templateKeys = templates.map(t => t.key);
 
       // ── Resolve active configs (same priority as buildPeriodMissions) ──
-      // 1. Scheduled override for exact periodKey
-      const scheduled = await ScheduledMissionConfig.find({ period, periodKey })
-        .sort({ displayOrder: 1 }).lean();
+      // 1. Recurring config for this cycle index
+      const recurring = await RecurringMissionConfig.find({
+        period,
+        cycleDayIndex: cycleIndex,
+        isEnabled: true,
+        templateKey: { $in: templateKeys },
+      }).lean();
 
       let configs;
-      if (scheduled.length > 0) {
-        configs = scheduled
-          .filter(s => s.isEnabled && s.templateKey && templateKeys.includes(s.templateKey))
-          .map(s => ({ _id: s._id, templateKey: s.templateKey, targetValue: s.targetValue, rewardAmount: s.rewardAmount }));
+      if (recurring.length > 0) {
+        configs = recurring.map(r => ({ _id: r._id, templateKey: r.templateKey, targetValue: r.targetValue, rewardAmount: r.rewardAmount }));
       } else {
-        // 2. Recurring config for this cycle index
-        const recurring = await RecurringMissionConfig.find({
-          period,
-          cycleDayIndex: cycleIndex,
-          isEnabled: true,
-          templateKey: { $in: templateKeys },
-        }).lean();
-
-        if (recurring.length > 0) {
-          configs = recurring.map(r => ({ _id: r._id, templateKey: r.templateKey, targetValue: r.targetValue, rewardAmount: r.rewardAmount }));
-        } else {
-          // 3. Legacy MissionConfig fallback
+        // 2. Legacy MissionConfig fallback
           configs = await MissionConfig.find({
             period,
             isEnabled: true,
             templateKey: { $in: templateKeys },
           }).lean();
         }
-      }
 
       for (const config of configs) {
         if (!config.targetValue) continue; // skip empty/disabled slots

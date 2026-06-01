@@ -8,10 +8,9 @@ const mongoose = require('mongoose');
  *   weekly:  4 entries (cycleDayIndex 1–4), repeats every 4 weeks.
  *   monthly: 1 entry  (cycleDayIndex 0), repeats every month.
  *
- * Resolution at runtime:
- *   1. ScheduledMissionConfig for the exact periodKey → use if found  (spot overrides / instant changes)
- *   2. RecurringMissionConfig for the matching cycleIndex              ← NEW default
- *   3. MissionConfig (legacy always-live default)                     ← fallback
+ * Resolution Order during mission building:
+ *   1. RecurringMissionConfig for the exact cycleDayIndex → use if found (repeating defaults)
+ *   2. MissionConfig → fallback to legacy always-live defaults)                     ← fallback
  *
  * cycleDayIndex mapping:
  *   daily   → dayOfWeek (0=Monday, 1=Tuesday … 6=Sunday)
