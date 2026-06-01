@@ -377,25 +377,6 @@ function RecurringPanel({ period, templates, recurringData, scheduledData, curre
         </div>
       )}
 
-      {/* Info banner */}
-      <div
-        className="mx-5 mt-4 rounded-xl px-4 py-2.5 text-xs flex items-start gap-2"
-        style={{ background: `${cfg.accent}08`, border: `1px solid ${cfg.accent}20`, color: cfg.text }}
-      >
-        <FiRepeat className="shrink-0 mt-0.5" />
-        <span>
-          {period === 'daily' && (
-            <>Editing <strong>{CYCLE_META.daily.labels[activeIdx]}</strong> missions.{activeIdx === liveIdx && <> <strong className="text-yellow-400">(This is TODAY’s active set)</strong></>} These will automatically show every {CYCLE_META.daily.labels[activeIdx]} unless overridden.</>
-          )}
-          {period === 'weekly' && (
-            <>Editing <strong>{CYCLE_META.weekly.labels[activeIdx]}</strong> missions.{activeIdx === liveIdx && <> <strong className="text-yellow-400">(This is the CURRENT active week)</strong></>} Repeats every 4th week automatically (ISO week mod 4 = {activeIdx}).</>
-          )}
-          {period === 'monthly' && (
-            <>These missions show <strong>every month</strong> automatically. If you update them, the new setup becomes the new default and keeps repeating.</>
-          )}
-        </span>
-      </div>
-
       {/* Slot cards */}
       <div className="p-5 grid grid-cols-1 md:grid-cols-3 gap-4">
         {slots.map((slot, idx) => (
@@ -413,6 +394,7 @@ function RecurringPanel({ period, templates, recurringData, scheduledData, curre
     </div>
   );
 }
+
 
 // ── Live Period Panel ─────────────────────────────────────────────────────────
 function PeriodPanel({ period, templates, configs, onSave, saving }) {
@@ -1241,15 +1223,6 @@ const AdminMissions = () => {
       {/* ── RECURRING CONFIG TAB ── */}
       {activeTab === 'recurring' && (
         <>
-          <div
-            className="rounded-xl px-4 py-3 text-xs leading-relaxed"
-            style={{ background: 'rgba(16,185,129,0.08)', border: '1px solid rgba(16,185,129,0.2)', color: '#6ee7b7' }}
-          >
-            <strong>Recurring Config:</strong> Set missions once and they repeat automatically.
-            Daily missions repeat every week (same missions every Monday, Tuesday, etc.).
-            Weekly missions use a 4-week cycle that repeats endlessly.
-            Monthly missions repeat every month — when you change them, the new version becomes the new default.
-          </div>
 
           {['daily', 'weekly', 'monthly'].map(period => (
             <RecurringPanel
