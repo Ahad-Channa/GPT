@@ -1173,33 +1173,6 @@ const AdminMissions = () => {
       {/* Stats */}
       <StatsBar stats={stats} />
 
-      {/* How it works */}
-      <div
-        className="rounded-xl px-4 py-3 text-xs leading-relaxed space-y-1"
-        style={{ background: 'rgba(16,185,129,0.06)', border: '1px solid rgba(16,185,129,0.2)', color: '#6ee7b7' }}
-      >
-        <div className="font-black text-sm mb-2 flex items-center gap-2">
-          <FiRepeat /> How the Mission System Works
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-slate-400">
-          <div className="rounded-lg p-3" style={{ background: 'rgba(16,185,129,0.08)', border: '1px solid rgba(16,185,129,0.15)' }}>
-            <div className="text-green-400 font-bold mb-1 flex items-center gap-1.5"><FiRepeat className="text-[11px]" /> 1 · Recurring (default)</div>
-            Configure Mon–Sun for daily, 4 weeks for weekly, or one monthly default.
-            These <strong>repeat automatically forever</strong> until you change them.
-          </div>
-          <div className="rounded-lg p-3" style={{ background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.15)' }}>
-            <div className="text-amber-400 font-bold mb-1 flex items-center gap-1.5"><FiCalendar className="text-[11px]" /> 2 · Date Override (optional)</div>
-            Override a specific date, week, or month.
-            Takes <strong>priority over recurring</strong> for that one period only.
-          </div>
-          <div className="rounded-lg p-3" style={{ background: 'rgba(99,102,241,0.08)', border: '1px solid rgba(99,102,241,0.15)' }}>
-            <div className="text-indigo-400 font-bold mb-1 flex items-center gap-1.5"><FiZap className="text-[11px]" /> 3 · Instant Override (emergency)</div>
-            Apply changes <strong>right now</strong> — useful for mistakes or urgent fixes.
-            Highest priority, affects the current live period.
-          </div>
-        </div>
-      </div>
-
       {/* Tab Switcher */}
       <div
         className="flex rounded-xl overflow-hidden border p-1 gap-1"
