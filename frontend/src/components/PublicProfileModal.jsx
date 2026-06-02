@@ -273,20 +273,9 @@ const PublicProfileModal = ({ userId, onClose }) => {
                   background: 'rgba(99,102,241,0.04)',
                   border: '1px solid rgba(99,102,241,0.15)',
                   display: 'flex', flexDirection: 'column', alignItems: 'center',
-                  justifyContent: 'center', gap: '12px', textAlign: 'center',
+                  justifyContent: 'center', textAlign: 'center',
                 }}>
-                  <div style={{
-                    width: '52px', height: '52px', borderRadius: '14px',
-                    background: 'rgba(99,102,241,0.10)',
-                    border: '1px solid rgba(99,102,241,0.20)',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  }}>
-                    <FiShield size={22} color="#818cf8" />
-                  </div>
-                  <div style={{ fontSize: '15px', fontWeight: 700, color: '#fff' }}>Earnings are private</div>
-                  <div style={{ fontSize: '13px', color: '#64748b', maxWidth: '260px' }}>
-                    This user has chosen to keep their offer history and earnings private.
-                  </div>
+                  <div style={{ fontSize: '15px', fontWeight: 700, color: '#fff' }}>This profile is private.</div>
                 </div>
               ) : (
                 /* Recent Activity — public profiles only */
