@@ -60,42 +60,24 @@ const RoleSymbol = ({ user }) => {
     );
   }
 
-  /* ── admin: VIP badge + ADMIN pill, no bolt icon ── */
+  /* ── admin: VIP badge only — role shown in hover popup ── */
   if (role === 'admin') {
     const vipLevel = getLevelFromEarned(user?.totalEarned || 0);
     const color = '#ef4444';
     const rankLabel = vipLevel ? getLevelLabel(vipLevel) : null;
-    return (
-      <div
-        onMouseEnter={() => {}}
-        onMouseLeave={() => {}}
-        style={{ position: 'relative', display: 'inline-flex', alignItems: 'center', gap: 4, cursor: 'default' }}
-      >
-        {/* VIP badge (if ranked) */}
-        {vipLevel && (
-          <HoverBadge
-            badge={<VipBadge tier={vipLevel.tier} rank={vipLevel.rank} size="xs" />}
-            label={rankLabel ? `Admin · ${rankLabel}` : 'Admin'}
-            color={color}
-            shift={0}
-          />
-        )}
-        {/* ADMIN pill */}
+    const popupLabel = rankLabel ? `Admin · ${rankLabel}` : 'Admin';
+    if (vipLevel) {
+      return (
         <HoverBadge
-          badge={
-            <span style={{
-              background: 'rgba(239,68,68,0.15)', color: '#ef4444',
-              fontSize: '0.6rem', fontWeight: 800, padding: '1px 5px',
-              borderRadius: '4px', border: '1px solid rgba(239,68,68,0.35)',
-              letterSpacing: '0.05em'
-            }}>ADMIN</span>
-          }
-          label={rankLabel ? `Admin · ${rankLabel}` : 'Admin'}
+          badge={<VipBadge tier={vipLevel.tier} rank={vipLevel.rank} size="xs" />}
+          label={popupLabel}
           color={color}
           shift={0}
         />
-      </div>
-    );
+      );
+    }
+    /* admin with no VIP rank — show nothing visible, popup still works via HoverBadge on an empty element */
+    return null;
   }
 
   /* ── moderator ── */
@@ -607,9 +589,6 @@ const ChatSidebar = ({ isOpen, onClose }) => {
                 }}>
                   {mongoUser ? (
                     <form onSubmit={sendMessage} style={{ display: 'flex', gap: 7, alignItems: 'flex-end' }}>
-                      <div style={{ paddingBottom: 6, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', width: 28 }}>
-                        <RoleSymbol user={mongoUser} />
-                      </div>
                       <div style={{ flex: 1, position: 'relative' }}>
                         <input
                           ref={inputRef}
@@ -656,11 +635,7 @@ const ChatSidebar = ({ isOpen, onClose }) => {
                       Log in to join the conversation
                     </p>
                   )}
-                  {canModerate && (
-                    <p style={{ margin: '5px 0 0 35px', fontSize: '0.62rem', color: '#1e293b' }}>
-                      Hover messages to moderate
-                    </p>
-                  )}
+
                 </div>
               </>
             )}
