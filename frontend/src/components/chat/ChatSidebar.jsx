@@ -432,14 +432,15 @@ const ChatSidebar = ({ isOpen, onClose }) => {
 
               {/* Right: tab switcher + close */}
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                {/* Tab pills */}
+                {/* Tab buttons */}
                 <div style={{
-                  display: 'flex', gap: 3,
-                  background: 'rgba(255,255,255,0.05)',
-                  borderRadius: 9, padding: '3px'
+                  display: 'flex', gap: 6,
+                  background: 'rgba(255,255,255,0.02)',
+                  borderRadius: 12, padding: '4px',
+                  border: '1px solid rgba(255,255,255,0.04)'
                 }}>
                   {[
-                    { key: 'chat', icon: FiMessageSquare, title: 'Public Chat' },
+                    { key: 'chat', icon: FiMessageSquare, title: 'Live Chat' },
                     { key: 'support', icon: FiHeadphones, title: 'Support' }
                   ].map(({ key, icon: Icon, title }) => {
                     const active = activeTab === key;
@@ -447,19 +448,20 @@ const ChatSidebar = ({ isOpen, onClose }) => {
                       <button
                         key={key}
                         onClick={() => setActiveTab(key)}
-                        title={title}
                         style={{
-                          display: 'flex', alignItems: 'center', justifyContent: 'center',
-                          width: 30, height: 30, borderRadius: 7, border: 'none', cursor: 'pointer',
-                          background: active ? 'rgba(99,102,241,0.3)' : 'transparent',
-                          color: active ? '#a5b4fc' : '#475569',
-                          transition: 'all 0.18s',
-                          boxShadow: active ? 'inset 0 0 0 1px rgba(99,102,241,0.4)' : 'none'
+                          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+                          padding: '6px 14px', borderRadius: 8, border: 'none', cursor: 'pointer',
+                          background: active ? '#6366f1' : 'transparent',
+                          color: active ? '#ffffff' : '#64748b',
+                          fontWeight: 600, fontSize: '0.75rem',
+                          transition: 'all 0.2s ease',
+                          boxShadow: active ? '0 2px 8px rgba(99,102,241,0.3)' : 'none'
                         }}
                         onMouseEnter={e => { if (!active) e.currentTarget.style.color = '#94a3b8'; }}
-                        onMouseLeave={e => { if (!active) e.currentTarget.style.color = '#475569'; }}
+                        onMouseLeave={e => { if (!active) e.currentTarget.style.color = '#64748b'; }}
                       >
                         <Icon style={{ fontSize: 14 }} />
+                        {title}
                       </button>
                     );
                   })}
