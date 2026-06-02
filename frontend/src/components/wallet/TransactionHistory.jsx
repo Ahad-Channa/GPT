@@ -205,11 +205,6 @@ const TransactionHistory = ({ refreshKey = 0, onStatsLoaded }) => {
                   animate={{ opacity: 1 }}
                   className="flex items-center gap-4 px-5 py-4 hover:bg-white/[0.02] transition-colors"
                 >
-                  {/* Icon bubble */}
-                  <div className={`w-9 h-9 rounded-xl bg-white/[0.04] border border-white/[0.07] flex items-center justify-center flex-shrink-0`}>
-                    <Icon className={`${config.color} text-sm`} />
-                  </div>
-
                   {/* Label + description */}
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-1.5 flex-wrap">
@@ -229,7 +224,7 @@ const TransactionHistory = ({ refreshKey = 0, onStatsLoaded }) => {
 
                   {/* Amount + time */}
                   <div className="text-right flex-shrink-0">
-                    <p className={`text-sm font-bold font-mono ${isDebit ? 'text-red-400' : 'text-emerald-400'}`}>
+                    <p className={`text-sm font-bold ${isDebit ? 'text-red-400' : 'text-emerald-400'}`}>
                       {isDebit ? '' : '+'}{tx.amount.toLocaleString()}
                     </p>
                     <p className="text-[10px] text-slate-600 mt-0.5">{formatRelativeTime(tx.createdAt)}</p>

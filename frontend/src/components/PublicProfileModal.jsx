@@ -329,14 +329,6 @@ const PublicProfileModal = ({ userId, onClose }) => {
                             }}
                           >
                             <div style={{ display: 'flex', alignItems: 'center', gap: '12px', minWidth: 0 }}>
-                              <div style={{
-                                width: '34px', height: '34px', borderRadius: '10px',
-                                background: 'rgba(16,185,129,0.10)',
-                                border: '1px solid rgba(16,185,129,0.2)',
-                                display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
-                              }}>
-                                <FiTrendingUp size={14} color="#34d399" />
-                              </div>
                               <div style={{ minWidth: 0 }}>
                                 <div style={{
                                   fontSize: '13px', fontWeight: 600, color: '#e2e8f0',
@@ -350,10 +342,9 @@ const PublicProfileModal = ({ userId, onClose }) => {
                               </div>
                             </div>
                             <div style={{ textAlign: 'right', flexShrink: 0 }}>
-                              <div style={{ fontSize: '13px', fontWeight: 700, color: '#34d399', fontFamily: 'monospace' }}>
+                              <div style={{ fontSize: '13px', fontWeight: 700, color: '#34d399' }}>
                                 +{(offer.amount || 0).toLocaleString()}
                               </div>
-                              <CoinIcon size={12} />
                             </div>
                           </div>
                         ))}

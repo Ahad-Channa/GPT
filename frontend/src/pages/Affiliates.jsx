@@ -92,7 +92,7 @@ const HistoryList = ({ transactions, loading, error, hasMore, onLoadMore, loadin
                   <span className="text-[10px] text-slate-600">{timeAgo(tx.createdAt)}</span>
                 </div>
               </div>
-              <span className={`text-sm font-bold font-mono flex-shrink-0 ${isDebit ? 'text-rose-400' : 'text-emerald-400'}`}>
+              <span className={`text-sm font-bold flex-shrink-0 ${isDebit ? 'text-rose-400' : 'text-emerald-400'}`}>
                 {amountStr}
               </span>
             </div>

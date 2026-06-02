@@ -395,7 +395,7 @@ const HistoryList = ({ transactions, loading, error, hasMore, onLoadMore, loadin
               </div>
 
               {/* Amount */}
-              <span className={`text-sm font-bold font-mono flex-shrink-0 ${isDebit ? 'text-rose-400' : 'text-emerald-400'}`}>
+              <span className={`text-sm font-bold flex-shrink-0 ${isDebit ? 'text-rose-400' : 'text-emerald-400'}`}>
                 {amountStr}
               </span>
             </div>
@@ -528,22 +528,11 @@ const ClickedOfferRow = ({ offer, token, onRefresh }) => {
     <div className="px-6 py-4">
       {/* Row header */}
       <div className="flex items-center gap-3">
-        {/* Icon / cover thumb */}
-        <div className="w-10 h-10 rounded-xl overflow-hidden bg-gradient-to-br from-amber-900/30 to-indigo-900/30 flex-shrink-0 flex items-center justify-center border border-white/[0.07]">
-          {iconUrl ? (
-            <img src={iconUrl} alt={offer.title} className="w-full h-full object-cover" />
-          ) : iconEmoji ? (
-            <span className="text-xl">{iconEmoji}</span>
-          ) : (
-            <FiStar className="text-amber-400/60" />
-          )}
-        </div>
-
         {/* Title + meta */}
         <div className="flex-1 min-w-0">
           <p className="text-sm font-semibold text-white truncate">{offer.title}</p>
           <div className="flex items-center gap-2 mt-0.5">
-            <span className="text-[10px] font-mono text-amber-400 flex items-center gap-1">+<CoinDisplay amount={offer.rewardAmount} size={10} /></span>
+            <span className="text-[10px] text-amber-400 flex items-center gap-1 font-semibold">+{(offer.rewardAmount || 0).toLocaleString()}</span>
             {isRejected && (
               <span className="text-[10px] font-semibold text-rose-400 px-1.5 py-0.5 bg-rose-500/10 rounded-full border border-rose-500/20 animate-pulse">
                 Rejected — resubmit
@@ -1119,16 +1108,6 @@ const Profile = () => {
                     const iconUrl = offer.coverImage || (offer.icon && !iconEmoji ? offer.icon : null);
                     return (
                       <div key={offer._id} className="px-6 py-4 flex items-center gap-3 hover:bg-white/[0.01] transition-colors">
-                        {/* Icon */}
-                        <div className="w-10 h-10 rounded-xl overflow-hidden bg-gradient-to-br from-emerald-900/30 to-indigo-900/30 flex-shrink-0 flex items-center justify-center border border-white/[0.07]">
-                          {iconUrl ? (
-                            <img src={iconUrl} alt={offer.title} className="w-full h-full object-cover" />
-                          ) : iconEmoji ? (
-                            <span className="text-xl">{iconEmoji}</span>
-                          ) : (
-                            <FiCheckCircle className="text-emerald-400/60" />
-                          )}
-                        </div>
                         {/* Info */}
                         <div className="flex-1 min-w-0">
                           <p className="text-sm font-semibold text-white truncate">{offer.title}</p>
@@ -1138,7 +1117,7 @@ const Profile = () => {
                           </div>
                         </div>
                         {/* Amount */}
-                        <span className="text-sm font-bold font-mono text-emerald-400 flex-shrink-0 flex items-center gap-1">+<CoinDisplay amount={offer.rewardAmount} size={14} /></span>
+                        <span className="text-sm font-bold text-emerald-400 flex-shrink-0 flex items-center gap-1">+{(offer.rewardAmount || 0).toLocaleString()}</span>
                       </div>
                     );
                   })}
