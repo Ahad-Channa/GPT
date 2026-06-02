@@ -53,12 +53,13 @@ function getPeriodEnd(period) {
 // ─── Real earning types ───────────────────────────────────────────────────────
 // These are the ONLY types that count toward leaderboard rankings.
 // Excluded: daily_bonus, promo_code, leaderboard_reward (bonuses, not real work).
-// Included: admin_adjustment DOES count — admins use it to credit real completed work.
+// Excluded: admin_adjustment — can represent withdrawal refunds (not new earnings)
+//   and manual balance bumps that are already recorded via offer_reward/custom_offer_reward.
+//   Including it would double-count those amounts.
 const REAL_EARNING_TYPES = [
   'offer_reward',
   'custom_offer_reward',
   'referral_reward',
-  'admin_adjustment',
 ];
 
 /**
@@ -104,10 +105,17 @@ async function getLiveRankings(period, limit = 50) {
     return rankings;
   }
 
-  // ── Use stored lastResetAt as cycle start (prevents bleed from previous cycle) ──
+  // ── Resolve cycleStart: the later of lastResetAt and the natural period boundary ──
+  // This dual-guard ensures:
+  //   • If lastResetAt is set (cron ran), use it so we start exactly at reset time.
+  //   • If lastResetAt is null/old (first run or missed cron), fall back to the
+  //     natural UTC period boundary — never pulling in a PREVIOUS period's transactions.
   const settings = await Settings.getSingleton();
   const storedReset = settings.leaderboardConfig?.[period]?.lastResetAt;
-  const cycleStart = storedReset ? new Date(storedReset) : getPeriodStart(period);
+  const naturalStart = getPeriodStart(period);
+  const cycleStart = storedReset
+    ? new Date(Math.max(new Date(storedReset).getTime(), naturalStart.getTime()))
+    : naturalStart;
 
   const results = await Transaction.aggregate([
     {
@@ -302,9 +310,17 @@ router.get('/', verifyToken, async (req, res) => {
       const cycleEnd = getPeriodEnd(period);
       const rankings = await getLiveRankings(period, visibleSlots);
 
+      // Return the ACTUAL cycleStart used in the DB query (same logic as getLiveRankings)
+      // so the frontend countdown/display is accurate.
+      const storedReset = periodCfg?.lastResetAt;
+      const naturalStart = getPeriodStart(period);
+      const actualCycleStart = storedReset
+        ? new Date(Math.max(new Date(storedReset).getTime(), naturalStart.getTime()))
+        : naturalStart;
+
       result[period] = {
         enabled: true,
-        cycleStart: getPeriodStart(period).toISOString(),
+        cycleStart: actualCycleStart.toISOString(),
         cycleEnd: cycleEnd.toISOString(),
         visibleSlots,
         rewardedRanks,

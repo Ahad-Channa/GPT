@@ -607,11 +607,13 @@ router.put('/custom-offers/submissions/:id', requirePermission('manage_offerwall
 
       await Transaction.create({
         userId: user._id,
-        transactionType: 'offer_reward',
+        transactionType: 'custom_offer_reward',
         amount: amountNum,
         balanceAfter: user.walletBalance,
-        description: `Offer Reward: ${submission.offerId.title}`,
+        description: `Custom Offer Reward: ${submission.offerId.title}`,
         status: 'completed',
+        sourceType: 'offer',
+        sourceId: submission.offerId._id,
       });
 
       await createLog(req.dbUser._id, 'APPROVE_CUSTOM_OFFER', user._id, { offerTitle: submission.offerId.title, submissionId: submission._id });
