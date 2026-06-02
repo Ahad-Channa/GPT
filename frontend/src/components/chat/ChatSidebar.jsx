@@ -14,7 +14,7 @@ const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 const SOCKET_URL = API.replace('/api', '');
 
 import { useNavigate } from 'react-router-dom';
-import { FaCrown, FaBolt } from 'react-icons/fa';
+import { FaCrown } from 'react-icons/fa';
 import PublicProfileModal from '../PublicProfileModal';
 import VipBadge from '../VipBadge';
 import { getLevelFromEarned, getLevelLabel, TIER_STYLES } from '../../utils/vipLevels';
@@ -40,49 +40,113 @@ const AvatarCircle = ({ user, size = 20 }) => {
 const RoleSymbol = ({ user }) => {
   const role = user?.role || 'user';
   const [hover, setHover] = useState(false);
-  let icon, label, color, shift = 0;
 
+  /* ── owner ── */
   if (role === 'owner') {
-    icon = <FaCrown size={15} />; label = 'Owner'; color = '#fbbf24';
-  } else if (role === 'admin') {
-    icon = <FaBolt size={15} />; label = 'Admin'; color = '#ef4444';
-  } else if (role === 'moderator') {
-    icon = (
-      <span style={{
-        background: 'rgba(56,189,248,0.15)', color: '#38bdf8',
-        fontSize: '0.65rem', fontWeight: 'bold', padding: '1px 5px',
-        borderRadius: '4px', border: '1px solid rgba(56,189,248,0.3)'
-      }}>MOD</span>
-    );
-    label = 'Moderator'; color = '#38bdf8'; shift = 10;
-  } else {
-    const vipLevel = getLevelFromEarned(user?.totalEarned || 0);
-    if (vipLevel) {
-      /* render the real VipBadge — hover tooltip comes from the badge itself */
-      return (
-        <VipBadge
-          tier={vipLevel.tier}
-          rank={vipLevel.rank}
-          size="xs"
+    const color = '#fbbf24';
+    return (
+      <div
+        onMouseEnter={() => {}}
+        onMouseLeave={() => {}}
+        style={{ position: 'relative', display: 'inline-flex', alignItems: 'center', cursor: 'default' }}
+      >
+        <SymbolWithHover
+          icon={<FaCrown size={13} />}
+          label="Owner"
+          color={color}
+          shift={0}
         />
-      );
-    }
-    /* truly unranked — show nothing */
-    return null;
+      </div>
+    );
   }
 
+  /* ── admin: VIP badge + ADMIN pill, no bolt icon ── */
+  if (role === 'admin') {
+    const vipLevel = getLevelFromEarned(user?.totalEarned || 0);
+    const color = '#ef4444';
+    const rankLabel = vipLevel ? getLevelLabel(vipLevel) : null;
+    return (
+      <div
+        onMouseEnter={() => {}}
+        onMouseLeave={() => {}}
+        style={{ position: 'relative', display: 'inline-flex', alignItems: 'center', gap: 4, cursor: 'default' }}
+      >
+        {/* VIP badge (if ranked) */}
+        {vipLevel && (
+          <HoverBadge
+            badge={<VipBadge tier={vipLevel.tier} rank={vipLevel.rank} size="xs" />}
+            label={rankLabel ? `Admin · ${rankLabel}` : 'Admin'}
+            color={color}
+            shift={0}
+          />
+        )}
+        {/* ADMIN pill */}
+        <HoverBadge
+          badge={
+            <span style={{
+              background: 'rgba(239,68,68,0.15)', color: '#ef4444',
+              fontSize: '0.6rem', fontWeight: 800, padding: '1px 5px',
+              borderRadius: '4px', border: '1px solid rgba(239,68,68,0.35)',
+              letterSpacing: '0.05em'
+            }}>ADMIN</span>
+          }
+          label={rankLabel ? `Admin · ${rankLabel}` : 'Admin'}
+          color={color}
+          shift={0}
+        />
+      </div>
+    );
+  }
+
+  /* ── moderator ── */
+  if (role === 'moderator') {
+    const color = '#38bdf8';
+    return (
+      <HoverBadge
+        badge={
+          <span style={{
+            background: 'rgba(56,189,248,0.15)', color: '#38bdf8',
+            fontSize: '0.65rem', fontWeight: 'bold', padding: '1px 5px',
+            borderRadius: '4px', border: '1px solid rgba(56,189,248,0.3)'
+          }}>MOD</span>
+        }
+        label="Moderator"
+        color={color}
+        shift={10}
+      />
+    );
+  }
+
+  /* ── regular user: VIP badge with styled hover popup ── */
+  const vipLevel = getLevelFromEarned(user?.totalEarned || 0);
+  if (!vipLevel) return null;
+
+  const tierStyle = TIER_STYLES[vipLevel.tier];
+  const color = tierStyle?.border || '#94a3b8';
+  return (
+    <HoverBadge
+      badge={<VipBadge tier={vipLevel.tier} rank={vipLevel.rank} size="xs" />}
+      label={`VIP: ${getLevelLabel(vipLevel)}`}
+      color={color}
+      shift={20}
+    />
+  );
+};
+
+/* ── reusable hover-popup wrapper ── */
+const HoverBadge = ({ badge, label, color, shift = 0 }) => {
+  const [hover, setHover] = useState(false);
   return (
     <div
       onMouseEnter={() => setHover(true)}
       onMouseLeave={() => setHover(false)}
       style={{ position: 'relative', display: 'inline-flex', alignItems: 'center', cursor: 'default' }}
     >
-      <span style={{ color: role === 'moderator' ? 'inherit' : color, display: 'inline-flex', alignItems: 'center' }}>
-        {icon}
-      </span>
+      {badge}
       {hover && (
         <div style={{
-          position: 'absolute', bottom: '100%', left: '50%', transform: `translate(calc(-50% + ${shift}px), -8px)`,
+          position: 'absolute', bottom: '100%', left: '50%',
+          transform: `translate(calc(-50% + ${shift}px), -8px)`,
           background: '#0b101e', border: `1px solid ${color}80`, color: '#f8fafc',
           padding: '5px 10px', borderRadius: '8px', fontSize: '0.75rem', fontWeight: 600,
           whiteSpace: 'nowrap', zIndex: 9999, boxShadow: `0 4px 15px ${color}40`,
@@ -90,7 +154,40 @@ const RoleSymbol = ({ user }) => {
         }}>
           {label}
           <div style={{
-            position: 'absolute', top: '100%', left: `calc(50% - ${shift}px)`, transform: 'translateX(-50%)',
+            position: 'absolute', top: '100%', left: `calc(50% - ${shift}px)`,
+            transform: 'translateX(-50%)',
+            borderWidth: '5px', borderStyle: 'solid',
+            borderColor: `${color}80 transparent transparent transparent`
+          }} />
+        </div>
+      )}
+    </div>
+  );
+};
+
+/* ── owner icon with hover (kept for owner role) ── */
+const SymbolWithHover = ({ icon, label, color, shift = 0 }) => {
+  const [hover, setHover] = useState(false);
+  return (
+    <div
+      onMouseEnter={() => setHover(true)}
+      onMouseLeave={() => setHover(false)}
+      style={{ position: 'relative', display: 'inline-flex', alignItems: 'center', cursor: 'default' }}
+    >
+      <span style={{ color, display: 'inline-flex', alignItems: 'center' }}>{icon}</span>
+      {hover && (
+        <div style={{
+          position: 'absolute', bottom: '100%', left: '50%',
+          transform: `translate(calc(-50% + ${shift}px), -8px)`,
+          background: '#0b101e', border: `1px solid ${color}80`, color: '#f8fafc',
+          padding: '5px 10px', borderRadius: '8px', fontSize: '0.75rem', fontWeight: 600,
+          whiteSpace: 'nowrap', zIndex: 9999, boxShadow: `0 4px 15px ${color}40`,
+          pointerEvents: 'none', display: 'flex', alignItems: 'center', gap: '4px'
+        }}>
+          {label}
+          <div style={{
+            position: 'absolute', top: '100%', left: `calc(50% - ${shift}px)`,
+            transform: 'translateX(-50%)',
             borderWidth: '5px', borderStyle: 'solid',
             borderColor: `${color}80 transparent transparent transparent`
           }} />
