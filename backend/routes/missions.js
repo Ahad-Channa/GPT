@@ -517,7 +517,14 @@ router.get('/admin/configs', requireAdmin, async (req, res) => {
 
 /**
  * POST /api/missions/admin/configs
- * Create a new mission config slot.
+ * Instant override: update the current active period immediately AND make
+ * this the new repeating default for this cycle slot going forward.
+ *
+ * What it does:
+ *   1. Upserts MissionConfig → immediate effect on the live period (fallback layer)
+ *   2. Upserts RecurringMissionConfig for the CURRENT cycleDayIndex → persists
+ *      into all future cycles of this same slot (e.g. every future Tuesday)
+ *
  * Body: { templateKey, period, displayOrder, targetValue, rewardAmount, isEnabled }
  */
 router.post('/admin/configs', requireAdmin, async (req, res) => {
@@ -547,13 +554,29 @@ router.post('/admin/configs', requireAdmin, async (req, res) => {
       });
     }
 
-    // Upsert (replace) the slot — one template per slot per period
+    const missionValues = {
+      templateKey,
+      targetValue:  Number(targetValue),
+      rewardAmount: Number(rewardAmount),
+      isEnabled:    isEnabled !== false,
+    };
+
+    // ── Step 1: Upsert MissionConfig (immediate effect on current period) ──
     const config = await MissionConfig.findOneAndUpdate(
       { period, displayOrder },
-      { templateKey, targetValue: Number(targetValue), rewardAmount: Number(rewardAmount), isEnabled: isEnabled !== false },
+      missionValues,
       { upsert: true, new: true }
     );
 
+    // ── Step 2: Upsert RecurringMissionConfig for the current cycle index ──
+    // This makes the instant change the new default going forward.
+    // e.g. Admin fixes Tuesday's missions → every future Tuesday uses these missions.
+    const currentCycleIndex = getCycleIndex(period);
+    await RecurringMissionConfig.findOneAndUpdate(
+      { period, cycleDayIndex: currentCycleIndex, displayOrder: Number(displayOrder) },
+      missionValues,
+      { upsert: true, new: true }
+    );
 
     res.json({ success: true, config });
   } catch (err) {

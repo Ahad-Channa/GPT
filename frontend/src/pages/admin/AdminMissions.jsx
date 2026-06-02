@@ -883,12 +883,18 @@ const AdminMissions = () => {
       {activeTab === 'instant' && (
         <>
           <div
-            className="rounded-xl px-4 py-3 text-xs leading-relaxed"
+            className="rounded-xl px-4 py-3 text-xs leading-relaxed space-y-1"
             style={{ background: 'rgba(99,102,241,0.08)', border: '1px solid rgba(99,102,241,0.2)', color: '#a5b4fc' }}
           >
-            <strong>Instant Override:</strong> Use <span className="font-black text-indigo-400">⚡ Apply Now</span> to change missions immediately for the
-            current active period.
-            <strong> Note: Instant changes do NOT affect the recurring config</strong> — they only override the live default.
+            <div>
+              <strong>⚡ Instant Change</strong> — Updates the current period <em>immediately</em> and becomes the{' '}
+              <strong className="text-indigo-300">new default going forward</strong> for this cycle slot.
+              For example: fixing Tuesday&apos;s missions will apply right now <em>and</em> automatically repeat every future Tuesday.
+            </div>
+            <div className="text-indigo-400/70">
+              To stage a change for a <strong>future</strong> period without touching today, use the{' '}
+              <strong>Recurring Config</strong> tab and edit the upcoming day/week/month directly.
+            </div>
           </div>
 
           {['daily', 'weekly', 'monthly'].map(period => (
