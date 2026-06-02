@@ -5,7 +5,7 @@ import SupportChat from '../SupportChat';
 import {
   FiX, FiSend, FiTrash2, FiUsers,
   FiMessageSquare, FiHeadphones, FiZap,
-  FiShield, FiStar
+  FiShield
 } from 'react-icons/fi';
 import { motion, AnimatePresence } from 'framer-motion';
 import toast from 'react-hot-toast';
@@ -16,6 +16,7 @@ const SOCKET_URL = API.replace('/api', '');
 import { useNavigate } from 'react-router-dom';
 import { FaCrown, FaBolt } from 'react-icons/fa';
 import PublicProfileModal from '../PublicProfileModal';
+import VipBadge from '../VipBadge';
 import { getLevelFromEarned, getLevelLabel, TIER_STYLES } from '../../utils/vipLevels';
 
 const getInitials = (name) => (name || '?').slice(0, 2).toUpperCase();
@@ -47,24 +48,27 @@ const RoleSymbol = ({ user }) => {
     icon = <FaBolt size={15} />; label = 'Admin'; color = '#ef4444';
   } else if (role === 'moderator') {
     icon = (
-      <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-        <FiStar size={15} style={{ color: '#94a3b8' }} />
-        <span style={{
-          background: 'rgba(56,189,248,0.15)', color: '#38bdf8',
-          fontSize: '0.65rem', fontWeight: 'bold', padding: '1px 4px',
-          borderRadius: '4px', border: '1px solid rgba(56,189,248,0.3)'
-        }}>M C</span>
-      </span>
+      <span style={{
+        background: 'rgba(56,189,248,0.15)', color: '#38bdf8',
+        fontSize: '0.65rem', fontWeight: 'bold', padding: '1px 5px',
+        borderRadius: '4px', border: '1px solid rgba(56,189,248,0.3)'
+      }}>MOD</span>
     );
     label = 'Moderator'; color = '#38bdf8'; shift = 10;
   } else {
     const vipLevel = getLevelFromEarned(user?.totalEarned || 0);
-    const tierStyle = vipLevel ? TIER_STYLES[vipLevel.tier] : null;
-
-    icon = <FiStar size={15} />;
-    label = vipLevel ? `VIP: ${getLevelLabel(vipLevel)}` : 'Unranked';
-    color = tierStyle ? tierStyle.border : '#94a3b8';
-    shift = 20;
+    if (vipLevel) {
+      /* render the real VipBadge — hover tooltip comes from the badge itself */
+      return (
+        <VipBadge
+          tier={vipLevel.tier}
+          rank={vipLevel.rank}
+          size="xs"
+        />
+      );
+    }
+    /* truly unranked — show nothing */
+    return null;
   }
 
   return (
@@ -101,6 +105,11 @@ const MessageRow = ({ msg, canModerate, onDelete, deletingId, onUserClick }) => 
   const [hov, setHov] = useState(false);
   const isDeleting = deletingId === msg._id;
 
+  const nameColor = msg.user?.role === 'admin'     ? '#fbbf24'
+                  : msg.user?.role === 'moderator' ? '#38bdf8'
+                  : msg.user?.role === 'owner'     ? '#fbbf24'
+                  : '#e2e8f0';
+
   return (
     <div
       onMouseEnter={() => setHov(true)}
@@ -109,39 +118,50 @@ const MessageRow = ({ msg, canModerate, onDelete, deletingId, onUserClick }) => 
         display: 'flex', flexDirection: 'column',
         marginBottom: 8,
         opacity: isDeleting ? 0.4 : 1,
-        transition: 'border-color 0.15s, background 0.15s, opacity 0.2s, transform 0.15s',
-        padding: '10px 14px',
+        transition: 'border-color 0.15s, background 0.15s, opacity 0.2s',
+        padding: '8px 12px 9px',
         borderRadius: 10,
         border: `1px solid ${hov ? 'rgba(255,255,255,0.08)' : 'rgba(255,255,255,0.04)'}`,
         background: hov ? 'rgba(255,255,255,0.04)' : 'rgba(255,255,255,0.02)',
         position: 'relative',
-        zIndex: hov ? 50 : 1
+        zIndex: hov ? 50 : 1,
+        gap: 4,
       }}
     >
-      <div style={{ display: 'inline-flex', alignItems: 'center', flexWrap: 'wrap', gap: 6, wordBreak: 'break-word', fontSize: '0.85rem' }}>
-        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
-          <RoleSymbol user={msg.user} />
-          <button
-            onClick={() => msg.user?._id && onUserClick(msg.user._id)}
-            style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', display: 'flex', alignItems: 'center' }}
-          >
-            <AvatarCircle user={msg.user} size={18} />
-          </button>
-        </span>
+      {/* ── Line 1: avatar + username + badge ── */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+        <button
+          onClick={() => msg.user?._id && onUserClick(msg.user._id)}
+          style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', display: 'flex', alignItems: 'center', flexShrink: 0 }}
+        >
+          <AvatarCircle user={msg.user} size={18} />
+        </button>
+
         <button
           onClick={() => msg.user?._id && onUserClick(msg.user._id)}
           style={{
-            fontWeight: 700, color: '#e2e8f0', cursor: 'pointer',
+            fontWeight: 700, color: nameColor, cursor: 'pointer',
             background: 'none', border: 'none', padding: 0,
-            fontFamily: 'inherit', fontSize: 'inherit'
+            fontFamily: 'inherit', fontSize: '0.82rem',
           }}
           onMouseEnter={(e) => e.target.style.textDecoration = 'underline'}
           onMouseLeave={(e) => e.target.style.textDecoration = 'none'}
         >
           {msg.user?.displayName || 'Unknown'}
         </button>
-        <span style={{ color: '#64748b' }}>:</span>
-        <span style={{ color: '#cbd5e1' }}>{msg.message}</span>
+
+        {/* Role / VIP badge */}
+        <RoleSymbol user={msg.user} />
+
+        {/* Timestamp */}
+        <span style={{ fontSize: '0.62rem', color: '#334155', marginLeft: 'auto' }}>
+          {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+        </span>
+      </div>
+
+      {/* ── Line 2: message text ── */}
+      <div style={{ color: '#cbd5e1', fontSize: '0.845rem', lineHeight: 1.45, wordBreak: 'break-word', paddingLeft: 24 }}>
+        {msg.message}
       </div>
 
       {canModerate && hov && (

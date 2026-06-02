@@ -344,12 +344,12 @@ async function incrementMissionProgress(userId, trackingField, incrementBy = 1) 
         configs = recurring.map(r => ({ _id: r._id, templateKey: r.templateKey, targetValue: r.targetValue, rewardAmount: r.rewardAmount }));
       } else {
         // 2. Legacy MissionConfig fallback
-          configs = await MissionConfig.find({
-            period,
-            isEnabled: true,
-            templateKey: { $in: templateKeys },
-          }).lean();
-        }
+        configs = await MissionConfig.find({
+          period,
+          isEnabled: true,
+          templateKey: { $in: templateKeys },
+        }).lean();
+      }
 
       for (const config of configs) {
         if (!config.targetValue) continue; // skip empty/disabled slots
