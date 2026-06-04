@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import DashboardLayout from '../components/layout/DashboardLayout';
 import { useAuth } from '../contexts/AuthContext';
 import { motion } from 'framer-motion';
-import { FiUsers, FiTrendingUp, FiCopy, FiInbox, FiLoader, FiChevronDown } from 'react-icons/fi';
+import { FiUsers, FiTrendingUp, FiCopy, FiInbox, FiLoader, FiChevronDown, FiLock, FiClock } from 'react-icons/fi';
 import { toast } from 'react-hot-toast';
 import CoinDisplay from '../components/CoinDisplay';
 import CoinIcon from '../components/CoinIcon';
@@ -205,6 +205,26 @@ const Affiliates = () => {
 
   const referrals = useHistory(token, 'referral_reward');
   const { stats, loading: statsLoading } = useAffiliateStats(token);
+  const [affiliateHolds, setAffiliateHolds] = useState([]);
+  const [holdsLoading, setHoldsLoading] = useState(true);
+
+  useEffect(() => {
+    if (!token) return;
+    const fetchHolds = async () => {
+      try {
+        const res = await fetch(`${API}/wallet/pending-earnings`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const data = await res.json();
+        if (data.success) setAffiliateHolds(data.affiliateHolds || []);
+      } catch (e) {
+        console.error('Failed to load affiliate holds', e);
+      } finally {
+        setHoldsLoading(false);
+      }
+    };
+    fetchHolds();
+  }, [token]);
 
   const copyToClipboard = (text) => {
     navigator.clipboard.writeText(text);
@@ -292,11 +312,81 @@ const Affiliates = () => {
           </div>
         </div>
 
+        {/* Pending Affiliate Earnings */}
+        <div className="glass-card overflow-hidden">
+          <div className="px-6 py-5 border-b border-white/[0.06] bg-white/[0.02] flex items-center justify-between">
+            <h3 className="text-lg font-bold text-white flex items-center gap-2">
+              <FiLock className="text-amber-400" /> Pending Affiliate Earnings
+            </h3>
+            {affiliateHolds.length > 0 && (
+              <span className="text-xs font-bold text-amber-300 bg-amber-500/10 border border-amber-500/20 rounded-lg px-2.5 py-1">
+                {affiliateHolds.length} on hold
+              </span>
+            )}
+          </div>
+          <div className="px-6 py-2">
+            {holdsLoading ? (
+              <div className="space-y-3 py-4">
+                {[1,2].map(i => (
+                  <div key={i} className="flex items-center gap-3 animate-pulse">
+                    <div className="w-8 h-8 rounded-xl bg-white/[0.05] flex-shrink-0" />
+                    <div className="flex-1 space-y-2">
+                      <div className="h-3 bg-white/[0.05] rounded w-1/3" />
+                      <div className="h-2 bg-white/[0.04] rounded w-2/3" />
+                    </div>
+                    <div className="h-3 bg-white/[0.05] rounded w-16" />
+                  </div>
+                ))}
+              </div>
+            ) : affiliateHolds.length === 0 ? (
+              <div className="py-10 flex flex-col items-center gap-3 text-center">
+                <div className="w-12 h-12 rounded-2xl bg-white/[0.03] border border-white/[0.07] flex items-center justify-center">
+                  <FiInbox className="text-slate-600 text-xl" />
+                </div>
+                <p className="text-slate-500 text-sm">No affiliate earnings on hold right now.</p>
+              </div>
+            ) : (
+              <div className="divide-y divide-white/[0.04]">
+                {affiliateHolds.map(tx => {
+                  const releaseDate = tx.releaseDate ? new Date(tx.releaseDate) : null;
+                  return (
+                    <div key={tx._id} className="flex items-center gap-3 py-3.5">
+                      <div className="w-8 h-8 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center flex-shrink-0">
+                        <FiClock className="text-amber-400 text-sm" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm text-white font-semibold">Referral Commission</p>
+                        <p className="text-xs text-slate-500">
+                          Earned {new Date(tx.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                          {releaseDate && (
+                            <> &middot; Releases {tx.daysRemaining === 0
+                              ? <span className="text-emerald-400 font-medium">today</span>
+                              : <span className="text-amber-400 font-medium">in {tx.daysRemaining}d</span>
+                            } ({releaseDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })})
+                            </>
+                          )}
+                        </p>
+                      </div>
+                      <div className="text-right flex-shrink-0">
+                        <p className="text-sm font-bold text-amber-300">+{tx.amount.toLocaleString()} <CoinIcon size={12} /></p>
+                        <div className="flex items-center gap-1 justify-end mt-0.5">
+                          <FiLock className="text-amber-500/60 text-[10px]" />
+                          <span className="text-[10px] text-amber-500/60 font-medium uppercase tracking-wide">Hold</span>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        </div>
+
         {/* Earnings History */}
         <div className="glass-card overflow-hidden">
           <div className="px-6 py-5 border-b border-white/[0.06] bg-white/[0.02]">
             <h3 className="text-lg font-bold text-white flex items-center gap-2">
-              <FiTrendingUp className="text-emerald-400" /> Recent Referral Earnings
+              <FiTrendingUp className="text-emerald-400" /> Completed Referral Earnings
             </h3>
           </div>
           <div className="px-6 py-2">

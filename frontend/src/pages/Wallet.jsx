@@ -15,6 +15,9 @@ import {
   FiRefreshCw,
   FiInfo,
   FiGift,
+  FiLock,
+  FiZap,
+  FiUsers,
 } from 'react-icons/fi';
 
 const container = { hidden: {}, show: { transition: { staggerChildren: 0.07 } } };
@@ -109,6 +112,7 @@ const Wallet = () => {
   const [txRefresh,    setTxRefresh]      = useState(0); // bump to refresh history
   const [settingsLoad, setSettingsLoad]   = useState(true);
   const [historyStats, setHistoryStats]   = useState({ totalEarned: 0, totalWithdrawn: 0, pendingCount: 0 });
+  const [pendingEarnings, setPendingEarnings] = useState({ regularHolds: [], totalPendingCoins: 0, totalCount: 0, loading: true });
 
   // Load wallet settings (fee %, methods, live rate)
   useEffect(() => {
@@ -147,6 +151,27 @@ const Wallet = () => {
       }
     };
     if (currentUser) fetchStats();
+  }, [currentUser, txRefresh]);
+
+  // Fetch pending (hold) earnings
+  useEffect(() => {
+    const fetchPending = async () => {
+      try {
+        const token = await currentUser.getIdToken();
+        const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/wallet/pending-earnings`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const data = await res.json();
+        if (data.success) {
+          setPendingEarnings({ ...data, loading: false });
+        } else {
+          setPendingEarnings(prev => ({ ...prev, loading: false }));
+        }
+      } catch (err) {
+        setPendingEarnings(prev => ({ ...prev, loading: false }));
+      }
+    };
+    if (currentUser) fetchPending();
   }, [currentUser, txRefresh]);
 
   // After successful withdrawal, refresh balance in header
@@ -271,6 +296,100 @@ const Wallet = () => {
         {/* ── Transaction History (Moved to Profile) ───────────────────────────────── */}
         <motion.div variants={item} className="hidden">
           {/* Transaction history was moved to the profile section. */}
+        </motion.div>
+
+        {/* ── Pending Rewards ────────────────────────────────────────── */}
+        <motion.div variants={item} className="glass-card p-6">
+          <div className="flex items-center justify-between mb-5">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-amber-500/10 flex items-center justify-center border border-amber-500/20">
+                <FiLock className="text-amber-400" />
+              </div>
+              <div>
+                <h2 className="text-lg font-bold font-display text-white">Pending Rewards</h2>
+                <p className="text-xs text-slate-500">Earnings held until their release date</p>
+              </div>
+            </div>
+            {pendingEarnings.regularHolds?.length > 0 && (
+              <div className="flex items-center gap-1.5 px-3 py-1.5 bg-amber-500/10 border border-amber-500/20 rounded-xl">
+                <FiClock className="text-amber-400 text-xs" />
+                <span className="text-amber-300 text-xs font-bold">
+                  <CoinDisplay amount={pendingEarnings.totalPendingCoins} size={11} /> pending
+                </span>
+              </div>
+            )}
+          </div>
+
+          {pendingEarnings.loading ? (
+            <div className="space-y-3">
+              {[1,2,3].map(i => (
+                <div key={i} className="flex items-center gap-3 animate-pulse">
+                  <div className="w-9 h-9 rounded-xl bg-white/[0.04] flex-shrink-0" />
+                  <div className="flex-1 space-y-1.5">
+                    <div className="h-3 bg-white/[0.04] rounded w-1/3" />
+                    <div className="h-2 bg-white/[0.03] rounded w-1/2" />
+                  </div>
+                  <div className="h-3 bg-white/[0.04] rounded w-16" />
+                </div>
+              ))}
+            </div>
+          ) : pendingEarnings.regularHolds?.length === 0 ? (
+            <div className="flex flex-col items-center gap-3 py-10 text-center">
+              <div className="w-12 h-12 rounded-2xl bg-white/[0.03] border border-white/[0.06] flex items-center justify-center">
+                <FiCheckCircle className="text-slate-600 text-xl" />
+              </div>
+              <p className="text-slate-500 text-sm">No pending rewards right now.</p>
+              <p className="text-slate-600 text-xs">Earnings from offers, bonuses and featured offers will appear here while on hold.</p>
+            </div>
+          ) : (
+            <div className="divide-y divide-white/[0.04]">
+              {(() => {
+                const TYPE_CONFIG = {
+                  offer_reward:        { label: 'Offer',          icon: FiZap,            color: 'text-cyan-400',    bg: 'bg-cyan-500/10' },
+                  custom_offer_reward: { label: 'Featured Offer', icon: FiGift,           color: 'text-fuchsia-400', bg: 'bg-fuchsia-500/10' },
+                  daily_bonus:         { label: 'Daily Bonus',    icon: FiRefreshCw,      color: 'text-blue-400',    bg: 'bg-blue-500/10' },
+                  leaderboard_reward:  { label: 'Leaderboard',   icon: FiTrendingUp,     color: 'text-amber-400',   bg: 'bg-amber-500/10' },
+                  vip_reward:          { label: 'VIP Reward',    icon: FiCheckCircle,    color: 'text-emerald-400', bg: 'bg-emerald-500/10' },
+                  mission_reward:      { label: 'Mission',        icon: FiCheckCircle,    color: 'text-violet-400',  bg: 'bg-violet-500/10' },
+                  promo_code:          { label: 'Promo Code',     icon: FiGift,           color: 'text-pink-400',    bg: 'bg-pink-500/10' },
+                };
+                return pendingEarnings.regularHolds.map(tx => {
+                  const cfg = TYPE_CONFIG[tx.transactionType] || { label: tx.transactionType, icon: FiClock, color: 'text-slate-400', bg: 'bg-white/[0.04]' };
+                  const Icon = cfg.icon;
+                  const releaseDate = tx.releaseDate ? new Date(tx.releaseDate) : null;
+                  return (
+                    <div key={tx._id} className="flex items-center gap-3 py-3.5">
+                      <div className={`w-9 h-9 rounded-xl ${cfg.bg} flex items-center justify-center flex-shrink-0`}>
+                        <Icon className={`${cfg.color} text-sm`} />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm text-white font-semibold truncate">{cfg.label}</p>
+                        <p className="text-xs text-slate-500">
+                          Earned {new Date(tx.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                          {releaseDate && (
+                            <> &middot; Releases {tx.daysRemaining === 0
+                              ? <span className="text-emerald-400 font-medium">today</span>
+                              : <span className="text-amber-400 font-medium">in {tx.daysRemaining}d</span>
+                            } ({releaseDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })})
+                            </>
+                          )}
+                        </p>
+                      </div>
+                      <div className="text-right flex-shrink-0">
+                        <p className="text-sm font-bold text-amber-300">
+                          +<CoinDisplay amount={tx.amount} size={12} inline />
+                        </p>
+                        <div className="flex items-center gap-1 justify-end mt-0.5">
+                          <FiLock className="text-amber-500/60 text-[10px]" />
+                          <span className="text-[10px] text-amber-500/60 font-medium uppercase tracking-wide">Hold</span>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                });
+              })()}
+            </div>
+          )}
         </motion.div>
 
         {/* ── Promo Code Redeemer ───────────────────────────────── */}

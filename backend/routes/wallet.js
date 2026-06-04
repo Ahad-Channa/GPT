@@ -931,4 +931,52 @@ router.post('/avatars/buy/:id', verifyToken, async (req, res) => {
   }
 });
 
+// ── GET /api/wallet/pending-earnings ──────────────────────────────────────────
+// Returns all of the current user's 'hold' transactions so they can see
+// pending earnings before they're officially credited to their wallet.
+const express_pending = require('express');
+router.get('/pending-earnings', verifyToken, async (req, res) => {
+  try {
+    const user = await User.findOne({ firebaseUid: req.user.uid });
+    if (!user) return res.status(404).json({ success: false, error: 'User not found' });
+
+    const now = new Date();
+
+    const holds = await Transaction.find({
+      userId: user._id,
+      status: 'hold',
+    }).sort({ createdAt: -1 }).lean();
+
+    // Annotate each hold with computed fields for the frontend
+    const annotated = holds.map(tx => {
+      const releaseDate = tx.holdUntil ? new Date(tx.holdUntil) : null;
+      const msRemaining = releaseDate ? Math.max(0, releaseDate - now) : 0;
+      const daysRemaining = releaseDate ? Math.ceil(msRemaining / (1000 * 60 * 60 * 24)) : 0;
+      return {
+        ...tx,
+        releaseDate,
+        daysRemaining,
+        isReadyToRelease: releaseDate ? releaseDate <= now : false,
+      };
+    });
+
+    // Split affiliate holds from regular holds
+    const affiliateHolds = annotated.filter(tx => tx.transactionType === 'referral_reward');
+    const regularHolds   = annotated.filter(tx => tx.transactionType !== 'referral_reward');
+
+    const totalPendingCoins = annotated.reduce((sum, tx) => sum + tx.amount, 0);
+
+    res.json({
+      success: true,
+      affiliateHolds,
+      regularHolds,
+      totalPendingCoins,
+      totalCount: annotated.length,
+    });
+  } catch (error) {
+    console.error('[/api/wallet/pending-earnings] Error:', error);
+    res.status(500).json({ success: false, error: 'Failed to fetch pending earnings' });
+  }
+});
+
 module.exports = router;
