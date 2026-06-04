@@ -300,16 +300,16 @@ function PeriodBonusCard({ bonus, period, periodCfg, onClaim, claimingBonus }) {
 
           <div>
             <p className="font-bold text-sm text-slate-100">
-              🏆 Complete All Missions Bonus
+              🏆 Complete All Missions
             </p>
             <p className="text-[11px] text-slate-500 mt-0.5">
               {claimed
-                ? 'Bonus claimed — great work!'
+                ? 'Reward claimed — great work!'
                 : claimable
-                ? 'All missions done! Claim your bonus reward below.'
+                ? 'All missions done! Claim your reward below.'
                 : isNotConfigured
-                ? 'All missions done! Admin will set the bonus reward soon.'
-                : `Complete all ${totalMissions} missions to unlock this bonus`}
+                ? 'All missions done! Admin will set the reward soon.'
+                : `Complete all ${totalMissions} missions to unlock this reward`}
             </p>
           </div>
         </div>
@@ -356,7 +356,7 @@ function PeriodBonusCard({ bonus, period, periodCfg, onClaim, claimingBonus }) {
           ) : (
             <span className="flex items-center justify-center gap-2">
               <FiAward />
-              Claim Bonus — +{bonusAmount.toLocaleString()} Coins
+              Claim — +{bonusAmount.toLocaleString()} Coins
             </span>
           )}
         </motion.button>
