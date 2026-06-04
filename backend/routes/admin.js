@@ -605,7 +605,7 @@ router.put('/custom-offers/submissions/:id', requirePermission('manage_offerwall
       await user.save();
       emitWalletUpdate(user.firebaseUid, user.walletBalance);
 
-      await Transaction.create({
+      const offerTx = await Transaction.create({
         userId: user._id,
         transactionType: 'custom_offer_reward',
         amount: amountNum,
@@ -621,6 +621,60 @@ router.put('/custom-offers/submissions/:id', requirePermission('manage_offerwall
 
       // Trigger VIP level-up check (custom offer rewards are real earnings)
       processVipLevelUp(user, amountNum, emitToUser);
+
+      // ── Referral Commission ──────────────────────────────────────────────
+      // If this user was referred by someone, credit the referrer a commission
+      if (user.referredBy) {
+        try {
+          const referrer = await User.findById(user.referredBy);
+          if (referrer) {
+            const settings = await Settings.getSingleton();
+            const holdDays = settings.referralConfig?.holdDays ?? 30;
+            const globalPct = settings.referralConfig?.globalPercentage ?? 5;
+            const pct = (user.referralPercentage !== null && user.referralPercentage !== undefined)
+              ? user.referralPercentage
+              : globalPct;
+            const refAmount = Math.floor(amountNum * (pct / 100));
+
+            if (refAmount > 0) {
+              const holdDate = new Date();
+              holdDate.setDate(holdDate.getDate() + holdDays);
+
+              // Increment referralEarnings tracker (not wallet yet — it's on hold)
+              await User.updateOne(
+                { _id: referrer._id },
+                { $inc: { referralEarnings: refAmount } }
+              );
+
+              await Transaction.create({
+                userId: referrer._id,
+                transactionType: 'referral_reward',
+                sourceType: 'referral',
+                sourceId: offerTx._id,
+                linkedTransactionId: offerTx._id,
+                amount: refAmount,
+                balanceAfter: referrer.walletBalance, // Unchanged — on hold
+                description: `Referral Reward from Featured Offer`,
+                status: 'hold',
+                holdUntil: holdDate,
+              });
+
+              await notify(
+                referrer._id,
+                'referral_earning',
+                'Referral Earning!',
+                `You earned +${refAmount} coins from ${user.displayName || 'a referral'}'s featured offer.`,
+                { amount: refAmount, sourceUserId: user._id }
+              );
+            }
+          }
+        } catch (refErr) {
+          // Non-fatal: log but don't fail the approval
+          console.error('[Referral] Failed to process referral commission for custom offer:', refErr);
+        }
+      }
+      // ─────────────────────────────────────────────────────────────────────
+
     } else if (status === 'rejected') {
       await createLog(req.dbUser._id, 'REJECT_CUSTOM_OFFER', user._id, {
         offerTitle: submission.offerId.title,

@@ -281,10 +281,10 @@ const Affiliates = () => {
           
           <div className="max-w-2xl mx-auto flex flex-col sm:flex-row items-center w-full bg-[#0b101e] border border-white/[0.08] rounded-xl overflow-hidden relative z-10 shadow-lg">
             <p className="text-sm sm:text-base text-cyan-200 font-mono truncate px-4 py-4 flex-1 select-all w-full text-center sm:text-left">
-              {window.location.origin}/?ref={mongoUser?._id}
+              {window.location.origin}/r/{mongoUser?.referralCode}
             </p>
             <button 
-              onClick={() => copyToClipboard(`${window.location.origin}/?ref=${mongoUser?._id}`)}
+              onClick={() => copyToClipboard(`${window.location.origin}/r/${mongoUser?.referralCode}`)}
               className="w-full sm:w-auto px-8 py-4 flex items-center justify-center bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-400 hover:to-blue-400 text-white font-bold text-sm transition-all shrink-0 gap-2 shadow-[0_0_20px_rgba(6,182,212,0.3)] hover:shadow-[0_0_30px_rgba(6,182,212,0.5)]"
             >
               <FiCopy size={18} /> <span>Copy Link</span>

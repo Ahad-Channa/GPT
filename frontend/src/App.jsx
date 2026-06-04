@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate, useParams } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { useAuth } from './contexts/AuthContext';
 import Home from './pages/Home';
@@ -37,9 +37,39 @@ import MissionPage from './pages/MissionPage';
 import AdminMissions from './pages/admin/AdminMissions';
 import NotificationPanel from './components/NotificationPanel';
 
+const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+
 const PrivateRoute = ({ children }) => {
   const { currentUser } = useAuth();
   return currentUser ? children : <Navigate to="/" replace />;
+};
+
+/**
+ * ReferralRedirect — handles short referral URLs like /r/XXXXXXXX
+ * Resolves the short code to a user ID, stores it in localStorage
+ * (same mechanism as ?ref= on the landing page), then redirects to /.
+ */
+const ReferralRedirect = () => {
+  const { code } = useParams();
+
+  useEffect(() => {
+    const resolve = async () => {
+      try {
+        const res = await fetch(`${API}/public/r/${code}`);
+        const data = await res.json();
+        if (data.success && data.referrerId) {
+          localStorage.setItem('ref', data.referrerId);
+        }
+      } catch (e) {
+        // Ignore — user still lands on home page
+      } finally {
+        window.location.replace('/');
+      }
+    };
+    resolve();
+  }, [code]);
+
+  return null; // Nothing to render — redirect happens immediately
 };
 
 function App() {
@@ -80,6 +110,7 @@ function App() {
       <NotificationPanel />
       <Routes>
       <Route path="/" element={<Landing />} />
+      <Route path="/r/:code" element={<ReferralRedirect />} />
       <Route path="/login" element={currentUser ? <Navigate to="/dashboard" replace /> : <Login />} />
       <Route path="/reset-password" element={<ResetPassword />} />
       <Route 

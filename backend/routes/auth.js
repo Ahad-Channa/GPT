@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const crypto = require('crypto');
 const User = require('../models/User');
 const Transaction = require('../models/Transaction');
 const CustomOfferSubmission = require('../models/CustomOfferSubmission');
@@ -8,6 +9,20 @@ const { verifyToken } = require('../middlewares/authMiddleware');
 const notify = require('../utils/notify');
 const { notifyAdmins } = require('../utils/adminNotify');
 const Avatar = require('../models/Avatar');
+
+/**
+ * Generates a unique 8-character alphanumeric referral code.
+ * Retries up to 5 times to avoid the (extremely unlikely) collision.
+ */
+async function generateUniqueReferralCode() {
+  for (let i = 0; i < 5; i++) {
+    const code = crypto.randomBytes(5).toString('base64url').slice(0, 8).toUpperCase();
+    const exists = await User.findOne({ referralCode: code });
+    if (!exists) return code;
+  }
+  // Fallback: longer random string virtually guarantees uniqueness
+  return crypto.randomBytes(8).toString('base64url').slice(0, 12).toUpperCase();
+}
 
 // POST /api/auth/sync
 // Validates Firebase token. If user doesn't exist in MongoDB, inserts them securely.
@@ -33,12 +48,29 @@ router.post('/sync', verifyToken, async (req, res) => {
         counter++;
       }
 
+      // Resolve the referrer: support both legacy ObjectId and new short referralCode
+      let referredById = null;
+      if (ref) {
+        if (/^[0-9a-fA-F]{24}$/.test(ref)) {
+          // Legacy: ref is a MongoDB ObjectId
+          referredById = ref;
+        } else {
+          // New: ref is a short referralCode — look up the user
+          const referrer = await User.findOne({ referralCode: ref.toUpperCase() });
+          if (referrer) referredById = referrer._id;
+        }
+      }
+
+      // Generate a unique referral code for this new user
+      const referralCode = await generateUniqueReferralCode();
+
       user = new User({
         firebaseUid: uid,
         email: email,
         displayName: uniqueName,
         avatarUrl: picture || '',
-        ...(ref && { referredBy: ref }),
+        referralCode,
+        ...(referredById && { referredBy: referredById }),
         ...(isPrimaryAdmin && { role: 'admin', adminPermissions: allPermissions })
       });
       await user.save();
@@ -53,7 +85,6 @@ router.post('/sync', verifyToken, async (req, res) => {
         'Welcome to the platform! Start earning coins by completing tasks.'
       );
 
-      // Support for future tracking: if the user creation somehow sets a referredBy (e.g., via middleware or future req.body parsing)
       if (user.referredBy) {
         await notify(
           user.referredBy,
@@ -80,11 +111,19 @@ router.post('/sync', verifyToken, async (req, res) => {
           console.error('[Mission Hook] Error processing referrals_made mission:', err);
         }
       }
-    } else if (isPrimaryAdmin && user.role !== 'admin') {
-      // Auto-promote if they are set as primary admin in .env but not in db
-      user.role = 'admin';
-      user.adminPermissions = allPermissions;
-      await user.save();
+    } else {
+      // Existing user: backfill referralCode if they don't have one yet
+      if (!user.referralCode) {
+        user.referralCode = await generateUniqueReferralCode();
+        await user.save();
+      }
+
+      if (isPrimaryAdmin && user.role !== 'admin') {
+        // Auto-promote if they are set as primary admin in .env but not in db
+        user.role = 'admin';
+        user.adminPermissions = allPermissions;
+        await user.save();
+      }
     }
 
     res.status(200).json({

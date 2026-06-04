@@ -143,8 +143,8 @@ const handlePostback = async (providerId, req, res, params) => {
     );
     // Push live balance to user's browser
     emitWalletUpdate(user.firebaseUid, updatedUser.walletBalance);
-    // Check VIP level-up (fire-and-forget)
-    processVipLevelUp(user, platformCoins, emitToUser);
+    // Check VIP level-up (fire-and-forget) — pass updatedUser so totalEarned is the new value
+    processVipLevelUp(updatedUser, platformCoins, emitToUser);
 
     // 11. Create Transaction
     const offerTx = await Transaction.create({

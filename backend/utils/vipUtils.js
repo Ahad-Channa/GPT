@@ -72,9 +72,12 @@ async function getDynamicVipLevels() {
  */
 async function processVipLevelUp(user, added, emitToUser) {
   try {
-    const oldEarned = user.totalEarned || 0;
-    const newEarned = oldEarned + added;
-    
+    // NOTE: user.totalEarned has already been incremented and saved by the
+    // caller before this function is invoked. So treat it as the NEW total
+    // and derive the old value by subtracting what was just added.
+    const newEarned = user.totalEarned || 0;
+    const oldEarned = Math.max(0, newEarned - added);
+
     // Fetch dynamic levels from DB
     const dynamicLevels = await getDynamicVipLevels();
     

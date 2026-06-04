@@ -174,4 +174,26 @@ router.get('/stats', async (req, res) => {
   }
 });
 
+// ── GET /api/public/r/:code ───────────────────────────────────────────────────
+// Resolves a short referral code to the referrer's user ID.
+// The frontend stores this in localStorage as 'ref' and redirects to the home page.
+router.get('/r/:code', async (req, res) => {
+  try {
+    const { code } = req.params;
+    if (!code || code.length < 6) {
+      return res.status(400).json({ success: false, error: 'Invalid referral code' });
+    }
+
+    const user = await User.findOne({ referralCode: code.toUpperCase() }).lean();
+    if (!user) {
+      return res.status(404).json({ success: false, error: 'Referral code not found' });
+    }
+
+    res.status(200).json({ success: true, referrerId: user._id });
+  } catch (err) {
+    console.error('[/api/public/r/:code] Error:', err);
+    res.status(500).json({ success: false, error: 'Failed to resolve referral code' });
+  }
+});
+
 module.exports = router;

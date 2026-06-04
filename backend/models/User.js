@@ -76,6 +76,12 @@ const userSchema = new mongoose.Schema(
       ref: 'User',
       default: null,
     },
+    referralCode: {
+      type: String,
+      unique: true,
+      sparse: true,
+      index: true,
+    },
     referralEarnings: {
       type: Number,
       default: 0,

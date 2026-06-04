@@ -997,7 +997,7 @@ const Profile = () => {
                       Joined {mongoUser?.createdAt ? new Date(mongoUser.createdAt).toLocaleDateString('en-US', { month: 'short', year: 'numeric' }) : 'N/A'}
                     </div>
                     <button
-                      onClick={() => copyToClipboard(`${window.location.origin}/dashboard?ref=${mongoUser?._id}`)}
+                      onClick={() => copyToClipboard(`${window.location.origin}/r/${mongoUser?.referralCode}`)}
                       className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white/[0.03] border border-white/[0.07] hover:border-cyan-500/30 hover:bg-cyan-500/[0.05] rounded-xl text-xs text-slate-400 hover:text-cyan-400 font-medium transition-all"
                     >
                       <FiCopy className="text-[11px]" />
