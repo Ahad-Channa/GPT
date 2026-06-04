@@ -1,7 +1,7 @@
 import DashboardLayout from '../components/layout/DashboardLayout';
 import { useAuth } from '../contexts/AuthContext';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FiZap, FiUsers, FiCheckCircle, FiDollarSign, FiStar, FiMonitor, FiInbox } from 'react-icons/fi';
+import { FiUsers, FiGift, FiDollarSign, FiClipboard, FiMonitor, FiInbox } from 'react-icons/fi';
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ProviderCard, OfferwallCard, FeaturedOfferCard, FeaturedOfferModal } from '../components/offers/OfferCards';
@@ -20,7 +20,7 @@ const TabButton = ({ active, onClick, icon: Icon, label, count }) => (
         : 'text-slate-400 hover:text-slate-200 border border-transparent hover:border-white/10 hover:bg-white/[0.03]'
     }`}
   >
-    <Icon className="text-base" />
+    {Icon && <Icon className="text-base" />}
     {label}
     {count !== undefined && count > 0 && (
       <span className={`ml-1 px-1.5 py-0.5 rounded-full text-[10px] font-bold ${
@@ -138,10 +138,10 @@ const Home = () => {
   const gamingProviders = enabledProviders.filter(p => p.category === 'gaming' || p.category === 'mixed');
 
   const tabs = [
-    { id: 'all', label: 'All Operations', icon: FiZap },
-    { id: 'featured', label: 'Featured Offers', icon: FiStar, count: customOffers.length, ref: featuredRef },
+    { id: 'all', label: 'All Operations' },
+    { id: 'featured', label: 'Featured Offers', icon: FiGift, count: customOffers.length, ref: featuredRef },
     { id: 'gaming', label: 'Gaming & Apps', icon: FiMonitor, count: gamingProviders.length, ref: gamingRef },
-    { id: 'surveys', label: 'Surveys', icon: FiCheckCircle, count: surveyProviders.length, ref: surveysRef },
+    { id: 'surveys', label: 'Surveys', icon: FiClipboard, count: surveyProviders.length, ref: surveysRef },
   ];
 
   if (activeProvider) {
@@ -223,7 +223,7 @@ const Home = () => {
             <motion.section ref={featuredRef} variants={item} className="space-y-4 pt-4">
                <div className="flex items-center gap-3 mb-2">
                  <div className="w-10 h-10 rounded-xl bg-amber-500/10 flex items-center justify-center border border-amber-500/20">
-                    <FiStar className="text-amber-400 text-xl" />
+                    <FiGift className="text-amber-400 text-xl" />
                  </div>
                  <div>
                    <h2 className="text-2xl font-bold font-display text-white">Featured Offers</h2>
@@ -269,7 +269,7 @@ const Home = () => {
             <motion.section ref={surveysRef} variants={item} className="space-y-4 pt-4">
                <div className="flex items-center gap-3 mb-2">
                  <div className="w-10 h-10 rounded-xl bg-indigo-500/10 flex items-center justify-center border border-indigo-500/20">
-                    <FiCheckCircle className="text-indigo-400 text-xl" />
+                    <FiClipboard className="text-indigo-400 text-xl" />
                  </div>
                  <div>
                    <h2 className="text-2xl font-bold font-display text-white">Surveys</h2>
