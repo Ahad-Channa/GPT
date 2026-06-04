@@ -38,7 +38,7 @@ const Home = () => {
   const displayName = mongoUser?.displayName || 'User';
   const balance = mongoUser?.walletBalance?.toFixed(2) ?? '0.00';
   const [tasksDone, setTasksDone] = useState('...');
-  const [globalStats, setGlobalStats] = useState({ totalUsers: 0, totalPaidOut: 0 });
+  const [globalStats, setGlobalStats] = useState({ totalUsers: 0, totalPaidOut: 0, show: false });
   
   const [settings, setSettings] = useState(null);
   const [customOffers, setCustomOffers] = useState([]);
@@ -80,7 +80,7 @@ const Home = () => {
         const res = await fetch(`${API}/public/stats`);
         const data = await res.json();
         if (data.success) {
-          setGlobalStats({ totalUsers: data.totalUsers, totalPaidOut: data.totalPaidOut });
+          setGlobalStats({ totalUsers: data.totalUsers, totalPaidOut: data.totalPaidOut, show: data.showGlobalStats });
         }
       } catch (err) {
         console.error('Failed to fetch global stats', err);
@@ -165,39 +165,41 @@ const Home = () => {
       <motion.div variants={container} initial="hidden" animate="show" className="space-y-8 pb-10">
 
         {/* ─── Platform Stats ───────────────────────────── */}
-        <motion.div variants={item} className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-           {/* Total Users Card */}
-           <div className="glass-card relative overflow-hidden p-6 sm:p-8 flex items-center gap-5 group border border-white/[0.05] hover:border-white/[0.08] transition-colors bg-gradient-to-br from-white/[0.02] to-transparent">
-             <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-[0.08] transition-opacity translate-x-4 -translate-y-4">
-               <FiUsers className="text-8xl text-blue-500" />
+        {globalStats.show && (
+          <motion.div variants={item} className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+             {/* Total Users Card */}
+             <div className="glass-card relative overflow-hidden p-4 flex items-center gap-4 group border border-white/[0.05] hover:border-white/[0.08] transition-colors bg-gradient-to-br from-white/[0.02] to-transparent">
+               <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-[0.08] transition-opacity translate-x-2 -translate-y-2">
+                 <FiUsers className="text-6xl text-blue-500" />
+               </div>
+               <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-blue-500/20 to-blue-600/5 border border-blue-500/20 flex items-center justify-center shadow-[0_0_30px_rgba(59,130,246,0.15)] relative z-10 shrink-0">
+                 <FiUsers className="text-blue-400 text-xl" />
+               </div>
+               <div className="relative z-10">
+                  <p className="text-xs text-slate-400 font-semibold uppercase tracking-widest mb-0.5 shadow-black/50 drop-shadow-sm">Total Members</p>
+                  <div className="text-2xl font-bold text-white font-sans tracking-tight shadow-black/50 drop-shadow-sm">
+                    {globalStats.totalUsers.toLocaleString()}
+                  </div>
+               </div>
              </div>
-             <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-500/20 to-blue-600/5 border border-blue-500/20 flex items-center justify-center shadow-[0_0_30px_rgba(59,130,246,0.15)] relative z-10 shrink-0">
-               <FiUsers className="text-blue-400 text-2xl" />
-             </div>
-             <div className="relative z-10">
-                <p className="text-sm text-slate-400 font-semibold uppercase tracking-widest mb-1 shadow-black/50 drop-shadow-sm">Total Members</p>
-                <div className="text-3xl sm:text-4xl font-bold text-white font-sans tracking-tight shadow-black/50 drop-shadow-sm">
-                  {globalStats.totalUsers.toLocaleString()}
-                </div>
-             </div>
-           </div>
 
-           {/* Paid Out Card */}
-           <div className="glass-card relative overflow-hidden p-6 sm:p-8 flex items-center gap-5 group border border-white/[0.05] hover:border-white/[0.08] transition-colors bg-gradient-to-br from-white/[0.02] to-transparent">
-             <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-[0.08] transition-opacity translate-x-4 -translate-y-4">
-               <FiDollarSign className="text-8xl text-emerald-500" />
+             {/* Paid Out Card */}
+             <div className="glass-card relative overflow-hidden p-4 flex items-center gap-4 group border border-white/[0.05] hover:border-white/[0.08] transition-colors bg-gradient-to-br from-white/[0.02] to-transparent">
+               <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-[0.08] transition-opacity translate-x-2 -translate-y-2">
+                 <FiDollarSign className="text-6xl text-emerald-500" />
+               </div>
+               <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-emerald-500/20 to-emerald-600/5 border border-emerald-500/20 flex items-center justify-center shadow-[0_0_30px_rgba(16,185,129,0.15)] relative z-10 shrink-0">
+                 <FiDollarSign className="text-emerald-400 text-xl" />
+               </div>
+               <div className="relative z-10">
+                  <p className="text-xs text-slate-400 font-semibold uppercase tracking-widest mb-0.5 shadow-black/50 drop-shadow-sm">Total Paid Out</p>
+                  <div className="text-2xl font-bold text-emerald-400 font-sans tracking-tight shadow-black/50 drop-shadow-md">
+                    ${globalStats.totalPaidOut.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  </div>
+               </div>
              </div>
-             <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-emerald-500/20 to-emerald-600/5 border border-emerald-500/20 flex items-center justify-center shadow-[0_0_30px_rgba(16,185,129,0.15)] relative z-10 shrink-0">
-               <FiDollarSign className="text-emerald-400 text-2xl" />
-             </div>
-             <div className="relative z-10">
-                <p className="text-sm text-slate-400 font-semibold uppercase tracking-widest mb-1 shadow-black/50 drop-shadow-sm">Total Paid Out</p>
-                <div className="text-3xl sm:text-4xl font-bold text-emerald-400 font-sans tracking-tight shadow-black/50 drop-shadow-md">
-                  ${globalStats.totalPaidOut.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                </div>
-             </div>
-           </div>
-        </motion.div>
+          </motion.div>
+        )}
 
         {/* ─── Quick Jump Tabs ───────────────────────────── */}
         <motion.div variants={item} className="sticky top-4 z-20">

@@ -346,8 +346,12 @@ router.get('/settings', requirePermission('manage_withdrawals'), async (req, res
 // PUT update platform settings
 router.put('/settings', requirePermission('manage_withdrawals'), async (req, res) => {
   try {
-    const { withdrawalFeePercent, withdrawalMethods, coinsPerUSD, rewardEngine, referralConfig } = req.body;
+    const { withdrawalFeePercent, withdrawalMethods, coinsPerUSD, rewardEngine, referralConfig, showGlobalStats } = req.body;
     const settings = await Settings.getSingleton();
+
+    if (showGlobalStats !== undefined) {
+      settings.showGlobalStats = Boolean(showGlobalStats);
+    }
 
     if (referralConfig !== undefined) {
       if (referralConfig.globalPercentage !== undefined) {

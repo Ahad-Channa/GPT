@@ -85,6 +85,7 @@ const AdminSettings = () => {
   const [refGlobalPct, setRefGlobalPct] = useState('');
   const [earnGate, setEarnGate] = useState([]);
   const [earnReward, setEarnReward] = useState([]);
+  const [showGlobalStats, setShowGlobalStats] = useState(false);
 
   const [saving,   setSaving]  = useState(false);
   const [dirty,    setDirty]   = useState(false);
@@ -112,6 +113,7 @@ const AdminSettings = () => {
       setEarnReward(data.settings.rewardEngine?.dailyBonusReward ?? Array.from({length: 30}, (_, i) => {
         if (i+1===10) return 500; if(i+1===20) return 1000; if(i+1===30) return 2500; return 100+(i*10);
       }));
+      setShowGlobalStats(Boolean(data.settings.showGlobalStats));
       setDirty(false);
     } catch (err) {
       setError(err.message || 'Failed to load settings');
@@ -167,7 +169,8 @@ const AdminSettings = () => {
           rewardEngine: {
             dailyBonusEarnGate: earnGate.map(Number),
             dailyBonusReward: earnReward.map(Number),
-          }
+          },
+          showGlobalStats
         }),
       });
       const data = await res.json();
@@ -196,6 +199,7 @@ const AdminSettings = () => {
     setEarnReward(settings.rewardEngine?.dailyBonusReward ?? Array.from({length: 30}, (_, i) => {
       if (i+1===10) return 500; if(i+1===20) return 1000; if(i+1===30) return 2500; return 100+(i*10);
     }));
+    setShowGlobalStats(Boolean(settings.showGlobalStats));
     setDirty(false);
     setError('');
     setSuccess('');
@@ -288,6 +292,28 @@ const AdminSettings = () => {
               </div>
             )}
           </Field>
+
+          {/* Show Global Stats Toggle */}
+          <div style={{ marginTop: '1.25rem' }}>
+            <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '0.5rem' }}>
+              Show Global Stats
+            </label>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0.75rem 1rem', background: 'rgba(255,255,255,0.03)', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.08)' }}>
+              <div>
+                <p style={{ color: 'white', fontWeight: 600, fontSize: '0.85rem', margin: 0 }}>Homepage Statistics</p>
+                <p style={{ color: '#64748b', fontSize: '0.7rem', margin: 0 }}>Show "Total Users" and "Total Cashout" on the homepage</p>
+              </div>
+              <button
+                onClick={() => { setShowGlobalStats(!showGlobalStats); markDirty(); }}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, display: 'flex', alignItems: 'center', gap: '0.35rem' }}
+              >
+                {showGlobalStats
+                  ? <FiToggleRight style={{ fontSize: '1.75rem', color: '#34d399' }} />
+                  : <FiToggleLeft  style={{ fontSize: '1.75rem', color: '#475569' }} />
+                }
+              </button>
+            </div>
+          </div>
         </div>
 
       {/* ── Section 3: Referrals ────────────── */}

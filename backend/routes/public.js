@@ -167,7 +167,7 @@ router.get('/stats', async (req, res) => {
     const settings = await Settings.findOne({}) || { coinsPerUSD: 1000 };
     const totalPaidOutUSD = Number((totalPaidOutCoins / settings.coinsPerUSD).toFixed(2));
 
-    res.status(200).json({ success: true, totalUsers, totalPaidOut: totalPaidOutUSD });
+    res.status(200).json({ success: true, totalUsers, totalPaidOut: totalPaidOutUSD, showGlobalStats: settings.showGlobalStats });
   } catch (err) {
     console.error('[/api/public/stats] Error:', err);
     res.status(500).json({ success: false, error: 'Failed to fetch public stats' });
