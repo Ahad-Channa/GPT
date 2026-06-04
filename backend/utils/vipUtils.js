@@ -4,7 +4,7 @@
  */
 
 const VIP_LEVELS = [
-  { key: 'bronze_1',   tier: 'Bronze',   rank: 'I',   threshold: 0,         tierOrder: 1 },
+  { key: 'bronze_1',   tier: 'Bronze',   rank: 'I',   threshold: 2500,      tierOrder: 1 },
   { key: 'bronze_2',   tier: 'Bronze',   rank: 'II',  threshold: 5000,      tierOrder: 1 },
   { key: 'bronze_3',   tier: 'Bronze',   rank: 'III', threshold: 15000,     tierOrder: 1 },
   { key: 'silver_1',   tier: 'Silver',   rank: 'I',   threshold: 30000,     tierOrder: 2 },
@@ -23,6 +23,7 @@ const VIP_LEVELS = [
 ];
 
 function getLevelFromEarned(totalEarned = 0, levels = VIP_LEVELS) {
+  // Returns null if the user hasn't reached the first real VIP threshold.
   let current = null;
   for (const lvl of levels) {
     if (totalEarned >= lvl.threshold) current = lvl;

@@ -409,13 +409,16 @@ const MessageRow = ({ msg, isOwn, isDeleting, showAvatar, canModerate, onDelete,
               {msg.user?.displayName || 'Unknown'}
             </span>
             <RoleBadge role={msg.user?.role} />
-            {msg.user?.totalEarned >= 0 && getLevelFromEarned(msg.user.totalEarned) && (
-              <VipBadge
-                tier={getLevelFromEarned(msg.user.totalEarned).tier}
-                rank={getLevelFromEarned(msg.user.totalEarned).rank}
-                size="xs"
-              />
-            )}
+            {(() => {
+                const vipLevel = getLevelFromEarned(msg.user?.totalEarned || 0);
+                return vipLevel ? (
+                  <VipBadge
+                    tier={vipLevel.tier}
+                    rank={vipLevel.rank}
+                    size="xs"
+                  />
+                ) : null;
+              })()}
             <span style={{ fontSize: '0.65rem', color: '#334155' }}>
               {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
             </span>

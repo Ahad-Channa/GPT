@@ -1,7 +1,7 @@
 /** Shared VIP level definitions for the frontend — mirrors backend vipUtils.js */
 
 export const VIP_LEVELS = [
-  { key: 'bronze_1',   tier: 'Bronze',   rank: 'I',   threshold: 0,         tierOrder: 1 },
+  { key: 'bronze_1',   tier: 'Bronze',   rank: 'I',   threshold: 2500,      tierOrder: 1 },
   { key: 'bronze_2',   tier: 'Bronze',   rank: 'II',  threshold: 5000,      tierOrder: 1 },
   { key: 'bronze_3',   tier: 'Bronze',   rank: 'III', threshold: 15000,     tierOrder: 1 },
   { key: 'silver_1',   tier: 'Silver',   rank: 'I',   threshold: 30000,     tierOrder: 2 },

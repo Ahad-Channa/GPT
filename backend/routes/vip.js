@@ -72,8 +72,10 @@ router.get('/status', requireAuth, async (req, res) => {
     const user = req.user;
     const totalEarned = user.totalEarned || 0;
 
-    const currentLevel = getLevelFromEarned(totalEarned, dynamicLevels);
-    const nextLevel    = getNextLevel(currentLevel.key, dynamicLevels);
+    const currentLevel = getLevelFromEarned(totalEarned, dynamicLevels); // null if below first threshold
+    const nextLevel    = currentLevel
+      ? getNextLevel(currentLevel.key, dynamicLevels)
+      : (dynamicLevels.length > 0 ? dynamicLevels[0] : null);
 
     // Fetch all configs & claims for this user
     const [configs, claims] = await Promise.all([
@@ -102,23 +104,28 @@ router.get('/status', requireAuth, async (req, res) => {
     });
 
     // Progress to next level
-    let progressPct = 100;
+    let progressPct = 0;
     let coinsToNext = 0;
     if (nextLevel) {
-      const rangeStart = currentLevel.threshold;
+      const rangeStart = currentLevel ? currentLevel.threshold : 0;
       const rangeEnd   = nextLevel.threshold;
       coinsToNext  = Math.max(0, rangeEnd - totalEarned);
-      progressPct  = Math.min(100, Math.floor(((totalEarned - rangeStart) / (rangeEnd - rangeStart)) * 100));
+      progressPct  = rangeEnd > 0
+        ? Math.min(100, Math.floor(((totalEarned - rangeStart) / (rangeEnd - rangeStart)) * 100))
+        : 100;
+    } else {
+      // At max level
+      progressPct = 100;
     }
 
     res.json({
       success: true,
       totalEarned,
-      currentLevel: {
+      currentLevel: currentLevel ? {
         ...currentLevel,
         rewardAmount: configMap[currentLevel.key] ?? 0,
         label: getLevelLabel(currentLevel),
-      },
+      } : null,
       nextLevel: nextLevel ? {
         ...nextLevel,
         rewardAmount: configMap[nextLevel.key] ?? 0,
