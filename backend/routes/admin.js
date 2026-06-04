@@ -975,6 +975,65 @@ router.get('/leaderboard-history', requirePrimaryAdmin, async (req, res) => {
 
 // ----------------------------------------------------
 // OVERVIEW & NOTIFICATIONS
+// POST /api/admin/referral-holds/release-now
+// Manually trigger the referral hold release (same logic as the midnight cron).
+// Useful for testing or forcing an instant payout of matured holds.
+router.post('/referral-holds/release-now', requirePermission('manage_withdrawals'), async (req, res) => {
+  try {
+    const now = new Date();
+
+    const eligibleHolds = await Transaction.find({
+      transactionType: 'referral_reward',
+      status: 'hold',
+      holdUntil: { $lte: now }
+    });
+
+    if (eligibleHolds.length === 0) {
+      return res.json({ success: true, releasedCount: 0, message: 'No matured holds to release right now.' });
+    }
+
+    let releasedCount = 0;
+    for (const tx of eligibleHolds) {
+      const user = await User.findById(tx.userId);
+      if (!user) continue;
+
+      // Credit wallet
+      user.walletBalance = Math.max(0, user.walletBalance + tx.amount);
+      user.totalEarned = (user.totalEarned || 0) + tx.amount;
+      await user.save();
+
+      // VIP check
+      processVipLevelUp(user, tx.amount, emitToUser);
+      emitWalletUpdate(user.firebaseUid, user.walletBalance);
+
+      // Mark released
+      tx.status = 'completed';
+      tx.balanceAfter = user.walletBalance;
+      tx.metadata = { ...tx.metadata, releasedAt: new Date().toISOString(), releasedBy: 'manual_admin' };
+      await tx.save();
+
+      // Notify user
+      await notify(
+        user._id,
+        'referral_earning',
+        'Referral Funds Released!',
+        `Your held referral reward of +${tx.amount} coins is now available in your wallet!`,
+        { amount: tx.amount, txId: tx._id }
+      );
+
+      releasedCount++;
+    }
+
+    await createLog(req.dbUser._id, 'MANUAL_REFERRAL_HOLD_RELEASE', null, { releasedCount });
+    res.json({ success: true, releasedCount, message: `Released ${releasedCount} referral hold(s) successfully.` });
+  } catch (error) {
+    console.error('[Admin] Manual referral hold release failed:', error);
+    res.status(500).json({ success: false, error: 'Failed to release referral holds' });
+  }
+});
+
+// ----------------------------------------------------
+// OVERVIEW & NOTIFICATIONS
 // ----------------------------------------------------
 
 router.get('/overview-stats', async (req, res) => {
