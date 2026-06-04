@@ -130,6 +130,13 @@ const settingsSchema = new mongoose.Schema(
         lastResetAt: { type: Date, default: null },
       },
     },
+    // Show/Hide Global Stats on the Homepage
+    // When false, the "Total Members" and "Total Paid Out" cards are hidden from users.
+    // Tracking and counting always continue in the background — this is visibility only.
+    showGlobalStats: {
+      type: Boolean,
+      default: false,
+    },
     // Block E — Mission Period Completion Bonus
     // Extra reward when user completes ALL missions in a period
     missionCompletionBonus: {
