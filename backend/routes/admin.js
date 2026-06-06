@@ -1047,7 +1047,6 @@ router.post('/referral-holds/release-now', requirePermission('manage_withdrawals
     const eligibleHolds = await Transaction.find({
       transactionType: 'referral_reward',
       status: 'hold',
-      holdUntil: { $lte: now }
     });
 
     if (eligibleHolds.length === 0) {

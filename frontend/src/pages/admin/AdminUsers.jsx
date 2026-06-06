@@ -3,8 +3,9 @@ import { useAuth } from '../../contexts/AuthContext';
 import {
   FiCopy, FiSearch, FiX, FiCheck, FiLoader, FiMessageSquare,
   FiEye, FiUser, FiDollarSign, FiActivity, FiGift, FiChevronDown,
-  FiAlertCircle, FiCheckCircle, FiZap, FiInfo
+  FiCheckCircle, FiInfo
 } from 'react-icons/fi';
+
 import toast from 'react-hot-toast';
 import CoinDisplay from '../../components/CoinDisplay';
 
@@ -234,191 +235,6 @@ const UserDetailModal = ({ user, onClose, currentUser }) => {
   );
 };
 
-// ── Referral Diagnostics Modal ───────────────────────────────────
-const RefDiagModal = ({ user, onClose, currentUser }) => {
-  const [data,    setData]    = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [testAmt, setTestAmt] = useState('100');
-  const [instant, setInstant] = useState(false);
-  const [sending, setSending] = useState(false);
-
-  useEffect(() => {
-    const run = async () => {
-      try {
-        const token = await currentUser.getIdToken();
-        const res = await fetch(`${API}/admin/referral-debug/${user._id}`, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        const json = await res.json();
-        setData(json);
-      } catch { setData({ success: false, error: 'Network error' }); }
-      setLoading(false);
-    };
-    run();
-  }, [user]);
-
-  const handleTestCommission = async () => {
-    const amt = Number(testAmt);
-    if (!amt || amt < 1) { toast.error('Enter a valid amount (min 1)'); return; }
-    setSending(true);
-    try {
-      const token = await currentUser.getIdToken();
-      const res = await fetch(`${API}/admin/referral-test-commission/${user._id}`, {
-        method: 'POST',
-        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ amount: amt, instant }),
-      });
-      const json = await res.json();
-      if (json.success) {
-        toast.success(json.message);
-        onClose();
-      } else {
-        toast.error(json.error || 'Failed');
-      }
-    } catch { toast.error('Network error'); }
-    setSending(false);
-  };
-
-  const row = (label, value, color = '#cbd5e1') => (
-    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.45rem 0', borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
-      <span style={{ fontSize: '0.75rem', color: '#64748b' }}>{label}</span>
-      <span style={{ fontSize: '0.8rem', fontWeight: 600, color }}>{value}</span>
-    </div>
-  );
-
-  return (
-    <div className="admin-modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
-      <div style={{ background: '#0f1422', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '1.5rem', width: '100%', maxWidth: '560px', maxHeight: '88vh', overflowY: 'auto', padding: '2rem', position: 'relative' }}>
-        <button onClick={onClose} style={{ position: 'absolute', top: '1.25rem', right: '1.25rem', background: 'none', border: 'none', color: '#64748b', cursor: 'pointer', fontSize: '20px' }}>
-          <FiX />
-        </button>
-
-        <h3 style={{ color: '#fff', fontWeight: 800, fontSize: '1.1rem', marginBottom: '0.25rem' }}>🔍 Referral Diagnostics</h3>
-        <p style={{ color: '#64748b', fontSize: '0.8rem', marginBottom: '1.5rem' }}>User: <strong style={{ color: '#94a3b8' }}>{user.email}</strong></p>
-
-        {loading ? (
-          <div style={{ display: 'flex', justifyContent: 'center', padding: '3rem' }}>
-            <FiLoader style={{ animation: 'spin 1s linear infinite', fontSize: 28, color: '#6366f1' }} />
-          </div>
-        ) : !data?.success ? (
-          <p style={{ color: '#f87171' }}>{data?.error || 'Failed to load diagnostic data'}</p>
-        ) : (
-          <>
-            {/* Diagnosis banner */}
-            <div style={{
-              padding: '0.75rem 1rem', borderRadius: '10px', marginBottom: '1.25rem',
-              background: data.diagnosis.hasAnyCommissions ? 'rgba(16,185,129,0.08)' : 'rgba(239,68,68,0.08)',
-              border: `1px solid ${data.diagnosis.hasAnyCommissions ? 'rgba(16,185,129,0.3)' : 'rgba(239,68,68,0.3)'}`,
-              display: 'flex', alignItems: 'flex-start', gap: '0.6rem',
-            }}>
-              {data.diagnosis.hasAnyCommissions
-                ? <FiCheckCircle style={{ color: '#34d399', flexShrink: 0, marginTop: 2 }} />
-                : <FiAlertCircle style={{ color: '#f87171', flexShrink: 0, marginTop: 2 }} />
-              }
-              <p style={{ fontSize: '0.8rem', color: data.diagnosis.hasAnyCommissions ? '#34d399' : '#fca5a5', margin: 0 }}>
-                {data.diagnosis.message}
-              </p>
-            </div>
-
-            {/* User info */}
-            <div style={{ marginBottom: '1rem', background: '#151d2e', borderRadius: '12px', padding: '0.875rem 1rem' }}>
-              <p style={{ fontSize: '0.65rem', fontWeight: 700, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.5rem' }}>This User</p>
-              {row('Referral Code', data.user.referralCode || 'None', '#818cf8')}
-              {row('Referrer Set?', data.diagnosis.hasReferrer ? '✅ Yes' : '❌ No (not linked)', data.diagnosis.hasReferrer ? '#34d399' : '#f87171')}
-              {row('Offers Completed', data.user.offersCompleted, data.user.offersCompleted > 0 ? '#34d399' : '#f87171')}
-              {row('Commission Rate', `${data.user.effectiveCommissionPct}%`, '#fbbf24')}
-            </div>
-
-            {/* Referrer info */}
-            {data.referrer ? (
-              <div style={{ marginBottom: '1rem', background: '#151d2e', borderRadius: '12px', padding: '0.875rem 1rem' }}>
-                <p style={{ fontSize: '0.65rem', fontWeight: 700, color: '#22d3ee', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.5rem' }}>Referrer (who earns commissions)</p>
-                {row('Name', data.referrer.displayName || '—')}
-                {row('Email', data.referrer.email)}
-                {row('Wallet', <CoinDisplay amount={data.referrer.walletBalance} size={12} compact={false} />, '#818cf8')}
-                {row('Total Referral Earnings', <CoinDisplay amount={data.referrer.referralEarnings} size={12} compact={false} />, '#22d3ee')}
-              </div>
-            ) : (
-              <div style={{ background: 'rgba(239,68,68,0.07)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: '10px', padding: '0.75rem 1rem', marginBottom: '1rem', fontSize: '0.8rem', color: '#f87171' }}>
-                ⛔ No referrer linked. Use the <strong>Ref %</strong> button to link this user to a referrer first.
-              </div>
-            )}
-
-            {/* Platform settings */}
-            <div style={{ marginBottom: '1rem', background: '#151d2e', borderRadius: '12px', padding: '0.875rem 1rem' }}>
-              <p style={{ fontSize: '0.65rem', fontWeight: 700, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.5rem' }}>Platform Settings</p>
-              {row('Global Commission %', `${data.platformSettings.globalPct}%`)}
-              {row('Hold Duration', `${data.platformSettings.holdDays} days`)}
-            </div>
-
-            {/* Commission history */}
-            {data.commissions.length > 0 && (
-              <div style={{ marginBottom: '1.25rem', background: '#151d2e', borderRadius: '12px', padding: '0.875rem 1rem' }}>
-                <p style={{ fontSize: '0.65rem', fontWeight: 700, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.5rem' }}>Recent Commissions (as Referrer)</p>
-                {data.commissions.slice(0, 5).map(tx => (
-                  <div key={tx._id} style={{ display: 'flex', justifyContent: 'space-between', padding: '0.4rem 0', borderBottom: '1px solid rgba(255,255,255,0.04)', fontSize: '0.75rem' }}>
-                    <span style={{ color: '#64748b' }}>{tx.description?.substring(0, 36)}…</span>
-                    <span style={{ color: tx.status === 'hold' ? '#fbbf24' : '#34d399', fontWeight: 700 }}>
-                      +{tx.amount} · {tx.status}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {/* Test Commission */}
-            {data.referrer && (
-              <div style={{ background: 'rgba(99,102,241,0.07)', border: '1px solid rgba(99,102,241,0.25)', borderRadius: '12px', padding: '1rem' }}>
-                <p style={{ fontSize: '0.75rem', fontWeight: 700, color: '#818cf8', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                  <FiZap size={12} /> Send Test Commission to Referrer
-                </p>
-                <p style={{ fontSize: '0.72rem', color: '#475569', marginBottom: '0.75rem' }}>
-                  Manually fire a commission to <strong style={{ color: '#c7d2fe' }}>{data.referrer.displayName || data.referrer.email}</strong>. Use this to verify the full system works end-to-end.
-                </p>
-                <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.6rem' }}>
-                  <input
-                    type="number"
-                    className="admin-input"
-                    style={{ flex: 1, fontSize: '0.9rem' }}
-                    value={testAmt}
-                    onChange={(e) => setTestAmt(e.target.value)}
-                    placeholder="Coins (e.g. 100)"
-                    min={1}
-                  />
-                  <button
-                    onClick={() => setInstant(!instant)}
-                    style={{
-                      padding: '0.4rem 0.9rem', borderRadius: '8px', fontSize: '0.75rem', fontWeight: 600, cursor: 'pointer',
-                      background: instant ? 'rgba(16,185,129,0.15)' : 'rgba(255,255,255,0.05)',
-                      border: instant ? '1px solid rgba(16,185,129,0.35)' : '1px solid rgba(255,255,255,0.1)',
-                      color: instant ? '#34d399' : '#64748b',
-                    }}
-                  >
-                    {instant ? '⚡ Instant' : '⏱ On Hold'}
-                  </button>
-                </div>
-                <button
-                  onClick={handleTestCommission}
-                  disabled={sending}
-                  style={{
-                    width: '100%', padding: '0.6rem', borderRadius: '10px', cursor: sending ? 'not-allowed' : 'pointer',
-                    background: 'linear-gradient(135deg,rgba(99,102,241,0.25),rgba(139,92,246,0.25))',
-                    border: '1px solid rgba(99,102,241,0.4)', color: '#a5b4fc', fontWeight: 700, fontSize: '0.82rem',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem',
-                  }}
-                >
-                  {sending ? <FiLoader style={{ animation: 'spin 1s linear infinite' }} /> : <FiZap />}
-                  {sending ? 'Sending...' : `Send ${testAmt || '?'} coin commission`}
-                </button>
-              </div>
-            )}
-          </>
-        )}
-        <style>{`@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`}</style>
-      </div>
-    </div>
-  );
-};
 
 // ── Main AdminUsers Component ────────────────────────────────────
 const AdminUsers = () => {
@@ -430,7 +246,6 @@ const AdminUsers = () => {
 
   // Detail modal
   const [detailUser, setDetailUser] = useState(null);
-  const [diagUser,   setDiagUser]   = useState(null);
 
   // Modals state
   const [banTarget,     setBanTarget]     = useState(null);
@@ -653,13 +468,6 @@ const AdminUsers = () => {
                       <button className="action-btn" onClick={() => { setBalanceTarget(u); setBalanceAmount(''); setBalanceReason(''); setBalanceError(''); }}>Adjust Bal</button>
                       <button className="action-btn" onClick={() => { setRefTarget(u); setRefAmount(u.referralPercentage !== null && u.referralPercentage !== undefined ? String(u.referralPercentage) : ''); setRefError(''); setReferredByCode(''); }}>Ref %</button>
                       <button
-                        className="action-btn"
-                        style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', color: '#22d3ee', borderColor: 'rgba(34,211,238,0.3)' }}
-                        onClick={() => setDiagUser(u)}
-                      >
-                        🔍 Diagnose
-                      </button>
-                      <button
                         className={`action-btn ${u.isBanned ? 'success' : 'danger'}`}
                         onClick={() => { setBanTarget(u); setBanReason(''); setBanError(''); }}
                       >
@@ -679,15 +487,6 @@ const AdminUsers = () => {
         <UserDetailModal
           user={detailUser}
           onClose={() => setDetailUser(null)}
-          currentUser={currentUser}
-        />
-      )}
-
-      {/* ── Referral Diagnostics Modal ─────── */}
-      {diagUser && (
-        <RefDiagModal
-          user={diagUser}
-          onClose={() => setDiagUser(null)}
           currentUser={currentUser}
         />
       )}
