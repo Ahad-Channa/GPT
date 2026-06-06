@@ -1071,6 +1071,162 @@ router.post('/referral-holds/release-now', requirePermission('manage_withdrawals
 });
 
 // ----------------------------------------------------
+// REFERRAL DIAGNOSTICS
+// GET /api/admin/referral-debug/:userId
+// Shows the full referral chain and commission history for a user.
+router.get('/referral-debug/:userId', requirePermission('manage_users'), async (req, res) => {
+  try {
+    const user = await User.findById(req.params.userId).select('displayName email referredBy referralCode referralEarnings referralPercentage walletBalance');
+    if (!user) return res.status(404).json({ success: false, error: 'User not found' });
+
+    // Get referrer info
+    let referrer = null;
+    if (user.referredBy) {
+      referrer = await User.findById(user.referredBy).select('displayName email referralCode walletBalance referralEarnings');
+    }
+
+    // Get all referral_reward transactions for THIS user (as the referrer)
+    const commissionsAsReferrer = await Transaction.find({
+      userId: user._id,
+      transactionType: 'referral_reward',
+    }).sort({ createdAt: -1 }).limit(20).lean();
+
+    // Get all referral_reward transactions where THIS user's offers triggered commissions (linked)
+    const offersThisUserCompleted = await Transaction.find({
+      userId: user._id,
+      transactionType: { $in: ['offer_reward', 'custom_offer_reward'] },
+      status: 'completed',
+    }).countDocuments();
+
+    const settings = await Settings.getSingleton();
+    const globalPct = settings.referralConfig?.globalPercentage ?? 5;
+    const holdDays  = settings.referralConfig?.holdDays ?? 30;
+    const effectivePct = (user.referralPercentage != null) ? user.referralPercentage : globalPct;
+
+    res.json({
+      success: true,
+      user: {
+        _id: user._id,
+        displayName: user.displayName,
+        email: user.email,
+        referralCode: user.referralCode,
+        referredBy: user.referredBy || null,
+        referralEarnings: user.referralEarnings || 0,
+        walletBalance: user.walletBalance || 0,
+        effectiveCommissionPct: effectivePct,
+        offersCompleted: offersThisUserCompleted,
+      },
+      referrer: referrer ? {
+        _id: referrer._id,
+        displayName: referrer.displayName,
+        email: referrer.email,
+        referralCode: referrer.referralCode,
+        walletBalance: referrer.walletBalance || 0,
+        referralEarnings: referrer.referralEarnings || 0,
+      } : null,
+      platformSettings: { globalPct, holdDays },
+      commissions: commissionsAsReferrer,
+      diagnosis: {
+        hasReferrer: !!user.referredBy,
+        hasAnyCommissions: commissionsAsReferrer.length > 0,
+        pendingCount: commissionsAsReferrer.filter(t => t.status === 'hold').length,
+        completedCount: commissionsAsReferrer.filter(t => t.status === 'completed').length,
+        message: !user.referredBy
+          ? '⚠️ User has no referrer linked (referredBy is null). No commissions will ever fire for this user.'
+          : commissionsAsReferrer.length === 0
+          ? '⚠️ Referrer exists but ZERO commission transactions found. The referred user likely has not completed any offers yet.'
+          : `✅ ${commissionsAsReferrer.length} commission transaction(s) found.`,
+      }
+    });
+  } catch (error) {
+    console.error('[Admin] Referral debug error:', error);
+    res.status(500).json({ success: false, error: 'Failed to run referral diagnostic' });
+  }
+});
+
+// POST /api/admin/referral-test-commission/:userId
+// Manually fire a test referral commission: credits the user's referrer with `amount` coins (on hold by default).
+// Body: { amount: number, instant: boolean }  — instant=true bypasses hold and credits wallet immediately.
+router.post('/referral-test-commission/:userId', requirePermission('manage_users'), async (req, res) => {
+  try {
+    const { amount = 100, instant = false } = req.body;
+    const amountNum = Math.max(1, Number(amount));
+
+    const user = await User.findById(req.params.userId);
+    if (!user) return res.status(404).json({ success: false, error: 'User not found' });
+    if (!user.referredBy) return res.status(400).json({ success: false, error: 'This user has no referrer (referredBy is null). Link a referrer first using the Ref% button.' });
+
+    const referrer = await User.findById(user.referredBy);
+    if (!referrer) return res.status(404).json({ success: false, error: 'Referrer user not found in database.' });
+
+    const settings = await Settings.getSingleton();
+    const holdDays  = settings.referralConfig?.holdDays ?? 30;
+
+    // Increment referralEarnings tracker
+    await User.updateOne({ _id: referrer._id }, { $inc: { referralEarnings: amountNum } });
+
+    let txStatus = 'hold';
+    let holdUntil = null;
+    let balanceAfterReferrer = referrer.walletBalance;
+
+    if (instant || holdDays === 0) {
+      // Credit wallet immediately
+      const updatedReferrer = await User.findOneAndUpdate(
+        { _id: referrer._id },
+        { $inc: { walletBalance: amountNum, totalEarned: amountNum } },
+        { new: true }
+      );
+      balanceAfterReferrer = updatedReferrer.walletBalance;
+      processVipLevelUp(updatedReferrer, amountNum, emitToUser);
+      emitWalletUpdate(updatedReferrer.firebaseUid, updatedReferrer.walletBalance);
+      txStatus = 'completed';
+    } else {
+      const holdDate = new Date();
+      holdDate.setDate(holdDate.getDate() + holdDays);
+      holdUntil = holdDate;
+    }
+
+    const tx = await Transaction.create({
+      userId: referrer._id,
+      transactionType: 'referral_reward',
+      sourceType: 'referral',
+      amount: amountNum,
+      balanceAfter: balanceAfterReferrer,
+      description: `[TEST] Referral Commission from ${user.displayName || user.email} — Manual Admin Test`,
+      status: txStatus,
+      holdUntil,
+      metadata: { isTestCommission: true, triggeredBy: req.dbUser.email, forUserId: user._id.toString() },
+    });
+
+    await notify(
+      referrer._id,
+      'referral_earning',
+      instant ? 'Referral Bonus Credited!' : 'Referral Earning Pending!',
+      instant
+        ? `+${amountNum} coins referral commission from ${user.displayName || 'a test'} has been credited to your wallet.`
+        : `+${amountNum} coins referral commission from ${user.displayName || 'a test'} is on hold for ${holdDays} day(s).`,
+      { amount: amountNum }
+    );
+
+    await createLog(req.dbUser._id, 'MANUAL_REFERRAL_COMMISSION', referrer._id, {
+      forUserId: user._id, amount: amountNum, instant, txId: tx._id,
+    });
+
+    res.json({
+      success: true,
+      message: instant
+        ? `✅ ${amountNum} coins credited instantly to ${referrer.displayName || referrer.email}'s wallet.`
+        : `✅ ${amountNum} coins commission created on hold for ${holdDays} day(s) for ${referrer.displayName || referrer.email}.`,
+      transaction: tx,
+      referrer: { _id: referrer._id, displayName: referrer.displayName, email: referrer.email },
+    });
+  } catch (error) {
+    console.error('[Admin] Manual test commission failed:', error);
+    res.status(500).json({ success: false, error: 'Failed to create test commission' });
+  }
+});
+
+// ----------------------------------------------------
 // OVERVIEW & NOTIFICATIONS
 // ----------------------------------------------------
 
