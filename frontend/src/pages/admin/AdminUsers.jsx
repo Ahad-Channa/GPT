@@ -256,6 +256,7 @@ const AdminUsers = () => {
   const [refTarget, setRefTarget] = useState(null);
   const [refAmount, setRefAmount] = useState('');
   const [refError,  setRefError]  = useState('');
+  const [referredByCode, setReferredByCode] = useState('');
 
   useEffect(() => { fetchUsers(); }, [search]);
 
@@ -334,22 +335,30 @@ const AdminUsers = () => {
   };
 
   const handleRefSubmit = async () => {
-    const amount = refAmount === '' ? null : Number(refAmount);
-    if (amount !== null && (isNaN(amount) || amount < 0 || amount > 100)) { setRefError('Please enter a valid percentage between 0 and 100.'); return; }
+    const amount = refAmount === '' ? undefined : Number(refAmount);
+    if (amount !== undefined && (isNaN(amount) || amount < 0 || amount > 100)) { setRefError('Please enter a valid percentage between 0 and 100.'); return; }
     
     setActionLoading(true);
     try {
       const token = await currentUser.getIdToken();
+      const body = {};
+      if (refAmount !== '') body.referralPercentage = amount ?? null;
+      if (referredByCode.trim()) body.referredByCode = referredByCode.trim();
+
       const res = await fetch(`${API}/admin/users/${refTarget._id}/referral`, {
         method: 'PUT',
         headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ referralPercentage: amount }),
+        body: JSON.stringify(body),
       });
       const data = await res.json();
       if (data.success) {
-        toast.success(amount === null ? 'Referral percentage override removed' : `Referral percentage overridden: ${amount}%`);
+        const msgs = [];
+        if (refAmount !== '') msgs.push(amount === undefined ? 'Ref% removed' : `Ref% set to ${amount}%`);
+        if (referredByCode.trim()) msgs.push(`Referrer linked via code ${referredByCode.trim().toUpperCase()}`);
+        toast.success(msgs.join(' · ') || 'Updated');
         fetchUsers();
         setRefTarget(null);
+        setReferredByCode('');
       } else {
         setRefError(data.error || 'Action failed.');
       }
@@ -454,7 +463,7 @@ const AdminUsers = () => {
                         <FiEye size={12} /> Details
                       </button>
                       <button className="action-btn" onClick={() => { setBalanceTarget(u); setBalanceAmount(''); setBalanceReason(''); setBalanceError(''); }}>Adjust Bal</button>
-                      <button className="action-btn" onClick={() => { setRefTarget(u); setRefAmount(u.referralPercentage !== null && u.referralPercentage !== undefined ? String(u.referralPercentage) : ''); setRefError(''); }}>Ref %</button>
+                      <button className="action-btn" onClick={() => { setRefTarget(u); setRefAmount(u.referralPercentage !== null && u.referralPercentage !== undefined ? String(u.referralPercentage) : ''); setRefError(''); setReferredByCode(''); }}>Ref %</button>
                       <button
                         className={`action-btn ${u.isBanned ? 'success' : 'danger'}`}
                         onClick={() => { setBanTarget(u); setBanReason(''); setBanError(''); }}
@@ -590,7 +599,7 @@ const AdminUsers = () => {
         <div className="admin-modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) setRefTarget(null); }}>
           <div className="admin-modal">
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.25rem' }}>
-              <h3>Override Referral %</h3>
+              <h3>Referral Settings</h3>
               <button onClick={() => setRefTarget(null)} style={{ background: 'none', border: 'none', color: '#64748b', cursor: 'pointer', padding: 0, fontSize: '18px' }}>
                 <FiX />
               </button>
@@ -598,8 +607,32 @@ const AdminUsers = () => {
             <p style={{ marginBottom: '1rem', color: '#94a3b8', fontSize: '0.9rem' }}>
               User: <strong style={{ color: '#fff' }}>{refTarget.email}</strong>
             </p>
+
+            {/* Current referredBy info */}
+            <div style={{ marginBottom: '1rem', padding: '0.6rem 0.8rem', background: 'rgba(99,102,241,0.08)', border: '1px solid rgba(99,102,241,0.2)', borderRadius: '8px', fontSize: '0.78rem', color: '#94a3b8' }}>
+              <strong style={{ color: '#c7d2fe' }}>Current referredBy:</strong>{' '}
+              {refTarget.referredBy
+                ? <span style={{ color: '#6ee7b7', fontFamily: 'monospace' }}>{String(refTarget.referredBy)}</span>
+                : <span style={{ color: '#f87171' }}>None (not linked to any referrer)</span>
+              }
+            </div>
+
+            {/* Set referrer by code */}
             <label style={{ display: 'block', fontSize: '0.75rem', color: '#94a3b8', marginBottom: '0.35rem' }}>
-              Specific Percentage <span style={{ color: '#f87171' }}>*</span>
+              Link to Referrer (enter their Referral Code)
+              <span style={{ color: '#475569', marginLeft: '0.4rem' }}>(leave empty to skip)</span>
+            </label>
+            <input
+              type="text"
+              className="admin-input"
+              style={{ marginBottom: '0.85rem', width: '100%', boxSizing: 'border-box', textTransform: 'uppercase', letterSpacing: '0.05em' }}
+              value={referredByCode}
+              onChange={(e) => { setReferredByCode(e.target.value.toUpperCase()); setRefError(''); }}
+              placeholder="e.g. AB12CD34"
+            />
+
+            <label style={{ display: 'block', fontSize: '0.75rem', color: '#94a3b8', marginBottom: '0.35rem' }}>
+              Override Referral %
               <span style={{ color: '#475569', marginLeft: '0.4rem' }}>(leave empty to use global setting)</span>
             </label>
             <input
@@ -626,7 +659,7 @@ const AdminUsers = () => {
                 style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}
               >
                 {actionLoading ? <FiLoader style={{ animation: 'spin 1s linear infinite' }} /> : <FiCheck />}
-                Apply Override
+                Apply
               </button>
             </div>
           </div>

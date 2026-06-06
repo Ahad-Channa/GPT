@@ -165,7 +165,7 @@ router.put('/users/:id/balance', requirePermission('manage_users'), async (req, 
 
 router.put('/users/:id/referral', requirePermission('manage_users'), async (req, res) => {
   try {
-    const { referralPercentage } = req.body;
+    const { referralPercentage, referredByCode, clearReferredBy } = req.body;
     const userToUpdate = await User.findById(req.params.id);
     if (!userToUpdate) return res.status(404).json({ success: false, error: 'User not found' });
 
@@ -173,19 +173,36 @@ router.put('/users/:id/referral', requirePermission('manage_users'), async (req,
       return res.status(403).json({ success: false, error: 'Cannot modify primary admin' });
     }
 
-    let val = null; // Unset it by passing null/undefined/empty
-    if (referralPercentage !== '' && referralPercentage !== null && referralPercentage !== undefined) {
-      val = Number(referralPercentage);
-      if (isNaN(val) || val < 0 || val > 100) {
-        return res.status(400).json({ success: false, error: 'Invalid referral percentage' });
+    const updateFields = {};
+
+    // Handle referral percentage
+    if (referralPercentage !== undefined) {
+      let val = null;
+      if (referralPercentage !== '' && referralPercentage !== null) {
+        val = Number(referralPercentage);
+        if (isNaN(val) || val < 0 || val > 100) {
+          return res.status(400).json({ success: false, error: 'Invalid referral percentage' });
+        }
       }
+      updateFields.referralPercentage = val;
     }
 
-    const user = await User.findByIdAndUpdate(req.params.id, { referralPercentage: val }, { returnDocument: 'after' });
-    await createLog(req.dbUser._id, 'ADJUST_REFERRAL_PCT', user._id, { referralPercentage: val });
+    // Handle setting referredBy via referral code (for testing / fixing existing accounts)
+    if (clearReferredBy) {
+      updateFields.referredBy = null;
+    } else if (referredByCode) {
+      const referrer = await User.findOne({ referralCode: referredByCode.toUpperCase() });
+      if (!referrer) return res.status(404).json({ success: false, error: 'Referral code not found — no user has that code.' });
+      if (referrer._id.toString() === req.params.id) return res.status(400).json({ success: false, error: 'User cannot refer themselves.' });
+      updateFields.referredBy = referrer._id;
+    }
+
+    const user = await User.findByIdAndUpdate(req.params.id, updateFields, { returnDocument: 'after' });
+    await createLog(req.dbUser._id, 'ADJUST_REFERRAL_PCT', user._id, { referralPercentage: updateFields.referralPercentage, referredByCode });
 
     res.json({ success: true, user });
   } catch (error) {
+    console.error('[PUT /users/:id/referral] Error:', error);
     res.status(500).json({ success: false, error: 'Failed to update user referral setting' });
   }
 });
@@ -599,52 +616,55 @@ router.put('/custom-offers/submissions/:id', requirePermission('manage_offerwall
     if (adminNote) submission.adminNote = adminNote;
     await submission.save();
 
-    const user = await User.findById(submission.userId._id);
+    // Use the already-populated user document (avoids double-fetch)
+    const user = submission.userId;
+    const freshUser = await User.findById(user._id); // fresh copy to avoid populated-doc save issues
 
     if (status === 'approved') {
       // Credit the user
       const amountNum = Number(submission.offerId.rewardAmount);
-      user.walletBalance += amountNum;
-      user.totalEarned = (user.totalEarned || 0) + amountNum;
-      await user.save();
-      emitWalletUpdate(user.firebaseUid, user.walletBalance);
+      freshUser.walletBalance += amountNum;
+      freshUser.totalEarned = (freshUser.totalEarned || 0) + amountNum;
+      await freshUser.save();
+      emitWalletUpdate(freshUser.firebaseUid, freshUser.walletBalance);
 
       const offerTx = await Transaction.create({
-        userId: user._id,
+        userId: freshUser._id,
         transactionType: 'custom_offer_reward',
         amount: amountNum,
-        balanceAfter: user.walletBalance,
+        balanceAfter: freshUser.walletBalance,
         description: `Custom Offer Reward: ${submission.offerId.title}`,
         status: 'completed',
         sourceType: 'offer',
         sourceId: submission.offerId._id,
       });
 
-      await createLog(req.dbUser._id, 'APPROVE_CUSTOM_OFFER', user._id, { offerTitle: submission.offerId.title, submissionId: submission._id });
-      await notify(user._id, 'offer_approved', 'Custom Offer Approved!', `Your submission for '${submission.offerId.title}' was approved! +${amountNum} coins.`, { offerId: submission.offerId._id });
+      await createLog(req.dbUser._id, 'APPROVE_CUSTOM_OFFER', freshUser._id, { offerTitle: submission.offerId.title, submissionId: submission._id });
+      await notify(freshUser._id, 'offer_approved', 'Custom Offer Approved!', `Your submission for '${submission.offerId.title}' was approved! +${amountNum} coins.`, { offerId: submission.offerId._id });
 
       // Trigger VIP level-up check (custom offer rewards are real earnings)
-      processVipLevelUp(user, amountNum, emitToUser);
+      processVipLevelUp(freshUser, amountNum, emitToUser);
 
       // ── Referral Commission ──────────────────────────────────────────────
-      // If this user was referred by someone, credit the referrer a commission
-      if (user.referredBy) {
+      console.log(`[Referral] Checking referredBy for user ${freshUser._id}: ${freshUser.referredBy}`);
+      if (freshUser.referredBy) {
         try {
-          const referrer = await User.findById(user.referredBy);
+          const referrer = await User.findById(freshUser.referredBy);
+          console.log(`[Referral] Found referrer: ${referrer?._id}`);
           if (referrer) {
             const settings = await Settings.getSingleton();
             const holdDays = settings.referralConfig?.holdDays ?? 30;
             const globalPct = settings.referralConfig?.globalPercentage ?? 5;
-            const pct = (user.referralPercentage !== null && user.referralPercentage !== undefined)
-              ? user.referralPercentage
+            const pct = (freshUser.referralPercentage !== null && freshUser.referralPercentage !== undefined)
+              ? freshUser.referralPercentage
               : globalPct;
             const refAmount = Math.floor(amountNum * (pct / 100));
+            console.log(`[Referral] Commission: ${refAmount} coins (${pct}% of ${amountNum}), hold ${holdDays} days`);
 
             if (refAmount > 0) {
               const holdDate = new Date();
               holdDate.setDate(holdDate.getDate() + holdDays);
 
-              // Increment referralEarnings tracker (not wallet yet — it's on hold)
               await User.updateOne(
                 { _id: referrer._id },
                 { $inc: { referralEarnings: refAmount } }
@@ -657,7 +677,7 @@ router.put('/custom-offers/submissions/:id', requirePermission('manage_offerwall
                 sourceId: offerTx._id,
                 linkedTransactionId: offerTx._id,
                 amount: refAmount,
-                balanceAfter: referrer.walletBalance, // Unchanged — on hold
+                balanceAfter: referrer.walletBalance,
                 description: `Referral Reward from Featured Offer`,
                 status: 'hold',
                 holdUntil: holdDate,
@@ -667,15 +687,19 @@ router.put('/custom-offers/submissions/:id', requirePermission('manage_offerwall
                 referrer._id,
                 'referral_earning',
                 'Referral Earning!',
-                `You earned +${refAmount} coins from ${user.displayName || 'a referral'}'s featured offer.`,
-                { amount: refAmount, sourceUserId: user._id }
+                `You earned +${refAmount} coins from ${freshUser.displayName || 'a referral'}'s featured offer.`,
+                { amount: refAmount, sourceUserId: freshUser._id }
               );
+              console.log(`[Referral] Commission created successfully for referrer ${referrer._id}`);
+            } else {
+              console.log(`[Referral] refAmount is 0 — skipping commission`);
             }
           }
         } catch (refErr) {
-          // Non-fatal: log but don't fail the approval
           console.error('[Referral] Failed to process referral commission for custom offer:', refErr);
         }
+      } else {
+        console.log(`[Referral] User ${freshUser._id} has no referredBy — skipping commission`);
       }
       // ─────────────────────────────────────────────────────────────────────
 
