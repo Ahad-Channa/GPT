@@ -660,6 +660,7 @@ router.put('/custom-offers/submissions/:id', requirePermission('manage_offerwall
       processVipLevelUp(freshUser, amountNum, emitToUser);
 
       // ── Referral Commission ──────────────────────────────────────────────
+      let commissionResult = { fired: false, reason: 'not_checked' };
       console.log(`[Referral] Checking referredBy for user ${freshUser._id}: ${freshUser.referredBy}`);
       if (freshUser.referredBy) {
         try {
@@ -669,51 +670,73 @@ router.put('/custom-offers/submissions/:id', requirePermission('manage_offerwall
             const settings = await Settings.getSingleton();
             const holdDays = settings.referralConfig?.holdDays ?? 30;
             const globalPct = settings.referralConfig?.globalPercentage ?? 5;
-            const pct = (freshUser.referralPercentage !== null && freshUser.referralPercentage !== undefined)
+            // FIX: treat 0 as "not set" — it falls back to the global platform percentage
+            const pct = (freshUser.referralPercentage != null && freshUser.referralPercentage > 0)
               ? freshUser.referralPercentage
               : globalPct;
             const refAmount = Math.floor(amountNum * (pct / 100));
-            console.log(`[Referral] Commission: ${refAmount} coins (${pct}% of ${amountNum}), hold ${holdDays} days`);
+            console.log(`[Referral] pct=${pct} (global=${globalPct}, override=${freshUser.referralPercentage}) offerAmt=${amountNum} refAmount=${refAmount} holdDays=${holdDays}`);
 
             if (refAmount > 0) {
-              const holdDate = new Date();
-              holdDate.setDate(holdDate.getDate() + holdDays);
+              const txStatus = holdDays === 0 ? 'completed' : 'hold';
+              const holdDate = holdDays > 0 ? (() => { const d = new Date(); d.setDate(d.getDate() + holdDays); return d; })() : null;
 
+              // Always increment lifetime referral earnings tracker
               await User.updateOne(
                 { _id: referrer._id },
                 { $inc: { referralEarnings: refAmount } }
               );
 
-              await Transaction.create({
+              // If holdDays=0, credit wallet immediately
+              let balanceAfterRef = referrer.walletBalance;
+              if (holdDays === 0) {
+                const updRef = await User.findOneAndUpdate(
+                  { _id: referrer._id },
+                  { $inc: { walletBalance: refAmount, totalEarned: refAmount } },
+                  { new: true }
+                );
+                balanceAfterRef = updRef.walletBalance;
+                emitWalletUpdate(referrer.firebaseUid, balanceAfterRef);
+              }
+
+              const refTx = await Transaction.create({
                 userId: referrer._id,
                 transactionType: 'referral_reward',
                 sourceType: 'referral',
                 sourceId: offerTx._id,
                 linkedTransactionId: offerTx._id,
                 amount: refAmount,
-                balanceAfter: referrer.walletBalance,
-                description: `Referral Reward from Featured Offer`,
-                status: 'hold',
+                balanceAfter: balanceAfterRef,
+                description: `Referral Commission from Custom Offer: ${submission.offerId.title}`,
+                status: txStatus,
                 holdUntil: holdDate,
               });
 
               await notify(
                 referrer._id,
                 'referral_earning',
-                'Referral Earning!',
-                `You earned +${refAmount} coins from ${freshUser.displayName || 'a referral'}'s featured offer.`,
+                txStatus === 'completed' ? 'Referral Bonus Credited!' : 'Referral Earning Pending!',
+                txStatus === 'completed'
+                  ? `+${refAmount} coins referral commission from ${freshUser.displayName || 'a referral'}'s custom offer has been credited to your wallet!`
+                  : `+${refAmount} coins referral commission from ${freshUser.displayName || 'a referral'}'s custom offer is on hold for ${holdDays} day(s).`,
                 { amount: refAmount, sourceUserId: freshUser._id }
               );
-              console.log(`[Referral] Commission created successfully for referrer ${referrer._id}`);
+              console.log(`[Referral] Commission created: ${refAmount} coins, status=${txStatus}, txId=${refTx._id}`);
+              commissionResult = { fired: true, amount: refAmount, pct, holdDays, status: txStatus, txId: refTx._id };
             } else {
-              console.log(`[Referral] refAmount is 0 — skipping commission`);
+              console.log(`[Referral] refAmount is 0 — pct=${pct}, amountNum=${amountNum} — skipping`);
+              commissionResult = { fired: false, reason: 'amount_zero', pct, amountNum };
             }
+          } else {
+            commissionResult = { fired: false, reason: 'referrer_not_found' };
           }
         } catch (refErr) {
           console.error('[Referral] Failed to process referral commission for custom offer:', refErr);
+          commissionResult = { fired: false, reason: 'error', error: refErr.message };
         }
       } else {
         console.log(`[Referral] User ${freshUser._id} has no referredBy — skipping commission`);
+        commissionResult = { fired: false, reason: 'no_referrer' };
       }
       // ─────────────────────────────────────────────────────────────────────
 
@@ -726,7 +749,8 @@ router.put('/custom-offers/submissions/:id', requirePermission('manage_offerwall
       await notify(user._id, 'offer_rejected', 'Custom Offer Rejected', `Your submission for '${submission.offerId.title}' was rejected.${adminNote ? ' Reason: ' + adminNote : ''}`, { offerId: submission.offerId._id });
     }
 
-    res.json({ success: true, submission });
+    res.json({ success: true, submission, commissionResult: commissionResult || null });
+
   } catch (error) {
     res.status(500).json({ success: false, error: 'Failed to update submission' });
   }
@@ -1389,23 +1413,94 @@ router.post('/proofs/:type/:id/:action', requirePermission('manage_offerwalls'),
         // Credit user
         const user = await User.findById(submission.userId);
         if (user) {
-          user.walletBalance = (user.walletBalance || 0) + submission.offerId.rewardAmount;
-          user.totalEarned = (user.totalEarned || 0) + submission.offerId.rewardAmount;
+          const offerAmount = submission.offerId.rewardAmount;
+          user.walletBalance = (user.walletBalance || 0) + offerAmount;
+          user.totalEarned = (user.totalEarned || 0) + offerAmount;
           await user.save();
           emitWalletUpdate(user.firebaseUid, user.walletBalance);
 
-          await Transaction.create({
+          const offerTx = await Transaction.create({
             userId: user._id,
-            amount: submission.offerId.rewardAmount,
+            amount: offerAmount,
             balanceAfter: user.walletBalance,
             transactionType: 'custom_offer_reward',
             description: `Reward for custom offer: ${submission.offerId.title}`,
             status: 'completed'
           });
 
-          await notify(user._id, 'offer_approved', 'Offer Approved', `Your proof for "${submission.offerId.title}" was approved! +${submission.offerId.rewardAmount} coins.`);
+          await notify(user._id, 'offer_approved', 'Offer Approved', `Your proof for "${submission.offerId.title}" was approved! +${offerAmount} coins.`);
           // Check VIP level-up
-          processVipLevelUp(user, submission.offerId.rewardAmount, emitToUser);
+          processVipLevelUp(user, offerAmount, emitToUser);
+
+          // ── Referral Commission ──────────────────────────────────────────────
+          console.log(`[Referral/ProofsHub] Checking referredBy for user ${user._id}: ${user.referredBy}`);
+          if (user.referredBy) {
+            try {
+              const referrer = await User.findById(user.referredBy);
+              if (referrer) {
+                const settings = await Settings.getSingleton();
+                const holdDays  = settings.referralConfig?.holdDays ?? 30;
+                const globalPct = settings.referralConfig?.globalPercentage ?? 5;
+                // FIX: treat 0 as "not set" so it falls back to globalPct
+                const pct = (user.referralPercentage != null && user.referralPercentage > 0)
+                  ? user.referralPercentage
+                  : globalPct;
+                const refAmount = Math.floor(offerAmount * (pct / 100));
+                console.log(`[Referral/ProofsHub] pct=${pct} offerAmt=${offerAmount} refAmount=${refAmount} holdDays=${holdDays}`);
+
+                if (refAmount > 0) {
+                  const txStatus = holdDays === 0 ? 'completed' : 'hold';
+                  const holdDate = holdDays > 0
+                    ? (() => { const d = new Date(); d.setDate(d.getDate() + holdDays); return d; })()
+                    : null;
+
+                  // Always increment lifetime referral earnings tracker
+                  await User.updateOne({ _id: referrer._id }, { $inc: { referralEarnings: refAmount } });
+
+                  // If holdDays=0, credit wallet immediately
+                  let balanceAfterRef = referrer.walletBalance;
+                  if (holdDays === 0) {
+                    const updRef = await User.findOneAndUpdate(
+                      { _id: referrer._id },
+                      { $inc: { walletBalance: refAmount, totalEarned: refAmount } },
+                      { new: true }
+                    );
+                    balanceAfterRef = updRef.walletBalance;
+                    emitWalletUpdate(referrer.firebaseUid, balanceAfterRef);
+                  }
+
+                  await Transaction.create({
+                    userId: referrer._id,
+                    transactionType: 'referral_reward',
+                    sourceType: 'referral',
+                    sourceId: offerTx._id,
+                    linkedTransactionId: offerTx._id,
+                    amount: refAmount,
+                    balanceAfter: balanceAfterRef,
+                    description: `Referral Commission from Custom Offer: ${submission.offerId.title}`,
+                    status: txStatus,
+                    holdUntil: holdDate,
+                  });
+
+                  await notify(
+                    referrer._id,
+                    'referral_earning',
+                    txStatus === 'completed' ? 'Referral Bonus Credited!' : 'Referral Earning Pending!',
+                    txStatus === 'completed'
+                      ? `+${refAmount} coins referral commission from ${user.displayName || 'a referral'}'s custom offer has been credited to your wallet!`
+                      : `+${refAmount} coins referral commission from ${user.displayName || 'a referral'}'s custom offer is on hold for ${holdDays} day(s).`,
+                    { amount: refAmount, sourceUserId: user._id }
+                  );
+                  console.log(`[Referral/ProofsHub] Commission created: ${refAmount} coins, status=${txStatus}`);
+                } else {
+                  console.log(`[Referral/ProofsHub] refAmount is 0 (pct=${pct}, offerAmt=${offerAmount}) — skipped`);
+                }
+              }
+            } catch (refErr) {
+              console.error('[Referral/ProofsHub] Commission error:', refErr);
+            }
+          }
+          // ─────────────────────────────────────────────────────────────────────
         }
       } else {
         submission.status = 'rejected';

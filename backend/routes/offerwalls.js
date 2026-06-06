@@ -188,11 +188,12 @@ const handlePostback = async (providerId, req, res, params) => {
         const holdDays = settings.referralConfig?.holdDays ?? 30;
         const globalPct = settings.referralConfig?.globalPercentage ?? 5;
         const signupBonusCoins = settings.referralConfig?.signupBonusCoins ?? 0;
-        const pct = (updatedUser.referralPercentage !== null && updatedUser.referralPercentage !== undefined)
+        const pct = (updatedUser.referralPercentage != null && updatedUser.referralPercentage > 0)
           ? updatedUser.referralPercentage
           : globalPct;
         const refAmount = Math.floor(platformCoins * (pct / 100));
-        
+        console.log(`[Referral/Offerwall] user=${user._id} referredBy=${updatedUser.referredBy} pct=${pct} refAmount=${refAmount} holdDays=${holdDays}`);
+
         // ── Percentage Commission (on hold) ──────────────────────────────────
         if (refAmount > 0) {
           const holdDate = new Date();
