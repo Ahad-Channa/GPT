@@ -602,23 +602,34 @@ router.get('/custom-offers/submissions/all', requirePermission('manage_offerwall
 router.put('/custom-offers/submissions/:id', requirePermission('manage_offerwalls'), async (req, res) => {
   try {
     const { status, adminNote } = req.body;
+    console.log(`[Approval] Route hit: submissionId=${req.params.id}, status=${status}`);
+
     const submission = await CustomOfferSubmission.findById(req.params.id)
       .populate('userId')
       .populate('offerId');
 
-    if (!submission) return res.status(404).json({ success: false, error: 'Submission not found' });
+    if (!submission) {
+      console.log(`[Approval] Submission not found: ${req.params.id}`);
+      return res.status(404).json({ success: false, error: 'Submission not found' });
+    }
+
+    console.log(`[Approval] Found submission. Current status: ${submission.status}`);
 
     if (submission.status !== 'pending') {
+      console.log(`[Approval] BLOCKED — submission already ${submission.status}`);
       return res.status(400).json({ success: false, error: `Cannot change status of a ${submission.status} submission` });
     }
 
     submission.status = status;
     if (adminNote) submission.adminNote = adminNote;
     await submission.save();
+    console.log(`[Approval] Status saved → ${status}`);
 
     // Use the already-populated user document (avoids double-fetch)
     const user = submission.userId;
-    const freshUser = await User.findById(user._id); // fresh copy to avoid populated-doc save issues
+    console.log(`[Approval] User from submission: ${user?._id}`);
+    const freshUser = await User.findById(user._id);
+    console.log(`[Approval] freshUser: ${freshUser?._id}, referredBy: ${freshUser?.referredBy}`);
 
     if (status === 'approved') {
       // Credit the user
