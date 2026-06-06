@@ -76,7 +76,14 @@ const settingsSchema = new mongoose.Schema(
         default: 5,  // 5% standard reward
         min: 0,
         max: 100,
-      }
+      },
+      // Optional flat coin bonus when referred user completes their FIRST offer
+      // Set to 0 to disable. This is credited immediately (no hold) as a thank-you bonus.
+      signupBonusCoins: {
+        type: Number,
+        default: 0,
+        min: 0,
+      },
     },
     // Block C — Offerwall Provider Registry
     offerwallProviders: {

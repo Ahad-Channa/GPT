@@ -187,11 +187,13 @@ const handlePostback = async (providerId, req, res, params) => {
       if (referrer) {
         const holdDays = settings.referralConfig?.holdDays ?? 30;
         const globalPct = settings.referralConfig?.globalPercentage ?? 5;
-        const pct = updatedUser.referralPercentage !== null && updatedUser.referralPercentage !== undefined 
-          ? updatedUser.referralPercentage 
+        const signupBonusCoins = settings.referralConfig?.signupBonusCoins ?? 0;
+        const pct = (updatedUser.referralPercentage !== null && updatedUser.referralPercentage !== undefined)
+          ? updatedUser.referralPercentage
           : globalPct;
         const refAmount = Math.floor(platformCoins * (pct / 100));
         
+        // ── Percentage Commission (on hold) ──────────────────────────────────
         if (refAmount > 0) {
           const holdDate = new Date();
           holdDate.setDate(holdDate.getDate() + holdDays);
@@ -222,6 +224,45 @@ const handlePostback = async (providerId, req, res, params) => {
             `You earned +${refAmount} coins from ${user.displayName || 'a referral'}'s offer.`,
             { amount: refAmount, sourceUserId: user._id }
           );
+        }
+
+        // ── Signup Bonus (instant, first offer only) ─────────────────────────
+        // Credit an immediate flat bonus to the referrer when their referred user
+        // completes their very first offer. Disabled when signupBonusCoins = 0.
+        if (signupBonusCoins > 0) {
+          const firstOfferCount = await Transaction.countDocuments({
+            userId: user._id,
+            transactionType: 'offer_reward',
+            status: 'completed',
+          });
+          // offerTx was just created above — count of 1 means this IS the first offer
+          if (firstOfferCount === 1) {
+            const updatedReferrer = await User.findOneAndUpdate(
+              { _id: referrer._id },
+              { $inc: { walletBalance: signupBonusCoins, referralEarnings: signupBonusCoins } },
+              { new: true }
+            );
+
+            await Transaction.create({
+              userId: referrer._id,
+              transactionType: 'referral_reward',
+              sourceType: 'referral',
+              sourceId: offerTx._id,
+              linkedTransactionId: offerTx._id,
+              amount: signupBonusCoins,
+              balanceAfter: updatedReferrer.walletBalance,
+              description: `Referral Signup Bonus — ${user.displayName || 'referred user'}'s first offer`,
+              status: 'completed',
+            });
+
+            await notify(
+              referrer._id,
+              'referral_earning',
+              'Referral Signup Bonus!',
+              `+${signupBonusCoins} bonus coins! ${user.displayName || 'Your referral'} just completed their first offer!`,
+              { amount: signupBonusCoins, sourceUserId: user._id }
+            );
+          }
         }
       }
     }

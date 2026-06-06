@@ -114,23 +114,40 @@ router.get('/affiliate-stats', verifyToken, async (req, res) => {
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
-    const thirtyDaysStats = await Transaction.aggregate([
-      {
-        $match: {
-          userId: user._id,
-          transactionType: 'referral_reward',
-          createdAt: { $gte: thirtyDaysAgo }
+    const [thirtyDaysStats, pendingStats] = await Promise.all([
+      Transaction.aggregate([
+        {
+          $match: {
+            userId: user._id,
+            transactionType: 'referral_reward',
+            status: 'completed',
+            createdAt: { $gte: thirtyDaysAgo }
+          }
+        },
+        { $group: { _id: null, total: { $sum: '$amount' } } }
+      ]),
+      // Also sum all currently held (pending) referral commissions
+      Transaction.aggregate([
+        {
+          $match: {
+            userId: user._id,
+            transactionType: 'referral_reward',
+            status: 'hold',
+          }
+        },
+        {
+          $group: {
+            _id: null,
+            total: { $sum: '$amount' },
+            count: { $sum: 1 }
+          }
         }
-      },
-      {
-        $group: {
-          _id: null,
-          total: { $sum: '$amount' }
-        }
-      }
+      ])
     ]);
 
     const last30DaysEarnings = thirtyDaysStats.length > 0 ? thirtyDaysStats[0].total : 0;
+    const pendingCommissions = pendingStats.length > 0 ? pendingStats[0].total : 0;
+    const pendingCount = pendingStats.length > 0 ? pendingStats[0].count : 0;
 
     // Use user's personal override if set, otherwise the global platform setting
     const effectivePct = (user.referralPercentage != null)
@@ -142,7 +159,10 @@ router.get('/affiliate-stats', verifyToken, async (req, res) => {
       totalAffiliates,
       totalAffiliateEarnings: user.referralEarnings || 0,
       last30DaysEarnings,
+      pendingCommissions,
+      pendingCount,
       referralPercentage: effectivePct,
+      holdDays: settings.referralConfig?.holdDays ?? 30,
     });
   } catch (error) {
     console.error('[/api/wallet/affiliate-stats] Error:', error);

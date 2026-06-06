@@ -377,6 +377,9 @@ router.put('/settings', requirePermission('manage_withdrawals'), async (req, res
       if (referralConfig.holdDays !== undefined) {
         settings.referralConfig.holdDays = Number(referralConfig.holdDays);
       }
+      if (referralConfig.signupBonusCoins !== undefined) {
+        settings.referralConfig.signupBonusCoins = Math.max(0, Number(referralConfig.signupBonusCoins) || 0);
+      }
       settings.markModified('referralConfig');
     }
 

@@ -164,7 +164,7 @@ const useHistory = (token, type, endpoint = '/wallet/history') => {
 };
 
 const useAffiliateStats = (token) => {
-  const [stats, setStats] = useState({ totalAffiliates: 0, totalAffiliateEarnings: 0, last30DaysEarnings: 0, referralPercentage: null });
+  const [stats, setStats] = useState({ totalAffiliates: 0, totalAffiliateEarnings: 0, last30DaysEarnings: 0, referralPercentage: null, pendingCommissions: 0, pendingCount: 0, holdDays: 30 });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -181,6 +181,9 @@ const useAffiliateStats = (token) => {
             totalAffiliateEarnings: data.totalAffiliateEarnings,
             last30DaysEarnings: data.last30DaysEarnings,
             referralPercentage: data.referralPercentage ?? null,
+            pendingCommissions: data.pendingCommissions ?? 0,
+            pendingCount: data.pendingCount ?? 0,
+            holdDays: data.holdDays ?? 30,
           });
         }
       } catch (err) {
@@ -258,7 +261,7 @@ const Affiliates = () => {
         </div>
 
         {/* Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           <div className="glass-card p-6 relative overflow-hidden">
             <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/5 to-transparent pointer-events-none" />
             <h3 className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-2">Total Affiliates</h3>
@@ -288,6 +291,19 @@ const Affiliates = () => {
               </div>
             </div>
             <p className="text-xs text-slate-500 mt-2">Coins earned in the last 30 days</p>
+          </div>
+
+          <div className="glass-card p-6 relative overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-br from-amber-500/5 to-transparent pointer-events-none" />
+            <h3 className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-2">Pending Commissions</h3>
+            <div className="flex items-center gap-2">
+              <div className="text-4xl font-black text-amber-400">
+                {statsLoading ? <span className="animate-pulse">...</span> : <CoinDisplay amount={stats.pendingCommissions} size={24} />}
+              </div>
+            </div>
+            <p className="text-xs text-slate-500 mt-2">
+              {statsLoading ? '...' : `${stats.pendingCount} hold(s) · releases after ${stats.holdDays}d`}
+            </p>
           </div>
         </div>
 
