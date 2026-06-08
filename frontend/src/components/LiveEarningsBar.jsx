@@ -92,7 +92,7 @@ const LiveEarningsBar = () => {
             <AnimatePresence initial={false}>
               {earnings.map((tx, index) => {
                 const details = getDetails(tx);
-                const coinId = (index % 6) + 1;
+                const coinId = (index % 2) + 1;
                 
                 return (
                   <motion.div 
