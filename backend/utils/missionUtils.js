@@ -388,6 +388,7 @@ async function incrementMissionProgress(userId, trackingField, incrementBy = 1) 
   } catch (err) {
     console.error('[Missions] incrementMissionProgress error:', err.message);
   }
+}
 
 
 /**
