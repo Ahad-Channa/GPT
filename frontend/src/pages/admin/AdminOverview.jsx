@@ -6,12 +6,42 @@ import toast from 'react-hot-toast';
 import CoinDisplay from '../../components/CoinDisplay';
 
 const AdminOverview = () => {
-  const { currentUser, isPrimaryAdmin, isSupportAgent } = useAuth();
+  const { currentUser, isPrimaryAdmin, isSupportAgent, mongoUser } = useAuth();
 
-  // Support agents have no business seeing overview — redirect them to support tab
-  if (isSupportAgent && !isPrimaryAdmin) {
-    return <Navigate to="/admin/support" replace />;
+  // Only the primary admin can see this sensitive overview screen.
+  // Everyone else gets redirected to the first section they can access.
+  if (!isPrimaryAdmin) {
+    const perms = mongoUser?.adminPermissions || [];
+
+    if (isSupportAgent || perms.includes('manage_support')) {
+      return <Navigate to="/admin/support" replace />;
+    }
+    if (perms.includes('manage_users')) {
+      return <Navigate to="/admin/users" replace />;
+    }
+    if (perms.includes('manage_withdrawals')) {
+      return <Navigate to="/admin/withdrawals" replace />;
+    }
+    if (perms.includes('manage_chat')) {
+      return <Navigate to="/admin/chat" replace />;
+    }
+    if (perms.includes('manage_missions')) {
+      return <Navigate to="/admin/missions" replace />;
+    }
+    if (perms.includes('manage_offerwalls')) {
+      return <Navigate to="/admin/offerwalls" replace />;
+    }
+    // Fallback — no permissions configured yet, show a friendly message
+    return (
+      <div style={{ padding: '3rem', textAlign: 'center' }}>
+        <h2 style={{ color: '#e2e8f0', marginBottom: '0.75rem' }}>No Access</h2>
+        <p style={{ color: '#64748b', fontSize: '0.9rem' }}>
+          You don't have any permissions assigned yet. Contact the Primary Admin.
+        </p>
+      </div>
+    );
   }
+
   const [stats, setStats] = useState({
     totalUsers: 0,
     bannedUsers: 0,
