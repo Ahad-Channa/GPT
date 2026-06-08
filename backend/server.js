@@ -22,6 +22,9 @@ const io = new Server(server, {
   }
 });
 
+// Expose io globally so cron-called utility functions (e.g. leaderboard rewards) can broadcast events
+global.__io = io;
+
 // Pass io to request object if routes need it later
 app.use((req, res, next) => {
   req.io = io;

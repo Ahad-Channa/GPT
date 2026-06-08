@@ -282,6 +282,8 @@ const TX_TYPE_LABEL = {
   withdrawal: { label: 'Withdrawal', color: 'text-rose-400' },
   admin_adjustment: { label: 'Adjustment', color: 'text-orange-400' },
   leaderboard_reward: { label: 'Leaderboard', color: 'text-violet-400' },
+  vip_reward: { label: 'VIP Reward', color: 'text-yellow-400' },
+  mission_reward: { label: 'Mission', color: 'text-sky-400' },
 };
 
 const STATUS_DOT = {

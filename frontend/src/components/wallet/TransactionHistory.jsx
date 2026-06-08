@@ -24,6 +24,8 @@ const TX_TYPES = {
   admin_adjustment:   { label: 'Admin Adjustment',    icon: FiSettings,       color: 'text-orange-400',  badge: 'badge-orange',   sign: '' },
   promo_code:         { label: 'Promo Code',          icon: FiTag,            color: 'text-emerald-400', badge: 'badge-emerald',  sign: '+' },
   leaderboard_reward: { label: 'Leaderboard Reward',  icon: FiAward,          color: 'text-violet-400',  badge: 'badge-violet',   sign: '+' },
+  vip_reward:         { label: 'VIP Reward',           icon: FiStar,           color: 'text-yellow-400',  badge: 'badge-amber',    sign: '+' },
+  mission_reward:     { label: 'Mission Reward',       icon: FiShield,         color: 'text-sky-400',     badge: 'badge-cyan',     sign: '+' },
 };
 
 const STATUS_COLORS = {
@@ -34,15 +36,17 @@ const STATUS_COLORS = {
 };
 
 const FILTER_OPTIONS = [
-  { value: 'all',              label: 'All Activity' },
-  { value: 'offer_reward',     label: 'Offer Rewards' },
+  { value: 'all',                 label: 'All Activity' },
+  { value: 'offer_reward',        label: 'Offer Rewards' },
   { value: 'custom_offer_reward', label: 'Custom Offers' },
-  { value: 'daily_bonus',      label: 'Daily Bonus' },
-  { value: 'referral_reward',  label: 'Referrals' },
-  { value: 'withdrawal',       label: 'Withdrawals' },
-  { value: 'admin_adjustment', label: 'Adjustments' },
-  { value: 'promo_code',       label: 'Promo Codes' },
-  { value: 'leaderboard_reward', label: 'Leaderboard' },
+  { value: 'daily_bonus',         label: 'Daily Bonus' },
+  { value: 'referral_reward',     label: 'Referrals' },
+  { value: 'withdrawal',          label: 'Withdrawals' },
+  { value: 'admin_adjustment',    label: 'Adjustments' },
+  { value: 'promo_code',          label: 'Promo Codes' },
+  { value: 'leaderboard_reward',  label: 'Leaderboard' },
+  { value: 'vip_reward',          label: 'VIP Rewards' },
+  { value: 'mission_reward',      label: 'Missions' },
 ];
 
 function formatRelativeTime(dateStr) {

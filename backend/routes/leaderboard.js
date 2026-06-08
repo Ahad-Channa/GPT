@@ -6,7 +6,7 @@ const User = require('../models/User');
 const Settings = require('../models/Settings');
 const LeaderboardCycle = require('../models/Leaderboard');
 const notify = require('../utils/notify');
-const { emitWalletUpdate } = require('../utils/walletEvents');
+const { emitWalletUpdate, emitToUser } = require('../utils/walletEvents');
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -223,9 +223,11 @@ async function resetLeaderboard(period) {
         // NOTE: totalEarned is intentionally NOT incremented here.
         // Leaderboard prizes are bonuses and must not count toward VIP progress.
         await user.save();
+
+        // Push live wallet balance to winner's open browser tabs
         emitWalletUpdate(user.firebaseUid, user.walletBalance);
 
-        await Transaction.create({
+        const rewardTx = await Transaction.create({
           userId: user._id,
           transactionType: 'leaderboard_reward',
           amount: reward,
@@ -235,6 +237,7 @@ async function resetLeaderboard(period) {
           sourceType: 'leaderboard',
         });
 
+        // Persist notification in DB
         await notify(
           user._id,
           'leaderboard_reward',
@@ -242,6 +245,38 @@ async function resetLeaderboard(period) {
           `Congratulations! You placed #${entry.rank} on the ${period} leaderboard and won ${reward} coins.`,
           { period, rank: entry.rank, reward }
         );
+
+        // Push real-time notification to the winner's browser immediately
+        emitToUser(user.firebaseUid, 'newNotification', {
+          type: 'leaderboard_reward',
+          title: 'Leaderboard Reward!',
+          message: `Congratulations! You placed #${entry.rank} on the ${period} leaderboard and won ${reward} coins.`,
+          metadata: { period, rank: entry.rank, reward },
+          createdAt: new Date().toISOString(),
+        });
+
+        // Broadcast new earning event globally so ALL users' live feed bars update immediately
+        // (instead of waiting for the 15-second polling cycle)
+        try {
+          const io = global.__io;
+          if (io) {
+            io.emit('newEarning', {
+              _id: rewardTx._id,
+              transactionType: 'leaderboard_reward',
+              amount: reward,
+              description: rewardTx.description,
+              createdAt: rewardTx.createdAt,
+              userId: {
+                _id: user._id,
+                displayName: user.displayName,
+                avatarUrl: user.avatarUrl,
+                isPrivate: user.isPrivate || false,
+              },
+            });
+          }
+        } catch (socketErr) {
+          console.warn('[leaderboard] Global socket broadcast failed:', socketErr.message);
+        }
       }
     }
 

@@ -15,6 +15,16 @@ function scrubTransaction(tx) {
   // Obfuscate the description (hide precise offer title)
   if (scrubbed.transactionType === 'withdrawal') {
     scrubbed.description = 'Requested a Withdrawal';
+  } else if (scrubbed.transactionType === 'leaderboard_reward') {
+    scrubbed.description = 'Earned a Leaderboard Prize';
+  } else if (scrubbed.transactionType === 'vip_reward') {
+    scrubbed.description = 'Earned a VIP Reward';
+  } else if (scrubbed.transactionType === 'mission_reward') {
+    scrubbed.description = 'Completed a Mission';
+  } else if (scrubbed.transactionType === 'daily_bonus') {
+    scrubbed.description = 'Claimed Daily Bonus';
+  } else if (scrubbed.transactionType === 'promo_code') {
+    scrubbed.description = 'Redeemed a Promo Code';
   } else if (scrubbed.method && scrubbed.method !== 'none' && scrubbed.transactionType !== 'withdrawal') {
     scrubbed.description = `Earned from ${scrubbed.method}`;
   } else if (scrubbed.metadata?.offerwall) {
@@ -111,7 +121,7 @@ router.get('/recent-earnings', async (req, res) => {
     let recentEarnings = await Transaction.find({
       $or: [
         {
-          transactionType: { $in: ['offer_reward', 'custom_offer_reward', 'daily_bonus', 'admin_adjustment', 'promo_code', 'leaderboard_reward'] },
+          transactionType: { $in: ['offer_reward', 'custom_offer_reward', 'daily_bonus', 'admin_adjustment', 'promo_code', 'leaderboard_reward', 'vip_reward', 'mission_reward'] },
           status: { $in: ['completed', 'hold'] },
           amount: { $gt: 0 }
         },

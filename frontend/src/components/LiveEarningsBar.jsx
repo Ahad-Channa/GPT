@@ -1,14 +1,19 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { FiActivity } from 'react-icons/fi';
 import CoinIcon from './CoinIcon';
 import { motion, AnimatePresence } from 'framer-motion';
 import PublicProfileModal from './PublicProfileModal';
+import { io } from 'socket.io-client';
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+const SOCKET_URL = import.meta.env.VITE_API_URL
+  ? import.meta.env.VITE_API_URL.replace('/api', '')
+  : 'http://localhost:5000';
 
 const LiveEarningsBar = () => {
   const [earnings, setEarnings] = useState([]);
   const [selectedUserId, setSelectedUserId] = useState(null);
+  const socketRef = useRef(null);
 
   useEffect(() => {
     const fetchEarnings = async () => {
@@ -23,9 +28,28 @@ const LiveEarningsBar = () => {
       }
     };
     fetchEarnings();
-    // Fetch slightly more frequently to show new actions as they happen
+    // Polling as fallback for historical data
     const intv = setInterval(fetchEarnings, 15000);
-    return () => clearInterval(intv);
+
+    // ── Real-time socket listener for instant live feed updates ──────────────
+    // When a leaderboard reward (or other major earning) fires server-side,
+    // the backend emits 'newEarning' globally so ALL users see it immediately.
+    socketRef.current = io(SOCKET_URL, { transports: ['websocket', 'polling'] });
+    socketRef.current.on('newEarning', (newTx) => {
+      setEarnings(prev => {
+        // Prepend the new transaction and cap the list at 20 items
+        const updated = [newTx, ...prev.filter(t => t._id !== newTx._id)].slice(0, 20);
+        return updated;
+      });
+    });
+
+    return () => {
+      clearInterval(intv);
+      if (socketRef.current) {
+        socketRef.current.disconnect();
+        socketRef.current = null;
+      }
+    };
   }, []);
 
   if (earnings.length === 0) return null;
@@ -49,6 +73,8 @@ const LiveEarningsBar = () => {
     
     if (tx.transactionType === 'daily_bonus') { task = 'Daily Bonus'; offerwall = 'Rewards'; }
     else if (tx.transactionType === 'leaderboard_reward') { task = 'Leaderboard Prize'; offerwall = 'Rewards'; }
+    else if (tx.transactionType === 'vip_reward') { task = 'VIP Reward'; offerwall = 'Rewards'; }
+    else if (tx.transactionType === 'mission_reward') { task = 'Mission Reward'; offerwall = 'Rewards'; }
     else if (tx.transactionType === 'admin_adjustment') { task = 'Admin Bonus'; offerwall = 'System'; }
     else if (tx.transactionType === 'promo_code') { task = 'Promo Code'; offerwall = 'Rewards'; }
     else {

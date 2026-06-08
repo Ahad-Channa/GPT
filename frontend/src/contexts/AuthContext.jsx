@@ -179,6 +179,25 @@ export const AuthProvider = ({ children }) => {
                         );
                     });
                 });
+
+                // ── Real-time notification push (leaderboard rewards, etc.) ──────────
+                socketRef.current.off('newNotification');
+                socketRef.current.on('newNotification', ({ type, title, message }) => {
+                    // Trigger a toast for important earning notifications
+                    import('react-hot-toast').then(({ default: toast }) => {
+                        toast.success(`${title}: ${message}`, {
+                            duration: 8000,
+                            style: {
+                                background: '#0b101e',
+                                border: '1px solid rgba(139,92,246,0.5)',
+                                color: '#f1f5f9',
+                                fontWeight: 600,
+                                boxShadow: '0 0 20px rgba(139,92,246,0.3)',
+                                maxWidth: '400px',
+                            },
+                        });
+                    });
+                });
             } else {
                 setMongoUser(null);
                 // Disconnect socket on logout
