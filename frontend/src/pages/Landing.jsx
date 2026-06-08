@@ -111,9 +111,7 @@ const Landing = () => {
         <nav className="fixed top-0 left-0 right-0 z-50 bg-brand-dark/80 backdrop-blur-md border-b border-brand-border">
           <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
             <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} className="flex items-center gap-2.5">
-              <div className="w-8 h-8 bg-gradient-brand rounded-md flex items-center justify-center transform rotate-3 shadow-glow">
-                <FiZap className="text-white text-lg transform -rotate-3" />
-              </div>
+              <img src="/coins/logo1.png" alt="Logo" className="w-10 h-auto object-contain" />
               <span className="font-display font-bold text-xl tracking-tight text-white">GPT Platform</span>
             </motion.div>
 

@@ -152,9 +152,7 @@ const Header = ({ onChatToggle, chatOpen }) => {
           onClick={() => navigate('/')}
           className="flex items-center gap-3 group"
         >
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center shadow-glow group-hover:shadow-glow-lg transition-shadow">
-            <FiZap className="text-white text-sm" />
-          </div>
+          <img src="/coins/logo1.png" alt="Logo" className="w-10 h-auto object-contain transition-transform group-hover:scale-105" />
           <div className="flex flex-col leading-none text-left">
             <span className="text-sm font-bold font-display text-white tracking-tight">GPT</span>
             <span className="text-[10px] text-slate-500 tracking-widest uppercase font-mono">Platform</span>

@@ -71,9 +71,7 @@ const AdminLayout = () => {
       <aside className="admin-sidebar">
         {/* Brand */}
         <div className="admin-brand">
-          <div className="admin-brand-icon">
-            <FiZap style={{ color: 'white', fontSize: '16px' }} />
-          </div>
+          <img src="/coins/logo1.png" alt="Logo" className="w-8 h-auto object-contain" />
           <div>
             <h2>GPT Admin</h2>
             <p>{isPrimaryAdmin ? 'Primary Admin' : 'Admin'}</p>
