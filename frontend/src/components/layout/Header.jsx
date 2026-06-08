@@ -152,7 +152,7 @@ const Header = ({ onChatToggle, chatOpen }) => {
           onClick={() => navigate('/')}
           className="flex items-center group"
         >
-          <img src="/coins/logo.png" alt="Logo" className="h-10 w-auto object-contain transition-transform group-hover:scale-105" />
+          <img src="/coins/logo.png" alt="Logo" className="h-8 w-auto object-contain transition-transform group-hover:scale-105" />
         </button>
 
 
