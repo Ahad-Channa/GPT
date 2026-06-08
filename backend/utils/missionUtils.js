@@ -38,9 +38,9 @@ function getPeriodKey(period, date = new Date(), offset = 0) {
     }
   }
 
-  const year  = d.getUTCFullYear();
+  const year = d.getUTCFullYear();
   const month = String(d.getUTCMonth() + 1).padStart(2, '0');
-  const day   = String(d.getUTCDate()).padStart(2, '0');
+  const day = String(d.getUTCDate()).padStart(2, '0');
 
   if (period === 'daily') {
     return `${year}-${month}-${day}`;
@@ -82,13 +82,13 @@ function getUpcomingPeriodKeys(period, count = 7) {
  */
 function getMissionPeriodBounds(period, date = new Date()) {
   const d = new Date(date);
-  const year  = d.getUTCFullYear();
+  const year = d.getUTCFullYear();
   const month = d.getUTCMonth();
-  const day   = d.getUTCDate();
+  const day = d.getUTCDate();
 
   if (period === 'daily') {
     const start = new Date(Date.UTC(year, month, day, 0, 0, 0, 0));
-    const end   = new Date(Date.UTC(year, month, day + 1, 0, 0, 0, 0));
+    const end = new Date(Date.UTC(year, month, day + 1, 0, 0, 0, 0));
     return { start, end };
   }
 
@@ -104,7 +104,7 @@ function getMissionPeriodBounds(period, date = new Date()) {
 
   if (period === 'monthly') {
     const start = new Date(Date.UTC(year, month, 1, 0, 0, 0, 0));
-    const end   = new Date(Date.UTC(year, month + 1, 1, 0, 0, 0, 0));
+    const end = new Date(Date.UTC(year, month + 1, 1, 0, 0, 0, 0));
     return { start, end };
   }
 
@@ -169,8 +169,8 @@ function getCycleIndex(period, date = new Date()) {
  *   monthly → 1
  */
 function getCycleLength(period) {
-  if (period === 'daily')   return 7;
-  if (period === 'weekly')  return 4;
+  if (period === 'daily') return 7;
+  if (period === 'weekly') return 4;
   if (period === 'monthly') return 1;
   throw new Error(`Unknown period: ${period}`);
 }
@@ -181,12 +181,12 @@ function getCycleLength(period) {
  *   weekly  → 'Week 1', 'Week 2', …
  *   monthly → 'Monthly'
  */
-const DAILY_NAMES   = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
-const WEEKLY_NAMES  = ['Week 1','Week 2','Week 3','Week 4'];
+const DAILY_NAMES = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+const WEEKLY_NAMES = ['Week 1', 'Week 2', 'Week 3', 'Week 4'];
 
 function getCycleLabel(period, idx) {
-  if (period === 'daily')   return DAILY_NAMES[idx]  || `Day ${idx + 1}`;
-  if (period === 'weekly')  return WEEKLY_NAMES[idx] || `Week ${idx + 1}`;
+  if (period === 'daily') return DAILY_NAMES[idx] || `Day ${idx + 1}`;
+  if (period === 'weekly') return WEEKLY_NAMES[idx] || `Week ${idx + 1}`;
   if (period === 'monthly') return 'Monthly Default';
   return `Index ${idx}`;
 }
@@ -316,14 +316,14 @@ async function seedMissionTemplates() {
  */
 async function incrementMissionProgress(userId, trackingField, incrementBy = 1) {
   try {
-    const MissionConfig          = require('../models/MissionConfig');
+    const MissionConfig = require('../models/MissionConfig');
     const RecurringMissionConfig = require('../models/RecurringMissionConfig');
-    const UserMission            = require('../models/UserMission');
+    const UserMission = require('../models/UserMission');
 
     const periods = ['daily', 'weekly', 'monthly'];
 
     for (const period of periods) {
-      const periodKey  = getPeriodKey(period);
+      const periodKey = getPeriodKey(period);
       const cycleIndex = getCycleIndex(period);
 
       const templates = await MissionTemplate.find({ trackingField, isActive: true });
@@ -350,44 +350,45 @@ async function incrementMissionProgress(userId, trackingField, incrementBy = 1) 
           templateKey: { $in: templateKeys },
         }).lean();
       }
+    }
 
-      for (const config of configs) {
-        if (!config.targetValue) continue; // skip empty/disabled slots
+    for (const config of configs) {
+      if (!config.targetValue) continue; // skip empty/disabled slots
 
-        // Upsert UserMission progress
-        const um = await UserMission.findOneAndUpdate(
-          { userId, configId: config._id, periodKey },
-          { $inc: { progress: incrementBy }, period },
-          { upsert: true, new: true, setDefaultsOnInsert: true }
+      // Upsert UserMission progress
+      const um = await UserMission.findOneAndUpdate(
+        { userId, configId: config._id, periodKey },
+        { $inc: { progress: incrementBy }, period },
+        { upsert: true, new: true, setDefaultsOnInsert: true }
+      );
+
+      // Mark completed if threshold crossed (and not already completed)
+      if (!um.completed && um.progress >= config.targetValue) {
+        await UserMission.updateOne(
+          { _id: um._id },
+          { $set: { completed: true } }
         );
 
-        // Mark completed if threshold crossed (and not already completed)
-        if (!um.completed && um.progress >= config.targetValue) {
-          await UserMission.updateOne(
-            { _id: um._id },
-            { $set: { completed: true } }
-          );
+        const notify = require('./notify');
+        const pLabel = period.charAt(0).toUpperCase() + period.slice(1);
+        await notify(
+          userId,
+          'mission_completed',
+          `${pLabel} Mission Completed!`,
+          `You completed a ${pLabel} Mission! Claim your ${config.rewardAmount} coins reward now.`,
+          { link: '/dashboard/missions', linkText: 'Claim now' }
+        ).catch(e => console.error('[Missions] Notify error:', e.message));
 
-          const notify = require('./notify');
-          const pLabel = period.charAt(0).toUpperCase() + period.slice(1);
-          await notify(
-            userId,
-            'mission_completed',
-            `${pLabel} Mission Completed!`,
-            `You completed a ${pLabel} Mission! Claim your ${config.rewardAmount} coins reward now.`,
-            { link: '/dashboard/missions', linkText: 'Claim now' }
-          ).catch(e => console.error('[Missions] Notify error:', e.message));
-
-          await checkAndGrantPeriodBonus(userId, period).catch(e =>
-            console.error('[Missions] Period bonus check error:', e.message)
-          );
-        }
+        await checkAndGrantPeriodBonus(userId, period).catch(e =>
+          console.error('[Missions] Period bonus check error:', e.message)
+        );
       }
     }
-  } catch (err) {
-    console.error('[Missions] incrementMissionProgress error:', err.message);
   }
+  } catch (err) {
+  console.error('[Missions] incrementMissionProgress error:', err.message);
 }
+
 
 /**
  * Checks if ALL enabled missions for a period are completed by the user.
@@ -398,10 +399,10 @@ async function incrementMissionProgress(userId, trackingField, incrementBy = 1) 
  */
 async function checkAndGrantPeriodBonus(userId, period) {
   const MissionConfig = require('../models/MissionConfig');
-  const UserMission   = require('../models/UserMission');
-  const PeriodBonus   = require('../models/PeriodBonus');
-  const Settings      = require('../models/Settings');
-  const notify        = require('./notify');
+  const UserMission = require('../models/UserMission');
+  const PeriodBonus = require('../models/PeriodBonus');
+  const Settings = require('../models/Settings');
+  const notify = require('./notify');
 
   const periodKey = getPeriodKey(period);
 
@@ -457,21 +458,21 @@ async function notifyNewMissions(period) {
   try {
     const User = require('../models/User');
     const notify = require('./notify');
-    
+
     // Find users updated in the last 7 days
     const activeSince = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
     const users = await User.find({ updatedAt: { $gte: activeSince } }).select('_id');
-    
+
     const pLabel = period.charAt(0).toUpperCase() + period.slice(1);
     const title = `New ${pLabel} Missions!`;
     const message = `Your ${pLabel} missions have refreshed! Complete them to earn bonus coins.`;
-    
+
     const batchSize = 100;
     for (let i = 0; i < users.length; i += batchSize) {
       const batch = users.slice(i, i + batchSize);
       await Promise.all(batch.map(u => notify(u._id, 'mission_new', title, message, { link: '/dashboard/missions', linkText: 'View Missions' })));
     }
-  } catch(err) {
+  } catch (err) {
     console.error('[Missions] notifyNewMissions error:', err.message);
   }
 }
@@ -484,25 +485,25 @@ async function sendMissionReminders(period) {
     const UserMission = require('../models/UserMission');
     const notify = require('./notify');
     const periodKey = getPeriodKey(period);
-    
+
     const userMissions = await UserMission.find({
       periodKey,
       completed: true,
       claimed: false
     }).select('userId');
-    
+
     const uniqueUserIds = [...new Set(userMissions.map(um => um.userId.toString()))];
-    
+
     const pLabel = period.charAt(0).toUpperCase() + period.slice(1);
     const title = `${pLabel} Missions Expiring Soon!`;
     const message = `Your completed ${pLabel} missions will expire in a few hours! Claim your rewards now.`;
-    
+
     const batchSize = 100;
     for (let i = 0; i < uniqueUserIds.length; i += batchSize) {
       const batch = uniqueUserIds.slice(i, i + batchSize);
       await Promise.all(batch.map(uid => notify(uid, 'mission_reminder', title, message, { link: '/dashboard/missions', linkText: 'Claim now' })));
     }
-  } catch(err) {
+  } catch (err) {
     console.error('[Missions] sendMissionReminders error:', err.message);
   }
 }
