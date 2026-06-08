@@ -42,6 +42,18 @@ const RoleSymbol = ({ user }) => {
     icon = <FaCrown size={15} />; label = 'Owner'; color = '#fbbf24';
   } else if (role === 'admin') {
     icon = <FaBolt size={15} />; label = 'Admin'; color = '#ef4444';
+  } else if (role === 'chat_mod') {
+    icon = (
+      <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+        <FiShield size={15} style={{ color: '#38bdf8' }} />
+        <span style={{
+          background: 'rgba(56,189,248,0.15)', color: '#38bdf8',
+          fontSize: '0.65rem', fontWeight: 'bold', padding: '1px 4px',
+          borderRadius: '4px', border: '1px solid rgba(56,189,248,0.3)'
+        }}>MOD</span>
+      </span>
+    );
+    label = 'Chat Moderator'; color = '#38bdf8'; shift = 10;
   } else if (role === 'moderator') {
     icon = (
       <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
@@ -163,9 +175,9 @@ const MessageRow = ({ msg, canModerate, onDelete, deletingId }) => {
 
 /* ─── Main Page ──────────────────────────────── */
 const Chat = () => {
-  const { mongoUser, currentUser, isAdmin } = useAuth();
-  const isMod = mongoUser?.role === 'moderator';
-  const canModerate = isAdmin || isMod;
+  const { mongoUser, currentUser, isAdmin, canModerateChat } = useAuth();
+  const isMod = mongoUser?.role === 'chat_mod' || mongoUser?.role === 'moderator';
+  const canModerate = canModerateChat;
 
   const [messages, setMessages]     = useState([]);
   const [newMsg, setNewMsg]         = useState('');
@@ -201,6 +213,8 @@ const Chat = () => {
     sock.on('newMessage',     (m)       => setMessages(p => [...p, m]));
     sock.on('messageDeleted', ({ _id }) => setMessages(p => p.filter(m => m._id !== _id)));
     sock.on('liveCount',      ({ count }) => setLiveCount(count));
+    // When a mod clears the entire chat
+    sock.on('chatCleared', () => setMessages([]));
     return () => sock.disconnect();
   }, []);
 

@@ -765,6 +765,20 @@ router.put('/custom-offers/submissions/:id', requirePermission('manage_offerwall
   }
 });
 
+// GET all staff (admins, chat_mods, support_agents)
+router.get('/admins', requirePrimaryAdmin, async (req, res) => {
+  try {
+    const staffRoles = ['admin', 'chat_mod', 'support_agent', 'moderator', 'owner'];
+    const admins = await User.find({ role: { $in: staffRoles } })
+      .select('displayName email role adminPermissions createdAt')
+      .sort({ createdAt: -1 });
+    res.json({ success: true, admins });
+  } catch (error) {
+    res.status(500).json({ success: false, error: 'Failed to fetch staff list' });
+  }
+});
+
+// POST promote a user to admin role
 router.post('/admins', requirePrimaryAdmin, async (req, res) => {
   try {
     const { userId, permissions } = req.body;
@@ -774,6 +788,72 @@ router.post('/admins', requirePrimaryAdmin, async (req, res) => {
     res.json({ success: true, user });
   } catch (error) {
     res.status(500).json({ success: false, error: 'Failed to promote admin' });
+  }
+});
+
+// POST promote a user to chat_mod
+router.post('/chat-mods', requirePrimaryAdmin, async (req, res) => {
+  try {
+    const { userId } = req.body;
+    const user = await User.findByIdAndUpdate(
+      userId,
+      { role: 'chat_mod', adminPermissions: [] },
+      { returnDocument: 'after' }
+    );
+    if (!user) return res.status(404).json({ success: false, error: 'User not found' });
+    await createLog(req.dbUser._id, 'CREATE_CHAT_MOD', user._id, {});
+    res.json({ success: true, user });
+  } catch (error) {
+    res.status(500).json({ success: false, error: 'Failed to promote chat mod' });
+  }
+});
+
+// DELETE revoke chat_mod
+router.delete('/chat-mods/:id', requirePrimaryAdmin, async (req, res) => {
+  try {
+    const user = await User.findOneAndUpdate(
+      { _id: req.params.id, role: 'chat_mod' },
+      { role: 'user', adminPermissions: [] },
+      { returnDocument: 'after' }
+    );
+    if (!user) return res.status(404).json({ success: false, error: 'Chat mod not found' });
+    await createLog(req.dbUser._id, 'REVOKE_CHAT_MOD', user._id, {});
+    res.json({ success: true, user });
+  } catch (error) {
+    res.status(500).json({ success: false, error: 'Failed to revoke chat mod' });
+  }
+});
+
+// POST promote a user to support_agent
+router.post('/support-agents', requirePrimaryAdmin, async (req, res) => {
+  try {
+    const { userId } = req.body;
+    const user = await User.findByIdAndUpdate(
+      userId,
+      { role: 'support_agent', adminPermissions: [] },
+      { returnDocument: 'after' }
+    );
+    if (!user) return res.status(404).json({ success: false, error: 'User not found' });
+    await createLog(req.dbUser._id, 'CREATE_SUPPORT_AGENT', user._id, {});
+    res.json({ success: true, user });
+  } catch (error) {
+    res.status(500).json({ success: false, error: 'Failed to promote support agent' });
+  }
+});
+
+// DELETE revoke support_agent
+router.delete('/support-agents/:id', requirePrimaryAdmin, async (req, res) => {
+  try {
+    const user = await User.findOneAndUpdate(
+      { _id: req.params.id, role: 'support_agent' },
+      { role: 'user', adminPermissions: [] },
+      { returnDocument: 'after' }
+    );
+    if (!user) return res.status(404).json({ success: false, error: 'Support agent not found' });
+    await createLog(req.dbUser._id, 'REVOKE_SUPPORT_AGENT', user._id, {});
+    res.json({ success: true, user });
+  } catch (error) {
+    res.status(500).json({ success: false, error: 'Failed to revoke support agent' });
   }
 });
 
@@ -1261,7 +1341,7 @@ router.post('/referral-test-commission/:userId', requirePermission('manage_users
 // OVERVIEW & NOTIFICATIONS
 // ----------------------------------------------------
 
-router.get('/overview-stats', async (req, res) => {
+router.get('/overview-stats', requirePrimaryAdmin, async (req, res) => {
   try {
     const totalUsers = await User.countDocuments();
     const bannedUsers = await User.countDocuments({ isBanned: true });

@@ -1,11 +1,17 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
+import { Navigate } from 'react-router-dom';
 import { FiUsers, FiDollarSign, FiActivity, FiBriefcase, FiAlertCircle } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 import CoinDisplay from '../../components/CoinDisplay';
 
 const AdminOverview = () => {
-  const { currentUser } = useAuth();
+  const { currentUser, isPrimaryAdmin, isSupportAgent } = useAuth();
+
+  // Support agents have no business seeing overview — redirect them to support tab
+  if (isSupportAgent && !isPrimaryAdmin) {
+    return <Navigate to="/admin/support" replace />;
+  }
   const [stats, setStats] = useState({
     totalUsers: 0,
     bannedUsers: 0,

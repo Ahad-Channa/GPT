@@ -73,7 +73,7 @@ const ReferralRedirect = () => {
 };
 
 function App() {
-  const { currentUser, isAdmin } = useAuth();
+  const { currentUser, isAdmin, hasAdminAccess } = useAuth();
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -207,7 +207,7 @@ function App() {
         path="/admin" 
         element={
           <PrivateRoute>
-            {isAdmin ? <AdminLayout /> : <Navigate to="/dashboard" replace />}
+            {hasAdminAccess ? <AdminLayout /> : <Navigate to="/dashboard" replace />}
           </PrivateRoute>
         }
       >

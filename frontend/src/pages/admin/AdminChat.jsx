@@ -11,7 +11,7 @@ const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 const SOCKET_URL = API.replace('/api', '');
 
 const AdminChat = () => {
-  const { currentUser } = useAuth();
+  const { currentUser, isPrimaryAdmin } = useAuth();
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(true);
   const [deletingId, setDeletingId] = useState(null);
@@ -60,6 +60,12 @@ const AdminChat = () => {
       );
     });
 
+    // Clear all event — nuke entire local state
+    socket.on('chatCleared', () => {
+      setMessages((prev) => prev.map(m => ({ ...m, isDeleted: true })));
+      toast.success('Chat cleared!');
+    });
+
     return () => socket.disconnect();
   }, [currentUser]);
 
@@ -75,7 +81,6 @@ const AdminChat = () => {
       const data = await res.json();
       if (data.status === 'success') {
         toast.success('Message deleted');
-        // Optimistically mark as deleted (socket event will also fire)
         setMessages((prev) => prev.map((m) => m._id === msgId ? { ...m, isDeleted: true } : m));
       } else {
         toast.error(data.message || 'Failed to delete');
@@ -85,6 +90,28 @@ const AdminChat = () => {
       toast.error('Failed to delete message');
     } finally {
       setDeletingId(null);
+    }
+  };
+
+  const handleClearAll = async () => {
+    if (!isPrimaryAdmin) return;
+    if (!window.confirm('⚠️ This will DELETE ALL active messages in the live chat. This cannot be undone. Continue?')) return;
+    try {
+      const token = await currentUser.getIdToken();
+      const res = await fetch(`${API}/chat/clear-all`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const data = await res.json();
+      if (data.status === 'success') {
+        toast.success(`Chat cleared — ${data.clearedCount} messages removed`);
+        setMessages(prev => prev.map(m => ({ ...m, isDeleted: true })));
+      } else {
+        toast.error('Failed to clear chat');
+      }
+    } catch (err) {
+      console.error('Clear all error:', err);
+      toast.error('Failed to clear chat');
     }
   };
 
@@ -206,6 +233,27 @@ const AdminChat = () => {
           <FiRefreshCw style={{ fontSize: '0.85rem', animation: loading ? 'spin 1s linear infinite' : 'none' }} />
           Refresh
         </button>
+
+        {/* Clear All Chat — primary admin only */}
+        {isPrimaryAdmin && (
+          <button
+            onClick={handleClearAll}
+            style={{
+              background: 'rgba(239,68,68,0.1)',
+              border: '1px solid rgba(239,68,68,0.3)',
+              borderRadius: 8, padding: '0.55rem 1rem',
+              color: '#f87171', cursor: 'pointer',
+              fontSize: '0.82rem', display: 'flex', alignItems: 'center', gap: '0.4rem',
+              transition: 'all 0.15s', fontWeight: 600
+            }}
+            onMouseEnter={e => e.currentTarget.style.background = 'rgba(239,68,68,0.2)'}
+            onMouseLeave={e => e.currentTarget.style.background = 'rgba(239,68,68,0.1)'}
+            title="Delete all active messages (emergency spam clear)"
+          >
+            <FiTrash2 style={{ fontSize: '0.85rem' }} />
+            Clear All Chat
+          </button>
+        )}
 
         {/* Live indicator */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginLeft: 'auto' }}>

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { NavLink, Outlet, useNavigate } from 'react-router-dom';
+import { NavLink, Outlet, useNavigate, Navigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import {
   FiGrid, FiUsers, FiShield, FiArrowRight, FiLogOut, FiZap, FiDollarSign, FiActivity, FiSliders, FiBox, FiTag, FiStar, FiTrendingUp, FiMessageSquare, FiInbox, FiImage, FiMessageCircle, FiHeadphones, FiAward, FiTarget
@@ -7,14 +7,16 @@ import {
 import './Admin.css';
 
 const AdminLayout = () => {
-  const { currentUser, logout, isPrimaryAdmin, mongoUser } = useAuth();
+  const { currentUser, logout, isPrimaryAdmin, isAdmin, isSupportAgent, mongoUser } = useAuth();
   const navigate = useNavigate();
   const [notiCounts, setNotiCounts] = useState({});
   const [totalUnread, setTotalUnread] = useState(0);
 
+  // Support agents should land directly on support tab
+  const defaultRedirect = isSupportAgent && !isAdmin && !isPrimaryAdmin ? '/admin/support' : null;
+
   useEffect(() => {
     fetchNotificationCounts();
-    // Poll every 1 minute
     const interval = setInterval(fetchNotificationCounts, 60000);
     return () => clearInterval(interval);
   }, []);
@@ -29,7 +31,6 @@ const AdminLayout = () => {
       const data = await res.json();
       if (data.success) {
         setNotiCounts(data.counts);
-        // Calculate total unread
         const total = Object.values(data.counts).reduce((a, b) => a + b, 0);
         setTotalUnread(total);
       }
@@ -43,26 +44,55 @@ const AdminLayout = () => {
     catch (e) { console.error('Failed to log out', e); }
   };
 
+  // Permission helper
+  const hasPerm = (perm) => isPrimaryAdmin || mongoUser?.adminPermissions?.includes(perm);
+
+  // Build nav items based on role
   const navItems = [
-    { to: '/admin',             end: true,  icon: FiGrid,       label: 'Overview'      },
-    { to: '/admin/users',       end: false, icon: FiUsers,      label: 'Users',        badgeKey: 'users' },
-    { to: '/admin/withdrawals', end: false, icon: FiDollarSign, label: 'Withdrawals',  badgeKey: 'withdrawals'   },
-    ...(isPrimaryAdmin || mongoUser?.adminPermissions?.includes('manage_offerwalls') ? [{ to: '/admin/offerwalls', end: false, icon: FiBox, label: 'Offerwalls', badgeKey: 'offerwalls' }] : []),
-    ...(isPrimaryAdmin || mongoUser?.adminPermissions?.includes('manage_offerwalls') ? [{ to: '/admin/promocodes', end: false, icon: FiTag, label: 'Promo Codes' }] : []),
-    ...(isPrimaryAdmin || mongoUser?.adminPermissions?.includes('manage_offerwalls') ? [{ to: '/admin/featured-offers', end: false, icon: FiStar, label: 'Featured Offers' }] : []),
-    ...(isPrimaryAdmin || mongoUser?.adminPermissions?.includes('manage_offerwalls') ? [{ to: '/admin/proofs', end: false, icon: FiInbox, label: 'Proofs' }] : []),
+    // Overview — primary admin only (has sensitive platform data)
+    ...(isPrimaryAdmin ? [{ to: '/admin', end: true, icon: FiGrid, label: 'Overview' }] : []),
+
+    // Users — manage_users perm or primary admin
+    ...(hasPerm('manage_users') ? [{ to: '/admin/users', end: false, icon: FiUsers, label: 'Users', badgeKey: 'users' }] : []),
+
+    // Withdrawals — manage_withdrawals perm or primary admin
+    ...(hasPerm('manage_withdrawals') ? [{ to: '/admin/withdrawals', end: false, icon: FiDollarSign, label: 'Withdrawals', badgeKey: 'withdrawals' }] : []),
+
+    // Offerwalls group — manage_offerwalls perm or primary admin
+    ...(hasPerm('manage_offerwalls') ? [{ to: '/admin/offerwalls', end: false, icon: FiBox, label: 'Offerwalls', badgeKey: 'offerwalls' }] : []),
+    ...(hasPerm('manage_offerwalls') ? [{ to: '/admin/promocodes', end: false, icon: FiTag, label: 'Promo Codes' }] : []),
+    ...(hasPerm('manage_offerwalls') ? [{ to: '/admin/featured-offers', end: false, icon: FiStar, label: 'Featured Offers' }] : []),
+    ...(hasPerm('manage_offerwalls') ? [{ to: '/admin/proofs', end: false, icon: FiInbox, label: 'Proofs' }] : []),
+
+    // Missions — manage_missions perm or primary admin
+    ...(hasPerm('manage_missions') ? [{ to: '/admin/missions', end: false, icon: FiTarget, label: 'Missions' }] : []),
+
+    // Leaderboard / VIP / Avatars — primary admin only
     ...(isPrimaryAdmin ? [{ to: '/admin/leaderboard', end: false, icon: FiTrendingUp, label: 'Leaderboard' }] : []),
-    ...(isPrimaryAdmin ? [{ to: '/admin/vip',         end: false, icon: FiAward,      label: 'VIP Ranks'   }] : []),
-    ...(isPrimaryAdmin ? [{ to: '/admin/missions',    end: false, icon: FiTarget,     label: 'Missions'    }] : []),
+    ...(isPrimaryAdmin ? [{ to: '/admin/vip', end: false, icon: FiAward, label: 'VIP Ranks' }] : []),
     ...(isPrimaryAdmin ? [{ to: '/admin/avatars', end: false, icon: FiImage, label: 'Avatars' }] : []),
 
-    ...(isPrimaryAdmin || mongoUser?.role === 'mod' ? [{ to: '/admin/chat', end: false, icon: FiMessageCircle, label: 'Chat Moderation' }] : []),
-    ...(isPrimaryAdmin || mongoUser?.adminPermissions?.includes('manage_support') ? [{ to: '/admin/support', end: false, icon: FiHeadphones, label: 'Support', badgeKey: 'support' }] : []),
-    ...(isPrimaryAdmin ? [{ to: '/admin/admins',   end: false, icon: FiShield,   label: 'Staff'     }] : []),
+    // Chat Moderation — manage_chat perm, or primary admin
+    ...(hasPerm('manage_chat') ? [{ to: '/admin/chat', end: false, icon: FiMessageCircle, label: 'Chat Moderation' }] : []),
+
+    // Support — manage_support perm, support_agent role, or primary admin
+    ...(hasPerm('manage_support') || isSupportAgent ? [{ to: '/admin/support', end: false, icon: FiHeadphones, label: 'Support', badgeKey: 'support' }] : []),
+
+    // Staff / Announcements / Logs / Settings — primary admin only
+    ...(isPrimaryAdmin ? [{ to: '/admin/admins', end: false, icon: FiShield, label: 'Staff' }] : []),
     ...(isPrimaryAdmin ? [{ to: '/admin/announcements', end: false, icon: FiMessageSquare, label: 'Announcements' }] : []),
-    ...(isPrimaryAdmin ? [{ to: '/admin/logs',     end: false, icon: FiActivity, label: 'Audit Log', badgeKey: 'security' }] : []),
-    ...(isPrimaryAdmin ? [{ to: '/admin/settings', end: false, icon: FiSliders,  label: 'Settings', accent: true }] : []),
+    ...(isPrimaryAdmin ? [{ to: '/admin/logs', end: false, icon: FiActivity, label: 'Audit Log', badgeKey: 'security' }] : []),
+    ...(isPrimaryAdmin ? [{ to: '/admin/settings', end: false, icon: FiSliders, label: 'Settings', accent: true }] : []),
   ];
+
+  // Role label for sidebar
+  const roleLabel = isPrimaryAdmin
+    ? 'Primary Admin'
+    : isAdmin
+    ? 'Admin'
+    : isSupportAgent
+    ? 'Support Agent'
+    : 'Staff';
 
   return (
     <div className="admin-layout">
@@ -74,7 +104,7 @@ const AdminLayout = () => {
           <img src="/coins/logo1.png" alt="Logo" className="h-16 w-auto object-contain" />
           <div>
             <h2>GPT Admin</h2>
-            <p>{isPrimaryAdmin ? 'Primary Admin' : 'Admin'}</p>
+            <p>{roleLabel}</p>
           </div>
         </div>
 
@@ -140,8 +170,12 @@ const AdminLayout = () => {
         <header className="admin-header">
           <h3>GPT Management Console</h3>
           <div className="admin-user-info" style={{ display: 'flex', alignItems: 'center', gap: '1.25rem' }}>
-
             {isPrimaryAdmin && <span className="super-badge">Primary Admin</span>}
+            {isSupportAgent && !isPrimaryAdmin && (
+              <span style={{ fontSize: '0.7rem', background: 'rgba(56,189,248,0.15)', color: '#38bdf8', border: '1px solid rgba(56,189,248,0.3)', borderRadius: '4px', padding: '2px 8px', fontWeight: 700 }}>
+                Support Agent
+              </span>
+            )}
           </div>
         </header>
 

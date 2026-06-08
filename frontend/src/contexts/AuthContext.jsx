@@ -215,6 +215,12 @@ export const AuthProvider = ({ children }) => {
 
     const isAdmin = mongoUser?.role === 'admin';
     const isPrimaryAdmin = mongoUser?.email === import.meta.env.VITE_PRIMARY_ADMIN_EMAIL;
+    const isChatMod = mongoUser?.role === 'chat_mod' || mongoUser?.role === 'moderator';
+    const isSupportAgent = mongoUser?.role === 'support_agent';
+    // Any role that gets admin panel access
+    const hasAdminAccess = isAdmin || isSupportAgent;
+    // Any role that can moderate the live chat
+    const canModerateChat = isAdmin || isChatMod || (mongoUser?.adminPermissions?.includes('manage_chat'));
 
     const value = {
         currentUser,
@@ -222,6 +228,10 @@ export const AuthProvider = ({ children }) => {
         setMongoUser,
         isAdmin,
         isPrimaryAdmin,
+        isChatMod,
+        isSupportAgent,
+        hasAdminAccess,
+        canModerateChat,
         loginWithGoogle,
         registerWithEmail,
         loginWithEmail,
