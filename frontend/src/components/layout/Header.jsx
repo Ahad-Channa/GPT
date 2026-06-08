@@ -150,13 +150,9 @@ const Header = ({ onChatToggle, chatOpen }) => {
         <button
           id="header-brand-logo"
           onClick={() => navigate('/')}
-          className="flex items-center gap-3 group"
+          className="flex items-center group"
         >
-          <img src="/coins/logo1.png" alt="Logo" className="h-16 w-auto object-contain transition-transform group-hover:scale-105" />
-          <div className="flex flex-col leading-none text-left">
-            <span className="text-sm font-bold font-display text-white tracking-tight">GPT</span>
-            <span className="text-[10px] text-slate-500 tracking-widest uppercase font-mono">Platform</span>
-          </div>
+          <img src="/coins/logo1.png" alt="Logo" className="h-20 w-auto object-contain transition-transform group-hover:scale-105" />
         </button>
 
 
