@@ -917,13 +917,20 @@ router.delete('/admins/:id', requirePrimaryAdmin, async (req, res) => {
       return res.status(403).json({ success: false, error: 'Cannot modify primary admin' });
     }
 
-    const adminUser = await User.findOneAndUpdate(
-      { _id: req.params.id, role: 'admin' },
+    // Revoke regardless of which staff role they currently have (admin, moderator, etc.)
+    // Just make sure we don't accidentally match a normal user.
+    const protectedRoles = ['user', 'owner'];
+    if (protectedRoles.includes(adminToUpdate.role)) {
+      return res.status(400).json({ success: false, error: 'User is not a staff member.' });
+    }
+
+    const adminUser = await User.findByIdAndUpdate(
+      req.params.id,
       { role: 'user', adminPermissions: [] },
-      { returnDocument: 'after' }
+      { new: true }
     );
-    if (!adminUser) return res.status(404).json({ success: false, error: 'Admin not found' });
-    await createLog(req.dbUser._id, 'REVOKE_ADMIN', adminUser._id, { reason: reason || 'No reason provided' });
+    if (!adminUser) return res.status(404).json({ success: false, error: 'User not found' });
+    await createLog(req.dbUser._id, 'REVOKE_ADMIN', adminUser._id, { reason: reason || 'No reason provided', previousRole: adminToUpdate.role });
     res.json({ success: true, user: adminUser });
   } catch (error) {
     res.status(500).json({ success: false, error: 'Failed to revoke admin status' });

@@ -104,14 +104,26 @@ const AdminStaff = () => {
     setWorking(false);
   };
 
-  // Revoke admin
+  // Revoke admin — demote back to normal user
   const revokeAdmin = async (id) => {
-    if (!window.confirm("Revoke this admin's access?")) return;
+    if (!window.confirm("Revoke this admin's access? They will become a normal user.")) return;
     setWorking(true);
     try {
-      await fetch(`${API}/admin/admins/${id}`, { method: 'DELETE', headers: await authHeaders() });
-      fetchStaff();
-    } catch (err) { console.error(err); }
+      const token = await currentUser.getIdToken();
+      const res = await fetch(`${API}/admin/admins/${id}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        fetchStaff();
+      } else {
+        alert('Failed to revoke: ' + (data.error || 'Unknown error'));
+      }
+    } catch (err) {
+      console.error('Revoke error:', err);
+      alert('Network error — check console');
+    }
     setWorking(false);
   };
 
