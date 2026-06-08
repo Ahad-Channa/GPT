@@ -71,7 +71,7 @@ const AdminLayout = () => {
       <aside className="admin-sidebar">
         {/* Brand */}
         <div className="admin-brand">
-          <img src="/coins/logo1.png" alt="Logo" className="h-14 w-auto object-contain" />
+          <img src="/coins/logo1.png" alt="Logo" className="h-16 w-auto object-contain" />
           <div>
             <h2>GPT Admin</h2>
             <p>{isPrimaryAdmin ? 'Primary Admin' : 'Admin'}</p>

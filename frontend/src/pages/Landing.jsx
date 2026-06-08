@@ -111,7 +111,7 @@ const Landing = () => {
         <nav className="fixed top-0 left-0 right-0 z-50 bg-brand-dark/80 backdrop-blur-md border-b border-brand-border">
           <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
             <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} className="flex items-center gap-2.5">
-              <img src="/coins/logo1.png" alt="Logo" className="h-14 w-auto object-contain" />
+              <img src="/coins/logo1.png" alt="Logo" className="h-20 w-auto object-contain" />
               <span className="font-display font-bold text-xl tracking-tight text-white">GPT Platform</span>
             </motion.div>
 

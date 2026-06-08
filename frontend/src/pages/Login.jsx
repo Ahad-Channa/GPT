@@ -257,7 +257,7 @@ const Login = () => {
             className="flex items-center gap-2.5 hover:opacity-80 transition-opacity"
             style={{ background: 'none', border: 'none', cursor: 'pointer' }}
           >
-            <img src="/coins/logo1.png" alt="Logo" className="h-16 w-auto object-contain" />
+            <img src="/coins/logo1.png" alt="Logo" className="h-24 w-auto object-contain" />
             <span style={{
               fontSize: '1.15rem', fontWeight: 700, color: 'white',
               fontFamily: "'Outfit', Inter, sans-serif", letterSpacing: '-0.01em'
@@ -339,7 +339,7 @@ const Login = () => {
             className="lg:hidden flex items-center gap-2 mb-8"
             style={{ background: 'none', border: 'none', cursor: 'pointer' }}
           >
-            <img src="/coins/logo1.png" alt="Logo" className="h-16 w-auto object-contain" />
+            <img src="/coins/logo1.png" alt="Logo" className="h-24 w-auto object-contain" />
             <span style={{
               fontSize: '1.1rem', fontWeight: 700, color: 'white',
               fontFamily: "'Outfit', Inter, sans-serif",
