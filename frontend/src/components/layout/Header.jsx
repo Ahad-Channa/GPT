@@ -144,7 +144,7 @@ const Header = ({ onChatToggle, chatOpen }) => {
 
   return (
     <header className="sticky top-0 z-40 w-full border-b border-white/[0.06] backdrop-blur-xl bg-[#080b14]/80">
-      <div className="max-w-7xl mx-auto px-4 md:px-8 h-[66px] flex items-center justify-between">
+      <div className="max-w-7xl mx-auto px-4 md:px-8 h-[80px] flex items-center justify-between">
 
         {/* Brand */}
         <button
@@ -152,7 +152,7 @@ const Header = ({ onChatToggle, chatOpen }) => {
           onClick={() => navigate('/')}
           className="flex items-center group"
         >
-          <img src="/coins/logo1.png" alt="Logo" className="h-[66px] w-auto min-w-[160px] object-contain transition-transform group-hover:scale-105" />
+          <img src="/coins/logo1.png" alt="Logo" className="h-[80px] w-auto min-w-[220px] object-contain transition-transform group-hover:scale-105" />
         </button>
 
 
