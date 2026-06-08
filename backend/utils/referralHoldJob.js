@@ -2,9 +2,6 @@ const cron = require('node-cron');
 const User = require('../models/User');
 const Transaction = require('../models/Transaction');
 const notify = require('./notify');
-const { notifyAdmins } = require('./adminNotify');
-const { emitToUser } = require('./walletEvents');
-const { processVipLevelUp } = require('./vipUtils');
 
 /**
  * Runs daily at midnight UTC
@@ -40,12 +37,10 @@ cron.schedule('0 0 * * *', async () => {
       }
 
       // 1. Credit wallet
+      // NOTE: walletBalance is credited but totalEarned is intentionally NOT incremented.
+      // Affiliate/referral earnings must NOT count toward VIP progress or leaderboard rankings.
       user.walletBalance = Math.max(0, user.walletBalance + tx.amount);
-      user.totalEarned = (user.totalEarned || 0) + tx.amount;
       await user.save();
-
-      // Check for VIP level-up (referral earnings count toward VIP)
-      processVipLevelUp(user, tx.amount, emitToUser);
 
       // 2. Update transaction status
       tx.status = 'completed';

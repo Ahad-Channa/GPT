@@ -690,9 +690,11 @@ router.put('/custom-offers/submissions/:id', requirePermission('manage_offerwall
               // If holdDays=0, credit wallet immediately
               let balanceAfterRef = referrer.walletBalance;
               if (holdDays === 0) {
+                // NOTE: walletBalance is credited but totalEarned is intentionally NOT incremented.
+                // Affiliate/referral earnings must NOT count toward VIP progress or leaderboard rankings.
                 const updRef = await User.findOneAndUpdate(
                   { _id: referrer._id },
-                  { $inc: { walletBalance: refAmount, totalEarned: refAmount } },
+                  { $inc: { walletBalance: refAmount } },
                   { new: true }
                 );
                 balanceAfterRef = updRef.walletBalance;
@@ -721,6 +723,13 @@ router.put('/custom-offers/submissions/:id', requirePermission('manage_offerwall
                   : `+${refAmount} coins referral commission from ${freshUser.displayName || 'a referral'}'s custom offer is on hold for ${holdDays} day(s).`,
                 { amount: refAmount, sourceUserId: freshUser._id }
               );
+              // MISSION: Increment affiliate_offers for the referrer
+              try {
+                const { incrementMissionProgress } = require('../utils/missionUtils');
+                await incrementMissionProgress(referrer._id, 'affiliate_offers', 1);
+              } catch (mErr) {
+                console.error('[Referral/Mission] Error tracking affiliate_offers:', mErr.message);
+              }
               console.log(`[Referral] Commission created: ${refAmount} coins, status=${txStatus}, txId=${refTx._id}`);
               commissionResult = { fired: true, amount: refAmount, pct, holdDays, status: txStatus, txId: refTx._id };
             } else {
@@ -1059,12 +1068,11 @@ router.post('/referral-holds/release-now', requirePermission('manage_withdrawals
       if (!user) continue;
 
       // Credit wallet
+      // NOTE: walletBalance is credited but totalEarned is intentionally NOT incremented.
+      // Affiliate/referral earnings must NOT count toward VIP progress or leaderboard rankings.
       user.walletBalance = Math.max(0, user.walletBalance + tx.amount);
-      user.totalEarned = (user.totalEarned || 0) + tx.amount;
       await user.save();
 
-      // VIP check
-      processVipLevelUp(user, tx.amount, emitToUser);
       emitWalletUpdate(user.firebaseUid, user.walletBalance);
 
       // Mark released
@@ -1457,11 +1465,13 @@ router.post('/proofs/:type/:id/:action', requirePermission('manage_offerwalls'),
                   await User.updateOne({ _id: referrer._id }, { $inc: { referralEarnings: refAmount } });
 
                   // If holdDays=0, credit wallet immediately
+                  // NOTE: walletBalance is credited but totalEarned is intentionally NOT incremented.
+                  // Affiliate/referral earnings must NOT count toward VIP progress or leaderboard rankings.
                   let balanceAfterRef = referrer.walletBalance;
                   if (holdDays === 0) {
                     const updRef = await User.findOneAndUpdate(
                       { _id: referrer._id },
-                      { $inc: { walletBalance: refAmount, totalEarned: refAmount } },
+                      { $inc: { walletBalance: refAmount } },
                       { new: true }
                     );
                     balanceAfterRef = updRef.walletBalance;
@@ -1490,6 +1500,13 @@ router.post('/proofs/:type/:id/:action', requirePermission('manage_offerwalls'),
                       : `+${refAmount} coins referral commission from ${user.displayName || 'a referral'}'s custom offer is on hold for ${holdDays} day(s).`,
                     { amount: refAmount, sourceUserId: user._id }
                   );
+                  // MISSION: Increment affiliate_offers for the referrer
+                  try {
+                    const { incrementMissionProgress } = require('../utils/missionUtils');
+                    await incrementMissionProgress(referrer._id, 'affiliate_offers', 1);
+                  } catch (mErr) {
+                    console.error('[Referral/Mission] Error tracking affiliate_offers:', mErr.message);
+                  }
                   console.log(`[Referral/ProofsHub] Commission created: ${refAmount} coins, status=${txStatus}`);
                 } else {
                   console.log(`[Referral/ProofsHub] refAmount is 0 (pct=${pct}, offerAmt=${offerAmount}) — skipped`);

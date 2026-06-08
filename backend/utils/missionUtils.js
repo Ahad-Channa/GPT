@@ -350,44 +350,44 @@ async function incrementMissionProgress(userId, trackingField, incrementBy = 1) 
           templateKey: { $in: templateKeys },
         }).lean();
       }
-    }
 
-    for (const config of configs) {
-      if (!config.targetValue) continue; // skip empty/disabled slots
+      // ── Process configs for this period ──
+      for (const config of configs) {
+        if (!config.targetValue) continue; // skip empty/disabled slots
 
-      // Upsert UserMission progress
-      const um = await UserMission.findOneAndUpdate(
-        { userId, configId: config._id, periodKey },
-        { $inc: { progress: incrementBy }, period },
-        { upsert: true, new: true, setDefaultsOnInsert: true }
-      );
-
-      // Mark completed if threshold crossed (and not already completed)
-      if (!um.completed && um.progress >= config.targetValue) {
-        await UserMission.updateOne(
-          { _id: um._id },
-          { $set: { completed: true } }
+        // Upsert UserMission progress
+        const um = await UserMission.findOneAndUpdate(
+          { userId, configId: config._id, periodKey },
+          { $inc: { progress: incrementBy }, period },
+          { upsert: true, new: true, setDefaultsOnInsert: true }
         );
 
-        const notify = require('./notify');
-        const pLabel = period.charAt(0).toUpperCase() + period.slice(1);
-        await notify(
-          userId,
-          'mission_completed',
-          `${pLabel} Mission Completed!`,
-          `You completed a ${pLabel} Mission! Claim your ${config.rewardAmount} coins reward now.`,
-          { link: '/dashboard/missions', linkText: 'Claim now' }
-        ).catch(e => console.error('[Missions] Notify error:', e.message));
+        // Mark completed if threshold crossed (and not already completed)
+        if (!um.completed && um.progress >= config.targetValue) {
+          await UserMission.updateOne(
+            { _id: um._id },
+            { $set: { completed: true } }
+          );
 
-        await checkAndGrantPeriodBonus(userId, period).catch(e =>
-          console.error('[Missions] Period bonus check error:', e.message)
-        );
+          const notify = require('./notify');
+          const pLabel = period.charAt(0).toUpperCase() + period.slice(1);
+          await notify(
+            userId,
+            'mission_completed',
+            `${pLabel} Mission Completed!`,
+            `You completed a ${pLabel} Mission! Claim your ${config.rewardAmount} coins reward now.`,
+            { link: '/dashboard/missions', linkText: 'Claim now' }
+          ).catch(e => console.error('[Missions] Notify error:', e.message));
+
+          await checkAndGrantPeriodBonus(userId, period).catch(e =>
+            console.error('[Missions] Period bonus check error:', e.message)
+          );
+        }
       }
     }
-  }
   } catch (err) {
-  console.error('[Missions] incrementMissionProgress error:', err.message);
-}
+    console.error('[Missions] incrementMissionProgress error:', err.message);
+  }
 
 
 /**

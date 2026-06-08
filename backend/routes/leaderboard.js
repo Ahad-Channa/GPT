@@ -56,10 +56,11 @@ function getPeriodEnd(period) {
 // Excluded: admin_adjustment — can represent withdrawal refunds (not new earnings)
 //   and manual balance bumps that are already recorded via offer_reward/custom_offer_reward.
 //   Including it would double-count those amounts.
+// Excluded: referral_reward — affiliate/referral commissions must NOT count toward
+//   leaderboard rankings (client requirement). They are passive income, not direct effort.
 const REAL_EARNING_TYPES = [
   'offer_reward',
   'custom_offer_reward',
-  'referral_reward',
 ];
 
 /**
