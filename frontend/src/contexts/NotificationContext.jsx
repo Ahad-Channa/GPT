@@ -67,12 +67,7 @@ export const NotificationProvider = ({ children }) => {
                     const newEarningNotifs = incoming.filter(
                         n => !prevIds.has(n._id) && (
                              n.type === 'offer_reward' || 
-                             n.type === 'offer_approved' || 
-                             n.type === 'leaderboard_reward' || 
-                             n.type === 'referral_earning' ||
-                             n.type === 'vip_level_up' ||
-                             n.type === 'mission_reward' ||
-                             (n.type === 'admin_adjustment' && n.metadata?.amount > 0)
+                             n.type === 'offer_approved'
                         )
                     );
                     

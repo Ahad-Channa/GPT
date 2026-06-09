@@ -1009,13 +1009,13 @@ const Profile = () => {
                 </div>
               </div>
 
-              {/* ── Right column: 4 stat tiles in 2×2 grid ── */}
-              <div className="grid grid-cols-2 gap-3 shrink-0 sm:w-72">
+              {/* ── Right column: stat tiles in grid ── */}
+              <div className="grid grid-cols-2 gap-3 shrink-0 sm:min-w-[18rem] sm:w-auto">
                 {/* Total Earned */}
                 <div className="bg-white/[0.02] border border-white/[0.05] hover:border-indigo-500/30 rounded-2xl p-4 transition-colors">
                   <div className="flex items-center gap-2 mb-2">
                     <div className="w-7 h-7 rounded-xl bg-indigo-500/15 flex items-center justify-center">
-                      <FiZap className="text-indigo-400 text-xs" />
+                      <CoinIcon size={14} />
                     </div>
                     <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Earned</p>
                   </div>
@@ -1041,7 +1041,7 @@ const Profile = () => {
                 <div className="bg-white/[0.02] border border-white/[0.05] hover:border-violet-500/30 rounded-2xl p-4 transition-colors">
                   <div className="flex items-center gap-2 mb-2">
                     <div className="w-7 h-7 rounded-xl bg-violet-500/15 flex items-center justify-center">
-                      <FiTrendingUp className="text-violet-400 text-xs" />
+                      <CoinIcon size={14} />
                     </div>
                     <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">30 Days</p>
                   </div>
