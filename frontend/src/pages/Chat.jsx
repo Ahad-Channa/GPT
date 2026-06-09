@@ -71,7 +71,7 @@ const RoleSymbol = ({ user }) => {
     const tierStyle = vipLevel ? TIER_STYLES[vipLevel.tier] : null;
     
     icon = <FiStar size={15} />; 
-    label = vipLevel ? `VIP: ${getLevelLabel(vipLevel)}` : 'Unranked'; 
+    label = vipLevel ? `VIP: ${getLevelLabel(vipLevel)}` : 'Non-VIP'; 
     color = tierStyle ? tierStyle.border : '#94a3b8'; 
     shift = 20;
   }

@@ -74,6 +74,6 @@ export function getLevelFromEarned(totalEarned = 0) {
 }
 
 export function getLevelLabel(level) {
-  if (!level) return 'Unranked';
+  if (!level) return 'Non-VIP';
   return level.rank ? `${level.tier} ${level.rank}` : level.tier;
 }

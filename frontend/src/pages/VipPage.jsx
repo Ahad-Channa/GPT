@@ -95,7 +95,7 @@ const VipPage = () => {
                 <VipBadge tier={currentLevel.tier} rank={currentLevel.rank} size="lg" />
               ) : (
                 <div className="px-6 py-4 rounded-xl border-2 border-white/10 bg-white/5 text-slate-400 font-extrabold tracking-wider">
-                  UNRANKED
+                  NON-VIP
                 </div>
               )}
             </div>
@@ -112,7 +112,7 @@ const VipPage = () => {
                   WebkitTextFillColor: 'transparent' 
                 }}
               >
-                {currentLevel ? getLevelLabel(currentLevel) : 'No Rank'}
+                {currentLevel ? getLevelLabel(currentLevel) : 'Non-VIP'}
               </h1>
               <div className="flex flex-col gap-2">
                 <span className="text-slate-400 text-sm font-semibold inline-flex items-center gap-1.5 bg-white/[0.03] w-fit px-3 py-1.5 rounded-lg border border-white/5 shadow-inner">
