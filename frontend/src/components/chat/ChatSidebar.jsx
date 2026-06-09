@@ -60,24 +60,33 @@ const RoleSymbol = ({ user }) => {
     );
   }
 
-  /* ── admin: VIP badge only — role shown in hover popup ── */
+  /* ── admin: Admin badge AND VIP badge separately ── */
   if (role === 'admin') {
     const vipLevel = getLevelFromEarned(user?.totalEarned || 0);
-    const color = '#ef4444';
-    const rankLabel = vipLevel ? getLevelLabel(vipLevel) : null;
-    const popupLabel = rankLabel ? `Admin · ${rankLabel}` : 'Admin';
-    if (vipLevel) {
-      return (
+    return (
+      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
         <HoverBadge
-          badge={<VipBadge tier={vipLevel.tier} rank={vipLevel.rank} size="xs" />}
-          label={popupLabel}
-          color={color}
-          shift={0}
+          badge={
+            <span style={{
+              background: 'rgba(239,68,68,0.15)', color: '#ef4444',
+              fontSize: '0.65rem', fontWeight: 'bold', padding: '1px 5px',
+              borderRadius: '4px', border: '1px solid rgba(239,68,68,0.3)'
+            }}>ADMIN</span>
+          }
+          label="Admin"
+          color="#ef4444"
+          shift={10}
         />
-      );
-    }
-    /* admin with no VIP rank — show nothing visible, popup still works via HoverBadge on an empty element */
-    return null;
+        {vipLevel && (
+          <HoverBadge
+            badge={<VipBadge tier={vipLevel.tier} rank={vipLevel.rank} size="xs" />}
+            label={`VIP: ${getLevelLabel(vipLevel)}`}
+            color={TIER_STYLES[vipLevel.tier]?.border || '#94a3b8'}
+            shift={20}
+          />
+        )}
+      </div>
+    );
   }
 
   /* ── moderator ── */
