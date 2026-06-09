@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../contexts/AuthContext';
+import { useNavigate } from 'react-router-dom';
 import DashboardLayout from '../components/layout/DashboardLayout';
 import CoinDisplay from '../components/CoinDisplay';
 import toast from 'react-hot-toast';
@@ -481,6 +482,7 @@ function PeriodSection({ data, periodKey, periodCfg, bonus, onClaim, onClaimBonu
 // ── Main Page ──────────────────────────────────────────────────────────────────
 const MissionPage = () => {
   const { currentUser } = useAuth();
+  const navigate = useNavigate();
   const [data, setData] = useState(null);
   const [periodBonus, setPeriodBonus] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -497,6 +499,13 @@ const MissionPage = () => {
         fetch(`${API}/missions/period-bonus`, { headers }),
       ]);
       const [json, bonusJson] = await Promise.all([missionsRes.json(), bonusRes.json()]);
+      
+      if (json.disabled) {
+        toast.error(json.error || 'Missions are currently disabled');
+        navigate('/dashboard');
+        return;
+      }
+
       if (json.success) setData(json);
       if (bonusJson.success) setPeriodBonus(bonusJson.periodBonus);
     } catch {
@@ -504,7 +513,7 @@ const MissionPage = () => {
     } finally {
       setLoading(false);
     }
-  }, [currentUser]);
+  }, [currentUser, navigate]);
 
   useEffect(() => { fetchMissions(); }, [fetchMissions]);
 

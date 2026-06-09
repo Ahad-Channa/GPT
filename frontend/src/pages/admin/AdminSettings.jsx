@@ -86,6 +86,7 @@ const AdminSettings = () => {
   const [earnGate, setEarnGate] = useState([]);
   const [earnReward, setEarnReward] = useState([]);
   const [showGlobalStats, setShowGlobalStats] = useState(false);
+  const [missionsEnabled, setMissionsEnabled] = useState(true);
 
   const [saving,   setSaving]  = useState(false);
   const [dirty,    setDirty]   = useState(false);
@@ -115,6 +116,7 @@ const AdminSettings = () => {
         if (i+1===10) return 500; if(i+1===20) return 1000; if(i+1===30) return 2500; return 100+(i*10);
       }));
       setShowGlobalStats(Boolean(data.settings.showGlobalStats));
+      setMissionsEnabled(data.settings.missionsEnabled ?? true);
       setDirty(false);
     } catch (err) {
       setError(err.message || 'Failed to load settings');
@@ -171,7 +173,8 @@ const AdminSettings = () => {
             dailyBonusEarnGate: earnGate.map(Number),
             dailyBonusReward: earnReward.map(Number),
           },
-          showGlobalStats
+          showGlobalStats,
+          missionsEnabled
         }),
       });
       const data = await res.json();
@@ -225,6 +228,7 @@ const AdminSettings = () => {
       if (i+1===10) return 500; if(i+1===20) return 1000; if(i+1===30) return 2500; return 100+(i*10);
     }));
     setShowGlobalStats(Boolean(settings.showGlobalStats));
+    setMissionsEnabled(settings.missionsEnabled ?? true);
     setDirty(false);
     setError('');
     setSuccess('');
@@ -333,6 +337,28 @@ const AdminSettings = () => {
                 style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, display: 'flex', alignItems: 'center', gap: '0.35rem' }}
               >
                 {showGlobalStats
+                  ? <FiToggleRight style={{ fontSize: '1.75rem', color: '#34d399' }} />
+                  : <FiToggleLeft  style={{ fontSize: '1.75rem', color: '#475569' }} />
+                }
+              </button>
+            </div>
+          </div>
+
+          {/* Missions Enabled Toggle */}
+          <div style={{ marginTop: '1.25rem' }}>
+            <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '0.5rem' }}>
+              Missions Feature
+            </label>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0.75rem 1rem', background: 'rgba(255,255,255,0.03)', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.08)' }}>
+              <div>
+                <p style={{ color: 'white', fontWeight: 600, fontSize: '0.85rem', margin: 0 }}>Enable Missions</p>
+                <p style={{ color: '#64748b', fontSize: '0.7rem', margin: 0 }}>Show or hide the Missions feature across the platform</p>
+              </div>
+              <button
+                onClick={() => { setMissionsEnabled(!missionsEnabled); markDirty(); }}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, display: 'flex', alignItems: 'center', gap: '0.35rem' }}
+              >
+                {missionsEnabled
                   ? <FiToggleRight style={{ fontSize: '1.75rem', color: '#34d399' }} />
                   : <FiToggleLeft  style={{ fontSize: '1.75rem', color: '#475569' }} />
                 }

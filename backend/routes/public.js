@@ -79,21 +79,26 @@ router.get('/user/:id', async (req, res) => {
       });
     }
 
+    const settings = await Settings.findOne({}) || {};
+    const missionsEnabled = settings.missionsEnabled ?? true;
+
+    const validTransactionTypes = [
+      'offer_reward',
+      'custom_offer_reward',
+      'daily_bonus',
+      'referral_reward',
+      'admin_adjustment',
+      'promo_code',
+      'leaderboard_reward',
+      'vip_reward',
+    ];
+    if (missionsEnabled) validTransactionTypes.push('mission_reward');
+
     // Fetch the user's latest 100 credited activities (public profiles only)
     const recentActiveOffers = await Transaction.find({
       userId: user._id,
       transactionType: {
-        $in: [
-          'offer_reward',
-          'custom_offer_reward',
-          'daily_bonus',
-          'referral_reward',
-          'admin_adjustment',
-          'promo_code',
-          'leaderboard_reward',
-          'vip_reward',
-          'mission_reward',
-        ]
+        $in: validTransactionTypes
       },
       status: { $in: ['completed', 'hold'] },
       amount: { $gt: 0 }
@@ -118,10 +123,16 @@ router.get('/user/:id', async (req, res) => {
 // Returns the 20 most recent earnings globally, intended for the Live Earning Bar.
 router.get('/recent-earnings', async (req, res) => {
   try {
+    const settings = await Settings.findOne({}) || {};
+    const missionsEnabled = settings.missionsEnabled ?? true;
+
+    const validTransactionTypes = ['offer_reward', 'custom_offer_reward', 'daily_bonus', 'admin_adjustment', 'promo_code', 'leaderboard_reward', 'vip_reward'];
+    if (missionsEnabled) validTransactionTypes.push('mission_reward');
+
     let recentEarnings = await Transaction.find({
       $or: [
         {
-          transactionType: { $in: ['offer_reward', 'custom_offer_reward', 'daily_bonus', 'admin_adjustment', 'promo_code', 'leaderboard_reward', 'vip_reward', 'mission_reward'] },
+          transactionType: { $in: validTransactionTypes },
           status: { $in: ['completed', 'hold'] },
           amount: { $gt: 0 }
         },
@@ -177,7 +188,13 @@ router.get('/stats', async (req, res) => {
     const settings = await Settings.findOne({}) || { coinsPerUSD: 1000 };
     const totalPaidOutUSD = Number((totalPaidOutCoins / settings.coinsPerUSD).toFixed(2));
 
-    res.status(200).json({ success: true, totalUsers, totalPaidOut: totalPaidOutUSD, showGlobalStats: settings.showGlobalStats });
+    res.status(200).json({ 
+      success: true, 
+      totalUsers, 
+      totalPaidOut: totalPaidOutUSD, 
+      showGlobalStats: settings.showGlobalStats,
+      missionsEnabled: settings.missionsEnabled ?? true 
+    });
   } catch (err) {
     console.error('[/api/public/stats] Error:', err);
     res.status(500).json({ success: false, error: 'Failed to fetch public stats' });

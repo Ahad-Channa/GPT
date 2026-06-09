@@ -154,6 +154,11 @@ async function buildPeriodMissions(userId, period) {
  */
 router.get('/', requireAuth, async (req, res) => {
   try {
+    const settings = await Settings.getSingleton();
+    if (settings && settings.missionsEnabled === false) {
+      return res.json({ success: false, disabled: true, error: 'Missions are currently disabled by the administrator.' });
+    }
+
     const userId = req.user._id;
 
     const [daily, weekly, monthly] = await Promise.all([

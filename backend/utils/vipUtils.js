@@ -45,7 +45,7 @@ function checkLevelUp(oldEarned = 0, newEarned = 0, levels = VIP_LEVELS) {
 }
 
 function getLevelLabel(level) {
-  if (!level) return 'Unranked';
+  if (!level) return 'Non-VIP';
   return level.rank ? `${level.tier} ${level.rank}` : level.tier;
 }
 

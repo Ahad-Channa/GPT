@@ -130,7 +130,17 @@ const Header = ({ onChatToggle, chatOpen }) => {
   const { unreadCount, togglePanel } = useNotifications();
   const navigate = useNavigate();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [missionsEnabled, setMissionsEnabled] = useState(true);
   const dropdownRef = useRef(null);
+
+  useEffect(() => {
+    fetch(`${API}/public/stats`)
+      .then(r => r.json())
+      .then(d => {
+        if (d.success) setMissionsEnabled(d.missionsEnabled ?? true);
+      })
+      .catch(() => {});
+  }, []);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -301,14 +311,16 @@ const Header = ({ onChatToggle, chatOpen }) => {
                     )}
                   </button>
 
-                  <button
-                    id="header-missions-link-nav"
-                    onClick={() => { setIsDropdownOpen(false); navigate('/dashboard/missions'); }}
-                    className="w-full text-left px-4 py-3 text-sm text-slate-300 hover:bg-white/[0.05] hover:text-white transition-colors flex items-center gap-3 border-b border-white/[0.04]"
-                  >
-                    <FiTarget className="text-indigo-400" />
-                    <span>Missions</span>
-                  </button>
+                  {missionsEnabled && (
+                    <button
+                      id="header-missions-link-nav"
+                      onClick={() => { setIsDropdownOpen(false); navigate('/dashboard/missions'); }}
+                      className="w-full text-left px-4 py-3 text-sm text-slate-300 hover:bg-white/[0.05] hover:text-white transition-colors flex items-center gap-3 border-b border-white/[0.04]"
+                    >
+                      <FiTarget className="text-indigo-400" />
+                      <span>Missions</span>
+                    </button>
+                  )}
 
                   {isAdmin && (
                     <button
