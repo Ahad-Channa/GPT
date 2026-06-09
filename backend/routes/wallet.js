@@ -171,6 +171,53 @@ router.get('/affiliate-stats', verifyToken, async (req, res) => {
 });
 
 /* ─────────────────────────────────────────────────────────────────
+   GET /api/wallet/referred-users
+   Returns: List of users referred by this user
+───────────────────────────────────────────────────────────────── */
+router.get('/referred-users', verifyToken, async (req, res) => {
+  try {
+    const user = await User.findOne({ firebaseUid: req.user.uid });
+    if (!user) return res.status(404).json({ success: false, error: 'User not found' });
+
+    const page = Math.max(1, parseInt(req.query.page) || 1);
+    const limit = Math.min(50, Math.max(1, parseInt(req.query.limit) || 20));
+
+    const query = { referredBy: user._id };
+
+    const [referredUsers, total] = await Promise.all([
+      User.find(query)
+        .select('displayName totalEarned createdAt updatedAt referralEarnings')
+        .sort({ createdAt: -1 })
+        .skip((page - 1) * limit)
+        .limit(limit),
+      User.countDocuments(query)
+    ]);
+
+    res.status(200).json({
+      success: true,
+      referredUsers: referredUsers.map(u => ({
+        _id: u._id,
+        displayName: u.displayName || 'Anonymous',
+        totalEarned: u.totalEarned,
+        referralEarnings: u.referralEarnings,
+        createdAt: u.createdAt,
+        updatedAt: u.updatedAt
+      })),
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit),
+        hasMore: page * limit < total,
+      }
+    });
+  } catch (error) {
+    console.error('[/api/wallet/referred-users] Error:', error);
+    res.status(500).json({ success: false, error: 'Failed to fetch referred users' });
+  }
+});
+
+/* ─────────────────────────────────────────────────────────────────
    GET /api/wallet/history
    Query params:
      page    (default 1)
