@@ -33,7 +33,7 @@ function timeAgo(dateStr) {
 }
 
 // ── Compact history list shared by Offers and Withdrawals tab
-const HistoryList = ({ transactions, loading, error, hasMore, onLoadMore, loadingMore, emptyMessage }) => {
+const HistoryList = ({ transactions, loading, error, page, totalPages, onNext, onPrev, emptyMessage }) => {
   if (loading) {
     return (
       <div className="space-y-3 px-1">
@@ -100,15 +100,24 @@ const HistoryList = ({ transactions, loading, error, hasMore, onLoadMore, loadin
         })}
       </div>
 
-      {hasMore && (
-        <div className="pt-4 flex justify-center">
+      {totalPages > 1 && (
+        <div className="pt-4 flex items-center justify-between border-t border-white/[0.04] mt-2">
           <button
-            onClick={onLoadMore}
-            disabled={loadingMore}
-            className="flex items-center gap-2 text-xs text-indigo-400 hover:text-indigo-300 font-medium transition-colors disabled:opacity-50"
+            onClick={onPrev}
+            disabled={page === 1 || loading}
+            className="px-3 py-1.5 text-xs font-medium text-slate-300 bg-white/[0.03] hover:bg-white/[0.06] rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {loadingMore ? <FiLoader className="animate-spin text-xs" /> : <FiChevronDown className="text-xs" />}
-            {loadingMore ? 'Loading...' : 'Load more'}
+            Previous
+          </button>
+          <span className="text-xs text-slate-500">
+            Page {page} of {totalPages}
+          </span>
+          <button
+            onClick={onNext}
+            disabled={page === totalPages || loading}
+            className="px-3 py-1.5 text-xs font-medium text-slate-300 bg-white/[0.03] hover:bg-white/[0.06] rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            Next
           </button>
         </div>
       )}
@@ -119,16 +128,15 @@ const HistoryList = ({ transactions, loading, error, hasMore, onLoadMore, loadin
 const useHistory = (token, type, endpoint = '/wallet/history') => {
   const [dataList, setDataList] = useState([]);
   const [page, setPage] = useState(1);
-  const [hasMore, setHasMore] = useState(false);
+  const [totalPages, setTotalPages] = useState(1);
   const [loading, setLoading] = useState(true);
-  const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState('');
   const [totalEarned, setTotalEarned] = useState(0);
 
-  const fetchPage = async (pg, append = false) => {
+  const fetchPage = async (pg) => {
     if (!token) return;
     try {
-      if (pg === 1) setLoading(true); else setLoadingMore(true);
+      setLoading(true);
       setError('');
       const params = new URLSearchParams({ page: pg, limit: 5 });
       if (type) params.append('type', type);
@@ -140,8 +148,8 @@ const useHistory = (token, type, endpoint = '/wallet/history') => {
       if (!data.success) throw new Error(data.error);
 
       const items = data.transactions || data.logs || [];
-      setDataList((prev) => append ? [...prev, ...items] : items);
-      setHasMore(data.pagination.hasMore);
+      setDataList(items);
+      setTotalPages(data.pagination?.totalPages || 1);
       setPage(pg);
       if (pg === 1 && data.stats) {
         setTotalEarned(data.stats.totalEarned || 0);
@@ -150,7 +158,6 @@ const useHistory = (token, type, endpoint = '/wallet/history') => {
       setError(err.message || 'Failed to load history');
     } finally {
       setLoading(false);
-      setLoadingMore(false);
     }
   };
 
@@ -158,9 +165,10 @@ const useHistory = (token, type, endpoint = '/wallet/history') => {
     if (token) fetchPage(1);
   }, [token, type, endpoint]);
 
-  const loadMore = () => fetchPage(page + 1, true);
+  const nextPage = () => { if (page < totalPages) fetchPage(page + 1); };
+  const prevPage = () => { if (page > 1) fetchPage(page - 1); };
 
-  return { dataList, loading, loadingMore, error, hasMore, loadMore, totalEarned };
+  return { dataList, loading, error, page, totalPages, nextPage, prevPage, totalEarned };
 };
 
 const useAffiliateStats = (token) => {
@@ -201,30 +209,28 @@ const useAffiliateStats = (token) => {
 const useReferredUsers = (token) => {
   const [users, setUsers] = useState([]);
   const [page, setPage] = useState(1);
-  const [hasMore, setHasMore] = useState(false);
+  const [totalPages, setTotalPages] = useState(1);
   const [loading, setLoading] = useState(true);
-  const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState('');
 
-  const fetchPage = async (pg, append = false) => {
+  const fetchPage = async (pg) => {
     if (!token) return;
     try {
-      if (pg === 1) setLoading(true); else setLoadingMore(true);
+      setLoading(true);
       setError('');
-      const res = await fetch(`${API}/wallet/referred-users?page=${pg}&limit=20`, {
+      const res = await fetch(`${API}/wallet/referred-users?page=${pg}&limit=5`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       const data = await res.json();
       if (!data.success) throw new Error(data.error);
 
-      setUsers(prev => append ? [...prev, ...data.referredUsers] : data.referredUsers);
-      setHasMore(data.pagination.hasMore);
+      setUsers(data.referredUsers);
+      setTotalPages(data.pagination?.totalPages || 1);
       setPage(pg);
     } catch (err) {
       setError(err.message || 'Failed to load referred users');
     } finally {
       setLoading(false);
-      setLoadingMore(false);
     }
   };
 
@@ -232,9 +238,10 @@ const useReferredUsers = (token) => {
     if (token) fetchPage(1);
   }, [token]);
 
-  const loadMore = () => fetchPage(page + 1, true);
+  const nextPage = () => { if (page < totalPages) fetchPage(page + 1); };
+  const prevPage = () => { if (page > 1) fetchPage(page - 1); };
 
-  return { users, loading, loadingMore, error, hasMore, loadMore };
+  return { users, loading, error, page, totalPages, nextPage, prevPage };
 };
 
 const Affiliates = () => {
@@ -251,6 +258,12 @@ const Affiliates = () => {
   const [activeTab, setActiveTab] = useState('recent'); // 'recent', 'users', 'pending'
   const [affiliateHolds, setAffiliateHolds] = useState([]);
   const [holdsLoading, setHoldsLoading] = useState(true);
+
+  // Local pagination for pending holds
+  const [pendingPage, setPendingPage] = useState(1);
+  const itemsPerPage = 5;
+  const totalPendingPages = Math.ceil(affiliateHolds.length / itemsPerPage);
+  const currentPendingHolds = affiliateHolds.slice((pendingPage - 1) * itemsPerPage, pendingPage * itemsPerPage);
 
   useEffect(() => {
     if (!token) return;
@@ -416,9 +429,10 @@ const Affiliates = () => {
                   transactions={referrals.dataList}
                   loading={referrals.loading}
                   error={referrals.error}
-                  hasMore={referrals.hasMore}
-                  onLoadMore={referrals.loadMore}
-                  loadingMore={referrals.loadingMore}
+                  page={referrals.page}
+                  totalPages={referrals.totalPages}
+                  onNext={referrals.nextPage}
+                  onPrev={referrals.prevPage}
                   emptyMessage="No referral earnings yet. Share your link to start earning!"
                 />
               </div>
@@ -469,22 +483,31 @@ const Affiliates = () => {
                             <div className="flex items-center gap-1 justify-end text-sm font-bold text-emerald-400">
                               +{u.referralEarnings ? u.referralEarnings.toLocaleString() : 0} <CoinIcon size={12} />
                             </div>
-                            <p className="text-[11px] text-slate-500 mt-0.5">
-                              LTV: {u.totalEarned ? u.totalEarned.toLocaleString() : 0} <CoinIcon size={10} />
+                            <p className="text-[11px] text-slate-500 mt-0.5" title="Lifetime Value (Total coins earned by this user on the platform)">
+                              Total Earned: {u.totalEarned ? u.totalEarned.toLocaleString() : 0} <CoinIcon size={10} />
                             </p>
                           </div>
                         </div>
                       ))}
                     </div>
-                    {referredUsersData.hasMore && (
-                      <div className="pt-4 flex justify-center">
+                    {referredUsersData.totalPages > 1 && (
+                      <div className="pt-4 flex items-center justify-between border-t border-white/[0.04] mt-2">
                         <button
-                          onClick={referredUsersData.loadMore}
-                          disabled={referredUsersData.loadingMore}
-                          className="flex items-center gap-2 text-xs text-indigo-400 hover:text-indigo-300 font-medium transition-colors disabled:opacity-50"
+                          onClick={referredUsersData.prevPage}
+                          disabled={referredUsersData.page === 1 || referredUsersData.loading}
+                          className="px-3 py-1.5 text-xs font-medium text-slate-300 bg-white/[0.03] hover:bg-white/[0.06] rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                         >
-                          {referredUsersData.loadingMore ? <FiLoader className="animate-spin text-xs" /> : <FiChevronDown className="text-xs" />}
-                          {referredUsersData.loadingMore ? 'Loading...' : 'Load more'}
+                          Previous
+                        </button>
+                        <span className="text-xs text-slate-500">
+                          Page {referredUsersData.page} of {referredUsersData.totalPages}
+                        </span>
+                        <button
+                          onClick={referredUsersData.nextPage}
+                          disabled={referredUsersData.page === referredUsersData.totalPages || referredUsersData.loading}
+                          className="px-3 py-1.5 text-xs font-medium text-slate-300 bg-white/[0.03] hover:bg-white/[0.06] rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          Next
                         </button>
                       </div>
                     )}
@@ -516,37 +539,60 @@ const Affiliates = () => {
                     <p className="text-slate-500 text-sm">No affiliate earnings on hold right now.</p>
                   </div>
                 ) : (
-                  <div className="divide-y divide-white/[0.04]">
-                    {affiliateHolds.map(tx => {
-                      const releaseDate = tx.releaseDate ? new Date(tx.releaseDate) : null;
-                      return (
-                        <div key={tx._id} className="flex items-center gap-3 py-3.5">
-                          <div className="w-8 h-8 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center flex-shrink-0">
-                            <FiClock className="text-amber-400 text-sm" />
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <p className="text-sm text-white font-semibold">Referral Commission</p>
-                            <p className="text-xs text-slate-500">
-                              Earned {new Date(tx.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
-                              {releaseDate && (
-                                <> &middot; Releases {tx.daysRemaining === 0
-                                  ? <span className="text-emerald-400 font-medium">today</span>
-                                  : <span className="text-amber-400 font-medium">in {tx.daysRemaining}d</span>
-                                } ({releaseDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })})
-                                </>
-                              )}
-                            </p>
-                          </div>
-                          <div className="text-right flex-shrink-0">
-                            <p className="text-sm font-bold text-amber-300">+{tx.amount.toLocaleString()} <CoinIcon size={12} /></p>
-                            <div className="flex items-center gap-1 justify-end mt-0.5">
-                              <FiLock className="text-amber-500/60 text-[10px]" />
-                              <span className="text-[10px] text-amber-500/60 font-medium uppercase tracking-wide">Hold</span>
+                  <div>
+                    <div className="divide-y divide-white/[0.04]">
+                      {currentPendingHolds.map(tx => {
+                        const releaseDate = tx.releaseDate ? new Date(tx.releaseDate) : null;
+                        return (
+                          <div key={tx._id} className="flex items-center gap-3 py-3.5">
+                            <div className="w-8 h-8 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center flex-shrink-0">
+                              <FiClock className="text-amber-400 text-sm" />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm text-white font-semibold">Referral Commission</p>
+                              <p className="text-xs text-slate-500">
+                                Earned {new Date(tx.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                                {releaseDate && (
+                                  <> &middot; Releases {tx.daysRemaining === 0
+                                    ? <span className="text-emerald-400 font-medium">today</span>
+                                    : <span className="text-amber-400 font-medium">in {tx.daysRemaining}d</span>
+                                  } ({releaseDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })})
+                                  </>
+                                )}
+                              </p>
+                            </div>
+                            <div className="text-right flex-shrink-0">
+                              <p className="text-sm font-bold text-amber-300">+{tx.amount.toLocaleString()} <CoinIcon size={12} /></p>
+                              <div className="flex items-center gap-1 justify-end mt-0.5">
+                                <FiLock className="text-amber-500/60 text-[10px]" />
+                                <span className="text-[10px] text-amber-500/60 font-medium uppercase tracking-wide">Hold</span>
+                              </div>
                             </div>
                           </div>
-                        </div>
-                      );
-                    })}
+                        );
+                      })}
+                    </div>
+                    {totalPendingPages > 1 && (
+                      <div className="pt-4 flex items-center justify-between border-t border-white/[0.04] mt-2">
+                        <button
+                          onClick={() => setPendingPage(p => Math.max(1, p - 1))}
+                          disabled={pendingPage === 1}
+                          className="px-3 py-1.5 text-xs font-medium text-slate-300 bg-white/[0.03] hover:bg-white/[0.06] rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          Previous
+                        </button>
+                        <span className="text-xs text-slate-500">
+                          Page {pendingPage} of {totalPendingPages}
+                        </span>
+                        <button
+                          onClick={() => setPendingPage(p => Math.min(totalPendingPages, p + 1))}
+                          disabled={pendingPage === totalPendingPages}
+                          className="px-3 py-1.5 text-xs font-medium text-slate-300 bg-white/[0.03] hover:bg-white/[0.06] rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          Next
+                        </button>
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
