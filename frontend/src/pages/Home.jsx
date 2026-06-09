@@ -116,7 +116,15 @@ const Home = () => {
           headers: { Authorization: `Bearer ${token}` },
         });
         const data = await res.json();
-        if (data.success) setCustomOffers(data.offers);
+        if (data.success) {
+          const now = new Date();
+          const visibleOffers = data.offers.filter(o => {
+            const isApproved = o.submissionStatus === 'approved';
+            const isExpired = o.expirationDate && new Date(o.expirationDate) < now;
+            return !isApproved && !isExpired;
+          });
+          setCustomOffers(visibleOffers);
+        }
       } catch (err) {
         console.error('Failed to load featured offers:', err);
       } finally {
