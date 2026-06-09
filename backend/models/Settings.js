@@ -144,6 +144,11 @@ const settingsSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    // Toggle for the entire Missions feature visibility for users
+    missionsEnabled: {
+      type: Boolean,
+      default: true,
+    },
     // Block E — Mission Period Completion Bonus
     // Extra reward when user completes ALL missions in a period
     missionCompletionBonus: {

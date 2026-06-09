@@ -1014,9 +1014,6 @@ const Profile = () => {
                 {/* Total Earned */}
                 <div className="bg-white/[0.02] border border-white/[0.05] hover:border-indigo-500/30 rounded-2xl p-4 transition-colors">
                   <div className="flex items-center gap-2 mb-2">
-                    <div className="w-7 h-7 rounded-xl bg-indigo-500/15 flex items-center justify-center">
-                      <CoinIcon size={14} />
-                    </div>
                     <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Earned</p>
                   </div>
                   <p className="text-xl font-black text-white tabular-nums leading-none flex items-center gap-1">
@@ -1040,9 +1037,6 @@ const Profile = () => {
                 {/* 30-Day Earnings */}
                 <div className="bg-white/[0.02] border border-white/[0.05] hover:border-violet-500/30 rounded-2xl p-4 transition-colors">
                   <div className="flex items-center gap-2 mb-2">
-                    <div className="w-7 h-7 rounded-xl bg-violet-500/15 flex items-center justify-center">
-                      <CoinIcon size={14} />
-                    </div>
                     <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">30 Days</p>
                   </div>
                   <p className="text-xl font-black text-emerald-400 leading-none tabular-nums flex items-center gap-1">
