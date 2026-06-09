@@ -284,24 +284,11 @@ function PeriodBonusCard({ bonus, period, periodCfg, onClaim, claimingBonus }) {
       )}
 
       <div className="relative z-10 flex items-center justify-between gap-4">
-        {/* Left: icon + text */}
+        {/* Left: text only */}
         <div className="flex items-center gap-3">
-          <div
-            className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0"
-            style={{
-              background: claimable || claimed ? periodCfg.gradient : 'rgba(30,41,59,0.8)',
-              border: `1px solid ${claimable || claimed ? periodCfg.border : 'rgba(51,65,85,0.4)'}`,
-              boxShadow: claimable ? `0 0 16px ${periodCfg.glow}` : 'none',
-            }}
-          >
-            {claimed
-              ? <FiCheckCircle className="text-xl" style={{ color: periodCfg.color }} />
-              : <FiAward className={`text-xl ${claimable ? 'text-white' : 'text-slate-500'}`} />}
-          </div>
-
           <div>
             <p className="font-bold text-sm text-slate-100">
-              🏆 Complete All Missions
+              Complete All Missions
             </p>
             <p className="text-[11px] text-slate-500 mt-0.5">
               {claimed

@@ -344,27 +344,6 @@ const AdminSettings = () => {
             </div>
           </div>
 
-          {/* Missions Enabled Toggle */}
-          <div style={{ marginTop: '1.25rem' }}>
-            <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '0.5rem' }}>
-              Missions Feature
-            </label>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0.75rem 1rem', background: 'rgba(255,255,255,0.03)', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.08)' }}>
-              <div>
-                <p style={{ color: 'white', fontWeight: 600, fontSize: '0.85rem', margin: 0 }}>Enable Missions</p>
-                <p style={{ color: '#64748b', fontSize: '0.7rem', margin: 0 }}>Show or hide the Missions feature across the platform</p>
-              </div>
-              <button
-                onClick={() => { setMissionsEnabled(!missionsEnabled); markDirty(); }}
-                style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, display: 'flex', alignItems: 'center', gap: '0.35rem' }}
-              >
-                {missionsEnabled
-                  ? <FiToggleRight style={{ fontSize: '1.75rem', color: '#34d399' }} />
-                  : <FiToggleLeft  style={{ fontSize: '1.75rem', color: '#475569' }} />
-                }
-              </button>
-            </div>
-          </div>
         </div>
 
       {/* ── Section 3: Referrals ────────────── */}

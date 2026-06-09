@@ -641,6 +641,7 @@ const AdminMissions = () => {
   const [loading,       setLoading]       = useState(true);
   const [saving,        setSaving]        = useState(null);
   const [savingBonus,   setSavingBonus]   = useState(false);
+  const [missionsEnabled, setMissionsEnabled] = useState(true);
   // 'recurring' | 'instant'
   const [activeTab,     setActiveTab]     = useState('recurring');
 
@@ -649,17 +650,18 @@ const AdminMissions = () => {
       const token   = await currentUser.getIdToken();
       const headers = { Authorization: `Bearer ${token}` };
 
-      const [tmplRes, cfgRes, statsRes, bonusRes, recurringRes] = await Promise.all([
+      const [tmplRes, cfgRes, statsRes, bonusRes, recurringRes, settingsRes] = await Promise.all([
         fetch(`${API}/missions/admin/templates`,      { headers }),
         fetch(`${API}/missions/admin/configs`,        { headers }),
         fetch(`${API}/missions/admin/stats`,          { headers }),
         fetch(`${API}/missions/admin/period-bonus-config`, { headers }),
         fetch(`${API}/missions/admin/recurring`,      { headers }),
+        fetch(`${API}/admin/settings`,                { headers }),
       ]);
 
-      const [tmplData, cfgData, statsData, bonusData, recurringJson] = await Promise.all([
+      const [tmplData, cfgData, statsData, bonusData, recurringJson, settingsData] = await Promise.all([
         tmplRes.json(), cfgRes.json(), statsRes.json(), bonusRes.json(),
-        recurringRes.json(),
+        recurringRes.json(), settingsRes.json(),
       ]);
 
       if (tmplData.success)      setTemplates(tmplData.templates);
@@ -667,6 +669,7 @@ const AdminMissions = () => {
       if (statsData.success)     setStats(statsData.stats);
       if (bonusData.success)     setBonusConfig(bonusData.config);
       if (recurringJson.success) setRecurringData(recurringJson.recurring);
+      if (settingsData.success)  setMissionsEnabled(settingsData.settings?.missionsEnabled ?? true);
     } catch (err) {
       toast.error('Failed to load mission data');
       console.error(err);
@@ -676,6 +679,22 @@ const AdminMissions = () => {
   }, [currentUser]);
 
   useEffect(() => { fetchData(); }, [fetchData]);
+
+  const handleToggleMissions = async () => {
+    const newVal = !missionsEnabled;
+    setMissionsEnabled(newVal);
+    try {
+      const token = await currentUser.getIdToken();
+      await fetch(`${API}/admin/settings`, {
+        method: 'PUT',
+        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ missionsEnabled: newVal }),
+      });
+      toast.success(newVal ? 'Missions Feature Enabled' : 'Missions Feature Disabled');
+    } catch (e) {
+      toast.error('Failed to update settings');
+    }
+  };
 
   // ── Save Recurring Config ────────────────────────────────────────────────
   const handleSaveRecurring = async (period, cycleDayIndex, slots) => {
@@ -804,12 +823,29 @@ const AdminMissions = () => {
             Configure recurring missions or apply instant overrides.
           </p>
         </div>
-        <button
-          onClick={fetchData}
-          className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold text-slate-300 hover:text-white border border-slate-700 hover:border-slate-600 transition-colors"
-        >
-          <FiRefreshCw className="text-xs" /> Refresh
-        </button>
+        <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3 px-4 py-2 rounded-xl border border-slate-700 bg-slate-800/50">
+            <div className="text-right hidden sm:block">
+              <p className="text-sm font-bold text-white leading-none mb-1">Enable Missions</p>
+              <p className="text-[10px] text-slate-400 uppercase tracking-wider leading-none">Global Toggle</p>
+            </div>
+            <button
+              onClick={handleToggleMissions}
+              className="flex items-center justify-center transition-transform hover:scale-110"
+            >
+              {missionsEnabled
+                ? <FiToggleRight className="text-3xl text-emerald-400" />
+                : <FiToggleLeft className="text-3xl text-slate-500" />
+              }
+            </button>
+          </div>
+          <button
+            onClick={fetchData}
+            className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold text-slate-300 hover:text-white border border-slate-700 hover:border-slate-600 transition-colors"
+          >
+            <FiRefreshCw className="text-xs" /> Refresh
+          </button>
+        </div>
       </div>
 
       {/* Stats */}
