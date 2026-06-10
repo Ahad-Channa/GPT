@@ -105,6 +105,7 @@ app.get('/api/health', (req, res) => {
 
 require('./utils/streakWarningJob');
 require('./utils/referralHoldJob');
+require('./utils/earningHoldJob');
 
 // Seed mission templates (idempotent)
 const { seedMissionTemplates, notifyNewMissions, sendMissionReminders } = require('./utils/missionUtils');

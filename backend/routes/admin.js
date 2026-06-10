@@ -363,7 +363,7 @@ router.get('/settings', requirePermission('manage_withdrawals'), async (req, res
 // PUT update platform settings
 router.put('/settings', requirePermission('manage_withdrawals'), async (req, res) => {
   try {
-    const { withdrawalFeePercent, withdrawalMethods, coinsPerUSD, rewardEngine, referralConfig, showGlobalStats, missionsEnabled } = req.body;
+    const { withdrawalFeePercent, withdrawalMethods, coinsPerUSD, rewardEngine, referralConfig, earningHoldConfig, showGlobalStats, missionsEnabled } = req.body;
     const settings = await Settings.getSingleton();
 
     if (showGlobalStats !== undefined) {
@@ -384,6 +384,19 @@ router.put('/settings', requirePermission('manage_withdrawals'), async (req, res
         settings.referralConfig.signupBonusCoins = Math.max(0, Number(referralConfig.signupBonusCoins) || 0);
       }
       settings.markModified('referralConfig');
+    }
+
+    if (earningHoldConfig !== undefined) {
+      if (earningHoldConfig.enabled !== undefined) {
+        settings.earningHoldConfig.enabled = Boolean(earningHoldConfig.enabled);
+      }
+      if (earningHoldConfig.threshold !== undefined) {
+        settings.earningHoldConfig.threshold = Math.max(0, Number(earningHoldConfig.threshold) || 0);
+      }
+      if (earningHoldConfig.holdDays !== undefined) {
+        settings.earningHoldConfig.holdDays = Math.max(0, Number(earningHoldConfig.holdDays) || 0);
+      }
+      settings.markModified('earningHoldConfig');
     }
 
     if (withdrawalFeePercent !== undefined) {
@@ -638,9 +651,21 @@ router.put('/custom-offers/submissions/:id', requirePermission('manage_offerwall
     console.log(`[Approval] freshUser: ${freshUser?._id}, referredBy: ${freshUser?.referredBy}`);
 
     if (status === 'approved') {
-      // Credit the user
+      const settings = await Settings.getSingleton();
       const amountNum = Number(submission.offerId.rewardAmount);
-      freshUser.walletBalance += amountNum;
+      
+      let creditBalance = amountNum;
+      let txStatus = 'completed';
+      let holdDate = null;
+      
+      if (settings.earningHoldConfig?.enabled && amountNum >= settings.earningHoldConfig.threshold) {
+          txStatus = 'hold';
+          creditBalance = 0; // do not add to wallet yet
+          holdDate = new Date();
+          holdDate.setDate(holdDate.getDate() + (settings.earningHoldConfig.holdDays || 30));
+      }
+
+      freshUser.walletBalance += creditBalance;
       freshUser.totalEarned = (freshUser.totalEarned || 0) + amountNum;
       await freshUser.save();
       emitWalletUpdate(freshUser.firebaseUid, freshUser.walletBalance);
@@ -651,13 +676,20 @@ router.put('/custom-offers/submissions/:id', requirePermission('manage_offerwall
         amount: amountNum,
         balanceAfter: freshUser.walletBalance,
         description: `Custom Offer Reward: ${submission.offerId.title}`,
-        status: 'completed',
+        status: txStatus,
+        holdUntil: holdDate,
         sourceType: 'offer',
         sourceId: submission.offerId._id,
       });
 
       await createLog(req.dbUser._id, 'APPROVE_CUSTOM_OFFER', freshUser._id, { offerTitle: submission.offerId.title, submissionId: submission._id });
-      await notify(freshUser._id, 'offer_approved', 'Custom Offer Approved!', `Your submission for '${submission.offerId.title}' was approved! +${amountNum} coins.`, { offerId: submission.offerId._id });
+      
+      const notifTitle = txStatus === 'hold' ? 'Offer Approved & Held' : 'Custom Offer Approved!';
+      const notifMsg = txStatus === 'hold'
+        ? `Your submission for '${submission.offerId.title}' was approved! +${amountNum} coins placed on hold for ${settings.earningHoldConfig.holdDays || 30} days.`
+        : `Your submission for '${submission.offerId.title}' was approved! +${amountNum} coins.`;
+      
+      await notify(freshUser._id, 'offer_approved', notifTitle, notifMsg, { offerId: submission.offerId._id });
 
       // Trigger VIP level-up check (custom offer rewards are real earnings)
       processVipLevelUp(freshUser, amountNum, emitToUser);

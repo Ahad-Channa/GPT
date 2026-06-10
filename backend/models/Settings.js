@@ -85,6 +85,12 @@ const settingsSchema = new mongoose.Schema(
         min: 0,
       },
     },
+    // Block B2 - Earning Hold Config (for real earnings like offerwalls/featured offers)
+    earningHoldConfig: {
+      enabled: { type: Boolean, default: false },
+      threshold: { type: Number, default: 5000, min: 0 },
+      holdDays: { type: Number, default: 30, min: 0 }
+    },
     // Block C — Offerwall Provider Registry
     offerwallProviders: {
       type: [

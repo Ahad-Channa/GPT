@@ -138,9 +138,21 @@ const handlePostback = async (providerId, req, res, params) => {
     }
 
     // 10. Atomic: User.findOneAndUpdate $inc walletBalance by platformCoins
+    let creditBalance = platformCoins;
+    let txStatus = 'completed';
+    let holdDate = null;
+    
+    // Evaluate Earning Hold Config
+    if (settings.earningHoldConfig?.enabled && platformCoins >= settings.earningHoldConfig.threshold) {
+        txStatus = 'hold';
+        creditBalance = 0; // do not add to wallet yet
+        holdDate = new Date();
+        holdDate.setDate(holdDate.getDate() + (settings.earningHoldConfig.holdDays || 30));
+    }
+
     const updatedUser = await User.findOneAndUpdate(
       { _id: user._id },
-      { $inc: { walletBalance: platformCoins, totalEarned: platformCoins } },
+      { $inc: { walletBalance: creditBalance, totalEarned: platformCoins } },
       { new: true }
     );
     // Push live balance to user's browser
@@ -156,7 +168,8 @@ const handlePostback = async (providerId, req, res, params) => {
       amount: platformCoins,
       balanceAfter: updatedUser.walletBalance,
       description: `${provider.label} Offer Reward`,
-      status: 'completed',
+      status: txStatus,
+      holdUntil: holdDate,
       externalId,
       metadata: {
         providerId,
@@ -166,11 +179,16 @@ const handlePostback = async (providerId, req, res, params) => {
     });
 
     // 12. Send Offer Reward Notification
+    const notifTitle = txStatus === 'hold' ? 'Offer Reward on Hold' : 'Offer Credited';
+    const notifMsg = txStatus === 'hold' 
+      ? `You completed an offer from ${provider.label} for +${platformCoins} coins. The reward is placed on hold for ${settings.earningHoldConfig.holdDays || 30} days.`
+      : `You earned +${platformCoins} coins from ${provider.label}.`;
+
     await notify(
       user._id,
       'offer_reward',
-      'Offer Credited',
-      `You earned +${platformCoins} coins from ${provider.label}.`,
+      notifTitle,
+      notifMsg,
       { amount: platformCoins, providerId }
     );
 

@@ -915,6 +915,30 @@ const Profile = () => {
     if (activeTab === 'completed_offers' && token) fetchCompletedOffers();
   }, [activeTab, token]);
 
+  // Held Offers
+  const [heldOffers, setHeldOffers] = useState([]);
+  const [loadingHolds, setLoadingHolds] = useState(false);
+
+  const fetchHeldOffers = async () => {
+    if (!token) return;
+    setLoadingHolds(true);
+    try {
+      const res = await fetch(`${API}/wallet/pending-earnings`, { headers: { Authorization: `Bearer ${token}` } });
+      const data = await res.json();
+      if (data.success) {
+        setHeldOffers(data.regularHolds);
+      }
+    } catch (err) {
+      console.error('Failed to fetch held offers:', err);
+    } finally {
+      setLoadingHolds(false);
+    }
+  };
+
+  useEffect(() => {
+    if (activeTab === 'held_offers' && token) fetchHeldOffers();
+  }, [activeTab, token]);
+
 
 
   return (
@@ -1055,6 +1079,7 @@ const Profile = () => {
           <div className="flex gap-1 min-w-max">
             <TabBtn active={activeTab === 'started_offers'} onClick={() => setActiveTab('started_offers')} icon={FiPlayCircle} label="Started Offers" />
             <TabBtn active={activeTab === 'completed_offers'} onClick={() => setActiveTab('completed_offers')} icon={FiCheckCircle} label="Completed Offers" />
+            <TabBtn active={activeTab === 'held_offers'} onClick={() => setActiveTab('held_offers')} icon={FiLock} label="Hold Offers" />
             <TabBtn active={activeTab === 'transaction_history'} onClick={() => setActiveTab('transaction_history')} icon={FiList} label="Transaction History" />
             <TabBtn active={activeTab === 'chargebacks'} onClick={() => setActiveTab('chargebacks')} icon={FiShield} label="Chargebacks" />
           </div>
@@ -1214,6 +1239,60 @@ const Profile = () => {
                   </div>
                 );
               })()}
+            </motion.div>
+          )}
+
+          {/* ══ HOLD OFFERS TAB ══ */}
+          {activeTab === 'held_offers' && (
+            <motion.div
+              key="held_offers"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -6 }}
+              className="glass-card overflow-hidden"
+            >
+              <div className="flex items-center justify-between px-6 py-5 border-b border-white/[0.06] bg-gradient-to-r from-blue-500/[0.04] to-transparent">
+                <div>
+                  <h2 className="text-base font-bold font-display text-white flex items-center gap-2">
+                    <FiLock className="text-blue-400" /> Held Offers
+                  </h2>
+                  <p className="text-xs text-slate-500 mt-0.5">Earnings placed on hold. They will be credited automatically on the release date.</p>
+                </div>
+              </div>
+
+              {loadingHolds ? (
+                <div className="flex justify-center py-10"><FiLoader className="animate-spin text-2xl text-blue-500" /></div>
+              ) : heldOffers.length === 0 ? (
+                <div className="py-14 flex flex-col items-center gap-3 text-center">
+                  <div className="w-12 h-12 rounded-2xl bg-white/[0.03] border border-white/[0.07] flex items-center justify-center">
+                    <FiInbox className="text-slate-600 text-xl" />
+                  </div>
+                  <p className="text-slate-500 text-sm">No held earnings at the moment.</p>
+                </div>
+              ) : (
+                <div className="divide-y divide-white/[0.04]">
+                  {heldOffers.map(offer => (
+                    <div key={offer._id} className="px-6 py-4 flex items-center justify-between">
+                      <div>
+                        <p className="text-sm font-semibold text-white">{offer.description}</p>
+                        <div className="flex items-center gap-2 mt-1">
+                          <span className="text-[10px] px-2 py-0.5 rounded border border-blue-500/20 bg-blue-500/10 text-blue-400 font-bold uppercase">
+                            Releasing {new Date(offer.releaseDate).toLocaleDateString()}
+                          </span>
+                          <span className="text-[10px] text-slate-500">
+                            ({offer.daysRemaining} days remaining)
+                          </span>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-base font-black text-amber-400 flex items-center gap-1">
+                          +{offer.amount} 🪙
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </motion.div>
           )}
 

@@ -129,7 +129,7 @@ const UserDetailModal = ({ user, onClose, currentUser }) => {
             {[
               { label: 'Wallet Balance', value: <CoinDisplay amount={user.walletBalance || 0} size={14} compact={false} />, color: '#818cf8' },
               { label: 'Total Earned', value: <CoinDisplay amount={user.totalEarned || 0} size={14} compact={false} />, color: '#34d399' },
-              { label: 'Referral Earnings', value: <CoinDisplay amount={user.referralEarnings || 0} size={14} compact={false} />, color: '#22d3ee' },
+              { label: 'Referral Earnings', value: <CoinDisplay amount={user.commissionGenerated || 0} size={14} compact={false} />, color: '#22d3ee' },
               { label: 'Daily Streak', value: `${user.dailyBonusStreak || 0} days`, color: '#fb923c' },
               { label: 'Fraud Flag', value: user.fraudFlag || 0, color: user.fraudFlag > 0 ? '#f87171' : '#475569' },
               { label: 'Referral %', value: user.referralPercentage !== null && user.referralPercentage !== undefined ? `${user.referralPercentage}% (override)` : 'Global default', color: '#94a3b8' },

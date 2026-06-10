@@ -86,7 +86,9 @@ const AdminSettings = () => {
   const [earnGate, setEarnGate] = useState([]);
   const [earnReward, setEarnReward] = useState([]);
   const [showGlobalStats, setShowGlobalStats] = useState(false);
-  const [missionsEnabled, setMissionsEnabled] = useState(true);
+  const [earnHoldEnabled, setEarnHoldEnabled] = useState(false);
+  const [earnHoldThreshold, setEarnHoldThreshold] = useState('');
+  const [earnHoldDays, setEarnHoldDays] = useState('');
 
   const [saving,   setSaving]  = useState(false);
   const [dirty,    setDirty]   = useState(false);
@@ -115,6 +117,9 @@ const AdminSettings = () => {
       setEarnReward(data.settings.rewardEngine?.dailyBonusReward ?? Array.from({length: 30}, (_, i) => {
         if (i+1===10) return 500; if(i+1===20) return 1000; if(i+1===30) return 2500; return 100+(i*10);
       }));
+      setEarnHoldEnabled(Boolean(data.settings.earningHoldConfig?.enabled));
+      setEarnHoldThreshold(String(data.settings.earningHoldConfig?.threshold ?? 5000));
+      setEarnHoldDays(String(data.settings.earningHoldConfig?.holdDays ?? 30));
       setShowGlobalStats(Boolean(data.settings.showGlobalStats));
       setMissionsEnabled(data.settings.missionsEnabled ?? true);
       setDirty(false);
@@ -146,6 +151,11 @@ const AdminSettings = () => {
     if (isNaN(cpusdNum) || cpusdNum <= 0)                return setError('Coins per USD must be a positive number.');
     if (isNaN(Number(refHoldDays)) || Number(refHoldDays) < 0) return setError('Referral Hold Days must be 0 or greater.');
     if (isNaN(Number(refGlobalPct)) || Number(refGlobalPct) < 0 || Number(refGlobalPct) > 100) return setError('Referral Global Percentage must be between 0 and 100.');
+    
+    if (earnHoldEnabled) {
+      if (isNaN(Number(earnHoldThreshold)) || Number(earnHoldThreshold) < 0) return setError('Earning Hold Threshold must be 0 or greater.');
+      if (isNaN(Number(earnHoldDays)) || Number(earnHoldDays) < 0) return setError('Earning Hold Days must be 0 or greater.');
+    }
 
     for (const m of methods) {
       if (isNaN(Number(m.minUSD)) || Number(m.minUSD) <= 0) {
@@ -168,6 +178,11 @@ const AdminSettings = () => {
           referralConfig: {
             holdDays: Number(refHoldDays),
             globalPercentage: Number(refGlobalPct)
+          },
+          earningHoldConfig: {
+            enabled: earnHoldEnabled,
+            threshold: Number(earnHoldThreshold),
+            holdDays: Number(earnHoldDays)
           },
           rewardEngine: {
             dailyBonusEarnGate: earnGate.map(Number),
@@ -227,6 +242,9 @@ const AdminSettings = () => {
     setEarnReward(settings.rewardEngine?.dailyBonusReward ?? Array.from({length: 30}, (_, i) => {
       if (i+1===10) return 500; if(i+1===20) return 1000; if(i+1===30) return 2500; return 100+(i*10);
     }));
+    setEarnHoldEnabled(Boolean(settings.earningHoldConfig?.enabled));
+    setEarnHoldThreshold(String(settings.earningHoldConfig?.threshold ?? 5000));
+    setEarnHoldDays(String(settings.earningHoldConfig?.holdDays ?? 30));
     setShowGlobalStats(Boolean(settings.showGlobalStats));
     setMissionsEnabled(settings.missionsEnabled ?? true);
     setDirty(false);
@@ -419,6 +437,61 @@ const AdminSettings = () => {
             Instantly credits all referral commissions whose hold period has already passed.
           </p>
         </div>
+      </div>
+
+      {/* ── Section: Real Earnings Hold ────────────── */}
+      <div className="admin-card" style={{ marginBottom: 0 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '1.5rem', paddingBottom: '1rem', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+          <div style={{ width: 32, height: 32, borderRadius: 10, background: 'linear-gradient(135deg,#3b82f6,#2563eb)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <FiShield style={{ color: 'white', fontSize: 14 }} />
+          </div>
+          <div>
+            <h3 style={{ color: 'white', fontSize: '0.9rem', fontWeight: 700, margin: 0 }}>Earnings Hold System</h3>
+            <p style={{ color: '#64748b', fontSize: '0.72rem', margin: 0 }}>Lock large earnings to protect the economy</p>
+          </div>
+        </div>
+
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0.75rem 1rem', background: 'rgba(255,255,255,0.03)', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.08)', marginBottom: '1.25rem' }}>
+          <div>
+            <p style={{ color: 'white', fontWeight: 600, fontSize: '0.85rem', margin: 0 }}>Enable Earnings Hold</p>
+            <p style={{ color: '#64748b', fontSize: '0.7rem', margin: 0 }}>Place large offerwall/custom earnings on hold automatically</p>
+          </div>
+          <button
+            onClick={() => { setEarnHoldEnabled(!earnHoldEnabled); markDirty(); }}
+            style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, display: 'flex', alignItems: 'center', gap: '0.35rem' }}
+          >
+            {earnHoldEnabled
+              ? <FiToggleRight style={{ fontSize: '1.75rem', color: '#34d399' }} />
+              : <FiToggleLeft  style={{ fontSize: '1.75rem', color: '#475569' }} />
+            }
+          </button>
+        </div>
+
+        <Field
+          label="Hold Threshold (Coins)"
+          hint="Any single earning equal to or above this amount will be placed on hold."
+        >
+          <NumberInput
+            value={earnHoldThreshold}
+            onChange={(v) => { setEarnHoldThreshold(v); markDirty(); }}
+            min={0}
+            disabled={!earnHoldEnabled}
+            suffix="Coins"
+          />
+        </Field>
+
+        <Field
+          label="Holds Duration (Days)"
+          hint="Number of days the earning will remain locked before being credited to the wallet."
+        >
+          <NumberInput
+            value={earnHoldDays}
+            onChange={(v) => { setEarnHoldDays(v); markDirty(); }}
+            min={0}
+            disabled={!earnHoldEnabled}
+            suffix="Days"
+          />
+        </Field>
       </div>
 
       {/* ── Section 4: Daily Bonus ────────────── */}

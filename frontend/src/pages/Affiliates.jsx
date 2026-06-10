@@ -481,7 +481,7 @@ const Affiliates = () => {
                           </div>
                           <div className="text-right flex-shrink-0">
                             <div className="flex items-center gap-1 justify-end text-sm font-bold text-emerald-400">
-                              +{u.referralEarnings ? u.referralEarnings.toLocaleString() : 0} <CoinIcon size={12} />
+                              +{u.commissionGenerated ? u.commissionGenerated.toLocaleString() : 0} <CoinIcon size={12} />
                             </div>
                             <p className="text-[11px] text-slate-500 mt-0.5" title="Lifetime Value (Total coins earned by this user on the platform)">
                               Total Earned: {u.totalEarned ? u.totalEarned.toLocaleString() : 0} <CoinIcon size={10} />
