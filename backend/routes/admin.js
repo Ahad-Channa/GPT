@@ -689,6 +689,10 @@ router.put('/custom-offers/submissions/:id', requirePermission('manage_offerwall
                 { _id: referrer._id },
                 { $inc: { referralEarnings: refAmount } }
               );
+              await User.updateOne(
+                { _id: freshUser._id },
+                { $inc: { commissionGenerated: refAmount } }
+              );
 
               // If holdDays=0, credit wallet immediately
               let balanceAfterRef = referrer.walletBalance;
@@ -1297,6 +1301,7 @@ router.post('/referral-test-commission/:userId', requirePermission('manage_users
 
     // Increment referralEarnings tracker
     await User.updateOne({ _id: referrer._id }, { $inc: { referralEarnings: amountNum } });
+    await User.updateOne({ _id: user._id }, { $inc: { commissionGenerated: amountNum } });
 
     let txStatus = 'hold';
     let holdUntil = null;
@@ -1565,6 +1570,7 @@ router.post('/proofs/:type/:id/:action', requirePermission('manage_offerwalls'),
 
                   // Always increment lifetime referral earnings tracker
                   await User.updateOne({ _id: referrer._id }, { $inc: { referralEarnings: refAmount } });
+                  await User.updateOne({ _id: user._id }, { $inc: { commissionGenerated: refAmount } });
 
                   // If holdDays=0, credit wallet immediately
                   // NOTE: walletBalance is credited but totalEarned is intentionally NOT incremented.
