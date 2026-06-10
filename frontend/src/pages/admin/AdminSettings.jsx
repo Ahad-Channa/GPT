@@ -5,7 +5,7 @@ import toast from 'react-hot-toast';
 import {
   FiSettings, FiPercent, FiDollarSign, FiToggleLeft,
   FiToggleRight, FiSave, FiRefreshCw, FiLoader,
-  FiAlertCircle, FiCheckCircle, FiInfo, FiEdit2, FiLock, FiZap,
+  FiAlertCircle, FiCheckCircle, FiInfo, FiEdit2, FiLock, FiZap, FiShield,
 } from 'react-icons/fi';
 import CoinDisplay from '../../components/CoinDisplay';
 
