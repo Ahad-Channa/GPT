@@ -1082,6 +1082,14 @@ router.put('/leaderboard-config', requirePrimaryAdmin, async (req, res) => {
       if (incoming.rewardTiers !== undefined && Array.isArray(incoming.rewardTiers)) {
         settings.leaderboardConfig[period].rewardTiers = incoming.rewardTiers.map(v => Math.max(0, Number(v) || 0));
       }
+      if (incoming.nextConfig) {
+        if (incoming.nextConfig.isScheduled !== undefined) settings.leaderboardConfig[period].nextConfig.isScheduled = Boolean(incoming.nextConfig.isScheduled);
+        if (incoming.nextConfig.visibleSlots !== undefined) settings.leaderboardConfig[period].nextConfig.visibleSlots = Math.max(5, Math.min(100, Number(incoming.nextConfig.visibleSlots) || 25));
+        if (incoming.nextConfig.rewardedRanks !== undefined) settings.leaderboardConfig[period].nextConfig.rewardedRanks = Math.max(0, Math.min(100, Number(incoming.nextConfig.rewardedRanks) || 3));
+        if (incoming.nextConfig.rewardTiers !== undefined && Array.isArray(incoming.nextConfig.rewardTiers)) {
+          settings.leaderboardConfig[period].nextConfig.rewardTiers = incoming.nextConfig.rewardTiers.map(v => Math.max(0, Number(v) || 0));
+        }
+      }
     });
 
     settings.markModified('leaderboardConfig');

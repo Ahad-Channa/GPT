@@ -20,13 +20,75 @@ const PERIOD_DESCRIPTIONS = {
 };
 
 function PeriodCard({ period, config, onSave, onReset, saving, resetting }) {
-  const [local, setLocal] = useState({ ...config });
+  const [activeTab, setActiveTab] = useState('live'); // 'live' | 'next'
   const colors = PERIOD_COLORS[period];
-  const isDirty = JSON.stringify(local) !== JSON.stringify(config);
 
-  useEffect(() => setLocal({ ...config }), [config]);
+  const [liveLocal, setLiveLocal] = useState({
+    enabled: config.enabled,
+    visibleSlots: config.visibleSlots,
+    rewardedRanks: config.rewardedRanks,
+    rewardTiers: config.rewardTiers,
+  });
 
+  const [nextLocal, setNextLocal] = useState({
+    isScheduled: config.nextConfig?.isScheduled || false,
+    visibleSlots: config.nextConfig?.visibleSlots || config.visibleSlots,
+    rewardedRanks: config.nextConfig?.rewardedRanks || config.rewardedRanks,
+    rewardTiers: config.nextConfig?.rewardTiers || config.rewardTiers,
+  });
+
+  useEffect(() => {
+    setLiveLocal({
+      enabled: config.enabled,
+      visibleSlots: config.visibleSlots,
+      rewardedRanks: config.rewardedRanks,
+      rewardTiers: config.rewardTiers,
+    });
+    setNextLocal({
+      isScheduled: config.nextConfig?.isScheduled || false,
+      visibleSlots: config.nextConfig?.visibleSlots || config.visibleSlots,
+      rewardedRanks: config.nextConfig?.rewardedRanks || config.rewardedRanks,
+      rewardTiers: config.nextConfig?.rewardTiers || config.rewardTiers,
+    });
+  }, [config]);
+
+  const isLiveDirty = JSON.stringify(liveLocal) !== JSON.stringify({
+    enabled: config.enabled,
+    visibleSlots: config.visibleSlots,
+    rewardedRanks: config.rewardedRanks,
+    rewardTiers: config.rewardTiers,
+  });
+  
+  const isNextDirty = JSON.stringify(nextLocal) !== JSON.stringify({
+    isScheduled: config.nextConfig?.isScheduled || false,
+    visibleSlots: config.nextConfig?.visibleSlots || config.visibleSlots,
+    rewardedRanks: config.nextConfig?.rewardedRanks || config.rewardedRanks,
+    rewardTiers: config.nextConfig?.rewardTiers || config.rewardTiers,
+  });
+
+  const local = activeTab === 'live' ? liveLocal : nextLocal;
+  const setLocal = activeTab === 'live' ? setLiveLocal : setNextLocal;
   const set = (key, val) => setLocal(prev => ({ ...prev, [key]: val }));
+  
+  const isDirty = activeTab === 'live' ? isLiveDirty : isNextDirty;
+
+  const handleSaveClick = () => {
+    if (activeTab === 'live') {
+      onSave(period, { ...liveLocal });
+    } else {
+      const updatedNext = { ...nextLocal, isScheduled: true };
+      setNextLocal(updatedNext);
+      onSave(period, { nextConfig: updatedNext });
+    }
+  };
+
+  const handleCancelNext = () => {
+    if (window.confirm('Cancel the scheduled next cycle update?')) {
+      const updatedNext = { ...nextLocal, isScheduled: false };
+      setNextLocal(updatedNext);
+      onSave(period, { nextConfig: updatedNext });
+    }
+  };
 
   return (
     <div style={{
@@ -45,38 +107,74 @@ function PeriodCard({ period, config, onSave, onReset, saving, resetting }) {
             {PERIOD_DESCRIPTIONS[period]}
           </p>
         </div>
-        {/* Toggle */}
+        {/* Toggle (Always affects live config) */}
         <button
           onClick={() => {
-            const newVal = !local.enabled;
-            set('enabled', newVal);
-            onSave(period, { ...local, enabled: newVal });
+            const newVal = !liveLocal.enabled;
+            setLiveLocal(prev => ({ ...prev, enabled: newVal }));
+            onSave(period, { ...liveLocal, enabled: newVal });
           }}
           style={{
             background: 'none', border: 'none', cursor: 'pointer',
-            color: local.enabled ? colors.accent : '#374151',
+            color: liveLocal.enabled ? colors.accent : '#374151',
             fontSize: '36px', transition: 'color 0.2s', padding: 0,
             display: 'flex', alignItems: 'center',
           }}
-          title={local.enabled ? 'Click to disable' : 'Click to enable'}
+          title={liveLocal.enabled ? 'Click to disable' : 'Click to enable'}
         >
-          {local.enabled ? <FiToggleRight /> : <FiToggleLeft />}
+          {liveLocal.enabled ? <FiToggleRight /> : <FiToggleLeft />}
         </button>
       </div>
 
-      {/* Status badge */}
-      <div style={{ marginBottom: '20px' }}>
-        <span style={{
-          display: 'inline-flex', alignItems: 'center', gap: '6px',
-          padding: '4px 12px', borderRadius: '20px', fontSize: '11px', fontWeight: 700,
-          background: local.enabled ? `${colors.accent}20` : 'rgba(100,116,139,0.15)',
-          color: local.enabled ? colors.accent : '#64748b',
-          border: `1px solid ${local.enabled ? `${colors.accent}40` : 'rgba(100,116,139,0.2)'}`,
-          textTransform: 'uppercase', letterSpacing: '0.08em',
-        }}>
-          {local.enabled ? '● ACTIVE' : '○ DISABLED'}
-        </span>
+      <div style={{ display: 'flex', gap: '16px', borderBottom: '1px solid rgba(255,255,255,0.08)', marginBottom: '24px' }}>
+        <button
+          onClick={() => setActiveTab('live')}
+          style={{
+            background: 'none', border: 'none', color: activeTab === 'live' ? colors.accent : '#94a3b8',
+            fontSize: '13px', fontWeight: 600, padding: '8px 4px', cursor: 'pointer',
+            borderBottom: activeTab === 'live' ? `2px solid ${colors.accent}` : '2px solid transparent',
+          }}
+        >
+          Live Setup
+        </button>
+        <button
+          onClick={() => setActiveTab('next')}
+          style={{
+            background: 'none', border: 'none', color: activeTab === 'next' ? colors.accent : '#94a3b8',
+            fontSize: '13px', fontWeight: 600, padding: '8px 4px', cursor: 'pointer',
+            borderBottom: activeTab === 'next' ? `2px solid ${colors.accent}` : '2px solid transparent',
+            display: 'flex', alignItems: 'center', gap: '6px'
+          }}
+        >
+          Next Cycle Setup
+          {config.nextConfig?.isScheduled && (
+            <span style={{ background: colors.accent, color: '#000', padding: '2px 6px', borderRadius: '10px', fontSize: '9px', fontWeight: 800 }}>SCHEDULED</span>
+          )}
+        </button>
       </div>
+
+      {activeTab === 'live' && (
+        <div style={{ marginBottom: '20px' }}>
+          <span style={{
+            display: 'inline-flex', alignItems: 'center', gap: '6px',
+            padding: '4px 12px', borderRadius: '20px', fontSize: '11px', fontWeight: 700,
+            background: liveLocal.enabled ? `${colors.accent}20` : 'rgba(100,116,139,0.15)',
+            color: liveLocal.enabled ? colors.accent : '#64748b',
+            border: `1px solid ${liveLocal.enabled ? `${colors.accent}40` : 'rgba(100,116,139,0.2)'}`,
+            textTransform: 'uppercase', letterSpacing: '0.08em',
+          }}>
+            {liveLocal.enabled ? '● ACTIVE' : '○ DISABLED'}
+          </span>
+        </div>
+      )}
+
+      {activeTab === 'next' && (
+        <div style={{ marginBottom: '20px' }}>
+          <p style={{ fontSize: '13px', color: '#94a3b8', background: 'rgba(255,255,255,0.02)', padding: '12px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.05)' }}>
+            These settings will automatically become active on the next <strong>{PERIOD_LABELS[period]}</strong> reset.
+          </p>
+        </div>
+      )}
 
       {/* Visible Slots control */}
       <div style={{ marginBottom: '20px', maxWidth: '280px' }}>
@@ -94,7 +192,7 @@ function PeriodCard({ period, config, onSave, onReset, saving, resetting }) {
           />
           <span style={{ fontSize: '10px', color: '#64748b', fontWeight: 600, whiteSpace: 'nowrap' }}>RANKS</span>
         </div>
-        <p style={{ fontSize: '10px', color: '#475569', margin: '4px 0 0' }}>How many ranks users will see on the leaderboard (e.g. 5, 20, 25)</p>
+        <p style={{ fontSize: '10px', color: '#475569', margin: '4px 0 0' }}>How many ranks users will see on the leaderboard</p>
       </div>
 
       {/* Rewarded Ranks control */}
@@ -111,7 +209,6 @@ function PeriodCard({ period, config, onSave, onReset, saving, resetting }) {
             onChange={e => {
               const count = Number(e.target.value);
               set('rewardedRanks', count);
-              // Ensure rewardTiers array size matches
               const newTiers = [...(local.rewardTiers || [])];
               if (newTiers.length < count) {
                 while (newTiers.length < count) newTiers.push(0);
@@ -154,7 +251,7 @@ function PeriodCard({ period, config, onSave, onReset, saving, resetting }) {
       {/* Actions */}
       <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
         <button
-          onClick={() => onSave(period, local)}
+          onClick={handleSaveClick}
           disabled={!isDirty || saving}
           style={{
             display: 'flex', alignItems: 'center', gap: '6px',
@@ -166,23 +263,41 @@ function PeriodCard({ period, config, onSave, onReset, saving, resetting }) {
           }}
         >
           <FiSave style={{ fontSize: '14px' }} />
-          {saving ? 'Saving…' : 'Save Changes'}
+          {saving ? 'Saving…' : activeTab === 'live' ? 'Apply Instantly' : 'Schedule for Next Period'}
         </button>
 
-        <button
-          onClick={() => onReset(period)}
-          disabled={resetting}
-          style={{
-            display: 'flex', alignItems: 'center', gap: '6px',
-            padding: '8px 16px', borderRadius: '10px', fontSize: '13px', fontWeight: 600,
-            background: 'rgba(239,68,68,0.08)', color: resetting ? '#475569' : '#f87171',
-            border: '1px solid rgba(239,68,68,0.2)', cursor: resetting ? 'not-allowed' : 'pointer',
-            transition: 'all 0.2s',
-          }}
-        >
-          <FiRotateCcw style={{ fontSize: '14px', animation: resetting ? 'spin 1s linear infinite' : 'none' }} />
-          {resetting ? 'Resetting…' : 'Manual Reset'}
-        </button>
+        {activeTab === 'next' && config.nextConfig?.isScheduled && (
+          <button
+            onClick={handleCancelNext}
+            disabled={saving}
+            style={{
+              display: 'flex', alignItems: 'center', gap: '6px',
+              padding: '8px 16px', borderRadius: '10px', fontSize: '13px', fontWeight: 600,
+              background: 'rgba(239,68,68,0.08)', color: '#f87171',
+              border: '1px solid rgba(239,68,68,0.2)', cursor: 'pointer',
+              transition: 'all 0.2s',
+            }}
+          >
+            Cancel Scheduled Update
+          </button>
+        )}
+
+        {activeTab === 'live' && (
+          <button
+            onClick={() => onReset(period)}
+            disabled={resetting}
+            style={{
+              display: 'flex', alignItems: 'center', gap: '6px',
+              padding: '8px 16px', borderRadius: '10px', fontSize: '13px', fontWeight: 600,
+              background: 'rgba(239,68,68,0.08)', color: resetting ? '#475569' : '#f87171',
+              border: '1px solid rgba(239,68,68,0.2)', cursor: resetting ? 'not-allowed' : 'pointer',
+              transition: 'all 0.2s',
+            }}
+          >
+            <FiRotateCcw style={{ fontSize: '14px', animation: resetting ? 'spin 1s linear infinite' : 'none' }} />
+            {resetting ? 'Resetting…' : 'Manual Reset'}
+          </button>
+        )}
       </div>
     </div>
   );

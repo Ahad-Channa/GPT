@@ -303,9 +303,17 @@ async function resetLeaderboard(period) {
 
   // Persist the reset time so the next cycle starts cleanly from NOW
   try {
+    const updatePayload = { [`leaderboardConfig.${period}.lastResetAt`]: cycleEnd };
+    if (cfg.nextConfig && cfg.nextConfig.isScheduled) {
+      updatePayload[`leaderboardConfig.${period}.visibleSlots`] = cfg.nextConfig.visibleSlots;
+      updatePayload[`leaderboardConfig.${period}.rewardedRanks`] = cfg.nextConfig.rewardedRanks;
+      updatePayload[`leaderboardConfig.${period}.rewardTiers`] = cfg.nextConfig.rewardTiers;
+      updatePayload[`leaderboardConfig.${period}.nextConfig.isScheduled`] = false;
+    }
+
     await Settings.findOneAndUpdate(
       { _singleton: 'platform_settings' },
-      { $set: { [`leaderboardConfig.${period}.lastResetAt`]: cycleEnd } }
+      { $set: updatePayload }
     );
   } catch (e) {
     console.warn('[leaderboard] Failed to persist lastResetAt:', e.message);

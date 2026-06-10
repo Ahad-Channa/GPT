@@ -121,6 +121,12 @@ const settingsSchema = new mongoose.Schema(
         rewardedRanks: { type: Number, default: 3, min: 0, max: 100 },
         rewardTiers: { type: [Number], default: [5000, 2500, 1000] },
         lastResetAt: { type: Date, default: null },
+        nextConfig: {
+          isScheduled: { type: Boolean, default: false },
+          visibleSlots: { type: Number, default: 25, min: 5, max: 100 },
+          rewardedRanks: { type: Number, default: 3, min: 0, max: 100 },
+          rewardTiers: { type: [Number], default: [5000, 2500, 1000] },
+        }
       },
       weekly: {
         enabled: { type: Boolean, default: false },
@@ -128,6 +134,12 @@ const settingsSchema = new mongoose.Schema(
         rewardedRanks: { type: Number, default: 3, min: 0, max: 100 },
         rewardTiers: { type: [Number], default: [20000, 10000, 5000] },
         lastResetAt: { type: Date, default: null },
+        nextConfig: {
+          isScheduled: { type: Boolean, default: false },
+          visibleSlots: { type: Number, default: 25, min: 5, max: 100 },
+          rewardedRanks: { type: Number, default: 3, min: 0, max: 100 },
+          rewardTiers: { type: [Number], default: [20000, 10000, 5000] },
+        }
       },
       monthly: {
         enabled: { type: Boolean, default: false },
@@ -135,6 +147,12 @@ const settingsSchema = new mongoose.Schema(
         rewardedRanks: { type: Number, default: 3, min: 0, max: 100 },
         rewardTiers: { type: [Number], default: [100000, 50000, 25000] },
         lastResetAt: { type: Date, default: null },
+        nextConfig: {
+          isScheduled: { type: Boolean, default: false },
+          visibleSlots: { type: Number, default: 25, min: 5, max: 100 },
+          rewardedRanks: { type: Number, default: 3, min: 0, max: 100 },
+          rewardTiers: { type: [Number], default: [100000, 50000, 25000] },
+        }
       },
     },
     // Show/Hide Global Stats on the Homepage
