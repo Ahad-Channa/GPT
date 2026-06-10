@@ -387,15 +387,11 @@ router.put('/settings', requirePermission('manage_withdrawals'), async (req, res
     }
 
     if (earningHoldConfig !== undefined) {
-      if (earningHoldConfig.enabled !== undefined) {
-        settings.earningHoldConfig.enabled = Boolean(earningHoldConfig.enabled);
-      }
-      if (earningHoldConfig.threshold !== undefined) {
-        settings.earningHoldConfig.threshold = Math.max(0, Number(earningHoldConfig.threshold) || 0);
-      }
-      if (earningHoldConfig.holdDays !== undefined) {
-        settings.earningHoldConfig.holdDays = Math.max(0, Number(earningHoldConfig.holdDays) || 0);
-      }
+      settings.set('earningHoldConfig', {
+        enabled: earningHoldConfig.enabled !== undefined ? Boolean(earningHoldConfig.enabled) : (settings.earningHoldConfig?.enabled || false),
+        threshold: earningHoldConfig.threshold !== undefined ? Math.max(0, Number(earningHoldConfig.threshold) || 0) : (settings.earningHoldConfig?.threshold || 5000),
+        holdDays: earningHoldConfig.holdDays !== undefined ? Math.max(0, Number(earningHoldConfig.holdDays) || 0) : (settings.earningHoldConfig?.holdDays || 30)
+      });
       settings.markModified('earningHoldConfig');
     }
 
