@@ -158,4 +158,43 @@ router.delete('/clear-all', requirePrimaryForChat, async (req, res) => {
   }
 });
 
+// DELETE /api/chat/clear-recent - Admin/Mod: nuke the last 30 active messages
+router.delete('/clear-recent', requireChatMod, async (req, res) => {
+  try {
+    const limit = parseInt(req.query.count) || 30;
+    
+    // Find the last N active messages
+    const recentMessages = await ChatMessage.find({ isDeleted: false })
+      .sort({ createdAt: -1 })
+      .limit(limit);
+
+    if (recentMessages.length === 0) {
+      return res.status(200).json({ status: 'success', message: 'No active messages to delete', clearedCount: 0 });
+    }
+
+    const messageIds = recentMessages.map(m => m._id);
+
+    // Soft delete them
+    const result = await ChatMessage.updateMany(
+      { _id: { $in: messageIds } },
+      { $set: { isDeleted: true } }
+    );
+
+    // Notify all connected clients for each message so we don't need frontend code changes
+    // or we could emit a new event, but emitting individual messageDeleted works perfectly
+    messageIds.forEach(id => {
+      req.io.emit('messageDeleted', { _id: id.toString() });
+    });
+
+    res.status(200).json({
+      status: 'success',
+      message: `Cleared last ${result.modifiedCount} messages`,
+      clearedCount: result.modifiedCount
+    });
+  } catch (error) {
+    console.error('Clear recent chat error:', error);
+    res.status(500).json({ status: 'error', message: 'Failed to clear recent messages' });
+  }
+});
+
 module.exports = router;

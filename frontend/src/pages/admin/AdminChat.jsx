@@ -234,6 +234,44 @@ const AdminChat = () => {
           Refresh
         </button>
 
+        {/* Clear Recent 30 Chat — moderators and admins */}
+        <button
+          onClick={async () => {
+            if (!window.confirm('Delete the last 30 messages?')) return;
+            try {
+              const token = await currentUser.getIdToken();
+              const res = await fetch(`${API}/chat/clear-recent?count=30`, {
+                method: 'DELETE',
+                headers: { Authorization: `Bearer ${token}` }
+              });
+              const data = await res.json();
+              if (data.status === 'success') {
+                toast.success(`Cleared ${data.clearedCount} recent messages`);
+                fetchMessages();
+              } else {
+                toast.error('Failed to clear recent chat');
+              }
+            } catch (err) {
+              console.error(err);
+              toast.error('Failed to clear recent chat');
+            }
+          }}
+          style={{
+            background: 'rgba(245,158,11,0.1)',
+            border: '1px solid rgba(245,158,11,0.3)',
+            borderRadius: 8, padding: '0.55rem 1rem',
+            color: '#f59e0b', cursor: 'pointer',
+            fontSize: '0.82rem', display: 'flex', alignItems: 'center', gap: '0.4rem',
+            transition: 'all 0.15s', fontWeight: 600
+          }}
+          onMouseEnter={e => e.currentTarget.style.background = 'rgba(245,158,11,0.2)'}
+          onMouseLeave={e => e.currentTarget.style.background = 'rgba(245,158,11,0.1)'}
+          title="Delete the last 30 messages (useful for spam)"
+        >
+          <FiTrash2 style={{ fontSize: '0.85rem' }} />
+          Clear Last 30
+        </button>
+
         {/* Clear All Chat — primary admin only */}
         {isPrimaryAdmin && (
           <button
