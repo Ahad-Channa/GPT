@@ -269,6 +269,29 @@ connectDB()
   .then(async () => {
     // Seed mission templates on startup (idempotent upsert)
     await seedMissionTemplates();
+
+    // MIGRATION: populate commissionGenerated for existing referral rewards
+    try {
+      const User = require('./models/User');
+      const Transaction = require('./models/Transaction');
+      // Only run if we haven't migrated yet
+      const alreadyMigrated = await User.findOne({ commissionGenerated: { $gt: 0 } });
+      if (!alreadyMigrated) {
+        console.log('[MIGRATION] Starting commissionGenerated migration...');
+        const txs = await Transaction.find({ transactionType: 'referral_reward', status: { $ne: 'reversed' } });
+        let count = 0;
+        for (let tx of txs) {
+          if (!tx.sourceId) continue;
+          const sourceTx = await Transaction.findById(tx.sourceId);
+          if (!sourceTx) continue;
+          await User.findByIdAndUpdate(sourceTx.userId, { $inc: { commissionGenerated: tx.amount } });
+          count++;
+        }
+        console.log(`[MIGRATION] Updated ${count} commissions.`);
+      }
+    } catch (e) {
+      console.error('[MIGRATION] Error:', e);
+    }
     server.listen(PORT, () => {
       console.log(`Server runtime initiated on port ${PORT}`);
     });

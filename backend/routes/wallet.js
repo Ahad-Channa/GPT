@@ -186,7 +186,7 @@ router.get('/referred-users', verifyToken, async (req, res) => {
 
     const [referredUsers, total] = await Promise.all([
       User.find(query)
-        .select('displayName totalEarned createdAt updatedAt referralEarnings')
+        .select('displayName totalEarned createdAt updatedAt commissionGenerated')
         .sort({ createdAt: -1 })
         .skip((page - 1) * limit)
         .limit(limit),
@@ -199,7 +199,7 @@ router.get('/referred-users', verifyToken, async (req, res) => {
         _id: u._id,
         displayName: u.displayName || 'Anonymous',
         totalEarned: u.totalEarned,
-        referralEarnings: u.referralEarnings,
+        referralEarnings: u.commissionGenerated || 0,
         createdAt: u.createdAt,
         updatedAt: u.updatedAt
       })),

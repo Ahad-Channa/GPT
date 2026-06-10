@@ -110,6 +110,8 @@ const handlePostback = async (providerId, req, res, params) => {
             } else {
               await User.findByIdAndUpdate(linkedTx.userId, { $inc: { walletBalance: -linkedTx.amount, referralEarnings: -linkedTx.amount } });
             }
+            // Decrement commissionGenerated from the referred user
+            await User.findByIdAndUpdate(user._id, { $inc: { commissionGenerated: -linkedTx.amount } });
           } else {
             await User.findByIdAndUpdate(linkedTx.userId, { $inc: { walletBalance: -linkedTx.amount } });
           }
@@ -205,6 +207,12 @@ const handlePostback = async (providerId, req, res, params) => {
             { $inc: { referralEarnings: refAmount } }
           );
 
+          // Track how much commission this specific referred user generated
+          await User.updateOne(
+            { _id: user._id },
+            { $inc: { commissionGenerated: refAmount } }
+          );
+
           await Transaction.create({
             userId: referrer._id,
             transactionType: 'referral_reward',
@@ -251,6 +259,12 @@ const handlePostback = async (providerId, req, res, params) => {
               { _id: referrer._id },
               { $inc: { walletBalance: signupBonusCoins, referralEarnings: signupBonusCoins } },
               { new: true }
+            );
+
+            // Track how much commission this specific referred user generated
+            await User.updateOne(
+              { _id: user._id },
+              { $inc: { commissionGenerated: signupBonusCoins } }
             );
 
             await Transaction.create({

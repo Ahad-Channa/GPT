@@ -1027,6 +1027,10 @@ router.post('/chargebacks/:transactionId/process', requirePermission('manage_off
             $inc: { walletBalance: -linkedTx.amount, referralEarnings: -linkedTx.amount }
           });
         }
+        // Decrement commissionGenerated from the referred user (who did the offer)
+        await User.findByIdAndUpdate(parentTx.userId, {
+          $inc: { commissionGenerated: -linkedTx.amount }
+        });
       } else {
         // Generic daily bonus or leaderboard refund derived from this offer
         await User.findByIdAndUpdate(linkedTx.userId, {

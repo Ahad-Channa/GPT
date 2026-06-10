@@ -98,6 +98,10 @@ const userSchema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
+    commissionGenerated: {
+      type: Number,
+      default: 0,
+    },
     referralPercentage: {
       type: Number,
       default: null, // If null, fallback to global settings
