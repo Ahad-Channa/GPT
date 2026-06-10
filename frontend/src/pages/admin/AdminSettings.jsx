@@ -86,6 +86,7 @@ const AdminSettings = () => {
   const [earnGate, setEarnGate] = useState([]);
   const [earnReward, setEarnReward] = useState([]);
   const [showGlobalStats, setShowGlobalStats] = useState(false);
+  const [missionsEnabled, setMissionsEnabled] = useState(true);
   const [earnHoldEnabled, setEarnHoldEnabled] = useState(false);
   const [earnHoldThreshold, setEarnHoldThreshold] = useState('');
   const [earnHoldDays, setEarnHoldDays] = useState('');
