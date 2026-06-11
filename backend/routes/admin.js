@@ -1759,7 +1759,11 @@ router.post('/proofs/:type/:id/chargeback', requirePermission('manage_offerwalls
         await notify(targetUserId, 'chargeback', 'Offer Chargeback', `A previously approved offer reward was charged back and -${Math.abs(parentTx.amount)} coins were deducted.`, { txId: parentTx._id, amount: -Math.abs(parentTx.amount) });
 
         // Cascade to linked transactions (e.g. referrals)
-        const linkedTxs = await Transaction.find({ linkedTransactionId: parentTx._id, status: { $ne: 'reversed' } });
+        const linkedTxs = await Transaction.find({ 
+          linkedTransactionId: parentTx._id, 
+          status: { $ne: 'reversed' },
+          transactionType: { $ne: 'chargeback' }
+        });
         for (const linkedTx of linkedTxs) {
           let updatedRefUser = null;
           if (linkedTx.transactionType === 'referral_reward') {
