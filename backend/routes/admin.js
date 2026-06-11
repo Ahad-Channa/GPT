@@ -1598,14 +1598,18 @@ router.get('/proofs', requirePermission('manage_offerwalls'), async (req, res) =
 
 router.get('/proofs/history', requirePermission('manage_offerwalls'), async (req, res) => {
   try {
-    const { page = 1, limit = 50 } = req.query;
+    const { page = 1, limit = 5 } = req.query;
+    const pageNum = parseInt(page) || 1;
+    const limitNum = parseInt(limit) || 5;
+    const skipNum = (pageNum - 1) * limitNum;
+    const fetchAmount = skipNum + limitNum + 1; // +1 to check if there is a next page
     
     // 1. Get Processed Custom Offer Submissions
     const processedSubs = await CustomOfferSubmission.find({ status: { $in: ['approved', 'rejected', 'chargebacked'] } })
       .populate('userId', 'displayName email avatarUrl')
       .populate('offerId', 'title rewardAmount')
       .sort({ updatedAt: -1 })
-      .limit(parseInt(limit))
+      .limit(fetchAmount)
       .lean();
 
     const customOfferProofs = processedSubs.map(sub => ({
@@ -1628,7 +1632,7 @@ router.get('/proofs/history', requirePermission('manage_offerwalls'), async (req
     })
       .populate('userId', 'displayName email avatarUrl')
       .sort({ updatedAt: -1 })
-      .limit(parseInt(limit))
+      .limit(fetchAmount)
       .lean();
 
     const transactionProofs = processedTxs.map(tx => ({
@@ -1645,11 +1649,22 @@ router.get('/proofs/history', requirePermission('manage_offerwalls'), async (req
     }));
 
     // Combine and Sort by updated date (newest first)
-    const allProofs = [...customOfferProofs, ...transactionProofs].sort(
+    const combinedProofs = [...customOfferProofs, ...transactionProofs].sort(
       (a, b) => new Date(b.submittedAt) - new Date(a.submittedAt)
-    ).slice(0, parseInt(limit));
+    );
 
-    res.status(200).json({ success: true, proofs: allProofs });
+    const hasMore = combinedProofs.length > (skipNum + limitNum);
+    const paginatedProofs = combinedProofs.slice(skipNum, skipNum + limitNum);
+
+    res.status(200).json({ 
+      success: true, 
+      proofs: paginatedProofs,
+      pagination: {
+        page: pageNum,
+        limit: limitNum,
+        hasMore
+      }
+    });
   } catch (error) {
     console.error('[/api/admin/proofs/history] Error:', error);
     res.status(500).json({ success: false, error: 'Failed to fetch proof history' });

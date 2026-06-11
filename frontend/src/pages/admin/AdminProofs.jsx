@@ -345,6 +345,8 @@ const AdminProofs = () => {
   const [activeTab, setActiveTab] = useState('pending'); // 'pending' or 'history'
   const [proofs, setProofs] = useState([]);
   const [historyProofs, setHistoryProofs] = useState([]);
+  const [historyPage, setHistoryPage] = useState(1);
+  const [historyHasMore, setHistoryHasMore] = useState(false);
   const [loading, setLoading] = useState(true);
   const [refreshToken, setRefreshToken] = useState(0);
   const [error, setError] = useState(null);
@@ -375,12 +377,13 @@ const AdminProofs = () => {
       }
 
       // Fetch History Proofs
-      const histRes = await fetch(`${API}/admin/proofs/history?limit=50`, {
+      const histRes = await fetch(`${API}/admin/proofs/history?page=${historyPage}&limit=5`, {
         headers: { Authorization: `Bearer ${t}` },
       });
       const histData = await histRes.json();
       if (histData.success) {
         setHistoryProofs(histData.proofs);
+        setHistoryHasMore(histData.pagination?.hasMore || false);
       }
     } catch (e) {
       console.error('Failed to load proofs:', e);
@@ -392,7 +395,7 @@ const AdminProofs = () => {
     if (!token) return;
     setLoading(true);
     fetchProofs(token).finally(() => setLoading(false));
-  }, [token, fetchProofs, refreshToken]);
+  }, [token, fetchProofs, refreshToken, historyPage]);
 
   const handleAction = (id, actionStatus, message) => {
     setProofs((prev) => prev.filter((p) => p._id !== id));
@@ -520,7 +523,7 @@ const AdminProofs = () => {
             <div className="px-5 py-4 border-b border-white/[0.06] flex items-center justify-between">
               <h2 className="text-sm font-bold text-white">Processed Proofs</h2>
               <span className="px-2 py-0.5 rounded-md bg-white/[0.04] text-xs font-mono text-slate-400">
-                Recent 50
+                Page {historyPage}
               </span>
             </div>
 
@@ -545,6 +548,27 @@ const AdminProofs = () => {
                     onError={(msg) => showToast(msg, 'error')}
                   />
                 ))}
+              </div>
+            )}
+            
+            {/* Pagination Controls */}
+            {(historyPage > 1 || historyHasMore) && (
+              <div className="px-5 py-4 border-t border-white/[0.06] flex items-center justify-between">
+                <button
+                  disabled={historyPage === 1}
+                  onClick={() => setHistoryPage((p) => Math.max(1, p - 1))}
+                  className="px-4 py-2 rounded-lg bg-white/[0.04] border border-white/[0.08] text-slate-300 hover:text-white hover:bg-white/[0.08] transition-all text-xs font-semibold disabled:opacity-30"
+                >
+                  Previous
+                </button>
+                <span className="text-xs text-slate-400 font-mono">Page {historyPage}</span>
+                <button
+                  disabled={!historyHasMore}
+                  onClick={() => setHistoryPage((p) => p + 1)}
+                  className="px-4 py-2 rounded-lg bg-white/[0.04] border border-white/[0.08] text-slate-300 hover:text-white hover:bg-white/[0.08] transition-all text-xs font-semibold disabled:opacity-30"
+                >
+                  Next
+                </button>
               </div>
             )}
           </>
