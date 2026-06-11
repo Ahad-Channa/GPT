@@ -1266,11 +1266,23 @@ router.post('/earnings-holds/release-now', requirePermission('manage_withdrawals
       tx.metadata = { ...tx.metadata, releasedAt: new Date().toISOString(), releasedBy: 'manual_admin' };
       await tx.save();
 
+      // Extract offer title from tx.description
+      let offerTitle = tx.description || 'an offer';
+      if (tx.description) {
+        if (tx.description.includes('Custom Offer Reward: ')) {
+          offerTitle = tx.description.replace('Custom Offer Reward: ', '');
+        } else if (tx.description.includes('Reward for custom offer: ')) {
+          offerTitle = tx.description.replace('Reward for custom offer: ', '');
+        } else if (tx.description.includes('Manual reward: ')) {
+          offerTitle = tx.description.replace('Manual reward: ', '');
+        }
+      }
+
       await notify(
         user._id,
         'earning_released',
         'Held Earnings Released!',
-        `Your held earning of +${tx.amount} coins is now available in your wallet!`,
+        `Your held reward for "${offerTitle}" has been released! +${tx.amount} coins have been credited to your wallet.`,
         { amount: tx.amount, txId: tx._id }
       );
 
@@ -1581,6 +1593,176 @@ router.get('/proofs', requirePermission('manage_offerwalls'), async (req, res) =
   } catch (error) {
     console.error('[/api/admin/proofs] Error:', error);
     res.status(500).json({ success: false, error: 'Failed to fetch proofs' });
+  }
+});
+
+router.get('/proofs/history', requirePermission('manage_offerwalls'), async (req, res) => {
+  try {
+    const { page = 1, limit = 50 } = req.query;
+    
+    // 1. Get Processed Custom Offer Submissions
+    const processedSubs = await CustomOfferSubmission.find({ status: { $in: ['approved', 'rejected', 'chargebacked'] } })
+      .populate('userId', 'displayName email avatarUrl')
+      .populate('offerId', 'title rewardAmount')
+      .sort({ updatedAt: -1 })
+      .limit(parseInt(limit))
+      .lean();
+
+    const customOfferProofs = processedSubs.map(sub => ({
+      _id: sub._id,
+      type: 'custom_offer',
+      status: sub.status,
+      user: sub.userId,
+      offerTitle: sub.offerId ? sub.offerId.title : 'Unknown Offer',
+      rewardAmount: sub.offerId ? sub.offerId.rewardAmount : 0,
+      proofText: sub.proofText,
+      proofImage: sub.proofImage,
+      submittedAt: sub.updatedAt,
+      adminNote: sub.adminNote
+    }));
+
+    // 2. Get Processed Transaction Proofs
+    const processedTxs = await Transaction.find({
+      status: { $in: ['completed', 'rejected', 'hold', 'reversed'] },
+      'metadata.userProof': { $exists: true }
+    })
+      .populate('userId', 'displayName email avatarUrl')
+      .sort({ updatedAt: -1 })
+      .limit(parseInt(limit))
+      .lean();
+
+    const transactionProofs = processedTxs.map(tx => ({
+      _id: tx._id,
+      type: 'transaction',
+      status: tx.status,
+      user: tx.userId,
+      offerTitle: tx.description || 'General Offer',
+      rewardAmount: tx.amount,
+      proofText: tx.metadata?.userProof?.text || '',
+      proofImage: tx.metadata?.userProof?.imageUrl || '',
+      submittedAt: tx.updatedAt,
+      adminNote: tx.metadata?.adminNote
+    }));
+
+    // Combine and Sort by updated date (newest first)
+    const allProofs = [...customOfferProofs, ...transactionProofs].sort(
+      (a, b) => new Date(b.submittedAt) - new Date(a.submittedAt)
+    ).slice(0, parseInt(limit));
+
+    res.status(200).json({ success: true, proofs: allProofs });
+  } catch (error) {
+    console.error('[/api/admin/proofs/history] Error:', error);
+    res.status(500).json({ success: false, error: 'Failed to fetch proof history' });
+  }
+});
+
+router.post('/proofs/:type/:id/chargeback', requirePermission('manage_offerwalls'), async (req, res) => {
+  try {
+    const { type, id } = req.params;
+
+    let targetUserId = null;
+    let targetAmount = 0;
+    let targetTxId = null;
+
+    if (type === 'custom_offer') {
+      const submission = await CustomOfferSubmission.findById(id).populate('offerId');
+      if (!submission) return res.status(404).json({ success: false, error: 'Submission not found' });
+      if (submission.status !== 'approved') return res.status(400).json({ success: false, error: 'Only approved proofs can be charged back' });
+
+      targetUserId = submission.userId;
+      targetAmount = submission.offerId ? submission.offerId.rewardAmount : 0;
+
+      // Find the associated transaction
+      const offerTx = await Transaction.findOne({
+        userId: targetUserId,
+        transactionType: 'custom_offer_reward',
+        sourceId: submission.offerId._id,
+        status: { $in: ['completed', 'hold'] }
+      }).sort({ createdAt: -1 });
+
+      if (offerTx) {
+        targetTxId = offerTx._id;
+      } else {
+        return res.status(400).json({ success: false, error: 'Original transaction not found, cannot charge back.' });
+      }
+
+      submission.status = 'chargebacked';
+      await submission.save();
+
+    } else if (type === 'transaction') {
+      const tx = await Transaction.findById(id);
+      if (!tx || !['completed', 'hold'].includes(tx.status)) {
+        return res.status(400).json({ success: false, error: 'Proof cannot be charged back. Must be completed or hold.' });
+      }
+
+      targetUserId = tx.userId;
+      targetAmount = tx.amount;
+      targetTxId = tx._id;
+    } else {
+      return res.status(400).json({ success: false, error: 'Invalid type' });
+    }
+
+    // Process the chargeback logic
+    if (targetTxId) {
+      const parentTx = await Transaction.findById(targetTxId);
+      if (parentTx && parentTx.status !== 'reversed') {
+        const user = await User.findById(targetUserId);
+        if (user) {
+          if (parentTx.status === 'completed') {
+             user.walletBalance = Math.max(0, user.walletBalance - Math.abs(parentTx.amount));
+          }
+          user.totalEarned = Math.max(0, (user.totalEarned || 0) - Math.abs(parentTx.amount));
+          await user.save();
+          emitWalletUpdate(user.firebaseUid, user.walletBalance);
+        }
+
+        parentTx.status = 'reversed';
+        await parentTx.save();
+
+        const cbTx = new Transaction({
+          userId: targetUserId,
+          transactionType: 'chargeback',
+          amount: -Math.abs(parentTx.amount),
+          balanceAfter: user ? user.walletBalance : 0,
+          sourceType: 'chargeback',
+          linkedTransactionId: parentTx._id,
+          description: `Chargeback for: ${parentTx.description || 'Offer Completion'}`,
+          status: 'completed',
+          metadata: { adminNote: 'Proof chargebacked' }
+        });
+        await cbTx.save();
+
+        await createLog(req.dbUser._id, 'PROCESS_PROOF_CHARGEBACK', targetUserId, {
+          txId: parentTx._id,
+          amount: -Math.abs(parentTx.amount),
+        });
+
+        await notify(targetUserId, 'chargeback', 'Offer Chargeback', `A previously approved offer reward was charged back and -${Math.abs(parentTx.amount)} coins were deducted.`, { txId: parentTx._id, amount: -Math.abs(parentTx.amount) });
+
+        // Cascade to linked transactions (e.g. referrals)
+        const linkedTxs = await Transaction.find({ linkedTransactionId: parentTx._id, status: { $ne: 'reversed' } });
+        for (const linkedTx of linkedTxs) {
+          if (linkedTx.transactionType === 'referral_reward') {
+            if (linkedTx.status === 'hold') {
+              await User.findByIdAndUpdate(linkedTx.userId, { $inc: { referralEarnings: -linkedTx.amount } });
+            } else {
+              await User.findByIdAndUpdate(linkedTx.userId, { $inc: { walletBalance: -linkedTx.amount, referralEarnings: -linkedTx.amount } });
+            }
+            await User.findByIdAndUpdate(targetUserId, { $inc: { commissionGenerated: -linkedTx.amount } });
+          } else {
+            await User.findByIdAndUpdate(linkedTx.userId, { $inc: { walletBalance: -linkedTx.amount } });
+          }
+          linkedTx.status = 'reversed';
+          await linkedTx.save();
+        }
+      }
+    }
+
+    res.json({ success: true, message: 'Chargeback processed successfully' });
+
+  } catch (error) {
+    console.error('[/api/admin/proofs/chargeback] Error:', error);
+    res.status(500).json({ success: false, error: 'Failed to process chargeback' });
   }
 });
 

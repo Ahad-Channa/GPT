@@ -26,6 +26,7 @@ const TX_TYPES = {
   leaderboard_reward: { label: 'Leaderboard Reward',  icon: FiAward,          color: 'text-violet-400',  badge: 'badge-violet',   sign: '+' },
   vip_reward:         { label: 'VIP Reward',           icon: FiStar,           color: 'text-yellow-400',  badge: 'badge-amber',    sign: '+' },
   mission_reward:     { label: 'Mission Reward',       icon: FiShield,         color: 'text-sky-400',     badge: 'badge-cyan',     sign: '+' },
+  chargeback:         { label: 'Chargeback',           icon: FiSettings,       color: 'text-rose-400',    badge: 'badge-red',      sign: '' },
 };
 
 const STATUS_COLORS = {
@@ -33,6 +34,7 @@ const STATUS_COLORS = {
   pending:   { text: 'text-amber-400',   dot: 'bg-amber-400 animate-pulse' },
   failed:    { text: 'text-red-400',     dot: 'bg-red-400' },
   rejected:  { text: 'text-red-400',     dot: 'bg-red-400' },
+  reversed:  { text: 'text-slate-400',   dot: 'bg-slate-400' },
 };
 
 const FILTER_OPTIONS = [
@@ -47,6 +49,7 @@ const FILTER_OPTIONS = [
   { value: 'leaderboard_reward',  label: 'Leaderboard' },
   { value: 'vip_reward',          label: 'VIP Rewards' },
   { value: 'mission_reward',      label: 'Missions' },
+  { value: 'chargeback',          label: 'Chargebacks' },
 ];
 
 function formatRelativeTime(dateStr) {

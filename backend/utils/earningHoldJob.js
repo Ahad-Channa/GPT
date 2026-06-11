@@ -50,12 +50,24 @@ cron.schedule('0 0 * * *', async () => {
       };
       await tx.save();
 
+      // Extract offer title from tx.description
+      let offerTitle = tx.description || 'an offer';
+      if (tx.description) {
+        if (tx.description.includes('Custom Offer Reward: ')) {
+          offerTitle = tx.description.replace('Custom Offer Reward: ', '');
+        } else if (tx.description.includes('Reward for custom offer: ')) {
+          offerTitle = tx.description.replace('Reward for custom offer: ', '');
+        } else if (tx.description.includes('Manual reward: ')) {
+          offerTitle = tx.description.replace('Manual reward: ', '');
+        }
+      }
+
       // 3. Notify the user that their held earning is now available
       await notify(
         user._id,
-        'offer_reward',
+        'earning_released',
         'Earning Hold Released!',
-        `Your held reward of +${tx.amount} coins is now available in your wallet!`,
+        `Your held reward for "${offerTitle}" has been released! +${tx.amount} coins have been credited to your wallet.`,
         { amount: tx.amount, txId: tx._id }
       );
       

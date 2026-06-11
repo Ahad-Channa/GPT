@@ -22,6 +22,7 @@ const getNotificationIcon = (type, metadata) => {
         case 'admin_announcement':
             return <FiMessageSquare className="text-violet-400 mt-0.5" size={18} />;
         case 'offer_rejected':
+        case 'chargeback':
             return <FiAlertCircle className="text-rose-400 mt-0.5" size={18} />;
         case 'mission_reward':
         case 'mission_completed':

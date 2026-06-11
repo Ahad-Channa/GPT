@@ -284,6 +284,7 @@ const TX_TYPE_LABEL = {
   leaderboard_reward: { label: 'Leaderboard', color: 'text-violet-400' },
   vip_reward: { label: 'VIP Reward', color: 'text-yellow-400' },
   mission_reward: { label: 'Mission', color: 'text-sky-400' },
+  chargeback: { label: 'Chargeback', color: 'text-rose-400' },
 };
 
 const STATUS_DOT = {
@@ -291,6 +292,7 @@ const STATUS_DOT = {
   pending: 'bg-amber-400 animate-pulse',
   rejected: 'bg-rose-400',
   failed: 'bg-rose-400',
+  reversed: 'bg-slate-400',
 };
 
 function timeAgo(dateStr) {

@@ -48,6 +48,7 @@ const UserDetailModal = ({ user, onClose, currentUser }) => {
       admin_adjustment: '#fb923c',
       leaderboard_reward: '#c084fc',
       custom_offer_reward: '#6ee7b7',
+      chargeback: '#f43f5e',
     };
     return map[type] || '#94a3b8';
   };
