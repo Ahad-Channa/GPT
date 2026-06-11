@@ -1235,6 +1235,53 @@ router.post('/referral-holds/release-now', requirePermission('manage_withdrawals
   }
 });
 
+// POST /api/admin/earnings-holds/release-now
+// Force release all earnings holds (custom offers, offerwalls, etc.)
+router.post('/earnings-holds/release-now', requirePermission('manage_withdrawals'), async (req, res) => {
+  try {
+    const eligibleHolds = await Transaction.find({
+      transactionType: { $ne: 'referral_reward' },
+      status: 'hold',
+    });
+
+    if (eligibleHolds.length === 0) {
+      return res.json({ success: true, releasedCount: 0, message: 'No earnings holds to release right now.' });
+    }
+
+    let releasedCount = 0;
+    for (const tx of eligibleHolds) {
+      const user = await User.findById(tx.userId);
+      if (!user) continue;
+
+      user.walletBalance = Math.max(0, (user.walletBalance || 0) + tx.amount);
+      await user.save();
+
+      emitWalletUpdate(user.firebaseUid, user.walletBalance);
+
+      tx.status = 'completed';
+      tx.balanceAfter = user.walletBalance;
+      tx.metadata = { ...tx.metadata, releasedAt: new Date().toISOString(), releasedBy: 'manual_admin' };
+      await tx.save();
+
+      await notify(
+        user._id,
+        'earning_released',
+        'Held Earnings Released!',
+        `Your held earning of +${tx.amount} coins is now available in your wallet!`,
+        { amount: tx.amount, txId: tx._id }
+      );
+
+      releasedCount++;
+    }
+
+    await createLog(req.dbUser._id, 'MANUAL_EARNINGS_HOLD_RELEASE', null, { releasedCount });
+    res.json({ success: true, releasedCount, message: `Released ${releasedCount} earnings hold(s) successfully.` });
+  } catch (error) {
+    console.error('[Admin] Manual earnings hold release failed:', error);
+    res.status(500).json({ success: false, error: 'Failed to release earnings holds.' });
+  }
+});
+
 // ----------------------------------------------------
 // REFERRAL DIAGNOSTICS
 // GET /api/admin/referral-debug/:userId

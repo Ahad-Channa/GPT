@@ -96,6 +96,7 @@ const AdminSettings = () => {
   const [error,    setError]   = useState('');
   const [success,  setSuccess] = useState('');
   const [releaseLoading, setReleaseLoading] = useState(false);
+  const [releaseEarningsLoading, setReleaseEarningsLoading] = useState(false);
 
   /* ── Fetch current settings ─────────────────── */
   const fetchSettings = useCallback(async () => {
@@ -234,8 +235,8 @@ const AdminSettings = () => {
 
   /* ── Manual Earnings Hold Release ──────────────── */
   const handleReleaseEarningsHolds = async () => {
-    if (releaseLoading) return;
-    setReleaseLoading(true);
+    if (releaseEarningsLoading) return;
+    setReleaseEarningsLoading(true);
     try {
       const token = await currentUser.getIdToken();
       const res = await fetch(
@@ -252,7 +253,7 @@ const AdminSettings = () => {
     } catch (err) {
       toast.error(err.message || 'Failed to release earnings holds');
     } finally {
-      setReleaseLoading(false);
+      setReleaseEarningsLoading(false);
     }
   };
 
@@ -522,7 +523,7 @@ const AdminSettings = () => {
         <div style={{ marginTop: '0.5rem' }}>
           <button
             onClick={handleReleaseEarningsHolds}
-            disabled={releaseLoading}
+            disabled={releaseEarningsLoading}
             style={{
               width: '100%',
               display: 'flex',
@@ -531,12 +532,12 @@ const AdminSettings = () => {
               gap: '0.5rem',
               padding: '0.65rem 1rem',
               borderRadius: '10px',
-              background: releaseLoading
+              background: releaseEarningsLoading
                 ? 'rgba(16,185,129,0.05)'
                 : 'linear-gradient(135deg, rgba(16,185,129,0.15), rgba(5,150,105,0.2))',
               border: '1px solid rgba(16,185,129,0.3)',
-              color: releaseLoading ? '#475569' : '#34d399',
-              cursor: releaseLoading ? 'not-allowed' : 'pointer',
+              color: releaseEarningsLoading ? '#475569' : '#34d399',
+              cursor: releaseEarningsLoading ? 'not-allowed' : 'pointer',
               fontSize: '0.82rem',
               fontWeight: 700,
               fontFamily: 'Inter, system-ui, sans-serif',
@@ -544,7 +545,7 @@ const AdminSettings = () => {
               letterSpacing: '0.02em',
             }}
           >
-            {releaseLoading
+            {releaseEarningsLoading
               ? <><FiLoader style={{ animation: 'spin 1s linear infinite' }} /> Releasing...</>
               : <><FiZap style={{ fontSize: '0.9rem' }} /> Force Release All Earnings Holds Now</>
             }
