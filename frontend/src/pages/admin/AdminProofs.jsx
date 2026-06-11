@@ -552,7 +552,7 @@ const AdminProofs = () => {
             )}
             
             {/* Pagination Controls */}
-            {(historyPage > 1 || historyHasMore) && (
+            {historyProofs.length > 0 && (
               <div className="px-5 py-4 border-t border-white/[0.06] flex items-center justify-between">
                 <button
                   disabled={historyPage === 1}

@@ -103,8 +103,7 @@ const AdminLayout = () => {
         <div className="admin-brand">
           <img src="/coins/logo1.png" alt="Logo" className="h-16 w-auto object-contain" />
           <div>
-            <h2>GPT Admin</h2>
-            <p>{roleLabel}</p>
+            <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">{roleLabel}</p>
           </div>
         </div>
 
@@ -168,7 +167,7 @@ const AdminLayout = () => {
       <main className="admin-main">
         {/* Top Header */}
         <header className="admin-header">
-          <h3>GPT Management Console</h3>
+          <h3>TaskMint Management Console</h3>
           <div className="admin-user-info" style={{ display: 'flex', alignItems: 'center', gap: '1.25rem' }}>
             {isPrimaryAdmin && <span className="super-badge">Primary Admin</span>}
             {isSupportAgent && !isPrimaryAdmin && (
