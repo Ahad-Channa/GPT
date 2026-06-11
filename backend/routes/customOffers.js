@@ -93,7 +93,7 @@ router.post('/:id/submit', verifyToken, async (req, res) => {
       return res.status(400).json({ success: false, error: 'You have already submitted this offer' });
     }
 
-    if (existing.status === 'rejected' || existing.status === 'started') {
+    if (existing.status === 'rejected' || existing.status === 'started' || existing.status === 'chargebacked') {
       existing.proofText = proofText || '';
       existing.proofImage = proofImage || '';
       existing.status = 'pending';

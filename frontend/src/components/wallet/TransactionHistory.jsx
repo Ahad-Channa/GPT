@@ -232,7 +232,7 @@ const TransactionHistory = ({ refreshKey = 0, onStatsLoaded }) => {
                   {/* Amount + time */}
                   <div className="text-right flex-shrink-0">
                     <p className={`text-sm font-bold ${isDebit ? 'text-red-400' : 'text-emerald-400'}`}>
-                      {isDebit ? '' : '+'}{tx.amount.toLocaleString()}
+                      {isDebit ? '-' : '+'}{Math.abs(tx.amount).toLocaleString()}
                     </p>
                     <p className="text-[10px] text-slate-600 mt-0.5">{formatRelativeTime(tx.createdAt)}</p>
                   </div>

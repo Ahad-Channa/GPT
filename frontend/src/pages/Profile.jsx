@@ -370,7 +370,7 @@ const HistoryList = ({ transactions, loading, error, hasMore, onLoadMore, loadin
             isDebit = tx.amount < 0;
             dotClass = STATUS_DOT[tx.status] || STATUS_DOT.completed;
             description = tx.description;
-            amountStr = `${isDebit ? '' : '+'}${Math.abs(tx.amount).toLocaleString()}`;
+            amountStr = `${isDebit ? '-' : '+'}${Math.abs(tx.amount).toLocaleString()}`;
           }
 
           return (

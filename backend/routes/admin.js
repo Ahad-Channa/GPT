@@ -1728,7 +1728,7 @@ router.post('/proofs/:type/:id/chargeback', requirePermission('manage_offerwalls
         const user = await User.findById(targetUserId);
         if (user) {
           if (parentTx.status === 'completed') {
-             user.walletBalance = Math.max(0, user.walletBalance - Math.abs(parentTx.amount));
+             user.walletBalance = user.walletBalance - Math.abs(parentTx.amount);
           }
           user.totalEarned = Math.max(0, (user.totalEarned || 0) - Math.abs(parentTx.amount));
           await user.save();
@@ -1761,18 +1761,35 @@ router.post('/proofs/:type/:id/chargeback', requirePermission('manage_offerwalls
         // Cascade to linked transactions (e.g. referrals)
         const linkedTxs = await Transaction.find({ linkedTransactionId: parentTx._id, status: { $ne: 'reversed' } });
         for (const linkedTx of linkedTxs) {
+          let updatedRefUser = null;
           if (linkedTx.transactionType === 'referral_reward') {
             if (linkedTx.status === 'hold') {
-              await User.findByIdAndUpdate(linkedTx.userId, { $inc: { referralEarnings: -linkedTx.amount } });
+              updatedRefUser = await User.findByIdAndUpdate(linkedTx.userId, { $inc: { referralEarnings: -linkedTx.amount } }, { new: true });
             } else {
-              await User.findByIdAndUpdate(linkedTx.userId, { $inc: { walletBalance: -linkedTx.amount, referralEarnings: -linkedTx.amount } });
+              updatedRefUser = await User.findByIdAndUpdate(linkedTx.userId, { $inc: { walletBalance: -linkedTx.amount, referralEarnings: -linkedTx.amount } }, { new: true });
             }
             await User.findByIdAndUpdate(targetUserId, { $inc: { commissionGenerated: -linkedTx.amount } });
           } else {
-            await User.findByIdAndUpdate(linkedTx.userId, { $inc: { walletBalance: -linkedTx.amount } });
+            updatedRefUser = await User.findByIdAndUpdate(linkedTx.userId, { $inc: { walletBalance: -linkedTx.amount } }, { new: true });
           }
           linkedTx.status = 'reversed';
           await linkedTx.save();
+          
+          if (updatedRefUser) {
+            const refCbTx = new Transaction({
+              userId: linkedTx.userId,
+              transactionType: 'chargeback',
+              amount: -Math.abs(linkedTx.amount),
+              balanceAfter: updatedRefUser.walletBalance,
+              sourceType: 'chargeback',
+              linkedTransactionId: linkedTx._id,
+              description: `Reversal of: ${linkedTx.description || 'Commission'}`,
+              status: 'completed',
+              metadata: { adminNote: 'Original offer chargebacked' }
+            });
+            await refCbTx.save();
+            emitWalletUpdate(updatedRefUser.firebaseUid, updatedRefUser.walletBalance);
+          }
         }
       }
     }
