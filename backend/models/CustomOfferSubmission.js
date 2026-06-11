@@ -16,7 +16,7 @@ const customOfferSubmissionSchema = new mongoose.Schema(
     proofImage: { type: String, default: '' }, // Support Base64 Image or URL
     status: {
       type: String,
-      enum: ['started', 'pending', 'approved', 'rejected'],
+      enum: ['started', 'pending', 'approved', 'rejected', 'chargebacked'],
       default: 'started'
     },
     adminNote: { type: String, default: '' }

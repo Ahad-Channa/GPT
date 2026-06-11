@@ -1688,12 +1688,16 @@ router.post('/proofs/:type/:id/chargeback', requirePermission('manage_offerwalls
       targetAmount = submission.offerId ? submission.offerId.rewardAmount : 0;
 
       // Find the associated transaction
-      const offerTx = await Transaction.findOne({
+      let query = {
         userId: targetUserId,
         transactionType: 'custom_offer_reward',
-        sourceId: submission.offerId._id,
         status: { $in: ['completed', 'hold'] }
-      }).sort({ createdAt: -1 });
+      };
+      if (submission.offerId && submission.offerId._id) {
+        query.sourceId = submission.offerId._id;
+      }
+      
+      const offerTx = await Transaction.findOne(query).sort({ createdAt: -1 });
 
       if (offerTx) {
         targetTxId = offerTx._id;
