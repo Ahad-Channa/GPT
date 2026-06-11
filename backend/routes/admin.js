@@ -1556,7 +1556,20 @@ router.post('/proofs/:type/:id/:action', requirePermission('manage_offerwalls'),
         const user = await User.findById(submission.userId);
         if (user) {
           const offerAmount = submission.offerId.rewardAmount;
-          user.walletBalance = (user.walletBalance || 0) + offerAmount;
+          
+          const settings = await Settings.getSingleton();
+          let txStatus = 'completed';
+          let creditBalance = offerAmount;
+          let holdDate = null;
+
+          if (settings.earningHoldConfig?.enabled && offerAmount >= settings.earningHoldConfig.threshold) {
+            txStatus = 'hold';
+            creditBalance = 0; // do not add to wallet yet
+            holdDate = new Date();
+            holdDate.setDate(holdDate.getDate() + (settings.earningHoldConfig.holdDays || 30));
+          }
+
+          user.walletBalance = (user.walletBalance || 0) + creditBalance;
           user.totalEarned = (user.totalEarned || 0) + offerAmount;
           await user.save();
           emitWalletUpdate(user.firebaseUid, user.walletBalance);
@@ -1567,7 +1580,10 @@ router.post('/proofs/:type/:id/:action', requirePermission('manage_offerwalls'),
             balanceAfter: user.walletBalance,
             transactionType: 'custom_offer_reward',
             description: `Reward for custom offer: ${submission.offerId.title}`,
-            status: 'completed'
+            status: txStatus,
+            holdUntil: holdDate,
+            sourceType: 'offer',
+            sourceId: submission.offerId._id,
           });
 
           await notify(user._id, 'offer_approved', 'Offer Approved', `Your proof for "${submission.offerId.title}" was approved! +${offerAmount} coins.`);
@@ -1677,8 +1693,22 @@ router.post('/proofs/:type/:id/:action', requirePermission('manage_offerwalls'),
       if (!user) return res.status(404).json({ success: false, error: 'User not found' });
 
       if (action === 'approve') {
-        tx.status = 'completed';
-        user.walletBalance = (user.walletBalance || 0) + tx.amount;
+        const settings = await Settings.getSingleton();
+        let txStatus = 'completed';
+        let creditBalance = tx.amount;
+        let holdDate = null;
+
+        if (settings.earningHoldConfig?.enabled && tx.amount >= settings.earningHoldConfig.threshold) {
+          txStatus = 'hold';
+          creditBalance = 0;
+          holdDate = new Date();
+          holdDate.setDate(holdDate.getDate() + (settings.earningHoldConfig.holdDays || 30));
+        }
+
+        tx.status = txStatus;
+        if (holdDate) tx.holdUntil = holdDate;
+
+        user.walletBalance = (user.walletBalance || 0) + creditBalance;
         user.totalEarned = (user.totalEarned || 0) + tx.amount;
         await user.save();
         emitWalletUpdate(user.firebaseUid, user.walletBalance);
