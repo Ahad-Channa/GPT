@@ -19,6 +19,10 @@ const avatarSchema = new mongoose.Schema(
     price: {
       type: Number,
       default: 0
+    },
+    quantity: {
+      type: Number,
+      default: null // null means unlimited
     }
   },
   { timestamps: true }

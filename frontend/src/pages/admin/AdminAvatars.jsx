@@ -12,8 +12,9 @@ export default function AdminAvatars() {
   
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingAvatar, setEditingAvatar] = useState(null);
+  const [totalCoinsEarned, setTotalCoinsEarned] = useState(0);
   
-  const [formData, setFormData] = useState({ name: '', isPremium: false, price: 0 });
+  const [formData, setFormData] = useState({ name: '', isPremium: false, price: 0, quantity: '' });
   const [file, setFile] = useState(null);
   const [saving, setSaving] = useState(false);
 
@@ -30,6 +31,7 @@ export default function AdminAvatars() {
       const data = await res.json();
       if (data.success) {
         setAvatars(data.avatars);
+        setTotalCoinsEarned(data.totalCoinsEarned || 0);
       } else {
         toast.error('Failed to load avatars');
       }
@@ -43,11 +45,11 @@ export default function AdminAvatars() {
   const openModal = (avatar = null) => {
     if (avatar) {
       setEditingAvatar(avatar);
-      setFormData({ name: avatar.name, isPremium: avatar.isPremium, price: avatar.price });
+      setFormData({ name: avatar.name, isPremium: avatar.isPremium, price: avatar.price, quantity: avatar.quantity === null || avatar.quantity === undefined ? '' : avatar.quantity });
       setFile(null);
     } else {
       setEditingAvatar(null);
-      setFormData({ name: '', isPremium: false, price: 0 });
+      setFormData({ name: '', isPremium: false, price: 0, quantity: '' });
       setFile(null);
     }
     setIsModalOpen(true);
@@ -76,6 +78,11 @@ export default function AdminAvatars() {
       fd.append('name', formData.name);
       fd.append('isPremium', formData.isPremium);
       fd.append('price', formData.price);
+      if (formData.quantity !== '') {
+        fd.append('quantity', formData.quantity);
+      } else {
+        fd.append('quantity', 'null');
+      }
       if (file) {
         fd.append('image', file);
       }
@@ -129,6 +136,10 @@ export default function AdminAvatars() {
         <div>
           <h1 className="text-2xl font-bold text-white">Avatar Shop Management</h1>
           <p className="text-slate-400 text-sm mt-1">Add, edit, or remove user avatars.</p>
+          <div className="mt-3 inline-flex items-center gap-2 px-3 py-1.5 bg-amber-500/10 border border-amber-500/20 rounded-lg">
+             <span className="text-amber-400 font-bold text-sm">Total Earned:</span>
+             <span className="text-amber-300 font-bold">{totalCoinsEarned.toLocaleString()} 🪙</span>
+          </div>
         </div>
         <button
           onClick={() => openModal()}
@@ -153,6 +164,9 @@ export default function AdminAvatars() {
             ) : (
               <div className="text-emerald-400 text-xs font-bold mt-1">FREE</div>
             )}
+            <div className="text-xs text-slate-400 mt-1">
+              {avatar.quantity === null || avatar.quantity === undefined ? 'Unlimited' : (avatar.quantity <= 0 ? <span className="text-rose-400 font-bold">Sold Out</span> : `${avatar.quantity} left`)}
+            </div>
 
             {/* Actions overlay */}
             <div className="absolute inset-0 bg-slate-900/80 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3 backdrop-blur-sm">
@@ -240,6 +254,18 @@ export default function AdminAvatars() {
                   />
                 </div>
               )}
+
+              <div>
+                <label className="block text-xs font-medium text-slate-400 uppercase tracking-wider mb-2">Quantity / Stock Limit</label>
+                <input
+                  type="number"
+                  min="0"
+                  value={formData.quantity}
+                  onChange={(e) => setFormData({...formData, quantity: e.target.value})}
+                  className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none"
+                  placeholder="Leave empty for unlimited"
+                />
+              </div>
 
               <div className="pt-4 flex justify-end gap-3">
                 <button

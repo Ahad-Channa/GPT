@@ -22,6 +22,10 @@ const CustomizationModal = ({ isOpen, onClose, mongoUser, token, setMongoUser })
   const [avatars, setAvatars] = useState([]);
   const [loadingAvatars, setLoadingAvatars] = useState(true);
   const [purchasingAvatar, setPurchasingAvatar] = useState(null);
+  
+  const [freePage, setFreePage] = useState(0);
+  const [premiumPage, setPremiumPage] = useState(0);
+  const ITEMS_PER_PAGE = 5;
 
   const fetchAvatars = async () => {
     setLoadingAvatars(true);
@@ -54,6 +58,10 @@ const CustomizationModal = ({ isOpen, onClose, mongoUser, token, setMongoUser })
   }, [isOpen, mongoUser]);
 
   const handleAvatarClick = (avatar) => {
+    if (avatar.quantity !== null && avatar.quantity <= 0 && !avatar.isUnlocked) {
+      toast.error('This avatar is sold out!');
+      return;
+    }
     if (avatar.isUnlocked) {
       setAvatarUrl(avatar.url);
       setPurchasingAvatar(null);
@@ -123,8 +131,61 @@ const CustomizationModal = ({ isOpen, onClose, mongoUser, token, setMongoUser })
 
   if (!isOpen) return null;
 
-  const ownedAvatars = avatars.filter(a => a.isUnlocked);
-  const lockedAvatars = avatars.filter(a => !a.isUnlocked);
+  const freeAvatars = avatars.filter(a => !a.isPremium);
+  const premiumAvatars = avatars.filter(a => a.isPremium);
+
+  const paginatedFree = freeAvatars.slice(freePage * ITEMS_PER_PAGE, (freePage + 1) * ITEMS_PER_PAGE);
+  const paginatedPremium = premiumAvatars.slice(premiumPage * ITEMS_PER_PAGE, (premiumPage + 1) * ITEMS_PER_PAGE);
+
+  const renderAvatar = (avatar) => {
+    const isEquipped = avatarUrl === avatar.url;
+    const isSelected = purchasingAvatar?._id === avatar._id;
+    const isSoldOut = avatar.quantity !== null && avatar.quantity <= 0 && !avatar.isUnlocked;
+
+    return (
+      <button
+        key={avatar._id}
+        onClick={() => handleAvatarClick(avatar)}
+        className={`relative group aspect-square rounded-2xl overflow-hidden border-2 transition-all duration-300 ${
+          isEquipped
+            ? 'border-indigo-500 shadow-[0_0_20px_rgba(79,70,229,0.3)] scale-105 z-10'
+            : isSelected
+              ? 'border-amber-500 shadow-[0_0_20px_rgba(245,158,11,0.3)] scale-105 z-10'
+              : 'border-white/5 hover:border-white/20 hover:scale-105'
+        } bg-[#151b2b] ${isSoldOut ? 'opacity-50 grayscale cursor-not-allowed' : ''}`}
+      >
+        <img src={avatar.url} alt={avatar.name} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
+        
+        {isEquipped && (
+          <div className="absolute inset-x-0 bottom-0 bg-indigo-500/90 py-1 text-[10px] font-bold text-white text-center backdrop-blur-sm">
+            EQUIPPED
+          </div>
+        )}
+        
+        {!avatar.isUnlocked && (
+          <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/40 backdrop-blur-[1px] group-hover:bg-black/20 transition-all">
+            <div className="bg-black/60 p-2 rounded-full mb-1 backdrop-blur-md border border-white/10">
+              <FiLock className="text-amber-400" size={16} />
+            </div>
+            {isSoldOut ? (
+              <span className="bg-rose-500/20 border border-rose-500/30 text-rose-300 text-[10px] font-bold px-2 py-0.5 rounded-full backdrop-blur-md">
+                SOLD OUT
+              </span>
+            ) : (
+              <span className="bg-amber-500/20 border border-amber-500/30 text-amber-300 text-[10px] font-bold px-2 py-0.5 rounded-full backdrop-blur-md">
+                {avatar.price}🪙
+              </span>
+            )}
+            {!isSoldOut && avatar.quantity !== null && avatar.quantity > 0 && (
+              <span className="mt-1 text-[9px] text-amber-100/70 font-semibold bg-black/50 px-1.5 rounded">
+                {avatar.quantity} left
+              </span>
+            )}
+          </div>
+        )}
+      </button>
+    );
+  };
 
   return createPortal(
     <div className="fixed inset-0 bg-black/80 backdrop-blur-md z-[999999] flex items-center justify-center p-4">
@@ -153,67 +214,62 @@ const CustomizationModal = ({ isOpen, onClose, mongoUser, token, setMongoUser })
             </div>
           ) : (
             <div className="space-y-10">
-              {/* Owned Avatars Section */}
-              {ownedAvatars.length > 0 && (
+              {/* Free Avatars Section */}
+              {freeAvatars.length > 0 && (
                 <section>
-                  <div className="flex items-center gap-3 mb-4">
-                    <h3 className="text-sm font-bold text-slate-300 uppercase tracking-wider">Your Collection</h3>
-                    <div className="h-px flex-1 bg-gradient-to-r from-white/10 to-transparent" />
+                  <div className="flex items-center justify-between gap-3 mb-4">
+                    <div className="flex items-center gap-3 flex-1">
+                      <h3 className="text-sm font-bold text-slate-300 uppercase tracking-wider">Free Avatars</h3>
+                      <div className="h-px flex-1 bg-gradient-to-r from-white/10 to-transparent" />
+                    </div>
+                    {freeAvatars.length > ITEMS_PER_PAGE && (
+                      <div className="flex gap-2">
+                        <button 
+                          onClick={() => setFreePage(Math.max(0, freePage - 1))}
+                          disabled={freePage === 0}
+                          className="px-2 py-1 bg-white/5 rounded hover:bg-white/10 disabled:opacity-30 text-xs font-bold text-slate-300"
+                        >Prev</button>
+                        <button 
+                          onClick={() => setFreePage(Math.min(Math.ceil(freeAvatars.length / ITEMS_PER_PAGE) - 1, freePage + 1))}
+                          disabled={(freePage + 1) * ITEMS_PER_PAGE >= freeAvatars.length}
+                          className="px-2 py-1 bg-white/5 rounded hover:bg-white/10 disabled:opacity-30 text-xs font-bold text-slate-300"
+                        >Next</button>
+                      </div>
+                    )}
                   </div>
-                  <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-4">
-                    {ownedAvatars.map((avatar) => (
-                      <button
-                        key={avatar._id}
-                        onClick={() => handleAvatarClick(avatar)}
-                        className={`relative group aspect-square rounded-2xl overflow-hidden border-2 transition-all duration-300 ${
-                          avatarUrl === avatar.url 
-                            ? 'border-indigo-500 shadow-[0_0_20px_rgba(79,70,229,0.3)] scale-105 z-10' 
-                            : 'border-white/5 hover:border-white/20 hover:scale-105'
-                        } bg-[#151b2b]`}
-                      >
-                        <img src={avatar.url} alt={avatar.name} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
-                        {avatarUrl === avatar.url && (
-                          <div className="absolute inset-x-0 bottom-0 bg-indigo-500/90 py-1 text-[10px] font-bold text-white text-center backdrop-blur-sm">
-                            EQUIPPED
-                          </div>
-                        )}
-                      </button>
-                    ))}
+                  <div className="grid grid-cols-5 gap-4">
+                    {paginatedFree.map(renderAvatar)}
                   </div>
                 </section>
               )}
 
-              {/* Locked/Premium Avatars Section */}
-              {lockedAvatars.length > 0 && (
+              {/* Premium Avatars Section */}
+              {premiumAvatars.length > 0 && (
                 <section>
-                  <div className="flex items-center gap-3 mb-4">
-                    <h3 className="text-sm font-bold text-slate-300 uppercase tracking-wider text-amber-400/90 flex items-center gap-2">
-                      <FiStar /> Premium Shop
-                    </h3>
-                    <div className="h-px flex-1 bg-gradient-to-r from-amber-500/20 to-transparent" />
+                  <div className="flex items-center justify-between gap-3 mb-4">
+                    <div className="flex items-center gap-3 flex-1">
+                      <h3 className="text-sm font-bold text-slate-300 uppercase tracking-wider text-amber-400/90 flex items-center gap-2">
+                        <FiStar /> Premium Shop
+                      </h3>
+                      <div className="h-px flex-1 bg-gradient-to-r from-amber-500/20 to-transparent" />
+                    </div>
+                    {premiumAvatars.length > ITEMS_PER_PAGE && (
+                      <div className="flex gap-2">
+                        <button 
+                          onClick={() => setPremiumPage(Math.max(0, premiumPage - 1))}
+                          disabled={premiumPage === 0}
+                          className="px-2 py-1 bg-amber-500/10 rounded hover:bg-amber-500/20 disabled:opacity-30 text-xs font-bold text-amber-400 border border-amber-500/20"
+                        >Prev</button>
+                        <button 
+                          onClick={() => setPremiumPage(Math.min(Math.ceil(premiumAvatars.length / ITEMS_PER_PAGE) - 1, premiumPage + 1))}
+                          disabled={(premiumPage + 1) * ITEMS_PER_PAGE >= premiumAvatars.length}
+                          className="px-2 py-1 bg-amber-500/10 rounded hover:bg-amber-500/20 disabled:opacity-30 text-xs font-bold text-amber-400 border border-amber-500/20"
+                        >Next</button>
+                      </div>
+                    )}
                   </div>
-                  <div className="grid grid-cols-3 sm:grid-cols-5 md:grid-cols-7 gap-4">
-                    {lockedAvatars.map((avatar) => (
-                      <button
-                        key={avatar._id}
-                        onClick={() => handleAvatarClick(avatar)}
-                        className={`relative group aspect-square rounded-2xl overflow-hidden border-2 transition-all duration-300 ${
-                          purchasingAvatar?._id === avatar._id
-                            ? 'border-amber-500 shadow-[0_0_20px_rgba(245,158,11,0.3)] scale-105 z-10'
-                            : 'border-transparent hover:border-amber-500/30 hover:scale-105'
-                        } bg-gradient-to-b from-[#1a2133] to-[#111624]`}
-                      >
-                        <img src={avatar.url} alt={avatar.name} className="w-full h-full object-cover opacity-60 group-hover:opacity-80 transition-opacity" />
-                        <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/40 backdrop-blur-[1px] group-hover:bg-black/20 transition-all">
-                          <div className="bg-black/60 p-2 rounded-full mb-1 backdrop-blur-md border border-white/10">
-                            <FiLock className="text-amber-400" size={16} />
-                          </div>
-                          <span className="bg-amber-500/20 border border-amber-500/30 text-amber-300 text-[10px] font-bold px-2 py-0.5 rounded-full backdrop-blur-md">
-                            {avatar.price}🪙
-                          </span>
-                        </div>
-                      </button>
-                    ))}
+                  <div className="grid grid-cols-5 gap-4">
+                    {paginatedPremium.map(renderAvatar)}
                   </div>
                 </section>
               )}

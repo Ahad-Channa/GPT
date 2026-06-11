@@ -938,6 +938,7 @@ router.get('/avatars', verifyToken, async (req, res) => {
         url: av.url,
         isPremium: av.isPremium,
         price: av.price,
+        quantity: av.quantity,
         isUnlocked
       };
     });
@@ -958,6 +959,10 @@ router.post('/avatars/buy/:id', verifyToken, async (req, res) => {
 
     const avatar = await Avatar.findById(req.params.id);
     if (!avatar) return res.status(404).json({ success: false, error: 'Avatar not found' });
+
+    if (avatar.quantity !== null && avatar.quantity <= 0) {
+      return res.status(400).json({ success: false, error: 'This avatar is sold out.' });
+    }
 
     // Check if already unlocked (uses .toString() for proper ObjectId comparison)
     const alreadyOwned = (user.unlockedAvatars || []).some(
@@ -990,6 +995,12 @@ router.post('/avatars/buy/:id', verifyToken, async (req, res) => {
     user.unlockedAvatars = user.unlockedAvatars || [];
     user.unlockedAvatars.push(avatar._id);
     await user.save();
+
+    // Decrement quantity if it's not unlimited
+    if (avatar.quantity !== null) {
+      avatar.quantity -= 1;
+      await avatar.save();
+    }
 
     res.json({ success: true, message: `Avatar "${avatar.name}" unlocked!`, walletBalance: user.walletBalance });
   } catch (error) {

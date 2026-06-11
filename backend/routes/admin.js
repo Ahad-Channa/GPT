@@ -2025,7 +2025,15 @@ router.post('/proofs/:type/:id/:action', requirePermission('manage_offerwalls'),
 router.get('/avatars', requirePermission('manage_users'), async (req, res) => {
   try {
     const avatars = await Avatar.find().sort({ createdAt: -1 });
-    res.json({ success: true, avatars });
+    
+    // Calculate total coins earned from avatar purchases
+    const earningsAggr = await Transaction.aggregate([
+      { $match: { transactionType: 'admin_adjustment', description: { $regex: /^Avatar Purchase:/ } } },
+      { $group: { _id: null, total: { $sum: '$amount' } } }
+    ]);
+    const totalCoinsEarned = earningsAggr.length > 0 ? Math.abs(earningsAggr[0].total) : 0;
+
+    res.json({ success: true, avatars, totalCoinsEarned });
   } catch (error) {
     console.error('[/api/admin/avatars GET] Error:', error);
     res.status(500).json({ success: false, error: 'Failed to fetch avatars' });
@@ -2035,7 +2043,7 @@ router.get('/avatars', requirePermission('manage_users'), async (req, res) => {
 // Create new avatar
 router.post('/avatars', requirePermission('manage_users'), upload.single('image'), async (req, res) => {
   try {
-    const { name, isPremium, price } = req.body;
+    const { name, isPremium, price, quantity } = req.body;
     let url = req.body.url;
 
     if (req.file) {
@@ -2046,11 +2054,17 @@ router.post('/avatars', requirePermission('manage_users'), upload.single('image'
       return res.status(400).json({ success: false, error: 'Image file or URL is required' });
     }
 
+    let parsedQuantity = null;
+    if (quantity !== undefined && quantity !== null && quantity !== '' && quantity !== 'null') {
+      parsedQuantity = Number(quantity);
+    }
+
     const avatar = new Avatar({
       name: name || 'Unnamed Avatar',
       url,
       isPremium: isPremium === 'true' || isPremium === true,
-      price: Number(price) || 0
+      price: Number(price) || 0,
+      quantity: parsedQuantity
     });
 
     await avatar.save();
@@ -2064,7 +2078,7 @@ router.post('/avatars', requirePermission('manage_users'), upload.single('image'
 // Update avatar
 router.put('/avatars/:id', requirePermission('manage_users'), upload.single('image'), async (req, res) => {
   try {
-    const { name, isPremium, price } = req.body;
+    const { name, isPremium, price, quantity } = req.body;
     const avatar = await Avatar.findById(req.params.id);
     
     if (!avatar) {
@@ -2074,6 +2088,14 @@ router.put('/avatars/:id', requirePermission('manage_users'), upload.single('ima
     if (name) avatar.name = name;
     if (isPremium !== undefined) avatar.isPremium = isPremium === 'true' || isPremium === true;
     if (price !== undefined) avatar.price = Number(price);
+    
+    if (quantity !== undefined) {
+      if (quantity === null || quantity === '' || quantity === 'null') {
+        avatar.quantity = null;
+      } else {
+        avatar.quantity = Number(quantity);
+      }
+    }
     
     if (req.file) {
       avatar.url = `/avatars/${req.file.filename}`;
