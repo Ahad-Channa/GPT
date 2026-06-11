@@ -1285,8 +1285,8 @@ const Profile = () => {
                         </div>
                       </div>
                       <div className="text-right">
-                        <p className="text-base font-black text-amber-400 flex items-center gap-1">
-                          +{offer.amount} 🪙
+                        <p className="text-base font-black text-emerald-400 flex items-center gap-1">
+                          +<CoinDisplay amount={offer.amount} size={16} />
                         </p>
                       </div>
                     </div>

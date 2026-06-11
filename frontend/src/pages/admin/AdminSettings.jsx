@@ -221,12 +221,36 @@ const AdminSettings = () => {
       const data = await res.json();
       if (!data.success) throw new Error(data.error);
       if (data.releasedCount === 0) {
-        toast('No matured holds found to release.', { icon: '💡' });
+        toast('No referral holds found to release.', { icon: '💡' });
       } else {
         toast.success(`✅ Released ${data.releasedCount} referral hold(s)! Wallets updated.`);
       }
     } catch (err) {
       toast.error(err.message || 'Failed to release holds');
+    } finally {
+      setReleaseLoading(false);
+    }
+  };
+
+  /* ── Manual Earnings Hold Release ──────────────── */
+  const handleReleaseEarningsHolds = async () => {
+    if (releaseLoading) return;
+    setReleaseLoading(true);
+    try {
+      const token = await currentUser.getIdToken();
+      const res = await fetch(
+        `${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/admin/earnings-holds/release-now`,
+        { method: 'POST', headers: { Authorization: `Bearer ${token}` } }
+      );
+      const data = await res.json();
+      if (!data.success) throw new Error(data.error);
+      if (data.releasedCount === 0) {
+        toast('No earnings holds found to release.', { icon: '💡' });
+      } else {
+        toast.success(`✅ Released ${data.releasedCount} earning hold(s)! Wallets updated.`);
+      }
+    } catch (err) {
+      toast.error(err.message || 'Failed to release earnings holds');
     } finally {
       setReleaseLoading(false);
     }
@@ -430,12 +454,12 @@ const AdminSettings = () => {
           >
             {releaseLoading
               ? <><FiLoader style={{ animation: 'spin 1s linear infinite' }} /> Releasing...</>
-              : <><FiZap style={{ fontSize: '0.9rem' }} /> Release All Matured Holds Now</>
+              : <><FiZap style={{ fontSize: '0.9rem' }} /> Force Release All Referral Holds Now</>
             }
           </button>
           <p style={{ fontSize: '0.7rem', color: '#475569', marginTop: '0.4rem', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
             <FiInfo style={{ flexShrink: 0 }} />
-            Instantly credits all referral commissions whose hold period has already passed.
+            Instantly credits all referral commissions to user wallets.
           </p>
         </div>
       </div>
@@ -493,6 +517,43 @@ const AdminSettings = () => {
             suffix="Days"
           />
         </Field>
+
+        {/* Release Earnings Holds Now Button */}
+        <div style={{ marginTop: '0.5rem' }}>
+          <button
+            onClick={handleReleaseEarningsHolds}
+            disabled={releaseLoading}
+            style={{
+              width: '100%',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '0.5rem',
+              padding: '0.65rem 1rem',
+              borderRadius: '10px',
+              background: releaseLoading
+                ? 'rgba(16,185,129,0.05)'
+                : 'linear-gradient(135deg, rgba(16,185,129,0.15), rgba(5,150,105,0.2))',
+              border: '1px solid rgba(16,185,129,0.3)',
+              color: releaseLoading ? '#475569' : '#34d399',
+              cursor: releaseLoading ? 'not-allowed' : 'pointer',
+              fontSize: '0.82rem',
+              fontWeight: 700,
+              fontFamily: 'Inter, system-ui, sans-serif',
+              transition: 'all 0.2s',
+              letterSpacing: '0.02em',
+            }}
+          >
+            {releaseLoading
+              ? <><FiLoader style={{ animation: 'spin 1s linear infinite' }} /> Releasing...</>
+              : <><FiZap style={{ fontSize: '0.9rem' }} /> Force Release All Earnings Holds Now</>
+            }
+          </button>
+          <p style={{ fontSize: '0.7rem', color: '#475569', marginTop: '0.4rem', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+            <FiInfo style={{ flexShrink: 0 }} />
+            Instantly credits all offerwall/custom earnings currently on hold to user wallets.
+          </p>
+        </div>
       </div>
 
       {/* ── Section 4: Daily Bonus ────────────── */}
