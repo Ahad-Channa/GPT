@@ -9,7 +9,7 @@
 
 @layer base {
   body {
-    background-color: #080b14;
+    background-color: #05100a;
     color: #c8d6ef;
     font-family: 'Inter', system-ui, sans-serif;
     font-feature-settings: 'cv01' 0, 'zero' 0; /* Disable slashed zeros in Inter and others */

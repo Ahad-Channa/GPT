@@ -1,41 +1,24 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { 
-  FiGithub, FiTwitter, FiDisc, FiArrowRight, FiUsers, FiDollarSign, FiZap, 
-  FiCheckCircle, FiTrendingUp, FiGift, FiLayers, FiActivity, FiShield, 
-  FiChevronDown, FiPlayCircle, FiStar, FiAward
+import {
+  FiArrowRight, FiUsers, FiDollarSign, FiZap,
+  FiCheckCircle, FiTrendingUp, FiGift, FiLayers, FiActivity, FiShield,
+  FiChevronDown, FiChevronUp, FiStar, FiAward, FiLock, FiLogIn, FiMonitor,
+  FiSmartphone, FiBarChart2, FiUserPlus, FiGrid, FiUserCheck, FiClipboard
 } from 'react-icons/fi';
-import { FaPaypal, FaAmazon, FaBitcoin } from 'react-icons/fa';
+import { LuGamepad2, LuBadgePercent } from 'react-icons/lu';
+import { FaPaypal, FaAmazon, FaBitcoin, FaDiscord, FaInstagram, FaYoutube, FaFacebook } from 'react-icons/fa';
 import { useAuth } from '../contexts/AuthContext';
 import Header from '../components/layout/Header';
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
-// Background Grid Component
-const CyberGrid = () => (
-  <div className="absolute inset-0 pointer-events-none opacity-[0.15]">
-    <div 
-      className="absolute inset-0"
-      style={{
-        backgroundImage: `
-          linear-gradient(to right, rgba(99, 102, 241, 0.4) 1px, transparent 1px),
-          linear-gradient(to bottom, rgba(99, 102, 241, 0.4) 1px, transparent 1px)
-        `,
-        backgroundSize: '40px 40px',
-        transform: 'perspective(500px) rotateX(60deg) translateY(-100px) translateZ(-200px)',
-        transformOrigin: 'top center',
-      }}
-    />
-    <div className="absolute inset-0 bg-gradient-to-t from-brand-dark via-brand-dark/80 to-transparent" />
-  </div>
-);
-
 const Landing = () => {
   const navigate = useNavigate();
   const { currentUser } = useAuth();
   const [stats, setStats] = useState({ totalUsers: 0, totalPaidOut: 0 });
-  const [activeFaq, setActiveFaq] = useState(null);
+  const [activeFaq, setActiveFaq] = useState(0);
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -48,7 +31,7 @@ const Landing = () => {
             totalPaidOut: data.totalPaidOut || 0
           });
         }
-      } catch(e) {
+      } catch (e) {
         console.error('Failed to fetch public stats', e);
       }
     };
@@ -59,307 +42,567 @@ const Landing = () => {
 
   const scrollToSection = (id) => {
     const element = document.getElementById(id);
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth' });
-    }
+    if (element) element.scrollIntoView({ behavior: 'smooth' });
   };
 
   const faqs = [
-    {
-      q: "How do I earn money?",
-      a: "By completing offers, surveys, and tasks on the platform."
-    },
-    {
-      q: "When do I get paid?",
-      a: "Rewards can be instant or take some time depending on the offer."
-    },
-    {
-      q: "Is it free to use?",
-      a: "Yes, completely free."
-    },
-    {
-      q: "Why was my reward not credited?",
-      a: "This can happen due to tracking issues. You can contact the offerwall support."
-    },
-    {
-      q: "What is the minimum payout?",
-      a: "Our minimum payout starts at just $0.50, depending on the chosen reward method."
-    }
+    { q: "How do I earn money?", a: "By completing offers, surveys, and tasks on the platform." },
+    { q: "When do I get paid?", a: "Rewards can be instant or take some time depending on the offer." },
+    { q: "How do I contact you?", a: "You can reach us through our support page or Discord community." },
+    { q: "Is it free to use?", a: "Yes, completely free. No hidden fees or charges." },
+    { q: "Why was my reward not credited?", a: "This can happen due to tracking issues. You can contact the offerwall support." },
+    { q: "What is the minimum payout?", a: "Our minimum payout starts at just $0.50, depending on the chosen reward method." },
   ];
 
   const features = [
-    { icon: <FiLayers />, title: "Multiple Offerwalls", desc: "Access many earning opportunities in one place" },
-    { icon: <FiZap />, title: "Fast Payouts", desc: "Withdraw your earnings quickly and securely" },
-    { icon: <FiGift />, title: "Daily Bonus", desc: "Earn extra rewards every day you stay active" },
-    { icon: <FiTrendingUp />, title: "VIP Progress", desc: "Level up and unlock better rewards" },
-    { icon: <FiUsers />, title: "Referral System", desc: "Invite friends and earn a percentage of their earnings" },
-    { icon: <FiActivity />, title: "Live Activity", desc: "See real-time earnings across the platform" },
+    { icon: <FiLayers size={22} />, title: "Multiple Offerwalls", desc: "Discover various earning options in one place." },
+    { icon: <FiZap size={22} />, title: "Fast Payouts", desc: "Withdraw your earnings quickly and securely." },
+    { icon: <FiGift size={22} />, title: "Daily Bonus", desc: "Earn extra rewards every day you stay active." },
+    { icon: <FiMonitor size={22} />, title: "VIP Progress", desc: "Level up and unlock better rewards." },
+    { icon: <FiUsers size={22} />, title: "Referral System", desc: "Refer friends and earn a share of their income." },
+    { icon: <FiActivity size={22} />, title: "Live Activity", desc: "See real-time earnings across the platform." },
+  ];
+
+  const earningMethods = [
+    { icon: <FiClipboard size={22} />, title: "Surveys", desc: "Share your opinion on various topics and get rewarded instantly.", highlighted: false },
+    { icon: <LuGamepad2 size={24} />, title: "Apps & Games", desc: "Download apps or play new games. Reach milestones to earn big.", highlighted: true },
+    { icon: <LuBadgePercent size={24} />, title: "Featured Offers", desc: "Sign up for services or trials to earn the highest paying rewards.", highlighted: false },
   ];
 
   return (
-    <div className="relative min-h-screen overflow-x-hidden bg-brand-dark text-[#c8d6ef] font-sans selection:bg-brand-accent/30 selection:text-white">
-      <CyberGrid />
-      <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-brand-accent to-transparent opacity-50" />
-      <div className="ambient-bg" />
+    <div style={{ background: '#0b1512', minHeight: '100vh', color: '#e0ede8', fontFamily: "'Inter', 'Segoe UI', sans-serif", overflowX: 'hidden' }}>
 
-      {/* Conditional Header */}
+      {/* ── NAVBAR ── */}
       {currentUser ? (
-        <div className="relative z-50">
+        <div style={{ position: 'relative', zIndex: 50 }}>
           <Header />
         </div>
       ) : (
-        <nav className="fixed top-0 left-0 right-0 z-50 bg-brand-dark/80 backdrop-blur-md border-b border-brand-border">
-          <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-            <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} className="flex items-center gap-2.5">
-              <img src="/coins/logo1.png" alt="Logo" className="h-20 w-auto object-contain" />
-              <span className="font-display font-bold text-xl tracking-tight text-white">GPT Platform</span>
-            </motion.div>
+        <nav style={{
+          position: 'fixed', top: 16, left: 0, right: 0, zIndex: 50,
+          display: 'flex', justifyContent: 'center',
+          pointerEvents: 'none',
+          padding: '0 16px',
+        }}>
+          <div style={{
+            pointerEvents: 'all',
+            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+            width: '100%',
+            maxWidth: 1100,
+            gap: 24,
+            background: 'rgba(11, 21, 16, 0.85)',
+            backdropFilter: 'blur(24px) saturate(160%)',
+            WebkitBackdropFilter: 'blur(24px) saturate(160%)',
+            border: 'none',
+            outline: 'none',
+            borderRadius: 999,
+            padding: '12px 12px 12px 24px',
+            boxShadow: '0 4px 32px rgba(0,0,0,0.45), inset 0 0 0 1px rgba(255,255,255,0.06)',
+          }}>
+            {/* Logo */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0 }}>
+              <img src="/coins/round.png" alt="TaskMint" style={{ width: 34, height: 34, objectFit: 'contain' }} />
+              <span style={{ color: '#fff', fontWeight: 800, fontSize: 17, letterSpacing: '-0.2px' }}>TaskMint</span>
+            </div>
 
-            <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }} className="hidden md:flex items-center gap-8 text-sm text-[#c8d6ef] font-medium">
-              <button onClick={() => scrollToSection('earn')} className="hover:text-white transition-all">Earn</button>
-              <button onClick={() => scrollToSection('how-it-works')} className="hover:text-white transition-all">How it Works</button>
-              <button onClick={() => scrollToSection('features')} className="hover:text-white transition-all">Features</button>
-              <button onClick={() => scrollToSection('faq')} className="hover:text-white transition-all">FAQ</button>
-            </motion.div>
+            {/* Nav links */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 24, fontSize: 13.5 }}>
+              <button onClick={() => scrollToSection('home')} style={navLinkStyle}>Home</button>
+              <button onClick={() => scrollToSection('earn')} style={navLinkStyle}>Earn</button>
+              <button onClick={() => scrollToSection('how-it-works')} style={navLinkStyle}>How it Works</button>
+              <button onClick={() => scrollToSection('features')} style={navLinkStyle}>Features</button>
+              <button onClick={() => scrollToSection('faq')} style={navLinkStyle}>FAQ</button>
+            </div>
 
-            <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="flex items-center gap-4">
-              <button onClick={() => navigate('/login')} className="hidden sm:block text-sm font-bold text-[#c8d6ef] hover:text-white uppercase tracking-wider">
-                Login
+            {/* Right side */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
+              {/* Language pill */}
+              <div style={{
+                display: 'flex', alignItems: 'center', gap: 6,
+                padding: '6px 12px', borderRadius: 999,
+                border: '1px solid rgba(255,255,255,0.1)',
+                background: 'rgba(255,255,255,0.05)',
+                fontSize: 13, color: '#a0b8ac', cursor: 'pointer', fontWeight: 500,
+                transition: 'all 0.2s',
+              }}
+                onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.09)'; e.currentTarget.style.color = '#fff'; }}
+                onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; e.currentTarget.style.color = '#a0b8ac'; }}
+              >
+                🇬🇧 Eng <span style={{ fontSize: 10, opacity: 0.55, marginLeft: 2 }}>▾</span>
+              </div>
+
+              {/* Get Started pill */}
+              <button
+                onClick={() => navigate('/login?tab=register')}
+                style={{
+                  background: '#00e676', color: '#051408', padding: '8px 18px',
+                  borderRadius: 999, border: 'none', fontWeight: 700, fontSize: 13.5,
+                  cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 7,
+                  boxShadow: 'none',
+                  transition: 'all 0.2s', fontFamily: 'inherit',
+                  letterSpacing: '-0.1px',
+                }}
+                onMouseEnter={e => { e.currentTarget.style.background = '#00ff84'; e.currentTarget.style.transform = 'translateY(-1px)'; e.currentTarget.style.boxShadow = '0 4px 20px rgba(0,230,118,0.4)'; }}
+                onMouseLeave={e => { e.currentTarget.style.background = '#00e676'; e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'none'; }}
+              >
+                Get Started <FiArrowRight size={13} />
               </button>
-              <button onClick={() => navigate('/login?tab=register')} className="btn-glow px-6 py-2 text-sm uppercase tracking-widest rounded-lg">
-                Sign Up
-              </button>
-            </motion.div>
+            </div>
           </div>
         </nav>
       )}
 
-      {/* 2. Hero Section */}
-      <section className="relative z-10 pt-32 pb-20 px-6 max-w-7xl mx-auto flex flex-col items-center text-center mt-10 lg:mt-20">
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }} className="max-w-4xl">
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 glass-card mb-8 font-mono text-xs text-brand-cyan shadow-glow-cyan">
-            <span className="w-2 h-2 rounded-full bg-brand-cyan animate-pulse"></span>
-            Live
-          </div>
-          <h1 className="text-5xl md:text-7xl font-display font-black uppercase tracking-tighter leading-tight mb-6 text-white">
-            Earn Money Online <br />
-            <span className="text-transparent bg-clip-text bg-gradient-brand">
-              Simple, Fast & Real
-            </span>
-          </h1>
-          <p className="text-lg md:text-xl text-[#c8d6ef]/80 max-w-2xl mx-auto mb-10 leading-relaxed font-sans">
-            Complete offers, surveys, and tasks to earn real rewards. Join thousands of users already earning every day.
-          </p>
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16">
-            <button onClick={() => navigate('/login?tab=register')} className="w-full sm:w-auto btn-glow px-8 py-4 uppercase tracking-widest flex items-center justify-center gap-2 group">
-              Start Earning
-              <FiArrowRight className="group-hover:translate-x-1 transition-transform" />
-            </button>
-            <button onClick={() => navigate('/login')} className="w-full sm:w-auto glass-card px-8 py-4 text-white font-bold uppercase tracking-widest hover:bg-white/5 transition-all flex items-center justify-center gap-2">
-              Login
-            </button>
-          </div>
+      {/* ── HERO SECTION ── */}
+      <section id="home" style={{
+        position: 'relative', paddingTop: currentUser ? 40 : 100, paddingBottom: 60,
+        minHeight: '100vh', display: 'flex', alignItems: 'center',
+        background: 'radial-gradient(ellipse 80% 60% at 60% 40%, rgba(41,253,152,0.08) 0%, transparent 70%), #0b1512',
+        overflow: 'hidden'
+      }}>
 
-          <div className="grid grid-cols-2 md:grid-cols-2 gap-6 max-w-2xl mx-auto">
-            <div className="stat-card">
-              <div className="text-3xl md:text-4xl font-black text-white clean-numbers">{stats.totalUsers.toLocaleString()}</div>
-              <div className="text-sm font-mono text-brand-accent uppercase tracking-wider mt-1">Total Users</div>
-            </div>
-            <div className="stat-card">
-              <div className="text-3xl md:text-4xl font-black text-brand-cyan clean-numbers">${stats.totalPaidOut.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
-              <div className="text-sm font-mono text-brand-cyan/80 uppercase tracking-wider mt-1">Total Paid</div>
-            </div>
-          </div>
-        </motion.div>
-      </section>
+        <div style={{ maxWidth: 1280, margin: '0 auto', padding: '0 40px', width: '100%', display: 'flex', alignItems: 'center', gap: 60 }}>
+          {/* Left Content */}
+          <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7 }} style={{ flex: 1, maxWidth: 560 }}>
+            <h1 style={{ fontSize: 'clamp(44px, 5.5vw, 68px)', fontWeight: 800, lineHeight: 1.15, marginBottom: 20, color: '#fff', letterSpacing: '-1.5px' }}>
+              Your Time Has Value
+              <br />
+              <span style={{ color: '#29FD98' }}>Get Rewarded For It</span>
+            </h1>
+            <p style={{ fontSize: 18, color: '#a0b8ac', lineHeight: 1.6, marginBottom: 40, maxWidth: 480 }}>
+              Complete offers, surveys, and tasks to earn real rewards. Join thousands of users already earning every day.
+            </p>
 
-      {/* 3. How It Works */}
-      <section id="how-it-works" className="relative z-10 py-24 bg-brand-darker border-y border-brand-border">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-display font-black uppercase tracking-tight mb-4 text-white">How It Works</h2>
-            <div className="w-16 h-1 bg-brand-accent mx-auto rounded-full"></div>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="glass-card p-8 relative group hover:border-brand-accent/50 transition-colors">
-              <div className="absolute -top-6 left-8 w-12 h-12 bg-gradient-brand rounded-xl flex items-center justify-center font-black text-xl text-white shadow-glow transform -rotate-6 group-hover:rotate-0 transition-transform">1</div>
-              <FiUsers className="text-4xl text-brand-accent mb-6 mt-4" />
-              <h3 className="text-xl font-bold mb-3 uppercase tracking-wide text-white">Sign Up</h3>
-              <p className="text-[#c8d6ef]/80">Create your free account in seconds and get instant access to the platform.</p>
+            {/* CTA Buttons */}
+            <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
+              <button
+                onClick={() => navigate('/login?tab=register')}
+                style={{
+                  background: '#29FD98', color: '#051408', padding: '14px 32px',
+                  borderRadius: 999, border: 'none', fontWeight: 700, fontSize: 15,
+                  cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8,
+                  transition: 'all 0.2s', letterSpacing: '-0.2px'
+                }}
+                onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 8px 24px rgba(41,253,152,0.3)'; }}
+                onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'none'; }}
+              >
+                Start Earning <FiArrowRight size={18} />
+              </button>
+              <button
+                onClick={() => navigate('/login')}
+                style={{
+                  background: 'transparent', color: '#fff', padding: '14px 32px',
+                  borderRadius: 999, border: '1px solid rgba(255,255,255,0.4)', fontWeight: 600, fontSize: 15,
+                  cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8, transition: 'all 0.2s',
+                  letterSpacing: '-0.2px'
+                }}
+                onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.6)'; }}
+                onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.4)'; }}
+              >
+                <FiLogIn size={18} /> Login
+              </button>
             </div>
-            <div className="glass-card p-8 relative group hover:border-brand-cyan/50 transition-colors">
-              <div className="absolute -top-6 left-8 w-12 h-12 bg-gradient-to-br from-brand-cyan to-blue-500 rounded-xl flex items-center justify-center font-black text-xl text-white shadow-glow-cyan transform rotate-3 group-hover:rotate-0 transition-transform">2</div>
-              <FiCheckCircle className="text-4xl text-brand-cyan mb-6 mt-4" />
-              <h3 className="text-xl font-bold mb-3 uppercase tracking-wide text-white">Complete Tasks</h3>
-              <p className="text-[#c8d6ef]/80">Choose from hundreds of offers, surveys, and apps to complete at your own pace.</p>
-            </div>
-            <div className="glass-card p-8 relative group hover:border-brand-violet/50 transition-colors">
-              <div className="absolute -top-6 left-8 w-12 h-12 bg-gradient-to-br from-brand-violet to-purple-600 rounded-xl flex items-center justify-center font-black text-xl text-white shadow-glow transform -rotate-3 group-hover:rotate-0 transition-transform">3</div>
-              <FiDollarSign className="text-4xl text-brand-violet mb-6 mt-4" />
-              <h3 className="text-xl font-bold mb-3 uppercase tracking-wide text-white">Earn Rewards</h3>
-              <p className="text-[#c8d6ef]/80">Get coins and convert them into real money, crypto, or gift cards instantly.</p>
-            </div>
-          </div>
-        </div>
-      </section>
+          </motion.div>
 
-      {/* 4. Features Section */}
-      <section id="features" className="relative z-10 py-24 px-6 max-w-7xl mx-auto">
-        <div className="text-center mb-16">
-          <h2 className="text-3xl md:text-4xl font-display font-black uppercase tracking-tight mb-4 text-white">Why Choose Us</h2>
-          <div className="w-16 h-1 bg-brand-accent mx-auto rounded-full"></div>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {features.map((f, i) => (
-            <div key={i} className="flex items-start gap-4 p-6 glass-card hover:bg-white/[0.04] transition-colors">
-              <div className="w-12 h-12 shrink-0 bg-brand-accent/10 border border-brand-accent/30 rounded-xl flex items-center justify-center text-brand-accent text-xl shadow-[inset_0_0_12px_rgba(99,102,241,0.2)]">
-                {f.icon}
+          {/* Right - Hero Image & Stats */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.85 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.8, delay: 0.2 }}
+            style={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center', position: 'relative', minHeight: 400 }}
+          >
+            {/* The Image */}
+            <img src="/coins/herosec.png" alt="Rewards" style={{ width: '120%', maxWidth: 700, objectFit: 'contain', zIndex: 1, position: 'relative', right: '-5%', filter: 'grayscale(100%) sepia(100%) hue-rotate(120deg) saturate(400%) brightness(1.2)' }} />
+
+            {/* Stats Box overlay */}
+            <div style={{
+              position: 'absolute', bottom: '5%', right: '15%', zIndex: 2,
+              background: 'rgba(41, 253, 152, 0.05)', 
+              backdropFilter: 'blur(24px)',
+              WebkitBackdropFilter: 'blur(24px)',
+              border: '1px solid rgba(41, 253, 152, 0.15)',
+              borderRadius: 20, padding: '24px 48px',
+              display: 'flex', alignItems: 'center', gap: 48,
+              boxShadow: '0 24px 50px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.05)'
+            }}>
+              <div style={{ textAlign: 'center' }}>
+                <div style={{ fontSize: 32, fontWeight: 800, color: '#fff', lineHeight: 1 }}>
+                  {stats.totalUsers.toLocaleString()}
+                </div>
+                <div style={{ fontSize: 13, color: '#9ab8a8', marginTop: 8, fontWeight: 500 }}>Total Users</div>
               </div>
-              <div>
-                <h4 className="font-bold text-lg mb-1 text-white">{f.title}</h4>
-                <p className="text-sm text-[#c8d6ef]/80 leading-relaxed">{f.desc}</p>
+              
+              <div style={{ width: 1, height: 45, background: 'rgba(255,255,255,0.12)' }} />
+
+              <div style={{ textAlign: 'center' }}>
+                <div style={{ fontSize: 32, fontWeight: 800, color: '#fff', lineHeight: 1 }}>
+                  ${stats.totalPaidOut.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                </div>
+                <div style={{ fontSize: 13, color: '#9ab8a8', marginTop: 8, fontWeight: 500 }}>Total Paid</div>
               </div>
             </div>
-          ))}
+          </motion.div>
         </div>
       </section>
 
-      {/* 5. Earnings Section */}
-      <section id="earn" className="relative z-10 py-32 bg-brand-dark overflow-hidden">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-brand-accent/10 via-transparent to-transparent pointer-events-none"></div>
-        <div className="max-w-6xl mx-auto px-6 relative z-10">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-5xl font-display font-black uppercase tracking-tight mb-4 text-white">Start Earning With</h2>
-            <div className="w-16 h-1 bg-brand-accent mx-auto rounded-full mb-6"></div>
-            <p className="text-lg text-[#c8d6ef]/80 max-w-2xl mx-auto">Multiple ways to stack your coins. Choose what works best for you.</p>
+      {/* ── TRUST BADGES ── */}
+      <section style={{
+        background: 'rgba(0,0,0,0.25)', borderTop: '1px solid rgba(41,253,152,0.07)', borderBottom: '1px solid rgba(41,253,152,0.07)',
+        padding: '36px 40px'
+      }}>
+        <div style={{ maxWidth: 1200, margin: '0 auto', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 50, flexWrap: 'wrap' }}>
+          
+          <div style={{ display: 'flex', alignItems: 'center', gap: 16, color: '#9ab8a8' }}>
+            <div style={{
+              width: 52, height: 52, borderRadius: '50%',
+              border: '1px solid rgba(41,253,152,0.2)', background: 'rgba(41,253,152,0.05)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#29FD98'
+            }}><FiUsers size={22} /></div>
+            <span style={{ fontSize: 15, fontWeight: 500 }}>Real Users Earning Daily</span>
+          </div>
+
+          <div style={{ width: 1, height: 40, background: 'rgba(255,255,255,0.1)' }} className="hidden sm:block" />
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: 16, color: '#9ab8a8' }}>
+            <div style={{
+              width: 52, height: 52, borderRadius: '50%',
+              border: '1px solid rgba(41,253,152,0.2)', background: 'rgba(41,253,152,0.05)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#29FD98'
+            }}><FiShield size={22} /></div>
+            <span style={{ fontSize: 15, fontWeight: 500 }}>Secure And Reliable Platform</span>
+          </div>
+
+          <div style={{ width: 1, height: 40, background: 'rgba(255,255,255,0.1)' }} className="hidden sm:block" />
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: 16, color: '#9ab8a8' }}>
+            <div style={{
+              width: 52, height: 52, borderRadius: '50%',
+              border: '1px solid rgba(41,253,152,0.2)', background: 'rgba(41,253,152,0.05)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#29FD98'
+            }}><FiAward size={22} /></div>
+            <span style={{ fontSize: 15, fontWeight: 500 }}>Transparent Reward System</span>
+          </div>
+
+        </div>
+      </section>
+
+      {/* ── HOW IT WORKS ── */}
+      <section id="how-it-works" style={{ 
+        padding: '100px 40px', position: 'relative', overflow: 'hidden',
+        background: '#0b1512'
+      }}>
+        {/* Tiled fading background */}
+        <div style={{
+          position: 'absolute', inset: 0, pointerEvents: 'none', opacity: 0.15,
+          backgroundImage: 'linear-gradient(rgba(41,253,152,0.4) 1px, transparent 1px), linear-gradient(90deg, rgba(41,253,152,0.4) 1px, transparent 1px)',
+          backgroundSize: '40px 40px',
+          maskImage: 'linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,0) 80%)',
+          WebkitMaskImage: 'linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,0) 80%)'
+        }} />
+
+        <div style={{ maxWidth: 1200, margin: '0 auto', position: 'relative', zIndex: 1 }}>
+          <div style={{ textAlign: 'center', marginBottom: 64 }}>
+            <h2 style={{ fontSize: 40, fontWeight: 800, color: '#fff', marginBottom: 12 }}>How It Works</h2>
+            <p style={{ fontSize: 16, color: '#9ab8a8' }}>Get started in seconds. No complicated setup required.</p>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="glass-card p-8 flex flex-col items-center text-center group hover:-translate-y-2 transition-all duration-300">
-              <div className="w-16 h-16 rounded-2xl bg-indigo-500/10 border border-indigo-500/30 flex items-center justify-center mb-6 shadow-[inset_0_0_20px_rgba(99,102,241,0.2)] group-hover:scale-110 transition-transform">
-                <FiActivity className="text-3xl text-indigo-400" />
-              </div>
-              <h3 className="text-2xl font-black uppercase tracking-wide text-white mb-3">Surveys</h3>
-              <p className="text-[#c8d6ef]/70 leading-relaxed">Share your opinion on various topics and get rewarded instantly.</p>
-            </div>
-            
-            <div className="glass-card p-8 flex flex-col items-center text-center group hover:-translate-y-2 transition-all duration-300">
-              <div className="w-16 h-16 rounded-2xl bg-violet-500/10 border border-violet-500/30 flex items-center justify-center mb-6 shadow-[inset_0_0_20px_rgba(139,92,246,0.2)] group-hover:scale-110 transition-transform">
-                <FiPlayCircle className="text-3xl text-violet-400" />
-              </div>
-              <h3 className="text-2xl font-black uppercase tracking-wide text-white mb-3">Apps & Games</h3>
-              <p className="text-[#c8d6ef]/70 leading-relaxed">Download apps or play new games. Reach milestones to earn big.</p>
-            </div>
-            
-            <div className="glass-card p-8 flex flex-col items-center text-center group hover:-translate-y-2 transition-all duration-300">
-              <div className="w-16 h-16 rounded-2xl bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center mb-6 shadow-[inset_0_0_20px_rgba(6,182,212,0.2)] group-hover:scale-110 transition-transform">
-                <FiStar className="text-3xl text-cyan-400" />
-              </div>
-              <h3 className="text-2xl font-black uppercase tracking-wide text-white mb-3">Featured Offers</h3>
-              <p className="text-[#c8d6ef]/70 leading-relaxed">Sign up for services or trials to earn the highest paying rewards.</p>
-            </div>
-          </div>
-        </div>
-      </section>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 24, position: 'relative' }}>
+            {[
+              { num: 1, icon: <FiUserCheck size={28} strokeWidth={1.5} />, title: 'Sign Up', desc: 'Create your free account in seconds and get instant access to the platform.' },
+              { num: 2, icon: <FiClipboard size={28} strokeWidth={1.5} />, title: 'Complete Tasks', desc: 'Choose from hundreds of offers, surveys, and apps to complete at your own pace.' },
+              { num: 3, icon: <FiGift size={28} strokeWidth={1.5} />, title: 'Earn Rewards', desc: 'Get coins and convert them into real money, crypto, or gift cards instantly.' },
+            ].map((step, i) => (
+              <div key={step.num} style={{ position: 'relative', zIndex: 10 - i }}>
+                <motion.div
+                  whileHover={{ y: -4 }}
+                  style={{
+                    background: 'rgba(21, 25, 24, 0.85)', backdropFilter: 'blur(12px)',
+                    border: '1px solid rgba(255,255,255,0.03)',
+                    borderRadius: 24, padding: '40px 32px', position: 'relative', transition: 'all 0.3s',
+                    height: '100%', overflow: 'hidden', display: 'flex', flexDirection: 'column',
+                    zIndex: 1
+                  }}
+                >
+                  {/* Big number background */}
+                  <div style={{
+                    position: 'absolute', top: 10, right: 10,
+                    fontSize: 180, fontWeight: 900, color: 'rgba(255,255,255,0.02)', lineHeight: 0.8,
+                    userSelect: 'none', zIndex: 0
+                  }}>
+                    {step.num}
+                  </div>
 
-      {/* 6. Trust Section */}
-      <section className="relative z-10 py-16 border-y border-brand-border bg-brand-accent/5">
-        <div className="max-w-6xl mx-auto px-6 flex flex-col md:flex-row justify-around items-center gap-8 text-center">
-          <div className="flex flex-col items-center">
-            <div className="w-12 h-12 bg-brand-card border border-brand-border rounded-full flex items-center justify-center mb-3">
-              <FiUsers className="text-brand-accent text-xl" />
-            </div>
-            <h4 className="font-bold uppercase tracking-wide text-white">Real users earning daily</h4>
-          </div>
-          <div className="hidden md:block w-px h-16 bg-brand-border"></div>
-          <div className="flex flex-col items-center">
-            <div className="w-12 h-12 bg-brand-card border border-brand-border rounded-full flex items-center justify-center mb-3">
-              <FiShield className="text-brand-accent text-xl" />
-            </div>
-            <h4 className="font-bold uppercase tracking-wide text-white">Secure and reliable platform</h4>
-          </div>
-          <div className="hidden md:block w-px h-16 bg-brand-border"></div>
-          <div className="flex flex-col items-center">
-            <div className="w-12 h-12 bg-brand-card border border-brand-border rounded-full flex items-center justify-center mb-3">
-              <FiAward className="text-brand-accent text-xl" />
-            </div>
-            <h4 className="font-bold uppercase tracking-wide text-white">Transparent reward system</h4>
-          </div>
-        </div>
-      </section>
-
-      {/* 7. FAQ Section */}
-      <section id="faq" className="relative z-10 py-24 px-6 max-w-3xl mx-auto">
-        <div className="text-center mb-16">
-          <h2 className="text-3xl md:text-4xl font-display font-black uppercase tracking-tight mb-4 text-white">Frequently Asked Questions</h2>
-          <div className="w-16 h-1 bg-brand-accent mx-auto rounded-full"></div>
-        </div>
-        <div className="space-y-4">
-          {faqs.map((faq, index) => (
-            <div key={index} className="glass-card overflow-hidden">
-              <button 
-                onClick={() => setActiveFaq(activeFaq === index ? null : index)}
-                className="w-full px-6 py-5 flex items-center justify-between text-left hover:bg-white/[0.02] transition-colors"
-              >
-                <span className="font-bold pr-4 text-white">{faq.q}</span>
-                <FiChevronDown className={`text-brand-accent transform transition-transform ${activeFaq === index ? 'rotate-180' : ''}`} />
-              </button>
-              <AnimatePresence>
-                {activeFaq === index && (
-                  <motion.div 
-                    initial={{ height: 0, opacity: 0 }} 
-                    animate={{ height: 'auto', opacity: 1 }} 
-                    exit={{ height: 0, opacity: 0 }}
-                    className="overflow-hidden"
-                  >
-                    <div className="px-6 pb-5 text-[#c8d6ef]/80 leading-relaxed border-t border-brand-border pt-4">
-                      {faq.a}
+                  <div style={{ position: 'relative', zIndex: 1 }}>
+                    {/* Arch Wrapper for Icon */}
+                    <div style={{ 
+                      width: 80, height: 110, 
+                      background: 'linear-gradient(to bottom, rgba(41,253,152,0.12) 0%, transparent 100%)',
+                      borderTopLeftRadius: 40, borderTopRightRadius: 40,
+                      display: 'flex', justifyContent: 'center', paddingTop: 24,
+                      color: '#29FD98', marginBottom: 20
+                    }}>
+                      {step.icon}
                     </div>
-                  </motion.div>
+                    <h3 style={{ fontSize: 20, fontWeight: 700, color: '#fff', marginBottom: 12 }}>{step.title}</h3>
+                    <p style={{ fontSize: 14, color: '#9ab8a8', lineHeight: 1.7 }}>{step.desc}</p>
+                  </div>
+                </motion.div>
+
+                {/* Connecting Arrow */}
+                {i < 2 && (
+                  <div className="hidden lg:flex" style={{
+                    position: 'absolute', top: '50%', right: -40, transform: 'translateY(-50%)',
+                    width: 56, height: 56, borderRadius: '50%', background: '#29FD98',
+                    alignItems: 'center', justifyContent: 'center', zIndex: 0,
+                    boxShadow: '0 0 20px rgba(41,253,152,0.4)'
+                  }}>
+                    <FiArrowRight size={26} color="#fff" strokeWidth={3} />
+                  </div>
                 )}
-              </AnimatePresence>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── WHY CHOOSE US ── */}
+      <section id="features" style={{ padding: '80px 40px', background: '#0a120e' }}>
+        <div style={{ maxWidth: 1280, margin: '0 auto' }}>
+          <div style={{ textAlign: 'center', marginBottom: 56 }}>
+            <h2 style={{ fontSize: 36, fontWeight: 800, color: '#fff', marginBottom: 12 }}>Why Choose Us</h2>
+            <p style={{ fontSize: 15, color: '#9ab8a8' }}>Powerful features designed specifically for you.</p>
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 16 }}>
+            {features.map((f, i) => (
+              <motion.div
+                key={i}
+                whileHover={{ y: -4, background: 'rgba(255,255,255,0.04)' }}
+                style={{
+                  background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.02)',
+                  borderRadius: 24, padding: '32px 16px', display: 'flex', flexDirection: 'column',
+                  alignItems: 'center', textAlign: 'center', transition: 'all 0.3s'
+                }}
+              >
+                {/* Arch Wrapper for Icon */}
+                <div style={{
+                  width: 64, height: 80,
+                  background: 'linear-gradient(to bottom, rgba(41,253,152,0.12) 0%, transparent 100%)',
+                  borderTopLeftRadius: 32, borderTopRightRadius: 32,
+                  display: 'flex', justifyContent: 'center', paddingTop: 16,
+                  color: '#29FD98', marginBottom: 20
+                }}>
+                  {f.icon}
+                </div>
+                <h4 style={{ fontSize: 15, fontWeight: 700, color: '#fff', marginBottom: 8 }}>{f.title}</h4>
+                <p style={{ fontSize: 13, color: '#9ab8a8', lineHeight: 1.6 }}>{f.desc}</p>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── LOWER SECTION WRAPPER ── */}
+      <div style={{ position: 'relative', overflow: 'hidden' }}>
+        {/* Background Grid */}
+        <div style={{
+          position: 'absolute', top: 0, left: 0, right: 0, height: '100%', zIndex: 0,
+          backgroundImage: `
+            linear-gradient(rgba(41, 253, 152, 0.04) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(41, 253, 152, 0.04) 1px, transparent 1px)
+          `,
+          backgroundSize: '40px 40px',
+          maskImage: 'linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,0) 35%, rgba(0,0,0,0) 65%, rgba(0,0,0,1) 100%)',
+          WebkitMaskImage: 'linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,0) 35%, rgba(0,0,0,0) 65%, rgba(0,0,0,1) 100%)'
+        }} />
+
+        {/* ── START EARNING WITH ── */}
+        <section id="earn" style={{ padding: '80px 40px', position: 'relative', zIndex: 1 }}>
+          <div style={{ maxWidth: 1280, margin: '0 auto' }}>
+            <div style={{ textAlign: 'center', marginBottom: 56 }}>
+              <h2 style={{ fontSize: 36, fontWeight: 800, color: '#fff', marginBottom: 12 }}>Start Earning With</h2>
+              <p style={{ fontSize: 15, color: '#9ab8a8' }}>Multiple ways to stack your coins. Choose what works best for you.</p>
             </div>
-          ))}
-        </div>
-      </section>
-
-      {/* 8. Payment Methods Section */}
-      <section className="relative z-10 py-16 bg-[#04060b] overflow-hidden border-t border-brand-border">
-        <div className="text-center mb-10">
-          <h3 className="text-xl md:text-2xl font-display font-black uppercase tracking-wider text-white">Supported Payout Methods</h3>
-        </div>
-        <div className="flex animate-marquee whitespace-nowrap opacity-50 hover:opacity-100 transition-opacity">
-          {[...Array(6)].map((_, i) => (
-            <div key={i} className="flex items-center gap-16 px-8">
-              <div className="flex items-center gap-2 text-2xl font-display font-bold text-white"><FaBitcoin className="text-[#F7931A]" /> Litecoin</div>
-              <div className="flex items-center gap-2 text-2xl font-display font-bold text-white"><FaPaypal className="text-[#00457C]" /> PayPal</div>
-              <div className="flex items-center gap-2 text-2xl font-display font-bold text-white"><FaAmazon className="text-[#FF9900]" /> Amazon</div>
-              <div className="flex items-center gap-2 text-2xl font-display font-bold text-white"><FiGift className="text-pink-500" /> Gift Cards</div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 20, maxWidth: 1000, margin: '0 auto' }}>
+              {earningMethods.map((method, i) => (
+                <motion.div
+                  key={i}
+                  whileHover={{ y: -4 }}
+                  style={{
+                    background: method.highlighted ? '#29FD98' : 'rgba(255,255,255,0.02)',
+                    borderRadius: 24, padding: '32px', display: 'flex', flexDirection: 'column',
+                    alignItems: 'flex-start', textAlign: 'left',
+                    boxShadow: method.highlighted ? '0 12px 40px rgba(41,253,152,0.15)' : 'none',
+                    transition: 'all 0.3s'
+                  }}
+                >
+                  {/* Arch Wrapper */}
+                  <div style={{
+                    width: 56, height: 72,
+                    background: method.highlighted ? 'linear-gradient(to bottom, rgba(0,0,0,0.08) 0%, transparent 100%)' : 'linear-gradient(to bottom, rgba(41,253,152,0.12) 0%, transparent 100%)',
+                    borderTopLeftRadius: 28, borderTopRightRadius: 28,
+                    display: 'flex', justifyContent: 'center', paddingTop: 16,
+                    color: method.highlighted ? '#000' : '#29FD98', marginBottom: 24
+                  }}>
+                    {method.icon}
+                  </div>
+                  <h3 style={{ fontSize: 18, fontWeight: 700, color: method.highlighted ? '#000' : '#fff', marginBottom: 12 }}>{method.title}</h3>
+                  <p style={{ fontSize: 14, color: method.highlighted ? 'rgba(0,0,0,0.7)' : '#9ab8a8', lineHeight: 1.7 }}>{method.desc}</p>
+                </motion.div>
+              ))}
             </div>
-          ))}
+          </div>
+        </section>
+
+        {/* ── FAQ ── */}
+        <section id="faq" style={{ padding: '80px 40px', position: 'relative', zIndex: 1 }}>
+          <div style={{ maxWidth: 960, margin: '0 auto' }}>
+            <div style={{ textAlign: 'center', marginBottom: 56 }}>
+              <h2 style={{ fontSize: 36, fontWeight: 800, color: '#fff', marginBottom: 12 }}>Frequently Asked Questions</h2>
+              <p style={{ fontSize: 15, color: '#9ab8a8' }}>Got questions? We've got answers.</p>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+              {faqs.map((faq, index) => (
+                <div
+                  key={index}
+                  style={{
+                    background: 'rgba(255,255,255,0.03)',
+                    borderRadius: 12, overflow: 'hidden'
+                  }}
+                >
+                  <button
+                    onClick={() => setActiveFaq(activeFaq === index ? null : index)}
+                    style={{
+                      width: '100%', padding: '20px 24px', display: 'flex', alignItems: 'center',
+                      justifyContent: 'space-between', background: 'none', border: 'none',
+                      color: '#fff', fontWeight: 700, fontSize: 14, cursor: 'pointer', textAlign: 'left', gap: 12
+                    }}
+                  >
+                    <span>{faq.q}</span>
+                    {activeFaq === index
+                      ? <FiChevronUp size={20} style={{ color: '#29FD98', flexShrink: 0 }} />
+                      : <FiChevronDown size={20} style={{ color: '#29FD98', flexShrink: 0 }} />
+                    }
+                  </button>
+                  <AnimatePresence>
+                    {activeFaq === index && (
+                      <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: 'auto', opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: 0.25 }}
+                        style={{ overflow: 'hidden' }}
+                      >
+                        <div style={{ padding: '0 24px 20px', fontSize: 13, color: '#9ab8a8', lineHeight: 1.7 }}>
+                          {faq.a}
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              ))}
+            </div>
+
+            {/* Supported Payout Methods */}
+            <div style={{
+              marginTop: 64, background: 'rgba(255,255,255,0.04)',
+              borderRadius: 999, padding: '24px 40px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 20
+            }}>
+              <span style={{ fontSize: 16, fontWeight: 700, color: '#fff', flexShrink: 0 }}>Supported Payout Methods</span>
+              <div style={{ display: 'flex', gap: 32, flexWrap: 'wrap', alignItems: 'center' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 14, color: '#fff', fontWeight: 600 }}>
+                  <FaBitcoin style={{ color: '#F7931A', fontSize: 18 }} /> Litecoin
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 14, color: '#fff', fontWeight: 600 }}>
+                  <FaPaypal style={{ color: '#00457C', fontSize: 18 }} /> PayPal
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 14, color: '#fff', fontWeight: 600 }}>
+                  <FaAmazon style={{ color: '#FF9900', fontSize: 18 }} /> Amazon
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 14, color: '#fff', fontWeight: 600 }}>
+                  <FiGift style={{ color: '#ff6ea0', fontSize: 18 }} /> Gift Cards
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      {/* ── CTA BANNER ── */}
+      <section style={{
+        background: 'linear-gradient(90deg, #29FD98 0%, #0fd5c9 100%)',
+        padding: '48px 40px',
+      }}>
+        <div style={{ maxWidth: 1280, margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 24 }}>
+          <div>
+            <h2 style={{ fontSize: 32, fontWeight: 800, color: '#000', marginBottom: 6 }}>Start Earning Today</h2>
+            <p style={{ fontSize: 15, color: 'rgba(0,0,0,0.65)', fontWeight: 500 }}>Join now and start making real money right now!</p>
+          </div>
+          <button
+            onClick={() => navigate('/login?tab=register')}
+            style={{
+              background: '#fff', color: '#000', padding: '16px 32px',
+              borderRadius: 999, border: 'none', fontWeight: 700, fontSize: 15,
+              cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 10, transition: 'all 0.2s',
+              boxShadow: '0 8px 24px rgba(0,0,0,0.1)'
+            }}
+            onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 12px 28px rgba(0,0,0,0.15)'; }}
+            onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 8px 24px rgba(0,0,0,0.1)'; }}
+          >
+            Get Started <FiArrowRight size={18} />
+          </button>
         </div>
       </section>
 
-      {/* 9. Final CTA Section */}
-      <section className="relative z-10 py-32 px-6 max-w-4xl mx-auto text-center">
-        <div className="absolute inset-0 bg-brand-accent/10 blur-[100px] rounded-full pointer-events-none" />
-        <h2 className="text-4xl md:text-6xl font-display font-black uppercase tracking-tight mb-8 relative text-white">Start Earning Today</h2>
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-6 relative">
-          <button onClick={() => navigate('/login?tab=register')} className="w-full sm:w-auto btn-glow px-10 py-5 uppercase tracking-widest text-lg">
-            Sign Up
-          </button>
-          <button onClick={() => navigate('/login')} className="w-full sm:w-auto glass-card px-10 py-5 text-white font-bold uppercase tracking-widest hover:bg-white/5 transition-all">
-            Login
-          </button>
-        </div>
-      </section>
+      {/* ── FOOTER ── */}
+      <footer style={{ background: '#05100a', padding: '64px 40px 40px', borderTop: 'none' }}>
+        <div style={{ maxWidth: 1000, margin: '0 auto' }}>
+          {/* Logo + Description */}
+          <div style={{ textAlign: 'center', marginBottom: 32 }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12, marginBottom: 20 }}>
+              <img src="/coins/round.png" alt="TaskMint Logo" style={{ width: 44, height: 44 }} />
+              <span style={{ color: '#fff', fontWeight: 800, fontSize: 28, letterSpacing: '-0.5px' }}>TaskMint</span>
+            </div>
+            <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.6)', maxWidth: 600, margin: '0 auto', lineHeight: 1.7 }}>
+              Complete offers, surveys, and tasks to earn real rewards. Join thousands of users already earning every day.
+            </p>
+          </div>
 
-      {/* Footer minimal */}
-      <footer className="relative z-10 border-t border-brand-border py-8 text-center text-sm text-[#c8d6ef]/60">
-        <p>&copy; {new Date().getFullYear()} GPT Platform. All rights reserved.</p>
+          {/* Footer Links */}
+          <div style={{ display: 'flex', justifyContent: 'center', gap: 16, flexWrap: 'wrap', marginBottom: 24 }}>
+            {['Features', 'FAQ', 'Blog', 'Terms of Use', 'Privacy Policy', 'Support'].map((link, i) => (
+              <span key={i} style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+                <a href="#" style={{ fontSize: 13, color: '#00e676', textDecoration: 'none', fontWeight: 600, transition: 'opacity 0.2s' }}
+                  onMouseEnter={e => e.currentTarget.style.opacity = 0.8}
+                  onMouseLeave={e => e.currentTarget.style.opacity = 1}
+                >{link}</a>
+                {i < 5 && <span style={{ color: '#fff', fontSize: 12 }}>•</span>}
+              </span>
+            ))}
+          </div>
+
+          <div style={{ width: '100%', height: 1, background: 'rgba(255,255,255,0.08)', margin: '24px 0' }} />
+
+          {/* Bottom Row */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 16 }}>
+            <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.6)' }}>© {new Date().getFullYear()} TaskMint. All rights reserved.</p>
+            <div style={{ display: 'flex', gap: 20 }}>
+              {[FaFacebook, FaInstagram, FaYoutube, FaDiscord].map((Icon, i) => (
+                <a key={i} href="#" style={{ color: '#00e676', textDecoration: 'none', transition: 'opacity 0.2s' }}
+                  onMouseEnter={e => e.currentTarget.style.opacity = 0.8}
+                  onMouseLeave={e => e.currentTarget.style.opacity = 1}
+                >
+                  <Icon size={18} />
+                </a>
+              ))}
+            </div>
+          </div>
+        </div>
       </footer>
     </div>
   );
+};
+
+const navLinkStyle = {
+  background: 'none', border: 'none', color: '#9ab8a8', fontSize: 14,
+  fontWeight: 500, cursor: 'pointer', padding: '4px 0', transition: 'color 0.2s',
+  fontFamily: 'inherit'
 };
 
 export default Landing;

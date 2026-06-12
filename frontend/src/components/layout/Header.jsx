@@ -153,16 +153,17 @@ const Header = ({ onChatToggle, chatOpen }) => {
   }, []);
 
   return (
-    <header className="sticky top-0 z-40 w-full border-b border-white/[0.06] backdrop-blur-xl bg-[#080b14]/80">
-      <div className="max-w-7xl mx-auto px-4 md:px-8 h-[66px] flex items-center justify-between">
+    <header className="sticky top-0 z-40 w-full border-b border-white/[0.06] backdrop-blur-xl bg-[#0b1512]/80">
+      <div className="max-w-7xl mx-auto px-4 md:px-8 h-[96px] flex items-center justify-between">
 
         {/* Brand */}
         <button
           id="header-brand-logo"
           onClick={() => navigate('/')}
-          className="flex items-center group"
+          className="flex items-center gap-3 group"
         >
-          <img src="/coins/logo.png" alt="Logo" className="h-8 w-auto object-contain transition-transform group-hover:scale-105" />
+          <img src="/coins/round.png" alt="TaskMint Logo" className="h-10 w-10 object-contain transition-transform group-hover:scale-105" />
+          <span className="text-white font-extrabold text-2xl tracking-tight hidden sm:block">TaskMint</span>
         </button>
 
 
