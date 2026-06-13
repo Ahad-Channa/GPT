@@ -22,15 +22,15 @@ const DailyBonusChip = () => {
   useEffect(() => {
     if (!status?.nextClaimAt || !status.alreadyClaimed) return;
     const target = new Date(status.nextClaimAt).getTime();
-    const interval = setInterval(() => {
+    const Barlowval = setInterval(() => {
       const distance = target - Date.now();
-      if (distance < 0) { clearInterval(interval); setTimeLeft('00:00:00'); fetchStatus(); return; }
+      if (distance < 0) { clearInterval(Barlowval); setTimeLeft('00:00:00'); fetchStatus(); return; }
       const h = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
       const m = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
       const s = Math.floor((distance % (1000 * 60)) / 1000);
       setTimeLeft(`${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`);
     }, 1000);
-    return () => clearInterval(interval);
+    return () => clearInterval(Barlowval);
   }, [status]);
 
   const claimBonus = async () => {

@@ -152,7 +152,7 @@ const ResetPassword = () => {
       className="min-h-screen flex items-center justify-center p-6 relative"
       style={{
         background: 'radial-gradient(ellipse 80% 60% at 50% 20%, rgba(3,15,60,0.5) 0%, #000000 60%)',
-        fontFamily: "'Inter', system-ui, sans-serif"
+        fontFamily: "'Barlow', system-ui, sans-serif"
       }}
     >
       <div style={{
@@ -176,7 +176,7 @@ const ResetPassword = () => {
         >
           <span style={{
             fontSize: '1.25rem', fontWeight: 700, color: 'white',
-            fontFamily: "'Outfit', Inter, sans-serif",
+            fontFamily: "'Barlow', Barlow, sans-serif",
           }}>
             GPT Platform
           </span>
@@ -185,7 +185,7 @@ const ResetPassword = () => {
         <div style={{ marginBottom: '1.75rem', textAlign: 'center' }}>
           <h1 style={{
             fontSize: '1.55rem', fontWeight: 800, color: 'white',
-            fontFamily: "'Outfit', Inter, sans-serif", lineHeight: 1.2, marginBottom: '0.35rem',
+            fontFamily: "'Barlow', Barlow, sans-serif", lineHeight: 1.2, marginBottom: '0.35rem',
           }}>
             Set New Password
           </h1>

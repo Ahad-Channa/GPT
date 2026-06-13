@@ -89,8 +89,8 @@ export const NotificationProvider = ({ children }) => {
         fetchNotifications();
         
         // Polling every 5 seconds for a near real-time feel
-        const intervalId = setInterval(fetchNotifications, 5000);
-        return () => clearInterval(intervalId);
+        const BarlowvalId = setInterval(fetchNotifications, 5000);
+        return () => clearInterval(BarlowvalId);
     }, [fetchNotifications]);
 
     const markAsRead = async () => {

@@ -27,7 +27,7 @@ const NumberInput = ({ value, onChange, min, max, step = 1, prefix, suffix, disa
         paddingLeft: prefix ? '2rem' : '1rem',
         paddingRight: suffix ? '3rem' : '1rem',
         width: '100%',
-        fontFamily: "'Inter', system-ui, sans-serif",
+        fontFamily: "'Barlow', system-ui, sans-serif",
         fontFeatureSettings: "'zero' 0",
         fontVariantNumeric: 'normal',
         fontSize: '1rem',
@@ -36,7 +36,7 @@ const NumberInput = ({ value, onChange, min, max, step = 1, prefix, suffix, disa
       }}
     />
     {suffix && (
-      <span style={{ position: 'absolute', right: '0.75rem', color: '#64748b', fontSize: '0.82rem', pointerEvents: 'none', fontFamily: "'Inter', system-ui, sans-serif" }}>
+      <span style={{ position: 'absolute', right: '0.75rem', color: '#64748b', fontSize: '0.82rem', pointerEvents: 'none', fontFamily: "'Barlow', system-ui, sans-serif" }}>
         {suffix}
       </span>
     )}
@@ -155,7 +155,7 @@ const ProviderCard = ({ provider, onUpdate, loadingProvider }) => {
         )}
       </div>
       {Number(ratio) > 0 && enabled && (
-        <div style={{ fontSize: '0.75rem', color: '#94a3b8', marginTop: '0.5rem', fontFamily: "'Inter', system-ui, sans-serif", fontFeatureSettings: "'zero' 0" }}>
+        <div style={{ fontSize: '0.75rem', color: '#94a3b8', marginTop: '0.5rem', fontFamily: "'Barlow', system-ui, sans-serif", fontFeatureSettings: "'zero' 0" }}>
           <strong>Formula:</strong> 1.00 Network Unit &times; {Number(ratio) || 1} = <span style={{ color: '#60a5fa' }}>{Math.round(1 * (Number(ratio) || 1))} Coins given to user</span>.
         </div>
       )}

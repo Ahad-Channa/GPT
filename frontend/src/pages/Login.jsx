@@ -227,7 +227,7 @@ const Login = () => {
   return (
     <div
       className="min-h-screen flex"
-      style={{ background: '#000000', fontFamily: "'Inter', system-ui, sans-serif" }}
+      style={{ background: '#000000', fontFamily: "'Barlow', system-ui, sans-serif" }}
     >
 
       {/* ══════════════════════════════════════════
@@ -260,7 +260,7 @@ const Login = () => {
             <img src="/coins/logo1.png" alt="Logo" className="h-24 w-auto object-contain" />
             <span style={{
               fontSize: '1.15rem', fontWeight: 700, color: 'white',
-              fontFamily: "'Outfit', Inter, sans-serif", letterSpacing: '-0.01em'
+              fontFamily: "'Barlow', Barlow, sans-serif", letterSpacing: '-0.01em'
             }}>
               GPT Platform
             </span>
@@ -273,7 +273,7 @@ const Login = () => {
             fontSize: 'clamp(1.8rem, 3vw, 2.5rem)',
             fontWeight: 800,
             lineHeight: 1.15,
-            fontFamily: "'Outfit', Inter, sans-serif",
+            fontFamily: "'Barlow', Barlow, sans-serif",
             marginBottom: '1rem',
           }}>
             <span style={{
@@ -302,7 +302,7 @@ const Login = () => {
           }}>
             {[['10K+', 'Active Users'], ['$500K+', 'Paid Out'], ['4.9★', 'Rating']].map(([val, lbl]) => (
               <div key={lbl}>
-                <div style={{ fontSize: '1.1rem', fontWeight: 700, color: 'white', fontFamily: "'Outfit', sans-serif" }}>{val}</div>
+                <div style={{ fontSize: '1.1rem', fontWeight: 700, color: 'white', fontFamily: "'Barlow', sans-serif" }}>{val}</div>
                 <div style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.35)', textTransform: 'uppercase', letterSpacing: '0.06em', marginTop: '2px' }}>{lbl}</div>
               </div>
             ))}
@@ -342,7 +342,7 @@ const Login = () => {
             <img src="/coins/logo1.png" alt="Logo" className="h-24 w-auto object-contain" />
             <span style={{
               fontSize: '1.1rem', fontWeight: 700, color: 'white',
-              fontFamily: "'Outfit', Inter, sans-serif",
+              fontFamily: "'Barlow', Barlow, sans-serif",
             }}>
               GPT Platform
             </span>
@@ -387,7 +387,7 @@ const Login = () => {
           <div style={{ marginBottom: '1.75rem' }}>
             <h1 style={{
               fontSize: '1.55rem', fontWeight: 800, color: 'white',
-              fontFamily: "'Outfit', Inter, sans-serif", lineHeight: 1.2, marginBottom: '0.35rem',
+              fontFamily: "'Barlow', Barlow, sans-serif", lineHeight: 1.2, marginBottom: '0.35rem',
             }}>
               {isForgotPassword ? 'Reset Password' : (isRegistering ? 'Create your account' : 'Welcome back')}
             </h1>

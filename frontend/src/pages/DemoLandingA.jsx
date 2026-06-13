@@ -78,7 +78,7 @@ const DemoLandingA = () => {
       className="relative min-h-screen overflow-hidden flex flex-col"
       style={{
         background: '#040814',
-        fontFamily: "'Inter', system-ui, sans-serif",
+        fontFamily: "'Barlow', system-ui, sans-serif",
       }}
     >
       {/* Dynamic Background Gradients */}
@@ -104,7 +104,7 @@ const DemoLandingA = () => {
              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-blue-600 flex items-center justify-center shadow-lg shadow-indigo-500/30">
                <FiZap className="text-white text-xl" />
              </div>
-             <span className="text-white font-bold text-xl tracking-tight" style={{ fontFamily: "'Outfit', Inter, sans-serif" }}>
+             <span className="text-white font-bold text-xl tracking-tight" style={{ fontFamily: "'Barlow', Barlow, sans-serif" }}>
                GPT Platform
              </span>
           </motion.div>
@@ -142,7 +142,7 @@ const DemoLandingA = () => {
         <motion.h1
           initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.1 }}
           className="font-extrabold leading-[1.1] mb-6 max-w-4xl"
-          style={{ fontFamily: "'Outfit', Inter, sans-serif", fontSize: 'clamp(3rem, 8vw, 5.5rem)' }}
+          style={{ fontFamily: "'Barlow', Barlow, sans-serif", fontSize: 'clamp(3rem, 8vw, 5.5rem)' }}
         >
           <span className="text-white">Turn your free time into </span>
           <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 via-blue-400 to-emerald-400">

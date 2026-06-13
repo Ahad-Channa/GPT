@@ -21,8 +21,8 @@ const LiveEarningsTicker = () => {
 
   useEffect(() => {
     fetchEarnings();
-    const interval = setInterval(fetchEarnings, 30000); // 30 sec polling
-    return () => clearInterval(interval);
+    const Barlowval = setInterval(fetchEarnings, 30000); // 30 sec polling
+    return () => clearInterval(Barlowval);
   }, []);
 
   if (earnings.length === 0) return null;

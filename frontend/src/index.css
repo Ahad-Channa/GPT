@@ -11,8 +11,8 @@
   body {
     background-color: #05100a;
     color: #c8d6ef;
-    font-family: 'Inter', system-ui, sans-serif;
-    font-feature-settings: 'cv01' 0, 'zero' 0; /* Disable slashed zeros in Inter and others */
+    font-family: 'Barlow', system-ui, sans-serif;
+    font-feature-settings: 'cv01' 0, 'zero' 0; /* Disable slashed zeros in Barlow and others */
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     overflow-x: hidden;
@@ -20,13 +20,13 @@
   }
 
   .clean-numbers {
-    font-family: 'Inter', system-ui, sans-serif !important;
+    font-family: 'Barlow', system-ui, sans-serif !important;
     font-variant-numeric: normal;
     font-feature-settings: 'cv01' 0, 'zero' 0;
   }
 
   .font-mono {
-    font-family: 'Inter', system-ui, sans-serif !important;
+    font-family: 'Barlow', system-ui, sans-serif !important;
     font-variant-numeric: normal !important;
     font-feature-settings: 'cv01' 0, 'zero' 0 !important;
   }

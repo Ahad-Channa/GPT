@@ -212,7 +212,7 @@ const AdminSupport = () => {
   return (
     <div style={{
       display: 'flex', height: '100%', overflow: 'hidden',
-      fontFamily: "'Inter', system-ui, sans-serif",
+      fontFamily: "'Barlow', system-ui, sans-serif",
       gap: 0
     }}>
 

@@ -188,7 +188,7 @@ function PeriodCard({ period, config, onSave, onReset, saving, resetting }) {
             max="100"
             value={local.visibleSlots || 25}
             onChange={e => set('visibleSlots', Number(e.target.value))}
-            style={{ background: 'none', border: 'none', outline: 'none', color: '#fff', fontSize: '14px', fontWeight: 600, width: '100%', fontFamily: "'Inter', system-ui, sans-serif", fontFeatureSettings: "'zero' 0", fontVariantNumeric: 'normal' }}
+            style={{ background: 'none', border: 'none', outline: 'none', color: '#fff', fontSize: '14px', fontWeight: 600, width: '100%', fontFamily: "'Barlow', system-ui, sans-serif", fontFeatureSettings: "'zero' 0", fontVariantNumeric: 'normal' }}
           />
           <span style={{ fontSize: '10px', color: '#64748b', fontWeight: 600, whiteSpace: 'nowrap' }}>RANKS</span>
         </div>
@@ -217,7 +217,7 @@ function PeriodCard({ period, config, onSave, onReset, saving, resetting }) {
               }
               set('rewardTiers', newTiers);
             }}
-            style={{ background: 'none', border: 'none', outline: 'none', color: '#fff', fontSize: '14px', fontWeight: 600, width: '100%', fontFamily: "'Inter', system-ui, sans-serif", fontFeatureSettings: "'zero' 0", fontVariantNumeric: 'normal' }}
+            style={{ background: 'none', border: 'none', outline: 'none', color: '#fff', fontSize: '14px', fontWeight: 600, width: '100%', fontFamily: "'Barlow', system-ui, sans-serif", fontFeatureSettings: "'zero' 0", fontVariantNumeric: 'normal' }}
           />
           <span style={{ fontSize: '10px', color: '#64748b', fontWeight: 600, whiteSpace: 'nowrap' }}>RANKS</span>
         </div>
@@ -238,7 +238,7 @@ function PeriodCard({ period, config, onSave, onReset, saving, resetting }) {
                       newTiers[idx] = Number(e.target.value);
                       set('rewardTiers', newTiers);
                     }}
-                    style={{ background: 'none', border: 'none', outline: 'none', color: '#fbbf24', fontSize: '13px', fontWeight: 600, width: '100%', fontFamily: "'Inter', system-ui, sans-serif", fontFeatureSettings: "'zero' 0", fontVariantNumeric: 'normal' }}
+                    style={{ background: 'none', border: 'none', outline: 'none', color: '#fbbf24', fontSize: '13px', fontWeight: 600, width: '100%', fontFamily: "'Barlow', system-ui, sans-serif", fontFeatureSettings: "'zero' 0", fontVariantNumeric: 'normal' }}
                   />
                   <CoinDisplay amount={local.rewardTiers?.[idx] || 0} size={9} />
                 </div>
@@ -336,7 +336,7 @@ function HistoryTable({ history, loading }) {
             return (
               <tr key={cycle._id} style={{ borderBottom: '1px solid rgba(255,255,255,0.04)', verticalAlign: 'top' }}>
                 <td style={{ padding: '12px', color: periodColor[cycle.period], fontWeight: 700, textTransform: 'capitalize' }}>{cycle.period}</td>
-                <td style={{ padding: '12px', color: '#94a3b8', fontFamily: "'Inter', system-ui, sans-serif", fontFeatureSettings: "'zero' 0", fontSize: '12px' }}>
+                <td style={{ padding: '12px', color: '#94a3b8', fontFamily: "'Barlow', system-ui, sans-serif", fontFeatureSettings: "'zero' 0", fontSize: '12px' }}>
                   {new Date(cycle.cycleEnd).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit', timeZone: 'UTC' })} UTC
                 </td>
                 <td style={{ padding: '12px', color: '#e2e8f0' }}>

@@ -47,7 +47,7 @@ const LogRow = ({ log }) => {
   return (
     <>
       <tr className={`log-row ${open ? 'log-row--open' : ''}`} onClick={() => setOpen(o => !o)} style={{ cursor: 'pointer' }}>
-        <td style={{ color: '#64748b', fontFamily: "'Inter', system-ui, sans-serif", fontSize: '0.75rem', fontFeatureSettings: "'zero' 0", fontVariantNumeric: 'normal' }}>
+        <td style={{ color: '#64748b', fontFamily: "'Barlow', system-ui, sans-serif", fontSize: '0.75rem', fontFeatureSettings: "'zero' 0", fontVariantNumeric: 'normal' }}>
           {fmt(log.createdAt)}
         </td>
         <td>
@@ -306,7 +306,7 @@ const AdminLogs = () => {
           border: 1px solid rgba(255,255,255,0.06);
           border-radius: 8px;
           padding: 0.75rem 1rem;
-          font-family: 'Inter', system-ui, sans-serif;
+          font-family: 'Barlow', system-ui, sans-serif;
           font-feature-settings: 'zero' 0;
           font-variant-numeric: normal;
           font-size: 0.78rem;

@@ -44,7 +44,7 @@ const DemoLandingB = () => {
       className="relative min-h-screen overflow-hidden flex flex-col"
       style={{
         background: '#03060d', // Ultra dark
-        fontFamily: "'Inter', system-ui, sans-serif",
+        fontFamily: "'Barlow', system-ui, sans-serif",
       }}
     >
       <CyberGrid />
@@ -58,7 +58,7 @@ const DemoLandingB = () => {
           <div className="w-10 h-10 bg-indigo-500 rounded-sm flex items-center justify-center transform rotate-45 border border-indigo-400">
             <FiTerminal className="text-white text-xl transform -rotate-45" />
           </div>
-          <span className="text-white font-bold text-2xl tracking-tighter uppercase" style={{ fontFamily: "'Outfit', Inter, sans-serif" }}>
+          <span className="text-white font-bold text-2xl tracking-tighter uppercase" style={{ fontFamily: "'Barlow', Barlow, sans-serif" }}>
             SYSTEM<span className="text-indigo-500">.EARN</span>
           </span>
         </div>

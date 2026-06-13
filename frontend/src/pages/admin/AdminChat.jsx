@@ -131,7 +131,7 @@ const AdminChat = () => {
   const deletedCount = messages.filter((m) => m.isDeleted).length;
 
   return (
-    <div style={{ fontFamily: "'Inter', sans-serif" }}>
+    <div style={{ fontFamily: "'Barlow', sans-serif" }}>
       {/* Page Header */}
       <div style={{ marginBottom: '2rem' }}>
         <h1 style={{ fontSize: '1.5rem', fontWeight: 700, color: '#f1f5f9', margin: 0, letterSpacing: '-0.01em' }}>

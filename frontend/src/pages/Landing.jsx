@@ -64,13 +64,13 @@ const Landing = () => {
   ];
 
   const earningMethods = [
-    { icon: <FiClipboard size={22} />, title: "Surveys", desc: "Share your opinion on various topics and get rewarded instantly.", highlighted: false },
-    { icon: <LuGamepad2 size={24} />, title: "Apps & Games", desc: "Download apps or play new games. Reach milestones to earn big.", highlighted: true },
-    { icon: <LuBadgePercent size={24} />, title: "Featured Offers", desc: "Sign up for services or trials to earn the highest paying rewards.", highlighted: false },
+    { icon: <FiClipboard size={34} />, title: "Surveys", desc: "Share your opinion on various topics and get rewarded instantly.", highlighted: false },
+    { icon: <LuGamepad2 size={34} />, title: "Apps & Games", desc: "Download apps or play new games. Reach milestones to earn big.", highlighted: true },
+    { icon: <LuBadgePercent size={34} />, title: "Featured Offers", desc: "Sign up for services or trials to earn the highest paying rewards.", highlighted: false },
   ];
 
   return (
-    <div style={{ background: '#0b1512', minHeight: '100vh', color: '#e0ede8', fontFamily: "'Inter', 'Segoe UI', sans-serif", overflowX: 'hidden' }}>
+    <div style={{ background: '#0b1512', minHeight: '100vh', color: '#e0ede8', fontFamily: "'Barlow', 'Segoe UI', sans-serif", overflowX: 'hidden' }}>
 
       {/* ── NAVBAR ── */}
       {currentUser ? (
@@ -79,7 +79,7 @@ const Landing = () => {
         </div>
       ) : (
         <nav style={{
-          position: 'fixed', top: 16, left: 0, right: 0, zIndex: 50,
+          position: 'fixed', top: 30, left: 0, right: 0, zIndex: 50,
           display: 'flex', justifyContent: 'center',
           pointerEvents: 'none',
           padding: '0 16px',
@@ -88,16 +88,17 @@ const Landing = () => {
             pointerEvents: 'all',
             display: 'flex', alignItems: 'center', justifyContent: 'space-between',
             width: '100%',
-            maxWidth: 1100,
+            maxWidth: 1240,
+            height: 84,
             gap: 24,
-            background: 'rgba(11, 21, 16, 0.85)',
-            backdropFilter: 'blur(24px) saturate(160%)',
-            WebkitBackdropFilter: 'blur(24px) saturate(160%)',
+            background: 'rgba(255, 255, 255, 0.07)',
+            backdropFilter: 'blur(24px)',
+            WebkitBackdropFilter: 'blur(24px)',
             border: 'none',
             outline: 'none',
-            borderRadius: 999,
-            padding: '12px 12px 12px 24px',
-            boxShadow: '0 4px 32px rgba(0,0,0,0.45), inset 0 0 0 1px rgba(255,255,255,0.06)',
+            borderRadius: 100,
+            padding: 18,
+            boxShadow: '0px 4px 44px 0px rgba(0, 0, 0, 0.25)',
           }}>
             {/* Logo */}
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0 }}>
@@ -135,15 +136,15 @@ const Landing = () => {
               <button
                 onClick={() => navigate('/login?tab=register')}
                 style={{
-                  background: '#00e676', color: '#051408', padding: '8px 18px',
+                  background: 'linear-gradient(90deg, #29FD98 0%, #2DD4BF 100%)', color: '#051408', padding: '8px 18px',
                   borderRadius: 999, border: 'none', fontWeight: 700, fontSize: 13.5,
                   cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 7,
                   boxShadow: 'none',
                   transition: 'all 0.2s', fontFamily: 'inherit',
                   letterSpacing: '-0.1px',
                 }}
-                onMouseEnter={e => { e.currentTarget.style.background = '#00ff84'; e.currentTarget.style.transform = 'translateY(-1px)'; e.currentTarget.style.boxShadow = '0 4px 20px rgba(0,230,118,0.4)'; }}
-                onMouseLeave={e => { e.currentTarget.style.background = '#00e676'; e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'none'; }}
+                onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-1px)'; e.currentTarget.style.boxShadow = '0 4px 20px rgba(41,253,152,0.4)'; }}
+                onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'none'; }}
               >
                 Get Started <FiArrowRight size={13} />
               </button>
@@ -154,21 +155,21 @@ const Landing = () => {
 
       {/* ── HERO SECTION ── */}
       <section id="home" style={{
-        position: 'relative', paddingTop: currentUser ? 40 : 100, paddingBottom: 60,
-        minHeight: '100vh', display: 'flex', alignItems: 'center',
+        position: 'relative', paddingTop: currentUser ? 80 : 160, paddingBottom: 100,
+        display: 'flex', alignItems: 'center',
         background: 'radial-gradient(ellipse 80% 60% at 60% 40%, rgba(41,253,152,0.08) 0%, transparent 70%), #0b1512',
         overflow: 'hidden'
       }}>
 
-        <div style={{ maxWidth: 1280, margin: '0 auto', padding: '0 40px', width: '100%', display: 'flex', alignItems: 'center', gap: 60 }}>
+        <div style={{ maxWidth: 1280, margin: '0 auto', padding: '0 40px', width: '100%', display: 'flex', alignItems: 'center', gap: 60, flexWrap: 'wrap', justifyContent: 'center' }}>
           {/* Left Content */}
-          <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7 }} style={{ flex: 1, maxWidth: 560 }}>
-            <h1 style={{ fontSize: 'clamp(44px, 5.5vw, 68px)', fontWeight: 800, lineHeight: 1.15, marginBottom: 20, color: '#fff', letterSpacing: '-1.5px' }}>
+          <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7 }} style={{ flex: 1.2, minWidth: 320, maxWidth: 700 }}>
+            <h1 style={{ fontSize: 'clamp(44px, 5.5vw, 68px)', fontWeight: 700, lineHeight: 1.15, marginBottom: 20, color: '#fff', letterSpacing: '-1.5px' }}>
               Your Time Has Value
               <br />
               <span style={{ color: '#29FD98' }}>Get Rewarded For It</span>
             </h1>
-            <p style={{ fontSize: 18, color: '#a0b8ac', lineHeight: 1.6, marginBottom: 40, maxWidth: 480 }}>
+            <p style={{ fontSize: 18, color: '#a0b8ac', lineHeight: 1.6, marginBottom: 40, maxWidth: 600 }}>
               Complete offers, surveys, and tasks to earn real rewards. Join thousands of users already earning every day.
             </p>
 
@@ -206,7 +207,7 @@ const Landing = () => {
           {/* Right - Hero Image & Stats */}
           <motion.div
             initial={{ opacity: 0, scale: 0.85 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.8, delay: 0.2 }}
-            style={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center', position: 'relative', minHeight: 400 }}
+            style={{ flex: 1, minWidth: 320, display: 'flex', justifyContent: 'center', alignItems: 'center', position: 'relative', minHeight: 400 }}
           >
             {/* The Image */}
             <img src="/coins/herosec.png" alt="Rewards" style={{ width: '120%', maxWidth: 700, objectFit: 'contain', zIndex: 1, position: 'relative', right: '-5%', filter: 'grayscale(100%) sepia(100%) hue-rotate(120deg) saturate(400%) brightness(1.2)' }} />
@@ -217,7 +218,7 @@ const Landing = () => {
               background: 'rgba(41, 253, 152, 0.05)', 
               backdropFilter: 'blur(24px)',
               WebkitBackdropFilter: 'blur(24px)',
-              border: '1px solid rgba(41, 253, 152, 0.15)',
+              border: 'none',
               borderRadius: 20, padding: '24px 48px',
               display: 'flex', alignItems: 'center', gap: 48,
               boxShadow: '0 24px 50px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.05)'
@@ -249,35 +250,35 @@ const Landing = () => {
       }}>
         <div style={{ maxWidth: 1200, margin: '0 auto', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 50, flexWrap: 'wrap' }}>
           
-          <div style={{ display: 'flex', alignItems: 'center', gap: 16, color: '#9ab8a8' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 16, color: '#fff' }}>
             <div style={{
               width: 52, height: 52, borderRadius: '50%',
               border: '1px solid rgba(41,253,152,0.2)', background: 'rgba(41,253,152,0.05)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#29FD98'
+              display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff'
             }}><FiUsers size={22} /></div>
-            <span style={{ fontSize: 15, fontWeight: 500 }}>Real Users Earning Daily</span>
+            <span style={{ fontSize: 17, fontWeight: 500 }}>Real Users Earning Daily</span>
           </div>
 
           <div style={{ width: 1, height: 40, background: 'rgba(255,255,255,0.1)' }} className="hidden sm:block" />
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: 16, color: '#9ab8a8' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 16, color: '#fff' }}>
             <div style={{
               width: 52, height: 52, borderRadius: '50%',
               border: '1px solid rgba(41,253,152,0.2)', background: 'rgba(41,253,152,0.05)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#29FD98'
+              display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff'
             }}><FiShield size={22} /></div>
-            <span style={{ fontSize: 15, fontWeight: 500 }}>Secure And Reliable Platform</span>
+            <span style={{ fontSize: 17, fontWeight: 500 }}>Secure And Reliable Platform</span>
           </div>
 
           <div style={{ width: 1, height: 40, background: 'rgba(255,255,255,0.1)' }} className="hidden sm:block" />
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: 16, color: '#9ab8a8' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 16, color: '#fff' }}>
             <div style={{
               width: 52, height: 52, borderRadius: '50%',
               border: '1px solid rgba(41,253,152,0.2)', background: 'rgba(41,253,152,0.05)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#29FD98'
+              display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff'
             }}><FiAward size={22} /></div>
-            <span style={{ fontSize: 15, fontWeight: 500 }}>Transparent Reward System</span>
+            <span style={{ fontSize: 17, fontWeight: 500 }}>Transparent Reward System</span>
           </div>
 
         </div>
@@ -292,14 +293,14 @@ const Landing = () => {
         <div style={{
           position: 'absolute', inset: 0, pointerEvents: 'none', opacity: 0.15,
           backgroundImage: 'linear-gradient(rgba(41,253,152,0.4) 1px, transparent 1px), linear-gradient(90deg, rgba(41,253,152,0.4) 1px, transparent 1px)',
-          backgroundSize: '40px 40px',
+          backgroundSize: '80px 80px',
           maskImage: 'linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,0) 80%)',
           WebkitMaskImage: 'linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,0) 80%)'
         }} />
 
         <div style={{ maxWidth: 1200, margin: '0 auto', position: 'relative', zIndex: 1 }}>
           <div style={{ textAlign: 'center', marginBottom: 64 }}>
-            <h2 style={{ fontSize: 40, fontWeight: 800, color: '#fff', marginBottom: 12 }}>How It Works</h2>
+            <h2 style={{ fontSize: 40, fontWeight: 700, color: '#fff', marginBottom: 12 }}>How It Works</h2>
             <p style={{ fontSize: 16, color: '#9ab8a8' }}>Get started in seconds. No complicated setup required.</p>
           </div>
           
@@ -314,7 +315,7 @@ const Landing = () => {
                   whileHover={{ y: -4 }}
                   style={{
                     background: 'rgba(21, 25, 24, 0.85)', backdropFilter: 'blur(12px)',
-                    border: '1px solid rgba(255,255,255,0.03)',
+                    border: 'none',
                     borderRadius: 24, padding: '40px 32px', position: 'relative', transition: 'all 0.3s',
                     height: '100%', overflow: 'hidden', display: 'flex', flexDirection: 'column',
                     zIndex: 1
@@ -363,21 +364,22 @@ const Landing = () => {
       </section>
 
       {/* ── WHY CHOOSE US ── */}
-      <section id="features" style={{ padding: '80px 40px', background: '#0a120e' }}>
+      <section id="features" style={{ padding: '80px 40px', background: '#111c18' }}>
         <div style={{ maxWidth: 1280, margin: '0 auto' }}>
           <div style={{ textAlign: 'center', marginBottom: 56 }}>
-            <h2 style={{ fontSize: 36, fontWeight: 800, color: '#fff', marginBottom: 12 }}>Why Choose Us</h2>
+            <h2 style={{ fontSize: 48, fontWeight: 700, color: '#fff', marginBottom: 12, lineHeight: '48px', letterSpacing: '0%', textAlign: 'center', verticalAlign: 'middle' }}>Why Choose Us</h2>
             <p style={{ fontSize: 15, color: '#9ab8a8' }}>Powerful features designed specifically for you.</p>
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 16 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 22, justifyItems: 'center' }}>
             {features.map((f, i) => (
               <motion.div
                 key={i}
-                whileHover={{ y: -4, background: 'rgba(255,255,255,0.04)' }}
+                whileHover={{ y: -4, background: 'rgba(255,255,255,0.1)' }}
                 style={{
-                  background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.02)',
-                  borderRadius: 24, padding: '32px 16px', display: 'flex', flexDirection: 'column',
-                  alignItems: 'center', textAlign: 'center', transition: 'all 0.3s'
+                  background: 'rgba(255,255,255,0.06)', border: 'none',
+                  borderRadius: 30, padding: '20px 12px', display: 'flex', flexDirection: 'column',
+                  alignItems: 'center', textAlign: 'center', transition: 'all 0.3s',
+                  width: '100%', maxWidth: 196.67, height: 230
                 }}
               >
                 {/* Arch Wrapper for Icon */}
@@ -416,33 +418,37 @@ const Landing = () => {
         <section id="earn" style={{ padding: '80px 40px', position: 'relative', zIndex: 1 }}>
           <div style={{ maxWidth: 1280, margin: '0 auto' }}>
             <div style={{ textAlign: 'center', marginBottom: 56 }}>
-              <h2 style={{ fontSize: 36, fontWeight: 800, color: '#fff', marginBottom: 12 }}>Start Earning With</h2>
+              <h2 style={{ fontSize: 32, fontWeight: 700, color: '#fff', margin: '0 auto 12px', width: 391, height: 34, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>Start Earning With</h2>
               <p style={{ fontSize: 15, color: '#9ab8a8' }}>Multiple ways to stack your coins. Choose what works best for you.</p>
             </div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 20, maxWidth: 1000, margin: '0 auto' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 20, maxWidth: 1240, margin: '0 auto', justifyItems: 'center' }}>
               {earningMethods.map((method, i) => (
                 <motion.div
                   key={i}
                   whileHover={{ y: -4 }}
                   style={{
-                    background: method.highlighted ? '#29FD98' : 'rgba(255,255,255,0.02)',
-                    borderRadius: 24, padding: '32px', display: 'flex', flexDirection: 'column',
-                    alignItems: 'flex-start', textAlign: 'left',
+                    background: method.highlighted ? 'linear-gradient(90deg, #29FD98 0%, #2DD4BF 100%)' : 'rgba(248, 250, 251, 0.04)',
+                    backdropFilter: method.highlighted ? 'none' : 'blur(24px)',
+                    WebkitBackdropFilter: method.highlighted ? 'none' : 'blur(24px)',
+                    borderRadius: 20, padding: 24, display: 'flex', flexDirection: 'column',
+                    alignItems: 'flex-start', textAlign: 'left', gap: 12,
                     boxShadow: method.highlighted ? '0 12px 40px rgba(41,253,152,0.15)' : 'none',
-                    transition: 'all 0.3s'
+                    transition: 'all 0.3s',
+                    width: '100%', maxWidth: 397.33, height: 252,
+                    borderBottom: method.highlighted ? '1px solid rgba(0,0,0,0.1)' : '1px solid rgba(255,255,255,0.05)'
                   }}
                 >
                   {/* Arch Wrapper */}
                   <div style={{
-                    width: 56, height: 72,
-                    background: method.highlighted ? 'linear-gradient(to bottom, rgba(0,0,0,0.08) 0%, transparent 100%)' : 'linear-gradient(to bottom, rgba(41,253,152,0.12) 0%, transparent 100%)',
-                    borderTopLeftRadius: 28, borderTopRightRadius: 28,
-                    display: 'flex', justifyContent: 'center', paddingTop: 16,
-                    color: method.highlighted ? '#000' : '#29FD98', marginBottom: 24
+                    width: 94, height: 94, gap: 10,
+                    background: 'linear-gradient(180deg, rgba(41, 253, 152, 0.2) 0%, rgba(41, 253, 152, 0) 100%)',
+                    borderTopLeftRadius: 60, borderTopRightRadius: 60,
+                    display: 'flex', justifyContent: 'center', paddingTop: 20,
+                    color: method.highlighted ? '#000' : '#29FD98'
                   }}>
                     {method.icon}
                   </div>
-                  <h3 style={{ fontSize: 18, fontWeight: 700, color: method.highlighted ? '#000' : '#fff', marginBottom: 12 }}>{method.title}</h3>
+                  <h3 style={{ fontSize: 18, fontWeight: 700, color: method.highlighted ? '#000' : '#fff' }}>{method.title}</h3>
                   <p style={{ fontSize: 14, color: method.highlighted ? 'rgba(0,0,0,0.7)' : '#9ab8a8', lineHeight: 1.7 }}>{method.desc}</p>
                 </motion.div>
               ))}
@@ -454,7 +460,7 @@ const Landing = () => {
         <section id="faq" style={{ padding: '80px 40px', position: 'relative', zIndex: 1 }}>
           <div style={{ maxWidth: 960, margin: '0 auto' }}>
             <div style={{ textAlign: 'center', marginBottom: 56 }}>
-              <h2 style={{ fontSize: 36, fontWeight: 800, color: '#fff', marginBottom: 12 }}>Frequently Asked Questions</h2>
+              <h2 style={{ fontSize: 32, fontWeight: 700, color: '#fff', margin: '0 auto 12px', width: 594, height: 34, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>Frequently Asked Questions</h2>
               <p style={{ fontSize: 15, color: '#9ab8a8' }}>Got questions? We've got answers.</p>
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
@@ -462,16 +468,19 @@ const Landing = () => {
                 <div
                   key={index}
                   style={{
-                    background: 'rgba(255,255,255,0.03)',
-                    borderRadius: 12, overflow: 'hidden'
+                    background: 'rgba(255, 255, 255, 0.08)',
+                    borderRadius: 20, overflow: 'hidden',
+                    backdropFilter: 'blur(54px)',
+                    WebkitBackdropFilter: 'blur(54px)',
+                    boxShadow: '0px 4px 34px 0px rgba(0, 0, 0, 0.05)'
                   }}
                 >
                   <button
                     onClick={() => setActiveFaq(activeFaq === index ? null : index)}
                     style={{
-                      width: '100%', padding: '20px 24px', display: 'flex', alignItems: 'center',
+                      width: '100%', padding: '30px 20px', display: 'flex', alignItems: 'center',
                       justifyContent: 'space-between', background: 'none', border: 'none',
-                      color: '#fff', fontWeight: 700, fontSize: 14, cursor: 'pointer', textAlign: 'left', gap: 12
+                      color: '#fff', fontWeight: 700, fontSize: 14, cursor: 'pointer', textAlign: 'left', gap: 10
                     }}
                   >
                     <span>{faq.q}</span>
@@ -489,7 +498,7 @@ const Landing = () => {
                         transition={{ duration: 0.25 }}
                         style={{ overflow: 'hidden' }}
                       >
-                        <div style={{ padding: '0 24px 20px', fontSize: 13, color: '#9ab8a8', lineHeight: 1.7 }}>
+                        <div style={{ padding: '0 20px 30px', fontSize: 13, color: '#9ab8a8', lineHeight: 1.7 }}>
                           {faq.a}
                         </div>
                       </motion.div>
@@ -498,11 +507,15 @@ const Landing = () => {
                 </div>
               ))}
             </div>
-
+          </div>
+          
+          <div style={{ maxWidth: 1240, margin: '0 auto', width: '100%' }}>
             {/* Supported Payout Methods */}
             <div style={{
-              marginTop: 64, background: 'rgba(255,255,255,0.04)',
-              borderRadius: 999, padding: '24px 40px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 20
+              marginTop: 64, background: 'rgba(255, 255, 255, 0.1)',
+              backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)',
+              borderRadius: 70, padding: '24px 40px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 20,
+              minHeight: 80
             }}>
               <span style={{ fontSize: 16, fontWeight: 700, color: '#fff', flexShrink: 0 }}>Supported Payout Methods</span>
               <div style={{ display: 'flex', gap: 32, flexWrap: 'wrap', alignItems: 'center' }}>
@@ -551,10 +564,10 @@ const Landing = () => {
       </section>
 
       {/* ── FOOTER ── */}
-      <footer style={{ background: '#05100a', padding: '64px 40px 40px', borderTop: 'none' }}>
-        <div style={{ maxWidth: 1000, margin: '0 auto' }}>
+      <footer style={{ position: 'relative', zIndex: 1, borderTop: '1px solid rgba(255,255,255,0.05)', background: '#051408', padding: '64px 40px 40px' }}>
+        <div style={{ maxWidth: 1240, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: 30 }}>
           {/* Logo + Description */}
-          <div style={{ textAlign: 'center', marginBottom: 32 }}>
+          <div style={{ textAlign: 'center' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12, marginBottom: 20 }}>
               <img src="/coins/round.png" alt="TaskMint Logo" style={{ width: 44, height: 44 }} />
               <span style={{ color: '#fff', fontWeight: 800, fontSize: 28, letterSpacing: '-0.5px' }}>TaskMint</span>
@@ -565,9 +578,9 @@ const Landing = () => {
           </div>
 
           {/* Footer Links */}
-          <div style={{ display: 'flex', justifyContent: 'center', gap: 16, flexWrap: 'wrap', marginBottom: 24 }}>
+          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 30, flexWrap: 'wrap', width: 708, height: 32, margin: '0 auto' }}>
             {['Features', 'FAQ', 'Blog', 'Terms of Use', 'Privacy Policy', 'Support'].map((link, i) => (
-              <span key={i} style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+              <span key={i} style={{ display: 'flex', alignItems: 'center', gap: 30 }}>
                 <a href="#" style={{ fontSize: 13, color: '#00e676', textDecoration: 'none', fontWeight: 600, transition: 'opacity 0.2s' }}
                   onMouseEnter={e => e.currentTarget.style.opacity = 0.8}
                   onMouseLeave={e => e.currentTarget.style.opacity = 1}
@@ -577,7 +590,7 @@ const Landing = () => {
             ))}
           </div>
 
-          <div style={{ width: '100%', height: 1, background: 'rgba(255,255,255,0.08)', margin: '24px 0' }} />
+          <div style={{ width: '100%', height: 1, background: 'rgba(255,255,255,0.08)' }} />
 
           {/* Bottom Row */}
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 16 }}>
@@ -600,7 +613,7 @@ const Landing = () => {
 };
 
 const navLinkStyle = {
-  background: 'none', border: 'none', color: '#9ab8a8', fontSize: 14,
+  background: 'none', border: 'none', color: '#fff', fontSize: 14,
   fontWeight: 500, cursor: 'pointer', padding: '4px 0', transition: 'color 0.2s',
   fontFamily: 'inherit'
 };

@@ -8,7 +8,7 @@
   display: flex;
   min-height: 100vh;
   background: #080b14;
-  font-family: 'Inter', system-ui, sans-serif;
+  font-family: 'Barlow', system-ui, sans-serif;
   font-feature-settings: 'cv01' 0, 'zero' 0;
   font-variant-numeric: normal;
   color: #c8d6ef;
@@ -60,7 +60,7 @@
   font-size: 0.85rem;
   font-weight: 700;
   color: white;
-  font-family: 'Inter', system-ui, sans-serif;
+  font-family: 'Barlow', system-ui, sans-serif;
   line-height: 1.2;
 }
 
@@ -69,7 +69,7 @@
   color: #fbbf24;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  font-family: 'Inter', system-ui, sans-serif;
+  font-family: 'Barlow', system-ui, sans-serif;
   font-variant-numeric: normal;
   font-feature-settings: 'cv01' 0, 'zero' 0;
 }
@@ -168,7 +168,7 @@
   font-size: 0.9rem;
   font-weight: 600;
   color: #e2e8f0;
-  font-family: 'Inter', system-ui, sans-serif;
+  font-family: 'Barlow', system-ui, sans-serif;
 }
 
 .admin-user-info {
@@ -187,7 +187,7 @@
   font-size: 1.5rem;
   font-weight: 700;
   color: white;
-  font-family: 'Inter', system-ui, sans-serif;
+  font-family: 'Barlow', system-ui, sans-serif;
   margin-bottom: 0.25rem;
 }
 
@@ -245,7 +245,7 @@
 .admin-stat-value {
   font-size: 2rem;
   font-weight: 700;
-  font-family: 'Inter', system-ui, sans-serif;
+  font-family: 'Barlow', system-ui, sans-serif;
   font-variant-numeric: normal;
   font-feature-settings: 'cv01' 0, 'zero' 0;
   color: white;
@@ -304,7 +304,7 @@
   background: rgba(255,255,255,0.03);
   color: #e2e8f0;
   font-size: 0.85rem;
-  font-family: 'Inter', system-ui, sans-serif;
+  font-family: 'Barlow', system-ui, sans-serif;
   outline: none;
   transition: border-color 0.2s, box-shadow 0.2s;
 }
@@ -324,7 +324,7 @@
   cursor: pointer;
   font-size: 0.75rem;
   font-weight: 500;
-  font-family: 'Inter', system-ui, sans-serif;
+  font-family: 'Barlow', system-ui, sans-serif;
   transition: all 0.18s;
   white-space: nowrap;
 }
@@ -408,7 +408,7 @@
   font-size: 1.1rem;
   font-weight: 700;
   color: white;
-  font-family: 'Inter', system-ui, sans-serif;
+  font-family: 'Barlow', system-ui, sans-serif;
   margin-bottom: 0.5rem;
 }
 
@@ -426,7 +426,7 @@
   padding: 0.75rem 1rem;
   color: #e2e8f0;
   font-size: 0.85rem;
-  font-family: 'Inter', system-ui, sans-serif;
+  font-family: 'Barlow', system-ui, sans-serif;
   resize: vertical;
   outline: none;
   min-height: 90px;

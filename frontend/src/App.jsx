@@ -93,7 +93,7 @@ function App() {
             color: '#fff',
             border: '1px solid rgba(255,255,255,0.15)',
             borderRadius: '2px',
-            fontFamily: "'Inter', system-ui, sans-serif",
+            fontFamily: "'Barlow', system-ui, sans-serif",
             fontFeatureSettings: '"cv01" 0, "zero" 0',
             fontVariantNumeric: 'normal',
             fontSize: '12px',

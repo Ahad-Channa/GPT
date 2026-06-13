@@ -254,7 +254,7 @@ const Chat = () => {
       flexDirection: 'column',
       overflow: 'hidden',
       background: '#080b14',
-      fontFamily: "'Inter', system-ui, sans-serif"
+      fontFamily: "'Barlow', system-ui, sans-serif"
     }}>
       {/* ambient glow */}
       <div className="ambient-bg" aria-hidden="true" />

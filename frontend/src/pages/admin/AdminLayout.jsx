@@ -17,8 +17,8 @@ const AdminLayout = () => {
 
   useEffect(() => {
     fetchNotificationCounts();
-    const interval = setInterval(fetchNotificationCounts, 60000);
-    return () => clearInterval(interval);
+    const Barlowval = setInterval(fetchNotificationCounts, 60000);
+    return () => clearInterval(Barlowval);
   }, []);
 
   const fetchNotificationCounts = async () => {

@@ -158,7 +158,7 @@ const LiveChat = ({ isOpen, onClose }) => {
               borderLeft: '1px solid rgba(255,255,255,0.07)',
               boxShadow: '-8px 0 40px rgba(0,0,0,0.6)',
               zIndex: 50, display: 'flex', flexDirection: 'column',
-              fontFamily: "'Inter', system-ui, sans-serif"
+              fontFamily: "'Barlow', system-ui, sans-serif"
             }}
           >
 
