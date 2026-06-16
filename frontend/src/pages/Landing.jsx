@@ -1,16 +1,18 @@
-import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import React, { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import {
-  FiArrowRight, FiUsers, FiDollarSign, FiZap,
-  FiCheckCircle, FiTrendingUp, FiGift, FiLayers, FiActivity, FiShield,
-  FiChevronDown, FiChevronUp, FiStar, FiAward, FiLock, FiLogIn, FiMonitor,
-  FiSmartphone, FiBarChart2, FiUserPlus, FiGrid, FiUserCheck, FiClipboard
-} from 'react-icons/fi';
-import { LuGamepad2, LuBadgePercent } from 'react-icons/lu';
-import { FaPaypal, FaAmazon, FaBitcoin, FaDiscord, FaInstagram, FaYoutube, FaFacebook } from 'react-icons/fa';
 import { useAuth } from '../contexts/AuthContext';
 import Header from '../components/layout/Header';
+import {
+  FiGlobe, FiLogIn, FiArrowRight, FiUsers, FiDollarSign,
+  FiUserPlus, FiCheckSquare, FiGift, FiLayers, FiZap,
+  FiMonitor, FiActivity, FiClipboard, FiChevronDown, FiUser
+} from 'react-icons/fi';
+import { LuGamepad2, LuBadgePercent } from 'react-icons/lu';
+import {
+  FaPaypal, FaAmazon, FaBitcoin, FaDiscord,
+  FaInstagram, FaYoutube, FaFacebook
+} from 'react-icons/fa';
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
@@ -18,7 +20,7 @@ const Landing = () => {
   const navigate = useNavigate();
   const { currentUser } = useAuth();
   const [stats, setStats] = useState({ totalUsers: 0, totalPaidOut: 0 });
-  const [activeFaq, setActiveFaq] = useState(0);
+  const [openFaq, setOpenFaq] = useState(null);
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -40,582 +42,1050 @@ const Landing = () => {
     return () => clearInterval(intv);
   }, []);
 
-  const scrollToSection = (id) => {
-    const element = document.getElementById(id);
-    if (element) element.scrollIntoView({ behavior: 'smooth' });
-  };
-
-  const faqs = [
-    { q: "How do I earn money?", a: "By completing offers, surveys, and tasks on the platform." },
-    { q: "When do I get paid?", a: "Rewards can be instant or take some time depending on the offer." },
-    { q: "How do I contact you?", a: "You can reach us through our support page or Discord community." },
-    { q: "Is it free to use?", a: "Yes, completely free. No hidden fees or charges." },
-    { q: "Why was my reward not credited?", a: "This can happen due to tracking issues. You can contact the offerwall support." },
-    { q: "What is the minimum payout?", a: "Our minimum payout starts at just $0.50, depending on the chosen reward method." },
-  ];
-
-  const features = [
-    { icon: <FiLayers size={22} />, title: "Multiple Offerwalls", desc: "Discover various earning options in one place." },
-    { icon: <FiZap size={22} />, title: "Fast Payouts", desc: "Withdraw your earnings quickly and securely." },
-    { icon: <FiGift size={22} />, title: "Daily Bonus", desc: "Earn extra rewards every day you stay active." },
-    { icon: <FiMonitor size={22} />, title: "VIP Progress", desc: "Level up and unlock better rewards." },
-    { icon: <FiUsers size={22} />, title: "Referral System", desc: "Refer friends and earn a share of their income." },
-    { icon: <FiActivity size={22} />, title: "Live Activity", desc: "See real-time earnings across the platform." },
-  ];
-
-  const earningMethods = [
-    { icon: <FiClipboard size={34} />, title: "Surveys", desc: "Share your opinion on various topics and get rewarded instantly.", highlighted: false },
-    { icon: <LuGamepad2 size={34} />, title: "Apps & Games", desc: "Download apps or play new games. Reach milestones to earn big.", highlighted: true },
-    { icon: <LuBadgePercent size={34} />, title: "Featured Offers", desc: "Sign up for services or trials to earn the highest paying rewards.", highlighted: false },
-  ];
-
   return (
-    <div style={{ background: '#0b1512', minHeight: '100vh', color: '#e0ede8', fontFamily: "'Barlow', 'Segoe UI', sans-serif", overflowX: 'hidden' }}>
+    <div className="min-h-screen bg-[#050505] text-white font-sans overflow-x-hidden selection:bg-[#29FD98] selection:text-black">
 
-      {/* ── NAVBAR ── */}
+      {/* NAVBAR */}
       {currentUser ? (
-        <div style={{ position: 'relative', zIndex: 50 }}>
+        <div className="relative z-50">
           <Header />
         </div>
       ) : (
-        <nav style={{
-          position: 'fixed', top: 30, left: 0, right: 0, zIndex: 50,
-          display: 'flex', justifyContent: 'center',
-          pointerEvents: 'none',
-          padding: '0 16px',
-        }}>
-          <div style={{
-            pointerEvents: 'all',
-            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-            width: '100%',
-            maxWidth: 1240,
-            height: 84,
-            gap: 24,
-            background: 'rgba(255, 255, 255, 0.07)',
-            backdropFilter: 'blur(24px)',
-            WebkitBackdropFilter: 'blur(24px)',
-            border: 'none',
-            outline: 'none',
-            borderRadius: 100,
-            padding: 18,
-            boxShadow: '0px 4px 44px 0px rgba(0, 0, 0, 0.25)',
-          }}>
-            {/* Logo */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0 }}>
-              <img src="/coins/round.png" alt="TaskMint" style={{ width: 34, height: 34, objectFit: 'contain' }} />
-              <span style={{ color: '#fff', fontWeight: 800, fontSize: 17, letterSpacing: '-0.2px' }}>TaskMint</span>
-            </div>
-
-            {/* Nav links */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: 24, fontSize: 13.5 }}>
-              <button onClick={() => scrollToSection('home')} style={navLinkStyle}>Home</button>
-              <button onClick={() => scrollToSection('earn')} style={navLinkStyle}>Earn</button>
-              <button onClick={() => scrollToSection('how-it-works')} style={navLinkStyle}>How it Works</button>
-              <button onClick={() => scrollToSection('features')} style={navLinkStyle}>Features</button>
-              <button onClick={() => scrollToSection('faq')} style={navLinkStyle}>FAQ</button>
-            </div>
-
-            {/* Right side */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
-              {/* Language pill */}
-              <div style={{
-                display: 'flex', alignItems: 'center', gap: 6,
-                padding: '6px 12px', borderRadius: 999,
-                border: '1px solid rgba(255,255,255,0.1)',
-                background: 'rgba(255,255,255,0.05)',
-                fontSize: 13, color: '#a0b8ac', cursor: 'pointer', fontWeight: 500,
-                transition: 'all 0.2s',
+        <nav className="w-full absolute top-0 left-0 right-0 z-50 py-6 px-8 flex justify-between items-center max-w-7xl mx-auto">
+          {/* Logo */}
+          <div className="flex items-center gap-2 cursor-pointer">
+            <img
+              src="/coins/logo copy.png"
+              alt="Logo"
+              style={{
+                width: 53.985984802246094,
+                height: 53.98569107055664
               }}
-                onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.09)'; e.currentTarget.style.color = '#fff'; }}
-                onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; e.currentTarget.style.color = '#a0b8ac'; }}
-              >
-                🇬🇧 Eng <span style={{ fontSize: 10, opacity: 0.55, marginLeft: 2 }}>▾</span>
-              </div>
+            />
+            <span
+              className="font-bold tracking-tight text-white"
+              style={{
+                fontFamily: '"Barlow Condensed", sans-serif',
+                fontSize: '28px',
+                lineHeight: '30.15px'
+              }}
+            >
+              TaskMint
+            </span>
+          </div>
 
-              {/* Get Started pill */}
-              <button
-                onClick={() => navigate('/login?tab=register')}
-                style={{
-                  background: 'linear-gradient(90deg, #29FD98 0%, #2DD4BF 100%)', color: '#051408', padding: '8px 18px',
-                  borderRadius: 999, border: 'none', fontWeight: 700, fontSize: 13.5,
-                  cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 7,
-                  boxShadow: 'none',
-                  transition: 'all 0.2s', fontFamily: 'inherit',
-                  letterSpacing: '-0.1px',
-                }}
-                onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-1px)'; e.currentTarget.style.boxShadow = '0 4px 20px rgba(41,253,152,0.4)'; }}
-                onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'none'; }}
-              >
-                Get Started <FiArrowRight size={13} />
-              </button>
+          {/* Links */}
+          <div className="hidden md:flex items-center gap-8 font-['Barlow_Condensed'] font-semibold text-[22px] leading-none tracking-normal text-white">
+            <a href="#" className="hover:text-[#29FD98] transition-colors">Home</a>
+            <a href="#earn" className="hover:text-[#29FD98] transition-colors">Earn</a>
+            <a href="#how-it-works" className="hover:text-[#29FD98] transition-colors">How it Works</a>
+            <a href="#features" className="hover:text-[#29FD98] transition-colors">Features</a>
+            <a href="#faq" className="hover:text-[#29FD98] transition-colors">FAQ</a>
+          </div>
+
+          {/* Right Actions */}
+          <div
+            className="flex items-center"
+            style={{ width: 282, height: 48, gap: 10 }}
+          >
+            <div
+              className="hidden sm:flex items-center justify-center cursor-pointer text-white transition-all hover:brightness-110 active:translate-y-[4px] active:shadow-none"
+              style={{
+                width: 104,
+                height: 48,
+                borderRadius: 10,
+                /* Using a slightly tighter padding to ensure all 3 elements fit inside the 104px width */
+                padding: '10px 14px',
+                gap: 8,
+                background: 'rgba(39, 112, 58, 1)',
+                boxShadow: '0px 4px 0px 0px rgba(35, 80, 47, 1)'
+              }}
+            >
+              <img src="/coins/globe.png" alt="Lang" className="w-5 h-5 object-contain" />
+              <span className="font-['Barlow_Condensed'] font-semibold text-[18px] leading-none tracking-normal">
+                Eng
+              </span>
+              <img src="/coins/arrow.png" alt="Arrow" className="w-3 h-3 object-contain" />
             </div>
+            <button
+              onClick={() => navigate('/login?tab=register')}
+              className="flex items-center justify-center text-white transition-all hover:brightness-110 active:translate-y-[4px] active:shadow-none"
+              style={{
+                width: 168,
+                height: 48,
+                borderRadius: 10,
+                padding: '10px 24px',
+                gap: 10,
+                background: 'rgba(73, 178, 101, 1)',
+                boxShadow: '0px 4px 0px 0px rgba(45, 110, 62, 1)'
+              }}
+            >
+              <span className="font-['Barlow_Condensed'] font-bold text-[18px] leading-none tracking-normal">
+                Get Started
+              </span>
+              <FiArrowRight className="text-[18px]" strokeWidth={3} />
+            </button>
           </div>
         </nav>
       )}
 
-      {/* ── HERO SECTION ── */}
-      <section id="home" style={{
-        position: 'relative', paddingTop: currentUser ? 80 : 160, paddingBottom: 100,
-        display: 'flex', alignItems: 'center',
-        background: 'radial-gradient(ellipse 80% 60% at 60% 40%, rgba(41,253,152,0.08) 0%, transparent 70%), #0b1512',
-        overflow: 'hidden'
-      }}>
+      {/* Header Bottom Line */}
+      <div
+        className="absolute left-1/2 -translate-x-1/2 z-40"
+        style={{
+          top: 106,
+          width: '100%',
+          maxWidth: 1240,
+          borderBottom: '1px solid rgba(255, 255, 255, 0.4)'
+        }}
+      />
 
-        <div style={{ maxWidth: 1280, margin: '0 auto', padding: '0 40px', width: '100%', display: 'flex', alignItems: 'center', gap: 60, flexWrap: 'wrap', justifyContent: 'center' }}>
-          {/* Left Content */}
-          <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7 }} style={{ flex: 1.2, minWidth: 320, maxWidth: 700 }}>
-            <h1 style={{ fontSize: 'clamp(44px, 5.5vw, 68px)', fontWeight: 700, lineHeight: 1.15, marginBottom: 20, color: '#fff', letterSpacing: '-1.5px' }}>
-              Your Time Has Value
-              <br />
-              <span style={{ color: '#29FD98' }}>Get Rewarded For It</span>
+      {/* HERO SECTION */}
+      <section className="relative pt-[184px] pb-[63px] md:pb-[95px] px-6 lg:px-8 max-w-7xl mx-auto flex flex-col lg:flex-row items-start gap-12 lg:gap-8">
+        {/* Left text */}
+        <div className="flex-1 w-full z-10">
+          <div
+            className="flex flex-col text-left"
+            style={{ width: '100%', maxWidth: 654, gap: 40 }}
+          >
+            <h1
+              className="font-bold text-white m-0"
+              style={{
+                fontFamily: '"Barlow Condensed", sans-serif',
+                fontSize: 88,
+                lineHeight: '90px',
+                whiteSpace: 'nowrap'
+              }}
+            >
+              Your Time Has Value<br />
+              <span style={{ color: 'rgba(73, 178, 101, 1)' }}>Get Rewarded For It</span>
             </h1>
-            <p style={{ fontSize: 18, color: '#a0b8ac', lineHeight: 1.6, marginBottom: 40, maxWidth: 600 }}>
+            <p
+              className="m-0"
+              style={{
+                fontFamily: '"Barlow Condensed", sans-serif',
+                fontSize: 22,
+                lineHeight: '32px',
+                color: 'rgba(209, 213, 219, 1)',
+                fontWeight: 400,
+                marginTop: -10
+              }}
+            >
               Complete offers, surveys, and tasks to earn real rewards. Join thousands of users already earning every day.
             </p>
+          </div>
 
-            {/* CTA Buttons */}
-            <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
-              <button
-                onClick={() => navigate('/login?tab=register')}
-                style={{
-                  background: '#29FD98', color: '#051408', padding: '14px 32px',
-                  borderRadius: 999, border: 'none', fontWeight: 700, fontSize: 15,
-                  cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8,
-                  transition: 'all 0.2s', letterSpacing: '-0.2px'
-                }}
-                onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 8px 24px rgba(41,253,152,0.3)'; }}
-                onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'none'; }}
-              >
-                Start Earning <FiArrowRight size={18} />
-              </button>
-              <button
-                onClick={() => navigate('/login')}
-                style={{
-                  background: 'transparent', color: '#fff', padding: '14px 32px',
-                  borderRadius: 999, border: '1px solid rgba(255,255,255,0.4)', fontWeight: 600, fontSize: 15,
-                  cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8, transition: 'all 0.2s',
-                  letterSpacing: '-0.2px'
-                }}
-                onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.6)'; }}
-                onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.4)'; }}
-              >
-                <FiLogIn size={18} /> Login
-              </button>
-            </div>
-          </motion.div>
-
-          {/* Right - Hero Image & Stats */}
           <motion.div
-            initial={{ opacity: 0, scale: 0.85 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.8, delay: 0.2 }}
-            style={{ flex: 1, minWidth: 320, display: 'flex', justifyContent: 'center', alignItems: 'center', position: 'relative', minHeight: 400 }}
+            initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.2 }}
+            className="flex items-center justify-start mt-[35px]"
+            style={{
+              width: 410,
+              height: 48,
+              gap: 10
+            }}
           >
-            {/* The Image */}
-            <img src="/coins/herosec.png" alt="Rewards" style={{ width: '120%', maxWidth: 700, objectFit: 'contain', zIndex: 1, position: 'relative', right: '-5%', filter: 'grayscale(100%) sepia(100%) hue-rotate(120deg) saturate(400%) brightness(1.2)' }} />
+            <button
+              onClick={() => navigate('/login')}
+              className="flex items-center justify-center text-white transition-all hover:brightness-110 active:translate-y-[4px] active:shadow-none"
+              style={{
+                width: 200,
+                height: 48,
+                borderRadius: 10,
+                padding: '10px 30px',
+                gap: 10,
+                backgroundColor: 'rgba(39, 112, 58, 1)',
+                boxShadow: '0px 4px 0px 0px rgba(35, 80, 47, 1)'
+              }}
+            >
+              <img src="/coins/login.png" alt="Login Icon" style={{ width: 24, height: 24, objectFit: 'contain' }} />
+              <span style={{
+                fontFamily: '"Barlow Condensed", sans-serif',
+                fontWeight: 700,
+                fontSize: 18,
+                lineHeight: '100%'
+              }}>
+                Login
+              </span>
+            </button>
+            <button
+              onClick={() => navigate('/login?tab=register')}
+              className="flex items-center justify-center text-white transition-all hover:brightness-110 active:translate-y-[4px] active:shadow-none"
+              style={{
+                width: 168,
+                height: 48,
+                borderRadius: 10,
+                padding: '10px 24px',
+                gap: 10,
+                background: 'rgba(73, 178, 101, 1)',
+                boxShadow: '0px 4px 0px 0px rgba(45, 110, 62, 1)'
+              }}
+            >
+              <span style={{
+                fontFamily: '"Barlow Condensed", sans-serif',
+                fontWeight: 700,
+                fontSize: 18,
+                lineHeight: '100%'
+              }}>
+                Get Started
+              </span>
+              <FiArrowRight className="text-[18px]" strokeWidth={3} />
+            </button>
+          </motion.div>
+        </div>
 
-            {/* Stats Box overlay */}
-            <div style={{
-              position: 'absolute', bottom: '5%', right: '15%', zIndex: 2,
-              background: 'rgba(41, 253, 152, 0.05)', 
-              backdropFilter: 'blur(24px)',
-              WebkitBackdropFilter: 'blur(24px)',
-              border: 'none',
-              borderRadius: 20, padding: '24px 48px',
-              display: 'flex', alignItems: 'center', gap: 48,
-              boxShadow: '0 24px 50px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.05)'
-            }}>
-              <div style={{ textAlign: 'center' }}>
-                <div style={{ fontSize: 32, fontWeight: 800, color: '#fff', lineHeight: 1 }}>
-                  {stats.totalUsers.toLocaleString()}
-                </div>
-                <div style={{ fontSize: 13, color: '#9ab8a8', marginTop: 8, fontWeight: 500 }}>Total Users</div>
-              </div>
-              
-              <div style={{ width: 1, height: 45, background: 'rgba(255,255,255,0.12)' }} />
+        {/* Right image */}
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.8, delay: 0.3 }}
+          className="flex-1 w-full relative z-0 flex justify-center lg:justify-end mt-12 lg:mt-[-50px]"
+        >
+          <div className="hover:scale-105 transition-transform duration-700 drop-shadow-2xl" style={{ width: 590, minWidth: 590, height: 590 }}>
+            <div
+              style={{
+                width: '100%',
+                height: '100%',
+                backgroundImage: `linear-gradient(rgba(182, 242, 198, 1), rgba(182, 242, 198, 1)), url('/coins/hero.png')`,
+                backgroundBlendMode: 'color',
+                backgroundSize: 'contain',
+                backgroundRepeat: 'no-repeat',
+                backgroundPosition: 'center',
+                WebkitMaskImage: `url('/coins/hero.png')`,
+                WebkitMaskSize: 'contain',
+                WebkitMaskRepeat: 'no-repeat',
+                WebkitMaskPosition: 'center',
+                maskImage: `url('/coins/hero.png')`,
+                maskSize: 'contain',
+                maskRepeat: 'no-repeat',
+                maskPosition: 'center'
+              }}
+            />
+          </div>
+        </motion.div>
 
-              <div style={{ textAlign: 'center' }}>
-                <div style={{ fontSize: 32, fontWeight: 800, color: '#fff', lineHeight: 1 }}>
-                  ${stats.totalPaidOut.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                </div>
-                <div style={{ fontSize: 13, color: '#9ab8a8', marginTop: 8, fontWeight: 500 }}>Total Paid</div>
-              </div>
+        {/* Floating Stats Box */}
+        <div className="absolute z-20 left-1/2 -translate-x-1/2 w-[90%] md:w-full max-w-[1240px] bottom-0 translate-y-1/2 lg:translate-y-0 lg:bottom-auto lg:top-[603px]">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.5 }}
+            className="flex flex-col md:flex-row items-center w-full p-6 md:p-[40px] gap-6 md:gap-[40px] rounded-[20px] min-h-[120px] md:h-[120px]"
+            style={{
+              backgroundColor: 'rgba(129, 129, 129, 0.2)',
+              backdropFilter: 'blur(64px)',
+              WebkitBackdropFilter: 'blur(64px)'
+            }}
+          >
+            <div className="w-full flex items-center max-w-[540px]" style={{ height: 40, gap: 14 }}>
+              <img src="/coins/people.png" alt="Users" className="w-[40px] h-[40px] object-contain" />
+              <span style={{ display: 'inline-block', fontFamily: '"Barlow Condensed", sans-serif', fontWeight: 700, fontSize: 30, lineHeight: '24px', letterSpacing: '0%', textTransform: 'capitalize', color: 'rgba(255, 255, 255, 1)', verticalAlign: 'middle', opacity: 1, width: 428, height: 24 }}>Total Users</span>
+              <span style={{ display: 'inline-block', width: 44, height: 24, fontFamily: '"Barlow Condensed", sans-serif', fontWeight: 700, fontSize: 60, lineHeight: '24px', letterSpacing: '0%', textAlign: 'center', verticalAlign: 'middle', textTransform: 'capitalize', color: 'rgba(255, 255, 255, 1)', opacity: 1 }}>
+                {(stats.totalUsers || 16).toLocaleString()}
+              </span>
+            </div>
+
+            <div className="hidden md:block w-px h-[60px] bg-white/10" />
+            <div className="md:hidden w-full h-px bg-white/10" />
+
+            <div className="w-full flex items-center max-w-[540px]" style={{ height: 40, gap: 14 }}>
+              <img src="/coins/doller.png" alt="Paid" className="w-[40px] h-[40px] object-contain" />
+              <span style={{ display: 'inline-block', fontFamily: '"Barlow Condensed", sans-serif', fontWeight: 700, fontSize: 30, lineHeight: '24px', letterSpacing: '0%', textTransform: 'capitalize', color: 'rgba(255, 255, 255, 1)', verticalAlign: 'middle', opacity: 1, width: 428, height: 24 }}>Total Paid</span>
+              <span style={{ display: 'inline-block', width: 135, height: 24, fontFamily: '"Barlow Condensed", sans-serif', fontWeight: 700, fontSize: 60, lineHeight: '24px', letterSpacing: '0%', textAlign: 'center', verticalAlign: 'middle', textTransform: 'capitalize', color: 'rgba(255, 255, 255, 1)', opacity: 1 }}>
+                ${(stats.totalPaidOut || 31.33).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              </span>
             </div>
           </motion.div>
         </div>
       </section>
 
-      {/* ── TRUST BADGES ── */}
-      <section style={{
-        background: 'rgba(0,0,0,0.25)', borderTop: '1px solid rgba(41,253,152,0.07)', borderBottom: '1px solid rgba(41,253,152,0.07)',
-        padding: '36px 40px'
-      }}>
-        <div style={{ maxWidth: 1200, margin: '0 auto', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 50, flexWrap: 'wrap' }}>
-          
-          <div style={{ display: 'flex', alignItems: 'center', gap: 16, color: '#fff' }}>
-            <div style={{
-              width: 52, height: 52, borderRadius: '50%',
-              border: '1px solid rgba(41,253,152,0.2)', background: 'rgba(41,253,152,0.05)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff'
-            }}><FiUsers size={22} /></div>
-            <span style={{ fontSize: 17, fontWeight: 500 }}>Real Users Earning Daily</span>
+      {/* HOW IT WORKS */}
+      <section id="how-it-works" className="pt-0 pb-24 px-6 relative bg-[#050505]">
+        <div className="max-w-7xl mx-auto">
+          <div 
+            className="flex flex-col items-center justify-center mx-auto mb-14"
+            style={{ width: 448, height: 102, gap: 30 }}
+          >
+            <h2 
+              className="font-bold text-white m-0"
+              style={{
+                width: 366,
+                height: 55,
+                fontFamily: '"Barlow Condensed", sans-serif',
+                fontSize: 78,
+                lineHeight: '48px',
+                textAlign: 'center'
+              }}
+            >
+              How It Works
+            </h2>
+            <p 
+              className="m-0"
+              style={{
+                width: 448,
+                height: 17,
+                fontFamily: '"Barlow Condensed", sans-serif',
+                fontWeight: 400,
+                fontSize: 24,
+                lineHeight: '28px',
+                color: 'rgba(209, 213, 219, 1)',
+                textAlign: 'center'
+              }}
+            >
+              Get started in seconds. No complicated setup required.
+            </p>
           </div>
 
-          <div style={{ width: 1, height: 40, background: 'rgba(255,255,255,0.1)' }} className="hidden sm:block" />
-
-          <div style={{ display: 'flex', alignItems: 'center', gap: 16, color: '#fff' }}>
-            <div style={{
-              width: 52, height: 52, borderRadius: '50%',
-              border: '1px solid rgba(41,253,152,0.2)', background: 'rgba(41,253,152,0.05)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff'
-            }}><FiShield size={22} /></div>
-            <span style={{ fontSize: 17, fontWeight: 500 }}>Secure And Reliable Platform</span>
-          </div>
-
-          <div style={{ width: 1, height: 40, background: 'rgba(255,255,255,0.1)' }} className="hidden sm:block" />
-
-          <div style={{ display: 'flex', alignItems: 'center', gap: 16, color: '#fff' }}>
-            <div style={{
-              width: 52, height: 52, borderRadius: '50%',
-              border: '1px solid rgba(41,253,152,0.2)', background: 'rgba(41,253,152,0.05)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff'
-            }}><FiAward size={22} /></div>
-            <span style={{ fontSize: 17, fontWeight: 500 }}>Transparent Reward System</span>
-          </div>
-
-        </div>
-      </section>
-
-      {/* ── HOW IT WORKS ── */}
-      <section id="how-it-works" style={{ 
-        padding: '100px 40px', position: 'relative', overflow: 'hidden',
-        background: '#0b1512'
-      }}>
-        {/* Tiled fading background */}
-        <div style={{
-          position: 'absolute', inset: 0, pointerEvents: 'none', opacity: 0.15,
-          backgroundImage: 'linear-gradient(rgba(41,253,152,0.4) 1px, transparent 1px), linear-gradient(90deg, rgba(41,253,152,0.4) 1px, transparent 1px)',
-          backgroundSize: '80px 80px',
-          maskImage: 'linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,0) 80%)',
-          WebkitMaskImage: 'linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,0) 80%)'
-        }} />
-
-        <div style={{ maxWidth: 1200, margin: '0 auto', position: 'relative', zIndex: 1 }}>
-          <div style={{ textAlign: 'center', marginBottom: 64 }}>
-            <h2 style={{ fontSize: 40, fontWeight: 700, color: '#fff', marginBottom: 12 }}>How It Works</h2>
-            <p style={{ fontSize: 16, color: '#9ab8a8' }}>Get started in seconds. No complicated setup required.</p>
-          </div>
-          
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 24, position: 'relative' }}>
+          <div 
+            className="grid grid-cols-1 md:grid-cols-3 mx-auto" 
+            style={{ width: 1240, maxWidth: '100%', height: 212, gap: 20 }}
+          >
             {[
-              { num: 1, icon: <FiUserCheck size={28} strokeWidth={1.5} />, title: 'Sign Up', desc: 'Create your free account in seconds and get instant access to the platform.' },
-              { num: 2, icon: <FiClipboard size={28} strokeWidth={1.5} />, title: 'Complete Tasks', desc: 'Choose from hundreds of offers, surveys, and apps to complete at your own pace.' },
-              { num: 3, icon: <FiGift size={28} strokeWidth={1.5} />, title: 'Earn Rewards', desc: 'Get coins and convert them into real money, crypto, or gift cards instantly.' },
-            ].map((step, i) => (
-              <div key={step.num} style={{ position: 'relative', zIndex: 10 - i }}>
-                <motion.div
-                  whileHover={{ y: -4 }}
-                  style={{
-                    background: 'rgba(21, 25, 24, 0.85)', backdropFilter: 'blur(12px)',
-                    border: 'none',
-                    borderRadius: 24, padding: '40px 32px', position: 'relative', transition: 'all 0.3s',
-                    height: '100%', overflow: 'hidden', display: 'flex', flexDirection: 'column',
-                    zIndex: 1
-                  }}
-                >
-                  {/* Big number background */}
-                  <div style={{
-                    position: 'absolute', top: 10, right: 10,
-                    fontSize: 180, fontWeight: 900, color: 'rgba(255,255,255,0.02)', lineHeight: 0.8,
-                    userSelect: 'none', zIndex: 0
-                  }}>
-                    {step.num}
-                  </div>
-
-                  <div style={{ position: 'relative', zIndex: 1 }}>
-                    {/* Arch Wrapper for Icon */}
-                    <div style={{ 
-                      width: 80, height: 110, 
-                      background: 'linear-gradient(to bottom, rgba(41,253,152,0.12) 0%, transparent 100%)',
-                      borderTopLeftRadius: 40, borderTopRightRadius: 40,
-                      display: 'flex', justifyContent: 'center', paddingTop: 24,
-                      color: '#29FD98', marginBottom: 20
-                    }}>
-                      {step.icon}
-                    </div>
-                    <h3 style={{ fontSize: 20, fontWeight: 700, color: '#fff', marginBottom: 12 }}>{step.title}</h3>
-                    <p style={{ fontSize: 14, color: '#9ab8a8', lineHeight: 1.7 }}>{step.desc}</p>
-                  </div>
-                </motion.div>
-
-                {/* Connecting Arrow */}
-                {i < 2 && (
-                  <div className="hidden lg:flex" style={{
-                    position: 'absolute', top: '50%', right: -40, transform: 'translateY(-50%)',
-                    width: 56, height: 56, borderRadius: '50%', background: '#29FD98',
-                    alignItems: 'center', justifyContent: 'center', zIndex: 0,
-                    boxShadow: '0 0 20px rgba(41,253,152,0.4)'
-                  }}>
-                    <FiArrowRight size={26} color="#fff" strokeWidth={3} />
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ── WHY CHOOSE US ── */}
-      <section id="features" style={{ padding: '80px 40px', background: '#111c18' }}>
-        <div style={{ maxWidth: 1280, margin: '0 auto' }}>
-          <div style={{ textAlign: 'center', marginBottom: 56 }}>
-            <h2 style={{ fontSize: 48, fontWeight: 700, color: '#fff', marginBottom: 12, lineHeight: '48px', letterSpacing: '0%', textAlign: 'center', verticalAlign: 'middle' }}>Why Choose Us</h2>
-            <p style={{ fontSize: 15, color: '#9ab8a8' }}>Powerful features designed specifically for you.</p>
-          </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 22, justifyItems: 'center' }}>
-            {features.map((f, i) => (
-              <motion.div
-                key={i}
-                whileHover={{ y: -4, background: 'rgba(255,255,255,0.1)' }}
+              { icon: '/coins/persontik.png', step: 1, title: 'Sign Up', desc: 'Create your free account in seconds and get instant access to the platform.' },
+              { icon: '/coins/clipboard.png', step: 2, title: 'Complete Tasks', desc: 'Choose from hundreds of offers, surveys, and apps to complete at your own pace.' },
+              { icon: '/coins/gift.png', step: 3, title: 'Earn Rewards', desc: 'Get coins and convert them into real money, crypto, or gift cards instantly.' },
+            ].map((item, idx) => (
+              <div 
+                key={idx} 
+                className="p-[24px] hover:brightness-110 transition-all group"
                 style={{
-                  background: 'rgba(255,255,255,0.06)', border: 'none',
-                  borderRadius: 30, padding: '20px 12px', display: 'flex', flexDirection: 'column',
-                  alignItems: 'center', textAlign: 'center', transition: 'all 0.3s',
-                  width: '100%', maxWidth: 196.67, height: 230
+                  width: '100%',
+                  maxWidth: 400,
+                  height: 212,
+                  borderRadius: 20,
+                  background: 'rgba(26, 27, 26, 1)',
+                  boxShadow: '0px 4px 80px 0px rgba(0, 0, 0, 0.15)',
+                  backdropFilter: 'blur(44px)',
+                  WebkitBackdropFilter: 'blur(44px)',
+                  border: 'none'
                 }}
               >
-                {/* Arch Wrapper for Icon */}
-                <div style={{
-                  width: 64, height: 80,
-                  background: 'linear-gradient(to bottom, rgba(41,253,152,0.12) 0%, transparent 100%)',
-                  borderTopLeftRadius: 32, borderTopRightRadius: 32,
-                  display: 'flex', justifyContent: 'center', paddingTop: 16,
-                  color: '#29FD98', marginBottom: 20
-                }}>
-                  {f.icon}
-                </div>
-                <h4 style={{ fontSize: 15, fontWeight: 700, color: '#fff', marginBottom: 8 }}>{f.title}</h4>
-                <p style={{ fontSize: 13, color: '#9ab8a8', lineHeight: 1.6 }}>{f.desc}</p>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ── LOWER SECTION WRAPPER ── */}
-      <div style={{ position: 'relative', overflow: 'hidden' }}>
-        {/* Background Grid */}
-        <div style={{
-          position: 'absolute', top: 0, left: 0, right: 0, height: '100%', zIndex: 0,
-          backgroundImage: `
-            linear-gradient(rgba(41, 253, 152, 0.04) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(41, 253, 152, 0.04) 1px, transparent 1px)
-          `,
-          backgroundSize: '40px 40px',
-          maskImage: 'linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,0) 35%, rgba(0,0,0,0) 65%, rgba(0,0,0,1) 100%)',
-          WebkitMaskImage: 'linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,0) 35%, rgba(0,0,0,0) 65%, rgba(0,0,0,1) 100%)'
-        }} />
-
-        {/* ── START EARNING WITH ── */}
-        <section id="earn" style={{ padding: '80px 40px', position: 'relative', zIndex: 1 }}>
-          <div style={{ maxWidth: 1280, margin: '0 auto' }}>
-            <div style={{ textAlign: 'center', marginBottom: 56 }}>
-              <h2 style={{ fontSize: 32, fontWeight: 700, color: '#fff', margin: '0 auto 12px', width: 391, height: 34, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>Start Earning With</h2>
-              <p style={{ fontSize: 15, color: '#9ab8a8' }}>Multiple ways to stack your coins. Choose what works best for you.</p>
-            </div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 20, maxWidth: 1240, margin: '0 auto', justifyItems: 'center' }}>
-              {earningMethods.map((method, i) => (
-                <motion.div
-                  key={i}
-                  whileHover={{ y: -4 }}
-                  style={{
-                    background: method.highlighted ? 'linear-gradient(90deg, #29FD98 0%, #2DD4BF 100%)' : 'rgba(248, 250, 251, 0.04)',
-                    backdropFilter: method.highlighted ? 'none' : 'blur(24px)',
-                    WebkitBackdropFilter: method.highlighted ? 'none' : 'blur(24px)',
-                    borderRadius: 20, padding: 24, display: 'flex', flexDirection: 'column',
-                    alignItems: 'flex-start', textAlign: 'left', gap: 12,
-                    boxShadow: method.highlighted ? '0 12px 40px rgba(41,253,152,0.15)' : 'none',
-                    transition: 'all 0.3s',
-                    width: '100%', maxWidth: 397.33, height: 252,
-                    borderBottom: method.highlighted ? '1px solid rgba(0,0,0,0.1)' : '1px solid rgba(255,255,255,0.05)'
-                  }}
-                >
-                  {/* Arch Wrapper */}
-                  <div style={{
-                    width: 94, height: 94, gap: 10,
-                    background: 'linear-gradient(180deg, rgba(41, 253, 152, 0.2) 0%, rgba(41, 253, 152, 0) 100%)',
-                    borderTopLeftRadius: 60, borderTopRightRadius: 60,
-                    display: 'flex', justifyContent: 'center', paddingTop: 20,
-                    color: method.highlighted ? '#000' : '#29FD98'
-                  }}>
-                    {method.icon}
-                  </div>
-                  <h3 style={{ fontSize: 18, fontWeight: 700, color: method.highlighted ? '#000' : '#fff' }}>{method.title}</h3>
-                  <p style={{ fontSize: 14, color: method.highlighted ? 'rgba(0,0,0,0.7)' : '#9ab8a8', lineHeight: 1.7 }}>{method.desc}</p>
-                </motion.div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* ── FAQ ── */}
-        <section id="faq" style={{ padding: '80px 40px', position: 'relative', zIndex: 1 }}>
-          <div style={{ maxWidth: 960, margin: '0 auto' }}>
-            <div style={{ textAlign: 'center', marginBottom: 56 }}>
-              <h2 style={{ fontSize: 32, fontWeight: 700, color: '#fff', margin: '0 auto 12px', width: 594, height: 34, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>Frequently Asked Questions</h2>
-              <p style={{ fontSize: 15, color: '#9ab8a8' }}>Got questions? We've got answers.</p>
-            </div>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
-              {faqs.map((faq, index) => (
-                <div
-                  key={index}
-                  style={{
-                    background: 'rgba(255, 255, 255, 0.08)',
-                    borderRadius: 20, overflow: 'hidden',
-                    backdropFilter: 'blur(54px)',
-                    WebkitBackdropFilter: 'blur(54px)',
-                    boxShadow: '0px 4px 34px 0px rgba(0, 0, 0, 0.05)'
-                  }}
-                >
-                  <button
-                    onClick={() => setActiveFaq(activeFaq === index ? null : index)}
-                    style={{
-                      width: '100%', padding: '30px 20px', display: 'flex', alignItems: 'center',
-                      justifyContent: 'space-between', background: 'none', border: 'none',
-                      color: '#fff', fontWeight: 700, fontSize: 14, cursor: 'pointer', textAlign: 'left', gap: 10
+                <div className="flex items-center">
+                  <img 
+                    src={item.icon} 
+                    alt={item.title} 
+                    className="group-hover:scale-110 transition-transform object-contain" 
+                    style={{ width: 44, height: 44 }} 
+                  />
+                  <div 
+                    className="absolute flex items-center justify-center"
+                    style={{ 
+                      width: 70, 
+                      height: 68, 
+                      top: 0, 
+                      left: 304, 
+                      padding: '10px 30px', 
+                      gap: 10,
+                      background: 'rgba(50, 50, 50, 1)',
+                      borderBottomRightRadius: 10,
+                      borderBottomLeftRadius: 10
                     }}
                   >
-                    <span>{faq.q}</span>
-                    {activeFaq === index
-                      ? <FiChevronUp size={20} style={{ color: '#29FD98', flexShrink: 0 }} />
-                      : <FiChevronDown size={20} style={{ color: '#29FD98', flexShrink: 0 }} />
-                    }
-                  </button>
-                  <AnimatePresence>
-                    {activeFaq === index && (
-                      <motion.div
-                        initial={{ height: 0, opacity: 0 }}
-                        animate={{ height: 'auto', opacity: 1 }}
-                        exit={{ height: 0, opacity: 0 }}
-                        transition={{ duration: 0.25 }}
-                        style={{ overflow: 'hidden' }}
-                      >
-                        <div style={{ padding: '0 20px 30px', fontSize: 13, color: '#9ab8a8', lineHeight: 1.7 }}>
-                          {faq.a}
-                        </div>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
+                    <span 
+                      className="text-white flex items-center justify-center"
+                      style={{
+                        width: 11,
+                        height: 27,
+                        fontFamily: '"Barlow Condensed", sans-serif',
+                        fontWeight: 700,
+                        fontSize: 38,
+                        lineHeight: '100%'
+                      }}
+                    >
+                      {item.step}
+                    </span>
+                  </div>
                 </div>
-              ))}
-            </div>
-          </div>
-          
-          <div style={{ maxWidth: 1240, margin: '0 auto', width: '100%' }}>
-            {/* Supported Payout Methods */}
-            <div style={{
-              marginTop: 64, background: 'rgba(255, 255, 255, 0.1)',
-              backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)',
-              borderRadius: 70, padding: '24px 40px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 20,
-              minHeight: 80
-            }}>
-              <span style={{ fontSize: 16, fontWeight: 700, color: '#fff', flexShrink: 0 }}>Supported Payout Methods</span>
-              <div style={{ display: 'flex', gap: 32, flexWrap: 'wrap', alignItems: 'center' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 14, color: '#fff', fontWeight: 600 }}>
-                  <FaBitcoin style={{ color: '#F7931A', fontSize: 18 }} /> Litecoin
-                </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 14, color: '#fff', fontWeight: 600 }}>
-                  <FaPaypal style={{ color: '#00457C', fontSize: 18 }} /> PayPal
-                </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 14, color: '#fff', fontWeight: 600 }}>
-                  <FaAmazon style={{ color: '#FF9900', fontSize: 18 }} /> Amazon
-                </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 14, color: '#fff', fontWeight: 600 }}>
-                  <FiGift style={{ color: '#ff6ea0', fontSize: 18 }} /> Gift Cards
+                <div 
+                  className="flex flex-col"
+                  style={{ width: 352, height: 84, gap: 12, marginTop: 34 }}
+                >
+                  <h3 
+                    className="font-bold text-white m-0"
+                    style={{
+                      width: 352,
+                      height: 24,
+                      fontFamily: '"Barlow Condensed", sans-serif',
+                      fontSize: 34,
+                      lineHeight: '100%'
+                    }}
+                  >
+                    {item.title}
+                  </h3>
+                  <p 
+                    className="m-0"
+                    style={{ 
+                      color: 'rgba(189, 189, 189, 1)',
+                      fontFamily: '"Barlow Condensed", sans-serif',
+                      fontWeight: 500,
+                      fontSize: 19,
+                      lineHeight: '24px',
+                      width: 352,
+                      height: 48,
+                      verticalAlign: 'middle'
+                    }}
+                  >
+                    {item.desc}
+                  </p>
                 </div>
               </div>
-            </div>
+            ))}
           </div>
-        </section>
-      </div>
+        </div>
+      </section>
 
-      {/* ── CTA BANNER ── */}
-      <section style={{
-        background: 'linear-gradient(90deg, #29FD98 0%, #0fd5c9 100%)',
-        padding: '48px 40px',
-      }}>
-        <div style={{ maxWidth: 1280, margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 24 }}>
-          <div>
-            <h2 style={{ fontSize: 32, fontWeight: 800, color: '#000', marginBottom: 6 }}>Start Earning Today</h2>
-            <p style={{ fontSize: 15, color: 'rgba(0,0,0,0.65)', fontWeight: 500 }}>Join now and start making real money right now!</p>
+      {/* WHY CHOOSE US */}
+      <section 
+        id="features" 
+        className="mx-auto flex flex-col"
+        style={{
+          width: 1440,
+          maxWidth: '100%',
+          height: 864,
+          padding: '120px 100px',
+          gap: 10,
+          background: 'rgba(26, 27, 26, 1)',
+          backdropFilter: 'blur(75px)',
+          WebkitBackdropFilter: 'blur(75px)'
+        }}
+      >
+        <div 
+          className="flex flex-col mx-auto"
+          style={{ width: 1240, maxWidth: '100%', height: 624, gap: 50 }}
+        >
+          <div 
+            className="flex flex-col items-center mx-auto" 
+            style={{ width: 429, height: 102, gap: 30 }}
+          >
+            <h2 
+              className="font-bold m-0"
+              style={{
+                width: 429,
+                height: 55,
+                fontFamily: '"Barlow Condensed", sans-serif',
+                fontSize: 78,
+                lineHeight: '48px',
+                textAlign: 'center',
+                verticalAlign: 'middle',
+                color: 'rgba(255, 255, 255, 1)'
+              }}
+            >
+              Why Choose Us
+            </h2>
+            <p 
+              className="m-0"
+              style={{
+                width: 387,
+                height: 17,
+                fontFamily: '"Barlow Condensed", sans-serif',
+                fontWeight: 400,
+                fontSize: 24,
+                lineHeight: '28px',
+                textAlign: 'center',
+                verticalAlign: 'middle',
+                color: 'rgba(209, 213, 219, 1)'
+              }}
+            >
+              Powerful features designed specifically for you.
+            </p>
+          </div>
+
+          <div 
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 mx-auto"
+            style={{ width: 1240, maxWidth: '100%', height: 472, gap: 20 }}
+          >
+            {[
+              { icon: '/coins/walls.png', title: 'Multiple Offerwalls', desc: 'Discover various earning options in one place.' },
+              { icon: '/coins/fast.png', title: 'Fast Payouts', desc: 'Withdraw your earnings quickly and securely' },
+              { icon: '/coins/gift.png', title: 'Daily Bonus', desc: 'Earn extra rewards every day you stay active' },
+              { icon: '/coins/presentations.png', title: 'VIP Progress', desc: 'Level up and unlock better rewards' },
+              { icon: '/coins/persons.png', title: 'Referral System', desc: 'Refer friends and earn a share of their income.' },
+              { icon: '/coins/live.png', title: 'Live Activity', desc: 'See real-time earnings across the platform' },
+            ].map((item, idx) => (
+              <div 
+                key={idx} 
+                className="flex flex-col items-center transition-colors group"
+                style={{
+                  width: 400,
+                  maxWidth: '100%',
+                  height: 226,
+                  borderRadius: 20,
+                  padding: '20px 12px 30px 12px',
+                  gap: 22,
+                  background: 'rgba(255, 255, 255, 0.08)',
+                  boxShadow: '0px 4px 80px 0px rgba(0, 0, 0, 0.15)',
+                  backdropFilter: 'blur(44px)',
+                  WebkitBackdropFilter: 'blur(44px)'
+                }}
+              >
+                <div 
+                  className="flex items-center justify-center mb-6 group-hover:scale-110 transition-transform"
+                  style={{ width: 94, height: 94, borderRadius: 20, gap: 10, background: 'transparent' }}
+                >
+                  <img src={item.icon} alt={item.title} style={{ width: 44, height: 44, objectFit: 'contain' }} />
+                </div>
+                <div 
+                  className="flex flex-col items-center"
+                  style={{ width: 376, height: 60, gap: 12 }}
+                >
+                  <h3 
+                    className="font-bold m-0"
+                    style={{
+                      width: 376,
+                      height: 24,
+                      fontFamily: '"Barlow Condensed", sans-serif',
+                      fontSize: 34,
+                      lineHeight: '100%',
+                      textAlign: 'center',
+                      color: 'rgba(255, 255, 255, 1)'
+                    }}
+                  >
+                    {item.title}
+                  </h3>
+                  <p 
+                    className="m-0"
+                    style={{
+                      width: 376,
+                      height: 24,
+                      fontFamily: '"Barlow Condensed", sans-serif',
+                      fontWeight: 500,
+                      fontSize: 19,
+                      lineHeight: '24px',
+                      textAlign: 'center',
+                      verticalAlign: 'middle',
+                      color: 'rgba(189, 189, 189, 1)'
+                    }}
+                  >
+                    {item.desc}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* START EARNING WITH */}
+      <section className="py-24 px-6 bg-[#050505]">
+        <div 
+          className="flex flex-col mx-auto"
+          style={{ width: 1240, maxWidth: '100%', height: 422, gap: 50 }}
+        >
+          <div 
+            className="flex flex-col items-center mx-auto" 
+            style={{ width: 542, height: 102, gap: 30 }}
+          >
+            <h2 
+              className="font-bold m-0"
+              style={{
+                width: 516,
+                height: 55,
+                fontFamily: '"Barlow Condensed", sans-serif',
+                fontSize: 78,
+                lineHeight: '48px',
+                textAlign: 'center',
+                verticalAlign: 'middle',
+                color: 'rgba(255, 255, 255, 1)'
+              }}
+            >
+              Start Earning With
+            </h2>
+            <p 
+              className="m-0"
+              style={{
+                width: 542,
+                height: 17,
+                fontFamily: '"Barlow Condensed", sans-serif',
+                fontWeight: 400,
+                fontSize: 24,
+                lineHeight: '28px',
+                textAlign: 'center',
+                verticalAlign: 'middle',
+                color: 'rgba(209, 213, 219, 1)'
+              }}
+            >
+              Multiple ways to stack your coins. Choose what works best for you.
+            </p>
+          </div>
+
+          <div 
+            className="grid grid-cols-1 md:grid-cols-3 mx-auto"
+            style={{ width: 1240, maxWidth: '100%', height: 270, gap: 24 }}
+          >
+            {[
+              { icon: '/coins/clicl.png', title: 'Surveys', desc: 'Share your opinion on various topics and get rewarded instantly.' },
+              { icon: '/coins/game.png', title: 'Apps & Games', desc: 'Download apps or play new games. Reach milestones to earn big.' },
+              { icon: '/coins/persantage.png', title: 'Featured Offers', desc: 'Sign up for services or trials to earn the highest paying rewards.' },
+            ].map((item, idx) => (
+              <div 
+                key={idx} 
+                className="flex flex-col items-center transition-colors group"
+                style={{
+                  width: '397.33px',
+                  maxWidth: '100%',
+                  height: 270,
+                  borderRadius: 20,
+                  padding: '30px 20px',
+                  gap: 22,
+                  background: 'rgba(26, 27, 26, 1)',
+                  boxShadow: '0px 4px 80px 0px rgba(0, 0, 0, 0.15)',
+                  backdropFilter: 'blur(44px)',
+                  WebkitBackdropFilter: 'blur(44px)'
+                }}
+              >
+                <div 
+                  className="flex items-center justify-center mb-6 group-hover:scale-110 transition-transform"
+                  style={{ width: 94, height: 94, borderRadius: 100, gap: 10, background: 'transparent' }}
+                >
+                  <img src={item.icon} alt={item.title} style={{ width: 44, height: 44, objectFit: 'contain' }} />
+                </div>
+                <h3 
+                  className="font-bold m-0"
+                  style={{
+                    width: '100%',
+                    height: 24,
+                    fontFamily: '"Barlow Condensed", sans-serif',
+                    fontSize: 34,
+                    lineHeight: '100%',
+                    textAlign: 'center',
+                    color: 'rgba(255, 255, 255, 1)'
+                  }}
+                >
+                  {item.title}
+                </h3>
+                <p 
+                  className="m-0 flex items-center justify-center"
+                  style={{
+                    width: '357.33px',
+                    maxWidth: '100%',
+                    height: 48,
+                    fontFamily: '"Barlow Condensed", sans-serif',
+                    fontWeight: 500,
+                    fontSize: 19,
+                    lineHeight: '24px',
+                    textAlign: 'center',
+                    color: 'rgba(189, 189, 189, 1)'
+                  }}
+                >
+                  {item.desc}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* FAQ SECTION */}
+      <section id="faq" className="py-12 px-6 bg-[#050505]">
+        <div 
+          className="flex flex-col mx-auto"
+          style={{
+            width: 1240,
+            maxWidth: '100%',
+            height: 622,
+            borderRadius: 20,
+            padding: '60px 40px',
+            gap: 50,
+            background: 'rgba(255, 255, 255, 0.08)',
+            boxShadow: '0px 4px 80px 0px rgba(0, 0, 0, 0.15)',
+            backdropFilter: 'blur(44px)',
+            WebkitBackdropFilter: 'blur(44px)'
+          }}
+        >
+          <div 
+            className="flex flex-col items-center mx-auto" 
+            style={{ width: 781, height: 102, gap: 30 }}
+          >
+            <h2 
+              className="font-bold m-0 whitespace-nowrap"
+              style={{
+                width: 781,
+                height: 55,
+                fontFamily: '"Barlow Condensed", sans-serif',
+                fontSize: 78,
+                lineHeight: '48px',
+                textAlign: 'center',
+                verticalAlign: 'middle',
+                color: 'rgba(255, 255, 255, 1)'
+              }}
+            >
+              Frequently Asked Questions
+            </h2>
+            <p 
+              className="m-0"
+              style={{
+                width: 279,
+                height: 17,
+                fontFamily: '"Barlow Condensed", sans-serif',
+                fontWeight: 400,
+                fontSize: 24,
+                lineHeight: '28px',
+                textAlign: 'center',
+                verticalAlign: 'middle',
+                color: 'rgba(209, 213, 219, 1)'
+              }}
+            >
+              Got questions? We've got answers.
+            </p>
+          </div>
+
+          <div 
+            className="grid grid-cols-1 md:grid-cols-2 mx-auto"
+            style={{ width: 1160, maxWidth: '100%', gap: 16 }}
+          >
+            {[
+              { q: "How do I earn money?", a: "By completing offers, surveys, and tasks on the platform." },
+              { q: "Is it free to use?", a: "Yes, it is 100% free to join and start earning." },
+              { q: "When do I get paid?", a: "You can withdraw your earnings instantly at any time." },
+              { q: "Why was my reward not credited?", a: "Sometimes tracking takes a bit longer. Contact support if you need help." },
+              { q: "How do i can contact you?", a: "You can reach us through our 24/7 support ticket system." },
+              { q: "What is the minimum payout?", a: "The minimum payout is only $5 for most withdrawal methods." }
+            ].map((faq, i) => {
+              const isOpen = openFaq === i;
+              return (
+              <div 
+                key={i} 
+                onClick={() => setOpenFaq(isOpen ? null : i)}
+                className="flex flex-col justify-start cursor-pointer transition-all duration-300 overflow-hidden"
+                style={{
+                  width: 570,
+                  maxWidth: '100%',
+                  minHeight: 92,
+                  borderRadius: 20,
+                  padding: '30px',
+                  background: 'rgba(44, 45, 44, 1)',
+                  backdropFilter: 'blur(54px)',
+                  WebkitBackdropFilter: 'blur(54px)',
+                  boxShadow: '0px 4px 34px 0px rgba(0, 0, 0, 0.05)'
+                }}
+              >
+                <div className="flex justify-between items-center w-full">
+                  <span 
+                    className="font-bold m-0 whitespace-nowrap overflow-hidden text-ellipsis"
+                    style={{
+                      width: '470.6px',
+                      maxWidth: '100%',
+                      height: 32,
+                      fontFamily: '"Barlow Condensed", sans-serif',
+                      fontSize: 28,
+                      lineHeight: '32px',
+                      color: 'rgba(255, 255, 255, 1)'
+                    }}
+                  >
+                    {faq.q}
+                  </span>
+                  <div 
+                    className={`bg-[#29FD98] transition-transform duration-300 ${isOpen ? '-rotate-180' : ''}`} 
+                    style={{
+                      width: 24, 
+                      height: 24, 
+                      WebkitMaskImage: 'url(/coins/arrow.png)',
+                      WebkitMaskSize: 'contain',
+                      WebkitMaskRepeat: 'no-repeat',
+                      WebkitMaskPosition: 'center',
+                      maskImage: 'url(/coins/arrow.png)',
+                      maskSize: 'contain',
+                      maskRepeat: 'no-repeat',
+                      maskPosition: 'center'
+                    }}
+                  />
+                </div>
+                <div 
+                  className={`transition-all duration-300 flex items-start overflow-hidden ${isOpen ? 'opacity-100 max-h-[60px] mt-[32px]' : 'opacity-0 max-h-0 mt-0'}`}
+                >
+                  <p 
+                    className="m-0 overflow-hidden text-ellipsis whitespace-nowrap"
+                    style={{
+                      width: 510,
+                      maxWidth: '100%',
+                      height: 24,
+                      fontFamily: '"Barlow Condensed", sans-serif',
+                      fontWeight: 500,
+                      fontSize: 20,
+                      lineHeight: '24px',
+                      color: 'rgba(130, 127, 141, 1)'
+                    }}
+                  >
+                    {faq.a}
+                  </p>
+                </div>
+              </div>
+            )})}
+          </div>
+        </div>
+      </section>
+
+      {/* MARQUEE */}
+      <div 
+        className="overflow-hidden flex mx-auto relative"
+        style={{
+          width: 1672.25,
+          maxWidth: '100%',
+          height: 106,
+          padding: '30px 100px',
+          borderTop: '1px solid rgba(255, 255, 255, 0.4)',
+          borderBottom: '1px solid rgba(255, 255, 255, 0.4)',
+          backdropFilter: 'blur(64px)',
+          WebkitBackdropFilter: 'blur(64px)'
+        }}
+      >
+        <div 
+          className="flex animate-[marquee_35s_linear_infinite] whitespace-nowrap items-center w-max" 
+          style={{ gap: 60 }}
+        >
+          {Array(10).fill([
+            { Icon: FaBitcoin, text: "Litecoin" },
+            { Icon: FaPaypal, text: "PayPal" },
+            { Icon: FaAmazon, text: "Amazon" },
+            { Icon: FiGift, text: "Gift Cards" }
+          ]).flat().map((item, idx) => (
+            <div key={idx} className="flex items-center gap-3 text-white">
+              <item.Icon style={{ fontSize: 32 }} />
+              <span style={{
+                width: 84,
+                height: 46,
+                fontFamily: '"Barlow Condensed", sans-serif',
+                fontWeight: 700,
+                fontSize: 28.75,
+                lineHeight: '46px',
+                color: 'rgba(255, 255, 255, 1)',
+                display: 'inline-block'
+              }}>{item.text}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+      <style>{`
+        @keyframes marquee {
+          0% { transform: translateX(0); }
+          100% { transform: translateX(-50%); }
+        }
+      `}</style>
+
+      {/* BOTTOM CTA */}
+      <section 
+        className="w-full flex justify-center"
+        style={{ background: 'rgba(27, 28, 27, 1)' }}
+      >
+        <div 
+          className="flex flex-col md:flex-row items-center justify-between w-full"
+          style={{
+            width: 1440,
+            maxWidth: '100%',
+            height: 158,
+            padding: '40px 100px',
+            justifyContent: 'space-between'
+          }}
+        >
+          <div 
+            className="flex flex-col justify-start"
+            style={{ width: 1072, height: 78, gap: 30 }}
+          >
+            <h2 
+              className="m-0 whitespace-nowrap flex items-center"
+              style={{
+                width: 341,
+                height: 34,
+                fontFamily: '"Barlow Condensed", sans-serif',
+                fontWeight: 700,
+                fontSize: 48,
+                lineHeight: '48px',
+                color: 'rgba(255, 255, 255, 1)'
+              }}
+            >
+              Start Earning Today
+            </h2>
+            <p 
+              className="m-0 whitespace-nowrap flex items-center"
+              style={{
+                width: 1072,
+                maxWidth: '100%',
+                height: 14,
+                fontFamily: '"Barlow Condensed", sans-serif',
+                fontWeight: 500,
+                fontSize: 20,
+                lineHeight: '28px',
+                color: 'rgba(255, 255, 255, 0.53)'
+              }}
+            >
+              Join now and start making real money right now!
+            </p>
           </div>
           <button
             onClick={() => navigate('/login?tab=register')}
+            className="flex items-center justify-center text-white transition-all hover:brightness-110 active:translate-y-[4px] active:shadow-none"
             style={{
-              background: '#fff', color: '#000', padding: '16px 32px',
-              borderRadius: 999, border: 'none', fontWeight: 700, fontSize: 15,
-              cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 10, transition: 'all 0.2s',
-              boxShadow: '0 8px 24px rgba(0,0,0,0.1)'
+              width: 168,
+              height: 48,
+              borderRadius: 10,
+              padding: '10px 30px',
+              gap: 10,
+              background: 'rgba(73, 178, 101, 1)',
+              boxShadow: '0px 4px 0px 0px rgba(39, 109, 58, 1)'
             }}
-            onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 12px 28px rgba(0,0,0,0.15)'; }}
-            onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 8px 24px rgba(0,0,0,0.1)'; }}
           >
-            Get Started <FiArrowRight size={18} />
+            <span 
+              className="whitespace-nowrap flex items-center justify-center m-0 p-0"
+              style={{
+                width: 74,
+                height: 13,
+                fontFamily: '"Barlow Condensed", sans-serif',
+                fontWeight: 700,
+                fontSize: 18,
+                lineHeight: '100%'
+              }}
+            >
+              Get Started
+            </span>
+            <FiArrowRight className="text-[18px]" strokeWidth={3} />
           </button>
         </div>
       </section>
 
-      {/* ── FOOTER ── */}
-      <footer style={{ position: 'relative', zIndex: 1, borderTop: '1px solid rgba(255,255,255,0.05)', background: '#051408', padding: '64px 40px 40px' }}>
-        <div style={{ maxWidth: 1240, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: 30 }}>
-          {/* Logo + Description */}
-          <div style={{ textAlign: 'center' }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12, marginBottom: 20 }}>
-              <img src="/coins/round.png" alt="TaskMint Logo" style={{ width: 44, height: 44 }} />
-              <span style={{ color: '#fff', fontWeight: 800, fontSize: 28, letterSpacing: '-0.5px' }}>TaskMint</span>
-            </div>
-            <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.6)', maxWidth: 600, margin: '0 auto', lineHeight: 1.7 }}>
+      {/* FOOTER */}
+      <footer 
+        className="w-full flex justify-center border-t border-[#333]"
+        style={{ background: 'rgba(44, 45, 44, 1)' }}
+      >
+        <div 
+          className="flex flex-col items-center text-center w-full"
+          style={{
+            width: 1440,
+            maxWidth: '100%',
+            height: 477,
+            padding: 100,
+            gap: 30,
+            justifyContent: 'space-between'
+          }}
+        >
+          {/* Top Logo */}
+          <div 
+            className="flex items-center justify-center"
+            style={{ width: 265, height: 74, gap: 10 }}
+          >
+            <img 
+              src="/coins/logo copy.png" 
+              alt="Logo" 
+              style={{ width: 74, height: 74, objectFit: 'contain' }}
+            />
+            <span 
+              className="whitespace-nowrap flex items-center"
+              style={{
+                width: 181,
+                height: 39,
+                fontFamily: '"Barlow Condensed", sans-serif',
+                fontWeight: 700,
+                fontSize: 56,
+                lineHeight: '100%',
+                color: 'rgba(255, 255, 255, 1)'
+              }}
+            >
+              TaskMint
+            </span>
+          </div>
+
+          {/* Middle Content */}
+          <div 
+            className="flex flex-col items-center text-center"
+            style={{ width: 1104, maxWidth: '100%', height: 79, gap: 30 }}
+          >
+            <p 
+              className="m-0 p-0 flex items-center justify-center whitespace-nowrap"
+              style={{
+                width: 1104,
+                maxWidth: '100%',
+                height: 17,
+                fontFamily: '"Barlow Condensed", sans-serif',
+                fontWeight: 400,
+                fontSize: 24,
+                lineHeight: '28px',
+                textAlign: 'center',
+                color: 'rgba(209, 213, 219, 1)'
+              }}
+            >
               Complete offers, surveys, and tasks to earn real rewards. Join thousands of users already earning every day.
             </p>
-          </div>
-
-          {/* Footer Links */}
-          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 30, flexWrap: 'wrap', width: 708, height: 32, margin: '0 auto' }}>
-            {['Features', 'FAQ', 'Blog', 'Terms of Use', 'Privacy Policy', 'Support'].map((link, i) => (
-              <span key={i} style={{ display: 'flex', alignItems: 'center', gap: 30 }}>
-                <a href="#" style={{ fontSize: 13, color: '#00e676', textDecoration: 'none', fontWeight: 600, transition: 'opacity 0.2s' }}
-                  onMouseEnter={e => e.currentTarget.style.opacity = 0.8}
-                  onMouseLeave={e => e.currentTarget.style.opacity = 1}
-                >{link}</a>
-                {i < 5 && <span style={{ color: '#fff', fontSize: 12 }}>•</span>}
-              </span>
-            ))}
-          </div>
-
-          <div style={{ width: '100%', height: 1, background: 'rgba(255,255,255,0.08)' }} />
-
-          {/* Bottom Row */}
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 16 }}>
-            <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.6)' }}>© {new Date().getFullYear()} TaskMint. All rights reserved.</p>
-            <div style={{ display: 'flex', gap: 20 }}>
-              {[FaFacebook, FaInstagram, FaYoutube, FaDiscord].map((Icon, i) => (
-                <a key={i} href="#" style={{ color: '#00e676', textDecoration: 'none', transition: 'opacity 0.2s' }}
-                  onMouseEnter={e => e.currentTarget.style.opacity = 0.8}
-                  onMouseLeave={e => e.currentTarget.style.opacity = 1}
-                >
-                  <Icon size={18} />
-                </a>
+            <div 
+              className="flex justify-center items-center m-0 p-0"
+              style={{ width: 772, maxWidth: '100%', height: 32, gap: 30 }}
+            >
+              {[
+                { name: 'Features', href: '#features' },
+                { name: 'FAQ', href: '#faq' },
+                { name: 'Blog', href: '#' },
+                { name: 'Terms of Use', href: '#' },
+                { name: 'Privacy Policy', href: '#' },
+                { name: 'Support', href: '#' }
+              ].map((link, idx, arr) => (
+                <React.Fragment key={link.name}>
+                  <a 
+                    href={link.href}
+                    className="hover:opacity-80 transition-opacity whitespace-nowrap flex items-center justify-center"
+                    style={{
+                      height: 32,
+                      fontFamily: '"Barlow Condensed", sans-serif',
+                      fontWeight: 700,
+                      fontSize: 26,
+                      lineHeight: '32px',
+                      color: 'rgba(73, 178, 101, 1)'
+                    }}
+                  >
+                    {link.name}
+                  </a>
+                  {idx < arr.length - 1 && (
+                    <span 
+                      className="flex items-center justify-center"
+                      style={{ color: '#fff', fontSize: 26, lineHeight: '32px' }}
+                    >
+                      &bull;
+                    </span>
+                  )}
+                </React.Fragment>
               ))}
+            </div>
+          </div>
+
+          {/* Bottom Divider & Copyright */}
+          <div className="w-full flex flex-col items-center gap-4">
+            <div className="w-full h-px bg-[#444]" />
+            <div 
+              className="flex items-center"
+              style={{
+                width: 1240,
+                maxWidth: '100%',
+                height: 34,
+                justifyContent: 'space-between'
+              }}
+            >
+              <p 
+                className="m-0 p-0 flex items-center"
+                style={{
+                  width: 1004,
+                  height: 14,
+                  fontFamily: '"Barlow Condensed", sans-serif',
+                  fontWeight: 500,
+                  fontSize: 20,
+                  lineHeight: '20px',
+                  color: 'rgba(255, 255, 255, 1)'
+                }}
+              >
+                © 2026 TaskMint. All rights reserved.
+              </p>
+              <div 
+                className="flex items-center justify-between"
+                style={{
+                  width: 196,
+                  height: 34,
+                  gap: 20,
+                  color: 'rgba(73, 178, 101, 1)'
+                }}
+              >
+                <FaFacebook className="hover:opacity-80 cursor-pointer transition-opacity flex-shrink-0" style={{ width: 34, height: 34 }} />
+                <FaInstagram className="hover:opacity-80 cursor-pointer transition-opacity flex-shrink-0" style={{ width: 34, height: 34 }} />
+                <FaYoutube className="hover:opacity-80 cursor-pointer transition-opacity flex-shrink-0" style={{ width: 34, height: 34 }} />
+                <FaDiscord className="hover:opacity-80 cursor-pointer transition-opacity flex-shrink-0" style={{ width: 34, height: 34 }} />
+              </div>
             </div>
           </div>
         </div>
       </footer>
     </div>
   );
-};
-
-const navLinkStyle = {
-  background: 'none', border: 'none', color: '#fff', fontSize: 14,
-  fontWeight: 500, cursor: 'pointer', padding: '4px 0', transition: 'color 0.2s',
-  fontFamily: 'inherit'
 };
 
 export default Landing;
