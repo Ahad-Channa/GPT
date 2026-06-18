@@ -11,26 +11,54 @@ const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 const container = { hidden: {}, show: { transition: { staggerChildren: 0.08 } } };
 const item = { hidden: { opacity: 0, y: 16 }, show: { opacity: 1, y: 0, transition: { duration: 0.4 } } };
 
-const TabButton = ({ active, onClick, icon: Icon, label, count }) => (
-  <button
-    onClick={onClick}
-    className={`relative flex items-center gap-2 px-5 py-2.5 rounded-xl font-semibold text-sm transition-all duration-200 ${
-      active
-        ? 'bg-indigo-500/20 text-indigo-300 border border-indigo-500/40'
-        : 'text-slate-400 hover:text-slate-200 border border-transparent hover:border-white/10 hover:bg-white/[0.03]'
-    }`}
-  >
-    {Icon && <Icon className="text-base" />}
-    {label}
-    {count !== undefined && count > 0 && (
-      <span className={`ml-1 px-1.5 py-0.5 rounded-full text-[10px] font-bold ${
-        active ? 'bg-indigo-500/30 text-indigo-200' : 'bg-white/10 text-slate-400'
-      }`}>
-        {count}
+const TabButton = ({ active, onClick, iconSrc, label }) => {
+  const activeStyle = {
+    flex: 1,
+    height: '48px',
+    borderRadius: '10px',
+    padding: '10px 20px',
+    gap: '10px',
+    background: 'rgba(73, 178, 101, 1)',
+    boxShadow: '0px 4px 0px 0px rgba(39, 109, 58, 1)',
+    whiteSpace: 'nowrap'
+  };
+
+  const inactiveStyle = {
+    flex: 1,
+    height: '48px',
+    padding: '10px 20px',
+    gap: '10px',
+    whiteSpace: 'nowrap'
+  };
+
+  return (
+    <button
+      onClick={onClick}
+      className="relative flex items-center justify-center text-white transition-all duration-200"
+      style={active ? activeStyle : inactiveStyle}
+    >
+      {iconSrc && (
+        <img 
+          src={iconSrc} 
+          alt="" 
+          className={`w-[24px] h-[24px] object-contain ${
+            active ? 'brightness-0 invert' : ''
+          }`}
+          style={!active && iconSrc.includes('dodo') ? { filter: 'invert(58%) sepia(34%) saturate(760%) hue-rotate(85deg) brightness(96%) contrast(88%)' } : {}}
+        />
+      )}
+      <span style={{
+        fontFamily: '"Barlow Condensed", sans-serif',
+        fontWeight: active ? 700 : 600,
+        fontSize: '20px',
+        lineHeight: '32px',
+        letterSpacing: '0.5px'
+      }}>
+        {label}
       </span>
-    )}
-  </button>
-);
+    </button>
+  );
+};
 
 const Home = () => {
   const { mongoUser, currentUser } = useAuth();
@@ -39,13 +67,13 @@ const Home = () => {
   const balance = mongoUser?.walletBalance?.toFixed(2) ?? '0.00';
   const [tasksDone, setTasksDone] = useState('...');
   const [globalStats, setGlobalStats] = useState({ totalUsers: 0, totalPaidOut: 0, show: false });
-  
+
   const [settings, setSettings] = useState(null);
   const [customOffers, setCustomOffers] = useState([]);
   const [loadingSettings, setLoadingSettings] = useState(true);
   const [loadingOffers, setLoadingOffers] = useState(true);
   const [token, setToken] = useState(null);
-  
+
   const [activeProvider, setActiveProvider] = useState(null);
   const [filter, setFilter] = useState('all');
   const [selectedOffer, setSelectedOffer] = useState(null);
@@ -89,7 +117,7 @@ const Home = () => {
     if (token) fetchStats();
     fetchGlobalStats();
   }, [token]);
-  
+
   useEffect(() => {
     if (!token) return;
     const fetchSettings = async () => {
@@ -136,8 +164,10 @@ const Home = () => {
 
   const scrollTo = (ref, filterType) => {
     setFilter(filterType);
-    if (filterType === 'all' && ref) {
-      ref.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    if (ref && ref.current) {
+      ref.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } else if (filterType === 'all') {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   };
 
@@ -146,10 +176,10 @@ const Home = () => {
   const gamingProviders = enabledProviders.filter(p => p.category === 'gaming' || p.category === 'mixed');
 
   const tabs = [
-    { id: 'all', label: 'All Operations' },
-    { id: 'featured', label: 'Featured Offers', icon: FiGift, count: customOffers.length, ref: featuredRef },
-    { id: 'gaming', label: 'Gaming & Apps', icon: FiMonitor, count: gamingProviders.length, ref: gamingRef },
-    { id: 'surveys', label: 'Surveys', icon: FiClipboard, count: surveyProviders.length, ref: surveysRef },
+    { id: 'all', label: 'All Operations', iconSrc: '/coins/dodo.png' },
+    { id: 'featured', label: 'Featured Offers', iconSrc: '/coins/gift.png', count: customOffers.length, ref: featuredRef },
+    { id: 'gaming', label: 'Gaming & Apps', iconSrc: '/coins/game.png', count: gamingProviders.length, ref: gamingRef },
+    { id: 'surveys', label: 'Surveys', iconSrc: '/coins/clipboard.png', count: surveyProviders.length, ref: surveysRef },
   ];
 
   if (activeProvider) {
@@ -174,128 +204,244 @@ const Home = () => {
 
         {/* ─── Platform Stats ───────────────────────────── */}
         {globalStats.show && (
-          <motion.div variants={item} className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-             {/* Total Users Card */}
-             <div className="relative overflow-hidden p-[20px] md:p-[30px] flex items-center justify-between group rounded-[20px] bg-[#1a1b1a] shadow-[0px_4px_80px_0px_rgba(0,0,0,0.15)] backdrop-blur-[44px] border border-white/[0.05]">
-               <div className="relative z-10 flex flex-col gap-2">
-                  <div className="w-[44px] h-[44px] rounded-[10px] bg-[#49B265]/10 flex items-center justify-center">
-                    <img src="/coins/people.png" alt="Members" className="w-[24px] h-[24px] object-contain" />
-                  </div>
-                  <p className="text-[12px] text-white/50 font-semibold uppercase tracking-widest mb-0.5">Total Members</p>
-                  <div className="text-[32px] md:text-[40px] font-bold text-white font-sans tracking-tight leading-none">
+          <motion.div
+            variants={item}
+            className="grid grid-cols-1 sm:grid-cols-2 gap-[10px] w-full max-w-[1240px] mx-auto sm:h-[103px]"
+          >
+            {/* Total Users Card */}
+            <div
+              className="relative overflow-hidden group"
+              style={{
+                width: '100%',
+                maxWidth: '615px',
+                height: '103px',
+                borderRadius: '20px',
+                background: 'rgba(26, 27, 26, 1)',
+                backdropFilter: 'blur(74px)',
+                WebkitBackdropFilter: 'blur(74px)'
+              }}
+            >
+              <div className="relative z-10 w-full h-full">
+                <div
+                  className="absolute flex items-center justify-center"
+                  style={{
+                    width: '72px',
+                    height: '72px',
+                    top: '16px',
+                    left: '15px',
+                    borderRadius: '10px',
+                    gap: '10px',
+                    padding: '10px',
+                    background: 'rgba(73, 178, 101, 0.13)'
+                  }}
+                >
+                  <img src="/coins/people.png" alt="Members" className="object-contain" style={{ width: '42px', height: '42px' }} />
+                </div>
+                <div className="absolute flex flex-col justify-center gap-0" style={{ left: '105px', top: '0', bottom: '0' }}>
+                  <p style={{
+                    width: 'auto',
+                    height: '18px',
+                    fontFamily: '"Barlow Condensed", sans-serif',
+                    fontWeight: 600,
+                    fontSize: '14px',
+                    lineHeight: '130%',
+                    color: 'rgba(255, 255, 255, 0.53)',
+                    margin: 0
+                  }}>Total Members</p>
+                  <div style={{
+                    width: 'auto',
+                    height: 'auto',
+                    fontFamily: '"Barlow Condensed", sans-serif',
+                    fontWeight: 600,
+                    fontSize: '44px',
+                    lineHeight: '120%',
+                    color: 'rgba(255, 255, 255, 1)'
+                  }}>
                     {globalStats.totalUsers.toLocaleString()}
                   </div>
-               </div>
-               <img src="/coins/persons.png" alt="Graphic" className="absolute right-0 top-1/2 -translate-y-1/2 h-full object-contain opacity-50 group-hover:opacity-80 transition-opacity" />
-             </div>
+                </div>
+              </div>
+              <img src="/coins/totalmember.png" alt="Graphic" style={{ position: 'absolute', width: '250px', height: '141px', top: '4px', left: '413px', opacity: 1, pointerEvents: 'none', objectFit: 'cover', transform: 'scale(1.3)', transformOrigin: 'right center' }} />
+            </div>
 
-             {/* Paid Out Card */}
-             <div className="relative overflow-hidden p-[20px] md:p-[30px] flex items-center justify-between group rounded-[20px] bg-[#1a1b1a] shadow-[0px_4px_80px_0px_rgba(0,0,0,0.15)] backdrop-blur-[44px] border border-white/[0.05]">
-               <div className="relative z-10 flex flex-col gap-2">
-                  <div className="w-[44px] h-[44px] rounded-[10px] bg-[#49B265]/10 flex items-center justify-center">
-                    <img src="/coins/doller.png" alt="Paid" className="w-[24px] h-[24px] object-contain" />
-                  </div>
-                  <p className="text-[12px] text-white/50 font-semibold uppercase tracking-widest mb-0.5">Total Paid Out</p>
-                  <div className="text-[32px] md:text-[40px] font-bold text-[#49B265] font-sans tracking-tight leading-none">
+            {/* Paid Out Card */}
+            <div
+              className="relative overflow-hidden group"
+              style={{
+                width: '100%',
+                maxWidth: '615px',
+                height: '103px',
+                borderRadius: '20px',
+                background: 'rgba(26, 27, 26, 1)',
+                backdropFilter: 'blur(74px)',
+                WebkitBackdropFilter: 'blur(74px)'
+              }}
+            >
+              <div className="relative z-10 w-full h-full">
+                <div
+                  className="absolute flex items-center justify-center"
+                  style={{
+                    width: '72px',
+                    height: '72px',
+                    top: '16px',
+                    left: '15px',
+                    borderRadius: '10px',
+                    gap: '10px',
+                    padding: '10px',
+                    background: 'rgba(73, 178, 101, 0.13)'
+                  }}
+                >
+                  <img src="/coins/paisa.png" alt="Paid" className="object-contain" style={{ width: '42px', height: '42px' }} />
+                </div>
+                <div className="absolute flex flex-col justify-center gap-0" style={{ left: '105px', top: '0', bottom: '0' }}>
+                  <p style={{
+                    width: 'auto',
+                    height: '18px',
+                    fontFamily: '"Barlow Condensed", sans-serif',
+                    fontWeight: 600,
+                    fontSize: '14px',
+                    lineHeight: '130%',
+                    color: 'rgba(255, 255, 255, 0.53)',
+                    margin: 0
+                  }}>Total Paid Out</p>
+                  <div style={{
+                    width: 'auto',
+                    height: 'auto',
+                    fontFamily: '"Barlow Condensed", sans-serif',
+                    fontWeight: 600,
+                    fontSize: '44px',
+                    lineHeight: '120%',
+                    color: 'rgba(255, 255, 255, 1)'
+                  }}>
                     ${globalStats.totalPaidOut.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                   </div>
-               </div>
-               <img src="/coins/live.png" alt="Graphic" className="absolute right-0 top-1/2 -translate-y-1/2 h-[120%] object-contain opacity-50 group-hover:opacity-80 transition-opacity" />
-             </div>
+                </div>
+              </div>
+              <img src="/coins/totalpaid.png" alt="Graphic" style={{ position: 'absolute', width: '250px', height: '161px', top: 'calc(50% + 30px)', transform: 'translateY(-50%) scale(1.45)', transformOrigin: 'right center', left: '410px', opacity: 1, pointerEvents: 'none', objectFit: 'cover' }} />
+            </div>
           </motion.div>
         )}
 
-        {/* ─── Quick Jump Tabs ───────────────────────────── */}
-        <motion.div variants={item} className="sticky top-4 z-20">
-          <div className="flex flex-wrap gap-2 p-1.5 bg-slate-900/60 backdrop-blur-xl border border-white/[0.06] rounded-2xl w-fit shadow-2xl">
-            {tabs.map(tab => (
-              <TabButton
-                key={tab.id}
-                active={filter === tab.id}
-                onClick={() => scrollTo(tab.ref, tab.id)}
-                icon={tab.icon}
-                label={tab.label}
-                count={tab.count}
-              />
-            ))}
-          </div>
-        </motion.div>
+        {/* ─── Tabs & MAIN CONTENT WRAPPER ─────────────────── */}
+        <div
+          className="mx-auto flex flex-col"
+          style={{ width: '100%', maxWidth: '1240px', gap: '30px' }}
+        >
+          {/* ─── Quick Jump Tabs ───────────────────────────── */}
+          <motion.div variants={item} className="sticky top-4 z-20">
+            <div
+              className="flex items-center justify-center overflow-x-auto"
+              style={{
+                width: '100%',
+                maxWidth: '1239px',
+                height: '84px',
+                borderRadius: '10px',
+                padding: '18px',
+                background: 'rgba(44, 45, 44, 1)',
+                backdropFilter: 'blur(24px)',
+                WebkitBackdropFilter: 'blur(24px)',
+                boxShadow: '0px 4px 44px 0px rgba(0, 0, 0, 0.25)'
+              }}
+            >
+              <div
+                className="flex items-center justify-between"
+                style={{
+                  width: '100%',
+                  height: '48px',
+                  borderRadius: '100px',
+                  opacity: 1
+                }}
+              >
+                {tabs.map(tab => (
+                  <TabButton
+                    key={tab.id}
+                    active={filter === tab.id}
+                    onClick={() => scrollTo(tab.ref, tab.id)}
+                    iconSrc={tab.iconSrc}
+                    label={tab.label}
+                    count={tab.count}
+                  />
+                ))}
+              </div>
+            </div>
+          </motion.div>
 
-        {/* ─── MAIN CONTENT ─────────────────────────────────── */}
-        <div className="space-y-12">
-          
-          {/* Section 1: Featured Offers */}
-          {(filter === 'all' || filter === 'featured') && customOffers.length > 0 && (
-            <motion.section ref={featuredRef} variants={item} className="space-y-4 pt-4">
-               <div className="flex items-center gap-3 mb-2">
-                 <div className="w-10 h-10 rounded-xl bg-amber-500/10 flex items-center justify-center border border-amber-500/20">
+          {/* ─── MAIN CONTENT ─────────────────────────────────── */}
+          <div className="flex flex-col gap-[30px]">
+
+            {/* Section 1: Featured Offers */}
+            {(filter === 'all' || filter === 'featured') && customOffers.length > 0 && (
+              <motion.section ref={featuredRef} variants={item} className="space-y-4 pt-4">
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="w-10 h-10 rounded-xl bg-amber-500/10 flex items-center justify-center border border-amber-500/20">
                     <FiGift className="text-amber-400 text-xl" />
-                 </div>
-                 <div>
-                   <h2 className="text-2xl font-bold font-display text-white">Featured Offers</h2>
-                   <p className="text-sm text-slate-400">High-reward direct tasks. Manual approval required.</p>
-                 </div>
-               </div>
-               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
-                 {customOffers.map(offer => (
+                  </div>
+                  <div>
+                    <h2 className="text-2xl font-bold font-display text-white">Featured Offers</h2>
+                    <p className="text-sm text-slate-400">High-reward direct tasks. Manual approval required.</p>
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+                  {customOffers.map(offer => (
                     <FeaturedOfferCard key={offer._id} offer={offer} onClick={() => setSelectedOffer(offer)} />
-                 ))}
-               </div>
-            </motion.section>
-          )}
+                  ))}
+                </div>
+              </motion.section>
+            )}
 
-          {/* Section 2: Gaming or App Offers */}
-          {(filter === 'all' || filter === 'gaming') && (
-            <motion.section ref={gamingRef} variants={item} className="space-y-4 pt-4">
-               <div className="flex items-center gap-3 mb-2">
-                 <div className="w-10 h-10 rounded-xl bg-cyan-500/10 flex items-center justify-center border border-cyan-500/20">
+            {/* Section 2: Gaming or App Offers */}
+            {(filter === 'all' || filter === 'gaming') && (
+              <motion.section ref={gamingRef} variants={item} className="space-y-4 pt-4">
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="w-10 h-10 rounded-xl bg-cyan-500/10 flex items-center justify-center border border-cyan-500/20">
                     <FiMonitor className="text-cyan-400 text-xl" />
-                 </div>
-                 <div>
-                   <h2 className="text-2xl font-bold font-display text-white">Gaming & App Offers</h2>
-                   <p className="text-sm text-slate-400">Play games to earn large amounts of points.</p>
-                 </div>
-               </div>
-               {loadingSettings ? (
+                  </div>
+                  <div>
+                    <h2 className="text-2xl font-bold font-display text-white">Gaming & App Offers</h2>
+                    <p className="text-sm text-slate-400">Play games to earn large amounts of points.</p>
+                  </div>
+                </div>
+                {loadingSettings ? (
                   <div className="glass-card p-8 flex justify-center"><div className="w-8 h-8 rounded-full border-2 border-cyan-500 border-t-transparent animate-spin" /></div>
-               ) : gamingProviders.length === 0 ? (
+                ) : gamingProviders.length === 0 ? (
                   <div className="glass-card p-8 border border-white/[0.05] flex items-center gap-3 opacity-50"><FiInbox className="text-slate-500" /> <span className="text-slate-400 text-sm">No gaming offerwalls active.</span></div>
-               ) : (
-                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                ) : (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                     {gamingProviders.map(provider => (
                       <ProviderCard key={provider.id} provider={provider} onClick={() => setActiveProvider(provider)} />
                     ))}
-                 </div>
-               )}
-            </motion.section>
-          )}
+                  </div>
+                )}
+              </motion.section>
+            )}
 
-          {/* Section 3: Surveys */}
-          {(filter === 'all' || filter === 'surveys') && (
-            <motion.section ref={surveysRef} variants={item} className="space-y-4 pt-4">
-               <div className="flex items-center gap-3 mb-2">
-                 <div className="w-10 h-10 rounded-xl bg-indigo-500/10 flex items-center justify-center border border-indigo-500/20">
+            {/* Section 3: Surveys */}
+            {(filter === 'all' || filter === 'surveys') && (
+              <motion.section ref={surveysRef} variants={item} className="space-y-4 pt-4">
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="w-10 h-10 rounded-xl bg-indigo-500/10 flex items-center justify-center border border-indigo-500/20">
                     <FiClipboard className="text-indigo-400 text-xl" />
-                 </div>
-                 <div>
-                   <h2 className="text-2xl font-bold font-display text-white">Surveys</h2>
-                   <p className="text-sm text-slate-400">Share your opinion for quick and easy rewards.</p>
-                 </div>
-               </div>
-               {loadingSettings ? (
+                  </div>
+                  <div>
+                    <h2 className="text-2xl font-bold font-display text-white">Surveys</h2>
+                    <p className="text-sm text-slate-400">Share your opinion for quick and easy rewards.</p>
+                  </div>
+                </div>
+                {loadingSettings ? (
                   <div className="glass-card p-8 flex justify-center"><div className="w-8 h-8 rounded-full border-2 border-indigo-500 border-t-transparent animate-spin" /></div>
-               ) : surveyProviders.length === 0 ? (
+                ) : surveyProviders.length === 0 ? (
                   <div className="glass-card p-8 border border-white/[0.05] flex items-center gap-3 opacity-50"><FiInbox className="text-slate-500" /> <span className="text-slate-400 text-sm">No survey offerwalls active.</span></div>
-               ) : (
-                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                ) : (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                     {surveyProviders.map(provider => (
                       <ProviderCard key={provider.id} provider={provider} onClick={() => setActiveProvider(provider)} />
                     ))}
-                 </div>
-               )}
-            </motion.section>
-          )}
-          
+                  </div>
+                )}
+              </motion.section>
+            )}
+
+          </div>
         </div>
       </motion.div>
 

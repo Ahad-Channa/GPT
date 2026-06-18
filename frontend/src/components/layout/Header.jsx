@@ -199,7 +199,21 @@ const DailyBonusChip = () => {
       >
         Daily Bonus
       </span>
-      <span className="text-[10px] bg-[#49B265]/20 text-[#49B265] px-1.5 py-0.5 rounded-full font-bold">{progressPercent}%</span>
+      <div className="relative flex items-center justify-center shrink-0 ml-1" style={{ width: '30px', height: '30px' }}>
+        <svg width="30" height="30" viewBox="0 0 30 30" className="absolute inset-0 transform -rotate-90">
+          <circle cx="15" cy="15" r="13" fill="black" stroke="#222" strokeWidth="4" />
+          <circle 
+            cx="15" cy="15" r="13" 
+            fill="transparent" 
+            stroke="#49B265" 
+            strokeWidth="4" 
+            strokeDasharray={2 * Math.PI * 13}
+            strokeDashoffset={2 * Math.PI * 13 * (1 - progressPercent / 100)}
+            strokeLinecap="round"
+          />
+        </svg>
+        <span className="relative z-10 text-[9px] text-[#49B265] font-bold leading-none">{progressPercent}%</span>
+      </div>
 
       {/* Hover tooltip */}
       <div className="absolute top-10 left-1/2 -translate-x-1/2 w-52 p-3 rounded-xl bg-[#0b101e] border border-[#49B265]/30 shadow-[0_0_15px_rgba(73,178,101,0.15)] opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 text-left">

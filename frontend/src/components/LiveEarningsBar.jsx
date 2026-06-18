@@ -96,32 +96,66 @@ const LiveEarningsBar = () => {
     <>
       {/* Removed overflow-hidden so the tooltip dropdown is visible */}
       <div 
-        className="w-full bg-brand-darker whitespace-nowrap flex items-center relative shadow-sm z-30 mx-auto"
+        className="w-full bg-black whitespace-nowrap flex items-center relative shadow-sm z-30 mx-auto"
         style={{
           maxWidth: '1511px',
           height: '88px',
-          border: '1px solid rgba(255, 255, 255, 0.4)'
+          borderTop: '1px solid rgba(255, 255, 255, 0.4)',
+          borderBottom: '1px solid rgba(255, 255, 255, 0.4)'
         }}
       >
         
         {/* Fade Gradients for smooth edges */}
-        <div className="absolute right-0 w-32 h-full bg-gradient-to-l from-brand-darker to-transparent z-10 pointer-events-none" />
+        <div className="absolute right-0 w-32 h-full bg-gradient-to-l from-black to-transparent z-10 pointer-events-none" />
         
         {/* LIVE Indicator Box */}
-        <div className="flex items-center gap-3 px-6 z-20 bg-brand-darker border-r border-brand-border h-full relative cursor-default shrink-0">
-          <div className="relative flex items-center justify-center">
-            <div className="w-2.5 h-2.5 rounded-full bg-[#49B265] animate-pulse drop-shadow-[0_0_8px_rgba(73,178,101,0.8)]" />
-          </div>
-          <div className="flex flex-col justify-center mt-0.5">
-            <span className="text-[13px] font-display font-bold uppercase tracking-[0.1em] text-[#49B265] leading-none">
+        <div className="flex items-center px-6 z-20 bg-black h-full relative cursor-default shrink-0">
+          <div 
+            className="flex items-center"
+            style={{
+              width: 'auto',
+              minWidth: '112px',
+              height: 'auto',
+              minHeight: '20px',
+              gap: '6px',
+              background: 'transparent',
+              padding: '2px 8px'
+            }}
+          >
+            <div className="w-2.5 h-2.5 rounded-full bg-[#49B265] animate-pulse drop-shadow-[0_0_8px_rgba(73,178,101,0.8)] shrink-0" />
+            <span style={{
+              width: 'auto',
+              minWidth: '96px',
+              height: 'auto',
+              fontFamily: '"Barlow Condensed", sans-serif',
+              fontWeight: 700,
+              fontSize: '28px',
+              lineHeight: '120%',
+              color: 'rgba(73, 178, 101, 1)',
+              display: 'block',
+              textShadow: '0px 0px 10px rgba(41, 253, 152, 0.2)'
+            }}>
               Live Feed
             </span>
           </div>
         </div>
 
-        {/* Live Items Container - Absolute positioned to avoid layout stretching and scrollbars */}
+        {/* Live Items Container - Scrollable */}
         <div className="relative flex-1 h-full z-0">
-          <div className="absolute inset-0 flex items-center">
+          <style>{`
+            .hide-scroll::-webkit-scrollbar { display: none; }
+          `}</style>
+          <div 
+            className="absolute inset-0 flex items-center gap-[6px] overflow-x-auto whitespace-nowrap hide-scroll px-4" 
+            style={{ 
+              scrollbarWidth: 'none', 
+              msOverflowStyle: 'none',
+              paddingTop: '150px',
+              paddingBottom: '150px',
+              marginTop: '-150px',
+              marginBottom: '-150px'
+            }}
+          >
             <AnimatePresence initial={false}>
               {earnings.map((tx, index) => {
                 const details = getDetails(tx);
@@ -135,12 +169,23 @@ const LiveEarningsBar = () => {
                     animate={{ opacity: 1, x: 0, scale: 1 }}
                     exit={{ opacity: 0, scale: 0.9, transition: { duration: 0.2 } }}
                     transition={{ duration: 0.4, type: "spring", bounce: 0.3 }}
-                    className="inline-flex items-center gap-3 px-6 h-full border-r border-brand-border/50 group cursor-pointer transition-colors hover:bg-white/[0.02] relative shrink-0" 
+                    className="inline-flex items-center group cursor-pointer transition-transform hover:scale-[1.02] relative shrink-0" 
+                    style={{
+                      width: '197px',
+                      height: '46px',
+                      borderRadius: '50px',
+                      gap: '6px',
+                      padding: '10px',
+                      background: 'rgba(255, 255, 255, 0.14)'
+                    }}
                     onClick={() => tx.userId?._id && setSelectedUserId(tx.userId._id)}
                   >
                     
                     {/* User Avatar */}
-                    <div className="relative w-8 h-8 rounded-full overflow-hidden bg-brand-card border border-brand-border shrink-0 transition-transform group-hover:scale-105">
+                    <div 
+                      className="relative rounded-full overflow-hidden shrink-0 transition-transform group-hover:scale-105"
+                      style={{ width: '26px', height: '26px' }}
+                    >
                       <img 
                         src={tx.userId?.avatarUrl || `/avatars/avatar1.png`} 
                         className="w-full h-full object-cover" 
@@ -150,17 +195,52 @@ const LiveEarningsBar = () => {
                     </div>
                     
                     {/* Base View (Username + Amount) */}
-                    <div className="flex items-center gap-2">
-                      <span className="text-[13px] font-bold text-slate-200 tracking-tight">
+                    <div 
+                      className="flex items-center"
+                      style={{ width: '145px', height: '18px', gap: '16px' }}
+                    >
+                      <span 
+                        className="truncate text-left shrink-0"
+                        style={{
+                          width: '79px',
+                          height: 'auto',
+                          fontFamily: '"Barlow Condensed", sans-serif',
+                          fontWeight: 600,
+                          fontSize: '22px',
+                          lineHeight: '120%',
+                          color: 'rgba(255, 255, 255, 1)'
+                        }}
+                      >
                         {tx.userId?.displayName || 'User'}
                       </span>
-                      <div className="flex items-center gap-1">
-                        <span className={`text-[13px] font-black font-mono tracking-tighter ${details.color}`}>
+                      <div 
+                        className="flex items-center shrink-0 ml-auto"
+                        style={{ width: '50px', height: '18px', gap: '3px' }}
+                      >
+                        {details.isCoin && (
+                          <img 
+                            src="/coins/coinfinal.png"
+                            alt="Coin"
+                            style={{ width: '18px', height: '18px' }}
+                          />
+                        )}
+                        <span 
+                          className="truncate"
+                          style={{
+                            width: '29px',
+                            height: 'auto',
+                            fontFamily: '"Barlow Condensed", sans-serif',
+                            fontWeight: 700,
+                            fontSize: '16px',
+                            lineHeight: '130%',
+                            backgroundImage: 'linear-gradient(180deg, #FEDF77 0%, #FCB91E 100%)',
+                            WebkitBackgroundClip: 'text',
+                            backgroundClip: 'text',
+                            color: 'transparent'
+                          }}
+                        >
                           {details.amountStr}
                         </span>
-                        {details.isCoin && (
-                          <CoinIcon size={17} coinId={coinId} />
-                        )}
                       </div>
                     </div>
 
