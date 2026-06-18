@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import Header from '../components/layout/Header';
@@ -123,7 +122,21 @@ const Landing = () => {
               <span className="font-['Barlow_Condensed'] font-bold text-[18px] leading-none tracking-normal">
                 Get Started
               </span>
-              <FiArrowRight className="text-[18px]" strokeWidth={3} />
+              <div
+                className="bg-white"
+                style={{
+                  width: 18,
+                  height: 18,
+                  WebkitMaskImage: 'url(/coins/image.png)',
+                  WebkitMaskSize: 'contain',
+                  WebkitMaskRepeat: 'no-repeat',
+                  WebkitMaskPosition: 'center',
+                  maskImage: 'url(/coins/image.png)',
+                  maskSize: 'contain',
+                  maskRepeat: 'no-repeat',
+                  maskPosition: 'center'
+                }}
+              />
             </button>
           </div>
         </nav>
@@ -175,8 +188,7 @@ const Landing = () => {
             </p>
           </div>
 
-          <motion.div
-            initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.2 }}
+          <div
             className="flex items-center justify-start mt-[35px]"
             style={{
               width: 410,
@@ -228,17 +240,30 @@ const Landing = () => {
               }}>
                 Get Started
               </span>
-              <FiArrowRight className="text-[18px]" strokeWidth={3} />
+              <div
+                className="bg-white"
+                style={{
+                  width: 18,
+                  height: 18,
+                  WebkitMaskImage: 'url(/coins/image.png)',
+                  WebkitMaskSize: 'contain',
+                  WebkitMaskRepeat: 'no-repeat',
+                  WebkitMaskPosition: 'center',
+                  maskImage: 'url(/coins/image.png)',
+                  maskSize: 'contain',
+                  maskRepeat: 'no-repeat',
+                  maskPosition: 'center'
+                }}
+              />
             </button>
-          </motion.div>
+          </div>
         </div>
 
         {/* Right image */}
-        <motion.div
-          initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.8, delay: 0.3 }}
+        <div
           className="flex-1 w-full relative z-0 flex justify-center lg:justify-end mt-12 lg:mt-[-50px]"
         >
-          <div className="hover:scale-105 transition-transform duration-700 drop-shadow-2xl" style={{ width: 590, minWidth: 590, height: 590 }}>
+          <div className="drop-shadow-2xl" style={{ width: 590, minWidth: 590, height: 590, transform: 'translateX(-30px)' }}>
             <div
               style={{
                 width: '100%',
@@ -259,12 +284,11 @@ const Landing = () => {
               }}
             />
           </div>
-        </motion.div>
+        </div>
 
         {/* Floating Stats Box */}
         <div className="absolute z-20 left-1/2 -translate-x-1/2 w-[90%] md:w-full max-w-[1240px] bottom-0 translate-y-1/2 lg:translate-y-0 lg:bottom-auto lg:top-[603px]">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.5 }}
+          <div
             className="flex flex-col md:flex-row items-center w-full p-6 md:p-[40px] gap-6 md:gap-[40px] rounded-[20px] min-h-[120px] md:h-[120px]"
             style={{
               backgroundColor: 'rgba(129, 129, 129, 0.2)',
@@ -290,18 +314,18 @@ const Landing = () => {
                 ${(stats.totalPaidOut || 31.33).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </span>
             </div>
-          </motion.div>
+          </div>
         </div>
       </section>
 
       {/* HOW IT WORKS */}
       <section id="how-it-works" className="pt-0 pb-24 px-6 relative bg-[#050505]">
         <div className="max-w-7xl mx-auto">
-          <div 
+          <div
             className="flex flex-col items-center justify-center mx-auto mb-14"
             style={{ width: 448, height: 102, gap: 30 }}
           >
-            <h2 
+            <h2
               className="font-bold text-white m-0"
               style={{
                 width: 366,
@@ -314,7 +338,7 @@ const Landing = () => {
             >
               How It Works
             </h2>
-            <p 
+            <p
               className="m-0"
               style={{
                 width: 448,
@@ -331,8 +355,8 @@ const Landing = () => {
             </p>
           </div>
 
-          <div 
-            className="grid grid-cols-1 md:grid-cols-3 mx-auto" 
+          <div
+            className="grid grid-cols-1 md:grid-cols-3 mx-auto"
             style={{ width: 1240, maxWidth: '100%', height: 212, gap: 20 }}
           >
             {[
@@ -340,8 +364,8 @@ const Landing = () => {
               { icon: '/coins/clipboard.png', step: 2, title: 'Complete Tasks', desc: 'Choose from hundreds of offers, surveys, and apps to complete at your own pace.' },
               { icon: '/coins/gift.png', step: 3, title: 'Earn Rewards', desc: 'Get coins and convert them into real money, crypto, or gift cards instantly.' },
             ].map((item, idx) => (
-              <div 
-                key={idx} 
+              <div
+                key={idx}
                 className="p-[24px] hover:brightness-110 transition-all group"
                 style={{
                   width: '100%',
@@ -356,27 +380,27 @@ const Landing = () => {
                 }}
               >
                 <div className="flex items-center">
-                  <img 
-                    src={item.icon} 
-                    alt={item.title} 
-                    className="group-hover:scale-110 transition-transform object-contain" 
-                    style={{ width: 44, height: 44 }} 
+                  <img
+                    src={item.icon}
+                    alt={item.title}
+                    className="object-contain"
+                    style={{ width: 44, height: 44 }}
                   />
-                  <div 
+                  <div
                     className="absolute flex items-center justify-center"
-                    style={{ 
-                      width: 70, 
-                      height: 68, 
-                      top: 0, 
-                      left: 304, 
-                      padding: '10px 30px', 
+                    style={{
+                      width: 70,
+                      height: 68,
+                      top: 0,
+                      left: 304,
+                      padding: '10px 30px',
                       gap: 10,
                       background: 'rgba(50, 50, 50, 1)',
                       borderBottomRightRadius: 10,
                       borderBottomLeftRadius: 10
                     }}
                   >
-                    <span 
+                    <span
                       className="text-white flex items-center justify-center"
                       style={{
                         width: 11,
@@ -391,11 +415,11 @@ const Landing = () => {
                     </span>
                   </div>
                 </div>
-                <div 
+                <div
                   className="flex flex-col"
                   style={{ width: 352, height: 84, gap: 12, marginTop: 34 }}
                 >
-                  <h3 
+                  <h3
                     className="font-bold text-white m-0"
                     style={{
                       width: 352,
@@ -407,9 +431,9 @@ const Landing = () => {
                   >
                     {item.title}
                   </h3>
-                  <p 
+                  <p
                     className="m-0"
-                    style={{ 
+                    style={{
                       color: 'rgba(189, 189, 189, 1)',
                       fontFamily: '"Barlow Condensed", sans-serif',
                       fontWeight: 500,
@@ -430,8 +454,8 @@ const Landing = () => {
       </section>
 
       {/* WHY CHOOSE US */}
-      <section 
-        id="features" 
+      <section
+        id="features"
         className="mx-auto flex flex-col"
         style={{
           width: 1440,
@@ -444,15 +468,15 @@ const Landing = () => {
           WebkitBackdropFilter: 'blur(75px)'
         }}
       >
-        <div 
+        <div
           className="flex flex-col mx-auto"
           style={{ width: 1240, maxWidth: '100%', height: 624, gap: 50 }}
         >
-          <div 
-            className="flex flex-col items-center mx-auto" 
+          <div
+            className="flex flex-col items-center mx-auto"
             style={{ width: 429, height: 102, gap: 30 }}
           >
-            <h2 
+            <h2
               className="font-bold m-0"
               style={{
                 width: 429,
@@ -467,7 +491,7 @@ const Landing = () => {
             >
               Why Choose Us
             </h2>
-            <p 
+            <p
               className="m-0"
               style={{
                 width: 387,
@@ -485,7 +509,7 @@ const Landing = () => {
             </p>
           </div>
 
-          <div 
+          <div
             className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 mx-auto"
             style={{ width: 1240, maxWidth: '100%', height: 472, gap: 20 }}
           >
@@ -497,8 +521,8 @@ const Landing = () => {
               { icon: '/coins/persons.png', title: 'Referral System', desc: 'Refer friends and earn a share of their income.' },
               { icon: '/coins/live.png', title: 'Live Activity', desc: 'See real-time earnings across the platform' },
             ].map((item, idx) => (
-              <div 
-                key={idx} 
+              <div
+                key={idx}
                 className="flex flex-col items-center transition-colors group"
                 style={{
                   width: 400,
@@ -513,17 +537,17 @@ const Landing = () => {
                   WebkitBackdropFilter: 'blur(44px)'
                 }}
               >
-                <div 
-                  className="flex items-center justify-center mb-6 group-hover:scale-110 transition-transform"
+                <div
+                  className="flex items-center justify-center mb-6"
                   style={{ width: 94, height: 94, borderRadius: 20, gap: 10, background: 'transparent' }}
                 >
                   <img src={item.icon} alt={item.title} style={{ width: 44, height: 44, objectFit: 'contain' }} />
                 </div>
-                <div 
+                <div
                   className="flex flex-col items-center"
                   style={{ width: 376, height: 60, gap: 12 }}
                 >
-                  <h3 
+                  <h3
                     className="font-bold m-0"
                     style={{
                       width: 376,
@@ -537,7 +561,7 @@ const Landing = () => {
                   >
                     {item.title}
                   </h3>
-                  <p 
+                  <p
                     className="m-0"
                     style={{
                       width: 376,
@@ -562,15 +586,15 @@ const Landing = () => {
 
       {/* START EARNING WITH */}
       <section className="py-24 px-6 bg-[#050505]">
-        <div 
+        <div
           className="flex flex-col mx-auto"
           style={{ width: 1240, maxWidth: '100%', height: 422, gap: 50 }}
         >
-          <div 
-            className="flex flex-col items-center mx-auto" 
+          <div
+            className="flex flex-col items-center mx-auto"
             style={{ width: 542, height: 102, gap: 30 }}
           >
-            <h2 
+            <h2
               className="font-bold m-0"
               style={{
                 width: 516,
@@ -585,7 +609,7 @@ const Landing = () => {
             >
               Start Earning With
             </h2>
-            <p 
+            <p
               className="m-0"
               style={{
                 width: 542,
@@ -603,7 +627,7 @@ const Landing = () => {
             </p>
           </div>
 
-          <div 
+          <div
             className="grid grid-cols-1 md:grid-cols-3 mx-auto"
             style={{ width: 1240, maxWidth: '100%', height: 270, gap: 24 }}
           >
@@ -612,8 +636,8 @@ const Landing = () => {
               { icon: '/coins/game.png', title: 'Apps & Games', desc: 'Download apps or play new games. Reach milestones to earn big.' },
               { icon: '/coins/persantage.png', title: 'Featured Offers', desc: 'Sign up for services or trials to earn the highest paying rewards.' },
             ].map((item, idx) => (
-              <div 
-                key={idx} 
+              <div
+                key={idx}
                 className="flex flex-col items-center transition-colors group"
                 style={{
                   width: '397.33px',
@@ -628,13 +652,13 @@ const Landing = () => {
                   WebkitBackdropFilter: 'blur(44px)'
                 }}
               >
-                <div 
-                  className="flex items-center justify-center mb-6 group-hover:scale-110 transition-transform"
+                <div
+                  className="flex items-center justify-center mb-6"
                   style={{ width: 94, height: 94, borderRadius: 100, gap: 10, background: 'transparent' }}
                 >
                   <img src={item.icon} alt={item.title} style={{ width: 44, height: 44, objectFit: 'contain' }} />
                 </div>
-                <h3 
+                <h3
                   className="font-bold m-0"
                   style={{
                     width: '100%',
@@ -648,7 +672,7 @@ const Landing = () => {
                 >
                   {item.title}
                 </h3>
-                <p 
+                <p
                   className="m-0 flex items-center justify-center"
                   style={{
                     width: '357.33px',
@@ -672,7 +696,7 @@ const Landing = () => {
 
       {/* FAQ SECTION */}
       <section id="faq" className="py-12 px-6 bg-[#050505]">
-        <div 
+        <div
           className="flex flex-col mx-auto"
           style={{
             width: 1240,
@@ -687,11 +711,11 @@ const Landing = () => {
             WebkitBackdropFilter: 'blur(44px)'
           }}
         >
-          <div 
-            className="flex flex-col items-center mx-auto" 
+          <div
+            className="flex flex-col items-center mx-auto"
             style={{ width: 781, height: 102, gap: 30 }}
           >
-            <h2 
+            <h2
               className="font-bold m-0 whitespace-nowrap"
               style={{
                 width: 781,
@@ -706,7 +730,7 @@ const Landing = () => {
             >
               Frequently Asked Questions
             </h2>
-            <p 
+            <p
               className="m-0"
               style={{
                 width: 279,
@@ -724,7 +748,7 @@ const Landing = () => {
             </p>
           </div>
 
-          <div 
+          <div
             className="grid grid-cols-1 md:grid-cols-2 mx-auto"
             style={{ width: 1160, maxWidth: '100%', gap: 16 }}
           >
@@ -738,131 +762,136 @@ const Landing = () => {
             ].map((faq, i) => {
               const isOpen = openFaq === i;
               return (
-              <div 
-                key={i} 
-                onClick={() => setOpenFaq(isOpen ? null : i)}
-                className="flex flex-col justify-start cursor-pointer transition-all duration-300 overflow-hidden"
-                style={{
-                  width: 570,
-                  maxWidth: '100%',
-                  minHeight: 92,
-                  borderRadius: 20,
-                  padding: '30px',
-                  background: 'rgba(44, 45, 44, 1)',
-                  backdropFilter: 'blur(54px)',
-                  WebkitBackdropFilter: 'blur(54px)',
-                  boxShadow: '0px 4px 34px 0px rgba(0, 0, 0, 0.05)'
-                }}
-              >
-                <div className="flex justify-between items-center w-full">
-                  <span 
-                    className="font-bold m-0 whitespace-nowrap overflow-hidden text-ellipsis"
-                    style={{
-                      width: '470.6px',
-                      maxWidth: '100%',
-                      height: 32,
-                      fontFamily: '"Barlow Condensed", sans-serif',
-                      fontSize: 28,
-                      lineHeight: '32px',
-                      color: 'rgba(255, 255, 255, 1)'
-                    }}
-                  >
-                    {faq.q}
-                  </span>
-                  <div 
-                    className={`bg-[#29FD98] transition-transform duration-300 ${isOpen ? '-rotate-180' : ''}`} 
-                    style={{
-                      width: 24, 
-                      height: 24, 
-                      WebkitMaskImage: 'url(/coins/arrow.png)',
-                      WebkitMaskSize: 'contain',
-                      WebkitMaskRepeat: 'no-repeat',
-                      WebkitMaskPosition: 'center',
-                      maskImage: 'url(/coins/arrow.png)',
-                      maskSize: 'contain',
-                      maskRepeat: 'no-repeat',
-                      maskPosition: 'center'
-                    }}
-                  />
-                </div>
-                <div 
-                  className={`transition-all duration-300 flex items-start overflow-hidden ${isOpen ? 'opacity-100 max-h-[60px] mt-[32px]' : 'opacity-0 max-h-0 mt-0'}`}
+                <div
+                  key={i}
+                  onClick={() => setOpenFaq(isOpen ? null : i)}
+                  className="flex flex-col justify-start cursor-pointer transition-all duration-300 overflow-hidden"
+                  style={{
+                    width: 570,
+                    maxWidth: '100%',
+                    minHeight: 92,
+                    borderRadius: 20,
+                    padding: '30px',
+                    background: 'rgba(44, 45, 44, 1)',
+                    backdropFilter: 'blur(54px)',
+                    WebkitBackdropFilter: 'blur(54px)',
+                    boxShadow: '0px 4px 34px 0px rgba(0, 0, 0, 0.05)'
+                  }}
                 >
-                  <p 
-                    className="m-0 overflow-hidden text-ellipsis whitespace-nowrap"
-                    style={{
-                      width: 510,
-                      maxWidth: '100%',
-                      height: 24,
-                      fontFamily: '"Barlow Condensed", sans-serif',
-                      fontWeight: 500,
-                      fontSize: 20,
-                      lineHeight: '24px',
-                      color: 'rgba(130, 127, 141, 1)'
-                    }}
+                  <div className="flex justify-between items-center w-full">
+                    <span
+                      className="font-bold m-0 whitespace-nowrap overflow-hidden text-ellipsis"
+                      style={{
+                        width: '470.6px',
+                        maxWidth: '100%',
+                        height: 32,
+                        fontFamily: '"Barlow Condensed", sans-serif',
+                        fontSize: 28,
+                        lineHeight: '32px',
+                        color: 'rgba(255, 255, 255, 1)'
+                      }}
+                    >
+                      {faq.q}
+                    </span>
+                    <div
+                      className={`bg-[#29FD98] transition-transform duration-300 ${isOpen ? '-rotate-180' : ''}`}
+                      style={{
+                        width: 24,
+                        height: 24,
+                        WebkitMaskImage: 'url(/coins/arrow.png)',
+                        WebkitMaskSize: 'contain',
+                        WebkitMaskRepeat: 'no-repeat',
+                        WebkitMaskPosition: 'center',
+                        maskImage: 'url(/coins/arrow.png)',
+                        maskSize: 'contain',
+                        maskRepeat: 'no-repeat',
+                        maskPosition: 'center'
+                      }}
+                    />
+                  </div>
+                  <div
+                    className={`transition-all duration-300 flex items-start overflow-hidden ${isOpen ? 'opacity-100 max-h-[60px] mt-[32px]' : 'opacity-0 max-h-0 mt-0'}`}
                   >
-                    {faq.a}
-                  </p>
+                    <p
+                      className="m-0 overflow-hidden text-ellipsis whitespace-nowrap"
+                      style={{
+                        width: 510,
+                        maxWidth: '100%',
+                        height: 24,
+                        fontFamily: '"Barlow Condensed", sans-serif',
+                        fontWeight: 500,
+                        fontSize: 20,
+                        lineHeight: '24px',
+                        color: 'rgba(130, 127, 141, 1)'
+                      }}
+                    >
+                      {faq.a}
+                    </p>
+                  </div>
                 </div>
-              </div>
-            )})}
+              )
+            })}
           </div>
         </div>
       </section>
 
-      {/* MARQUEE */}
-      <div 
-        className="overflow-hidden flex mx-auto relative"
+      {/* STATIC PAYOUT OPTIONS */}
+      <div
+        className="flex mx-auto justify-center items-center"
         style={{
-          width: 1672.25,
+          width: 1440,
           maxWidth: '100%',
           height: 106,
-          padding: '30px 100px',
-          borderTop: '1px solid rgba(255, 255, 255, 0.4)',
-          borderBottom: '1px solid rgba(255, 255, 255, 0.4)',
+          paddingTop: 30,
+          paddingRight: 100,
+          paddingBottom: 30,
+          paddingLeft: 100,
+          gap: 100,
+          borderTopWidth: 1,
+          borderBottomWidth: 1,
+          borderStyle: 'solid',
+          borderColor: 'rgba(255, 255, 255, 0.4)',
           backdropFilter: 'blur(64px)',
-          WebkitBackdropFilter: 'blur(64px)'
+          WebkitBackdropFilter: 'blur(64px)',
+          opacity: 1,
+          transform: 'rotate(0deg)'
         }}
       >
-        <div 
-          className="flex animate-[marquee_35s_linear_infinite] whitespace-nowrap items-center w-max" 
-          style={{ gap: 60 }}
-        >
-          {Array(10).fill([
-            { Icon: FaBitcoin, text: "Litecoin" },
-            { Icon: FaPaypal, text: "PayPal" },
-            { Icon: FaAmazon, text: "Amazon" },
-            { Icon: FiGift, text: "Gift Cards" }
-          ]).flat().map((item, idx) => (
-            <div key={idx} className="flex items-center gap-3 text-white">
-              <item.Icon style={{ fontSize: 32 }} />
-              <span style={{
-                width: 84,
-                height: 46,
-                fontFamily: '"Barlow Condensed", sans-serif',
-                fontWeight: 700,
-                fontSize: 28.75,
-                lineHeight: '46px',
-                color: 'rgba(255, 255, 255, 1)',
-                display: 'inline-block'
-              }}>{item.text}</span>
-            </div>
-          ))}
-        </div>
+        {[
+          { Icon: FaBitcoin, text: "Litecoin" },
+          { Icon: FaPaypal, text: "PayPal" },
+          { Icon: FaAmazon, text: "Amazon" },
+          { Icon: FiGift, text: "Gift Cards" }
+        ].map((item, idx) => (
+          <div key={idx} className="flex items-center gap-3 text-white whitespace-nowrap">
+            <item.Icon style={{ fontSize: 32 }} />
+            <span style={{
+              width: 84,
+              height: 46,
+              display: 'inline-block',
+              fontFamily: '"Barlow Condensed", sans-serif',
+              fontWeight: 700,
+              fontStyle: 'normal',
+              fontSize: 28.75,
+              lineHeight: '46px',
+              letterSpacing: '0%',
+              verticalAlign: 'middle',
+              color: 'rgba(255, 255, 255, 1)',
+              opacity: 1,
+              transform: 'rotate(0deg)'
+            }}>
+              {item.text}
+            </span>
+          </div>
+        ))}
       </div>
-      <style>{`
-        @keyframes marquee {
-          0% { transform: translateX(0); }
-          100% { transform: translateX(-50%); }
-        }
-      `}</style>
 
       {/* BOTTOM CTA */}
-      <section 
+      <section
         className="w-full flex justify-center"
         style={{ background: 'rgba(27, 28, 27, 1)' }}
       >
-        <div 
+        <div
           className="flex flex-col md:flex-row items-center justify-between w-full"
           style={{
             width: 1440,
@@ -872,11 +901,11 @@ const Landing = () => {
             justifyContent: 'space-between'
           }}
         >
-          <div 
+          <div
             className="flex flex-col justify-start"
             style={{ width: 1072, height: 78, gap: 30 }}
           >
-            <h2 
+            <h2
               className="m-0 whitespace-nowrap flex items-center"
               style={{
                 width: 341,
@@ -890,7 +919,7 @@ const Landing = () => {
             >
               Start Earning Today
             </h2>
-            <p 
+            <p
               className="m-0 whitespace-nowrap flex items-center"
               style={{
                 width: 1072,
@@ -919,51 +948,84 @@ const Landing = () => {
               boxShadow: '0px 4px 0px 0px rgba(39, 109, 58, 1)'
             }}
           >
-            <span 
+            <span
               className="whitespace-nowrap flex items-center justify-center m-0 p-0"
               style={{
                 width: 74,
                 height: 13,
                 fontFamily: '"Barlow Condensed", sans-serif',
                 fontWeight: 700,
+                fontStyle: 'normal',
                 fontSize: 18,
-                lineHeight: '100%'
+                lineHeight: '100%',
+                letterSpacing: '0%'
               }}
             >
               Get Started
             </span>
-            <FiArrowRight className="text-[18px]" strokeWidth={3} />
+            <div
+              className="bg-white"
+              style={{
+                width: 18,
+                height: 18,
+                WebkitMaskImage: 'url(/coins/image.png)',
+                WebkitMaskSize: 'contain',
+                WebkitMaskRepeat: 'no-repeat',
+                WebkitMaskPosition: 'center',
+                maskImage: 'url(/coins/image.png)',
+                maskSize: 'contain',
+                maskRepeat: 'no-repeat',
+                maskPosition: 'center'
+              }}
+            />
           </button>
         </div>
       </section>
 
       {/* FOOTER */}
-      <footer 
+      <footer
         className="w-full flex justify-center border-t border-[#333]"
         style={{ background: 'rgba(44, 45, 44, 1)' }}
       >
-        <div 
-          className="flex flex-col items-center text-center w-full"
+        <div
+          className="flex flex-col items-center text-center w-full mx-auto"
           style={{
             width: 1440,
             maxWidth: '100%',
-            height: 477,
-            padding: 100,
+            height: 406.9995422363281,
+            paddingTop: 100,
+            paddingRight: 100,
+            paddingBottom: 30,
+            paddingLeft: 100,
             gap: 30,
+            opacity: 1,
+            transform: 'rotate(0deg)',
             justifyContent: 'space-between'
           }}
         >
           {/* Top Logo */}
-          <div 
+          <div
             className="flex items-center justify-center"
-            style={{ width: 265, height: 74, gap: 10 }}
+            style={{
+              width: 264.9997253417969,
+              height: 73.99954223632812,
+              gap: 10,
+              opacity: 1,
+              transform: 'rotate(0deg)'
+            }}
           >
-            <img 
-              src="/coins/logo copy.png" 
-              alt="Logo" 
-              style={{ width: 74, height: 74, objectFit: 'contain' }}
+            <img
+              src="/coins/logo copy.png"
+              alt="Logo"
+              style={{
+                width: 73.99972534179688,
+                height: 73.99954223632812,
+                objectFit: 'contain',
+                opacity: 1,
+                transform: 'rotate(0deg)'
+              }}
             />
-            <span 
+            <span
               className="whitespace-nowrap flex items-center"
               style={{
                 width: 181,
@@ -972,7 +1034,10 @@ const Landing = () => {
                 fontWeight: 700,
                 fontSize: 56,
                 lineHeight: '100%',
-                color: 'rgba(255, 255, 255, 1)'
+                letterSpacing: '0%',
+                color: 'rgba(255, 255, 255, 1)',
+                opacity: 1,
+                transform: 'rotate(0deg)'
               }}
             >
               TaskMint
@@ -980,11 +1045,11 @@ const Landing = () => {
           </div>
 
           {/* Middle Content */}
-          <div 
+          <div
             className="flex flex-col items-center text-center"
             style={{ width: 1104, maxWidth: '100%', height: 79, gap: 30 }}
           >
-            <p 
+            <p
               className="m-0 p-0 flex items-center justify-center whitespace-nowrap"
               style={{
                 width: 1104,
@@ -1000,7 +1065,7 @@ const Landing = () => {
             >
               Complete offers, surveys, and tasks to earn real rewards. Join thousands of users already earning every day.
             </p>
-            <div 
+            <div
               className="flex justify-center items-center m-0 p-0"
               style={{ width: 772, maxWidth: '100%', height: 32, gap: 30 }}
             >
@@ -1013,7 +1078,7 @@ const Landing = () => {
                 { name: 'Support', href: '#' }
               ].map((link, idx, arr) => (
                 <React.Fragment key={link.name}>
-                  <a 
+                  <a
                     href={link.href}
                     className="hover:opacity-80 transition-opacity whitespace-nowrap flex items-center justify-center"
                     style={{
@@ -1028,7 +1093,7 @@ const Landing = () => {
                     {link.name}
                   </a>
                   {idx < arr.length - 1 && (
-                    <span 
+                    <span
                       className="flex items-center justify-center"
                       style={{ color: '#fff', fontSize: 26, lineHeight: '32px' }}
                     >
@@ -1043,16 +1108,18 @@ const Landing = () => {
           {/* Bottom Divider & Copyright */}
           <div className="w-full flex flex-col items-center gap-4">
             <div className="w-full h-px bg-[#444]" />
-            <div 
+            <div
               className="flex items-center"
               style={{
                 width: 1240,
                 maxWidth: '100%',
                 height: 34,
-                justifyContent: 'space-between'
+                justifyContent: 'space-between',
+                opacity: 1,
+                transform: 'rotate(0deg)'
               }}
             >
-              <p 
+              <p
                 className="m-0 p-0 flex items-center"
                 style={{
                   width: 1004,
@@ -1066,7 +1133,7 @@ const Landing = () => {
               >
                 © 2026 TaskMint. All rights reserved.
               </p>
-              <div 
+              <div
                 className="flex items-center justify-between"
                 style={{
                   width: 196,
@@ -1075,10 +1142,10 @@ const Landing = () => {
                   color: 'rgba(73, 178, 101, 1)'
                 }}
               >
-                <FaFacebook className="hover:opacity-80 cursor-pointer transition-opacity flex-shrink-0" style={{ width: 34, height: 34 }} />
-                <FaInstagram className="hover:opacity-80 cursor-pointer transition-opacity flex-shrink-0" style={{ width: 34, height: 34 }} />
-                <FaYoutube className="hover:opacity-80 cursor-pointer transition-opacity flex-shrink-0" style={{ width: 34, height: 34 }} />
-                <FaDiscord className="hover:opacity-80 cursor-pointer transition-opacity flex-shrink-0" style={{ width: 34, height: 34 }} />
+                <FaFacebook className="hover:opacity-80 cursor-pointer transition-opacity flex-shrink-0" style={{ width: 34, height: 34, opacity: 1, transform: 'rotate(0deg)' }} />
+                <FaInstagram className="hover:opacity-80 cursor-pointer transition-opacity flex-shrink-0" style={{ width: 34, height: 34, opacity: 1, transform: 'rotate(0deg)' }} />
+                <FaYoutube className="hover:opacity-80 cursor-pointer transition-opacity flex-shrink-0" style={{ width: 34, height: 34, opacity: 1, transform: 'rotate(0deg)' }} />
+                <FaDiscord className="hover:opacity-80 cursor-pointer transition-opacity flex-shrink-0" style={{ width: 34, height: 34, opacity: 1, transform: 'rotate(0deg)' }} />
               </div>
             </div>
           </div>
