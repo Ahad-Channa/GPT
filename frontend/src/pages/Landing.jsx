@@ -835,18 +835,15 @@ const Landing = () => {
         </div>
       </section>
 
-      {/* STATIC PAYOUT OPTIONS */}
+      {/* PAYOUT OPTIONS */}
       <div
-        className="flex mx-auto justify-center items-center"
+        className="mx-auto overflow-hidden flex items-center"
         style={{
           width: 1440,
           maxWidth: '100%',
           height: 106,
           paddingTop: 30,
-          paddingRight: 100,
           paddingBottom: 30,
-          paddingLeft: 100,
-          gap: 100,
           borderTopWidth: 1,
           borderBottomWidth: 1,
           borderStyle: 'solid',
@@ -857,33 +854,39 @@ const Landing = () => {
           transform: 'rotate(0deg)'
         }}
       >
-        {[
-          { Icon: FaBitcoin, text: "Litecoin" },
-          { Icon: FaPaypal, text: "PayPal" },
-          { Icon: FaAmazon, text: "Amazon" },
-          { Icon: FiGift, text: "Gift Cards" }
-        ].map((item, idx) => (
-          <div key={idx} className="flex items-center gap-3 text-white whitespace-nowrap">
-            <item.Icon style={{ fontSize: 32 }} />
-            <span style={{
-              width: 84,
-              height: 46,
-              display: 'inline-block',
-              fontFamily: '"Barlow Condensed", sans-serif',
-              fontWeight: 700,
-              fontStyle: 'normal',
-              fontSize: 28.75,
-              lineHeight: '46px',
-              letterSpacing: '0%',
-              verticalAlign: 'middle',
-              color: 'rgba(255, 255, 255, 1)',
-              opacity: 1,
-              transform: 'rotate(0deg)'
-            }}>
-              {item.text}
-            </span>
-          </div>
-        ))}
+        <div className="flex animate-[marquee_40s_linear_infinite] whitespace-nowrap">
+          {[...Array(4)].map((_, i) => (
+            <React.Fragment key={i}>
+              {[
+                { Icon: FaBitcoin, text: "Litecoin" },
+                { Icon: FaPaypal, text: "PayPal" },
+                { Icon: FaAmazon, text: "Amazon" },
+                { Icon: FiGift, text: "Gift Cards" }
+              ].map((item, idx) => (
+                <div key={idx} className="flex items-center gap-3 text-white whitespace-nowrap" style={{ marginRight: 100 }}>
+                  <item.Icon style={{ fontSize: 32 }} />
+                  <span style={{
+                    width: 84,
+                    height: 46,
+                    display: 'inline-block',
+                    fontFamily: '"Barlow Condensed", sans-serif',
+                    fontWeight: 700,
+                    fontStyle: 'normal',
+                    fontSize: 28.75,
+                    lineHeight: '46px',
+                    letterSpacing: '0%',
+                    verticalAlign: 'middle',
+                    color: 'rgba(255, 255, 255, 1)',
+                    opacity: 1,
+                    transform: 'rotate(0deg)'
+                  }}>
+                    {item.text}
+                  </span>
+                </div>
+              ))}
+            </React.Fragment>
+          ))}
+        </div>
       </div>
 
       {/* BOTTOM CTA */}

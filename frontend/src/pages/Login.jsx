@@ -1,63 +1,62 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { motion, AnimatePresence } from 'framer-motion';
 import { FcGoogle } from 'react-icons/fc';
 import { FiMail, FiLock, FiUser, FiArrowRight, FiEye, FiEyeOff } from 'react-icons/fi';
+import { FaFacebook, FaInstagram, FaYoutube, FaDiscord } from 'react-icons/fa';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import toast from 'react-hot-toast';
-
-/* ─── Left-panel decorative SVG waves ──────────────────────── */
-const WaveDecor = () => (
-  <svg viewBox="0 0 500 500" fill="none" xmlns="http://www.w3.org/2000/svg"
-    className="absolute inset-0 w-full h-full opacity-20" preserveAspectRatio="xMidYMid slice">
-    <defs>
-      <radialGradient id="wA" cx="50%" cy="50%" r="50%">
-        <stop offset="0%" stopColor="#3b82f6" stopOpacity="0.8" />
-        <stop offset="100%" stopColor="#1d4ed8" stopOpacity="0" />
-      </radialGradient>
-      <radialGradient id="wB" cx="50%" cy="50%" r="50%">
-        <stop offset="0%" stopColor="#0ea5e9" stopOpacity="0.7" />
-        <stop offset="100%" stopColor="#2563eb" stopOpacity="0" />
-      </radialGradient>
-    </defs>
-    <ellipse cx="120" cy="120" rx="250" ry="250" fill="url(#wA)" />
-    <ellipse cx="380" cy="380" rx="220" ry="220" fill="url(#wB)" />
-    {/* Wave lines */}
-    {[0, 30, 60, 90, 120, 150].map((offset, i) => (
-      <path key={i}
-        d={`M -50 ${160 + offset} Q 125 ${120 + offset} 250 ${160 + offset} Q 375 ${200 + offset} 550 ${160 + offset}`}
-        stroke="white" strokeWidth="1" fill="none" strokeOpacity="0.12"
-      />
-    ))}
-  </svg>
-);
-
-/* ─── Floating dots ─────────────────────────────────────────── */
-const Dot = ({ style, color, size = 8 }) => (
-  <div className="absolute rounded-full pointer-events-none"
-    style={{ width: size, height: size, background: color, filter: 'blur(0.5px)', ...style }} />
-);
+import { motion, AnimatePresence } from 'framer-motion';
 
 /* ─── Input Field Component ─────────────────────────────────── */
-const Field = ({ label, name, type, placeholder, icon: Icon, formik, loading, extra }) => {
+const Field = ({ label, name, type, placeholder, icon, formik, loading, extra }) => {
   const [show, setShow] = useState(false);
   const isPass = type === 'password';
   const hasErr = formik.touched[name] && formik.errors[name];
   return (
-    <div>
-      <div className="flex items-center justify-between mb-1.5">
-        <label style={{ fontSize: '0.78rem', fontWeight: 600, color: 'rgba(255,255,255,0.45)', letterSpacing: '0.04em' }}>
+    <div className="flex flex-col gap-1.5 w-full">
+      <div className="flex items-center justify-between">
+        <label
+          style={{
+            height: '20px',
+            fontFamily: '"Barlow Condensed", sans-serif',
+            fontWeight: 500,
+            fontSize: '16px',
+            lineHeight: '20px',
+            letterSpacing: '-0.01em',
+            color: 'rgba(255, 255, 255, 1)',
+            verticalAlign: 'middle',
+            margin: 0,
+            display: 'inline-block',
+          }}
+        >
           {label}
         </label>
         {extra}
       </div>
-      <div className="relative">
-        <Icon
-          size={14}
-          className="absolute left-3.5 top-1/2 -translate-y-1/2"
-          style={{ color: hasErr ? '#f87171' : 'rgba(255,255,255,0.25)' }}
+      <div
+        className="flex items-center relative"
+        style={{
+          width: '100%',
+          height: '56px',
+          borderRadius: '10px',
+          background: 'rgba(255, 255, 255, 0.08)',
+          padding: '16px 20px',
+          gap: '12px',
+          border: hasErr ? '1px solid rgba(248,113,113,0.5)' : '1px solid transparent',
+          transition: 'all 0.2s',
+        }}
+      >
+        <img
+          src={icon}
+          alt={name}
+          style={{
+            width: '24px',
+            height: '24px',
+            flexShrink: 0,
+            objectFit: 'contain',
+          }}
         />
         <input
           type={isPass && show ? 'text' : type}
@@ -67,46 +66,58 @@ const Field = ({ label, name, type, placeholder, icon: Icon, formik, loading, ex
           onChange={formik.handleChange}
           onBlur={formik.handleBlur}
           disabled={loading}
+          className="w-full bg-transparent border-none outline-none focus:outline-none placeholder-[rgba(137,141,143,1)]"
           style={{
-            width: '100%',
-            background: 'rgba(255,255,255,0.05)',
-            border: `1px solid ${hasErr ? 'rgba(248,113,113,0.45)' : 'rgba(255,255,255,0.1)'}`,
-            borderRadius: '12px',
-            padding: '0.7rem 2.5rem 0.7rem 2.6rem',
-            color: 'white',
-            fontSize: '0.9rem',
-            outline: 'none',
-            transition: 'border-color 0.2s, box-shadow 0.2s',
-          }}
-          onFocus={e => {
-            e.target.style.borderColor = 'rgba(37,99,235,0.55)';
-            e.target.style.boxShadow = '0 0 0 3px rgba(37,99,235,0.1)';
-          }}
-          onBlurCapture={e => {
-            if (!hasErr) {
-              e.target.style.borderColor = 'rgba(255,255,255,0.1)';
-              e.target.style.boxShadow = 'none';
-            }
+            height: '24px',
+            fontFamily: '"Barlow Condensed", sans-serif',
+            fontWeight: 500,
+            fontSize: '18px',
+            lineHeight: '20px',
+            letterSpacing: '0%',
+            verticalAlign: 'middle',
+            color: 'rgba(255, 255, 255, 1)',
+            padding: 0,
+            margin: 0,
+            flex: 1,
+            minWidth: 0,
           }}
         />
         {isPass && (
           <button type="button" tabIndex={-1}
             onClick={() => setShow(s => !s)}
-            className="absolute right-3.5 top-1/2 -translate-y-1/2 transition-colors"
-            style={{ color: 'rgba(255,255,255,0.25)', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+            style={{
+              width: '24px',
+              height: '24px',
+              background: 'transparent',
+              border: 'none',
+              cursor: 'pointer',
+              padding: 0,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: 'rgba(137, 141, 143, 1)',
+              flexShrink: 0,
+            }}
+            className="hover:text-[#A1A1AA] transition-colors"
           >
-            {show ? <FiEyeOff size={14} /> : <FiEye size={14} />}
+            <img 
+              src="/coins/evy.png" 
+              alt={show ? "hide" : "show"} 
+              style={{ 
+                width: '24px', 
+                height: '24px', 
+                opacity: show ? 0.5 : 1,
+                objectFit: 'contain',
+              }} 
+            />
           </button>
         )}
       </div>
-      {hasErr && <p style={{ color: '#f87171', fontSize: '0.72rem', marginTop: '5px' }}>{formik.errors[name]}</p>}
+      {hasErr && <p className="text-[#f87171] text-xs mt-1 font-['Barlow']">{formik.errors[name]}</p>}
     </div>
   );
 };
 
-/* ═══════════════════════════════════════════════════════════
-   Login / Register Page
-═══════════════════════════════════════════════════════════ */
 const Login = () => {
   const { loginWithGoogle, loginWithEmail, registerWithEmail, resetPassword } = useAuth();
   const navigate = useNavigate();
@@ -142,11 +153,12 @@ const Login = () => {
         .min(3, 'At least 3 characters').max(20, 'Max 20 characters')
         .matches(/^[a-zA-Z0-9_-]+$/, 'Letters, numbers, dashes & underscores only')
         .required('Username is required'),
+      terms: Yup.boolean().oneOf([true], 'You must accept the terms and conditions'),
     }),
   });
 
   const formik = useFormik({
-    initialValues: { displayName: '', email: '', password: '' },
+    initialValues: { displayName: '', email: '', password: '', terms: false },
     validationSchema,
     validateOnChange: false,
     validateOnBlur: true,
@@ -205,202 +217,190 @@ const Login = () => {
     }
   };
 
-  /* ── Shared button style matching landing page ─────────── */
-  const pillBtnStyle = {
-    background: 'linear-gradient(90deg, #1d4ed8 0%, #2563eb 50%, #0ea5e9 100%)',
-    borderRadius: '999px',
-    boxShadow: '0 0 20px rgba(37,99,235,0.35)',
-    border: 'none',
-    color: 'white',
-    fontWeight: 600,
-    fontSize: '0.9rem',
-    cursor: 'pointer',
-    width: '100%',
-    padding: '0.8rem 1.5rem',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: '8px',
-    transition: 'opacity 0.2s, transform 0.15s',
-  };
-
   return (
-    <div
-      className="min-h-screen flex"
-      style={{ background: '#000000', fontFamily: "'Barlow', system-ui, sans-serif" }}
-    >
-
-      {/* ══════════════════════════════════════════
-          LEFT PANEL — Branded dark panel
-      ══════════════════════════════════════════ */}
-      <div
-        className="hidden lg:flex lg:w-[44%] relative flex-col justify-between overflow-hidden"
-        style={{
-          background: 'linear-gradient(135deg, #00061a 0%, #000d2e 40%, #030b20 100%)',
-        }}
-      >
-        {/* Wave decoration */}
-        <WaveDecor />
-
-        {/* Floating dots */}
-        <Dot color="#2563eb" size={12} style={{ top: '18%', left: '15%', opacity: 0.85 }} />
-        <Dot color="#0ea5e9" size={9}  style={{ top: '32%', right: '18%', opacity: 0.75 }} />
-        <Dot color="#1d4ed8" size={14} style={{ top: '55%', left: '10%', opacity: 0.6 }} />
-        <Dot color="#38bdf8" size={8}  style={{ bottom: '28%', right: '14%', opacity: 0.7 }} />
-        <Dot color="#3b82f6" size={10} style={{ bottom: '15%', left: '25%', opacity: 0.65 }} />
-        <Dot color="#60a5fa" size={6}  style={{ top: '72%', right: '28%', opacity: 0.6 }} />
-
-        {/* Top: Logo */}
-        <div className="relative z-10 p-10">
-          <button
-            onClick={() => navigate('/')}
-            className="flex items-center gap-2.5 hover:opacity-80 transition-opacity"
-            style={{ background: 'none', border: 'none', cursor: 'pointer' }}
+    <div className="min-h-screen bg-[#050505] text-white font-sans overflow-x-hidden selection:bg-[#29FD98] selection:text-black">
+      
+      {/* NAVBAR */}
+      <nav className="w-full absolute top-0 left-0 right-0 z-50 py-6 px-8 flex justify-between items-center max-w-7xl mx-auto">
+        {/* Logo */}
+        <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate('/')}>
+          <img
+            src="/coins/logo copy.png"
+            alt="Logo"
+            style={{
+              width: 53.985984802246094,
+              height: 53.98569107055664
+            }}
+          />
+          <span
+            className="font-bold tracking-tight text-white"
+            style={{
+              fontFamily: '"Barlow Condensed", sans-serif',
+              fontSize: '28px',
+              lineHeight: '30.15px'
+            }}
           >
-            <img src="/coins/logo1.png" alt="Logo" className="h-24 w-auto object-contain" />
-            <span style={{
-              fontSize: '1.15rem', fontWeight: 700, color: 'white',
-              fontFamily: "'Barlow', Barlow, sans-serif", letterSpacing: '-0.01em'
-            }}>
-              GPT Platform
+            TaskMint
+          </span>
+        </div>
+
+        {/* Links */}
+        <div className="hidden md:flex items-center gap-8 font-['Barlow_Condensed'] font-semibold text-[22px] leading-none tracking-normal text-white">
+          <a href="/#" className="hover:text-[#29FD98] transition-colors">Home</a>
+          <a href="/#earn" className="hover:text-[#29FD98] transition-colors">Earn</a>
+          <a href="/#how-it-works" className="hover:text-[#29FD98] transition-colors">How it Works</a>
+          <a href="/#features" className="hover:text-[#29FD98] transition-colors">Features</a>
+          <a href="/#faq" className="hover:text-[#29FD98] transition-colors">FAQ</a>
+        </div>
+
+        {/* Right Actions */}
+        <div
+          className="flex items-center"
+          style={{ width: 282, height: 48, gap: 10 }}
+        >
+          <div
+            className="hidden sm:flex items-center justify-center cursor-pointer text-white transition-all hover:brightness-110 active:translate-y-[4px] active:shadow-none"
+            style={{
+              width: 104,
+              height: 48,
+              borderRadius: 10,
+              padding: '10px 14px',
+              gap: 8,
+              background: 'rgba(39, 112, 58, 1)',
+              boxShadow: '0px 4px 0px 0px rgba(35, 80, 47, 1)'
+            }}
+          >
+            <img src="/coins/globe.png" alt="Lang" className="w-5 h-5 object-contain" />
+            <span className="font-['Barlow_Condensed'] font-semibold text-[18px] leading-none tracking-normal">
+              Eng
             </span>
+            <img src="/coins/arrow.png" alt="Arrow" className="w-3 h-3 object-contain" />
+          </div>
+          <button
+            onClick={() => switchTab(true)}
+            className="flex items-center justify-center text-white transition-all hover:brightness-110 active:translate-y-[4px] active:shadow-none"
+            style={{
+              width: 168,
+              height: 48,
+              borderRadius: 10,
+              padding: '10px 24px',
+              gap: 10,
+              background: 'rgba(73, 178, 101, 1)',
+              boxShadow: '0px 4px 0px 0px rgba(45, 110, 62, 1)'
+            }}
+          >
+            <span className="font-['Barlow_Condensed'] font-bold text-[18px] leading-none tracking-normal">
+              Get Started
+            </span>
+            <div
+              className="bg-white"
+              style={{
+                width: 18,
+                height: 18,
+                WebkitMaskImage: 'url(/coins/image.png)',
+                WebkitMaskSize: 'contain',
+                WebkitMaskRepeat: 'no-repeat',
+                WebkitMaskPosition: 'center',
+                maskImage: 'url(/coins/image.png)',
+                maskSize: 'contain',
+                maskRepeat: 'no-repeat',
+                maskPosition: 'center'
+              }}
+            />
           </button>
         </div>
+      </nav>
 
-        {/* Center: Hero text */}
-        <div className="relative z-10 px-10 pb-4">
-          <h2 style={{
-            fontSize: 'clamp(1.8rem, 3vw, 2.5rem)',
-            fontWeight: 800,
-            lineHeight: 1.15,
-            fontFamily: "'Barlow', Barlow, sans-serif",
-            marginBottom: '1rem',
-          }}>
-            <span style={{
-              background: 'linear-gradient(90deg, #60a5fa 0%, #2563eb 55%, #0ea5e9 100%)',
-              WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text',
-            }}>
-              Earn Real Rewards.
-            </span>
-            <br />
-            <span className="text-white">Start Today.</span>
-          </h2>
-          <p style={{ color: 'rgba(255,255,255,0.45)', fontSize: '0.9rem', lineHeight: 1.6, maxWidth: '320px' }}>
-            Complete simple tasks and surveys. Redeem points for Crypto, PayPal, Gift Cards, Discord Nitro & more.
-          </p>
-        </div>
-
-        {/* Bottom: Testimonial / stat strip */}
-        <div className="relative z-10 p-10 pt-0">
-          <div style={{
-            background: 'rgba(255,255,255,0.04)',
-            border: '1px solid rgba(255,255,255,0.08)',
-            borderRadius: '16px',
-            padding: '1.1rem 1.25rem',
-            display: 'flex',
-            gap: '2rem',
-          }}>
-            {[['10K+', 'Active Users'], ['$500K+', 'Paid Out'], ['4.9★', 'Rating']].map(([val, lbl]) => (
-              <div key={lbl}>
-                <div style={{ fontSize: '1.1rem', fontWeight: 700, color: 'white', fontFamily: "'Barlow', sans-serif" }}>{val}</div>
-                <div style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.35)', textTransform: 'uppercase', letterSpacing: '0.06em', marginTop: '2px' }}>{lbl}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* ══════════════════════════════════════════
-          RIGHT PANEL — Form
-      ══════════════════════════════════════════ */}
+      {/* Header Bottom Line */}
       <div
-        className="flex-1 flex items-center justify-center p-6 relative"
+        className="absolute left-1/2 -translate-x-1/2 z-40"
         style={{
-          background: 'radial-gradient(ellipse 80% 60% at 80% 20%, rgba(3,15,60,0.5) 0%, #000000 60%)',
+          top: 106,
+          width: '100%',
+          maxWidth: 1240,
+          borderBottom: '1px solid rgba(255, 255, 255, 0.4)'
         }}
-      >
-        {/* Subtle top-right glow */}
-        <div style={{
-          position: 'absolute', top: '-80px', right: '-80px',
-          width: '360px', height: '360px',
-          background: 'radial-gradient(circle, rgba(37,99,235,0.1) 0%, transparent 70%)',
-          pointerEvents: 'none',
-        }} />
+      />
 
+      {/* LOGIN/REGISTER FORM SECTION */}
+      <section className="pt-[195px] pb-[100px] flex items-center justify-center px-4 relative z-10">
         <motion.div
           initial={{ opacity: 0, y: 14 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4 }}
-          style={{ width: '100%', maxWidth: '400px', position: 'relative', zIndex: 10 }}
-        >
-          {/* Mobile logo */}
-          <button
-            onClick={() => navigate('/')}
-            className="lg:hidden flex items-center gap-2 mb-8"
-            style={{ background: 'none', border: 'none', cursor: 'pointer' }}
-          >
-            <img src="/coins/logo1.png" alt="Logo" className="h-24 w-auto object-contain" />
-            <span style={{
-              fontSize: '1.1rem', fontWeight: 700, color: 'white',
-              fontFamily: "'Barlow', Barlow, sans-serif",
-            }}>
-              GPT Platform
-            </span>
-          </button>
-
-          {/* ── Tab switcher ── */}
-          <div style={{
+          className="w-full"
+          style={{
+            width: '600px',
+            background: 'rgba(26, 27, 26, 1)',
+            backdropFilter: 'blur(104px)',
+            WebkitBackdropFilter: 'blur(104px)',
+            borderRadius: '24px',
+            padding: '40px',
+            gap: '30px',
             display: 'flex',
-            gap: '4px',
-            background: 'rgba(255,255,255,0.05)',
-            borderRadius: '999px',
-            padding: '4px',
-            marginBottom: '2rem',
-            border: '1px solid rgba(255,255,255,0.07)',
-          }}>
-            {[['Sign Up', true], ['Sign In', false]].map(([label, isReg]) => (
-              <button
-                key={label}
-                onClick={() => switchTab(isReg)}
-                style={{
-                  flex: 1,
-                  padding: '0.55rem 1rem',
-                  borderRadius: '999px',
-                  fontSize: '0.85rem',
-                  fontWeight: 600,
-                  border: 'none',
-                  cursor: 'pointer',
-                  transition: 'all 0.2s',
-                  background: isRegistering === isReg
-                    ? 'linear-gradient(90deg, #1d4ed8 0%, #2563eb 50%, #0ea5e9 100%)'
-                    : 'transparent',
-                  color: isRegistering === isReg ? 'white' : 'rgba(255,255,255,0.4)',
-                  boxShadow: isRegistering === isReg ? '0 0 16px rgba(37,99,235,0.35)' : 'none',
-                }}
-              >
-                {label}
-              </button>
-            ))}
-          </div>
-
-          {/* ── Greeting ── */}
-          <div style={{ marginBottom: '1.75rem' }}>
-            <h1 style={{
-              fontSize: '1.55rem', fontWeight: 800, color: 'white',
-              fontFamily: "'Barlow', Barlow, sans-serif", lineHeight: 1.2, marginBottom: '0.35rem',
-            }}>
-              {isForgotPassword ? 'Reset Password' : (isRegistering ? 'Create your account' : 'Welcome back')}
+            flexDirection: 'column',
+            boxShadow: '0px 4px 80px 0px rgba(0, 0, 0, 0.15)',
+          }}
+        >
+          {/* Greeting */}
+          <div
+            className="flex flex-col items-center justify-center mx-auto"
+            style={{
+              width: '520px',
+              maxWidth: '100%',
+              height: '70px',
+              gap: '16px',
+            }}
+          >
+            <h1
+              style={{
+                width: '100%',
+                maxWidth: '520px',
+                height: '32px',
+                margin: 0,
+                fontFamily: '"Barlow Condensed", sans-serif',
+                fontWeight: 700,
+                fontSize: '42px',
+                lineHeight: '32px',
+                letterSpacing: '0%',
+                textAlign: 'center',
+                color: 'rgba(255, 255, 255, 1)',
+              }}
+            >
+              {isForgotPassword ? 'Forgot Password' : (isRegistering ? 'Create Your Account' : 'Login Your Account')}
             </h1>
-            <p style={{ fontSize: '0.83rem', color: 'rgba(255,255,255,0.35)' }}>
+            <p
+              style={{
+                width: '100%',
+                maxWidth: '520px',
+                height: '22px',
+                margin: 0,
+                fontFamily: '"Barlow Condensed", sans-serif',
+                fontWeight: 500,
+                fontSize: '20px',
+                lineHeight: '22px',
+                letterSpacing: '-0.01em',
+                textAlign: 'center',
+                color: 'rgba(255, 255, 255, 0.4)',
+              }}
+            >
               {isForgotPassword
-                ? 'Enter your email to receive a password reset link'
-                : (isRegistering ? 'Sign up below or continue with Google' : 'Sign in below or continue with Google')}
+                ? 'Enter your registered email to get verification code'
+                : (isRegistering ? 'Create your account to access all features' : 'Login into your account to access all features')}
             </p>
           </div>
 
-          {/* ── Form ── */}
-          <form onSubmit={formik.handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-            {/* Username — sign up only */}
+          {/* Form */}
+          <form onSubmit={formik.handleSubmit} className="flex flex-col items-center w-full" style={{ gap: '24px' }}>
+            {/* Fields Container */}
+            <div
+              className="flex flex-col mx-auto w-full"
+              style={{
+                width: '520px',
+                maxWidth: '100%',
+                gap: '12px',
+              }}
+            >
             <AnimatePresence mode="popLayout">
               {isRegistering && !isForgotPassword && (
                 <motion.div
@@ -411,14 +411,14 @@ const Login = () => {
                   transition={{ duration: 0.22 }}
                   style={{ overflow: 'hidden' }}
                 >
-                  <Field name="displayName" type="text" label="USERNAME" placeholder="your_username"
-                    icon={FiUser} formik={formik} loading={loading} />
+                  <Field name="displayName" type="text" label="Username" placeholder="Emmy"
+                    icon="/coins/pelogin.png" formik={formik} loading={loading} />
                 </motion.div>
               )}
             </AnimatePresence>
 
-            <Field name="email" type="email" label="EMAIL ADDRESS" placeholder="you@email.com"
-              icon={FiMail} formik={formik} loading={loading} />
+            <Field name="email" type="email" label="Email" placeholder="emmy@gmail.com"
+              icon="/coins/sms.png" formik={formik} loading={loading} />
 
             <AnimatePresence mode="popLayout">
               {!isForgotPassword && (
@@ -431,110 +431,280 @@ const Login = () => {
                   style={{ overflow: 'hidden' }}
                 >
                   <Field
-                    name="password" type="password" label="PASSWORD" placeholder="At least 8 characters"
-                    icon={FiLock} formik={formik} loading={loading}
-                    extra={!isRegistering && (
-                      <button type="button"
-                        onClick={() => { setIsForgotPassword(true); formik.resetForm(); }}
-                        style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '0.72rem',
-                          color: 'rgba(37,99,235,0.9)', fontWeight: 600 }}>
-                        Forgot Password?
-                      </button>
-                    )}
+                    name="password" type="password" label="Password" placeholder="Your password"
+                    icon="/coins/lockpe.png" formik={formik} loading={loading}
                   />
                 </motion.div>
               )}
             </AnimatePresence>
+            </div>
 
-            {/* Password hints (sign up) */}
-            <AnimatePresence>
+            {/* Checkbox for Register */}
+            <AnimatePresence mode="popLayout">
               {isRegistering && !isForgotPassword && (
                 <motion.div
-                  key="hints"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  style={{ display: 'flex', flexDirection: 'column', gap: '4px', marginTop: '-4px' }}
+                  key="terms"
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  exit={{ opacity: 0, height: 0 }}
+                  transition={{ duration: 0.22 }}
+                  style={{ overflow: 'hidden' }}
                 >
-                  {[
-                    { ok: formik.values.password.length >= 8,        text: 'At least 8 characters' },
-                    { ok: /[0-9!@#$%^&*]/.test(formik.values.password), text: 'Contains a number or symbol' },
-                  ].map(({ ok, text }) => (
-                    <div key={text} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                      <span style={{ fontSize: '10px', color: ok ? '#34d399' : 'rgba(255,255,255,0.2)' }}>
-                        {ok ? '✓' : '○'}
-                      </span>
-                      <span style={{ fontSize: '0.72rem', color: ok ? 'rgba(52,211,153,0.8)' : 'rgba(255,255,255,0.25)' }}>
-                        {text}
-                      </span>
+                  <div
+                    className="flex items-center w-full mt-1 mb-2"
+                    style={{
+                      width: '520px',
+                      maxWidth: '100%',
+                      height: '26px',
+                      gap: '10px',
+                    }}
+                  >
+                    <div className="relative flex items-center justify-center">
+                      <input
+                        type="checkbox"
+                        id="terms"
+                        name="terms"
+                        onChange={formik.handleChange}
+                        checked={formik.values.terms}
+                        className="appearance-none bg-transparent checked:bg-[rgba(73,178,101,1)] cursor-pointer transition-colors m-0"
+                        style={{
+                          width: '26px',
+                          height: '26px',
+                          borderRadius: '6px',
+                          border: '2px solid rgba(73, 178, 101, 1)',
+                          flexShrink: 0,
+                        }}
+                      />
+                      {formik.values.terms && (
+                        <svg className="absolute w-4 h-4 text-white pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7" />
+                        </svg>
+                      )}
                     </div>
-                  ))}
+                    <label 
+                      htmlFor="terms" 
+                      className="cursor-pointer text-[#A1A1AA]"
+                      style={{
+                        width: '439px',
+                        maxWidth: '100%',
+                        height: '20px',
+                        fontFamily: '"Barlow Condensed", sans-serif',
+                        fontWeight: 500,
+                        fontSize: '18px',
+                        lineHeight: '20px',
+                        letterSpacing: '0%',
+                        verticalAlign: 'middle',
+                        margin: 0,
+                      }}
+                    >
+                      By signing up, you agree to our <span className="text-[rgba(73,178,101,1)]">Terms and Conditions</span> & <span className="text-[rgba(73,178,101,1)]">Privacy Policy</span>.
+                    </label>
+                  </div>
+                  {formik.touched.terms && formik.errors.terms && (
+                    <p className="text-[#f87171] text-xs mt-1 font-['Barlow']">{formik.errors.terms}</p>
+                  )}
                 </motion.div>
               )}
             </AnimatePresence>
 
-            {/* Primary submit */}
+            {/* Forgot Password Link for Login */}
+            <AnimatePresence mode="popLayout">
+              {!isRegistering && !isForgotPassword && (
+                <motion.div
+                  key="forgot-password"
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  exit={{ opacity: 0, height: 0 }}
+                  transition={{ duration: 0.22 }}
+                  style={{ overflow: 'hidden' }}
+                >
+                  <div 
+                    className="flex items-center justify-center w-full mx-auto m-0"
+                    style={{
+                      width: '520px',
+                      maxWidth: '100%',
+                      height: '24px',
+                      gap: '4px'
+                    }}
+                  >
+                    <span
+                      style={{
+                        fontFamily: '"Barlow Condensed", sans-serif',
+                        fontWeight: 500,
+                        fontSize: '18px',
+                        lineHeight: '22px',
+                        letterSpacing: '-0.01em',
+                        verticalAlign: 'middle',
+                        color: 'rgba(255, 255, 255, 1)'
+                      }}
+                    >
+                      Don't Remember Your Password?
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => { setIsForgotPassword(true); formik.resetForm(); }}
+                      className="bg-transparent border-none p-0 cursor-pointer hover:brightness-110 transition-all"
+                      style={{
+                        fontFamily: '"Barlow Condensed", sans-serif',
+                        fontWeight: 500,
+                        fontSize: '18px',
+                        lineHeight: '22px',
+                        letterSpacing: '-0.01em',
+                        verticalAlign: 'middle',
+                        color: 'rgba(73,178,101,1)'
+                      }}
+                    >
+                      Reset
+                    </button>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            {/* Submit Button */}
             <button
               type="submit"
               disabled={loading}
+              className="flex items-center justify-center transition-all hover:brightness-110 active:translate-y-[4px] active:shadow-none border-none cursor-pointer"
               style={{
-                ...pillBtnStyle,
-                marginTop: '0.5rem',
-                opacity: loading ? 0.6 : 1,
-                cursor: loading ? 'not-allowed' : 'pointer',
+                width: '520px',
+                maxWidth: '100%',
+                height: '48px',
+                borderRadius: '10px',
+                padding: '10px 30px',
+                gap: '10px',
+                background: 'rgba(73, 178, 101, 1)',
+                boxShadow: '0px 4px 0px 0px rgba(39, 109, 58, 1)',
+                opacity: loading ? 0.7 : 1,
               }}
-              onMouseEnter={e => { if (!loading) { e.currentTarget.style.transform = 'scale(1.02)'; e.currentTarget.style.opacity = '0.92'; }}}
-              onMouseLeave={e => { e.currentTarget.style.transform = 'scale(1)'; e.currentTarget.style.opacity = loading ? '0.6' : '1'; }}
             >
-              {loading ? 'Please wait...' : (isForgotPassword ? 'Send Reset Link' : (isRegistering ? 'Create Account' : 'Sign In'))}
-              {!loading && <FiArrowRight size={15} />}
+              <span
+                style={{
+                  fontFamily: '"Barlow Condensed", sans-serif',
+                  fontWeight: 700,
+                  fontSize: '18px',
+                  lineHeight: '100%',
+                  letterSpacing: '0.02em',
+                  color: 'rgba(255, 255, 255, 1)',
+                  margin: 0,
+                }}
+              >
+                {loading ? 'Please wait...' : (isForgotPassword ? 'Send Reset Link' : (isRegistering ? 'Sign Up' : 'Login'))}
+              </span>
+              {!loading && (
+                <div
+                  className="bg-white"
+                  style={{
+                    width: '24px',
+                    height: '24px',
+                    WebkitMaskImage: 'url(/coins/image.png)',
+                    WebkitMaskSize: 'contain',
+                    WebkitMaskRepeat: 'no-repeat',
+                    WebkitMaskPosition: 'center',
+                    maskImage: 'url(/coins/image.png)',
+                    maskSize: 'contain',
+                    maskRepeat: 'no-repeat',
+                    maskPosition: 'center'
+                  }}
+                />
+              )}
             </button>
           </form>
 
-          {/* ── Divider ── */}
+          {/* Divider */}
           {!isForgotPassword && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', margin: '1.4rem 0' }}>
-              <div style={{ flex: 1, height: '1px', background: 'rgba(255,255,255,0.07)' }} />
-              <span style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.25)', whiteSpace: 'nowrap' }}>
-                or continue with
+            <div 
+              className="flex items-center mx-auto" 
+              style={{
+                width: '520px',
+                maxWidth: '100%',
+                height: '18px',
+                gap: '10px'
+              }}
+            >
+              <div className="h-px bg-[#333] flex-1"></div>
+              <span 
+                style={{
+                  width: '10px',
+                  height: '18px',
+                  fontFamily: '"Barlow Condensed", sans-serif',
+                  fontWeight: 600,
+                  fontSize: '12px',
+                  lineHeight: '18px',
+                  letterSpacing: '-0.01em',
+                  textAlign: 'center',
+                  color: 'rgba(255, 255, 255, 1)',
+                  display: 'inline-block'
+                }}
+              >
+                or
               </span>
-              <div style={{ flex: 1, height: '1px', background: 'rgba(255,255,255,0.07)' }} />
+              <div className="h-px bg-[#333] flex-1"></div>
             </div>
           )}
 
-          {/* ── Google button ── */}
+          {/* Google Button */}
           {!isForgotPassword && (
             <button
+              type="button"
               onClick={handleGoogleLogin}
               disabled={loading}
+              className="flex items-center justify-center transition-all hover:brightness-110 active:translate-y-[4px] active:shadow-none border-none cursor-pointer"
               style={{
-                width: '100%',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
+                width: '520px',
+                maxWidth: '100%',
+                height: '48px',
+                borderRadius: '10px',
+                padding: '10px 30px',
                 gap: '10px',
-                padding: '0.75rem 1.5rem',
-                borderRadius: '999px',
-                border: '1px solid rgba(255,255,255,0.12)',
-                background: 'rgba(255,255,255,0.04)',
-                color: 'rgba(255,255,255,0.75)',
-                fontSize: '0.875rem',
-                fontWeight: 500,
-                cursor: loading ? 'not-allowed' : 'pointer',
-                opacity: loading ? 0.5 : 1,
-                transition: 'all 0.2s',
+                background: 'rgba(39, 112, 58, 1)',
+                boxShadow: '0px 4px 0px 0px rgba(35, 80, 47, 1)',
+                opacity: loading ? 0.7 : 1,
               }}
-              onMouseEnter={e => { if (!loading) { e.currentTarget.style.background = 'rgba(255,255,255,0.08)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.22)'; e.currentTarget.style.color = 'white'; }}}
-              onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.04)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.12)'; e.currentTarget.style.color = 'rgba(255,255,255,0.75)'; }}
             >
-              <FcGoogle size={18} />
-              Continue with Google
+              <img 
+                src="/coins/gogle.png" 
+                alt="Google" 
+                style={{
+                  width: '20px',
+                  height: '20px',
+                  objectFit: 'contain'
+                }}
+              />
+              <span
+                style={{
+                  width: '114px',
+                  height: '18px',
+                  fontFamily: '"Barlow Condensed", sans-serif',
+                  fontWeight: 700,
+                  fontSize: '15px',
+                  lineHeight: '100%',
+                  letterSpacing: '0%',
+                  color: 'rgba(255, 255, 255, 1)',
+                  margin: 0,
+                  whiteSpace: 'nowrap'
+                }}
+              >
+                Continue with Google
+              </span>
             </button>
           )}
 
-          {/* ── Bottom switch link ── */}
-          <p style={{ textAlign: 'center', marginTop: '1.5rem', fontSize: '0.82rem', color: 'rgba(255,255,255,0.3)' }}>
-            {isForgotPassword ? '' : (isRegistering ? 'Already have an account? ' : "Don't have an account? ")}
+          {/* Bottom Switch Link */}
+          <p 
+            className="text-center mx-auto m-0"
+            style={{
+              height: '22px',
+              fontFamily: '"Barlow Condensed", sans-serif',
+              fontWeight: 500,
+              fontSize: '18px',
+              lineHeight: '22px',
+              letterSpacing: '-0.01em',
+              verticalAlign: 'middle',
+              color: 'rgba(255, 255, 255, 1)'
+            }}
+          >
+            {isForgotPassword ? 'Back to ' : (isRegistering ? 'Already Have an Account? ' : "Don't Have an Account? ")}
             <button
               type="button"
               onClick={() => {
@@ -545,26 +715,287 @@ const Login = () => {
                   switchTab(!isRegistering);
                 }
               }}
+              className="bg-transparent border-none p-0 cursor-pointer hover:brightness-110 transition-all"
               style={{
-                background: 'none', border: 'none', cursor: 'pointer', padding: 0,
-                background: 'linear-gradient(90deg, #2563eb, #0ea5e9)',
-                WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
-                backgroundClip: 'text', fontWeight: 600, fontSize: '0.82rem',
+                fontFamily: '"Barlow Condensed", sans-serif',
+                fontWeight: 600,
+                fontSize: '18px',
+                color: 'rgba(73,178,101,1)'
               }}
             >
-              {isForgotPassword ? 'Back to sign in' : (isRegistering ? 'Sign in' : 'Sign up')}
+              {isForgotPassword ? 'Login Now' : (isRegistering ? 'Login Now' : 'Register Now')}
             </button>
           </p>
-
-          {/* Terms */}
-          <p style={{ textAlign: 'center', marginTop: '1.25rem', fontSize: '0.68rem', color: 'rgba(255,255,255,0.18)', lineHeight: 1.5 }}>
-            By continuing, you agree to our{' '}
-            <span style={{ color: 'rgba(37,99,235,0.8)', cursor: 'pointer' }}>Terms of Use</span>
-            {' '}&{' '}
-            <span style={{ color: 'rgba(37,99,235,0.8)', cursor: 'pointer' }}>Privacy Policy</span>
-          </p>
         </motion.div>
-      </div>
+      </section>
+
+      {/* BOTTOM CTA */}
+      <section
+        className="w-full flex justify-center mt-12"
+        style={{ background: 'rgba(27, 28, 27, 1)' }}
+      >
+        <div
+          className="flex flex-col md:flex-row items-center justify-between w-full"
+          style={{
+            width: 1440,
+            maxWidth: '100%',
+            height: 158,
+            padding: '40px 100px',
+            justifyContent: 'space-between'
+          }}
+        >
+          <div
+            className="flex flex-col justify-start"
+            style={{ width: 1072, height: 78, gap: 30 }}
+          >
+            <h2
+              className="m-0 whitespace-nowrap flex items-center"
+              style={{
+                width: 341,
+                height: 34,
+                fontFamily: '"Barlow Condensed", sans-serif',
+                fontWeight: 700,
+                fontSize: 48,
+                lineHeight: '48px',
+                color: 'rgba(255, 255, 255, 1)'
+              }}
+            >
+              Start Earning Today
+            </h2>
+            <p
+              className="m-0 whitespace-nowrap flex items-center"
+              style={{
+                width: 1072,
+                maxWidth: '100%',
+                height: 14,
+                fontFamily: '"Barlow Condensed", sans-serif',
+                fontWeight: 500,
+                fontSize: 20,
+                lineHeight: '28px',
+                color: 'rgba(255, 255, 255, 0.53)'
+              }}
+            >
+              Join now and start making real money right now!
+            </p>
+          </div>
+          <button
+            onClick={() => switchTab(true)}
+            className="flex items-center justify-center text-white transition-all hover:brightness-110 active:translate-y-[4px] active:shadow-none border-none cursor-pointer"
+            style={{
+              width: 168,
+              height: 48,
+              borderRadius: 10,
+              padding: '10px 30px',
+              gap: 10,
+              background: 'rgba(73, 178, 101, 1)',
+              boxShadow: '0px 4px 0px 0px rgba(39, 109, 58, 1)'
+            }}
+          >
+            <span
+              className="whitespace-nowrap flex items-center justify-center m-0 p-0"
+              style={{
+                width: 74,
+                height: 13,
+                fontFamily: '"Barlow Condensed", sans-serif',
+                fontWeight: 700,
+                fontStyle: 'normal',
+                fontSize: 18,
+                lineHeight: '100%',
+                letterSpacing: '0%'
+              }}
+            >
+              Get Started
+            </span>
+            <div
+              className="bg-white"
+              style={{
+                width: 18,
+                height: 18,
+                WebkitMaskImage: 'url(/coins/image.png)',
+                WebkitMaskSize: 'contain',
+                WebkitMaskRepeat: 'no-repeat',
+                WebkitMaskPosition: 'center',
+                maskImage: 'url(/coins/image.png)',
+                maskSize: 'contain',
+                maskRepeat: 'no-repeat',
+                maskPosition: 'center'
+              }}
+            />
+          </button>
+        </div>
+      </section>
+
+      {/* FOOTER */}
+      <footer
+        className="w-full flex justify-center border-t border-[#333]"
+        style={{ background: 'rgba(44, 45, 44, 1)' }}
+      >
+        <div
+          className="flex flex-col items-center text-center w-full mx-auto"
+          style={{
+            width: 1440,
+            maxWidth: '100%',
+            height: 406.9995422363281,
+            paddingTop: 100,
+            paddingRight: 100,
+            paddingBottom: 30,
+            paddingLeft: 100,
+            gap: 30,
+            opacity: 1,
+            transform: 'rotate(0deg)',
+            justifyContent: 'space-between'
+          }}
+        >
+          {/* Top Logo */}
+          <div
+            className="flex items-center justify-center cursor-pointer hover:opacity-80 transition-opacity"
+            onClick={() => navigate('/')}
+            style={{
+              width: 264.9997253417969,
+              height: 73.99954223632812,
+              gap: 10,
+              opacity: 1,
+              transform: 'rotate(0deg)'
+            }}
+          >
+            <img
+              src="/coins/logo copy.png"
+              alt="Logo"
+              style={{
+                width: 73.99972534179688,
+                height: 73.99954223632812,
+                objectFit: 'contain',
+                opacity: 1,
+                transform: 'rotate(0deg)'
+              }}
+            />
+            <span
+              className="whitespace-nowrap flex items-center"
+              style={{
+                width: 181,
+                height: 39,
+                fontFamily: '"Barlow Condensed", sans-serif',
+                fontWeight: 700,
+                fontSize: 56,
+                lineHeight: '100%',
+                letterSpacing: '0%',
+                color: 'rgba(255, 255, 255, 1)',
+                opacity: 1,
+                transform: 'rotate(0deg)'
+              }}
+            >
+              TaskMint
+            </span>
+          </div>
+
+          {/* Middle Content */}
+          <div
+            className="flex flex-col items-center text-center"
+            style={{ width: 1104, maxWidth: '100%', height: 79, gap: 30 }}
+          >
+            <p
+              className="m-0 p-0 flex items-center justify-center whitespace-nowrap"
+              style={{
+                width: 1104,
+                maxWidth: '100%',
+                height: 17,
+                fontFamily: '"Barlow Condensed", sans-serif',
+                fontWeight: 400,
+                fontSize: 24,
+                lineHeight: '28px',
+                textAlign: 'center',
+                color: 'rgba(209, 213, 219, 1)'
+              }}
+            >
+              Complete offers, surveys, and tasks to earn real rewards. Join thousands of users already earning every day.
+            </p>
+            <div
+              className="flex justify-center items-center m-0 p-0"
+              style={{ width: 772, maxWidth: '100%', height: 32, gap: 30 }}
+            >
+              {[
+                { name: 'Features', href: '/#features' },
+                { name: 'FAQ', href: '/#faq' },
+                { name: 'Blog', href: '#' },
+                { name: 'Terms of Use', href: '#' },
+                { name: 'Privacy Policy', href: '#' },
+                { name: 'Support', href: '#' }
+              ].map((link, idx, arr) => (
+                <React.Fragment key={link.name}>
+                  <a
+                    href={link.href}
+                    className="hover:opacity-80 transition-opacity whitespace-nowrap flex items-center justify-center"
+                    style={{
+                      height: 32,
+                      fontFamily: '"Barlow Condensed", sans-serif',
+                      fontWeight: 700,
+                      fontSize: 26,
+                      lineHeight: '32px',
+                      color: 'rgba(73, 178, 101, 1)',
+                      textDecoration: 'none'
+                    }}
+                  >
+                    {link.name}
+                  </a>
+                  {idx < arr.length - 1 && (
+                    <span
+                      className="flex items-center justify-center"
+                      style={{ color: '#fff', fontSize: 26, lineHeight: '32px' }}
+                    >
+                      &bull;
+                    </span>
+                  )}
+                </React.Fragment>
+              ))}
+            </div>
+          </div>
+
+          {/* Bottom Divider & Copyright */}
+          <div className="w-full flex flex-col items-center gap-4">
+            <div className="w-full h-px bg-[#444]" />
+            <div
+              className="flex items-center"
+              style={{
+                width: 1240,
+                maxWidth: '100%',
+                height: 34,
+                justifyContent: 'space-between',
+                opacity: 1,
+                transform: 'rotate(0deg)'
+              }}
+            >
+              <p
+                className="m-0 p-0 flex items-center"
+                style={{
+                  width: 1004,
+                  height: 14,
+                  fontFamily: '"Barlow Condensed", sans-serif',
+                  fontWeight: 500,
+                  fontSize: 20,
+                  lineHeight: '20px',
+                  color: 'rgba(255, 255, 255, 1)'
+                }}
+              >
+                © 2026 TaskMint. All rights reserved.
+              </p>
+              <div
+                className="flex items-center justify-between"
+                style={{
+                  width: 196,
+                  height: 34,
+                  gap: 20,
+                  color: 'rgba(73, 178, 101, 1)'
+                }}
+              >
+                <FaFacebook className="hover:opacity-80 cursor-pointer transition-opacity flex-shrink-0" style={{ width: 34, height: 34, opacity: 1, transform: 'rotate(0deg)' }} />
+                <FaInstagram className="hover:opacity-80 cursor-pointer transition-opacity flex-shrink-0" style={{ width: 34, height: 34, opacity: 1, transform: 'rotate(0deg)' }} />
+                <FaYoutube className="hover:opacity-80 cursor-pointer transition-opacity flex-shrink-0" style={{ width: 34, height: 34, opacity: 1, transform: 'rotate(0deg)' }} />
+                <FaDiscord className="hover:opacity-80 cursor-pointer transition-opacity flex-shrink-0" style={{ width: 34, height: 34, opacity: 1, transform: 'rotate(0deg)' }} />
+              </div>
+            </div>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 };
