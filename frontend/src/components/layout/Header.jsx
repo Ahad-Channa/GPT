@@ -59,9 +59,9 @@ const DailyBonusChip = () => {
     return (
       <button
         onClick={() => navigate('/dashboard/daily-bonus')}
-        className="hidden lg:flex items-center gap-2 px-4 py-1.5 rounded-xl bg-white/[0.04] border border-white/[0.07] text-sm hover:bg-white/[0.08] transition-all font-semibold text-slate-400"
+        className="group hidden lg:flex items-center gap-2 px-4 py-1.5 text-sm transition-all font-semibold text-white hover:text-[#49B265] bg-transparent border-none"
       >
-        <FiClock className="text-slate-500 text-sm" />
+        <FiClock className="text-[#49B265] text-sm transition-all duration-300 group-hover:drop-shadow-[0_0_8px_rgba(73,178,101,0.5)]" />
         <span>{timeLeft || '...'}</span>
       </button>
     );
@@ -73,17 +73,16 @@ const DailyBonusChip = () => {
       <button
         onClick={claimBonus}
         disabled={claiming}
-        className="hidden lg:flex relative items-center gap-2 px-5 py-1.5 rounded-xl font-bold text-sm text-white
-          bg-gradient-to-r from-amber-400 to-orange-500
-          border border-amber-300/60
-          shadow-[0_0_18px_rgba(245,158,11,0.7),0_0_40px_rgba(245,158,11,0.3)]
-          hover:shadow-[0_0_28px_rgba(245,158,11,0.9),0_0_60px_rgba(245,158,11,0.5)]
-          disabled:opacity-60 overflow-hidden group"
+        className="hidden lg:flex relative items-center gap-2 px-5 py-1.5 rounded-[10px] font-bold text-sm text-white
+          bg-[#49B265] hover:brightness-110
+          shadow-[0_0_15px_rgba(73,178,101,0.4)]
+          hover:shadow-[0_0_25px_rgba(73,178,101,0.6)]
+          disabled:opacity-60 overflow-hidden group border-none"
         style={{ animation: 'bonusPulse 1.8s ease-in-out infinite' }}
       >
-        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-600" />
+        <div className="absolute inset-0 bg-white/20 -translate-x-full group-hover:translate-x-full transition-transform duration-600" />
         <FiGift className="text-white text-sm relative z-10" />
-        <span className="relative z-10">{claiming ? 'Claiming…' : '🎁 Claim Bonus!'}</span>
+        <span className="relative z-10 font-bold">{claiming ? 'Claiming…' : '🎁 Claim Bonus!'}</span>
       </button>
     );
   }
@@ -94,27 +93,20 @@ const DailyBonusChip = () => {
   return (
     <button
       onClick={() => navigate('/dashboard/daily-bonus')}
-      className="hidden lg:flex flex-col justify-center px-3 py-1 rounded-xl bg-white/[0.04] border border-white/[0.07] hover:bg-white/[0.08] hover:border-white/[0.15] transition-all group relative overflow-visible"
-      style={{ minWidth: '128px', height: '34px' }}
+      className="group hidden lg:flex items-center gap-2 px-4 py-1.5 text-sm transition-all font-semibold text-white hover:text-[#49B265] bg-transparent border-none relative overflow-visible"
     >
-      <div className="flex items-center gap-1.5 mb-0.5">
-        <FiLock className="text-slate-500 text-[10px] flex-shrink-0" />
-        <span className="font-semibold text-slate-300 text-xs">Daily Bonus</span>
-        <span className="ml-auto text-[10px] text-indigo-400 font-bold">{progressPercent}%</span>
-      </div>
-      <div className="w-full h-1 bg-white/[0.07] rounded-full overflow-hidden">
-        <div
-          className="h-full bg-gradient-to-r from-indigo-500 to-violet-400 rounded-full transition-all duration-700"
-          style={{ width: `${progressPercent}%` }}
-        />
+      <div className="flex items-center gap-2">
+        <FiLock className="text-[#49B265] text-sm transition-all duration-300 group-hover:drop-shadow-[0_0_8px_rgba(73,178,101,0.5)]" />
+        <span>Daily Bonus</span>
+        <span className="ml-1 text-[10px] bg-[#49B265]/20 text-[#49B265] px-1.5 py-0.5 rounded-full font-bold">{progressPercent}%</span>
       </div>
       {/* Hover tooltip */}
-      <div className="absolute top-11 right-0 w-52 p-3 rounded-xl bg-[#0b101e] border border-white/[0.08] shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 text-left">
+      <div className="absolute top-10 left-1/2 -translate-x-1/2 w-52 p-3 rounded-xl bg-[#0b101e] border border-[#49B265]/30 shadow-[0_0_15px_rgba(73,178,101,0.15)] opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 text-left">
         <p className="text-xs text-slate-300 mb-2">
           Earn <span className="font-bold text-white"><CoinDisplay amount={status.required - status.earned} showIcon={true} size={12} /></span> more to unlock.
         </p>
         <div className="w-full h-1.5 bg-white/10 rounded-full overflow-hidden mb-2">
-          <div className="bg-indigo-400 h-full rounded-full" style={{ width: `${progressPercent}%` }} />
+          <div className="bg-[#49B265] h-full rounded-full" style={{ width: `${progressPercent}%` }} />
         </div>
         <div className="flex justify-between text-[10px] text-slate-400">
           <span>{status.earned.toLocaleString()} earned</span>
@@ -175,11 +167,11 @@ const Header = ({ onChatToggle, chatOpen }) => {
           <button
             id="header-earn-btn"
             onClick={() => navigate('/dashboard')}
-            className="hidden lg:flex items-center gap-2 px-6 py-1.5 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-400 hover:to-blue-400 text-white font-bold text-sm transition-all shadow-[0_0_15px_rgba(6,182,212,0.4)] hover:shadow-[0_0_25px_rgba(6,182,212,0.6)] border border-cyan-400/50 relative overflow-hidden group"
+            className="hidden lg:flex items-center gap-2 px-6 py-1.5 rounded-[10px] bg-[#49B265] hover:brightness-110 text-white font-bold text-sm transition-all border-none relative overflow-hidden group"
           >
             <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out" />
             <FiDollarSign className="text-white text-[16px] relative z-10" />
-            <span className="relative z-10 tracking-wide text-[15px]">Earn</span>
+            <span className="relative z-10 tracking-wide text-[15px] font-bold">Earn</span>
           </button>
 
           <DailyBonusChip />
@@ -188,9 +180,9 @@ const Header = ({ onChatToggle, chatOpen }) => {
           <button
             id="header-leaderboard-chip"
             onClick={() => navigate('/dashboard/leaderboard')}
-            className="group hidden lg:flex items-center gap-2 px-4 py-1.5 rounded-xl bg-white/[0.04] border border-white/[0.07] text-sm hover:bg-white/[0.08] hover:border-white/[0.15] hover:shadow-[0_0_15px_rgba(251,191,36,0.15)] transition-all font-semibold text-slate-300 hover:text-amber-50"
+            className="group hidden lg:flex items-center gap-2 px-4 py-1.5 text-sm transition-all font-semibold text-white hover:text-[#49B265] bg-transparent border-none"
           >
-            <FaTrophy className="text-slate-400 text-sm transition-all duration-300 group-hover:text-amber-400 group-hover:drop-shadow-[0_0_8px_rgba(251,191,36,0.8)]" />
+            <FaTrophy className="text-[#49B265] text-sm transition-all duration-300 group-hover:drop-shadow-[0_0_8px_rgba(73,178,101,0.5)]" />
             <span>Leaderboard</span>
           </button>
 
@@ -198,9 +190,9 @@ const Header = ({ onChatToggle, chatOpen }) => {
           <button
             id="header-affiliates-btn"
             onClick={() => navigate('/dashboard/affiliates')}
-            className="hidden lg:flex items-center gap-2 px-4 py-1.5 rounded-xl bg-white/[0.04] border border-white/[0.07] text-sm hover:bg-white/[0.08] hover:border-white/[0.15] transition-all font-semibold text-slate-300"
+            className="group hidden lg:flex items-center gap-2 px-4 py-1.5 text-sm transition-all font-semibold text-white hover:text-[#49B265] bg-transparent border-none"
           >
-            <FiUsers className="text-slate-400 text-sm" />
+            <FiUsers className="text-[#49B265] text-sm transition-all duration-300 group-hover:drop-shadow-[0_0_8px_rgba(73,178,101,0.5)]" />
             <span>Affiliates</span>
           </button>
           
@@ -208,9 +200,9 @@ const Header = ({ onChatToggle, chatOpen }) => {
           <button
             id="header-withdraw-btn"
             onClick={() => navigate('/dashboard/wallet')}
-            className="hidden sm:flex items-center gap-2 px-4 py-1.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-sm hover:bg-emerald-500/20 hover:border-emerald-500/40 transition-all font-bold"
+            className="group hidden sm:flex items-center gap-2 px-4 py-1.5 text-sm transition-all font-semibold text-white hover:text-[#49B265] bg-transparent border-none"
           >
-            <FiCreditCard className="text-emerald-400 text-sm" />
+            <FiCreditCard className="text-[#49B265] text-sm transition-all duration-300 group-hover:drop-shadow-[0_0_8px_rgba(73,178,101,0.5)]" />
             <span>Withdraw</span>
           </button>
 
@@ -220,14 +212,14 @@ const Header = ({ onChatToggle, chatOpen }) => {
           <button
             id="header-livechat-btn"
             onClick={onChatToggle}
-            className={`relative flex items-center justify-center w-8 h-8 md:w-10 md:h-10 rounded-xl border transition-colors group ${
+            className={`relative flex items-center justify-center w-8 h-8 md:w-10 md:h-10 rounded-[10px] transition-colors group border-none ${
               chatOpen
-                ? 'bg-indigo-500/20 border-indigo-500/40'
-                : 'bg-white/[0.04] border-white/[0.07] hover:bg-white/[0.08]'
+                ? 'bg-[#49B265]/20'
+                : 'bg-[#1a1b1a] hover:bg-[#252625]'
             }`}
           >
             <FiMessageSquare className={`text-sm md:text-base transition-colors ${
-              chatOpen ? 'text-indigo-400' : 'text-slate-300 group-hover:text-indigo-400'
+              chatOpen ? 'text-[#49B265]' : 'text-slate-300 group-hover:text-[#49B265]'
             }`} />
           </button>
 
@@ -235,11 +227,11 @@ const Header = ({ onChatToggle, chatOpen }) => {
           <button
             id="header-notifications-btn"
             onClick={togglePanel}
-            className="relative flex items-center justify-center w-8 h-8 md:w-10 md:h-10 rounded-xl bg-white/[0.04] border border-white/[0.07] hover:bg-white/[0.08] transition-colors"
+            className="relative flex items-center justify-center w-8 h-8 md:w-10 md:h-10 rounded-[10px] bg-[#1a1b1a] hover:bg-[#252625] transition-colors border-none group"
           >
-            <FiBell className="text-slate-300 text-sm md:text-base" />
+            <FiBell className="text-slate-300 text-sm md:text-base group-hover:text-[#49B265] transition-colors" />
             {unreadCount > 0 && (
-              <span className="absolute top-1.5 right-1.5 md:top-2 md:right-2.5 w-2 h-2 bg-indigo-500 rounded-full shadow-[0_0_8px_rgba(99,102,241,0.8)]" />
+              <span className="absolute top-1.5 right-1.5 md:top-2 md:right-2.5 w-2 h-2 bg-[#49B265] rounded-full shadow-[0_0_8px_rgba(73,178,101,0.8)]" />
             )}
           </button>
 

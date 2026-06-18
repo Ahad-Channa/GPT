@@ -176,35 +176,31 @@ const Home = () => {
         {globalStats.show && (
           <motion.div variants={item} className="grid grid-cols-1 sm:grid-cols-2 gap-4">
              {/* Total Users Card */}
-             <div className="glass-card relative overflow-hidden p-4 flex items-center gap-4 group border border-white/[0.05] hover:border-white/[0.08] transition-colors bg-gradient-to-br from-white/[0.02] to-transparent">
-               <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-[0.08] transition-opacity translate-x-2 -translate-y-2">
-                 <FiUsers className="text-6xl text-blue-500" />
-               </div>
-               <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-blue-500/20 to-blue-600/5 border border-blue-500/20 flex items-center justify-center shadow-[0_0_30px_rgba(59,130,246,0.15)] relative z-10 shrink-0">
-                 <FiUsers className="text-blue-400 text-xl" />
-               </div>
-               <div className="relative z-10">
-                  <p className="text-xs text-slate-400 font-semibold uppercase tracking-widest mb-0.5 shadow-black/50 drop-shadow-sm">Total Members</p>
-                  <div className="text-2xl font-bold text-white font-sans tracking-tight shadow-black/50 drop-shadow-sm">
+             <div className="relative overflow-hidden p-[20px] md:p-[30px] flex items-center justify-between group rounded-[20px] bg-[#1a1b1a] shadow-[0px_4px_80px_0px_rgba(0,0,0,0.15)] backdrop-blur-[44px] border border-white/[0.05]">
+               <div className="relative z-10 flex flex-col gap-2">
+                  <div className="w-[44px] h-[44px] rounded-[10px] bg-[#49B265]/10 flex items-center justify-center">
+                    <img src="/coins/people.png" alt="Members" className="w-[24px] h-[24px] object-contain" />
+                  </div>
+                  <p className="text-[12px] text-white/50 font-semibold uppercase tracking-widest mb-0.5">Total Members</p>
+                  <div className="text-[32px] md:text-[40px] font-bold text-white font-sans tracking-tight leading-none">
                     {globalStats.totalUsers.toLocaleString()}
                   </div>
                </div>
+               <img src="/coins/persons.png" alt="Graphic" className="absolute right-0 top-1/2 -translate-y-1/2 h-full object-contain opacity-50 group-hover:opacity-80 transition-opacity" />
              </div>
 
              {/* Paid Out Card */}
-             <div className="glass-card relative overflow-hidden p-4 flex items-center gap-4 group border border-white/[0.05] hover:border-white/[0.08] transition-colors bg-gradient-to-br from-white/[0.02] to-transparent">
-               <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-[0.08] transition-opacity translate-x-2 -translate-y-2">
-                 <FiDollarSign className="text-6xl text-emerald-500" />
-               </div>
-               <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-emerald-500/20 to-emerald-600/5 border border-emerald-500/20 flex items-center justify-center shadow-[0_0_30px_rgba(16,185,129,0.15)] relative z-10 shrink-0">
-                 <FiDollarSign className="text-emerald-400 text-xl" />
-               </div>
-               <div className="relative z-10">
-                  <p className="text-xs text-slate-400 font-semibold uppercase tracking-widest mb-0.5 shadow-black/50 drop-shadow-sm">Total Paid Out</p>
-                  <div className="text-2xl font-bold text-emerald-400 font-sans tracking-tight shadow-black/50 drop-shadow-md">
+             <div className="relative overflow-hidden p-[20px] md:p-[30px] flex items-center justify-between group rounded-[20px] bg-[#1a1b1a] shadow-[0px_4px_80px_0px_rgba(0,0,0,0.15)] backdrop-blur-[44px] border border-white/[0.05]">
+               <div className="relative z-10 flex flex-col gap-2">
+                  <div className="w-[44px] h-[44px] rounded-[10px] bg-[#49B265]/10 flex items-center justify-center">
+                    <img src="/coins/doller.png" alt="Paid" className="w-[24px] h-[24px] object-contain" />
+                  </div>
+                  <p className="text-[12px] text-white/50 font-semibold uppercase tracking-widest mb-0.5">Total Paid Out</p>
+                  <div className="text-[32px] md:text-[40px] font-bold text-[#49B265] font-sans tracking-tight leading-none">
                     ${globalStats.totalPaidOut.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                   </div>
                </div>
+               <img src="/coins/live.png" alt="Graphic" className="absolute right-0 top-1/2 -translate-y-1/2 h-[120%] object-contain opacity-50 group-hover:opacity-80 transition-opacity" />
              </div>
           </motion.div>
         )}

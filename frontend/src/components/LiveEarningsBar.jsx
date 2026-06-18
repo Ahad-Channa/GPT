@@ -63,7 +63,7 @@ const LiveEarningsBar = () => {
         isCoin: false,
         isWithdrawal: true,
         method: method,
-        color: 'text-brand-cyan' // Different color for withdrawals
+        color: 'text-[#49B265]' // Different color for withdrawals
       };
     }
     
@@ -88,7 +88,7 @@ const LiveEarningsBar = () => {
       isWithdrawal: false,
       offerwall,
       task,
-      color: 'text-brand-accent'
+      color: 'text-[#FACC15]'
     };
   };
 
@@ -103,10 +103,10 @@ const LiveEarningsBar = () => {
         {/* LIVE Indicator Box */}
         <div className="flex items-center gap-3 px-6 z-20 bg-brand-darker border-r border-brand-border h-full relative cursor-default shrink-0">
           <div className="relative flex items-center justify-center">
-            <FiActivity className="text-brand-cyan text-lg animate-pulse drop-shadow-[0_0_8px_rgba(6,182,212,0.8)]" />
+            <div className="w-2.5 h-2.5 rounded-full bg-[#49B265] animate-pulse drop-shadow-[0_0_8px_rgba(73,178,101,0.8)]" />
           </div>
           <div className="flex flex-col justify-center mt-0.5">
-            <span className="text-[13px] font-display font-bold uppercase tracking-[0.1em] text-white leading-none">
+            <span className="text-[13px] font-display font-bold uppercase tracking-[0.1em] text-[#49B265] leading-none">
               Live Feed
             </span>
           </div>
@@ -163,18 +163,18 @@ const LiveEarningsBar = () => {
                         
                         {details.isWithdrawal ? (
                           <div className="flex flex-col relative z-10">
-                            <span className="text-[10px] font-bold text-brand-cyan uppercase tracking-widest mb-1.5">Withdrawal</span>
+                            <span className="text-[10px] font-bold text-[#49B265] uppercase tracking-widest mb-1.5">Withdrawal</span>
                             <div className="flex items-center justify-between gap-4">
                               <span className="text-sm font-display font-bold text-white">{details.method}</span>
-                              <span className="text-sm font-black font-mono text-brand-cyan">{details.amountStr}</span>
+                              <span className="text-sm font-black font-mono text-[#49B265]">{details.amountStr}</span>
                             </div>
                           </div>
                         ) : (
                           <div className="flex flex-col relative z-10">
-                            <span className="text-[10px] font-bold text-brand-accent uppercase tracking-widest mb-1.5">{details.offerwall}</span>
+                            <span className="text-[10px] font-bold text-[#FACC15] uppercase tracking-widest mb-1.5">{details.offerwall}</span>
                             <span className="text-sm font-display font-bold text-white mb-2 line-clamp-2 whitespace-normal break-words leading-snug max-w-[220px]">{details.task}</span>
                             <div className="flex items-center gap-1.5 bg-white/5 rounded-lg px-2.5 py-1.5 w-fit border border-white/5">
-                              <span className="text-sm font-black font-mono text-brand-accent">{details.amountStr}</span>
+                              <span className="text-sm font-black font-mono text-[#FACC15]">{details.amountStr}</span>
                               <CoinIcon size={17} coinId={coinId} />
                             </div>
                           </div>
