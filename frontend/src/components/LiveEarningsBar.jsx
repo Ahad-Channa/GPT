@@ -95,7 +95,14 @@ const LiveEarningsBar = () => {
   return (
     <>
       {/* Removed overflow-hidden so the tooltip dropdown is visible */}
-      <div className="w-full bg-brand-darker border-b border-brand-border whitespace-nowrap h-10 flex items-center relative shadow-sm z-30">
+      <div 
+        className="w-full bg-brand-darker whitespace-nowrap flex items-center relative shadow-sm z-30 mx-auto"
+        style={{
+          maxWidth: '1511px',
+          height: '88px',
+          border: '1px solid rgba(255, 255, 255, 0.4)'
+        }}
+      >
         
         {/* Fade Gradients for smooth edges */}
         <div className="absolute right-0 w-32 h-full bg-gradient-to-l from-brand-darker to-transparent z-10 pointer-events-none" />

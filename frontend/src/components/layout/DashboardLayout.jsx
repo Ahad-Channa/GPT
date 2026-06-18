@@ -14,9 +14,9 @@ const DashboardLayout = ({ children, showLiveBar = true, fullWidth = false }) =>
   }, [chatOpen]);
 
   return (
-    <div className="relative min-h-screen bg-[#080b14] text-gray-300 overflow-x-hidden">
+    <div className="relative min-h-screen bg-black text-gray-300 overflow-x-hidden">
       {/* Ambient Background Glows */}
-      <div className="ambient-bg" aria-hidden="true" />
+      {/* <div className="ambient-bg" aria-hidden="true" /> */}
 
       {/* Sticky Header — passes chat toggle down */}
       <Header onChatToggle={() => setChatOpen(o => !o)} chatOpen={chatOpen} />
