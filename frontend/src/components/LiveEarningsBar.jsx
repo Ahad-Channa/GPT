@@ -70,15 +70,21 @@ const LiveEarningsBar = () => {
     // Earnings
     let offerwall = 'System';
     let task = 'Completed Task';
+    let taskCategory = 'Task: System Bonus';
     
-    if (tx.transactionType === 'daily_bonus') { task = 'Daily Bonus'; offerwall = 'Rewards'; }
-    else if (tx.transactionType === 'leaderboard_reward') { task = 'Leaderboard Prize'; offerwall = 'Rewards'; }
-    else if (tx.transactionType === 'vip_reward') { task = 'VIP Reward'; offerwall = 'Rewards'; }
-    else if (tx.transactionType === 'mission_reward') { task = 'Mission Reward'; offerwall = 'Rewards'; }
-    else if (tx.transactionType === 'admin_adjustment') { task = 'Admin Bonus'; offerwall = 'System'; }
-    else if (tx.transactionType === 'promo_code') { task = 'Promo Code'; offerwall = 'Rewards'; }
+    if (tx.transactionType === 'daily_bonus') { task = 'Daily Bonus'; offerwall = 'Rewards'; taskCategory = 'Task: Claimed Daily Bonus'; }
+    else if (tx.transactionType === 'leaderboard_reward') { task = 'Leaderboard Prize'; offerwall = 'Rewards'; taskCategory = 'Task: Leaderboard Prize'; }
+    else if (tx.transactionType === 'vip_reward') { task = 'VIP Reward'; offerwall = 'Rewards'; taskCategory = 'Task: VIP Reward'; }
+    else if (tx.transactionType === 'mission_reward') { task = 'Mission Reward'; offerwall = 'Rewards'; taskCategory = 'Task: Completed Mission'; }
+    else if (tx.transactionType === 'admin_adjustment') { task = 'Admin Bonus'; offerwall = 'System'; taskCategory = 'Task: Admin Adjustment'; }
+    else if (tx.transactionType === 'promo_code') { task = 'Promo Code'; offerwall = 'Rewards'; taskCategory = 'Task: Redeemed Promo Code'; }
     else {
-      if (tx.metadata?.offerwall) offerwall = tx.metadata.offerwall;
+      if (tx.metadata?.offerwall) {
+        offerwall = tx.metadata.offerwall;
+        taskCategory = `Task: Completed ${tx.metadata.offerwall} offer`;
+      } else {
+        taskCategory = 'Task: Completed offer';
+      }
       if (tx.description) task = tx.description;
     }
 
@@ -88,6 +94,7 @@ const LiveEarningsBar = () => {
       isWithdrawal: false,
       offerwall,
       task,
+      taskCategory,
       color: 'text-[#FACC15]'
     };
   };
@@ -246,23 +253,83 @@ const LiveEarningsBar = () => {
 
                     {/* Tooltip Box (Hover) */}
                     <div className="absolute top-[calc(100%+8px)] left-1/2 -translate-x-1/2 pointer-events-none opacity-0 translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-200 z-[100] drop-shadow-2xl">
-                      <div className="bg-[#0a0d14] border border-brand-border rounded-xl p-3.5 flex flex-col gap-2 min-w-[180px] shadow-[0_10px_40px_rgba(0,0,0,0.6)] relative before:content-[''] before:absolute before:-top-[7px] before:left-1/2 before:-translate-x-1/2 before:w-3.5 before:h-3.5 before:bg-[#0a0d14] before:border-t before:border-l before:border-brand-border before:rotate-45 before:rounded-tl-sm">
-                        
+                      <div 
+                        className="flex flex-col relative shadow-[0_10px_40px_rgba(0,0,0,0.6)]"
+                        style={{
+                          width: 'auto',
+                          minWidth: '167px',
+                          height: 'auto',
+                          minHeight: '97px',
+                          borderRadius: '12px',
+                          gap: '10px',
+                          padding: '12px',
+                          background: 'rgba(36, 36, 36, 1)',
+                          backdropFilter: 'blur(44px)',
+                          WebkitBackdropFilter: 'blur(44px)',
+                          boxSizing: 'border-box'
+                        }}
+                      >
                         {details.isWithdrawal ? (
-                          <div className="flex flex-col relative z-10">
-                            <span className="text-[10px] font-bold text-[#49B265] uppercase tracking-widest mb-1.5">Withdrawal</span>
-                            <div className="flex items-center justify-between gap-4">
+                          <div className="flex flex-col relative z-10 h-full justify-between gap-2">
+                            <span className="text-[10px] font-bold text-[#49B265] uppercase tracking-widest">Withdrawal</span>
+                            <div style={{ width: '143px', height: '0px', borderTop: '1px solid rgba(255, 255, 255, 0.12)', flexShrink: 0 }} />
+                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '143px', height: '18px' }}>
                               <span className="text-sm font-display font-bold text-white">{details.method}</span>
                               <span className="text-sm font-black font-mono text-[#49B265]">{details.amountStr}</span>
                             </div>
                           </div>
                         ) : (
-                          <div className="flex flex-col relative z-10">
-                            <span className="text-[10px] font-bold text-[#FACC15] uppercase tracking-widest mb-1.5">{details.offerwall}</span>
-                            <span className="text-sm font-display font-bold text-white mb-2 line-clamp-2 whitespace-normal break-words leading-snug max-w-[220px]">{details.task}</span>
-                            <div className="flex items-center gap-1.5 bg-white/5 rounded-lg px-2.5 py-1.5 w-fit border border-white/5">
-                              <span className="text-sm font-black font-mono text-[#FACC15]">{details.amountStr}</span>
-                              <CoinIcon size={17} coinId={coinId} />
+                          <div className="flex flex-col relative z-10 h-full justify-between gap-[10px]">
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', width: '143px', height: 'auto' }}>
+                              <span style={{
+                                width: '143px', height: 'auto',
+                                fontFamily: '"Barlow Condensed", sans-serif', fontWeight: 700, fontSize: '14px', lineHeight: '120%', color: 'rgba(255, 255, 255, 1)',
+                                whiteSpace: 'normal', wordBreak: 'break-word'
+                              }}>
+                                {details.task}
+                              </span>
+                              <span style={{
+                                width: '143px', height: '14px',
+                                fontFamily: '"Barlow Condensed", sans-serif', fontWeight: 500, fontSize: '11px', lineHeight: '130%', color: 'rgba(136, 136, 136, 1)',
+                                whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis'
+                              }}>
+                                {details.taskCategory}
+                              </span>
+                            </div>
+                            <div style={{ width: '143px', height: '0px', borderTop: '1px solid rgba(255, 255, 255, 0.12)', flexShrink: 0 }} />
+                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '143px', height: '18px' }}>
+                              <span style={{ 
+                                width: '32px', 
+                                height: '17px', 
+                                fontFamily: '"Barlow Condensed", sans-serif', 
+                                fontWeight: 500, 
+                                fontSize: '13px', 
+                                lineHeight: '130%', 
+                                textAlign: 'right', 
+                                color: 'rgba(255, 255, 255, 1)',
+                                whiteSpace: 'nowrap'
+                              }}>
+                                Earned
+                              </span>
+                              <div style={{ display: 'flex', alignItems: 'center', width: '50px', height: '18px', gap: '3px' }}>
+                                <img src="/coins/coinfinal.png" alt="coin" style={{ width: '18px', height: '18px' }} />
+                                <span style={{ 
+                                  width: '29px', 
+                                  height: '11px', 
+                                  fontFamily: '"Barlow Condensed", sans-serif', 
+                                  fontWeight: 700, 
+                                  fontSize: '16px', 
+                                  lineHeight: '130%', 
+                                  backgroundImage: 'linear-gradient(180deg, #FEDF77 0%, #FCB91E 100%)', 
+                                  WebkitBackgroundClip: 'text', 
+                                  color: 'transparent',
+                                  whiteSpace: 'nowrap',
+                                  display: 'flex',
+                                  alignItems: 'center'
+                                }}>
+                                  {details.amountStr}
+                                </span>
+                              </div>
                             </div>
                           </div>
                         )}

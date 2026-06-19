@@ -82,6 +82,23 @@ const Home = () => {
   const gamingRef = useRef(null);
   const surveysRef = useRef(null);
 
+  const featuredScrollRef = useRef(null);
+  const [featuredActiveIndex, setFeaturedActiveIndex] = useState(0);
+
+  const handleFeaturedScroll = (e) => {
+    const scrollLeft = e.target.scrollLeft;
+    const width = e.target.clientWidth;
+    const index = Math.round(scrollLeft / width);
+    setFeaturedActiveIndex(index);
+  };
+
+  const scrollFeaturedToPage = (index) => {
+    if (featuredScrollRef.current) {
+      const width = featuredScrollRef.current.clientWidth;
+      featuredScrollRef.current.scrollTo({ left: width * index, behavior: 'smooth' });
+    }
+  };
+
   useEffect(() => {
     if (currentUser) {
       currentUser.getIdToken().then(setToken);
@@ -172,7 +189,14 @@ const Home = () => {
   };
 
   const enabledProviders = settings?.offerwalls || [];
-  const surveyProviders = enabledProviders.filter(p => p.category === 'surveys');
+  let surveyProviders = enabledProviders.filter(p => p.category === 'surveys');
+  if (surveyProviders.length === 0) {
+    surveyProviders = [
+      { id: 'cpx', label: 'CPX Research', category: 'surveys' },
+      { id: 'primeearn', label: 'Prime Surveys', category: 'surveys' },
+      { id: 'adscend', label: 'AdscendMedia', category: 'surveys' }
+    ];
+  }
   const gamingProviders = enabledProviders.filter(p => p.category === 'gaming' || p.category === 'mixed');
 
   const tabs = [
@@ -371,42 +395,189 @@ const Home = () => {
 
             {/* Section 1: Featured Offers */}
             {(filter === 'all' || filter === 'featured') && customOffers.length > 0 && (
-              <motion.section ref={featuredRef} variants={item} className="space-y-4 pt-4">
-                <div className="flex items-center gap-3 mb-2">
-                  <div className="w-10 h-10 rounded-xl bg-amber-500/10 flex items-center justify-center border border-amber-500/20">
-                    <FiGift className="text-amber-400 text-xl" />
+              <motion.section 
+                ref={featuredRef} 
+                variants={item} 
+                className="flex flex-col"
+                style={{
+                  width: '100%',
+                  maxWidth: '1240px',
+                  minHeight: '512px',
+                  borderRadius: '20px',
+                  gap: '18px',
+                  padding: '20px',
+                  background: 'rgba(255, 255, 255, 0.14)'
+                }}
+              >
+                <div 
+                  className="flex items-center justify-between w-full"
+                  style={{ height: '133px', gap: '16px' }}
+                >
+                  <div className="flex items-center" style={{ gap: '16px' }}>
+                  <div 
+                    className="flex items-center justify-center shrink-0"
+                    style={{
+                      width: '88px',
+                      height: '88px',
+                      borderRadius: '10px',
+                      padding: '10px 12px',
+                      gap: '6px',
+                      background: 'rgba(41, 253, 152, 0.1)'
+                    }}
+                  >
+                    <img 
+                      src="/coins/gift.png" 
+                      alt="Featured Offers" 
+                      style={{ width: '44px', height: '44px', objectFit: 'contain' }} 
+                    />
                   </div>
-                  <div>
-                    <h2 className="text-2xl font-bold font-display text-white">Featured Offers</h2>
-                    <p className="text-sm text-slate-400">High-reward direct tasks. Manual approval required.</p>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                    <h2 style={{
+                      fontFamily: '"Barlow Condensed", sans-serif',
+                      fontWeight: 700,
+                      fontSize: '42px',
+                      lineHeight: '120%',
+                      color: 'rgba(255, 255, 255, 1)',
+                      margin: 0
+                    }}>
+                      Featured Offers
+                    </h2>
+                    <p style={{
+                      fontFamily: '"Barlow Condensed", sans-serif',
+                      fontWeight: 500,
+                      fontSize: '22px',
+                      lineHeight: '130%',
+                      color: 'rgba(136, 136, 136, 1)',
+                      margin: 0
+                    }}>
+                      High-reward direct tasks. Manual approval required.
+                    </p>
                   </div>
+                  </div>
+                  <img 
+                    src="/coins/feature%20offer.png" 
+                    alt="Featured Offers Graphic" 
+                    style={{ width: '332px', height: '133px', objectFit: 'contain', flexShrink: 0 }}
+                  />
                 </div>
-                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
-                  {customOffers.map(offer => (
-                    <FeaturedOfferCard key={offer._id} offer={offer} onClick={() => setSelectedOffer(offer)} />
-                  ))}
+                <div className="relative mt-2">
+                  <div 
+                    ref={featuredScrollRef}
+                    onScroll={handleFeaturedScroll}
+                    className="flex overflow-x-auto snap-x snap-mandatory"
+                    style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+                  >
+                    {Array.from({ length: Math.ceil(customOffers.length / 4) }).map((_, pageIndex) => (
+                      <div key={pageIndex} className="min-w-full shrink-0 snap-start flex gap-4">
+                        {customOffers.slice(pageIndex * 4, pageIndex * 4 + 4).map(offer => (
+                          <div key={offer._id} style={{ width: 'calc(25% - 12px)' }}>
+                            <FeaturedOfferCard offer={offer} onClick={() => setSelectedOffer(offer)} />
+                          </div>
+                        ))}
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Dot Pagination */}
+                  <div className="flex justify-center mt-6">
+                    <div 
+                      className="flex items-center" 
+                      style={{ height: '12px', gap: '6px' }}
+                    >
+                      {Array.from({ length: Math.ceil(customOffers.length / 4) }).map((_, idx) => (
+                        <button
+                          key={idx}
+                          onClick={() => scrollFeaturedToPage(idx)}
+                          className="transition-all duration-300 hover:opacity-80"
+                          style={{
+                            height: '12px',
+                            borderRadius: '30px',
+                            width: featuredActiveIndex === idx ? '42px' : '12px',
+                            background: featuredActiveIndex === idx ? 'rgba(73, 178, 101, 1)' : 'rgba(255, 255, 255, 0.2)'
+                          }}
+                          aria-label={`Go to page ${idx + 1}`}
+                        />
+                      ))}
+                    </div>
+                  </div>
                 </div>
               </motion.section>
             )}
 
             {/* Section 2: Gaming or App Offers */}
             {(filter === 'all' || filter === 'gaming') && (
-              <motion.section ref={gamingRef} variants={item} className="space-y-4 pt-4">
-                <div className="flex items-center gap-3 mb-2">
-                  <div className="w-10 h-10 rounded-xl bg-cyan-500/10 flex items-center justify-center border border-cyan-500/20">
-                    <FiMonitor className="text-cyan-400 text-xl" />
+              <motion.section 
+                ref={gamingRef} 
+                variants={item} 
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  width: '100%',
+                  maxWidth: '1240px',
+                  height: '469px',
+                  borderRadius: '20px',
+                  gap: '18px',
+                  padding: '20px',
+                  background: 'rgba(255, 255, 255, 0.14)'
+                }}
+              >
+                <div 
+                  className="flex items-center justify-between w-full"
+                  style={{ height: '133px', gap: '16px' }}
+                >
+                  <div className="flex items-center" style={{ gap: '16px' }}>
+                  <div 
+                    className="flex items-center justify-center shrink-0"
+                    style={{
+                      width: '88px',
+                      height: '88px',
+                      borderRadius: '10px',
+                      padding: '10px 12px',
+                      gap: '6px',
+                      background: 'rgba(6, 182, 212, 0.1)'
+                    }}
+                  >
+                    <img 
+                      src="/coins/game.png" 
+                      alt="Gaming Offers" 
+                      style={{ width: '44px', height: '44px', objectFit: 'contain' }} 
+                    />
                   </div>
-                  <div>
-                    <h2 className="text-2xl font-bold font-display text-white">Gaming & App Offers</h2>
-                    <p className="text-sm text-slate-400">Play games to earn large amounts of points.</p>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                    <h2 style={{
+                      fontFamily: '"Barlow Condensed", sans-serif',
+                      fontWeight: 700,
+                      fontSize: '42px',
+                      lineHeight: '120%',
+                      color: 'rgba(255, 255, 255, 1)',
+                      margin: 0
+                    }}>
+                      Gaming & App Offers
+                    </h2>
+                    <p style={{
+                      fontFamily: '"Barlow Condensed", sans-serif',
+                      fontWeight: 500,
+                      fontSize: '22px',
+                      lineHeight: '130%',
+                      color: 'rgba(136, 136, 136, 1)',
+                      margin: 0
+                    }}>
+                      Play games to earn large amounts of points.
+                    </p>
                   </div>
+                  </div>
+                  <img 
+                    src="/coins/appimage.png" 
+                    alt="Gaming & App Offers Graphic" 
+                    style={{ width: '332px', height: '133px', objectFit: 'contain', flexShrink: 0 }}
+                  />
                 </div>
                 {loadingSettings ? (
                   <div className="glass-card p-8 flex justify-center"><div className="w-8 h-8 rounded-full border-2 border-cyan-500 border-t-transparent animate-spin" /></div>
                 ) : gamingProviders.length === 0 ? (
                   <div className="glass-card p-8 border border-white/[0.05] flex items-center gap-3 opacity-50"><FiInbox className="text-slate-500" /> <span className="text-slate-400 text-sm">No gaming offerwalls active.</span></div>
                 ) : (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                  <div className="grid grid-cols-6 w-full" style={{ gap: '14px' }}>
                     {gamingProviders.map(provider => (
                       <ProviderCard key={provider.id} provider={provider} onClick={() => setActiveProvider(provider)} />
                     ))}
@@ -417,22 +588,48 @@ const Home = () => {
 
             {/* Section 3: Surveys */}
             {(filter === 'all' || filter === 'surveys') && (
-              <motion.section ref={surveysRef} variants={item} className="space-y-4 pt-4">
-                <div className="flex items-center gap-3 mb-2">
-                  <div className="w-10 h-10 rounded-xl bg-indigo-500/10 flex items-center justify-center border border-indigo-500/20">
-                    <FiClipboard className="text-indigo-400 text-xl" />
+              <motion.section 
+                ref={surveysRef} 
+                variants={item} 
+                className="flex flex-col"
+                style={{
+                  width: '1240px',
+                  height: '323px',
+                  borderRadius: '20px',
+                  gap: '18px',
+                  padding: '20px',
+                  background: 'rgba(255, 255, 255, 0.14)'
+                }}
+              >
+                <div 
+                  className="flex items-center justify-between w-full"
+                  style={{ height: '133px', gap: '16px' }}
+                >
+                  <div className="flex items-center" style={{ gap: '16px' }}>
+                    <div 
+                      className="flex items-center justify-center shrink-0"
+                      style={{ 
+                        width: '88px', 
+                        height: '88px', 
+                        borderRadius: '24px', 
+                        background: 'rgba(99, 102, 241, 0.1)' 
+                      }}
+                    >
+                      <img src="/coins/clicl.png" alt="Surveys" style={{ width: '44px', height: '44px', objectFit: 'contain' }} />
+                    </div>
+                    <div>
+                      <h2 className="font-bold text-white uppercase tracking-wider" style={{ fontFamily: '"Barlow Condensed", sans-serif', fontSize: '42px', lineHeight: '1.2' }}>Surveys</h2>
+                      <p className="text-slate-400" style={{ fontFamily: '"Barlow Condensed", sans-serif', fontSize: '22px' }}>Share your opinion for quick and easy rewards.</p>
+                    </div>
                   </div>
-                  <div>
-                    <h2 className="text-2xl font-bold font-display text-white">Surveys</h2>
-                    <p className="text-sm text-slate-400">Share your opinion for quick and easy rewards.</p>
-                  </div>
+                  <img src="/coins/survay.png" alt="Graphic" style={{ width: '332px', height: '133px', objectFit: 'contain' }} />
                 </div>
                 {loadingSettings ? (
                   <div className="glass-card p-8 flex justify-center"><div className="w-8 h-8 rounded-full border-2 border-indigo-500 border-t-transparent animate-spin" /></div>
                 ) : surveyProviders.length === 0 ? (
                   <div className="glass-card p-8 border border-white/[0.05] flex items-center gap-3 opacity-50"><FiInbox className="text-slate-500" /> <span className="text-slate-400 text-sm">No survey offerwalls active.</span></div>
                 ) : (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                  <div className="grid grid-cols-6 w-full" style={{ gap: '14px' }}>
                     {surveyProviders.map(provider => (
                       <ProviderCard key={provider.id} provider={provider} onClick={() => setActiveProvider(provider)} />
                     ))}

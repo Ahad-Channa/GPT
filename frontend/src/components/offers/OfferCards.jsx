@@ -19,25 +19,76 @@ export const buildProviderUrl = (provider, userId) => {
   }
 };
 
-export const ProviderCard = ({ provider, onClick }) => (
-  <motion.div
-    variants={item}
-    onClick={onClick}
-    className="glass-card p-6 cursor-pointer hover:border-indigo-500/40 hover:bg-white/[0.03] transition-all flex flex-col items-center justify-center gap-4 group h-48"
-  >
-    <div className="w-16 h-16 rounded-2xl bg-white/[0.05] flex items-center justify-center group-hover:scale-110 group-hover:bg-indigo-500/10 transition-all">
-      {provider.imageUrl ? (
-        <img src={provider.imageUrl} alt={provider.label} className="w-10 h-10 object-contain" />
+const getProviderLogo = (id) => {
+  const lowerId = id?.toLowerCase();
+  
+  const localLogos = {
+    lootably: '/coins/lotablily.png',
+    revu: '/coins/revu.png',
+    torox: '/coins/torox.png',
+    ayet: '/coins/aye.png',
+    'ayet-studios': '/coins/aye.png',
+    'ayet studios': '/coins/aye.png',
+    timewall: '/coins/wall.png',
+    notik: '/coins/me.png',
+    mmwall: '/coins/mmwakk.png',
+    cpx: '/coins/CPXR.png',
+    'cpx-research': '/coins/CPXR.png',
+    'cpx research': '/coins/CPXR.png',
+    adgem: '/coins/adgem.png',
+    primeearn: '/coins/primesur.png',
+    'prime-earn': '/coins/primesur.png',
+    'prime surveys': '/coins/primesur.png',
+    primesurveys: '/coins/primesur.png',
+    adtowall: '/coins/adtowall.png',
+    adscend: '/coins/adsendm.png',
+    adscendmedia: '/coins/adsendm.png',
+    'adscend media': '/coins/adsendm.png'
+  };
+
+  if (localLogos[lowerId]) {
+    return localLogos[lowerId];
+  }
+
+  return null;
+};
+
+export const ProviderCard = ({ provider, onClick }) => {
+  const fallbackLogo = getProviderLogo(provider.id);
+  const logoUrl = provider.imageUrl || fallbackLogo;
+
+  return (
+    <motion.div
+      variants={item}
+      onClick={onClick}
+      className="cursor-pointer hover:border-indigo-500/40 transition-all flex flex-col items-center justify-center gap-2 group"
+      style={{ 
+        width: '188px', 
+        height: '132px', 
+        borderRadius: '20px', 
+        background: 'rgba(0, 0, 0, 0.36)', 
+        backdropFilter: 'blur(44px)',
+        WebkitBackdropFilter: 'blur(44px)'
+      }}
+    >
+      {logoUrl ? (
+        <img 
+          src={logoUrl} 
+          alt={provider.label} 
+          className="group-hover:scale-110 transition-all"
+          style={{ width: '160px', height: '39px', objectFit: 'contain' }} 
+        />
       ) : (
-        <FiMonitor className="text-3xl text-indigo-400 group-hover:text-amber-400 transition-colors" />
+        <div 
+          className="group-hover:scale-110 transition-all flex items-center justify-center"
+          style={{ width: '160px', height: '39px' }}
+        >
+          <FiMonitor className="text-4xl text-indigo-400 group-hover:text-amber-400 transition-colors" />
+        </div>
       )}
-    </div>
-    <div className="text-center">
-      <h3 className="text-white font-semibold text-lg">{provider.label}</h3>
-      <p className="text-slate-400 text-xs mt-1 flex items-center justify-center gap-1">Earn <CoinIcon size={12} /></p>
-    </div>
-  </motion.div>
-);
+    </motion.div>
+  );
+};
 
 export const OfferwallCard = ({ provider, userId }) => {
   const url = buildProviderUrl(provider, userId);
@@ -85,12 +136,25 @@ export const FeaturedOfferCard = ({ offer, onClick }) => {
     <motion.div
       variants={item}
       onClick={onClick}
-      className={`glass-card cursor-pointer transition-all flex flex-col overflow-hidden group border ${
-        isExpired ? 'opacity-50 border-white/[0.04]' : 'border-amber-500/20 hover:border-amber-500/50 hover:shadow-[0_0_20px_rgba(245,158,11,0.08)]'
+      className={`cursor-pointer transition-all flex flex-col group ${
+        isExpired ? 'opacity-50' : 'hover:scale-[1.02]'
       }`}
+      style={{
+        height: '291px',
+        borderRadius: '20px',
+        gap: '16px',
+        padding: '16px',
+        background: 'rgba(0, 0, 0, 0.36)',
+        backdropFilter: 'blur(44px)',
+        WebkitBackdropFilter: 'blur(44px)',
+        width: '100%'
+      }}
     >
       {/* Cover area */}
-      <div className="h-28 w-full overflow-hidden relative flex-shrink-0">
+      <div 
+        className="w-full relative flex-shrink-0 overflow-hidden"
+        style={{ height: '135px', borderRadius: '10px' }}
+      >
         {coverImgSrc ? (
           <img
             src={coverImgSrc}
@@ -113,14 +177,73 @@ export const FeaturedOfferCard = ({ offer, onClick }) => {
       </div>
 
       {/* Text info */}
-      <div className="px-3 py-2.5 flex flex-col gap-1">
-        <p className="text-white font-semibold text-[13px] leading-snug line-clamp-1" title={offer.title}>
-          {offer.title}
-        </p>
-        <div className="flex items-center gap-1.5">
-          <FiZap className="text-amber-400 text-[11px] flex-shrink-0" />
-          <span className="text-amber-400 font-bold font-mono text-[12px]">
-            <CoinDisplay amount={offer.rewardAmount} />
+      <div 
+        className="flex flex-col w-full"
+        style={{ height: '108px', gap: '16px' }}
+      >
+        <div 
+          className="flex flex-col w-full"
+          style={{ height: '66px', gap: '6px' }}
+        >
+          <p 
+            className="line-clamp-1 truncate" 
+            title={offer.title}
+            style={{
+              fontFamily: '"Barlow Condensed", sans-serif',
+              fontWeight: 600,
+              fontSize: '26px',
+              lineHeight: '120%',
+              color: 'rgba(255, 255, 255, 1)',
+              margin: 0,
+              display: 'flex'
+            }}
+          >
+            {offer.title}
+          </p>
+          <p 
+            className="line-clamp-2"
+            style={{
+              fontFamily: '"Barlow Condensed", sans-serif',
+              fontWeight: 500,
+              fontSize: '16px',
+              lineHeight: '130%',
+              color: 'rgba(136, 136, 136, 1)',
+              margin: 0,
+              height: '42px'
+            }}
+          >
+            {offer.description || 'Complete this offer to earn rewards.'}
+          </p>
+        </div>
+        <div 
+          className="flex items-center mt-auto"
+          style={{ height: '26px', gap: '3px' }}
+        >
+          <img 
+            src="/coins/coinfinal.png" 
+            alt="Coin" 
+            style={{ 
+              width: '26px', 
+              height: '26px', 
+              objectFit: 'contain',
+              filter: 'drop-shadow(0px 0px 14px rgba(254, 198, 53, 0.6))'
+            }} 
+          />
+          <span 
+            style={{
+              fontFamily: '"Barlow Condensed", sans-serif',
+              fontWeight: 700,
+              fontSize: '22px',
+              lineHeight: '130%',
+              background: 'linear-gradient(180deg, #FEDF77 0%, #FCB91E 100%)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              backgroundClip: 'text',
+              display: 'flex',
+              alignItems: 'center'
+            }}
+          >
+            +<CoinDisplay amount={offer.rewardAmount} />
           </span>
         </div>
       </div>
