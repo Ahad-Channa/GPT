@@ -13,7 +13,8 @@ const customOfferSubmissionSchema = new mongoose.Schema(
       required: true
     },
     proofText: { type: String, default: '' },
-    proofImage: { type: String, default: '' }, // Support Base64 Image or URL
+    proofImage: { type: String, default: '' }, // Legacy fallback
+    proofImages: { type: [String], default: [] }, // New array for multiple images
     status: {
       type: String,
       enum: ['started', 'pending', 'approved', 'rejected', 'chargebacked'],

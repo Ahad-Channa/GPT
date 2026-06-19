@@ -1561,6 +1561,7 @@ router.get('/proofs', requirePermission('manage_offerwalls'), async (req, res) =
       rewardAmount: sub.offerId ? sub.offerId.rewardAmount : 0,
       proofText: sub.proofText,
       proofImage: sub.proofImage,
+      proofImages: sub.proofImages,
       submittedAt: sub.updatedAt,
     }));
 
@@ -1622,6 +1623,7 @@ router.get('/proofs/history', requirePermission('manage_offerwalls'), async (req
       rewardAmount: sub.offerId ? sub.offerId.rewardAmount : 0,
       proofText: sub.proofText,
       proofImage: sub.proofImage,
+      proofImages: sub.proofImages,
       submittedAt: sub.updatedAt,
       adminNote: sub.adminNote
     }));

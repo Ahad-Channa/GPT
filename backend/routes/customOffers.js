@@ -73,7 +73,7 @@ router.post('/:id/start', verifyToken, async (req, res) => {
 // POST /api/custom-offers/:id/submit (User) - Submit proof for a custom offer
 router.post('/:id/submit', verifyToken, async (req, res) => {
   try {
-    const { proofText, proofImage } = req.body;
+    const { proofText, proofImage, proofImages } = req.body;
     const user = await User.findOne({ firebaseUid: req.user.uid });
     if (!user) return res.status(404).json({ success: false, error: 'User not found' });
 
@@ -95,7 +95,16 @@ router.post('/:id/submit', verifyToken, async (req, res) => {
 
     if (existing.status === 'rejected' || existing.status === 'started' || existing.status === 'chargebacked') {
       existing.proofText = proofText || '';
-      existing.proofImage = proofImage || '';
+      if (proofImages && Array.isArray(proofImages)) {
+        existing.proofImages = proofImages;
+        existing.proofImage = proofImages.length > 0 ? proofImages[0] : '';
+      } else if (proofImage) {
+        existing.proofImage = proofImage;
+        existing.proofImages = [proofImage];
+      } else {
+        existing.proofImage = '';
+        existing.proofImages = [];
+      }
       existing.status = 'pending';
       existing.adminNote = '';
       await existing.save();

@@ -5,6 +5,7 @@ import { FiMonitor, FiInbox, FiStar, FiZap, FiExternalLink, FiCheckCircle, FiSen
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 import CoinDisplay from '../CoinDisplay';
 import CoinIcon from '../CoinIcon';
+import { ProofUploadView } from './ProofUploadView';
 const item = { hidden: { opacity: 0, y: 16 }, show: { opacity: 1, y: 0, transition: { duration: 0.4 } } };
 
 export const buildProviderUrl = (provider, userId) => {
@@ -351,263 +352,269 @@ export const FeaturedOfferModal = ({ offer, token, onClose, onSubmitted }) => {
         }}
       >
         {/* Close Button - Moved out of the image container to sit at top right of modal */}
-        <button
-          onClick={onClose}
-          style={{
-            position: 'absolute', top: '26px', left: '438px',
-            width: '36px', height: '36px', borderRadius: '10px',
-            background: 'rgba(255, 255, 255, 0.11)',
-            border: 'none', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center',
-            cursor: 'pointer', zIndex: 10
-          }}
-        >
-          <FiX size={16} />
-        </button>
+        {!showProofForm && (
+          <button
+            onClick={onClose}
+            style={{
+              position: 'absolute', top: '26px', left: '438px',
+              width: '36px', height: '36px', borderRadius: '10px',
+              background: 'rgba(255, 255, 255, 0.11)',
+              border: 'none', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center',
+              cursor: 'pointer', zIndex: 10
+            }}
+          >
+            <FiX size={16} />
+          </button>
+        )}
 
-        {/* Modal Header / Image */}
-        <div style={{
-          width: '468px',
-          height: '159px',
-          borderRadius: '10px',
-          background: 'rgba(255, 255, 255, 0.05)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          position: 'relative',
-          flexShrink: 0,
-          overflow: 'hidden'
-        }}>
-          {/* Trophy / Icon */}
-          {(() => {
-            const coverImgSrc = offer.coverImage || (isIconUrl(offer.icon) ? offer.icon : null);
-            const emojiIcon = !coverImgSrc && offer.icon ? offer.icon : '🏆';
-            if (coverImgSrc) {
-              return <img src={coverImgSrc} alt={offer.title} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '10px' }} />;
-            }
-            return <span style={{ fontSize: '48px', filter: 'drop-shadow(0px 4px 10px rgba(0,0,0,0.5))' }}>{emojiIcon}</span>;
-          })()}
-        </div>
-
-        {/* Title, Description, and Coin Pill */}
-        <div style={{ width: '468px', minHeight: '108px', height: 'auto', display: 'flex', flexDirection: 'column', gap: '16px', flexShrink: 0, opacity: 1 }}>
-
-          {/* Heading and Description Wrapper */}
-          <div style={{ width: '468px', height: 'auto', display: 'flex', flexDirection: 'column', gap: '6px', opacity: 1 }}>
-            <h2 style={{
-              width: '100%', height: 'auto', opacity: 1,
-              fontFamily: '"Barlow Condensed", sans-serif', fontWeight: 600, fontStyle: 'normal', fontSize: '26px',
-              color: 'rgba(255, 255, 255, 1)', margin: 0, lineHeight: '1.2'
-            }}>
-              {offer.title}
-            </h2>
+        {/* Header Section */}
+        {!showProofForm ? (
+          <>
+            {/* Modal Header / Image */}
             <div style={{
-              width: '468px', height: 'auto', opacity: 1,
-              fontFamily: '"Barlow Condensed", sans-serif', fontWeight: 500, fontStyle: 'normal', fontSize: '16px',
-              color: 'rgba(136, 136, 136, 1)', lineHeight: '1.3'
+              width: '468px', height: '159px', borderRadius: '10px',
+              background: 'rgba(255, 255, 255, 0.05)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              position: 'relative', flexShrink: 0, overflow: 'hidden'
             }}>
-              {offer.description.split('\n').map((line, i) => <p key={i} style={{ margin: 0, padding: 0 }}>{line}</p>)}
+              {(() => {
+                const coverImgSrc = offer.coverImage || (isIconUrl(offer.icon) ? offer.icon : null);
+                const emojiIcon = !coverImgSrc && offer.icon ? offer.icon : '🏆';
+                if (coverImgSrc) {
+                  return <img src={coverImgSrc} alt={offer.title} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '10px' }} />;
+                }
+                return <span style={{ fontSize: '48px', filter: 'drop-shadow(0px 4px 10px rgba(0,0,0,0.5))' }}>{emojiIcon}</span>;
+              })()}
             </div>
+
+            {/* Title, Description, and Coin Pill */}
+            <div style={{ width: '468px', minHeight: '108px', height: 'auto', display: 'flex', flexDirection: 'column', gap: '16px', flexShrink: 0, opacity: 1 }}>
+              {/* Heading and Description Wrapper */}
+              <div style={{ width: '468px', height: 'auto', display: 'flex', flexDirection: 'column', gap: '6px', opacity: 1 }}>
+                <h2 style={{
+                  width: '100%', height: 'auto', opacity: 1,
+                  fontFamily: '"Barlow Condensed", sans-serif', fontWeight: 600, fontStyle: 'normal', fontSize: '26px',
+                  color: 'rgba(255, 255, 255, 1)', margin: 0, lineHeight: '1.2'
+                }}>
+                  {offer.title}
+                </h2>
+                <div style={{
+                  width: '468px', height: 'auto', opacity: 1,
+                  fontFamily: '"Barlow Condensed", sans-serif', fontWeight: 500, fontStyle: 'normal', fontSize: '16px',
+                  color: 'rgba(136, 136, 136, 1)', lineHeight: '1.3'
+                }}>
+                  {offer.description.split('\n').map((line, i) => <p key={i} style={{ margin: 0, padding: 0 }}>{line}</p>)}
+                </div>
+              </div>
+              <div style={{
+                width: '69px', height: '26px', opacity: 1,
+                display: 'flex', alignItems: 'center', gap: '3px',
+                alignSelf: 'flex-start'
+              }}>
+                <img src="/coins/coinfinal.png" alt="coin" style={{
+                  width: '26px', height: '26px', opacity: 1,
+                  objectFit: 'contain',
+                  filter: 'drop-shadow(0px 0px 14px rgba(254, 198, 53, 0.6))'
+                }} />
+                <span style={{
+                  width: 'auto', minWidth: '40px', height: 'auto', opacity: 1,
+                  fontFamily: '"Barlow Condensed", sans-serif', fontWeight: 700, fontStyle: 'normal', fontSize: '22px',
+                  lineHeight: '1.3',
+                  background: 'linear-gradient(180deg, #FEDF77 0%, #FCB91E 100%)',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                  backgroundClip: 'text',
+                  color: 'transparent',
+                  display: 'inline-flex', alignItems: 'center', whiteSpace: 'nowrap'
+                }}>
+                  +{(offer.rewardAmount || 0).toLocaleString()}
+                </span>
+              </div>
+            </div>
+          </>
+        ) : (
+          <div style={{ width: '468px', height: '66px', display: 'flex', alignItems: 'center', gap: '6px', flexShrink: 0, opacity: 1 }}>
+            {/* Small Image */}
+            <div style={{ width: '99px', height: '66px', borderRadius: '6px', overflow: 'hidden', flexShrink: 0, background: 'rgba(255, 255, 255, 0.05)' }}>
+              {(() => {
+                const coverImgSrc = offer.coverImage || (isIconUrl(offer.icon) ? offer.icon : null);
+                const emojiIcon = !coverImgSrc && offer.icon ? offer.icon : '🏆';
+                if (coverImgSrc) {
+                  return <img src={coverImgSrc} alt={offer.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />;
+                }
+                return <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '24px' }}>{emojiIcon}</div>;
+              })()}
+            </div>
+            {/* Title and Description */}
+            <div style={{ width: '333px', height: 'auto', display: 'flex', flexDirection: 'column', gap: '12px', opacity: 1 }}>
+              <h2 style={{
+                width: '333px', height: 'auto', opacity: 1,
+                fontFamily: '"Barlow Condensed", sans-serif', fontWeight: 600, fontStyle: 'normal', fontSize: '28px',
+                color: 'rgba(255, 255, 255, 1)', margin: 0, lineHeight: '1',
+                whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis'
+              }}>
+                {offer.title}
+              </h2>
+              <div style={{
+                width: '333px', height: '17px', opacity: 1,
+                fontFamily: '"Barlow Condensed", sans-serif', fontWeight: 500, fontStyle: 'normal', fontSize: '13px',
+                color: 'rgba(136, 136, 136, 1)', lineHeight: '1.3'
+              }}>
+                <p style={{ margin: 0, padding: 0 }}>Follow the steps below to submit your proof of completion for review.</p>
+              </div>
+            </div>
+            {/* Inline Close Button for Proof Form */}
+            <button
+              onClick={onClose}
+              style={{
+                width: '24px', height: '66px', gap: '10px',
+                background: 'transparent', opacity: 1,
+                border: 'none', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                cursor: 'pointer', flexShrink: 0, padding: 0
+              }}
+            >
+              <FiX size={20} />
+            </button>
           </div>
-          <div style={{
-            width: '69px', height: '26px', opacity: 1,
-            display: 'flex', alignItems: 'center', gap: '3px',
-            alignSelf: 'flex-start'
-          }}>
-            <img src="/coins/coinfinal.png" alt="coin" style={{
-              width: '26px', height: '26px', opacity: 1,
-              objectFit: 'contain',
-              filter: 'drop-shadow(0px 0px 14px rgba(254, 198, 53, 0.6))'
-            }} />
-            <span style={{
-              width: 'auto', minWidth: '40px', height: 'auto', opacity: 1,
-              fontFamily: '"Barlow Condensed", sans-serif', fontWeight: 700, fontStyle: 'normal', fontSize: '22px',
-              lineHeight: '1.3',
-              background: 'linear-gradient(180deg, #FEDF77 0%, #FCB91E 100%)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              backgroundClip: 'text',
-              color: 'transparent',
-              display: 'inline-flex', alignItems: 'center', whiteSpace: 'nowrap'
-            }}>
-              +{(offer.rewardAmount || 0).toLocaleString()}
-            </span>
-          </div>
-        </div>
+        )}
 
         {/* Modal Body (Scrollable) */}
         <div className="custom-scrollbar" style={{ flex: 1, overflowX: 'hidden', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '16px', paddingRight: '4px' }}>
 
-          {/* Status Markers */}
-          {(isExpired || alreadySubmitted || isRejected) && (
-            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-              {isExpired && (
-                <span style={{ padding: '4px 10px', borderRadius: '16px', fontSize: '12px', fontWeight: 'bold', background: 'rgba(244, 63, 94, 0.15)', color: '#fb7185', border: '1px solid rgba(244, 63, 94, 0.2)' }}>
-                  Expired
-                </span>
-              )}
-              {alreadySubmitted && (
-                <span style={{ padding: '4px 10px', borderRadius: '16px', fontSize: '12px', fontWeight: 'bold', background: 'rgba(16, 185, 129, 0.15)', color: '#34d399', border: '1px solid rgba(16, 185, 129, 0.2)' }}>
-                  {submissionStatus === 'approved' ? '✓ Approved' : 'Submitted'}
-                </span>
-              )}
-              {isRejected && !alreadySubmitted && (
-                <div style={{ width: '100%', background: 'rgba(244, 63, 94, 0.1)', border: '1px solid rgba(244, 63, 94, 0.2)', padding: '12px', borderRadius: '12px', color: '#fb7185', fontSize: '13px' }}>
-                  <div style={{ fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' }}><FiInbox /> Submission Rejected</div>
-                  {offer.adminNote && <div style={{ fontStyle: 'italic', opacity: 0.8 }}>Admin Note: "{offer.adminNote}"</div>}
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* Requirements Section ALWAYS VISIBLE AND STICKY */}
-          {!isStarted && offer.requirements && offer.requirements.length > 0 && (
-            <div style={{ 
-              width: '468px', display: 'flex', flexDirection: 'column', gap: '8px', opacity: 1, flexShrink: 0,
-              position: 'sticky', top: '-1px', zIndex: 20, background: 'rgba(36, 36, 36, 1)', paddingBottom: '8px'
-            }}>
-                <h4 style={{ 
-                  fontFamily: '"Barlow Condensed", sans-serif', fontWeight: 700, fontStyle: 'normal', fontSize: '16px', 
-                  color: 'rgba(255, 255, 255, 1)', margin: 0, lineHeight: '1.2' 
-                }}>
-                  Requirements
-                </h4>
-                <div style={{ 
-                  width: '468px', boxSizing: 'border-box', height: 'auto', flexShrink: 0,
-                  borderRadius: '12px', padding: '12px', display: 'flex', flexDirection: 'column', gap: '8px', 
-                  background: 'rgba(0, 0, 0, 0.36)', backdropFilter: 'blur(44px)', WebkitBackdropFilter: 'blur(44px)',
-                  opacity: 1 
-                }}>
-                  {offer.requirements.map((req, i) => (
-                     <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: '6px' }}>
-                       <img 
-                         src="/coins/retik.png" 
-                         alt="check" 
-                         style={{ width: '14px', height: '14px', flexShrink: 0, marginTop: '2px' }} 
-                       />
-                       <span style={{ 
-                         fontFamily: '"Barlow Condensed", sans-serif', fontWeight: 600, fontStyle: 'normal', fontSize: '12px', 
-                         color: 'rgba(255, 255, 255, 1)', lineHeight: '1.2', flex: 1 
-                       }}>
-                         {req}
-                       </span>
-                     </div>
-                  ))}
-                </div>
-              </div>
-            )
-          }
-
-          {/* Boxes when started */}
-          {isStarted && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-              {/* Offer link clicked box */}
-              <div style={{ 
-                width: '468px', height: '62px', borderRadius: '12px', gap: '16px', padding: '12px', 
-                background: 'rgba(0, 0, 0, 0.36)', backdropFilter: 'blur(44px)', WebkitBackdropFilter: 'blur(44px)',
-                display: 'flex', alignItems: 'center', justifyContent: 'space-between', boxSizing: 'border-box'
-              }}>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', width: '214px', height: '37px', flexShrink: 0 }}>
-                  <span style={{ 
-                    width: '214px', height: '17px', fontFamily: '"Barlow Condensed", sans-serif', fontWeight: 700, 
-                    fontSize: '14px', lineHeight: '120%', color: 'rgba(255, 255, 255, 1)' 
-                  }}>Offer link clicked</span>
-                  <span style={{ 
-                    width: '214px', height: '14px', fontFamily: '"Barlow Condensed", sans-serif', fontWeight: 500, 
-                    fontSize: '11px', lineHeight: '130%', color: 'rgba(136, 136, 136, 1)' 
-                  }}>You clicked the offer link.</span>
-                </div>
-                <button
-                  onClick={handleStartOffer}
-                  style={{
-                    width: '214px', height: '38px', borderRadius: '10px', padding: '10px 30px', gap: '10px',
-                    background: 'rgba(39, 112, 58, 1)', border: 'none', cursor: 'pointer',
-                    boxShadow: '0px 4px 0px 0px rgba(35, 80, 47, 1)',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center', boxSizing: 'border-box'
-                  }}
-                >
-                  <span style={{
-                    width: '79px', height: '11px', fontFamily: '"Barlow Condensed", sans-serif', fontWeight: 700,
-                    fontSize: '16px', lineHeight: '32px', color: 'rgba(255, 255, 255, 1)',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center'
-                  }}>
-                    Resume Offer
-                  </span>
-                </button>
-              </div>
-
-              {/* Submit Proof Details */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', width: '468px', height: '41px', flexShrink: 0 }}>
-                <span style={{ 
-                  width: '468px', height: '19px', fontFamily: '"Barlow Condensed", sans-serif', fontWeight: 700, 
-                  fontSize: '14px', lineHeight: '120%', color: 'rgba(255, 255, 255, 1)', display: 'block'
-                }}>
-                  Submit Proof
-                </span>
-                <span style={{ 
-                  width: '468px', height: '14px', fontFamily: '"Barlow Condensed", sans-serif', fontWeight: 500, 
-                  fontSize: '11px', lineHeight: '130%', color: 'rgba(136, 136, 136, 1)', display: 'block'
-                }}>
-                  Follow the requirements above, then submit proof of completion for review.
-                </span>
-              </div>
-            </div>
-          )}
-
-          {/* Inline proof form */}
-          <AnimatePresence>
-            {showProofForm && !alreadySubmitted && (
-              <motion.form
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: 'auto' }}
-                exit={{ opacity: 0, height: 0 }}
-                onSubmit={handleSubmit}
-                style={{ overflow: 'hidden' }}
-              >
-                <div style={{ borderTop: '1px solid rgba(255, 255, 255, 0.05)', paddingTop: '16px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                  <h4 style={{ fontFamily: '"Barlow Condensed", sans-serif', fontWeight: 600, fontSize: '13px', color: '#888', margin: 0, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Submit Proof</h4>
-                  <textarea
-                    value={proof}
-                    onChange={(e) => setProof(e.target.value)}
-                    placeholder="Transaction ID, username, screenshot URL, or describe what you completed…"
-                    rows={3}
-                    style={{
-                      width: '100%', background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', padding: '12px', color: '#fff', fontSize: '14px', resize: 'none', boxSizing: 'border-box'
-                    }}
-                  />
-                  {/* Image upload */}
-                  <label style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', padding: '12px', border: '1px dashed rgba(255,255,255,0.15)', borderRadius: '12px', background: 'rgba(0,0,0,0.2)' }}>
-                    <FiSend style={{ color: 'rgba(255, 169, 40, 0.6)' }} />
-                    <span style={{ fontSize: '13px', color: '#888', fontWeight: 500 }}>
-                      {proofImage ? '✓ Image selected — click to change' : 'Attach screenshot (optional)'}
+          {showProofForm ? (
+            <ProofUploadView 
+              offer={offer} 
+              token={token} 
+              API={API} 
+              onSubmitted={() => {
+                setSubmissionStatus('pending');
+                setShowProofForm(false);
+                if (onSubmitted) onSubmitted();
+              }} 
+              onCancel={() => setShowProofForm(false)}
+              setResult={setResult} 
+            />
+          ) : (
+            <>
+              {/* Status Markers */}
+              {(isExpired || alreadySubmitted || isRejected) && (
+                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                  {isExpired && (
+                    <span style={{ padding: '4px 10px', borderRadius: '16px', fontSize: '12px', fontWeight: 'bold', background: 'rgba(244, 63, 94, 0.15)', color: '#fb7185', border: '1px solid rgba(244, 63, 94, 0.2)' }}>
+                      Expired
                     </span>
-                    <input type="file" accept="image/*" onChange={handleImageUpload} style={{ display: 'none' }} />
-                  </label>
-                  {proofImage && (
-                    <div style={{ borderRadius: '12px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.1)' }}>
-                      <img src={proofImage} alt="Proof preview" style={{ maxHeight: '120px', width: '100%', objectFit: 'contain' }} />
+                  )}
+                  {alreadySubmitted && (
+                    <span style={{ padding: '4px 10px', borderRadius: '16px', fontSize: '12px', fontWeight: 'bold', background: 'rgba(16, 185, 129, 0.15)', color: '#34d399', border: '1px solid rgba(16, 185, 129, 0.2)' }}>
+                      {submissionStatus === 'approved' ? '✓ Approved' : 'Submitted'}
+                    </span>
+                  )}
+                  {isRejected && !alreadySubmitted && (
+                    <div style={{ width: '100%', background: 'rgba(244, 63, 94, 0.1)', border: '1px solid rgba(244, 63, 94, 0.2)', padding: '12px', borderRadius: '12px', color: '#fb7185', fontSize: '13px' }}>
+                      <div style={{ fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' }}><FiInbox /> Submission Rejected</div>
+                      {offer.adminNote && <div style={{ fontStyle: 'italic', opacity: 0.8 }}>Admin Note: "{offer.adminNote}"</div>}
                     </div>
                   )}
-                  <div style={{ display: 'flex', gap: '8px' }}>
+                </div>
+              )}
+
+              {/* Requirements Section ALWAYS VISIBLE AND STICKY */}
+              {!isStarted && offer.requirements && offer.requirements.length > 0 && (
+                <div style={{ 
+                  width: '468px', display: 'flex', flexDirection: 'column', gap: '8px', opacity: 1, flexShrink: 0,
+                  position: 'sticky', top: '-1px', zIndex: 20, background: 'rgba(36, 36, 36, 1)', paddingBottom: '8px'
+                }}>
+                    <h4 style={{ 
+                      fontFamily: '"Barlow Condensed", sans-serif', fontWeight: 700, fontStyle: 'normal', fontSize: '16px', 
+                      color: 'rgba(255, 255, 255, 1)', margin: 0, lineHeight: '1.2' 
+                    }}>
+                      Requirements
+                    </h4>
+                    <div style={{ 
+                      width: '468px', boxSizing: 'border-box', height: 'auto', flexShrink: 0,
+                      borderRadius: '12px', padding: '12px', display: 'flex', flexDirection: 'column', gap: '8px', 
+                      background: 'rgba(0, 0, 0, 0.36)', backdropFilter: 'blur(44px)', WebkitBackdropFilter: 'blur(44px)',
+                      opacity: 1 
+                    }}>
+                      {offer.requirements.map((req, i) => (
+                        <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: '6px' }}>
+                          <img 
+                            src="/coins/image (1).png" 
+                            alt="bullet" 
+                            style={{ width: '14px', height: '14px', flexShrink: 0, marginTop: '2px' }} 
+                          />
+                          <p style={{ 
+                            fontFamily: '"Barlow Condensed", sans-serif', fontWeight: 500, fontSize: '16px', 
+                            lineHeight: '120%', color: 'rgba(255, 255, 255, 1)', margin: 0 
+                          }}>
+                            {req}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                </div>
+              )}
+
+              {/* Boxes when started */}
+              {isStarted && !alreadySubmitted && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', width: '468px', height: '155px', flexShrink: 0 }}>
+                  <div style={{
+                    width: '468px', height: '62px', borderRadius: '12px', padding: '12px', gap: '16px',
+                    background: 'rgba(0, 0, 0, 0.36)', backdropFilter: 'blur(44px)',
+                    display: 'flex', alignItems: 'center', boxSizing: 'border-box'
+                  }}>
+                    <div style={{ width: '214px', height: '37px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                      <span style={{ 
+                        width: '214px', height: '17px', fontFamily: '"Barlow Condensed", sans-serif', fontWeight: 700, 
+                        fontSize: '14px', lineHeight: '120%', color: 'var(--S3, rgba(255, 255, 255, 1))', display: 'block'
+                      }}>
+                        Offer link clicked
+                      </span>
+                      <span style={{ 
+                        width: '214px', height: '14px', fontFamily: '"Barlow Condensed", sans-serif', fontWeight: 500, 
+                        fontSize: '11px', lineHeight: '130%', color: 'var(--Text-text-sheen, rgba(136, 136, 136, 1))', display: 'block'
+                      }}>
+                        Complete the offer requirements
+                      </span>
+                    </div>
                     <button
-                      type="submit"
-                      disabled={submitting || (!proof.trim() && !proofImage)}
+                      onClick={handleStartOffer}
                       style={{
-                        display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 16px', borderRadius: '12px', background: 'linear-gradient(90deg, #10B981 0%, #059669 100%)', color: '#fff', fontWeight: 'bold', fontSize: '14px', border: 'none', cursor: submitting || (!proof.trim() && !proofImage) ? 'not-allowed' : 'pointer', opacity: submitting || (!proof.trim() && !proofImage) ? 0.5 : 1
+                        width: '214px', height: '38px', borderRadius: '10px', padding: '10px 30px', gap: '10px',
+                        background: 'rgba(39, 112, 58, 1)', border: 'none', cursor: 'pointer',
+                        boxShadow: '0px 4px 0px 0px rgba(35, 80, 47, 1)',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center', boxSizing: 'border-box'
                       }}
                     >
-                      {submitting ? <FiLoader className="animate-spin" /> : <FiSend />}
-                      {submitting ? 'Sending…' : 'Send Proof'}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setShowProofForm(false)}
-                      style={{ padding: '10px 16px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.1)', background: 'transparent', color: '#888', fontWeight: 600, fontSize: '14px', cursor: 'pointer' }}
-                    >
-                      Cancel
+                      <span style={{
+                        width: '79px', height: '11px', fontFamily: '"Barlow Condensed", sans-serif', fontWeight: 700,
+                        fontSize: '16px', lineHeight: '32px', color: 'rgba(255, 255, 255, 1)',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center'
+                      }}>
+                        Resume Offer
+                      </span>
                     </button>
                   </div>
+
+                  {/* Submit Proof Details */}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', width: '468px', height: '41px', flexShrink: 0 }}>
+                    <span style={{ 
+                      width: '468px', height: '19px', fontFamily: '"Barlow Condensed", sans-serif', fontWeight: 700, 
+                      fontSize: '14px', lineHeight: '120%', color: 'rgba(255, 255, 255, 1)', display: 'block'
+                    }}>
+                      Submit Proof
+                    </span>
+                    <span style={{ 
+                      width: '468px', height: '14px', fontFamily: '"Barlow Condensed", sans-serif', fontWeight: 500, 
+                      fontSize: '11px', lineHeight: '130%', color: 'rgba(136, 136, 136, 1)', display: 'block'
+                    }}>
+                      Follow the requirements above, then submit proof of completion for review.
+                    </span>
+                  </div>
                 </div>
-              </motion.form>
-            )}
-          </AnimatePresence>
+              )}
+            </>
+          )}
 
           {result && (
             <div style={{ padding: '12px', borderRadius: '12px', fontSize: '13px', fontWeight: 500, background: result.type === 'success' ? 'rgba(16, 185, 129, 0.1)' : 'rgba(244, 63, 94, 0.1)', border: `1px solid ${result.type === 'success' ? 'rgba(16, 185, 129, 0.2)' : 'rgba(244, 63, 94, 0.2)'}`, color: result.type === 'success' ? '#34d399' : '#fb7185' }}>

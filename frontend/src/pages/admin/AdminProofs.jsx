@@ -130,7 +130,7 @@ const Badge = ({ customClass, children }) => (
 
 // ── Proof Row ─────────────────────────────────────────────────────────────────
 const ProofRow = ({ proof, onAction, token, onError }) => {
-  const { _id, type, user, offerTitle, rewardAmount, proofText, proofImage, submittedAt } = proof;
+  const { _id, type, user, offerTitle, rewardAmount, proofText, proofImage, proofImages, submittedAt } = proof;
   const [loading, setLoading] = useState(false);
   const [imageModalOpen, setImageModalOpen] = useState(false);
   const [showRejectModal, setShowRejectModal] = useState(false);
@@ -198,7 +198,21 @@ const ProofRow = ({ proof, onAction, token, onError }) => {
             </div>
           )}
 
-          {proofImage && (
+          {proofImages && proofImages.length > 0 ? (
+            <div className="mt-2 flex flex-wrap gap-2">
+              {proofImages.map((img, idx) => (
+                <div key={idx}>
+                  <button
+                    onClick={() => setImageModalOpen(idx)}
+                    className="px-3 py-1.5 rounded-lg bg-white/[0.04] border border-white/[0.08] text-slate-300 hover:text-white hover:bg-white/[0.08] transition-all text-xs flex items-center gap-2"
+                  >
+                    <FiImage className="text-indigo-400" /> View Image {idx + 1}
+                  </button>
+                  <ImageModal isOpen={imageModalOpen === idx} onClose={() => setImageModalOpen(false)} imageUrl={img} />
+                </div>
+              ))}
+            </div>
+          ) : proofImage ? (
             <div className="mt-2">
               <button
                 onClick={() => setImageModalOpen(true)}
@@ -206,9 +220,9 @@ const ProofRow = ({ proof, onAction, token, onError }) => {
               >
                 <FiImage className="text-indigo-400" /> View Image Proof
               </button>
-              <ImageModal isOpen={imageModalOpen} onClose={() => setImageModalOpen(false)} imageUrl={proofImage} />
+              <ImageModal isOpen={imageModalOpen === true} onClose={() => setImageModalOpen(false)} imageUrl={proofImage} />
             </div>
-          )}
+          ) : null}
         </div>
 
         <div className="flex items-center gap-2 flex-shrink-0">
@@ -236,7 +250,7 @@ const ProofRow = ({ proof, onAction, token, onError }) => {
 
 // ── History Proof Row ─────────────────────────────────────────────────────────
 const HistoryProofRow = ({ proof, onChargeback, token, onError }) => {
-  const { _id, type, user, offerTitle, rewardAmount, proofText, proofImage, submittedAt, status, adminNote } = proof;
+  const { _id, type, user, offerTitle, rewardAmount, proofText, proofImage, proofImages, submittedAt, status, adminNote } = proof;
   const [loading, setLoading] = useState(false);
   const [imageModalOpen, setImageModalOpen] = useState(false);
 
@@ -309,7 +323,21 @@ const HistoryProofRow = ({ proof, onChargeback, token, onError }) => {
           </div>
         )}
 
-        {proofImage && (
+        {proofImages && proofImages.length > 0 ? (
+          <div className="mt-2 flex flex-wrap gap-2">
+            {proofImages.map((img, idx) => (
+              <div key={idx}>
+                <button
+                  onClick={() => setImageModalOpen(idx)}
+                  className="px-3 py-1.5 rounded-lg bg-white/[0.04] border border-white/[0.08] text-slate-300 hover:text-white hover:bg-white/[0.08] transition-all text-xs flex items-center gap-2"
+                >
+                  <FiImage className="text-indigo-400" /> View Image {idx + 1}
+                </button>
+                <ImageModal isOpen={imageModalOpen === idx} onClose={() => setImageModalOpen(false)} imageUrl={img} />
+              </div>
+            ))}
+          </div>
+        ) : proofImage ? (
           <div className="mt-2">
             <button
               onClick={() => setImageModalOpen(true)}
@@ -317,9 +345,9 @@ const HistoryProofRow = ({ proof, onChargeback, token, onError }) => {
             >
               <FiImage className="text-indigo-400" /> View Image Proof
             </button>
-            <ImageModal isOpen={imageModalOpen} onClose={() => setImageModalOpen(false)} imageUrl={proofImage} />
+            <ImageModal isOpen={imageModalOpen === true} onClose={() => setImageModalOpen(false)} imageUrl={proofImage} />
           </div>
-        )}
+        ) : null}
       </div>
 
       <div className="flex items-center gap-2 flex-shrink-0">
