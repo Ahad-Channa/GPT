@@ -563,12 +563,13 @@ router.get('/custom-offers', requirePermission('manage_offerwalls'), async (req,
 
 router.post('/custom-offers', requirePermission('manage_offerwalls'), async (req, res) => {
   try {
-    const { title, description, rewardAmount, externalLink, trackingType, expirationDate, icon, coverImage } = req.body;
+    const { title, description, rewardAmount, externalLink, trackingType, expirationDate, icon, coverImage, requirements } = req.body;
     const newOffer = new CustomOffer({
       title, description, rewardAmount, externalLink, trackingType,
       expirationDate: expirationDate || null,
       icon: icon || null,
       coverImage: coverImage || null,
+      requirements: Array.isArray(requirements) ? requirements : [],
     });
     await newOffer.save();
     await createLog(req.dbUser._id, 'CREATE_CUSTOM_OFFER', null, `Created custom offer: ${title}`);

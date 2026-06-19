@@ -15,6 +15,7 @@ const customOfferSchema = new mongoose.Schema(
       enum: ['click', 'manual_approval'], 
       default: 'manual_approval' 
     },
+    requirements: [{ type: String }],
   },
   { timestamps: true }
 );

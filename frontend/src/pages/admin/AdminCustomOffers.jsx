@@ -43,6 +43,7 @@ const CreateOfferModal = ({ onClose, onCreated, token }) => {
     expirationDate: '',
     icon: '',
     coverImage: '',
+    requirements: '',
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -61,6 +62,7 @@ const CreateOfferModal = ({ onClose, onCreated, token }) => {
           ...form,
           rewardAmount: Number(form.rewardAmount),
           expirationDate: form.expirationDate || null,
+          requirements: form.requirements.split('\n').map(r => r.trim()).filter(Boolean),
         }),
       });
       const data = await res.json();
@@ -125,6 +127,18 @@ const CreateOfferModal = ({ onClose, onCreated, token }) => {
               placeholder="Describe the steps needed to complete and earn the reward..."
               rows={2}
               required
+              className="w-full bg-slate-900 border border-white/[0.08] rounded-xl px-3 py-2 text-white text-sm placeholder-slate-600 focus:outline-none focus:border-amber-500/40 focus:ring-1 focus:ring-amber-500/20 resize-none"
+            />
+          </div>
+
+          {/* Requirements */}
+          <div>
+            <label className="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Requirements (one per line)</label>
+            <textarea
+              value={form.requirements}
+              onChange={set('requirements')}
+              placeholder="e.g. Sign up with a valid email and phone number&#10;Verify your identity&#10;New users only"
+              rows={3}
               className="w-full bg-slate-900 border border-white/[0.08] rounded-xl px-3 py-2 text-white text-sm placeholder-slate-600 focus:outline-none focus:border-amber-500/40 focus:ring-1 focus:ring-amber-500/20 resize-none"
             />
           </div>
