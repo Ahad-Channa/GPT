@@ -104,16 +104,18 @@ const PublicProfileModal = ({ userId, onClose }) => {
           transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
           onClick={(e) => e.stopPropagation()}
           style={{
-            width: '100%',
-            maxWidth: '520px',
-            maxHeight: '90vh',
+            width: '500px',
+            height: '521px',
+            borderRadius: '20px',
+            gap: '16px',
+            padding: '16px',
+            background: 'rgba(36, 36, 36, 1)',
             overflowY: 'auto',
-            background: 'linear-gradient(160deg, #0c101b 0%, #111624 100%)',
-            border: '1px solid rgba(255,255,255,0.09)',
-            borderRadius: '24px',
-            boxShadow: '0 32px 80px rgba(0,0,0,0.6), 0 0 0 1px rgba(99,102,241,0.08)',
             position: 'relative',
             zIndex: 9001,
+            display: 'flex',
+            flexDirection: 'column',
+            boxSizing: 'border-box'
           }}
         >
           {/* ── Close button ── */}
@@ -122,18 +124,19 @@ const PublicProfileModal = ({ userId, onClose }) => {
             aria-label="Close profile popup"
             style={{
               position: 'absolute', top: '16px', right: '16px',
-              width: '36px', height: '36px', borderRadius: '10px',
-              background: 'rgba(255,255,255,0.06)',
-              border: '1px solid rgba(255,255,255,0.08)',
+              width: '24px', height: '56px', gap: '10px',
+              background: 'transparent',
+              border: 'none',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
-              cursor: 'pointer', color: '#94a3b8',
-              transition: 'background 0.2s, color 0.2s',
+              cursor: 'pointer',
+              transition: 'opacity 0.2s',
+              opacity: 0.7,
               zIndex: 2,
             }}
-            onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.12)'; e.currentTarget.style.color = '#fff'; }}
-            onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.06)'; e.currentTarget.style.color = '#94a3b8'; }}
+            onMouseEnter={e => { e.currentTarget.style.opacity = '1'; }}
+            onMouseLeave={e => { e.currentTarget.style.opacity = '0.7'; }}
           >
-            <FiX size={16} />
+            <img src="/coins/cros.png" alt="Close" style={{ width: '24px', height: '24px', objectFit: 'contain' }} />
           </button>
 
           {/* ── Loading State ── */}
@@ -180,39 +183,21 @@ const PublicProfileModal = ({ userId, onClose }) => {
 
           {/* ── Profile Content ── */}
           {!loading && profile && (
-            <div style={{ padding: '28px 24px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', flex: 1, minHeight: 0 }}>
 
               {/* Profile Header Card */}
               <div style={{
-                borderRadius: '18px',
-                background: 'rgba(255,255,255,0.02)',
-                border: '1px solid rgba(255,255,255,0.07)',
-                padding: '24px',
-                position: 'relative',
-                overflow: 'hidden',
+                width: '468px',
+                height: '56px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px'
               }}>
-                {/* Decorative glows */}
-                <div style={{
-                  position: 'absolute', top: '-20px', right: '-20px',
-                  width: '120px', height: '120px',
-                  background: 'radial-gradient(circle, rgba(99,102,241,0.15), transparent)',
-                  borderRadius: '50%', pointerEvents: 'none',
-                }} />
-                <div style={{
-                  position: 'absolute', bottom: '-20px', left: '-20px',
-                  width: '80px', height: '80px',
-                  background: 'radial-gradient(circle, rgba(168,85,247,0.12), transparent)',
-                  borderRadius: '50%', pointerEvents: 'none',
-                }} />
-
-                <div style={{ display: 'flex', alignItems: 'center', gap: '20px', flexWrap: 'wrap', position: 'relative', zIndex: 1 }}>
                   {/* Avatar */}
                   <div style={{
-                    width: '80px', height: '80px', borderRadius: '50%',
+                    width: '56px', height: '56px', borderRadius: '10px',
                     overflow: 'hidden', flexShrink: 0,
-                    border: '2px solid rgba(99,102,241,0.25)',
-                    background: '#1a2235',
-                    boxShadow: '0 8px 24px rgba(0,0,0,0.4)',
+                    border: '1px solid rgba(73, 178, 101, 1)',
                   }}>
                     <img
                       src={profile.avatarUrl || `/avatars/avatar1.png`}
@@ -222,49 +207,56 @@ const PublicProfileModal = ({ userId, onClose }) => {
                   </div>
 
                   {/* Info */}
-                  <div style={{ flex: 1, minWidth: '0' }}>
+                  <div style={{ width: '376px', height: '50px', display: 'flex', flexDirection: 'column', gap: '4px', minWidth: '0' }}>
                     <div style={{
-                      fontSize: '22px', fontWeight: 800, color: '#fff',
-                      overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-                      marginBottom: '10px',
+                      width: '376px',
+                      fontFamily: '"Barlow Condensed", sans-serif', fontWeight: 600, fontSize: '28px', lineHeight: '28px', color: 'rgba(255, 255, 255, 1)',
+                      overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap'
                     }}>
                       {profile.displayName}
                     </div>
 
                     {/* Badge row */}
-                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', alignItems: 'center' }}>
+                    <div style={{ width: '376px', height: '18px', display: 'flex', gap: '16px', alignItems: 'center' }}>
                       {/* Rank & Total Earned — public only */}
                       {!profile.isPrivate && typeof profile.totalEarned !== 'undefined' && (() => {
                         const level = getLevelFromEarned(profile.totalEarned);
                         return (
                           <>
-                            {level && <VipBadge tier={level.tier} rank={level.rank} size="sm" />}
-                            <span style={{
-                              display: 'inline-flex', alignItems: 'center', gap: '5px',
-                              padding: '4px 10px', borderRadius: '8px',
-                              background: 'rgba(245,158,11,0.10)',
-                              border: '1px solid rgba(245,158,11,0.25)',
-                              color: '#fbbf24', fontSize: '12px', fontWeight: 600,
-                            }}>
-                              {(profile.totalEarned || 0).toLocaleString()} earned
-                            </span>
+                            {level && <VipBadge tier={level.tier} rank="" size="sm" style={{ width: '49px', height: '18px', padding: '0', display: 'inline-flex', justifyContent: 'center', alignItems: 'center', boxSizing: 'border-box' }} />}
+                            <div style={{ display: 'flex', width: '82px', height: '18px', gap: '3px', alignItems: 'center' }}>
+                              <img src="/coins/coinfinal.png" alt="coin" style={{ width: '18px', height: '18px' }} />
+                              <div style={{
+                                width: '61px', height: '11px',
+                                fontFamily: '"Barlow Condensed", sans-serif', fontWeight: 700, fontSize: '16px', lineHeight: '130%',
+                                backgroundImage: 'linear-gradient(180deg, #FEDF77 0%, #FCB91E 100%)',
+                                WebkitBackgroundClip: 'text',
+                                color: 'transparent',
+                                display: 'flex', alignItems: 'center', whiteSpace: 'nowrap'
+                              }}>
+                                {(profile.totalEarned || 0).toLocaleString()} earned
+                              </div>
+                            </div>
                           </>
                         );
                       })()}
 
                       {/* Joined */}
                       {profile.createdAt && (
-                        <span style={{
-                          display: 'inline-flex', alignItems: 'center', gap: '5px',
-                          color: '#64748b', fontSize: '12px', fontWeight: 500,
-                        }}>
-                          <FiClock size={11} /> Joined {new Date(profile.createdAt).getFullYear()}
-                        </span>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
+                          <img src="/coins/calender.png" alt="calendar" style={{ width: '15px', height: '15px' }} />
+                          <div style={{
+                            width: '71px', height: '11px',
+                            fontFamily: '"Barlow Condensed", sans-serif', fontWeight: 700, fontSize: '16px', lineHeight: '130%',
+                            color: 'rgba(255, 255, 255, 1)', display: 'flex', alignItems: 'center', whiteSpace: 'nowrap'
+                          }}>
+                            Joined {new Date(profile.createdAt).getFullYear()}
+                          </div>
+                        </div>
                       )}
                     </div>
                   </div>
                 </div>
-              </div>
 
               {/* Private — earnings & history hidden */}
               {profile.isPrivate ? (
@@ -280,15 +272,15 @@ const PublicProfileModal = ({ userId, onClose }) => {
               ) : (
                 /* Recent Activity — public profiles only */
                 <div style={{
-                  borderRadius: '18px',
-                  background: 'rgba(255,255,255,0.015)',
-                  border: '1px solid rgba(255,255,255,0.07)',
-                  padding: '20px',
+                  width: '468px', height: '369px',
+                  display: 'flex', flexDirection: 'column', gap: '8px',
+                  background: 'rgba(36, 36, 36, 1)',
+                  border: 'none',
                 }}>
                   <div style={{
-                    display: 'flex', alignItems: 'center', gap: '8px',
-                    marginBottom: '16px',
-                    fontSize: '14px', fontWeight: 700, color: '#fff',
+                    width: '468px', height: '19px',
+                    fontFamily: '"Barlow Condensed", sans-serif', fontWeight: 700, fontSize: '16px', lineHeight: '120%', color: 'rgba(255, 255, 255, 1)',
+                    display: 'flex', alignItems: 'center'
                   }}>
                     Recent Activity
                   </div>
@@ -305,84 +297,161 @@ const PublicProfileModal = ({ userId, onClose }) => {
                     const start = (activityPage - 1) * ITEMS_PER_PAGE;
                     const pageOffers = recentOffers.slice(start, start + ITEMS_PER_PAGE);
                     return (
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                        {pageOffers.map((offer) => (
-                          <div
-                            key={offer._id}
-                            style={{
-                              display: 'flex', alignItems: 'center',
-                              justifyContent: 'space-between', gap: '12px',
-                              padding: '10px 14px', borderRadius: '12px',
-                              background: 'rgba(255,255,255,0.025)',
-                              border: '1px solid rgba(255,255,255,0.05)',
-                            }}
-                          >
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', minWidth: 0 }}>
-                              <div style={{ minWidth: 0 }}>
+                      <>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', flex: 1 }}>
+                          {pageOffers.map((offer) => {
+                          const desc = offer.description || '';
+                          let heading = desc;
+                          let subText = '';
+                          if (desc.includes(':')) {
+                            const parts = desc.split(':');
+                            heading = parts[0].trim();
+                            subText = 'Task: ' + parts.slice(1).join(':').trim();
+                          } else {
+                            heading = offer.amount < 0 ? 'Payout processed' : 'Reward for completing task';
+                            subText = desc ? `Task: ${desc}` : (offer.amount < 0 ? 'PayPal' : 'System bonus');
+                          }
+
+                          return (
+                            <div
+                              key={offer._id}
+                              style={{
+                                width: '468px', height: '62px',
+                                display: 'flex', alignItems: 'center',
+                                justifyContent: 'space-between', gap: '16px',
+                                padding: '12px', borderRadius: '12px',
+                                background: 'rgba(0, 0, 0, 0.36)',
+                                backdropFilter: 'blur(44px)',
+                                border: 'none',
+                              }}
+                            >
+                              <div style={{ flex: 1, minWidth: 0, height: '37px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
                                 <div style={{
-                                  fontSize: '13px', fontWeight: 600, color: '#e2e8f0',
+                                  width: '100%', height: '17px',
+                                  fontFamily: '"Barlow Condensed", sans-serif', fontWeight: 700, fontSize: '14px', lineHeight: '120%', color: 'rgba(255, 255, 255, 1)',
+                                  letterSpacing: '0.5px',
                                   overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
                                 }}>
-                                  {offer.description}
+                                  {heading}
                                 </div>
-                                <div style={{ fontSize: '11px', color: '#64748b', marginTop: '2px' }}>
+                                <div style={{
+                                  width: '100%', height: '14px',
+                                  fontFamily: '"Barlow Condensed", sans-serif', fontWeight: 500, fontSize: '11px', lineHeight: '130%', color: 'rgba(136, 136, 136, 1)',
+                                  letterSpacing: '0.5px',
+                                  overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                                }}>
+                                  {subText}
+                                </div>
+                              </div>
+                              <div style={{ width: 'auto', height: '38px', display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '6px', flexShrink: 0 }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                  <img src="/coins/coinfinal.png" alt="coin" style={{ width: '18px', height: '18px' }} />
+                                  <div style={{
+                                    fontFamily: '"Barlow Condensed", sans-serif', fontWeight: 700, fontSize: '16px', lineHeight: '130%',
+                                    backgroundImage: 'linear-gradient(180deg, #FEDF77 0%, #FCB91E 100%)',
+                                    WebkitBackgroundClip: 'text', color: 'transparent'
+                                  }}>
+                                    {offer.amount > 0 ? '+' : ''}{(offer.amount || 0).toLocaleString()}
+                                  </div>
+                                </div>
+                                <div style={{
+                                  width: 'auto', height: '14px',
+                                  fontFamily: '"Barlow Condensed", sans-serif', fontWeight: 500, fontSize: '11px', lineHeight: '130%', textAlign: 'right', color: 'rgba(136, 136, 136, 1)',
+                                  whiteSpace: 'nowrap'
+                                }}>
                                   {timeAgo(offer.createdAt)}
                                 </div>
                               </div>
                             </div>
-                            <div style={{ textAlign: 'right', flexShrink: 0 }}>
-                              <div style={{ fontSize: '13px', fontWeight: 700, color: '#34d399' }}>
-                                +{(offer.amount || 0).toLocaleString()}
-                              </div>
-                            </div>
-                          </div>
-                        ))}
+                          );
+                        })}
+                        </div>
 
                         {/* Pagination Controls */}
-                        {totalPages > 1 && (
-                          <div style={{
-                            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                            marginTop: '8px', paddingTop: '8px',
-                            borderTop: '1px solid rgba(255,255,255,0.05)',
-                          }}>
-                            <button
-                              onClick={() => setActivityPage(p => Math.max(1, p - 1))}
-                              disabled={activityPage === 1}
-                              style={{
-                                display: 'flex', alignItems: 'center', gap: '4px',
-                                padding: '5px 10px', borderRadius: '8px',
-                                background: activityPage === 1 ? 'rgba(255,255,255,0.03)' : 'rgba(99,102,241,0.10)',
-                                border: '1px solid ' + (activityPage === 1 ? 'rgba(255,255,255,0.05)' : 'rgba(99,102,241,0.25)'),
-                                color: activityPage === 1 ? '#374151' : '#818cf8',
-                                fontSize: '12px', fontWeight: 600, cursor: activityPage === 1 ? 'default' : 'pointer',
-                                transition: 'all 0.2s',
-                              }}
-                            >
-                              <FiChevronLeft size={13} /> Prev
-                            </button>
+                        {totalPages > 1 && (() => {
+                          const visiblePages = [];
+                          if (totalPages <= 3) {
+                            for (let i = 1; i <= totalPages; i++) visiblePages.push(i);
+                          } else {
+                            let start = Math.min(activityPage, totalPages - 2);
+                            visiblePages.push(start, start + 1, start + 2);
+                          }
 
-                            <span style={{ fontSize: '12px', color: '#64748b', fontWeight: 500 }}>
-                              Page {activityPage} of {totalPages}
-                            </span>
+                          const CircleBtn = ({ active, disabled, onClick, children, isArrow }) => {
+                            const isGreen = active;
+                            return (
+                              <button
+                                onClick={onClick}
+                                disabled={disabled}
+                                style={{
+                                  width: '32px', height: '32px', borderRadius: '32px',
+                                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px',
+                                  background: isGreen ? 'rgba(73, 178, 101, 1)' : (isArrow ? 'transparent' : 'rgba(255, 255, 255, 0.15)'),
+                                  border: isArrow ? '1px solid rgba(73, 178, 101, 1)' : '1px solid transparent',
+                                  color: isGreen || !isArrow ? '#fff' : 'rgba(73, 178, 101, 1)',
+                                  fontFamily: '"Barlow Condensed", sans-serif', fontWeight: 700, fontSize: '14px',
+                                  cursor: disabled ? 'default' : 'pointer',
+                                  opacity: disabled ? 0.3 : 1,
+                                  padding: '10px',
+                                  boxSizing: 'border-box',
+                                }}
+                              >
+                                {children}
+                              </button>
+                            );
+                          };
 
-                            <button
-                              onClick={() => setActivityPage(p => Math.min(totalPages, p + 1))}
-                              disabled={activityPage === totalPages}
-                              style={{
-                                display: 'flex', alignItems: 'center', gap: '4px',
-                                padding: '5px 10px', borderRadius: '8px',
-                                background: activityPage === totalPages ? 'rgba(255,255,255,0.03)' : 'rgba(99,102,241,0.10)',
-                                border: '1px solid ' + (activityPage === totalPages ? 'rgba(255,255,255,0.05)' : 'rgba(99,102,241,0.25)'),
-                                color: activityPage === totalPages ? '#374151' : '#818cf8',
-                                fontSize: '12px', fontWeight: 600, cursor: activityPage === totalPages ? 'default' : 'pointer',
-                                transition: 'all 0.2s',
-                              }}
-                            >
-                              Next <FiChevronRight size={13} />
-                            </button>
-                          </div>
-                        )}
-                      </div>
+                          return (
+                            <div style={{
+                              width: '468px', height: '32px',
+                              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '5px',
+                              marginTop: 'auto',
+                            }}>
+                              <CircleBtn
+                                isArrow
+                                disabled={activityPage === 1}
+                                onClick={() => setActivityPage(p => Math.max(1, p - 1))}
+                              >
+                                <div style={{
+                                  width: '16px', height: '16px',
+                                  backgroundColor: 'rgba(73, 178, 101, 1)',
+                                  WebkitMaskImage: 'url(/coins/leftarrow.png)',
+                                  WebkitMaskSize: 'contain',
+                                  WebkitMaskRepeat: 'no-repeat',
+                                  WebkitMaskPosition: 'center',
+                                  transform: 'rotate(180deg)'
+                                }} />
+                              </CircleBtn>
+
+                              {visiblePages.map(p => (
+                                <CircleBtn
+                                  key={p}
+                                  active={activityPage === p}
+                                  onClick={() => setActivityPage(p)}
+                                >
+                                  {p}
+                                </CircleBtn>
+                              ))}
+
+                              <CircleBtn
+                                isArrow
+                                disabled={activityPage === totalPages}
+                                onClick={() => setActivityPage(p => Math.min(totalPages, p + 1))}
+                              >
+                                <div style={{
+                                  width: '16px', height: '16px',
+                                  backgroundColor: 'rgba(73, 178, 101, 1)',
+                                  WebkitMaskImage: 'url(/coins/leftarrow.png)',
+                                  WebkitMaskSize: 'contain',
+                                  WebkitMaskRepeat: 'no-repeat',
+                                  WebkitMaskPosition: 'center',
+                                  transform: 'rotate(0deg)'
+                                }} />
+                              </CircleBtn>
+                            </div>
+                          );
+                        })()}
+                      </>
                     );
                   })()}
                 </div>
