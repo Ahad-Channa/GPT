@@ -4,7 +4,7 @@ import LiveEarningsBar from '../LiveEarningsBar';
 import ChatSidebar from '../chat/ChatSidebar';
 import { FaFacebook, FaInstagram, FaYoutube, FaDiscord } from 'react-icons/fa';
 
-const DashboardLayout = ({ children, showLiveBar = true, fullWidth = false }) => {
+const DashboardLayout = ({ children, showLiveBar = true, fullWidth = false, hideStartEarning = false }) => {
   const [chatOpen, setChatOpen] = useState(() => {
     return localStorage.getItem('chatOpen') === 'true';
   });
@@ -35,7 +35,8 @@ const DashboardLayout = ({ children, showLiveBar = true, fullWidth = false }) =>
       </div>
 
       {/* Start Earning Today */}
-      <section className="w-full flex justify-center mt-12 bg-[rgba(27,28,27,1)] relative z-10">
+      {!hideStartEarning && (
+        <section className="w-full flex justify-center mt-12 bg-[rgba(27,28,27,1)] relative z-10">
         <div className="flex flex-col md:flex-row items-center justify-between w-full max-w-[1440px] px-8 md:px-[100px] py-[40px]">
           <div className="flex flex-col justify-start mb-6 md:mb-0 gap-[30px]">
             <h2 className="m-0 flex items-center font-bold text-[48px] leading-[48px] text-white font-['Barlow_Condensed'] whitespace-nowrap">
@@ -67,7 +68,8 @@ const DashboardLayout = ({ children, showLiveBar = true, fullWidth = false }) =>
             />
           </button>
         </div>
-      </section>
+        </section>
+      )}
 
       {/* Footer */}
       <footer className="w-full flex justify-center border-t border-[#333] bg-[rgba(44,45,44,1)] relative z-10">

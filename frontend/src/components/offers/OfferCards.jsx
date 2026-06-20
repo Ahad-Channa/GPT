@@ -407,7 +407,7 @@ export const FeaturedOfferModal = ({ offer, token, onClose, onSubmitted }) => {
                 </div>
               </div>
               <div style={{
-                width: '69px', height: '26px', opacity: 1,
+                width: 'auto', height: '26px', opacity: 1,
                 display: 'flex', alignItems: 'center', gap: '3px',
                 alignSelf: 'flex-start'
               }}>
@@ -539,7 +539,7 @@ export const FeaturedOfferModal = ({ offer, token, onClose, onSubmitted }) => {
                       {offer.requirements.map((req, i) => (
                         <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: '6px' }}>
                           <img 
-                            src="/coins/image (1).png" 
+                            src="/coins/retik.png" 
                             alt="bullet" 
                             style={{ width: '14px', height: '14px', flexShrink: 0, marginTop: '2px' }} 
                           />

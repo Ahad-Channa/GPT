@@ -147,7 +147,7 @@ const DailyBonusChip = () => {
         onClick={claimBonus}
         disabled={claiming}
         className="hidden lg:flex relative items-center justify-center font-bold text-[15px] text-white disabled:opacity-60 overflow-hidden group border-none"
-        style={{ ...baseStyle, background: 'rgba(73, 178, 101, 1)', boxShadow: '0px 4px 0px 0px rgba(39, 109, 58, 1)', animation: 'bonusPulse 1.8s ease-in-out infinite' }}
+        style={{ ...baseStyle, background: 'linear-gradient(180deg, #FEDF77 0%, #FCB91E 100%)', boxShadow: '0px 4px 10px 0px rgba(252, 185, 30, 0.5)', animation: 'bonusPulse 1.8s ease-in-out infinite' }}
       >
         <div className="absolute inset-0 bg-white/20 -translate-x-full group-hover:translate-x-full transition-transform duration-600" />
         <img
