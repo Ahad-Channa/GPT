@@ -67,6 +67,13 @@ const Home = () => {
   const balance = mongoUser?.walletBalance?.toFixed(2) ?? '0.00';
   const [tasksDone, setTasksDone] = useState('...');
   const [globalStats, setGlobalStats] = useState({ totalUsers: 0, totalPaidOut: 0, show: false });
+  const [chatOpen, setChatOpen] = useState(() => localStorage.getItem('chatOpen') === 'true');
+
+  useEffect(() => {
+    const handleChatToggle = () => setChatOpen(localStorage.getItem('chatOpen') === 'true');
+    window.addEventListener('chatToggle', handleChatToggle);
+    return () => window.removeEventListener('chatToggle', handleChatToggle);
+  }, []);
 
   const [settings, setSettings] = useState(null);
   const [customOffers, setCustomOffers] = useState([]);
@@ -205,6 +212,9 @@ const Home = () => {
     { id: 'gaming', label: 'Gaming & Apps', iconSrc: '/coins/game.png', count: gamingProviders.length, ref: gamingRef },
     { id: 'surveys', label: 'Surveys', iconSrc: '/coins/clipboard.png', count: surveyProviders.length, ref: surveysRef },
   ];
+
+  const itemsPerPage = chatOpen ? 3 : 4;
+  const gridColsClass = chatOpen ? 'grid-cols-2 sm:grid-cols-3 lg:grid-cols-4' : 'grid-cols-2 sm:grid-cols-4 lg:grid-cols-6';
 
   if (activeProvider) {
     return (
@@ -467,10 +477,10 @@ const Home = () => {
                     className="flex overflow-x-auto snap-x snap-mandatory"
                     style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
                   >
-                    {Array.from({ length: Math.ceil(customOffers.length / 4) }).map((_, pageIndex) => (
+                    {Array.from({ length: Math.ceil(customOffers.length / itemsPerPage) }).map((_, pageIndex) => (
                       <div key={pageIndex} className="min-w-full shrink-0 snap-start flex gap-4">
-                        {customOffers.slice(pageIndex * 4, pageIndex * 4 + 4).map(offer => (
-                          <div key={offer._id} style={{ width: 'calc(25% - 12px)' }}>
+                        {customOffers.slice(pageIndex * itemsPerPage, pageIndex * itemsPerPage + itemsPerPage).map(offer => (
+                          <div key={offer._id} style={{ width: `calc(${100 / itemsPerPage}% - ${(itemsPerPage - 1) * 16 / itemsPerPage}px)` }}>
                             <FeaturedOfferCard offer={offer} onClick={() => setSelectedOffer(offer)} />
                           </div>
                         ))}
@@ -484,7 +494,7 @@ const Home = () => {
                       className="flex items-center" 
                       style={{ height: '12px', gap: '6px' }}
                     >
-                      {Array.from({ length: Math.ceil(customOffers.length / 4) }).map((_, idx) => (
+                      {Array.from({ length: Math.ceil(customOffers.length / itemsPerPage) }).map((_, idx) => (
                         <button
                           key={idx}
                           onClick={() => scrollFeaturedToPage(idx)}
@@ -514,7 +524,7 @@ const Home = () => {
                   flexDirection: 'column',
                   width: '100%',
                   maxWidth: '1240px',
-                  height: '469px',
+                  minHeight: '469px',
                   borderRadius: '20px',
                   gap: '18px',
                   padding: '20px',
@@ -577,7 +587,7 @@ const Home = () => {
                 ) : gamingProviders.length === 0 ? (
                   <div className="glass-card p-8 border border-white/[0.05] flex items-center gap-3 opacity-50"><FiInbox className="text-slate-500" /> <span className="text-slate-400 text-sm">No gaming offerwalls active.</span></div>
                 ) : (
-                  <div className="grid grid-cols-6 w-full" style={{ gap: '14px' }}>
+                  <div className={`grid ${gridColsClass} w-full`} style={{ gap: '14px' }}>
                     {gamingProviders.map(provider => (
                       <ProviderCard key={provider.id} provider={provider} onClick={() => setActiveProvider(provider)} />
                     ))}
@@ -593,8 +603,9 @@ const Home = () => {
                 variants={item} 
                 className="flex flex-col"
                 style={{
-                  width: '1240px',
-                  height: '323px',
+                  width: '100%',
+                  maxWidth: '1240px',
+                  minHeight: '323px',
                   borderRadius: '20px',
                   gap: '18px',
                   padding: '20px',
@@ -629,7 +640,7 @@ const Home = () => {
                 ) : surveyProviders.length === 0 ? (
                   <div className="glass-card p-8 border border-white/[0.05] flex items-center gap-3 opacity-50"><FiInbox className="text-slate-500" /> <span className="text-slate-400 text-sm">No survey offerwalls active.</span></div>
                 ) : (
-                  <div className="grid grid-cols-6 w-full" style={{ gap: '14px' }}>
+                  <div className={`grid ${gridColsClass} w-full`} style={{ gap: '14px' }}>
                     {surveyProviders.map(provider => (
                       <ProviderCard key={provider.id} provider={provider} onClick={() => setActiveProvider(provider)} />
                     ))}

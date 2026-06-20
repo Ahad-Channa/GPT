@@ -11,6 +11,7 @@ const DashboardLayout = ({ children, showLiveBar = true, fullWidth = false }) =>
 
   useEffect(() => {
     localStorage.setItem('chatOpen', chatOpen);
+    window.dispatchEvent(new Event('chatToggle'));
   }, [chatOpen]);
 
   return (
@@ -24,10 +25,14 @@ const DashboardLayout = ({ children, showLiveBar = true, fullWidth = false }) =>
       {/* Live Earnings Ticker */}
       {showLiveBar && <LiveEarningsBar />}
 
-      {/* Main Content */}
-      <main className={`relative z-10 w-full ${fullWidth ? 'max-w-[1600px]' : 'max-w-7xl'} mx-auto px-4 md:px-8 2xl:px-12 py-8 md:py-12 flex flex-col`}>
-        {children}
-      </main>
+      {/* Main Content Wrapper - shrinks when chat is open */}
+      <div 
+        className={`transition-all duration-300 ease-in-out w-full ${chatOpen ? 'xl:w-[calc(100%-400px)]' : ''}`}
+      >
+        <main className={`relative z-10 w-full ${fullWidth ? 'max-w-[1600px]' : 'max-w-7xl'} mx-auto px-4 md:px-8 2xl:px-12 py-8 md:py-12 flex flex-col`}>
+          {children}
+        </main>
+      </div>
 
       {/* Start Earning Today */}
       <section className="w-full flex justify-center mt-12 bg-[rgba(27,28,27,1)] relative z-10">

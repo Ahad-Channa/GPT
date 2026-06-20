@@ -9,10 +9,10 @@ import { TIER_STYLES } from '../utils/vipLevels';
  *  inline — if true, renders as an inline element (for chat)
  */
 const SIZE = {
-  xs: { badge: { fontSize: '0.55rem', padding: '1px 5px', borderRadius: 4, gap: 2 }, roman: { fontSize: '0.5rem' } },
-  sm: { badge: { fontSize: '0.62rem', padding: '2px 7px', borderRadius: 5, gap: 3 }, roman: { fontSize: '0.55rem' } },
-  md: { badge: { fontSize: '0.75rem', padding: '4px 10px', borderRadius: 7, gap: 4 }, roman: { fontSize: '0.65rem' } },
-  lg: { badge: { fontSize: '1.05rem', padding: '6px 14px', borderRadius: 9, gap: 5 }, roman: { fontSize: '0.85rem' } },
+  xs: { badge: { fontSize: '11px', padding: '2px 8px', borderRadius: 100, gap: 2 }, roman: { fontSize: '9px' } },
+  sm: { badge: { fontSize: '12px', padding: '2px 10px', borderRadius: 100, gap: 3 }, roman: { fontSize: '10px' } },
+  md: { badge: { fontSize: '14px', padding: '4px 12px', borderRadius: 100, gap: 4 }, roman: { fontSize: '11px' } },
+  lg: { badge: { fontSize: '16px', padding: '6px 16px', borderRadius: 100, gap: 5 }, roman: { fontSize: '12px' } },
 };
 
 const VipBadge = ({ tier = 'Bronze', rank = 'I', size = 'sm', style = {} }) => {
@@ -32,8 +32,9 @@ const VipBadge = ({ tier = 'Bronze', rank = 'I', size = 'sm', style = {} }) => {
         background: s.gradient,
         border: `1px solid ${s.border}`,
         boxShadow: `0 0 8px ${s.glow}`,
-        fontWeight: 800,
-        letterSpacing: '0.04em',
+        fontWeight: 600,
+        fontFamily: '"Barlow Condensed", sans-serif',
+        letterSpacing: '0.5px',
         userSelect: 'none',
         whiteSpace: 'nowrap',
         flexShrink: 0,
@@ -45,7 +46,7 @@ const VipBadge = ({ tier = 'Bronze', rank = 'I', size = 'sm', style = {} }) => {
       }}
     >
       <span style={{ fontSize: sz.badge.fontSize, color: s.text, textShadow: `0 0 8px ${s.glow}` }}>
-        {tier.toUpperCase()}
+        {tier}
       </span>
       {rank && (
         <span style={{
