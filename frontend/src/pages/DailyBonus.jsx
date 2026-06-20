@@ -305,17 +305,17 @@ export default function DailyBonus() {
 
          {/* Third Card section: Milestones */}
          <div className="flex flex-col w-[1240px] h-[384px] gap-[18px] rounded-[20px] p-[20px] bg-white/[0.14] shrink-0 relative z-10">
-            <div className="flex w-[1200px] h-[133px] gap-[16px] shrink-0 relative">
-               <div className="flex flex-col w-[852px] h-[85px] gap-[6px] shrink-0">
+            <div className="flex items-center w-[1200px] h-[133px] gap-[16px] shrink-0 relative">
+               <div className="flex flex-col justify-center w-[852px] h-[85px] gap-[6px] shrink-0">
                   <h2 className="w-[852px] h-[50px] m-0 p-0 text-white text-[42px] font-bold font-['Barlow_Condensed'] leading-[120%] tracking-normal whitespace-nowrap">Streak Milestones</h2>
                   <p className="w-[852px] h-[29px] m-0 p-0 text-[#888888] text-[22px] font-medium font-['Barlow_Condensed'] leading-[130%] tracking-normal whitespace-nowrap">Bonus coins for hitting these streaks</p>
                </div>
-               <div className="hidden md:block absolute right-0 top-[-50px] pointer-events-none z-0">
-                  <img src="/coins/calender.png" alt="Milestones" className="h-[140px] object-contain drop-shadow-2xl" />
+               <div className="w-[332px] h-[133px] shrink-0 pointer-events-none z-0 flex items-center justify-center">
+                  <img src="/coins/streakmil.png" alt="Milestones" className="w-[332px] h-[133px] object-contain" />
                </div>
             </div>
 
-           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 relative z-10">
+           <div className="flex w-[1200px] h-[193px] gap-[14px] shrink-0 relative z-10">
               {[
                  { title: '10 Day Streak', sub: 'Keep going!', target: 10, reward: status.rewardDay10 ?? 500, current: Math.min(streak, 10) },
                  { title: '20 Day Streak', sub: 'Almost there!', target: 20, reward: status.rewardDay20 ?? 2500, current: Math.min(streak, 20) },
@@ -332,30 +332,33 @@ export default function DailyBonus() {
                  const badgeBg = badgeColors[milestone.target] || 'from-gray-500 to-gray-700 border-gray-400/30';
 
                  return (
-                   <div key={milestone.target} className="bg-[#242426] rounded-[20px] p-6 border border-white/5 relative hover:bg-[#2a2a2d] transition-colors">
+                   <div key={milestone.target} className="flex flex-col w-[390.66px] h-[193px] gap-[16px] rounded-[20px] p-[16px] bg-black/[0.36] backdrop-blur-[44px] shrink-0 relative">
                       {reached && (
                          <div className="absolute -top-3 -right-3 w-8 h-8 rounded-full bg-[#49B265] flex items-center justify-center text-white border-4 border-[#1c1c1e] shadow-lg">
                             <FiCheckCircle className="text-sm" />
                          </div>
                       )}
-                      <div className="flex items-center gap-5 mb-6">
-                         <div className={`w-[68px] h-[68px] bg-gradient-to-br ${badgeBg} rounded-2xl flex flex-col items-center justify-center text-white border relative overflow-hidden shrink-0`}>
-                            {/* Inner shine */}
-                            <div className="absolute top-0 left-0 w-full h-1/2 bg-white/20" style={{ clipPath: 'polygon(0 0, 100% 0, 100% 50%, 0 100%)' }}></div>
-                            <span className="font-black text-[26px] leading-none tracking-tight">{milestone.target}</span>
-                         </div>
-                         <div>
-                            <h3 className="text-white font-bold text-lg leading-tight">{milestone.title}</h3>
-                            <p className="text-gray-400 text-[13px] mt-1">{milestone.sub}</p>
+                      <div className="flex items-center w-[358.66px] h-[91px] gap-[16px] shrink-0">
+                         <img src={`/coins/st${milestone.target}.png`} alt={`${milestone.target} Day Streak`} className="w-[81px] h-[91px] object-contain shrink-0" />
+                         <div className="flex flex-col w-[261.66px] h-[51px] gap-[16px] shrink-0">
+                            <h3 className="w-[152px] h-[22px] m-0 p-0 text-white text-[32px] font-semibold font-['Barlow_Condensed'] leading-[120%] tracking-normal whitespace-nowrap">{milestone.title}</h3>
+                            <p className="w-[261.66px] h-[13px] m-0 p-0 text-white/60 text-[18px] font-medium font-['Barlow_Condensed'] leading-[120%] tracking-normal whitespace-nowrap">{milestone.sub}</p>
                          </div>
                       </div>
                       
-                      <div className="flex justify-between items-end mb-3">
-                         <span className="text-amber-400 font-bold flex items-center gap-1.5 text-xl"><img src="/coins/coin1.png" alt="Coin" className="w-[22px] h-[22px]" /> {milestone.reward.toLocaleString()}</span>
-                         <span className="text-white text-sm font-bold">{milestone.current} / {milestone.target} Days</span>
+                      <div className="w-[358.66px] h-[12px] bg-white/[0.1] rounded-[30px] shrink-0">
+                         <div className="h-full bg-[#49B265] rounded-[30px] transition-all duration-1000" style={{ width: `${progress}%` }}></div>
                       </div>
-                      <div className="h-2 w-full bg-[#3a3a3c] rounded-full overflow-hidden shadow-inner">
-                         <div className="h-full bg-[#49B265] rounded-full transition-all duration-1000 shadow-[0_0_10px_rgba(73,178,101,0.5)]" style={{ width: `${progress}%` }}></div>
+                      <div className="flex justify-between items-center w-[358.66px] h-[26px] shrink-0">
+                         <div className="flex items-center w-auto h-[26px] gap-[4px] shrink-0 overflow-visible">
+                            <img src="/coins/coinfinal.png" alt="Coin" className="w-[26px] h-[26px] shrink-0 object-contain overflow-visible" style={{ filter: 'drop-shadow(0px 0px 14px rgba(254, 198, 53, 0.6))' }} />
+                            <span className="w-auto h-auto m-0 p-0 text-[28px] font-bold font-['Barlow_Condensed'] leading-none tracking-normal whitespace-nowrap bg-gradient-to-b from-[#FEDF77] to-[#FCB91E] text-transparent bg-clip-text flex items-center shrink-0 pb-[2px]">
+                               {milestone.reward}
+                            </span>
+                         </div>
+                         <span className="w-auto h-auto m-0 p-0 text-white text-[22px] font-semibold font-['Barlow_Condensed'] leading-[130%] tracking-normal whitespace-nowrap text-right shrink-0">
+                            {milestone.current} / {milestone.target} Days
+                         </span>
                       </div>
                    </div>
                  )
