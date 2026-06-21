@@ -59,33 +59,39 @@ const PromoCodeRedeem = ({ onSuccess }) => {
   };
 
   return (
-    <motion.div variants={item} className="glass-card p-6 border border-fuchsia-500/20 bg-gradient-to-r from-fuchsia-500/5 to-transparent">
-      <div className="flex items-center gap-3 mb-4">
-        <div className="w-10 h-10 rounded-xl bg-fuchsia-500/10 flex items-center justify-center border border-fuchsia-500/20">
-          <FiGift className="text-fuchsia-400" />
+    <motion.div variants={item} className="flex flex-col w-[1240px] gap-[18px] rounded-[20px] p-[20px] bg-white/[0.14]">
+      <div className="flex items-center w-[852px] h-[88px] gap-[16px]">
+        <div className="flex items-center justify-center w-[88px] h-[88px] gap-[6px] rounded-[10px] py-[10px] px-[12px] bg-[rgba(41,253,152,0.2)] flex-shrink-0">
+          <img src="/coins/gift.png" alt="Gift Icon" className="w-[44px] h-[44px] object-contain" />
         </div>
-        <div>
-          <h2 className="text-lg font-bold font-display text-white">Redeem Promo Code</h2>
-          <p className="text-sm text-slate-400">Have a code? Enter it below to claim free coins.</p>
+        <div className="flex flex-col w-[748px] h-[85px] gap-[6px] justify-center">
+          <h2 className="w-[748px] h-[50px] m-0 p-0 font-bold font-['Barlow_Condensed'] text-[42px] leading-[120%] text-white whitespace-nowrap">
+            Redeem Promo Code
+          </h2>
+          <p className="w-[748px] h-[29px] m-0 p-0 font-medium font-['Barlow_Condensed'] text-[22px] leading-[130%] text-[#888888] whitespace-nowrap">
+            Have a code? Enter it below to claim free coins.
+          </p>
         </div>
       </div>
       
-      <form onSubmit={handleRedeem} className="flex flex-col sm:flex-row gap-3">
+      <form onSubmit={handleRedeem} className="flex flex-col sm:flex-row gap-3 items-center w-full">
         <input
           type="text"
           value={code}
           onChange={(e) => setCode(e.target.value.toUpperCase())}
           placeholder="ENTER CODE HERE"
-          className="bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-fuchsia-500/50 focus:ring-1 focus:ring-fuchsia-500/50 flex-1 uppercase font-sans tracking-wider"
+          className="bg-white/5 border border-[#49B265]/30 rounded-[10px] h-[48px] px-4 text-white placeholder-slate-500 focus:outline-none focus:border-[#49B265]/70 focus:ring-1 focus:ring-[#49B265]/50 flex-1 uppercase font-['Barlow_Condensed'] font-medium text-[22px] tracking-wider w-full"
           disabled={loading}
         />
         <button
           type="submit"
           disabled={loading || !code.trim()}
-          className="btn-primary bg-gradient-to-r from-fuchsia-500 to-violet-600 hover:from-fuchsia-400 hover:to-violet-500 px-6 py-3 rounded-xl font-semibold disabled:opacity-50"
-          style={{ boxShadow: '0 0 15px rgba(217,70,239,0.2)' }}
+          className="flex items-center justify-center sm:w-auto w-full h-[48px] gap-[10px] rounded-[10px] px-[30px] py-[10px] bg-[#49B265] shadow-[0_4px_0_0_#276D3A] hover:bg-[#49B265]/90 hover:translate-y-[1px] hover:shadow-[0_3px_0_0_#276D3A] active:translate-y-[4px] active:shadow-none transition-all shrink-0 disabled:opacity-50 disabled:hover:translate-y-0 disabled:hover:shadow-[0_4px_0_0_#276D3A] disabled:active:translate-y-0"
         >
-          {loading ? 'Redeeming...' : 'Redeem'}
+          <span className="m-0 p-0 font-bold font-['Barlow_Condensed'] text-[18px] leading-none text-white whitespace-nowrap">
+            {loading ? 'Redeeming...' : 'Redeem'}
+          </span>
+          <img src="/coins/ar.png" alt="Arrow" className="w-[24px] h-[24px] object-contain" />
         </button>
       </form>
       

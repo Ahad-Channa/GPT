@@ -405,7 +405,7 @@ router.put('/admin/orders/:id', verifyToken, requireAdmin, async (req, res) => {
       req.params.id,
       { status, adminNote, trackingNumber },
       { new: true }
-    ).populate('userId', 'displayName email').populate('bookId', 'title');
+    ).populate('userId', 'displayName email firebaseUid').populate('bookId', 'title');
     if (!order) return res.status(404).json({ success: false, error: 'Order not found' });
 
     if (status === 'cancelled' && existingOrder.status !== 'cancelled') {
@@ -427,6 +427,15 @@ router.put('/admin/orders/:id', verifyToken, requireAdmin, async (req, res) => {
         title: 'Order Updated',
         message: `There is an update on your order for "${order.bookId ? order.bookId.title : order.bookTitle}". Status: ${status}`,
         metadata: { orderId: order._id }
+      });
+    }
+
+    const { emitToUser } = require('../utils/walletEvents');
+    if (order.userId.firebaseUid) {
+      emitToUser(order.userId.firebaseUid, 'bookOrderUpdated', {
+        orderId: order._id,
+        bookId: order.bookId ? order.bookId._id : null,
+        status: order.status
       });
     }
 

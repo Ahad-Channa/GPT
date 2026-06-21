@@ -483,7 +483,7 @@ export default function AdminBooks() {
 
       {/* ── Book Add/Edit Modal ──────────────── */}
       {showModal && (
-        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
+        <div className="fixed inset-0 z-[9998] flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
           <div className="bg-[#0c101b] border border-white/[0.1] rounded-2xl w-full max-w-2xl max-h-[90vh] flex flex-col shadow-2xl">
             <div className="flex items-center justify-between px-6 py-5 border-b border-white/[0.07] flex-shrink-0">
               <h2 className="text-lg font-bold text-white">{editing ? 'Edit Book' : 'Add New Book'}</h2>
@@ -578,13 +578,13 @@ export default function AdminBooks() {
 
       {/* ── Order Detail Modal ──────────────── */}
       {selectedOrder && (
-        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
-          <div className="bg-[#0c101b] border border-white/[0.1] rounded-2xl w-full max-w-lg shadow-2xl">
-            <div className="flex items-center justify-between px-6 py-5 border-b border-white/[0.07]">
+        <div className="fixed inset-0 z-[9998] flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
+          <div className="bg-[#0c101b] border border-white/[0.1] rounded-2xl w-full max-w-lg max-h-[90vh] flex flex-col shadow-2xl">
+            <div className="flex items-center justify-between px-6 py-5 border-b border-white/[0.07] flex-shrink-0">
               <h2 className="text-lg font-bold text-white flex items-center gap-2"><FiPackage className="text-emerald-400" /> Order Details</h2>
               <button onClick={() => setSelectedOrder(null)} className="text-slate-400 hover:text-white"><FiX /></button>
             </div>
-            <div className="p-6 space-y-5">
+            <div className="p-6 space-y-5 overflow-y-auto flex-1">
               <div className="flex gap-4 items-start">
                 {selectedOrder.bookId?.coverImage && (
                   <img src={selectedOrder.bookId.coverImage.startsWith('http') ? selectedOrder.bookId.coverImage : `${BACKEND}${selectedOrder.bookId.coverImage}`}
@@ -630,7 +630,7 @@ export default function AdminBooks() {
                 </div>
               </div>
             </div>
-            <div className="flex justify-end gap-3 px-6 py-5 border-t border-white/[0.07]">
+            <div className="flex justify-end gap-3 px-6 py-5 border-t border-white/[0.07] flex-shrink-0">
               <button onClick={() => setSelectedOrder(null)} className="px-4 py-2 text-slate-400 hover:text-white text-sm">Cancel</button>
               <button onClick={handleUpdateOrder} disabled={updatingOrder}
                 className="flex items-center gap-2 px-6 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-semibold text-sm disabled:opacity-50">

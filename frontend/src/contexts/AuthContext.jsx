@@ -237,7 +237,8 @@ export const AuthProvider = ({ children }) => {
         loginWithEmail,
         resetPassword,
         confirmResetPassword,
-        logout
+        logout,
+        getSocket: () => socketRef.current
     };
 
     return (
