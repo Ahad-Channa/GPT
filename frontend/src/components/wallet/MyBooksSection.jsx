@@ -16,8 +16,8 @@ const CoinBadge = ({ amount, size = 'md' }) => {
   const cls = size === 'sm'
     ? 'text-xs gap-1 px-2 py-0.5'
     : size === 'lg'
-    ? 'text-base gap-1.5 px-3 py-1'
-    : 'text-sm gap-1 px-2.5 py-0.5';
+      ? 'text-base gap-1.5 px-3 py-1'
+      : 'text-sm gap-1 px-2.5 py-0.5';
   return (
     <span className={`inline-flex items-center font-bold text-amber-400 bg-amber-500/10 border border-amber-500/20 rounded-full ${cls}`}>
       <CoinIcon size={size === 'lg' ? 16 : 12} />
@@ -111,7 +111,7 @@ const BookDetailModal = ({ book, onClose, onOrder, balance }) => {
               <h3 className="w-[491px] text-white font-semibold font-['Barlow_Condensed'] text-[26px] leading-[120%]">
                 {book.title}
               </h3>
-              
+
               <div className="flex items-center gap-[14px] w-[491px] h-[48px] shrink-0">
                 <div className="flex items-center gap-[3px] w-[238.5px] h-[26px]">
                   <img src="/coins/coinfix.png" alt="Coin" className="w-[26px] h-[26px] object-contain rounded-full shadow-[0px_14px_34px_0px_rgba(254,198,53,0.3)]" />
@@ -157,7 +157,7 @@ const BookDetailModal = ({ book, onClose, onOrder, balance }) => {
           <div className="bg-[rgba(0,0,0,0.36)] backdrop-blur-[44px] rounded-[20px] w-[668px] h-[319px] p-[16px] flex flex-col gap-[16px] shrink-0">
             <h4 className="w-[636px] h-[15px] text-white font-semibold font-['Barlow_Condensed'] text-[21px] leading-[120%] flex items-center">Book Preview</h4>
             <div className="flex items-center justify-between">
-              <button 
+              <button
                 onClick={prevPreview}
                 disabled={previewIdx === 0}
                 className="w-[32px] h-[32px] flex-shrink-0 rounded-[32px] border-[1px] border-[#49B265] flex items-center justify-center hover:bg-[#49B265]/10 transition-colors disabled:opacity-30 disabled:hover:bg-transparent"
@@ -167,11 +167,11 @@ const BookDetailModal = ({ book, onClose, onOrder, balance }) => {
               <div className="flex gap-[16px] justify-center overflow-hidden">
                 {validImages.slice(previewIdx, previewIdx + 3).map((url, i) => (
                   <div key={i} className="bg-white rounded-[3px] overflow-hidden flex-shrink-0 w-[177px] h-[256px] flex items-center justify-center">
-                    <img src={url} alt={`Preview ${i+1}`} className="w-full h-full object-cover" />
+                    <img src={url} alt={`Preview ${i + 1}`} className="w-full h-full object-cover" />
                   </div>
                 ))}
               </div>
-              <button 
+              <button
                 onClick={nextPreview}
                 disabled={previewIdx + 3 >= validImages.length}
                 className="w-[32px] h-[32px] flex-shrink-0 rounded-[32px] border-[1px] border-[#49B265] flex items-center justify-center hover:bg-[#49B265]/10 transition-colors disabled:opacity-30 disabled:hover:bg-transparent"
@@ -205,6 +205,13 @@ const OrderModal = ({ book, onClose, onSuccess, balance }) => {
 
   const set = (k, v) => setForm(f => ({ ...f, [k]: v }));
 
+  useEffect(() => {
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, []);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!form.fullName || !form.email || !form.address || !form.city || !form.zipcode) {
@@ -237,131 +244,141 @@ const OrderModal = ({ book, onClose, onSuccess, balance }) => {
     }
   };
 
-  return (
+  return createPortal(
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-      className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/80 backdrop-blur-md p-4"
+      className="fixed inset-0 z-[999999] flex items-center justify-center bg-black/75 backdrop-blur-md p-4"
       onClick={onClose}>
       <motion.div initial={{ scale: 0.93, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.93, opacity: 0 }}
         transition={{ duration: 0.22 }}
-        className="bg-[#0c1322] border border-white/[0.1] rounded-2xl w-full max-w-md max-h-[90vh] overflow-y-auto shadow-2xl"
+        className="bg-[#242424] rounded-[20px] w-[700px] h-[835px] max-h-[95vh] overflow-y-auto shadow-2xl overflow-x-hidden [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] p-[16px] flex flex-col gap-[16px]"
         onClick={e => e.stopPropagation()}>
 
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-white/[0.07]">
-          <h2 className="text-sm font-bold text-white">Order Book</h2>
-          <button onClick={onClose} className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-white/[0.08] transition-colors">
-            <FiX size={16} />
+        <div className="flex items-center w-[668px] h-[24px] gap-[6px] shrink-0">
+          <h2 className="w-[638px] h-[19px] text-white font-bold font-['Barlow_Condensed'] text-[16px] leading-[120%]">Order Book</h2>
+          <button onClick={onClose} className="w-[24px] h-[24px] flex items-center justify-center text-white/50 hover:text-white transition-colors shrink-0">
+            <FiX size={24} strokeWidth={1.5} />
           </button>
         </div>
 
-        <form onSubmit={handleSubmit}>
-          <div className="p-6 space-y-5">
-            {/* Book summary */}
-            <div className="flex gap-4 items-center bg-[#111827] border border-white/[0.07] rounded-xl p-4">
-              {book.coverImage && (
-                <img src={book.coverImage} alt={book.title} className="w-14 h-18 object-contain flex-shrink-0 rounded-lg" />
-              )}
-              <div className="min-w-0">
-                <p className="text-white font-semibold text-sm leading-snug line-clamp-2">{book.title}</p>
-                <div className="mt-2">
-                  <CoinBadge amount={book.coinCost} size="sm" />
-                </div>
-              </div>
+        <form onSubmit={handleSubmit} className="flex flex-col gap-[16px]">
+
+          {/* Book Info Header */}
+          <div className="flex w-[668px] h-[119px] gap-[16px] shrink-0 items-center">
+            <div className="w-[78px] h-[119px] shrink-0 overflow-hidden shadow-lg rounded-[3px]">
+              <img src={book.coverImage} alt={book.title} className="w-full h-full object-cover" />
             </div>
-
-            {/* Shipping */}
-            <div>
-              <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">Shipping Address</p>
-              <div className="grid grid-cols-2 gap-3">
-                <div className="col-span-2 sm:col-span-1">
-                  <label className="block text-xs text-slate-500 mb-1">Full Name</label>
-                  <div className="relative">
-                    <FiUser className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-xs" />
-                    <input type="text" required value={form.fullName} onChange={e => set('fullName', e.target.value)}
-                      className="w-full bg-[#151b2b] border border-white/[0.08] rounded-xl pl-8 pr-4 py-3 text-white text-sm focus:outline-none focus:border-emerald-500/50"
-                      placeholder="Emmy" />
-                  </div>
-                </div>
-                <div className="col-span-2 sm:col-span-1">
-                  <label className="block text-xs text-slate-500 mb-1">Email</label>
-                  <div className="relative">
-                    <FiMail className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-xs" />
-                    <input type="email" required value={form.email} onChange={e => set('email', e.target.value)}
-                      className="w-full bg-[#151b2b] border border-white/[0.08] rounded-xl pl-8 pr-4 py-3 text-white text-sm focus:outline-none focus:border-emerald-500/50"
-                      placeholder="emmy@gmail.com" />
-                  </div>
-                </div>
-                <div className="col-span-2">
-                  <label className="block text-xs text-slate-500 mb-1">Address</label>
-                  <div className="relative">
-                    <FiHome className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-xs" />
-                    <input type="text" required value={form.address} onChange={e => set('address', e.target.value)}
-                      className="w-full bg-[#151b2b] border border-white/[0.08] rounded-xl pl-8 pr-4 py-3 text-white text-sm focus:outline-none focus:border-emerald-500/50"
-                      placeholder="Enter your complete address" />
-                  </div>
-                </div>
-                <div>
-                  <label className="block text-xs text-slate-500 mb-1">City</label>
-                  <div className="relative">
-                    <FiMapPin className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-xs" />
-                    <input type="text" required value={form.city} onChange={e => set('city', e.target.value)}
-                      className="w-full bg-[#151b2b] border border-white/[0.08] rounded-xl pl-8 pr-4 py-3 text-white text-sm focus:outline-none focus:border-emerald-500/50"
-                      placeholder="Enter your city" />
-                  </div>
-                </div>
-                <div>
-                  <label className="block text-xs text-slate-500 mb-1">Zipcode</label>
-                  <div className="relative">
-                    <FiMapPin className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-xs" />
-                    <input type="text" required value={form.zipcode} onChange={e => set('zipcode', e.target.value)}
-                      className="w-full bg-[#151b2b] border border-white/[0.08] rounded-xl pl-8 pr-4 py-3 text-white text-sm focus:outline-none focus:border-emerald-500/50"
-                      placeholder="12345" />
-                  </div>
-                </div>
+            <div className="flex flex-col w-[574px] min-h-[89px] gap-[16px] shrink-0">
+              <h3 className="w-[574px] min-h-[41px] text-white font-semibold font-['Barlow_Condensed'] text-[22px] leading-[120%] line-clamp-2">
+                {book.title}
+              </h3>
+              <div className="flex items-center gap-[3px] w-[237px] h-[26px]">
+                <img src="/coins/coinfix.png" alt="Coin" className="w-[26px] h-[26px] object-contain rounded-full shadow-[0px_14px_34px_0px_rgba(254,198,53,0.3)] shrink-0" />
+                <span className="font-bold font-['Barlow_Condensed'] text-[24px] leading-none bg-clip-text text-transparent bg-gradient-to-b from-[#FEDF77] to-[#FCB91E]">
+                  {book.coinCost ? book.coinCost.toLocaleString() : "0"}
+                </span>
               </div>
-            </div>
-
-            {/* Signature */}
-            <div className="border border-white/[0.07] rounded-xl p-4 bg-[#111827]">
-              <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">Personal Signature</p>
-              <label className="flex items-center gap-3 cursor-pointer">
-                <button type="button" onClick={() => set('wantsSignature', !form.wantsSignature)}
-                  className={`w-5 h-5 rounded border-2 flex-shrink-0 flex items-center justify-center transition-all ${
-                    form.wantsSignature ? 'bg-emerald-500 border-emerald-500' : 'border-slate-600 bg-transparent'
-                  }`}>
-                  {form.wantsSignature && <FiCheck size={11} className="text-white" />}
-                </button>
-                <span className="text-sm text-slate-300">I would like a personal signature</span>
-              </label>
-
-              <AnimatePresence>
-                {form.wantsSignature && (
-                  <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }}
-                    transition={{ duration: 0.2 }} className="overflow-hidden mt-3">
-                    <label className="block text-xs text-slate-500 mb-1">Name for Signature</label>
-                    <input type="text" value={form.signatureName} onChange={e => set('signatureName', e.target.value)}
-                      className="w-full bg-[#151b2b] border border-white/[0.08] rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-emerald-500/50"
-                      placeholder={form.fullName || 'Your name'} />
-                  </motion.div>
-                )}
-              </AnimatePresence>
             </div>
           </div>
 
-          {/* Footer */}
-          <div className="px-6 pb-6">
+          {/* Shipping Address */}
+          <div className="bg-[rgba(0,0,0,0.36)] backdrop-blur-[44px] rounded-[20px] w-[668px] h-[327px] p-[16px] flex flex-col gap-[16px] shrink-0">
+            <h3 className="w-[636px] h-[15px] text-white font-semibold font-['Barlow_Condensed'] text-[21px] leading-[120%] shrink-0">Shipping Address</h3>
+
+            <div className="w-[636px] h-[264px] shrink-0 grid grid-cols-2 gap-[12px]">
+              <div className="flex flex-col gap-[4px] col-span-2 sm:col-span-1">
+                <label className="w-fit h-[20px] text-white font-medium font-['Barlow_Condensed'] text-[16px] leading-[20px] tracking-[-0.01em] flex items-center shrink-0">Full Name</label>
+                <div className="w-full h-[56px] bg-[rgba(255,255,255,0.08)] rounded-[10px] py-[16px] px-[20px] flex justify-between items-center">
+                  <img src="/coins/orman.png" alt="User" className="w-[24px] h-[24px] shrink-0" />
+                  <input type="text" required value={form.fullName} onChange={e => set('fullName', e.target.value)}
+                    className="w-[236px] h-[20px] bg-transparent text-white font-medium font-['Barlow_Condensed'] text-[18px] leading-[20px] placeholder:text-[#898D8F] focus:outline-none border-none p-0"
+                    placeholder="Emmy" />
+                </div>
+              </div>
+              <div className="flex flex-col gap-[4px] col-span-2 sm:col-span-1">
+                <label className="w-fit h-[20px] text-white font-medium font-['Barlow_Condensed'] text-[16px] leading-[20px] tracking-[-0.01em] flex items-center shrink-0">Email</label>
+                <div className="w-full h-[56px] bg-[rgba(255,255,255,0.08)] rounded-[10px] py-[16px] px-[20px] flex justify-between items-center">
+                  <img src="/coins/orsms.png" alt="Email" className="w-[24px] h-[24px] shrink-0" />
+                  <input type="email" required value={form.email} onChange={e => set('email', e.target.value)}
+                    className="w-[236px] h-[20px] bg-transparent text-white font-medium font-['Barlow_Condensed'] text-[18px] leading-[20px] placeholder:text-[#898D8F] focus:outline-none border-none p-0"
+                    placeholder="emmy@gmail.com" />
+                </div>
+              </div>
+              <div className="flex flex-col gap-[4px] col-span-2">
+                <label className="w-fit h-[20px] text-white font-medium font-['Barlow_Condensed'] text-[16px] leading-[20px] tracking-[-0.01em] flex items-center shrink-0">Address</label>
+                <div className="w-full h-[56px] bg-[rgba(255,255,255,0.08)] rounded-[10px] py-[16px] px-[20px] flex justify-between items-center">
+                  <img src="/coins/orloc.png" alt="Location" className="w-[24px] h-[24px] shrink-0" />
+                  <input type="text" required value={form.address} onChange={e => set('address', e.target.value)}
+                    className="w-[560px] h-[20px] bg-transparent text-white font-medium font-['Barlow_Condensed'] text-[18px] leading-[20px] placeholder:text-[#898D8F] focus:outline-none border-none p-0"
+                    placeholder="Enter Your complete address" />
+                </div>
+              </div>
+              <div className="flex flex-col gap-[4px] col-span-2 sm:col-span-1">
+                <label className="w-fit h-[20px] text-white font-medium font-['Barlow_Condensed'] text-[16px] leading-[20px] tracking-[-0.01em] flex items-center shrink-0">City</label>
+                <div className="w-full h-[56px] bg-[rgba(255,255,255,0.08)] rounded-[10px] py-[16px] px-[20px] flex justify-start items-center">
+                  <input type="text" required value={form.city} onChange={e => set('city', e.target.value)}
+                    className="w-full h-[20px] bg-transparent text-white font-medium font-['Barlow_Condensed'] text-[18px] leading-[20px] placeholder:text-[#898D8F] focus:outline-none border-none p-0"
+                    placeholder="Enter Your City" />
+                </div>
+              </div>
+              <div className="flex flex-col gap-[4px] col-span-2 sm:col-span-1">
+                <label className="w-fit h-[20px] text-white font-medium font-['Barlow_Condensed'] text-[16px] leading-[20px] tracking-[-0.01em] flex items-center shrink-0">Zipcode</label>
+                <div className="w-full h-[56px] bg-[rgba(255,255,255,0.08)] rounded-[10px] py-[16px] px-[20px] flex justify-between items-center">
+                  <img src="/coins/orloc.png" alt="Zipcode" className="w-[24px] h-[24px] shrink-0" />
+                  <input type="text" required value={form.zipcode} onChange={e => set('zipcode', e.target.value)}
+                    className="w-[236px] h-[20px] bg-transparent text-white font-medium font-['Barlow_Condensed'] text-[18px] leading-[20px] placeholder:text-[#898D8F] focus:outline-none border-none p-0"
+                    placeholder="12345" />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Personal Signature */}
+          <div className="bg-[rgba(0,0,0,0.36)] backdrop-blur-[44px] rounded-[20px] w-[668px] p-[16px] flex flex-col gap-[16px] shrink-0">
+            <h3 className="w-[636px] h-[15px] text-white font-semibold font-['Barlow_Condensed'] text-[21px] leading-[120%] shrink-0">Personal Signature</h3>
+
+            <label className="flex items-center gap-[12px] cursor-pointer w-fit">
+              <button type="button" onClick={() => set('wantsSignature', !form.wantsSignature)}
+                className={`w-[26px] h-[26px] rounded-[6px] border-[2px] flex items-center justify-center shrink-0 transition-all ${form.wantsSignature ? 'bg-[#49B265] border-[#49B265]' : 'border-[#49B265] bg-transparent'
+                  }`}>
+                {form.wantsSignature && <FiCheck size={16} strokeWidth={3} className="text-[#1A1A1A]" />}
+              </button>
+              <span className="w-[203px] h-[20px] text-white font-medium font-['Barlow_Condensed'] text-[16px] leading-[20px] flex items-center shrink-0">I would like a personal signature</span>
+            </label>
+
+            <AnimatePresence>
+              {form.wantsSignature && (
+                <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }}
+                  transition={{ duration: 0.2 }} className="overflow-hidden">
+                  <div className="flex flex-col gap-[8px] mt-[8px]">
+                    <label className="w-fit h-[20px] text-white font-medium font-['Barlow_Condensed'] text-[16px] leading-[20px] tracking-[-0.01em] flex items-center shrink-0">Name for Signature</label>
+                    <div className="w-full h-[56px] bg-[rgba(255,255,255,0.08)] rounded-[10px] py-[16px] px-[20px] flex justify-between items-center">
+                      <input type="text" value={form.signatureName} onChange={e => set('signatureName', e.target.value)}
+                        className="w-full h-[20px] bg-transparent text-white font-medium font-['Barlow_Condensed'] text-[18px] leading-[20px] placeholder:text-[#898D8F] focus:outline-none border-none p-0"
+                        placeholder="Emmy" />
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+
+          {/* Submit Button */}
+          <div className="flex flex-col gap-[12px] mt-[8px]">
             <button type="submit" disabled={submitting}
-              className="flex items-center justify-center gap-2 w-full py-3.5 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white font-bold rounded-xl transition-all text-sm">
-              {submitting ? <FiLoader className="animate-spin" size={16} /> : <FiArrowRight size={16} />}
-              {submitting ? 'Placing Order...' : 'Order Book Now →'}
+              className="w-full h-[48px] bg-[#49B265] text-white rounded-[10px] font-bold font-['Barlow_Condensed'] text-[20px] shadow-[0_4px_0_0_#276D3A] hover:bg-[#49B265]/90 hover:translate-y-[1px] hover:shadow-[0_3px_0_0_#276D3A] active:translate-y-[4px] active:shadow-none transition-all flex items-center justify-center gap-[10px] disabled:opacity-50">
+              {submitting ? 'Placing Order...' : 'Order Book Now'}
+              {!submitting && <FiArrowRight size={20} strokeWidth={2.5} />}
             </button>
-            <p className="text-center text-xs text-slate-500 mt-3">
-              After ordering, the book will be shipped within 3–5 business days
+            <p className="w-[668px] h-[20px] text-[rgba(137,141,143,1)] font-medium font-['Barlow_Condensed'] text-[18px] leading-[20px] text-center flex items-center justify-center shrink-0">
+              After ordering, the book will be shipped within 3-5 business days
             </p>
           </div>
+
         </form>
       </motion.div>
-    </motion.div>
+    </motion.div>,
+    document.body
   );
 };
 
@@ -399,11 +416,11 @@ const MyBooksSection = ({ balance, onBalanceUpdate }) => {
   useEffect(() => {
     const socket = getSocket && getSocket();
     if (!socket) return;
-    
+
     const onOrderUpdated = (data) => {
-      setBooks(prev => prev.map(b => 
-        (b.userOrder && b.userOrder._id === data.orderId) 
-          ? { ...b, userOrder: { ...b.userOrder, status: data.status } } 
+      setBooks(prev => prev.map(b =>
+        (b.userOrder && b.userOrder._id === data.orderId)
+          ? { ...b, userOrder: { ...b.userOrder, status: data.status } }
           : b
       ));
     };
@@ -470,10 +487,10 @@ const MyBooksSection = ({ balance, onBalanceUpdate }) => {
                     {book.title}
                   </p>
                   <div className="flex items-center w-[156.33px] h-[26px] gap-[3px]">
-                    <img 
-                      src="/coins/coinfix.png" 
-                      alt="Coin" 
-                      className="w-[26px] h-[26px] object-contain rounded-full shadow-[0px_14px_34px_0px_rgba(254,198,53,0.3)] flex-shrink-0" 
+                    <img
+                      src="/coins/coinfix.png"
+                      alt="Coin"
+                      className="w-[26px] h-[26px] object-contain rounded-full shadow-[0px_14px_34px_0px_rgba(254,198,53,0.3)] flex-shrink-0"
                     />
                     <span className="flex items-center min-w-[51px] pt-[2px] pb-[4px] m-0 font-bold font-['Barlow_Condensed'] text-[22px] leading-none bg-clip-text text-transparent bg-gradient-to-b from-[#FEDF77] to-[#FCB91E]">
                       {book.coinCost.toLocaleString()}
