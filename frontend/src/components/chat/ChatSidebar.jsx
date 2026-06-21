@@ -462,7 +462,7 @@ const ChatSidebar = ({ isOpen, onClose }) => {
               background: 'transparent',
               zIndex: 40,
             }}
-            className="lg:bg-transparent bg-black/50 backdrop-blur-sm lg:backdrop-blur-none"
+            className="lg:bg-transparent bg-black/50 backdrop-blur-sm lg:backdrop-blur-none lg:pointer-events-none"
           />
 
           {/* ── Sidebar panel ───────────────────────── */}

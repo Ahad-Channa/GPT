@@ -160,7 +160,8 @@ const LiveEarningsBar = () => {
               paddingTop: '150px',
               paddingBottom: '150px',
               marginTop: '-150px',
-              marginBottom: '-150px'
+              marginBottom: '-150px',
+              pointerEvents: 'none'
             }}
           >
             <AnimatePresence initial={false}>
@@ -183,7 +184,8 @@ const LiveEarningsBar = () => {
                       borderRadius: '50px',
                       gap: '6px',
                       padding: '10px',
-                      background: 'rgba(255, 255, 255, 0.14)'
+                      background: 'rgba(255, 255, 255, 0.14)',
+                      pointerEvents: 'auto'
                     }}
                     onClick={() => tx.userId?._id && setSelectedUserId(tx.userId._id)}
                   >
