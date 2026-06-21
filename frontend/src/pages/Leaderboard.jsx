@@ -19,73 +19,131 @@ const PERIOD_META = {
   monthly: { label: 'Monthly' },
 };
 
-const RANK_COLORS = {
-  1: { ring: 'border-amber-400',   badge: 'bg-amber-500 text-amber-900',    glow: 'shadow-[0_0_30px_rgba(245,158,11,0.18)]',  prize: 'text-amber-400 bg-amber-500/10 border-amber-500/25' },
-  2: { ring: 'border-slate-300',   badge: 'bg-slate-300 text-slate-800',    glow: 'shadow-[0_0_20px_rgba(148,163,184,0.08)]', prize: 'text-slate-300 bg-slate-300/10 border-slate-300/25' },
-  3: { ring: 'border-orange-500',  badge: 'bg-orange-500 text-orange-950',  glow: 'shadow-[0_0_20px_rgba(249,115,22,0.08)]',  prize: 'text-orange-400 bg-orange-500/10 border-orange-500/25' },
-};
-
-const CARD_GRADIENT = {
-  1: 'from-amber-500/10 to-[#0f172a]/80 border-amber-500/30',
-  2: 'from-indigo-400/10 to-[#0f172a]/80 border-indigo-400/30',
-  3: 'from-orange-500/10 to-[#0f172a]/80 border-orange-500/30',
-};
-
-const LaurelLeft  = () => <img src="/wheat.png" alt="" className="w-8 h-10 md:w-12 md:h-14 object-contain filter brightness-0 invert drop-shadow-[0_0_8px_rgba(255,255,255,0.4)] scale-x-[-1]" />;
-const LaurelRight = () => <img src="/wheat.png" alt="" className="w-8 h-10 md:w-12 md:h-14 object-contain filter brightness-0 invert drop-shadow-[0_0_8px_rgba(255,255,255,0.4)]" />;
-
-/* ── Prize badge ─────────────────────────────────────────────── */
-const PrizeBadge = ({ coins, className = '' }) => {
-  if (!coins || coins <= 0) return null;
-  return (
-    <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg border text-xs font-bold ${className}`}>
-      <CoinDisplay amount={coins} size={14} /> prize
-    </div>
-  );
-};
+const LaurelLeft  = () => <img src="/coins/leaf.png" alt="" className="w-[80px] h-[96px] md:w-[113px] md:h-[136px] object-contain" />;
+const LaurelRight = () => <img src="/coins/leaf.png" alt="" className="w-[80px] h-[96px] md:w-[113px] md:h-[136px] object-contain scale-x-[-1]" />;
 
 /* ── Podium Card ─────────────────────────────────────────────── */
 const PodiumCard = ({ rank, user, prize, onClick }) => {
-  if (!user) return <div className="w-full max-w-[320px] hidden md:block opacity-0 pointer-events-none" />;
-  const c = RANK_COLORS[rank];
-  const isGold = rank === 1;
+  if (!user) return <div className="w-full max-w-[280px] hidden md:block opacity-0 pointer-events-none" />;
+
+  const styles = {
+    1: {
+      container: 'mt-0 z-10 w-[35%] md:w-[390px] h-[240px] md:h-[320px] justify-end',
+      crown: 'w-[40px] h-[40px] md:w-[54px] md:h-[54px] -top-[35px] md:-top-[45px]',
+      ring: 'p-[4px] bg-gradient-to-b from-[#FEDF77] to-[#FCB91E]',
+      bg: "bg-[url('/coins/platform.png')] bg-[length:100%_100%] bg-center bg-no-repeat",
+      clip: 'none',
+      paddingTop: 'pt-10 md:pt-16',
+      avatarSize: 'w-20 h-20 md:w-[112px] md:h-[112px]',
+      height: 'h-[130px] md:h-[172px]',
+      avatarShadow: 'shadow-[0px_9px_0px_0px_rgba(147,121,10,1)]',
+      avatarPosition: 'bottom-[124px] md:bottom-[163px]',
+      layoutWrapper: 'flex-row justify-between w-full max-w-[340px] h-[32px] mx-auto mb-3 items-center',
+      nameStyle: { fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 600, fontSize: '32px', lineHeight: '1.2' },
+      nameClass: 'text-white truncate max-w-[167px] text-left leading-[32px]',
+      scoreClass: 'flex items-center gap-[8px]',
+      scoreStyle: { fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 700, fontSize: '32px', lineHeight: '1.3' },
+      prizeBg: 'bg-[#FFD80C]/[0.13]',
+    },
+    2: {
+      container: 'mt-[48px] md:mt-[67px] z-0 w-[28%] md:w-[369px] h-[220px] md:h-[303px] justify-end',
+      crown: 'w-[40px] h-[40px] md:w-[54px] md:h-[54px] -top-[35px] md:-top-[45px]',
+      crownColor: 'rgba(217, 217, 217, 1)',
+      ring: 'p-[4px] bg-gradient-to-b from-[#D9D9D9] to-[#828282]',
+      bg: "bg-[url('/coins/platform.png')] bg-[length:100%_100%] bg-center bg-no-repeat",
+      clip: 'none',
+      paddingTop: 'pt-10 md:pt-16',
+      avatarSize: 'w-[80px] h-[80px] md:w-[106px] md:h-[106px]',
+      height: 'h-[120px] md:h-[163px]',
+      avatarShadow: 'shadow-[0px_9px_0px_0px_rgba(73,73,73,1)]',
+      avatarPosition: 'bottom-[115px] md:bottom-[154px]',
+      layoutWrapper: 'flex-row justify-between w-full max-w-[320px] h-[32px] mx-auto mb-3 items-center gap-1 md:gap-0',
+      nameStyle: { fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 600, fontSize: '32px', lineHeight: '1.2' },
+      nameClass: 'text-white truncate max-w-[100px] md:max-w-[120px] text-left leading-[32px]',
+      scoreClass: 'flex items-center gap-[8px]',
+      scoreStyle: { fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 700, fontSize: '32px', lineHeight: '1.3' },
+      prizeBg: 'bg-white/[0.13]',
+    },
+    3: {
+      container: 'mt-[48px] md:mt-[67px] z-0 w-[28%] md:w-[369px] h-[220px] md:h-[303px] justify-end',
+      crown: 'w-[40px] h-[40px] md:w-[54px] md:h-[54px] -top-[35px] md:-top-[45px]',
+      crownColor: 'rgba(174, 90, 16, 1)',
+      ring: 'p-[4px] bg-gradient-to-b from-[#C08965] to-[#AE580E]',
+      bg: "bg-[url('/coins/platform.png')] bg-[length:100%_100%] bg-center bg-no-repeat",
+      clip: 'none',
+      paddingTop: 'pt-10 md:pt-16',
+      avatarSize: 'w-[80px] h-[80px] md:w-[106px] md:h-[106px]',
+      height: 'h-[120px] md:h-[163px]',
+      avatarShadow: 'shadow-[0px_9px_0px_0px_rgba(121,63,23,1)]',
+      avatarPosition: 'bottom-[115px] md:bottom-[154px]',
+      layoutWrapper: 'flex-row justify-between w-full max-w-[320px] h-[32px] mx-auto mb-3 items-center gap-1 md:gap-0',
+      nameStyle: { fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 600, fontSize: '32px', lineHeight: '1.2' },
+      nameClass: 'text-white truncate max-w-[100px] md:max-w-[120px] text-left leading-[32px]',
+      scoreClass: 'flex items-center gap-[8px]',
+      scoreStyle: { fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 700, fontSize: '32px', lineHeight: '1.3' },
+      prizeBg: 'bg-[#FF8C00]/[0.15]',
+    }
+  }[rank];
 
   return (
-    <div
-      onClick={() => onClick(user.userId)}
-      className={`relative flex flex-col items-center bg-gradient-to-b ${CARD_GRADIENT[rank]} border bg-[#0b101e] rounded-2xl p-5 md:p-6 w-full max-w-[240px] lg:max-w-[280px] cursor-pointer hover:-translate-y-2 transition-all duration-300 ${c.glow} ${isGold ? 'scale-110 z-10 mx-2 md:mx-6' : 'z-0 mt-4 md:mt-8'}`}
-    >
-      {/* Rank hex badge */}
-      <div
-        className={`absolute -left-3 -top-3 w-10 h-10 ${c.badge} flex items-center justify-center font-black text-lg shadow-lg z-20`}
-        style={{ clipPath: 'polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)' }}
+    <div className={`relative flex flex-col items-center ${styles.container}`}>
+      {/* Avatar Wrapper */}
+      <div className={`absolute left-1/2 -translate-x-1/2 flex flex-col items-center z-20 ${styles.avatarPosition}`}>
+        {rank === 1 ? (
+          <img src="/coins/crown.png" alt="1st Place Crown" className={`absolute z-30 object-contain drop-shadow-md ${styles.crown}`} />
+        ) : (
+          <div className={`absolute z-30 ${styles.crown} drop-shadow-md`}>
+            <img src="/coins/crown.png" alt="Crown" className="absolute inset-0 w-full h-full object-contain" />
+            <div 
+              className="absolute inset-0 w-full h-full"
+              style={{
+                backgroundColor: styles.crownColor,
+                mixBlendMode: 'color',
+                WebkitMaskImage: `url('/coins/crown.png')`,
+                WebkitMaskSize: 'contain',
+                WebkitMaskRepeat: 'no-repeat',
+                WebkitMaskPosition: 'center',
+                maskImage: `url('/coins/crown.png')`,
+                maskSize: 'contain',
+                maskRepeat: 'no-repeat',
+                maskPosition: 'center',
+              }}
+            />
+          </div>
+        )}
+        <div className={`${styles.avatarSize} rounded-[20px] ${styles.ring} ${styles.avatarShadow} bg-slate-800 flex items-center justify-center`}>
+          <img src={user.avatarUrl || user.avatar || '/avatars/avatar1.png'} className="w-full h-full object-cover rounded-[16px]" alt={user.displayName} />
+        </div>
+      </div>
+
+      {/* Podium Block */}
+      <div 
+        onClick={() => onClick(user.userId)}
+        className={`w-full ${styles.bg} ${styles.height || ''} ${rank !== 1 ? 'rounded-b-2xl shadow-2xl pb-4' : 'justify-end pb-3 md:pb-5'} cursor-pointer hover:brightness-110 transition-all flex flex-col ${styles.paddingTop} px-3 md:px-5`}
+        style={styles.clip !== 'none' ? { clipPath: styles.clip } : {}}
       >
-        {rank}
-      </div>
-
-      {isGold && (
-        <div className="absolute -top-10 text-amber-400 text-5xl drop-shadow-[0_0_15px_rgba(245,158,11,0.6)] z-20">
-          <FaCrown />
+        <div className={`flex ${styles.layoutWrapper}`}>
+          <div className={styles.nameClass} style={styles.nameStyle}>{user.displayName}</div>
+          <div className={styles.scoreClass}>
+            <img src="/coins/coinfinal.png" alt="Coin" className="w-[32px] h-[32px] object-contain" />
+            <span className="text-transparent bg-clip-text bg-gradient-to-b from-[#FEDF77] to-[#FCB91E]" style={styles.scoreStyle}>
+              {user.coinsEarned?.toLocaleString() || 0}
+            </span>
+          </div>
         </div>
-      )}
 
-      {/* Avatar */}
-      <div className={`w-20 h-20 md:w-24 md:h-24 rounded-full border-[3px] ${c.ring} overflow-hidden mb-4 shadow-[0_0_15px_rgba(0,0,0,0.5)]`}>
-        <img src={user.avatarUrl || user.avatar || '/avatars/avatar1.png'} className="w-full h-full object-cover bg-slate-800" alt={user.displayName} />
+        {prize > 0 && (
+          <div className={`w-full max-w-[340px] h-[52px] ${styles.prizeBg} rounded-[10px] flex justify-between items-center px-[20px] py-[10px] mx-auto`}>
+            <span style={{ fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 600, fontSize: '15.15px', lineHeight: '1.2' }} className="text-white text-center">REWARD</span>
+            <div className="flex items-center gap-[8px]">
+              <img src="/coins/coinfinal.png" alt="Coin" className="w-[32px] h-[32px] object-contain" />
+              <span className="text-transparent bg-clip-text bg-gradient-to-b from-[#FEDF77] to-[#FCB91E]" style={styles.scoreStyle}>
+                {prize.toLocaleString()}
+              </span>
+            </div>
+          </div>
+        )}
       </div>
-
-      <div className="font-bold text-white text-base md:text-lg mb-1 truncate w-full text-center">{user.displayName}</div>
-
-      <div className="flex flex-col items-center font-black text-2xl md:text-3xl text-white leading-none mt-1">
-        <CoinDisplay amount={user.coinsEarned || 0} size={24} />
-      </div>
-
-      {/* Prize */}
-      {prize > 0 && (
-        <div className={`mt-3 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-sm font-bold ${c.prize}`}>
-          <CoinDisplay amount={prize} size={16} /> reward
-        </div>
-      )}
     </div>
   );
 };
@@ -103,7 +161,7 @@ const LeaderboardCountdown = ({ targetDate }) => {
       const h = Math.floor((dist % 86400000) / 3600000);
       const m = Math.floor((dist % 3600000) / 60000);
       const s = Math.floor((dist % 60000) / 1000);
-      setTimeLeft(`${d}d ${String(h).padStart(2,'0')}h ${String(m).padStart(2,'0')}m ${String(s).padStart(2,'0')}s`);
+      setTimeLeft(`${String(d).padStart(2,'0')}d ${String(h).padStart(2,'0')}h ${String(m).padStart(2,'0')}m ${String(s).padStart(2,'0')}s`);
     };
     calc();
     const id = setInterval(calc, 1000);
@@ -112,29 +170,11 @@ const LeaderboardCountdown = ({ targetDate }) => {
 
   if (!timeLeft) return null;
   return (
-    <div className="flex items-center justify-center gap-2 px-6 py-2.5 bg-indigo-500/10 border border-indigo-500/20 rounded-2xl text-indigo-300 font-mono text-sm md:text-base font-bold shadow-[0_0_15px_rgba(99,102,241,0.1)] mb-8">
-      <FiClock className="text-indigo-400 text-lg" />
-      <span>Resets in: {timeLeft}</span>
-    </div>
-  );
-};
-
-/* ── Prizes summary strip ────────────────────────────────────── */
-const PrizeStrip = ({ rewardTiers = [], rewardedRanks = 0 }) => {
-  const tiers = rewardTiers.slice(0, rewardedRanks).filter(c => c > 0);
-  if (!tiers.length) return null;
-
-  const MEDAL = ['🥇', '🥈', '🥉'];
-
-  return (
-    <div className="flex flex-wrap items-center justify-center gap-3 mb-8">
-      <span className="text-slate-500 text-xs font-bold uppercase tracking-widest">Prizes:</span>
-      {tiers.map((coins, i) => (
-        <div key={i} className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-500/8 border border-amber-500/15 text-sm font-bold text-amber-300">
-          <span>{MEDAL[i] || `#${i+1}`}</span>
-          <CoinDisplay amount={coins} size={16} />
-        </div>
-      ))}
+    <div className="flex items-center justify-center gap-[6px] px-[20px] py-[12px] bg-[#49B265]/[0.23] rounded-[100px] mx-auto mb-8 w-auto min-w-[246px] h-[48px]">
+      <img src="/coins/clock.png" alt="Clock" className="w-[24px] h-[24px] object-contain shrink-0" />
+      <span style={{ fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 600, fontSize: '20px', lineHeight: '32px' }} className="text-white whitespace-nowrap text-center">
+        Reset in {timeLeft}
+      </span>
     </div>
   );
 };
@@ -154,30 +194,33 @@ const PeriodPanel = ({ data, onProfileClick }) => {
   };
 
   return (
-    <div className="flex flex-col items-center w-full">
-      {data?.cycleEnd && <LeaderboardCountdown targetDate={data.cycleEnd} />}
-
+    <div className="flex flex-col items-center w-full mt-4 md:mt-8">
       {/* Podium */}
-      <div className="flex flex-row items-end justify-center w-full gap-2 md:gap-4 mb-20 pt-4">
+      <div className="flex flex-row items-start justify-center w-full gap-2 md:gap-4 mb-0">
         <PodiumCard rank={2} user={top3[0]} prize={getPrize(2)} onClick={onProfileClick} />
         <PodiumCard rank={1} user={top3[1]} prize={getPrize(1)} onClick={onProfileClick} />
         <PodiumCard rank={3} user={top3[2]} prize={getPrize(3)} onClick={onProfileClick} />
       </div>
 
+      {data?.cycleEnd && <LeaderboardCountdown targetDate={data.cycleEnd} />}
+
       {/* List rows 4+ */}
-      <div className="w-full bg-[#0b101e] border border-white/5 rounded-2xl p-4 md:p-8 shadow-2xl">
-        <div className="grid grid-cols-[60px_1fr_100px_80px] md:grid-cols-[100px_1fr_160px_120px] text-[11px] md:text-sm font-bold text-slate-500 mb-4 pb-4 border-b border-white/5 uppercase tracking-wider">
-          <div className="text-center md:text-left pl-0 md:pl-6">Rank</div>
+      <div className="w-full max-w-[1240px] mx-auto bg-[#242424] rounded-[30px] p-[30px] shadow-2xl mt-4 flex flex-col gap-[10px]">
+        <div 
+          className="grid grid-cols-[74px_521px_1fr_1fr] gap-[50px] w-full h-[62px] pt-[10px] pb-[30px] pl-[40px] pr-[95px] rounded-[20px] text-white/40"
+          style={{ fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 600, fontSize: '32px', lineHeight: '1.2' }}
+        >
+          <div>Rank</div>
           <div>User</div>
-          <div className="text-right pr-2 md:pr-4">Earnings</div>
-          <div className="text-right pr-2 md:pr-6">Prize</div>
+          <div>Earning</div>
+          <div>Prize</div>
         </div>
 
         {!others.length && rankings.length <= 3 && (
           <div className="text-center py-8 text-slate-500 text-sm">No other users on the leaderboard yet.</div>
         )}
 
-        <motion.div variants={container} initial="hidden" animate="show" className="space-y-1">
+        <motion.div variants={container} initial="hidden" animate="show" className="flex flex-col gap-[10px]">
           {others.map((user, idx) => {
             const currentRank = idx + 4;
             const prize = getPrize(currentRank);
@@ -186,25 +229,41 @@ const PeriodPanel = ({ data, onProfileClick }) => {
                 variants={item}
                 key={user.userId || idx}
                 onClick={() => onProfileClick(user.userId)}
-                className="grid grid-cols-[60px_1fr_100px_80px] md:grid-cols-[100px_1fr_160px_120px] items-center py-4 border-b border-white/5 last:border-0 hover:bg-white/[0.02] rounded-xl px-2 md:px-4 -mx-2 md:-mx-4 transition-colors cursor-pointer group"
+                className="grid grid-cols-[74px_521px_1fr_1fr] gap-[50px] items-center w-full h-[119px] bg-[#171717] rounded-[20px] pt-[29px] pb-[30px] pl-[40px] pr-[95px] cursor-pointer hover:brightness-110 transition-all"
               >
-                <div className="font-bold text-slate-300 text-base md:text-xl text-center md:text-left pl-0 md:pl-6 group-hover:text-white transition-colors">{currentRank}</div>
-                <div className="flex items-center gap-3 md:gap-5 overflow-hidden">
-                  <div className="w-8 h-8 md:w-12 md:h-12 rounded-full overflow-hidden bg-slate-800 flex-shrink-0 border border-slate-700">
+                <div 
+                  className="text-white" 
+                  style={{ fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 600, fontSize: '32px', lineHeight: '1.2' }}
+                >
+                  #{currentRank}
+                </div>
+                <div className="flex items-center gap-[16px] overflow-hidden w-full">
+                  <div className="w-[60px] h-[60px] rounded-[10px] overflow-hidden bg-slate-800 flex-shrink-0">
                     <img src={user.avatarUrl || user.avatar || '/avatars/avatar1.png'} className="w-full h-full object-cover" alt={user.displayName} />
                   </div>
-                  <div className="font-bold text-slate-200 text-sm md:text-lg truncate">{user.displayName}</div>
+                  <div 
+                    className="text-white truncate" 
+                    style={{ fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 600, fontSize: '32px', lineHeight: '1.2' }}
+                  >
+                    {user.displayName}
+                  </div>
                 </div>
-                <div className="flex flex-col items-end justify-center font-bold text-emerald-400 text-sm md:text-xl pr-2 md:pr-4 tracking-wide leading-none">
-                  <CoinDisplay amount={user.coinsEarned || 0} size={18} />
+                <div className="flex items-center gap-[8px]">
+                  <img src="/coins/coinfinal.png" alt="Coin" className="w-[32px] h-[32px] object-contain shrink-0" />
+                  <span className="text-transparent bg-clip-text bg-gradient-to-b from-[#FEDF77] to-[#FCB91E]" style={{ fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 700, fontSize: '32px', lineHeight: '1.3' }}>
+                    {user.coinsEarned?.toLocaleString() || 0}
+                  </span>
                 </div>
-                <div className="flex justify-end pr-2 md:pr-6">
+                <div className="flex items-center gap-[8px]">
                   {prize > 0 ? (
-                    <div className="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-400 text-xs font-bold">
-                      <CoinDisplay amount={prize} size={12} />
-                    </div>
+                    <>
+                      <img src="/coins/coinfinal.png" alt="Coin" className="w-[32px] h-[32px] object-contain shrink-0" />
+                      <span className="text-transparent bg-clip-text bg-gradient-to-b from-[#FEDF77] to-[#FCB91E]" style={{ fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 700, fontSize: '32px', lineHeight: '1.3' }}>
+                        {prize.toLocaleString()}
+                      </span>
+                    </>
                   ) : (
-                    <span className="text-slate-700 text-xs">—</span>
+                    <span className="text-slate-600 text-sm">—</span>
                   )}
                 </div>
               </motion.div>
@@ -256,13 +315,23 @@ const Leaderboard = () => {
       <motion.div variants={container} initial="hidden" animate="show" className="pb-16 px-4 md:px-8 max-w-[1600px] w-full mx-auto">
 
         {/* Header */}
-        <motion.div variants={item} className="flex flex-col items-center text-center mt-8 mb-10">
-          <div className="flex items-center justify-center gap-4 mb-2">
-            <LaurelLeft />
-            <h1 className="text-3xl md:text-5xl font-black text-white tracking-tight font-display">Leaderboard</h1>
-            <LaurelRight />
+        <motion.div variants={item} className="flex items-center justify-center gap-1 md:gap-2 mt-8 mb-8">
+          <LaurelLeft />
+          <div className="flex flex-col items-center text-center gap-[6px]">
+            <h1 
+              className="text-white text-center font-bold"
+              style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '68px', lineHeight: '120%' }}
+            >
+              Leaderboard
+            </h1>
+            <p 
+              className="text-[#888888] font-medium"
+              style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '26px', lineHeight: '130%' }}
+            >
+              Top users ranked by earnings — win prizes every cycle!
+            </p>
           </div>
-          <p className="text-slate-400 font-medium mt-1">Top users ranked by earnings — win prizes every cycle!</p>
+          <LaurelRight />
         </motion.div>
 
         {loading ? (
@@ -278,25 +347,28 @@ const Leaderboard = () => {
         ) : (
           <>
             {/* Period tabs */}
-            <motion.div variants={item} className="flex justify-center mb-10">
-              <div className="flex p-1.5 bg-transparent border border-white/10 rounded-xl gap-2">
-                {enabledPeriods.map(period => {
-                  const isActive = activeTab === period;
-                  return (
-                    <button
-                      key={period}
-                      onClick={() => setActiveTab(period)}
-                      className={`flex items-center justify-center gap-2 px-6 py-2.5 rounded-lg font-bold text-sm transition-all duration-200 ${
-                        isActive
-                          ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/20'
-                          : 'text-slate-400 hover:text-white hover:bg-white/5'
-                      }`}
-                    >
-                      <FiCalendar className={isActive ? 'text-white' : 'text-slate-400'} />
-                      {PERIOD_META[period].label}
-                    </button>
-                  );
-                })}
+            <motion.div variants={item} className="flex justify-center mb-6">
+              <div className="w-[355px] h-[84px] bg-[#2C2D2C] backdrop-blur-[24px] shadow-[0_4px_44px_rgba(0,0,0,0.25)] rounded-[10px] p-[18px] flex">
+                <div className="w-[319px] h-[48px] flex">
+                  {enabledPeriods.map(period => {
+                    const isActive = activeTab === period;
+                    return (
+                      <button
+                        key={period}
+                        onClick={() => setActiveTab(period)}
+                        className={`w-[159.5px] h-[48px] flex items-center justify-center rounded-[10px] gap-[10px] py-[10px] px-[20px] transition-all duration-200 ${
+                          isActive
+                            ? 'bg-[#49B265] text-white shadow-[0px_4px_0px_0px_rgba(39,109,58,1)]'
+                            : 'text-[#888888] hover:text-white'
+                        }`}
+                      >
+                        <span style={{ fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 700, fontSize: '20px', lineHeight: '32px' }}>
+                          {PERIOD_META[period].label}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
             </motion.div>
 
