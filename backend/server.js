@@ -55,6 +55,8 @@ app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ limit: '10mb', extended: true }));
 // Serve uploaded avatar images statically
 app.use('/avatars', express.static(path.join(__dirname, '../frontend/public/avatars')));
+// Serve uploaded book images statically
+app.use('/books', express.static(path.join(__dirname, '../frontend/public/books')));
 
 // Connect to MongoDB — server only starts after a successful connection
 if (!process.env.MONGODB_URI || process.env.MONGODB_URI.includes('<username>')) {
@@ -76,6 +78,7 @@ const chatRoutes = require('./routes/chat');
 const supportRoutes = require('./routes/support');
 const vipRoutes = require('./routes/vip');
 const missionRoutes = require('./routes/missions');
+const booksRoutes = require('./routes/books');
 
 app.use('/api/auth', authRoutes);
 app.use('/api/wallet', walletRoutes);
@@ -90,6 +93,7 @@ app.use('/api/chat', chatRoutes);
 app.use('/api/support', supportRoutes);
 app.use('/api/vip', vipRoutes);
 app.use('/api/missions', missionRoutes);
+app.use('/api/books', booksRoutes);
 
 // Base Route
 app.get('/', (req, res) => {

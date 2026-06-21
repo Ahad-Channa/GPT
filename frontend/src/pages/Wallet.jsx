@@ -1,24 +1,20 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import DashboardLayout from '../components/layout/DashboardLayout';
 import { useAuth } from '../contexts/AuthContext';
 import WithdrawalModal from '../components/wallet/WithdrawalModal';
+import MyBooksSection from '../components/wallet/MyBooksSection';
 
 import { formatCoins } from '../config/platform';
 import CoinDisplay from '../components/CoinDisplay';
 import CoinIcon from '../components/CoinIcon';
 import {
-  FiArrowDownCircle,
-  FiTrendingUp,
-  FiClock,
-  FiCheckCircle,
-  FiRefreshCw,
-  FiInfo,
+  FiArrowRight,
   FiGift,
-  FiLock,
-  FiZap,
-  FiUsers,
+  FiCheck,
 } from 'react-icons/fi';
+import { FaPaypal, FaAmazon } from 'react-icons/fa';
+import { SiLitecoin, SiNetflix, SiGoogleplay } from 'react-icons/si';
 
 const container = { hidden: {}, show: { transition: { staggerChildren: 0.07 } } };
 const item      = { hidden: { opacity: 0, y: 18 }, show: { opacity: 1, y: 0, transition: { duration: 0.38 } } };
@@ -108,11 +104,10 @@ const PromoCodeRedeem = ({ onSuccess }) => {
 const Wallet = () => {
   const { currentUser, mongoUser, setMongoUser } = useAuth();
   const [showWithdraw, setShowWithdraw]   = useState(false);
+  const [filterType, setFilterType]       = useState(null);
   const [settings,     setSettings]       = useState(null);
-  const [txRefresh,    setTxRefresh]      = useState(0); // bump to refresh history
+  const [txRefresh,    setTxRefresh]      = useState(0);
   const [settingsLoad, setSettingsLoad]   = useState(true);
-  const [historyStats, setHistoryStats]   = useState({ totalEarned: 0, totalWithdrawn: 0, pendingCount: 0 });
-  const [pendingEarnings, setPendingEarnings] = useState({ regularHolds: [], totalPendingCoins: 0, totalCount: 0, loading: true });
 
   // Load wallet settings (fee %, methods, live rate)
   useEffect(() => {
@@ -134,46 +129,6 @@ const Wallet = () => {
     if (currentUser) fetchSettings();
   }, [currentUser]);
 
-  // Fetch history stats
-  useEffect(() => {
-    const fetchStats = async () => {
-      try {
-        const token = await currentUser.getIdToken();
-        const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/wallet/history?page=1&limit=1&type=all`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        const data = await res.json();
-        if (data.success && data.stats) {
-          setHistoryStats(data.stats);
-        }
-      } catch (err) {
-        console.error('Failed to load wallet stats:', err);
-      }
-    };
-    if (currentUser) fetchStats();
-  }, [currentUser, txRefresh]);
-
-  // Fetch pending (hold) earnings
-  useEffect(() => {
-    const fetchPending = async () => {
-      try {
-        const token = await currentUser.getIdToken();
-        const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/wallet/pending-earnings`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        const data = await res.json();
-        if (data.success) {
-          setPendingEarnings({ ...data, loading: false });
-        } else {
-          setPendingEarnings(prev => ({ ...prev, loading: false }));
-        }
-      } catch (err) {
-        setPendingEarnings(prev => ({ ...prev, loading: false }));
-      }
-    };
-    if (currentUser) fetchPending();
-  }, [currentUser, txRefresh]);
-
   // After successful withdrawal, refresh balance in header
   const handleWithdrawSuccess = useCallback((newBalance) => {
     if (setMongoUser) {
@@ -183,214 +138,217 @@ const Wallet = () => {
   }, [setMongoUser]);
 
   const balance = mongoUser?.walletBalance ?? 0;
+  
+  const handleOpenWithdrawal = (type) => {
+    setFilterType(type);
+    setShowWithdraw(true);
+  };
+
+  const scrollToBooks = () => {
+    document.getElementById('my-books-section')?.scrollIntoView({ behavior: 'smooth' });
+  };
 
   return (
     <DashboardLayout>
-      <motion.div variants={container} initial="hidden" animate="show" className="space-y-8 max-w-5xl mx-auto w-full">
+      <motion.div variants={container} initial="hidden" animate="show" className="space-y-8 max-w-[1240px] mx-auto w-full">
 
         {/* ── Page Header ───────────────────────────────────────── */}
-        <motion.div variants={item}>
-          <h1 className="text-3xl font-bold font-display text-white">Your Wallet</h1>
-        </motion.div>
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 relative">
+           <div className="flex flex-col gap-[6px] relative z-10">
+             <h1 className="m-0 p-0 font-bold text-[68px] leading-[120%] text-white font-['Barlow_Condensed'] whitespace-nowrap">Withdraw</h1>
+             <p className="m-0 p-0 font-medium text-[26px] leading-[130%] text-[#888888] font-['Barlow_Condensed']">Choose your preferred withdrawal method and convert your coins into real rewards.</p>
+           </div>
+           <div className="hidden md:block absolute right-0 -top-[36px] opacity-100 pointer-events-none w-[317px] h-[226px] z-0">
+              <img 
+                 src="/coins/withdarwhero.png" 
+                 alt="Wallet Illustration" 
+                 className="absolute inset-0 w-full h-full object-contain z-10 drop-shadow-2xl"
+                 onError={(e) => e.target.style.display='none'}
+              />
+           </div>
+        </div>
 
         {/* ── Balance Hero Card ─────────────────────────────────── */}
-        <motion.div variants={item} className="relative overflow-hidden rounded-2xl border border-white/[0.08] bg-gradient-to-br from-[#0d1628] via-[#0f1e3a] to-[#091020] p-8">
-          {/* Background glow orbs */}
-          <div className="absolute -top-16 -right-16 w-72 h-72 bg-blue-600/10 rounded-full blur-3xl pointer-events-none" />
-          <div className="absolute -bottom-16 -left-16 w-56 h-56 bg-indigo-600/8 rounded-full blur-3xl pointer-events-none" />
-          <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-blue-500/40 to-transparent" />
-
-          <div className="relative z-10 flex flex-col sm:flex-row sm:items-end justify-between gap-6">
-            <div>
-              <p className="text-blue-400/80 text-xs font-semibold tracking-widest uppercase mb-3">
-                Available Balance
-              </p>
-              <div className="flex items-baseline gap-3">
-                <p className="text-6xl font-bold font-sans text-white tracking-tighter">
-                  {balance.toLocaleString()}
-                </p>
-                <CoinIcon size={20} />
-              </div>
-
-            </div>
-
-            <button
-              id="wallet-withdraw-btn"
-              onClick={() => setShowWithdraw(true)}
-              disabled={balance <= 0 || settingsLoad}
-              className="flex items-center gap-2.5 px-6 py-3.5 rounded-xl font-semibold text-sm btn-glow disabled:opacity-40 disabled:cursor-not-allowed shrink-0 self-start sm:self-auto"
-            >
-              <FiArrowDownCircle className="text-base" />
-              Withdraw Funds
-            </button>
-          </div>
-
-          {/* Live Rate Chip */}
-          {settings && (
-            <div className="relative z-10 mt-6 pt-5 border-t border-white/[0.06] flex flex-wrap gap-4 items-center">
-              <div className="flex items-center gap-2 bg-white/[0.04] border border-white/[0.07] rounded-lg px-3 py-1.5">
-                <span className="text-xs font-sans text-slate-400">1 USD =</span>
-                <span className="text-xs font-sans font-bold text-blue-400"><CoinDisplay amount={settings.coinsPerUSD} size={10} /></span>
-              </div>
-            </div>
-          )}
-        </motion.div>
-
-        {/* ── Quick Stats Row ───────────────────────────────────── */}
-        <motion.div variants={item} className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          {[
-            {
-              label: 'Total Earned',
-              value: <CoinDisplay amount={historyStats.totalEarned} compact={true} size={20} />,
-              icon: FiTrendingUp,
-              color: 'text-emerald-400',
-              bg: 'from-emerald-500/10 to-emerald-600/5',
-              border: 'border-emerald-500/15',
-            },
-            {
-              label: 'Total Withdrawn',
-              value: <CoinDisplay amount={historyStats.totalWithdrawn} compact={true} size={20} />,
-              icon: FiArrowDownCircle,
-              color: 'text-blue-400',
-              bg: 'from-blue-500/10 to-blue-600/5',
-              border: 'border-blue-500/15',
-            },
-            {
-              label: 'Pending Payouts',
-              value: historyStats.pendingCount,
-              suffix: 'requests',
-              icon: FiClock,
-              color: 'text-amber-400',
-              bg: 'from-amber-500/10 to-amber-600/5',
-              border: 'border-amber-500/15',
-            },
-          ].map((stat, i) => (
-            <div
-              key={i}
-              className={`relative overflow-hidden bg-gradient-to-br ${stat.bg} border ${stat.border} rounded-xl p-5`}
-            >
-              <div className="flex items-start justify-between mb-4">
-                <p className="text-xs text-slate-500 font-semibold tracking-wide uppercase">{stat.label}</p>
-                <stat.icon className={`${stat.color} text-sm`} />
-              </div>
-              <p className={`text-2xl font-bold font-sans ${stat.color}`}>{stat.value}</p>
-              {stat.suffix && <p className="text-xs text-slate-600 mt-1">{stat.suffix}</p>}
-            </div>
-          ))}
-        </motion.div>
-
-        {/* ── How Withdrawals Work (Info Banner) ───────────────── */}
-        {settings && (
-          <motion.div variants={item} className="flex items-start gap-3 p-4 rounded-xl bg-blue-500/[0.06] border border-blue-500/[0.15]">
-            <FiInfo className="text-blue-400 mt-0.5 flex-shrink-0" />
-            <div className="text-xs text-slate-400 space-y-0.5 leading-relaxed">
-              <p>
-                <span className="text-white font-semibold">How payouts work: </span>
-                Submit a request for a supported method. <span className="text-orange-400 font-semibold">Processing fees apply based on the payout method</span>.
-                Payouts are reviewed and processed by our team within 1–3 business days.
+        <motion.div variants={item} className="relative overflow-hidden rounded-[20px] bg-[#242424] py-[30px] px-[40px] flex items-center justify-between gap-[40px] w-full md:w-[1240px] h-[138px] backdrop-blur-[94px]">
+          <p className="w-[931px] h-[36px] m-0 p-0 text-white font-bold font-['Barlow_Condensed'] text-[28px] leading-[130%] uppercase whitespace-nowrap">
+            Your Balance
+          </p>
+          <div className="flex flex-col items-end justify-center w-[189px] h-[78px] gap-[18px] shrink-0">
+            <div className="flex items-center w-auto h-[44px] gap-[6px] shrink-0 overflow-visible">
+              <img src="/coins/coinfix.png" alt="Coin" className="w-[44px] h-[44px] shrink-0 object-contain" />
+              <p 
+                className="w-auto h-auto m-0 p-0 font-bold font-['Barlow_Condensed'] text-[60px] leading-none tracking-normal whitespace-nowrap flex items-center shrink-0 pb-[6px]"
+                style={{
+                  backgroundImage: 'linear-gradient(180deg, #FEDF77 0%, #FCB91E 100%)',
+                  WebkitBackgroundClip: 'text',
+                  backgroundClip: 'text',
+                  color: 'transparent'
+                }}
+              >
+                {balance.toLocaleString()}
               </p>
             </div>
-          </motion.div>
-        )}
-
-        {/* ── Transaction History (Moved to Profile) ───────────────────────────────── */}
-        <motion.div variants={item} className="hidden">
-          {/* Transaction history was moved to the profile section. */}
-        </motion.div>
-
-        {/* ── Pending Rewards ────────────────────────────────────────── */}
-        <motion.div variants={item} className="glass-card p-6">
-          <div className="flex items-center justify-between mb-5">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-amber-500/10 flex items-center justify-center border border-amber-500/20">
-                <FiLock className="text-amber-400" />
-              </div>
-              <div>
-                <h2 className="text-lg font-bold font-display text-white">Pending Rewards</h2>
-                <p className="text-xs text-slate-500">Earnings held until their release date</p>
-              </div>
-            </div>
-            {pendingEarnings.regularHolds?.length > 0 && (
-              <div className="flex items-center gap-1.5 px-3 py-1.5 bg-amber-500/10 border border-amber-500/20 rounded-xl">
-                <FiClock className="text-amber-400 text-xs" />
-                <span className="text-amber-300 text-xs font-bold">
-                  <CoinDisplay amount={pendingEarnings.totalPendingCoins} size={11} /> pending
-                </span>
+            {settings && (
+              <div className="flex items-center gap-1 font-semibold font-['Barlow_Condensed'] text-[20px] uppercase tracking-wide">
+                <div className="flex items-center w-[52px] h-[16px] gap-[3px]">
+                  <img 
+                    src="/coins/coinfix.png" 
+                    alt="Coin" 
+                    className="w-[16px] h-[16px] object-contain" 
+                  />
+                  <span 
+                    style={{
+                      backgroundImage: 'linear-gradient(180deg, #FEDF77 0%, #FCB91E 100%)',
+                      WebkitBackgroundClip: 'text',
+                      backgroundClip: 'text',
+                      color: 'transparent'
+                    }}
+                  >
+                    {settings.coinsPerUSD.toLocaleString()}
+                  </span>
+                </div>
+                <span className="text-white ml-1">= 1 USD</span>
               </div>
             )}
           </div>
-
-          {pendingEarnings.loading ? (
-            <div className="space-y-3">
-              {[1,2,3].map(i => (
-                <div key={i} className="flex items-center gap-3 animate-pulse">
-                  <div className="w-9 h-9 rounded-xl bg-white/[0.04] flex-shrink-0" />
-                  <div className="flex-1 space-y-1.5">
-                    <div className="h-3 bg-white/[0.04] rounded w-1/3" />
-                    <div className="h-2 bg-white/[0.03] rounded w-1/2" />
-                  </div>
-                  <div className="h-3 bg-white/[0.04] rounded w-16" />
-                </div>
-              ))}
-            </div>
-          ) : pendingEarnings.regularHolds?.length === 0 ? (
-            <div className="flex flex-col items-center gap-3 py-10 text-center">
-              <div className="w-12 h-12 rounded-2xl bg-white/[0.03] border border-white/[0.06] flex items-center justify-center">
-                <FiCheckCircle className="text-slate-600 text-xl" />
-              </div>
-              <p className="text-slate-500 text-sm">No pending rewards right now.</p>
-              <p className="text-slate-600 text-xs">Earnings from offers, bonuses and featured offers will appear here while on hold.</p>
-            </div>
-          ) : (
-            <div className="divide-y divide-white/[0.04]">
-              {(() => {
-                const TYPE_CONFIG = {
-                  offer_reward:        { label: 'Offer',          icon: FiZap,            color: 'text-cyan-400',    bg: 'bg-cyan-500/10' },
-                  custom_offer_reward: { label: 'Featured Offer', icon: FiGift,           color: 'text-fuchsia-400', bg: 'bg-fuchsia-500/10' },
-                  daily_bonus:         { label: 'Daily Bonus',    icon: FiRefreshCw,      color: 'text-blue-400',    bg: 'bg-blue-500/10' },
-                  leaderboard_reward:  { label: 'Leaderboard',   icon: FiTrendingUp,     color: 'text-amber-400',   bg: 'bg-amber-500/10' },
-                  vip_reward:          { label: 'VIP Reward',    icon: FiCheckCircle,    color: 'text-emerald-400', bg: 'bg-emerald-500/10' },
-                  mission_reward:      { label: 'Mission',        icon: FiCheckCircle,    color: 'text-violet-400',  bg: 'bg-violet-500/10' },
-                  promo_code:          { label: 'Promo Code',     icon: FiGift,           color: 'text-pink-400',    bg: 'bg-pink-500/10' },
-                };
-                return pendingEarnings.regularHolds.map(tx => {
-                  const cfg = TYPE_CONFIG[tx.transactionType] || { label: tx.transactionType, icon: FiClock, color: 'text-slate-400', bg: 'bg-white/[0.04]' };
-                  const Icon = cfg.icon;
-                  const releaseDate = tx.releaseDate ? new Date(tx.releaseDate) : null;
-                  return (
-                    <div key={tx._id} className="flex items-center gap-3 py-3.5">
-                      <div className={`w-9 h-9 rounded-xl ${cfg.bg} flex items-center justify-center flex-shrink-0`}>
-                        <Icon className={`${cfg.color} text-sm`} />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm text-white font-semibold truncate">{cfg.label}</p>
-                        <p className="text-xs text-slate-500">
-                          Earned {new Date(tx.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
-                          {releaseDate && (
-                            <> &middot; Releases {tx.daysRemaining === 0
-                              ? <span className="text-emerald-400 font-medium">today</span>
-                              : <span className="text-amber-400 font-medium">in {tx.daysRemaining}d</span>
-                            } ({releaseDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })})
-                            </>
-                          )}
-                        </p>
-                      </div>
-                      <div className="text-right flex-shrink-0">
-                        <p className="text-sm font-bold text-amber-300">
-                          +<CoinDisplay amount={tx.amount} size={12} inline />
-                        </p>
-                        <div className="flex items-center gap-1 justify-end mt-0.5">
-                          <FiLock className="text-amber-500/60 text-[10px]" />
-                          <span className="text-[10px] text-amber-500/60 font-medium uppercase tracking-wide">Hold</span>
-                        </div>
-                      </div>
-                    </div>
-                  );
-                });
-              })()}
-            </div>
-          )}
         </motion.div>
+
+        {/* ── Withdrawal Options ───────────────────────────────────── */}
+        <motion.div variants={item} className="flex flex-col md:flex-row justify-between gap-5">
+          
+          {/* Card 1: PayPal & Litecoin */}
+          <div className="bg-white/[0.14] rounded-[20px] p-[20px] flex flex-col gap-[18px] w-full md:w-[400px] md:h-[445px] hover:bg-white/[0.18] transition-colors shrink-0">
+            <div className="flex justify-center w-full">
+              <img src="/coins/paylite.png" alt="PayPal and Litecoin" className="w-[249px] h-[126px] object-contain" />
+            </div>
+            <div className="flex flex-col w-[360px] h-[105px] gap-[6px]">
+              <h3 className="w-[360px] h-[41px] m-0 p-0 font-bold font-['Barlow_Condensed'] text-[34px] leading-[120%] text-white">
+                PayPal & Litecoin
+              </h3>
+              <p className="w-[360px] h-[58px] m-0 p-0 font-medium font-['Barlow_Condensed'] text-[22px] leading-[130%] text-[#888888]">
+                Withdraw your earnings to your PayPal account or Litecoin wallet.
+              </p>
+            </div>
+            
+            <div className="flex flex-col w-[360px] h-[72px] gap-[14px]">
+              <div className="flex items-center w-[360px] h-[29px] gap-[18px]">
+                <img src="/coins/paypal.png" alt="PayPal" className="w-[24px] h-[24px] object-contain" />
+                <span className="w-[52px] h-[29px] m-0 p-0 font-medium font-['Barlow_Condensed'] text-[22px] leading-[130%] text-white">
+                  PayPal
+                </span>
+              </div>
+              <div className="flex items-center w-[360px] h-[29px] gap-[18px]">
+                <img src="/coins/litecoin.png" alt="Litecoin" className="w-[24px] h-[24px] object-contain" />
+                <span className="w-[52px] h-[29px] m-0 p-0 font-medium font-['Barlow_Condensed'] text-[22px] leading-[130%] text-white">
+                  Litecoin
+                </span>
+              </div>
+            </div>
+
+            <button 
+              onClick={() => handleOpenWithdrawal('paypal_litecoin')}
+              disabled={settingsLoad}
+              className="flex items-center justify-center w-[360px] h-[48px] gap-[10px] rounded-[10px] px-[30px] py-[10px] bg-[#49B265] shadow-[0_4px_0_0_#276D3A] hover:bg-[#49B265]/90 hover:translate-y-[1px] hover:shadow-[0_3px_0_0_#276D3A] active:translate-y-[4px] active:shadow-none transition-all mt-auto shrink-0"
+            >
+              <span className="m-0 p-0 font-bold font-['Barlow_Condensed'] text-[18px] leading-none text-white whitespace-nowrap">
+                Withdraw Now
+              </span>
+              <img src="/coins/ar.png" alt="Arrow" className="w-[24px] h-[24px] object-contain" />
+            </button>
+          </div>
+
+          {/* Card 2: Gift Cards */}
+          <div className="bg-white/[0.14] rounded-[20px] p-[20px] flex flex-col gap-[18px] w-full md:w-[400px] md:h-[445px] hover:bg-white/[0.18] transition-colors shrink-0">
+            <div className="flex justify-center w-[360px]">
+              <img src="/coins/giftcard.png" alt="Gift Cards" className="w-[330px] h-[126px] object-contain" />
+            </div>
+            <div className="flex flex-col w-[360px] h-[105px] gap-[6px]">
+              <h3 className="w-[360px] h-[41px] m-0 p-0 font-bold font-['Barlow_Condensed'] text-[34px] leading-[120%] text-white">
+                Gift Cards
+              </h3>
+              <p className="w-[360px] h-[58px] m-0 p-0 font-medium font-['Barlow_Condensed'] text-[22px] leading-[130%] text-[#888888]">
+                Choose from a variety of popular gift cards and treat yourself.
+              </p>
+            </div>
+            
+            <div className="flex items-center w-[360px] h-[72px] gap-[8px]">
+              <div className="flex items-center justify-center w-[114.66px] h-[60px] rounded-[10px] border border-white/[0.22] bg-[#111111] shrink-0">
+                <img src="/coins/amazon.png" alt="Amazon" className="w-[86px] h-[24px] object-contain" />
+              </div>
+              <div className="flex items-center justify-center w-[114.66px] h-[60px] rounded-[10px] border border-white/[0.22] bg-[#111111] shrink-0">
+                <img src="/coins/netflix.png" alt="Netflix" className="w-[86px] h-[24px] object-contain" />
+              </div>
+              <div className="flex items-center justify-center w-[114.66px] h-[60px] rounded-[10px] border border-white/[0.22] bg-[#111111] shrink-0">
+                <span className="w-[61px] h-[29px] m-0 p-0 text-white font-medium font-['Barlow_Condensed'] text-[22px] leading-[130%] whitespace-nowrap text-center">
+                  +5 More
+                </span>
+              </div>
+            </div>
+
+            <button 
+              onClick={() => handleOpenWithdrawal('giftcards')}
+              disabled={settingsLoad}
+              className="flex items-center justify-center w-[360px] h-[48px] gap-[10px] rounded-[10px] px-[30px] py-[10px] bg-[#49B265] shadow-[0_4px_0_0_#276D3A] hover:bg-[#49B265]/90 hover:translate-y-[1px] hover:shadow-[0_3px_0_0_#276D3A] active:translate-y-[4px] active:shadow-none transition-all mt-auto shrink-0"
+            >
+              <span className="m-0 p-0 font-bold font-['Barlow_Condensed'] text-[18px] leading-none text-white whitespace-nowrap">
+                Withdraw Now
+              </span>
+              <img src="/coins/ar.png" alt="Arrow" className="w-[24px] h-[24px] object-contain" />
+            </button>
+          </div>
+
+          {/* Card 3: Your Books */}
+          <div className="bg-white/[0.14] rounded-[20px] p-[20px] flex flex-col gap-[18px] w-full md:w-[400px] md:h-[445px] hover:bg-white/[0.18] transition-colors shrink-0">
+            <div className="flex justify-center w-[360px]">
+              <img src="/coins/books.png" alt="Your Books" className="w-[321px] h-[126px] object-contain" />
+            </div>
+            <div className="flex flex-col w-[360px] h-[105px] gap-[6px]">
+              <h3 className="w-[360px] h-[41px] m-0 p-0 font-bold font-['Barlow_Condensed'] text-[34px] leading-[120%] text-white">
+                Your Books
+              </h3>
+              <p className="w-[360px] h-[58px] m-0 p-0 font-medium font-['Barlow_Condensed'] text-[22px] leading-[130%] text-[#888888]">
+                Redeem your coins for my books. Personally signed - only in Germany.
+              </p>
+            </div>
+            
+            <div className="flex flex-col w-[360px] h-[72px] gap-[14px]">
+              <div className="flex items-center w-[360px] h-[29px] gap-[18px]">
+                <img src="/coins/signature.png" alt="Signature" className="w-[26px] h-[26px] object-contain" />
+                <span className="h-[29px] m-0 p-0 font-medium font-['Barlow_Condensed'] text-[22px] leading-[130%] text-white whitespace-nowrap">
+                  Personal signature possible
+                </span>
+              </div>
+              <div className="flex items-center w-[360px] h-[29px] gap-[18px]">
+                <img src="/coins/truck.png" alt="Truck" className="w-[26px] h-[26px] object-contain" />
+                <span className="h-[29px] m-0 p-0 font-medium font-['Barlow_Condensed'] text-[22px] leading-[130%] text-white whitespace-nowrap">
+                  Shipping only within Germany
+                </span>
+              </div>
+            </div>
+
+            <button 
+              onClick={scrollToBooks}
+              className="flex items-center justify-center w-[360px] h-[48px] gap-[10px] rounded-[10px] px-[30px] py-[10px] bg-[#49B265] shadow-[0_4px_0_0_#276D3A] hover:bg-[#49B265]/90 hover:translate-y-[1px] hover:shadow-[0_3px_0_0_#276D3A] active:translate-y-[4px] active:shadow-none transition-all mt-auto shrink-0"
+            >
+              <span className="m-0 p-0 font-bold font-['Barlow_Condensed'] text-[18px] leading-none text-white whitespace-nowrap">
+                Order Now
+              </span>
+              <img src="/coins/ar.png" alt="Arrow" className="w-[24px] h-[24px] object-contain" />
+            </button>
+          </div>
+
+        </motion.div>
+
+        {/* ── My Books ─────────────────────────────────────────── */}
+        <div id="my-books-section" className="scroll-mt-6">
+          <MyBooksSection
+            balance={balance}
+            onBalanceUpdate={(newBalance) => {
+              if (setMongoUser) setMongoUser(prev => ({ ...prev, walletBalance: newBalance }));
+              setTxRefresh(n => n + 1);
+            }}
+          />
+        </div>
 
         {/* ── Promo Code Redeemer ───────────────────────────────── */}
         <PromoCodeRedeem onSuccess={handleWithdrawSuccess} />
@@ -403,6 +361,7 @@ const Wallet = () => {
           <WithdrawalModal
             settings={settings}
             balance={balance}
+            filterType={filterType}
             onClose={() => setShowWithdraw(false)}
             onSuccess={handleWithdrawSuccess}
           />

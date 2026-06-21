@@ -308,7 +308,7 @@ router.get('/history', verifyToken, async (req, res) => {
 ───────────────────────────────────────────────────────────────── */
 router.post('/withdraw', verifyToken, async (req, res) => {
   try {
-    const { method, amount, payoutDestination } = req.body;
+    const { method, amount, payoutDestination, brand } = req.body;
 
     // --- 1. Basic input validation ---
     if (!method || !amount || !payoutDestination) {
@@ -388,6 +388,7 @@ router.post('/withdraw', verifyToken, async (req, res) => {
         feePercent,
         coinsPerUSD,
         exchangeRateSnapshot,
+        ...(brand && { brand }),
       },
     });
 

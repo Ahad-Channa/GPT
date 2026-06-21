@@ -41,7 +41,7 @@ const METHOD_CONFIG = {
   },
 };
 
-const WithdrawalModal = ({ settings, balance, onClose, onSuccess }) => {
+const WithdrawalModal = ({ settings, balance, onClose, onSuccess, filterType }) => {
   const { currentUser } = useAuth();
 
   // Steps: 1 = select method, 2 = enter amount & destination, 3 = confirm, 4 = done
@@ -49,12 +49,28 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess }) => {
   const [method,      setMethod]      = useState('');
   const [amount,      setAmount]      = useState('');
   const [destination, setDestination] = useState('');
+  const [giftCardBrand, setGiftCardBrand] = useState('Amazon');
   const [submitting,  setSubmitting]  = useState(false);
   const [error,       setError]       = useState('');
 
   const overlayRef = useRef(null);
 
   const { coinsPerUSD, withdrawalMethods = [], exchangeRates } = settings;
+
+  // Filter methods based on filterType
+  const filteredMethods = withdrawalMethods.filter(m => {
+    if (filterType === 'paypal_litecoin') return m.id === 'paypal' || m.id === 'litecoin';
+    if (filterType === 'giftcards') return m.id === 'giftcard';
+    return true;
+  });
+
+  // Skip step 1 if there's only one method and we haven't explicitly set a method yet
+  useEffect(() => {
+    if (step === 1 && filteredMethods.length === 1 && !method) {
+      setMethod(filteredMethods[0].id);
+      setStep(2);
+    }
+  }, [step, filteredMethods, method]);
 
   const selectedMethod = method ? withdrawalMethods.find((m) => m.id === method) : null;
   const selectedConfig = method ? METHOD_CONFIG[method] : null;
@@ -103,7 +119,12 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess }) => {
           Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ method, amount: amountNum, payoutDestination: destination }),
+        body: JSON.stringify({ 
+          method, 
+          amount: amountNum, 
+          payoutDestination: destination,
+          brand: method === 'giftcard' ? giftCardBrand : undefined
+        }),
       });
       const data = await res.json();
 
@@ -179,7 +200,7 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess }) => {
             <>
               <p className="text-xs text-slate-500">Choose how you'd like to receive your {CURRENCY_NAME}.</p>
               <div className="space-y-3">
-                {withdrawalMethods.map((m) => {
+                {filteredMethods.map((m) => {
                   const cfg = METHOD_CONFIG[m.id];
                   if (!cfg) return null;
                   const minCoins = m.minUSD * coinsPerUSD;
@@ -229,6 +250,30 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess }) => {
                   <p className="text-xs text-slate-400">{selectedConfig.hint}</p>
                 </div>
               </div>
+
+              {/* Gift Card Brand Selection */}
+              {method === 'giftcard' && (
+                <div>
+                  <label className="block text-xs font-semibold text-slate-400 tracking-wide uppercase mb-2">
+                    Select Gift Card Brand
+                  </label>
+                  <div className="grid grid-cols-2 gap-2 mb-4">
+                    {['Amazon', 'Netflix', 'Google Play', 'Steam', 'PlayStation', 'Xbox', 'Apple', 'Spotify'].map((brand) => (
+                      <button
+                        key={brand}
+                        onClick={() => setGiftCardBrand(brand)}
+                        className={`py-2 px-3 rounded-lg border text-sm font-medium transition-all ${
+                          giftCardBrand === brand 
+                            ? 'bg-violet-500/20 border-violet-500 text-white' 
+                            : 'bg-white/[0.03] border-white/[0.08] text-slate-400 hover:bg-white/[0.06] hover:text-white'
+                        }`}
+                      >
+                        {brand}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               {/* Amount input */}
               <div>
@@ -346,7 +391,7 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess }) => {
             <>
               <div className="rounded-xl bg-white/[0.03] border border-white/[0.07] divide-y divide-white/[0.05]">
                 {[
-                  { label: 'Method',      value: selectedMethod.label },
+                  { label: 'Method',      value: method === 'giftcard' ? `${selectedMethod.label} (${giftCardBrand})` : selectedMethod.label },
                   { label: 'Destination', value: destination, mono: true, truncate: true },
                   { label: 'Amount you receive', value: `${amountNum.toLocaleString()} ${CURRENCY_NAME}`, mono: true, accent: 'text-emerald-400', bold: true },
                   { label: 'Processing fee', value: `+${feeCoins.toLocaleString()} ${CURRENCY_NAME}`, mono: true, accent: 'text-orange-400' },

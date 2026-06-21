@@ -170,7 +170,10 @@ const AdminWithdrawals = () => {
                 withdrawals.map((w) => {
                   const user   = w.userId;
                   const badge  = statusBadgeClass(w.status);
-                  const method = METHOD_LABELS[w.method] || { label: w.method || '—', color: '#94a3b8' };
+                  const baseMethod = METHOD_LABELS[w.method] || { label: w.method || '—', color: '#94a3b8' };
+                  const methodLabel = w.method === 'giftcard' && w.metadata?.brand 
+                    ? `🎁 Gift Card (${w.metadata.brand})` 
+                    : baseMethod.label;
                   const isActing = actionLoading === w._id;
 
                   return (
@@ -194,8 +197,8 @@ const AdminWithdrawals = () => {
                         {w.fee ? <CoinDisplay amount={w.fee} size={11} compact={false} /> : '—'}
                       </td>
                       <td>
-                        <span style={{ color: method.color, fontSize: '0.78rem', fontWeight: 500 }}>
-                          {method.label}
+                        <span style={{ color: baseMethod.color, fontSize: '0.78rem', fontWeight: 500 }}>
+                          {methodLabel}
                         </span>
                       </td>
                       <td style={{ maxWidth: '160px' }}>

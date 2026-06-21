@@ -189,6 +189,13 @@ const settingsSchema = new mongoose.Schema(
         bonusAmount: { type: Number, default: 0, min: 0 },
       },
     },
+    // Block F — Book Rewards
+    // When true: only users with a German IP see books in the withdrawal section
+    // When false: all users worldwide can see and order books
+    booksGermanyOnly: {
+      type: Boolean,
+      default: true,
+    },
   },
   { timestamps: true }
 );

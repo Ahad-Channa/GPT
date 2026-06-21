@@ -70,7 +70,7 @@ const transactionSchema = new mongoose.Schema(
     // Withdrawal-specific fields
     method: {
       type: String,
-      enum: ['litecoin', 'paypal', 'giftcard', null],
+      enum: ['litecoin', 'paypal', 'giftcard', 'book', null],
       default: null,
     },
     // Address/account for withdrawal payout

@@ -35,6 +35,7 @@ import AdminVip from './pages/admin/AdminVip';
 import VipPage from './pages/VipPage';
 import MissionPage from './pages/MissionPage';
 import AdminMissions from './pages/admin/AdminMissions';
+import AdminBooks from './pages/admin/AdminBooks';
 import NotificationPanel from './components/NotificationPanel';
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
@@ -216,6 +217,7 @@ function App() {
         <Route path="vip" element={<AdminVip />} />
         <Route path="missions" element={<AdminMissions />} />
         <Route path="avatars" element={<AdminAvatars />} />
+        <Route path="books" element={<AdminBooks />} />
         <Route path="admins" element={<AdminStaff />} />
         <Route path="withdrawals" element={<AdminWithdrawals />} />
         <Route path="offerwalls" element={<AdminOfferwalls />} />

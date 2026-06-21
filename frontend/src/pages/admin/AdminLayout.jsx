@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { NavLink, Outlet, useNavigate, Navigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import {
-  FiGrid, FiUsers, FiShield, FiArrowRight, FiLogOut, FiZap, FiDollarSign, FiActivity, FiSliders, FiBox, FiTag, FiStar, FiTrendingUp, FiMessageSquare, FiInbox, FiImage, FiMessageCircle, FiHeadphones, FiAward, FiTarget
+  FiGrid, FiUsers, FiShield, FiArrowRight, FiLogOut, FiZap, FiDollarSign, FiActivity, FiSliders, FiBox, FiTag, FiStar, FiTrendingUp, FiMessageSquare, FiInbox, FiImage, FiMessageCircle, FiHeadphones, FiAward, FiTarget, FiBook
 } from 'react-icons/fi';
 import './Admin.css';
 
@@ -70,6 +70,7 @@ const AdminLayout = () => {
     // Leaderboard / VIP / Avatars — primary admin only
     ...(isPrimaryAdmin ? [{ to: '/admin/leaderboard', end: false, icon: FiTrendingUp, label: 'Leaderboard' }] : []),
     ...(isPrimaryAdmin ? [{ to: '/admin/vip', end: false, icon: FiAward, label: 'VIP Ranks' }] : []),
+    ...(isPrimaryAdmin ? [{ to: '/admin/books', end: false, icon: FiBook, label: 'Books' }] : []),
     ...(isPrimaryAdmin ? [{ to: '/admin/avatars', end: false, icon: FiImage, label: 'Avatars' }] : []),
 
     // Chat Moderation — manage_chat perm, or primary admin
