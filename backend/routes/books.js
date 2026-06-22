@@ -371,6 +371,42 @@ router.delete('/admin/:id', verifyToken, requireAdmin, async (req, res) => {
 });
 
 /* ─────────────────────────────────────────────────────────────────
+   ADMIN: POST /api/books/admin/fix-images
+   One-time cleanup: clears all broken localhost image URLs from DB
+   so books show a placeholder instead of CORS errors.
+───────────────────────────────────────────────────────────────── */
+router.post('/admin/fix-images', verifyToken, requireAdmin, async (req, res) => {
+  try {
+    const books = await Book.find({});
+    let fixed = 0;
+    for (const book of books) {
+      let changed = false;
+      // Clear cover if it points to localhost
+      if (book.coverImage && book.coverImage.includes('localhost')) {
+        book.coverImage = '';
+        changed = true;
+      }
+      // Clear each preview that points to localhost
+      if (book.previewImages && book.previewImages.length > 0) {
+        const cleaned = book.previewImages.filter(img => !img.includes('localhost'));
+        if (cleaned.length !== book.previewImages.length) {
+          book.previewImages = cleaned;
+          changed = true;
+        }
+      }
+      if (changed) {
+        await book.save();
+        fixed++;
+      }
+    }
+    res.json({ success: true, message: `Fixed ${fixed} book(s). Re-upload their cover images from the admin panel.` });
+  } catch (e) {
+    console.error('[POST /api/books/admin/fix-images]', e);
+    res.status(500).json({ success: false, error: 'Failed to fix images' });
+  }
+});
+
+/* ─────────────────────────────────────────────────────────────────
    ADMIN: GET /api/books/admin/orders
 ───────────────────────────────────────────────────────────────── */
 router.get('/admin/orders', verifyToken, requireAdmin, async (req, res) => {

@@ -123,6 +123,25 @@ export default function AdminBooks() {
 
   const getToken = () => currentUser.getIdToken();
 
+  /* ── Fix broken localhost image URLs in DB ── */
+  const fixImages = async () => {
+    if (!window.confirm('This will clear all broken localhost image URLs from your database. Books will show a placeholder until you re-upload their images. Continue?')) return;
+    try {
+      const token = await getToken();
+      const res = await fetch(`${API}/books/admin/fix-images`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await res.json();
+      if (data.success) {
+        toast.success(data.message);
+        fetchBooks();
+      } else {
+        toast.error(data.error || 'Failed to fix images');
+      }
+    } catch { toast.error('Network error'); }
+  };
+
   /* ── Fetch ─────────────────────────────── */
   const fetchBooks = async () => {
     setLoading(true);
@@ -284,12 +303,21 @@ export default function AdminBooks() {
           <p className="text-slate-400 text-sm mt-1">Manage books users can redeem with coins.</p>
         </div>
 
-        <button
-          onClick={() => openModal()}
-          className="flex items-center gap-2 px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-semibold text-sm transition-colors"
-        >
-          <FiPlus /> Add Book
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={fixImages}
+            title="Clear broken localhost image URLs from database"
+            className="flex items-center gap-2 px-4 py-2.5 bg-amber-600/20 hover:bg-amber-600/30 text-amber-300 border border-amber-500/30 rounded-xl font-semibold text-sm transition-colors"
+          >
+            <FiImage /> Fix Images
+          </button>
+          <button
+            onClick={() => openModal()}
+            className="flex items-center gap-2 px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-semibold text-sm transition-colors"
+          >
+            <FiPlus /> Add Book
+          </button>
+        </div>
       </div>
 
       {/* ── Book Visibility Setting ─────────────── */}
@@ -388,10 +416,11 @@ export default function AdminBooks() {
                 <div className="relative h-52 bg-slate-900 flex items-center justify-center overflow-hidden">
                   {book.coverImage ? (
                     <img src={book.coverImage.startsWith('http') ? book.coverImage : `${BACKEND}${book.coverImage}`}
-                      alt={book.title} className="h-full w-full object-contain p-4" />
-                  ) : (
-                    <FiBook className="text-slate-600 text-5xl" />
-                  )}
+                      alt={book.title} className="h-full w-full object-contain p-4"
+                      onError={(e) => { e.target.style.display = 'none'; e.target.nextSibling && (e.target.nextSibling.style.display = 'flex'); }} />
+                  ) : null}
+                  <div className="text-slate-600 text-5xl flex items-center justify-center h-full" style={{ display: book.coverImage ? 'none' : 'flex' }}>
+                    <FiBook /></div>
                   {!book.available && (
                     <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
                       <span className="bg-rose-500/20 border border-rose-500/40 text-rose-300 text-xs font-bold px-3 py-1 rounded-full">UNAVAILABLE</span>

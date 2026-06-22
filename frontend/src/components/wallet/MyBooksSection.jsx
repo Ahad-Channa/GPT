@@ -96,7 +96,8 @@ const BookDetailModal = ({ book, onClose, onOrder, balance }) => {
           {/* Cover */}
           <div className="w-[161px] h-[246px] shrink-0">
             {book.coverImage ? (
-              <img src={book.coverImage} alt={book.title} className="w-full h-full object-cover rounded-md drop-shadow-2xl" />
+              <img src={book.coverImage} alt={book.title} className="w-full h-full object-cover rounded-md drop-shadow-2xl"
+                onError={(e) => { e.target.style.display = 'none'; }} />
             ) : (
               <div className="w-full h-full rounded-xl bg-[#1a1a1a] flex items-center justify-center">
                 <FiBook className="text-slate-600 text-5xl" />
@@ -266,7 +267,12 @@ const OrderModal = ({ book, onClose, onSuccess, balance }) => {
           {/* Book Info Header */}
           <div className="flex w-[668px] h-[119px] gap-[16px] shrink-0 items-center">
             <div className="w-[78px] h-[119px] shrink-0 overflow-hidden shadow-lg rounded-[3px]">
-              <img src={book.coverImage} alt={book.title} className="w-full h-full object-cover" />
+              {book.coverImage ? (
+                <img src={book.coverImage} alt={book.title} className="w-full h-full object-cover"
+                  onError={(e) => { e.target.style.display = 'none'; }} />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center"><FiBook className="text-slate-600 text-3xl" /></div>
+              )}
             </div>
             <div className="flex flex-col w-[574px] min-h-[89px] gap-[16px] shrink-0">
               <h3 className="w-[574px] min-h-[41px] text-white font-semibold font-['Barlow_Condensed'] text-[22px] leading-[120%] line-clamp-2">
@@ -475,7 +481,8 @@ const MyBooksSection = ({ balance, onBalanceUpdate }) => {
                 <div className="flex items-center justify-center w-full h-[162px]">
                   {book.coverImage ? (
                     <img src={book.coverImage} alt={book.title}
-                      className="w-[106px] h-[162px] object-contain drop-shadow-lg" />
+                      className="w-[106px] h-[162px] object-contain drop-shadow-lg"
+                      onError={(e) => { e.target.style.display = 'none'; }} />
                   ) : (
                     <FiBook className="text-slate-600 text-4xl" />
                   )}
