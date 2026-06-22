@@ -1,8 +1,6 @@
 const express = require('express');
 const router = express.Router();
 const https = require('https');
-const path = require('path');
-const fs = require('fs');
 const multer = require('multer');
 const Book = require('../models/Book');
 const BookOrder = require('../models/BookOrder');
@@ -12,20 +10,10 @@ const Settings = require('../models/Settings');
 const Notification = require('../models/Notification');
 const { verifyToken } = require('../middlewares/authMiddleware');
 
-/* ─── Multer — save uploaded images to frontend/public/books/ ── */
-const booksDir = path.join(__dirname, '../../frontend/public/books');
-if (!fs.existsSync(booksDir)) fs.mkdirSync(booksDir, { recursive: true });
-
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => cb(null, booksDir),
-  filename: (req, file, cb) => {
-    const safe = file.originalname.replace(/[^a-zA-Z0-9._-]/g, '');
-    cb(null, `${Date.now()}-${safe}`);
-  },
-});
+/* ─── Multer — memory storage (images saved as base64 in MongoDB) ── */
 const upload = multer({
-  storage,
-  limits: { fileSize: 10 * 1024 * 1024 }, // 10 MB per file
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 5 * 1024 * 1024 }, // 5 MB per file
   fileFilter: (req, file, cb) => {
     if (file.mimetype.startsWith('image/')) cb(null, true);
     else cb(new Error('Only image files are allowed'));
@@ -37,6 +25,15 @@ const bookUpload = upload.fields([
   { name: 'coverImage', maxCount: 1 },
   { name: 'previewImages', maxCount: 5 },
 ]);
+
+/* ─── Helper: convert uploaded buffer to base64 data URL, or use URL string ── */
+function resolveImageField(files, fieldName, fallbackUrl) {
+  if (files && files[fieldName] && files[fieldName].length > 0) {
+    const file = files[fieldName][0];
+    return `data:${file.mimetype};base64,${file.buffer.toString('base64')}`;
+  }
+  return (fallbackUrl || '').trim();
+}
 
 /* ─── IP helpers ──────────────────────────────────────────────── */
 function getClientIp(req) {
@@ -261,13 +258,11 @@ router.post('/admin/create', verifyToken, requireAdmin, (req, res) => {
         return res.status(400).json({ success: false, error: 'Title and coinCost are required' });
       }
 
-      const BASE = process.env.BACKEND_URL || `http://localhost:5000`;
+      // Cover: uploaded file (base64) takes priority over URL
+      const coverImage = resolveImageField(req.files, 'coverImage', coverImageUrl);
 
-      // Cover: uploaded file takes priority over URL
-      const coverImage = resolveImageField(req.files, 'coverImage', coverImageUrl, BASE);
-
-      // Preview images: merge uploaded files + URL strings
-      const uploadedPreviews = (req.files?.previewImages || []).map(f => `${BASE}/books/${f.filename}`);
+      // Preview images: merge uploaded files (base64) + URL strings
+      const uploadedPreviews = (req.files?.previewImages || []).map(f => `data:${f.mimetype};base64,${f.buffer.toString('base64')}`);
       const urlPreviews = Array.isArray(previewImageUrls)
         ? previewImageUrls.filter(Boolean)
         : (typeof previewImageUrls === 'string' ? previewImageUrls.split(',').map(s => s.trim()).filter(Boolean) : []);
@@ -318,22 +313,21 @@ router.put('/admin/:id', verifyToken, requireAdmin, (req, res) => {
       const coverImageUrl = req.body.coverImageUrl || '';
       const previewImageUrls = req.body.previewImageUrls || [];
 
-      const BASE = process.env.BACKEND_URL || `http://localhost:5000`;
-
       // Existing book (to preserve current cover if no new one provided)
       const existing = await Book.findById(req.params.id);
       if (!existing) return res.status(404).json({ success: false, error: 'Book not found' });
 
-      // Cover: uploaded file > new URL > keep existing
+      // Cover: uploaded file (base64) > new URL > keep existing
       let coverImage = existing.coverImage;
       if (req.files?.coverImage?.length) {
-        coverImage = `${BASE}/books/${req.files.coverImage[0].filename}`;
+        const f = req.files.coverImage[0];
+        coverImage = `data:${f.mimetype};base64,${f.buffer.toString('base64')}`;
       } else if (coverImageUrl.trim()) {
         coverImage = coverImageUrl.trim();
       }
 
-      // Previews: uploaded files + URL strings (replace existing)
-      const uploadedPreviews = (req.files?.previewImages || []).map(f => `${BASE}/books/${f.filename}`);
+      // Previews: uploaded files (base64) + URL strings (replace existing)
+      const uploadedPreviews = (req.files?.previewImages || []).map(f => `data:${f.mimetype};base64,${f.buffer.toString('base64')}`);
       const urlPreviews = Array.isArray(previewImageUrls)
         ? previewImageUrls.filter(Boolean)
         : (typeof previewImageUrls === 'string' ? previewImageUrls.split(',').map(s => s.trim()).filter(Boolean) : []);
