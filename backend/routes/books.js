@@ -127,6 +127,13 @@ router.get('/', verifyToken, async (req, res) => {
       });
     }
 
+    // Fix hardcoded localhost URLs in DB
+    const currentBase = process.env.BACKEND_URL || 'http://localhost:5000';
+    books.forEach(b => {
+      if (b.coverImage) b.coverImage = b.coverImage.replace('http://localhost:5000', currentBase);
+      if (b.previewImages) b.previewImages = b.previewImages.map(img => img.replace('http://localhost:5000', currentBase));
+    });
+
     res.json({ success: true, books, booksGermanyOnly, isGermanIP });
   } catch (e) {
     console.error('[GET /api/books]', e);
@@ -221,7 +228,15 @@ router.post('/order', verifyToken, async (req, res) => {
 ───────────────────────────────────────────────────────────────── */
 router.get('/admin/list', verifyToken, requireAdmin, async (req, res) => {
   try {
-    const books = await Book.find().sort({ createdAt: -1 });
+    const books = await Book.find().sort({ createdAt: -1 }).lean();
+    
+    // Fix hardcoded localhost URLs in DB
+    const currentBase = process.env.BACKEND_URL || 'http://localhost:5000';
+    books.forEach(b => {
+      if (b.coverImage) b.coverImage = b.coverImage.replace('http://localhost:5000', currentBase);
+      if (b.previewImages) b.previewImages = b.previewImages.map(img => img.replace('http://localhost:5000', currentBase));
+    });
+
     const settings = await Settings.getSingleton();
     res.json({ success: true, books, booksGermanyOnly: settings.booksGermanyOnly !== false });
   } catch (e) {
