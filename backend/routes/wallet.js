@@ -186,7 +186,7 @@ router.get('/referred-users', verifyToken, async (req, res) => {
 
     const [referredUsers, total] = await Promise.all([
       User.find(query)
-        .select('displayName totalEarned createdAt updatedAt commissionGenerated')
+        .select('displayName totalEarned commissionGenerated createdAt updatedAt avatarUrl photoURL')
         .sort({ createdAt: -1 })
         .skip((page - 1) * limit)
         .limit(limit),
@@ -198,6 +198,7 @@ router.get('/referred-users', verifyToken, async (req, res) => {
       referredUsers: referredUsers.map(u => ({
         _id: u._id,
         displayName: u.displayName || 'Anonymous',
+        avatarUrl: u.avatarUrl || u.photoURL || null,
         totalEarned: u.totalEarned,
         referralEarnings: u.commissionGenerated || 0,
         createdAt: u.createdAt,
@@ -246,6 +247,11 @@ router.get('/history', verifyToken, async (req, res) => {
 
     const [transactions, total, earnedResult, withdrawnResult, pendingCount] = await Promise.all([
       Transaction.find(query)
+        .populate({
+          path: 'linkedTransactionId',
+          select: 'userId',
+          populate: { path: 'userId', select: 'avatarUrl photoURL displayName' }
+        })
         .sort({ createdAt: -1 })
         .skip((page - 1) * limit)
         .limit(limit),

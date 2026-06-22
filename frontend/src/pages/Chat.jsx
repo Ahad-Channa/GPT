@@ -299,20 +299,25 @@ const Chat = () => {
           {/* Chat / Support tab switcher */}
           <div style={{ display: 'flex', gap: 4, background: 'rgba(255,255,255,0.04)', borderRadius: 10, padding: 3 }}>
             {[
-              { key: 'chat',    label: 'Chat',    icon: FiMessageSquare },
+              { key: 'chat',    label: 'Live Chat',    icon: FiMessageSquare },
               { key: 'support', label: 'Support', icon: FiHeadphones }
             ].map(({ key, label, icon: Icon }) => {
               const active = activeTab === key;
+              const isSupport = key === 'support';
               return (
                 <button key={key} onClick={() => setActiveTab(key)} style={{
                   display: 'flex', alignItems: 'center', gap: 6,
                   padding: '5px 14px', borderRadius: 7, border: 'none', cursor: 'pointer',
                   fontSize: '0.78rem', fontWeight: active ? 700 : 500,
-                  background: active ? 'rgba(99,102,241,0.25)' : 'transparent',
-                  color: active ? '#a5b4fc' : '#475569',
+                  background: active 
+                    ? (isSupport ? '#10b981' : 'rgba(99,102,241,0.25)') 
+                    : 'transparent',
+                  color: active 
+                    ? (isSupport ? '#ffffff' : '#a5b4fc') 
+                    : '#94a3b8',
                   transition: 'all 0.18s'
                 }}>
-                  <Icon style={{ fontSize: 13 }} />
+                  <Icon style={{ fontSize: 13, display: key === 'chat' ? 'none' : 'block' }} />
                   {label}
                 </button>
               );
@@ -451,36 +456,31 @@ const Chat = () => {
             {/* ── Input bar (fixed at bottom, no scroll) */}
             <div style={{
               padding: '10px 18px 14px',
-              borderTop: '1px solid rgba(255,255,255,0.06)',
               background: 'rgba(255,255,255,0.015)',
               flexShrink: 0
             }}>
               {mongoUser ? (
-                <form onSubmit={sendMessage} style={{ display: 'flex', gap: 9, alignItems: 'center' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 32 }}>
-                    <RoleSymbol user={mongoUser} />
-                  </div>
-
+                <form onSubmit={sendMessage} style={{ display: 'flex', alignItems: 'center' }}>
                   <div style={{ flex: 1, position: 'relative' }}>
                     <input
                       ref={inputRef}
                       type="text"
                       value={newMsg}
                       onChange={e => setNewMsg(e.target.value)}
-                      placeholder="Type a message…"
+                      placeholder="Message everyone..."
                       maxLength={500}
                       style={{
                         width: '100%', boxSizing: 'border-box',
-                        background: 'rgba(255,255,255,0.05)',
-                        border: '1px solid rgba(255,255,255,0.09)',
-                        borderRadius: 11,
-                        padding: '10px 48px 10px 14px',
-                        color: '#f1f5f9', fontSize: '0.9rem',
+                        background: 'rgba(255,255,255,0.03)',
+                        border: '1px solid rgba(34,197,94,0.8)',
+                        borderRadius: 8,
+                        padding: '12px 48px 12px 14px',
+                        color: '#f8fafc', fontSize: '0.85rem', fontWeight: 500,
                         outline: 'none', transition: 'border 0.15s',
-                        caretColor: '#a5b4fc'
+                        caretColor: '#22c55e'
                       }}
-                      onFocus={e => { e.target.style.borderColor = 'rgba(99,102,241,0.5)'; }}
-                      onBlur={e  => { e.target.style.borderColor = 'rgba(255,255,255,0.09)'; }}
+                      onFocus={e => { e.target.style.borderColor = 'rgba(34,197,94,1)'; }}
+                      onBlur={e  => { e.target.style.borderColor = 'rgba(34,197,94,0.8)'; }}
                     />
                     {newMsg.length > 400 && (
                       <span style={{
@@ -495,20 +495,19 @@ const Chat = () => {
                       type="submit"
                       disabled={!newMsg.trim()}
                       style={{
-                        position: 'absolute', right: 7, top: '50%',
+                        position: 'absolute', right: 8, top: '50%',
                         transform: 'translateY(-50%)',
                         width: 32, height: 32, borderRadius: 8,
-                        background: newMsg.trim()
-                          ? 'linear-gradient(135deg,#6366f1,#8b5cf6)'
-                          : 'rgba(255,255,255,0.06)',
+                        background: 'transparent',
                         border: 'none',
                         cursor: newMsg.trim() ? 'pointer' : 'default',
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        color: 'white', transition: 'all 0.18s',
-                        boxShadow: newMsg.trim() ? '0 0 10px rgba(99,102,241,0.4)' : 'none'
+                        color: newMsg.trim() ? '#22c55e' : 'rgba(34,197,94,0.4)',
+                        transition: 'all 0.18s',
+                        boxShadow: 'none'
                       }}
                     >
-                      <FiSend style={{ fontSize: 13 }} />
+                      <FiSend style={{ fontSize: 16 }} />
                     </button>
                   </div>
                 </form>
@@ -517,12 +516,6 @@ const Chat = () => {
                   <FiZap style={{ display: 'inline', marginRight: 6, color: '#6366f1' }} />
                   Log in to join the conversation
                 </div>
-              )}
-
-              {canModerate && (
-                <p style={{ margin: '6px 0 0 41px', fontSize: '0.65rem', color: '#1e293b' }}>
-                  Hover messages to moderate
-                </p>
               )}
             </div>
           </div>

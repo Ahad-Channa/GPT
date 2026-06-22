@@ -192,27 +192,50 @@ const SupportChat = ({ socket }) => {
         {/* Empty state — no ticket yet */}
         {!ticket && messages.length === 0 && (
           <div style={{
-            display: 'flex', flexDirection: 'column',
-            alignItems: 'center', justifyContent: 'center',
-            height: '100%', gap: 14, paddingTop: '3rem'
+            height: '100%', width: '100%',
+            display: 'flex', alignItems: 'center', justifyContent: 'center'
           }}>
             <div style={{
-              width: 64, height: 64, borderRadius: 18,
-              background: 'linear-gradient(135deg,rgba(99,102,241,0.15),rgba(139,92,246,0.1))',
-              border: '1px solid rgba(99,102,241,0.2)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center'
+              width: '360px', height: '206px',
+              display: 'flex', flexDirection: 'column',
+              alignItems: 'center', justifyContent: 'center',
+              gap: '16px'
             }}>
-              <FiHeadphones style={{ fontSize: 26, color: '#6366f1' }} />
+            <div style={{
+              width: '88px', height: '88px', borderRadius: '10px',
+              padding: '10px 12px 10px 12px',
+              background: 'rgba(41, 253, 152, 0.1)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              boxSizing: 'border-box'
+            }}>
+              <img src="/coins/headp.png" alt="Support" style={{ width: '44px', height: '44px' }} />
             </div>
-            <div style={{ textAlign: 'center' }}>
-              <p style={{ margin: '0 0 6px', fontSize: '0.95rem', fontWeight: 700, color: '#f1f5f9' }}>
+            <div style={{ 
+              width: '360px', height: '102px', 
+              display: 'flex', flexDirection: 'column', 
+              gap: '6px', textAlign: 'center'
+            }}>
+              <p style={{ 
+                margin: 0, width: '360px', height: '38px',
+                fontFamily: '"Barlow Condensed", sans-serif',
+                fontWeight: 700, fontSize: '32px',
+                lineHeight: '120%', color: '#f8fafc',
+                display: 'flex', alignItems: 'center', justifyContent: 'center'
+              }}>
                 Contact Support
               </p>
-              <p style={{ margin: 0, fontSize: '0.82rem', color: '#475569', maxWidth: 260 }}>
+              <p style={{ 
+                margin: 0, width: '360px', height: '58px',
+                fontFamily: '"Barlow Condensed", sans-serif',
+                fontWeight: 500, fontSize: '22px',
+                lineHeight: '130%', color: '#64748b',
+                display: 'flex', alignItems: 'center', justifyContent: 'center'
+              }}>
                 Send us a message below and our team will respond as soon as possible.
               </p>
             </div>
           </div>
+        </div>
         )}
 
         {/* Messages */}
@@ -268,12 +291,10 @@ const SupportChat = ({ socket }) => {
       {/* ── Input Bar ───────────────────────────────────── */}
       <div style={{
         padding: '10px 18px 14px',
-        borderTop: '1px solid rgba(255,255,255,0.06)',
-        background: 'rgba(255,255,255,0.015)',
+        background: 'transparent',
         flexShrink: 0
       }}>
-        <form onSubmit={sendMessage} style={{ display: 'flex', gap: 9, alignItems: 'center' }}>
-          <AvatarCircle user={mongoUser} size={32} />
+        <form onSubmit={sendMessage} style={{ display: 'flex', alignItems: 'center' }}>
           <div style={{ flex: 1, position: 'relative' }}>
             <input
               ref={inputRef}
@@ -285,41 +306,45 @@ const SupportChat = ({ socket }) => {
               disabled={sending}
               style={{
                 width: '100%', boxSizing: 'border-box',
-                background: 'rgba(255,255,255,0.05)',
-                border: '1px solid rgba(255,255,255,0.09)',
-                borderRadius: 11,
-                padding: '10px 48px 10px 14px',
-                color: '#f1f5f9', fontSize: '0.9rem',
+                background: 'transparent',
+                border: '1px solid rgba(34,197,94,0.8)',
+                borderRadius: 8,
+                padding: '12px 48px 12px 14px',
+                color: '#f8fafc', fontSize: '0.85rem', fontWeight: 500,
                 outline: 'none', transition: 'border 0.15s',
-                caretColor: '#a5b4fc',
+                caretColor: '#22c55e',
                 opacity: sending ? 0.6 : 1
               }}
-              onFocus={e => { e.target.style.borderColor = 'rgba(99,102,241,0.5)'; }}
-              onBlur={e  => { e.target.style.borderColor = 'rgba(255,255,255,0.09)'; }}
+              onFocus={e => { e.target.style.borderColor = 'rgba(34,197,94,1)'; }}
+              onBlur={e  => { e.target.style.borderColor = 'rgba(34,197,94,0.8)'; }}
             />
             <button
               type="submit"
               disabled={!text.trim() || sending}
               style={{
-                position: 'absolute', right: 7, top: '50%',
+                position: 'absolute', right: 12, top: '50%',
                 transform: 'translateY(-50%)',
-                width: 32, height: 32, borderRadius: 8,
-                background: text.trim() && !sending
-                  ? 'linear-gradient(135deg,#6366f1,#8b5cf6)'
-                  : 'rgba(255,255,255,0.06)',
+                background: 'transparent',
                 border: 'none',
                 cursor: text.trim() && !sending ? 'pointer' : 'default',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                color: 'white', transition: 'all 0.18s'
+                color: text.trim() && !sending ? '#49B265' : 'rgba(73, 178, 101, 0.5)',
+                transition: 'all 0.18s',
+                boxShadow: 'none'
               }}
             >
-              <FiSend style={{ fontSize: 13 }} />
+              <img 
+                src="/coins/send.png" 
+                alt="Send" 
+                style={{ 
+                  width: '24px', height: '24px',
+                  opacity: text.trim() && !sending ? 1 : 0.5,
+                  transition: 'opacity 0.18s'
+                }} 
+              />
             </button>
           </div>
         </form>
-        <p style={{ margin: '6px 0 0 41px', fontSize: '0.65rem', color: '#1e293b' }}>
-          Our team typically responds within a few hours
-        </p>
       </div>
 
       <style>{`

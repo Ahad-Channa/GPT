@@ -2,125 +2,39 @@ import { useState, useEffect } from 'react';
 import DashboardLayout from '../components/layout/DashboardLayout';
 import { useAuth } from '../contexts/AuthContext';
 import { motion } from 'framer-motion';
-import { FiUsers, FiTrendingUp, FiCopy, FiInbox, FiLoader, FiChevronDown, FiLock, FiClock } from 'react-icons/fi';
+import { FiUsers, FiTrendingUp, FiCopy, FiInbox, FiClock, FiChevronLeft, FiChevronRight } from 'react-icons/fi';
 import { toast } from 'react-hot-toast';
 import CoinDisplay from '../components/CoinDisplay';
 import CoinIcon from '../components/CoinIcon';
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
-const TX_TYPE_LABEL = {
-  referral_reward: { label: 'Referral', color: 'text-cyan-400' },
-};
-
-const STATUS_DOT = {
-  completed: 'bg-emerald-400',
-  pending:   'bg-amber-400 animate-pulse',
-  rejected:  'bg-rose-400',
-  failed:    'bg-rose-400',
-};
-
-function timeAgo(dateStr) {
-  const diff = Date.now() - new Date(dateStr).getTime();
-  const m = Math.floor(diff / 60000);
-  const h = Math.floor(diff / 3600000);
+const calculateReleaseIn = (releaseDateStr) => {
+  if (!releaseDateStr) return 'N/A';
+  const diff = new Date(releaseDateStr).getTime() - new Date().getTime();
+  if (diff <= 0) return 'Ready';
   const d = Math.floor(diff / 86400000);
-  if (m < 1)  return 'Just now';
-  if (m < 60) return `${m}m ago`;
-  if (h < 24) return `${h}h ago`;
-  if (d < 7)  return `${d}d ago`;
-  return new Date(dateStr).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-}
+  const h = Math.floor((diff % 86400000) / 3600000);
+  return `${d}d ${h}h`;
+};
 
-// ── Compact history list shared by Offers and Withdrawals tab
-const HistoryList = ({ transactions, loading, error, page, totalPages, onNext, onPrev, emptyMessage }) => {
-  if (loading) {
-    return (
-      <div className="space-y-3 px-1">
-        {Array.from({ length: 5 }).map((_, i) => (
-          <div key={i} className="flex items-center gap-3 animate-pulse">
-            <div className="w-8 h-8 rounded-xl bg-white/[0.05] flex-shrink-0" />
-            <div className="flex-1 space-y-2">
-              <div className="h-3 bg-white/[0.05] rounded w-1/3" />
-              <div className="h-2 bg-white/[0.04] rounded w-2/3" />
-            </div>
-            <div className="h-3 bg-white/[0.05] rounded w-16" />
-          </div>
+const Pagination = ({ page, totalPages, onNext, onPrev }) => {
+  if (totalPages <= 1) return null;
+  return (
+    <div className="pt-6 pb-2 flex items-center justify-center gap-2">
+      <button onClick={onPrev} disabled={page === 1} className="w-8 h-8 rounded-full flex items-center justify-center border border-[#2a2d36] text-[#4ade80] hover:bg-[#4ade80]/10 disabled:opacity-50 disabled:hover:bg-transparent transition-colors">
+        <FiChevronLeft />
+      </button>
+      <div className="flex items-center gap-1">
+        {Array.from({ length: totalPages }).map((_, i) => (
+          <button key={i} className={`w-8 h-8 rounded-full text-sm font-medium ${page === i + 1 ? 'bg-[#4ade80] text-[#0f1115]' : 'text-slate-400'} transition-colors cursor-default`}>
+            {i + 1}
+          </button>
         ))}
       </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="py-10 text-center">
-        <p className="text-rose-400 text-sm">{error}</p>
-      </div>
-    );
-  }
-
-  if (transactions.length === 0) {
-    return (
-      <div className="py-14 flex flex-col items-center gap-3 text-center">
-        <div className="w-12 h-12 rounded-2xl bg-white/[0.03] border border-white/[0.07] flex items-center justify-center">
-          <FiInbox className="text-slate-600 text-xl" />
-        </div>
-        <p className="text-slate-500 text-sm">{emptyMessage}</p>
-      </div>
-    );
-  }
-
-  return (
-    <div>
-      <div className="divide-y divide-white/[0.04]">
-        {transactions.map((tx) => {
-          const cfg = TX_TYPE_LABEL[tx.transactionType] || { label: tx.transactionType, color: 'text-slate-400' };
-          const label = cfg.label;
-          const color = cfg.color;
-          const isDebit = tx.amount < 0;
-          const dotClass = STATUS_DOT[tx.status] || STATUS_DOT.completed;
-          const description = tx.description;
-          const amountStr = `${isDebit ? '' : '+'}${Math.abs(tx.amount).toLocaleString()}`;
-
-          return (
-            <div key={tx._id} className="flex items-center gap-3 py-3 hover:bg-white/[0.01] transition-colors">
-              <div className={`w-2 h-2 rounded-full flex-shrink-0 ${dotClass}`} />
-              <div className="flex-1 min-w-0">
-                <p className="text-sm text-slate-200 font-medium truncate">{description}</p>
-                <div className="flex items-center gap-2 mt-0.5">
-                  <span className={`text-[10px] font-semibold ${color}`}>{label}</span>
-                  <span className="text-[10px] text-slate-600">{timeAgo(tx.createdAt)}</span>
-                </div>
-              </div>
-              <span className={`text-sm font-bold flex-shrink-0 ${isDebit ? 'text-rose-400' : 'text-emerald-400'}`}>
-                {amountStr}
-              </span>
-            </div>
-          );
-        })}
-      </div>
-
-      {totalPages > 1 && (
-        <div className="pt-4 flex items-center justify-between border-t border-white/[0.04] mt-2">
-          <button
-            onClick={onPrev}
-            disabled={page === 1 || loading}
-            className="px-3 py-1.5 text-xs font-medium text-slate-300 bg-white/[0.03] hover:bg-white/[0.06] rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            Previous
-          </button>
-          <span className="text-xs text-slate-500">
-            Page {page} of {totalPages}
-          </span>
-          <button
-            onClick={onNext}
-            disabled={page === totalPages || loading}
-            className="px-3 py-1.5 text-xs font-medium text-slate-300 bg-white/[0.03] hover:bg-white/[0.06] rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            Next
-          </button>
-        </div>
-      )}
+      <button onClick={onNext} disabled={page === totalPages} className="w-8 h-8 rounded-full flex items-center justify-center border border-[#2a2d36] text-[#4ade80] hover:bg-[#4ade80]/10 disabled:opacity-50 disabled:hover:bg-transparent transition-colors">
+        <FiChevronRight />
+      </button>
     </div>
   );
 };
@@ -293,313 +207,340 @@ const Affiliates = () => {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="max-w-5xl mx-auto w-full space-y-8"
+        className="max-w-[1280px] mx-auto w-full space-y-8"
       >
         {/* Header Section */}
-        <div className="text-center space-y-4">
-          <div className="w-20 h-20 mx-auto rounded-full bg-cyan-500/10 flex items-center justify-center border border-cyan-500/20 shadow-[0_0_30px_rgba(6,182,212,0.15)]">
-            <FiUsers className="text-4xl text-cyan-400" />
-          </div>
-          <h1 className="text-3xl sm:text-4xl font-bold font-display text-white">Affiliate Program</h1>
-          <p className="text-slate-400 max-w-lg mx-auto text-sm sm:text-base">
-            Invite friends and earn{' '}
-            {statsLoading ? (
-              <span className="inline-block w-8 h-3.5 bg-white/10 rounded animate-pulse align-middle" />
-            ) : (
-              <span className="text-cyan-400 font-bold">
-                {stats.referralPercentage != null ? `${stats.referralPercentage}%` : '5%'}
-              </span>
-            )}{' '}
-            of their earnings — forever! The more you invite, the more you earn.
-          </p>
+        <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-8 w-full max-w-[1240px]">
+            <div className="flex flex-col gap-[6px] w-full max-w-[866px] h-auto lg:h-[122px]">
+              <h1 style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="font-bold text-[68px] leading-[120%] text-white tracking-normal m-0 p-0">Affiliate Program</h1>
+              <p style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="font-medium text-[26px] leading-[130%] text-[#888888] tracking-normal m-0 p-0 max-w-[866px] h-auto lg:h-[34px] lg:whitespace-nowrap">
+                Invite friends and earn {statsLoading ? '...' : (stats.referralPercentage != null ? `${stats.referralPercentage}%` : '10%')} of their earnings — forever! The more you invite, the more you earn.
+              </p>
+            </div>
+            <div className="relative w-[365.53px] h-[243.69px] shrink-0">
+              <img 
+                src="/coins/heroaffli.png" 
+                alt="Affiliate Hero" 
+                className="w-full h-full object-contain" 
+              />
+              <div 
+                className="absolute inset-0 pointer-events-none mix-blend-color"
+                style={{
+                  backgroundColor: 'rgba(73, 178, 101, 1)',
+                  WebkitMaskImage: 'url(/coins/heroaffli.png)',
+                  WebkitMaskSize: 'contain',
+                  WebkitMaskRepeat: 'no-repeat',
+                  WebkitMaskPosition: 'center',
+                  maskImage: 'url(/coins/heroaffli.png)',
+                  maskSize: 'contain',
+                  maskRepeat: 'no-repeat',
+                  maskPosition: 'center',
+                }}
+              />
+            </div>
         </div>
 
-        {/* Stats Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          <div className="glass-card p-6 relative overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/5 to-transparent pointer-events-none" />
-            <h3 className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-2">Total Affiliates</h3>
-            <div className="text-4xl font-black text-white">
-              {statsLoading ? <span className="animate-pulse">...</span> : stats.totalAffiliates}
-            </div>
-            <p className="text-xs text-slate-500 mt-2">Active referred users</p>
-          </div>
+        {/* Lower Group (Stats, Referral Link, Tabs, Tables) */}
+        <div className="flex flex-col gap-[20px] w-full max-w-[1240px]">
+          <div className="w-full">
+            {/* Stats Grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-[20px]">
+              <div className="bg-[#1f2128] rounded-xl p-5 border border-white/[0.05]">
+                <h3 className="text-sm font-bold text-white mb-2">Today's Reward</h3>
+                <div className="text-3xl font-black text-[#4ade80] mb-1">
+                  {statsLoading ? '...' : stats.totalAffiliates}
+                </div>
+                <p className="text-xs text-slate-500">Active referred users</p>
+              </div>
 
-          <div className="glass-card p-6 relative overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/5 to-transparent pointer-events-none" />
-            <h3 className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-2">Lifetime Earnings</h3>
-            <div className="flex items-center gap-2">
-              <div className="text-4xl font-black text-emerald-400">
-                {statsLoading ? <span className="animate-pulse">...</span> : <CoinDisplay amount={stats.totalAffiliateEarnings} size={24} />}
+              <div className="bg-[#1f2128] rounded-xl p-5 border border-white/[0.05]">
+                <h3 className="text-sm font-bold text-white mb-2">Lifetime Earnings</h3>
+                <div className="flex items-center gap-2 mb-1">
+                  <CoinIcon size={24} />
+                  <div className="text-3xl font-black text-[#fbbf24]">
+                    {statsLoading ? '...' : stats.totalAffiliateEarnings.toLocaleString()}
+                  </div>
+                </div>
+                <p className="text-xs text-slate-500">Total coins earned from referrals</p>
+              </div>
+
+              <div className="bg-[#1f2128] rounded-xl p-5 border border-white/[0.05]">
+                <h3 className="text-sm font-bold text-white mb-2">30-Day Earnings</h3>
+                <div className="flex items-center gap-2 mb-1">
+                  <CoinIcon size={24} />
+                  <div className="text-3xl font-black text-[#fbbf24]">
+                    {statsLoading ? '...' : stats.last30DaysEarnings.toLocaleString()}
+                  </div>
+                </div>
+                <p className="text-xs text-slate-500">Coins earned in the last 30 days</p>
+              </div>
+
+              <div className="bg-[#1f2128] rounded-xl p-5 border border-white/[0.05]">
+                <h3 className="text-sm font-bold text-white mb-2">Pending Commissions</h3>
+                <div className="flex items-center gap-2 mb-1">
+                  <CoinIcon size={24} />
+                  <div className="text-3xl font-black text-[#fbbf24]">
+                    {statsLoading ? '...' : stats.pendingCommissions.toLocaleString()}
+                  </div>
+                </div>
+                <p className="text-xs text-slate-500">
+                  {statsLoading ? '...' : `${stats.pendingCount} hold(s) - releases after ${stats.holdDays}d`}
+                </p>
               </div>
             </div>
-            <p className="text-xs text-slate-500 mt-2">Total coins earned from referrals</p>
           </div>
-
-          <div className="glass-card p-6 relative overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/5 to-transparent pointer-events-none" />
-            <h3 className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-2">30-Day Earnings</h3>
-            <div className="flex items-center gap-2">
-              <div className="text-4xl font-black text-indigo-400">
-                {statsLoading ? <span className="animate-pulse">...</span> : <CoinDisplay amount={stats.last30DaysEarnings} size={24} />}
-              </div>
-            </div>
-            <p className="text-xs text-slate-500 mt-2">Coins earned in the last 30 days</p>
-          </div>
-
-          <div className="glass-card p-6 relative overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-to-br from-amber-500/5 to-transparent pointer-events-none" />
-            <h3 className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-2">Pending Commissions</h3>
-            <div className="flex items-center gap-2">
-              <div className="text-4xl font-black text-amber-400">
-                {statsLoading ? <span className="animate-pulse">...</span> : <CoinDisplay amount={stats.pendingCommissions} size={24} />}
-              </div>
-            </div>
-            <p className="text-xs text-slate-500 mt-2">
-              {statsLoading ? '...' : `${stats.pendingCount} hold(s) · releases after ${stats.holdDays}d`}
-            </p>
-          </div>
-        </div>
 
         {/* Referral Link Section */}
-        <div className="glass-card p-6 sm:p-10 text-center relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-64 h-64 bg-cyan-500/10 rounded-full blur-3xl -mr-20 -mt-20 pointer-events-none" />
-          <div className="absolute bottom-0 left-0 w-64 h-64 bg-indigo-500/10 rounded-full blur-3xl -ml-20 -mb-20 pointer-events-none" />
+        <div className="bg-[#1f2128] rounded-2xl p-6 border border-white/[0.05]">
+          <h2 className="text-xl font-bold text-white mb-1">Your Unique Referral Link</h2>
+          <p className="text-slate-400 text-sm mb-4">Share this link anywhere to start earning passive income.</p>
           
-          <h2 className="text-xl sm:text-2xl font-bold text-white mb-2 relative z-10">Your Unique Referral Link</h2>
-          <p className="text-slate-400 text-sm mb-6 relative z-10">Share this link anywhere to start earning passive income.</p>
-          
-          <div className="max-w-2xl mx-auto flex flex-col sm:flex-row items-center w-full bg-[#0b101e] border border-white/[0.08] rounded-xl overflow-hidden relative z-10 shadow-lg">
-            <p className="text-sm sm:text-base text-cyan-200 font-mono truncate px-4 py-4 flex-1 select-all w-full text-center sm:text-left">
-              {window.location.origin}/r/{mongoUser?.referralCode}
-            </p>
+          <div className="flex flex-col sm:flex-row items-center bg-[#15171e] rounded-xl border border-[#2a2d36] overflow-hidden">
+            <input 
+              type="text" 
+              readOnly 
+              value={`${window.location.origin}/r/${mongoUser?.referralCode || ''}`}
+              className="flex-1 w-full bg-transparent text-slate-300 px-4 py-3 text-sm font-mono outline-none"
+            />
             <button 
               onClick={() => copyToClipboard(`${window.location.origin}/r/${mongoUser?.referralCode}`)}
-              className="w-full sm:w-auto px-8 py-4 flex items-center justify-center bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-400 hover:to-blue-400 text-white font-bold text-sm transition-all shrink-0 gap-2 shadow-[0_0_20px_rgba(6,182,212,0.3)] hover:shadow-[0_0_30px_rgba(6,182,212,0.5)]"
+              className="w-full sm:w-auto px-6 py-2.5 sm:m-1.5 rounded-none sm:rounded-lg flex items-center justify-center bg-[#4ade80] hover:bg-[#3bb770] text-[#0f1115] font-bold text-sm transition-colors gap-2"
             >
-              <FiCopy size={18} /> <span>Copy Link</span>
+              <FiCopy size={16} /> Copy
             </button>
           </div>
         </div>
 
         {/* Tabs section */}
-        <div className="glass-card overflow-hidden">
-          <div className="flex overflow-x-auto border-b border-white/[0.06] bg-white/[0.02]">
+        <div className="bg-[#1f2128] rounded-2xl border border-white/[0.05] p-2 flex flex-col sm:flex-row gap-2">
             <button
               onClick={() => setActiveTab('recent')}
-              className={`flex-1 px-6 py-4 text-sm font-bold transition-colors whitespace-nowrap border-b-2 ${
+              className={`flex-1 px-4 py-3 rounded-xl text-sm font-bold transition-all flex justify-center items-center gap-2 ${
                 activeTab === 'recent'
-                  ? 'border-cyan-400 text-white'
-                  : 'border-transparent text-slate-400 hover:text-slate-200'
+                  ? 'bg-[#4ade80] text-[#0f1115] shadow-lg'
+                  : 'text-slate-300 hover:bg-white/5 hover:text-white'
               }`}
             >
-              Recent Affiliate Earnings
+              <FiInbox /> Recent Affiliate Earnings
             </button>
             <button
               onClick={() => setActiveTab('users')}
-              className={`flex-1 px-6 py-4 text-sm font-bold transition-colors whitespace-nowrap border-b-2 ${
+              className={`flex-1 px-4 py-3 rounded-xl text-sm font-bold transition-all flex justify-center items-center gap-2 ${
                 activeTab === 'users'
-                  ? 'border-cyan-400 text-white'
-                  : 'border-transparent text-slate-400 hover:text-slate-200'
+                  ? 'bg-[#4ade80] text-[#0f1115] shadow-lg'
+                  : 'text-slate-300 hover:bg-white/5 hover:text-white'
               }`}
             >
-              Referred Users
+              <FiUsers /> Referred Users
             </button>
             <button
               onClick={() => setActiveTab('pending')}
-              className={`flex-1 px-6 py-4 text-sm font-bold transition-colors whitespace-nowrap border-b-2 flex justify-center items-center gap-2 ${
+              className={`flex-1 px-4 py-3 rounded-xl text-sm font-bold transition-all flex justify-center items-center gap-2 ${
                 activeTab === 'pending'
-                  ? 'border-cyan-400 text-white'
-                  : 'border-transparent text-slate-400 hover:text-slate-200'
+                  ? 'bg-[#4ade80] text-[#0f1115] shadow-lg'
+                  : 'text-slate-300 hover:bg-white/5 hover:text-white'
               }`}
             >
-              Pending Affiliate Earnings
-              {affiliateHolds.length > 0 && (
-                <span className="text-[10px] font-bold text-amber-300 bg-amber-500/10 border border-amber-500/20 rounded px-1.5 py-0.5">
-                  {affiliateHolds.length}
-                </span>
-              )}
+              <FiClock /> Pending Affiliate Earnings
             </button>
-          </div>
-
-          <div className="p-0">
-            {activeTab === 'recent' && (
-              <div className="px-6 py-4">
-                <HistoryList
-                  transactions={referrals.dataList}
-                  loading={referrals.loading}
-                  error={referrals.error}
-                  page={referrals.page}
-                  totalPages={referrals.totalPages}
-                  onNext={referrals.nextPage}
-                  onPrev={referrals.prevPage}
-                  emptyMessage="No referral earnings yet. Share your link to start earning!"
-                />
-              </div>
-            )}
-
-            {activeTab === 'users' && (
-              <div className="px-6 py-4">
-                {referredUsersData.loading ? (
-                  <div className="space-y-3 py-2 px-1">
-                    {[1,2,3].map(i => (
-                      <div key={i} className="flex items-center gap-3 animate-pulse">
-                        <div className="w-10 h-10 rounded-full bg-white/[0.05] flex-shrink-0" />
-                        <div className="flex-1 space-y-2">
-                          <div className="h-3 bg-white/[0.05] rounded w-1/3" />
-                          <div className="h-2 bg-white/[0.04] rounded w-2/3" />
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                ) : referredUsersData.error ? (
-                  <div className="py-10 text-center">
-                    <p className="text-rose-400 text-sm">{referredUsersData.error}</p>
-                  </div>
-                ) : referredUsersData.users.length === 0 ? (
-                  <div className="py-14 flex flex-col items-center gap-3 text-center">
-                    <div className="w-12 h-12 rounded-2xl bg-white/[0.03] border border-white/[0.07] flex items-center justify-center">
-                      <FiUsers className="text-slate-600 text-xl" />
-                    </div>
-                    <p className="text-slate-500 text-sm">No referred users yet.</p>
-                  </div>
-                ) : (
-                  <div>
-                    <div className="divide-y divide-white/[0.04]">
-                      {referredUsersData.users.map(u => (
-                        <div key={u._id} className="flex items-center justify-between gap-3 py-3 hover:bg-white/[0.01] transition-colors">
-                          <div className="flex items-center gap-3 min-w-0">
-                            <div className="w-10 h-10 rounded-full bg-cyan-500/10 flex items-center justify-center flex-shrink-0 border border-cyan-500/20">
-                              <FiUsers className="text-cyan-400" />
-                            </div>
-                            <div className="min-w-0">
-                              <p className="text-sm text-white font-medium truncate">{u.displayName}</p>
-                              <p className="text-[11px] text-slate-500 mt-0.5">
-                                Reg: {timeAgo(u.createdAt)} &middot; Active: {timeAgo(u.updatedAt)}
-                              </p>
-                            </div>
-                          </div>
-                          <div className="text-right flex-shrink-0">
-                            <div className="flex items-center gap-1 justify-end text-sm font-bold text-emerald-400">
-                              +{u.commissionGenerated ? u.commissionGenerated.toLocaleString() : 0} <CoinIcon size={12} />
-                            </div>
-                            <p className="text-[11px] text-slate-500 mt-0.5" title="Lifetime Value (Total coins earned by this user on the platform)">
-                              Total Earned: {u.totalEarned ? u.totalEarned.toLocaleString() : 0} <CoinIcon size={10} />
-                            </p>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                    {referredUsersData.totalPages > 1 && (
-                      <div className="pt-4 flex items-center justify-between border-t border-white/[0.04] mt-2">
-                        <button
-                          onClick={referredUsersData.prevPage}
-                          disabled={referredUsersData.page === 1 || referredUsersData.loading}
-                          className="px-3 py-1.5 text-xs font-medium text-slate-300 bg-white/[0.03] hover:bg-white/[0.06] rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                          Previous
-                        </button>
-                        <span className="text-xs text-slate-500">
-                          Page {referredUsersData.page} of {referredUsersData.totalPages}
-                        </span>
-                        <button
-                          onClick={referredUsersData.nextPage}
-                          disabled={referredUsersData.page === referredUsersData.totalPages || referredUsersData.loading}
-                          className="px-3 py-1.5 text-xs font-medium text-slate-300 bg-white/[0.03] hover:bg-white/[0.06] rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                          Next
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                )}
-              </div>
-            )}
-
-            {activeTab === 'pending' && (
-              <div className="px-6 py-4">
-                {holdsLoading ? (
-                  <div className="space-y-3 py-2">
-                    {[1,2].map(i => (
-                      <div key={i} className="flex items-center gap-3 animate-pulse">
-                        <div className="w-8 h-8 rounded-xl bg-white/[0.05] flex-shrink-0" />
-                        <div className="flex-1 space-y-2">
-                          <div className="h-3 bg-white/[0.05] rounded w-1/3" />
-                          <div className="h-2 bg-white/[0.04] rounded w-2/3" />
-                        </div>
-                        <div className="h-3 bg-white/[0.05] rounded w-16" />
-                      </div>
-                    ))}
-                  </div>
-                ) : affiliateHolds.length === 0 ? (
-                  <div className="py-10 flex flex-col items-center gap-3 text-center">
-                    <div className="w-12 h-12 rounded-2xl bg-white/[0.03] border border-white/[0.07] flex items-center justify-center">
-                      <FiInbox className="text-slate-600 text-xl" />
-                    </div>
-                    <p className="text-slate-500 text-sm">No affiliate earnings on hold right now.</p>
-                  </div>
-                ) : (
-                  <div>
-                    <div className="divide-y divide-white/[0.04]">
-                      {currentPendingHolds.map(tx => {
-                        const releaseDate = tx.releaseDate ? new Date(tx.releaseDate) : null;
-                        return (
-                          <div key={tx._id} className="flex items-center gap-3 py-3.5">
-                            <div className="w-8 h-8 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center flex-shrink-0">
-                              <FiClock className="text-amber-400 text-sm" />
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              <p className="text-sm text-white font-semibold">Referral Commission</p>
-                              <p className="text-xs text-slate-500">
-                                Earned {new Date(tx.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
-                                {releaseDate && (
-                                  <> &middot; Releases {tx.daysRemaining === 0
-                                    ? <span className="text-emerald-400 font-medium">today</span>
-                                    : <span className="text-amber-400 font-medium">in {tx.daysRemaining}d</span>
-                                  } ({releaseDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })})
-                                  </>
-                                )}
-                              </p>
-                            </div>
-                            <div className="text-right flex-shrink-0">
-                              <p className="text-sm font-bold text-amber-300">+{tx.amount.toLocaleString()} <CoinIcon size={12} /></p>
-                              <div className="flex items-center gap-1 justify-end mt-0.5">
-                                <FiLock className="text-amber-500/60 text-[10px]" />
-                                <span className="text-[10px] text-amber-500/60 font-medium uppercase tracking-wide">Hold</span>
-                              </div>
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                    {totalPendingPages > 1 && (
-                      <div className="pt-4 flex items-center justify-between border-t border-white/[0.04] mt-2">
-                        <button
-                          onClick={() => setPendingPage(p => Math.max(1, p - 1))}
-                          disabled={pendingPage === 1}
-                          className="px-3 py-1.5 text-xs font-medium text-slate-300 bg-white/[0.03] hover:bg-white/[0.06] rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                          Previous
-                        </button>
-                        <span className="text-xs text-slate-500">
-                          Page {pendingPage} of {totalPendingPages}
-                        </span>
-                        <button
-                          onClick={() => setPendingPage(p => Math.min(totalPendingPages, p + 1))}
-                          disabled={pendingPage === totalPendingPages}
-                          className="px-3 py-1.5 text-xs font-medium text-slate-300 bg-white/[0.03] hover:bg-white/[0.06] rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                          Next
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
         </div>
 
+        {/* Table Content Section */}
+        <div className="bg-[#1f2128] rounded-2xl border border-white/[0.05] overflow-hidden p-6">
+           
+           {activeTab === 'recent' && (
+             <div>
+               {referrals.loading ? (
+                 <div className="animate-pulse flex flex-col gap-4">
+                    <div className="h-8 bg-white/5 rounded w-full"></div>
+                    <div className="h-12 bg-white/5 rounded w-full"></div>
+                 </div>
+               ) : referrals.error ? (
+                 <p className="text-rose-400 text-center py-8">{referrals.error}</p>
+               ) : referrals.dataList.length === 0 ? (
+                 <p className="text-slate-500 text-center py-8">No referral earnings yet.</p>
+               ) : (
+                 <>
+                   <div className="overflow-x-auto">
+                     <table className="w-full text-left border-collapse min-w-[600px]">
+                       <thead>
+                         <tr className="text-slate-400 text-sm border-b border-[#2a2d36]">
+                           <th className="pb-4 font-medium px-4">User</th>
+                           <th className="pb-4 font-medium px-4">Date</th>
+                           <th className="pb-4 font-medium px-4">Earning</th>
+                           <th className="pb-4 font-medium px-4">Commission ({statsLoading ? '...' : (stats.referralPercentage != null ? `${stats.referralPercentage}%` : '10%')})</th>
+                           <th className="pb-4 font-medium px-4 text-right">Status</th>
+                         </tr>
+                       </thead>
+                       <tbody className="divide-y divide-[#2a2d36]">
+                         {referrals.dataList.map(tx => (
+                           <tr key={tx._id} className="hover:bg-white/[0.02] transition-colors">
+                             <td className="py-4 px-4">
+                               <div className="flex items-center gap-3">
+                                  <img src={tx.linkedTransactionId?.userId?.avatarUrl || tx.linkedTransactionId?.userId?.photoURL || `https://api.dicebear.com/7.x/bottts/svg?seed=${tx._id}`} className="w-8 h-8 rounded-full bg-[#15171e] object-cover" alt="avatar"/>
+                                  <span className="font-bold text-white">{tx.description?.replace(/Referral Reward from /i, '') || 'Unknown'}</span>
+                               </div>
+                             </td>
+                             <td className="py-4 px-4 text-white font-medium">{new Date(tx.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</td>
+                             <td className="py-4 px-4">
+                               <div className="flex items-center gap-1 font-bold text-[#fbbf24]">
+                                 <CoinIcon size={14} /> {(tx.amount * 10).toLocaleString()}
+                               </div>
+                             </td>
+                             <td className="py-4 px-4">
+                               <div className="flex items-center gap-1 font-bold text-[#fbbf24]">
+                                 <CoinIcon size={14} /> {tx.amount.toLocaleString()}
+                               </div>
+                             </td>
+                             <td className="py-4 px-4 text-right">
+                               <span className={`inline-block px-3 py-1 rounded-full text-xs font-bold ${tx.status === 'hold' ? 'bg-[#fbbf24]/10 text-[#fbbf24]' : 'bg-[#153423] text-[#4ade80]'}`}>
+                                 {tx.status === 'hold' ? 'Pending' : 'Paid'}
+                               </span>
+                             </td>
+                           </tr>
+                         ))}
+                       </tbody>
+                     </table>
+                   </div>
+                   <Pagination 
+                     page={referrals.page} 
+                     totalPages={referrals.totalPages} 
+                     onNext={referrals.nextPage} 
+                     onPrev={referrals.prevPage} 
+                   />
+                 </>
+               )}
+             </div>
+           )}
+
+           {activeTab === 'users' && (
+             <div>
+               {referredUsersData.loading ? (
+                 <div className="animate-pulse flex flex-col gap-4">
+                    <div className="h-8 bg-white/5 rounded w-full"></div>
+                    <div className="h-12 bg-white/5 rounded w-full"></div>
+                 </div>
+               ) : referredUsersData.error ? (
+                 <p className="text-rose-400 text-center py-8">{referredUsersData.error}</p>
+               ) : referredUsersData.users.length === 0 ? (
+                 <p className="text-slate-500 text-center py-8">No referred users yet.</p>
+               ) : (
+                 <>
+                   <div className="overflow-x-auto">
+                     <table className="w-full text-left border-collapse min-w-[600px]">
+                       <thead>
+                         <tr className="text-slate-400 text-sm border-b border-[#2a2d36]">
+                           <th className="pb-4 font-medium px-4">User</th>
+                           <th className="pb-4 font-medium px-4">Joined Date</th>
+                           <th className="pb-4 font-medium px-4">Total Earning</th>
+                           <th className="pb-4 font-medium px-4">Your Commission</th>
+                           <th className="pb-4 font-medium px-4 text-right">Status</th>
+                         </tr>
+                       </thead>
+                       <tbody className="divide-y divide-[#2a2d36]">
+                         {referredUsersData.users.map(u => (
+                           <tr key={u._id} className="hover:bg-white/[0.02] transition-colors">
+                             <td className="py-4 px-4">
+                               <div className="flex items-center gap-3">
+                                  <img src={u.avatarUrl || u.photoURL || `https://api.dicebear.com/7.x/bottts/svg?seed=${u.displayName}`} className="w-8 h-8 rounded-full bg-[#15171e] object-cover" alt="avatar"/>
+                                  <span className="font-bold text-white">{u.displayName}</span>
+                               </div>
+                             </td>
+                             <td className="py-4 px-4 text-white font-medium">{new Date(u.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</td>
+                             <td className="py-4 px-4">
+                               <div className="flex items-center gap-1 font-bold text-[#fbbf24]">
+                                 <CoinIcon size={14} /> {(u.totalEarned || 0).toLocaleString()}
+                               </div>
+                             </td>
+                             <td className="py-4 px-4">
+                               <div className="flex items-center gap-1 font-bold text-[#fbbf24]">
+                                 <CoinIcon size={14} /> {(u.referralEarnings > 0 ? u.referralEarnings : Math.floor((u.totalEarned || 0) * ((stats.referralPercentage || 10) / 100))).toLocaleString()}
+                               </div>
+                             </td>
+                             <td className="py-4 px-4 text-right">
+                               <span className="inline-block px-3 py-1 rounded-full text-xs font-bold bg-[#153423] text-[#4ade80]">
+                                 Active
+                               </span>
+                             </td>
+                           </tr>
+                         ))}
+                       </tbody>
+                     </table>
+                   </div>
+                   <Pagination 
+                     page={referredUsersData.page} 
+                     totalPages={referredUsersData.totalPages} 
+                     onNext={referredUsersData.nextPage} 
+                     onPrev={referredUsersData.prevPage} 
+                   />
+                 </>
+               )}
+             </div>
+           )}
+
+           {activeTab === 'pending' && (
+             <div>
+               {holdsLoading ? (
+                 <div className="animate-pulse flex flex-col gap-4">
+                    <div className="h-8 bg-white/5 rounded w-full"></div>
+                    <div className="h-12 bg-white/5 rounded w-full"></div>
+                 </div>
+               ) : currentPendingHolds.length === 0 ? (
+                 <p className="text-slate-500 text-center py-8">No affiliate earnings on hold right now.</p>
+               ) : (
+                 <>
+                   <div className="overflow-x-auto">
+                     <table className="w-full text-left border-collapse min-w-[600px]">
+                       <thead>
+                         <tr className="text-slate-400 text-sm border-b border-[#2a2d36]">
+                           <th className="pb-4 font-medium px-4">User</th>
+                           <th className="pb-4 font-medium px-4">Earning Date</th>
+                           <th className="pb-4 font-medium px-4">Earning</th>
+                           <th className="pb-4 font-medium px-4">Commission ({statsLoading ? '...' : (stats.referralPercentage != null ? `${stats.referralPercentage}%` : '10%')})</th>
+                           <th className="pb-4 font-medium px-4 text-right">Release In</th>
+                         </tr>
+                       </thead>
+                       <tbody className="divide-y divide-[#2a2d36]">
+                         {currentPendingHolds.map(tx => (
+                           <tr key={tx._id} className="hover:bg-white/[0.02] transition-colors">
+                             <td className="py-4 px-4">
+                               <div className="flex items-center gap-3">
+                                  <img src={tx.linkedTransactionId?.userId?.avatarUrl || tx.linkedTransactionId?.userId?.photoURL || `https://api.dicebear.com/7.x/bottts/svg?seed=${tx._id}`} className="w-8 h-8 rounded-full bg-[#15171e] object-cover" alt="avatar"/>
+                                  <span className="font-bold text-white">{tx.description?.replace(/Referral Reward from /i, '') || 'Unknown'}</span>
+                               </div>
+                             </td>
+                             <td className="py-4 px-4 text-white font-medium">{new Date(tx.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</td>
+                             <td className="py-4 px-4">
+                               <div className="flex items-center gap-1 font-bold text-[#fbbf24]">
+                                 <CoinIcon size={14} /> {(tx.amount * 10).toLocaleString()}
+                               </div>
+                             </td>
+                             <td className="py-4 px-4">
+                               <div className="flex items-center gap-1 font-bold text-[#fbbf24]">
+                                 <CoinIcon size={14} /> {tx.amount.toLocaleString()}
+                               </div>
+                             </td>
+                             <td className="py-4 px-4 text-right text-slate-300 font-medium">
+                               {calculateReleaseIn(tx.releaseDate)}
+                             </td>
+                           </tr>
+                         ))}
+                       </tbody>
+                     </table>
+                   </div>
+                   <Pagination 
+                     page={pendingPage} 
+                     totalPages={totalPendingPages} 
+                     onNext={() => setPendingPage(p => Math.min(totalPendingPages, p + 1))} 
+                     onPrev={() => setPendingPage(p => Math.max(1, p - 1))} 
+                   />
+                 </>
+               )}
+             </div>
+           )}
+
+        </div>
+        </div>
       </motion.div>
     </DashboardLayout>
   );
