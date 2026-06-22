@@ -59,46 +59,40 @@ const PromoCodeRedeem = ({ onSuccess }) => {
   };
 
   return (
-    <motion.div variants={item} className="flex flex-col w-[1240px] gap-[18px] rounded-[20px] p-[20px] bg-white/[0.14]">
-      <div className="flex items-center w-[852px] h-[88px] gap-[16px]">
-        <div className="flex items-center justify-center w-[88px] h-[88px] gap-[6px] rounded-[10px] py-[10px] px-[12px] bg-[rgba(41,253,152,0.2)] flex-shrink-0">
-          <img src="/coins/gift.png" alt="Gift Icon" className="w-[44px] h-[44px] object-contain" />
-        </div>
-        <div className="flex flex-col w-[748px] h-[85px] gap-[6px] justify-center">
-          <h2 className="w-[748px] h-[50px] m-0 p-0 font-bold font-['Barlow_Condensed'] text-[42px] leading-[120%] text-white whitespace-nowrap">
-            Redeem Promo Code
-          </h2>
-          <p className="w-[748px] h-[29px] m-0 p-0 font-medium font-['Barlow_Condensed'] text-[22px] leading-[130%] text-[#888888] whitespace-nowrap">
-            Have a code? Enter it below to claim free coins.
-          </p>
-        </div>
+    <motion.div variants={item} className="flex flex-col md:flex-row items-start md:items-center justify-between w-full md:w-[1240px] md:h-[120px] rounded-[20px] p-[20px] bg-[#242424] shrink-0 gap-[18px] relative">
+      <div className="flex flex-col gap-[6px] w-full md:w-[591px] md:h-[76px] shrink-0 justify-between">
+        <h2 className="m-0 p-0 font-bold font-['Barlow_Condensed'] text-[34px] leading-[120%] text-white w-full md:w-[591px] md:h-[41px] flex items-center shrink-0">
+          Redeem Promo Code
+        </h2>
+        <p className="m-0 p-0 font-medium font-['Barlow_Condensed'] text-[22px] leading-[130%] text-[#888888] w-full md:w-[591px] md:h-[29px] flex items-center shrink-0">
+          Have a code? Enter it below to claim free coins.
+        </p>
       </div>
       
-      <form onSubmit={handleRedeem} className="flex flex-col sm:flex-row gap-3 items-center w-full">
+      <form onSubmit={handleRedeem} className="flex items-center w-full md:w-[591px] md:h-[80px] bg-[rgba(255,255,255,0.08)] border border-[#49B265] rounded-[10px] p-[16px] justify-between gap-[10px] shrink-0 relative">
         <input
           type="text"
           value={code}
           onChange={(e) => setCode(e.target.value.toUpperCase())}
-          placeholder="ENTER CODE HERE"
-          className="bg-white/5 border border-[#49B265]/30 rounded-[10px] h-[48px] px-4 text-white placeholder-slate-500 focus:outline-none focus:border-[#49B265]/70 focus:ring-1 focus:ring-[#49B265]/50 flex-1 uppercase font-['Barlow_Condensed'] font-medium text-[22px] tracking-wider w-full"
+          placeholder="Enter code here..."
+          className="w-full md:w-[466px] h-[20px] bg-transparent text-white placeholder-white/50 font-medium font-['Barlow_Condensed'] text-[22px] leading-[20px] align-middle focus:outline-none border-none p-0 uppercase"
           disabled={loading}
         />
         <button
           type="submit"
           disabled={loading || !code.trim()}
-          className="flex items-center justify-center sm:w-auto w-full h-[48px] gap-[10px] rounded-[10px] px-[30px] py-[10px] bg-[#49B265] shadow-[0_4px_0_0_#276D3A] hover:bg-[#49B265]/90 hover:translate-y-[1px] hover:shadow-[0_3px_0_0_#276D3A] active:translate-y-[4px] active:shadow-none transition-all shrink-0 disabled:opacity-50 disabled:hover:translate-y-0 disabled:hover:shadow-[0_4px_0_0_#276D3A] disabled:active:translate-y-0"
+          className="flex items-center justify-center w-[93px] h-[48px] rounded-[10px] gap-[10px] py-[10px] px-[20px] bg-[#49B265] shadow-[0_4px_0_0_#276D3A] hover:bg-[#49B265]/90 hover:translate-y-[1px] hover:shadow-[0_3px_0_0_#276D3A] active:translate-y-[4px] active:shadow-none transition-all disabled:opacity-50 disabled:translate-y-0 disabled:shadow-[0_4px_0_0_#276D3A] shrink-0"
         >
-          <span className="m-0 p-0 font-bold font-['Barlow_Condensed'] text-[18px] leading-none text-white whitespace-nowrap">
-            {loading ? 'Redeeming...' : 'Redeem'}
+          <span className="font-bold font-['Barlow_Condensed'] text-[18px] leading-none text-white whitespace-nowrap">
+            {loading ? '...' : 'Redeem'}
           </span>
-          <img src="/coins/ar.png" alt="Arrow" className="w-[24px] h-[24px] object-contain" />
         </button>
       </form>
       
       {message.text && (
         <motion.p 
           initial={{ opacity: 0, y: -5 }} animate={{ opacity: 1, y: 0 }}
-          className={`mt-3 text-sm font-medium ${message.type === 'success' ? 'text-emerald-400' : 'text-rose-400'}`}
+          className={`absolute -bottom-[24px] right-[20px] text-sm font-medium ${message.type === 'success' ? 'text-emerald-400' : 'text-rose-400'}`}
         >
           {message.text}
         </motion.p>
@@ -107,6 +101,7 @@ const PromoCodeRedeem = ({ onSuccess }) => {
   );
 };
 
+
 const Wallet = () => {
   const { currentUser, mongoUser, setMongoUser } = useAuth();
   const [showWithdraw, setShowWithdraw]   = useState(false);
@@ -114,6 +109,7 @@ const Wallet = () => {
   const [settings,     setSettings]       = useState(null);
   const [txRefresh,    setTxRefresh]      = useState(0);
   const [settingsLoad, setSettingsLoad]   = useState(true);
+  const [showBookSelector, setShowBookSelector] = useState(false);
 
   // Load wallet settings (fee %, methods, live rate)
   useEffect(() => {
@@ -333,7 +329,7 @@ const Wallet = () => {
             </div>
 
             <button 
-              onClick={scrollToBooks}
+              onClick={() => setShowBookSelector(true)}
               className="flex items-center justify-center w-[360px] h-[48px] gap-[10px] rounded-[10px] px-[30px] py-[10px] bg-[#49B265] shadow-[0_4px_0_0_#276D3A] hover:bg-[#49B265]/90 hover:translate-y-[1px] hover:shadow-[0_3px_0_0_#276D3A] active:translate-y-[4px] active:shadow-none transition-all mt-auto shrink-0"
             >
               <span className="m-0 p-0 font-bold font-['Barlow_Condensed'] text-[18px] leading-none text-white whitespace-nowrap">
@@ -345,16 +341,6 @@ const Wallet = () => {
 
         </motion.div>
 
-        {/* ── My Books ─────────────────────────────────────────── */}
-        <div id="my-books-section" className="scroll-mt-6">
-          <MyBooksSection
-            balance={balance}
-            onBalanceUpdate={(newBalance) => {
-              if (setMongoUser) setMongoUser(prev => ({ ...prev, walletBalance: newBalance }));
-              setTxRefresh(n => n + 1);
-            }}
-          />
-        </div>
 
         {/* ── Promo Code Redeemer ───────────────────────────────── */}
         <PromoCodeRedeem onSuccess={handleWithdrawSuccess} />
@@ -370,6 +356,20 @@ const Wallet = () => {
             filterType={filterType}
             onClose={() => setShowWithdraw(false)}
             onSuccess={handleWithdrawSuccess}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* ── Select Book Modal ─────────────────────────────────── */}
+      <AnimatePresence>
+        {showBookSelector && (
+          <MyBooksSection
+            balance={balance}
+            onClose={() => setShowBookSelector(false)}
+            onBalanceUpdate={(newBalance) => {
+              if (setMongoUser) setMongoUser(prev => ({ ...prev, walletBalance: newBalance }));
+              setTxRefresh(n => n + 1);
+            }}
           />
         )}
       </AnimatePresence>

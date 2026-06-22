@@ -12,6 +12,20 @@ import toast from 'react-hot-toast';
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 const BACKEND = (import.meta.env.VITE_API_URL || 'http://localhost:5000/api').replace('/api', '');
 
+let openModalsCount = 0;
+const updateBodyScrollLock = (isLocked) => {
+  if (typeof document === 'undefined') return;
+  if (isLocked) {
+    document.body.style.overflow = 'hidden';
+    document.body.style.overflowY = 'hidden';
+    document.documentElement.style.overflowY = 'hidden';
+  } else {
+    document.body.style.overflow = '';
+    document.body.style.overflowY = '';
+    document.documentElement.style.overflowY = '';
+  }
+};
+
 /* ── Coin Badge ──────────────────────────────────────────────── */
 const CoinBadge = ({ amount, size = 'md' }) => {
   const cls = size === 'sm'
@@ -69,19 +83,23 @@ const BookDetailModal = ({ book, onClose, onOrder, balance }) => {
   };
 
   useEffect(() => {
-    document.body.style.overflow = 'hidden';
+    openModalsCount++;
+    updateBodyScrollLock(true);
     return () => {
-      document.body.style.overflow = 'unset';
+      openModalsCount = Math.max(0, openModalsCount - 1);
+      if (openModalsCount === 0) {
+        updateBodyScrollLock(false);
+      }
     };
   }, []);
 
   return createPortal(
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-      className="fixed inset-0 z-[99999] flex items-center justify-center bg-black/75 backdrop-blur-md p-4"
+      className="fixed inset-0 z-[99999] flex items-center justify-center bg-black/75 backdrop-blur-md p-4 overflow-y-auto"
       onClick={onClose}>
       <motion.div initial={{ scale: 0.93, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.93, opacity: 0 }}
         transition={{ duration: 0.22 }}
-        className="bg-[#242424] rounded-[20px] w-[700px] h-[808px] max-h-[95vh] flex flex-col p-[16px] gap-[16px] shadow-2xl relative overflow-y-auto overflow-x-hidden [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
+        className="bg-[#242424] rounded-[20px] w-[700px] h-[808px] my-auto flex flex-col p-[16px] gap-[16px] shadow-2xl relative border border-white/[0.08]"
         onClick={e => e.stopPropagation()}>
 
         {/* Header */}
@@ -208,9 +226,13 @@ const OrderModal = ({ book, onClose, onSuccess, balance }) => {
   const set = (k, v) => setForm(f => ({ ...f, [k]: v }));
 
   useEffect(() => {
-    document.body.style.overflow = 'hidden';
+    openModalsCount++;
+    updateBodyScrollLock(true);
     return () => {
-      document.body.style.overflow = 'unset';
+      openModalsCount = Math.max(0, openModalsCount - 1);
+      if (openModalsCount === 0) {
+        updateBodyScrollLock(false);
+      }
     };
   }, []);
 
@@ -248,11 +270,11 @@ const OrderModal = ({ book, onClose, onSuccess, balance }) => {
 
   return createPortal(
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-      className="fixed inset-0 z-[999999] flex items-center justify-center bg-black/75 backdrop-blur-md p-4"
+      className="fixed inset-0 z-[999999] flex items-center justify-center bg-black/75 backdrop-blur-md p-4 overflow-y-auto"
       onClick={onClose}>
       <motion.div initial={{ scale: 0.93, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.93, opacity: 0 }}
         transition={{ duration: 0.22 }}
-        className="bg-[#242424] rounded-[20px] w-[700px] h-[835px] max-h-[95vh] overflow-y-auto shadow-2xl overflow-x-hidden [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] p-[16px] flex flex-col gap-[16px]"
+        className="bg-[#242424] rounded-[20px] w-[700px] h-[835px] my-auto flex flex-col p-[16px] gap-[16px] shadow-2xl relative border border-white/[0.08]"
         onClick={e => e.stopPropagation()}>
 
         {/* Header */}
@@ -390,7 +412,7 @@ const OrderModal = ({ book, onClose, onSuccess, balance }) => {
 };
 
 /* ── Main Section component ──────────────────────────────────── */
-const MyBooksSection = ({ balance, onBalanceUpdate }) => {
+const MyBooksSection = ({ balance, onBalanceUpdate, onClose }) => {
   const { currentUser, getSocket } = useAuth();
   const [books, setBooks] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -436,79 +458,123 @@ const MyBooksSection = ({ balance, onBalanceUpdate }) => {
     return () => socket.off('bookOrderUpdated', onOrderUpdated);
   }, [getSocket, setBooks]);
 
-  if (loading) return null;
-  if (!visible) return null;
+  useEffect(() => {
+    openModalsCount++;
+    updateBodyScrollLock(true);
+    return () => {
+      openModalsCount = Math.max(0, openModalsCount - 1);
+      if (openModalsCount === 0) {
+        updateBodyScrollLock(false);
+      }
+    };
+  }, []);
 
-  return (
-    <>
-      <motion.div
-        initial={{ opacity: 0, y: 18 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.38 }}
-        className="flex flex-col w-[1240px] gap-[18px] rounded-[20px] p-[20px] bg-white/[0.14]"
-      >
-        {/* Section header */}
-        <div className="flex items-center w-[852px] h-[88px] gap-[16px]">
-          <div className="flex items-center justify-center w-[88px] h-[88px] gap-[6px] rounded-[10px] py-[10px] px-[12px] bg-[rgba(41,253,152,0.2)] flex-shrink-0">
-            <img src="/coins/booki.png" alt="Book Icon" className="w-[44px] h-[44px] object-contain" />
+  if (loading) return null;
+  if (!visible) {
+    return createPortal(
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+        className="fixed inset-0 z-[99999] flex items-center justify-center bg-black/75 backdrop-blur-md p-4"
+        onClick={onClose}>
+        <motion.div initial={{ scale: 0.93, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.93, opacity: 0 }}
+          transition={{ duration: 0.22 }}
+          className="bg-[#242424] rounded-[20px] w-[500px] p-[24px] shadow-2xl relative flex flex-col items-center text-center gap-4 border border-white/[0.08]"
+          onClick={e => e.stopPropagation()}>
+          <button onClick={onClose} className="absolute top-4 right-4 text-[#888888] hover:text-white transition-colors">
+            <FiX size={24} />
+          </button>
+          <div className="w-16 h-16 rounded-full bg-amber-500/10 flex items-center justify-center text-amber-500 mb-2">
+            <FiBook size={32} />
           </div>
-          <div className="flex flex-col w-[748px] h-[85px] gap-[6px] justify-center">
-            <h2 className="w-[748px] h-[50px] m-0 p-0 font-bold font-['Barlow_Condensed'] text-[42px] leading-[120%] text-white whitespace-nowrap">
-              My Books
-            </h2>
-            <p className="w-[748px] h-[29px] m-0 p-0 font-medium font-['Barlow_Condensed'] text-[22px] leading-[130%] text-[#888888] whitespace-nowrap">
-              Redeem your coins for my books. Each book can be ordered with a personal signature.
-            </p>
-          </div>
+          <h2 className="text-white font-bold font-['Barlow_Condensed'] text-2xl uppercase">Germany Only Reward</h2>
+          <p className="text-[#888888] font-['Barlow_Condensed'] text-[18px]">
+            Ordering physical books is currently only available for shipping addresses within Germany.
+          </p>
+        </motion.div>
+      </motion.div>,
+      document.body
+    );
+  }
+
+  return createPortal(
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+      className="fixed inset-0 z-[99999] flex items-center justify-center bg-black/75 backdrop-blur-md p-4 overflow-y-auto"
+      onClick={onClose}>
+      <motion.div initial={{ scale: 0.93, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.93, opacity: 0 }}
+        transition={{ duration: 0.22 }}
+        className="bg-[#242424] rounded-[20px] w-[700px] h-[720px] my-auto flex flex-col p-[16px] gap-[16px] shadow-2xl relative border border-white/[0.08]"
+        onClick={e => e.stopPropagation()}>
+
+        {/* Header */}
+        <div className="flex items-center w-[668px] h-[24px] gap-[6px] shrink-0">
+          <h2 className="w-[638px] h-[19px] text-white font-bold font-['Barlow_Condensed'] text-[16px] leading-[120%] flex items-center">Select Book to Order</h2>
+          <button onClick={onClose} className="text-[#888888] hover:text-white transition-colors flex items-center justify-center w-[24px] h-[24px]">
+            <FiX size={24} strokeWidth={1.5} />
+          </button>
         </div>
 
-        {books.length === 0 ? (
-          <div className="flex flex-col items-center gap-3 py-10 text-center">
-            <div className="w-12 h-12 rounded-2xl bg-white/[0.03] border border-white/[0.06] flex items-center justify-center">
-              <FiBook className="text-slate-600 text-xl" />
+        {/* Books Grid */}
+        <div className="w-[668px] h-[648px] overflow-x-auto overflow-y-hidden select-none [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+          {books.length === 0 ? (
+            <div className="flex flex-col items-center justify-center gap-3 py-20 text-center w-full h-full">
+              <div className="w-12 h-12 rounded-2xl bg-white/[0.03] border border-white/[0.06] flex items-center justify-center">
+                <FiBook className="text-slate-600 text-xl" />
+              </div>
+              <p className="text-slate-500 text-sm">No books available right now.</p>
             </div>
-            <p className="text-slate-500 text-sm">No books available right now.</p>
-            <p className="text-slate-600 text-xs">Check back soon for new releases!</p>
-          </div>
-        ) : (
-          <div className="flex w-[1200px] gap-[14px] overflow-x-auto overflow-y-hidden pb-4 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent">
-            {books.map(book => (
-              <button
-                key={book._id}
-                onClick={() => setDetailBook(book)}
-                className="flex flex-col items-center flex-shrink-0 w-[188.33px] h-[317px] gap-[16px] rounded-[20px] p-[16px] bg-[rgba(0,0,0,0.36)] backdrop-blur-[44px] cursor-pointer group text-left"
-              >
-                {/* Cover */}
-                <div className="flex items-center justify-center w-full h-[162px]">
-                  {book.coverImage ? (
-                    <img src={book.coverImage.startsWith('data:') || book.coverImage.startsWith('http') ? book.coverImage : `${BACKEND}${book.coverImage}`} alt={book.title}
-                      className="w-[106px] h-[162px] object-contain drop-shadow-lg"
-                      onError={(e) => { e.target.style.display = 'none'; }} />
-                  ) : (
-                    <FiBook className="text-slate-600 text-4xl" />
-                  )}
-                </div>
+          ) : (() => {
+            const cols = Math.max(3, Math.ceil(books.length / 2));
+            const reorderedBooks = Array(cols * 2).fill(null);
+            books.forEach((book, i) => {
+              const r = Math.floor(i / cols);
+              const c = i % cols;
+              reorderedBooks[c * 2 + r] = book;
+            });
+            return (
+              <div className="grid grid-rows-2 grid-flow-col gap-[14px] h-[638px] p-0.5">
+                {reorderedBooks.map((book, idx) => {
+                  if (!book) {
+                    return <div key={`empty-${idx}`} className="w-[213.33px] h-[317px] opacity-0 pointer-events-none" />;
+                  }
+                  return (
+                    <button
+                      key={book._id}
+                      onClick={() => setDetailBook(book)}
+                      className="flex flex-col items-center w-[213.33px] h-[317px] gap-[16px] rounded-[20px] p-[16px] bg-[rgba(0,0,0,0.36)] backdrop-blur-[44px] hover:scale-[1.02] transition-all cursor-pointer text-left"
+                    >
+                      {/* Cover */}
+                      <div className="flex items-center justify-center w-full h-[162px]">
+                        {book.coverImage ? (
+                          <img src={book.coverImage.startsWith('data:') || book.coverImage.startsWith('http') ? book.coverImage : `${BACKEND}${book.coverImage}`} alt={book.title}
+                            className="w-[106px] h-[162px] object-contain drop-shadow-lg"
+                            onError={(e) => { e.target.style.display = 'none'; }} />
+                        ) : (
+                          <FiBook className="text-slate-600 text-4xl" />
+                        )}
+                      </div>
 
-                {/* Info */}
-                <div className="flex flex-col w-full h-full justify-between">
-                  <p className="w-[156.33px] h-[65px] m-0 p-0 font-semibold font-['Barlow_Condensed'] text-[21px] leading-[120%] text-white overflow-hidden">
-                    {book.title}
-                  </p>
-                  <div className="flex items-center w-[156.33px] h-[26px] gap-[3px]">
-                    <img
-                      src="/coins/coinfix.png"
-                      alt="Coin"
-                      className="w-[26px] h-[26px] object-contain rounded-full shadow-[0px_14px_34px_0px_rgba(254,198,53,0.3)] flex-shrink-0"
-                    />
-                    <span className="flex items-center min-w-[51px] pt-[2px] pb-[4px] m-0 font-bold font-['Barlow_Condensed'] text-[22px] leading-none bg-clip-text text-transparent bg-gradient-to-b from-[#FEDF77] to-[#FCB91E]">
-                      {book.coinCost.toLocaleString()}
-                    </span>
-                  </div>
-                </div>
-              </button>
-            ))}
-          </div>
-        )}
+                      {/* Info */}
+                      <div className="flex flex-col w-full h-full justify-between min-h-[80px]">
+                        <p className="m-0 p-0 font-semibold font-['Barlow_Condensed'] text-[20px] leading-[120%] text-white line-clamp-3">
+                          {book.title}
+                        </p>
+                        <div className="flex items-center w-full h-[26px] gap-[3px] mt-2">
+                          <img
+                            src="/coins/coinfix.png"
+                            alt="Coin"
+                            className="w-[22px] h-[22px] object-contain rounded-full shadow-[0px_14px_34px_0px_rgba(254,198,53,0.3)] flex-shrink-0"
+                          />
+                          <span className="flex items-center pt-[2px] pb-[4px] m-0 font-bold font-['Barlow_Condensed'] text-[22px] leading-none bg-clip-text text-transparent bg-gradient-to-b from-[#FEDF77] to-[#FCB91E]">
+                            {book.coinCost.toLocaleString()}
+                          </span>
+                        </div>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            );
+          })()}
+        </div>
       </motion.div>
 
       {/* Book Detail Modal */}
@@ -536,11 +602,13 @@ const MyBooksSection = ({ balance, onBalanceUpdate }) => {
                 setBooks(prev => prev.map(b => b._id === orderBook._id ? { ...b, userOrder: newOrder } : b));
               }
               setOrderBook(null);
+              onClose(); // Close the main selector modal too
             }}
           />
         )}
       </AnimatePresence>
-    </>
+    </motion.div>,
+    document.body
   );
 };
 

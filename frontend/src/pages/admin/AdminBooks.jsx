@@ -305,13 +305,6 @@ export default function AdminBooks() {
 
         <div className="flex items-center gap-2">
           <button
-            onClick={fixImages}
-            title="Clear broken localhost image URLs from database"
-            className="flex items-center gap-2 px-4 py-2.5 bg-amber-600/20 hover:bg-amber-600/30 text-amber-300 border border-amber-500/30 rounded-xl font-semibold text-sm transition-colors"
-          >
-            <FiImage /> Fix Images
-          </button>
-          <button
             onClick={() => openModal()}
             className="flex items-center gap-2 px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-semibold text-sm transition-colors"
           >

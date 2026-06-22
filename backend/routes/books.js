@@ -13,7 +13,10 @@ const { verifyToken } = require('../middlewares/authMiddleware');
 /* ─── Multer — memory storage (images saved as base64 in MongoDB) ── */
 const upload = multer({
   storage: multer.memoryStorage(),
-  limits: { fileSize: 5 * 1024 * 1024 }, // 5 MB per file
+  limits: { 
+    fileSize: 5 * 1024 * 1024, // 5 MB per file
+    fieldSize: 15 * 1024 * 1024 // 15 MB per field to allow large base64 strings
+  },
   fileFilter: (req, file, cb) => {
     if (file.mimetype.startsWith('image/')) cb(null, true);
     else cb(new Error('Only image files are allowed'));
@@ -88,13 +91,6 @@ async function requireAdmin(req, res, next) {
   }
 }
 
-/* ─── Helper: resolve image field (uploaded file OR URL string) ── */
-function resolveImageField(files, fieldName, fallbackUrl, BASE_URL) {
-  if (files && files[fieldName] && files[fieldName].length > 0) {
-    return `${BASE_URL}/books/${files[fieldName][0].filename}`;
-  }
-  return (fallbackUrl || '').trim();
-}
 
 /* ─────────────────────────────────────────────────────────────────
    PUBLIC: GET /api/books
