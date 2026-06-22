@@ -83,7 +83,7 @@ function ImagePicker({ label, urlValue, onUrlChange, filePreview, onFileChange, 
             className="w-full bg-[#151b2b] border border-white/[0.08] rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-emerald-500/50"
           />
           {urlValue && (
-            <img src={urlValue} alt="" onError={e => e.target.style.display='none'}
+            <img src={urlValue.startsWith('data:') || urlValue.startsWith('http') ? urlValue : `${BACKEND}${urlValue}`} alt="" onError={e => e.target.style.display='none'}
               className="mt-2 h-20 object-contain rounded-lg border border-white/[0.07]" />
           )}
         </div>
@@ -415,7 +415,8 @@ export default function AdminBooks() {
               <div key={book._id} className="bg-[#0c101b] border border-white/[0.08] rounded-2xl overflow-hidden group">
                 <div className="relative h-52 bg-slate-900 flex items-center justify-center overflow-hidden">
                   {book.coverImage ? (
-                    <img src={book.coverImage.startsWith('http') ? book.coverImage : `${BACKEND}${book.coverImage}`}
+                    <img
+                      src={book.coverImage.startsWith('data:') || book.coverImage.startsWith('http') ? book.coverImage : `${BACKEND}${book.coverImage}`}
                       alt={book.title} className="h-full w-full object-contain p-4"
                       onError={(e) => { e.target.style.display = 'none'; e.target.nextSibling && (e.target.nextSibling.style.display = 'flex'); }} />
                   ) : null}
@@ -476,7 +477,8 @@ export default function AdminBooks() {
                 <div key={order._id} className="bg-[#0c101b] border border-white/[0.07] rounded-2xl p-5 flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
                   <div className="flex gap-4 items-start min-w-0">
                     {order.bookId?.coverImage && (
-                      <img src={order.bookId.coverImage.startsWith('http') ? order.bookId.coverImage : `${BACKEND}${order.bookId.coverImage}`}
+                      <img
+                        src={order.bookId.coverImage.startsWith('data:') || order.bookId.coverImage.startsWith('http') ? order.bookId.coverImage : `${BACKEND}${order.bookId.coverImage}`}
                         alt="" className="w-12 h-16 object-contain flex-shrink-0 rounded" />
                     )}
                     <div className="min-w-0">
@@ -616,7 +618,8 @@ export default function AdminBooks() {
             <div className="p-6 space-y-5 overflow-y-auto flex-1">
               <div className="flex gap-4 items-start">
                 {selectedOrder.bookId?.coverImage && (
-                  <img src={selectedOrder.bookId.coverImage.startsWith('http') ? selectedOrder.bookId.coverImage : `${BACKEND}${selectedOrder.bookId.coverImage}`}
+                  <img
+                    src={selectedOrder.bookId.coverImage.startsWith('data:') || selectedOrder.bookId.coverImage.startsWith('http') ? selectedOrder.bookId.coverImage : `${BACKEND}${selectedOrder.bookId.coverImage}`}
                     alt="" className="w-16 h-20 object-contain flex-shrink-0 rounded-lg border border-white/[0.07]" />
                 )}
                 <div>

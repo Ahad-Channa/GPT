@@ -10,6 +10,7 @@ import CoinIcon from '../CoinIcon';
 import toast from 'react-hot-toast';
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+const BACKEND = (import.meta.env.VITE_API_URL || 'http://localhost:5000/api').replace('/api', '');
 
 /* ── Coin Badge ──────────────────────────────────────────────── */
 const CoinBadge = ({ amount, size = 'md' }) => {
@@ -34,7 +35,7 @@ const PreviewCarousel = ({ images }) => {
   return (
     <div className="relative select-none">
       <div className="rounded-xl overflow-hidden bg-black/30 border border-white/[0.07] aspect-[3/4] max-h-72 flex items-center justify-center">
-        <img src={valid[idx]} alt={`Preview ${idx + 1}`} className="max-h-full max-w-full object-contain" />
+        <img src={valid[idx].startsWith('data:') || valid[idx].startsWith('http') ? valid[idx] : `${BACKEND}${valid[idx]}`} alt={`Preview ${idx + 1}`} className="max-h-full max-w-full object-contain" />
       </div>
       {valid.length > 1 && (
         <div className="flex items-center justify-center gap-3 mt-3">
@@ -96,7 +97,7 @@ const BookDetailModal = ({ book, onClose, onOrder, balance }) => {
           {/* Cover */}
           <div className="w-[161px] h-[246px] shrink-0">
             {book.coverImage ? (
-              <img src={book.coverImage} alt={book.title} className="w-full h-full object-cover rounded-md drop-shadow-2xl"
+              <img src={book.coverImage.startsWith('data:') || book.coverImage.startsWith('http') ? book.coverImage : `${BACKEND}${book.coverImage}`} alt={book.title} className="w-full h-full object-cover rounded-md drop-shadow-2xl"
                 onError={(e) => { e.target.style.display = 'none'; }} />
             ) : (
               <div className="w-full h-full rounded-xl bg-[#1a1a1a] flex items-center justify-center">
@@ -268,7 +269,7 @@ const OrderModal = ({ book, onClose, onSuccess, balance }) => {
           <div className="flex w-[668px] h-[119px] gap-[16px] shrink-0 items-center">
             <div className="w-[78px] h-[119px] shrink-0 overflow-hidden shadow-lg rounded-[3px]">
               {book.coverImage ? (
-                <img src={book.coverImage} alt={book.title} className="w-full h-full object-cover"
+                <img src={book.coverImage.startsWith('data:') || book.coverImage.startsWith('http') ? book.coverImage : `${BACKEND}${book.coverImage}`} alt={book.title} className="w-full h-full object-cover"
                   onError={(e) => { e.target.style.display = 'none'; }} />
               ) : (
                 <div className="w-full h-full flex items-center justify-center"><FiBook className="text-slate-600 text-3xl" /></div>
@@ -480,7 +481,7 @@ const MyBooksSection = ({ balance, onBalanceUpdate }) => {
                 {/* Cover */}
                 <div className="flex items-center justify-center w-full h-[162px]">
                   {book.coverImage ? (
-                    <img src={book.coverImage} alt={book.title}
+                    <img src={book.coverImage.startsWith('data:') || book.coverImage.startsWith('http') ? book.coverImage : `${BACKEND}${book.coverImage}`} alt={book.title}
                       className="w-[106px] h-[162px] object-contain drop-shadow-lg"
                       onError={(e) => { e.target.style.display = 'none'; }} />
                   ) : (
