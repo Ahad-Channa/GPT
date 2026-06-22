@@ -1030,7 +1030,13 @@ router.get('/pending-earnings', verifyToken, async (req, res) => {
     const holds = await Transaction.find({
       userId: user._id,
       status: 'hold',
-    }).sort({ createdAt: -1 }).lean();
+    })
+      .populate({
+        path: 'linkedTransactionId',
+        select: 'userId',
+        populate: { path: 'userId', select: 'avatarUrl photoURL displayName' }
+      })
+      .sort({ createdAt: -1 }).lean();
 
     // Annotate each hold with computed fields for the frontend
     const annotated = holds.map(tx => {
