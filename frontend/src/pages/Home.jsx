@@ -213,8 +213,8 @@ const Home = () => {
     { id: 'surveys', label: 'Surveys', iconSrc: '/coins/clipboard.png', count: surveyProviders.length, ref: surveysRef },
   ];
 
-  const itemsPerPage = chatOpen ? 3 : 4;
-  const gridColsClass = chatOpen ? 'grid-cols-2 sm:grid-cols-3 lg:grid-cols-4' : 'grid-cols-2 sm:grid-cols-4 lg:grid-cols-6';
+  const itemsPerPage = 4;
+  const gridColsClass = 'grid-cols-2 sm:grid-cols-4 lg:grid-cols-6';
 
   if (activeProvider) {
     return (

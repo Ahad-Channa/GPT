@@ -4,7 +4,7 @@ import LiveEarningsBar from '../LiveEarningsBar';
 import ChatSidebar from '../chat/ChatSidebar';
 import { FaFacebook, FaInstagram, FaYoutube, FaDiscord } from 'react-icons/fa';
 
-const DashboardLayout = ({ children, showLiveBar = true, fullWidth = false, hideStartEarning = false }) => {
+const DashboardLayout = ({ children, showLiveBar = true, fullWidth = false }) => {
   const [chatOpen, setChatOpen] = useState(() => {
     return localStorage.getItem('chatOpen') === 'true';
   });
@@ -25,51 +25,16 @@ const DashboardLayout = ({ children, showLiveBar = true, fullWidth = false, hide
       {/* Live Earnings Ticker */}
       {showLiveBar && <LiveEarningsBar />}
 
-      {/* Main Content Wrapper - shrinks when chat is open */}
+      {/* Main Content Wrapper */}
       <div 
-        className={`transition-all duration-300 ease-in-out w-full ${chatOpen ? 'xl:w-[calc(100%-400px)]' : ''}`}
+        className="transition-all duration-300 ease-in-out w-full"
       >
         <main className={`relative z-10 w-full ${fullWidth ? 'max-w-[1600px]' : 'max-w-7xl'} mx-auto px-4 md:px-8 2xl:px-12 py-8 md:py-12 flex flex-col`}>
           {children}
         </main>
       </div>
 
-      {/* Start Earning Today */}
-      {!hideStartEarning && (
-        <section className="w-full flex justify-center mt-12 bg-[rgba(27,28,27,1)] relative z-10">
-        <div className="flex flex-col md:flex-row items-center justify-between w-full max-w-[1440px] px-8 md:px-[100px] py-[40px]">
-          <div className="flex flex-col justify-start mb-6 md:mb-0 gap-[30px]">
-            <h2 className="m-0 flex items-center font-bold text-[48px] leading-[48px] text-white font-['Barlow_Condensed'] whitespace-nowrap">
-              Start Earning Today
-            </h2>
-            <p className="m-0 flex items-center font-medium text-[20px] leading-[28px] text-white/50 font-['Barlow_Condensed']">
-              Join now and start making real money right now!
-            </p>
-          </div>
-          <button
-            onClick={() => window.scrollTo({top: 0, behavior: 'smooth'})}
-            className="flex items-center justify-center text-white transition-all hover:brightness-110 active:translate-y-[4px] bg-[#49B265] rounded-[10px] px-[30px] py-[10px] gap-[10px] w-[168px] h-[48px] shadow-[0px_4px_0px_0px_rgba(39,109,58,1)]"
-          >
-            <span className="flex items-center justify-center m-0 p-0 font-bold text-[18px] leading-[100%] font-['Barlow_Condensed'] whitespace-nowrap">
-              Get Started
-            </span>
-            <div
-              className="bg-white w-[18px] h-[18px]"
-              style={{
-                WebkitMaskImage: 'url(/coins/image.png)',
-                WebkitMaskSize: 'contain',
-                WebkitMaskRepeat: 'no-repeat',
-                WebkitMaskPosition: 'center',
-                maskImage: 'url(/coins/image.png)',
-                maskSize: 'contain',
-                maskRepeat: 'no-repeat',
-                maskPosition: 'center'
-              }}
-            />
-          </button>
-        </div>
-        </section>
-      )}
+
 
       {/* Footer */}
       <footer className="w-full flex justify-center border-t border-[#333] bg-[rgba(44,45,44,1)] relative z-10">

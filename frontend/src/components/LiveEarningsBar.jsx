@@ -179,11 +179,12 @@ const LiveEarningsBar = () => {
                     transition={{ duration: 0.4, type: "spring", bounce: 0.3 }}
                     className="inline-flex items-center group cursor-pointer transition-transform hover:scale-[1.02] relative shrink-0" 
                     style={{
-                      width: '197px',
+                      width: 'auto',
+                      minWidth: 'fit-content',
                       height: '46px',
                       borderRadius: '50px',
-                      gap: '6px',
-                      padding: '10px',
+                      gap: '8px',
+                      padding: '10px 16px',
                       background: 'rgba(255, 255, 255, 0.14)',
                       pointerEvents: 'auto'
                     }}
@@ -205,13 +206,12 @@ const LiveEarningsBar = () => {
                     
                     {/* Base View (Username + Amount) */}
                     <div 
-                      className="flex items-center"
-                      style={{ width: '145px', height: '18px', gap: '16px' }}
+                      className="flex items-center gap-[12px]"
+                      style={{ height: '18px' }}
                     >
                       <span 
-                        className="truncate text-left shrink-0"
+                        className="text-left shrink-0"
                         style={{
-                          width: '79px',
                           height: 'auto',
                           fontFamily: '"Barlow Condensed", sans-serif',
                           fontWeight: 600,
@@ -223,8 +223,8 @@ const LiveEarningsBar = () => {
                         {tx.userId?.displayName || 'User'}
                       </span>
                       <div 
-                        className="flex items-center shrink-0 ml-auto"
-                        style={{ width: '50px', height: '18px', gap: '3px' }}
+                        className="flex items-center shrink-0"
+                        style={{ height: '18px', gap: '3px' }}
                       >
                         {details.isCoin && (
                           <img 
@@ -233,10 +233,22 @@ const LiveEarningsBar = () => {
                             style={{ width: '18px', height: '18px' }}
                           />
                         )}
+                        {!details.isCoin && details.isWithdrawal && (
+                          <img 
+                            src="/coins/paisa.png"
+                            alt="Paisa"
+                            style={{ width: '18px', height: '18px', objectFit: 'contain' }}
+                          />
+                        )}
                         <span 
-                          className="truncate"
-                          style={{
-                            width: '29px',
+                          style={details.isWithdrawal ? {
+                            height: 'auto',
+                            fontFamily: '"Barlow Condensed", sans-serif',
+                            fontWeight: 700,
+                            fontSize: '16px',
+                            lineHeight: '130%',
+                            color: '#49B265'
+                          } : {
                             height: 'auto',
                             fontFamily: '"Barlow Condensed", sans-serif',
                             fontWeight: 700,
@@ -272,12 +284,55 @@ const LiveEarningsBar = () => {
                         }}
                       >
                         {details.isWithdrawal ? (
-                          <div className="flex flex-col relative z-10 h-full justify-between gap-2">
-                            <span className="text-[10px] font-bold text-[#49B265] uppercase tracking-widest">Withdrawal</span>
+                          <div className="flex flex-col relative z-10 h-full justify-between gap-[8px]">
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', width: '143px', height: 'auto' }}>
+                              <span style={{
+                                fontFamily: '"Barlow Condensed", sans-serif',
+                                fontWeight: 700,
+                                fontSize: '15px',
+                                lineHeight: '120%',
+                                color: 'rgba(255, 255, 255, 1)',
+                                whiteSpace: 'nowrap'
+                              }}>
+                                Withdrawal Completed
+                              </span>
+                              <span style={{
+                                fontFamily: '"Barlow Condensed", sans-serif',
+                                fontWeight: 500,
+                                fontSize: '12px',
+                                lineHeight: '130%',
+                                color: 'rgba(136, 136, 136, 1)'
+                              }}>
+                                Method: {details.method}
+                              </span>
+                            </div>
                             <div style={{ width: '143px', height: '0px', borderTop: '1px solid rgba(255, 255, 255, 0.12)', flexShrink: 0 }} />
                             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '143px', height: '18px' }}>
-                              <span className="text-sm font-display font-bold text-white">{details.method}</span>
-                              <span className="text-sm font-black font-mono text-[#49B265]">{details.amountStr}</span>
+                              <span style={{ 
+                                fontFamily: '"Barlow Condensed", sans-serif', 
+                                fontWeight: 500, 
+                                fontSize: '13px', 
+                                lineHeight: '130%', 
+                                color: 'rgba(255, 255, 255, 1)',
+                                whiteSpace: 'nowrap'
+                              }}>
+                                Amount
+                              </span>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
+                                <img src="/coins/paisa.png" alt="Paisa" style={{ width: '18px', height: '18px', objectFit: 'contain' }} />
+                                <span style={{ 
+                                  fontFamily: '"Barlow Condensed", sans-serif', 
+                                  fontWeight: 700, 
+                                  fontSize: '16px', 
+                                  lineHeight: '130%', 
+                                  color: '#49B265',
+                                  whiteSpace: 'nowrap',
+                                  display: 'flex',
+                                  alignItems: 'center'
+                                }}>
+                                  {details.amountStr}
+                                </span>
+                              </div>
                             </div>
                           </div>
                         ) : (

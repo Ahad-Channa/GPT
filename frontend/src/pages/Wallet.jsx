@@ -110,6 +110,9 @@ const Wallet = () => {
   const [txRefresh,    setTxRefresh]      = useState(0);
   const [settingsLoad, setSettingsLoad]   = useState(true);
   const [showBookSelector, setShowBookSelector] = useState(false);
+  const [books, setBooks] = useState([]);
+  const [booksLoading, setBooksLoading] = useState(true);
+  const [booksVisible, setBooksVisible] = useState(false);
 
   // Load wallet settings (fee %, methods, live rate)
   useEffect(() => {
@@ -129,6 +132,29 @@ const Wallet = () => {
       }
     };
     if (currentUser) fetchSettings();
+  }, [currentUser]);
+
+  // Load books in the background
+  useEffect(() => {
+    const fetchBooks = async () => {
+      try {
+        setBooksLoading(true);
+        const token = await currentUser.getIdToken();
+        const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/books`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const data = await res.json();
+        if (data.success) {
+          setBooks(data.books);
+          setBooksVisible(!data.booksGermanyOnly || data.isGermanIP);
+        }
+      } catch (err) {
+        console.error('Failed to load books:', err);
+      } finally {
+        setBooksLoading(false);
+      }
+    };
+    if (currentUser) fetchBooks();
   }, [currentUser]);
 
   // After successful withdrawal, refresh balance in header
@@ -155,16 +181,16 @@ const Wallet = () => {
       <motion.div variants={container} initial="hidden" animate="show" className="space-y-8 max-w-[1240px] mx-auto w-full">
 
         {/* ── Page Header ───────────────────────────────────────── */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 relative">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 relative w-full md:w-[1240px]">
            <div className="flex flex-col gap-[6px] relative z-10">
              <h1 className="m-0 p-0 font-bold text-[68px] leading-[120%] text-white font-['Barlow_Condensed'] whitespace-nowrap">Withdraw</h1>
              <p className="m-0 p-0 font-medium text-[26px] leading-[130%] text-[#888888] font-['Barlow_Condensed']">Choose your preferred withdrawal method and convert your coins into real rewards.</p>
            </div>
-           <div className="hidden md:block absolute right-0 -top-[36px] opacity-100 pointer-events-none w-[317px] h-[226px] z-0">
+           <div className="hidden md:block absolute right-[-10px] -top-[36px] opacity-100 pointer-events-none w-[317px] h-[226px] z-0">
               <img 
                  src="/coins/withdarwhero.png" 
                  alt="Wallet Illustration" 
-                 className="absolute inset-0 w-full h-full object-contain z-10 drop-shadow-2xl"
+                 className="absolute inset-0 w-full h-full object-contain object-right z-10 drop-shadow-2xl"
                  onError={(e) => e.target.style.display='none'}
               />
            </div>
@@ -365,6 +391,10 @@ const Wallet = () => {
         {showBookSelector && (
           <MyBooksSection
             balance={balance}
+            preFetchedBooks={books}
+            preFetchedLoading={booksLoading}
+            preFetchedVisible={booksVisible}
+            onBooksUpdate={setBooks}
             onClose={() => setShowBookSelector(false)}
             onBalanceUpdate={(newBalance) => {
               if (setMongoUser) setMongoUser(prev => ({ ...prev, walletBalance: newBalance }));

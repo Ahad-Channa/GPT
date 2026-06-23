@@ -213,6 +213,8 @@ const BookDetailModal = ({ book, onClose, onOrder, balance }) => {
 const OrderModal = ({ book, onClose, onSuccess, balance }) => {
   const { currentUser, mongoUser } = useAuth();
   const [submitting, setSubmitting] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
+  const [resultData, setResultData] = useState(null);
   const [form, setForm] = useState({
     fullName: mongoUser?.displayName || '',
     email: currentUser?.email || '',
@@ -236,6 +238,14 @@ const OrderModal = ({ book, onClose, onSuccess, balance }) => {
     };
   }, []);
 
+  const handleDone = () => {
+    if (resultData) {
+      onSuccess(resultData.newBalance, resultData.order);
+    } else {
+      onClose();
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!form.fullName || !form.email || !form.address || !form.city || !form.zipcode) {
@@ -255,9 +265,8 @@ const OrderModal = ({ book, onClose, onSuccess, balance }) => {
       });
       const data = await res.json();
       if (data.success) {
-        toast.success('📦 Order placed! Your book will be shipped within 3–5 business days.');
-        onSuccess(data.newBalance, data.order);
-        onClose();
+        setResultData({ newBalance: data.newBalance, order: data.order });
+        setSubmitted(true);
       } else {
         toast.error(data.error || 'Failed to place order');
       }
@@ -267,6 +276,52 @@ const OrderModal = ({ book, onClose, onSuccess, balance }) => {
       setSubmitting(false);
     }
   };
+
+  if (submitted) {
+    return createPortal(
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+        className="fixed inset-0 z-[999999] flex items-center justify-center bg-black/75 backdrop-blur-md p-4 overflow-y-auto"
+        onClick={handleDone}>
+        <motion.div initial={{ scale: 0.93, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.93, opacity: 0 }}
+          transition={{ duration: 0.22 }}
+          className="bg-[#242424] rounded-[20px] w-[500px] h-[379px] my-auto flex flex-col items-center p-[16px] gap-[20px] shadow-2xl relative border border-white/[0.08]"
+          onClick={e => e.stopPropagation()}>
+
+          <button onClick={handleDone} className="absolute top-4 right-4 w-[36px] h-[36px] rounded-[10px] bg-white/[0.11] hover:bg-white/[0.18] transition-colors flex items-center justify-between px-[8px] text-white shrink-0">
+            <div className="w-full flex justify-center items-center">
+              <FiX size={20} strokeWidth={2} />
+            </div>
+          </button>
+
+          <div className="w-[64px] h-[64px] rounded-full bg-[#49B265] flex items-center justify-center text-[#1A1A1A] shrink-0 mt-[16px]">
+            <FiCheck size={36} strokeWidth={3} />
+          </div>
+
+          <h2 className="text-white font-bold font-['Barlow_Condensed'] text-[28px] leading-[120%] tracking-normal m-0 p-0 text-center uppercase w-[468px] h-[34px] flex items-center justify-center shrink-0">
+            Order Submitted!
+          </h2>
+
+          <div className="flex flex-col gap-[6px] items-center w-[468px] h-[85px] shrink-0 justify-center overflow-y-auto custom-scrollbar">
+            <p className="font-medium font-['Barlow_Condensed'] text-[18px] leading-[130%] m-0 p-0 text-center w-[468px]" style={{ color: 'var(--Text-text-sheen, rgba(136, 136, 136, 1))' }}>
+              You have successfully order book &ldquo;{book.title}&rdquo;
+            </p>
+            <p className="font-medium font-['Barlow_Condensed'] text-[18px] leading-[130%] m-0 p-0 text-center w-[468px]" style={{ color: 'var(--Text-text-sheen, rgba(136, 136, 136, 1))' }}>
+              Our team will process your order within 1-3 business days. Check your email for updates.
+            </p>
+          </div>
+
+          <button
+            onClick={handleDone}
+            className="w-full h-[48px] bg-[#49B265] text-white rounded-[10px] font-bold font-['Barlow_Condensed'] text-[20px] shadow-[0_4px_0_0_#276D3A] hover:bg-[#49B265]/90 hover:translate-y-[1px] hover:shadow-[0_3px_0_0_#276D3A] active:translate-y-[4px] active:shadow-none transition-all flex items-center justify-center mt-auto"
+          >
+            Done
+          </button>
+
+        </motion.div>
+      </motion.div>,
+      document.body
+    );
+  }
 
   return createPortal(
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
@@ -412,14 +467,22 @@ const OrderModal = ({ book, onClose, onSuccess, balance }) => {
 };
 
 /* ── Main Section component ──────────────────────────────────── */
-const MyBooksSection = ({ balance, onBalanceUpdate, onClose }) => {
+const MyBooksSection = ({ balance, onBalanceUpdate, onClose, preFetchedBooks, preFetchedLoading, preFetchedVisible, onBooksUpdate }) => {
   const { currentUser, getSocket } = useAuth();
-  const [books, setBooks] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [visible, setVisible] = useState(false); // whether this user is eligible to see books
+  const [books, setBooks] = useState(preFetchedBooks || []);
+  const [loading, setLoading] = useState(preFetchedBooks !== undefined ? preFetchedLoading : true);
+  const [visible, setVisible] = useState(preFetchedBooks !== undefined ? preFetchedVisible : false); // whether this user is eligible to see books
 
   const [detailBook, setDetailBook] = useState(null);
   const [orderBook, setOrderBook] = useState(null);
+
+  const updateBooksState = useCallback((newBooksOrFn) => {
+    setBooks(prev => {
+      const next = typeof newBooksOrFn === 'function' ? newBooksOrFn(prev) : newBooksOrFn;
+      if (onBooksUpdate) onBooksUpdate(next);
+      return next;
+    });
+  }, [onBooksUpdate]);
 
   const fetchBooks = useCallback(async () => {
     if (!currentUser) return;
@@ -429,25 +492,39 @@ const MyBooksSection = ({ balance, onBalanceUpdate, onClose }) => {
       const res = await fetch(`${API}/books`, { headers: { Authorization: `Bearer ${token}` } });
       const data = await res.json();
       if (data.success) {
-        setBooks(data.books);
+        updateBooksState(data.books);
         // Show section if: worldwide mode OR user is on German IP
-        setVisible(!data.booksGermanyOnly || data.isGermanIP);
+        const isVisible = !data.booksGermanyOnly || data.isGermanIP;
+        setVisible(isVisible);
       }
     } catch (e) {
       console.error('Failed to load books', e);
     } finally {
       setLoading(false);
     }
-  }, [currentUser]);
+  }, [currentUser, updateBooksState]);
 
-  useEffect(() => { fetchBooks(); }, [fetchBooks]);
+  useEffect(() => {
+    if (preFetchedBooks === undefined) {
+      fetchBooks();
+    }
+  }, [fetchBooks, preFetchedBooks]);
+
+  // Sync state if pre-fetched props change
+  useEffect(() => {
+    if (preFetchedBooks !== undefined) {
+      setBooks(preFetchedBooks);
+      setLoading(preFetchedLoading);
+      setVisible(preFetchedVisible);
+    }
+  }, [preFetchedBooks, preFetchedLoading, preFetchedVisible]);
 
   useEffect(() => {
     const socket = getSocket && getSocket();
     if (!socket) return;
 
     const onOrderUpdated = (data) => {
-      setBooks(prev => prev.map(b =>
+      updateBooksState(prev => prev.map(b =>
         (b.userOrder && b.userOrder._id === data.orderId)
           ? { ...b, userOrder: { ...b.userOrder, status: data.status } }
           : b
@@ -456,7 +533,7 @@ const MyBooksSection = ({ balance, onBalanceUpdate, onClose }) => {
 
     socket.on('bookOrderUpdated', onOrderUpdated);
     return () => socket.off('bookOrderUpdated', onOrderUpdated);
-  }, [getSocket, setBooks]);
+  }, [getSocket, updateBooksState]);
 
   useEffect(() => {
     openModalsCount++;
@@ -469,8 +546,7 @@ const MyBooksSection = ({ balance, onBalanceUpdate, onClose }) => {
     };
   }, []);
 
-  if (loading) return null;
-  if (!visible) {
+  if (!loading && !visible) {
     return createPortal(
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
         className="fixed inset-0 z-[99999] flex items-center justify-center bg-black/75 backdrop-blur-md p-4"
@@ -512,8 +588,14 @@ const MyBooksSection = ({ balance, onBalanceUpdate, onClose }) => {
           </button>
         </div>
 
-        {/* Books Grid */}
-        <div className="w-[668px] h-[648px] overflow-x-auto overflow-y-hidden select-none [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+        {loading ? (
+          <div className="flex-1 flex flex-col items-center justify-center gap-3">
+            <div className="w-12 h-12 rounded-full border-2 border-[#49B265] border-t-transparent animate-spin" />
+            <p className="text-[#888888] font-['Barlow_Condensed'] text-[18px]">Loading books...</p>
+          </div>
+        ) : (
+          /* Books Grid */
+          <div className="w-[668px] h-[648px] overflow-x-auto overflow-y-hidden select-none [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
           {books.length === 0 ? (
             <div className="flex flex-col items-center justify-center gap-3 py-20 text-center w-full h-full">
               <div className="w-12 h-12 rounded-2xl bg-white/[0.03] border border-white/[0.06] flex items-center justify-center">
@@ -575,6 +657,7 @@ const MyBooksSection = ({ balance, onBalanceUpdate, onClose }) => {
             );
           })()}
         </div>
+        )}
       </motion.div>
 
       {/* Book Detail Modal */}

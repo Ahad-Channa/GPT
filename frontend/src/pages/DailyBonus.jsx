@@ -80,16 +80,16 @@ export default function DailyBonus() {
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="w-full max-w-[1240px] mx-auto pb-12 pt-4">
 
         {/* Heading Section */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 relative">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 relative w-full md:w-[1240px]">
            <div className="flex flex-col gap-[6px]">
              <h1 className="m-0 p-0 font-bold text-[68px] leading-[120%] text-white font-['Barlow_Condensed'] whitespace-nowrap">Daily Bonus</h1>
              <p className="m-0 p-0 font-medium text-[26px] leading-[130%] text-[#888888] font-['Barlow_Condensed']">Claim your daily reward and keep your streak going!</p>
            </div>
-           <div className="hidden md:block absolute right-0 -top-5 opacity-100 pointer-events-none w-[380px] h-[212px] z-0">
+           <div className="hidden md:block absolute right-[-10px] -top-5 opacity-100 pointer-events-none w-[380px] h-[212px] z-0">
               <img 
                  src="/coins/dailybonus.png" 
                  alt="Daily Bonus" 
-                 className="absolute inset-0 w-full h-full object-contain z-10"
+                 className="absolute inset-0 w-full h-full object-contain object-right z-10"
               />
               <div 
                  className="absolute inset-0 z-20 mix-blend-color"
@@ -98,11 +98,11 @@ export default function DailyBonus() {
                    WebkitMaskImage: 'url(/coins/dailybonus.png)',
                    WebkitMaskSize: 'contain',
                    WebkitMaskRepeat: 'no-repeat',
-                   WebkitMaskPosition: 'center',
+                   WebkitMaskPosition: 'right',
                    maskImage: 'url(/coins/dailybonus.png)',
                    maskSize: 'contain',
                    maskRepeat: 'no-repeat',
-                   maskPosition: 'center'
+                   maskPosition: 'right'
                  }}
               />
            </div>
