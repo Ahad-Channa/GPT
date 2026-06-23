@@ -4,7 +4,7 @@ import { getLevelFromEarned } from '../../utils/vipLevels';
 import VipBadge from '../VipBadge';
 import { useNotifications } from '../../contexts/NotificationContext';
 import { useDailyBonus } from '../../contexts/DailyBonusContext';
-import { FiLogOut, FiUser, FiSettings, FiZap, FiChevronDown, FiCreditCard, FiLock, FiClock, FiBell, FiUsers, FiGift, FiDollarSign, FiMessageSquare, FiTarget } from 'react-icons/fi';
+import { FiLogOut, FiUser, FiSettings, FiZap, FiChevronDown, FiCreditCard, FiLock, FiClock, FiBell, FiUsers, FiGift, FiDollarSign, FiMessageSquare, FiTarget, FiStar } from 'react-icons/fi';
 import { FaTrophy } from 'react-icons/fa6';
 import CoinDisplay from '../CoinDisplay';
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -202,11 +202,11 @@ const DailyBonusChip = () => {
       <div className="relative flex items-center justify-center shrink-0 ml-1" style={{ width: '30px', height: '30px' }}>
         <svg width="30" height="30" viewBox="0 0 30 30" className="absolute inset-0 transform -rotate-90">
           <circle cx="15" cy="15" r="13" fill="black" stroke="#222" strokeWidth="4" />
-          <circle 
-            cx="15" cy="15" r="13" 
-            fill="transparent" 
-            stroke="#49B265" 
-            strokeWidth="4" 
+          <circle
+            cx="15" cy="15" r="13"
+            fill="transparent"
+            stroke="#49B265"
+            strokeWidth="4"
             strokeDasharray={2 * Math.PI * 13}
             strokeDashoffset={2 * Math.PI * 13 * (1 - progressPercent / 100)}
             strokeLinecap="round"
@@ -260,29 +260,27 @@ const Header = ({ onChatToggle, chatOpen }) => {
   }, []);
 
   return (
-    <header className="sticky top-0 z-40 flex items-center px-6 md:px-8 transition-all" style={{
+    <header className="sticky top-0 z-40 w-full transition-all" style={{
       height: '84px',
-      justifyContent: 'space-between',
-      paddingTop: '18px',
-      paddingBottom: '18px',
       background: 'black',
       backdropFilter: 'blur(24px)',
       WebkitBackdropFilter: 'blur(24px)',
       boxShadow: '0px 4px 44px 0px rgba(0, 0, 0, 0.25)'
     }}>
+      <div className="h-full max-w-[1240px] mx-auto flex items-center justify-between px-6 md:px-8 w-full">
 
-      {/* Group 1: Brand */}
-      <button
-        id="header-brand-logo"
-        onClick={() => navigate('/')}
-        className="flex items-center cursor-pointer transition-transform hover:scale-105"
-        style={{ width: '191.5026397705078px', height: '53.98556137084961px', gap: '7.28px', border: 'none', background: 'transparent', padding: 0 }}
-      >
-        <img
-          src="/coins/logo copy.png"
-          alt="TaskMint Logo"
-          style={{ width: '53.9856071472168px', height: '53.98556137084961px', objectFit: 'contain' }}
-        />
+        {/* Group 1: Brand */}
+        <button
+          id="header-brand-logo"
+          onClick={() => navigate('/')}
+          className="flex items-center cursor-pointer transition-transform hover:scale-105"
+          style={{ width: '191.5026397705078px', height: '53.98556137084961px', gap: '7.28px', border: 'none', background: 'transparent', padding: 0 }}
+        >
+          <img
+            src="/coins/logo copy.png"
+            alt="TaskMint Logo"
+            style={{ width: '53.9856071472168px', height: '53.98556137084961px', objectFit: 'contain' }}
+          />
           <span
             className="text-white font-bold hidden sm:flex items-center"
             style={{
@@ -294,241 +292,426 @@ const Header = ({ onChatToggle, chatOpen }) => {
               letterSpacing: '1.5px'
             }}
           >
-          TaskMint
-        </span>
-      </button>
+            TaskMint
+          </span>
+        </button>
 
 
 
-      {/* Group 2: Main Links */}
-      <div
-        className="hidden lg:flex items-center justify-between"
-        style={{ width: '708.0146484375px', height: '48px', borderRadius: '100px' }}
-      >
+        {/* Group 2: Main Links */}
+        <div
+          className="hidden lg:flex items-center justify-between"
+          style={{ width: '708.0146484375px', height: '48px', borderRadius: '100px' }}
+        >
 
-        <NavItem path="/dashboard" icon="/coins/paisa.png" label="Earn" />
-        <DailyBonusChip />
-        <NavItem path="/dashboard/leaderboard" icon="/coins/cup.png" label="Leaderboard" />
-        <NavItem path="/dashboard/affiliates" icon="/coins/person1.png" label="Affiliates" />
-        <NavItem path="/dashboard/wallet" icon="/coins/wallet1.png" label="Withdraw" />
+          <NavItem path="/dashboard" icon="/coins/paisa.png" label="Earn" />
+          <DailyBonusChip />
+          <NavItem path="/dashboard/leaderboard" icon="/coins/cup.png" label="Leaderboard" />
+          <NavItem path="/dashboard/affiliates" icon="/coins/person1.png" label="Affiliates" />
+          <NavItem path="/dashboard/wallet" icon="/coins/wallet1.png" label="Withdraw" />
 
-      </div>
+        </div>
 
-      {/* Group 3: User Actions */}
-      <div
-        className="flex items-center"
-        style={{ width: '245.5px', height: '48px', gap: '8px' }}
-      >
-        {/* Live Chat Button → sidebar */}
-        <button
-          id="header-livechat-btn"
-          onClick={onChatToggle}
-          className={`relative flex-shrink-0 flex items-center justify-center transition-colors group ${chatOpen
+        {/* Group 3: User Actions */}
+        <div
+          className="flex items-center"
+          style={{ width: '245.5px', height: '48px', gap: '8px' }}
+        >
+          {/* Live Chat Button → sidebar */}
+          <button
+            id="header-livechat-btn"
+            onClick={onChatToggle}
+            className={`relative flex-shrink-0 flex items-center justify-center transition-colors group ${chatOpen
               ? 'bg-[#49B265]/20'
               : 'bg-transparent hover:bg-white/5'
-            }`}
-          style={{
-            width: '48px',
-            height: '48px',
-            borderRadius: '10px',
-            border: '1px solid rgba(73, 178, 101, 0.4)'
-          }}
-        >
-          <img 
-            src={chatOpen ? '/coins/chatOn.png' : '/coins/chat.png'} 
-            alt="Chat" 
-            style={{ 
-              width: '24px', 
-              height: '24px', 
-              objectFit: 'contain',
-              filter: !chatOpen ? 'brightness(0) saturate(100%) invert(59%) sepia(33%) saturate(1030%) hue-rotate(86deg) brightness(93%) contrast(87%)' : 'none'
-            }}
-          />
-        </button>
-
-        {/* Notifications */}
-        <button
-          id="header-notifications-btn"
-          onClick={togglePanel}
-          className="relative flex-shrink-0 flex items-center justify-center bg-transparent hover:bg-white/5 transition-colors group"
-          style={{
-            width: '48px',
-            height: '48px',
-            borderRadius: '10px',
-            border: '1px solid rgba(73, 178, 101, 0.4)'
-          }}
-        >
-          <img 
-            src="/coins/noti.png" 
-            alt="Notifications" 
-            style={{ width: '24px', height: '24px', objectFit: 'contain' }}
-          />
-          {unreadCount > 0 && (
-            <span className="absolute top-2 right-2.5 w-2 h-2 bg-[#49B265] rounded-full shadow-[0_0_8px_rgba(73,178,101,0.8)]" />
-          )}
-        </button>
-
-        {/* Avatar + Dropdown */}
-        <div className="relative" ref={dropdownRef}>
-          <button
-            id="header-profile-menu"
-            onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-            className="flex items-center hover:bg-white/[0.05] transition-colors group flex-shrink-0"
+              }`}
             style={{
-              minWidth: '133.5px',
-              width: 'auto',
+              width: '48px',
               height: '48px',
               borderRadius: '10px',
-              padding: '12px 16px 12px 8.5px',
-              gap: '6px',
               border: '1px solid rgba(73, 178, 101, 0.4)'
             }}
           >
-            <div 
-              className="rounded-full overflow-hidden border border-white/10 flex-shrink-0 bg-[#111827]"
-              style={{ width: '31px', height: '31px' }}
-            >
-              <img
-                src={mongoUser?.avatarUrl || currentUser?.photoURL || `/avatars/avatar1.png`}
-                alt="Avatar"
-                className="w-full h-full object-cover"
-              />
-            </div>
-            <div 
-              className="hidden md:flex flex-col items-start justify-center flex-1 overflow-visible"
-              style={{ minWidth: '42px', width: 'auto', height: '26px', gap: '4px' }}
-            >
-              <span 
-                className="text-white text-left"
-                style={{
-                  width: '43px',
-                  fontFamily: '"Barlow Condensed", sans-serif',
-                  fontWeight: 600,
-                  fontSize: '14px',
-                  lineHeight: '1',
-                  display: 'block'
-                }}
-              >
-                {mongoUser?.displayName || 'User'}
-              </span>
-              <span 
-                className="flex items-center"
-                style={{ minWidth: '39px', width: 'auto', height: 'auto', gap: '3px' }}
-              >
-                <img 
-                  src="/coins/coinfinal.png" 
-                  alt="Coin" 
-                  style={{ width: '12px', height: '12px', objectFit: 'contain', flexShrink: 0 }}
-                />
-                <span style={{
-                  minWidth: '24px',
-                  width: 'auto',
-                  height: 'auto',
-                  paddingTop: '2px',
-                  fontFamily: '"Barlow Condensed", sans-serif',
-                  fontWeight: 700,
-                  fontSize: '12px',
-                  lineHeight: '130%',
-                  background: 'linear-gradient(180deg, #FEDF77 0%, #FCB91E 100%)',
-                  WebkitBackgroundClip: 'text',
-                  WebkitTextFillColor: 'transparent',
-                  backgroundClip: 'text',
-                  color: 'transparent',
-                  display: 'flex',
-                  alignItems: 'center',
-                  overflow: 'visible',
-                  whiteSpace: 'nowrap'
-                }}>
-                  {mongoUser?.walletBalance?.toLocaleString() ?? 0}
-                </span>
-              </span>
-            </div>
-            <img 
-              src="/coins/arrow.png" 
-              alt="Dropdown Arrow" 
-              className={`transition-transform duration-200 flex-shrink-0 ${isDropdownOpen ? 'rotate-180' : ''}`}
-              style={{ 
-                width: '24px', 
-                height: '24px', 
+            <img
+              src={chatOpen ? '/coins/chatOn.png' : '/coins/chat.png'}
+              alt="Chat"
+              style={{
+                width: '24px',
+                height: '24px',
                 objectFit: 'contain',
-                filter: 'brightness(0) saturate(100%) invert(59%) sepia(33%) saturate(1030%) hue-rotate(86deg) brightness(93%) contrast(87%)'
+                filter: !chatOpen ? 'brightness(0) saturate(100%) invert(59%) sepia(33%) saturate(1030%) hue-rotate(86deg) brightness(93%) contrast(87%)' : 'none'
               }}
             />
           </button>
 
-          <AnimatePresence>
-            {isDropdownOpen && (
-              <motion.div
-                initial={{ opacity: 0, y: 6, scale: 0.97 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                transition={{ duration: 0.15 }}
-                className="absolute right-0 top-14 w-48 bg-[#0b101e] shadow-card border border-white/[0.08] overflow-hidden z-50 rounded-xl"
-              >
-                {/* Balance (mobile) */}
-                <div className="sm:hidden px-4 py-3 border-b border-white/[0.06] flex items-center gap-2">
-                  <FiZap className="text-indigo-400 text-xs" />
-                  <span className="text-slate-300 text-xs font-mono">
-                    {mongoUser?.walletBalance?.toFixed(2) ?? '0.00'} PTS
-                  </span>
-                </div>
-
-                <button
-                  id="header-profile-link-nav"
-                  onClick={() => { setIsDropdownOpen(false); navigate('/dashboard/profile'); }}
-                  className="w-full text-left px-4 py-3 text-sm text-slate-300 hover:bg-white/[0.05] hover:text-white transition-colors flex items-center gap-3 border-b border-white/[0.04]"
-                >
-                  <FiUser className="text-indigo-400" /> My Profile
-                </button>
-
-                <button
-                  id="header-vip-link-nav"
-                  onClick={() => { setIsDropdownOpen(false); navigate('/dashboard/vip'); }}
-                  className="w-full text-left px-4 py-3 text-sm text-slate-300 hover:bg-white/[0.05] hover:text-white transition-colors flex items-center gap-3 border-b border-white/[0.04]"
-                >
-                  <span style={{ fontSize: '0.7rem' }}>⭐</span>
-                  <span>VIP Status</span>
-                  {mongoUser?.totalEarned >= 0 && getLevelFromEarned(mongoUser.totalEarned) && (
-                    <span style={{ marginLeft: 'auto' }}>
-                      <VipBadge
-                        tier={getLevelFromEarned(mongoUser.totalEarned).tier}
-                        rank={getLevelFromEarned(mongoUser.totalEarned).rank}
-                        size="xs"
-                      />
-                    </span>
-                  )}
-                </button>
-
-                {missionsEnabled && (
-                  <button
-                    id="header-missions-link-nav"
-                    onClick={() => { setIsDropdownOpen(false); navigate('/dashboard/missions'); }}
-                    className="w-full text-left px-4 py-3 text-sm text-slate-300 hover:bg-white/[0.05] hover:text-white transition-colors flex items-center gap-3 border-b border-white/[0.04]"
-                  >
-                    <FiTarget className="text-indigo-400" />
-                    <span>Missions</span>
-                  </button>
-                )}
-
-                {isAdmin && (
-                  <button
-                    id="header-admin-link"
-                    onClick={() => { setIsDropdownOpen(false); navigate('/admin'); }}
-                    className="w-full text-left px-4 py-3 text-sm text-amber-400 hover:bg-amber-500/[0.08] hover:text-amber-300 transition-colors flex items-center gap-3 border-b border-white/[0.04]"
-                  >
-                    <FiSettings className="text-amber-400" /> Admin Panel
-                  </button>
-                )}
-
-                <button
-                  id="header-logout-btn"
-                  onClick={() => { setIsDropdownOpen(false); logout(); }}
-                  className="w-full text-left px-4 py-3 text-sm text-red-400 hover:bg-red-500/[0.08] hover:text-red-300 transition-colors flex items-center gap-3"
-                >
-                  <FiLogOut /> Sign Out
-                </button>
-              </motion.div>
+          {/* Notifications */}
+          <button
+            id="header-notifications-btn"
+            onClick={togglePanel}
+            className="relative flex-shrink-0 flex items-center justify-center bg-transparent hover:bg-white/5 transition-colors group"
+            style={{
+              width: '48px',
+              height: '48px',
+              borderRadius: '10px',
+              border: '1px solid rgba(73, 178, 101, 0.4)'
+            }}
+          >
+            <img
+              src="/coins/noti.png"
+              alt="Notifications"
+              style={{ width: '24px', height: '24px', objectFit: 'contain' }}
+            />
+            {unreadCount > 0 && (
+              <span className="absolute top-2 right-2.5 w-2 h-2 bg-[#49B265] rounded-full shadow-[0_0_8px_rgba(73,178,101,0.8)]" />
             )}
-          </AnimatePresence>
+          </button>
+
+          {/* Avatar + Dropdown */}
+          <div className="relative" ref={dropdownRef}>
+            <button
+              id="header-profile-menu"
+              onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+              className="flex items-center hover:bg-white/[0.05] transition-colors group flex-shrink-0"
+              style={{
+                minWidth: '133.5px',
+                width: 'auto',
+                height: '48px',
+                borderRadius: '10px',
+                padding: '12px 16px 12px 8.5px',
+                gap: '6px',
+                border: '1px solid rgba(73, 178, 101, 0.4)'
+              }}
+            >
+              <div
+                className="rounded-full overflow-hidden border border-white/10 flex-shrink-0 bg-[#111827]"
+                style={{ width: '31px', height: '31px' }}
+              >
+                <img
+                  src={mongoUser?.avatarUrl || currentUser?.photoURL || `/avatars/avatar1.png`}
+                  alt="Avatar"
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              <div
+                className="hidden md:flex flex-col items-start justify-center flex-1 overflow-visible"
+                style={{ minWidth: '42px', width: 'auto', height: '26px', gap: '4px' }}
+              >
+                <span
+                  className="text-white text-left"
+                  style={{
+                    width: '43px',
+                    fontFamily: '"Barlow Condensed", sans-serif',
+                    fontWeight: 600,
+                    fontSize: '14px',
+                    lineHeight: '1',
+                    display: 'block'
+                  }}
+                >
+                  {mongoUser?.displayName || 'User'}
+                </span>
+                <span
+                  className="flex items-center"
+                  style={{ minWidth: '39px', width: 'auto', height: 'auto', gap: '3px' }}
+                >
+                  <img
+                    src="/coins/coinfinal.png"
+                    alt="Coin"
+                    style={{ width: '12px', height: '12px', objectFit: 'contain', flexShrink: 0 }}
+                  />
+                  <span style={{
+                    minWidth: '24px',
+                    width: 'auto',
+                    height: 'auto',
+                    paddingTop: '2px',
+                    fontFamily: '"Barlow Condensed", sans-serif',
+                    fontWeight: 700,
+                    fontSize: '12px',
+                    lineHeight: '130%',
+                    background: 'linear-gradient(180deg, #FEDF77 0%, #FCB91E 100%)',
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent',
+                    backgroundClip: 'text',
+                    color: 'transparent',
+                    display: 'flex',
+                    alignItems: 'center',
+                    overflow: 'visible',
+                    whiteSpace: 'nowrap'
+                  }}>
+                    {mongoUser?.walletBalance?.toLocaleString() ?? 0}
+                  </span>
+                </span>
+              </div>
+              <img
+                src="/coins/arrow.png"
+                alt="Dropdown Arrow"
+                className={`transition-transform duration-200 flex-shrink-0 ${isDropdownOpen ? 'rotate-180' : ''}`}
+                style={{
+                  width: '24px',
+                  height: '24px',
+                  objectFit: 'contain',
+                  filter: 'brightness(0) saturate(100%) invert(59%) sepia(33%) saturate(1030%) hue-rotate(86deg) brightness(93%) contrast(87%)'
+                }}
+              />
+            </button>
+
+            <AnimatePresence>
+              {isDropdownOpen && (
+                <motion.div
+                  initial={{ opacity: 0, y: 6, scale: 0.97 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  transition={{ duration: 0.15 }}
+                  className="absolute right-0 z-50 flex flex-col backdrop-blur-[44px]"
+                  style={{
+                    width: '171px',
+                    top: '58px',
+                    background: 'rgba(36, 36, 36, 1)',
+                    borderRadius: '12px',
+                    padding: '12px',
+                    gap: '12px',
+                    boxShadow: '0px 4px 20px rgba(0, 0, 0, 0.4)',
+                    border: '1px solid rgba(255, 255, 255, 0.08)'
+                  }}
+                >
+                  {/* Balance (mobile) */}
+                  <div className="sm:hidden px-1 pb-1 flex items-center gap-2 border-b border-white/5">
+                    <FiZap className="text-indigo-400 text-xs" />
+                    <span className="text-slate-300 text-xs font-mono">
+                      {mongoUser?.walletBalance?.toFixed(2) ?? '0.00'} PTS
+                    </span>
+                  </div>
+
+                  {/* My Profile */}
+                  <button
+                    id="header-profile-link-nav"
+                    onClick={() => { setIsDropdownOpen(false); navigate('/dashboard/profile'); }}
+                    className="text-left text-white/95 hover:text-white transition-colors flex items-center shrink-0 cursor-pointer"
+                    style={{
+                      background: 'transparent',
+                      border: 'none',
+                      padding: 0,
+                      width: '147px',
+                      height: '22px',
+                      gap: '8px',
+                      opacity: 1
+                    }}
+                  >
+                    <img
+                      src="/coins/profile.png"
+                      alt="Profile"
+                      className="shrink-0 object-contain"
+                      style={{
+                        width: '22px',
+                        height: '22px',
+                        opacity: 1
+                      }}
+                    />
+                    <span
+                      className="font-['Barlow_Condensed'] flex items-center overflow-visible whitespace-nowrap text-white"
+                      style={{
+                        width: '47px',
+                        height: '19px',
+                        fontFamily: "'Barlow Condensed', sans-serif",
+                        fontWeight: 600,
+                        fontSize: '16px',
+                        lineHeight: '120%',
+                        letterSpacing: '0%',
+                        verticalAlign: 'middle',
+                        opacity: 1
+                      }}
+                    >
+                      My Profile
+                    </span>
+                  </button>
+
+                  <div className="w-full h-[1px] bg-white/5 shrink-0" />
+
+                  {/* VIP Status */}
+                  <button
+                    id="header-vip-link-nav"
+                    onClick={() => { setIsDropdownOpen(false); navigate('/dashboard/vip'); }}
+                    className="text-left text-white/95 hover:text-white transition-colors flex items-center shrink-0 cursor-pointer"
+                    style={{
+                      background: 'transparent',
+                      border: 'none',
+                      padding: 0,
+                      width: '147px',
+                      height: '22px',
+                      gap: '8px',
+                      opacity: 1
+                    }}
+                  >
+                    <img
+                      src="/coins/vipstar.png"
+                      alt="VIP Status"
+                      className="shrink-0 object-contain"
+                      style={{
+                        width: '22px',
+                        height: '22px',
+                        opacity: 1
+                      }}
+                    />
+                    <span
+                      className="font-['Barlow_Condensed'] flex items-center overflow-visible whitespace-nowrap text-white"
+                      style={{
+                        width: '47px',
+                        height: '19px',
+                        fontFamily: "'Barlow Condensed', sans-serif",
+                        fontWeight: 600,
+                        fontSize: '16px',
+                        lineHeight: '120%',
+                        letterSpacing: '0%',
+                        verticalAlign: 'middle',
+                        opacity: 1
+                      }}
+                    >
+                      VIP Status
+                    </span>
+                  </button>
+
+                  <div className="w-full h-[1px] bg-white/5 shrink-0" />
+
+                  {/* Missions */}
+                  {missionsEnabled && (
+                    <>
+                      <button
+                        id="header-missions-link-nav"
+                        onClick={() => { setIsDropdownOpen(false); navigate('/dashboard/missions'); }}
+                        className="text-left text-white/95 hover:text-white transition-colors flex items-center shrink-0 cursor-pointer"
+                        style={{
+                          background: 'transparent',
+                          border: 'none',
+                          padding: 0,
+                          width: '147px',
+                          height: '22px',
+                          gap: '8px',
+                          opacity: 1
+                        }}
+                      >
+                        <img
+                          src="/coins/target.png"
+                          alt="Missions"
+                          className="shrink-0 object-contain"
+                          style={{
+                            width: '22px',
+                            height: '22px',
+                            opacity: 1
+                          }}
+                        />
+                        <span
+                          className="font-['Barlow_Condensed'] flex items-center overflow-visible whitespace-nowrap text-white"
+                          style={{
+                            width: '47px',
+                            height: '19px',
+                            fontFamily: "'Barlow Condensed', sans-serif",
+                            fontWeight: 600,
+                            fontSize: '16px',
+                            lineHeight: '120%',
+                            letterSpacing: '0%',
+                            verticalAlign: 'middle',
+                            opacity: 1
+                          }}
+                        >
+                          Missions
+                        </span>
+                      </button>
+                      <div className="w-full h-[1px] bg-white/5 shrink-0" />
+                    </>
+                  )}
+
+                  {/* Admin Panel */}
+                  {isAdmin && (
+                    <>
+                      <button
+                        id="header-admin-link"
+                        onClick={() => { setIsDropdownOpen(false); navigate('/admin'); }}
+                        className="text-left text-amber-400 hover:text-amber-300 transition-colors flex items-center shrink-0 cursor-pointer"
+                        style={{
+                          background: 'transparent',
+                          border: 'none',
+                          padding: 0,
+                          width: '147px',
+                          height: '22px',
+                          gap: '8px',
+                          opacity: 1
+                        }}
+                      >
+                        <div
+                          className="flex items-center justify-center shrink-0"
+                          style={{
+                            width: '22px',
+                            height: '22px',
+                            opacity: 1
+                          }}
+                        >
+                          <FiSettings className="text-amber-400 text-sm" />
+                        </div>
+                        <span
+                          className="font-['Barlow_Condensed'] flex items-center overflow-visible whitespace-nowrap text-amber-400"
+                          style={{
+                            width: '47px',
+                            height: '19px',
+                            fontFamily: "'Barlow Condensed', sans-serif",
+                            fontWeight: 600,
+                            fontSize: '16px',
+                            lineHeight: '120%',
+                            letterSpacing: '0%',
+                            verticalAlign: 'middle',
+                            opacity: 1
+                          }}
+                        >
+                          Admin Panel
+                        </span>
+                      </button>
+                      <div className="w-full h-[1px] bg-white/5 shrink-0" />
+                    </>
+                  )}
+
+                  {/* Sign Out */}
+                  <button
+                    id="header-logout-btn"
+                    onClick={() => { setIsDropdownOpen(false); logout(); }}
+                    className="text-left text-red-400 hover:text-red-300 transition-colors flex items-center shrink-0 cursor-pointer"
+                    style={{
+                      background: 'transparent',
+                      border: 'none',
+                      padding: 0,
+                      width: '147px',
+                      height: '22px',
+                      gap: '8px',
+                      opacity: 1
+                    }}
+                  >
+                    <img
+                      src="/coins/logout.png"
+                      alt="Sign Out"
+                      className="shrink-0 object-contain"
+                      style={{
+                        width: '22px',
+                        height: '22px',
+                        opacity: 1
+                      }}
+                    />
+                    <span
+                      className="font-['Barlow_Condensed'] flex items-center overflow-visible whitespace-nowrap text-red-400"
+                      style={{
+                        width: '47px',
+                        height: '19px',
+                        fontFamily: "'Barlow Condensed', sans-serif",
+                        fontWeight: 600,
+                        fontSize: '16px',
+                        lineHeight: '120%',
+                        letterSpacing: '0%',
+                        verticalAlign: 'middle',
+                        opacity: 1
+                      }}
+                    >
+                      Sign Out
+                    </span>
+                  </button>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
         </div>
       </div>
     </header>

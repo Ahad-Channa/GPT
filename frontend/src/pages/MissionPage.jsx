@@ -1,68 +1,41 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import DashboardLayout from '../components/layout/DashboardLayout';
-import CoinDisplay from '../components/CoinDisplay';
 import toast from 'react-hot-toast';
 import {
-  FiTarget,
-  FiCheckCircle,
   FiClock,
   FiLock,
-  FiGift,
   FiCalendar,
   FiTrendingUp,
   FiRepeat,
-  FiAward,
 } from 'react-icons/fi';
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
-// ── Period accent colors & labels ───────────────────────────────────────────
+// ── Period configurations ───────────────────────────────────────────────────
 const PERIOD_CONFIG = {
   daily: {
     label: 'Daily',
     icon: FiCalendar,
-    color: '#6366f1',       // indigo
-    glow: 'rgba(99,102,241,0.35)',
-    border: 'rgba(99,102,241,0.3)',
-    bg: 'rgba(99,102,241,0.08)',
-    gradient: 'linear-gradient(135deg, #6366f1, #8b5cf6)',
-    badgeBg: 'rgba(99,102,241,0.15)',
-    badgeText: '#a5b4fc',
   },
   weekly: {
     label: 'Weekly',
     icon: FiRepeat,
-    color: '#10b981',       // emerald
-    glow: 'rgba(16,185,129,0.35)',
-    border: 'rgba(16,185,129,0.3)',
-    bg: 'rgba(16,185,129,0.08)',
-    gradient: 'linear-gradient(135deg, #10b981, #34d399)',
-    badgeBg: 'rgba(16,185,129,0.15)',
-    badgeText: '#6ee7b7',
   },
   monthly: {
     label: 'Monthly',
     icon: FiTrendingUp,
-    color: '#f59e0b',       // amber
-    glow: 'rgba(245,158,11,0.35)',
-    border: 'rgba(245,158,11,0.3)',
-    bg: 'rgba(245,158,11,0.08)',
-    gradient: 'linear-gradient(135deg, #f59e0b, #fbbf24)',
-    badgeBg: 'rgba(245,158,11,0.15)',
-    badgeText: '#fcd34d',
   },
 };
 
-// ── Countdown hook ─────────────────────────────────────────────────────────
-// Returns { timeLeft: string, isExpired: boolean }
+// ── Countdown hook (Figma format: 01d 14h 09m 06s) ──────────────────────────
 function useCountdown(endsAt) {
   const calc = () => {
     if (!endsAt) return { timeLeft: '', isExpired: false };
     const diff = new Date(endsAt).getTime() - Date.now();
-    if (diff <= 0) return { timeLeft: '00:00:00', isExpired: true };
+    if (diff <= 0) return { timeLeft: '00h 00m 00s', isExpired: true };
     const totalSec = Math.floor(diff / 1000);
     const d = Math.floor(totalSec / 86400);
     const h = Math.floor((totalSec % 86400) / 3600);
@@ -70,8 +43,8 @@ function useCountdown(endsAt) {
     const s = totalSec % 60;
     const fmt = (n) => String(n).padStart(2, '0');
     const timeLeft = d > 0
-      ? `${d}d ${fmt(h)}h ${fmt(m)}m ${fmt(s)}s`
-      : `${fmt(h)}:${fmt(m)}:${fmt(s)}`;
+      ? `${fmt(d)}d ${fmt(h)}h ${fmt(m)}m ${fmt(s)}s`
+      : `${fmt(h)}h ${fmt(m)}m ${fmt(s)}s`;
     return { timeLeft, isExpired: false };
   };
 
@@ -89,267 +62,532 @@ function useCountdown(endsAt) {
 }
 
 // ── MissionCard component ────────────────────────────────────────────────────
-function MissionCard({ mission, periodCfg, onClaim, claiming }) {
+function MissionCard({ mission, onClaim, claiming }) {
   const pct = Math.min(100, Math.floor((mission.progress / mission.targetValue) * 100));
   const isClaiming = claiming === mission.userMissionId;
 
-  let stateLabel = null;
-  let stateLabelColor = '#94a3b8';
-  if (mission.claimed) {
-    stateLabel = '✓ Claimed';
-    stateLabelColor = periodCfg.color;
-  } else if (mission.completed && !mission.claimable) {
-    stateLabel = 'Expired';
-    stateLabelColor = '#ef4444';
-  }
+  // Icon selection helper
+  const getMissionIcon = (label) => {
+    const l = label.toLowerCase();
+    if (l.includes('affiliate')) return '/coins/people.png';
+    if (l.includes('featured')) return '/coins/gift.png';
+    if (l.includes('survey')) return '/coins/clipboard.png';
+    if (l.includes('visit')) return '/coins/globe.png';
+    if (l.includes('invite')) return '/coins/person1.png';
+    if (l.includes('check-in') || l.includes('daily')) return '/coins/calender.png';
+    return '/coins/target.png';
+  };
 
   return (
     <motion.div
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
-      className="relative rounded-2xl p-5 flex flex-col gap-3 overflow-hidden"
+      onClick={() => {
+        if (mission.claimable && !isClaiming) {
+          onClaim(mission.userMissionId);
+        }
+      }}
+      className={`relative flex flex-col justify-between overflow-hidden transition-all duration-150 border border-white/[0.08] shrink-0 ${
+        mission.claimable ? 'cursor-pointer hover:scale-[1.02] hover:border-[#49B265]/50 shadow-[0_0_15px_rgba(73,178,101,0.15)]' : ''
+      }`}
       style={{
-        background: mission.claimed
-          ? `${periodCfg.bg}`
-          : 'rgba(15, 23, 42, 0.6)',
-        border: `1px solid ${mission.completed ? periodCfg.border : 'rgba(51,65,85,0.5)'}`,
-        boxShadow: mission.claimable ? `0 0 20px ${periodCfg.glow}` : 'none',
-        backdropFilter: 'blur(10px)',
+        width: '390.6666564941406px',
+        height: '168px',
+        gap: '16px',
+        borderRadius: '20px',
+        padding: '16px',
+        background: 'rgba(0, 0, 0, 0.36)',
+        backdropFilter: 'blur(44px)',
+        boxShadow: '0px 4px 44px 0px rgba(0, 0, 0, 0.25)',
+        opacity: 1
       }}
     >
-      {/* Shimmer for claimable missions */}
-      {mission.claimable && (
+      {/* Top row: Icon, title, description */}
+      <div 
+        className="flex items-start shrink-0"
+        style={{
+          width: '358.6666564941406px',
+          height: '70px',
+          gap: '16px',
+          opacity: 1
+        }}
+      >
+        {/* Icon Box */}
         <div
-          className="absolute inset-0 pointer-events-none"
+          className="flex items-center justify-center shrink-0"
           style={{
-            background: `linear-gradient(90deg, transparent, ${periodCfg.glow}, transparent)`,
-            animation: 'missionShimmer 2.4s ease-in-out infinite',
+            width: '70px',
+            height: '70px',
+            borderRadius: '12px',
+            background: mission.claimed 
+              ? 'rgba(255, 255, 255, 0.05)' 
+              : 'rgba(73, 178, 101, 0.2)',
+            opacity: 1
           }}
-        />
-      )}
-
-      {/* Header row */}
-      <div className="flex items-start justify-between gap-3 relative z-10">
-        <div className="flex items-center gap-3 flex-1 min-w-0">
-          {/* Icon */}
-          <div
-            className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
-            style={{
-              background: mission.completed ? periodCfg.gradient : 'rgba(30,41,59,0.8)',
-              border: `1px solid ${mission.completed ? periodCfg.border : 'rgba(51,65,85,0.5)'}`,
-              boxShadow: mission.completed ? `0 0 10px ${periodCfg.glow}` : 'none',
-            }}
-          >
-            {mission.claimed ? (
-              <FiCheckCircle className="text-lg" style={{ color: periodCfg.color }} />
-            ) : mission.completed ? (
-              <FiTarget className="text-lg text-white" />
-            ) : (
-              <FiTarget className="text-slate-500 text-base" />
-            )}
-          </div>
-
-          <div className="min-w-0">
-            <p className={`font-bold text-sm leading-tight truncate ${mission.completed ? 'text-slate-100' : 'text-slate-300'}`}>
-              {mission.label}
-            </p>
-            <p className="text-xs text-slate-500 mt-0.5 line-clamp-2">{mission.description}</p>
-          </div>
+        >
+          {mission.claimed ? (
+            <img 
+              src="/coins/tik1.png" 
+              alt="Claimed" 
+              className="object-contain" 
+              style={{ width: '34px', height: '34px', opacity: 1 }}
+            />
+          ) : (
+            <img 
+              src={getMissionIcon(mission.label)} 
+              alt="Mission Icon" 
+              className="object-contain" 
+              style={{ width: '34px', height: '34px', opacity: 1 }}
+            />
+          )}
         </div>
 
-        {/* State label / reward */}
-        <div className="flex flex-col items-end gap-1 flex-shrink-0">
-          <div className="flex items-center gap-1 font-bold text-sm" style={{ color: periodCfg.color }}>
-            <CoinDisplay amount={mission.rewardAmount} size={13} />
-          </div>
-          {stateLabel && (
-            <span className="text-[10px] font-bold uppercase tracking-wider" style={{ color: stateLabelColor }}>
-              {stateLabel}
-            </span>
-          )}
+        <div className="flex-1 min-w-0 flex flex-col justify-center">
+          <span 
+            className="text-white truncate m-0 p-0"
+            style={{
+              width: '209px',
+              height: 'auto',
+              fontFamily: "'Barlow Condensed', sans-serif",
+              fontWeight: 600,
+              fontSize: '24px',
+              lineHeight: '120%',
+              letterSpacing: '0%',
+              opacity: 1
+            }}
+          >
+            {mission.label}
+          </span>
+          <span 
+            className="text-[#888888] truncate m-0 p-0"
+            style={{
+              width: '272.6666564941406px',
+              height: 'auto',
+              fontFamily: "'Barlow Condensed', sans-serif",
+              fontWeight: 500,
+              fontSize: '17px',
+              lineHeight: '120%',
+              letterSpacing: '0%',
+              opacity: 1,
+              marginTop: '8px'
+            }}
+          >
+            {mission.description}
+          </span>
         </div>
       </div>
 
-      {/* Progress bar */}
-      <div className="relative z-10">
-        <div className="flex items-center justify-between mb-1.5">
-          <span className="text-[11px] text-slate-500 font-medium">
-            {mission.progress.toLocaleString()} / {mission.targetValue.toLocaleString()}
-          </span>
-          <span className="text-[11px] font-bold" style={{ color: pct === 100 ? periodCfg.color : '#64748b' }}>
-            {pct}%
-          </span>
-        </div>
-        <div className="h-2 bg-slate-800/80 rounded-full overflow-hidden">
-          <motion.div
-            initial={{ width: 0 }}
-            animate={{ width: `${pct}%` }}
-            transition={{ duration: 0.8, ease: 'easeOut' }}
-            className="h-full rounded-full"
+      {/* Bottom Block: Reward + Progress Info */}
+      <div 
+        className="flex flex-col shrink-0"
+        style={{
+          width: '358.6666564941406px',
+          height: '50px',
+          gap: '12px',
+          opacity: 1
+        }}
+      >
+        <div 
+          className="flex items-center justify-between shrink-0"
+          style={{
+            width: '358.6666564941406px',
+            height: '26px',
+            opacity: 1
+          }}
+        >
+          <div 
+            className="flex items-center shrink-0"
             style={{
-              background: pct === 100 ? periodCfg.gradient : `linear-gradient(90deg, ${periodCfg.color}80, ${periodCfg.color}40)`,
-              boxShadow: pct === 100 ? `0 0 8px ${periodCfg.glow}` : 'none',
+              width: '59px',
+              height: '26px',
+              gap: '3px',
+              opacity: 1
+            }}
+          >
+            <img 
+              src="/coins/coinfinal.png" 
+              alt="Reward" 
+              className="shrink-0 object-contain overflow-visible" 
+              style={{ 
+                width: '26px', 
+                height: '26px', 
+                opacity: 1, 
+                filter: 'drop-shadow(0px 0px 14px rgba(254, 198, 53, 0.6))' 
+              }}
+            />
+            <span 
+              className="font-bold text-[#FCB91E] flex items-center shrink-0 p-0 m-0"
+              style={{
+                width: '30px',
+                height: '15px',
+                fontFamily: "'Barlow Condensed', sans-serif",
+                fontSize: '18px',
+                lineHeight: '1',
+                opacity: 1
+              }}
+            >
+              {mission.rewardAmount}
+            </span>
+          </div>
+
+          {mission.claimed ? (
+            <span 
+              className="text-[#49B265] m-0 p-0"
+              style={{
+                width: 'auto',
+                minWidth: '35px',
+                height: 'auto',
+                minHeight: '15px',
+                fontFamily: "'Barlow Condensed', sans-serif",
+                fontWeight: 700,
+                fontSize: '22px',
+                lineHeight: '130%',
+                letterSpacing: '0%',
+                opacity: 1
+              }}
+            >
+              Claimed
+            </span>
+          ) : mission.claimable ? (
+            <button 
+              onClick={(e) => { e.stopPropagation(); onClaim(mission.userMissionId); }}
+              disabled={isClaiming}
+              className="flex items-center justify-center transition-all m-0 hover:bg-[#3da156] active:translate-y-[2px] active:shadow-none"
+              style={{
+                width: '85px',
+                height: '24px',
+                gap: '4px',
+                borderRadius: '6px',
+                padding: '0px',
+                background: 'rgba(73, 178, 101, 1)',
+                boxShadow: '0px 2px 0px 0px rgba(39, 109, 58, 1)',
+                border: 'none',
+                cursor: isClaiming ? 'not-allowed' : 'pointer',
+                opacity: isClaiming ? 0.7 : 1
+              }}
+            >
+              <span
+                style={{
+                  fontFamily: "'Barlow Condensed', sans-serif",
+                  fontWeight: 700,
+                  fontSize: '15px',
+                  lineHeight: '100%',
+                  color: 'white',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  whiteSpace: 'nowrap'
+                }}
+              >
+                {isClaiming ? 'Claiming...' : 'Claim Reward'}
+              </span>
+            </button>
+          ) : (
+            <span 
+              className="text-white m-0 p-0 text-right"
+              style={{
+                width: 'auto',
+                minWidth: '35px',
+                height: 'auto',
+                minHeight: '15px',
+                fontFamily: "'Barlow Condensed', sans-serif",
+                fontWeight: 700,
+                fontSize: '22px',
+                lineHeight: '130%',
+                letterSpacing: '0%',
+                opacity: 1,
+                whiteSpace: 'nowrap'
+              }}
+            >
+              {mission.progress} / {mission.targetValue}
+            </span>
+          )}
+        </div>
+
+        {/* Progress bar */}
+        <div 
+          className="bg-white/5 overflow-hidden shrink-0"
+          style={{
+            width: '358.6666564941406px',
+            height: '12px',
+            borderRadius: '30px',
+            opacity: 1
+          }}
+        >
+          <div 
+            className="h-full transition-all duration-300"
+            style={{
+              width: `${pct}%`,
+              background: '#49B265',
+              borderRadius: '30px'
             }}
           />
         </div>
       </div>
-
-      {/* Claim Button */}
-      {mission.claimable && (
-        <motion.button
-          initial={{ scale: 0.95, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.97 }}
-          onClick={() => onClaim(mission.userMissionId)}
-          disabled={isClaiming}
-          className="relative z-10 w-full py-2.5 rounded-xl font-bold text-sm transition-all disabled:opacity-60 disabled:pointer-events-none"
-          style={{
-            background: periodCfg.gradient,
-            color: '#fff',
-            boxShadow: `0 4px 16px ${periodCfg.glow}`,
-          }}
-        >
-          {isClaiming ? (
-            <span className="flex items-center justify-center gap-2">
-              <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
-              </svg>
-              Claiming…
-            </span>
-          ) : (
-            <span className="flex items-center justify-center gap-2">
-              Claim {mission.rewardAmount.toLocaleString()} Coins
-            </span>
-          )}
-        </motion.button>
-      )}
     </motion.div>
   );
 }
 
 // ── Period Bonus Card ───────────────────────────────────────────────────────────────
-// bonus: { enabled, bonusAmount, totalMissions, completedMissions, allMissionsCompleted, unlocked, claimed, claimable }
-function PeriodBonusCard({ bonus, period, periodCfg, onClaim, claimingBonus }) {
+function PeriodBonusCard({ bonus, period, onClaim, claimingBonus }) {
   if (!bonus) return null;
 
   const {
-    enabled        = true,
-    bonusAmount    = 0,
-    totalMissions  = 0,
+    enabled = true,
+    bonusAmount = 0,
+    totalMissions = 0,
     completedMissions = 0,
-    allMissionsCompleted = false,
-    claimed        = false,
-    claimable      = false,
+    claimed = false,
+    claimable = false,
   } = bonus;
 
-  // State helpers
-  const isNotConfigured = !enabled || !bonusAmount;
+  if (!enabled || !bonusAmount) return null;
 
-  // Hide if not configured and not unlocked
-  if (isNotConfigured && !bonus.unlocked) return null;
-
-  const pct = totalMissions > 0 ? Math.min(100, Math.round((completedMissions / totalMissions) * 100)) : 0;
+  // Since we only display up to 3 missions, let's clamp total to 3 in UI if needed
+  const displayTotal = Math.min(3, totalMissions);
+  const displayCompleted = Math.min(displayTotal, completedMissions);
+  const pct = displayTotal > 0 ? Math.min(100, Math.round((displayCompleted / displayTotal) * 100)) : 0;
   const isClaiming = claimingBonus === period;
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 12 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="relative rounded-2xl p-5 overflow-hidden mt-2"
+    <div
+      className="flex flex-col md:flex-row items-center transition-all border border-white/[0.08]"
       style={{
-        background: claimed
-          ? periodCfg.bg
-          : claimable
-          ? `linear-gradient(135deg, ${periodCfg.bg}, rgba(15,23,42,0.9))`
-          : 'rgba(15,23,42,0.5)',
-        border: `1px solid ${
-          claimable ? periodCfg.color
-          : claimed  ? periodCfg.border
-          : 'rgba(51,65,85,0.5)'
-        }`,
-        boxShadow: claimable ? `0 0 28px ${periodCfg.glow}` : 'none',
+        width: '100%',
+        maxWidth: '1240px',
+        height: '152px',
+        gap: '40px',
+        borderRadius: '20px',
+        padding: '30px 40px',
+        background: 'rgba(36, 36, 36, 1)',
+        backdropFilter: 'blur(94px)',
+        opacity: 1
       }}
     >
-      {/* Shimmer for claimable */}
-      {claimable && (
-        <div
-          className="absolute inset-0 pointer-events-none"
+      {/* Left: Complete All Missions & Reward */}
+      <div 
+        className="flex flex-col shrink-0"
+        style={{
+          width: '252px',
+          height: '92px',
+          justifyContent: 'space-between',
+          opacity: 1
+        }}
+      >
+        <span 
+          className="text-white font-bold m-0 p-0"
           style={{
-            background: `linear-gradient(90deg, transparent, ${periodCfg.glow}, transparent)`,
-            animation: 'missionShimmer 2.4s ease-in-out infinite',
-          }}
-        />
-      )}
-
-      <div className="relative z-10 flex items-center justify-between gap-4">
-        {/* Left: text only */}
-        <div className="flex items-center gap-3">
-          <div>
-            <p className="font-bold text-sm text-slate-100">
-              Complete All Missions
-            </p>
-            <p className="text-[11px] text-slate-500 mt-0.5">
-              {claimed
-                ? 'Reward claimed — great work!'
-                : claimable
-                ? 'All missions done! Claim your reward below.'
-                : isNotConfigured
-                ? 'All missions done! Admin will set the reward soon.'
-                : `Complete all ${totalMissions} missions to unlock this reward`}
-            </p>
-          </div>
-        </div>
-
-        {/* Right: amount */}
-        {bonusAmount > 0 && (
-          <div className="flex flex-col items-end gap-1 flex-shrink-0">
-            <div className="flex items-center gap-1 font-bold text-sm" style={{ color: periodCfg.color }}>
-              <CoinDisplay amount={bonusAmount} size={13} />
-            </div>
-            {claimed && (
-              <span className="text-[10px] font-bold uppercase tracking-wider" style={{ color: periodCfg.color }}>
-                ✓ Claimed
-              </span>
-            )}
-          </div>
-        )}
-      </div>
-
-      {/* Claim button */}
-      {claimable && bonusAmount > 0 && (
-        <motion.button
-          initial={{ scale: 0.95, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.97 }}
-          onClick={() => onClaim(period)}
-          disabled={isClaiming}
-          className="relative z-10 w-full mt-4 py-2.5 rounded-xl font-bold text-sm transition-all disabled:opacity-60 disabled:pointer-events-none"
-          style={{
-            background: periodCfg.gradient,
-            color: '#fff',
-            boxShadow: `0 4px 20px ${periodCfg.glow}`,
+            width: '172px',
+            height: '29px',
+            fontFamily: "'Barlow Condensed', sans-serif",
+            fontSize: '22px',
+            lineHeight: '130%',
+            letterSpacing: '0%',
+            opacity: 1
           }}
         >
-          {isClaiming ? (
-            <span className="flex items-center justify-center gap-2">
-              <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
-              </svg>
-              Claiming…
+          Complete All Missions
+        </span>
+        <div 
+          className="flex items-center"
+          style={{
+            width: '142px',
+            height: '52px',
+            gap: '6px',
+            opacity: 1
+          }}
+        >
+          <img 
+            src="/coins/coinfix.png" 
+            alt="Coin" 
+            className="shrink-0 object-contain" 
+            style={{ 
+              width: '52px',
+              height: '52px',
+              opacity: 1
+            }}
+          />
+          <span 
+            className="font-bold m-0 p-0 flex items-center shrink-0"
+            style={{
+              width: 'auto',
+              minWidth: '84px',
+              height: 'auto',
+              minHeight: '49px',
+              fontFamily: "'Barlow Condensed', sans-serif",
+              fontSize: '70px',
+              lineHeight: '120%',
+              background: 'linear-gradient(180deg, #FEDF77 0%, #FCB91E 100%)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              backgroundClip: 'text',
+              color: 'transparent',
+              marginTop: '8px'
+            }}
+          >
+            {bonusAmount}
+          </span>
+        </div>
+      </div>
+
+      {/* Vertical Divider */}
+      <div 
+        className="hidden md:block shrink-0"
+        style={{
+          width: '1px',
+          height: '92px',
+          background: 'rgba(255, 255, 255, 0.1)',
+          opacity: 1
+        }}
+      />
+
+      {/* Middle: Progress Text & Bar */}
+      <div 
+        className="flex flex-col shrink-0"
+        style={{
+          width: '565px',
+          height: '49px',
+          gap: '20px',
+          opacity: 1
+        }}
+      >
+        <div 
+          className="flex items-center justify-between"
+          style={{
+            width: '100%',
+            height: '17px',
+            opacity: 1
+          }}
+        >
+          <span 
+            className="m-0 p-0 text-white"
+            style={{
+              width: 'auto',
+              height: 'auto',
+              minHeight: '15px',
+              fontFamily: "'Barlow Condensed', sans-serif",
+              fontWeight: 500,
+              fontSize: '22px',
+              lineHeight: '130%',
+              letterSpacing: '0%',
+              whiteSpace: 'nowrap'
+            }}
+          >
+            Complete all {displayTotal} missions to unlock this reward
+          </span>
+          <span 
+            className="m-0 p-0 text-[#FCB91E] text-right"
+            style={{
+              width: 'auto',
+              height: 'auto',
+              minHeight: '17px',
+              fontFamily: "'Barlow Condensed', sans-serif",
+              fontWeight: 700,
+              fontSize: '24px',
+              lineHeight: '130%',
+              letterSpacing: '0%',
+              whiteSpace: 'nowrap'
+            }}
+          >
+            {displayCompleted} / {displayTotal}
+          </span>
+        </div>
+        <div 
+          className="bg-white/5 overflow-hidden shrink-0"
+          style={{
+            width: '565px',
+            height: '12px',
+            borderRadius: '30px',
+            opacity: 1
+          }}
+        >
+          <div 
+            className="h-full transition-all duration-300"
+            style={{
+              width: `${pct}%`,
+              background: '#49B265',
+              borderRadius: '30px'
+            }}
+          />
+        </div>
+      </div>
+
+      {/* Vertical Divider 2 */}
+      <div 
+        className="hidden md:block shrink-0"
+        style={{
+          width: '1px',
+          height: '92px',
+          background: 'rgba(255, 255, 255, 0.1)',
+          opacity: 1
+        }}
+      />
+
+      {/* Right: Claim Button */}
+      <div className="shrink-0">
+        {claimed ? (
+          <div 
+            className="flex items-center justify-center font-bold text-white"
+            style={{
+              width: '183px',
+              height: '48px',
+              gap: '10px',
+              borderRadius: '10px',
+              padding: '10px 30px',
+              background: 'rgba(73, 178, 101, 1)',
+              boxShadow: '0px 4px 0px 0px rgba(39, 109, 58, 1)',
+              fontFamily: "'Barlow Condensed', sans-serif",
+              fontSize: '18px',
+              opacity: 0.6
+            }}
+          >
+            ✓ Claimed
+          </div>
+        ) : (
+          <button
+            onClick={() => { if (claimable) onClaim(period); }}
+            disabled={!claimable || isClaiming}
+            className={`transition-all flex items-center justify-center border-none ${
+              claimable 
+                ? 'cursor-pointer hover:scale-[1.02] active:scale-[0.98]' 
+                : 'cursor-not-allowed opacity-80'
+            }`}
+            style={{
+              width: '183px',
+              height: '48px',
+              gap: '10px',
+              borderRadius: '10px',
+              padding: '10px 30px',
+              background: 'rgba(73, 178, 101, 1)',
+              boxShadow: '0px 4px 0px 0px rgba(39, 109, 58, 1)',
+              mixBlendMode: 'luminosity',
+              opacity: 1,
+              fontFamily: "'Barlow Condensed', sans-serif",
+              fontWeight: 700,
+              fontSize: '18px',
+              color: 'white'
+            }}
+          >
+            {!claimable && (
+              <img 
+                src="/coins/lockpe.png" 
+                alt="Locked"
+                className="shrink-0 object-contain"
+                style={{
+                  width: '24px',
+                  height: '24px',
+                  opacity: 1,
+                  filter: 'brightness(0) invert(1)'
+                }}
+              />
+            )}
+            <span style={{ m: 0, p: 0 }}>
+              {isClaiming ? 'Claiming...' : 'Claim Reward'}
             </span>
-          ) : (
-            <span className="flex items-center justify-center gap-2">
-              <FiAward />
-              Claim — +{bonusAmount.toLocaleString()} Coins
-            </span>
-          )}
-        </motion.button>
-      )}
-    </motion.div>
+          </button>
+        )}
+      </div>
+    </div>
   );
 }
 
@@ -357,110 +595,216 @@ function PeriodBonusCard({ bonus, period, periodCfg, onClaim, claimingBonus }) {
 function PeriodSection({ data, periodKey, periodCfg, bonus, onClaim, onClaimBonus, claiming, claimingBonus, onExpired }) {
   const { timeLeft, isExpired } = useCountdown(data?.endsAt);
   const missions = data?.missions || [];
-  const completed = missions.filter(m => m.completed).length;
+  
+  // Show exactly 3 missions (the user specified to show exactly three missions)
+  const displayedMissions = missions.slice(0, 3);
+  const completed = displayedMissions.filter(m => m.completed).length;
 
-  // When the period expires, notify parent to refetch fresh missions
   useEffect(() => {
     if (isExpired && onExpired) onExpired();
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isExpired]);
 
   return (
-    <div className="space-y-4">
+    <div className="flex flex-col w-full gap-[24px]">
+      <div 
+        className="flex flex-col gap-[18px] w-full h-auto p-[20px]"
+        style={{
+          background: 'rgba(255, 255, 255, 0.14)',
+          borderRadius: '20px',
+        }}
+      >
+        {/* ── Period header ─────────────────────────────────── */}
+        <div 
+          className="flex items-center justify-between w-full"
+          style={{
+            maxWidth: '1200px',
+            height: '88px',
+            gap: '16px',
+            opacity: 1
+          }}
+        >
+          <div className="flex items-center gap-[16px] h-full">
+            <div
+              className="flex items-center justify-center shrink-0"
+              style={{ 
+                width: '88px',
+                height: '88px',
+                gap: '6px',
+                borderRadius: '10px',
+                padding: '10px 12px',
+                background: 'rgba(41, 253, 152, 0.1)',
+                opacity: 1
+              }}
+            >
+              <img 
+                src="/coins/target.png" 
+                alt="Missions" 
+                style={{
+                  width: '44px',
+                  height: '44px',
+                  opacity: 1
+                }}
+                className="object-contain shrink-0" 
+              />
+            </div>
+            <div 
+              className="flex flex-col"
+              style={{
+                width: '100%',
+                maxWidth: '834px',
+                height: '85px',
+                gap: '6px',
+                opacity: 1
+              }}
+            >
+              <h2 
+                className="text-white m-0 p-0"
+                style={{
+                  width: '100%',
+                  maxWidth: '834px',
+                  height: '50px',
+                  fontFamily: "'Barlow Condensed', sans-serif",
+                  fontWeight: 700,
+                  fontSize: '42px',
+                  lineHeight: '120%',
+                  letterSpacing: '0%',
+                  opacity: 1
+                }}
+              >
+                {periodCfg.label} Missions
+              </h2>
+              {!isExpired && (
+                <p 
+                  className="m-0"
+                  style={{
+                    width: '100%',
+                    maxWidth: '834px',
+                    height: '29px',
+                    fontFamily: "'Barlow Condensed', sans-serif",
+                    fontWeight: 500,
+                    fontSize: '22px',
+                    lineHeight: '130%',
+                    letterSpacing: '0%',
+                    color: 'rgba(136, 136, 136, 1)',
+                    opacity: 1
+                  }}
+                >
+                  {completed}/{Math.min(3, displayedMissions.length)} completed
+                </p>
+              )}
+            </div>
+          </div>
 
-      {/* ── Period header ─────────────────────────────────── */}
-      <div className="flex items-center justify-between flex-wrap gap-3">
-        <div className="flex items-center gap-2">
-          <div
-            className="w-8 h-8 rounded-lg flex items-center justify-center"
-            style={{ background: periodCfg.gradient, boxShadow: `0 0 12px ${periodCfg.glow}` }}
-          >
-            <periodCfg.icon className="text-white text-sm" />
-          </div>
-          <div>
-            <h2 className="font-bold text-slate-100 text-base">{periodCfg.label} Missions</h2>
-            {!isExpired && (
-              <p className="text-[11px] text-slate-500">
-                {completed}/{missions.length} completed
-              </p>
-            )}
-          </div>
+          {/* Timer */}
+          {!isExpired && timeLeft && (
+            <div
+              className="flex items-center shrink-0"
+              style={{
+                width: 'auto',
+                minWidth: '246px',
+                height: '48px',
+                gap: '6px',
+                borderRadius: '100px',
+                padding: '12px 20px',
+                background: 'rgba(73, 178, 101, 0.23)',
+                opacity: 1
+              }}
+            >
+              <img 
+                src="/coins/clock.png" 
+                alt="Clock" 
+                className="shrink-0 object-contain"
+                style={{
+                  width: '24px',
+                  height: '24px',
+                  opacity: 1
+                }} 
+              />
+              <span
+                className="text-white m-0 p-0"
+                style={{
+                  width: 'auto',
+                  height: '32px',
+                  fontFamily: "'Barlow Condensed', sans-serif",
+                  fontWeight: 600,
+                  fontSize: '20px',
+                  lineHeight: '32px',
+                  letterSpacing: '0%',
+                  whiteSpace: 'nowrap',
+                  opacity: 1
+                }}
+              >
+                Reset in {timeLeft}
+              </span>
+            </div>
+          )}
         </div>
 
-        {/* Fixed timer — prominent, leaderboard-style */}
-        {!isExpired && timeLeft && (
+        {/* ── Expired state ── */}
+        {isExpired ? (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.97 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="rounded-2xl p-10 flex flex-col items-center gap-3 text-center border border-white/[0.08]"
+            style={{ background: 'rgba(0, 0, 0, 0.36)', backdropFilter: 'blur(44px)' }}
+          >
+            <div
+              className="w-14 h-14 rounded-2xl flex items-center justify-center mb-1"
+              style={{ background: 'rgba(73, 178, 101, 0.15)', border: '1px solid rgba(73, 178, 101, 0.4)' }}
+            >
+              <FiClock className="text-[#49B265] text-2xl" />
+            </div>
+            <p className="font-bold text-slate-100 text-base">{periodCfg.label} missions are refreshing…</p>
+            <p className="text-slate-500 text-sm max-w-xs">
+              The {periodCfg.label.toLowerCase()} period has ended. New missions will appear shortly.
+            </p>
+            <div
+              className="mt-2 px-4 py-2 rounded-xl text-xs font-bold bg-[#49B265]/10 text-[#49B265] border border-[#49B265]/20"
+            >
+              Refreshing automatically…
+            </div>
+          </motion.div>
+        ) : displayedMissions.length === 0 ? (
           <div
-            className="flex items-center gap-2 px-4 py-2 rounded-xl font-mono font-black text-sm"
+            className="rounded-2xl p-8 flex flex-col items-center gap-3 text-center border border-white/[0.08]"
+            style={{ background: 'rgba(0, 0, 0, 0.36)', backdropFilter: 'blur(44px)' }}
+          >
+            <FiLock className="text-slate-600 text-3xl" />
+            <p className="text-slate-500 text-sm font-medium">No {periodCfg.label.toLowerCase()} missions configured yet.</p>
+            <p className="text-slate-600 text-xs">Check back later or contact support.</p>
+          </div>
+        ) : (
+          <div 
+            className="flex items-center overflow-x-auto md:overflow-visible"
             style={{
-              background: periodCfg.badgeBg,
-              color: periodCfg.badgeText,
-              border: `1px solid ${periodCfg.border}`,
-              boxShadow: `0 0 12px ${periodCfg.glow}`,
+              width: '100%',
+              maxWidth: '1200px',
+              height: '168px',
+              gap: '14px',
+              opacity: 1
             }}
           >
-            <FiClock className="text-xs flex-shrink-0" />
-            <span>Resets in: {timeLeft}</span>
-          </div>
-        )}
-      </div>
-
-      {/* ── Expired state — hide old missions, show reset notice ── */}
-      {isExpired ? (
-        <motion.div
-          initial={{ opacity: 0, scale: 0.97 }}
-          animate={{ opacity: 1, scale: 1 }}
-          className="rounded-2xl p-10 flex flex-col items-center gap-3 text-center"
-          style={{ background: 'rgba(15,23,42,0.6)', border: `1px solid ${periodCfg.border}` }}
-        >
-          <div
-            className="w-14 h-14 rounded-2xl flex items-center justify-center mb-1"
-            style={{ background: periodCfg.gradient, boxShadow: `0 0 20px ${periodCfg.glow}` }}
-          >
-            <FiClock className="text-white text-2xl" />
-          </div>
-          <p className="font-bold text-slate-100 text-base">{periodCfg.label} missions are refreshing…</p>
-          <p className="text-slate-500 text-sm max-w-xs">
-            The {periodCfg.label.toLowerCase()} period has ended. New missions will appear shortly.
-          </p>
-          <div
-            className="mt-2 px-4 py-2 rounded-xl text-xs font-bold"
-            style={{ background: periodCfg.badgeBg, color: periodCfg.badgeText, border: `1px solid ${periodCfg.border}` }}
-          >
-            Refreshing automatically…
-          </div>
-        </motion.div>
-      ) : missions.length === 0 ? (
-        <div
-          className="rounded-2xl p-8 flex flex-col items-center gap-3 text-center"
-          style={{ background: 'rgba(15,23,42,0.5)', border: '1px solid rgba(51,65,85,0.4)' }}
-        >
-          <FiLock className="text-slate-600 text-3xl" />
-          <p className="text-slate-500 text-sm font-medium">No {periodCfg.label.toLowerCase()} missions configured yet.</p>
-          <p className="text-slate-600 text-xs">Check back later or contact support.</p>
-        </div>
-      ) : (
-        <>
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-            {missions.map(mission => (
+            {displayedMissions.map(mission => (
               <MissionCard
                 key={mission.configId}
                 mission={mission}
-                periodCfg={periodCfg}
                 onClaim={onClaim}
                 claiming={claiming}
               />
             ))}
           </div>
+        )}
+      </div>
 
-          {/* Period completion bonus — shown below missions, uses API bonus data directly */}
-          <PeriodBonusCard
-            bonus={bonus}
-            period={periodKey}
-            periodCfg={periodCfg}
-            onClaim={onClaimBonus}
-            claimingBonus={claimingBonus}
-          />
-        </>
+      {/* Completion Bonus Footer */}
+      {!isExpired && displayedMissions.length > 0 && (
+        <PeriodBonusCard
+          bonus={{...bonus, completedMissions: Math.max(bonus?.completedMissions || 0, completed)}}
+          period={periodKey}
+          onClaim={onClaimBonus}
+          claimingBonus={claimingBonus}
+        />
       )}
     </div>
   );
@@ -560,7 +904,7 @@ const MissionPage = () => {
     return (
       <DashboardLayout>
         <div className="flex items-center justify-center min-h-[60vh]">
-          <div className="w-10 h-10 border-4 border-indigo-500/30 border-t-indigo-500 rounded-full animate-spin" />
+          <div className="w-10 h-10 border-4 border-[#49B265]/30 border-t-[#49B265] rounded-full animate-spin" />
         </div>
       </DashboardLayout>
     );
@@ -568,140 +912,182 @@ const MissionPage = () => {
 
   const tabs = ['daily', 'weekly', 'monthly'];
 
-  // Summary stats across all periods
-  const allMissions = [
-    ...(data?.daily?.missions || []),
-    ...(data?.weekly?.missions || []),
-    ...(data?.monthly?.missions || []),
-  ];
-  const totalCompleted = allMissions.filter(m => m.completed).length;
-  const totalClaimable = allMissions.filter(m => m.claimable).length;
-
   return (
     <DashboardLayout>
-      {/* Shimmer animation keyframes */}
-      <style>{`
-        @keyframes missionShimmer {
-          0%   { opacity: 0; transform: translateX(-100%); }
-          50%  { opacity: 1; }
-          100% { opacity: 0; transform: translateX(100%); }
-        }
-      `}</style>
+      <div className="w-full max-w-[1240px] mx-auto space-y-8 p-4 sm:p-6 pb-20 pt-4">
 
-      <div className="w-full max-w-7xl mx-auto space-y-8 p-4 sm:p-6 pb-20">
-
-        {/* ── Hero Header ──────────────────────────────────────── */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="relative overflow-hidden rounded-2xl p-6 sm:p-8 border border-white/[0.07]"
-          style={{ background: 'linear-gradient(135deg, rgba(99,102,241,0.12), rgba(139,92,246,0.06), rgba(15,23,42,0.95))' }}
-        >
-          {/* Background decoration */}
-          <div
-            className="absolute top-0 right-0 w-64 h-64 rounded-full pointer-events-none"
-            style={{ background: 'radial-gradient(circle, rgba(99,102,241,0.15) 0%, transparent 70%)', transform: 'translate(30%, -30%)' }}
-          />
-
-          <div className="relative z-10 flex flex-col sm:flex-row items-start sm:items-center gap-6">
-            <div
-              className="w-16 h-16 rounded-2xl flex items-center justify-center flex-shrink-0"
-              style={{ background: 'linear-gradient(135deg, #6366f1, #8b5cf6)', boxShadow: '0 0 30px rgba(99,102,241,0.5)' }}
+        {/* Heading Section */}
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center relative w-full md:w-[1240px] h-[122px]">
+          <div 
+            className="flex flex-col justify-start"
+            style={{
+              width: '745px',
+              height: '122px',
+              gap: '6px'
+            }}
+          >
+            <h1 
+              className="m-0 p-0 text-white"
+              style={{
+                width: '745px',
+                height: '82px',
+                fontFamily: "'Barlow Condensed', sans-serif",
+                fontWeight: 700,
+                fontSize: '68px',
+                lineHeight: '120%',
+                letterSpacing: '0%'
+              }}
             >
-              <FiTarget className="text-white text-2xl" />
-            </div>
-
-            <div className="flex-1">
-              <h1 className="text-3xl sm:text-4xl font-black text-white mb-1 tracking-tight">
-                Missions
-              </h1>
-              <p className="text-slate-400 text-sm">
-                Complete missions to earn bonus coins. Rewards expire at the end of each period.
-              </p>
-            </div>
-
-            {/* Quick stats */}
-            <div className="flex gap-4 flex-shrink-0">
-              <div
-                className="text-center px-4 py-3 rounded-xl"
-                style={{ background: 'rgba(99,102,241,0.1)', border: '1px solid rgba(99,102,241,0.2)' }}
-              >
-                <div className="text-2xl font-black text-indigo-400">{totalCompleted}</div>
-                <div className="text-[10px] text-slate-500 uppercase tracking-wider font-bold mt-0.5">Completed</div>
-              </div>
-              {totalClaimable > 0 && (
-                <div
-                  className="text-center px-4 py-3 rounded-xl"
-                  style={{ background: 'rgba(16,185,129,0.1)', border: '1px solid rgba(16,185,129,0.3)' }}
-                >
-                  <div className="text-2xl font-black text-emerald-400">{totalClaimable}</div>
-                  <div className="text-[10px] text-slate-500 uppercase tracking-wider font-bold mt-0.5">Claimable</div>
-                </div>
-              )}
-            </div>
+              Missions
+            </h1>
+            <p 
+              className="m-0 p-0"
+              style={{
+                width: '745px',
+                height: '34px',
+                fontFamily: "'Barlow Condensed', sans-serif",
+                fontWeight: 500,
+                fontSize: '26px',
+                lineHeight: '130%',
+                letterSpacing: '0%',
+                color: 'rgba(136, 136, 136, 1)'
+              }}
+            >
+              Complete missions to earn bonus coins. Rewards expire at the end of each period.
+            </p>
           </div>
-        </motion.div>
 
-        {/* ── Tab Bar ──────────────────────────────────────────── */}
-        <div
-          className="flex items-center gap-1 p-1 rounded-xl"
-          style={{ background: 'rgba(15,23,42,0.6)', border: '1px solid rgba(51,65,85,0.4)' }}
-        >
-          {tabs.map(tab => {
-            const cfg = PERIOD_CONFIG[tab];
-            const tabData = data?.[tab];
-            const claimable = (tabData?.missions || []).filter(m => m.claimable).length
-              + (periodBonus?.[tab]?.claimable ? 1 : 0);
-
-            return (
-              <button
-                key={tab}
-                id={`missions-tab-${tab}`}
-                onClick={() => setActiveTab(tab)}
-                className="flex-1 relative flex items-center justify-center gap-2 py-2.5 px-4 rounded-lg font-bold text-sm transition-all"
-                style={{
-                  background: activeTab === tab ? cfg.gradient : 'transparent',
-                  color: activeTab === tab ? '#fff' : '#94a3b8',
-                  boxShadow: activeTab === tab ? `0 0 16px ${cfg.glow}` : 'none',
-                }}
-              >
-                <cfg.icon className="text-sm" />
-                {cfg.label}
-                {claimable > 0 && (
-                  <span
-                    className="absolute top-1 right-1 w-4 h-4 rounded-full text-[9px] font-black flex items-center justify-center"
-                    style={{ background: '#ef4444', color: '#fff', boxShadow: '0 0 6px rgba(239,68,68,0.6)' }}
-                  >
-                    {claimable}
-                  </span>
-                )}
-              </button>
-            );
-          })}
+          {/* Right side illustration */}
+          <div 
+            className="hidden md:block absolute pointer-events-none"
+            style={{
+              width: '392px',
+              height: '200px',
+              right: '-13px',
+              bottom: '-38px',
+              opacity: 1,
+              zIndex: 0,
+              transform: 'scale(1.15)',
+              transformOrigin: 'right bottom',
+              WebkitMaskImage: 'linear-gradient(180deg, #D9D9D9 65%, rgba(115, 115, 115, 0) 100%)',
+              maskImage: 'linear-gradient(180deg, #D9D9D9 65%, rgba(115, 115, 115, 0) 100%)'
+            }}
+          >
+            <img
+              src="/coins/missionpage.png"
+              alt="Missions"
+              className="absolute inset-0 w-full h-full object-contain object-right z-10"
+            />
+            <div
+              className="absolute inset-0 z-20 mix-blend-color"
+              style={{
+                backgroundColor: 'rgba(73, 178, 101, 1)',
+                WebkitMaskImage: 'url(/coins/missionpage.png)',
+                WebkitMaskSize: 'contain',
+                WebkitMaskRepeat: 'no-repeat',
+                WebkitMaskPosition: 'right',
+                maskImage: 'url(/coins/missionpage.png)',
+                maskSize: 'contain',
+                maskRepeat: 'no-repeat',
+                maskPosition: 'right'
+              }}
+            />
+          </div>
         </div>
 
-        {/* ── Tab Content ──────────────────────────────────────── */}
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={activeTab}
-            initial={{ opacity: 0, x: 10 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -10 }}
-            transition={{ duration: 0.18 }}
+        {/* Tab Layout Container (width: 1240, height: auto, gap: 20) */}
+        <div 
+          className="flex flex-col gap-[20px] w-full md:w-[1240px] md:h-auto shrink-0"
+        >
+          {/* ── Tab Bar ──────────────────────────────────────────── */}
+          <div
+            className="flex items-center shrink-0 w-full md:w-[1240px]"
+            style={{ 
+              background: 'rgba(44, 45, 44, 1)', 
+              backdropFilter: 'blur(24px)',
+              boxShadow: '0px 4px 44px 0px rgba(0, 0, 0, 0.25)',
+              borderRadius: '10px',
+              padding: '18px',
+              height: '84px',
+              opacity: 1
+            }}
           >
-            <PeriodSection
-              data={data?.[activeTab]}
-              periodKey={activeTab}
-              periodCfg={PERIOD_CONFIG[activeTab]}
-              bonus={periodBonus?.[activeTab] || null}
-              onClaim={handleClaim}
-              onClaimBonus={handleBonusClaim}
-              claiming={claiming}
-              claimingBonus={claimingBonus}
-              onExpired={fetchMissions}
-            />
-          </motion.div>
-        </AnimatePresence>
+            <div 
+              className="flex items-center w-full h-full"
+              style={{
+                borderRadius: '100px',
+                width: '100%',
+                maxWidth: '1204px',
+                height: '48px',
+              }}
+            >
+              {tabs.map(tab => {
+                const cfg = PERIOD_CONFIG[tab];
+                const isActive = activeTab === tab;
+                const tabData = data?.[tab];
+                const claimableCount = (tabData?.missions || []).filter(m => m.claimable).length
+                  + (periodBonus?.[tab]?.claimable ? 1 : 0);
+
+                return (
+                  <button
+                    key={tab}
+                    id={`missions-tab-${tab}`}
+                    onClick={() => setActiveTab(tab)}
+                    className="relative flex items-center justify-center transition-all border-none cursor-pointer flex-1"
+                    style={{
+                      height: '48px',
+                      background: isActive ? 'rgba(73, 178, 101, 1)' : 'transparent',
+                      color: 'rgba(255, 255, 255, 1)',
+                      fontFamily: "'Barlow Condensed', sans-serif",
+                      fontSize: '20px',
+                      fontWeight: 700,
+                      lineHeight: '32px',
+                      letterSpacing: '0%',
+                      borderRadius: isActive ? '10px' : '0px',
+                      boxShadow: isActive ? '0px 4px 0px 0px rgba(39, 109, 58, 1)' : 'none',
+                      padding: '10px 20px',
+                      gap: '10px'
+                    }}
+                  >
+                    {cfg.label}
+                    {claimableCount > 0 && (
+                      <span
+                        className="w-4 h-4 rounded-full text-[9px] font-black flex items-center justify-center text-white"
+                        style={{ background: '#ef4444', boxShadow: '0 0 6px rgba(239,68,68,0.6)' }}
+                      >
+                        {claimableCount}
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* ── Tab Content ──────────────────────────────────────── */}
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={activeTab}
+              initial={{ opacity: 0, x: 10 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -10 }}
+              transition={{ duration: 0.18 }}
+              className="w-full md:w-[1240px] shrink-0"
+            >
+              <PeriodSection
+                data={data?.[activeTab]}
+                periodKey={activeTab}
+                periodCfg={PERIOD_CONFIG[activeTab]}
+                bonus={periodBonus?.[activeTab] || null}
+                onClaim={handleClaim}
+                onClaimBonus={handleBonusClaim}
+                claiming={claiming}
+                claimingBonus={claimingBonus}
+                onExpired={fetchMissions}
+              />
+            </motion.div>
+          </AnimatePresence>
+        </div>
 
       </div>
     </DashboardLayout>
