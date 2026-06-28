@@ -234,7 +234,13 @@ const DailyBonusChip = () => {
 
 const Header = ({ onChatToggle, chatOpen, fullWidth }) => {
   const { currentUser, mongoUser, logout, isAdmin } = useAuth();
-  const { unreadCount, togglePanel } = useNotifications();
+  const { unreadCount, togglePanel, hasUnreadChat, setHasUnreadChat } = useNotifications();
+
+  useEffect(() => {
+    if (chatOpen) {
+      setHasUnreadChat(false);
+    }
+  }, [chatOpen, setHasUnreadChat]);
   const navigate = useNavigate();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [missionsEnabled, setMissionsEnabled] = useState(true);
@@ -333,15 +339,18 @@ const Header = ({ onChatToggle, chatOpen, fullWidth }) => {
             }}
           >
             <img
-              src={chatOpen ? '/coins/chatOn.png' : '/coins/chat.png'}
+              src="/coins/chat.png"
               alt="Chat"
               style={{
                 width: '24px',
                 height: '24px',
                 objectFit: 'contain',
-                filter: !chatOpen ? 'brightness(0) saturate(100%) invert(59%) sepia(33%) saturate(1030%) hue-rotate(86deg) brightness(93%) contrast(87%)' : 'none'
+                filter: 'brightness(0) saturate(100%) invert(59%) sepia(33%) saturate(1030%) hue-rotate(86deg) brightness(93%) contrast(87%)'
               }}
             />
+            {hasUnreadChat && (
+              <span className="absolute top-2 right-2.5 w-2 h-2 bg-[#49B265] rounded-full shadow-[0_0_8px_rgba(73,178,101,0.8)]" />
+            )}
           </button>
 
           {/* Notifications */}

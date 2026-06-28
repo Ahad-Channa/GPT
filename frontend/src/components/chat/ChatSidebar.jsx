@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import io from 'socket.io-client';
 import { useAuth } from '../../contexts/AuthContext';
+import { useNotifications } from '../../contexts/NotificationContext';
 import SupportChat from '../SupportChat';
 import {
   FiX, FiSend, FiTrash2, FiUsers,
@@ -78,14 +79,14 @@ const RoleSymbol = ({ user }) => {
           }
           label="Admin"
           color="#ef4444"
-          shift={10}
+          shift={0}
         />
         {vipLevel && (
           <HoverBadge
             badge={<VipBadge tier={vipLevel.tier} rank={vipLevel.rank} size="xs" />}
             label={`VIP: ${getLevelLabel(vipLevel)}`}
             color={TIER_STYLES[vipLevel.tier]?.border || '#94a3b8'}
-            shift={20}
+            shift={0}
           />
         )}
       </div>
@@ -109,7 +110,7 @@ const RoleSymbol = ({ user }) => {
         }
         label="Moderator"
         color={color}
-        shift={10}
+        shift={0}
       />
     );
   }
@@ -125,7 +126,7 @@ const RoleSymbol = ({ user }) => {
       badge={<VipBadge tier={vipLevel.tier} rank={vipLevel.rank} size="xs" />}
       label={`VIP: ${getLevelLabel(vipLevel)}`}
       color={color}
-      shift={20}
+      shift={0}
     />
   );
 };
@@ -326,6 +327,7 @@ const MessageRow = ({ msg, canModerate, onDelete, deletingId, onUserClick }) => 
 /* ─── main sidebar component ────────────────────────────── */
 const ChatSidebar = ({ isOpen, onClose }) => {
   const { mongoUser, currentUser, isAdmin } = useAuth();
+  const { setHasUnreadChat } = useNotifications();
   const isMod = mongoUser?.role === 'moderator';
   const canModerate = isAdmin || isMod;
 
@@ -349,17 +351,12 @@ const ChatSidebar = ({ isOpen, onClose }) => {
     endRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, []);
 
-  // Prevent page scroll when chat is open
+  // Mark chat as read when chat is open, without disabling page scrolling
   useEffect(() => {
     if (isOpen) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = '';
+      setHasUnreadChat(false);
     }
-    return () => {
-      document.body.style.overflow = '';
-    };
-  }, [isOpen]);
+  }, [isOpen, setHasUnreadChat]);
 
   /* fetch history when first opened */
   useEffect(() => {
@@ -470,7 +467,7 @@ const ChatSidebar = ({ isOpen, onClose }) => {
             initial={{ x: '100%' }} animate={{ x: 0 }} exit={{ x: '100%' }}
             transition={{ type: 'spring', damping: 30, stiffness: 240 }}
             style={{
-              position: 'fixed', right: 0, top: 84, bottom: 0,
+              position: 'fixed', right: 0, top: 0, bottom: 0,
               width: 400, maxWidth: '100vw',
               background: 'rgba(26, 27, 26, 1)',
               borderLeft: '1px solid rgba(255,255,255,0.07)',
@@ -480,9 +477,41 @@ const ChatSidebar = ({ isOpen, onClose }) => {
               fontFamily: "'Barlow', system-ui, sans-serif"
             }}
           >
+            {/* Absolute Close Button */}
+            <button
+              onClick={onClose}
+              style={{
+                position: 'absolute',
+                top: '12px',
+                right: '12px',
+                background: 'transparent',
+                border: 'none',
+                color: '#888888',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                zIndex: 60,
+                width: '28px',
+                height: '28px',
+                borderRadius: '50%',
+                transition: 'color 0.2s, background 0.2s',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.color = '#ffffff';
+                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.08)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.color = '#888888';
+                e.currentTarget.style.background = 'transparent';
+              }}
+            >
+              <FiX size={18} />
+            </button>
+
             {/* ── Header ─────────────────────────────── */}
             <div style={{
-              padding: '20px 20px 12px',
+              padding: '32px 20px 12px',
               display: 'flex', flexDirection: 'column', gap: '12px',
               background: 'transparent',
               flexShrink: 0

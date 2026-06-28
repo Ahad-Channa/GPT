@@ -126,10 +126,22 @@ router.post('/sync', verifyToken, async (req, res) => {
       }
     }
 
+    // Check if 2FA is required for this user
+    let twoFactorRequired = false;
+    if (user.twoFactorEnabled) {
+      const twoFactorToken = req.headers['x-two-factor-token'];
+      const { verifyTwoFactorToken } = require('../utils/twoFactorUtils');
+      const verifiedPayload = verifyTwoFactorToken(twoFactorToken);
+      if (!verifiedPayload || verifiedPayload.uid !== user.firebaseUid) {
+        twoFactorRequired = true;
+      }
+    }
+
     res.status(200).json({
       success: true,
       user,
       isNewUser,
+      twoFactorRequired,
     });
   } catch (error) {
     console.error('[/api/auth/sync] Database Error:', error);
@@ -215,6 +227,131 @@ router.delete('/account', verifyToken, async (req, res) => {
   } catch (error) {
     console.error('[/api/auth/account] Deletion Error:', error);
     res.status(500).json({ success: false, error: 'Account Deletion Error.' });
+  }
+});
+
+// ── Two-Factor Authentication (2FA) Routes ──
+
+// POST /api/auth/setup-2fa
+// Generates a temp secret and returns otpauth URL + secret key
+router.post('/setup-2fa', verifyToken, async (req, res) => {
+  try {
+    const user = await User.findOne({ firebaseUid: req.user.uid });
+    if (!user) return res.status(404).json({ success: false, error: 'User not found' });
+
+    const { generateBase32Secret } = require('../utils/twoFactorUtils');
+    const secret = generateBase32Secret();
+    user.tempTwoFactorSecret = secret;
+    await user.save();
+
+    const appName = 'GPT-Earn';
+    const otpauthUrl = `otpauth://totp/${encodeURIComponent(appName)}:${encodeURIComponent(user.email)}?secret=${secret}&issuer=${encodeURIComponent(appName)}`;
+
+    res.status(200).json({
+      success: true,
+      secret,
+      otpauthUrl
+    });
+  } catch (error) {
+    console.error('[/api/auth/setup-2fa] Setup Error:', error);
+    res.status(500).json({ success: false, error: 'Failed to initiate 2FA setup.' });
+  }
+});
+
+// POST /api/auth/confirm-2fa
+// Verifies code and completes 2FA activation
+router.post('/confirm-2fa', verifyToken, async (req, res) => {
+  try {
+    const { code } = req.body;
+    if (!code) return res.status(400).json({ success: false, error: 'Verification code is required.' });
+
+    const user = await User.findOne({ firebaseUid: req.user.uid });
+    if (!user) return res.status(404).json({ success: false, error: 'User not found' });
+    if (!user.tempTwoFactorSecret) return res.status(400).json({ success: false, error: '2FA setup was not initiated.' });
+
+    const { verifyTOTP, signTwoFactorToken } = require('../utils/twoFactorUtils');
+    const isValid = verifyTOTP(code, user.tempTwoFactorSecret);
+    if (!isValid) return res.status(400).json({ success: false, error: 'Invalid verification code. Please check your app.' });
+
+    user.twoFactorSecret = user.tempTwoFactorSecret;
+    user.tempTwoFactorSecret = null;
+    user.twoFactorEnabled = true;
+    await user.save();
+
+    // Issue a 2FA session token
+    const twoFactorToken = signTwoFactorToken(user.firebaseUid);
+
+    res.status(200).json({
+      success: true,
+      message: 'Two-factor authentication enabled successfully!',
+      twoFactorToken,
+      user
+    });
+  } catch (error) {
+    console.error('[/api/auth/confirm-2fa] Confirmation Error:', error);
+    res.status(500).json({ success: false, error: 'Failed to confirm 2FA.' });
+  }
+});
+
+// POST /api/auth/verify-2fa
+// Validates 2FA code during login/session initialization
+router.post('/verify-2fa', verifyToken, async (req, res) => {
+  try {
+    const { code } = req.body;
+    if (!code) return res.status(400).json({ success: false, error: 'Verification code is required.' });
+
+    const user = await User.findOne({ firebaseUid: req.user.uid });
+    if (!user) return res.status(404).json({ success: false, error: 'User not found' });
+    if (!user.twoFactorEnabled || !user.twoFactorSecret) {
+      return res.status(400).json({ success: false, error: 'Two-factor authentication is not enabled for this account.' });
+    }
+
+    const { verifyTOTP, signTwoFactorToken } = require('../utils/twoFactorUtils');
+    const isValid = verifyTOTP(code, user.twoFactorSecret);
+    if (!isValid) return res.status(400).json({ success: false, error: 'Invalid verification code.' });
+
+    // Issue a 2FA session token
+    const twoFactorToken = signTwoFactorToken(user.firebaseUid);
+
+    res.status(200).json({
+      success: true,
+      twoFactorToken,
+      user
+    });
+  } catch (error) {
+    console.error('[/api/auth/verify-2fa] Verification Error:', error);
+    res.status(500).json({ success: false, error: 'Failed to verify 2FA.' });
+  }
+});
+
+// POST /api/auth/disable-2fa
+// Disables 2FA (requires code to confirm)
+router.post('/disable-2fa', verifyToken, async (req, res) => {
+  try {
+    const { code } = req.body;
+    if (!code) return res.status(400).json({ success: false, error: 'Verification code is required to disable 2FA.' });
+
+    const user = await User.findOne({ firebaseUid: req.user.uid });
+    if (!user) return res.status(404).json({ success: false, error: 'User not found' });
+    if (!user.twoFactorEnabled) return res.status(400).json({ success: false, error: '2FA is already disabled.' });
+
+    const { verifyTOTP } = require('../utils/twoFactorUtils');
+    const isValid = verifyTOTP(code, user.twoFactorSecret);
+    if (!isValid) return res.status(400).json({ success: false, error: 'Invalid verification code. Cannot disable 2FA.' });
+
+    user.twoFactorSecret = null;
+    user.twoFactorEnabled = false;
+    user.tempTwoFactorSecret = null;
+    await user.save();
+
+    res.status(200).json({
+      success: true,
+      message: 'Two-factor authentication disabled successfully.',
+      user
+    });
+  } catch (error) {
+    console.error('[/api/auth/disable-2fa] Disable Error:', error);
+    res.status(500).json({ success: false, error: 'Failed to disable 2FA.' });
   }
 });
 

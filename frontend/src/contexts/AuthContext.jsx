@@ -15,6 +15,31 @@ import {
 import { auth, googleProvider } from '../config/firebase';
 import { io } from 'socket.io-client';
 
+// Global fetch interceptor to inject 2FA token
+const originalFetch = window.fetch;
+window.fetch = async function (url, options = {}) {
+  const twoFactorToken = localStorage.getItem('twoFactorToken');
+  if (twoFactorToken) {
+    const headers = options.headers || {};
+    if (headers instanceof Headers) {
+      if (!headers.has('x-two-factor-token')) {
+        headers.set('x-two-factor-token', twoFactorToken);
+      }
+    } else if (Array.isArray(headers)) {
+      const hasHeader = headers.some(h => h[0].toLowerCase() === 'x-two-factor-token');
+      if (!hasHeader) {
+        headers.push(['x-two-factor-token', twoFactorToken]);
+      }
+    } else {
+      if (!headers['x-two-factor-token'] && !headers['X-Two-Factor-Token']) {
+        headers['x-two-factor-token'] = twoFactorToken;
+      }
+    }
+    options.headers = headers;
+  }
+  return originalFetch(url, options);
+};
+
 const AuthContext = createContext();
 
 export const useAuth = () => useContext(AuthContext);
@@ -22,6 +47,7 @@ export const useAuth = () => useContext(AuthContext);
 export const AuthProvider = ({ children }) => {
     const [currentUser, setCurrentUser] = useState(null);
     const [mongoUser, setMongoUser] = useState(null);
+    const [twoFactorRequired, setTwoFactorRequired] = useState(false);
     const [loading, setLoading] = useState(true);
     const socketRef = useRef(null);
 
@@ -47,6 +73,11 @@ export const AuthProvider = ({ children }) => {
             }
             if (data.success) {
                 setMongoUser(data.user);
+                if (data.twoFactorRequired) {
+                    setTwoFactorRequired(true);
+                } else {
+                    setTwoFactorRequired(false);
+                }
             }
         } catch (error) {
             console.error("MongoDB Sync Failed:", error);
@@ -114,7 +145,92 @@ export const AuthProvider = ({ children }) => {
         }
     };
 
+    const verify2FA = async (code) => {
+        try {
+            const token = await currentUser.getIdToken();
+            const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/auth/verify-2fa`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ code })
+            });
+            const data = await res.json();
+            if (data.success) {
+                localStorage.setItem('twoFactorToken', data.twoFactorToken);
+                setTwoFactorRequired(false);
+                setMongoUser(data.user);
+                return { success: true };
+            }
+            return { success: false, error: data.error };
+        } catch (err) {
+            return { success: false, error: 'Network error.' };
+        }
+    };
+
+    const setup2FA = async () => {
+        try {
+            const token = await currentUser.getIdToken();
+            const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/auth/setup-2fa`, {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            return await res.json();
+        } catch (err) {
+            return { success: false, error: 'Network error.' };
+        }
+    };
+
+    const confirm2FA = async (code) => {
+        try {
+            const token = await currentUser.getIdToken();
+            const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/auth/confirm-2fa`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ code })
+            });
+            const data = await res.json();
+            if (data.success) {
+                localStorage.setItem('twoFactorToken', data.twoFactorToken);
+                setMongoUser(data.user);
+                return { success: true };
+            }
+            return { success: false, error: data.error };
+        } catch (err) {
+            return { success: false, error: 'Network error.' };
+        }
+    };
+
+    const disable2FA = async (code) => {
+        try {
+            const token = await currentUser.getIdToken();
+            const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/auth/disable-2fa`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ code })
+            });
+            const data = await res.json();
+            if (data.success) {
+                localStorage.removeItem('twoFactorToken');
+                setMongoUser(data.user);
+                return { success: true };
+            }
+            return { success: false, error: data.error };
+        } catch (err) {
+            return { success: false, error: 'Network error.' };
+        }
+    };
+
     const logout = () => {
+        localStorage.removeItem('twoFactorToken');
+        setTwoFactorRequired(false);
         setMongoUser(null);
         return signOut(auth);
     };
@@ -226,6 +342,11 @@ export const AuthProvider = ({ children }) => {
         currentUser,
         mongoUser,
         setMongoUser,
+        twoFactorRequired,
+        verify2FA,
+        setup2FA,
+        confirm2FA,
+        disable2FA,
         isAdmin,
         isPrimaryAdmin,
         isChatMod,

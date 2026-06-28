@@ -111,6 +111,18 @@ const userSchema = new mongoose.Schema(
       type: Number,
       default: null, // If null, fallback to global settings
     },
+    twoFactorEnabled: {
+      type: Boolean,
+      default: false,
+    },
+    twoFactorSecret: {
+      type: String,
+      default: null,
+    },
+    tempTwoFactorSecret: {
+      type: String,
+      default: null,
+    },
   },
   { timestamps: true }
 );

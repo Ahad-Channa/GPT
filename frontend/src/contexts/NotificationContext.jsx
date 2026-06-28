@@ -1,5 +1,10 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import { useAuth } from './AuthContext';
+import io from 'socket.io-client';
+
+const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+const SOCKET_URL = API.replace('/api', '');
+
 
 const NotificationContext = createContext();
 
@@ -38,6 +43,26 @@ export const NotificationProvider = ({ children }) => {
     const [notifications, setNotifications] = useState([]);
     const [unreadCount, setUnreadCount] = useState(0);
     const [isPanelOpen, setIsPanelOpen] = useState(false);
+    const [hasUnreadChat, setHasUnreadChat] = useState(() => {
+        return localStorage.getItem('hasUnreadChat') === 'true';
+    });
+
+    useEffect(() => {
+        localStorage.setItem('hasUnreadChat', hasUnreadChat);
+    }, [hasUnreadChat]);
+
+    useEffect(() => {
+        const sock = io(SOCKET_URL, { transports: ['websocket', 'polling'] });
+        sock.on('newMessage', () => {
+            const isChatOpen = localStorage.getItem('chatOpen') === 'true';
+            if (!isChatOpen) {
+                setHasUnreadChat(true);
+            }
+        });
+        return () => {
+            sock.disconnect();
+        };
+    }, []);
 
     // Store previous notifications to detect new earnings
     const prevNotifsRef = useRef([]);
@@ -167,7 +192,9 @@ export const NotificationProvider = ({ children }) => {
         markAsRead,
         dismissNotification,
         dismissAllNotifications,
-        refresh: fetchNotifications
+        refresh: fetchNotifications,
+        hasUnreadChat,
+        setHasUnreadChat
     };
 
     return (

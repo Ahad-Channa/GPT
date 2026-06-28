@@ -23,6 +23,22 @@ const verifyToken = async (req, res, next) => {
       return res.status(403).json({ success: false, error: 'Forbidden: Account has been banned', isBanned: true });
     }
 
+    // Enforce 2FA verification if enabled
+    if (userRecord && userRecord.twoFactorEnabled) {
+      const is2FAExempt = /\/(sync|setup-2fa|confirm-2fa|verify-2fa|disable-2fa)$/.test(req.originalUrl || req.path);
+      if (!is2FAExempt) {
+        const twoFactorToken = req.headers['x-two-factor-token'];
+        if (!twoFactorToken) {
+          return res.status(401).json({ success: false, code: 'TWO_FACTOR_REQUIRED', error: 'Two-factor authentication required.' });
+        }
+        const { verifyTwoFactorToken } = require('../utils/twoFactorUtils');
+        const verifiedPayload = verifyTwoFactorToken(twoFactorToken);
+        if (!verifiedPayload || verifiedPayload.uid !== decodedToken.uid) {
+          return res.status(401).json({ success: false, code: 'TWO_FACTOR_REQUIRED', error: 'Invalid or expired two-factor token.' });
+        }
+      }
+    }
+
     req.user = decodedToken;
     next();
   } catch (error) {

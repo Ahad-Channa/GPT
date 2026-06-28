@@ -7,6 +7,7 @@ import Login from './pages/Login';
 import ResetPassword from './pages/ResetPassword';
 import Landing from './pages/Landing';
 import Profile from './pages/Profile';
+import TwoFactorOverlay from './components/TwoFactorOverlay';
 
 import Affiliates from './pages/Affiliates';
 import Wallet from './pages/Wallet';
@@ -74,7 +75,7 @@ const ReferralRedirect = () => {
 };
 
 function App() {
-  const { currentUser, isAdmin, hasAdminAccess } = useAuth();
+  const { currentUser, isAdmin, hasAdminAccess, twoFactorRequired } = useAuth();
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -86,8 +87,10 @@ function App() {
 
   return (
     <>
+      {currentUser && twoFactorRequired && <TwoFactorOverlay />}
       <Toaster 
         position="bottom-right" 
+        containerStyle={{ zIndex: 999999 }}
         toastOptions={{
           style: {
             background: '#0A0A0A',
