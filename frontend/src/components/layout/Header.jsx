@@ -232,7 +232,7 @@ const DailyBonusChip = () => {
   );
 };
 
-const Header = ({ onChatToggle, chatOpen }) => {
+const Header = ({ onChatToggle, chatOpen, fullWidth }) => {
   const { currentUser, mongoUser, logout, isAdmin } = useAuth();
   const { unreadCount, togglePanel } = useNotifications();
   const navigate = useNavigate();
@@ -267,19 +267,19 @@ const Header = ({ onChatToggle, chatOpen }) => {
       WebkitBackdropFilter: 'blur(24px)',
       boxShadow: '0px 4px 44px 0px rgba(0, 0, 0, 0.25)'
     }}>
-      <div className="h-full max-w-[1240px] mx-auto flex items-center justify-between px-6 md:px-8 w-full">
+      <div className={`h-full ${fullWidth ? 'max-w-[1600px]' : 'max-w-[1240px]'} mx-auto flex items-center justify-between px-4 md:px-8 xl:px-0 w-full`}>
 
         {/* Group 1: Brand */}
         <button
           id="header-brand-logo"
           onClick={() => navigate('/')}
-          className="flex items-center cursor-pointer transition-transform hover:scale-105"
-          style={{ width: '191.5026397705078px', height: '53.98556137084961px', gap: '7.28px', border: 'none', background: 'transparent', padding: 0 }}
+          className="flex items-center cursor-pointer transition-transform hover:scale-105 ml-1"
+          style={{ gap: '7.28px', border: 'none', background: 'transparent', padding: 0 }}
         >
           <img
             src="/coins/logo copy.png"
             alt="TaskMint Logo"
-            style={{ width: '53.9856071472168px', height: '53.98556137084961px', objectFit: 'contain' }}
+            style={{ width: '46px', height: '46px', objectFit: 'contain' }}
           />
           <span
             className="text-white font-bold hidden sm:flex items-center"
@@ -314,8 +314,8 @@ const Header = ({ onChatToggle, chatOpen }) => {
 
         {/* Group 3: User Actions */}
         <div
-          className="flex items-center"
-          style={{ width: '245.5px', height: '48px', gap: '8px' }}
+          className="flex items-center shrink-0"
+          style={{ height: '48px', gap: '8px' }}
         >
           {/* Live Chat Button → sidebar */}
           <button
@@ -367,7 +367,7 @@ const Header = ({ onChatToggle, chatOpen }) => {
           </button>
 
           {/* Avatar + Dropdown */}
-          <div className="relative" ref={dropdownRef}>
+          <div className="relative mr-[-5px]" ref={dropdownRef}>
             <button
               id="header-profile-menu"
               onClick={() => setIsDropdownOpen(!isDropdownOpen)}

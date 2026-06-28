@@ -261,10 +261,10 @@ const Affiliates = () => {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="max-w-[1280px] mx-auto w-full space-y-8"
+        className="max-w-[1240px] mx-auto w-full space-y-8"
       >
         {/* Header Section */}
-        <div className="relative w-full max-w-[1240px] lg:mt-[49px]">
+        <div className="relative w-[1240px] lg:mt-[49px] shrink-0">
           <div className="flex flex-col gap-[6px] w-full max-w-[866px] h-auto lg:h-[122px] relative z-10">
             <h1 style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="font-bold text-[68px] leading-[120%] text-white tracking-normal m-0 p-0">Affiliate Program</h1>
             <p style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="font-medium text-[26px] leading-[130%] text-[#888888] tracking-normal m-0 p-0 max-w-[866px] h-auto lg:h-[34px] lg:whitespace-nowrap">
@@ -295,10 +295,10 @@ const Affiliates = () => {
         </div>
 
         {/* Lower Group (Stats, Referral Link, Tabs, Tables) */}
-        <div className="flex flex-col gap-[20px] w-full max-w-[1240px]">
+        <div className="flex flex-col gap-[20px] w-[1240px] shrink-0">
           <div className="w-full">
             {/* Stats Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 w-full lg:w-[1240px] lg:h-[156px] gap-[10px]">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 w-full lg:w-[1240px] lg:h-[156px] gap-[10px] shrink-0">
               <div className="flex flex-col w-full h-[156px] rounded-[20px] p-[20px] gap-[22px] bg-[#1a1b1a] backdrop-blur-[74px]">
                 <div className="flex flex-col w-fit min-w-[123px] h-[81px] gap-[12px] whitespace-nowrap">
                   <h3 style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="w-[123px] h-[29px] font-bold text-[22px] leading-[130%] text-white tracking-normal m-0 p-0">Total Affiliates</h3>
@@ -410,8 +410,8 @@ const Affiliates = () => {
               <button
                 onClick={() => setActiveTab('recent')}
                 className={`transition-all flex justify-center items-center gap-[10px] py-[10px] px-[20px] rounded-[10px] text-[16px] font-bold shrink-0 ${activeTab === 'recent'
-                    ? 'lg:w-[401px] h-[48px] bg-[#49b265] text-white shadow-[0px_4px_0px_0px_rgba(39,109,58,1)]'
-                    : 'w-auto h-[48px] text-white hover:bg-white/5'
+                  ? 'lg:w-[401px] h-[48px] bg-[#49b265] text-white shadow-[0px_4px_0px_0px_rgba(39,109,58,1)]'
+                  : 'w-auto h-[48px] text-white hover:bg-white/5'
                   }`}
               >
                 <img src="/coins/paisa.png" alt="Recent" className={`w-[24px] h-[24px] shrink-0 object-contain ${activeTab === 'recent' ? 'brightness-0 invert' : ''}`} />
@@ -420,8 +420,8 @@ const Affiliates = () => {
               <button
                 onClick={() => setActiveTab('users')}
                 className={`transition-all flex justify-center items-center gap-[10px] py-[10px] px-[20px] rounded-[10px] text-[16px] font-bold shrink-0 ${activeTab === 'users'
-                    ? 'lg:w-[401px] h-[48px] bg-[#49b265] text-white shadow-[0px_4px_0px_0px_rgba(39,109,58,1)]'
-                    : 'w-auto h-[48px] text-white hover:bg-white/5'
+                  ? 'lg:w-[401px] h-[48px] bg-[#49b265] text-white shadow-[0px_4px_0px_0px_rgba(39,109,58,1)]'
+                  : 'w-auto h-[48px] text-white hover:bg-white/5'
                   }`}
               >
                 <img src="/coins/persons.png" alt="Users" className={`w-[24px] h-[24px] shrink-0 object-contain ${activeTab === 'users' ? 'brightness-0 invert' : ''}`} />
@@ -430,8 +430,8 @@ const Affiliates = () => {
               <button
                 onClick={() => setActiveTab('pending')}
                 className={`transition-all flex justify-center items-center gap-[10px] py-[10px] px-[20px] rounded-[10px] text-[16px] font-bold shrink-0 ${activeTab === 'pending'
-                    ? 'lg:w-[401px] h-[48px] bg-[#49b265] text-white shadow-[0px_4px_0px_0px_rgba(39,109,58,1)]'
-                    : 'w-auto h-[48px] text-white hover:bg-white/5'
+                  ? 'lg:w-[401px] h-[48px] bg-[#49b265] text-white shadow-[0px_4px_0px_0px_rgba(39,109,58,1)]'
+                  : 'w-auto h-[48px] text-white hover:bg-white/5'
                   }`}
               >
                 <img src="/coins/clock.png" alt="Pending" className={`w-[24px] h-[24px] shrink-0 object-contain ${activeTab === 'pending' ? 'brightness-0 invert' : ''}`} />
@@ -490,13 +490,13 @@ const Affiliates = () => {
                   </div>
                 )}
                 {!referrals.loading && !referrals.error && referrals.dataList.length > 0 && (
-                    <Pagination
-                      page={referrals.page}
-                      totalPages={referrals.totalPages}
-                      onNext={referrals.nextPage}
-                      onPrev={referrals.prevPage}
-                      onPageClick={referrals.goToPage}
-                    />
+                  <Pagination
+                    page={referrals.page}
+                    totalPages={referrals.totalPages}
+                    onNext={referrals.nextPage}
+                    onPrev={referrals.prevPage}
+                    onPageClick={referrals.goToPage}
+                  />
                 )}
               </div>
             )}

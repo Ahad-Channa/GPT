@@ -240,7 +240,7 @@ const Home = () => {
         {globalStats.show && (
           <motion.div
             variants={item}
-            className="grid grid-cols-1 sm:grid-cols-2 gap-[10px] w-full max-w-[1240px] mx-auto sm:h-[103px]"
+            className="grid grid-cols-1 sm:grid-cols-2 gap-[10px] w-[1240px] mx-auto sm:h-[103px] shrink-0"
           >
             {/* Total Users Card */}
             <div
@@ -358,16 +358,15 @@ const Home = () => {
 
         {/* ─── Tabs & MAIN CONTENT WRAPPER ─────────────────── */}
         <div
-          className="mx-auto flex flex-col"
-          style={{ width: '100%', maxWidth: '1240px', gap: '30px' }}
+          className="mx-auto flex flex-col shrink-0"
+          style={{ width: '1240px', gap: '30px' }}
         >
           {/* ─── Quick Jump Tabs ───────────────────────────── */}
           <motion.div variants={item} className="sticky top-4 z-20">
             <div
               className="flex items-center justify-center overflow-x-auto"
               style={{
-                width: '100%',
-                maxWidth: '1239px',
+                width: '1240px',
                 height: '84px',
                 borderRadius: '10px',
                 padding: '18px',
@@ -408,10 +407,9 @@ const Home = () => {
               <motion.section 
                 ref={featuredRef} 
                 variants={item} 
-                className="flex flex-col"
+                className="flex flex-col shrink-0"
                 style={{
-                  width: '100%',
-                  maxWidth: '1240px',
+                  width: '1240px',
                   minHeight: '512px',
                   borderRadius: '20px',
                   gap: '18px',
@@ -519,11 +517,11 @@ const Home = () => {
               <motion.section 
                 ref={gamingRef} 
                 variants={item} 
+                className="shrink-0"
                 style={{
                   display: 'flex',
                   flexDirection: 'column',
-                  width: '100%',
-                  maxWidth: '1240px',
+                  width: '1240px',
                   minHeight: '469px',
                   borderRadius: '20px',
                   gap: '18px',
@@ -601,10 +599,9 @@ const Home = () => {
               <motion.section 
                 ref={surveysRef} 
                 variants={item} 
-                className="flex flex-col"
+                className="flex flex-col shrink-0"
                 style={{
-                  width: '100%',
-                  maxWidth: '1240px',
+                  width: '1240px',
                   minHeight: '323px',
                   borderRadius: '20px',
                   gap: '18px',

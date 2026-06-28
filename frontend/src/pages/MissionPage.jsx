@@ -55,7 +55,7 @@ function useCountdown(endsAt) {
     if (!endsAt) return;
     const iv = setInterval(() => setState(calc()), 1000);
     return () => clearInterval(iv);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [endsAt]);
 
   return state;
@@ -87,9 +87,8 @@ function MissionCard({ mission, onClaim, claiming }) {
           onClaim(mission.userMissionId);
         }
       }}
-      className={`relative flex flex-col justify-between overflow-hidden transition-all duration-150 border border-white/[0.08] shrink-0 ${
-        mission.claimable ? 'cursor-pointer hover:scale-[1.02] hover:border-[#49B265]/50 shadow-[0_0_15px_rgba(73,178,101,0.15)]' : ''
-      }`}
+      className={`relative flex flex-col justify-between overflow-hidden transition-all duration-150 border border-white/[0.08] shrink-0 ${mission.claimable ? 'cursor-pointer hover:scale-[1.02] hover:border-[#49B265]/50 shadow-[0_0_15px_rgba(73,178,101,0.15)]' : ''
+        }`}
       style={{
         width: '390.6666564941406px',
         height: '168px',
@@ -103,7 +102,7 @@ function MissionCard({ mission, onClaim, claiming }) {
       }}
     >
       {/* Top row: Icon, title, description */}
-      <div 
+      <div
         className="flex items-start shrink-0"
         style={{
           width: '358.6666564941406px',
@@ -119,31 +118,31 @@ function MissionCard({ mission, onClaim, claiming }) {
             width: '70px',
             height: '70px',
             borderRadius: '12px',
-            background: mission.claimed 
-              ? 'rgba(255, 255, 255, 0.05)' 
+            background: mission.claimed
+              ? 'rgba(255, 255, 255, 0.05)'
               : 'rgba(73, 178, 101, 0.2)',
             opacity: 1
           }}
         >
           {mission.claimed ? (
-            <img 
-              src="/coins/tik1.png" 
-              alt="Claimed" 
-              className="object-contain" 
+            <img
+              src="/coins/tik1.png"
+              alt="Claimed"
+              className="object-contain"
               style={{ width: '34px', height: '34px', opacity: 1 }}
             />
           ) : (
-            <img 
-              src={getMissionIcon(mission.label)} 
-              alt="Mission Icon" 
-              className="object-contain" 
+            <img
+              src={getMissionIcon(mission.label)}
+              alt="Mission Icon"
+              className="object-contain"
               style={{ width: '34px', height: '34px', opacity: 1 }}
             />
           )}
         </div>
 
         <div className="flex-1 min-w-0 flex flex-col justify-center">
-          <span 
+          <span
             className="text-white truncate m-0 p-0"
             style={{
               width: '209px',
@@ -158,7 +157,7 @@ function MissionCard({ mission, onClaim, claiming }) {
           >
             {mission.label}
           </span>
-          <span 
+          <span
             className="text-[#888888] truncate m-0 p-0"
             style={{
               width: '272.6666564941406px',
@@ -178,7 +177,7 @@ function MissionCard({ mission, onClaim, claiming }) {
       </div>
 
       {/* Bottom Block: Reward + Progress Info */}
-      <div 
+      <div
         className="flex flex-col shrink-0"
         style={{
           width: '358.6666564941406px',
@@ -187,7 +186,7 @@ function MissionCard({ mission, onClaim, claiming }) {
           opacity: 1
         }}
       >
-        <div 
+        <div
           className="flex items-center justify-between shrink-0"
           style={{
             width: '358.6666564941406px',
@@ -195,7 +194,7 @@ function MissionCard({ mission, onClaim, claiming }) {
             opacity: 1
           }}
         >
-          <div 
+          <div
             className="flex items-center shrink-0"
             style={{
               width: '59px',
@@ -204,18 +203,18 @@ function MissionCard({ mission, onClaim, claiming }) {
               opacity: 1
             }}
           >
-            <img 
-              src="/coins/coinfinal.png" 
-              alt="Reward" 
-              className="shrink-0 object-contain overflow-visible" 
-              style={{ 
-                width: '26px', 
-                height: '26px', 
-                opacity: 1, 
-                filter: 'drop-shadow(0px 0px 14px rgba(254, 198, 53, 0.6))' 
+            <img
+              src="/coins/coinfinal.png"
+              alt="Reward"
+              className="shrink-0 object-contain overflow-visible"
+              style={{
+                width: '26px',
+                height: '26px',
+                opacity: 1,
+                filter: 'drop-shadow(0px 0px 14px rgba(254, 198, 53, 0.6))'
               }}
             />
-            <span 
+            <span
               className="font-bold text-[#FCB91E] flex items-center shrink-0 p-0 m-0"
               style={{
                 width: '30px',
@@ -231,7 +230,7 @@ function MissionCard({ mission, onClaim, claiming }) {
           </div>
 
           {mission.claimed ? (
-            <span 
+            <span
               className="text-[#49B265] m-0 p-0"
               style={{
                 width: 'auto',
@@ -249,7 +248,7 @@ function MissionCard({ mission, onClaim, claiming }) {
               Claimed
             </span>
           ) : mission.claimable ? (
-            <button 
+            <button
               onClick={(e) => { e.stopPropagation(); onClaim(mission.userMissionId); }}
               disabled={isClaiming}
               className="flex items-center justify-center transition-all m-0 hover:bg-[#3da156] active:translate-y-[2px] active:shadow-none"
@@ -283,7 +282,7 @@ function MissionCard({ mission, onClaim, claiming }) {
               </span>
             </button>
           ) : (
-            <span 
+            <span
               className="text-white m-0 p-0 text-right"
               style={{
                 width: 'auto',
@@ -305,7 +304,7 @@ function MissionCard({ mission, onClaim, claiming }) {
         </div>
 
         {/* Progress bar */}
-        <div 
+        <div
           className="bg-white/5 overflow-hidden shrink-0"
           style={{
             width: '358.6666564941406px',
@@ -314,7 +313,7 @@ function MissionCard({ mission, onClaim, claiming }) {
             opacity: 1
           }}
         >
-          <div 
+          <div
             className="h-full transition-all duration-300"
             style={{
               width: `${pct}%`,
@@ -365,7 +364,7 @@ function PeriodBonusCard({ bonus, period, onClaim, claimingBonus }) {
       }}
     >
       {/* Left: Complete All Missions & Reward */}
-      <div 
+      <div
         className="flex flex-col shrink-0"
         style={{
           width: '252px',
@@ -374,7 +373,7 @@ function PeriodBonusCard({ bonus, period, onClaim, claimingBonus }) {
           opacity: 1
         }}
       >
-        <span 
+        <span
           className="text-white font-bold m-0 p-0"
           style={{
             width: '172px',
@@ -388,7 +387,7 @@ function PeriodBonusCard({ bonus, period, onClaim, claimingBonus }) {
         >
           Complete All Missions
         </span>
-        <div 
+        <div
           className="flex items-center"
           style={{
             width: '142px',
@@ -397,17 +396,17 @@ function PeriodBonusCard({ bonus, period, onClaim, claimingBonus }) {
             opacity: 1
           }}
         >
-          <img 
-            src="/coins/coinfix.png" 
-            alt="Coin" 
-            className="shrink-0 object-contain" 
-            style={{ 
+          <img
+            src="/coins/coinfix.png"
+            alt="Coin"
+            className="shrink-0 object-contain"
+            style={{
               width: '52px',
               height: '52px',
               opacity: 1
             }}
           />
-          <span 
+          <span
             className="font-bold m-0 p-0 flex items-center shrink-0"
             style={{
               width: 'auto',
@@ -431,7 +430,7 @@ function PeriodBonusCard({ bonus, period, onClaim, claimingBonus }) {
       </div>
 
       {/* Vertical Divider */}
-      <div 
+      <div
         className="hidden md:block shrink-0"
         style={{
           width: '1px',
@@ -442,7 +441,7 @@ function PeriodBonusCard({ bonus, period, onClaim, claimingBonus }) {
       />
 
       {/* Middle: Progress Text & Bar */}
-      <div 
+      <div
         className="flex flex-col shrink-0"
         style={{
           width: '565px',
@@ -451,7 +450,7 @@ function PeriodBonusCard({ bonus, period, onClaim, claimingBonus }) {
           opacity: 1
         }}
       >
-        <div 
+        <div
           className="flex items-center justify-between"
           style={{
             width: '100%',
@@ -459,7 +458,7 @@ function PeriodBonusCard({ bonus, period, onClaim, claimingBonus }) {
             opacity: 1
           }}
         >
-          <span 
+          <span
             className="m-0 p-0 text-white"
             style={{
               width: 'auto',
@@ -475,7 +474,7 @@ function PeriodBonusCard({ bonus, period, onClaim, claimingBonus }) {
           >
             Complete all {displayTotal} missions to unlock this reward
           </span>
-          <span 
+          <span
             className="m-0 p-0 text-[#FCB91E] text-right"
             style={{
               width: 'auto',
@@ -492,7 +491,7 @@ function PeriodBonusCard({ bonus, period, onClaim, claimingBonus }) {
             {displayCompleted} / {displayTotal}
           </span>
         </div>
-        <div 
+        <div
           className="bg-white/5 overflow-hidden shrink-0"
           style={{
             width: '565px',
@@ -501,7 +500,7 @@ function PeriodBonusCard({ bonus, period, onClaim, claimingBonus }) {
             opacity: 1
           }}
         >
-          <div 
+          <div
             className="h-full transition-all duration-300"
             style={{
               width: `${pct}%`,
@@ -513,7 +512,7 @@ function PeriodBonusCard({ bonus, period, onClaim, claimingBonus }) {
       </div>
 
       {/* Vertical Divider 2 */}
-      <div 
+      <div
         className="hidden md:block shrink-0"
         style={{
           width: '1px',
@@ -526,7 +525,7 @@ function PeriodBonusCard({ bonus, period, onClaim, claimingBonus }) {
       {/* Right: Claim Button */}
       <div className="shrink-0">
         {claimed ? (
-          <div 
+          <div
             className="flex items-center justify-center font-bold text-white"
             style={{
               width: '183px',
@@ -547,11 +546,10 @@ function PeriodBonusCard({ bonus, period, onClaim, claimingBonus }) {
           <button
             onClick={() => { if (claimable) onClaim(period); }}
             disabled={!claimable || isClaiming}
-            className={`transition-all flex items-center justify-center border-none ${
-              claimable 
-                ? 'cursor-pointer hover:scale-[1.02] active:scale-[0.98]' 
+            className={`transition-all flex items-center justify-center border-none ${claimable
+                ? 'cursor-pointer hover:scale-[1.02] active:scale-[0.98]'
                 : 'cursor-not-allowed opacity-80'
-            }`}
+              }`}
             style={{
               width: '183px',
               height: '48px',
@@ -569,8 +567,8 @@ function PeriodBonusCard({ bonus, period, onClaim, claimingBonus }) {
             }}
           >
             {!claimable && (
-              <img 
-                src="/coins/lockpe.png" 
+              <img
+                src="/coins/lockpe.png"
                 alt="Locked"
                 className="shrink-0 object-contain"
                 style={{
@@ -595,27 +593,27 @@ function PeriodBonusCard({ bonus, period, onClaim, claimingBonus }) {
 function PeriodSection({ data, periodKey, periodCfg, bonus, onClaim, onClaimBonus, claiming, claimingBonus, onExpired }) {
   const { timeLeft, isExpired } = useCountdown(data?.endsAt);
   const missions = data?.missions || [];
-  
+
   // Show exactly 3 missions (the user specified to show exactly three missions)
   const displayedMissions = missions.slice(0, 3);
   const completed = displayedMissions.filter(m => m.completed).length;
 
   useEffect(() => {
     if (isExpired && onExpired) onExpired();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isExpired]);
 
   return (
-    <div className="flex flex-col w-full gap-[24px]">
-      <div 
-        className="flex flex-col gap-[18px] w-full h-auto p-[20px]"
+    <div className="flex flex-col w-[1240px] gap-[24px] shrink-0">
+      <div
+        className="flex flex-col gap-[18px] w-[1240px] h-auto p-[20px] shrink-0"
         style={{
           background: 'rgba(255, 255, 255, 0.14)',
           borderRadius: '20px',
         }}
       >
         {/* ── Period header ─────────────────────────────────── */}
-        <div 
+        <div
           className="flex items-center justify-between w-full"
           style={{
             maxWidth: '1200px',
@@ -627,7 +625,7 @@ function PeriodSection({ data, periodKey, periodCfg, bonus, onClaim, onClaimBonu
           <div className="flex items-center gap-[16px] h-full">
             <div
               className="flex items-center justify-center shrink-0"
-              style={{ 
+              style={{
                 width: '88px',
                 height: '88px',
                 gap: '6px',
@@ -637,18 +635,18 @@ function PeriodSection({ data, periodKey, periodCfg, bonus, onClaim, onClaimBonu
                 opacity: 1
               }}
             >
-              <img 
-                src="/coins/target.png" 
-                alt="Missions" 
+              <img
+                src="/coins/target.png"
+                alt="Missions"
                 style={{
                   width: '44px',
                   height: '44px',
                   opacity: 1
                 }}
-                className="object-contain shrink-0" 
+                className="object-contain shrink-0"
               />
             </div>
-            <div 
+            <div
               className="flex flex-col"
               style={{
                 width: '100%',
@@ -658,7 +656,7 @@ function PeriodSection({ data, periodKey, periodCfg, bonus, onClaim, onClaimBonu
                 opacity: 1
               }}
             >
-              <h2 
+              <h2
                 className="text-white m-0 p-0"
                 style={{
                   width: '100%',
@@ -675,7 +673,7 @@ function PeriodSection({ data, periodKey, periodCfg, bonus, onClaim, onClaimBonu
                 {periodCfg.label} Missions
               </h2>
               {!isExpired && (
-                <p 
+                <p
                   className="m-0"
                   style={{
                     width: '100%',
@@ -711,15 +709,15 @@ function PeriodSection({ data, periodKey, periodCfg, bonus, onClaim, onClaimBonu
                 opacity: 1
               }}
             >
-              <img 
-                src="/coins/clock.png" 
-                alt="Clock" 
+              <img
+                src="/coins/clock.png"
+                alt="Clock"
                 className="shrink-0 object-contain"
                 style={{
                   width: '24px',
                   height: '24px',
                   opacity: 1
-                }} 
+                }}
               />
               <span
                 className="text-white m-0 p-0"
@@ -775,7 +773,7 @@ function PeriodSection({ data, periodKey, periodCfg, bonus, onClaim, onClaimBonu
             <p className="text-slate-600 text-xs">Check back later or contact support.</p>
           </div>
         ) : (
-          <div 
+          <div
             className="flex items-center overflow-x-auto md:overflow-visible"
             style={{
               width: '100%',
@@ -800,7 +798,7 @@ function PeriodSection({ data, periodKey, periodCfg, bonus, onClaim, onClaimBonu
       {/* Completion Bonus Footer */}
       {!isExpired && displayedMissions.length > 0 && (
         <PeriodBonusCard
-          bonus={{...bonus, completedMissions: Math.max(bonus?.completedMissions || 0, completed)}}
+          bonus={{ ...bonus, completedMissions: Math.max(bonus?.completedMissions || 0, completed) }}
           period={periodKey}
           onClaim={onClaimBonus}
           claimingBonus={claimingBonus}
@@ -830,7 +828,7 @@ const MissionPage = () => {
         fetch(`${API}/missions/period-bonus`, { headers }),
       ]);
       const [json, bonusJson] = await Promise.all([missionsRes.json(), bonusRes.json()]);
-      
+
       if (json.disabled) {
         toast.error(json.error || 'Missions are currently disabled');
         navigate('/dashboard');
@@ -914,11 +912,11 @@ const MissionPage = () => {
 
   return (
     <DashboardLayout>
-      <div className="w-full max-w-[1240px] mx-auto space-y-8 p-4 sm:p-6 pb-20 pt-4">
+      <div className="w-full max-w-[1240px] mx-auto space-y-8 pb-20 pt-4">
 
         {/* Heading Section */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center relative w-full md:w-[1240px] h-[122px]">
-          <div 
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center relative w-[1240px] h-[122px] shrink-0">
+          <div
             className="flex flex-col justify-start"
             style={{
               width: '745px',
@@ -926,7 +924,7 @@ const MissionPage = () => {
               gap: '6px'
             }}
           >
-            <h1 
+            <h1
               className="m-0 p-0 text-white"
               style={{
                 width: '745px',
@@ -940,7 +938,7 @@ const MissionPage = () => {
             >
               Missions
             </h1>
-            <p 
+            <p
               className="m-0 p-0"
               style={{
                 width: '745px',
@@ -958,7 +956,7 @@ const MissionPage = () => {
           </div>
 
           {/* Right side illustration */}
-          <div 
+          <div
             className="hidden md:block absolute pointer-events-none"
             style={{
               width: '392px',
@@ -997,13 +995,13 @@ const MissionPage = () => {
 
         {/* Tab Layout Container (width: 1240, height: auto, gap: 20) */}
         <div 
-          className="flex flex-col gap-[20px] w-full md:w-[1240px] md:h-auto shrink-0"
+          className="flex flex-col gap-[20px] w-[1240px] md:h-auto shrink-0"
         >
           {/* ── Tab Bar ──────────────────────────────────────────── */}
           <div
-            className="flex items-center shrink-0 w-full md:w-[1240px]"
-            style={{ 
-              background: 'rgba(44, 45, 44, 1)', 
+            className="flex items-center shrink-0 w-[1240px]"
+            style={{
+              background: 'rgba(44, 45, 44, 1)',
               backdropFilter: 'blur(24px)',
               boxShadow: '0px 4px 44px 0px rgba(0, 0, 0, 0.25)',
               borderRadius: '10px',
@@ -1012,7 +1010,7 @@ const MissionPage = () => {
               opacity: 1
             }}
           >
-            <div 
+            <div
               className="flex items-center w-full h-full"
               style={{
                 borderRadius: '100px',
@@ -1072,7 +1070,7 @@ const MissionPage = () => {
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -10 }}
               transition={{ duration: 0.18 }}
-              className="w-full md:w-[1240px] shrink-0"
+              className="w-[1240px] shrink-0"
             >
               <PeriodSection
                 data={data?.[activeTab]}

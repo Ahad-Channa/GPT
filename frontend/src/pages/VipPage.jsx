@@ -183,7 +183,7 @@ const VipPage = () => {
       <div className="w-full max-w-[1240px] mx-auto space-y-8 pb-20 pt-4">
 
         {/* Heading Section */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 relative w-full md:w-[1240px]">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 relative w-[1240px] shrink-0">
           <div className="flex flex-col gap-[6px]">
             <h1 className="m-0 p-0 font-bold text-[68px] leading-[120%] text-white font-['Barlow_Condensed'] whitespace-nowrap">VIP Status</h1>
             <p className="m-0 p-0 font-medium text-[26px] leading-[130%] text-[#888888] font-['Barlow_Condensed']">Higher rewards. Bigger perks. More earning power.</p>
@@ -212,7 +212,7 @@ const VipPage = () => {
         </div>
 
         {/* Top Status Card */}
-        <div className="bg-[#242424] rounded-[20px] px-6 md:px-[40px] py-[30px] border border-[#2A2A2E] flex flex-col md:flex-row items-center justify-between gap-[40px] w-full md:w-[1240px] md:h-[177px] shrink-0 backdrop-blur-[94px]">
+        <div className="bg-[#242424] rounded-[20px] px-6 md:px-[40px] py-[30px] border border-[#2A2A2E] flex flex-col md:flex-row items-center justify-between gap-[40px] w-[1240px] md:h-[177px] shrink-0 backdrop-blur-[94px]">
 
           {/* Left Section: Current Rank */}
           <div className="flex flex-col items-start justify-between min-w-[176px] h-[118px] shrink-0 pr-2">
@@ -355,7 +355,7 @@ const VipPage = () => {
         </div>
 
         {/* Level Grid by Tier */}
-        <div className="flex flex-col gap-[20px] w-full md:w-[1240px]">
+        <div className="flex flex-col gap-[20px] w-[1240px]">
           {tiers.map(tierName => {
             const tierLevels = levels.filter(l => l.tier === tierName);
             if (tierLevels.length === 0) return null;
@@ -363,7 +363,7 @@ const VipPage = () => {
             const ts = TIER_STYLES[tierName];
 
             return (
-              <div key={tierName} className="bg-[#242424] rounded-[20px] pt-[20px] pr-[20px] pb-[20px] pl-[40px] border border-[#2A2A2E] flex flex-col md:flex-row gap-[30px] items-center w-full md:w-[1240px] md:h-[181px] shrink-0 backdrop-blur-[94px]">
+              <div key={tierName} className="bg-[#242424] rounded-[20px] pt-[20px] pr-[20px] pb-[20px] pl-[40px] border border-[#2A2A2E] flex flex-col md:flex-row gap-[30px] items-center w-[1240px] md:h-[181px] shrink-0 backdrop-blur-[94px]">
 
                 {/* Left Tier Sidebar */}
                 <div className="flex flex-col items-center justify-between text-center w-[110px] shrink-0 h-[141px]">
@@ -426,7 +426,7 @@ const VipPage = () => {
                 <div className="flex gap-[10px] items-center w-[1010px] h-[141px] shrink-0">
                   {tierLevels.map((lvl) => {
                     return (
-                      <div 
+                      <div
                         key={lvl.key}
                         className={`relative rounded-[20px] p-[16px] border flex flex-col justify-between h-[135px] w-[330px] shrink-0 transition-all duration-300 backdrop-blur-[44px]
                           ${lvl.reached ? 'border-[#2A2A2E]' : 'border-[#2A2A2E]/40 opacity-70'}`}
@@ -450,10 +450,10 @@ const VipPage = () => {
 
                           {/* Reached Checkmark */}
                           {lvl.reached ? (
-                            <img 
-                              src="/coins/tik1.png" 
-                              alt="Reached" 
-                              className="w-[28px] h-[28px] shrink-0 object-contain" 
+                            <img
+                              src="/coins/tik1.png"
+                              alt="Reached"
+                              className="w-[28px] h-[28px] shrink-0 object-contain"
                             />
                           ) : (
                             <div className="w-[28px] h-[28px] shrink-0" />

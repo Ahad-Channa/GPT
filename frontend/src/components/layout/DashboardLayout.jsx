@@ -20,7 +20,7 @@ const DashboardLayout = ({ children, showLiveBar = true, fullWidth = false }) =>
       {/* <div className="ambient-bg" aria-hidden="true" /> */}
 
       {/* Sticky Header — passes chat toggle down */}
-      <Header onChatToggle={() => setChatOpen(o => !o)} chatOpen={chatOpen} />
+      <Header onChatToggle={() => setChatOpen(o => !o)} chatOpen={chatOpen} fullWidth={fullWidth} />
 
       {/* Live Earnings Ticker */}
       {showLiveBar && <LiveEarningsBar />}

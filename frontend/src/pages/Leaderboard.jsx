@@ -11,15 +11,15 @@ import CoinIcon from '../components/CoinIcon';
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
 const container = { hidden: {}, show: { transition: { staggerChildren: 0.04 } } };
-const item      = { hidden: { opacity: 0, y: 14 }, show: { opacity: 1, y: 0, transition: { duration: 0.3 } } };
+const item = { hidden: { opacity: 0, y: 14 }, show: { opacity: 1, y: 0, transition: { duration: 0.3 } } };
 
 const PERIOD_META = {
-  daily:   { label: 'Daily' },
-  weekly:  { label: 'Weekly' },
+  daily: { label: 'Daily' },
+  weekly: { label: 'Weekly' },
   monthly: { label: 'Monthly' },
 };
 
-const LaurelLeft  = () => <img src="/coins/leaf.png" alt="" className="w-[80px] h-[96px] md:w-[113px] md:h-[136px] object-contain" />;
+const LaurelLeft = () => <img src="/coins/leaf.png" alt="" className="w-[80px] h-[96px] md:w-[113px] md:h-[136px] object-contain" />;
 const LaurelRight = () => <img src="/coins/leaf.png" alt="" className="w-[80px] h-[96px] md:w-[113px] md:h-[136px] object-contain scale-x-[-1]" />;
 
 /* ── Podium Card ─────────────────────────────────────────────── */
@@ -94,7 +94,7 @@ const PodiumCard = ({ rank, user, prize, onClick }) => {
         ) : (
           <div className={`absolute z-30 ${styles.crown} drop-shadow-md`}>
             <img src="/coins/crown.png" alt="Crown" className="absolute inset-0 w-full h-full object-contain" />
-            <div 
+            <div
               className="absolute inset-0 w-full h-full"
               style={{
                 backgroundColor: styles.crownColor,
@@ -117,7 +117,7 @@ const PodiumCard = ({ rank, user, prize, onClick }) => {
       </div>
 
       {/* Podium Block */}
-      <div 
+      <div
         onClick={() => onClick(user.userId)}
         className={`w-full ${styles.bg} ${styles.height || ''} ${rank !== 1 ? 'rounded-b-2xl shadow-2xl pb-4' : 'justify-end pb-3 md:pb-5'} cursor-pointer hover:brightness-110 transition-all flex flex-col ${styles.paddingTop} px-3 md:px-5`}
         style={styles.clip !== 'none' ? { clipPath: styles.clip } : {}}
@@ -161,7 +161,7 @@ const LeaderboardCountdown = ({ targetDate }) => {
       const h = Math.floor((dist % 86400000) / 3600000);
       const m = Math.floor((dist % 3600000) / 60000);
       const s = Math.floor((dist % 60000) / 1000);
-      setTimeLeft(`${String(d).padStart(2,'0')}d ${String(h).padStart(2,'0')}h ${String(m).padStart(2,'0')}m ${String(s).padStart(2,'0')}s`);
+      setTimeLeft(`${String(d).padStart(2, '0')}d ${String(h).padStart(2, '0')}h ${String(m).padStart(2, '0')}m ${String(s).padStart(2, '0')}s`);
     };
     calc();
     const id = setInterval(calc, 1000);
@@ -181,11 +181,11 @@ const LeaderboardCountdown = ({ targetDate }) => {
 
 /* ── Period Panel ────────────────────────────────────────────── */
 const PeriodPanel = ({ data, onProfileClick }) => {
-  const rankings     = data?.rankings || [];
-  const rewardTiers  = data?.rewardTiers || [];
+  const rankings = data?.rankings || [];
+  const rewardTiers = data?.rewardTiers || [];
   const rewardedRanks = data?.rewardedRanks || 0;
 
-  const top3   = [rankings[1], rankings[0], rankings[2]]; // 2nd, 1st, 3rd display order
+  const top3 = [rankings[1], rankings[0], rankings[2]]; // 2nd, 1st, 3rd display order
   const others = rankings.slice(3);
 
   const getPrize = (rank) => {
@@ -206,7 +206,7 @@ const PeriodPanel = ({ data, onProfileClick }) => {
 
       {/* List rows 4+ */}
       <div className="w-full max-w-[1240px] mx-auto bg-[#242424] rounded-[30px] p-[30px] shadow-2xl mt-4 flex flex-col gap-[10px]">
-        <div 
+        <div
           className="grid grid-cols-[74px_521px_1fr_1fr] gap-[50px] w-full h-[62px] pt-[10px] pb-[30px] pl-[40px] pr-[95px] rounded-[20px] text-white/40"
           style={{ fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 600, fontSize: '32px', lineHeight: '1.2' }}
         >
@@ -231,8 +231,8 @@ const PeriodPanel = ({ data, onProfileClick }) => {
                 onClick={() => onProfileClick(user.userId)}
                 className="grid grid-cols-[74px_521px_1fr_1fr] gap-[50px] items-center w-full h-[119px] bg-[#171717] rounded-[20px] pt-[29px] pb-[30px] pl-[40px] pr-[95px] cursor-pointer hover:brightness-110 transition-all"
               >
-                <div 
-                  className="text-white" 
+                <div
+                  className="text-white"
                   style={{ fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 600, fontSize: '32px', lineHeight: '1.2' }}
                 >
                   #{currentRank}
@@ -241,8 +241,8 @@ const PeriodPanel = ({ data, onProfileClick }) => {
                   <div className="w-[60px] h-[60px] rounded-[10px] overflow-hidden bg-slate-800 flex-shrink-0">
                     <img src={user.avatarUrl || user.avatar || '/avatars/avatar1.png'} className="w-full h-full object-cover" alt={user.displayName} />
                   </div>
-                  <div 
-                    className="text-white truncate" 
+                  <div
+                    className="text-white truncate"
                     style={{ fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 600, fontSize: '32px', lineHeight: '1.2' }}
                   >
                     {user.displayName}
@@ -318,13 +318,13 @@ const Leaderboard = () => {
         <motion.div variants={item} className="flex items-center justify-center gap-1 md:gap-2 mt-8 mb-8">
           <LaurelLeft />
           <div className="flex flex-col items-center text-center gap-[6px]">
-            <h1 
+            <h1
               className="text-white text-center font-bold"
               style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '68px', lineHeight: '120%' }}
             >
               Leaderboard
             </h1>
-            <p 
+            <p
               className="text-[#888888] font-medium"
               style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '26px', lineHeight: '130%' }}
             >
@@ -356,11 +356,10 @@ const Leaderboard = () => {
                       <button
                         key={period}
                         onClick={() => setActiveTab(period)}
-                        className={`w-[159.5px] h-[48px] flex items-center justify-center rounded-[10px] gap-[10px] py-[10px] px-[20px] transition-all duration-200 ${
-                          isActive
+                        className={`w-[159.5px] h-[48px] flex items-center justify-center rounded-[10px] gap-[10px] py-[10px] px-[20px] transition-all duration-200 ${isActive
                             ? 'bg-[#49B265] text-white shadow-[0px_4px_0px_0px_rgba(39,109,58,1)]'
                             : 'text-[#888888] hover:text-white'
-                        }`}
+                          }`}
                       >
                         <span style={{ fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 700, fontSize: '20px', lineHeight: '32px' }}>
                           {PERIOD_META[period].label}
