@@ -9,7 +9,7 @@ import {
   FiActivity, FiArrowDownCircle, FiCheckCircle, FiClock,
   FiInbox, FiLoader, FiTrendingUp, FiChevronDown, FiPlayCircle,
   FiSend, FiExternalLink, FiSettings, FiTrash2, FiAlertTriangle, FiRefreshCw,
-  FiUsers, FiCopy, FiLock, FiList
+  FiUsers, FiCopy, FiLock, FiList, FiChevronLeft, FiChevronRight
 } from 'react-icons/fi';
 import TransactionHistory from '../components/wallet/TransactionHistory';
 import CoinDisplay from '../components/CoinDisplay';
@@ -17,15 +17,20 @@ import CoinIcon from '../components/CoinIcon';
 
 // ── Customization / Avatar Shop Modal ─────────────────────────────
 const CustomizationModal = ({ isOpen, onClose, mongoUser, token, setMongoUser }) => {
-  const [avatarUrl, setAvatarUrl] = useState(mongoUser?.avatarUrl || '');
+  const [activeTab, setActiveTab] = useState('my_avatars');
+  const [previewAvatar, setPreviewAvatar] = useState(null);
+
   const [saving, setSaving] = useState(false);
   const [avatars, setAvatars] = useState([]);
   const [loadingAvatars, setLoadingAvatars] = useState(true);
-  const [purchasingAvatar, setPurchasingAvatar] = useState(null);
 
-  const [freePage, setFreePage] = useState(0);
-  const [premiumPage, setPremiumPage] = useState(0);
-  const ITEMS_PER_PAGE = 5;
+  const [myPage, setMyPage] = useState(1);
+  const [shopPage, setShopPage] = useState(1);
+  const ITEMS_PER_PAGE_MY = 5;
+  const ITEMS_PER_PAGE_SHOP = 10;
+
+  const [confirmingAvatar, setConfirmingAvatar] = useState(null);
+  const [purchaseSuccessAvatar, setPurchaseSuccessAvatar] = useState(null);
 
   const fetchAvatars = async () => {
     setLoadingAvatars(true);
@@ -35,12 +40,7 @@ const CustomizationModal = ({ isOpen, onClose, mongoUser, token, setMongoUser })
       });
       const data = await res.json();
       if (data.success) {
-        // Sort: Owned first (isUnlocked), then locked.
-        const sorted = data.avatars.sort((a, b) => {
-          if (a.isUnlocked === b.isUnlocked) return a.price - b.price;
-          return a.isUnlocked ? -1 : 1;
-        });
-        setAvatars(sorted);
+        setAvatars(data.avatars);
       }
     } catch (e) {
       console.error(e);
@@ -51,52 +51,69 @@ const CustomizationModal = ({ isOpen, onClose, mongoUser, token, setMongoUser })
 
   useEffect(() => {
     if (isOpen) {
-      setAvatarUrl(mongoUser?.avatarUrl || '');
-      setPurchasingAvatar(null);
+      setPreviewAvatar(null);
+      setMyPage(1);
+      setShopPage(1);
+      setActiveTab('my_avatars');
+      setConfirmingAvatar(null);
+      setPurchaseSuccessAvatar(null);
       fetchAvatars();
     }
-  }, [isOpen, mongoUser]);
+  }, [isOpen]);
 
-  const handleAvatarClick = (avatar) => {
-    if (avatar.quantity !== null && avatar.quantity <= 0 && !avatar.isUnlocked) {
-      toast.error('This avatar is sold out!');
-      return;
+  useEffect(() => {
+    if (avatars.length > 0 && !previewAvatar && isOpen) {
+      const equipped = avatars.find(a => a.url === mongoUser?.avatarUrl) || avatars[0];
+      setPreviewAvatar(equipped);
     }
-    if (avatar.isUnlocked) {
-      setAvatarUrl(avatar.url);
-      setPurchasingAvatar(null);
+  }, [avatars, mongoUser, previewAvatar, isOpen]);
+
+  const handleTabChange = (tab) => {
+    setActiveTab(tab);
+    setMyPage(1);
+    setShopPage(1);
+    const sourceList = tab === 'my_avatars'
+      ? avatars.filter(a => a.isUnlocked)
+      : avatars.filter(a => !a.isUnlocked);
+
+    if (sourceList.length > 0) {
+      if (tab === 'my_avatars') {
+        const equipped = sourceList.find(a => a.url === mongoUser?.avatarUrl);
+        setPreviewAvatar(equipped || sourceList[0]);
+      } else {
+        setPreviewAvatar(sourceList[0]);
+      }
     } else {
-      setPurchasingAvatar(avatar);
+      setPreviewAvatar(null);
     }
   };
 
-  const handlePurchaseAvatar = async () => {
-    if (!purchasingAvatar) return;
+  const handlePurchaseAvatar = async (avatarToBuy) => {
+    const avatar = avatarToBuy || previewAvatar;
+    if (!avatar) return;
     setSaving(true);
     try {
-      const res = await fetch(`${API}/wallet/avatars/buy/${purchasingAvatar._id}`, {
+      const res = await fetch(`${API}/wallet/avatars/buy/${avatar._id}`, {
         method: 'POST',
         headers: { Authorization: `Bearer ${token}` }
       });
       const data = await res.json();
       if (data.success) {
-        toast.success(data.message);
-        setAvatarUrl(purchasingAvatar.url);
         setMongoUser(prev => ({
           ...prev,
           walletBalance: data.walletBalance,
-          unlockedAvatars: [...(prev.unlockedAvatars || []), purchasingAvatar._id]
+          unlockedAvatars: [...(prev.unlockedAvatars || []), avatar._id]
         }));
 
-        // Auto-equip on backend
         await fetch(`${API}/auth/profile`, {
           method: 'PUT',
           headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-          body: JSON.stringify({ avatarUrl: purchasingAvatar.url })
+          body: JSON.stringify({ avatarUrl: avatar.url })
         });
 
-        fetchAvatars();
-        setPurchasingAvatar(null);
+        await fetchAvatars();
+        setPurchaseSuccessAvatar(avatar);
+        setConfirmingAvatar(null);
       } else {
         toast.error(data.error);
       }
@@ -108,18 +125,18 @@ const CustomizationModal = ({ isOpen, onClose, mongoUser, token, setMongoUser })
   };
 
   const handleEquip = async () => {
+    if (!previewAvatar) return;
     setSaving(true);
     try {
       const res = await fetch(`${API}/auth/profile`, {
         method: 'PUT',
         headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ avatarUrl })
+        body: JSON.stringify({ avatarUrl: previewAvatar.url })
       });
       const data = await res.json();
       if (res.ok) {
         setMongoUser(data.user);
         toast.success('Avatar equipped successfully!');
-        onClose();
       } else {
         toast.error(data.error || 'Failed to equip avatar');
       }
@@ -131,196 +148,425 @@ const CustomizationModal = ({ isOpen, onClose, mongoUser, token, setMongoUser })
 
   if (!isOpen) return null;
 
-  const freeAvatars = avatars.filter(a => !a.isPremium);
-  const premiumAvatars = avatars.filter(a => a.isPremium);
+  const myAvatars = avatars.filter(a => a.isUnlocked);
+  const shopAvatars = avatars.filter(a => !a.isUnlocked);
 
-  const paginatedFree = freeAvatars.slice(freePage * ITEMS_PER_PAGE, (freePage + 1) * ITEMS_PER_PAGE);
-  const paginatedPremium = premiumAvatars.slice(premiumPage * ITEMS_PER_PAGE, (premiumPage + 1) * ITEMS_PER_PAGE);
+  const totalMyPages = Math.ceil(myAvatars.length / ITEMS_PER_PAGE_MY) || 1;
+  const paginatedMyAvatars = myAvatars.slice((myPage - 1) * ITEMS_PER_PAGE_MY, myPage * ITEMS_PER_PAGE_MY);
 
-  const renderAvatar = (avatar) => {
-    const isEquipped = avatarUrl === avatar.url;
-    const isSelected = purchasingAvatar?._id === avatar._id;
-    const isSoldOut = avatar.quantity !== null && avatar.quantity <= 0 && !avatar.isUnlocked;
-
-    return (
-      <button
-        key={avatar._id}
-        onClick={() => handleAvatarClick(avatar)}
-        className={`relative group aspect-square rounded-2xl overflow-hidden border-2 transition-all duration-300 ${isEquipped
-          ? 'border-indigo-500 shadow-[0_0_20px_rgba(79,70,229,0.3)] scale-105 z-10'
-          : isSelected
-            ? 'border-amber-500 shadow-[0_0_20px_rgba(245,158,11,0.3)] scale-105 z-10'
-            : 'border-white/5 hover:border-white/20 hover:scale-105'
-          } bg-[#151b2b] ${isSoldOut ? 'opacity-50 grayscale cursor-not-allowed' : ''}`}
-      >
-        <img src={avatar.url} alt={avatar.name} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
-
-        {isEquipped && (
-          <div className="absolute inset-x-0 bottom-0 bg-indigo-500/90 py-1 text-[10px] font-bold text-white text-center backdrop-blur-sm">
-            EQUIPPED
-          </div>
-        )}
-
-        {!avatar.isUnlocked && (
-          <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/40 backdrop-blur-[1px] group-hover:bg-black/20 transition-all">
-            <div className="bg-black/60 p-2 rounded-full mb-1 backdrop-blur-md border border-white/10">
-              <FiLock className="text-amber-400" size={16} />
-            </div>
-            {isSoldOut ? (
-              <span className="bg-rose-500/20 border border-rose-500/30 text-rose-300 text-[10px] font-bold px-2 py-0.5 rounded-full backdrop-blur-md">
-                SOLD OUT
-              </span>
-            ) : (
-              <span className="bg-amber-500/20 border border-amber-500/30 text-amber-300 text-[10px] font-bold px-2 py-0.5 rounded-full backdrop-blur-md">
-                {avatar.price}🪙
-              </span>
-            )}
-            {!isSoldOut && avatar.quantity !== null && avatar.quantity > 0 && (
-              <span className="mt-1 text-[9px] text-amber-100/70 font-semibold bg-black/50 px-1.5 rounded">
-                {avatar.quantity} left
-              </span>
-            )}
-          </div>
-        )}
-      </button>
-    );
-  };
+  const totalShopPages = Math.ceil(shopAvatars.length / ITEMS_PER_PAGE_SHOP) || 1;
+  const paginatedShopAvatars = shopAvatars.slice((shopPage - 1) * ITEMS_PER_PAGE_SHOP, shopPage * ITEMS_PER_PAGE_SHOP);
 
   return createPortal(
-    <div className="fixed inset-0 bg-black/80 backdrop-blur-md z-[999999] flex items-center justify-center p-4">
+    <div className="fixed inset-0 bg-black/80 backdrop-blur-md z-[999999] flex items-center justify-center p-4 overflow-y-auto">
       <motion.div
         initial={{ scale: 0.95, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
-        className="bg-[#0c101b] border border-white/[0.08] rounded-[2rem] w-full max-w-4xl max-h-[90vh] flex flex-col relative shadow-2xl shadow-indigo-500/10"
+        className="w-[1200px] h-auto min-h-[586px] my-auto rounded-[20px] p-[30px] bg-[rgba(36,36,36,1)] flex flex-col relative shadow-2xl font-['Barlow_Condensed'] border-2 border-[#1a1a1a]"
       >
-        <div className="flex-shrink-0 flex justify-between items-center px-8 pt-8 pb-4 border-b border-white/[0.04]">
-          <div>
-            <h2 className="text-2xl font-black text-white flex items-center gap-2 font-display tracking-tight">
-              <span className="bg-gradient-to-r from-indigo-400 to-fuchsia-400 bg-clip-text text-transparent">Avatar Shop</span>
-            </h2>
-            <p className="text-slate-400 text-sm mt-1">Customize your identity with premium avatars</p>
-          </div>
-          <button onClick={onClose} className="text-slate-400 hover:text-white transition-colors bg-white/5 hover:bg-white/10 rounded-full p-2">
-            <FiX size={20} />
-          </button>
-        </div>
-
-        <div className="overflow-y-auto custom-scrollbar flex-1 p-8">
-          {loadingAvatars ? (
-            <div className="flex flex-col items-center justify-center py-20">
-              <FiLoader className="animate-spin text-3xl text-indigo-500 mb-4" />
-              <p className="text-slate-400 text-sm">Loading collection...</p>
-            </div>
-          ) : (
-            <div className="space-y-10">
-              {/* Free Avatars Section */}
-              {freeAvatars.length > 0 && (
-                <section>
-                  <div className="flex items-center justify-between gap-3 mb-4">
-                    <div className="flex items-center gap-3 flex-1">
-                      <h3 className="text-sm font-bold text-slate-300 uppercase tracking-wider">Free Avatars</h3>
-                      <div className="h-px flex-1 bg-gradient-to-r from-white/10 to-transparent" />
-                    </div>
-                    {freeAvatars.length > ITEMS_PER_PAGE && (
-                      <div className="flex gap-2">
-                        <button
-                          onClick={() => setFreePage(Math.max(0, freePage - 1))}
-                          disabled={freePage === 0}
-                          className="px-2 py-1 bg-white/5 rounded hover:bg-white/10 disabled:opacity-30 text-xs font-bold text-slate-300"
-                        >Prev</button>
-                        <button
-                          onClick={() => setFreePage(Math.min(Math.ceil(freeAvatars.length / ITEMS_PER_PAGE) - 1, freePage + 1))}
-                          disabled={(freePage + 1) * ITEMS_PER_PAGE >= freeAvatars.length}
-                          className="px-2 py-1 bg-white/5 rounded hover:bg-white/10 disabled:opacity-30 text-xs font-bold text-slate-300"
-                        >Next</button>
-                      </div>
-                    )}
+        <div className="flex gap-[20px] flex-1 min-h-0">
+          <div className="flex-1 flex flex-col min-w-0">
+            <div className="flex justify-between items-center w-full h-[77px] gap-[16px] mb-[20px] shrink-0">
+              <div className="flex flex-col gap-[6px] w-[568px] h-[77px] justify-center">
+                <h2 className="text-[40px] font-bold text-white leading-[1.2] m-0">Avatar Shop</h2>
+                <p className="text-[18px] font-medium text-white/50 leading-[1.3] m-0">Customize your identity with premium avatars</p>
+              </div>
+              <div className="flex items-center gap-[22px]">
+                <div className="flex items-center justify-center bg-[rgba(26,27,26,1)] h-[63px] p-[10px] rounded-[10px] backdrop-blur-[74px]">
+                  <div className="flex items-center justify-center gap-[6px] min-w-[111px] h-[32px]">
+                    <img src="/coins/coinfix.png" alt="Coins" className="w-[32px] h-[32px] object-contain shrink-0" />
+                    <span className="font-bold text-[30px] leading-[1.2] text-transparent bg-clip-text bg-gradient-to-b from-[#FEDF77] to-[#FCB91E]">
+                      {(mongoUser?.walletBalance || 0).toLocaleString()}
+                    </span>
                   </div>
-                  <div className="grid grid-cols-5 gap-4">
-                    {paginatedFree.map(renderAvatar)}
-                  </div>
-                </section>
-              )}
-
-              {/* Premium Avatars Section */}
-              {premiumAvatars.length > 0 && (
-                <section>
-                  <div className="flex items-center justify-between gap-3 mb-4">
-                    <div className="flex items-center gap-3 flex-1">
-                      <h3 className="text-sm font-bold text-slate-300 uppercase tracking-wider text-amber-400/90 flex items-center gap-2">
-                        <FiStar /> Premium Shop
-                      </h3>
-                      <div className="h-px flex-1 bg-gradient-to-r from-amber-500/20 to-transparent" />
-                    </div>
-                    {premiumAvatars.length > ITEMS_PER_PAGE && (
-                      <div className="flex gap-2">
-                        <button
-                          onClick={() => setPremiumPage(Math.max(0, premiumPage - 1))}
-                          disabled={premiumPage === 0}
-                          className="px-2 py-1 bg-amber-500/10 rounded hover:bg-amber-500/20 disabled:opacity-30 text-xs font-bold text-amber-400 border border-amber-500/20"
-                        >Prev</button>
-                        <button
-                          onClick={() => setPremiumPage(Math.min(Math.ceil(premiumAvatars.length / ITEMS_PER_PAGE) - 1, premiumPage + 1))}
-                          disabled={(premiumPage + 1) * ITEMS_PER_PAGE >= premiumAvatars.length}
-                          className="px-2 py-1 bg-amber-500/10 rounded hover:bg-amber-500/20 disabled:opacity-30 text-xs font-bold text-amber-400 border border-amber-500/20"
-                        >Next</button>
-                      </div>
-                    )}
-                  </div>
-                  <div className="grid grid-cols-5 gap-4">
-                    {paginatedPremium.map(renderAvatar)}
-                  </div>
-                </section>
-              )}
-            </div>
-          )}
-        </div>
-
-        {/* Action Footer */}
-        <div className="p-6 border-t border-white/[0.04] bg-[#080b14]/50 rounded-b-[2rem] flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2 bg-white/5 px-4 py-2 rounded-xl border border-white/10">
-              <FiZap className="text-amber-400" />
-              <CoinDisplay amount={mongoUser?.walletBalance || 0} size={14} className="text-sm font-bold text-white" />
-            </div>
-          </div>
-
-          <div className="flex gap-4 w-full sm:w-auto items-center">
-            {purchasingAvatar ? (
-              <>
-                <div className="w-14 h-14 rounded-xl overflow-hidden border-2 border-amber-500/40 shadow-[0_0_15px_rgba(245,158,11,0.2)] bg-[#0b101e] flex-shrink-0 animate-fade-in-up">
-                  <img src={purchasingAvatar.url} alt={purchasingAvatar.name} className="w-full h-full object-cover" />
                 </div>
-                <div className="flex flex-1 sm:flex-none items-center gap-3 bg-amber-500/10 border border-amber-500/20 pl-4 pr-1 py-1 rounded-xl h-12">
-                  <div className="flex flex-col items-start pr-2 hidden sm:flex">
-                    <span className="text-[10px] text-amber-500/70 font-bold uppercase tracking-wider leading-none mb-0.5">Purchase</span>
-                    <span className="text-sm font-bold text-amber-400 leading-none">{purchasingAvatar.name}</span>
-                  </div>
-                  <button
-                    onClick={handlePurchaseAvatar}
-                    disabled={saving || (mongoUser?.walletBalance || 0) < purchasingAvatar.price}
-                    className="flex-1 sm:flex-none h-full px-6 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 disabled:opacity-50 text-white text-sm font-bold rounded-lg shadow-lg shadow-amber-500/20 transition-all whitespace-nowrap flex items-center justify-center"
-                  >
-                    {saving ? 'Processing...' : `Buy for ${purchasingAvatar.price}🪙`}
-                  </button>
-                  <button onClick={() => setPurchasingAvatar(null)} className="h-full px-3 flex items-center justify-center text-slate-400 hover:text-white hover:bg-white/5 rounded-lg transition-colors">
-                    <FiX />
-                  </button>
-                </div>
-              </>
-            ) : (
+                <button onClick={onClose} className="w-[40px] h-[40px] bg-[#1a1a1a] hover:bg-white/10 rounded-[10px] flex items-center justify-center text-white/50 hover:text-white transition-colors">
+                  <FiX size={24} />
+                </button>
+              </div>
+            </div>
+
+            <div className="h-[50px] bg-[#1a1a1a] rounded-[10px] p-[5px] flex shrink-0 mb-[20px]">
               <button
-                onClick={handleEquip}
-                disabled={saving || avatarUrl === mongoUser?.avatarUrl}
-                className="w-full sm:w-auto flex items-center justify-center gap-2 px-8 py-3 rounded-xl bg-gradient-to-r from-indigo-500 to-violet-600 text-white font-bold hover:shadow-[0_0_20px_rgba(99,102,241,0.4)] transition-all disabled:opacity-50 disabled:hover:shadow-none"
+                onClick={() => handleTabChange('my_avatars')}
+                className={`flex-1 rounded-[8px] font-bold text-[20px] transition-colors flex items-center justify-center ${activeTab === 'my_avatars' ? 'bg-[#49b265] text-white shadow-[0px_2px_0px_0px_rgba(35,80,47,1)]' : 'text-white/50 hover:text-white'}`}
               >
-                {saving ? <FiLoader className="animate-spin" /> : <FiCheck />}
-                {saving ? 'Equipping...' : (avatarUrl === mongoUser?.avatarUrl ? 'Equipped' : 'Equip Selected')}
+                My Avatars
               </button>
+              <button
+                onClick={() => handleTabChange('shop')}
+                className={`flex-1 rounded-[8px] font-bold text-[20px] transition-colors flex items-center justify-center ${activeTab === 'shop' ? 'bg-[#49b265] text-white shadow-[0px_2px_0px_0px_rgba(35,80,47,1)]' : 'text-white/50 hover:text-white'}`}
+              >
+                Shop
+              </button>
+            </div>
+
+            {loadingAvatars ? (
+              <div className="flex-1 flex items-center justify-center">
+                <FiLoader className="animate-spin text-4xl text-[#49b265]" />
+              </div>
+            ) : activeTab === 'my_avatars' ? (
+              <div className="flex flex-col flex-1 min-h-0">
+                <h3 className="text-[24px] font-bold text-white leading-none mb-1">My Avatars</h3>
+                <p className="text-[16px] text-white/50 mb-[15px] leading-none">Avatars your owns and can use</p>
+
+                <div className="grid grid-cols-5 gap-[15px] content-start">
+                  {paginatedMyAvatars.length === 0 ? (
+                    <div className="col-span-5 text-center text-white/50 py-10">No avatars owned. Visit the shop!</div>
+                  ) : (
+                    paginatedMyAvatars.map(avatar => (
+                      <div
+                        key={avatar._id}
+                        onClick={() => setPreviewAvatar(avatar)}
+                        className={`rounded-[12px] bg-[#1a1a1a] p-[10px] flex flex-col gap-[10px] cursor-pointer border-2 transition-all ${previewAvatar?._id === avatar._id ? 'border-[#49b265]' : 'border-transparent hover:border-white/10'
+                          }`}
+                      >
+                        <div className="w-full aspect-square rounded-[8px] overflow-hidden bg-black/20">
+                          <img src={avatar.url} alt={avatar.name} className="w-full h-full object-cover" />
+                        </div>
+                        <span className="text-white text-center font-semibold text-[16px] leading-none truncate pb-[4px]">{avatar.name}</span>
+                      </div>
+                    ))
+                  )}
+                </div>
+
+                <Pagination
+                  page={myPage}
+                  totalPages={totalMyPages}
+                  onNext={() => setMyPage(p => Math.min(totalMyPages, p + 1))}
+                  onPrev={() => setMyPage(p => Math.max(1, p - 1))}
+                  onPageClick={(p) => setMyPage(p)}
+                />
+              </div>
+            ) : (
+              <div className="flex flex-col flex-1 min-h-0">
+                <h3 className="text-[24px] font-bold text-white leading-none mb-1">Collect & Stand Out</h3>
+                <p className="text-[16px] text-white/50 mb-[15px] leading-none">Limited avatars are rare and available in limited quantities.</p>
+
+                <div className="grid grid-cols-5 gap-[15px] content-start">
+                  {paginatedShopAvatars.length === 0 ? (
+                    <div className="col-span-5 text-center text-white/50 py-10">No premium avatars available right now.</div>
+                  ) : (
+                    paginatedShopAvatars.map(avatar => (
+                      <div
+                        key={avatar._id}
+                        onClick={() => setPreviewAvatar(avatar)}
+                        className={`rounded-[12px] bg-[#1a1a1a] p-[10px] flex flex-col gap-[8px] cursor-pointer border-2 transition-all ${previewAvatar?._id === avatar._id ? 'border-[#49b265]' : 'border-transparent hover:border-white/10'
+                          }`}
+                      >
+                        <div className="w-full aspect-square rounded-[8px] overflow-hidden bg-black/20 relative">
+                          <img src={avatar.url} alt={avatar.name} className="w-full h-full object-cover" />
+                          {avatar.quantity === 0 && (
+                            <div
+                              className="absolute top-[8px] right-[8px] bg-[rgba(26,27,26,0.85)] border border-[#fbbf24] px-[10px] py-[4px] rounded-full text-[#fbbf24] font-bold text-[14px] uppercase leading-none tracking-wider shadow-lg"
+                              style={{ fontFamily: '"Barlow Condensed", sans-serif' }}
+                            >
+                              Sold Out
+                            </div>
+                          )}
+                        </div>
+                        <div>
+                          <div className="text-white font-semibold text-[16px] leading-none truncate mb-[6px]">{avatar.name}</div>
+                          <div className="text-[12px] text-[#49b265] font-semibold leading-none mb-[6px]">{avatar.quantity ?? 'Unlimited'} Available</div>
+                          <div className="flex items-center gap-[4px]">
+                            <img src="/coins/coinfix.png" alt="Coins" className="w-[14px] h-[14px] object-contain" style={{ filter: 'drop-shadow(0px 0px 10px rgba(254, 198, 53, 0.6))' }} />
+                            <span className="text-[#fbbf24] font-bold text-[14px] leading-none">{avatar.price}</span>
+                          </div>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+
+                <Pagination
+                  page={shopPage}
+                  totalPages={totalShopPages}
+                  onNext={() => setShopPage(p => Math.min(totalShopPages, p + 1))}
+                  onPrev={() => setShopPage(p => Math.max(1, p - 1))}
+                  onPageClick={(p) => setShopPage(p)}
+                />
+              </div>
+            )}
+          </div>
+
+          <div
+            className="w-[325px] h-auto shrink-0 rounded-[20px] p-[16px] flex flex-col relative"
+            style={{
+              background: 'rgba(0, 0, 0, 0.36)',
+              backdropFilter: 'blur(44px)',
+              WebkitBackdropFilter: 'blur(44px)',
+              gap: '26px'
+            }}
+          >
+            <h3
+              className="text-[28px] font-bold text-white leading-[1.2]"
+              style={{
+                width: '293px',
+                height: '34px',
+                fontFamily: '"Barlow Condensed", sans-serif',
+                fontWeight: 700
+              }}
+            >
+              Preview
+            </h3>
+
+            {previewAvatar ? (
+              <div
+                className="w-[293px] flex-1 flex flex-col min-h-[420px]"
+                style={{ gap: '26px' }}
+              >
+                <div
+                  className="w-[160px] h-[160px] rounded-full mx-auto overflow-hidden shadow-[0_0_20px_rgba(251,191,36,0.3)] shrink-0 flex items-center justify-center p-[5px]"
+                  style={{
+                    background: 'linear-gradient(180deg, #FEDF77 0%, #FCB91E 100%)'
+                  }}
+                >
+                  <div className="w-full h-full rounded-full overflow-hidden bg-black/20">
+                    <img src={previewAvatar.url} alt={previewAvatar.name} className="w-full h-full object-cover" />
+                  </div>
+                </div>
+
+                <div
+                  className="flex flex-col shrink-0 text-left justify-center"
+                  style={{
+                    width: '293px',
+                    height: '49px',
+                    gap: '14px'
+                  }}
+                >
+                  <h4
+                    className="text-white truncate shrink-0"
+                    style={{
+                      width: '293px',
+                      fontFamily: '"Barlow Condensed", sans-serif',
+                      fontWeight: 600,
+                      fontSize: '32px',
+                      lineHeight: '1.2'
+                    }}
+                  >
+                    {previewAvatar.name}
+                  </h4>
+                  <p
+                    className="truncate shrink-0"
+                    style={{
+                      width: '293px',
+                      fontFamily: '"Barlow Condensed", sans-serif',
+                      fontWeight: 600,
+                      fontSize: '18px',
+                      lineHeight: '1.2',
+                      color: 'rgba(255, 255, 255, 0.5)'
+                    }}
+                  >
+                    {previewAvatar.description || 'Premium Avatar Collection'}
+                  </p>
+                </div>
+
+                <div
+                  className="flex flex-col text-[16px] shrink-0"
+                  style={{
+                    width: '293px',
+                    minHeight: '102px',
+                    gap: '16px',
+                    borderRadius: '12px',
+                    padding: '16px',
+                    background: 'rgba(36, 36, 36, 1)',
+                    backdropFilter: 'blur(44px)',
+                    WebkitBackdropFilter: 'blur(44px)'
+                  }}
+                >
+                  {activeTab === 'shop' && (
+                    <div className="flex justify-between items-center pb-[8px] border-b border-white/5 last:border-0 last:pb-0">
+                      <span className="text-white font-semibold">Price</span>
+                      <div className="flex items-center gap-[4px]">
+                        <img src="/coins/coinfix.png" alt="Coins" className="w-[16px] h-[16px] object-contain" style={{ filter: 'drop-shadow(0px 0px 10px rgba(254, 198, 53, 0.6))' }} />
+                        <span className="text-[#fbbf24] font-bold text-[16px] leading-none">{previewAvatar.price}</span>
+                      </div>
+                    </div>
+                  )}
+                  <div className="flex justify-between items-center pb-[8px] border-b border-white/5 last:border-0 last:pb-0">
+                    <span className="text-white font-semibold">Rarity</span>
+                    <span className="text-white font-bold">{previewAvatar.rarity || 'Limited Edition'}</span>
+                  </div>
+                  {activeTab === 'my_avatars' && (
+                    <div className="flex justify-between items-center pb-[8px] border-b border-white/5 last:border-0 last:pb-0">
+                      <span className="text-white font-semibold">Obtained On</span>
+                      <span className="text-white font-bold">
+                        {previewAvatar.obtainedAt ? new Date(previewAvatar.obtainedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'May 21, 2026'}
+                      </span>
+                    </div>
+                  )}
+                  {activeTab === 'shop' && (
+                    <div className="flex justify-between items-center pb-[8px] border-b border-white/5 last:border-0 last:pb-0">
+                      <span className="text-white font-semibold">Limited Quantity</span>
+                      <span className="text-white font-bold">{previewAvatar.quantity ? `Only ${previewAvatar.quantity} Available` : 'Unlimited'}</span>
+                    </div>
+                  )}
+                </div>
+
+                <div className="mt-auto shrink-0">
+                  {activeTab === 'my_avatars' ? (
+                    <button
+                      onClick={handleEquip}
+                      disabled={saving || mongoUser?.avatarUrl === previewAvatar.url}
+                      className="w-full h-[48px] bg-[#49b265] disabled:bg-[#49b265]/50 hover:bg-[#3bb770] text-white rounded-[10px] font-bold text-[20px] transition-all flex items-center justify-center gap-[10px] shadow-[0px_4px_0px_0px_rgba(35,80,47,1)] active:translate-y-[2px] active:shadow-[0px_2px_0px_0px_rgba(35,80,47,1)] disabled:shadow-none disabled:translate-y-[2px]"
+                    >
+                      {saving ? 'Equipping...' : mongoUser?.avatarUrl === previewAvatar.url ? 'Equipped' : 'Equip'}
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => setConfirmingAvatar(previewAvatar)}
+                      disabled={saving || previewAvatar.quantity === 0 || (mongoUser?.walletBalance || 0) < previewAvatar.price}
+                      className="w-full h-[48px] bg-[#49b265] disabled:bg-[#49b265]/50 hover:bg-[#3bb770] text-white rounded-[10px] font-bold text-[20px] transition-all flex items-center justify-center gap-[10px] shadow-[0px_4px_0px_0px_rgba(35,80,47,1)] active:translate-y-[2px] active:shadow-[0px_2px_0px_0px_rgba(35,80,47,1)] disabled:shadow-none disabled:translate-y-[2px]"
+                    >
+                      {saving ? 'Processing...' : previewAvatar.quantity === 0 ? 'Sold Out' : (previewAvatar.price === 0 ? 'Claim Free' : 'Buy Now')}
+                    </button>
+                  )}
+                </div>
+              </div>
+            ) : (
+              <div className="flex-1 flex items-center justify-center text-white/30 text-[18px] font-semibold">
+                Select an avatar
+              </div>
             )}
           </div>
         </div>
       </motion.div>
+
+      {/* Confirmation Modal ("Order Summary") */}
+      {confirmingAvatar && (
+        <div className="fixed inset-0 bg-black/60 z-[9999999] flex items-center justify-center p-4">
+          <motion.div
+            initial={{ scale: 0.95, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            className="w-[500px] h-[313px] rounded-[20px] p-[16px] bg-[rgba(36,36,36,1)] border border-white/[0.08] shadow-2xl flex flex-col justify-between font-['Barlow_Condensed'] text-white"
+          >
+            <div className="flex justify-between items-center w-full">
+              <h3
+                className="text-white m-0 flex items-center"
+                style={{
+                  width: '416px',
+                  height: '34px',
+                  fontFamily: '"Barlow Condensed", sans-serif',
+                  fontWeight: 700,
+                  fontSize: '28px',
+                  lineHeight: '120%',
+                  opacity: 1
+                }}
+              >
+                Order Summary
+              </h3>
+              <button
+                onClick={() => setConfirmingAvatar(null)}
+                className="w-[36px] h-[36px] rounded-[10px] bg-white/[0.11] hover:bg-white/[0.18] transition-colors flex items-center justify-center text-white shrink-0"
+              >
+                <FiX size={20} strokeWidth={2} />
+              </button>
+            </div>
+
+            <div
+              className="flex flex-col justify-between border border-white/[0.08] shrink-0"
+              style={{
+                width: '468px',
+                height: '157px',
+                gap: '12px',
+                borderRadius: '20px',
+                padding: '16px',
+                background: 'rgba(0, 0, 0, 0.36)',
+                backdropFilter: 'blur(44px)',
+                WebkitBackdropFilter: 'blur(44px)',
+                opacity: 1
+              }}
+            >
+              <div className="flex gap-[16px] items-center">
+                <img
+                  src={confirmingAvatar.url}
+                  alt={confirmingAvatar.name}
+                  className="object-cover shrink-0"
+                  style={{
+                    width: '72px',
+                    height: '72px',
+                    borderRadius: '10px',
+                    opacity: 1
+                  }}
+                />
+                <div className="flex flex-col justify-center min-w-0">
+                  <span className="text-white font-bold text-[24px] leading-tight truncate">{confirmingAvatar.name}</span>
+                  <span className="text-white/50 text-[16px] font-medium leading-[1.3] truncate">{confirmingAvatar.description || 'Premium Avatar Collection'}</span>
+                </div>
+              </div>
+              <div className="h-[1px] bg-white/10 w-full shrink-0" />
+              <div className="flex justify-between items-center w-full">
+                <span className="text-[#49b265] font-semibold text-[20px] leading-none">Price</span>
+                <div className="flex items-center gap-[4px]">
+                  <img
+                    src="/coins/coinfix.png"
+                    alt="Coins"
+                    className="w-[18px] h-[18px] object-contain shrink-0"
+                    style={{ filter: 'drop-shadow(0px 0px 10px rgba(254, 198, 53, 0.6))' }}
+                  />
+                  <span className="text-[#fbbf24] font-bold text-[22px] leading-none pt-[2px]">{confirmingAvatar.price}</span>
+                </div>
+              </div>
+            </div>
+
+            <button
+              onClick={() => handlePurchaseAvatar(confirmingAvatar)}
+              disabled={saving}
+              className="w-full h-[48px] bg-[#49b265] disabled:bg-[#49b265]/50 hover:bg-[#3bb770] text-white rounded-[10px] font-bold text-[20px] transition-all flex items-center justify-center gap-[10px] shadow-[0px_4px_0px_0px_rgba(35,80,47,1)] active:translate-y-[2px] active:shadow-[0px_2px_0px_0px_rgba(35,80,47,1)] disabled:shadow-none"
+            >
+              {saving ? 'Processing...' : 'Confirm Purchase →'}
+            </button>
+          </motion.div>
+        </div>
+      )}
+
+      {/* Success Modal ("Purchase Successful!") */}
+      {purchaseSuccessAvatar && (
+        <div className="fixed inset-0 bg-black/60 z-[9999999] flex items-center justify-center p-4">
+          <motion.div
+            initial={{ scale: 0.95, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            className="w-[500px] h-[317px] rounded-[20px] p-[16px] bg-[rgba(36,36,36,1)] border border-white/[0.08] shadow-2xl flex flex-col justify-between items-center font-['Barlow_Condensed'] text-white text-center"
+          >
+            <div className="w-full flex justify-end">
+              <button
+                onClick={() => setPurchaseSuccessAvatar(null)}
+                className="w-[36px] h-[36px] rounded-[10px] bg-white/[0.11] hover:bg-white/[0.18] transition-colors flex items-center justify-center text-white shrink-0"
+              >
+                <FiX size={20} strokeWidth={2} />
+              </button>
+            </div>
+
+            <div className="flex flex-col items-center flex-1 justify-center my-[10px]">
+              <img
+                src="/coins/tik1.png"
+                alt="Success"
+                className="shrink-0 object-contain mb-[14px]"
+                style={{
+                  width: '74px',
+                  height: '74px',
+                  opacity: 1
+                }}
+              />
+              <h3 className="text-[28px] font-bold text-white leading-none m-0 uppercase">Purchase Successful!</h3>
+              <p className="text-white/50 text-[18px] font-medium leading-[1.3] m-0 mt-[10px] max-w-[400px]">
+                {purchaseSuccessAvatar.name} has been added to your collection.
+              </p>
+            </div>
+
+            <button
+              onClick={() => {
+                setPurchaseSuccessAvatar(null);
+                setActiveTab('my_avatars');
+                setPreviewAvatar(purchaseSuccessAvatar);
+              }}
+              className="w-full h-[48px] bg-[#49b265] hover:bg-[#3bb770] text-white rounded-[10px] font-bold text-[20px] transition-all flex items-center justify-center shadow-[0px_4px_0px_0px_rgba(35,80,47,1)] active:translate-y-[2px] active:shadow-[0px_2px_0px_0px_rgba(35,80,47,1)]"
+            >
+              View My Avatar
+            </button>
+          </motion.div>
+        </div>
+      )}
     </div>,
     document.body
   );
@@ -492,8 +738,8 @@ const TabBtn = ({ active, onClick, icon, label }) => (
       }`}
     style={{ fontFamily: "'Barlow Condensed', sans-serif" }}
   >
-    <img 
-      src={icon} 
+    <img
+      src={icon}
       alt=""
       className={`w-[24px] h-[24px] shrink-0 object-contain ${active ? 'brightness-0 invert' : ''}`}
     />
@@ -581,10 +827,9 @@ const ClickedOfferRow = ({ offer, token: initialToken, onRefresh }) => {
         <div className="flex justify-start">
           <button
             onClick={() => { setOpen(o => !o); setResult(null); }}
-            className="h-[48px] px-5 bg-[#49b265] hover:bg-[#3bb770] text-white rounded-[10px] flex items-center justify-center gap-[10px] font-bold font-['Barlow_Condensed'] text-[20px] transition-all shadow-[0px_4px_0px_0px_rgba(39,109,58,1)] active:translate-y-[2px] active:shadow-[0px_2px_0px_0px_rgba(39,109,58,1)]"
+            className="h-[48px] px-5 bg-[rgba(39,112,58,1)] hover:brightness-110 text-white rounded-[10px] flex items-center justify-center gap-[10px] font-bold font-['Barlow_Condensed'] text-[20px] transition-all shadow-[0px_4px_0px_0px_rgba(35,80,47,1)] active:translate-y-[2px] active:shadow-[0px_2px_0px_0px_rgba(35,80,47,1)]"
             style={{ fontFamily: "'Barlow Condensed', sans-serif" }}
           >
-            <FiSend className="w-[20px] h-[20px] shrink-0" />
             <span>{isRejected ? 'Resubmit' : 'Submit Proof'}</span>
           </button>
         </div>
@@ -1318,27 +1563,27 @@ const Profile = () => {
                           </div>
                           <div className="flex flex-col gap-[10px] mt-[10px]">
                             {paginatedHeld.map(offer => {
-                                const holdPeriodDays = offer.holdUntil && offer.createdAt
-                                  ? Math.round((new Date(offer.holdUntil) - new Date(offer.createdAt)) / (1000 * 60 * 60 * 24))
-                                  : 30;
-                                const releaseIn = offer.daysRemaining > 0
-                                  ? `${offer.daysRemaining}d`
-                                  : offer.isReadyToRelease ? 'Ready' : 'N/A';
-                                return (
-                                  <div key={offer._id} className="w-[1180px] h-[82px] bg-[#171717] rounded-[20px] pt-[20px] pr-[95px] pb-[20px] pl-[40px] grid grid-cols-[300px_repeat(4,1fr)] gap-[20px] items-center hover:bg-[#1a1a1a] transition-colors">
-                                    <span style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="font-semibold text-[28px] leading-[120%] text-white truncate">{offer.description}</span>
-                                    <span style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="text-white font-semibold text-[28px] leading-[120%]">{offer.createdAt ? new Date(offer.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'N/A'}</span>
-                                    <div className="flex items-center gap-[6px] font-semibold text-[#fbbf24] text-[28px] leading-[120%]" style={{ fontFamily: "'Barlow Condensed', sans-serif" }}>
-                                      <img src="/coins/coinfix.png" alt="Coin" className="w-[24px] h-[24px] shrink-0 object-contain" />
-                                      <span>{(offer.amount || 0).toLocaleString()}</span>
-                                    </div>
-                                    <span style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="text-white font-semibold text-[28px] leading-[120%]">{holdPeriodDays} days</span>
-                                    <div style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className={`text-right font-semibold text-[28px] leading-[120%] ${offer.isReadyToRelease ? 'text-[#49b265]' : 'text-white'}`}>
-                                      {releaseIn}
-                                    </div>
+                              const holdPeriodDays = offer.holdUntil && offer.createdAt
+                                ? Math.round((new Date(offer.holdUntil) - new Date(offer.createdAt)) / (1000 * 60 * 60 * 24))
+                                : 30;
+                              const releaseIn = offer.daysRemaining > 0
+                                ? `${offer.daysRemaining}d`
+                                : offer.isReadyToRelease ? 'Ready' : 'N/A';
+                              return (
+                                <div key={offer._id} className="w-[1180px] h-[82px] bg-[#171717] rounded-[20px] pt-[20px] pr-[95px] pb-[20px] pl-[40px] grid grid-cols-[300px_repeat(4,1fr)] gap-[20px] items-center hover:bg-[#1a1a1a] transition-colors">
+                                  <span style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="font-semibold text-[28px] leading-[120%] text-white truncate">{offer.description}</span>
+                                  <span style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="text-white font-semibold text-[28px] leading-[120%]">{offer.createdAt ? new Date(offer.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'N/A'}</span>
+                                  <div className="flex items-center gap-[6px] font-semibold text-[#fbbf24] text-[28px] leading-[120%]" style={{ fontFamily: "'Barlow Condensed', sans-serif" }}>
+                                    <img src="/coins/coinfix.png" alt="Coin" className="w-[24px] h-[24px] shrink-0 object-contain" />
+                                    <span>{(offer.amount || 0).toLocaleString()}</span>
                                   </div>
-                                );
-                              })}
+                                  <span style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="text-white font-semibold text-[28px] leading-[120%]">{holdPeriodDays} days</span>
+                                  <div style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className={`text-right font-semibold text-[28px] leading-[120%] ${offer.isReadyToRelease ? 'text-[#49b265]' : 'text-white'}`}>
+                                    {releaseIn}
+                                  </div>
+                                </div>
+                              );
+                            })}
                           </div>
                         </div>
                       </div>

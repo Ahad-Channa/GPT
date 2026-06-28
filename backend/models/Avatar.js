@@ -23,6 +23,14 @@ const avatarSchema = new mongoose.Schema(
     quantity: {
       type: Number,
       default: null // null means unlimited
+    },
+    description: {
+      type: String,
+      default: ''
+    },
+    rarity: {
+      type: String,
+      default: ''
     }
   },
   { timestamps: true }

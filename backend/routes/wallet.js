@@ -938,15 +938,23 @@ router.get('/avatars', verifyToken, async (req, res) => {
     const unlockedSet = new Set((user.unlockedAvatars || []).map(id => id.toString()));
 
     const avatarsWithStatus = avatars.map(av => {
-      const isUnlocked = !av.isPremium || unlockedSet.has(av._id.toString());
+      // Free avatars no longer auto-unlock; they must be explicitly acquired via the shop
+      const isUnlocked = unlockedSet.has(av._id.toString());
+      const obtainedAt = isUnlocked && user.avatarObtainedDates 
+        ? user.avatarObtainedDates.get(av._id.toString()) 
+        : null;
+
       return {
         _id: av._id,
         name: av.name,
+        description: av.description,
+        rarity: av.rarity,
         url: av.url,
         isPremium: av.isPremium,
         price: av.price,
         quantity: av.quantity,
-        isUnlocked
+        isUnlocked,
+        obtainedAt
       };
     });
 
@@ -1001,6 +1009,13 @@ router.post('/avatars/buy/:id', verifyToken, async (req, res) => {
     // Add to unlocked list
     user.unlockedAvatars = user.unlockedAvatars || [];
     user.unlockedAvatars.push(avatar._id);
+    
+    // Store obtained date
+    if (!user.avatarObtainedDates) {
+      user.avatarObtainedDates = new Map();
+    }
+    user.avatarObtainedDates.set(avatar._id.toString(), new Date());
+    
     await user.save();
 
     // Decrement quantity if it's not unlimited

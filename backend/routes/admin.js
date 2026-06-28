@@ -2046,7 +2046,7 @@ router.get('/avatars', requirePermission('manage_users'), async (req, res) => {
 // Create new avatar
 router.post('/avatars', requirePermission('manage_users'), upload.single('image'), async (req, res) => {
   try {
-    const { name, isPremium, price, quantity } = req.body;
+    const { name, isPremium, price, quantity, description, rarity } = req.body;
     let url = req.body.url;
 
     if (req.file) {
@@ -2067,7 +2067,9 @@ router.post('/avatars', requirePermission('manage_users'), upload.single('image'
       url,
       isPremium: isPremium === 'true' || isPremium === true,
       price: Number(price) || 0,
-      quantity: parsedQuantity
+      quantity: parsedQuantity,
+      description: description || '',
+      rarity: rarity || ''
     });
 
     await avatar.save();
@@ -2081,7 +2083,7 @@ router.post('/avatars', requirePermission('manage_users'), upload.single('image'
 // Update avatar
 router.put('/avatars/:id', requirePermission('manage_users'), upload.single('image'), async (req, res) => {
   try {
-    const { name, isPremium, price, quantity } = req.body;
+    const { name, isPremium, price, quantity, description, rarity } = req.body;
     const avatar = await Avatar.findById(req.params.id);
     
     if (!avatar) {
@@ -2091,6 +2093,8 @@ router.put('/avatars/:id', requirePermission('manage_users'), upload.single('ima
     if (name) avatar.name = name;
     if (isPremium !== undefined) avatar.isPremium = isPremium === 'true' || isPremium === true;
     if (price !== undefined) avatar.price = Number(price);
+    if (description !== undefined) avatar.description = description;
+    if (rarity !== undefined) avatar.rarity = rarity;
     
     if (quantity !== undefined) {
       if (quantity === null || quantity === '' || quantity === 'null') {

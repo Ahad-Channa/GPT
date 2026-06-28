@@ -14,7 +14,7 @@ export default function AdminAvatars() {
   const [editingAvatar, setEditingAvatar] = useState(null);
   const [totalCoinsEarned, setTotalCoinsEarned] = useState(0);
   
-  const [formData, setFormData] = useState({ name: '', isPremium: false, price: 0, quantity: '' });
+  const [formData, setFormData] = useState({ name: '', isPremium: false, price: 0, quantity: '', description: '', rarity: '' });
   const [file, setFile] = useState(null);
   const [saving, setSaving] = useState(false);
 
@@ -45,11 +45,11 @@ export default function AdminAvatars() {
   const openModal = (avatar = null) => {
     if (avatar) {
       setEditingAvatar(avatar);
-      setFormData({ name: avatar.name, isPremium: avatar.isPremium, price: avatar.price, quantity: avatar.quantity === null || avatar.quantity === undefined ? '' : avatar.quantity });
+      setFormData({ name: avatar.name, isPremium: avatar.isPremium, price: avatar.price, quantity: avatar.quantity === null || avatar.quantity === undefined ? '' : avatar.quantity, description: avatar.description || '', rarity: avatar.rarity || '' });
       setFile(null);
     } else {
       setEditingAvatar(null);
-      setFormData({ name: '', isPremium: false, price: 0, quantity: '' });
+      setFormData({ name: '', isPremium: false, price: 0, quantity: '', description: '', rarity: '' });
       setFile(null);
     }
     setIsModalOpen(true);
@@ -78,6 +78,8 @@ export default function AdminAvatars() {
       fd.append('name', formData.name);
       fd.append('isPremium', formData.isPremium);
       fd.append('price', formData.price);
+      fd.append('description', formData.description || '');
+      fd.append('rarity', formData.rarity || '');
       if (formData.quantity !== '') {
         fd.append('quantity', formData.quantity);
       } else {
@@ -188,14 +190,14 @@ export default function AdminAvatars() {
 
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-          <div className="bg-slate-800 rounded-xl shadow-xl w-full max-w-md border border-slate-700 overflow-hidden">
-            <div className="p-6 border-b border-slate-700 flex justify-between items-center bg-slate-800/50">
+          <div className="bg-slate-800 rounded-xl shadow-xl w-full max-w-md border border-slate-700 overflow-hidden flex flex-col max-h-[90vh]">
+            <div className="p-6 border-b border-slate-700 flex justify-between items-center bg-slate-800/50 shrink-0">
               <h2 className="text-lg font-bold text-white">
                 {editingAvatar ? 'Edit Avatar' : 'Add New Avatar'}
               </h2>
             </div>
             
-            <form onSubmit={handleSubmit} className="p-6 space-y-4">
+            <form onSubmit={handleSubmit} className="p-6 space-y-4 overflow-y-auto hide-scrollbar">
               <div>
                 <label className="block text-xs font-medium text-slate-400 uppercase tracking-wider mb-2">Avatar Name</label>
                 <input
@@ -205,6 +207,27 @@ export default function AdminAvatars() {
                   onChange={(e) => setFormData({...formData, name: e.target.value})}
                   className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none"
                   placeholder="e.g. Cyber Punk Girl"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-medium text-slate-400 uppercase tracking-wider mb-2">Description</label>
+                <textarea
+                  value={formData.description}
+                  onChange={(e) => setFormData({...formData, description: e.target.value})}
+                  className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none h-20 resize-none"
+                  placeholder="e.g. Rare Mythic Edition"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-medium text-slate-400 uppercase tracking-wider mb-2">Rarity</label>
+                <input
+                  type="text"
+                  value={formData.rarity}
+                  onChange={(e) => setFormData({...formData, rarity: e.target.value})}
+                  className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none"
+                  placeholder="e.g. Limited Edition"
                 />
               </div>
 

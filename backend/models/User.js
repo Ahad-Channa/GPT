@@ -74,6 +74,11 @@ const userSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Avatar'
     }],
+    avatarObtainedDates: {
+      type: Map,
+      of: Date,
+      default: {}
+    },
     isBanned: {
       type: Boolean,
       default: false,

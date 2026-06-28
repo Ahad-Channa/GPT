@@ -43,6 +43,9 @@
 ::-webkit-scrollbar-thumb { background: rgba(37,99,235,0.3); border-radius: 2px; }
 ::-webkit-scrollbar-thumb:hover { background: rgba(37,99,235,0.6); }
 
+.hide-scrollbar::-webkit-scrollbar { display: none; }
+.hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
 /* ─── Glass Card ────────────────────────────────────────────── */
 .glass-card {
   background: rgba(255, 255, 255, 0.03);
