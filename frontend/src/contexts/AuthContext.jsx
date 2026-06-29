@@ -18,8 +18,12 @@ import { io } from 'socket.io-client';
 // Global fetch interceptor to inject 2FA token
 const originalFetch = window.fetch;
 window.fetch = async function (url, options = {}) {
+  const urlString = typeof url === 'string' ? url : url?.toString() || '';
+  const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+  const isOwnApi = (urlString.startsWith('/') && !urlString.startsWith('//')) || urlString.startsWith(apiUrl);
+
   const twoFactorToken = localStorage.getItem('twoFactorToken');
-  if (twoFactorToken) {
+  if (twoFactorToken && isOwnApi) {
     const headers = options.headers || {};
     if (headers instanceof Headers) {
       if (!headers.has('x-two-factor-token')) {

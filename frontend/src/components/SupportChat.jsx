@@ -1,50 +1,257 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { FiSend, FiHeadphones, FiClock, FiCheckCircle, FiAlertCircle, FiLoader } from 'react-icons/fi';
+import { FaCrown } from 'react-icons/fa';
+import VipBadge from './VipBadge';
+import { getLevelFromEarned, getLevelLabel, TIER_STYLES } from '../utils/vipLevels';
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
-const getInitials = (name) => (name || '?').slice(0, 2).toUpperCase();
-const getHue = (name) => name ? [...name].reduce((a, c) => a + c.charCodeAt(0), 0) % 360 : 210;
-
-const AvatarCircle = ({ user, size = 34 }) => {
-  const src = user?.avatarUrl;
-  const hue = getHue(user?.displayName);
+const AvatarCircle = ({ user, size = 20 }) => {
+  const photo = user?.avatarUrl || user?.photoURL || `/avatars/avatar1.png`;
   return (
     <div style={{
-      width: size, height: size, borderRadius: '50%',
-      overflow: 'hidden', flexShrink: 0,
-      background: src ? 'transparent' : `hsl(${hue},50%,26%)`,
-      border: '2px solid rgba(255,255,255,0.09)',
-      display: 'flex', alignItems: 'center', justifyContent: 'center',
-      fontSize: size * 0.36, fontWeight: 700, color: 'rgba(255,255,255,0.75)',
-      userSelect: 'none'
+      width: size, height: size, borderRadius: '50%', flexShrink: 0,
+      overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center',
+      background: 'transparent',
+      color: 'white', fontSize: size * 0.45, fontWeight: 'bold'
     }}>
-      {src
-        ? <img src={src} alt={user?.displayName || ''} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-        : getInitials(user?.displayName)}
+      <img src={photo} alt="avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
     </div>
   );
 };
 
-const StatusBadge = ({ status }) => {
-  const map = {
-    open:        { label: 'Open',        color: '#6366f1', bg: 'rgba(99,102,241,0.12)',   icon: FiAlertCircle },
-    'in-progress':{ label: 'In Progress', color: '#f59e0b', bg: 'rgba(245,158,11,0.12)',  icon: FiClock },
-    closed:      { label: 'Closed',      color: '#64748b', bg: 'rgba(100,116,139,0.12)', icon: FiCheckCircle }
-  };
-  const s = map[status] || map.open;
-  const Icon = s.icon;
+const RoleSymbol = ({ user }) => {
+  const role = user?.role || 'user';
+
+  /* ── owner ── */
+  if (role === 'owner') {
+    const color = '#fbbf24';
+    return (
+      <SymbolWithHover
+        icon={<FaCrown size={13} />}
+        label="Owner"
+        color={color}
+      />
+    );
+  }
+
+  /* ── admin ── */
+  if (role === 'admin') {
+    const vipLevel = getLevelFromEarned(user?.totalEarned || 0);
+    return (
+      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+        <HoverBadge
+          badge={
+            <div style={{
+              width: '49px', height: '18px',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              background: 'rgba(239,68,68,0.05)', color: '#ef4444',
+              fontSize: '11px', fontWeight: 600,
+              borderRadius: '59.47px', border: '1px solid #ef4444',
+              fontFamily: '"Barlow Condensed", sans-serif', letterSpacing: '0px'
+            }}>Admin</div>
+          }
+          label="Admin"
+          color="#ef4444"
+        />
+        {vipLevel && (
+          <HoverBadge
+            badge={<VipBadge tier={vipLevel.tier} rank={vipLevel.rank} size="xs" />}
+            label={`VIP: ${getLevelLabel(vipLevel)}`}
+            color={TIER_STYLES[vipLevel.tier]?.border || '#94a3b8'}
+          />
+        )}
+      </div>
+    );
+  }
+
+  /* ── moderator ── */
+  if (role === 'moderator') {
+    const color = '#38bdf8';
+    return (
+      <HoverBadge
+        badge={
+          <div style={{
+            width: '49px', height: '18px',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            background: 'rgba(56,189,248,0.05)', color: '#38bdf8',
+            fontSize: '11px', fontWeight: 600,
+            borderRadius: '59.47px', border: '1px solid #38bdf8',
+            fontFamily: '"Barlow Condensed", sans-serif', letterSpacing: '0px'
+          }}>Mod</div>
+        }
+        label="Moderator"
+        color={color}
+      />
+    );
+  }
+
+  /* ── regular user ── */
+  const vipLevel = getLevelFromEarned(user?.totalEarned || 0);
+  if (!vipLevel) return null;
+
+  const tierStyle = TIER_STYLES[vipLevel.tier];
+  const color = tierStyle?.border || '#94a3b8';
   return (
-    <span style={{
-      display: 'inline-flex', alignItems: 'center', gap: 4,
-      fontSize: '0.65rem', fontWeight: 700, padding: '2px 8px',
-      borderRadius: 100, background: s.bg, color: s.color,
-      border: `1px solid ${s.color}30`
-    }}>
-      <Icon style={{ fontSize: 10 }} />
-      {s.label}
-    </span>
+    <HoverBadge
+      badge={<VipBadge tier={vipLevel.tier} rank={vipLevel.rank} size="xs" />}
+      label={`VIP: ${getLevelLabel(vipLevel)}`}
+      color={color}
+    />
+  );
+};
+
+const HoverBadge = ({ badge, label, color }) => {
+  const [hover, setHover] = useState(false);
+  return (
+    <div
+      onMouseEnter={() => setHover(true)}
+      onMouseLeave={() => setHover(false)}
+      style={{ position: 'relative', display: 'inline-flex', alignItems: 'center', cursor: 'default' }}
+    >
+      {badge}
+      {hover && (
+        <div style={{
+          position: 'absolute', bottom: '100%', left: '50%',
+          transform: `translate(-50%, -8px)`,
+          background: '#0b101e', border: `1px solid ${color}80`, color: '#f8fafc',
+          padding: '5px 10px', borderRadius: '8px', fontSize: '0.75rem', fontWeight: 600,
+          whiteSpace: 'nowrap', zIndex: 9999, boxShadow: `0 4px 15px ${color}40`,
+          pointerEvents: 'none', display: 'flex', alignItems: 'center', gap: '4px'
+        }}>
+          {label}
+          <div style={{
+            position: 'absolute', top: '100%', left: `50%`,
+            transform: 'translateX(-50%)',
+            borderWidth: '5px', borderStyle: 'solid',
+            borderColor: `${color}80 transparent transparent transparent`
+          }} />
+        </div>
+      )}
+    </div>
+  );
+};
+
+const SymbolWithHover = ({ icon, label, color }) => {
+  const [hover, setHover] = useState(false);
+  return (
+    <div
+      onMouseEnter={() => setHover(true)}
+      onMouseLeave={() => setHover(false)}
+      style={{ position: 'relative', display: 'inline-flex', alignItems: 'center', cursor: 'default' }}
+    >
+      <span style={{ color, display: 'inline-flex', alignItems: 'center' }}>{icon}</span>
+      {hover && (
+        <div style={{
+          position: 'absolute', bottom: '100%', left: '50%',
+          transform: `translate(-50%, -8px)`,
+          background: '#0b101e', border: `1px solid ${color}80`, color: '#f8fafc',
+          padding: '5px 10px', borderRadius: '8px', fontSize: '0.75rem', fontWeight: 600,
+          whiteSpace: 'nowrap', zIndex: 9999, boxShadow: `0 4px 15px ${color}40`,
+          pointerEvents: 'none', display: 'flex', alignItems: 'center', gap: '4px'
+        }}>
+          {label}
+          <div style={{
+            position: 'absolute', top: '100%', left: `50%`,
+            transform: 'translateX(-50%)',
+            borderWidth: '5px', borderStyle: 'solid',
+            borderColor: `${color}80 transparent transparent transparent`
+          }} />
+        </div>
+      )}
+    </div>
+  );
+};
+
+/* ─── MessageRow (matching Live Chat exactly) ─── */
+const MessageRow = ({ msg, isOwn, mongoUser }) => {
+  const senderUser = isOwn ? mongoUser : { displayName: 'Support Team', role: 'moderator' };
+
+  return (
+    <div
+      style={{
+        display: 'flex',
+        marginBottom: 12,
+        padding: '14px 12px',
+        borderRadius: '12px',
+        background: 'rgba(0, 0, 0, 0.36)',
+        backdropFilter: 'blur(44px)',
+        position: 'relative',
+        gap: '8px',
+        minHeight: '71px',
+        boxSizing: 'border-box',
+        flexShrink: 0
+      }}
+    >
+      {/* ── Left Column: Avatar & Timestamp ── */}
+      <div style={{ 
+        width: '24px', height: '43px', 
+        display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'space-between', 
+        flexShrink: 0 
+      }}>
+        <AvatarCircle user={senderUser} size={24} />
+        <span style={{ 
+          fontFamily: '"Barlow Condensed", sans-serif',
+          fontWeight: 600,
+          fontSize: '10px',
+          lineHeight: '130%',
+          color: 'rgba(73, 178, 101, 1)',
+          letterSpacing: '0px',
+          whiteSpace: 'nowrap'
+        }}>
+          {(() => {
+            const date = new Date(msg.createdAt);
+            const today = new Date();
+            const isToday = date.getDate() === today.getDate() &&
+              date.getMonth() === today.getMonth() &&
+              date.getFullYear() === today.getFullYear();
+            return isToday
+              ? date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+              : date.toLocaleDateString([], { month: 'short', day: 'numeric' });
+          })()}
+        </span>
+      </div>
+
+      {/* ── Right Column: Username, Role & Message ── */}
+      <div style={{ display: 'flex', flexDirection: 'column', width: '304px', minHeight: '43px', gap: '6px' }}>
+        <div style={{ 
+          width: '304px', height: '18px', 
+          display: 'flex', alignItems: 'center', gap: '6px' 
+        }}>
+          <div style={{
+            width: '249px', height: '13px',
+            display: 'flex', alignItems: 'center',
+            fontWeight: 600, color: 'rgba(255, 255, 255, 1)',
+            fontFamily: '"Barlow Condensed", sans-serif', fontSize: '18px',
+            lineHeight: '120%', letterSpacing: '0px',
+            textAlign: 'left',
+            whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis'
+          }}>
+            {senderUser?.displayName || 'Unknown'}
+          </div>
+
+          {/* Role / VIP badge on Top Right */}
+          <div style={{ display: 'flex', alignItems: 'center' }}>
+            <RoleSymbol user={senderUser} />
+          </div>
+        </div>
+
+        {/* Message text */}
+        <div style={{ 
+          width: '304px',
+          color: 'rgba(136, 136, 136, 1)', 
+          fontSize: '16px', 
+          fontWeight: 500,
+          lineHeight: '130%', 
+          letterSpacing: '0px',
+          wordBreak: 'break-word',
+          fontFamily: '"Barlow Condensed", sans-serif'
+        }}>
+          {msg.text}
+        </div>
+      </div>
+    </div>
   );
 };
 
@@ -165,28 +372,9 @@ const SupportChat = ({ socket }) => {
   return (
     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', minHeight: 0 }}>
 
-      {/* ── Ticket Header ───────────────────────────────── */}
-      {ticket && (
-        <div style={{
-          padding: '10px 20px',
-          background: 'rgba(255,255,255,0.02)',
-          borderBottom: '1px solid rgba(255,255,255,0.05)',
-          display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0
-        }}>
-          <FiHeadphones style={{ color: '#6366f1', fontSize: 14 }} />
-          <span style={{ fontSize: '0.78rem', color: '#94a3b8', fontWeight: 500 }}>
-            Ticket #{String(ticket._id).slice(-6).toUpperCase()}
-          </span>
-          <StatusBadge status={ticket.status} />
-          <span style={{ marginLeft: 'auto', fontSize: '0.7rem', color: '#374151' }}>
-            {new Date(ticket.createdAt).toLocaleDateString()}
-          </span>
-        </div>
-      )}
-
       {/* ── Messages Area ───────────────────────────────── */}
       <div
-        style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden', padding: '16px 20px 8px' }}
+        style={{ flex: 1, overflowY: 'auto', padding: '12px 14px 6px', display: 'flex', flexDirection: 'column', gap: 0 }}
         className="custom-scrollbar"
       >
         {/* Empty state — no ticket yet */}
@@ -201,88 +389,53 @@ const SupportChat = ({ socket }) => {
               alignItems: 'center', justifyContent: 'center',
               gap: '16px'
             }}>
-            <div style={{
-              width: '88px', height: '88px', borderRadius: '10px',
-              padding: '10px 12px 10px 12px',
-              background: 'rgba(41, 253, 152, 0.1)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              boxSizing: 'border-box'
-            }}>
-              <img src="/coins/headp.png" alt="Support" style={{ width: '44px', height: '44px' }} />
-            </div>
-            <div style={{ 
-              width: '360px', height: '102px', 
-              display: 'flex', flexDirection: 'column', 
-              gap: '6px', textAlign: 'center'
-            }}>
-              <p style={{ 
-                margin: 0, width: '360px', height: '38px',
-                fontFamily: '"Barlow Condensed", sans-serif',
-                fontWeight: 700, fontSize: '32px',
-                lineHeight: '120%', color: '#f8fafc',
-                display: 'flex', alignItems: 'center', justifyContent: 'center'
+              <div style={{
+                width: '88px', height: '88px', borderRadius: '10px',
+                padding: '10px 12px 10px 12px',
+                background: 'rgba(41, 253, 152, 0.1)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                boxSizing: 'border-box'
               }}>
-                Contact Support
-              </p>
-              <p style={{ 
-                margin: 0, width: '360px', height: '58px',
-                fontFamily: '"Barlow Condensed", sans-serif',
-                fontWeight: 500, fontSize: '22px',
-                lineHeight: '130%', color: '#64748b',
-                display: 'flex', alignItems: 'center', justifyContent: 'center'
+                <img src="/coins/headp.png" alt="Support" style={{ width: '44px', height: '44px' }} />
+              </div>
+              <div style={{ 
+                width: '360px', height: '102px', 
+                display: 'flex', flexDirection: 'column', 
+                gap: '6px', textAlign: 'center'
               }}>
-                Send us a message below and our team will respond as soon as possible.
-              </p>
+                <p style={{ 
+                  margin: 0, width: '360px', height: '38px',
+                  fontFamily: '"Barlow Condensed", sans-serif',
+                  fontWeight: 700, fontSize: '32px',
+                  lineHeight: '120%', color: '#f8fafc',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center'
+                }}>
+                  Contact Support
+                </p>
+                <p style={{ 
+                  margin: 0, width: '360px', height: '58px',
+                  fontFamily: '"Barlow Condensed", sans-serif',
+                  fontWeight: 500, fontSize: '22px',
+                  lineHeight: '130%', color: '#64748b',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center'
+                }}>
+                  Send us a message below and our team will respond as soon as possible.
+                </p>
+              </div>
             </div>
           </div>
-        </div>
         )}
 
         {/* Messages */}
         {messages.map((msg, idx) => {
           const isOwn = msg.sender === 'user';
-          const showHead = idx === 0 || messages[idx - 1]?.sender !== msg.sender;
-          const senderUser = isOwn ? mongoUser : { displayName: 'Support', avatarUrl: null };
-
           return (
-            <div key={msg._id || idx} style={{
-              display: 'flex',
-              flexDirection: isOwn ? 'row-reverse' : 'row',
-              gap: 10,
-              marginTop: showHead ? 16 : 4,
-              alignItems: 'flex-end'
-            }}>
-              <div style={{ width: 32, flexShrink: 0 }}>
-                {showHead && <AvatarCircle user={senderUser} size={32} />}
-              </div>
-              <div style={{
-                display: 'flex', flexDirection: 'column',
-                alignItems: isOwn ? 'flex-end' : 'flex-start',
-                maxWidth: '72%', gap: 2
-              }}>
-                {showHead && (
-                  <span style={{ fontSize: '0.7rem', fontWeight: 600,
-                    color: isOwn ? '#a5b4fc' : '#34d399', marginBottom: 2 }}>
-                    {isOwn ? mongoUser?.displayName : 'Support Team'}
-                  </span>
-                )}
-                <div style={{
-                  background: isOwn
-                    ? 'linear-gradient(135deg,rgba(99,102,241,0.3),rgba(139,92,246,0.2))'
-                    : 'rgba(255,255,255,0.05)',
-                  border: isOwn ? '1px solid rgba(99,102,241,0.28)' : '1px solid rgba(255,255,255,0.07)',
-                  borderRadius: isOwn ? '14px 4px 14px 14px' : '4px 14px 14px 14px',
-                  padding: '9px 13px',
-                  color: '#e2e8f0', fontSize: '0.88rem', lineHeight: 1.5,
-                  wordBreak: 'break-word'
-                }}>
-                  {msg.text}
-                </div>
-                <span style={{ fontSize: '0.62rem', color: '#1e293b', marginTop: 1 }}>
-                  {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                </span>
-              </div>
-            </div>
+            <MessageRow
+              key={msg._id || idx}
+              msg={msg}
+              isOwn={isOwn}
+              mongoUser={mongoUser}
+            />
           );
         })}
         <div ref={endRef} />
@@ -290,11 +443,11 @@ const SupportChat = ({ socket }) => {
 
       {/* ── Input Bar ───────────────────────────────────── */}
       <div style={{
-        padding: '10px 18px 14px',
+        padding: '12px 20px 20px',
         background: 'transparent',
         flexShrink: 0
       }}>
-        <form onSubmit={sendMessage} style={{ display: 'flex', alignItems: 'center' }}>
+        <form onSubmit={sendMessage} style={{ display: 'flex', gap: 7, alignItems: 'flex-end' }}>
           <div style={{ flex: 1, position: 'relative' }}>
             <input
               ref={inputRef}
@@ -305,18 +458,20 @@ const SupportChat = ({ socket }) => {
               maxLength={2000}
               disabled={sending}
               style={{
-                width: '100%', boxSizing: 'border-box',
+                width: '360px', height: '48px', boxSizing: 'border-box',
                 background: 'transparent',
-                border: '1px solid rgba(34,197,94,0.8)',
-                borderRadius: 8,
-                padding: '12px 48px 12px 14px',
-                color: '#f8fafc', fontSize: '0.85rem', fontWeight: 500,
+                border: '1px solid rgba(73, 178, 101, 1)',
+                borderRadius: '10px', padding: '10px 40px 10px 20px',
+                color: 'rgba(255, 255, 255, 1)', fontSize: '16px',
+                fontWeight: 500, lineHeight: '100%',
                 outline: 'none', transition: 'border 0.15s',
-                caretColor: '#22c55e',
+                caretColor: '#49B265',
+                fontFamily: '"Barlow Condensed", sans-serif',
+                letterSpacing: '0px',
                 opacity: sending ? 0.6 : 1
               }}
-              onFocus={e => { e.target.style.borderColor = 'rgba(34,197,94,1)'; }}
-              onBlur={e  => { e.target.style.borderColor = 'rgba(34,197,94,0.8)'; }}
+              onFocus={e => { e.target.style.boxShadow = '0 0 0 1px rgba(73, 178, 101, 0.5)'; }}
+              onBlur={e => { e.target.style.boxShadow = 'none'; }}
             />
             <button
               type="submit"
@@ -329,8 +484,7 @@ const SupportChat = ({ socket }) => {
                 cursor: text.trim() && !sending ? 'pointer' : 'default',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 color: text.trim() && !sending ? '#49B265' : 'rgba(73, 178, 101, 0.5)',
-                transition: 'all 0.18s',
-                boxShadow: 'none'
+                transition: 'all 0.18s'
               }}
             >
               <img 

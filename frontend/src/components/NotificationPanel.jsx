@@ -7,40 +7,66 @@ import { useNotifications } from '../contexts/NotificationContext';
 import VipBadge from './VipBadge';
 
 const getNotificationIcon = (type, metadata) => {
+    let icon;
     switch (type) {
         case 'offer_reward':
         case 'offer_approved':
-            return <FiCheckCircle className="text-emerald-400 mt-0.5" size={18} />;
+            icon = <FiCheckCircle className="text-[#49B265]" size={24} />;
+            break;
         case 'leaderboard_reward':
-            return <FiAward className="text-amber-400 mt-0.5" size={18} />;
+            icon = <FiAward className="text-[#49B265]" size={24} />;
+            break;
         case 'referral_earning':
-            return <FiUsers className="text-cyan-400 mt-0.5" size={18} />;
+            icon = <FiUsers className="text-[#49B265]" size={24} />;
+            break;
         case 'admin_adjustment':
         case 'daily_bonus':
-            return <FiGift className="text-indigo-400 mt-0.5" size={18} />;
+            icon = <img src="/coins/bonus.png" style={{ width: '24px', height: '24px', objectFit: 'contain' }} alt="bonus" />;
+            break;
         case 'global_announcement':
         case 'admin_announcement':
-            return <FiMessageSquare className="text-violet-400 mt-0.5" size={18} />;
+            icon = <FiMessageSquare className="text-[#49B265]" size={24} />;
+            break;
         case 'offer_rejected':
         case 'chargeback':
-            return <FiAlertCircle className="text-rose-400 mt-0.5" size={18} />;
+            icon = <FiAlertCircle className="text-[#49B265]" size={24} />;
+            break;
         case 'mission_reward':
         case 'mission_completed':
         case 'mission_reminder':
         case 'mission_new':
-            return <FiTarget className="text-indigo-400 mt-0.5" size={18} />;
-        case 'vip_level_up':
-            if (metadata?.tier) {
-                return (
-                    <span className="mt-0.5 flex-shrink-0">
-                        <VipBadge tier={metadata.tier} rank={metadata.rank || ''} size="xs" />
-                    </span>
-                );
-            }
-            return <FiStar className="text-amber-400 mt-0.5" size={18} />;
+            icon = <img src="/coins/newmissio.png" style={{ width: '24px', height: '24px', objectFit: 'contain' }} alt="new missions" />;
+            break;
+        case 'vip_level_up': {
+            const tier = metadata?.tier || 'Bronze';
+            const name = tier.charAt(0).toUpperCase() + tier.slice(1).toLowerCase();
+            const fileName = name === 'Diamond' ? 'dimond' : name.toLowerCase();
+            icon = <img src={`/coins/${fileName}.png`} style={{ width: '48px', height: '48px', objectFit: 'contain' }} alt={tier} />;
+            break;
+        }
         default:
-            return <FiInfo className="text-blue-400 mt-0.5" size={18} />;
+            icon = <FiInfo className="text-[#49B265]" size={24} />;
     }
+
+    const isVip = type === 'vip_level_up';
+
+    return (
+        <div style={{
+            width: '48px',
+            height: '48px',
+            padding: isVip ? '0' : '10px 12px',
+            boxSizing: 'border-box',
+            borderRadius: isVip ? '0' : '10px',
+            border: isVip ? 'none' : '1px solid rgba(73, 178, 101, 0.4)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            background: 'transparent',
+            flexShrink: 0
+        }}>
+            {icon}
+        </div>
+    );
 };
 
 /**
@@ -49,18 +75,65 @@ const getNotificationIcon = (type, metadata) => {
  */
 function NotificationMessage({ message, metadata, onLinkClick }) {
     if (!metadata?.link || !metadata?.linkText) {
-        return <p className="text-sm text-gray-400 leading-relaxed mb-2">{message}</p>;
+        return (
+            <div style={{
+                width: '280px',
+                height: '38px',
+                fontFamily: '"Barlow Condensed", sans-serif',
+                fontWeight: 500,
+                fontSize: '16px',
+                lineHeight: '18px',
+                color: 'rgba(255, 255, 255, 0.6)',
+                overflow: 'hidden',
+                display: '-webkit-box',
+                WebkitLineClamp: 2,
+                WebkitBoxOrient: 'vertical',
+                textOverflow: 'ellipsis'
+            }}>
+                {message}
+            </div>
+        );
     }
 
     const { linkText, link } = metadata;
     const parts = message.split(linkText);
 
     if (parts.length < 2) {
-        return <p className="text-sm text-gray-400 leading-relaxed mb-2">{message}</p>;
+        return (
+            <div style={{
+                width: '280px',
+                height: '38px',
+                fontFamily: '"Barlow Condensed", sans-serif',
+                fontWeight: 500,
+                fontSize: '16px',
+                lineHeight: '18px',
+                color: 'rgba(255, 255, 255, 0.6)',
+                overflow: 'hidden',
+                display: '-webkit-box',
+                WebkitLineClamp: 2,
+                WebkitBoxOrient: 'vertical',
+                textOverflow: 'ellipsis'
+            }}>
+                {message}
+            </div>
+        );
     }
 
     return (
-        <p className="text-sm text-gray-400 leading-relaxed mb-2">
+        <div style={{
+            width: '280px',
+            height: '38px',
+            fontFamily: '"Barlow Condensed", sans-serif',
+            fontWeight: 500,
+            fontSize: '16px',
+            lineHeight: '18px',
+            color: 'rgba(255, 255, 255, 0.6)',
+            overflow: 'hidden',
+            display: '-webkit-box',
+            WebkitLineClamp: 2,
+            WebkitBoxOrient: 'vertical',
+            textOverflow: 'ellipsis'
+        }}>
             {parts[0]}
             <button
                 onClick={(e) => {
@@ -68,11 +141,12 @@ function NotificationMessage({ message, metadata, onLinkClick }) {
                     onLinkClick(link);
                 }}
                 className="text-indigo-400 hover:text-indigo-300 underline underline-offset-2 font-semibold transition-colors"
+                style={{ fontFamily: '"Barlow Condensed", sans-serif', fontWeight: 600, fontSize: '16px' }}
             >
                 {linkText}
             </button>
             {parts.slice(1).join(linkText)}
-        </p>
+        </div>
     );
 }
 
@@ -126,7 +200,8 @@ export default function NotificationPanel() {
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 0.5 }}
                         exit={{ opacity: 0 }}
-                        className="fixed inset-0 bg-black z-[9998]"
+                        onClick={closePanel}
+                        className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[9998]"
                         aria-hidden="true"
                     />
 
@@ -137,38 +212,99 @@ export default function NotificationPanel() {
                         animate={{ x: 0 }}
                         exit={{ x: '100%' }}
                         transition={{ type: 'spring', bounce: 0, duration: 0.4 }}
-                        className="fixed right-0 top-0 bottom-0 w-full max-w-sm bg-gray-900 border-l border-gray-800 shadow-2xl z-[9999] flex flex-col"
+                        className="notification-panel-card"
                     >
                         {/* Header */}
-                        <div className="flex items-center justify-between p-4 border-b border-gray-800">
-                            <div className="flex items-center gap-2 text-white">
-                                <IoNotificationsOutline size={24} />
-                                <h2 className="text-lg font-bold">Notifications</h2>
-                            </div>
-                            <div className="flex items-center gap-3">
-                                {notifications.length > 0 && (
+                        <div 
+                            className="flex items-center justify-between shrink-0" 
+                            style={{ 
+                                padding: '32px 20px 16px',
+                                boxSizing: 'border-box',
+                                height: '78px'
+                            }}
+                        >
+                            <div style={{
+                                width: '360px',
+                                height: '29px',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'space-between',
+                                gap: '6px'
+                            }}>
+                                <h2 style={{
+                                    width: '276px',
+                                    height: '29px',
+                                    fontFamily: '"Barlow Condensed", sans-serif',
+                                    fontWeight: 700,
+                                    fontSize: '24px',
+                                    lineHeight: '120%',
+                                    color: 'rgba(255, 255, 255, 1)',
+                                    margin: 0,
+                                    padding: 0,
+                                    display: 'flex',
+                                    alignItems: 'center'
+                                }}>
+                                    Notifications
+                                </h2>
+                                <div style={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '12px'
+                                }}>
+                                    {notifications.length > 0 && (
+                                        <button 
+                                            onClick={() => {
+                                                if (window.confirm('Clear all notifications?')) {
+                                                    dismissAllNotifications();
+                                                }
+                                            }}
+                                            style={{
+                                                background: 'transparent',
+                                                border: 'none',
+                                                cursor: 'pointer',
+                                                padding: 0,
+                                                width: '48px',
+                                                height: '19px',
+                                                fontFamily: '"Barlow Condensed", sans-serif',
+                                                fontWeight: 700,
+                                                fontSize: '16px',
+                                                lineHeight: '120%',
+                                                color: 'rgba(226, 69, 69, 1)',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                transition: 'opacity 0.2s'
+                                            }}
+                                            onMouseEnter={(e) => { e.target.style.opacity = 0.8; }}
+                                            onMouseLeave={(e) => { e.target.style.opacity = 1; }}
+                                        >
+                                            Clear All
+                                        </button>
+                                    )}
                                     <button 
-                                        onClick={() => {
-                                            if (window.confirm('Clear all notifications?')) {
-                                                dismissAllNotifications();
-                                            }
+                                        onClick={closePanel}
+                                        style={{
+                                            background: 'transparent',
+                                            border: 'none',
+                                            cursor: 'pointer',
+                                            padding: 0,
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            color: '#888888',
+                                            transition: 'color 0.2s'
                                         }}
-                                        className="text-xs font-semibold text-gray-400 hover:text-red-400 transition-colors"
+                                        onMouseEnter={(e) => { e.currentTarget.style.color = '#ffffff'; }}
+                                        onMouseLeave={(e) => { e.currentTarget.style.color = '#888888'; }}
                                     >
-                                        Clear All
+                                        <IoClose size={24} />
                                     </button>
-                                )}
-                                <button 
-                                    onClick={closePanel}
-                                    className="text-gray-400 hover:text-white transition-colors"
-                                >
-                                    <IoClose size={24} />
-                                </button>
+                                </div>
                             </div>
                         </div>
 
                         {/* Content */}
-                        <div className="flex-1 overflow-y-auto p-4 space-y-4">
+                        <div className="flex-1 overflow-y-auto space-y-4" style={{ padding: '16px 20px' }}>
                             {notifications.length === 0 ? (
                                 <div className="flex flex-col items-center justify-center h-40 text-gray-500">
                                     <IoNotificationsOutline size={48} className="mb-2 opacity-50" />
@@ -187,33 +323,84 @@ export default function NotificationPanel() {
                                                 handleLinkClick(notif.metadata.link);
                                             }
                                         }}
-                                        className={`relative group p-4 rounded-xl border transition-colors ${
-                                            notif.metadata?.link ? 'cursor-pointer hover:bg-gray-800/80' : ''
-                                        } ${
-                                            notif.isRead 
-                                                ? 'bg-gray-800/50 border-gray-800 text-gray-300' 
-                                                : notif.type === 'vip_level_up'
-                                                    ? 'bg-amber-900/20 border-amber-500/30 text-white'
-                                                    : 'bg-indigo-900/20 border-indigo-500/30 text-white'
-                                        }`}
+                                        style={{
+                                            width: '360px',
+                                            height: '114px',
+                                            boxSizing: 'border-box',
+                                            borderRadius: '12px',
+                                            padding: '14px 12px',
+                                            background: 'rgba(0, 0, 0, 0.36)',
+                                            backdropFilter: 'blur(44px)',
+                                            WebkitBackdropFilter: 'blur(44px)',
+                                            display: 'flex',
+                                            gap: '8px',
+                                            flexDirection: 'row',
+                                            alignItems: 'flex-start',
+                                            overflow: 'hidden',
+                                            flexShrink: 0,
+                                            cursor: notif.metadata?.link ? 'pointer' : 'default',
+                                        }}
+                                        className="transition-colors hover:bg-white/[0.02]"
                                     >
-                                        {!notif.isRead && (
-                                            <div className={`absolute top-4 left-4 w-2 h-2 rounded-full ${notif.type === 'vip_level_up' ? 'bg-amber-400' : 'bg-indigo-500'}`} />
-                                        )}
-                                        
-                                        <div className={`flex justify-between items-start gap-3 ${!notif.isRead ? 'pl-4' : ''}`}>
+                                        <div style={{ display: 'flex', flexDirection: 'row', gap: '8px', width: '100%', height: '100%', position: 'relative' }}>
                                             {getNotificationIcon(notif.type, notif.metadata)}
-                                            <div className="flex-1 min-w-0">
-                                                <h3 className="font-semibold mb-1 text-sm">{notif.title}</h3>
-                                                <NotificationMessage
-                                                    message={notif.message}
-                                                    metadata={notif.metadata}
-                                                    onLinkClick={handleLinkClick}
-                                                />
-                                                <span className="text-xs text-gray-500">
-                                                    {new Date(notif.createdAt).toLocaleDateString(undefined, { 
-                                                        month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' 
-                                                    })}
+                                            
+                                            <div style={{
+                                                width: '280px',
+                                                height: '86px',
+                                                display: 'flex',
+                                                flexDirection: 'column',
+                                                gap: '14px',
+                                                justifyContent: 'flex-start',
+                                                minWidth: 0,
+                                                boxSizing: 'border-box'
+                                            }}>
+                                                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                                                    <h3 style={{
+                                                        width: '280px',
+                                                        height: '13px',
+                                                        fontFamily: '"Barlow Condensed", sans-serif',
+                                                        fontWeight: 600,
+                                                        fontSize: '18px',
+                                                        lineHeight: '120%',
+                                                        color: '#ffffff',
+                                                        margin: 0,
+                                                        padding: 0,
+                                                        whiteSpace: 'nowrap',
+                                                        overflow: 'hidden',
+                                                        textOverflow: 'ellipsis',
+                                                        display: 'flex',
+                                                        alignItems: 'center'
+                                                    }}>
+                                                        {notif.title}
+                                                    </h3>
+                                                    <NotificationMessage
+                                                        message={notif.message}
+                                                        metadata={notif.metadata}
+                                                        onLinkClick={handleLinkClick}
+                                                    />
+                                                </div>
+                                                
+                                                <span style={{ 
+                                                    width: '42px',
+                                                    height: '13px',
+                                                    fontFamily: '"Barlow Condensed", sans-serif',
+                                                    fontWeight: 600,
+                                                    fontSize: '10px',
+                                                    color: 'rgba(73, 178, 101, 1)',
+                                                    lineHeight: '130%',
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    whiteSpace: 'nowrap'
+                                                }}>
+                                                    {(() => {
+                                                        const date = new Date(notif.createdAt);
+                                                        return date.toLocaleDateString(undefined, { 
+                                                            day: 'numeric', month: 'short'
+                                                        }) + ', ' + date.toLocaleTimeString(undefined, {
+                                                            hour: '2-digit', minute: '2-digit', hour12: false
+                                                        });
+                                                    })()}
                                                 </span>
                                             </div>
                                             
@@ -222,10 +409,26 @@ export default function NotificationPanel() {
                                                     e.stopPropagation();
                                                     dismissNotification(notif._id);
                                                 }}
-                                                className="text-gray-500 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity p-1"
+                                                style={{
+                                                    position: 'absolute',
+                                                    right: 0,
+                                                    top: 0,
+                                                    background: 'transparent',
+                                                    border: 'none',
+                                                    cursor: 'pointer',
+                                                    color: '#888888',
+                                                    padding: 0,
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'center',
+                                                    transition: 'color 0.2s',
+                                                    zIndex: 10
+                                                }}
+                                                onMouseEnter={(e) => { e.currentTarget.style.color = '#ef4444'; }}
+                                                onMouseLeave={(e) => { e.currentTarget.style.color = '#888888'; }}
                                                 title="Dismiss"
                                             >
-                                                <IoTrashOutline size={18} />
+                                                <IoClose size={16} />
                                             </button>
                                         </div>
                                     </motion.div>
