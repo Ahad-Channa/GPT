@@ -358,7 +358,7 @@ export default function NotificationPanel() {
                                                 <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                                                     <h3 style={{
                                                         width: '280px',
-                                                        height: '13px',
+                                                        height: 'auto',
                                                         fontFamily: '"Barlow Condensed", sans-serif',
                                                         fontWeight: 600,
                                                         fontSize: '18px',

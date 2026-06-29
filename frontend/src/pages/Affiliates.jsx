@@ -271,7 +271,7 @@ const Affiliates = () => {
               Invite friends and earn {statsLoading ? '...' : (stats.referralPercentage != null ? `${stats.referralPercentage}%` : '10%')} of their earnings — forever! The more you invite, the more you earn.
             </p>
           </div>
-          <div className="relative lg:absolute lg:right-[-42.53px] lg:top-[-49px] w-[365.53px] h-[243.69px] shrink-0 pointer-events-none z-0 mt-8 lg:mt-0">
+          <div className="relative lg:absolute lg:right-[-30.53px] lg:top-[-49px] w-[365.53px] h-[243.69px] shrink-0 pointer-events-none z-0 mt-8 lg:mt-0">
             <img
               src="/coins/heroaffli.png"
               alt="Affiliate Hero"
@@ -453,20 +453,20 @@ const Affiliates = () => {
                 ) : referrals.error ? (
                   <p className="text-rose-400 text-center py-8">{referrals.error}</p>
                 ) : referrals.dataList.length === 0 ? (
-                  <p className="text-slate-500 text-center py-8">No referral earnings yet.</p>
+                  <p className="text-center py-8" style={{ fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 700, fontSize: '20px', lineHeight: '120%', color: 'white' }}>No referral earnings yet.</p>
                 ) : (
                   <div className="overflow-x-auto">
                     <div className="min-w-[1180px]">
-                      <div className="w-[1180px] h-[58px] rounded-[20px] pt-[10px] pr-[95px] pb-[30px] pl-[40px] grid grid-cols-[313px_repeat(4,1fr)] gap-[50px] border-b border-[#2a2d36]">
+                      <div className="w-[1180px] h-[58px] rounded-[20px] pt-[10px] pr-[95px] pb-[30px] pl-[40px] grid grid-cols-[313px_repeat(4,minmax(0,1fr))] gap-[50px] border-b border-[#2a2d36]">
                         <div style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="h-[18px] font-semibold text-[26px] leading-[120%] text-[rgba(255,255,255,0.4)] whitespace-nowrap">User</div>
                         <div style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="h-[18px] font-semibold text-[26px] leading-[120%] text-[rgba(255,255,255,0.4)] whitespace-nowrap">Date</div>
                         <div style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="h-[18px] font-semibold text-[26px] leading-[120%] text-[rgba(255,255,255,0.4)] whitespace-nowrap">Earning</div>
                         <div style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="h-[18px] font-semibold text-[26px] leading-[120%] text-[rgba(255,255,255,0.4)] whitespace-nowrap">Commission ({statsLoading ? '...' : (stats.referralPercentage != null ? `${stats.referralPercentage}%` : '10%')})</div>
-                        <div style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="h-[18px] font-semibold text-[26px] leading-[120%] text-[rgba(255,255,255,0.4)] whitespace-nowrap text-right">Status</div>
+                        <div style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="h-[18px] font-semibold text-[26px] leading-[120%] text-[rgba(255,255,255,0.4)] whitespace-nowrap pl-[50px]">Status</div>
                       </div>
                       <div className="flex flex-col gap-[10px]">
                         {referrals.dataList.map(tx => (
-                          <div key={tx._id} className="w-[1180px] h-[82px] bg-[#171717] rounded-[20px] pt-[20px] pr-[95px] pb-[20px] pl-[40px] grid grid-cols-[313px_repeat(4,1fr)] gap-[50px] items-center hover:bg-[#1a1a1a] transition-colors">
+                          <div key={tx._id} className="w-[1180px] h-[82px] bg-[#171717] rounded-[20px] pt-[20px] pr-[95px] pb-[20px] pl-[40px] grid grid-cols-[313px_repeat(4,minmax(0,1fr))] gap-[50px] items-center hover:bg-[#1a1a1a] transition-colors">
                             <div className="flex items-center gap-[10px]">
                               <img src={tx.linkedTransactionId?.userId?.avatarUrl || tx.linkedTransactionId?.userId?.photoURL || `https://api.dicebear.com/7.x/bottts/svg?seed=${tx._id}`} className="w-[42px] h-[42px] rounded-[10px] bg-[#15171e] object-cover shrink-0" alt="avatar" />
                               <span style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="font-semibold text-[28px] leading-[120%] text-white truncate">{tx.linkedTransactionId?.userId?.displayName || 'Unknown User'}</span>
@@ -478,7 +478,7 @@ const Affiliates = () => {
                             <div className="flex items-center gap-[6px] font-semibold text-[#fbbf24] text-[28px] leading-[120%]" style={{ fontFamily: "'Barlow Condensed', sans-serif" }}>
                               <img src="/coins/coinfix.png" alt="Coin" className="w-[24px] h-[24px] shrink-0 object-contain" /> {tx.amount.toLocaleString()}
                             </div>
-                            <div className="text-right flex justify-end">
+                            <div className="flex items-center pl-[50px]">
                               <span style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className={`inline-flex items-center justify-center px-[20px] py-[4px] rounded-[100px] text-[22px] leading-[120%] font-semibold ${tx.status === 'hold' ? 'bg-[#fbbf24]/10 text-[#fbbf24]' : 'bg-[#153423] text-[#4ade80]'}`}>
                                 {tx.status === 'hold' ? 'Pending' : 'Paid'}
                               </span>
@@ -511,22 +511,22 @@ const Affiliates = () => {
                 ) : referredUsersData.error ? (
                   <p className="text-rose-400 text-center py-8">{referredUsersData.error}</p>
                 ) : referredUsersData.users.length === 0 ? (
-                  <p className="text-slate-500 text-center py-8">No referred users yet.</p>
+                  <p className="text-center py-8" style={{ fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 700, fontSize: '20px', lineHeight: '120%', color: 'white' }}>No referred users yet.</p>
                 ) : (
                   <>
                     <div className="overflow-x-auto">
                       <div className="min-w-[1180px]">
-                        <div className="w-[1180px] h-[58px] rounded-[20px] pt-[10px] pr-[95px] pb-[30px] pl-[40px] grid grid-cols-[313px_repeat(4,1fr)] gap-[50px] border-b border-[#2a2d36]">
+                        <div className="w-[1180px] h-[58px] rounded-[20px] pt-[10px] pr-[95px] pb-[30px] pl-[40px] grid grid-cols-[313px_repeat(4,minmax(0,1fr))] gap-[50px] border-b border-[#2a2d36]">
                           <div style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="h-[18px] font-semibold text-[26px] leading-[120%] text-[rgba(255,255,255,0.4)] whitespace-nowrap">User</div>
                           <div style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="h-[18px] font-semibold text-[26px] leading-[120%] text-[rgba(255,255,255,0.4)] whitespace-nowrap">Joined Date</div>
                           <div style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="h-[18px] font-semibold text-[26px] leading-[120%] text-[rgba(255,255,255,0.4)] whitespace-nowrap">Total Earning</div>
                           <div style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="h-[18px] font-semibold text-[26px] leading-[120%] text-[rgba(255,255,255,0.4)] whitespace-nowrap">Your Commission</div>
-                          <div style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="h-[18px] font-semibold text-[26px] leading-[120%] text-[rgba(255,255,255,0.4)] whitespace-nowrap text-right">Status</div>
+                          <div style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="h-[18px] font-semibold text-[26px] leading-[120%] text-[rgba(255,255,255,0.4)] whitespace-nowrap pl-[50px]">Status</div>
                         </div>
 
                         <div className="flex flex-col gap-[10px]">
                           {referredUsersData.users.map(u => (
-                            <div key={u._id} className="w-[1180px] h-[82px] bg-[#171717] rounded-[20px] pt-[20px] pr-[95px] pb-[20px] pl-[40px] grid grid-cols-[313px_repeat(4,1fr)] gap-[50px] items-center hover:bg-[#1a1a1a] transition-colors">
+                            <div key={u._id} className="w-[1180px] h-[82px] bg-[#171717] rounded-[20px] pt-[20px] pr-[95px] pb-[20px] pl-[40px] grid grid-cols-[313px_repeat(4,minmax(0,1fr))] gap-[50px] items-center hover:bg-[#1a1a1a] transition-colors">
                               <div className="flex items-center gap-[10px]">
                                 <img src={u.avatarUrl || u.photoURL || `https://api.dicebear.com/7.x/bottts/svg?seed=${u.displayName}`} className="w-[42px] h-[42px] rounded-[10px] bg-[#15171e] object-cover shrink-0" alt="avatar" />
                                 <span style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="font-semibold text-[28px] leading-[120%] text-white truncate">{u.displayName}</span>
@@ -538,7 +538,7 @@ const Affiliates = () => {
                               <div className="flex items-center gap-[6px] font-semibold text-[#fbbf24] text-[28px] leading-[120%]" style={{ fontFamily: "'Barlow Condensed', sans-serif" }}>
                                 <img src="/coins/coinfix.png" alt="Coin" className="w-[24px] h-[24px] shrink-0 object-contain" /> {(u.referralEarnings > 0 ? u.referralEarnings : Math.floor((u.totalEarned || 0) * ((stats.referralPercentage || 10) / 100))).toLocaleString()}
                               </div>
-                              <div className="text-right flex justify-end">
+                              <div className="flex items-center pl-[50px]">
                                 <span style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="inline-flex items-center justify-center px-[20px] py-[4px] rounded-[100px] text-[22px] leading-[120%] font-semibold bg-[#153423] text-[#4ade80]">
                                   Active
                                 </span>
@@ -568,22 +568,22 @@ const Affiliates = () => {
                     <div className="h-12 bg-white/5 rounded w-full"></div>
                   </div>
                 ) : currentPendingHolds.length === 0 ? (
-                  <p className="text-slate-500 text-center py-8">No affiliate earnings on hold right now.</p>
+                  <p className="text-center py-8" style={{ fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 700, fontSize: '20px', lineHeight: '120%', color: 'white' }}>No affiliate earnings on hold right now.</p>
                 ) : (
                   <>
                     <div className="overflow-x-auto">
                       <div className="min-w-[1180px]">
-                        <div className="w-[1180px] h-[58px] rounded-[20px] pt-[10px] pr-[95px] pb-[30px] pl-[40px] grid grid-cols-[313px_repeat(4,1fr)] gap-[50px] border-b border-[#2a2d36]">
+                        <div className="w-[1180px] h-[58px] rounded-[20px] pt-[10px] pr-[95px] pb-[30px] pl-[40px] grid grid-cols-[313px_repeat(4,minmax(0,1fr))] gap-[50px] border-b border-[#2a2d36]">
                           <div style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="h-[18px] font-semibold text-[26px] leading-[120%] text-[rgba(255,255,255,0.4)] whitespace-nowrap">User</div>
                           <div style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="h-[18px] font-semibold text-[26px] leading-[120%] text-[rgba(255,255,255,0.4)] whitespace-nowrap">Earning Date</div>
                           <div style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="h-[18px] font-semibold text-[26px] leading-[120%] text-[rgba(255,255,255,0.4)] whitespace-nowrap">Earning</div>
                           <div style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="h-[18px] font-semibold text-[26px] leading-[120%] text-[rgba(255,255,255,0.4)] whitespace-nowrap">Commission ({statsLoading ? '...' : (stats.referralPercentage != null ? `${stats.referralPercentage}%` : '10%')})</div>
-                          <div style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="h-[18px] font-semibold text-[26px] leading-[120%] text-[rgba(255,255,255,0.4)] whitespace-nowrap text-right">Release In</div>
+                          <div style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="h-[18px] font-semibold text-[26px] leading-[120%] text-[rgba(255,255,255,0.4)] whitespace-nowrap pl-[50px]">Release In</div>
                         </div>
 
                         <div className="flex flex-col gap-[10px]">
                           {currentPendingHolds.map(tx => (
-                            <div key={tx._id} className="w-[1180px] h-[82px] bg-[#171717] rounded-[20px] pt-[20px] pr-[95px] pb-[20px] pl-[40px] grid grid-cols-[313px_repeat(4,1fr)] gap-[50px] items-center hover:bg-[#1a1a1a] transition-colors">
+                            <div key={tx._id} className="w-[1180px] h-[82px] bg-[#171717] rounded-[20px] pt-[20px] pr-[95px] pb-[20px] pl-[40px] grid grid-cols-[313px_repeat(4,minmax(0,1fr))] gap-[50px] items-center hover:bg-[#1a1a1a] transition-colors">
                               <div className="flex items-center gap-[10px]">
                                 <img src={tx.linkedTransactionId?.userId?.avatarUrl || tx.linkedTransactionId?.userId?.photoURL || `https://api.dicebear.com/7.x/bottts/svg?seed=${tx._id}`} className="w-[42px] h-[42px] rounded-[10px] bg-[#15171e] object-cover shrink-0" alt="avatar" />
                                 <span style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="font-semibold text-[28px] leading-[120%] text-white truncate">{tx.linkedTransactionId?.userId?.displayName || 'Unknown User'}</span>
@@ -595,7 +595,7 @@ const Affiliates = () => {
                               <div className="flex items-center gap-[6px] font-semibold text-[#fbbf24] text-[28px] leading-[120%]" style={{ fontFamily: "'Barlow Condensed', sans-serif" }}>
                                 <img src="/coins/coinfix.png" alt="Coin" className="w-[24px] h-[24px] shrink-0 object-contain" /> {tx.amount.toLocaleString()}
                               </div>
-                              <div className="text-right flex justify-end">
+                              <div className="flex items-center pl-[50px]">
                                 <span style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="text-[#888888] font-semibold text-[28px] leading-[120%]">
                                   {calculateReleaseIn(tx.releaseDate)}
                                 </span>

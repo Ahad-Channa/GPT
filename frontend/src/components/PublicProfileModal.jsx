@@ -105,12 +105,12 @@ const PublicProfileModal = ({ userId, onClose }) => {
           onClick={(e) => e.stopPropagation()}
           style={{
             width: '500px',
-            height: '521px',
+            height: profile?.isPrivate ? '235px' : '521px',
             borderRadius: '20px',
             gap: '16px',
             padding: '16px',
             background: 'rgba(36, 36, 36, 1)',
-            overflowY: 'auto',
+            overflowY: profile?.isPrivate ? 'hidden' : 'auto',
             position: 'relative',
             zIndex: 9001,
             display: 'flex',
@@ -124,7 +124,7 @@ const PublicProfileModal = ({ userId, onClose }) => {
             aria-label="Close profile popup"
             style={{
               position: 'absolute', top: '16px', right: '16px',
-              width: '24px', height: '56px', gap: '10px',
+              width: '24px', height: '24px',
               background: 'transparent',
               border: 'none',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -136,7 +136,7 @@ const PublicProfileModal = ({ userId, onClose }) => {
             onMouseEnter={e => { e.currentTarget.style.opacity = '1'; }}
             onMouseLeave={e => { e.currentTarget.style.opacity = '0.7'; }}
           >
-            <img src="/coins/cros.png" alt="Close" style={{ width: '24px', height: '24px', objectFit: 'contain' }} />
+            <FiX size={24} color="rgba(255, 255, 255, 0.4)" />
           </button>
 
           {/* ── Loading State ── */}
@@ -197,7 +197,7 @@ const PublicProfileModal = ({ userId, onClose }) => {
                   <div style={{
                     width: '56px', height: '56px', borderRadius: '10px',
                     overflow: 'hidden', flexShrink: 0,
-                    border: '1px solid rgba(73, 178, 101, 1)',
+                    border: '1px solid var(--S1, rgba(73, 178, 101, 1))',
                   }}>
                     <img
                       src={profile.avatarUrl || `/avatars/avatar1.png`}
@@ -210,10 +210,24 @@ const PublicProfileModal = ({ userId, onClose }) => {
                   <div style={{ width: '376px', height: '50px', display: 'flex', flexDirection: 'column', gap: '4px', minWidth: '0' }}>
                     <div style={{
                       width: '376px',
-                      fontFamily: '"Barlow Condensed", sans-serif', fontWeight: 600, fontSize: '28px', lineHeight: '28px', color: 'rgba(255, 255, 255, 1)',
-                      overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap'
+                      height: '20px',
+                      display: 'flex',
+                      alignItems: 'center'
                     }}>
-                      {profile.displayName}
+                      <span style={{
+                        fontFamily: '"Barlow Condensed", sans-serif',
+                        fontWeight: 600,
+                        fontSize: '28px',
+                        lineHeight: '120%',
+                        color: 'rgba(255, 255, 255, 1)',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap',
+                        width: '100%',
+                        display: 'block'
+                      }}>
+                        {profile.displayName}
+                      </span>
                     </div>
 
                     {/* Badge row */}
@@ -244,13 +258,32 @@ const PublicProfileModal = ({ userId, onClose }) => {
                       {/* Joined */}
                       {profile.createdAt && (
                         <div style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
-                          <img src="/coins/calender.png" alt="calendar" style={{ width: '15px', height: '15px' }} />
+                          <img
+                            src="/coins/caledar.png"
+                            alt="calendar"
+                            style={{
+                              width: '15px',
+                              height: '15px',
+                              objectFit: 'contain'
+                            }}
+                          />
                           <div style={{
-                            width: '71px', height: '11px',
-                            fontFamily: '"Barlow Condensed", sans-serif', fontWeight: 700, fontSize: '16px', lineHeight: '130%',
-                            color: 'rgba(255, 255, 255, 1)', display: 'flex', alignItems: 'center', whiteSpace: 'nowrap'
+                            width: '71px',
+                            height: '11px',
+                            display: 'flex',
+                            alignItems: 'center'
                           }}>
-                            Joined {new Date(profile.createdAt).getFullYear()}
+                            <span style={{
+                              fontFamily: '"Barlow Condensed", sans-serif',
+                              fontWeight: 700,
+                              fontSize: '16px',
+                              lineHeight: '130%',
+                              color: 'rgba(255, 255, 255, 1)',
+                              whiteSpace: 'nowrap',
+                              display: 'block'
+                            }}>
+                              Joined {new Date(profile.createdAt).getFullYear()}
+                            </span>
                           </div>
                         </div>
                       )}
@@ -261,13 +294,46 @@ const PublicProfileModal = ({ userId, onClose }) => {
               {/* Private — earnings & history hidden */}
               {profile.isPrivate ? (
                 <div style={{
-                  borderRadius: '18px', padding: '32px 24px',
-                  background: 'rgba(99,102,241,0.04)',
-                  border: '1px solid rgba(99,102,241,0.15)',
-                  display: 'flex', flexDirection: 'column', alignItems: 'center',
-                  justifyContent: 'center', textAlign: 'center',
+                  width: '468px',
+                  height: '131px',
+                  borderRadius: '12px',
+                  gap: '16px',
+                  padding: '22px 12px',
+                  background: 'rgba(0, 0, 0, 0.36)',
+                  backdropFilter: 'blur(44px)',
+                  WebkitBackdropFilter: 'blur(44px)',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  boxSizing: 'border-box'
                 }}>
-                  <div style={{ fontSize: '15px', fontWeight: 700, color: '#fff' }}>This profile is private.</div>
+                  {/* Green Shield Icon */}
+                  <img
+                    src="/coins/privatesheild.png"
+                    alt="Private Shield"
+                    style={{
+                      width: '54px',
+                      height: '54px',
+                      objectFit: 'contain'
+                    }}
+                  />
+                  {/* Text */}
+                  <div style={{
+                    width: '444px',
+                    height: '17px',
+                    fontFamily: '"Barlow Condensed", sans-serif',
+                    fontWeight: 700,
+                    fontSize: '14px',
+                    lineHeight: '120%',
+                    color: 'var(--S3, rgba(255, 255, 255, 1))',
+                    textAlign: 'center',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center'
+                  }}>
+                    This profile is private.
+                  </div>
                 </div>
               ) : (
                 /* Recent Activity — public profiles only */

@@ -285,7 +285,7 @@ const LiveEarningsBar = () => {
                       >
                         {details.isWithdrawal ? (
                           <div className="flex flex-col relative z-10 h-full justify-between gap-[8px]">
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', width: '143px', height: 'auto' }}>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', width: '100%', height: 'auto' }}>
                               <span style={{
                                 fontFamily: '"Barlow Condensed", sans-serif',
                                 fontWeight: 700,
@@ -306,8 +306,8 @@ const LiveEarningsBar = () => {
                                 Method: {details.method}
                               </span>
                             </div>
-                            <div style={{ width: '143px', height: '0px', borderTop: '1px solid rgba(255, 255, 255, 0.12)', flexShrink: 0 }} />
-                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '143px', height: '18px' }}>
+                            <div style={{ width: '100%', height: '0px', borderTop: '1px solid rgba(255, 255, 255, 0.12)', flexShrink: 0 }} />
+                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', minWidth: 'max-content', gap: '16px', height: '18px' }}>
                               <span style={{ 
                                 fontFamily: '"Barlow Condensed", sans-serif', 
                                 fontWeight: 500, 
@@ -337,24 +337,24 @@ const LiveEarningsBar = () => {
                           </div>
                         ) : (
                           <div className="flex flex-col relative z-10 h-full justify-between gap-[10px]">
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', width: '143px', height: 'auto' }}>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', width: '100%', height: 'auto' }}>
                               <span style={{
-                                width: '143px', height: 'auto',
+                                width: '100%', height: 'auto',
                                 fontFamily: '"Barlow Condensed", sans-serif', fontWeight: 700, fontSize: '14px', lineHeight: '120%', color: 'rgba(255, 255, 255, 1)',
                                 whiteSpace: 'normal', wordBreak: 'break-word'
                               }}>
                                 {details.task}
                               </span>
                               <span style={{
-                                width: '143px', height: '14px',
+                                width: '100%', height: '14px',
                                 fontFamily: '"Barlow Condensed", sans-serif', fontWeight: 500, fontSize: '11px', lineHeight: '130%', color: 'rgba(136, 136, 136, 1)',
                                 whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis'
                               }}>
                                 {details.taskCategory}
                               </span>
                             </div>
-                            <div style={{ width: '143px', height: '0px', borderTop: '1px solid rgba(255, 255, 255, 0.12)', flexShrink: 0 }} />
-                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '143px', height: '18px' }}>
+                            <div style={{ width: '100%', height: '0px', borderTop: '1px solid rgba(255, 255, 255, 0.12)', flexShrink: 0 }} />
+                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', minWidth: 'max-content', gap: '16px', height: '18px' }}>
                               <span style={{ 
                                 width: '32px', 
                                 height: '17px', 
@@ -368,11 +368,10 @@ const LiveEarningsBar = () => {
                               }}>
                                 Earned
                               </span>
-                              <div style={{ display: 'flex', alignItems: 'center', width: '50px', height: '18px', gap: '3px' }}>
+                              <div style={{ display: 'flex', alignItems: 'center', height: '18px', gap: '3px' }}>
                                 <img src="/coins/coinfinal.png" alt="coin" style={{ width: '18px', height: '18px' }} />
                                 <span style={{ 
-                                  width: '29px', 
-                                  height: '11px', 
+                                  height: 'auto', 
                                   fontFamily: '"Barlow Condensed", sans-serif', 
                                   fontWeight: 700, 
                                   fontSize: '16px', 

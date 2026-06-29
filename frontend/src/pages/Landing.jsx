@@ -530,7 +530,7 @@ const Landing = () => {
                   height: 226,
                   borderRadius: 20,
                   padding: '20px 12px 30px 12px',
-                  gap: 22,
+                  gap: 12,
                   background: 'rgba(255, 255, 255, 0.08)',
                   boxShadow: '0px 4px 80px 0px rgba(0, 0, 0, 0.15)',
                   backdropFilter: 'blur(44px)',
@@ -538,7 +538,7 @@ const Landing = () => {
                 }}
               >
                 <div
-                  className="flex items-center justify-center mb-6"
+                  className="flex items-center justify-center mb-0"
                   style={{ width: 94, height: 94, borderRadius: 20, gap: 10, background: 'transparent' }}
                 >
                   <img src={item.icon} alt={item.title} style={{ width: 44, height: 44, objectFit: 'contain' }} />
@@ -645,7 +645,7 @@ const Landing = () => {
                   height: 270,
                   borderRadius: 20,
                   padding: '30px 20px',
-                  gap: 22,
+                  gap: 12,
                   background: 'rgba(26, 27, 26, 1)',
                   boxShadow: '0px 4px 80px 0px rgba(0, 0, 0, 0.15)',
                   backdropFilter: 'blur(44px)',
@@ -653,7 +653,7 @@ const Landing = () => {
                 }}
               >
                 <div
-                  className="flex items-center justify-center mb-6"
+                  className="flex items-center justify-center mb-0"
                   style={{ width: 94, height: 94, borderRadius: 100, gap: 10, background: 'transparent' }}
                 >
                   <img src={item.icon} alt={item.title} style={{ width: 44, height: 44, objectFit: 'contain' }} />

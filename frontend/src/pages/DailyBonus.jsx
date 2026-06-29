@@ -85,7 +85,7 @@ export default function DailyBonus() {
              <h1 className="m-0 p-0 font-bold text-[68px] leading-[120%] text-white font-['Barlow_Condensed'] whitespace-nowrap">Daily Bonus</h1>
              <p className="m-0 p-0 font-medium text-[26px] leading-[130%] text-[#888888] font-['Barlow_Condensed']">Claim your daily reward and keep your streak going!</p>
            </div>
-           <div className="hidden md:block absolute right-[-10px] -top-5 opacity-100 pointer-events-none w-[380px] h-[212px] z-0">
+           <div className="hidden md:block absolute right-[-5px] -top-5 opacity-100 pointer-events-none w-[380px] h-[212px] z-0">
               <img 
                  src="/coins/dailybonus.png" 
                  alt="Daily Bonus" 

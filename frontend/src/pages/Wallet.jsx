@@ -186,7 +186,7 @@ const Wallet = () => {
             <h1 className="m-0 p-0 font-bold text-[68px] leading-[120%] text-white font-['Barlow_Condensed'] whitespace-nowrap">Withdraw</h1>
             <p className="m-0 p-0 font-medium text-[26px] leading-[130%] text-[#888888] font-['Barlow_Condensed']">Choose your preferred withdrawal method and convert your coins into real rewards.</p>
           </div>
-          <div className="hidden md:block absolute right-[-10px] -top-[36px] opacity-100 pointer-events-none w-[317px] h-[226px] z-0">
+          <div className="hidden md:block absolute right-[-7px] -top-[36px] opacity-100 pointer-events-none w-[317px] h-[226px] z-0">
             <img
               src="/coins/withdarwhero.png"
               alt="Wallet Illustration"

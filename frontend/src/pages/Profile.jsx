@@ -1066,13 +1066,13 @@ const SettingsModal = ({ isOpen, onClose, mongoUser, token, setMongoUser, logout
     <>
       {/* 2FA Setup Inner Modal */}
       {show2FASetup && (
-        <div className="fixed inset-0 bg-black/95 backdrop-blur-md z-[999999] flex items-center justify-center p-4">
-          <div className="bg-[#121212] border border-white/[0.08] rounded-[2rem] w-full max-w-md p-8 shadow-glow flex flex-col items-center text-center">
-            <div className="w-[52px] h-[52px] rounded-full bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 mb-4">
-              <FiShield size={24} />
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-[44px] z-[999999] flex items-center justify-center p-4 overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none']">
+          <div className="bg-[#242424] border border-white/[0.08] rounded-[2rem] w-full max-w-md p-8 flex flex-col items-center text-center my-auto max-h-[95vh] overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none']">
+            <div className="w-[52px] h-[52px] rounded-full bg-[#11291b] border border-[#1a422a] flex items-center justify-center text-[#49b265] mb-4 shrink-0">
+              <FiShield size={22} />
             </div>
-            <h3 className="text-2xl font-bold text-white mb-2 font-['Barlow_Condensed'] uppercase tracking-wide">Setup 2-Factor Auth</h3>
-            <p className="text-slate-400 text-sm mb-6 max-w-xs font-['Barlow_Condensed'] font-semibold leading-normal">
+            <h3 className="text-2xl font-bold text-white mb-2 font-['Barlow_Condensed'] uppercase tracking-wide">SETUP 2-FACTOR AUTH</h3>
+            <p className="text-slate-400 text-[14px] mb-6 max-w-[280px] font-['Barlow_Condensed'] font-semibold leading-normal">
               Scan this QR code with Google Authenticator or Microsoft Authenticator, then enter the 6-digit code.
             </p>
             
@@ -1086,7 +1086,7 @@ const SettingsModal = ({ isOpen, onClose, mongoUser, token, setMongoUser, logout
               </div>
             )}
 
-            <div className="w-full bg-[#1c1c1f] border border-white/[0.05] rounded-xl py-3 px-4 mb-6 font-mono text-sm text-center text-emerald-400 select-all">
+            <div className="w-full bg-black/[0.36] border border-white/[0.08] rounded-xl py-3 px-4 mb-4 font-['Barlow_Condensed'] text-[15px] font-semibold text-center text-[#49b265] select-all tracking-wide">
               {secretKey || 'Loading secret key...'}
             </div>
 
@@ -1096,24 +1096,24 @@ const SettingsModal = ({ isOpen, onClose, mongoUser, token, setMongoUser, logout
                 maxLength={6}
                 value={otpCode}
                 onChange={e => setOtpCode(e.target.value.replace(/\D/g, ''))}
-                placeholder="000000"
-                className="w-full bg-[#1c1c1c] border border-white/[0.08] rounded-xl py-3 text-center text-xl font-bold text-white tracking-[0.5em] pl-[0.5em] focus:outline-none focus:border-[#49b265]/50 transition-colors"
+                placeholder="0 0 0 0 0 0"
+                className="w-full bg-black/[0.36] border border-white/[0.08] rounded-xl py-3 text-center text-xl font-bold text-white tracking-[0.6em] pl-[0.6em] focus:outline-none focus:bg-black/[0.36] active:bg-black/[0.36] focus:border-[#49b265]/50 transition-colors font-['Barlow_Condensed'] placeholder:text-slate-600 [&:-webkit-autofill]:[Webkit-text-fill-color:white] [&:-webkit-autofill]:[Webkit-box-shadow:0_0_0_30px_#151515_inset]"
                 autoFocus
               />
               {error && <p className="text-rose-400 text-sm font-['Barlow_Condensed'] font-semibold">{error}</p>}
               
-              <div className="flex gap-3 font-['Barlow_Condensed'] text-[18px]">
+              <div className="flex gap-3 font-['Barlow_Condensed'] text-[20px] mt-4">
                 <button
                   type="button"
                   onClick={() => { setShow2FASetup(false); setOtpCode(''); setError(''); }}
-                  className="w-1/2 py-3 border border-white/10 hover:bg-white/5 text-slate-300 rounded-xl font-bold transition-all"
+                  className="w-1/2 h-[48px] bg-white/[0.11] text-white rounded-[10px] font-bold shadow-[0_4px_0_0_rgba(255,255,255,0.05)] hover:bg-white/[0.15] hover:translate-y-[1px] hover:shadow-[0_3px_0_0_rgba(255,255,255,0.05)] active:translate-y-[4px] active:shadow-none transition-all flex items-center justify-center"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={verifying2FA || otpCode.length !== 6}
-                  className="w-1/2 py-3 bg-[#49b265] hover:bg-[#3bb770] disabled:bg-emerald-800/40 text-white rounded-xl font-bold hover:shadow-glow transition-all"
+                  className="w-1/2 h-[48px] bg-[#49B265] text-white rounded-[10px] font-bold shadow-[0_4px_0_0_#276D3A] hover:bg-[#49B265]/90 hover:translate-y-[1px] hover:shadow-[0_3px_0_0_#276D3A] active:translate-y-[4px] active:shadow-none transition-all flex items-center justify-center disabled:opacity-50 disabled:active:translate-y-0 disabled:active:shadow-[0_4px_0_0_#276D3A] disabled:hover:translate-y-0 disabled:hover:shadow-[0_4px_0_0_#276D3A]"
                 >
                   {verifying2FA ? 'Enabling...' : 'Verify & Enable'}
                 </button>
@@ -1125,13 +1125,13 @@ const SettingsModal = ({ isOpen, onClose, mongoUser, token, setMongoUser, logout
 
       {/* 2FA Disable Inner Modal */}
       {show2FADisable && (
-        <div className="fixed inset-0 bg-black/95 backdrop-blur-md z-[999999] flex items-center justify-center p-4">
-          <div className="bg-[#121212] border border-white/[0.08] rounded-[2rem] w-full max-w-md p-8 shadow-glow flex flex-col items-center text-center">
-            <div className="w-[52px] h-[52px] rounded-full bg-rose-500/10 border border-rose-500/20 flex items-center justify-center text-rose-500 mb-4">
-              <FiShield size={24} />
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-[44px] z-[999999] flex items-center justify-center p-4 overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none']">
+          <div className="bg-[#242424] border border-white/[0.08] rounded-[2rem] w-full max-w-md p-8 flex flex-col items-center text-center my-auto max-h-[95vh] overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none']">
+            <div className="w-[52px] h-[52px] rounded-full bg-[#2a1114] border border-[#4a1a21] flex items-center justify-center text-rose-500 mb-4 shrink-0">
+              <FiShield size={22} />
             </div>
-            <h3 className="text-2xl font-bold text-white mb-2 font-['Barlow_Condensed'] uppercase tracking-wide">Disable 2-Factor Auth</h3>
-            <p className="text-slate-400 text-sm mb-6 max-w-xs font-['Barlow_Condensed'] font-semibold leading-normal">
+            <h3 className="text-2xl font-bold text-white mb-2 font-['Barlow_Condensed'] uppercase tracking-wide">DISABLE 2-FACTOR AUTH</h3>
+            <p className="text-slate-400 text-[14px] mb-6 max-w-[280px] font-['Barlow_Condensed'] font-semibold leading-normal">
               For security, enter the 6-digit code from your authenticator app to disable 2FA.
             </p>
 
@@ -1141,26 +1141,26 @@ const SettingsModal = ({ isOpen, onClose, mongoUser, token, setMongoUser, logout
                 maxLength={6}
                 value={disableCode}
                 onChange={e => setDisableCode(e.target.value.replace(/\D/g, ''))}
-                placeholder="000000"
-                className="w-full bg-[#1c1c1c] border border-white/[0.08] rounded-xl py-3 text-center text-xl font-bold text-white tracking-[0.5em] pl-[0.5em] focus:outline-none focus:border-rose-500/50 transition-colors"
+                placeholder="0 0 0 0 0 0"
+                className="w-full bg-black/[0.36] border border-white/[0.08] rounded-xl py-3 text-center text-xl font-bold text-white tracking-[0.6em] pl-[0.6em] focus:outline-none focus:bg-black/[0.36] active:bg-black/[0.36] focus:border-rose-500/50 transition-colors font-['Barlow_Condensed'] placeholder:text-slate-600 [&:-webkit-autofill]:[Webkit-text-fill-color:white] [&:-webkit-autofill]:[Webkit-box-shadow:0_0_0_30px_#151515_inset]"
                 autoFocus
               />
               {error && <p className="text-rose-400 text-sm font-['Barlow_Condensed'] font-semibold">{error}</p>}
               
-              <div className="flex gap-3 font-['Barlow_Condensed'] text-[18px]">
+              <div className="flex gap-3 font-['Barlow_Condensed'] text-[20px] mt-4">
                 <button
                   type="button"
                   onClick={() => { setShow2FADisable(false); setDisableCode(''); setError(''); }}
-                  className="w-1/2 py-3 border border-white/10 hover:bg-white/5 text-slate-300 rounded-xl font-bold transition-all"
+                  className="w-1/2 h-[48px] bg-white/[0.11] text-white rounded-[10px] font-bold shadow-[0_4px_0_0_rgba(255,255,255,0.05)] hover:bg-white/[0.15] hover:translate-y-[1px] hover:shadow-[0_3px_0_0_rgba(255,255,255,0.05)] active:translate-y-[4px] active:shadow-none transition-all flex items-center justify-center"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={verifying2FA || disableCode.length !== 6}
-                  className="w-1/2 py-3 bg-[#e53e3e] hover:bg-[#c53030] disabled:opacity-50 text-white rounded-xl font-bold hover:shadow-glow transition-all"
+                  className="w-1/2 h-[48px] bg-rose-500 text-white rounded-[10px] font-bold shadow-[0_4px_0_0_#9f1239] hover:bg-rose-500/90 hover:translate-y-[1px] hover:shadow-[0_3px_0_0_#9f1239] active:translate-y-[4px] active:shadow-none transition-all flex items-center justify-center disabled:opacity-50 disabled:active:translate-y-0 disabled:active:shadow-[0_4px_0_0_#9f1239] disabled:hover:translate-y-0 disabled:hover:shadow-[0_4px_0_0_#9f1239]"
                 >
-                  {verifying2FA ? 'Disabling...' : 'Confirm & Disable'}
+                  {verifying2FA ? 'Disabling...' : 'Verify & Disable'}
                 </button>
               </div>
             </form>
@@ -2078,9 +2078,9 @@ const Profile = () => {
                     return (
                       <div className="py-14 flex flex-col items-center gap-3 text-center">
                         <div className="w-12 h-12 rounded-2xl bg-white/[0.03] border border-white/[0.07] flex items-center justify-center">
-                          <FiInbox className="text-slate-600 text-xl" />
+                          <FiInbox className="text-[#49b265] text-xl" />
                         </div>
-                        <p className="text-slate-500 text-sm">No clicked offers yet. Browse the Earn page to start new offers!</p>
+                        <p className="text-center py-8" style={{ fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 700, fontSize: '20px', lineHeight: '120%', color: 'white' }}>No clicked offers yet. Browse the Earn page to start new offers!</p>
                       </div>
                     );
                   }
@@ -2136,9 +2136,9 @@ const Profile = () => {
                 ) : completedOffers.length === 0 ? (
                   <div className="py-14 flex flex-col items-center gap-3 text-center">
                     <div className="w-12 h-12 rounded-2xl bg-white/[0.03] border border-white/[0.07] flex items-center justify-center">
-                      <FiInbox className="text-slate-600 text-xl" />
+                      <FiInbox className="text-[#49b265] text-xl" />
                     </div>
-                    <p className="text-slate-500 text-sm">No completed offers yet. Finish a started offer to earn your reward!</p>
+                    <p className="text-center py-8" style={{ fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 700, fontSize: '20px', lineHeight: '120%', color: 'white' }}>No completed offers yet. Finish a started offer to earn your reward!</p>
                   </div>
                 ) : (() => {
                   const totalCompletedPages = Math.ceil(completedOffers.length / itemsPerPage);
@@ -2193,9 +2193,9 @@ const Profile = () => {
                 ) : heldOffers.length === 0 ? (
                   <div className="py-14 flex flex-col items-center gap-3 text-center">
                     <div className="w-12 h-12 rounded-2xl bg-white/[0.03] border border-white/[0.07] flex items-center justify-center">
-                      <FiInbox className="text-slate-600 text-xl" />
+                      <FiInbox className="text-[#49b265] text-xl" />
                     </div>
-                    <p className="text-slate-500 text-sm">No held earnings at the moment.</p>
+                    <p className="text-center py-8" style={{ fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 700, fontSize: '20px', lineHeight: '120%', color: 'white' }}>No held earnings at the moment.</p>
                   </div>
                 ) : (() => {
                   const totalHeldPages = Math.ceil(heldOffers.length / itemsPerPage);
@@ -2264,7 +2264,7 @@ const Profile = () => {
                 ) : txHistory.error ? (
                   <p className="text-rose-400 text-center py-8">{txHistory.error}</p>
                 ) : txHistory.dataList.length === 0 ? (
-                  <p className="text-slate-500 text-center py-8">No transaction history found.</p>
+                  <p className="text-center py-8" style={{ fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 700, fontSize: '20px', lineHeight: '120%', color: 'white' }}>No transaction history found.</p>
                 ) : (
                   <div>
                     <div className="overflow-x-auto">
@@ -2338,7 +2338,7 @@ const Profile = () => {
                 ) : chargebacks.error ? (
                   <p className="text-rose-400 text-center py-8">{chargebacks.error}</p>
                 ) : chargebacks.dataList.length === 0 ? (
-                  <p className="text-slate-500 text-center py-8">No chargebacks found on your account.</p>
+                  <p className="text-center py-8" style={{ fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 700, fontSize: '20px', lineHeight: '120%', color: 'white' }}>No chargebacks found on your account.</p>
                 ) : (
                   <div>
                     <div className="overflow-x-auto">

@@ -140,7 +140,7 @@ export const FeaturedOfferCard = ({ offer, onClick }) => {
       className={`cursor-pointer transition-all flex flex-col group ${isExpired ? 'opacity-50' : 'hover:scale-[1.02]'
         }`}
       style={{
-        height: '291px',
+        height: '305px',
         borderRadius: '20px',
         gap: '16px',
         padding: '16px',
@@ -179,11 +179,11 @@ export const FeaturedOfferCard = ({ offer, onClick }) => {
       {/* Text info */}
       <div
         className="flex flex-col w-full"
-        style={{ height: '108px', gap: '16px' }}
+        style={{ flex: 1, gap: '16px' }}
       >
         <div
           className="flex flex-col w-full"
-          style={{ height: '66px', gap: '6px' }}
+          style={{ gap: '6px' }}
         >
           <p
             className="line-clamp-1 truncate"
@@ -195,7 +195,7 @@ export const FeaturedOfferCard = ({ offer, onClick }) => {
               lineHeight: '120%',
               color: 'rgba(255, 255, 255, 1)',
               margin: 0,
-              display: 'flex'
+              paddingBottom: '2px'
             }}
           >
             {offer.title}
