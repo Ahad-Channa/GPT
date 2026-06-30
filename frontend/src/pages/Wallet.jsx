@@ -326,44 +326,46 @@ const Wallet = () => {
           </div>
 
           {/* Card 3: Your Books */}
-          <div className="bg-white/[0.14] rounded-[20px] p-[20px] flex flex-col gap-[18px] w-full md:w-[400px] md:h-[445px] hover:bg-white/[0.18] transition-colors shrink-0">
-            <div className="flex justify-center w-[360px]">
-              <img src="/coins/books.png" alt="Your Books" className="w-[321px] h-[126px] object-contain" />
-            </div>
-            <div className="flex flex-col w-[360px] h-[105px] gap-[6px]">
-              <h3 className="w-[360px] h-[41px] m-0 p-0 font-bold font-['Barlow_Condensed'] text-[34px] leading-[120%] text-white">
-                Your Books
-              </h3>
-              <p className="w-[360px] h-[58px] m-0 p-0 font-medium font-['Barlow_Condensed'] text-[22px] leading-[130%] text-[#888888]">
-                Redeem your coins for my books. Personally signed - only in Germany.
-              </p>
-            </div>
-
-            <div className="flex flex-col w-[360px] h-[72px] gap-[14px]">
-              <div className="flex items-center w-[360px] h-[29px] gap-[18px]">
-                <img src="/coins/signature.png" alt="Signature" className="w-[26px] h-[26px] object-contain" />
-                <span className="h-[29px] m-0 p-0 font-medium font-['Barlow_Condensed'] text-[22px] leading-[130%] text-white whitespace-nowrap">
-                  Personal signature possible
-                </span>
+          {booksVisible && (
+            <div className="bg-white/[0.14] rounded-[20px] p-[20px] flex flex-col gap-[18px] w-full md:w-[400px] md:h-[445px] hover:bg-white/[0.18] transition-colors shrink-0">
+              <div className="flex justify-center w-[360px]">
+                <img src="/coins/books.png" alt="Your Books" className="w-[321px] h-[126px] object-contain" />
               </div>
-              <div className="flex items-center w-[360px] h-[29px] gap-[18px]">
-                <img src="/coins/truck.png" alt="Truck" className="w-[26px] h-[26px] object-contain" />
-                <span className="h-[29px] m-0 p-0 font-medium font-['Barlow_Condensed'] text-[22px] leading-[130%] text-white whitespace-nowrap">
-                  Shipping only within Germany
-                </span>
+              <div className="flex flex-col w-[360px] h-[105px] gap-[6px]">
+                <h3 className="w-[360px] h-[41px] m-0 p-0 font-bold font-['Barlow_Condensed'] text-[34px] leading-[120%] text-white">
+                  Your Books
+                </h3>
+                <p className="w-[360px] h-[58px] m-0 p-0 font-medium font-['Barlow_Condensed'] text-[22px] leading-[130%] text-[#888888]">
+                  Redeem your coins for my books. Personally signed - only in Germany.
+                </p>
               </div>
-            </div>
 
-            <button
-              onClick={() => setShowBookSelector(true)}
-              className="flex items-center justify-center w-[360px] h-[48px] gap-[10px] rounded-[10px] px-[30px] py-[10px] bg-[#49B265] shadow-[0_4px_0_0_#276D3A] hover:bg-[#49B265]/90 hover:translate-y-[1px] hover:shadow-[0_3px_0_0_#276D3A] active:translate-y-[4px] active:shadow-none transition-all mt-auto shrink-0"
-            >
-              <span className="m-0 p-0 font-bold font-['Barlow_Condensed'] text-[18px] leading-none text-white whitespace-nowrap">
-                Order Now
-              </span>
-              <img src="/coins/ar.png" alt="Arrow" className="w-[24px] h-[24px] object-contain" />
-            </button>
-          </div>
+              <div className="flex flex-col w-[360px] h-[72px] gap-[14px]">
+                <div className="flex items-center w-[360px] h-[29px] gap-[18px]">
+                  <img src="/coins/signature.png" alt="Signature" className="w-[26px] h-[26px] object-contain" />
+                  <span className="h-[29px] m-0 p-0 font-medium font-['Barlow_Condensed'] text-[22px] leading-[130%] text-white whitespace-nowrap">
+                    Personal signature possible
+                  </span>
+                </div>
+                <div className="flex items-center w-[360px] h-[29px] gap-[18px]">
+                  <img src="/coins/truck.png" alt="Truck" className="w-[26px] h-[26px] object-contain" />
+                  <span className="h-[29px] m-0 p-0 font-medium font-['Barlow_Condensed'] text-[22px] leading-[130%] text-white whitespace-nowrap">
+                    Shipping only within Germany
+                  </span>
+                </div>
+              </div>
+
+              <button
+                onClick={() => setShowBookSelector(true)}
+                className="flex items-center justify-center w-[360px] h-[48px] gap-[10px] rounded-[10px] px-[30px] py-[10px] bg-[#49B265] shadow-[0_4px_0_0_#276D3A] hover:bg-[#49B265]/90 hover:translate-y-[1px] hover:shadow-[0_3px_0_0_#276D3A] active:translate-y-[4px] active:shadow-none transition-all mt-auto shrink-0"
+              >
+                <span className="m-0 p-0 font-bold font-['Barlow_Condensed'] text-[18px] leading-none text-white whitespace-nowrap">
+                  Order Now
+                </span>
+                <img src="/coins/ar.png" alt="Arrow" className="w-[24px] h-[24px] object-contain" />
+              </button>
+            </div>
+          )}
 
         </motion.div>
 
