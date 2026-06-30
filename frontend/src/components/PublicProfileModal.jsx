@@ -238,17 +238,19 @@ const PublicProfileModal = ({ userId, onClose }) => {
                         return (
                           <>
                             {level && <VipBadge tier={level.tier} rank="" size="sm" style={{ width: '49px', height: '18px', padding: '0', display: 'inline-flex', justifyContent: 'center', alignItems: 'center', boxSizing: 'border-box' }} />}
-                            <div style={{ display: 'flex', width: '82px', height: '18px', gap: '3px', alignItems: 'center' }}>
+                            <div style={{ display: 'flex', width: 'auto', height: '18px', gap: '3px', alignItems: 'center' }}>
                               <img src="/coins/coinfinal.png" alt="coin" style={{ width: '18px', height: '18px' }} />
                               <div style={{
-                                width: '61px', height: '11px',
+                                width: 'auto', height: 'auto',
+                                paddingTop: '2px',
                                 fontFamily: '"Barlow Condensed", sans-serif', fontWeight: 700, fontSize: '16px', lineHeight: '130%',
                                 backgroundImage: 'linear-gradient(180deg, #FEDF77 0%, #FCB91E 100%)',
                                 WebkitBackgroundClip: 'text',
                                 color: 'transparent',
-                                display: 'flex', alignItems: 'center', whiteSpace: 'nowrap'
+                                display: 'flex', alignItems: 'center', whiteSpace: 'nowrap',
+                                overflow: 'visible'
                               }}>
-                                {(profile.totalEarned || 0).toLocaleString()} earned
+                                {(profile.totalEarned || 0).toLocaleString()}
                               </div>
                             </div>
                           </>

@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const https = require('https');
+const http = require('http');
 const multer = require('multer');
 const Book = require('../models/Book');
 const BookOrder = require('../models/BookOrder');
@@ -57,18 +58,22 @@ async function getCountryFromIp(ip) {
 
   return new Promise((resolve) => {
     const options = {
-      hostname: 'ipapi.co',
-      path: `/${ip}/country/`,
+      hostname: 'ip-api.com',
+      path: `/json/${ip}?fields=countryCode`,
       method: 'GET',
-      headers: { 'User-Agent': 'TaskMint-Platform/1.0' },
     };
-    const req = https.request(options, (res) => {
+    const req = http.request(options, (res) => {
       let data = '';
       res.on('data', (c) => (data += c));
       res.on('end', () => {
-        const country = data.trim().toUpperCase().slice(0, 2);
-        ipCountryCache.set(ip, { country, ts: Date.now() });
-        resolve(country);
+        try {
+          const parsed = JSON.parse(data);
+          const country = parsed.countryCode ? parsed.countryCode.toUpperCase() : 'XX';
+          ipCountryCache.set(ip, { country, ts: Date.now() });
+          resolve(country);
+        } catch(e) {
+          resolve('XX');
+        }
       });
     });
     req.on('error', () => resolve('XX'));
@@ -101,7 +106,10 @@ router.get('/', verifyToken, async (req, res) => {
     const booksGermanyOnly = settings.booksGermanyOnly !== false;
 
     const ip = getClientIp(req);
-    const country = await getCountryFromIp(ip);
+    let country = req.headers['cf-ipcountry'];
+    if (!country) {
+      country = await getCountryFromIp(ip);
+    }
     const isGermanIP = country === 'DE';
 
     const user = await User.findOne({ firebaseUid: req.user.uid }).lean();
