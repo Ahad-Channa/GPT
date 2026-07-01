@@ -139,8 +139,8 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess, filterType }) 
 
   const amountNum = Number(amount) || 0;
   const feeCoins  = Math.ceil(amountNum * (methodFeePercent / 100));
-  const youReceive = amountNum;
-  const totalDeducted = amountNum + feeCoins;
+  const youReceive = amountNum - feeCoins;
+  const totalDeducted = amountNum;
 
   const minimumCoins = selectedMethod ? selectedMethod.minUSD * coinsPerUSD : 0;
   const hasEnoughBalance = totalDeducted <= balance;
@@ -214,14 +214,14 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess, filterType }) 
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.95, y: 12 }}
         transition={{ duration: 0.2 }}
-        className={`relative bg-[#242424] border border-white/[0.08] shadow-2xl max-w-[95vw] flex flex-col my-auto overflow-x-hidden ${
+        className={`relative bg-[#242424] border border-white/[0.08] shadow-2xl max-w-[95vw] flex flex-col my-auto ${
           step === 1
-            ? 'h-[339px] shrink-0'
+            ? 'h-[339px] shrink-0 overflow-hidden'
             : step === 2
-            ? (isGiftCard ? 'h-[881px] shrink-0' : 'h-[740px] shrink-0')
+            ? (isGiftCard ? 'h-[881px] shrink-0 overflow-hidden' : 'h-[740px] shrink-0 overflow-hidden')
             : step === 4
-            ? 'h-[379px] shrink-0'
-            : 'h-auto max-h-[90vh] overflow-y-auto custom-scrollbar'
+            ? 'h-[379px] shrink-0 overflow-hidden'
+            : 'h-auto max-h-[90vh] overflow-y-auto custom-scrollbar overflow-x-hidden'
         }`}
         style={{
           width: modalWidth,
@@ -662,7 +662,7 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess, filterType }) 
                       color: '#ffffff',
                     }}
                   >
-                    Amount Your Receive
+                    Amount You Receive
                   </span>
                   <span
                     style={{
@@ -673,7 +673,7 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess, filterType }) 
                       color: '#ffffff',
                     }}
                   >
-                    {amountNum.toLocaleString()}
+                    {youReceive.toLocaleString()}
                   </span>
                 </div>
 
@@ -698,7 +698,7 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess, filterType }) 
                       color: '#ffffff',
                     }}
                   >
-                    +{feeCoins.toLocaleString()}
+                    -{feeCoins.toLocaleString()}
                   </span>
                 </div>
 
@@ -909,7 +909,7 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess, filterType }) 
         )}
 
         {step === 4 && (
-          <div className="py-6 flex flex-col items-center gap-[20px] text-center w-full">
+          <div className="py-2 flex flex-col items-center gap-[20px] text-center w-full">
               <img
                 src="/coins/tik1.png"
                 alt="Success"

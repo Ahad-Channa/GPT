@@ -111,41 +111,13 @@ function MissionCard({ mission, onClaim, claiming }) {
           opacity: 1
         }}
       >
-        {/* Icon Box */}
-        <div
-          className="flex items-center justify-center shrink-0"
-          style={{
-            width: '70px',
-            height: '70px',
-            borderRadius: '12px',
-            background: mission.claimed
-              ? 'rgba(255, 255, 255, 0.05)'
-              : 'rgba(73, 178, 101, 0.2)',
-            opacity: 1
-          }}
-        >
-          {mission.claimed ? (
-            <img
-              src="/coins/tik1.png"
-              alt="Claimed"
-              className="object-contain"
-              style={{ width: '34px', height: '34px', opacity: 1 }}
-            />
-          ) : (
-            <img
-              src={getMissionIcon(mission.label)}
-              alt="Mission Icon"
-              className="object-contain"
-              style={{ width: '34px', height: '34px', opacity: 1 }}
-            />
-          )}
-        </div>
+
 
         <div className="flex-1 min-w-0 flex flex-col justify-center">
           <span
-            className="text-white truncate m-0 p-0"
+            className="text-white m-0 p-0"
             style={{
-              width: '209px',
+              width: '100%',
               height: 'auto',
               fontFamily: "'Barlow Condensed', sans-serif",
               fontWeight: 600,
@@ -158,9 +130,9 @@ function MissionCard({ mission, onClaim, claiming }) {
             {mission.label}
           </span>
           <span
-            className="text-[#888888] truncate m-0 p-0"
+            className="text-[#888888] m-0 p-0"
             style={{
-              width: '272.6666564941406px',
+              width: '100%',
               height: 'auto',
               fontFamily: "'Barlow Condensed', sans-serif",
               fontWeight: 500,
@@ -388,7 +360,7 @@ function PeriodBonusCard({ bonus, period, onClaim, claimingBonus }) {
           Complete All Missions
         </span>
         <div
-          className="flex items-center"
+          className="flex items-end"
           style={{
             width: '142px',
             height: '52px',
@@ -403,11 +375,12 @@ function PeriodBonusCard({ bonus, period, onClaim, claimingBonus }) {
             style={{
               width: '52px',
               height: '52px',
-              opacity: 1
+              opacity: 1,
+              marginBottom: '8px'
             }}
           />
           <span
-            className="font-bold m-0 p-0 flex items-center shrink-0"
+            className="font-bold m-0 p-0 flex items-end shrink-0"
             style={{
               width: 'auto',
               minWidth: '84px',
@@ -421,7 +394,6 @@ function PeriodBonusCard({ bonus, period, onClaim, claimingBonus }) {
               WebkitTextFillColor: 'transparent',
               backgroundClip: 'text',
               color: 'transparent',
-              marginTop: '8px'
             }}
           >
             {bonusAmount}

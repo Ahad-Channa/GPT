@@ -98,11 +98,22 @@ async function requireAdmin(req, res, next) {
 
 
 /* ─────────────────────────────────────────────────────────────────
+   PUBLIC: GET /api/books/debug
+───────────────────────────────────────────────────────────────── */
+router.get('/debug', async (req, res) => {
+  const settings = await Settings.findOne({ _singleton: 'platform_settings' }).lean();
+  res.json({ settings });
+});
+
+/* ─────────────────────────────────────────────────────────────────
    PUBLIC: GET /api/books
 ───────────────────────────────────────────────────────────────── */
 router.get('/', verifyToken, async (req, res) => {
   try {
-    const settings = await Settings.getSingleton();
+    let settings = await Settings.findOne({ _singleton: 'platform_settings' }).lean();
+    if (!settings) {
+      settings = await Settings.create({ _singleton: 'platform_settings' });
+    }
     const booksGermanyOnly = settings.booksGermanyOnly !== false;
 
     const ip = getClientIp(req);
@@ -112,7 +123,10 @@ router.get('/', verifyToken, async (req, res) => {
     }
     const isGermanIP = country === 'DE';
 
-    const user = await User.findOne({ firebaseUid: req.user.uid }).lean();
+    let user = null;
+    if (req.user) {
+      user = await User.findOne({ firebaseUid: req.user.uid }).lean();
+    }
     const books = await Book.find({ available: true }).lean().sort({ createdAt: -1 });
 
     if (user) {
@@ -238,7 +252,10 @@ router.get('/admin/list', verifyToken, requireAdmin, async (req, res) => {
       if (b.previewImages) b.previewImages = b.previewImages.map(img => img.replace('http://localhost:5000', currentBase));
     });
 
-    const settings = await Settings.getSingleton();
+    let settings = await Settings.findOne({ _singleton: 'platform_settings' }).lean();
+    if (!settings) {
+      settings = await Settings.create({ _singleton: 'platform_settings' });
+    }
     res.json({ success: true, books, booksGermanyOnly: settings.booksGermanyOnly !== false });
   } catch (e) {
     res.status(500).json({ success: false, error: 'Failed to fetch books' });
@@ -296,10 +313,12 @@ router.post('/admin/create', verifyToken, requireAdmin, (req, res) => {
 router.put('/admin/settings', verifyToken, requireAdmin, async (req, res) => {
   try {
     const { booksGermanyOnly } = req.body;
-    const settings = await Settings.getSingleton();
-    settings.booksGermanyOnly = !!booksGermanyOnly;
-    await settings.save();
-    res.json({ success: true, booksGermanyOnly: settings.booksGermanyOnly });
+    await Settings.updateOne(
+      { _singleton: 'platform_settings' },
+      { $set: { booksGermanyOnly: !!booksGermanyOnly } },
+      { strict: false }
+    );
+    res.json({ success: true, booksGermanyOnly: !!booksGermanyOnly });
   } catch (e) {
     res.status(500).json({ success: false, error: 'Failed to update settings' });
   }

@@ -1313,7 +1313,7 @@ const SettingsModal = ({ isOpen, onClose, mongoUser, token, setMongoUser, logout
           animate={{ scale: 1, opacity: 1 }}
           style={{
             width: '700px',
-            height: '633px',
+            height: '720px',
             background: 'rgba(36, 36, 36, 1)',
             borderRadius: '20px',
             padding: '16px',
@@ -1787,88 +1787,70 @@ const Profile = () => {
     }
   }, [token]);
 
-  const fetchCustomOffers = async () => {
-    if (!currentUser && !token) return;
-    setLoadingOffers(true);
-    try {
-      const freshToken = currentUser ? await currentUser.getIdToken() : token;
-      const res = await fetch(`${API}/custom-offers`, { headers: { Authorization: `Bearer ${freshToken}` } });
-      const data = await res.json();
-      if (data.success) {
-        setCustomOffers(data.offers);
-      }
-    } catch (err) {
-      console.error('Failed to fetch custom offers:', err);
-    } finally {
-      setLoadingOffers(false);
-    }
-  };
-
-  useEffect(() => {
-    if (activeTab === 'started_offers' && token) {
-      fetchCustomOffers();
-    }
-  }, [activeTab, token]);
-
-  // History hooks (only fetches when token is ready)
-  const txHistory = useHistory(activeTab === 'transaction_history' ? token : null, null);
-  const chargebacks = useHistory(activeTab === 'chargebacks' ? token : null, 'chargeback');
-
   // Completed offers = approved custom offers + all offer_reward transactions
   const [completedOffers, setCompletedOffers] = useState([]);
   const [loadingCompleted, setLoadingCompleted] = useState(false);
 
-  const fetchCompletedOffers = async () => {
+  const fetchOffersData = async () => {
     if (!currentUser && !token) return;
+    setLoadingOffers(true);
     setLoadingCompleted(true);
     try {
       const freshToken = currentUser ? await currentUser.getIdToken() : token;
-
-      // Fetch both sources in parallel
+      
       const [customRes, walletRes] = await Promise.all([
         fetch(`${API}/custom-offers`, { headers: { Authorization: `Bearer ${freshToken}` } }),
         fetch(`${API}/wallet/history?type=offer_reward%2Ccustom_offer_reward&limit=50`, { headers: { Authorization: `Bearer ${freshToken}` } }),
       ]);
       const [customData, walletData] = await Promise.all([customRes.json(), walletRes.json()]);
 
-      // Approved custom offers
-      const approvedCustom = (customData.success ? customData.offers.filter(o => o.submissionStatus === 'approved') : [])
-        .map(o => ({
-          _id: o._id,
-          title: o.title,
-          rewardAmount: o.rewardAmount,
-          completedAt: o.updatedAt,
-          source: 'custom',
-        }));
+      if (customData.success) {
+        setCustomOffers(customData.offers);
+        
+        const approvedCustom = customData.offers
+          .filter(o => o.submissionStatus === 'approved')
+          .map(o => ({
+            _id: o._id,
+            title: o.title,
+            rewardAmount: o.rewardAmount,
+            completedAt: o.updatedAt,
+            source: 'custom',
+          }));
 
-      // Offer-wall reward transactions
-      const walletOffers = (walletData.success ? walletData.transactions : [])
-        .filter(tx => tx.status === 'completed' && tx.amount > 0)
-        .map(tx => ({
-          _id: tx._id,
-          title: tx.description || 'Offer Reward',
-          rewardAmount: tx.amount,
-          completedAt: tx.createdAt,
-          source: 'offerwall',
-        }));
+        const walletOffers = (walletData.success ? walletData.transactions : [])
+          .filter(tx => tx.status === 'completed' && tx.amount > 0)
+          .map(tx => ({
+            _id: tx._id,
+            title: tx.description || 'Offer Reward',
+            rewardAmount: tx.amount,
+            completedAt: tx.createdAt,
+            source: 'offerwall',
+          }));
 
-      // Merge, deduplicate by _id, sort newest first
-      const seen = new Set();
-      const merged = [...approvedCustom, ...walletOffers]
-        .filter(o => { if (seen.has(String(o._id))) return false; seen.add(String(o._id)); return true; })
-        .sort((a, b) => new Date(b.completedAt) - new Date(a.completedAt));
+        const seen = new Set();
+        const merged = [...approvedCustom, ...walletOffers]
+          .filter(o => { if (seen.has(String(o._id))) return false; seen.add(String(o._id)); return true; })
+          .sort((a, b) => new Date(b.completedAt) - new Date(a.completedAt));
 
-      setCompletedOffers(merged);
+        setCompletedOffers(merged);
+      }
     } catch (err) {
-      console.error('Failed to fetch completed offers:', err);
+      console.error('Failed to fetch offers:', err);
     } finally {
+      setLoadingOffers(false);
       setLoadingCompleted(false);
     }
   };
 
   useEffect(() => {
-    if (activeTab === 'completed_offers' && token) fetchCompletedOffers();
-  }, [activeTab, token]);
+    if (token) {
+      fetchOffersData();
+    }
+  }, [token]);
+
+  // History hooks (only fetches when token is ready)
+  const txHistory = useHistory(token, null);
+  const chargebacks = useHistory(token, 'chargeback');
 
   // Held Offers
   const [heldOffers, setHeldOffers] = useState([]);
@@ -1892,8 +1874,8 @@ const Profile = () => {
   };
 
   useEffect(() => {
-    if (activeTab === 'held_offers' && token) fetchHeldOffers();
-  }, [activeTab, token]);
+    if (token) fetchHeldOffers();
+  }, [token]);
 
 
 
@@ -2076,12 +2058,7 @@ const Profile = () => {
                   const startedOffers = customOffers.filter(o => o.submissionStatus === 'started' || o.submissionStatus === 'rejected');
                   if (startedOffers.length === 0) {
                     return (
-                      <div className="py-14 flex flex-col items-center gap-3 text-center">
-                        <div className="w-12 h-12 rounded-2xl bg-white/[0.03] border border-white/[0.07] flex items-center justify-center">
-                          <FiInbox className="text-[#49b265] text-xl" />
-                        </div>
-                        <p className="text-center py-8" style={{ fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 700, fontSize: '20px', lineHeight: '120%', color: 'white' }}>No clicked offers yet. Browse the Earn page to start new offers!</p>
-                      </div>
+                      <p className="text-center py-8" style={{ fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 700, fontSize: '20px', lineHeight: '120%', color: 'white' }}>No clicked offers yet. Browse the Earn page to start new offers!</p>
                     );
                   }
                   const totalStartedPages = Math.ceil(startedOffers.length / itemsPerPage);
@@ -2103,7 +2080,7 @@ const Profile = () => {
                                 key={offer._id}
                                 offer={offer}
                                 token={token}
-                                onRefresh={fetchCustomOffers}
+                                onRefresh={fetchOffersData}
                               />
                             ))}
                           </div>
@@ -2134,12 +2111,7 @@ const Profile = () => {
                 {loadingCompleted ? (
                   <div className="flex justify-center py-10"><FiLoader className="animate-spin text-2xl text-[#49b265]" /></div>
                 ) : completedOffers.length === 0 ? (
-                  <div className="py-14 flex flex-col items-center gap-3 text-center">
-                    <div className="w-12 h-12 rounded-2xl bg-white/[0.03] border border-white/[0.07] flex items-center justify-center">
-                      <FiInbox className="text-[#49b265] text-xl" />
-                    </div>
-                    <p className="text-center py-8" style={{ fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 700, fontSize: '20px', lineHeight: '120%', color: 'white' }}>No completed offers yet. Finish a started offer to earn your reward!</p>
-                  </div>
+                  <p className="text-center py-8" style={{ fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 700, fontSize: '20px', lineHeight: '120%', color: 'white' }}>No completed offers yet. Finish a started offer to earn your reward!</p>
                 ) : (() => {
                   const totalCompletedPages = Math.ceil(completedOffers.length / itemsPerPage);
                   const paginatedCompleted = completedOffers.slice((completedPage - 1) * itemsPerPage, completedPage * itemsPerPage);
@@ -2191,12 +2163,7 @@ const Profile = () => {
                 {loadingHolds ? (
                   <div className="flex justify-center py-10"><FiLoader className="animate-spin text-2xl text-[#49b265]" /></div>
                 ) : heldOffers.length === 0 ? (
-                  <div className="py-14 flex flex-col items-center gap-3 text-center">
-                    <div className="w-12 h-12 rounded-2xl bg-white/[0.03] border border-white/[0.07] flex items-center justify-center">
-                      <FiInbox className="text-[#49b265] text-xl" />
-                    </div>
-                    <p className="text-center py-8" style={{ fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 700, fontSize: '20px', lineHeight: '120%', color: 'white' }}>No held earnings at the moment.</p>
-                  </div>
+                  <p className="text-center py-8" style={{ fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 700, fontSize: '20px', lineHeight: '120%', color: 'white' }}>No held earnings at the moment.</p>
                 ) : (() => {
                   const totalHeldPages = Math.ceil(heldOffers.length / itemsPerPage);
                   const paginatedHeld = heldOffers.slice((heldPage - 1) * itemsPerPage, heldPage * itemsPerPage);
@@ -2346,7 +2313,7 @@ const Profile = () => {
                         <div className="w-[1180px] h-[58px] rounded-[20px] pt-[10px] pr-[95px] pb-[30px] pl-[40px] grid grid-cols-[2fr_1fr_1fr] gap-[20px] border-b border-[#2a2d36] items-center">
                           <div style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="font-semibold text-[26px] text-white/40">Offers</div>
                           <div style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="font-semibold text-[26px] text-white/40">Started On</div>
-                          <div style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="font-semibold text-[26px] text-white/40">Reward</div>
+                          <div style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="font-semibold text-[26px] text-white/40">Amount</div>
                         </div>
                         <div className="flex flex-col gap-[10px] mt-[10px]">
                           {chargebacks.dataList.map(tx => (

@@ -17,6 +17,7 @@ const getHue = (name) =>
 import { useNavigate } from 'react-router-dom';
 import { FaCrown, FaBolt } from 'react-icons/fa';
 import { getLevelFromEarned, getLevelLabel, TIER_STYLES } from '../utils/vipLevels';
+import VipBadge from '../components/VipBadge';
 
 const AvatarCircle = ({ user, size = 20 }) => {
    const dName = user?.displayName || 'Unknown';
@@ -35,73 +36,45 @@ const AvatarCircle = ({ user, size = 20 }) => {
 
 const RoleSymbol = ({ user }) => {
   const role = user?.role || 'user';
-  const [hover, setHover] = useState(false);
-  let icon, label, color, shift = 0;
-
-  if (role === 'owner') {
-    icon = <FaCrown size={15} />; label = 'Owner'; color = '#fbbf24';
-  } else if (role === 'admin') {
-    icon = <FaBolt size={15} />; label = 'Admin'; color = '#ef4444';
-  } else if (role === 'chat_mod') {
-    icon = (
-      <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-        <FiShield size={15} style={{ color: '#38bdf8' }} />
-        <span style={{
-          background: 'rgba(56,189,248,0.15)', color: '#38bdf8',
-          fontSize: '0.65rem', fontWeight: 'bold', padding: '1px 4px',
-          borderRadius: '4px', border: '1px solid rgba(56,189,248,0.3)'
-        }}>MOD</span>
-      </span>
-    );
-    label = 'Chat Moderator'; color = '#38bdf8'; shift = 10;
-  } else if (role === 'moderator') {
-    icon = (
-      <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-        <FiStar size={15} style={{ color: '#94a3b8' }} />
-        <span style={{ 
-          background: 'rgba(56,189,248,0.15)', color: '#38bdf8', 
-          fontSize: '0.65rem', fontWeight: 'bold', padding: '1px 4px', 
-          borderRadius: '4px', border: '1px solid rgba(56,189,248,0.3)' 
-        }}>M C</span>
-      </span>
-    );
-    label = 'Moderator'; color = '#38bdf8'; shift = 10;
-  } else {
-    const vipLevel = getLevelFromEarned(user?.totalEarned || 0);
-    const tierStyle = vipLevel ? TIER_STYLES[vipLevel.tier] : null;
-    
-    icon = <FiStar size={15} />; 
-    label = vipLevel ? `VIP: ${getLevelLabel(vipLevel)}` : 'Non-VIP'; 
-    color = tierStyle ? tierStyle.border : '#94a3b8'; 
-    shift = 20;
-  }
+  const vipLevel = getLevelFromEarned(user?.totalEarned || 0);
 
   return (
-    <div 
-      onMouseEnter={() => setHover(true)} 
-      onMouseLeave={() => setHover(false)}
-      style={{ position: 'relative', display: 'inline-flex', alignItems: 'center', cursor: 'default' }}
-    >
-      <span style={{ color: role === 'moderator' ? 'inherit' : color, display: 'inline-flex', alignItems: 'center' }}>
-        {icon}
-      </span>
-      {hover && (
-        <div style={{
-          position: 'absolute', bottom: '100%', left: '50%', transform: `translate(calc(-50% + ${shift}px), -8px)`,
-          background: '#0b101e', border: `1px solid ${color}80`, color: '#f8fafc',
-          padding: '5px 10px', borderRadius: '8px', fontSize: '0.75rem', fontWeight: 600,
-          whiteSpace: 'nowrap', zIndex: 9999, boxShadow: `0 4px 15px ${color}40`,
-          pointerEvents: 'none', display: 'flex', alignItems: 'center', gap: '4px'
-        }}>
-          {label}
-          <div style={{
-            position: 'absolute', top: '100%', left: `calc(50% - ${shift}px)`, transform: 'translateX(-50%)',
-            borderWidth: '5px', borderStyle: 'solid',
-            borderColor: `${color}80 transparent transparent transparent`
-          }} />
-        </div>
+    <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+      {/* Role Badge */}
+      {role === 'owner' && (
+        <span style={{ background: 'rgba(251,191,36,0.15)', color: '#fbbf24', fontSize: '10px', fontWeight: 'bold', padding: '2px 8px', borderRadius: '100px', border: '1px solid rgba(251,191,36,0.3)', whiteSpace: 'nowrap' }}>Owner</span>
       )}
-    </div>
+      {role === 'admin' && (
+        <span style={{ 
+          background: 'linear-gradient(180deg, #FE7777 0%, #FC1E1E 100%)', 
+          color: '#ffffff', 
+          fontSize: '10px', 
+          fontFamily: '"Barlow Condensed", sans-serif',
+          fontWeight: 600, 
+          padding: '0 7.94px', 
+          borderRadius: '59.47px', 
+          whiteSpace: 'nowrap',
+          minWidth: '44px',
+          height: '18px',
+          display: 'inline-flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: '2.63px',
+          boxSizing: 'border-box'
+        }}>Admin</span>
+      )}
+      {role === 'chat_mod' && (
+        <span style={{ background: 'rgba(56,189,248,0.15)', color: '#38bdf8', fontSize: '10px', fontWeight: 'bold', padding: '2px 8px', borderRadius: '100px', border: '1px solid rgba(56,189,248,0.3)', whiteSpace: 'nowrap' }}>MOD</span>
+      )}
+      {role === 'moderator' && (
+        <span style={{ background: 'rgba(56,189,248,0.15)', color: '#38bdf8', fontSize: '10px', fontWeight: 'bold', padding: '2px 8px', borderRadius: '100px', border: '1px solid rgba(56,189,248,0.3)', whiteSpace: 'nowrap' }}>M C</span>
+      )}
+
+      {/* VIP Badge */}
+      {vipLevel && (
+        <VipBadge tier={vipLevel.tier} rank={vipLevel.rank} size="xs" />
+      )}
+    </span>
   );
 };
 
@@ -130,7 +103,6 @@ const MessageRow = ({ msg, canModerate, onDelete, deletingId }) => {
     >
       <div style={{ display: 'inline-flex', alignItems: 'center', flexWrap: 'wrap', gap: 6, wordBreak: 'break-word', fontSize: '0.9rem' }}>
          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
-            <RoleSymbol user={msg.user} />
             <button 
               onClick={() => navigate(`/user/${msg.user?._id}`)}
               style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', display: 'flex', alignItems: 'center' }}
@@ -150,6 +122,7 @@ const MessageRow = ({ msg, canModerate, onDelete, deletingId }) => {
          >
            {msg.user?.displayName || 'Unknown'}
          </button>
+         <RoleSymbol user={msg.user} />
          <span style={{ color: '#64748b' }}>:</span>
          <span style={{ color: '#cbd5e1' }}>{msg.message}</span>
       </div>
@@ -191,7 +164,7 @@ const Chat = () => {
   const inputRef = useRef(null);
 
   const scrollToBottom = useCallback(() => {
-    endRef.current?.scrollIntoView({ behavior: 'smooth' });
+    endRef.current?.scrollIntoView({ behavior: 'auto' });
   }, []);
 
   /* fetch history */

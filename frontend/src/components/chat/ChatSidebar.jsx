@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useLayoutEffect, useRef, useCallback } from 'react';
 import io from 'socket.io-client';
 import { useAuth } from '../../contexts/AuthContext';
 import { useNotifications } from '../../contexts/NotificationContext';
@@ -69,11 +69,14 @@ const RoleSymbol = ({ user }) => {
         <HoverBadge
           badge={
             <div style={{
-              width: '49px', height: '18px',
+              minWidth: '44px', height: '18px',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
-              background: 'rgba(239,68,68,0.05)', color: '#ef4444',
-              fontSize: '11px', fontWeight: 600,
-              borderRadius: '59.47px', border: '1px solid #ef4444',
+              background: 'linear-gradient(180deg, #FE7777 0%, #FC1E1E 100%)', color: '#ffffff',
+              fontSize: '10px', fontWeight: 600,
+              borderRadius: '59.47px', border: 'none',
+              padding: '0 7.94px',
+              gap: '2.63px',
+              boxSizing: 'border-box',
               fontFamily: '"Barlow Condensed", sans-serif', letterSpacing: '0px'
             }}>Admin</div>
           }
@@ -347,9 +350,41 @@ const ChatSidebar = ({ isOpen, onClose }) => {
   const inputRef = useRef(null);
   const scrollContainerRef = useRef(null);
 
-  const scrollToBottom = useCallback(() => {
-    endRef.current?.scrollIntoView({ behavior: 'smooth' });
+  const scrollToBottom = useCallback((behavior = 'smooth') => {
+    endRef.current?.scrollIntoView({ behavior });
   }, []);
+
+  const isInitialScroll = useRef(true);
+
+  useEffect(() => {
+    if (isOpen) {
+      isInitialScroll.current = true;
+    }
+  }, [isOpen, activeTab]);
+
+  useLayoutEffect(() => {
+    if (!loading && messages.length > 0 && isInitialScroll.current && activeTab === 'chat') {
+      const container = scrollContainerRef.current;
+      if (container) {
+        const snap = () => {
+          if (container) container.scrollTop = container.scrollHeight;
+        };
+        snap();
+        requestAnimationFrame(snap);
+        const t1 = setTimeout(snap, 30);
+        const t2 = setTimeout(snap, 80);
+        const t3 = setTimeout(() => {
+          snap();
+          isInitialScroll.current = false;
+        }, 150);
+        return () => {
+          clearTimeout(t1);
+          clearTimeout(t2);
+          clearTimeout(t3);
+        };
+      }
+    }
+  }, [loading, messages, activeTab]);
 
   // Mark chat as read when chat is open, without disabling page scrolling
   useEffect(() => {
@@ -361,6 +396,8 @@ const ChatSidebar = ({ isOpen, onClose }) => {
   /* fetch history when first opened */
   useEffect(() => {
     if (!isOpen) return;
+    setLoading(true);
+    const startTime = Date.now();
     (async () => {
       try {
         const res = await fetch(`${API}/chat/history`);
@@ -368,10 +405,13 @@ const ChatSidebar = ({ isOpen, onClose }) => {
         if (data.status === 'success') {
           setMessages(data.data);
           if (data.data.length < 50) setHasMore(false);
-          setTimeout(scrollToBottom, 100);
         }
       } catch (e) { console.error(e); }
-      finally { setLoading(false); }
+      finally {
+        const elapsed = Date.now() - startTime;
+        const remaining = Math.max(0, 400 - elapsed);
+        setTimeout(() => setLoading(false), remaining);
+      }
     })();
   }, [isOpen]);
 
@@ -385,7 +425,7 @@ const ChatSidebar = ({ isOpen, onClose }) => {
       const el = scrollContainerRef.current;
       if (el) {
         const isNearBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 150;
-        if (isNearBottom) setTimeout(scrollToBottom, 50);
+        if (isNearBottom) setTimeout(() => scrollToBottom('smooth'), 50);
       }
     });
     sock.on('messageDeleted', ({ _id }) => setMessages(p => p.filter(m => m._id !== _id)));
@@ -402,7 +442,7 @@ const ChatSidebar = ({ isOpen, onClose }) => {
     if (!newMsg.trim() || !socket || !mongoUser) return;
     socket.emit('sendMessage', { userId: mongoUser._id, message: newMsg.trim() });
     setNewMsg('');
-    setTimeout(scrollToBottom, 50);
+    setTimeout(() => scrollToBottom('smooth'), 50);
   };
 
   const handleScroll = async (e) => {
@@ -601,6 +641,15 @@ const ChatSidebar = ({ isOpen, onClose }) => {
             {/* ── Body ────────────────────────────────── */}
             {activeTab === 'support' ? (
               <SupportChat socket={socket} />
+            ) : loading ? (
+              <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <div style={{
+                  width: 22, height: 22, borderRadius: '50%',
+                  border: '2px solid rgba(99,102,241,0.35)',
+                  borderTopColor: '#6366f1',
+                  animation: 'sidebarSpin 0.8s linear infinite'
+                }} />
+              </div>
             ) : (
               <>
                 {/* Messages */}
@@ -620,16 +669,7 @@ const ChatSidebar = ({ isOpen, onClose }) => {
                       }} />
                     </div>
                   )}
-                  {loading ? (
-                    <div style={{ display: 'flex', justifyContent: 'center', paddingTop: '3rem' }}>
-                      <div style={{
-                        width: 22, height: 22, borderRadius: '50%',
-                        border: '2px solid rgba(99,102,241,0.35)',
-                        borderTopColor: '#6366f1',
-                        animation: 'sidebarSpin 0.8s linear infinite'
-                      }} />
-                    </div>
-                  ) : messages.length === 0 ? (
+                  {messages.length === 0 ? (
                     <div style={{
                       flex: 1, display: 'flex', flexDirection: 'column',
                       alignItems: 'center', justifyContent: 'center',

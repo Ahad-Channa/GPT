@@ -215,19 +215,7 @@ const DailyBonusChip = () => {
         <span className="relative z-10 text-[9px] text-[#49B265] font-bold leading-none">{progressPercent}%</span>
       </div>
 
-      {/* Hover tooltip */}
-      <div className="absolute top-10 left-1/2 -translate-x-1/2 w-52 p-3 rounded-xl bg-[#0b101e] border border-[#49B265]/30 shadow-[0_0_15px_rgba(73,178,101,0.15)] opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 text-left">
-        <p className="text-xs text-slate-300 mb-2">
-          Earn <span className="font-bold text-white"><CoinDisplay amount={status.required - status.earned} showIcon={true} size={12} /></span> more to unlock.
-        </p>
-        <div className="w-full h-1.5 bg-white/10 rounded-full overflow-hidden mb-2">
-          <div className="bg-[#49B265] h-full rounded-full" style={{ width: `${progressPercent}%` }} />
-        </div>
-        <div className="flex justify-between text-[10px] text-slate-400">
-          <span>{status.earned.toLocaleString()} earned</span>
-          <span>{status.required.toLocaleString()} needed</span>
-        </div>
-      </div>
+
     </button>
   );
 };
@@ -273,7 +261,7 @@ const Header = ({ onChatToggle, chatOpen, fullWidth }) => {
       WebkitBackdropFilter: 'blur(24px)',
       boxShadow: '0px 4px 44px 0px rgba(0, 0, 0, 0.25)'
     }}>
-      <div className={`h-full ${fullWidth ? 'max-w-[1600px]' : 'max-w-[1240px]'} mx-auto flex items-center justify-between px-4 md:px-8 xl:px-0 w-full`}>
+      <div className={`relative left-[10px] h-full ${fullWidth ? 'max-w-[1600px]' : 'max-w-[1240px]'} mx-auto flex items-center justify-between px-4 md:px-8 xl:px-0 w-full`}>
 
         {/* Group 1: Brand */}
         <button
@@ -320,7 +308,7 @@ const Header = ({ onChatToggle, chatOpen, fullWidth }) => {
 
         {/* Group 3: User Actions */}
         <div
-          className="flex items-center shrink-0"
+          className="relative right-[3px] flex items-center shrink-0"
           style={{ height: '48px', gap: '8px' }}
         >
           {/* Live Chat Button → sidebar */}
@@ -403,7 +391,7 @@ const Header = ({ onChatToggle, chatOpen, fullWidth }) => {
               </div>
               <div
                 className="hidden md:flex flex-col items-start justify-center flex-1 overflow-visible"
-                style={{ minWidth: '42px', width: 'auto', height: '26px', gap: '4px' }}
+                style={{ minWidth: '42px', width: 'auto', height: '26px', gap: '8px' }}
               >
                 <span
                   className="text-white text-left"
@@ -425,7 +413,7 @@ const Header = ({ onChatToggle, chatOpen, fullWidth }) => {
                   <img
                     src="/coins/coinfinal.png"
                     alt="Coin"
-                    style={{ width: '12px', height: '12px', objectFit: 'contain', flexShrink: 0 }}
+                    style={{ width: '12px', height: '12px', objectFit: 'contain', flexShrink: 0, marginTop: '4px' }}
                   />
                   <span style={{
                     minWidth: '24px',

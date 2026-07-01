@@ -121,7 +121,7 @@ function NotificationMessage({ message, metadata, onLinkClick }) {
 
     return (
         <div style={{
-            width: '280px',
+            width: '100%',
             height: '38px',
             fontFamily: '"Barlow Condensed", sans-serif',
             fontWeight: 500,
@@ -195,15 +195,7 @@ export default function NotificationPanel() {
         <AnimatePresence>
             {isPanelOpen && (
                 <>
-                    {/* Backdrop */}
-                    <motion.div 
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 0.5 }}
-                        exit={{ opacity: 0 }}
-                        onClick={closePanel}
-                        className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[9998]"
-                        aria-hidden="true"
-                    />
+
 
                     {/* Panel */}
                     <motion.div
@@ -343,10 +335,9 @@ export default function NotificationPanel() {
                                         className="transition-colors hover:bg-white/[0.02]"
                                     >
                                         <div style={{ display: 'flex', flexDirection: 'row', gap: '8px', width: '100%', height: '100%', position: 'relative' }}>
-                                            {getNotificationIcon(notif.type, notif.metadata)}
                                             
                                             <div style={{
-                                                width: '280px',
+                                                width: '100%',
                                                 height: '86px',
                                                 display: 'flex',
                                                 flexDirection: 'column',
@@ -357,7 +348,7 @@ export default function NotificationPanel() {
                                             }}>
                                                 <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                                                     <h3 style={{
-                                                        width: '280px',
+                                                        width: '100%',
                                                         height: 'auto',
                                                         fontFamily: '"Barlow Condensed", sans-serif',
                                                         fontWeight: 600,

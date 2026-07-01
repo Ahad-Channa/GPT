@@ -97,7 +97,6 @@ export const OfferwallCard = ({ provider, userId }) => {
   if (!url) {
     return (
       <div className="glass-card p-10 text-center flex flex-col items-center gap-3">
-        <FiInbox className="text-slate-600 text-3xl" />
         <p className="text-slate-500 text-sm">This offerwall is not yet configured with an embed URL.</p>
       </div>
     );
@@ -243,7 +242,7 @@ export const FeaturedOfferCard = ({ offer, onClick }) => {
               alignItems: 'center'
             }}
           >
-            +<CoinDisplay amount={offer.rewardAmount} />
+            +<CoinDisplay amount={offer.rewardAmount} showIcon={false} />
           </span>
         </div>
       </div>

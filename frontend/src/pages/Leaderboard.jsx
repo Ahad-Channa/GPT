@@ -180,10 +180,16 @@ const LeaderboardCountdown = ({ targetDate }) => {
 };
 
 /* ── Period Panel ────────────────────────────────────────────── */
-const PeriodPanel = ({ data, onProfileClick }) => {
+const PeriodPanel = ({ data, periodName, onProfileClick }) => {
+  const { currentUser } = useAuth();
   const rankings = data?.rankings || [];
   const rewardTiers = data?.rewardTiers || [];
   const rewardedRanks = data?.rewardedRanks || 0;
+
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResult, setSearchResult] = useState(null);
+  const [isSearching, setIsSearching] = useState(false);
+  const [searchError, setSearchError] = useState('');
 
   const top3 = [rankings[1], rankings[0], rankings[2]]; // 2nd, 1st, 3rd display order
   const others = rankings.slice(3);
@@ -191,6 +197,34 @@ const PeriodPanel = ({ data, onProfileClick }) => {
   const getPrize = (rank) => {
     if (rank > rewardedRanks) return 0;
     return rewardTiers[rank - 1] || 0;
+  };
+
+  const handleSearch = async (e) => {
+    e.preventDefault();
+    if (!searchQuery.trim()) {
+      setSearchResult(null);
+      setSearchError('');
+      return;
+    }
+    setIsSearching(true);
+    setSearchError('');
+    try {
+      const token = await currentUser?.getIdToken();
+      const res = await fetch(`${API}/leaderboard/search?q=${encodeURIComponent(searchQuery)}&period=${periodName}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const data = await res.json();
+      if (data.success && data.user) {
+        setSearchResult(data.user);
+      } else {
+        setSearchResult(null);
+        setSearchError('User not found');
+      }
+    } catch (err) {
+      setSearchError('Search failed');
+    } finally {
+      setIsSearching(false);
+    }
   };
 
   return (
@@ -206,6 +240,7 @@ const PeriodPanel = ({ data, onProfileClick }) => {
 
       {/* List rows 4+ */}
       <div className="w-full max-w-[1240px] mx-auto bg-[#242424] rounded-[30px] p-[30px] shadow-2xl mt-4 flex flex-col gap-[10px]">
+        
         <div
           className="grid grid-cols-[74px_521px_1fr_1fr] gap-[50px] w-full h-[62px] pt-[10px] pb-[30px] pl-[40px] pr-[95px] rounded-[20px] text-white/40"
           style={{ fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 600, fontSize: '32px', lineHeight: '1.2' }}
@@ -269,6 +304,42 @@ const PeriodPanel = ({ data, onProfileClick }) => {
               </motion.div>
             );
           })}
+          {/* Current User extra row at bottom if they aren't in the list */}
+          {data?.currentUser && !rankings.some(r => String(r.userId) === String(data.currentUser.userId)) && (
+            <motion.div
+              variants={item}
+              key={data.currentUser.userId}
+              onClick={() => onProfileClick(data.currentUser.userId)}
+              className="grid grid-cols-[74px_521px_1fr_1fr] gap-[50px] items-center w-full h-[119px] bg-[#1a1a1a] border border-[#FC1E1E]/30 rounded-[20px] pt-[29px] pb-[30px] pl-[40px] pr-[95px] cursor-pointer hover:brightness-110 transition-all mt-4"
+            >
+              <div
+                className="text-white"
+                style={{ fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 600, fontSize: '32px', lineHeight: '1.2' }}
+              >
+                {data.currentUser.rank === '-' ? '-' : `#${data.currentUser.rank}`}
+              </div>
+              <div className="flex items-center gap-[16px] overflow-hidden w-full">
+                <div className="w-[60px] h-[60px] rounded-[10px] overflow-hidden bg-slate-800 flex-shrink-0">
+                  <img src={data.currentUser.avatarUrl || data.currentUser.avatar || '/avatars/avatar1.png'} className="w-full h-full object-cover" alt={data.currentUser.displayName} />
+                </div>
+                <div
+                  className="text-white truncate"
+                  style={{ fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 600, fontSize: '32px', lineHeight: '1.2' }}
+                >
+                  {data.currentUser.displayName} (You)
+                </div>
+              </div>
+              <div className="flex items-center gap-[8px]">
+                <img src="/coins/coinfinal.png" alt="Coin" className="w-[32px] h-[32px] object-contain shrink-0" />
+                <span className="text-transparent bg-clip-text bg-gradient-to-b from-[#FEDF77] to-[#FCB91E]" style={{ fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 700, fontSize: '32px', lineHeight: '1.3' }}>
+                  {data.currentUser.coinsEarned?.toLocaleString() || 0}
+                </span>
+              </div>
+              <div className="flex items-center gap-[8px]">
+                <span className="text-slate-600 text-sm">—</span>
+              </div>
+            </motion.div>
+          )}
         </motion.div>
       </div>
     </div>

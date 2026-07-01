@@ -119,9 +119,6 @@ const Earn = () => {
 
   const renderEmptyState = (label) => (
     <div className="glass-card p-16 text-center flex flex-col items-center gap-4">
-      <div className="w-16 h-16 rounded-2xl bg-white/[0.03] border border-white/[0.07] flex items-center justify-center">
-        <FiInbox className="text-slate-600 text-2xl" />
-      </div>
       <div>
         <p className="text-slate-300 font-semibold mb-1">No {label} Available</p>
         <p className="text-slate-500 text-sm">Check back soon — new earning opportunities are added regularly.</p>

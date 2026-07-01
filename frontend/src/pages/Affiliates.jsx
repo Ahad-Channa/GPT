@@ -271,7 +271,7 @@ const Affiliates = () => {
               Invite friends and earn {statsLoading ? '...' : (stats.referralPercentage != null ? `${stats.referralPercentage}%` : '10%')} of their earnings — forever! The more you invite, the more you earn.
             </p>
           </div>
-          <div className="relative lg:absolute lg:right-[-30.53px] lg:top-[-49px] w-[365.53px] h-[243.69px] shrink-0 pointer-events-none z-0 mt-8 lg:mt-0">
+          <div className="relative lg:absolute lg:right-[-28.53px] lg:top-[-49px] w-[365.53px] h-[243.69px] shrink-0 pointer-events-none z-0 mt-8 lg:mt-0">
             <img
               src="/coins/heroaffli.png"
               alt="Affiliate Hero"
@@ -409,33 +409,33 @@ const Affiliates = () => {
             <div className="w-full lg:w-[1203px] lg:h-[48px] rounded-[100px] flex flex-col sm:flex-row gap-[20px] lg:justify-between items-center">
               <button
                 onClick={() => setActiveTab('recent')}
-                className={`transition-all flex justify-center items-center gap-[10px] py-[10px] px-[20px] rounded-[10px] text-[16px] font-bold shrink-0 ${activeTab === 'recent'
-                  ? 'lg:w-[401px] h-[48px] bg-[#49b265] text-white shadow-[0px_4px_0px_0px_rgba(39,109,58,1)]'
-                  : 'w-auto h-[48px] text-white hover:bg-white/5'
+                className={`transition-all flex justify-center items-center gap-[10px] py-[10px] px-[20px] rounded-[10px] text-[16px] font-bold shrink-0 flex-1 h-[48px] ${activeTab === 'recent'
+                  ? 'bg-[#49b265] text-white shadow-[0px_4px_0px_0px_rgba(39,109,58,1)]'
+                  : 'text-white hover:bg-white/5'
                   }`}
               >
                 <img src="/coins/paisa.png" alt="Recent" className={`w-[24px] h-[24px] shrink-0 object-contain ${activeTab === 'recent' ? 'brightness-0 invert' : ''}`} />
-                <span style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="w-[180px] h-[32px] font-bold text-[20px] leading-[32px] text-white tracking-normal m-0 p-0 flex items-center justify-start whitespace-nowrap">Recent Affiliate Earnings</span>
+                <span style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="h-[32px] font-bold text-[20px] leading-[32px] text-white tracking-normal m-0 p-0 flex items-center justify-center whitespace-nowrap">Recent Affiliate Earnings</span>
               </button>
               <button
                 onClick={() => setActiveTab('users')}
-                className={`transition-all flex justify-center items-center gap-[10px] py-[10px] px-[20px] rounded-[10px] text-[16px] font-bold shrink-0 ${activeTab === 'users'
-                  ? 'lg:w-[401px] h-[48px] bg-[#49b265] text-white shadow-[0px_4px_0px_0px_rgba(39,109,58,1)]'
-                  : 'w-auto h-[48px] text-white hover:bg-white/5'
+                className={`transition-all flex justify-center items-center gap-[10px] py-[10px] px-[20px] rounded-[10px] text-[16px] font-bold shrink-0 flex-1 h-[48px] ${activeTab === 'users'
+                  ? 'bg-[#49b265] text-white shadow-[0px_4px_0px_0px_rgba(39,109,58,1)]'
+                  : 'text-white hover:bg-white/5'
                   }`}
               >
                 <img src="/coins/persons.png" alt="Users" className={`w-[24px] h-[24px] shrink-0 object-contain ${activeTab === 'users' ? 'brightness-0 invert' : ''}`} />
-                <span style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="w-[180px] h-[32px] font-bold text-[20px] leading-[32px] text-white tracking-normal m-0 p-0 flex items-center justify-start whitespace-nowrap">Referred Users</span>
+                <span style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="h-[32px] font-bold text-[20px] leading-[32px] text-white tracking-normal m-0 p-0 flex items-center justify-center whitespace-nowrap">Referred Users</span>
               </button>
               <button
                 onClick={() => setActiveTab('pending')}
-                className={`transition-all flex justify-center items-center gap-[10px] py-[10px] px-[20px] rounded-[10px] text-[16px] font-bold shrink-0 ${activeTab === 'pending'
-                  ? 'lg:w-[401px] h-[48px] bg-[#49b265] text-white shadow-[0px_4px_0px_0px_rgba(39,109,58,1)]'
-                  : 'w-auto h-[48px] text-white hover:bg-white/5'
+                className={`transition-all flex justify-center items-center gap-[10px] py-[10px] px-[20px] rounded-[10px] text-[16px] font-bold shrink-0 flex-1 h-[48px] ${activeTab === 'pending'
+                  ? 'bg-[#49b265] text-white shadow-[0px_4px_0px_0px_rgba(39,109,58,1)]'
+                  : 'text-white hover:bg-white/5'
                   }`}
               >
                 <img src="/coins/clock.png" alt="Pending" className={`w-[24px] h-[24px] shrink-0 object-contain ${activeTab === 'pending' ? 'brightness-0 invert' : ''}`} />
-                <span style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="w-[180px] h-[32px] font-bold text-[20px] leading-[32px] text-white tracking-normal m-0 p-0 flex items-center justify-start whitespace-nowrap">Pending Affiliate Earnings</span>
+                <span style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="h-[32px] font-bold text-[20px] leading-[32px] text-white tracking-normal m-0 p-0 flex items-center justify-center whitespace-nowrap">Pending Affiliate Earnings</span>
               </button>
             </div>
           </div>

@@ -74,6 +74,7 @@ const BookDetailModal = ({ book, onClose, onOrder, balance }) => {
   const hasOrder = !!book.userOrder;
   const validImages = book.previewImages?.filter(Boolean) || [];
   const [previewIdx, setPreviewIdx] = useState(0);
+  const [lightboxIdx, setLightboxIdx] = useState(null);
 
   const nextPreview = () => {
     if (previewIdx + 3 < validImages.length) setPreviewIdx(p => p + 1);
@@ -139,23 +140,16 @@ const BookDetailModal = ({ book, onClose, onOrder, balance }) => {
                     {book.coinCost.toLocaleString()}
                   </span>
                 </div>
-
-                {hasOrder ? (
-                  <div className="flex items-center justify-center px-[30px] py-[10px] w-[238.5px] h-[48px] bg-[#1a1a1a] text-[#49B265] font-bold font-['Barlow_Condensed'] rounded-[10px] text-[20px] border border-[#49B265]/30 gap-[10px]">
-                    Status: <span className="capitalize ml-1">{book.userOrder.status}</span>
-                  </div>
-                ) : (
-                  <button
-                    onClick={() => canAfford && onOrder(book)}
-                    disabled={!canAfford}
-                    className="flex items-center justify-center w-[238.5px] h-[48px] gap-[10px] rounded-[10px] px-[30px] py-[10px] bg-[#49B265] shadow-[0_4px_0_0_#276D3A] hover:bg-[#49B265]/90 hover:translate-y-[1px] hover:shadow-[0_3px_0_0_#276D3A] active:translate-y-[4px] active:shadow-none transition-all disabled:opacity-50 disabled:active:translate-y-0 disabled:hover:translate-y-0 disabled:hover:shadow-[0_4px_0_0_#276D3A]"
-                  >
-                    <span className="font-bold font-['Barlow_Condensed'] text-[20px] leading-none text-white whitespace-nowrap">
-                      {canAfford ? 'Order Now' : 'Insufficient Coins'}
-                    </span>
-                    {canAfford && <img src="/coins/ar.png" alt="Arrow" className="w-[24px] h-[24px] object-contain shrink-0" />}
-                  </button>
-                )}
+                <button
+                  onClick={() => canAfford && onOrder(book)}
+                  disabled={!canAfford}
+                  className="flex items-center justify-center w-[238.5px] h-[48px] gap-[10px] rounded-[10px] px-[30px] py-[10px] bg-[#49B265] shadow-[0_4px_0_0_#276D3A] hover:bg-[#49B265]/90 hover:translate-y-[1px] hover:shadow-[0_3px_0_0_#276D3A] active:translate-y-[4px] active:shadow-none transition-all disabled:opacity-50 disabled:active:translate-y-0 disabled:hover:translate-y-0 disabled:hover:shadow-[0_4px_0_0_#276D3A]"
+                >
+                  <span className="font-bold font-['Barlow_Condensed'] text-[20px] leading-none text-white whitespace-nowrap">
+                    {canAfford ? 'Order Now' : 'Insufficient Coins'}
+                  </span>
+                  {canAfford && <img src="/coins/ar.png" alt="Arrow" className="w-[24px] h-[24px] object-contain shrink-0" />}
+                </button>
               </div>
             </div>
 
@@ -186,7 +180,11 @@ const BookDetailModal = ({ book, onClose, onOrder, balance }) => {
               </button>
               <div className="flex gap-[16px] justify-center overflow-hidden">
                 {validImages.slice(previewIdx, previewIdx + 3).map((url, i) => (
-                  <div key={i} className="bg-white rounded-[3px] overflow-hidden flex-shrink-0 w-[177px] h-[256px] flex items-center justify-center">
+                  <div
+                    key={i}
+                    onClick={() => setLightboxIdx(previewIdx + i)}
+                    className="bg-white rounded-[3px] overflow-hidden flex-shrink-0 w-[177px] h-[256px] flex items-center justify-center cursor-pointer hover:ring-2 hover:ring-[#49B265] transition-all"
+                  >
                     <img src={url} alt={`Preview ${i + 1}`} className="w-full h-full object-cover" />
                   </div>
                 ))}
@@ -203,6 +201,64 @@ const BookDetailModal = ({ book, onClose, onOrder, balance }) => {
         )}
 
       </motion.div>
+
+      {/* Lightbox Overlay */}
+      <AnimatePresence>
+        {lightboxIdx !== null && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100000] flex items-center justify-center bg-black/95 backdrop-blur-md p-4"
+            onClick={(e) => {
+              e.stopPropagation();
+              setLightboxIdx(null);
+            }}
+          >
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                setLightboxIdx(null);
+              }}
+              className="absolute top-6 right-6 text-white/50 hover:text-white transition-colors"
+            >
+              <FiX size={32} />
+            </button>
+
+            <div className="relative w-full max-w-5xl h-full flex items-center justify-center" onClick={e => e.stopPropagation()}>
+              <img
+                src={validImages[lightboxIdx]}
+                alt={`Enlarged Preview ${lightboxIdx + 1}`}
+                className="max-w-full max-h-[90vh] object-contain rounded-lg shadow-2xl"
+              />
+
+              {validImages.length > 1 && (
+                <>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setLightboxIdx(prev => (prev > 0 ? prev - 1 : validImages.length - 1));
+                    }}
+                    className="absolute left-4 md:left-12 p-3 rounded-full bg-white/10 text-white hover:bg-white/20 transition-colors"
+                  >
+                    <FiChevronLeft size={32} />
+                  </button>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setLightboxIdx(prev => (prev < validImages.length - 1 ? prev + 1 : 0));
+                    }}
+                    className="absolute right-4 md:right-12 p-3 rounded-full bg-white/10 text-white hover:bg-white/20 transition-colors"
+                  >
+                    <FiChevronRight size={32} />
+                  </button>
+                </>
+              )}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
     </motion.div>,
     document.body
   );

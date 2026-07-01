@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useLayoutEffect, useRef, useCallback } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { FiSend, FiHeadphones, FiClock, FiCheckCircle, FiAlertCircle, FiLoader } from 'react-icons/fi';
 import { FaCrown } from 'react-icons/fa';
@@ -266,15 +266,18 @@ const SupportChat = ({ socket }) => {
   const endRef  = useRef(null);
   const inputRef = useRef(null);
 
-  const scrollToBottom = useCallback(() => {
-    endRef.current?.scrollIntoView({ behavior: 'smooth' });
+  const isInitialScroll = useRef(true);
+
+  const scrollToBottom = useCallback((behavior = 'smooth') => {
+    endRef.current?.scrollIntoView({ behavior });
   }, []);
 
   // Fetch active ticket
   useEffect(() => {
     if (!currentUser) { setLoading(false); return; }
+    setLoading(true);
+    const startTime = Date.now();
     (async () => {
-      setLoading(true);
       try {
         const token = await currentUser.getIdToken();
         const res   = await fetch(`${API}/support/my-ticket`, {
@@ -289,7 +292,11 @@ const SupportChat = ({ socket }) => {
           setMessages([]);
         }
       } catch (e) { console.error(e); }
-      finally { setLoading(false); }
+      finally {
+        const elapsed = Date.now() - startTime;
+        const remaining = Math.max(0, 400 - elapsed);
+        setTimeout(() => setLoading(false), remaining);
+      }
     })();
   }, [currentUser, resetKey]);
 
@@ -322,7 +329,29 @@ const SupportChat = ({ socket }) => {
     };
   }, [socket, ticket]);
 
-  useEffect(() => { scrollToBottom(); }, [messages]);
+  useLayoutEffect(() => {
+    if (messages.length === 0) return;
+    if (isInitialScroll.current) {
+      const snap = () => {
+        endRef.current?.scrollIntoView({ behavior: 'auto' });
+      };
+      snap();
+      requestAnimationFrame(snap);
+      const t1 = setTimeout(snap, 30);
+      const t2 = setTimeout(snap, 80);
+      const t3 = setTimeout(() => {
+        snap();
+        isInitialScroll.current = false;
+      }, 150);
+      return () => {
+        clearTimeout(t1);
+        clearTimeout(t2);
+        clearTimeout(t3);
+      };
+    } else {
+      endRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [messages]);
   useEffect(() => { setTimeout(() => inputRef.current?.focus(), 150); }, [ticket]);
 
   const sendMessage = async (e) => {
@@ -357,7 +386,12 @@ const SupportChat = ({ socket }) => {
   // ── Loading ───────────────────────────────────────────────────────────────
   if (loading) return (
     <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-      <FiLoader style={{ fontSize: 22, color: '#6366f1', animation: 'spin 0.8s linear infinite' }} />
+      <div style={{
+        width: 22, height: 22, borderRadius: '50%',
+        border: '2px solid rgba(99,102,241,0.35)',
+        borderTopColor: '#6366f1',
+        animation: 'sidebarSpin 0.8s linear infinite'
+      }} />
     </div>
   );
 

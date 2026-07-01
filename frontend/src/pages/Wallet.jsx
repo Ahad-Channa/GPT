@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import DashboardLayout from '../components/layout/DashboardLayout';
 import { useAuth } from '../contexts/AuthContext';
@@ -12,6 +13,7 @@ import {
   FiArrowRight,
   FiGift,
   FiCheck,
+  FiAlertCircle,
 } from 'react-icons/fi';
 import { FaPaypal, FaAmazon } from 'react-icons/fa';
 import { SiLitecoin, SiNetflix, SiGoogleplay } from 'react-icons/si';
@@ -23,14 +25,27 @@ const PromoCodeRedeem = ({ onSuccess }) => {
   const { currentUser } = useAuth();
   const [code, setCode] = useState('');
   const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState({ text: '', type: '' });
+  const [popup, setPopup] = useState(null); // { type: 'success'|'error', text: '' }
+
+  // Lock scroll when popup is open — only button can close it
+  useEffect(() => {
+    if (!popup) return;
+    document.body.style.overflow = 'hidden';
+    document.body.style.overflowY = 'hidden';
+    document.documentElement.style.overflowY = 'hidden';
+    return () => {
+      document.body.style.overflow = '';
+      document.body.style.overflowY = '';
+      document.documentElement.style.overflowY = '';
+    };
+  }, [popup]);
 
   const handleRedeem = async (e) => {
     e.preventDefault();
     if (!code.trim()) return;
 
     setLoading(true);
-    setMessage({ text: '', type: '' });
+    setPopup(null);
 
     try {
       const token = await currentUser.getIdToken();
@@ -45,61 +60,118 @@ const PromoCodeRedeem = ({ onSuccess }) => {
       const data = await res.json();
 
       if (data.success) {
-        setMessage({ text: <span className="flex items-center gap-1">+<CoinDisplay amount={data.coinsEarned} size={12} /> added to your wallet!</span>, type: 'success' });
+        setPopup({ type: 'success', coins: data.coinsEarned, newBalance: data.newBalance });
         setCode('');
         if (onSuccess) onSuccess(data.newBalance);
       } else {
-        setMessage({ text: data.error || 'Failed to redeem code', type: 'error' });
+        setPopup({ type: 'error', text: data.error || 'Failed to redeem code' });
       }
     } catch (err) {
-      setMessage({ text: 'Network error. Try again later.', type: 'error' });
+      setPopup({ type: 'error', text: 'Network error. Try again later.' });
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <motion.div variants={item} className="flex flex-col md:flex-row items-start md:items-center justify-between w-[1240px] md:h-[120px] rounded-[20px] p-[20px] bg-[#242424] shrink-0 gap-[18px] relative">
-      <div className="flex flex-col gap-[6px] w-full md:w-[591px] md:h-[76px] shrink-0 justify-between">
-        <h2 className="m-0 p-0 font-bold font-['Barlow_Condensed'] text-[34px] leading-[120%] text-white w-full md:w-[591px] md:h-[41px] flex items-center shrink-0">
-          Redeem Promo Code
-        </h2>
-        <p className="m-0 p-0 font-medium font-['Barlow_Condensed'] text-[22px] leading-[130%] text-[#888888] w-full md:w-[591px] md:h-[29px] flex items-center shrink-0">
-          Have a code? Enter it below to claim free coins.
-        </p>
-      </div>
+    <>
+      <motion.div variants={item} className="flex flex-col md:flex-row items-start md:items-center justify-between w-[1240px] md:h-[120px] rounded-[20px] p-[20px] bg-[#242424] shrink-0 gap-[18px] relative">
+        <div className="flex flex-col gap-[6px] w-full md:w-[591px] md:h-[76px] shrink-0 justify-between">
+          <h2 className="m-0 p-0 font-bold font-['Barlow_Condensed'] text-[34px] leading-[120%] text-white w-full md:w-[591px] md:h-[41px] flex items-center shrink-0">
+            Redeem Promo Code
+          </h2>
+          <p className="m-0 p-0 font-medium font-['Barlow_Condensed'] text-[22px] leading-[130%] text-[#888888] w-full md:w-[591px] md:h-[29px] flex items-center shrink-0">
+            Have a code? Enter it below to claim free coins.
+          </p>
+        </div>
 
-      <form onSubmit={handleRedeem} className="flex items-center w-full md:w-[591px] md:h-[80px] bg-[rgba(255,255,255,0.08)] border border-[#49B265] rounded-[10px] p-[16px] justify-between gap-[10px] shrink-0 relative">
-        <input
-          type="text"
-          value={code}
-          onChange={(e) => setCode(e.target.value.toUpperCase())}
-          placeholder="Enter code here..."
-          className="w-full md:w-[466px] h-[20px] bg-transparent text-white placeholder-white/50 font-medium font-['Barlow_Condensed'] text-[22px] leading-[20px] align-middle focus:outline-none border-none p-0 uppercase"
-          disabled={loading}
-        />
-        <button
-          type="submit"
-          disabled={loading || !code.trim()}
-          className="flex items-center justify-center w-[93px] h-[48px] rounded-[10px] gap-[10px] py-[10px] px-[20px] bg-[#49B265] shadow-[0_4px_0_0_#276D3A] hover:bg-[#49B265]/90 hover:translate-y-[1px] hover:shadow-[0_3px_0_0_#276D3A] active:translate-y-[4px] active:shadow-none transition-all disabled:opacity-50 disabled:translate-y-0 disabled:shadow-[0_4px_0_0_#276D3A] shrink-0"
-        >
-          <span className="font-bold font-['Barlow_Condensed'] text-[18px] leading-none text-white whitespace-nowrap">
-            {loading ? '...' : 'Redeem'}
-          </span>
-        </button>
-      </form>
+        <form onSubmit={handleRedeem} className="flex items-center w-full md:w-[591px] md:h-[80px] bg-[rgba(255,255,255,0.08)] border border-[#49B265] rounded-[10px] p-[16px] justify-between gap-[10px] shrink-0">
+          <input
+            type="text"
+            value={code}
+            onChange={(e) => setCode(e.target.value.toUpperCase())}
+            placeholder="Enter code here..."
+            className="w-full md:w-[466px] h-[20px] bg-transparent text-white placeholder-white/50 font-medium font-['Barlow_Condensed'] text-[22px] leading-[20px] align-middle focus:outline-none border-none p-0 uppercase"
+            disabled={loading}
+          />
+          <button
+            type="submit"
+            disabled={loading || !code.trim()}
+            className="flex items-center justify-center w-[93px] h-[48px] rounded-[10px] gap-[10px] py-[10px] px-[20px] bg-[#49B265] shadow-[0_4px_0_0_#276D3A] hover:bg-[#49B265]/90 hover:translate-y-[1px] hover:shadow-[0_3px_0_0_#276D3A] active:translate-y-[4px] active:shadow-none transition-all disabled:opacity-50 disabled:translate-y-0 disabled:shadow-[0_4px_0_0_#276D3A] shrink-0"
+          >
+            <span className="font-bold font-['Barlow_Condensed'] text-[18px] leading-none text-white whitespace-nowrap">
+              {loading ? '...' : 'Redeem'}
+            </span>
+          </button>
+        </form>
+      </motion.div>
 
-      {message.text && (
-        <motion.p
-          initial={{ opacity: 0, y: -5 }} animate={{ opacity: 1, y: 0 }}
-          className={`absolute -bottom-[24px] right-[20px] text-sm font-medium ${message.type === 'success' ? 'text-emerald-400' : 'text-rose-400'}`}
-        >
-          {message.text}
-        </motion.p>
+      {/* ── Promo Result Popup — rendered via portal so it escapes transform stacking context ── */}
+      {createPortal(
+        <AnimatePresence>
+          {popup && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 z-[9999] flex items-center justify-center p-4"
+              style={{ background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)' }}
+            >
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95, y: 12 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95, y: 12 }}
+                transition={{ duration: 0.2 }}
+                onClick={(e) => e.stopPropagation()}
+                className="relative bg-[#242424] border border-white/[0.08] shadow-2xl flex flex-col items-center gap-[24px]"
+                style={{ width: '500px', borderRadius: '20px', padding: '32px 16px 28px' }}
+              >
+                {/* Icon */}
+                <div
+                  className="flex items-center justify-center rounded-full shrink-0"
+                  style={{
+                    width: 72, height: 72,
+                    background: popup.type === 'success' ? 'rgba(73,178,101,0.15)' : 'transparent',
+                  }}
+                >
+                  {popup.type === 'success' ? (
+                    <FiCheck size={36} className="text-[#49B265]" />
+                  ) : (
+                    <img src="/coins/war2.png" alt="Error" className="w-[64px] h-[64px] object-contain" />
+                  )}
+                </div>
+
+                {/* Title */}
+                <div className="flex flex-col items-center gap-[8px] w-[468px]">
+                  <h2 className="m-0 p-0 font-bold font-['Barlow_Condensed'] text-[34px] leading-[120%] text-white text-center">
+                    {popup.type === 'success' ? 'Code Redeemed!' : 'Redemption Failed'}
+                  </h2>
+                  <p className="m-0 p-0 font-medium font-['Barlow_Condensed'] text-[22px] leading-[130%] text-[#888888] text-center">
+                    {popup.type === 'success'
+                      ? <span className="flex items-center justify-center gap-2">+<CoinDisplay amount={popup.coins} size={18} /> added to your wallet!</span>
+                      : popup.text}
+                  </p>
+                </div>
+
+                {/* Close button */}
+                <button
+                  onClick={() => setPopup(null)}
+                  className="flex items-center justify-center w-[468px] h-[48px] rounded-[10px] gap-[10px] px-[30px] py-[10px] bg-[#49B265] shadow-[0_4px_0_0_#276D3A] hover:bg-[#49B265]/90 hover:translate-y-[1px] hover:shadow-[0_3px_0_0_#276D3A] active:translate-y-[4px] active:shadow-none transition-all"
+                >
+                  <span className="font-bold font-['Barlow_Condensed'] text-[18px] leading-none text-white">
+                    {popup.type === 'success' ? 'Awesome!' : 'Try Again'}
+                  </span>
+                </button>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>,
+        document.body
       )}
-    </motion.div>
+    </>
   );
 };
+
 
 
 const Wallet = () => {
@@ -110,9 +182,24 @@ const Wallet = () => {
   const [txRefresh, setTxRefresh] = useState(0);
   const [settingsLoad, setSettingsLoad] = useState(true);
   const [showBookSelector, setShowBookSelector] = useState(false);
-  const [books, setBooks] = useState([]);
-  const [booksLoading, setBooksLoading] = useState(true);
-  const [booksVisible, setBooksVisible] = useState(false);
+  const [books, setBooks] = useState(() => {
+    try {
+      const cached = localStorage.getItem('books');
+      return cached ? JSON.parse(cached) : [];
+    } catch {
+      return [];
+    }
+  });
+  const [booksVisible, setBooksVisible] = useState(() => {
+    const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+    if (isLocalhost) return true;
+    return localStorage.getItem('booksVisible') === 'true';
+  });
+  const [booksLoading, setBooksLoading] = useState(() => {
+    const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+    if (isLocalhost) return false;
+    return !localStorage.getItem('booksVisible');
+  });
 
   // Load wallet settings (fee %, methods, live rate)
   useEffect(() => {
@@ -146,7 +233,11 @@ const Wallet = () => {
         const data = await res.json();
         if (data.success) {
           setBooks(data.books);
-          setBooksVisible(!data.booksGermanyOnly || data.isGermanIP);
+          localStorage.setItem('books', JSON.stringify(data.books));
+          const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+          const visible = data.isGermanIP === true || isLocalhost;
+          setBooksVisible(visible);
+          localStorage.setItem('booksVisible', String(visible));
         }
       } catch (err) {
         console.error('Failed to load books:', err);
@@ -186,7 +277,7 @@ const Wallet = () => {
             <h1 className="m-0 p-0 font-bold text-[68px] leading-[120%] text-white font-['Barlow_Condensed'] whitespace-nowrap">Withdraw</h1>
             <p className="m-0 p-0 font-medium text-[26px] leading-[130%] text-[#888888] font-['Barlow_Condensed']">Choose your preferred withdrawal method and convert your coins into real rewards.</p>
           </div>
-          <div className="hidden md:block absolute right-[-7px] -top-[36px] opacity-100 pointer-events-none w-[317px] h-[226px] z-0">
+          <div className="hidden md:block absolute right-[-3px] -top-[36px] opacity-100 pointer-events-none w-[317px] h-[226px] z-0">
             <img
               src="/coins/withdarwhero.png"
               alt="Wallet Illustration"
@@ -242,7 +333,7 @@ const Wallet = () => {
         </motion.div>
 
         {/* ── Withdrawal Options ───────────────────────────────────── */}
-        <motion.div variants={item} className="flex flex-col md:flex-row justify-between gap-5 w-[1240px] shrink-0">
+        <motion.div variants={item} className="flex flex-col md:flex-row justify-start gap-[20px] w-[1240px] shrink-0">
 
           {/* Card 1: PayPal & Litecoin */}
           <div className="bg-white/[0.14] rounded-[20px] p-[20px] flex flex-col gap-[18px] w-full md:w-[400px] md:h-[445px] hover:bg-white/[0.18] transition-colors shrink-0">

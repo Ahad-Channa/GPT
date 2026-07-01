@@ -362,6 +362,73 @@ router.get('/', verifyToken, async (req, res) => {
         ? new Date(Math.max(new Date(storedReset).getTime(), naturalStart.getTime()))
         : naturalStart;
 
+      let currentUserRankObj = null;
+      if (req.user && req.user._id) {
+        const inRankings = rankings.find(r => String(r.userId) === String(req.user._id));
+        if (inRankings) {
+          currentUserRankObj = inRankings;
+        } else {
+          let myEarned = 0;
+          let myRank = '-';
+          
+          if (period === 'allTime') {
+             const me = await User.findById(req.user._id);
+             myEarned = me?.totalEarned || 0;
+             if (myEarned > 0) {
+               const higherCount = await User.countDocuments({ totalEarned: { $gt: myEarned }, role: { $ne: 'admin' }, isBanned: false });
+               myRank = higherCount + 1;
+             }
+             currentUserRankObj = {
+                rank: myRank,
+                userId: me._id,
+                displayName: me.displayName,
+                avatarUrl: me.avatarUrl,
+                avatar: me.photoURL,
+                coinsEarned: myEarned,
+             };
+          } else {
+             const myRes = await Transaction.aggregate([
+                { $match: { 
+                     userId: req.user._id,
+                     transactionType: { $in: REAL_EARNING_TYPES },
+                     amount: { $gt: 0 },
+                     status: { $in: ['completed', 'hold'] },
+                     createdAt: { $gte: actualCycleStart }
+                  } 
+                },
+                { $group: { _id: null, total: { $sum: '$amount' } } }
+             ]);
+             myEarned = myRes.length > 0 ? myRes[0].total : 0;
+             
+             if (myEarned > 0) {
+                 const higherUsers = await Transaction.aggregate([
+                    { $match: { 
+                         transactionType: { $in: REAL_EARNING_TYPES },
+                         amount: { $gt: 0 },
+                         status: { $in: ['completed', 'hold'] },
+                         createdAt: { $gte: actualCycleStart }
+                      } 
+                    },
+                    { $group: { _id: '$userId', total: { $sum: '$amount' } } },
+                    { $match: { total: { $gt: myEarned } } },
+                    { $count: "count" }
+                 ]);
+                 myRank = higherUsers.length > 0 ? higherUsers[0].count + 1 : 1;
+             }
+
+             const me = await User.findById(req.user._id);
+             currentUserRankObj = {
+                rank: myRank,
+                userId: me._id,
+                displayName: me?.displayName || 'Unknown',
+                avatarUrl: me?.avatarUrl,
+                avatar: me?.photoURL,
+                coinsEarned: myEarned,
+             };
+          }
+        }
+      }
+
       result[period] = {
         enabled: true,
         cycleStart: actualCycleStart.toISOString(),
@@ -370,6 +437,7 @@ router.get('/', verifyToken, async (req, res) => {
         rewardedRanks,
         rewardTiers: rewardTiersArr,
         rankings,
+        currentUser: currentUserRankObj
       };
     }));
 
@@ -379,5 +447,7 @@ router.get('/', verifyToken, async (req, res) => {
     res.status(500).json({ success: false, error: 'Failed to fetch leaderboard' });
   }
 });
+
+
 
 module.exports.router = router;

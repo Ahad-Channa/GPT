@@ -9,63 +9,65 @@ import { TIER_STYLES } from '../utils/vipLevels';
  *  inline — if true, renders as an inline element (for chat)
  */
 const SIZE = {
-  xs: { badge: { fontSize: '11px', padding: '2px 8px', borderRadius: 100, gap: 2 }, roman: { fontSize: '9px' } },
-  sm: { badge: { fontSize: '12px', padding: '2px 10px', borderRadius: 100, gap: 3 }, roman: { fontSize: '10px' } },
-  md: { badge: { fontSize: '14px', padding: '4px 12px', borderRadius: 100, gap: 4 }, roman: { fontSize: '11px' } },
-  lg: { badge: { fontSize: '16px', padding: '6px 16px', borderRadius: 100, gap: 5 }, roman: { fontSize: '12px' } },
+  xs: { badge: { fontSize: '10px', padding: '0 7.94px', gap: '2.63px', minWidth: '44px', height: '18px' }, roman: { fontSize: '10px' } },
+  sm: { badge: { fontSize: '10px', padding: '2px 10px', gap: '3px' }, roman: { fontSize: '10px' } },
+  md: { badge: { fontSize: '12px', padding: '4px 12px', gap: '4px' }, roman: { fontSize: '12px' } },
+  lg: { badge: { fontSize: '14px', padding: '6px 14px', gap: '5px' }, roman: { fontSize: '14px' } },
+};
+
+const getBackground = (tier) => {
+  switch (tier) {
+    case 'Bronze': return 'linear-gradient(180deg, #FF8C00 0%, #90540B 100%)';
+    case 'Silver': return 'linear-gradient(180deg, #DEDEDE 0%, #8B8B8B 100%)';
+    case 'Gold': return 'linear-gradient(180deg, #FEDF77 0%, #FCB91E 100%), linear-gradient(0deg, rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 0.1))';
+    case 'Platinum': return 'linear-gradient(180deg, #1FCBE6 0%, #217681 100%)';
+    case 'Diamond': return 'linear-gradient(180deg, #7F8AF7 0%, #793EB9 100%)';
+    case 'Opal': return 'linear-gradient(180deg, #E079DD 0%, #2757A0 100%)';
+    default: return 'linear-gradient(180deg, #FF8C00 0%, #90540B 100%)';
+  }
 };
 
 const VipBadge = ({ tier = 'Bronze', rank = 'I', size = 'sm', style = {} }) => {
-  const s = TIER_STYLES[tier] || TIER_STYLES.Bronze;
   const sz = SIZE[size] || SIZE.sm;
-  const isOpal = tier === 'Opal';
 
   return (
-    <span
+    <div
       title={rank ? `${tier} ${rank}` : tier}
+      className="flex items-center justify-center overflow-visible"
       style={{
-        display: 'inline-flex',
-        alignItems: 'center',
-        gap: sz.badge.gap,
+        boxSizing: 'border-box',
+        borderRadius: '30px',
         padding: sz.badge.padding,
-        borderRadius: sz.badge.borderRadius,
-        background: s.gradient,
-        border: `1px solid ${s.border}`,
-        boxShadow: `0 0 8px ${s.glow}`,
-        fontWeight: 600,
-        fontFamily: '"Barlow Condensed", sans-serif',
-        letterSpacing: '0.5px',
-        userSelect: 'none',
-        whiteSpace: 'nowrap',
-        flexShrink: 0,
-        ...(isOpal ? {
-          background: 'linear-gradient(135deg, #7c3aed, #ec4899, #06b6d4)',
-          animation: 'opalShimmer 3s ease-in-out infinite',
-        } : {}),
-        ...style,
+        minWidth: sz.badge.minWidth,
+        height: sz.badge.height,
+        background: getBackground(tier),
+        display: 'inline-flex',
+        gap: sz.badge.gap,
+        opacity: 1,
+        ...style
       }}
     >
-      <span style={{ fontSize: sz.badge.fontSize, color: s.text, textShadow: `0 0 8px ${s.glow}` }}>
+      <span
+        className="text-white font-['Barlow_Condensed'] font-semibold leading-[120%] text-center flex items-center justify-center overflow-visible whitespace-nowrap"
+        style={{
+          fontSize: sz.badge.fontSize,
+          letterSpacing: '0%',
+        }}
+      >
         {tier}
       </span>
       {rank && (
-        <span style={{
-          fontSize: sz.roman.fontSize,
-          color: s.text,
-          opacity: 0.85,
-          fontStyle: 'italic',
-          fontWeight: 700,
-        }}>
+        <span
+          className="text-white font-['Barlow_Condensed'] font-semibold leading-[120%] text-center flex items-center justify-center overflow-visible whitespace-nowrap"
+          style={{
+            fontSize: sz.roman.fontSize,
+            letterSpacing: '0%',
+          }}
+        >
           {rank}
         </span>
       )}
-      <style>{`
-        @keyframes opalShimmer {
-          0%,100% { filter: hue-rotate(0deg) brightness(1); }
-          50%      { filter: hue-rotate(30deg) brightness(1.15); }
-        }
-      `}</style>
-    </span>
+    </div>
   );
 };
 

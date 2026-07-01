@@ -355,7 +355,8 @@ router.post('/withdraw', verifyToken, async (req, res) => {
 
     // --- 4. Calculate fee ---
     const feeCoins = Math.ceil(amountNum * (feePercent / 100));
-    const totalDeduction = amountNum + feeCoins; // total coins deducted from balance
+    const totalDeduction = amountNum; // fee is included
+    const netAmount = amountNum - feeCoins;
 
     // --- 5. Load user ---
     const user = await User.findOne({ firebaseUid: req.user.uid });
@@ -364,7 +365,7 @@ router.post('/withdraw', verifyToken, async (req, res) => {
     if (user.walletBalance < totalDeduction) {
       return res.status(400).json({
         success: false,
-        error: `Insufficient balance. You need ${totalDeduction.toLocaleString()} Coins (${amountNum} + ${feeCoins} fee) but have ${user.walletBalance.toLocaleString()} Coins`,
+        error: `Insufficient balance. You need ${totalDeduction.toLocaleString()} Coins but have ${user.walletBalance.toLocaleString()} Coins`,
       });
     }
 
@@ -383,7 +384,7 @@ router.post('/withdraw', verifyToken, async (req, res) => {
     const transaction = await Transaction.create({
       userId: user._id,
       transactionType: 'withdrawal',
-      amount: -amountNum, // negative = deduction
+      amount: -netAmount, // negative = deduction
       fee: feeCoins,
       balanceAfter: updatedUser.walletBalance,
       description: `Withdrawal via ${methodConfig.label} — ${payoutDestination}`,
@@ -403,7 +404,7 @@ router.post('/withdraw', verifyToken, async (req, res) => {
       message: 'Withdrawal request submitted',
       transaction: {
         _id: transaction._id,
-        amount: amountNum,
+        amount: netAmount,
         fee: feeCoins,
         method,
         payoutDestination,

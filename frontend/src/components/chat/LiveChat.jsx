@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useLayoutEffect, useRef, useCallback } from 'react';
 import io from 'socket.io-client';
 import { useAuth } from '../../contexts/AuthContext';
 import { FiX, FiSend, FiMessageSquare, FiTrash2, FiUsers, FiSmile } from 'react-icons/fi';
@@ -71,8 +71,8 @@ const LiveChat = ({ isOpen, onClose }) => {
   const messagesEndRef = useRef(null);
   const inputRef       = useRef(null);
 
-  const scrollToBottom = useCallback(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  const scrollToBottom = useCallback((instant = false) => {
+    messagesEndRef.current?.scrollIntoView({ behavior: instant === true ? 'auto' : 'smooth' });
   }, []);
 
   /* fetch history */
@@ -84,7 +84,7 @@ const LiveChat = ({ isOpen, onClose }) => {
         const data = await res.json();
         if (data.status === 'success') {
           setMessages(data.data);
-          setTimeout(scrollToBottom, 120);
+          setTimeout(() => scrollToBottom(true), 120);
         }
       } catch (err) { console.error('Chat history fetch error:', err); }
     };
@@ -107,9 +107,12 @@ const LiveChat = ({ isOpen, onClose }) => {
   /* scroll on new msg */
   useEffect(() => { scrollToBottom(); }, [messages]);
 
-  /* focus input when opens */
-  useEffect(() => {
-    if (isOpen) setTimeout(() => inputRef.current?.focus(), 350);
+  /* focus input & scroll to bottom when opens synchronously */
+  useLayoutEffect(() => {
+    if (isOpen) {
+      messagesEndRef.current?.scrollIntoView({ behavior: 'auto' });
+      setTimeout(() => inputRef.current?.focus({ preventScroll: true }), 350);
+    }
   }, [isOpen]);
 
   const handleSend = (e) => {

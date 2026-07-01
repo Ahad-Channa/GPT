@@ -212,7 +212,8 @@ const PublicProfileModal = ({ userId, onClose }) => {
                       width: '376px',
                       height: '20px',
                       display: 'flex',
-                      alignItems: 'center'
+                      alignItems: 'center',
+                      marginBottom: '6px'
                     }}>
                       <span style={{
                         fontFamily: '"Barlow Condensed", sans-serif',

@@ -542,7 +542,7 @@ const Home = () => {
                       borderRadius: '10px',
                       padding: '10px 12px',
                       gap: '6px',
-                      background: 'rgba(6, 182, 212, 0.1)'
+                      background: 'rgba(41, 253, 152, 0.1)'
                     }}
                   >
                     <img 
@@ -583,7 +583,7 @@ const Home = () => {
                 {loadingSettings ? (
                   <div className="glass-card p-8 flex justify-center"><div className="w-8 h-8 rounded-full border-2 border-cyan-500 border-t-transparent animate-spin" /></div>
                 ) : gamingProviders.length === 0 ? (
-                  <div className="glass-card p-8 border border-white/[0.05] flex items-center gap-3 opacity-50"><FiInbox className="text-slate-500" /> <span className="text-slate-400 text-sm">No gaming offerwalls active.</span></div>
+                  <div className="glass-card p-8 border border-white/[0.05] flex justify-center opacity-50"><span className="text-slate-400 text-sm">No gaming offerwalls active.</span></div>
                 ) : (
                   <div className={`grid ${gridColsClass} w-full`} style={{ gap: '14px' }}>
                     {gamingProviders.map(provider => (
@@ -619,8 +619,10 @@ const Home = () => {
                       style={{ 
                         width: '88px', 
                         height: '88px', 
-                        borderRadius: '24px', 
-                        background: 'rgba(99, 102, 241, 0.1)' 
+                        borderRadius: '10px', 
+                        padding: '10px 12px',
+                        gap: '6px',
+                        background: 'rgba(41, 253, 152, 0.1)' 
                       }}
                     >
                       <img src="/coins/clicl.png" alt="Surveys" style={{ width: '44px', height: '44px', objectFit: 'contain' }} />
@@ -635,7 +637,7 @@ const Home = () => {
                 {loadingSettings ? (
                   <div className="glass-card p-8 flex justify-center"><div className="w-8 h-8 rounded-full border-2 border-indigo-500 border-t-transparent animate-spin" /></div>
                 ) : surveyProviders.length === 0 ? (
-                  <div className="glass-card p-8 border border-white/[0.05] flex items-center gap-3 opacity-50"><FiInbox className="text-slate-500" /> <span className="text-slate-400 text-sm">No survey offerwalls active.</span></div>
+                  <div className="glass-card p-8 border border-white/[0.05] flex justify-center opacity-50"><span className="text-slate-400 text-sm">No survey offerwalls active.</span></div>
                 ) : (
                   <div className={`grid ${gridColsClass} w-full`} style={{ gap: '14px' }}>
                     {surveyProviders.map(provider => (

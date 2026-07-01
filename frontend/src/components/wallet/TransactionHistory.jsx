@@ -187,9 +187,6 @@ const TransactionHistory = ({ refreshKey = 0, onStatsLoaded }) => {
           </div>
         ) : transactions.length === 0 ? (
           <div className="px-5 py-16 flex flex-col items-center gap-3">
-            <div className="w-14 h-14 rounded-2xl bg-white/[0.04] border border-white/[0.07] flex items-center justify-center">
-              <FiInbox className="text-slate-600 text-2xl" />
-            </div>
             <p className="text-slate-500 text-sm font-medium">No transactions yet</p>
             <p className="text-slate-600 text-xs text-center max-w-xs">
               {filter !== 'all'
