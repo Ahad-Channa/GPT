@@ -125,7 +125,7 @@ const PodiumCard = ({ rank, user, prize, onClick }) => {
         <div className={`flex ${styles.layoutWrapper}`}>
           <div className={styles.nameClass} style={styles.nameStyle}>{user.displayName}</div>
           <div className={styles.scoreClass}>
-            <img src="/coins/coinfinal.png" alt="Coin" className="w-[32px] h-[32px] object-contain" />
+            <img src="/coins/Coin.png" alt="Coin" className="w-[32px] h-[32px] object-contain" />
             <span className="text-transparent bg-clip-text bg-gradient-to-b from-[#FEDF77] to-[#FCB91E]" style={styles.scoreStyle}>
               {user.coinsEarned?.toLocaleString() || 0}
             </span>
@@ -136,7 +136,7 @@ const PodiumCard = ({ rank, user, prize, onClick }) => {
           <div className={`w-full max-w-[340px] h-[52px] ${styles.prizeBg} rounded-[10px] flex justify-between items-center px-[20px] py-[10px] mx-auto`}>
             <span style={{ fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 600, fontSize: '15.15px', lineHeight: '1.2' }} className="text-white text-center">REWARD</span>
             <div className="flex items-center gap-[8px]">
-              <img src="/coins/coinfinal.png" alt="Coin" className="w-[32px] h-[32px] object-contain" />
+              <img src="/coins/Coin.png" alt="Coin" className="w-[32px] h-[32px] object-contain" />
               <span className="text-transparent bg-clip-text bg-gradient-to-b from-[#FEDF77] to-[#FCB91E]" style={styles.scoreStyle}>
                 {prize.toLocaleString()}
               </span>
@@ -284,7 +284,7 @@ const PeriodPanel = ({ data, periodName, onProfileClick }) => {
                   </div>
                 </div>
                 <div className="flex items-center gap-[8px]">
-                  <img src="/coins/coinfinal.png" alt="Coin" className="w-[32px] h-[32px] object-contain shrink-0" />
+                  <img src="/coins/Coin.png" alt="Coin" className="w-[32px] h-[32px] object-contain shrink-0" />
                   <span className="text-transparent bg-clip-text bg-gradient-to-b from-[#FEDF77] to-[#FCB91E]" style={{ fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 700, fontSize: '32px', lineHeight: '1.3' }}>
                     {user.coinsEarned?.toLocaleString() || 0}
                   </span>
@@ -292,7 +292,7 @@ const PeriodPanel = ({ data, periodName, onProfileClick }) => {
                 <div className="flex items-center gap-[8px]">
                   {prize > 0 ? (
                     <>
-                      <img src="/coins/coinfinal.png" alt="Coin" className="w-[32px] h-[32px] object-contain shrink-0" />
+                      <img src="/coins/Coin.png" alt="Coin" className="w-[32px] h-[32px] object-contain shrink-0" />
                       <span className="text-transparent bg-clip-text bg-gradient-to-b from-[#FEDF77] to-[#FCB91E]" style={{ fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 700, fontSize: '32px', lineHeight: '1.3' }}>
                         {prize.toLocaleString()}
                       </span>
@@ -330,7 +330,7 @@ const PeriodPanel = ({ data, periodName, onProfileClick }) => {
                 </div>
               </div>
               <div className="flex items-center gap-[8px]">
-                <img src="/coins/coinfinal.png" alt="Coin" className="w-[32px] h-[32px] object-contain shrink-0" />
+                <img src="/coins/Coin.png" alt="Coin" className="w-[32px] h-[32px] object-contain shrink-0" />
                 <span className="text-transparent bg-clip-text bg-gradient-to-b from-[#FEDF77] to-[#FCB91E]" style={{ fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 700, fontSize: '32px', lineHeight: '1.3' }}>
                   {data.currentUser.coinsEarned?.toLocaleString() || 0}
                 </span>

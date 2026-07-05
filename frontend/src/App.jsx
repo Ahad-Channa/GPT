@@ -92,19 +92,28 @@ function App() {
         position="bottom-right" 
         containerStyle={{ zIndex: 999999 }}
         toastOptions={{
+          className: 'custom-toast',
           style: {
-            background: '#0A0A0A',
+            width: '276px',
+            height: '74px',
+            background: 'rgba(44, 45, 44, 1)',
             color: '#fff',
-            border: '1px solid rgba(255,255,255,0.15)',
-            borderRadius: '2px',
-            fontFamily: "'Barlow', system-ui, sans-serif",
-            fontFeatureSettings: '"cv01" 0, "zero" 0',
-            fontVariantNumeric: 'normal',
-            fontSize: '12px',
-            textTransform: 'uppercase'
+            border: '1px solid rgba(73, 178, 101, 1)',
+            borderRadius: '20px',
+            padding: '16px',
+            gap: '10px',
+            fontFamily: '"Barlow Condensed", sans-serif',
+            fontWeight: 600,
+            fontSize: '22px',
+            lineHeight: '120%',
+            textTransform: 'uppercase',
+            whiteSpace: 'nowrap',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'flex-start'
           },
           success: {
-            iconTheme: { primary: '#10b981', secondary: '#0A0A0A' }
+            icon: <img src="/coins/Notipro.png" alt="Success" style={{ width: '42px', height: '42px', objectFit: 'contain', flexShrink: 0 }} />
           },
           error: {
             iconTheme: { primary: '#ef4444', secondary: '#0A0A0A' }

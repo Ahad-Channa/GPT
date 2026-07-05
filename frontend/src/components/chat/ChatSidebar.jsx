@@ -272,7 +272,7 @@ const MessageRow = ({ msg, canModerate, onDelete, deletingId, onUserClick }) => 
           <button
             onClick={() => msg.user?._id && onUserClick(msg.user._id)}
             style={{
-              width: '249px', height: '13px',
+              flex: 1, minWidth: 0, height: '13px',
               display: 'flex', alignItems: 'center',
               fontWeight: 600, color: 'rgba(255, 255, 255, 1)', cursor: 'pointer',
               background: 'none', border: 'none', padding: 0,
@@ -288,7 +288,7 @@ const MessageRow = ({ msg, canModerate, onDelete, deletingId, onUserClick }) => 
           </button>
 
           {/* Role / VIP badge on Top Right */}
-          <div style={{ display: 'flex', alignItems: 'center' }}>
+          <div style={{ display: 'flex', alignItems: 'center', minWidth: '95px', justifyContent: 'flex-end' }}>
             <RoleSymbol user={msg.user} />
           </div>
         </div>

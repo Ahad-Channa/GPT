@@ -50,7 +50,7 @@ const Landing = () => {
           <Header />
         </div>
       ) : (
-        <nav className="w-full absolute top-0 left-0 right-0 z-50 py-6 px-8 flex justify-between items-center max-w-7xl mx-auto">
+        <nav className="w-full relative z-50 py-6 px-8 flex justify-between items-center max-w-7xl mx-auto h-[106px]">
           {/* Logo */}
           <div className="flex items-center gap-2 cursor-pointer">
             <img
@@ -154,20 +154,24 @@ const Landing = () => {
       />
 
       {/* HERO SECTION */}
-      <section className="relative pt-[184px] pb-[63px] md:pb-[95px] px-6 lg:px-8 max-w-7xl mx-auto flex flex-col lg:flex-row items-start gap-12 lg:gap-8">
+      <section className="relative pt-[72px] pb-[53px] md:pb-[85px] px-6 lg:px-8 max-w-7xl mx-auto flex flex-col lg:flex-row items-start gap-12 lg:gap-8">
         {/* Left text */}
         <div className="flex-1 w-full z-10">
           <div
             className="flex flex-col text-left"
-            style={{ width: '100%', maxWidth: 654, gap: 40 }}
+            style={{ width: 654, height: 297, gap: 50, opacity: 1 }}
           >
             <h1
               className="font-bold text-white m-0"
               style={{
+                width: 654,
+                height: 112,
                 fontFamily: '"Barlow Condensed", sans-serif',
-                fontSize: 88,
-                lineHeight: '90px',
-                whiteSpace: 'nowrap'
+                fontWeight: 700,
+                fontSize: 62,
+                lineHeight: '69px',
+                letterSpacing: '0%',
+                opacity: 1
               }}
             >
               Your Time Has Value<br />
@@ -176,94 +180,100 @@ const Landing = () => {
             <p
               className="m-0"
               style={{
+                width: 654,
+                height: 47,
                 fontFamily: '"Barlow Condensed", sans-serif',
+                fontWeight: 400,
                 fontSize: 22,
                 lineHeight: '32px',
+                letterSpacing: '0%',
                 color: 'rgba(209, 213, 219, 1)',
-                fontWeight: 400,
-                marginTop: -10
+                opacity: 1
               }}
             >
               Complete offers, surveys, and tasks to earn real rewards. Join thousands of users already earning every day.
             </p>
-          </div>
 
-          <div
-            className="flex items-center justify-start mt-[35px]"
-            style={{
-              width: 410,
-              height: 48,
-              gap: 10
-            }}
-          >
-            <button
-              onClick={() => navigate('/login')}
-              className="flex items-center justify-center text-white transition-all hover:brightness-110 active:translate-y-[4px] active:shadow-none"
+            <div
+              className="flex items-center justify-start"
               style={{
-                width: 200,
+                width: 410,
                 height: 48,
-                borderRadius: 10,
-                padding: '10px 30px',
                 gap: 10,
-                backgroundColor: 'rgba(39, 112, 58, 1)',
-                boxShadow: '0px 4px 0px 0px rgba(35, 80, 47, 1)'
+                opacity: 1
               }}
             >
-              <img src="/coins/login.png" alt="Login Icon" style={{ width: 24, height: 24, objectFit: 'contain' }} />
-              <span style={{
-                fontFamily: '"Barlow Condensed", sans-serif',
-                fontWeight: 700,
-                fontSize: 18,
-                lineHeight: '100%'
-              }}>
-                Login
-              </span>
-            </button>
-            <button
-              onClick={() => navigate('/login?tab=register')}
-              className="flex items-center justify-center text-white transition-all hover:brightness-110 active:translate-y-[4px] active:shadow-none"
-              style={{
-                width: 168,
-                height: 48,
-                borderRadius: 10,
-                padding: '10px 24px',
-                gap: 10,
-                background: 'rgba(73, 178, 101, 1)',
-                boxShadow: '0px 4px 0px 0px rgba(45, 110, 62, 1)'
-              }}
-            >
-              <span style={{
-                fontFamily: '"Barlow Condensed", sans-serif',
-                fontWeight: 700,
-                fontSize: 18,
-                lineHeight: '100%'
-              }}>
-                Get Started
-              </span>
-              <div
-                className="bg-white"
+              <button
+                onClick={() => navigate('/login')}
+                className="flex items-center justify-center text-white transition-all hover:brightness-110 active:translate-y-[4px] active:shadow-none"
                 style={{
-                  width: 18,
-                  height: 18,
-                  WebkitMaskImage: 'url(/coins/image.png)',
-                  WebkitMaskSize: 'contain',
-                  WebkitMaskRepeat: 'no-repeat',
-                  WebkitMaskPosition: 'center',
-                  maskImage: 'url(/coins/image.png)',
-                  maskSize: 'contain',
-                  maskRepeat: 'no-repeat',
-                  maskPosition: 'center'
+                  width: 200,
+                  height: 48,
+                  borderRadius: 10,
+                  padding: '10px 30px 10px 30px',
+                  gap: 10,
+                  opacity: 1,
+                  backgroundColor: 'rgba(39, 112, 58, 1)',
+                  boxShadow: '0px 4px 0px 0px rgba(35, 80, 47, 1)'
                 }}
-              />
-            </button>
+              >
+                <img src="/coins/login.png" alt="Login Icon" style={{ width: 24, height: 24, objectFit: 'contain' }} />
+                <span style={{
+                  fontFamily: '"Barlow Condensed", sans-serif',
+                  fontWeight: 700,
+                  fontSize: 18,
+                  lineHeight: '100%'
+                }}>
+                  Login
+                </span>
+              </button>
+              <button
+                onClick={() => navigate('/login?tab=register')}
+                className="flex items-center justify-center text-white transition-all hover:brightness-110 active:translate-y-[4px] active:shadow-none"
+                style={{
+                  width: 200,
+                  height: 48,
+                  borderRadius: 10,
+                  padding: '10px 30px 10px 30px',
+                  gap: 10,
+                  opacity: 1,
+                  background: 'rgba(73, 178, 101, 1)',
+                  boxShadow: '0px 4px 0px 0px rgba(45, 110, 62, 1)'
+                }}
+              >
+                <span style={{
+                  fontFamily: '"Barlow Condensed", sans-serif',
+                  fontWeight: 700,
+                  fontSize: 18,
+                  lineHeight: '100%'
+                }}>
+                  Start Earning
+                </span>
+                <div
+                  className="bg-white"
+                  style={{
+                    width: 18,
+                    height: 18,
+                    WebkitMaskImage: 'url(/coins/image.png)',
+                    WebkitMaskSize: 'contain',
+                    WebkitMaskRepeat: 'no-repeat',
+                    WebkitMaskPosition: 'center',
+                    maskImage: 'url(/coins/image.png)',
+                    maskSize: 'contain',
+                    maskRepeat: 'no-repeat',
+                    maskPosition: 'center'
+                  }}
+                />
+              </button>
+            </div>
           </div>
         </div>
 
         {/* Right image */}
         <div
-          className="flex-1 w-full relative z-0 flex justify-center lg:justify-end mt-12 lg:mt-[-50px]"
+          className="flex-1 w-full relative z-0 flex justify-center lg:justify-end mt-12 lg:-mt-[55px]"
         >
-          <div className="drop-shadow-2xl" style={{ width: 590, minWidth: 590, height: 590, transform: 'translateX(-30px)' }}>
+          <div className="drop-shadow-2xl" style={{ width: 577, minWidth: 577, height: 577, opacity: 1, transform: 'translateX(-30px)' }}>
             <div
               style={{
                 width: '100%',
@@ -287,19 +297,25 @@ const Landing = () => {
         </div>
 
         {/* Floating Stats Box */}
-        <div className="absolute z-20 left-1/2 -translate-x-1/2 w-[90%] md:w-full max-w-[1240px] bottom-0 translate-y-1/2 lg:translate-y-0 lg:bottom-auto lg:top-[603px]">
+        <div className="absolute z-20 left-1/2 -translate-x-1/2 w-[90%] md:w-[1240px] max-w-[1240px] bottom-0 translate-y-1/2 lg:translate-y-0 lg:bottom-auto lg:top-[448px]">
           <div
-            className="flex flex-col md:flex-row items-center w-full p-6 md:p-[40px] gap-6 md:gap-[40px] rounded-[20px] min-h-[120px] md:h-[120px]"
+            className="flex flex-col md:flex-row items-center w-full"
             style={{
+              width: 1240,
+              height: 120,
+              borderRadius: 20,
+              gap: 40,
+              padding: 40,
+              opacity: 1,
               backgroundColor: 'rgba(129, 129, 129, 0.2)',
               backdropFilter: 'blur(64px)',
               WebkitBackdropFilter: 'blur(64px)'
             }}
           >
             <div className="w-full flex items-center max-w-[540px]" style={{ height: 40, gap: 14 }}>
-              <img src="/coins/people.png" alt="Users" className="w-[40px] h-[40px] object-contain" />
-              <span style={{ display: 'inline-block', fontFamily: '"Barlow Condensed", sans-serif', fontWeight: 700, fontSize: 30, lineHeight: '24px', letterSpacing: '0%', textTransform: 'capitalize', color: 'rgba(255, 255, 255, 1)', verticalAlign: 'middle', opacity: 1, width: 428, height: 24 }}>Total Users</span>
-              <span style={{ display: 'inline-block', width: 44, height: 24, fontFamily: '"Barlow Condensed", sans-serif', fontWeight: 700, fontSize: 60, lineHeight: '24px', letterSpacing: '0%', textAlign: 'center', verticalAlign: 'middle', textTransform: 'capitalize', color: 'rgba(255, 255, 255, 1)', opacity: 1 }}>
+              <img src="/coins/people.png" alt="Users" style={{ width: 40, height: 40, objectFit: 'contain' }} />
+              <span style={{ display: 'inline-block', width: 440, height: 24, opacity: 1, fontFamily: '"Barlow Condensed", sans-serif', fontWeight: 700, fontSize: 24, lineHeight: '24px', letterSpacing: '0%', textTransform: 'capitalize', color: 'rgba(255, 255, 255, 1)', verticalAlign: 'middle' }}>Total Users</span>
+              <span style={{ display: 'inline-block', width: 'auto', minWidth: 32, height: 24, opacity: 1, fontFamily: '"Barlow Condensed", sans-serif', fontWeight: 700, fontSize: 44, lineHeight: '24px', letterSpacing: '0%', textAlign: 'center', verticalAlign: 'middle', textTransform: 'capitalize', color: 'rgba(255, 255, 255, 1)' }}>
                 {(stats.totalUsers || 16).toLocaleString()}
               </span>
             </div>
@@ -308,9 +324,9 @@ const Landing = () => {
             <div className="md:hidden w-full h-px bg-white/10" />
 
             <div className="w-full flex items-center max-w-[540px]" style={{ height: 40, gap: 14 }}>
-              <img src="/coins/doller.png" alt="Paid" className="w-[40px] h-[40px] object-contain" />
-              <span style={{ display: 'inline-block', fontFamily: '"Barlow Condensed", sans-serif', fontWeight: 700, fontSize: 30, lineHeight: '24px', letterSpacing: '0%', textTransform: 'capitalize', color: 'rgba(255, 255, 255, 1)', verticalAlign: 'middle', opacity: 1, width: 428, height: 24 }}>Total Paid</span>
-              <span style={{ display: 'inline-block', width: 135, height: 24, fontFamily: '"Barlow Condensed", sans-serif', fontWeight: 700, fontSize: 60, lineHeight: '24px', letterSpacing: '0%', textAlign: 'center', verticalAlign: 'middle', textTransform: 'capitalize', color: 'rgba(255, 255, 255, 1)', opacity: 1 }}>
+              <img src="/coins/doller.png" alt="Paid" style={{ width: 40, height: 40, objectFit: 'contain' }} />
+              <span style={{ display: 'inline-block', width: 440, height: 24, opacity: 1, fontFamily: '"Barlow Condensed", sans-serif', fontWeight: 700, fontSize: 24, lineHeight: '24px', letterSpacing: '0%', textTransform: 'capitalize', color: 'rgba(255, 255, 255, 1)', verticalAlign: 'middle' }}>Total Paid</span>
+              <span style={{ display: 'inline-block', width: 'auto', minWidth: 32, height: 24, opacity: 1, fontFamily: '"Barlow Condensed", sans-serif', fontWeight: 700, fontSize: 44, lineHeight: '24px', letterSpacing: '0%', textAlign: 'center', verticalAlign: 'middle', textTransform: 'capitalize', color: 'rgba(255, 255, 255, 1)' }}>
                 ${(stats.totalPaidOut || 31.33).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </span>
             </div>
@@ -319,36 +335,52 @@ const Landing = () => {
       </section>
 
       {/* HOW IT WORKS */}
-      <section id="how-it-works" className="pt-0 pb-24 px-6 relative bg-[#050505]">
-        <div className="max-w-7xl mx-auto">
+      <section id="how-it-works" className="pt-0 pb-24 px-6 relative bg-[#050505] flex justify-center w-full">
+        <div 
+          className="flex flex-col mx-auto"
+          style={{
+            width: 1240,
+            maxWidth: '100%',
+            height: 337,
+            gap: 40,
+            opacity: 1
+          }}
+        >
           <div
-            className="flex flex-col items-center justify-center mx-auto mb-14"
-            style={{ width: 448, height: 102, gap: 30 }}
+            className="flex flex-col items-center justify-center mx-auto"
+            style={{ width: 374, height: 85, gap: 30, opacity: 1 }}
           >
             <h2
-              className="font-bold text-white m-0"
+              className="font-bold text-white m-0 flex items-center justify-center"
               style={{
-                width: 366,
-                height: 55,
+                width: 272,
+                height: 41,
+                opacity: 1,
                 fontFamily: '"Barlow Condensed", sans-serif',
-                fontSize: 78,
+                fontWeight: 700,
+                fontSize: 58,
                 lineHeight: '48px',
-                textAlign: 'center'
+                letterSpacing: '0%',
+                textAlign: 'center',
+                verticalAlign: 'middle'
               }}
             >
               How It Works
             </h2>
             <p
-              className="m-0"
+              className="m-0 flex items-center justify-center"
               style={{
-                width: 448,
-                height: 17,
+                width: 374,
+                height: 14,
+                opacity: 1,
                 fontFamily: '"Barlow Condensed", sans-serif',
                 fontWeight: 400,
-                fontSize: 24,
+                fontSize: 20,
                 lineHeight: '28px',
+                letterSpacing: '0%',
                 color: 'rgba(209, 213, 219, 1)',
-                textAlign: 'center'
+                textAlign: 'center',
+                verticalAlign: 'middle'
               }}
             >
               Get started in seconds. No complicated setup required.
@@ -366,25 +398,32 @@ const Landing = () => {
             ].map((item, idx) => (
               <div
                 key={idx}
-                className="p-[24px] hover:brightness-110 transition-all group"
+                className="hover:brightness-110 transition-all group relative"
                 style={{
-                  width: '100%',
-                  maxWidth: 400,
+                  width: 400,
                   height: 212,
                   borderRadius: 20,
                   background: 'rgba(26, 27, 26, 1)',
                   boxShadow: '0px 4px 80px 0px rgba(0, 0, 0, 0.15)',
                   backdropFilter: 'blur(44px)',
                   WebkitBackdropFilter: 'blur(44px)',
-                  border: 'none'
+                  border: 'none',
+                  opacity: 1
                 }}
               >
-                <div className="flex items-center">
+                <div>
                   <img
                     src={item.icon}
                     alt={item.title}
                     className="object-contain"
-                    style={{ width: 44, height: 44 }}
+                    style={{ 
+                      width: 44, 
+                      height: 44, 
+                      opacity: 1, 
+                      position: 'absolute', 
+                      top: 24, 
+                      left: 24 
+                    }}
                   />
                   <div
                     className="absolute flex items-center justify-center"
@@ -416,31 +455,35 @@ const Landing = () => {
                   </div>
                 </div>
                 <div
-                  className="flex flex-col"
-                  style={{ width: 352, height: 84, gap: 12, marginTop: 34 }}
+                  className="flex flex-col absolute"
+                  style={{ width: 351.9999084472656, height: 77, gap: 12, top: 102, left: 24, opacity: 1 }}
                 >
                   <h3
-                    className="font-bold text-white m-0"
+                    className="font-semibold text-white m-0"
                     style={{
-                      width: 352,
-                      height: 24,
+                      width: 351.9999084472656,
+                      height: 17,
                       fontFamily: '"Barlow Condensed", sans-serif',
-                      fontSize: 34,
-                      lineHeight: '100%'
+                      fontWeight: 600,
+                      fontSize: 24,
+                      lineHeight: '100%',
+                      opacity: 1,
+                      letterSpacing: '0.5px'
                     }}
                   >
                     {item.title}
                   </h3>
                   <p
-                    className="m-0"
+                    className="m-0 flex items-center"
                     style={{
-                      color: 'rgba(189, 189, 189, 1)',
+                      width: 351.9999084472656,
+                      height: 48,
                       fontFamily: '"Barlow Condensed", sans-serif',
                       fontWeight: 500,
-                      fontSize: 19,
+                      fontSize: 17,
                       lineHeight: '24px',
-                      width: 352,
-                      height: 48,
+                      color: 'rgba(156, 163, 175, 1)',
+                      opacity: 1,
                       verticalAlign: 'middle'
                     }}
                   >
@@ -460,8 +503,8 @@ const Landing = () => {
         style={{
           width: 1440,
           maxWidth: '100%',
-          height: 864,
-          padding: '120px 100px',
+          height: 721,
+          padding: '100px',
           gap: 10,
           background: 'rgba(26, 27, 26, 1)',
           backdropFilter: 'blur(75px)',
@@ -470,19 +513,20 @@ const Landing = () => {
       >
         <div
           className="flex flex-col mx-auto"
-          style={{ width: 1240, maxWidth: '100%', height: 624, gap: 50 }}
+          style={{ width: 1240, maxWidth: '100%', height: 521, gap: 50 }}
         >
           <div
             className="flex flex-col items-center mx-auto"
-            style={{ width: 429, height: 102, gap: 30 }}
+            style={{ width: 323, height: 85, gap: 30 }}
           >
             <h2
               className="font-bold m-0"
               style={{
-                width: 429,
-                height: 55,
+                width: 319,
+                height: 41,
                 fontFamily: '"Barlow Condensed", sans-serif',
-                fontSize: 78,
+                fontWeight: 700,
+                fontSize: 58,
                 lineHeight: '48px',
                 textAlign: 'center',
                 verticalAlign: 'middle',
@@ -494,11 +538,11 @@ const Landing = () => {
             <p
               className="m-0"
               style={{
-                width: 387,
-                height: 17,
+                width: 323,
+                height: 14,
                 fontFamily: '"Barlow Condensed", sans-serif',
                 fontWeight: 400,
-                fontSize: 24,
+                fontSize: 20,
                 lineHeight: '28px',
                 textAlign: 'center',
                 verticalAlign: 'middle',
@@ -527,9 +571,9 @@ const Landing = () => {
                 style={{
                   width: 400,
                   maxWidth: '100%',
-                  height: 226,
+                  height: 183,
                   borderRadius: 20,
-                  padding: '20px 12px 30px 12px',
+                  padding: '20px 12px 24px 12px',
                   gap: 12,
                   background: 'rgba(255, 255, 255, 0.08)',
                   boxShadow: '0px 4px 80px 0px rgba(0, 0, 0, 0.15)',
@@ -545,15 +589,16 @@ const Landing = () => {
                 </div>
                 <div
                   className="flex flex-col items-center"
-                  style={{ width: 376, height: 60, gap: 12 }}
+                  style={{ width: 376, height: 53, gap: 12 }}
                 >
                   <h3
                     className="font-bold m-0"
                     style={{
                       width: 376,
-                      height: 24,
+                      height: 17,
                       fontFamily: '"Barlow Condensed", sans-serif',
-                      fontSize: 34,
+                      fontWeight: 700,
+                      fontSize: 24,
                       lineHeight: '100%',
                       textAlign: 'center',
                       color: 'rgba(255, 255, 255, 1)'
@@ -568,7 +613,7 @@ const Landing = () => {
                       height: 24,
                       fontFamily: '"Barlow Condensed", sans-serif',
                       fontWeight: 500,
-                      fontSize: 19,
+                      fontSize: 17,
                       lineHeight: '24px',
                       textAlign: 'center',
                       verticalAlign: 'middle',
@@ -588,19 +633,20 @@ const Landing = () => {
       <section className="py-24 px-6 bg-[#050505]">
         <div
           className="flex flex-col mx-auto"
-          style={{ width: 1240, maxWidth: '100%', height: 422, gap: 50 }}
+          style={{ width: 1240, maxWidth: '100%', height: 318, gap: 50 }}
         >
           <div
             className="flex flex-col items-center mx-auto"
-            style={{ width: 542, height: 102, gap: 30 }}
+            style={{ width: 452, height: 85, gap: 30 }}
           >
             <h2
               className="font-bold m-0"
               style={{
-                width: 516,
-                height: 55,
+                width: 384,
+                height: 41,
                 fontFamily: '"Barlow Condensed", sans-serif',
-                fontSize: 78,
+                fontWeight: 700,
+                fontSize: 58,
                 lineHeight: '48px',
                 textAlign: 'center',
                 verticalAlign: 'middle',
@@ -612,11 +658,11 @@ const Landing = () => {
             <p
               className="m-0"
               style={{
-                width: 542,
-                height: 17,
+                width: 452,
+                height: 14,
                 fontFamily: '"Barlow Condensed", sans-serif',
                 fontWeight: 400,
-                fontSize: 24,
+                fontSize: 20,
                 lineHeight: '28px',
                 textAlign: 'center',
                 verticalAlign: 'middle',
@@ -642,10 +688,10 @@ const Landing = () => {
                 style={{
                   width: '397.33px',
                   maxWidth: '100%',
-                  height: 270,
+                  height: 183,
                   borderRadius: 20,
-                  padding: '30px 20px',
-                  gap: 12,
+                  padding: '20px',
+                  gap: 2,
                   background: 'rgba(26, 27, 26, 1)',
                   boxShadow: '0px 4px 80px 0px rgba(0, 0, 0, 0.15)',
                   backdropFilter: 'blur(44px)',
@@ -654,40 +700,45 @@ const Landing = () => {
               >
                 <div
                   className="flex items-center justify-center mb-0"
-                  style={{ width: 94, height: 94, borderRadius: 100, gap: 10, background: 'transparent' }}
+                  style={{ width: 94, height: 94, borderRadius: 100, gap: 10, background: 'transparent', transform: 'translateY(-11px)' }}
                 >
                   <img src={item.icon} alt={item.title} style={{ width: 44, height: 44, objectFit: 'contain' }} />
                 </div>
-                <h3
-                  className="font-bold m-0"
-                  style={{
-                    width: '100%',
-                    height: 24,
-                    fontFamily: '"Barlow Condensed", sans-serif',
-                    fontSize: 34,
-                    lineHeight: '100%',
-                    textAlign: 'center',
-                    color: 'rgba(255, 255, 255, 1)'
-                  }}
-                >
-                  {item.title}
-                </h3>
-                <p
-                  className="m-0 flex items-center justify-center"
-                  style={{
-                    width: '357.33px',
-                    maxWidth: '100%',
-                    height: 48,
-                    fontFamily: '"Barlow Condensed", sans-serif',
-                    fontWeight: 500,
-                    fontSize: 19,
-                    lineHeight: '24px',
-                    textAlign: 'center',
-                    color: 'rgba(189, 189, 189, 1)'
-                  }}
-                >
-                  {item.desc}
-                </p>
+                <div className="flex flex-col items-center" style={{ gap: 1, width: '100%' }}>
+                  <h3
+                    className="font-bold m-0"
+                    style={{
+                      width: '100%',
+                      height: 17,
+                      fontFamily: '"Barlow Condensed", sans-serif',
+                      fontWeight: 700,
+                      fontSize: 24,
+                      lineHeight: '100%',
+                      textAlign: 'center',
+                      color: 'rgba(255, 255, 255, 1)',
+                      transform: 'translateY(-8px)'
+                    }}
+                  >
+                    {item.title}
+                  </h3>
+                  <p
+                    className="m-0 flex items-center justify-center"
+                    style={{
+                      width: '357.33px',
+                      maxWidth: '100%',
+                      height: 48,
+                      fontFamily: '"Barlow Condensed", sans-serif',
+                      fontWeight: 500,
+                      fontSize: 17,
+                      lineHeight: '24px',
+                      textAlign: 'center',
+                      verticalAlign: 'middle',
+                      color: 'rgba(189, 189, 189, 1)'
+                    }}
+                  >
+                    {item.desc}
+                  </p>
+                </div>
               </div>
             ))}
           </div>
@@ -695,13 +746,13 @@ const Landing = () => {
       </section>
 
       {/* FAQ SECTION */}
-      <section id="faq" className="py-12 px-6 bg-[#050505]">
+      <section id="faq" className="py-12 px-6 bg-[#050505]" style={{ marginTop: -38 }}>
         <div
           className="flex flex-col mx-auto"
           style={{
             width: 1240,
             maxWidth: '100%',
-            height: 622,
+            height: 557,
             borderRadius: 20,
             padding: '60px 40px',
             gap: 50,
@@ -713,15 +764,16 @@ const Landing = () => {
         >
           <div
             className="flex flex-col items-center mx-auto"
-            style={{ width: 781, height: 102, gap: 30 }}
+            style={{ width: 581, height: 85, gap: 30 }}
           >
             <h2
               className="font-bold m-0 whitespace-nowrap"
               style={{
-                width: 781,
-                height: 55,
+                width: 581,
+                height: 41,
                 fontFamily: '"Barlow Condensed", sans-serif',
-                fontSize: 78,
+                fontWeight: 700,
+                fontSize: 58,
                 lineHeight: '48px',
                 textAlign: 'center',
                 verticalAlign: 'middle',
@@ -733,11 +785,11 @@ const Landing = () => {
             <p
               className="m-0"
               style={{
-                width: 279,
-                height: 17,
+                width: 232,
+                height: 14,
                 fontFamily: '"Barlow Condensed", sans-serif',
                 fontWeight: 400,
-                fontSize: 24,
+                fontSize: 20,
                 lineHeight: '28px',
                 textAlign: 'center',
                 verticalAlign: 'middle',
@@ -769,9 +821,10 @@ const Landing = () => {
                   style={{
                     width: 570,
                     maxWidth: '100%',
-                    minHeight: 92,
+                    height: isOpen ? 110 : 76,
+                    gap: 10,
                     borderRadius: 20,
-                    padding: '30px',
+                    padding: '22px 30px',
                     background: 'rgba(44, 45, 44, 1)',
                     backdropFilter: 'blur(54px)',
                     WebkitBackdropFilter: 'blur(54px)',
@@ -786,7 +839,8 @@ const Landing = () => {
                         maxWidth: '100%',
                         height: 32,
                         fontFamily: '"Barlow Condensed", sans-serif',
-                        fontSize: 28,
+                        fontWeight: 700,
+                        fontSize: 22,
                         lineHeight: '32px',
                         color: 'rgba(255, 255, 255, 1)'
                       }}
@@ -810,7 +864,7 @@ const Landing = () => {
                     />
                   </div>
                   <div
-                    className={`transition-all duration-300 flex items-start overflow-hidden ${isOpen ? 'opacity-100 max-h-[60px] mt-[32px]' : 'opacity-0 max-h-0 mt-0'}`}
+                    className={`transition-all duration-300 flex items-start overflow-hidden ${isOpen ? 'opacity-100 max-h-[60px]' : 'opacity-0 max-h-0'}`}
                   >
                     <p
                       className="m-0 overflow-hidden text-ellipsis whitespace-nowrap"

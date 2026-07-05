@@ -294,7 +294,7 @@ const Wallet = () => {
           </p>
           <div className="flex flex-col items-end justify-center w-[189px] h-[78px] gap-[18px] shrink-0">
             <div className="flex items-center w-auto h-[44px] gap-[6px] shrink-0 overflow-visible">
-              <img src="/coins/coinfix.png" alt="Coin" className="w-[44px] h-[44px] shrink-0 object-contain" />
+              <img src="/coins/Coin.png" alt="Coin" className="w-[44px] h-[44px] shrink-0 object-contain" />
               <p
                 className="w-auto h-auto m-0 p-0 font-bold font-['Barlow_Condensed'] text-[60px] leading-none tracking-normal whitespace-nowrap flex items-center shrink-0 pb-[6px]"
                 style={{
@@ -311,7 +311,7 @@ const Wallet = () => {
               <div className="flex items-center gap-1 font-semibold font-['Barlow_Condensed'] text-[20px] uppercase tracking-wide">
                 <div className="flex items-center w-[52px] h-[16px] gap-[3px]">
                   <img
-                    src="/coins/coinfix.png"
+                    src="/coins/Coin.png"
                     alt="Coin"
                     className="w-[16px] h-[16px] object-contain"
                   />

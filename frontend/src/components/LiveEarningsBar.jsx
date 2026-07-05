@@ -228,7 +228,7 @@ const LiveEarningsBar = () => {
                       >
                         {details.isCoin && (
                           <img 
-                            src="/coins/coinfinal.png"
+                            src="/coins/Coin.png"
                             alt="Coin"
                             style={{ width: '18px', height: '18px' }}
                           />
@@ -369,7 +369,7 @@ const LiveEarningsBar = () => {
                                 Earned
                               </span>
                               <div style={{ display: 'flex', alignItems: 'center', height: '18px', gap: '3px' }}>
-                                <img src="/coins/coinfinal.png" alt="coin" style={{ width: '18px', height: '18px' }} />
+                                <img src="/coins/Coin.png" alt="coin" style={{ width: '18px', height: '18px' }} />
                                 <span style={{ 
                                   height: 'auto', 
                                   fontFamily: '"Barlow Condensed", sans-serif', 

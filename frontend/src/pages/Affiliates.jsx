@@ -313,7 +313,7 @@ const Affiliates = () => {
                 <div className="flex flex-col w-fit min-w-[123px] h-[81px] gap-[12px] whitespace-nowrap">
                   <h3 style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="w-[123px] h-[29px] font-bold text-[22px] leading-[130%] text-white tracking-normal m-0 p-0">Lifetime Earnings</h3>
                   <div className="flex items-center gap-[6px] h-[40px]">
-                    <img src="/coins/coinfix.png" alt="Coin" className="w-[40px] h-[40px] shrink-0 object-contain" />
+                    <img src="/coins/Coin.png" alt="Coin" className="w-[40px] h-[40px] shrink-0 object-contain" />
                     <div
                       style={{
                         fontFamily: "'Barlow Condensed', sans-serif",
@@ -335,7 +335,7 @@ const Affiliates = () => {
                 <div className="flex flex-col w-fit min-w-[123px] h-[81px] gap-[12px] whitespace-nowrap">
                   <h3 style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="w-[123px] h-[29px] font-bold text-[22px] leading-[130%] text-white tracking-normal m-0 p-0">30-Day Earnings</h3>
                   <div className="flex items-center gap-[6px] h-[40px]">
-                    <img src="/coins/coinfix.png" alt="Coin" className="w-[40px] h-[40px] shrink-0 object-contain" />
+                    <img src="/coins/Coin.png" alt="Coin" className="w-[40px] h-[40px] shrink-0 object-contain" />
                     <div
                       style={{
                         fontFamily: "'Barlow Condensed', sans-serif",
@@ -357,7 +357,7 @@ const Affiliates = () => {
                 <div className="flex flex-col w-fit min-w-[123px] h-[81px] gap-[12px] whitespace-nowrap">
                   <h3 style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="w-fit min-w-[123px] h-[29px] font-bold text-[22px] leading-[130%] text-white tracking-normal m-0 p-0">Pending Commissions</h3>
                   <div className="flex items-center gap-[6px] h-[40px]">
-                    <img src="/coins/coinfix.png" alt="Coin" className="w-[40px] h-[40px] shrink-0 object-contain" />
+                    <img src="/coins/Coin.png" alt="Coin" className="w-[40px] h-[40px] shrink-0 object-contain" />
                     <div
                       style={{
                         fontFamily: "'Barlow Condensed', sans-serif",
@@ -473,10 +473,10 @@ const Affiliates = () => {
                             </div>
                             <div style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="text-white font-semibold text-[28px] leading-[120%]">{new Date(tx.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</div>
                             <div className="flex items-center gap-[6px] font-semibold text-[#fbbf24] text-[28px] leading-[120%]" style={{ fontFamily: "'Barlow Condensed', sans-serif" }}>
-                              <img src="/coins/coinfix.png" alt="Coin" className="w-[24px] h-[24px] shrink-0 object-contain" /> {(tx.amount * 10).toLocaleString()}
+                              <img src="/coins/Coin.png" alt="Coin" className="w-[24px] h-[24px] shrink-0 object-contain" /> {(tx.amount * 10).toLocaleString()}
                             </div>
                             <div className="flex items-center gap-[6px] font-semibold text-[#fbbf24] text-[28px] leading-[120%]" style={{ fontFamily: "'Barlow Condensed', sans-serif" }}>
-                              <img src="/coins/coinfix.png" alt="Coin" className="w-[24px] h-[24px] shrink-0 object-contain" /> {tx.amount.toLocaleString()}
+                              <img src="/coins/Coin.png" alt="Coin" className="w-[24px] h-[24px] shrink-0 object-contain" /> {tx.amount.toLocaleString()}
                             </div>
                             <div className="flex items-center pl-[50px]">
                               <span style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className={`inline-flex items-center justify-center px-[20px] py-[4px] rounded-[100px] text-[22px] leading-[120%] font-semibold ${tx.status === 'hold' ? 'bg-[#fbbf24]/10 text-[#fbbf24]' : 'bg-[#153423] text-[#4ade80]'}`}>
@@ -533,10 +533,10 @@ const Affiliates = () => {
                               </div>
                               <div style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="text-white font-semibold text-[28px] leading-[120%]">{new Date(u.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</div>
                               <div className="flex items-center gap-[6px] font-semibold text-[#fbbf24] text-[28px] leading-[120%]" style={{ fontFamily: "'Barlow Condensed', sans-serif" }}>
-                                <img src="/coins/coinfix.png" alt="Coin" className="w-[24px] h-[24px] shrink-0 object-contain" /> {(u.totalEarned || 0).toLocaleString()}
+                                <img src="/coins/Coin.png" alt="Coin" className="w-[24px] h-[24px] shrink-0 object-contain" /> {(u.totalEarned || 0).toLocaleString()}
                               </div>
                               <div className="flex items-center gap-[6px] font-semibold text-[#fbbf24] text-[28px] leading-[120%]" style={{ fontFamily: "'Barlow Condensed', sans-serif" }}>
-                                <img src="/coins/coinfix.png" alt="Coin" className="w-[24px] h-[24px] shrink-0 object-contain" /> {(u.referralEarnings > 0 ? u.referralEarnings : Math.floor((u.totalEarned || 0) * ((stats.referralPercentage || 10) / 100))).toLocaleString()}
+                                <img src="/coins/Coin.png" alt="Coin" className="w-[24px] h-[24px] shrink-0 object-contain" /> {(u.referralEarnings > 0 ? u.referralEarnings : Math.floor((u.totalEarned || 0) * ((stats.referralPercentage || 10) / 100))).toLocaleString()}
                               </div>
                               <div className="flex items-center pl-[50px]">
                                 <span style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="inline-flex items-center justify-center px-[20px] py-[4px] rounded-[100px] text-[22px] leading-[120%] font-semibold bg-[#153423] text-[#4ade80]">
@@ -590,10 +590,10 @@ const Affiliates = () => {
                               </div>
                               <div style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="text-white font-semibold text-[28px] leading-[120%]">{new Date(tx.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</div>
                               <div className="flex items-center gap-[6px] font-semibold text-[#fbbf24] text-[28px] leading-[120%]" style={{ fontFamily: "'Barlow Condensed', sans-serif" }}>
-                                <img src="/coins/coinfix.png" alt="Coin" className="w-[24px] h-[24px] shrink-0 object-contain" /> {(tx.amount * 10).toLocaleString()}
+                                <img src="/coins/Coin.png" alt="Coin" className="w-[24px] h-[24px] shrink-0 object-contain" /> {(tx.amount * 10).toLocaleString()}
                               </div>
                               <div className="flex items-center gap-[6px] font-semibold text-[#fbbf24] text-[28px] leading-[120%]" style={{ fontFamily: "'Barlow Condensed', sans-serif" }}>
-                                <img src="/coins/coinfix.png" alt="Coin" className="w-[24px] h-[24px] shrink-0 object-contain" /> {tx.amount.toLocaleString()}
+                                <img src="/coins/Coin.png" alt="Coin" className="w-[24px] h-[24px] shrink-0 object-contain" /> {tx.amount.toLocaleString()}
                               </div>
                               <div className="flex items-center pl-[50px]">
                                 <span style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="text-[#888888] font-semibold text-[28px] leading-[120%]">

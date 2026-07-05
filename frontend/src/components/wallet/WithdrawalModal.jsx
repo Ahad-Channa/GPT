@@ -513,7 +513,7 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess, filterType }) 
                 <span className="text-[14px] font-medium text-[#888888] font-['Barlow_Condensed']">Minimum: {minimumCoins.toLocaleString()} Coins</span>
               </div>
               <div className="relative flex items-center bg-white/[0.04] border border-white/[0.08] focus-within:border-[#49B265] rounded-[10px] h-[56px] w-full px-[16px] transition-all">
-                <img src="/coins/coinfix.png" alt="Coin" className="w-[24px] h-[24px] object-contain mr-[10px] shrink-0" />
+                <img src="/coins/Coin.png" alt="Coin" className="w-[24px] h-[24px] object-contain mr-[10px] shrink-0" />
                 <input
                   id="withdrawal-amount"
                   type="number"

@@ -36,7 +36,6 @@ const RoleSymbol = ({ user }) => {
     );
   }
 
-  /* ── admin ── */
   if (role === 'admin') {
     const vipLevel = getLevelFromEarned(user?.totalEarned || 0);
     return (
@@ -44,11 +43,14 @@ const RoleSymbol = ({ user }) => {
         <HoverBadge
           badge={
             <div style={{
-              width: '49px', height: '18px',
+              minWidth: '44px', height: '18px',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
-              background: 'rgba(239,68,68,0.05)', color: '#ef4444',
-              fontSize: '11px', fontWeight: 600,
-              borderRadius: '59.47px', border: '1px solid #ef4444',
+              background: 'linear-gradient(180deg, #FE7777 0%, #FC1E1E 100%)', color: '#ffffff',
+              fontSize: '10px', fontWeight: 600,
+              borderRadius: '59.47px', border: 'none',
+              padding: '0 7.94px',
+              gap: '2.63px',
+              boxSizing: 'border-box',
               fontFamily: '"Barlow Condensed", sans-serif', letterSpacing: '0px'
             }}>Admin</div>
           }
@@ -220,7 +222,7 @@ const MessageRow = ({ msg, isOwn, mongoUser }) => {
           display: 'flex', alignItems: 'center', gap: '6px' 
         }}>
           <div style={{
-            width: '249px', height: '13px',
+            flex: 1, minWidth: 0, height: '13px',
             display: 'flex', alignItems: 'center',
             fontWeight: 600, color: 'rgba(255, 255, 255, 1)',
             fontFamily: '"Barlow Condensed", sans-serif', fontSize: '18px',
@@ -232,7 +234,7 @@ const MessageRow = ({ msg, isOwn, mongoUser }) => {
           </div>
 
           {/* Role / VIP badge on Top Right */}
-          <div style={{ display: 'flex', alignItems: 'center' }}>
+          <div style={{ display: 'flex', alignItems: 'center', minWidth: '95px', justifyContent: 'flex-end' }}>
             <RoleSymbol user={senderUser} />
           </div>
         </div>

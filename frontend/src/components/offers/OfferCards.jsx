@@ -219,7 +219,7 @@ export const FeaturedOfferCard = ({ offer, onClick }) => {
           style={{ height: '26px', gap: '3px' }}
         >
           <img
-            src="/coins/coinfinal.png"
+            src="/coins/Coin.png"
             alt="Coin"
             style={{
               width: '26px',
@@ -410,7 +410,7 @@ export const FeaturedOfferModal = ({ offer, token, onClose, onSubmitted }) => {
                 display: 'flex', alignItems: 'center', gap: '3px',
                 alignSelf: 'flex-start'
               }}>
-                <img src="/coins/coinfinal.png" alt="coin" style={{
+                <img src="/coins/Coin.png" alt="coin" style={{
                   width: '26px', height: '26px', opacity: 1,
                   objectFit: 'contain',
                   filter: 'drop-shadow(0px 0px 14px rgba(254, 198, 53, 0.6))'

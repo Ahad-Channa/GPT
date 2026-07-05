@@ -176,7 +176,7 @@ function MissionCard({ mission, onClaim, claiming }) {
             }}
           >
             <img
-              src="/coins/coinfinal.png"
+              src="/coins/Coin.png"
               alt="Reward"
               className="shrink-0 object-contain overflow-visible"
               style={{
@@ -369,7 +369,7 @@ function PeriodBonusCard({ bonus, period, onClaim, claimingBonus }) {
           }}
         >
           <img
-            src="/coins/coinfix.png"
+            src="/coins/Coin.png"
             alt="Coin"
             className="shrink-0 object-contain"
             style={{

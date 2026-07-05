@@ -174,7 +174,7 @@ const CustomizationModal = ({ isOpen, onClose, mongoUser, token, setMongoUser })
               <div className="flex items-center gap-[22px]">
                 <div className="flex items-center justify-center bg-[rgba(26,27,26,1)] h-[63px] p-[10px] rounded-[10px] backdrop-blur-[74px]">
                   <div className="flex items-center justify-center gap-[6px] min-w-[111px] h-[32px]">
-                    <img src="/coins/coinfix.png" alt="Coins" className="w-[32px] h-[32px] object-contain shrink-0" />
+                    <img src="/coins/Coin.png" alt="Coins" className="w-[32px] h-[32px] object-contain shrink-0" />
                     <span className="font-bold text-[30px] leading-[1.2] text-transparent bg-clip-text bg-gradient-to-b from-[#FEDF77] to-[#FCB91E]">
                       {(mongoUser?.walletBalance || 0).toLocaleString()}
                     </span>
@@ -269,7 +269,7 @@ const CustomizationModal = ({ isOpen, onClose, mongoUser, token, setMongoUser })
                           <div className="text-white font-semibold text-[16px] leading-none truncate mb-[6px]">{avatar.name}</div>
                           <div className="text-[12px] text-[#49b265] font-semibold leading-none mb-[6px]">{avatar.quantity ?? 'Unlimited'} Available</div>
                           <div className="flex items-center gap-[4px]">
-                            <img src="/coins/coinfix.png" alt="Coins" className="w-[14px] h-[14px] object-contain" style={{ filter: 'drop-shadow(0px 0px 10px rgba(254, 198, 53, 0.6))' }} />
+                            <img src="/coins/Coin.png" alt="Coins" className="w-[14px] h-[14px] object-contain" style={{ filter: 'drop-shadow(0px 0px 10px rgba(254, 198, 53, 0.6))' }} />
                             <span className="text-[#fbbf24] font-bold text-[14px] leading-none">{avatar.price}</span>
                           </div>
                         </div>
@@ -378,7 +378,7 @@ const CustomizationModal = ({ isOpen, onClose, mongoUser, token, setMongoUser })
                     <div className="flex justify-between items-center pb-[8px] border-b border-white/5 last:border-0 last:pb-0">
                       <span className="text-white font-semibold">Price</span>
                       <div className="flex items-center gap-[4px]">
-                        <img src="/coins/coinfix.png" alt="Coins" className="w-[16px] h-[16px] object-contain" style={{ filter: 'drop-shadow(0px 0px 10px rgba(254, 198, 53, 0.6))' }} />
+                        <img src="/coins/Coin.png" alt="Coins" className="w-[16px] h-[16px] object-contain" style={{ filter: 'drop-shadow(0px 0px 10px rgba(254, 198, 53, 0.6))' }} />
                         <span className="text-[#fbbf24] font-bold text-[16px] leading-none">{previewAvatar.price}</span>
                       </div>
                     </div>
@@ -499,7 +499,7 @@ const CustomizationModal = ({ isOpen, onClose, mongoUser, token, setMongoUser })
                 <span className="text-[#49b265] font-semibold text-[20px] leading-none">Price</span>
                 <div className="flex items-center gap-[4px]">
                   <img
-                    src="/coins/coinfix.png"
+                    src="/coins/Coin.png"
                     alt="Coins"
                     className="w-[18px] h-[18px] object-contain shrink-0"
                     style={{ filter: 'drop-shadow(0px 0px 10px rgba(254, 198, 53, 0.6))' }}
@@ -809,7 +809,7 @@ const ClickedOfferRow = ({ offer, token: initialToken, onRefresh }) => {
 
         {/* Reward */}
         <div className="flex items-center gap-[6px] font-semibold text-[#fbbf24] text-[28px] leading-[120%]" style={{ fontFamily: "'Barlow Condensed', sans-serif" }}>
-          <img src="/coins/coinfix.png" alt="Coin" className="w-[24px] h-[24px] shrink-0 object-contain" />
+          <img src="/coins/Coin.png" alt="Coin" className="w-[24px] h-[24px] shrink-0 object-contain" />
           <span>{(offer.rewardAmount || 0).toLocaleString()}</span>
         </div>
 
@@ -1986,7 +1986,7 @@ const Profile = () => {
               <div className="flex flex-col gap-[12px] h-[81px]">
                 <h3 className="font-['Barlow_Condensed'] text-[22px] font-bold text-white leading-[130%] h-[29px]">Earned</h3>
                 <div className="flex items-center gap-[6px] h-[40px]">
-                  <img src="/coins/coinfix.png" alt="Coin" className="w-[40px] h-[40px] object-contain shrink-0" />
+                  <img src="/coins/Coin.png" alt="Coin" className="w-[40px] h-[40px] object-contain shrink-0" />
                   <span
                     style={{
                       fontFamily: "'Barlow Condensed', sans-serif",
@@ -2009,7 +2009,7 @@ const Profile = () => {
               <div className="flex flex-col gap-[12px] h-[81px]">
                 <h3 className="font-['Barlow_Condensed'] text-[22px] font-bold text-white leading-[130%] h-[29px] whitespace-nowrap">30-Day Earnings</h3>
                 <div className="flex items-center gap-[6px] h-[40px]">
-                  <img src="/coins/coinfix.png" alt="Coin" className="w-[40px] h-[40px] object-contain shrink-0" />
+                  <img src="/coins/Coin.png" alt="Coin" className="w-[40px] h-[40px] object-contain shrink-0" />
                   <span
                     style={{
                       fontFamily: "'Barlow Condensed', sans-serif",
@@ -2130,7 +2130,7 @@ const Profile = () => {
                                 <span style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="font-semibold text-[28px] leading-[120%] text-white truncate">{offer.title}</span>
                                 <span style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="text-white font-semibold text-[28px] leading-[120%]">{offer.completedAt ? new Date(offer.completedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'N/A'}</span>
                                 <div className="flex items-center gap-[6px] font-semibold text-[#fbbf24] text-[28px] leading-[120%]" style={{ fontFamily: "'Barlow Condensed', sans-serif" }}>
-                                  <img src="/coins/coinfix.png" alt="Coin" className="w-[24px] h-[24px] shrink-0 object-contain" />
+                                  <img src="/coins/Coin.png" alt="Coin" className="w-[24px] h-[24px] shrink-0 object-contain" />
                                   <span>{(offer.rewardAmount || 0).toLocaleString()}</span>
                                 </div>
                               </div>
@@ -2191,7 +2191,7 @@ const Profile = () => {
                                   <span style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="font-semibold text-[28px] leading-[120%] text-white truncate">{offer.description}</span>
                                   <span style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="text-white font-semibold text-[28px] leading-[120%]">{offer.createdAt ? new Date(offer.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'N/A'}</span>
                                   <div className="flex items-center gap-[6px] font-semibold text-[#fbbf24] text-[28px] leading-[120%]" style={{ fontFamily: "'Barlow Condensed', sans-serif" }}>
-                                    <img src="/coins/coinfix.png" alt="Coin" className="w-[24px] h-[24px] shrink-0 object-contain" />
+                                    <img src="/coins/Coin.png" alt="Coin" className="w-[24px] h-[24px] shrink-0 object-contain" />
                                     <span>{(offer.amount || 0).toLocaleString()}</span>
                                   </div>
                                   <span style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="text-white font-semibold text-[28px] leading-[120%]">{holdPeriodDays} days</span>
@@ -2260,7 +2260,7 @@ const Profile = () => {
                                   {tx.description}
                                 </span>
                                 <div className="flex items-center gap-[6px] font-semibold text-[#fbbf24] text-[28px] leading-[120%]" style={{ fontFamily: "'Barlow Condensed', sans-serif" }}>
-                                  <img src="/coins/coinfix.png" alt="Coin" className="w-[24px] h-[24px] shrink-0 object-contain" />
+                                  <img src="/coins/Coin.png" alt="Coin" className="w-[24px] h-[24px] shrink-0 object-contain" />
                                   <span>{isDebit ? '' : '+'}{tx.amount.toLocaleString()}</span>
                                 </div>
                                 <div className="flex justify-start">
@@ -2321,7 +2321,7 @@ const Profile = () => {
                               <span style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="font-semibold text-[28px] leading-[120%] text-white truncate">{tx.description}</span>
                               <span style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="text-white font-semibold text-[28px] leading-[120%]">{tx.createdAt ? new Date(tx.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'N/A'}</span>
                               <div className="flex items-center gap-[6px] font-semibold text-[#fbbf24] text-[28px] leading-[120%]" style={{ fontFamily: "'Barlow Condensed', sans-serif" }}>
-                                <img src="/coins/coinfix.png" alt="Coin" className="w-[24px] h-[24px] shrink-0 object-contain" />
+                                <img src="/coins/Coin.png" alt="Coin" className="w-[24px] h-[24px] shrink-0 object-contain" />
                                 <span>{Math.abs(tx.amount || 0).toLocaleString()}</span>
                               </div>
                             </div>

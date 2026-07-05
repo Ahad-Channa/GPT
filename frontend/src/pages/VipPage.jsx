@@ -235,7 +235,7 @@ const VipPage = () => {
             <div className="flex items-center gap-[6px] w-[116px] h-[15px] shrink-0 mt-auto">
               <span className="text-white text-[16px] font-medium font-['Barlow_Condensed'] leading-[130%] w-[70px] h-[11px] flex items-center whitespace-nowrap">Total Earned</span>
               <div className="flex items-center gap-[4px] h-[15px]">
-                <img src="/coins/coinfix.png" alt="Coin" className="w-[15px] h-[15px] shrink-0 object-contain" />
+                <img src="/coins/Coin.png" alt="Coin" className="w-[15px] h-[15px] shrink-0 object-contain" />
                 <span
                   className="font-bold text-[18px] font-['Barlow_Condensed'] leading-none whitespace-nowrap pt-[2px]"
                   style={{
@@ -288,7 +288,7 @@ const VipPage = () => {
               <div className="flex items-center w-full gap-[6px]">
                 <span className="text-[#888888] text-[16px] font-medium font-['Barlow_Condensed'] leading-[130%] tracking-normal whitespace-nowrap">Earn</span>
                 <div className="flex items-center gap-[3px]">
-                  <img src="/coins/coinfix.png" alt="Coin" className="w-[15px] h-[15px] shrink-0" />
+                  <img src="/coins/Coin.png" alt="Coin" className="w-[15px] h-[15px] shrink-0" />
                   <span
                     className="font-bold text-[16px] font-['Barlow_Condensed'] leading-none tracking-normal whitespace-nowrap pt-[1px]"
                     style={{
@@ -305,7 +305,7 @@ const VipPage = () => {
                   more coins needed - Unlock
                 </span>
                 <div className="flex items-center gap-[3px]">
-                  <img src="/coins/coinfix.png" alt="Coin" className="w-[15px] h-[15px] shrink-0" />
+                  <img src="/coins/Coin.png" alt="Coin" className="w-[15px] h-[15px] shrink-0" />
                   <span
                     className="font-bold text-[16px] font-['Barlow_Condensed'] leading-none tracking-normal whitespace-nowrap pt-[1px]"
                     style={{
@@ -468,7 +468,7 @@ const VipPage = () => {
                           {/* Reward Coins */}
                           <div className="flex items-center gap-[4px] overflow-visible">
                             <img
-                              src="/coins/coinfinal.png"
+                              src="/coins/Coin.png"
                               alt="Coin"
                               className="w-[26px] h-[26px] shrink-0 object-contain overflow-visible"
                               style={{ filter: 'drop-shadow(0px 0px 14px rgba(254, 198, 53, 0.6))' }}

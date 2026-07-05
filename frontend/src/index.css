@@ -295,3 +295,10 @@
   display: flex;
   flex-direction: column;
 }
+
+/* ─── Toast Notifications Fix ─────────────────────────────────── */
+.custom-toast div[role="status"],
+.custom-toast .go3958315143, /* Fallback for react-hot-toast generic inner wrapper if role="status" is overridden */
+.custom-toast > div {
+  white-space: nowrap !important;
+}

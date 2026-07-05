@@ -119,7 +119,7 @@ export default function DailyBonus() {
                  <div className="flex flex-col gap-0">
                     <h2 className="text-white text-[22px] font-bold font-['Barlow_Condensed'] leading-none tracking-normal m-0 p-0 whitespace-nowrap">Today's Reward</h2>
                     <div className="flex items-center gap-[6px]">
-                       <img src="/coins/coinfix.png" alt="Coin" className="w-[52px] h-[52px] shrink-0" />
+                       <img src="/coins/Coin.png" alt="Coin" className="w-[52px] h-[52px] shrink-0" />
                        <span 
                          className="font-bold text-[70px] font-['Barlow_Condensed'] leading-[120%] whitespace-nowrap"
                          style={{
@@ -136,7 +136,7 @@ export default function DailyBonus() {
                  <div className="flex items-center gap-[10px]">
                     <span className="text-white text-[18px] font-semibold font-['Barlow_Condensed'] leading-none tracking-normal whitespace-nowrap">Next Reward Tomorrow</span>
                     <div className="flex items-center gap-[4px]">
-                       <img src="/coins/coinfix.png" alt="Coin" className="w-[15px] h-[15px] shrink-0" />
+                       <img src="/coins/Coin.png" alt="Coin" className="w-[15px] h-[15px] shrink-0" />
                        <span 
                          className="font-bold text-[20px] font-['Barlow_Condensed'] leading-none tracking-normal whitespace-nowrap pt-[2px]"
                          style={{
@@ -160,7 +160,7 @@ export default function DailyBonus() {
                  <div className="flex justify-between items-center w-full">
                     <span className="text-white text-[22px] font-medium font-['Barlow_Condensed'] leading-[130%] tracking-normal whitespace-nowrap">Progress to unlock</span>
                     <div className="flex items-center gap-[3px]">
-                       <img src="/coins/coinfix.png" alt="Coin" className="w-[22px] h-[22px] shrink-0" />
+                       <img src="/coins/Coin.png" alt="Coin" className="w-[22px] h-[22px] shrink-0" />
                        <span 
                          className="font-bold text-[24px] font-['Barlow_Condensed'] leading-[130%] tracking-normal whitespace-nowrap"
                          style={{
@@ -186,7 +186,7 @@ export default function DailyBonus() {
                  <div className="flex items-center w-[560px] gap-[6px]">
                     <span className="text-white text-[16px] font-medium font-['Barlow_Condensed'] leading-[130%] tracking-normal whitespace-nowrap">Earn</span>
                     <div className="flex items-center gap-[3px]">
-                       <img src="/coins/coinfix.png" alt="Coin" className="w-[15px] h-[15px] shrink-0" />
+                       <img src="/coins/Coin.png" alt="Coin" className="w-[15px] h-[15px] shrink-0" />
                        <span 
                          className="font-bold text-[16px] font-['Barlow_Condensed'] leading-none tracking-normal whitespace-nowrap pt-[1px]"
                          style={{
@@ -351,7 +351,7 @@ export default function DailyBonus() {
                       </div>
                       <div className="flex justify-between items-center w-[358.66px] h-[26px] shrink-0">
                          <div className="flex items-center w-auto h-[26px] gap-[4px] shrink-0 overflow-visible">
-                            <img src="/coins/coinfinal.png" alt="Coin" className="w-[26px] h-[26px] shrink-0 object-contain overflow-visible" style={{ filter: 'drop-shadow(0px 0px 14px rgba(254, 198, 53, 0.6))' }} />
+                            <img src="/coins/Coin.png" alt="Coin" className="w-[26px] h-[26px] shrink-0 object-contain overflow-visible" style={{ filter: 'drop-shadow(0px 0px 14px rgba(254, 198, 53, 0.6))' }} />
                             <span className="w-auto h-auto m-0 p-0 text-[28px] font-bold font-['Barlow_Condensed'] leading-none tracking-normal whitespace-nowrap bg-gradient-to-b from-[#FEDF77] to-[#FCB91E] text-transparent bg-clip-text flex items-center shrink-0 pb-[2px]">
                                {milestone.reward}
                             </span>

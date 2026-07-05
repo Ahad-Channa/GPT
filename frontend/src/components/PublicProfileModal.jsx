@@ -240,7 +240,7 @@ const PublicProfileModal = ({ userId, onClose }) => {
                           <>
                             {level && <VipBadge tier={level.tier} rank="" size="sm" style={{ width: '49px', height: '18px', padding: '0', display: 'inline-flex', justifyContent: 'center', alignItems: 'center', boxSizing: 'border-box' }} />}
                             <div style={{ display: 'flex', width: 'auto', height: '18px', gap: '3px', alignItems: 'center' }}>
-                              <img src="/coins/coinfinal.png" alt="coin" style={{ width: '18px', height: '18px' }} />
+                              <img src="/coins/Coin.png" alt="coin" style={{ width: '18px', height: '18px' }} />
                               <div style={{
                                 width: 'auto', height: 'auto',
                                 paddingTop: '2px',
@@ -414,7 +414,7 @@ const PublicProfileModal = ({ userId, onClose }) => {
                               </div>
                               <div style={{ width: 'auto', height: '38px', display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '6px', flexShrink: 0 }}>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                                  <img src="/coins/coinfinal.png" alt="coin" style={{ width: '18px', height: '18px' }} />
+                                  <img src="/coins/Coin.png" alt="coin" style={{ width: '18px', height: '18px' }} />
                                   <div style={{
                                     fontFamily: '"Barlow Condensed", sans-serif', fontWeight: 700, fontSize: '16px', lineHeight: '130%',
                                     backgroundImage: 'linear-gradient(180deg, #FEDF77 0%, #FCB91E 100%)',

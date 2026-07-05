@@ -364,7 +364,7 @@ const Header = ({ onChatToggle, chatOpen, fullWidth }) => {
           </button>
 
           {/* Avatar + Dropdown */}
-          <div className="relative mr-[-5px]" ref={dropdownRef}>
+          <div className="relative mr-[5px]" ref={dropdownRef}>
             <button
               id="header-profile-menu"
               onClick={() => setIsDropdownOpen(!isDropdownOpen)}
@@ -374,8 +374,8 @@ const Header = ({ onChatToggle, chatOpen, fullWidth }) => {
                 width: 'auto',
                 height: '48px',
                 borderRadius: '10px',
-                padding: '12px 16px 12px 8.5px',
-                gap: '6px',
+                padding: '12px 10px 12px 8.5px',
+                gap: '4px',
                 border: '1px solid rgba(73, 178, 101, 0.4)'
               }}
             >
@@ -391,16 +391,16 @@ const Header = ({ onChatToggle, chatOpen, fullWidth }) => {
               </div>
               <div
                 className="hidden md:flex flex-col items-start justify-center flex-1 overflow-visible"
-                style={{ minWidth: '42px', width: 'auto', height: '26px', gap: '8px' }}
+                style={{ width: 79.5, height: 26, gap: 4 }}
               >
                 <span
-                  className="text-white text-left"
+                  className="text-white text-left whitespace-nowrap flex-shrink-0"
                   style={{
-                    width: '43px',
+                    width: '100%',
                     fontFamily: '"Barlow Condensed", sans-serif',
                     fontWeight: 600,
                     fontSize: '14px',
-                    lineHeight: '1',
+                    lineHeight: '14px',
                     display: 'block'
                   }}
                 >
@@ -411,15 +411,14 @@ const Header = ({ onChatToggle, chatOpen, fullWidth }) => {
                   style={{ minWidth: '39px', width: 'auto', height: 'auto', gap: '3px' }}
                 >
                   <img
-                    src="/coins/coinfinal.png"
+                    src="/coins/Coin.png"
                     alt="Coin"
-                    style={{ width: '12px', height: '12px', objectFit: 'contain', flexShrink: 0, marginTop: '4px' }}
+                    style={{ width: '12px', height: '12px', objectFit: 'contain', flexShrink: 0 }}
                   />
                   <span style={{
                     minWidth: '24px',
                     width: 'auto',
                     height: 'auto',
-                    paddingTop: '2px',
                     fontFamily: '"Barlow Condensed", sans-serif',
                     fontWeight: 700,
                     fontSize: '12px',

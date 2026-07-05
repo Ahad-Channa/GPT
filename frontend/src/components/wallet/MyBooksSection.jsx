@@ -135,7 +135,7 @@ const BookDetailModal = ({ book, onClose, onOrder, balance }) => {
 
               <div className="flex items-center gap-[14px] w-[491px] h-[48px] shrink-0">
                 <div className="flex items-center gap-[3px] w-[238.5px] h-[26px]">
-                  <img src="/coins/coinfix.png" alt="Coin" className="w-[26px] h-[26px] object-contain rounded-full shadow-[0px_14px_34px_0px_rgba(254,198,53,0.3)]" />
+                  <img src="/coins/Coin.png" alt="Coin" className="w-[26px] h-[26px] object-contain rounded-full shadow-[0px_14px_34px_0px_rgba(254,198,53,0.3)]" />
                   <span className="font-bold font-['Barlow_Condensed'] text-[32px] leading-none bg-clip-text text-transparent bg-gradient-to-b from-[#FEDF77] to-[#FCB91E]">
                     {book.coinCost.toLocaleString()}
                   </span>
@@ -413,7 +413,7 @@ const OrderModal = ({ book, onClose, onSuccess, balance }) => {
                 {book.title}
               </h3>
               <div className="flex items-center gap-[3px] w-[237px] h-[26px]">
-                <img src="/coins/coinfix.png" alt="Coin" className="w-[26px] h-[26px] object-contain rounded-full shadow-[0px_14px_34px_0px_rgba(254,198,53,0.3)] shrink-0" />
+                <img src="/coins/Coin.png" alt="Coin" className="w-[26px] h-[26px] object-contain rounded-full shadow-[0px_14px_34px_0px_rgba(254,198,53,0.3)] shrink-0" />
                 <span className="font-bold font-['Barlow_Condensed'] text-[24px] leading-none bg-clip-text text-transparent bg-gradient-to-b from-[#FEDF77] to-[#FCB91E]">
                   {book.coinCost ? book.coinCost.toLocaleString() : "0"}
                 </span>
@@ -697,7 +697,7 @@ const MyBooksSection = ({ balance, onBalanceUpdate, onClose, preFetchedBooks, pr
                         </p>
                         <div className="flex items-center w-full h-[26px] gap-[3px] mt-2">
                           <img
-                            src="/coins/coinfix.png"
+                            src="/coins/Coin.png"
                             alt="Coin"
                             className="w-[22px] h-[22px] object-contain rounded-full shadow-[0px_14px_34px_0px_rgba(254,198,53,0.3)] flex-shrink-0"
                           />
