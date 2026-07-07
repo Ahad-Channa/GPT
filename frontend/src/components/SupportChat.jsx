@@ -105,63 +105,21 @@ const RoleSymbol = ({ user }) => {
 };
 
 const HoverBadge = ({ badge, label, color }) => {
-  const [hover, setHover] = useState(false);
   return (
     <div
-      onMouseEnter={() => setHover(true)}
-      onMouseLeave={() => setHover(false)}
       style={{ position: 'relative', display: 'inline-flex', alignItems: 'center', cursor: 'default' }}
     >
       {badge}
-      {hover && (
-        <div style={{
-          position: 'absolute', bottom: '100%', left: '50%',
-          transform: `translate(-50%, -8px)`,
-          background: '#0b101e', border: `1px solid ${color}80`, color: '#f8fafc',
-          padding: '5px 10px', borderRadius: '8px', fontSize: '0.75rem', fontWeight: 600,
-          whiteSpace: 'nowrap', zIndex: 9999, boxShadow: `0 4px 15px ${color}40`,
-          pointerEvents: 'none', display: 'flex', alignItems: 'center', gap: '4px'
-        }}>
-          {label}
-          <div style={{
-            position: 'absolute', top: '100%', left: `50%`,
-            transform: 'translateX(-50%)',
-            borderWidth: '5px', borderStyle: 'solid',
-            borderColor: `${color}80 transparent transparent transparent`
-          }} />
-        </div>
-      )}
     </div>
   );
 };
 
 const SymbolWithHover = ({ icon, label, color }) => {
-  const [hover, setHover] = useState(false);
   return (
     <div
-      onMouseEnter={() => setHover(true)}
-      onMouseLeave={() => setHover(false)}
       style={{ position: 'relative', display: 'inline-flex', alignItems: 'center', cursor: 'default' }}
     >
       <span style={{ color, display: 'inline-flex', alignItems: 'center' }}>{icon}</span>
-      {hover && (
-        <div style={{
-          position: 'absolute', bottom: '100%', left: '50%',
-          transform: `translate(-50%, -8px)`,
-          background: '#0b101e', border: `1px solid ${color}80`, color: '#f8fafc',
-          padding: '5px 10px', borderRadius: '8px', fontSize: '0.75rem', fontWeight: 600,
-          whiteSpace: 'nowrap', zIndex: 9999, boxShadow: `0 4px 15px ${color}40`,
-          pointerEvents: 'none', display: 'flex', alignItems: 'center', gap: '4px'
-        }}>
-          {label}
-          <div style={{
-            position: 'absolute', top: '100%', left: `50%`,
-            transform: 'translateX(-50%)',
-            borderWidth: '5px', borderStyle: 'solid',
-            borderColor: `${color}80 transparent transparent transparent`
-          }} />
-        </div>
-      )}
     </div>
   );
 };

@@ -295,7 +295,7 @@ const Home = () => {
                   </div>
                 </div>
               </div>
-              <img src="/coins/totalmember.png" alt="Graphic" style={{ position: 'absolute', width: '250px', height: '141px', top: '4px', left: '413px', opacity: 1, pointerEvents: 'none', objectFit: 'cover', transform: 'scale(1.3)', transformOrigin: 'right center' }} />
+              <img src="/coins/1000337345.png" alt="Graphic" style={{ position: 'absolute', height: '103px', width: 'auto', bottom: '0px', right: '0px', opacity: 1, pointerEvents: 'none', objectFit: 'contain' }} />
             </div>
 
             {/* Paid Out Card */}
@@ -351,7 +351,7 @@ const Home = () => {
                   </div>
                 </div>
               </div>
-              <img src="/coins/totalpaid.png" alt="Graphic" style={{ position: 'absolute', width: '250px', height: '161px', top: 'calc(50% + 30px)', transform: 'translateY(-50%) scale(1.45)', transformOrigin: 'right center', left: '410px', opacity: 1, pointerEvents: 'none', objectFit: 'cover' }} />
+              <img src="/coins/1000337344.png" alt="Graphic" style={{ position: 'absolute', height: '103px', width: 'auto', bottom: '0px', right: '0px', opacity: 1, pointerEvents: 'none', objectFit: 'contain' }} />
             </div>
           </motion.div>
         )}

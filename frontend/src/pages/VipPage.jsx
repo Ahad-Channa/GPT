@@ -46,9 +46,10 @@ const TIER_COLORS = {
     shadow: '0px 3px 0px 0px rgba(77, 33, 130, 1)'
   },
   Opal: {
-    text: '#E079DD',
-    gradient: 'linear-gradient(180deg, #E079DD 0%, #2757A0 100%)',
-    shadow: '0px 3px 0px 0px rgba(29, 61, 112, 1)'
+    text: '#FFA5FC',
+    textGradient: 'linear-gradient(180deg, #FFA5FC 0%, #26BEFF 100%)',
+    gradient: 'linear-gradient(180deg, #FFA5FC 0%, #26BEFF 100%)',
+    shadow: '0px 3px 0px 0px rgba(38, 190, 255, 0.4)'
   }
 };
 
@@ -218,7 +219,15 @@ const VipPage = () => {
           <div className="flex flex-col items-start justify-between min-w-[176px] h-[118px] shrink-0 pr-2">
             <div className="flex flex-col gap-0 w-full">
               <h2 className="text-white text-[22px] font-bold font-['Barlow_Condensed'] leading-[130%] m-0 p-0 w-[105px] h-[29px] whitespace-nowrap">Current rank</h2>
-              <div className="flex items-center mt-[8px] w-full h-[42px] overflow-visible">
+              <div className="flex items-center gap-[10px] mt-[8px] w-full h-[55px] overflow-visible">
+                {currentLevel && (
+                  <img
+                    src={`/coins/${currentLevel.tier === 'Diamond' ? 'dimond' : currentLevel.tier === 'Opal' ? 'opelbadge' : currentLevel.tier.toLowerCase()}.png`}
+                    alt={`${currentLevel.tier} Badge`}
+                    style={{ width: '49.22px', height: '55px' }}
+                    className="object-contain shrink-0"
+                  />
+                )}
                 <span
                   className="font-bold text-[60px] font-['Barlow_Condensed'] leading-[120%] whitespace-nowrap"
                   style={{
@@ -324,10 +333,57 @@ const VipPage = () => {
               </div>
             </div>
           ) : (
-            <div className="flex flex-col w-[704px] h-[84px] justify-center items-center shrink-0">
-              <span className="text-white text-[24px] font-bold font-['Barlow_Condensed'] leading-[130%] tracking-normal whitespace-nowrap">
-                Maximum rank achieved — Opal VIP!
-              </span>
+            <div className="flex flex-col flex-1 max-w-[704px] h-[84px] gap-[20px] justify-center">
+              <div className="flex justify-between items-center w-full">
+                <span className="text-white text-[22px] font-medium font-['Barlow_Condensed'] leading-[130%] tracking-normal whitespace-nowrap">
+                  Max Rank Achieved
+                </span>
+                <span
+                  className="font-bold text-[24px] font-['Barlow_Condensed'] leading-[130%] tracking-normal whitespace-nowrap"
+                  style={{
+                    backgroundImage: currentLevel ? TIER_STYLES[currentLevel.tier]?.gradient : 'linear-gradient(180deg, #FEDF77 0%, #FCB91E 100%)',
+                    WebkitBackgroundClip: 'text',
+                    backgroundClip: 'text',
+                    color: 'transparent'
+                  }}
+                >
+                  100%
+                </span>
+              </div>
+
+              {/* Progress Bar Container */}
+              <div className="w-full h-[12px] bg-[#3A3A3A] rounded-[30px] overflow-hidden shrink-0">
+                <div
+                  className="h-full rounded-[30px] transition-all duration-500 ease-out"
+                  style={{
+                    width: '100%',
+                    background: 'linear-gradient(90deg, #4ade80, #22c55e)'
+                  }}
+                />
+              </div>
+
+              <div className="flex items-center justify-between w-full">
+                <div className="flex items-center gap-[6px]">
+                  <img src="/coins/Coin.png" alt="Coin" className="w-[15px] h-[15px] shrink-0" />
+                  <span
+                    className="font-bold text-[16px] font-['Barlow_Condensed'] leading-none tracking-normal whitespace-nowrap pt-[1px]"
+                    style={{
+                      backgroundImage: 'linear-gradient(180deg, #FEDF77 0%, #FCB91E 100%)',
+                      WebkitBackgroundClip: 'text',
+                      backgroundClip: 'text',
+                      color: 'transparent'
+                    }}
+                  >
+                    {totalEarned?.toLocaleString() || currentLevel?.threshold?.toLocaleString() || 0} / {currentLevel?.threshold?.toLocaleString() || 0}
+                  </span>
+                  <span className="text-[#888888] text-[16px] font-medium font-['Barlow_Condensed'] leading-[130%] tracking-normal whitespace-nowrap">
+                    coins
+                  </span>
+                </div>
+                <span className="text-white text-[12px] font-medium font-['Barlow_Condensed'] leading-[130%] tracking-normal whitespace-nowrap">
+                  Congratulations! You've reached the highest rank.
+                </span>
+              </div>
             </div>
           )}
 
@@ -368,7 +424,7 @@ const VipPage = () => {
                 {/* Left Tier Sidebar */}
                 <div className="flex flex-col items-center justify-between text-center w-[110px] shrink-0 h-[141px]">
                   <img
-                    src={`/coins/${tierName === 'Diamond' ? 'dimond' : tierName.toLowerCase()}.png`}
+                    src={`/coins/${tierName === 'Diamond' ? 'dimond' : tierName === 'Opal' ? 'opelbadge' : tierName.toLowerCase()}.png`}
                     alt={`${tierName} Shield`}
                     className="w-[43.32px] h-[48.41px] object-contain shrink-0"
                   />
@@ -403,7 +459,7 @@ const VipPage = () => {
                               ? 'linear-gradient(180deg, #1FCBE6 0%, #217681 100%)'
                               : tierName === 'Diamond'
                                 ? 'linear-gradient(180deg, #7F8AF7 0%, #793EB9 100%)'
-                                : 'linear-gradient(180deg, #E079DD 0%, #2757A0 100%)'
+                                : 'linear-gradient(180deg, #FFA5FC 0%, #26BEFF 100%)'
                     }}
                   >
                     <span
@@ -508,11 +564,20 @@ const VipPage = () => {
                             ) : lvl.claimed ? (
                               <span
                                 className="font-bold font-['Barlow_Condensed'] text-[20px] leading-[100%] text-right flex items-center justify-end overflow-visible whitespace-nowrap"
-                                style={{
-                                  width: '58px',
-                                  height: '14px',
-                                  color: TIER_COLORS[tierName]?.text || '#FF8C00'
-                                }}
+                                style={
+                                  TIER_COLORS[tierName]?.textGradient
+                                  ? {
+                                      width: '58px',
+                                      backgroundImage: TIER_COLORS[tierName].textGradient,
+                                      WebkitBackgroundClip: 'text',
+                                      backgroundClip: 'text',
+                                      color: 'transparent'
+                                    }
+                                  : {
+                                      width: '58px',
+                                      color: TIER_COLORS[tierName]?.text || '#FF8C00'
+                                    }
+                                }
                               >
                                 Claimed
                               </span>
@@ -539,6 +604,38 @@ const VipPage = () => {
                       </div>
                     )
                   })}
+                  {tierName === 'Opal' && (
+                    <div
+                      className="ml-auto shrink-0 relative flex items-center justify-center rounded-[40px] gap-[10px]"
+                      style={{
+                        width: '112px',
+                        height: '47px',
+                        background: 'linear-gradient(180deg, rgba(255, 165, 252, 0.1) 0%, rgba(38, 190, 255, 0.1) 100%), linear-gradient(0deg, rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.2))'
+                      }}
+                    >
+                      <div
+                        className="absolute inset-0 rounded-[40px] pointer-events-none"
+                        style={{
+                          padding: '1px',
+                          background: 'linear-gradient(180deg, #FFA5FC 0%, #26BEFF 100%)',
+                          WebkitMask: 'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)',
+                          WebkitMaskComposite: 'xor',
+                          maskComposite: 'exclude'
+                        }}
+                      />
+                      <span
+                        className="font-bold text-[22px] font-['Barlow_Condensed'] leading-[130%] tracking-normal whitespace-nowrap pt-[2px]"
+                        style={{
+                          backgroundImage: 'linear-gradient(180deg, #FFA5FC 0%, #26BEFF 100%)',
+                          WebkitBackgroundClip: 'text',
+                          backgroundClip: 'text',
+                          color: 'transparent'
+                        }}
+                      >
+                        Max Rank
+                      </span>
+                    </div>
+                  )}
                 </div>
               </div>
             );
