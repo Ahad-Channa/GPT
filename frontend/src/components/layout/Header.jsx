@@ -308,7 +308,7 @@ const Header = ({ onChatToggle, chatOpen, fullWidth }) => {
 
         {/* Group 3: User Actions */}
         <div
-          className="relative right-[3px] flex items-center shrink-0"
+          className="relative right-[-7px] flex items-center shrink-0"
           style={{ height: '48px', gap: '8px' }}
         >
           {/* Live Chat Button → sidebar */}

@@ -85,14 +85,7 @@ router.get('/user/:id', async (req, res) => {
     const validTransactionTypes = [
       'offer_reward',
       'custom_offer_reward',
-      'daily_bonus',
-      'referral_reward',
-      'admin_adjustment',
-      'promo_code',
-      'leaderboard_reward',
-      'vip_reward',
     ];
-    if (missionsEnabled) validTransactionTypes.push('mission_reward');
 
     // Fetch the user's latest 100 credited activities (public profiles only)
     const recentActiveOffers = await Transaction.find({
