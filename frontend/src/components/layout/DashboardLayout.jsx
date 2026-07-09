@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import Header from './Header';
 import LiveEarningsBar from '../LiveEarningsBar';
 import ChatSidebar from '../chat/ChatSidebar';
@@ -36,55 +36,178 @@ const DashboardLayout = ({ children, showLiveBar = true, fullWidth = false }) =>
 
 
 
-      {/* Footer */}
-      <footer className="w-full flex justify-center border-t border-[#333] bg-[rgba(44,45,44,1)] relative z-10">
-        <div className="flex flex-col items-center text-center w-full max-w-[1440px] pt-[100px] px-8 md:px-[100px] pb-[30px] gap-[30px]">
+      {/* FOOTER */}
+      <footer
+        className="w-full flex justify-center border-t border-[#333]"
+        style={{ background: 'rgba(44, 45, 44, 1)' }}
+      >
+        <div
+          className="flex flex-col items-center text-center w-full mx-auto"
+          style={{
+            width: 1440,
+            maxWidth: '100%',
+            height: 266.9997863769531,
+            paddingTop: 40,
+            paddingRight: 100,
+            paddingBottom: 22,
+            paddingLeft: 100,
+            gap: 30,
+            opacity: 1,
+            transform: 'rotate(0deg)',
+            justifyContent: 'space-between'
+          }}
+        >
           {/* Top Logo */}
-          <div className="flex items-center justify-center gap-[10px]">
-            <img src="/coins/logo copy.png" alt="Logo" className="w-[74px] h-[74px] object-contain" />
-            <span className="flex items-center font-bold text-[56px] leading-[100%] text-white font-['Barlow_Condensed'] whitespace-nowrap">
+          <div
+            className="flex items-center justify-center"
+            style={{
+              width: 210.99978637695312,
+              height: 51.999786376953125,
+              gap: 10,
+              opacity: 1,
+              transform: 'rotate(0deg)'
+            }}
+          >
+            <img
+              src="/coins/logo copy.png"
+              alt="Logo"
+              style={{
+                width: 51.999786376953125,
+                height: 51.999786376953125,
+                objectFit: 'contain',
+                opacity: 1,
+                transform: 'rotate(0deg)'
+              }}
+            />
+            <span
+              className="whitespace-nowrap flex items-center"
+              style={{
+                width: 149,
+                height: 32,
+                fontFamily: '"Barlow Condensed", sans-serif',
+                fontWeight: 700,
+                fontSize: 46,
+                lineHeight: '100%',
+                letterSpacing: '0%',
+                color: 'rgba(255, 255, 255, 1)',
+                opacity: 1,
+                transform: 'rotate(0deg)'
+              }}
+            >
               TaskMint
             </span>
           </div>
 
           {/* Middle Content */}
-          <div className="flex flex-col items-center text-center max-w-full gap-[30px]">
-            <p className="m-0 p-0 flex items-center justify-center text-[24px] leading-[28px] text-gray-300 font-['Barlow_Condensed'] text-center">
+          <div
+            className="flex flex-col items-center text-center"
+            style={{ width: 1104, maxWidth: '100%', gap: 30 }}
+          >
+            <p
+              className="m-0 p-0 flex items-center justify-center whitespace-nowrap"
+              style={{
+                width: 1104,
+                maxWidth: '100%',
+                height: 14,
+                fontFamily: '"Barlow Condensed", sans-serif',
+                fontWeight: 400,
+                fontSize: 20,
+                lineHeight: '28px',
+                textAlign: 'center',
+                color: 'rgba(209, 213, 219, 1)'
+              }}
+            >
               Complete offers, surveys, and tasks to earn real rewards. Join thousands of users already earning every day.
             </p>
-            <div className="flex flex-wrap justify-center items-center gap-x-[30px] gap-y-4">
+            <div
+              className="flex justify-center items-center m-0 p-0"
+              style={{ width: 526, maxWidth: '100%', height: 11, gap: 20 }}
+            >
               {[
-                { name: 'Features', href: '#' },
-                { name: 'FAQ', href: '#' },
+                { name: 'Features', href: '#features' },
+                { name: 'FAQ', href: '#faq' },
                 { name: 'Blog', href: '#' },
                 { name: 'Terms of Use', href: '#' },
                 { name: 'Privacy Policy', href: '#' },
                 { name: 'Support', href: '#' }
               ].map((link, idx, arr) => (
-                <div key={link.name} className="flex items-center">
-                  <a href={link.href} className="hover:opacity-80 transition-opacity flex items-center justify-center font-bold text-[26px] leading-[32px] text-[#49B265] font-['Barlow_Condensed'] whitespace-nowrap">
+                <React.Fragment key={link.name}>
+                  <a
+                    href={link.href}
+                    className="hover:opacity-80 transition-opacity whitespace-nowrap flex items-center justify-center"
+                    style={{
+                      height: 11,
+                      fontFamily: '"Barlow Condensed", sans-serif',
+                      fontWeight: 700,
+                      fontSize: 16,
+                      lineHeight: '11px',
+                      color: 'rgba(73, 178, 101, 1)',
+                      textDecoration: 'none'
+                    }}
+                  >
                     {link.name}
                   </a>
                   {idx < arr.length - 1 && (
-                    <span className="flex items-center justify-center text-white text-[26px] leading-[32px] ml-[30px] hidden sm:block">&bull;</span>
+                    <span
+                      className="flex items-center justify-center"
+                      style={{ color: '#fff', fontSize: 16, lineHeight: '11px' }}
+                    >
+                      &bull;
+                    </span>
                   )}
-                </div>
+                </React.Fragment>
               ))}
             </div>
           </div>
 
           {/* Bottom Divider & Copyright */}
-          <div className="w-full flex flex-col items-center gap-4 mt-8">
-            <div className="w-full h-px bg-[#444]" />
-            <div className="flex flex-col sm:flex-row items-center justify-between w-full max-w-[1240px] gap-4 sm:gap-0 mt-4">
-              <p className="m-0 p-0 flex items-center font-medium text-[20px] leading-[20px] text-white font-['Barlow_Condensed']">
+          <div className="w-full flex flex-col items-center gap-4">
+            <div
+              style={{
+                width: 1240,
+                maxWidth: '100%',
+                height: 0,
+                borderTop: '1px solid rgba(255, 255, 255, 0.3)'
+              }}
+            />
+            <div
+              className="flex items-center"
+              style={{
+                width: 1240,
+                maxWidth: '100%',
+                height: 34,
+                justifyContent: 'space-between',
+                opacity: 1,
+                transform: 'rotate(0deg)'
+              }}
+            >
+              <p
+                className="m-0 p-0 flex items-center"
+                style={{
+                  width: 1004,
+                  height: 11,
+                  fontFamily: '"Barlow Condensed", sans-serif',
+                  fontWeight: 500,
+                  fontSize: 16,
+                  lineHeight: '20px',
+                  color: 'rgba(255, 255, 255, 1)'
+                }}
+              >
                 © 2026 TaskMint. All rights reserved.
               </p>
-              <div className="flex items-center gap-[20px] text-[#49B265]">
-                <FaFacebook className="w-[34px] h-[34px] hover:opacity-80 cursor-pointer transition-opacity" />
-                <FaInstagram className="w-[34px] h-[34px] hover:opacity-80 cursor-pointer transition-opacity" />
-                <FaYoutube className="w-[34px] h-[34px] hover:opacity-80 cursor-pointer transition-opacity" />
-                <FaDiscord className="w-[34px] h-[34px] hover:opacity-80 cursor-pointer transition-opacity" />
+              <div
+                className="flex items-center justify-between"
+                style={{
+                  width: 164,
+                  height: 26,
+                  gap: 20,
+                  color: 'rgba(73, 178, 101, 1)'
+                }}
+              >
+                <FaFacebook className="hover:opacity-80 cursor-pointer transition-opacity flex-shrink-0" style={{ width: 26, height: 26, opacity: 1, transform: 'rotate(0deg)' }} />
+                <FaInstagram className="hover:opacity-80 cursor-pointer transition-opacity flex-shrink-0" style={{ width: 26, height: 26, opacity: 1, transform: 'rotate(0deg)' }} />
+                <FaYoutube className="hover:opacity-80 cursor-pointer transition-opacity flex-shrink-0" style={{ width: 26, height: 26, opacity: 1, transform: 'rotate(0deg)' }} />
+                <FaDiscord className="hover:opacity-80 cursor-pointer transition-opacity flex-shrink-0" style={{ width: 26, height: 26, opacity: 1, transform: 'rotate(0deg)' }} />
               </div>
             </div>
           </div>

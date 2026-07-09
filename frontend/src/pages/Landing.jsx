@@ -1049,10 +1049,10 @@ const Landing = () => {
           style={{
             width: 1440,
             maxWidth: '100%',
-            height: 406.9995422363281,
-            paddingTop: 100,
+            height: 266.9997863769531,
+            paddingTop: 40,
             paddingRight: 100,
-            paddingBottom: 30,
+            paddingBottom: 22,
             paddingLeft: 100,
             gap: 30,
             opacity: 1,
@@ -1064,8 +1064,8 @@ const Landing = () => {
           <div
             className="flex items-center justify-center"
             style={{
-              width: 264.9997253417969,
-              height: 73.99954223632812,
+              width: 210.99978637695312,
+              height: 51.999786376953125,
               gap: 10,
               opacity: 1,
               transform: 'rotate(0deg)'
@@ -1075,8 +1075,8 @@ const Landing = () => {
               src="/coins/logo copy.png"
               alt="Logo"
               style={{
-                width: 73.99972534179688,
-                height: 73.99954223632812,
+                width: 51.999786376953125,
+                height: 51.999786376953125,
                 objectFit: 'contain',
                 opacity: 1,
                 transform: 'rotate(0deg)'
@@ -1085,11 +1085,11 @@ const Landing = () => {
             <span
               className="whitespace-nowrap flex items-center"
               style={{
-                width: 181,
-                height: 39,
+                width: 149,
+                height: 32,
                 fontFamily: '"Barlow Condensed", sans-serif',
                 fontWeight: 700,
-                fontSize: 56,
+                fontSize: 46,
                 lineHeight: '100%',
                 letterSpacing: '0%',
                 color: 'rgba(255, 255, 255, 1)',
@@ -1104,17 +1104,17 @@ const Landing = () => {
           {/* Middle Content */}
           <div
             className="flex flex-col items-center text-center"
-            style={{ width: 1104, maxWidth: '100%', height: 79, gap: 30 }}
+            style={{ width: 1104, maxWidth: '100%', gap: 30 }}
           >
             <p
               className="m-0 p-0 flex items-center justify-center whitespace-nowrap"
               style={{
                 width: 1104,
                 maxWidth: '100%',
-                height: 17,
+                height: 14,
                 fontFamily: '"Barlow Condensed", sans-serif',
                 fontWeight: 400,
-                fontSize: 24,
+                fontSize: 20,
                 lineHeight: '28px',
                 textAlign: 'center',
                 color: 'rgba(209, 213, 219, 1)'
@@ -1124,7 +1124,7 @@ const Landing = () => {
             </p>
             <div
               className="flex justify-center items-center m-0 p-0"
-              style={{ width: 772, maxWidth: '100%', height: 32, gap: 30 }}
+              style={{ width: 526, maxWidth: '100%', height: 11, gap: 20 }}
             >
               {[
                 { name: 'Features', href: '#features' },
@@ -1139,12 +1139,13 @@ const Landing = () => {
                     href={link.href}
                     className="hover:opacity-80 transition-opacity whitespace-nowrap flex items-center justify-center"
                     style={{
-                      height: 32,
+                      height: 11,
                       fontFamily: '"Barlow Condensed", sans-serif',
                       fontWeight: 700,
-                      fontSize: 26,
-                      lineHeight: '32px',
-                      color: 'rgba(73, 178, 101, 1)'
+                      fontSize: 16,
+                      lineHeight: '11px',
+                      color: 'rgba(73, 178, 101, 1)',
+                      textDecoration: 'none'
                     }}
                   >
                     {link.name}
@@ -1152,7 +1153,7 @@ const Landing = () => {
                   {idx < arr.length - 1 && (
                     <span
                       className="flex items-center justify-center"
-                      style={{ color: '#fff', fontSize: 26, lineHeight: '32px' }}
+                      style={{ color: '#fff', fontSize: 16, lineHeight: '11px' }}
                     >
                       &bull;
                     </span>
@@ -1164,7 +1165,14 @@ const Landing = () => {
 
           {/* Bottom Divider & Copyright */}
           <div className="w-full flex flex-col items-center gap-4">
-            <div className="w-full h-px bg-[#444]" />
+            <div
+              style={{
+                width: 1240,
+                maxWidth: '100%',
+                height: 0,
+                borderTop: '1px solid rgba(255, 255, 255, 0.3)'
+              }}
+            />
             <div
               className="flex items-center"
               style={{
@@ -1180,10 +1188,10 @@ const Landing = () => {
                 className="m-0 p-0 flex items-center"
                 style={{
                   width: 1004,
-                  height: 14,
+                  height: 11,
                   fontFamily: '"Barlow Condensed", sans-serif',
                   fontWeight: 500,
-                  fontSize: 20,
+                  fontSize: 16,
                   lineHeight: '20px',
                   color: 'rgba(255, 255, 255, 1)'
                 }}
@@ -1193,16 +1201,16 @@ const Landing = () => {
               <div
                 className="flex items-center justify-between"
                 style={{
-                  width: 196,
-                  height: 34,
+                  width: 164,
+                  height: 26,
                   gap: 20,
                   color: 'rgba(73, 178, 101, 1)'
                 }}
               >
-                <FaFacebook className="hover:opacity-80 cursor-pointer transition-opacity flex-shrink-0" style={{ width: 34, height: 34, opacity: 1, transform: 'rotate(0deg)' }} />
-                <FaInstagram className="hover:opacity-80 cursor-pointer transition-opacity flex-shrink-0" style={{ width: 34, height: 34, opacity: 1, transform: 'rotate(0deg)' }} />
-                <FaYoutube className="hover:opacity-80 cursor-pointer transition-opacity flex-shrink-0" style={{ width: 34, height: 34, opacity: 1, transform: 'rotate(0deg)' }} />
-                <FaDiscord className="hover:opacity-80 cursor-pointer transition-opacity flex-shrink-0" style={{ width: 34, height: 34, opacity: 1, transform: 'rotate(0deg)' }} />
+                <FaFacebook className="hover:opacity-80 cursor-pointer transition-opacity flex-shrink-0" style={{ width: 26, height: 26, opacity: 1, transform: 'rotate(0deg)' }} />
+                <FaInstagram className="hover:opacity-80 cursor-pointer transition-opacity flex-shrink-0" style={{ width: 26, height: 26, opacity: 1, transform: 'rotate(0deg)' }} />
+                <FaYoutube className="hover:opacity-80 cursor-pointer transition-opacity flex-shrink-0" style={{ width: 26, height: 26, opacity: 1, transform: 'rotate(0deg)' }} />
+                <FaDiscord className="hover:opacity-80 cursor-pointer transition-opacity flex-shrink-0" style={{ width: 26, height: 26, opacity: 1, transform: 'rotate(0deg)' }} />
               </div>
             </div>
           </div>
