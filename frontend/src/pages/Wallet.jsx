@@ -235,7 +235,8 @@ const Wallet = () => {
           setBooks(data.books);
           localStorage.setItem('books', JSON.stringify(data.books));
           const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-          const visible = data.isGermanIP === true || isLocalhost;
+          // Show books if: worldwide mode OR user has a German IP (or we're on localhost for dev)
+          const visible = isLocalhost || !data.booksGermanyOnly || data.isGermanIP === true;
           setBooksVisible(visible);
           localStorage.setItem('booksVisible', String(visible));
         }
