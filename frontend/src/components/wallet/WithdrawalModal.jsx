@@ -573,9 +573,7 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess, filterType }) 
                 paddingRight: '14px',
                 paddingBottom: '16px',
                 paddingLeft: '14px',
-                background: 'rgba(226, 69, 69, 0.14)',
-                backdropFilter: 'blur(44px)',
-                border: 'none',
+                background: 'rgba(226, 69, 69, 0.14)'
               }}
             >
               <img

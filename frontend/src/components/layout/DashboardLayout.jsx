@@ -27,7 +27,7 @@ const DashboardLayout = ({ children, showLiveBar = true, fullWidth = false }) =>
 
       {/* Main Content Wrapper */}
       <div 
-        className="transition-all duration-300 ease-in-out w-full"
+        className="transition-all duration-300 ease-in-out w-full flex-1"
       >
         <main className={`relative z-10 w-full ${fullWidth ? 'max-w-[1600px]' : 'max-w-7xl'} mx-auto px-4 md:px-8 2xl:px-12 py-8 md:py-12 flex flex-col`}>
           {children}
@@ -38,7 +38,7 @@ const DashboardLayout = ({ children, showLiveBar = true, fullWidth = false }) =>
 
       {/* FOOTER */}
       <footer
-        className="w-full flex justify-center border-t border-[#333] flex-1 items-start"
+        className="w-full flex justify-center border-t border-[#333] shrink-0 items-start"
         style={{ background: 'rgba(44, 45, 44, 1)' }}
       >
         <div

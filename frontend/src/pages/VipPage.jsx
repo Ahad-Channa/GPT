@@ -370,7 +370,7 @@ const VipPage = () => {
                   <span
                     className="text-[16px] font-medium font-['Barlow_Condensed'] leading-[130%] tracking-normal whitespace-nowrap flex items-center"
                     style={{
-                      height: '11px',
+                      height: '21px',
                       backgroundImage: 'linear-gradient(180deg, #FEDF77 0%, #FCB91E 100%)',
                       WebkitBackgroundClip: 'text',
                       backgroundClip: 'text',
@@ -381,12 +381,15 @@ const VipPage = () => {
                   </span>
                   <span 
                     className="text-[#888888] text-[16px] font-medium font-['Barlow_Condensed'] leading-[130%] tracking-normal whitespace-nowrap flex items-center"
-                    style={{ height: '11px' }}
+                    style={{ height: '21px' }}
                   >
                     coins
                   </span>
                 </div>
-                <span className="text-white text-[12px] font-medium font-['Barlow_Condensed'] leading-[130%] tracking-normal whitespace-nowrap">
+                <span 
+                  className="text-white text-[16px] font-medium font-['Barlow_Condensed'] leading-[130%] tracking-normal whitespace-nowrap flex items-center justify-end"
+                  style={{ width: '254px', height: '21px' }}
+                >
                   Congratulations! You've reached the highest rank.
                 </span>
               </div>

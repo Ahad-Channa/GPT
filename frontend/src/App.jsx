@@ -94,8 +94,10 @@ function App() {
         toastOptions={{
           className: 'custom-toast',
           style: {
-            width: '276px',
-            height: '74px',
+            minWidth: '276px',
+            maxWidth: '400px',
+            minHeight: '74px',
+            height: 'auto',
             background: 'rgba(44, 45, 44, 1)',
             color: '#fff',
             border: '1px solid rgba(73, 178, 101, 1)',
@@ -107,7 +109,8 @@ function App() {
             fontSize: '22px',
             lineHeight: '120%',
             textTransform: 'uppercase',
-            whiteSpace: 'nowrap',
+            whiteSpace: 'normal',
+            wordBreak: 'break-word',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'flex-start'
