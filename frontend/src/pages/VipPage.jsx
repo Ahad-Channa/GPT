@@ -634,8 +634,7 @@ const VipPage = () => {
                       style={{
                         width: '112px',
                         height: '47px',
-                        background: 'linear-gradient(180deg, rgba(255, 165, 252, 0.05) 0%, rgba(38, 190, 255, 0.05) 100%), rgba(0, 0, 0, 0.4)',
-                        boxShadow: '0px 0px 15px rgba(38, 190, 255, 0.15)'
+                        background: '#1A1A1E'
                       }}
                     >
                       <div
@@ -649,14 +648,7 @@ const VipPage = () => {
                         }}
                       />
                       <span
-                        className="font-bold text-[22px] font-['Barlow_Condensed'] leading-[130%] tracking-normal whitespace-nowrap"
-                        style={{
-                          backgroundImage: 'linear-gradient(180deg, #FFA5FC 0%, #26BEFF 100%)',
-                          WebkitBackgroundClip: 'text',
-                          backgroundClip: 'text',
-                          color: 'transparent',
-                          filter: 'drop-shadow(0px 2px 4px rgba(0, 0, 0, 0.5))'
-                        }}
+                        className="font-bold text-white text-[22px] font-['Barlow_Condensed'] leading-[130%] tracking-normal whitespace-nowrap"
                       >
                         Max Rank
                       </span>
