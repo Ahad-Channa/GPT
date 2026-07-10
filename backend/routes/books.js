@@ -49,13 +49,7 @@ function getClientIp(req) {
 const ipCountryCache = new Map();
 const IP_CACHE_TTL = 10 * 60 * 1000;
 
-async function getCountryFromIp(ip) {
-  if (!ip || ip === '127.0.0.1' || ip === '::1' || ip.startsWith('192.168') || ip.startsWith('10.') || ip.startsWith('::ffff:127')) {
-    return 'DE';
-  }
-  const cached = ipCountryCache.get(ip);
-  if (cached && Date.now() - cached.ts < IP_CACHE_TTL) return cached.country;
-
+function queryIpApi(ip) {
   return new Promise((resolve) => {
     const options = {
       hostname: 'ip-api.com',
@@ -68,18 +62,135 @@ async function getCountryFromIp(ip) {
       res.on('end', () => {
         try {
           const parsed = JSON.parse(data);
-          const country = parsed.countryCode ? parsed.countryCode.toUpperCase() : 'XX';
-          ipCountryCache.set(ip, { country, ts: Date.now() });
-          resolve(country);
-        } catch(e) {
+          resolve(parsed.countryCode ? parsed.countryCode.toUpperCase() : 'XX');
+        } catch (e) {
           resolve('XX');
         }
       });
     });
     req.on('error', () => resolve('XX'));
-    req.setTimeout(4000, () => { req.destroy(); resolve('XX'); });
+    req.setTimeout(3000, () => { req.destroy(); resolve('XX'); });
     req.end();
   });
+}
+
+function queryIpWhoIs(ip) {
+  return new Promise((resolve) => {
+    const options = {
+      hostname: 'ipwho.is',
+      path: `/${ip}`,
+      method: 'GET',
+    };
+    const req = https.request(options, (res) => {
+      let data = '';
+      res.on('data', (c) => (data += c));
+      res.on('end', () => {
+        try {
+          const parsed = JSON.parse(data);
+          resolve(parsed.country_code ? parsed.country_code.toUpperCase() : 'XX');
+        } catch (e) {
+          resolve('XX');
+        }
+      });
+    });
+    req.on('error', () => resolve('XX'));
+    req.setTimeout(3000, () => { req.destroy(); resolve('XX'); });
+    req.end();
+  });
+}
+
+function queryCountryIs(ip) {
+  return new Promise((resolve) => {
+    const options = {
+      hostname: 'api.country.is',
+      path: `/${ip}`,
+      method: 'GET',
+    };
+    const req = https.request(options, (res) => {
+      let data = '';
+      res.on('data', (c) => (data += c));
+      res.on('end', () => {
+        try {
+          const parsed = JSON.parse(data);
+          resolve(parsed.country ? parsed.country.toUpperCase() : 'XX');
+        } catch (e) {
+          resolve('XX');
+        }
+      });
+    });
+    req.on('error', () => resolve('XX'));
+    req.setTimeout(3000, () => { req.destroy(); resolve('XX'); });
+    req.end();
+  });
+}
+
+function queryIpApiCo(ip) {
+  return new Promise((resolve) => {
+    const options = {
+      hostname: 'ipapi.co',
+      path: `/${ip}/country/`,
+      method: 'GET',
+      headers: { 'User-Agent': 'Mozilla/5.0' }
+    };
+    const req = https.request(options, (res) => {
+      let data = '';
+      res.on('data', (c) => (data += c));
+      res.on('end', () => {
+        const country = data.trim().toUpperCase();
+        resolve(country.length === 2 ? country : 'XX');
+      });
+    });
+    req.on('error', () => resolve('XX'));
+    req.setTimeout(3000, () => { req.destroy(); resolve('XX'); });
+    req.end();
+  });
+}
+
+async function getCountryFromIp(ip) {
+  if (!ip || ip === '127.0.0.1' || ip === '::1' || ip.startsWith('192.168') || ip.startsWith('10.') || ip.startsWith('::ffff:127')) {
+    console.log(`[Books Geolocation] Localhost/private IP detected: ${ip}. Defaulting to DE.`);
+    return 'DE';
+  }
+  const cached = ipCountryCache.get(ip);
+  if (cached && Date.now() - cached.ts < IP_CACHE_TTL) {
+    console.log(`[Books Geolocation] Cache hit for IP ${ip}: ${cached.country}`);
+    return cached.country;
+  }
+
+  // 1. Try ip-api.com
+  let country = await queryIpApi(ip);
+  if (country && country !== 'XX') {
+    console.log(`[Books Geolocation] Resolved IP ${ip} via ip-api.com: ${country}`);
+    ipCountryCache.set(ip, { country, ts: Date.now() });
+    return country;
+  }
+
+  // 2. Try ipwho.is
+  country = await queryIpWhoIs(ip);
+  if (country && country !== 'XX') {
+    console.log(`[Books Geolocation] Resolved IP ${ip} via ipwho.is: ${country}`);
+    ipCountryCache.set(ip, { country, ts: Date.now() });
+    return country;
+  }
+
+  // 3. Try api.country.is
+  country = await queryCountryIs(ip);
+  if (country && country !== 'XX') {
+    console.log(`[Books Geolocation] Resolved IP ${ip} via api.country.is: ${country}`);
+    ipCountryCache.set(ip, { country, ts: Date.now() });
+    return country;
+  }
+
+  // 4. Try ipapi.co
+  country = await queryIpApiCo(ip);
+  if (country && country !== 'XX') {
+    console.log(`[Books Geolocation] Resolved IP ${ip} via ipapi.co: ${country}`);
+    ipCountryCache.set(ip, { country, ts: Date.now() });
+    return country;
+  }
+
+  console.warn(`[Books Geolocation] All geolocators failed for IP ${ip}. Defaulting to XX.`);
+  return 'XX';
 }
 
 /* ─── Admin middleware ─────────────────────────────────────────── */
@@ -117,11 +228,15 @@ router.get('/', verifyToken, async (req, res) => {
     const booksGermanyOnly = settings.booksGermanyOnly !== false;
 
     const ip = getClientIp(req);
-    let country = req.headers['cf-ipcountry'];
+    let country = req.headers['cf-ipcountry'] || req.headers['x-vercel-ip-country'] || req.headers['x-country-code'];
+    if (country) {
+      country = String(country).toUpperCase().trim();
+    }
     if (!country) {
       country = await getCountryFromIp(ip);
     }
     const isGermanIP = country === 'DE';
+    console.log(`[Books Geolocation] Client IP: ${ip}, Headers: cf-ipcountry=${req.headers['cf-ipcountry'] || 'none'}, x-vercel-ip-country=${req.headers['x-vercel-ip-country'] || 'none'}, Resolved: ${country}, isGermanIP: ${isGermanIP}`);
 
     let user = null;
     if (req.user) {
