@@ -299,8 +299,9 @@ const VipPage = () => {
                 <div className="flex items-center gap-[3px]">
                   <img src="/coins/Coin.png" alt="Coin" className="w-[15px] h-[15px] shrink-0" />
                   <span
-                    className="font-bold text-[16px] font-['Barlow_Condensed'] leading-none tracking-normal whitespace-nowrap pt-[1px]"
+                    className="text-[16px] font-medium font-['Barlow_Condensed'] leading-[130%] tracking-normal whitespace-nowrap flex items-center"
                     style={{
+                      height: '11px',
                       backgroundImage: 'linear-gradient(180deg, #FEDF77 0%, #FCB91E 100%)',
                       WebkitBackgroundClip: 'text',
                       backgroundClip: 'text',
@@ -316,8 +317,9 @@ const VipPage = () => {
                 <div className="flex items-center gap-[3px]">
                   <img src="/coins/Coin.png" alt="Coin" className="w-[15px] h-[15px] shrink-0" />
                   <span
-                    className="font-bold text-[16px] font-['Barlow_Condensed'] leading-none tracking-normal whitespace-nowrap pt-[1px]"
+                    className="text-[16px] font-medium font-['Barlow_Condensed'] leading-[130%] tracking-normal whitespace-nowrap flex items-center"
                     style={{
+                      height: '11px',
                       backgroundImage: 'linear-gradient(180deg, #FEDF77 0%, #FCB91E 100%)',
                       WebkitBackgroundClip: 'text',
                       backgroundClip: 'text',
@@ -366,8 +368,9 @@ const VipPage = () => {
                 <div className="flex items-center gap-[6px]">
                   <img src="/coins/Coin.png" alt="Coin" className="w-[15px] h-[15px] shrink-0" />
                   <span
-                    className="font-bold text-[16px] font-['Barlow_Condensed'] leading-none tracking-normal whitespace-nowrap pt-[1px]"
+                    className="text-[16px] font-medium font-['Barlow_Condensed'] leading-[130%] tracking-normal whitespace-nowrap flex items-center"
                     style={{
+                      height: '11px',
                       backgroundImage: 'linear-gradient(180deg, #FEDF77 0%, #FCB91E 100%)',
                       WebkitBackgroundClip: 'text',
                       backgroundClip: 'text',
@@ -376,7 +379,10 @@ const VipPage = () => {
                   >
                     {totalEarned?.toLocaleString() || currentLevel?.threshold?.toLocaleString() || 0} / {currentLevel?.threshold?.toLocaleString() || 0}
                   </span>
-                  <span className="text-[#888888] text-[16px] font-medium font-['Barlow_Condensed'] leading-[130%] tracking-normal whitespace-nowrap">
+                  <span 
+                    className="text-[#888888] text-[16px] font-medium font-['Barlow_Condensed'] leading-[130%] tracking-normal whitespace-nowrap flex items-center"
+                    style={{ height: '11px' }}
+                  >
                     coins
                   </span>
                 </div>
@@ -417,10 +423,28 @@ const VipPage = () => {
             if (tierLevels.length === 0) return null;
             const meta = TIER_METADATA[tierName];
             const ts = TIER_STYLES[tierName];
+            const isCurrentTier = currentLevel?.tier === tierName;
 
             return (
-              <div key={tierName} className="bg-[#242424] rounded-[20px] pt-[20px] pr-[20px] pb-[20px] pl-[40px] border border-[#2A2A2E] flex flex-col md:flex-row gap-[30px] items-center w-[1240px] md:h-[181px] shrink-0 backdrop-blur-[94px]">
-
+              <div 
+                key={tierName} 
+                className={`relative bg-[#242424] rounded-[20px] pt-[20px] pr-[20px] pb-[20px] pl-[40px] border flex flex-col md:flex-row gap-[30px] items-center w-[1240px] md:h-[181px] shrink-0 backdrop-blur-[94px] ${
+                  isCurrentTier ? 'border-transparent' : 'border-[#2A2A2E]'
+                }`}
+              >
+                {isCurrentTier && (
+                  <div
+                    className="absolute rounded-[20px] pointer-events-none"
+                    style={{
+                      top: '-1px', left: '-1px', right: '-1px', bottom: '-1px',
+                      padding: '2px',
+                      background: TIER_COLORS[tierName]?.gradient || 'linear-gradient(180deg, #FFA5FC 0%, #26BEFF 100%)',
+                      WebkitMask: 'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)',
+                      WebkitMaskComposite: 'xor',
+                      maskComposite: 'exclude'
+                    }}
+                  />
+                )}
                 {/* Left Tier Sidebar */}
                 <div className="flex flex-col items-center justify-between text-center w-[110px] shrink-0 h-[141px]">
                   <img
@@ -610,7 +634,8 @@ const VipPage = () => {
                       style={{
                         width: '112px',
                         height: '47px',
-                        background: 'linear-gradient(180deg, rgba(255, 165, 252, 0.1) 0%, rgba(38, 190, 255, 0.1) 100%), linear-gradient(0deg, rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.2))'
+                        background: 'linear-gradient(180deg, rgba(255, 165, 252, 0.05) 0%, rgba(38, 190, 255, 0.05) 100%), rgba(0, 0, 0, 0.4)',
+                        boxShadow: '0px 0px 15px rgba(38, 190, 255, 0.15)'
                       }}
                     >
                       <div
@@ -624,12 +649,13 @@ const VipPage = () => {
                         }}
                       />
                       <span
-                        className="font-bold text-[22px] font-['Barlow_Condensed'] leading-[130%] tracking-normal whitespace-nowrap pt-[2px]"
+                        className="font-bold text-[22px] font-['Barlow_Condensed'] leading-[130%] tracking-normal whitespace-nowrap"
                         style={{
                           backgroundImage: 'linear-gradient(180deg, #FFA5FC 0%, #26BEFF 100%)',
                           WebkitBackgroundClip: 'text',
                           backgroundClip: 'text',
-                          color: 'transparent'
+                          color: 'transparent',
+                          filter: 'drop-shadow(0px 2px 4px rgba(0, 0, 0, 0.5))'
                         }}
                       >
                         Max Rank
