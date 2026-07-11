@@ -522,63 +522,8 @@ const OrderModal = ({ book, onClose, onSuccess, balance }) => {
   );
 };
 
-const isClientGerman = async () => {
-  // 1. Timezone check (very fast & reliable fallback for German residency)
-  try {
-    const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
-    if (tz === 'Europe/Berlin' || tz === 'Europe/Busingen') {
-      return true;
-    }
-  } catch (e) {}
 
-  // 2. Cloudflare edge trace (highly reliable, no rate limits, client-side IP lookup)
-  try {
-    const cfRes = await fetch('https://www.cloudflare.com/cdn-cgi/trace');
-    if (cfRes.ok) {
-      const text = await cfRes.text();
-      const lines = text.split('\n');
-      const locLine = lines.find(line => line.startsWith('loc='));
-      if (locLine) {
-        const country = locLine.split('=')[1].trim().toUpperCase();
-        if (country === 'DE') return true;
-      }
-    }
-  } catch (e) {
-    console.warn('CF geo trace failed:', e);
-  }
 
-  // 3. api.country.is (fast HTTPS lookup)
-  try {
-    const res = await fetch('https://api.country.is');
-    if (res.ok) {
-      const data = await res.json();
-      if (data && data.country === 'DE') return true;
-    }
-  } catch (e) {
-    console.warn('api.country.is failed:', e);
-  }
-
-  // 4. ipwho.is (fast HTTPS lookup)
-  try {
-    const res = await fetch('https://ipwho.is/');
-    if (res.ok) {
-      const data = await res.json();
-      if (data && data.country_code === 'DE') return true;
-    }
-  } catch (e) {
-    console.warn('ipwho.is failed:', e);
-  }
-
-  // 5. Browser language fallback
-  try {
-    const lang = navigator.language || navigator.userLanguage;
-    if (lang && lang.toLowerCase().startsWith('de')) {
-      return true;
-    }
-  } catch (e) {}
-
-  return false;
-};
 
 /* ── Main Section component ──────────────────────────────────── */
 const MyBooksSection = ({ balance, onBalanceUpdate, onClose, preFetchedBooks, preFetchedLoading, preFetchedVisible, onBooksUpdate }) => {
@@ -586,7 +531,6 @@ const MyBooksSection = ({ balance, onBalanceUpdate, onClose, preFetchedBooks, pr
   const [books, setBooks] = useState(preFetchedBooks || []);
   const [loading, setLoading] = useState(preFetchedBooks !== undefined ? preFetchedLoading : true);
   const [visible, setVisible] = useState(preFetchedBooks !== undefined ? preFetchedVisible : false); // whether this user is eligible to see books
-  const [clientIsGerman, setClientIsGerman] = useState(false);
 
   const [detailBook, setDetailBook] = useState(null);
   const [orderBook, setOrderBook] = useState(null);
@@ -608,9 +552,8 @@ const MyBooksSection = ({ balance, onBalanceUpdate, onClose, preFetchedBooks, pr
       const data = await res.json();
       if (data.success) {
         updateBooksState(data.books);
-        const clientGeo = await isClientGerman();
-        // Show section if: worldwide mode OR user is on German IP (from backend or client check)
-        const isVisible = !data.booksGermanyOnly || data.isGermanIP || clientGeo;
+        // Show section if: worldwide mode OR backend confirmed real German IP (no VPN)
+        const isVisible = !data.booksGermanyOnly || data.isGermanIP;
         setVisible(isVisible);
       }
     } catch (e) {
@@ -635,19 +578,7 @@ const MyBooksSection = ({ balance, onBalanceUpdate, onClose, preFetchedBooks, pr
     }
   }, [preFetchedBooks, preFetchedLoading, preFetchedVisible]);
 
-  // Early client-side check on mount
-  useEffect(() => {
-    const runClientGeoCheck = async () => {
-      const isGerman = await isClientGerman();
-      setClientIsGerman(isGerman);
-      if (isGerman) {
-        setVisible(true);
-      }
-    };
-    if (preFetchedBooks === undefined || !preFetchedVisible) {
-      runClientGeoCheck();
-    }
-  }, [preFetchedBooks, preFetchedVisible]);
+
 
   useEffect(() => {
     const socket = getSocket && getSocket();

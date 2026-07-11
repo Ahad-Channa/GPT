@@ -174,63 +174,8 @@ const PromoCodeRedeem = ({ onSuccess }) => {
 
 
 
-const isClientGerman = async () => {
-  // 1. Timezone check (very fast & reliable fallback for German residency)
-  try {
-    const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
-    if (tz === 'Europe/Berlin' || tz === 'Europe/Busingen') {
-      return true;
-    }
-  } catch (e) {}
 
-  // 2. Cloudflare edge trace (highly reliable, no rate limits, client-side IP lookup)
-  try {
-    const cfRes = await fetch('https://www.cloudflare.com/cdn-cgi/trace');
-    if (cfRes.ok) {
-      const text = await cfRes.text();
-      const lines = text.split('\n');
-      const locLine = lines.find(line => line.startsWith('loc='));
-      if (locLine) {
-        const country = locLine.split('=')[1].trim().toUpperCase();
-        if (country === 'DE') return true;
-      }
-    }
-  } catch (e) {
-    console.warn('CF geo trace failed:', e);
-  }
 
-  // 3. api.country.is (fast HTTPS lookup)
-  try {
-    const res = await fetch('https://api.country.is');
-    if (res.ok) {
-      const data = await res.json();
-      if (data && data.country === 'DE') return true;
-    }
-  } catch (e) {
-    console.warn('api.country.is failed:', e);
-  }
-
-  // 4. ipwho.is (fast HTTPS lookup)
-  try {
-    const res = await fetch('https://ipwho.is/');
-    if (res.ok) {
-      const data = await res.json();
-      if (data && data.country_code === 'DE') return true;
-    }
-  } catch (e) {
-    console.warn('ipwho.is failed:', e);
-  }
-
-  // 5. Browser language fallback
-  try {
-    const lang = navigator.language || navigator.userLanguage;
-    if (lang && lang.toLowerCase().startsWith('de')) {
-      return true;
-    }
-  } catch (e) {}
-
-  return false;
-};
 
 const Wallet = () => {
   const { currentUser, mongoUser, setMongoUser } = useAuth();
@@ -240,41 +185,11 @@ const Wallet = () => {
   const [txRefresh, setTxRefresh] = useState(0);
   const [settingsLoad, setSettingsLoad] = useState(true);
   const [showBookSelector, setShowBookSelector] = useState(false);
-  const [clientIsGerman, setClientIsGerman] = useState(false);
-  const [books, setBooks] = useState(() => {
-    try {
-      const cached = localStorage.getItem('books');
-      return cached ? JSON.parse(cached) : [];
-    } catch {
-      return [];
-    }
-  });
-  const [booksVisible, setBooksVisible] = useState(() => {
-    const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-    if (isLocalhost) return true;
-    return localStorage.getItem('booksVisible') === 'true';
-  });
-  const [booksLoading, setBooksLoading] = useState(() => {
-    const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-    if (isLocalhost) return false;
-    return !localStorage.getItem('booksVisible');
-  });
+  const [books, setBooks] = useState([]);
+  const [booksVisible, setBooksVisible] = useState(false);
+  const [booksLoading, setBooksLoading] = useState(true);
 
-  // Early client-side geolocation check on mount
-  useEffect(() => {
-    const runClientGeoCheck = async () => {
-      const isGerman = await isClientGerman();
-      setClientIsGerman(isGerman);
-      if (isGerman) {
-        setBooksVisible(true);
-        localStorage.setItem('booksVisible', 'true');
-      }
-    };
-    const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-    if (!isLocalhost && localStorage.getItem('booksVisible') !== 'true') {
-      runClientGeoCheck();
-    }
-  }, []);
+
 
   // Load wallet settings (fee %, methods, live rate)
   useEffect(() => {
@@ -308,13 +223,10 @@ const Wallet = () => {
         const data = await res.json();
         if (data.success) {
           setBooks(data.books);
-          localStorage.setItem('books', JSON.stringify(data.books));
-          const clientGeo = await isClientGerman();
           const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-          // Show books if: worldwide mode OR user has a German IP (or we're on localhost for dev)
-          const visible = isLocalhost || !data.booksGermanyOnly || data.isGermanIP === true || clientGeo;
+          // Show books ONLY if: worldwide mode OR backend confirmed real German IP (no VPN)
+          const visible = isLocalhost || !data.booksGermanyOnly || data.isGermanIP === true;
           setBooksVisible(visible);
-          localStorage.setItem('booksVisible', String(visible));
         }
       } catch (err) {
         console.error('Failed to load books:', err);

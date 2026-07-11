@@ -53,7 +53,7 @@ function queryIpApi(ip) {
   return new Promise((resolve) => {
     const options = {
       hostname: 'ip-api.com',
-      path: `/json/${ip}?fields=countryCode`,
+      path: `/json/${ip}?fields=countryCode,proxy,hosting`,
       method: 'GET',
     };
     const req = http.request(options, (res) => {
@@ -62,14 +62,18 @@ function queryIpApi(ip) {
       res.on('end', () => {
         try {
           const parsed = JSON.parse(data);
-          resolve(parsed.countryCode ? parsed.countryCode.toUpperCase() : 'XX');
+          resolve({
+            country: parsed.countryCode ? parsed.countryCode.toUpperCase() : 'XX',
+            proxy: !!parsed.proxy,
+            hosting: !!parsed.hosting,
+          });
         } catch (e) {
-          resolve('XX');
+          resolve({ country: 'XX', proxy: false, hosting: false });
         }
       });
     });
-    req.on('error', () => resolve('XX'));
-    req.setTimeout(3000, () => { req.destroy(); resolve('XX'); });
+    req.on('error', () => resolve({ country: 'XX', proxy: false, hosting: false }));
+    req.setTimeout(3000, () => { req.destroy(); resolve({ country: 'XX', proxy: false, hosting: false }); });
     req.end();
   });
 }
@@ -146,51 +150,59 @@ function queryIpApiCo(ip) {
   });
 }
 
-async function getCountryFromIp(ip) {
+async function getCountryAndVpnFromIp(ip) {
   if (!ip || ip === '127.0.0.1' || ip === '::1' || ip.startsWith('192.168') || ip.startsWith('10.') || ip.startsWith('::ffff:127')) {
-    console.log(`[Books Geolocation] Localhost/private IP detected: ${ip}. Defaulting to DE.`);
-    return 'DE';
+    console.log(`[Books Geolocation] Localhost/private IP detected: ${ip}. Defaulting to DE, no VPN.`);
+    return { country: 'DE', isVPN: false };
   }
   const cached = ipCountryCache.get(ip);
   if (cached && Date.now() - cached.ts < IP_CACHE_TTL) {
-    console.log(`[Books Geolocation] Cache hit for IP ${ip}: ${cached.country}`);
-    return cached.country;
+    console.log(`[Books Geolocation] Cache hit for IP ${ip}: country=${cached.country}, isVPN=${cached.isVPN}`);
+    return { country: cached.country, isVPN: cached.isVPN };
   }
 
-  // 1. Try ip-api.com
-  let country = await queryIpApi(ip);
-  if (country && country !== 'XX') {
-    console.log(`[Books Geolocation] Resolved IP ${ip} via ip-api.com: ${country}`);
-    ipCountryCache.set(ip, { country, ts: Date.now() });
-    return country;
+  let country = 'XX';
+  let isVPN = false;
+
+  // 1. Try ip-api.com (returns country + proxy/hosting detection)
+  const ipApiResult = await queryIpApi(ip);
+  if (ipApiResult.country && ipApiResult.country !== 'XX') {
+    country = ipApiResult.country;
+    isVPN = ipApiResult.proxy || ipApiResult.hosting;
+    console.log(`[Books Geolocation] Resolved IP ${ip} via ip-api.com: country=${country}, proxy=${ipApiResult.proxy}, hosting=${ipApiResult.hosting}, isVPN=${isVPN}`);
+    ipCountryCache.set(ip, { country, isVPN, ts: Date.now() });
+    return { country, isVPN };
   }
 
   // 2. Try ipwho.is
-  country = await queryIpWhoIs(ip);
-  if (country && country !== 'XX') {
+  const ipWhoCountry = await queryIpWhoIs(ip);
+  if (ipWhoCountry && ipWhoCountry !== 'XX') {
+    country = ipWhoCountry;
     console.log(`[Books Geolocation] Resolved IP ${ip} via ipwho.is: ${country}`);
-    ipCountryCache.set(ip, { country, ts: Date.now() });
-    return country;
+    ipCountryCache.set(ip, { country, isVPN: false, ts: Date.now() });
+    return { country, isVPN: false };
   }
 
   // 3. Try api.country.is
-  country = await queryCountryIs(ip);
-  if (country && country !== 'XX') {
+  const countryIsResult = await queryCountryIs(ip);
+  if (countryIsResult && countryIsResult !== 'XX') {
+    country = countryIsResult;
     console.log(`[Books Geolocation] Resolved IP ${ip} via api.country.is: ${country}`);
-    ipCountryCache.set(ip, { country, ts: Date.now() });
-    return country;
+    ipCountryCache.set(ip, { country, isVPN: false, ts: Date.now() });
+    return { country, isVPN: false };
   }
 
   // 4. Try ipapi.co
-  country = await queryIpApiCo(ip);
-  if (country && country !== 'XX') {
+  const ipapiCoResult = await queryIpApiCo(ip);
+  if (ipapiCoResult && ipapiCoResult !== 'XX') {
+    country = ipapiCoResult;
     console.log(`[Books Geolocation] Resolved IP ${ip} via ipapi.co: ${country}`);
-    ipCountryCache.set(ip, { country, ts: Date.now() });
-    return country;
+    ipCountryCache.set(ip, { country, isVPN: false, ts: Date.now() });
+    return { country, isVPN: false };
   }
 
   console.warn(`[Books Geolocation] All geolocators failed for IP ${ip}. Defaulting to XX.`);
-  return 'XX';
+  return { country: 'XX', isVPN: false };
 }
 
 /* ─── Admin middleware ─────────────────────────────────────────── */
@@ -228,15 +240,26 @@ router.get('/', verifyToken, async (req, res) => {
     const booksGermanyOnly = settings.booksGermanyOnly !== false;
 
     const ip = getClientIp(req);
-    let country = req.headers['cf-ipcountry'] || req.headers['x-vercel-ip-country'] || req.headers['x-country-code'];
-    if (country) {
-      country = String(country).toUpperCase().trim();
+    let country = null;
+    let isVPN = false;
+
+    // Check CDN headers first (Cloudflare / Vercel provide real country)
+    const headerCountry = req.headers['cf-ipcountry'] || req.headers['x-vercel-ip-country'] || req.headers['x-country-code'];
+    if (headerCountry) {
+      country = String(headerCountry).toUpperCase().trim();
+      // Even with CDN header country, still check VPN status via ip-api.com
+      const vpnCheck = await queryIpApi(ip);
+      isVPN = vpnCheck.proxy || vpnCheck.hosting;
     }
     if (!country) {
-      country = await getCountryFromIp(ip);
+      const result = await getCountryAndVpnFromIp(ip);
+      country = result.country;
+      isVPN = result.isVPN;
     }
-    const isGermanIP = country === 'DE';
-    console.log(`[Books Geolocation] Client IP: ${ip}, Headers: cf-ipcountry=${req.headers['cf-ipcountry'] || 'none'}, x-vercel-ip-country=${req.headers['x-vercel-ip-country'] || 'none'}, Resolved: ${country}, isGermanIP: ${isGermanIP}`);
+
+    // Only allow German IP if: country is DE AND not using VPN/proxy/hosting
+    const isGermanIP = country === 'DE' && !isVPN;
+    console.log(`[Books Geolocation] Client IP: ${ip}, Headers: cf-ipcountry=${req.headers['cf-ipcountry'] || 'none'}, x-vercel-ip-country=${req.headers['x-vercel-ip-country'] || 'none'}, Resolved: ${country}, isVPN: ${isVPN}, isGermanIP: ${isGermanIP}`);
 
     let user = null;
     if (req.user) {
