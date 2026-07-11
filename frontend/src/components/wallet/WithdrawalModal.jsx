@@ -83,10 +83,10 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess, filterType }) 
   const overlayRef = useRef(null);
 
   const isGiftCard = method === 'giftcard';
-  const modalWidth = isGiftCard && step !== 4 ? '700px' : '500px';
-  const modalHeight = isGiftCard && step !== 4 ? (step === 2 ? '881px' : 'auto') : (step === 1 ? '339px' : step === 2 ? '740px' : step === 4 ? '379px' : 'auto');
-  const contentWidth = isGiftCard && step !== 4 ? '668px' : '468px';
-  const textWidth = isGiftCard && step !== 4 ? '608px' : '408px';
+  const modalWidth = isGiftCard && step === 2 ? '700px' : '500px';
+  const modalHeight = isGiftCard && step === 2 ? '881px' : (step === 1 ? '339px' : step === 2 ? '740px' : step === 4 ? '379px' : 'auto');
+  const contentWidth = isGiftCard && step === 2 ? '668px' : '468px';
+  const textWidth = isGiftCard && step === 2 ? '608px' : '408px';
 
   const { coinsPerUSD, withdrawalMethods = [], exchangeRates } = settings;
 
@@ -565,7 +565,7 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess, filterType }) 
               className="flex items-start shrink-0"
               style={{
                 width: contentWidth,
-                height: '86px',
+                height: 'auto',
                 borderRadius: '12px',
                 gap: '8px',
                 opacity: 1,
@@ -591,7 +591,7 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess, filterType }) 
                 className="font-medium font-['Barlow_Condensed']"
                 style={{
                   width: textWidth,
-                  height: '54px',
+                  height: 'auto',
                   fontFamily: 'Barlow Condensed',
                   fontWeight: 500,
                   fontSize: '14px',
@@ -831,7 +831,7 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess, filterType }) 
               className="flex items-start shrink-0"
               style={{
                 width: contentWidth,
-                height: '86px',
+                height: 'auto',
                 borderRadius: '12px',
                 gap: '8px',
                 opacity: 1,
@@ -840,7 +840,6 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess, filterType }) 
                 paddingBottom: '16px',
                 paddingLeft: '14px',
                 background: 'rgba(226, 69, 69, 0.14)',
-                backdropFilter: 'blur(44px)',
                 border: 'none'
               }}
             >
@@ -858,7 +857,7 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess, filterType }) 
                 className="font-medium font-['Barlow_Condensed']"
                 style={{
                   width: textWidth,
-                  height: '54px',
+                  height: 'auto',
                   fontFamily: 'Barlow Condensed',
                   fontWeight: 500,
                   fontSize: '14px',
