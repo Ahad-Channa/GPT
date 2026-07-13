@@ -105,12 +105,12 @@ const PublicProfileModal = ({ userId, onClose }) => {
           onClick={(e) => e.stopPropagation()}
           style={{
             width: '500px',
-            height: profile?.isPrivate ? '235px' : '521px',
+            height: profile?.isPrivate ? '235px' : '615px',
             borderRadius: '20px',
             gap: '16px',
             padding: '16px',
             background: 'rgba(36, 36, 36, 1)',
-            overflowY: profile?.isPrivate ? 'hidden' : 'auto',
+            overflow: 'hidden',
             position: 'relative',
             zIndex: 9001,
             display: 'flex',
@@ -233,29 +233,12 @@ const PublicProfileModal = ({ userId, onClose }) => {
 
                     {/* Badge row */}
                     <div style={{ width: '376px', height: '18px', display: 'flex', gap: '16px', alignItems: 'center' }}>
-                      {/* Rank & Total Earned — public only */}
+                      {/* Rank — public only */}
                       {!profile.isPrivate && typeof profile.totalEarned !== 'undefined' && (() => {
                         const level = getLevelFromEarned(profile.totalEarned);
-                        return (
-                          <>
-                            {level && <VipBadge tier={level.tier} rank="" size="sm" style={{ width: '49px', height: '18px', padding: '0', display: 'inline-flex', justifyContent: 'center', alignItems: 'center', boxSizing: 'border-box' }} />}
-                            <div style={{ display: 'flex', width: 'auto', height: '18px', gap: '3px', alignItems: 'center' }}>
-                              <img src="/coins/Coin.png" alt="coin" style={{ width: '18px', height: '18px' }} />
-                              <div style={{
-                                width: 'auto', height: 'auto',
-                                paddingTop: '2px',
-                                fontFamily: '"Barlow Condensed", sans-serif', fontWeight: 700, fontSize: '16px', lineHeight: '130%',
-                                backgroundImage: 'linear-gradient(180deg, #FEDF77 0%, #FCB91E 100%)',
-                                WebkitBackgroundClip: 'text',
-                                color: 'transparent',
-                                display: 'flex', alignItems: 'center', whiteSpace: 'nowrap',
-                                overflow: 'visible'
-                              }}>
-                                {(profile.totalEarned || 0).toLocaleString()}
-                              </div>
-                            </div>
-                          </>
-                        );
+                        return level ? (
+                          <VipBadge tier={level.tier} rank="" size="sm" style={{ width: '49px', height: '18px', padding: '0', display: 'inline-flex', justifyContent: 'center', alignItems: 'center', boxSizing: 'border-box' }} />
+                        ) : null;
                       })()}
 
                       {/* Joined */}
@@ -339,191 +322,428 @@ const PublicProfileModal = ({ userId, onClose }) => {
                   </div>
                 </div>
               ) : (
-                /* Recent Activity — public profiles only */
-                <div style={{
-                  width: '468px', height: '369px',
-                  display: 'flex', flexDirection: 'column', gap: '8px',
-                  background: 'rgba(36, 36, 36, 1)',
-                  border: 'none',
-                }}>
+                <>
+                  {/* Four Stats Boxes */}
                   <div style={{
-                    width: '468px', height: '19px',
-                    fontFamily: '"Barlow Condensed", sans-serif', fontWeight: 700, fontSize: '16px', lineHeight: '120%', color: 'rgba(255, 255, 255, 1)',
-                    display: 'flex', alignItems: 'center'
+                    width: '468px',
+                    height: '78px',
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    gap: '6px',
+                    boxSizing: 'border-box',
+                    flexShrink: 0
                   }}>
-                    Recent Activity
+                    {/* Box 1: Coin's Earned */}
+                    <div style={{
+                      width: '112.5px',
+                      height: '78px',
+                      borderRadius: '12px',
+                      padding: '10px 14px',
+                      background: 'rgba(0, 0, 0, 0.36)',
+                      backdropFilter: 'blur(44px)',
+                      WebkitBackdropFilter: 'blur(44px)',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      justifyContent: 'space-between',
+                      alignItems: 'flex-start',
+                      boxSizing: 'border-box',
+                    }}>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                        <span style={{
+                          fontFamily: '"Barlow Condensed", sans-serif',
+                          fontWeight: 600,
+                          fontSize: '13px',
+                          lineHeight: '110%',
+                          color: 'rgba(255, 255, 255, 0.9)',
+                          whiteSpace: 'nowrap',
+                        }}>
+                          Coin's Earned
+                        </span>
+                        <span style={{
+                          fontFamily: '"Barlow Condensed", sans-serif',
+                          fontWeight: 500,
+                          fontSize: '10px',
+                          lineHeight: '110%',
+                          color: 'rgba(136, 136, 136, 1)',
+                          whiteSpace: 'nowrap',
+                          marginTop: '-2px',
+                        }}>
+                          This Month
+                        </span>
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginTop: '2px' }}>
+                        <img src="/coins/Coin.png" alt="coin" style={{ width: '18px', height: '18px' }} />
+                        <div style={{
+                          fontFamily: '"Barlow Condensed", sans-serif',
+                          fontWeight: 700,
+                          fontSize: '18px',
+                          lineHeight: '120%',
+                          backgroundImage: 'linear-gradient(180deg, #FEDF77 0%, #FCB91E 100%)',
+                          WebkitBackgroundClip: 'text',
+                          color: 'transparent',
+                          display: 'flex',
+                          alignItems: 'center',
+                          whiteSpace: 'nowrap',
+                          overflow: 'visible',
+                        }}>
+                          {(profile.earningsThisMonth || 0).toLocaleString()}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Box 2: Total Earning */}
+                    <div style={{
+                      width: '112.5px',
+                      height: '78px',
+                      borderRadius: '12px',
+                      padding: '10px 14px',
+                      background: 'rgba(0, 0, 0, 0.36)',
+                      backdropFilter: 'blur(44px)',
+                      WebkitBackdropFilter: 'blur(44px)',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      justifyContent: 'space-between',
+                      alignItems: 'flex-start',
+                      boxSizing: 'border-box',
+                    }}>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                        <span style={{
+                          fontFamily: '"Barlow Condensed", sans-serif',
+                          fontWeight: 600,
+                          fontSize: '13px',
+                          lineHeight: '110%',
+                          color: 'rgba(255, 255, 255, 0.9)',
+                          whiteSpace: 'nowrap',
+                        }}>
+                          Total Earning
+                        </span>
+                        <span style={{
+                          fontFamily: '"Barlow Condensed", sans-serif',
+                          fontWeight: 500,
+                          fontSize: '10px',
+                          lineHeight: '110%',
+                          color: 'rgba(136, 136, 136, 1)',
+                          whiteSpace: 'nowrap',
+                          marginTop: '-2px',
+                        }}>
+                          All Time
+                        </span>
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginTop: '2px' }}>
+                        <img src="/coins/Coin.png" alt="coin" style={{ width: '18px', height: '18px' }} />
+                        <div style={{
+                          fontFamily: '"Barlow Condensed", sans-serif',
+                          fontWeight: 700,
+                          fontSize: '18px',
+                          lineHeight: '120%',
+                          backgroundImage: 'linear-gradient(180deg, #FEDF77 0%, #FCB91E 100%)',
+                          WebkitBackgroundClip: 'text',
+                          color: 'transparent',
+                          display: 'flex',
+                          alignItems: 'center',
+                          whiteSpace: 'nowrap',
+                          overflow: 'visible',
+                        }}>
+                          {(profile.totalEarned || 0).toLocaleString()}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Box 3: Referred Affiliates */}
+                    <div style={{
+                      width: '112.5px',
+                      height: '78px',
+                      borderRadius: '12px',
+                      padding: '10px 14px',
+                      background: 'rgba(0, 0, 0, 0.36)',
+                      backdropFilter: 'blur(44px)',
+                      WebkitBackdropFilter: 'blur(44px)',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      justifyContent: 'space-between',
+                      alignItems: 'flex-start',
+                      boxSizing: 'border-box',
+                    }}>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                        <span style={{
+                          fontFamily: '"Barlow Condensed", sans-serif',
+                          fontWeight: 600,
+                          fontSize: '13px',
+                          lineHeight: '110%',
+                          color: 'rgba(255, 255, 255, 0.9)',
+                          whiteSpace: 'nowrap',
+                        }}>
+                          Referred Affiliates
+                        </span>
+                        <span style={{
+                          fontFamily: '"Barlow Condensed", sans-serif',
+                          fontWeight: 500,
+                          fontSize: '10px',
+                          lineHeight: '110%',
+                          color: 'rgba(136, 136, 136, 1)',
+                          whiteSpace: 'nowrap',
+                          marginTop: '-2px',
+                        }}>
+                          All Time
+                        </span>
+                      </div>
+                      <span style={{
+                        fontFamily: '"Barlow Condensed", sans-serif',
+                        fontWeight: 700,
+                        fontSize: '18px',
+                        lineHeight: '120%',
+                        color: 'rgba(73, 178, 101, 1)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        marginTop: '2px',
+                      }}>
+                        {(profile.referredCount || 0).toLocaleString()}
+                      </span>
+                    </div>
+
+                    {/* Box 4: Task Completed */}
+                    <div style={{
+                      width: '112.5px',
+                      height: '78px',
+                      borderRadius: '12px',
+                      padding: '10px 14px',
+                      background: 'rgba(0, 0, 0, 0.36)',
+                      backdropFilter: 'blur(44px)',
+                      WebkitBackdropFilter: 'blur(44px)',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      justifyContent: 'space-between',
+                      alignItems: 'flex-start',
+                      boxSizing: 'border-box',
+                    }}>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                        <span style={{
+                          fontFamily: '"Barlow Condensed", sans-serif',
+                          fontWeight: 600,
+                          fontSize: '13px',
+                          lineHeight: '110%',
+                          color: 'rgba(255, 255, 255, 0.9)',
+                          whiteSpace: 'nowrap',
+                        }}>
+                          Task Completed
+                        </span>
+                        <span style={{
+                          fontFamily: '"Barlow Condensed", sans-serif',
+                          fontWeight: 500,
+                          fontSize: '10px',
+                          lineHeight: '110%',
+                          color: 'rgba(136, 136, 136, 1)',
+                          whiteSpace: 'nowrap',
+                          marginTop: '-2px',
+                        }}>
+                          All Time
+                        </span>
+                      </div>
+                      <span style={{
+                        fontFamily: '"Barlow Condensed", sans-serif',
+                        fontWeight: 700,
+                        fontSize: '18px',
+                        lineHeight: '120%',
+                        color: 'rgba(73, 178, 101, 1)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        marginTop: '2px',
+                      }}>
+                        {(profile.tasksCompletedCount || 0).toLocaleString()}
+                      </span>
+                    </div>
                   </div>
 
-                  {recentOffers.length === 0 ? (
+                  {/* Recent Activity — public profiles only */}
+                  <div style={{
+                    width: '468px',
+                    flex: 1,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '8px',
+                    background: 'rgba(36, 36, 36, 1)',
+                    border: 'none',
+                    minHeight: 0
+                  }}>
                     <div style={{
-                      textAlign: 'center', padding: '32px 0',
-                      color: '#64748b', fontSize: '13px',
+                      width: '468px', height: '19px',
+                      fontFamily: '"Barlow Condensed", sans-serif', fontWeight: 700, fontSize: '16px', lineHeight: '120%', color: 'rgba(255, 255, 255, 1)',
+                      display: 'flex', alignItems: 'center'
                     }}>
-                      No recent activity found.
+                      Recent Activity
                     </div>
-                  ) : (() => {
-                    const totalPages = Math.ceil(recentOffers.length / ITEMS_PER_PAGE);
-                    const start = (activityPage - 1) * ITEMS_PER_PAGE;
-                    const pageOffers = recentOffers.slice(start, start + ITEMS_PER_PAGE);
-                    return (
-                      <>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', flex: 1 }}>
-                          {pageOffers.map((offer) => {
-                          const desc = offer.description || '';
-                          let heading = desc;
-                          let subText = '';
-                          if (desc.includes(':')) {
-                            const parts = desc.split(':');
-                            heading = parts[0].trim();
-                            subText = 'Task: ' + parts.slice(1).join(':').trim();
-                          } else {
-                            heading = offer.amount < 0 ? 'Payout processed' : 'Reward for completing task';
-                            subText = desc ? `Task: ${desc}` : (offer.amount < 0 ? 'PayPal' : 'System bonus');
-                          }
 
-                          return (
-                            <div
-                              key={offer._id}
-                              style={{
-                                width: '468px', height: '62px',
-                                display: 'flex', alignItems: 'center',
-                                justifyContent: 'space-between', gap: '16px',
-                                padding: '12px', borderRadius: '12px',
-                                background: 'rgba(0, 0, 0, 0.36)',
-                                backdropFilter: 'blur(44px)',
-                                border: 'none',
-                              }}
-                            >
-                              <div style={{ flex: 1, minWidth: 0, height: '37px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                                <div style={{
-                                  width: '100%', height: '17px',
-                                  fontFamily: '"Barlow Condensed", sans-serif', fontWeight: 700, fontSize: '14px', lineHeight: '120%', color: 'rgba(255, 255, 255, 1)',
-                                  letterSpacing: '0.5px',
-                                  overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-                                }}>
-                                  {heading}
-                                </div>
-                                <div style={{
-                                  width: '100%', height: '14px',
-                                  fontFamily: '"Barlow Condensed", sans-serif', fontWeight: 500, fontSize: '11px', lineHeight: '130%', color: 'rgba(136, 136, 136, 1)',
-                                  letterSpacing: '0.5px',
-                                  overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-                                }}>
-                                  {subText}
-                                </div>
-                              </div>
-                              <div style={{ width: 'auto', height: '38px', display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '6px', flexShrink: 0 }}>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                                  <img src="/coins/Coin.png" alt="coin" style={{ width: '18px', height: '18px' }} />
-                                  <div style={{
-                                    fontFamily: '"Barlow Condensed", sans-serif', fontWeight: 700, fontSize: '16px', lineHeight: '130%',
-                                    backgroundImage: 'linear-gradient(180deg, #FEDF77 0%, #FCB91E 100%)',
-                                    WebkitBackgroundClip: 'text', color: 'transparent'
-                                  }}>
-                                    {offer.amount > 0 ? '+' : ''}{(offer.amount || 0).toLocaleString()}
-                                  </div>
-                                </div>
-                                <div style={{
-                                  width: 'auto', height: '14px',
-                                  fontFamily: '"Barlow Condensed", sans-serif', fontWeight: 500, fontSize: '11px', lineHeight: '130%', textAlign: 'right', color: 'rgba(136, 136, 136, 1)',
-                                  whiteSpace: 'nowrap'
-                                }}>
-                                  {timeAgo(offer.createdAt)}
-                                </div>
-                              </div>
-                            </div>
-                          );
-                        })}
-                        </div>
+                    {recentOffers.length === 0 ? (
+                      <div style={{
+                        textAlign: 'center', padding: '32px 0',
+                        color: '#64748b', fontSize: '13px',
+                      }}>
+                        No recent activity found.
+                      </div>
+                    ) : (() => {
+                      const totalPages = Math.ceil(recentOffers.length / ITEMS_PER_PAGE);
+                      const start = (activityPage - 1) * ITEMS_PER_PAGE;
+                      const pageOffers = recentOffers.slice(start, start + ITEMS_PER_PAGE);
+                      return (
+                        <>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', flex: 1 }}>
+                            {pageOffers.map((offer) => {
+                            const desc = offer.description || '';
+                            let heading = desc;
+                            let subText = '';
+                            if (desc.includes(':')) {
+                              const parts = desc.split(':');
+                              heading = parts[0].trim();
+                              subText = 'Task: ' + parts.slice(1).join(':').trim();
+                            } else {
+                              heading = offer.amount < 0 ? 'Payout processed' : 'Reward for completing task';
+                              subText = desc ? `Task: ${desc}` : (offer.amount < 0 ? 'PayPal' : 'System bonus');
+                            }
 
-                        {/* Pagination Controls */}
-                        {totalPages > 1 && (() => {
-                          const visiblePages = [];
-                          if (totalPages <= 3) {
-                            for (let i = 1; i <= totalPages; i++) visiblePages.push(i);
-                          } else {
-                            let start = Math.min(activityPage, totalPages - 2);
-                            visiblePages.push(start, start + 1, start + 2);
-                          }
-
-                          const CircleBtn = ({ active, disabled, onClick, children, isArrow }) => {
-                            const isGreen = active;
                             return (
-                              <button
-                                onClick={onClick}
-                                disabled={disabled}
+                              <div
+                                key={offer._id}
                                 style={{
-                                  width: '32px', height: '32px', borderRadius: '32px',
-                                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px',
-                                  background: isGreen ? 'rgba(73, 178, 101, 1)' : (isArrow ? 'transparent' : 'rgba(255, 255, 255, 0.15)'),
-                                  border: isArrow ? '1px solid rgba(73, 178, 101, 1)' : '1px solid transparent',
-                                  color: isGreen || !isArrow ? '#fff' : 'rgba(73, 178, 101, 1)',
-                                  fontFamily: '"Barlow Condensed", sans-serif', fontWeight: 700, fontSize: '14px',
-                                  cursor: disabled ? 'default' : 'pointer',
-                                  opacity: disabled ? 0.3 : 1,
-                                  padding: '10px',
-                                  boxSizing: 'border-box',
+                                  width: '468px', height: '62px',
+                                  display: 'flex', alignItems: 'center',
+                                  justifyContent: 'space-between', gap: '16px',
+                                  padding: '12px', borderRadius: '12px',
+                                  background: 'rgba(0, 0, 0, 0.36)',
+                                  backdropFilter: 'blur(44px)',
+                                  border: 'none',
                                 }}
                               >
-                                {children}
-                              </button>
+                                <div style={{ flex: 1, minWidth: 0, height: '37px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                                  <div style={{
+                                    width: '100%', height: '17px',
+                                    fontFamily: '"Barlow Condensed", sans-serif', fontWeight: 700, fontSize: '14px', lineHeight: '120%', color: 'rgba(255, 255, 255, 1)',
+                                    letterSpacing: '0.5px',
+                                    overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                                  }}>
+                                    {heading}
+                                  </div>
+                                  <div style={{
+                                    width: '100%', height: '14px',
+                                    fontFamily: '"Barlow Condensed", sans-serif', fontWeight: 500, fontSize: '11px', lineHeight: '130%', color: 'rgba(136, 136, 136, 1)',
+                                    letterSpacing: '0.5px',
+                                    overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                                  }}>
+                                    {subText}
+                                  </div>
+                                </div>
+                                <div style={{ width: 'auto', height: '38px', display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '6px', flexShrink: 0 }}>
+                                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                    <img src="/coins/Coin.png" alt="coin" style={{ width: '18px', height: '18px' }} />
+                                    <div style={{
+                                      fontFamily: '"Barlow Condensed", sans-serif', fontWeight: 700, fontSize: '16px', lineHeight: '130%',
+                                      backgroundImage: 'linear-gradient(180deg, #FEDF77 0%, #FCB91E 100%)',
+                                      WebkitBackgroundClip: 'text', color: 'transparent'
+                                    }}>
+                                      {offer.amount > 0 ? '+' : ''}{(offer.amount || 0).toLocaleString()}
+                                    </div>
+                                  </div>
+                                  <div style={{
+                                    width: 'auto', height: '14px',
+                                    fontFamily: '"Barlow Condensed", sans-serif', fontWeight: 500, fontSize: '11px', lineHeight: '130%', textAlign: 'right', color: 'rgba(136, 136, 136, 1)',
+                                    whiteSpace: 'nowrap'
+                                  }}>
+                                    {timeAgo(offer.createdAt)}
+                                  </div>
+                                </div>
+                              </div>
                             );
-                          };
+                          })}
+                          </div>
 
-                          return (
-                            <div style={{
-                              width: '468px', height: '32px',
-                              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '5px',
-                              marginTop: 'auto',
-                            }}>
-                              <CircleBtn
-                                isArrow
-                                disabled={activityPage === 1}
-                                onClick={() => setActivityPage(p => Math.max(1, p - 1))}
-                              >
-                                <div style={{
-                                  width: '16px', height: '16px',
-                                  backgroundColor: 'rgba(73, 178, 101, 1)',
-                                  WebkitMaskImage: 'url(/coins/leftarrow.png)',
-                                  WebkitMaskSize: 'contain',
-                                  WebkitMaskRepeat: 'no-repeat',
-                                  WebkitMaskPosition: 'center',
-                                  transform: 'rotate(180deg)'
-                                }} />
-                              </CircleBtn>
+                          {/* Pagination Controls */}
+                          {totalPages > 1 && (() => {
+                            const visiblePages = [];
+                            if (totalPages <= 3) {
+                              for (let i = 1; i <= totalPages; i++) visiblePages.push(i);
+                            } else {
+                              let start = Math.min(activityPage, totalPages - 2);
+                              visiblePages.push(start, start + 1, start + 2);
+                            }
 
-                              {visiblePages.map(p => (
-                                <CircleBtn
-                                  key={p}
-                                  active={activityPage === p}
-                                  onClick={() => setActivityPage(p)}
+                            const CircleBtn = ({ active, disabled, onClick, children, isArrow }) => {
+                              const isGreen = active;
+                              return (
+                                <button
+                                  onClick={onClick}
+                                  disabled={disabled}
+                                  style={{
+                                    width: '32px', height: '32px', borderRadius: '32px',
+                                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px',
+                                    background: isGreen ? 'rgba(73, 178, 101, 1)' : (isArrow ? 'transparent' : 'rgba(255, 255, 255, 0.15)'),
+                                    border: isArrow ? '1px solid rgba(73, 178, 101, 1)' : '1px solid transparent',
+                                    color: isGreen || !isArrow ? '#fff' : 'rgba(73, 178, 101, 1)',
+                                    fontFamily: '"Barlow Condensed", sans-serif', fontWeight: 700, fontSize: '14px',
+                                    cursor: disabled ? 'default' : 'pointer',
+                                    opacity: disabled ? 0.3 : 1,
+                                    padding: '10px',
+                                    boxSizing: 'border-box',
+                                  }}
                                 >
-                                  {p}
-                                </CircleBtn>
-                              ))}
+                                  {children}
+                                </button>
+                              );
+                            };
 
-                              <CircleBtn
-                                isArrow
-                                disabled={activityPage === totalPages}
-                                onClick={() => setActivityPage(p => Math.min(totalPages, p + 1))}
-                              >
-                                <div style={{
-                                  width: '16px', height: '16px',
-                                  backgroundColor: 'rgba(73, 178, 101, 1)',
-                                  WebkitMaskImage: 'url(/coins/leftarrow.png)',
-                                  WebkitMaskSize: 'contain',
-                                  WebkitMaskRepeat: 'no-repeat',
-                                  WebkitMaskPosition: 'center',
-                                  transform: 'rotate(0deg)'
-                                }} />
-                              </CircleBtn>
-                            </div>
-                          );
-                        })()}
-                      </>
-                    );
-                  })()}
-                </div>
+                            return (
+                              <div style={{
+                                width: '468px', height: '32px',
+                                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '5px',
+                                marginTop: 'auto',
+                              }}>
+                                <CircleBtn
+                                  isArrow
+                                  disabled={activityPage === 1}
+                                  onClick={() => setActivityPage(p => Math.max(1, p - 1))}
+                                >
+                                  <div style={{
+                                    width: '16px', height: '16px',
+                                    backgroundColor: 'rgba(73, 178, 101, 1)',
+                                    WebkitMaskImage: 'url(/coins/leftarrow.png)',
+                                    WebkitMaskSize: 'contain',
+                                    WebkitMaskRepeat: 'no-repeat',
+                                    WebkitMaskPosition: 'center',
+                                    transform: 'rotate(180deg)'
+                                  }} />
+                                </CircleBtn>
+
+                                {visiblePages.map(p => (
+                                  <CircleBtn
+                                    key={p}
+                                    active={activityPage === p}
+                                    onClick={() => setActivityPage(p)}
+                                  >
+                                    {p}
+                                  </CircleBtn>
+                                ))}
+
+                                <CircleBtn
+                                  isArrow
+                                  disabled={activityPage === totalPages}
+                                  onClick={() => setActivityPage(p => Math.min(totalPages, p + 1))}
+                                >
+                                  <div style={{
+                                    width: '16px', height: '16px',
+                                    backgroundColor: 'rgba(73, 178, 101, 1)',
+                                    WebkitMaskImage: 'url(/coins/leftarrow.png)',
+                                    WebkitMaskSize: 'contain',
+                                    WebkitMaskRepeat: 'no-repeat',
+                                    WebkitMaskPosition: 'center',
+                                    transform: 'rotate(0deg)'
+                                  }} />
+                                </CircleBtn>
+                              </div>
+                            );
+                          })()}
+                        </>
+                      );
+                    })()}
+                  </div>
+                </>
               )}
 
             </div>

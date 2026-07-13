@@ -60,14 +60,58 @@ router.get('/user/:id', async (req, res) => {
     // Only return safe public info
     const isPrivate = !!user.isPrivate;
 
+    let earningsThisMonth = 0;
+    let referredCount = 0;
+    let tasksCompletedCount = 0;
+
+    if (!isPrivate) {
+      const now = new Date();
+      const startOfCurrentMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+
+      const [monthResult, tasksCount, refCount] = await Promise.all([
+        Transaction.aggregate([
+          {
+            $match: {
+              userId: user._id,
+              amount: { $gt: 0 },
+              status: 'completed',
+              createdAt: { $gte: startOfCurrentMonth },
+              description: { $not: /^Withdrawal Refund/ }
+            }
+          },
+          {
+            $group: {
+              _id: null,
+              total: { $sum: '$amount' }
+            }
+          }
+        ]),
+        Transaction.countDocuments({
+          userId: user._id,
+          transactionType: { $in: ['offer_reward', 'custom_offer_reward'] },
+          status: 'completed'
+        }),
+        User.countDocuments({ referredBy: user._id })
+      ]);
+
+      earningsThisMonth = monthResult.length > 0 ? monthResult[0].total : 0;
+      tasksCompletedCount = tasksCount;
+      referredCount = refCount;
+    }
+
     const publicProfile = {
       _id: user._id,
       displayName: user.displayName,
       avatarUrl: user.avatarUrl,
       isPrivate,
       createdAt: user.createdAt,
-      // totalEarned only exposed for public profiles
-      ...(isPrivate ? {} : { totalEarned: user.totalEarned || 0 }),
+      // stats only exposed for public profiles
+      ...(isPrivate ? {} : {
+        totalEarned: user.totalEarned || 0,
+        earningsThisMonth,
+        referredCount,
+        tasksCompletedCount,
+      }),
     };
 
     // If private — return profile card data but NO earnings/history
