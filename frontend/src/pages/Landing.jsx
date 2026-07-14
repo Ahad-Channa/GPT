@@ -42,7 +42,7 @@ const Landing = () => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-[#050505] text-white font-sans overflow-x-hidden selection:bg-[#29FD98] selection:text-black">
+    <div className="min-h-screen bg-[#050505] text-white font-sans overflow-x-hidden selection:bg-[#29FD98] selection:text-black flex flex-col">
 
       {/* NAVBAR */}
       {currentUser ? (
@@ -1041,7 +1041,7 @@ const Landing = () => {
 
       {/* FOOTER */}
       <footer
-        className="w-full flex justify-center border-t border-[#333]"
+        className="w-full flex justify-center border-t border-[#333] mt-auto shrink-0"
         style={{ background: 'rgba(44, 45, 44, 1)' }}
       >
         <div

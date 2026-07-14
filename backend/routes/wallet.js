@@ -738,6 +738,40 @@ router.post('/redeem-promo', verifyToken, async (req, res) => {
       return res.status(400).json({ success: false, error: 'Code fully used' });
     }
 
+    // ── Check minimum 7-day earnings requirement ──────────────────────
+    if (promo.minEarningsLast7Days > 0) {
+      const sevenDaysAgo = new Date();
+      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
+      const earningsResult = await Transaction.aggregate([
+        {
+          $match: {
+            userId: user._id,
+            amount: { $gt: 0 },
+            status: 'completed',
+            createdAt: { $gte: sevenDaysAgo },
+            description: { $not: /^Withdrawal Refund/ }
+          }
+        },
+        {
+          $group: {
+            _id: null,
+            totalEarned: { $sum: '$amount' }
+          }
+        }
+      ]);
+
+      const earned7Days = earningsResult.length > 0 ? earningsResult[0].totalEarned : 0;
+
+      if (earned7Days < promo.minEarningsLast7Days) {
+        return res.status(400).json({
+          success: false,
+          error: `You need to earn ${promo.minEarningsLast7Days} coins in the last 7 days to use this code. You have earned ${Math.floor(earned7Days)} so far.`,
+          errorType: 'min_earnings'
+        });
+      }
+    }
+
     // Atomic update
     const updatedPromo = await PromoCode.findOneAndUpdate(
       {

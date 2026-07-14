@@ -14,7 +14,7 @@ const AdminPromoCodes = () => {
   const [totalPages, setTotalPages] = useState(1);
 
   const [showCreateModal, setShowCreateModal] = useState(false);
-  const [createForm, setCreateForm] = useState({ code: '', rewardCoins: '', maxUses: '', expiresAt: '' });
+  const [createForm, setCreateForm] = useState({ code: '', rewardCoins: '', maxUses: '', expiresAt: '', minEarningsLast7Days: '' });
   const [creating, setCreating] = useState(false);
 
   const fetchCodes = useCallback(async (p = 1) => {
@@ -52,7 +52,8 @@ const AdminPromoCodes = () => {
           code: createForm.code.trim().toUpperCase(),
           rewardCoins: Number(createForm.rewardCoins),
           maxUses: createForm.maxUses ? Number(createForm.maxUses) : 0,
-          expiresAt: createForm.expiresAt || null
+          expiresAt: createForm.expiresAt || null,
+          minEarningsLast7Days: createForm.minEarningsLast7Days ? Number(createForm.minEarningsLast7Days) : 0
         })
       });
       const data = await res.json();
@@ -60,7 +61,7 @@ const AdminPromoCodes = () => {
       
       toast.success('Promo code created!');
       setShowCreateModal(false);
-      setCreateForm({ code: '', rewardCoins: '', maxUses: '', expiresAt: '' });
+      setCreateForm({ code: '', rewardCoins: '', maxUses: '', expiresAt: '', minEarningsLast7Days: '' });
       fetchCodes(1);
     } catch (err) {
       toast.error(err.message || 'Failed to create code');
@@ -144,6 +145,7 @@ const AdminPromoCodes = () => {
             <tr>
               <th>CODE</th>
               <th>REWARD</th>
+              <th>7D REQ</th>
               <th>USES</th>
               <th>EXPIRES</th>
               <th>STATUS</th>
@@ -152,9 +154,9 @@ const AdminPromoCodes = () => {
           </thead>
           <tbody>
             {loading ? (
-              <tr><td colSpan="6" style={{ textAlign: 'center', padding: '2rem' }}><FiLoader className="spin" /></td></tr>
+              <tr><td colSpan="7" style={{ textAlign: 'center', padding: '2rem' }}><FiLoader className="spin" /></td></tr>
             ) : codes.length === 0 ? (
-              <tr><td colSpan="6" style={{ textAlign: 'center', color: '#64748b', padding: '2rem' }}>No promo codes found</td></tr>
+              <tr><td colSpan="7" style={{ textAlign: 'center', color: '#64748b', padding: '2rem' }}>No promo codes found</td></tr>
             ) : (
                codes.map(c => {
                  const isExpired = c.expiresAt && new Date(c.expiresAt) < new Date();
@@ -165,6 +167,7 @@ const AdminPromoCodes = () => {
                   <tr key={c._id}>
                     <td><strong style={{ color: '#e2e8f0', letterSpacing: '1px' }}>{c.code}</strong></td>
                     <td style={{ display: 'flex', alignItems: 'center' }}><CoinDisplay amount={c.rewardCoins} size={12} /></td>
+                    <td style={{ color: c.minEarningsLast7Days > 0 ? '#facc15' : '#64748b' }}>{c.minEarningsLast7Days > 0 ? <CoinDisplay amount={c.minEarningsLast7Days} size={12} /> : '—'}</td>
                     <td>{c.usedCount} {c.maxUses > 0 ? `/ ${c.maxUses}` : ''}</td>
                     <td>{c.expiresAt ? new Date(c.expiresAt).toLocaleDateString() : 'Never'}</td>
                     <td>
@@ -237,6 +240,18 @@ const AdminPromoCodes = () => {
                   value={createForm.maxUses} 
                   onChange={e => setCreateForm({...createForm, maxUses: e.target.value})}
                   min="0" 
+                />
+              </div>
+
+              <div>
+                <label className="admin-label">Min Coins Earned (Last 7 Days)</label>
+                <input 
+                  type="number" 
+                  className="admin-input" 
+                  value={createForm.minEarningsLast7Days} 
+                  onChange={e => setCreateForm({...createForm, minEarningsLast7Days: e.target.value})}
+                  min="0" 
+                  placeholder="0 = no restriction"
                 />
               </div>
 

@@ -483,13 +483,14 @@ router.get('/promo-codes', requirePermission('manage_offerwalls'), async (req, r
 
 router.post('/promo-codes', requirePermission('manage_offerwalls'), async (req, res) => {
   try {
-    const { code, rewardCoins, maxUses, expiresAt } = req.body;
+    const { code, rewardCoins, maxUses, expiresAt, minEarningsLast7Days } = req.body;
 
     const newCode = new PromoCode({
       code: code.trim().toUpperCase(),
       rewardCoins: Number(rewardCoins),
       maxUses: Number(maxUses) || 0,
       expiresAt: expiresAt ? new Date(expiresAt) : null,
+      minEarningsLast7Days: Number(minEarningsLast7Days) || 0,
       createdBy: req.dbUser._id,
     });
 

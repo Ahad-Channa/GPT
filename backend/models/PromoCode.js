@@ -27,6 +27,11 @@ const promoCodeSchema = new mongoose.Schema(
       type: Date,
       default: null, // null = never expires
     },
+    minEarningsLast7Days: {
+      type: Number,
+      default: 0, // 0 = no restriction
+      min: 0,
+    },
     createdBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
