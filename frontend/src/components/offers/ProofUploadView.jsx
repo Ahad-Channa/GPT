@@ -121,7 +121,7 @@ export const ProofUploadView = ({ offer, token, API, onSubmitted, setResult, onC
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -10 }}
       onSubmit={handleSubmit}
-      style={{ display: 'flex', flexDirection: 'column', gap: '12px', width: '100%', flexShrink: 0 }}
+      style={{ display: 'flex', flexDirection: 'column', gap: '10px', width: '100%', flexShrink: 0 }}
     >
       {/* Upload Proof Header */}
       <div style={{ width: '100%', height: 'auto', display: 'flex', flexDirection: 'column', gap: '4px', opacity: 1 }}>
@@ -152,7 +152,7 @@ export const ProofUploadView = ({ offer, token, API, onSubmitted, setResult, onC
         onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
         onDragLeave={() => setIsDragging(false)}
         onDrop={handleDrop}
-        className="w-full h-[140px] lg:h-[185px]"
+        className="w-full h-[110px] lg:h-[185px]"
         style={{
           borderRadius: '12px',
           paddingTop: '16px',
@@ -307,7 +307,7 @@ export const ProofUploadView = ({ offer, token, API, onSubmitted, setResult, onC
           onChange={(e) => setProof(e.target.value)}
           placeholder="Enter your User ID, email used for registration, transaction ID, username on the platform, or any other details..."
           rows={4}
-          className="w-full h-[90px] lg:h-[109px] text-[15px] lg:text-[14px]"
+          className="w-full h-[70px] lg:h-[109px] text-[15px] lg:text-[14px]"
           style={{
             background: 'rgba(0, 0, 0, 0.36)', border: '1px solid rgba(73, 178, 101, 1)', 
             borderRadius: '10px', padding: '12px', color: '#fff', 

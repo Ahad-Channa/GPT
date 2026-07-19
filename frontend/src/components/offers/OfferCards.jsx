@@ -326,7 +326,7 @@ export const FeaturedOfferModal = ({ offer, token, onClose, onSubmitted }) => {
         animate={{ scale: 1, opacity: 1 }}
         exit={{ scale: 0.95, opacity: 0 }}
         onClick={(e) => e.stopPropagation()}
-        className="relative flex flex-col gap-4 p-4 rounded-[20px] bg-[#242424] w-[95%] lg:w-[500px] h-[90vh] lg:h-auto lg:max-h-[90vh] max-h-[95vh] box-border overflow-hidden"
+        className="relative flex flex-col gap-3 lg:gap-4 p-3 lg:p-4 rounded-[20px] bg-[#242424] w-[95%] lg:w-[500px] h-auto lg:h-auto max-h-[85vh] lg:max-h-[90vh] box-border overflow-hidden"
       >
         {/* Close Button - Moved out of the image container to sit at top right of modal */}
         {!showProofForm && (
