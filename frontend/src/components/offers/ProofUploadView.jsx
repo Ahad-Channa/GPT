@@ -121,12 +121,12 @@ export const ProofUploadView = ({ offer, token, API, onSubmitted, setResult, onC
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -10 }}
       onSubmit={handleSubmit}
-      style={{ display: 'flex', flexDirection: 'column', gap: '16px', width: '100%', flexShrink: 0 }}
+      style={{ display: 'flex', flexDirection: 'column', gap: '12px', width: '100%', flexShrink: 0 }}
     >
       {/* Upload Proof Header */}
-      <div style={{ width: '100%', height: 'auto', display: 'flex', flexDirection: 'column', gap: '6px', opacity: 1 }}>
+      <div style={{ width: '100%', height: 'auto', display: 'flex', flexDirection: 'column', gap: '4px', opacity: 1 }}>
         <h3 
-          className="text-[24px] lg:text-[16px]"
+          className="text-[18px] lg:text-[16px]"
           style={{
             width: '100%', height: 'auto', opacity: 1,
             fontFamily: '"Barlow Condensed", sans-serif', fontWeight: 700, fontStyle: 'normal',
@@ -136,7 +136,7 @@ export const ProofUploadView = ({ offer, token, API, onSubmitted, setResult, onC
           Upload Proof
         </h3>
         <p 
-          className="text-[16px] lg:text-[11px]"
+          className="text-[12px] lg:text-[11px]"
           style={{
             width: '100%', height: 'auto', opacity: 1,
             fontFamily: '"Barlow Condensed", sans-serif', fontWeight: 500, fontStyle: 'normal',
@@ -152,14 +152,14 @@ export const ProofUploadView = ({ offer, token, API, onSubmitted, setResult, onC
         onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
         onDragLeave={() => setIsDragging(false)}
         onDrop={handleDrop}
-        className="w-full h-[210px] lg:h-[185px]"
+        className="w-full h-[140px] lg:h-[185px]"
         style={{
           borderRadius: '12px',
-          paddingTop: '22px',
+          paddingTop: '16px',
           paddingRight: '12px',
-          paddingBottom: '22px',
+          paddingBottom: '16px',
           paddingLeft: '12px',
-          gap: '16px',
+          gap: '10px',
           opacity: 1,
           border: `1px dashed rgba(73, 178, 101, 1)`,
           background: isDragging ? 'rgba(73, 178, 101, 0.25)' : 'rgba(73, 178, 101, 0.16)',
@@ -179,21 +179,21 @@ export const ProofUploadView = ({ offer, token, API, onSubmitted, setResult, onC
         <img 
           src="/coins/upload.png" 
           alt="upload" 
-          className="w-[44px] h-[44px] lg:w-[34px] lg:h-[34px] object-contain"
+          className="w-[30px] h-[30px] lg:w-[34px] lg:h-[34px] object-contain"
           style={{ 
             opacity: 1, 
             filter: 'brightness(0) saturate(100%) invert(56%) sepia(43%) saturate(555%) hue-rotate(83deg) brightness(96%) contrast(88%)' 
           }} 
         />
-        <div style={{ width: '100%', height: 'auto', display: 'flex', flexDirection: 'column', gap: '6px', opacity: 1, alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ width: '100%', height: 'auto', display: 'flex', flexDirection: 'column', gap: '4px', opacity: 1, alignItems: 'center', justifyContent: 'center' }}>
           <span 
-            className="text-[22px] lg:text-[16px]"
+            className="text-[15px] lg:text-[16px]"
             style={{ fontFamily: '"Barlow Condensed", sans-serif', fontWeight: 600, color: '#fff', lineHeight: 1 }}
           >
             Drag & drop files here
           </span>
           <span 
-            className="text-[16px] lg:text-[12px]"
+            className="text-[11px] lg:text-[12px]"
             style={{ fontFamily: '"Barlow Condensed", sans-serif', fontWeight: 500, color: '#888', lineHeight: 1 }}
           >
             JPG, PNG. PDF up to 10MB each (max 10 files)
@@ -202,10 +202,10 @@ export const ProofUploadView = ({ offer, token, API, onSubmitted, setResult, onC
         <button
           type="button"
           onClick={(e) => { e.stopPropagation(); fileInputRef.current?.click(); }}
-          className="w-[190px] h-[46px] lg:w-[156px] lg:h-[38px] text-[18px] lg:text-[14px]"
+          className="w-[130px] h-[34px] lg:w-[156px] lg:h-[38px] text-[13px] lg:text-[14px]"
           style={{
             borderRadius: '10px',
-            padding: '10px 30px',
+            padding: '4px 20px',
             gap: '10px',
             opacity: 1,
             background: 'rgba(39, 112, 58, 1)',
@@ -239,7 +239,7 @@ export const ProofUploadView = ({ offer, token, API, onSubmitted, setResult, onC
           {proofImages.map((img, idx) => (
             <div 
               key={idx} 
-              className="p-3 lg:p-[8px_12px]"
+              className="p-2 lg:p-[8px_12px]"
               style={{ 
                 display: 'flex', alignItems: 'center', justifyContent: 'space-between', 
                 background: 'rgba(0, 0, 0, 0.36)', backdropFilter: 'blur(44px)', WebkitBackdropFilter: 'blur(44px)', borderRadius: '8px'
@@ -250,18 +250,18 @@ export const ProofUploadView = ({ offer, token, API, onSubmitted, setResult, onC
                   <img 
                     src={img.base64} 
                     alt="preview" 
-                    className="w-[44px] h-[44px] lg:w-[32px] lg:h-[32px] rounded object-cover" 
+                    className="w-[32px] h-[32px] lg:w-[32px] lg:h-[32px] rounded object-cover" 
                   />
                 ) : (
                   <div 
-                    className="w-[44px] h-[44px] lg:w-[32px] lg:h-[32px] rounded bg-white/10 flex items-center justify-center text-[12px] lg:text-[10px] text-[#888]"
+                    className="w-[32px] h-[32px] lg:w-[32px] lg:h-[32px] rounded bg-white/10 flex items-center justify-center text-[10px] text-[#888]"
                   >
                     PDF
                   </div>
                 )}
                 <div style={{ display: 'flex', flexDirection: 'column' }}>
                   <span 
-                    className="text-[18px] lg:text-[14px]"
+                    className="text-[15px] lg:text-[14px]"
                     style={{ fontFamily: '"Barlow Condensed", sans-serif', fontWeight: 600, color: '#fff', maxWidth: '200px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}
                   >
                     {img.name}
@@ -270,7 +270,7 @@ export const ProofUploadView = ({ offer, token, API, onSubmitted, setResult, onC
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                 <span 
-                  className="text-[15px] lg:text-[12px]"
+                  className="text-[12px] lg:text-[12px]"
                   style={{ fontFamily: '"Barlow Condensed", sans-serif', fontWeight: 500, color: '#888' }}
                 >
                   {img.sizeStr}
@@ -280,7 +280,7 @@ export const ProofUploadView = ({ offer, token, API, onSubmitted, setResult, onC
                   onClick={() => removeImage(idx)}
                   style={{ background: 'transparent', border: 'none', color: '#888', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '4px' }}
                 >
-                  <FiX className="w-5 h-5 lg:w-4 lg:h-4" />
+                  <FiX size={16} />
                 </button>
               </div>
             </div>
@@ -289,15 +289,15 @@ export const ProofUploadView = ({ offer, token, API, onSubmitted, setResult, onC
       )}
 
       {/* Additional Details */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', width: '100%' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', width: '100%' }}>
         <h3 
-          className="text-[22px] lg:text-[16px]"
+          className="text-[18px] lg:text-[16px]"
           style={{ fontFamily: '"Barlow Condensed", sans-serif', fontWeight: 700, color: '#fff', margin: 0, lineHeight: '1.2' }}
         >
           Additional Details (Optional)
         </h3>
         <p 
-          className="text-[15px] lg:text-[11px]"
+          className="text-[12px] lg:text-[11px]"
           style={{ fontFamily: '"Barlow Condensed", sans-serif', fontWeight: 500, color: '#888', margin: 0, lineHeight: '1.3' }}
         >
           Provide any extra information that can help us verify your completion.
@@ -307,21 +307,21 @@ export const ProofUploadView = ({ offer, token, API, onSubmitted, setResult, onC
           onChange={(e) => setProof(e.target.value)}
           placeholder="Enter your User ID, email used for registration, transaction ID, username on the platform, or any other details..."
           rows={4}
-          className="w-full h-[140px] lg:h-[109px] text-[18px] lg:text-[14px]"
+          className="w-full h-[90px] lg:h-[109px] text-[15px] lg:text-[14px]"
           style={{
             background: 'rgba(0, 0, 0, 0.36)', border: '1px solid rgba(73, 178, 101, 1)', 
-            borderRadius: '10px', padding: '16px', color: '#fff', 
+            borderRadius: '10px', padding: '12px', color: '#fff', 
             resize: 'none', boxSizing: 'border-box', fontFamily: '"Barlow Condensed", sans-serif',
             backdropFilter: 'blur(44px)', WebkitBackdropFilter: 'blur(44px)', opacity: 1, gap: '10px'
           }}
         />
       </div>
 
-      <div style={{ display: 'flex', marginTop: '8px', paddingBottom: '4px', width: '100%' }}>
+      <div style={{ display: 'flex', marginTop: '4px', paddingBottom: '4px', width: '100%' }}>
         <button
           type="submit"
           disabled={submitting || (proofImages.length === 0 && !proof.trim())}
-          className="w-full h-[60px] lg:h-[48px] text-[22px] lg:text-[18px]"
+          className="w-full h-[48px] lg:h-[48px] text-[18px] lg:text-[18px]"
           style={{
             borderRadius: '10px',
             padding: '10px 30px',
