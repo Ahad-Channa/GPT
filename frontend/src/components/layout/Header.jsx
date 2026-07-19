@@ -459,30 +459,30 @@ const Header = ({ onChatToggle, chatOpen, fullWidth }) => {
 
         {/* Group 3: User Actions */}
         <div
-          className="relative right-[-7px] flex items-center shrink-0 h-[58px] lg:h-[48px]"
+          className="relative right-[-7px] flex items-center shrink-0 h-[68px] lg:h-[48px]"
           style={{ gap: '8px' }}
         >
           {/* Mobile Hamburger Button - visible only below lg */}
           <button
             id="header-mobile-menu-btn"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="lg:hidden relative flex-shrink-0 flex items-center justify-center bg-transparent hover:bg-white/5 transition-colors w-[58px] h-[58px]"
+            className="lg:hidden relative flex-shrink-0 flex items-center justify-center bg-transparent hover:bg-white/5 transition-colors w-[68px] h-[68px]"
             style={{
               borderRadius: '10px',
               border: '1px solid rgba(73, 178, 101, 0.4)',
             }}
           >
             {mobileMenuOpen ? (
-              <FiX style={{ width: '30px', height: '30px', color: '#49B265' }} />
+              <FiX style={{ width: '36px', height: '36px', color: '#49B265' }} />
             ) : (
-              <FiMenu style={{ width: '30px', height: '30px', color: '#49B265' }} />
+              <FiMenu style={{ width: '36px', height: '36px', color: '#49B265' }} />
             )}
           </button>
           {/* Live Chat Button → sidebar */}
           <button
             id="header-livechat-btn"
             onClick={onChatToggle}
-            className={`relative flex-shrink-0 flex items-center justify-center transition-colors group w-[58px] h-[58px] lg:w-[48px] lg:h-[48px] ${chatOpen
+            className={`relative flex-shrink-0 flex items-center justify-center transition-colors group w-[68px] h-[68px] lg:w-[48px] lg:h-[48px] ${chatOpen
               ? 'bg-[#49B265]/20'
               : 'bg-transparent hover:bg-white/5'
               }`}
@@ -494,7 +494,7 @@ const Header = ({ onChatToggle, chatOpen, fullWidth }) => {
             <img
               src="/coins/chat.png"
               alt="Chat"
-              className="w-[30px] h-[30px] lg:w-[24px] lg:h-[24px] object-contain"
+              className="w-[36px] h-[36px] lg:w-[24px] lg:h-[24px] object-contain"
               style={{
                 filter: 'brightness(0) saturate(100%) invert(59%) sepia(33%) saturate(1030%) hue-rotate(86deg) brightness(93%) contrast(87%)'
               }}
@@ -508,7 +508,7 @@ const Header = ({ onChatToggle, chatOpen, fullWidth }) => {
           <button
             id="header-notifications-btn"
             onClick={togglePanel}
-            className="relative flex-shrink-0 flex items-center justify-center bg-transparent hover:bg-white/5 transition-colors group w-[58px] h-[58px] lg:w-[48px] lg:h-[48px]"
+            className="relative flex-shrink-0 flex items-center justify-center bg-transparent hover:bg-white/5 transition-colors group w-[68px] h-[68px] lg:w-[48px] lg:h-[48px]"
             style={{
               borderRadius: '10px',
               border: '1px solid rgba(73, 178, 101, 0.4)'
@@ -517,7 +517,7 @@ const Header = ({ onChatToggle, chatOpen, fullWidth }) => {
             <img
               src="/coins/noti.png"
               alt="Notifications"
-              className="w-[30px] h-[30px] lg:w-[24px] lg:h-[24px] object-contain"
+              className="w-[36px] h-[36px] lg:w-[24px] lg:h-[24px] object-contain"
             />
             {unreadCount > 0 && (
               <span className="absolute top-2 right-2.5 w-2 h-2 bg-[#49B265] rounded-full shadow-[0_0_8px_rgba(73,178,101,0.8)]" />
@@ -529,7 +529,7 @@ const Header = ({ onChatToggle, chatOpen, fullWidth }) => {
             <button
               id="header-profile-menu"
               onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-              className="flex items-center hover:bg-white/[0.05] transition-colors group flex-shrink-0 h-[58px] lg:h-[48px]"
+              className="flex items-center hover:bg-white/[0.05] transition-colors group flex-shrink-0 h-[68px] lg:h-[48px]"
               style={{
                 minWidth: '133.5px',
                 width: 'auto',
@@ -540,7 +540,7 @@ const Header = ({ onChatToggle, chatOpen, fullWidth }) => {
               }}
             >
               <div
-                className="rounded-full overflow-hidden border border-white/10 flex-shrink-0 bg-[#111827] w-[42px] h-[42px] lg:w-[31px] lg:h-[31px]"
+                className="rounded-full overflow-hidden border border-white/10 flex-shrink-0 bg-[#111827] w-[48px] h-[48px] lg:w-[31px] lg:h-[31px]"
               >
                 <img
                   src={mongoUser?.avatarUrl || currentUser?.photoURL || `/avatars/avatar1.png`}
@@ -553,7 +553,7 @@ const Header = ({ onChatToggle, chatOpen, fullWidth }) => {
                 style={{ gap: 4 }}
               >
                 <span
-                  className="text-white text-left whitespace-nowrap flex-shrink-0 text-[18px] lg:text-[14px] leading-[18px] lg:leading-[14px]"
+                  className="text-white text-left whitespace-nowrap flex-shrink-0 text-[22px] lg:text-[14px] leading-[22px] lg:leading-[14px]"
                   style={{
                     width: '100%',
                     fontFamily: '"Barlow Condensed", sans-serif',
@@ -570,9 +570,9 @@ const Header = ({ onChatToggle, chatOpen, fullWidth }) => {
                   <img
                     src="/coins/Coin.png"
                     alt="Coin"
-                    className="w-[16px] h-[16px] lg:w-[12px] lg:h-[12px] object-contain flex-shrink-0"
+                    className="w-[20px] h-[20px] lg:w-[12px] lg:h-[12px] object-contain flex-shrink-0"
                   />
-                  <span className="text-[15px] lg:text-[12px]" style={{
+                  <span className="text-[18px] lg:text-[12px]" style={{
                     minWidth: '24px',
                     width: 'auto',
                     height: 'auto',
