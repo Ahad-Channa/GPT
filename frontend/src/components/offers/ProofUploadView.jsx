@@ -121,22 +121,28 @@ export const ProofUploadView = ({ offer, token, API, onSubmitted, setResult, onC
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -10 }}
       onSubmit={handleSubmit}
-      style={{ display: 'flex', flexDirection: 'column', gap: '16px', width: '468px', flexShrink: 0 }}
+      style={{ display: 'flex', flexDirection: 'column', gap: '16px', width: '100%', flexShrink: 0 }}
     >
       {/* Upload Proof Header */}
-      <div style={{ width: '468px', height: '39px', display: 'flex', flexDirection: 'column', gap: '6px', opacity: 1 }}>
-        <h3 style={{
-          width: '468px', height: '19px', opacity: 1,
-          fontFamily: '"Barlow Condensed", sans-serif', fontWeight: 700, fontStyle: 'normal', fontSize: '16px',
-          color: 'rgba(255, 255, 255, 1)', margin: 0, lineHeight: '1.2'
-        }}>
+      <div style={{ width: '100%', height: 'auto', display: 'flex', flexDirection: 'column', gap: '6px', opacity: 1 }}>
+        <h3 
+          className="text-[24px] lg:text-[16px]"
+          style={{
+            width: '100%', height: 'auto', opacity: 1,
+            fontFamily: '"Barlow Condensed", sans-serif', fontWeight: 700, fontStyle: 'normal',
+            color: 'rgba(255, 255, 255, 1)', margin: 0, lineHeight: '1.2'
+          }}
+        >
           Upload Proof
         </h3>
-        <p style={{
-          width: '468px', height: '14px', opacity: 1,
-          fontFamily: '"Barlow Condensed", sans-serif', fontWeight: 500, fontStyle: 'normal', fontSize: '11px',
-          color: 'rgba(136, 136, 136, 1)', margin: 0, lineHeight: '1.3'
-        }}>
+        <p 
+          className="text-[16px] lg:text-[11px]"
+          style={{
+            width: '100%', height: 'auto', opacity: 1,
+            fontFamily: '"Barlow Condensed", sans-serif', fontWeight: 500, fontStyle: 'normal',
+            color: 'rgba(136, 136, 136, 1)', margin: 0, lineHeight: '1.3'
+          }}
+        >
           Upload screenshots, receipts, or any files that prove task completion.
         </p>
       </div>
@@ -146,9 +152,8 @@ export const ProofUploadView = ({ offer, token, API, onSubmitted, setResult, onC
         onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
         onDragLeave={() => setIsDragging(false)}
         onDrop={handleDrop}
+        className="w-full h-[210px] lg:h-[185px]"
         style={{
-          width: '468px',
-          height: '185px',
           borderRadius: '12px',
           paddingTop: '22px',
           paddingRight: '12px',
@@ -171,24 +176,34 @@ export const ProofUploadView = ({ offer, token, API, onSubmitted, setResult, onC
         }}
         onClick={() => fileInputRef.current?.click()}
       >
-        <img src="/coins/upload.png" alt="upload" style={{ 
-          width: '34px', height: '34px', opacity: 1, 
-          filter: 'brightness(0) saturate(100%) invert(56%) sepia(43%) saturate(555%) hue-rotate(83deg) brightness(96%) contrast(88%)' 
-        }} />
-        <div style={{ width: '444px', height: '37px', display: 'flex', flexDirection: 'column', gap: '6px', opacity: 1, alignItems: 'center', justifyContent: 'center' }}>
-          <span style={{ fontFamily: '"Barlow Condensed", sans-serif', fontWeight: 600, fontSize: '16px', color: '#fff', lineHeight: 1 }}>
+        <img 
+          src="/coins/upload.png" 
+          alt="upload" 
+          className="w-[44px] h-[44px] lg:w-[34px] lg:h-[34px] object-contain"
+          style={{ 
+            opacity: 1, 
+            filter: 'brightness(0) saturate(100%) invert(56%) sepia(43%) saturate(555%) hue-rotate(83deg) brightness(96%) contrast(88%)' 
+          }} 
+        />
+        <div style={{ width: '100%', height: 'auto', display: 'flex', flexDirection: 'column', gap: '6px', opacity: 1, alignItems: 'center', justifyContent: 'center' }}>
+          <span 
+            className="text-[22px] lg:text-[16px]"
+            style={{ fontFamily: '"Barlow Condensed", sans-serif', fontWeight: 600, color: '#fff', lineHeight: 1 }}
+          >
             Drag & drop files here
           </span>
-          <span style={{ fontFamily: '"Barlow Condensed", sans-serif', fontWeight: 500, fontSize: '12px', color: '#888', lineHeight: 1 }}>
+          <span 
+            className="text-[16px] lg:text-[12px]"
+            style={{ fontFamily: '"Barlow Condensed", sans-serif', fontWeight: 500, color: '#888', lineHeight: 1 }}
+          >
             JPG, PNG. PDF up to 10MB each (max 10 files)
           </span>
         </div>
         <button
           type="button"
           onClick={(e) => { e.stopPropagation(); fileInputRef.current?.click(); }}
+          className="w-[190px] h-[46px] lg:w-[156px] lg:h-[38px] text-[18px] lg:text-[14px]"
           style={{
-            width: '156px',
-            height: '38px',
             borderRadius: '10px',
             padding: '10px 30px',
             gap: '10px',
@@ -199,7 +214,6 @@ export const ProofUploadView = ({ offer, token, API, onSubmitted, setResult, onC
             border: 'none',
             fontFamily: '"Barlow Condensed", sans-serif',
             fontWeight: 600,
-            fontSize: '14px',
             cursor: 'pointer',
             display: 'flex',
             alignItems: 'center',
@@ -221,30 +235,52 @@ export const ProofUploadView = ({ offer, token, API, onSubmitted, setResult, onC
 
       {/* File List */}
       {proofImages.length > 0 && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', width: '100%' }}>
           {proofImages.map((img, idx) => (
-            <div key={idx} style={{ 
-              display: 'flex', alignItems: 'center', justifyContent: 'space-between', 
-              padding: '8px 12px', background: 'rgba(0, 0, 0, 0.36)', backdropFilter: 'blur(44px)', WebkitBackdropFilter: 'blur(44px)', borderRadius: '8px'
-            }}>
+            <div 
+              key={idx} 
+              className="p-3 lg:p-[8px_12px]"
+              style={{ 
+                display: 'flex', alignItems: 'center', justifyContent: 'space-between', 
+                background: 'rgba(0, 0, 0, 0.36)', backdropFilter: 'blur(44px)', WebkitBackdropFilter: 'blur(44px)', borderRadius: '8px'
+              }}
+            >
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                 {img.base64.startsWith('data:image') ? (
-                  <img src={img.base64} alt="preview" style={{ width: '32px', height: '32px', borderRadius: '4px', objectFit: 'cover' }} />
+                  <img 
+                    src={img.base64} 
+                    alt="preview" 
+                    className="w-[44px] h-[44px] lg:w-[32px] lg:h-[32px] rounded object-cover" 
+                  />
                 ) : (
-                  <div style={{ width: '32px', height: '32px', borderRadius: '4px', background: 'rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '10px', color: '#888' }}>PDF</div>
+                  <div 
+                    className="w-[44px] h-[44px] lg:w-[32px] lg:h-[32px] rounded bg-white/10 flex items-center justify-center text-[12px] lg:text-[10px] text-[#888]"
+                  >
+                    PDF
+                  </div>
                 )}
                 <div style={{ display: 'flex', flexDirection: 'column' }}>
-                  <span style={{ fontFamily: '"Barlow Condensed", sans-serif', fontWeight: 600, fontSize: '14px', color: '#fff', maxWidth: '200px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{img.name}</span>
+                  <span 
+                    className="text-[18px] lg:text-[14px]"
+                    style={{ fontFamily: '"Barlow Condensed", sans-serif', fontWeight: 600, color: '#fff', maxWidth: '200px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}
+                  >
+                    {img.name}
+                  </span>
                 </div>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                <span style={{ fontFamily: '"Barlow Condensed", sans-serif', fontWeight: 500, fontSize: '12px', color: '#888' }}>{img.sizeStr}</span>
+                <span 
+                  className="text-[15px] lg:text-[12px]"
+                  style={{ fontFamily: '"Barlow Condensed", sans-serif', fontWeight: 500, color: '#888' }}
+                >
+                  {img.sizeStr}
+                </span>
                 <button 
                   type="button" 
                   onClick={() => removeImage(idx)}
                   style={{ background: 'transparent', border: 'none', color: '#888', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '4px' }}
                 >
-                  <FiX size={16} />
+                  <FiX className="w-5 h-5 lg:w-4 lg:h-4" />
                 </button>
               </div>
             </div>
@@ -253,11 +289,17 @@ export const ProofUploadView = ({ offer, token, API, onSubmitted, setResult, onC
       )}
 
       {/* Additional Details */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-        <h3 style={{ fontFamily: '"Barlow Condensed", sans-serif', fontWeight: 700, fontSize: '16px', color: '#fff', margin: 0, lineHeight: '1.2' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', width: '100%' }}>
+        <h3 
+          className="text-[22px] lg:text-[16px]"
+          style={{ fontFamily: '"Barlow Condensed", sans-serif', fontWeight: 700, color: '#fff', margin: 0, lineHeight: '1.2' }}
+        >
           Additional Details (Optional)
         </h3>
-        <p style={{ fontFamily: '"Barlow Condensed", sans-serif', fontWeight: 500, fontSize: '11px', color: '#888', margin: 0, lineHeight: '1.3' }}>
+        <p 
+          className="text-[15px] lg:text-[11px]"
+          style={{ fontFamily: '"Barlow Condensed", sans-serif', fontWeight: 500, color: '#888', margin: 0, lineHeight: '1.3' }}
+        >
           Provide any extra information that can help us verify your completion.
         </p>
         <textarea
@@ -265,24 +307,26 @@ export const ProofUploadView = ({ offer, token, API, onSubmitted, setResult, onC
           onChange={(e) => setProof(e.target.value)}
           placeholder="Enter your User ID, email used for registration, transaction ID, username on the platform, or any other details..."
           rows={4}
+          className="w-full h-[140px] lg:h-[109px] text-[18px] lg:text-[14px]"
           style={{
-            width: '468px', height: '109px', background: 'rgba(0, 0, 0, 0.36)', border: '1px solid rgba(73, 178, 101, 1)', 
-            borderRadius: '10px', padding: '16px', color: '#fff', fontSize: '14px', 
+            background: 'rgba(0, 0, 0, 0.36)', border: '1px solid rgba(73, 178, 101, 1)', 
+            borderRadius: '10px', padding: '16px', color: '#fff', 
             resize: 'none', boxSizing: 'border-box', fontFamily: '"Barlow Condensed", sans-serif',
             backdropFilter: 'blur(44px)', WebkitBackdropFilter: 'blur(44px)', opacity: 1, gap: '10px'
           }}
         />
       </div>
 
-      <div style={{ display: 'flex', marginTop: '8px', paddingBottom: '4px' }}>
+      <div style={{ display: 'flex', marginTop: '8px', paddingBottom: '4px', width: '100%' }}>
         <button
           type="submit"
           disabled={submitting || (proofImages.length === 0 && !proof.trim())}
+          className="w-full h-[60px] lg:h-[48px] text-[22px] lg:text-[18px]"
           style={{
-            width: '468px', height: '48px', borderRadius: '10px',
+            borderRadius: '10px',
             padding: '10px 30px',
             background: 'rgba(73, 178, 101, 1)', color: 'rgba(255, 255, 255, 1)', border: 'none',
-            fontFamily: '"Barlow Condensed", sans-serif', fontWeight: 700, fontSize: '18px', lineHeight: '100%',
+            fontFamily: '"Barlow Condensed", sans-serif', fontWeight: 700, lineHeight: '100%',
             display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px',
             cursor: submitting || (proofImages.length === 0 && !proof.trim()) ? 'not-allowed' : 'pointer',
             opacity: submitting || (proofImages.length === 0 && !proof.trim()) ? 0.5 : 1,

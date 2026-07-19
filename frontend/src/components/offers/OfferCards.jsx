@@ -326,33 +326,13 @@ export const FeaturedOfferModal = ({ offer, token, onClose, onSubmitted }) => {
         animate={{ scale: 1, opacity: 1 }}
         exit={{ scale: 0.95, opacity: 0 }}
         onClick={(e) => e.stopPropagation()}
-        style={{
-          width: '500px',
-          minHeight: '526px',
-          height: 'auto',
-          maxHeight: '90vh',
-          background: 'rgba(36, 36, 36, 1)',
-          borderRadius: '20px',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '16px',
-          padding: '16px',
-          boxSizing: 'border-box',
-          overflow: 'hidden',
-          position: 'relative'
-        }}
+        className="relative flex flex-col gap-4 p-4 rounded-[20px] bg-[#242424] w-[95%] lg:w-[500px] h-[90vh] lg:h-auto lg:max-h-[90vh] max-h-[95vh] box-border overflow-hidden"
       >
         {/* Close Button - Moved out of the image container to sit at top right of modal */}
         {!showProofForm && (
           <button
             onClick={onClose}
-            style={{
-              position: 'absolute', top: '26px', left: '438px',
-              width: '36px', height: '36px', borderRadius: '10px',
-              background: 'rgba(255, 255, 255, 0.11)',
-              border: 'none', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center',
-              cursor: 'pointer', zIndex: 10
-            }}
+            className="absolute top-[26px] right-[16px] w-[36px] h-[36px] rounded-[10px] bg-white/10 text-white flex items-center justify-center cursor-pointer z-10 border-none"
           >
             <FiX size={16} />
           </button>
@@ -362,107 +342,99 @@ export const FeaturedOfferModal = ({ offer, token, onClose, onSubmitted }) => {
         {!showProofForm ? (
           <>
             {/* Modal Header / Image */}
-            <div style={{
-              width: '468px', height: '159px', borderRadius: '10px',
-              background: 'rgba(255, 255, 255, 0.05)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              position: 'relative', flexShrink: 0, overflow: 'hidden'
-            }}>
+            <div className="w-full h-[180px] lg:h-[159px] rounded-[10px] bg-white/5 flex items-center justify-center relative shrink-0 overflow-hidden">
               {(() => {
                 const coverImgSrc = offer.coverImage || (isIconUrl(offer.icon) ? offer.icon : null);
                 const emojiIcon = !coverImgSrc && offer.icon ? offer.icon : '🏆';
                 if (coverImgSrc) {
-                  return <img src={coverImgSrc} alt={offer.title} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '10px' }} />;
+                  return <img src={coverImgSrc} alt={offer.title} className="w-full h-full object-cover rounded-[10px]" />;
                 }
-                return <span style={{ fontSize: '48px', filter: 'drop-shadow(0px 4px 10px rgba(0,0,0,0.5))' }}>{emojiIcon}</span>;
+                return <span className="text-[64px] lg:text-[48px] select-none" style={{ filter: 'drop-shadow(0px 4px 10px rgba(0,0,0,0.5))' }}>{emojiIcon}</span>;
               })()}
             </div>
 
             {/* Title, Description, and Coin Pill */}
-            <div style={{ width: '468px', minHeight: '108px', height: 'auto', display: 'flex', flexDirection: 'column', gap: '16px', flexShrink: 0, opacity: 1 }}>
+            <div className="w-full min-h-[108px] h-auto flex flex-col gap-4 shrink-0 opacity-100">
               {/* Heading and Description Wrapper */}
-              <div style={{ width: '468px', height: 'auto', display: 'flex', flexDirection: 'column', gap: '6px', opacity: 1 }}>
-                <h2 style={{
-                  width: '100%', height: 'auto', opacity: 1,
-                  fontFamily: '"Barlow Condensed", sans-serif', fontWeight: 600, fontStyle: 'normal', fontSize: '26px',
-                  color: 'rgba(255, 255, 255, 1)', margin: 0, lineHeight: '1.2'
-                }}>
+              <div className="w-full h-auto flex flex-col gap-[6px] opacity-100">
+                <h2 
+                  className="w-full h-auto text-[36px] lg:text-[26px]"
+                  style={{
+                    fontFamily: '"Barlow Condensed", sans-serif',
+                    fontWeight: 600,
+                    color: 'rgba(255, 255, 255, 1)',
+                    margin: 0,
+                    lineHeight: '1.2'
+                  }}
+                >
                   {offer.title}
                 </h2>
-                <div style={{
-                  width: '468px', height: 'auto', opacity: 1,
-                  fontFamily: '"Barlow Condensed", sans-serif', fontWeight: 500, fontStyle: 'normal', fontSize: '16px',
-                  color: 'rgba(136, 136, 136, 1)', lineHeight: '1.3'
-                }}>
+                <div 
+                  className="w-full h-auto text-[22px] lg:text-[16px]"
+                  style={{
+                    fontFamily: '"Barlow Condensed", sans-serif',
+                    fontWeight: 500,
+                    color: 'rgba(136, 136, 136, 1)',
+                    lineHeight: '1.3'
+                  }}
+                >
                   {offer.description.split('\n').map((line, i) => <p key={i} style={{ margin: 0, padding: 0 }}>{line}</p>)}
                 </div>
               </div>
-              <div style={{
-                width: 'auto', height: '26px', opacity: 1,
-                display: 'flex', alignItems: 'center', gap: '3px',
-                alignSelf: 'flex-start'
-              }}>
-                <img src="/coins/Coin.png" alt="coin" style={{
-                  width: '26px', height: '26px', opacity: 1,
-                  objectFit: 'contain',
+              <div className="flex items-center gap-[3px] self-start h-[36px] lg:h-[26px]">
+                <img src="/coins/Coin.png" alt="coin" className="w-[30px] h-[30px] lg:w-[26px] lg:h-[26px] object-contain" style={{
                   filter: 'drop-shadow(0px 0px 14px rgba(254, 198, 53, 0.6))'
                 }} />
-                <span style={{
-                  width: 'auto', minWidth: '40px', height: 'auto', opacity: 1,
-                  fontFamily: '"Barlow Condensed", sans-serif', fontWeight: 700, fontStyle: 'normal', fontSize: '22px',
-                  lineHeight: '1.3',
-                  background: 'linear-gradient(180deg, #FEDF77 0%, #FCB91E 100%)',
-                  WebkitBackgroundClip: 'text',
-                  WebkitTextFillColor: 'transparent',
-                  backgroundClip: 'text',
-                  color: 'transparent',
-                  display: 'inline-flex', alignItems: 'center', whiteSpace: 'nowrap'
-                }}>
+                <span 
+                  className="text-[30px] lg:text-[22px] inline-flex items-center"
+                  style={{
+                    fontFamily: '"Barlow Condensed", sans-serif',
+                    fontWeight: 700,
+                    background: 'linear-gradient(180deg, #FEDF77 0%, #FCB91E 100%)',
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent',
+                    backgroundClip: 'text',
+                    color: 'transparent',
+                    whiteSpace: 'nowrap'
+                  }}
+                >
                   +{(offer.rewardAmount || 0).toLocaleString()}
                 </span>
               </div>
             </div>
           </>
         ) : (
-          <div style={{ width: '468px', height: '66px', display: 'flex', alignItems: 'center', gap: '6px', flexShrink: 0, opacity: 1 }}>
+          <div className="w-full flex items-center gap-1.5 shrink-0 opacity-100">
             {/* Small Image */}
-            <div style={{ width: '99px', height: '66px', borderRadius: '6px', overflow: 'hidden', flexShrink: 0, background: 'rgba(255, 255, 255, 0.05)' }}>
+            <div className="w-[99px] h-[66px] rounded-md overflow-hidden shrink-0 bg-white/5">
               {(() => {
                 const coverImgSrc = offer.coverImage || (isIconUrl(offer.icon) ? offer.icon : null);
                 const emojiIcon = !coverImgSrc && offer.icon ? offer.icon : '🏆';
                 if (coverImgSrc) {
-                  return <img src={coverImgSrc} alt={offer.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />;
+                  return <img src={coverImgSrc} alt={offer.title} className="w-full h-full object-cover" />;
                 }
-                return <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '24px' }}>{emojiIcon}</div>;
+                return <div className="w-full h-full flex items-center justify-center text-2xl select-none">{emojiIcon}</div>;
               })()}
             </div>
             {/* Title and Description */}
-            <div style={{ width: '333px', height: 'auto', display: 'flex', flexDirection: 'column', gap: '12px', opacity: 1 }}>
-              <h2 style={{
-                width: '333px', height: 'auto', opacity: 1,
-                fontFamily: '"Barlow Condensed", sans-serif', fontWeight: 600, fontStyle: 'normal', fontSize: '28px',
-                color: 'rgba(255, 255, 255, 1)', margin: 0, lineHeight: '1',
-                whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis'
-              }}>
+            <div className="flex-1 flex flex-col gap-2 opacity-100 min-w-0">
+              <h2 
+                className="w-full text-[20px] lg:text-[28px] text-white font-semibold leading-none truncate"
+                style={{ fontFamily: '"Barlow Condensed", sans-serif', margin: 0 }}
+              >
                 {offer.title}
               </h2>
-              <div style={{
-                width: '333px', height: '17px', opacity: 1,
-                fontFamily: '"Barlow Condensed", sans-serif', fontWeight: 500, fontStyle: 'normal', fontSize: '13px',
-                color: 'rgba(136, 136, 136, 1)', lineHeight: '1.3'
-              }}>
+              <div 
+                className="w-full text-xs text-[#888888] leading-tight"
+                style={{ fontFamily: '"Barlow Condensed", sans-serif' }}
+              >
                 <p style={{ margin: 0, padding: 0 }}>Follow the steps below to submit your proof of completion for review.</p>
               </div>
             </div>
             {/* Inline Close Button for Proof Form */}
             <button
               onClick={onClose}
-              style={{
-                width: '24px', height: '66px', gap: '10px',
-                background: 'transparent', opacity: 1,
-                border: 'none', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                cursor: 'pointer', flexShrink: 0, padding: 0
-              }}
+              className="w-6 h-[66px] bg-transparent opacity-100 border-none text-white flex items-center justify-center cursor-pointer shrink-0 p-0"
             >
               <FiX size={20} />
             </button>
@@ -511,33 +483,32 @@ export const FeaturedOfferModal = ({ offer, token, onClose, onSubmitted }) => {
 
               {/* Requirements Section ALWAYS VISIBLE AND STICKY */}
               {!isStarted && offer.requirements && offer.requirements.length > 0 && (
-                <div style={{ 
-                  width: '468px', display: 'flex', flexDirection: 'column', gap: '8px', opacity: 1, flexShrink: 0,
-                  position: 'sticky', top: '-1px', zIndex: 20, background: 'rgba(36, 36, 36, 1)', paddingBottom: '8px'
-                }}>
-                    <h4 style={{ 
-                      fontFamily: '"Barlow Condensed", sans-serif', fontWeight: 700, fontStyle: 'normal', fontSize: '16px', 
-                      color: 'rgba(255, 255, 255, 1)', margin: 0, lineHeight: '1.2' 
-                    }}>
+                <div className="w-full flex flex-col gap-2 shrink-0 sticky top-[-1px] z-20 bg-[#242424] pb-2 opacity-100">
+                    <h4 
+                      className="text-[20px] lg:text-[16px] text-white font-bold leading-normal"
+                      style={{ fontFamily: '"Barlow Condensed", sans-serif', margin: 0 }}
+                    >
                       Requirements
                     </h4>
-                    <div style={{ 
-                      width: '468px', boxSizing: 'border-box', height: 'auto', flexShrink: 0,
-                      borderRadius: '12px', padding: '12px', display: 'flex', flexDirection: 'column', gap: '8px', 
-                      background: 'rgba(0, 0, 0, 0.36)', backdropFilter: 'blur(44px)', WebkitBackdropFilter: 'blur(44px)',
-                      opacity: 1 
-                    }}>
+                    <div 
+                      className="w-full box-border h-auto shrink-0"
+                      style={{ 
+                        borderRadius: '12px', padding: '12px', display: 'flex', flexDirection: 'column', gap: '8px', 
+                        background: 'rgba(0, 0, 0, 0.36)', backdropFilter: 'blur(44px)', WebkitBackdropFilter: 'blur(44px)',
+                        opacity: 1 
+                      }}
+                    >
                       {offer.requirements.map((req, i) => (
-                        <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: '6px' }}>
+                        <div key={i} className="flex items-start gap-1.5">
                           <img 
                             src="/coins/retik.png" 
                             alt="bullet" 
                             style={{ width: '14px', height: '14px', flexShrink: 0, marginTop: '2px' }} 
                           />
-                          <p style={{ 
-                            fontFamily: '"Barlow Condensed", sans-serif', fontWeight: 500, fontSize: '16px', 
-                            lineHeight: '120%', color: 'rgba(255, 255, 255, 1)', margin: 0 
-                          }}>
+                          <p 
+                            className="text-[18px] lg:text-[16px] text-white font-medium leading-tight"
+                            style={{ fontFamily: '"Barlow Condensed", sans-serif', margin: 0 }}
+                          >
                             {req}
                           </p>
                         </div>
@@ -548,40 +519,37 @@ export const FeaturedOfferModal = ({ offer, token, onClose, onSubmitted }) => {
 
               {/* Boxes when started */}
               {isStarted && !alreadySubmitted && (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', width: '468px', height: '155px', flexShrink: 0 }}>
-                  <div style={{
-                    width: '468px', height: '62px', borderRadius: '12px', padding: '12px', gap: '16px',
-                    background: 'rgba(0, 0, 0, 0.36)', backdropFilter: 'blur(44px)',
-                    display: 'flex', alignItems: 'center', boxSizing: 'border-box'
-                  }}>
-                    <div style={{ width: '214px', height: '37px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                      <span style={{ 
-                        width: '214px', height: '17px', fontFamily: '"Barlow Condensed", sans-serif', fontWeight: 700, 
-                        fontSize: '14px', lineHeight: '120%', color: 'var(--S3, rgba(255, 255, 255, 1))', display: 'block'
-                      }}>
+                <div className="w-full flex flex-col gap-4 shrink-0">
+                  <div 
+                    className="w-full h-auto"
+                    style={{
+                      borderRadius: '12px', padding: '12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '16px',
+                      background: 'rgba(0, 0, 0, 0.36)', backdropFilter: 'blur(44px)', WebkitBackdropFilter: 'blur(44px)',
+                      boxSizing: 'border-box'
+                    }}
+                  >
+                    <div className="flex flex-col gap-1 min-w-0 flex-1">
+                      <span 
+                        className="text-[18px] lg:text-[14px] text-white font-bold leading-tight block truncate"
+                        style={{ fontFamily: '"Barlow Condensed", sans-serif' }}
+                      >
                         Offer link clicked
                       </span>
-                      <span style={{ 
-                        width: '214px', height: '14px', fontFamily: '"Barlow Condensed", sans-serif', fontWeight: 500, 
-                        fontSize: '11px', lineHeight: '130%', color: 'var(--Text-text-sheen, rgba(136, 136, 136, 1))', display: 'block'
-                      }}>
+                      <span 
+                        className="text-[14px] lg:text-[11px] text-[#888888] font-medium leading-tight block truncate"
+                        style={{ fontFamily: '"Barlow Condensed", sans-serif' }}
+                      >
                         Complete the offer requirements
                       </span>
                     </div>
                     <button
                       onClick={handleStartOffer}
-                      style={{
-                        width: '214px', height: '38px', borderRadius: '10px', padding: '10px 30px', gap: '10px',
-                        background: 'rgba(39, 112, 58, 1)', border: 'none', cursor: 'pointer',
-                        boxShadow: '0px 4px 0px 0px rgba(35, 80, 47, 1)',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center', boxSizing: 'border-box'
-                      }}
+                      className="h-[46px] lg:h-[38px] rounded-[10px] px-6 py-2 bg-[#27703a] border-none cursor-pointer flex items-center justify-center gap-2 shadow-[0_4px_0_#23502f] shrink-0"
                     >
-                      <span style={{
-                        width: '79px', height: '11px', fontFamily: '"Barlow Condensed", sans-serif', fontWeight: 700,
-                        fontSize: '16px', lineHeight: '32px', color: 'rgba(255, 255, 255, 1)',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center'
-                      }}>
+                      <span 
+                        className="text-[18px] lg:text-[16px] text-white font-bold leading-none flex items-center justify-center"
+                        style={{ fontFamily: '"Barlow Condensed", sans-serif' }}
+                      >
                         Resume Offer
                       </span>
                     </button>
