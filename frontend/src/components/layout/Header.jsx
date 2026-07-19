@@ -4,7 +4,7 @@ import { getLevelFromEarned } from '../../utils/vipLevels';
 import VipBadge from '../VipBadge';
 import { useNotifications } from '../../contexts/NotificationContext';
 import { useDailyBonus } from '../../contexts/DailyBonusContext';
-import { FiLogOut, FiUser, FiSettings, FiZap, FiChevronDown, FiCreditCard, FiLock, FiClock, FiBell, FiUsers, FiGift, FiDollarSign, FiMessageSquare, FiTarget, FiStar } from 'react-icons/fi';
+import { FiLogOut, FiUser, FiSettings, FiZap, FiChevronDown, FiCreditCard, FiLock, FiClock, FiBell, FiUsers, FiGift, FiDollarSign, FiMessageSquare, FiTarget, FiStar, FiMenu, FiX } from 'react-icons/fi';
 import { FaTrophy } from 'react-icons/fa6';
 import CoinDisplay from '../CoinDisplay';
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -51,6 +51,157 @@ const NavItem = ({ path, icon, label }) => {
       >
         {label}
       </span>
+    </button>
+  );
+};
+
+// --- Mobile Nav Item (visible only in mobile collapsible menu)
+const MobileNavItem = ({ path, icon, label, onClose }) => {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const isActive = location.pathname === path;
+
+  return (
+    <button
+      onClick={() => { navigate(path); onClose(); }}
+      className="flex items-center w-full transition-all cursor-pointer"
+      style={{
+        height: '48px',
+        padding: '10px 18px',
+        borderRadius: '10px',
+        gap: '10px',
+        background: isActive ? 'rgba(73, 178, 101, 1)' : 'transparent',
+        boxShadow: isActive ? '0px 4px 0px 0px rgba(39, 109, 58, 1)' : 'none',
+        border: 'none',
+      }}
+    >
+      <img
+        src={icon}
+        alt={label}
+        className="w-[18px] h-[18px] object-contain"
+        style={isActive ? { filter: 'brightness(0) invert(1)' } : {}}
+      />
+      <span
+        className="text-white"
+        style={{
+          fontFamily: '"Barlow Condensed", sans-serif',
+          fontWeight: 600,
+          fontSize: '20px',
+          lineHeight: '32px',
+          height: '32px',
+        }}
+      >
+        {label}
+      </span>
+    </button>
+  );
+};
+
+// --- Mobile Daily Bonus Chip (visible only in mobile collapsible menu)
+const MobileDailyBonusChip = ({ onClose }) => {
+  const { currentUser } = useAuth();
+  const navigate = useNavigate();
+  const { status, loading, fetchStatus } = useDailyBonus();
+  const [claiming, setClaiming] = useState(false);
+  const [timeLeft, setTimeLeft] = useState('');
+  const location = useLocation();
+  const isActive = location.pathname === '/dashboard/daily-bonus';
+
+  const baseStyle = {
+    height: '48px',
+    padding: '10px 18px',
+    borderRadius: '10px',
+    gap: '10px',
+    background: isActive ? 'rgba(73, 178, 101, 1)' : 'transparent',
+    boxShadow: isActive ? '0px 4px 0px 0px rgba(39, 109, 58, 1)' : 'none',
+    border: 'none',
+    width: '100%',
+  };
+
+  useEffect(() => {
+    if (!status?.nextClaimAt || !status.alreadyClaimed) return;
+    const target = new Date(status.nextClaimAt).getTime();
+    const interval = setInterval(() => {
+      const distance = target - Date.now();
+      if (distance < 0) { clearInterval(interval); setTimeLeft('00:00:00'); fetchStatus(); return; }
+      const h = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      const m = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+      const s = Math.floor((distance % (1000 * 60)) / 1000);
+      setTimeLeft(`${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`);
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [status]);
+
+  const claimBonus = async () => {
+    setClaiming(true);
+    try {
+      const token = await currentUser?.getIdToken();
+      const res = await fetch(`${API}/wallet/daily-bonus`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }
+      });
+      const data = await res.json();
+      if (data.success) fetchStatus();
+    } catch (err) {
+      console.error('Failed to claim bonus', err);
+    } finally {
+      setClaiming(false);
+    }
+  };
+
+  if (loading || !status) {
+    return <div className="flex items-center gap-2 px-4 py-1.5 rounded-xl bg-white/[0.04] border border-white/[0.07] animate-pulse h-[34px] w-full" />;
+  }
+
+  if (status.alreadyClaimed) {
+    return (
+      <button
+        onClick={() => { navigate('/dashboard/daily-bonus'); onClose(); }}
+        className="flex items-center w-full transition-all cursor-pointer"
+        style={baseStyle}
+      >
+        <img src="/coins/gift1.png" alt="Daily Bonus" className="w-[18px] h-[18px] object-contain" style={isActive ? { filter: 'brightness(0) invert(1)' } : {}} />
+        <span className="text-white" style={{ fontFamily: '"Barlow Condensed", sans-serif', fontWeight: 600, fontSize: '20px', lineHeight: '32px', height: '32px' }}>
+          {timeLeft || '...'}
+        </span>
+      </button>
+    );
+  }
+
+  if (status.gateUnlocked) {
+    return (
+      <button
+        onClick={() => { claimBonus(); }}
+        disabled={claiming}
+        className="flex items-center w-full font-bold text-white disabled:opacity-60 overflow-hidden relative border-none"
+        style={{ ...baseStyle, background: 'linear-gradient(180deg, #FEDF77 0%, #FCB91E 100%)', boxShadow: '0px 4px 10px 0px rgba(252, 185, 30, 0.5)' }}
+      >
+        <img src="/coins/gift1.png" alt="Daily Bonus" className="w-[18px] h-[18px] object-contain relative z-10" style={{ filter: 'brightness(0) invert(1)' }} />
+        <span className="relative z-10 text-white" style={{ fontFamily: '"Barlow Condensed", sans-serif', fontWeight: 600, fontSize: '20px', lineHeight: '32px', height: '32px' }}>
+          {claiming ? 'Claiming…' : 'Claim Bonus!'}
+        </span>
+      </button>
+    );
+  }
+
+  const progressPercent = Math.min(100, Math.floor((status.earned / status.required) * 100));
+  return (
+    <button
+      onClick={() => { navigate('/dashboard/daily-bonus'); onClose(); }}
+      className="flex items-center w-full transition-all cursor-pointer relative overflow-visible"
+      style={baseStyle}
+    >
+      <img src="/coins/gift1.png" alt="Daily Bonus" className="w-[18px] h-[18px] object-contain" style={isActive ? { filter: 'brightness(0) invert(1)' } : {}} />
+      <span className="text-white" style={{ fontFamily: '"Barlow Condensed", sans-serif', fontWeight: 600, fontSize: '20px', lineHeight: '32px', height: '32px' }}>
+        Daily Bonus
+      </span>
+      <div className="relative flex items-center justify-center shrink-0 ml-auto" style={{ width: '30px', height: '30px' }}>
+        <svg width="30" height="30" viewBox="0 0 30 30" className="absolute inset-0 transform -rotate-90">
+          <circle cx="15" cy="15" r="13" fill="black" stroke="#222" strokeWidth="4" />
+          <circle cx="15" cy="15" r="13" fill="transparent" stroke="#49B265" strokeWidth="4" strokeDasharray={2 * Math.PI * 13} strokeDashoffset={2 * Math.PI * 13 * (1 - progressPercent / 100)} strokeLinecap="round" />
+        </svg>
+        <span className="relative z-10 text-[9px] text-[#49B265] font-bold leading-none">{progressPercent}%</span>
+      </div>
     </button>
   );
 };
@@ -231,6 +382,7 @@ const Header = ({ onChatToggle, chatOpen, fullWidth }) => {
   }, [chatOpen, setHasUnreadChat]);
   const navigate = useNavigate();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [missionsEnabled, setMissionsEnabled] = useState(true);
   const dropdownRef = useRef(null);
 
@@ -255,13 +407,12 @@ const Header = ({ onChatToggle, chatOpen, fullWidth }) => {
 
   return (
     <header className="sticky top-0 z-40 w-full transition-all" style={{
-      height: '84px',
       background: 'black',
       backdropFilter: 'blur(24px)',
       WebkitBackdropFilter: 'blur(24px)',
       boxShadow: '0px 4px 44px 0px rgba(0, 0, 0, 0.25)'
     }}>
-      <div className={`relative left-[10px] h-full ${fullWidth ? 'max-w-[1600px]' : 'max-w-[1240px]'} mx-auto flex items-center justify-between px-4 md:px-8 xl:px-0 w-full`}>
+      <div className={`relative left-[10px] ${fullWidth ? 'max-w-[1600px]' : 'max-w-[1240px]'} mx-auto flex items-center justify-between px-4 md:px-8 xl:px-0 w-full`} style={{ height: '84px' }}>
 
         {/* Group 1: Brand */}
         <button
@@ -311,6 +462,24 @@ const Header = ({ onChatToggle, chatOpen, fullWidth }) => {
           className="relative right-[-7px] flex items-center shrink-0"
           style={{ height: '48px', gap: '8px' }}
         >
+          {/* Mobile Hamburger Button - visible only below lg */}
+          <button
+            id="header-mobile-menu-btn"
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            className="lg:hidden relative flex-shrink-0 flex items-center justify-center bg-transparent hover:bg-white/5 transition-colors"
+            style={{
+              width: '48px',
+              height: '48px',
+              borderRadius: '10px',
+              border: '1px solid rgba(73, 178, 101, 0.4)',
+            }}
+          >
+            {mobileMenuOpen ? (
+              <FiX style={{ width: '24px', height: '24px', color: '#49B265' }} />
+            ) : (
+              <FiMenu style={{ width: '24px', height: '24px', color: '#49B265' }} />
+            )}
+          </button>
           {/* Live Chat Button → sidebar */}
           <button
             id="header-livechat-btn"
@@ -710,6 +879,32 @@ const Header = ({ onChatToggle, chatOpen, fullWidth }) => {
           </div>
         </div>
       </div>
+
+      {/* Mobile Collapsible Nav Menu - only visible below lg */}
+      <AnimatePresence>
+        {mobileMenuOpen && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.25, ease: 'easeInOut' }}
+            className="lg:hidden overflow-hidden"
+            style={{
+              background: 'rgba(10, 10, 10, 0.98)',
+              borderTop: '1px solid rgba(73, 178, 101, 0.15)',
+              boxShadow: '0px 8px 24px rgba(0, 0, 0, 0.4)',
+            }}
+          >
+            <div className="flex flex-col gap-1 px-4 py-3">
+              <MobileNavItem path="/dashboard" icon="/coins/paisa.png" label="Earn" onClose={() => setMobileMenuOpen(false)} />
+              <MobileDailyBonusChip onClose={() => setMobileMenuOpen(false)} />
+              <MobileNavItem path="/dashboard/leaderboard" icon="/coins/cup.png" label="Leaderboard" onClose={() => setMobileMenuOpen(false)} />
+              <MobileNavItem path="/dashboard/affiliates" icon="/coins/person1.png" label="Affiliates" onClose={() => setMobileMenuOpen(false)} />
+              <MobileNavItem path="/dashboard/wallet" icon="/coins/wallet1.png" label="Withdraw" onClose={() => setMobileMenuOpen(false)} />
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </header>
   );
 };
