@@ -213,7 +213,13 @@ const Home = () => {
     { id: 'surveys', label: 'Surveys', iconSrc: '/coins/clipboard.png', count: surveyProviders.length, ref: surveysRef },
   ];
 
-  const itemsPerPage = 4;
+  const [itemsPerPage, setItemsPerPage] = useState(() => window.innerWidth < 1024 ? 3 : 4);
+
+  useEffect(() => {
+    const handleResize = () => setItemsPerPage(window.innerWidth < 1024 ? 3 : 4);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
   const gridColsClass = 'grid-cols-2 sm:grid-cols-4 lg:grid-cols-6';
 
   if (activeProvider) {
@@ -402,9 +408,8 @@ const Home = () => {
               <motion.section 
                 ref={featuredRef} 
                 variants={item} 
-                className="flex flex-col shrink-0 w-full lg:w-[1240px]"
+                className="flex flex-col shrink-0 w-full lg:w-[1240px] min-h-[580px] lg:min-h-[512px]"
                 style={{
-                  minHeight: '512px',
                   borderRadius: '20px',
                   gap: '18px',
                   padding: '20px',

@@ -136,10 +136,9 @@ export const FeaturedOfferCard = ({ offer, onClick }) => {
     <motion.div
       variants={item}
       onClick={onClick}
-      className={`cursor-pointer transition-all flex flex-col group ${isExpired ? 'opacity-50' : 'hover:scale-[1.02]'
+      className={`cursor-pointer transition-all flex flex-col group h-[370px] lg:h-[305px] ${isExpired ? 'opacity-50' : 'hover:scale-[1.02]'
         }`}
       style={{
-        height: '305px',
         borderRadius: '20px',
         gap: '16px',
         padding: '16px',
@@ -151,8 +150,8 @@ export const FeaturedOfferCard = ({ offer, onClick }) => {
     >
       {/* Cover area */}
       <div
-        className="w-full relative flex-shrink-0 overflow-hidden"
-        style={{ height: '135px', borderRadius: '10px' }}
+        className="w-full relative flex-shrink-0 overflow-hidden h-[165px] lg:h-[135px]"
+        style={{ borderRadius: '10px' }}
       >
         {coverImgSrc ? (
           <img
@@ -163,7 +162,7 @@ export const FeaturedOfferCard = ({ offer, onClick }) => {
         ) : (
           <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-amber-900/30 via-[#131a2e] to-indigo-900/30">
             {emojiIcon ? (
-              <span className="text-5xl select-none group-hover:scale-110 transition-transform duration-300">
+              <span className="text-6xl lg:text-5xl select-none group-hover:scale-110 transition-transform duration-300">
                 {emojiIcon}
               </span>
             ) : (
@@ -185,12 +184,11 @@ export const FeaturedOfferCard = ({ offer, onClick }) => {
           style={{ gap: '6px' }}
         >
           <p
-            className="line-clamp-1 truncate"
+            className="line-clamp-1 truncate text-[32px] lg:text-[26px]"
             title={offer.title}
             style={{
               fontFamily: '"Barlow Condensed", sans-serif',
               fontWeight: 600,
-              fontSize: '26px',
               lineHeight: '120%',
               color: 'rgba(255, 255, 255, 1)',
               margin: 0,
@@ -200,46 +198,40 @@ export const FeaturedOfferCard = ({ offer, onClick }) => {
             {offer.title}
           </p>
           <p
-            className="line-clamp-2"
+            className="line-clamp-2 text-[20px] lg:text-[16px] h-[52px] lg:h-[42px]"
             style={{
               fontFamily: '"Barlow Condensed", sans-serif',
               fontWeight: 500,
-              fontSize: '16px',
               lineHeight: '130%',
               color: 'rgba(136, 136, 136, 1)',
-              margin: 0,
-              height: '42px'
+              margin: 0
             }}
           >
             {offer.description || 'Complete this offer to earn rewards.'}
           </p>
         </div>
         <div
-          className="flex items-center mt-auto"
-          style={{ height: '26px', gap: '3px' }}
+          className="flex items-center mt-auto h-[32px] lg:h-[26px]"
+          style={{ gap: '3px' }}
         >
           <img
             src="/coins/Coin.png"
             alt="Coin"
+            className="w-[32px] h-[32px] lg:w-[26px] lg:h-[26px] object-contain"
             style={{
-              width: '26px',
-              height: '26px',
-              objectFit: 'contain',
               filter: 'drop-shadow(0px 0px 14px rgba(254, 198, 53, 0.6))'
             }}
           />
           <span
+            className="text-[28px] lg:text-[22px] flex items-center"
             style={{
               fontFamily: '"Barlow Condensed", sans-serif',
               fontWeight: 700,
-              fontSize: '22px',
               lineHeight: '130%',
               background: 'linear-gradient(180deg, #FEDF77 0%, #FCB91E 100%)',
               WebkitBackgroundClip: 'text',
               WebkitTextFillColor: 'transparent',
-              backgroundClip: 'text',
-              display: 'flex',
-              alignItems: 'center'
+              backgroundClip: 'text'
             }}
           >
             +<CoinDisplay amount={offer.rewardAmount} showIcon={false} />
