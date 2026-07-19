@@ -612,14 +612,10 @@ const Header = ({ onChatToggle, chatOpen, fullWidth }) => {
                   initial={{ opacity: 0, y: 6, scale: 0.97 }}
                   animate={{ opacity: 1, y: 0, scale: 1 }}
                   transition={{ duration: 0.15 }}
-                  className="absolute right-0 z-50 flex flex-col backdrop-blur-[44px]"
-                  style={{
-                    width: '171px',
-                    top: '58px',
-                    background: 'rgba(36, 36, 36, 1)',
-                    borderRadius: '12px',
-                    padding: '12px',
-                    gap: '12px',
+                  className="absolute right-0 z-50 flex flex-col backdrop-blur-[44px] w-[210px] lg:w-[171px] p-[16px] lg:p-[12px] gap-[16px] lg:gap-[12px] top-[70px] lg:top-[58px]"
+                    style={{
+                      background: 'rgba(36, 36, 36, 1)',
+                      borderRadius: '12px',
                     boxShadow: '0px 4px 20px rgba(0, 0, 0, 0.4)',
                     border: '1px solid rgba(255, 255, 255, 0.08)'
                   }}
@@ -636,35 +632,25 @@ const Header = ({ onChatToggle, chatOpen, fullWidth }) => {
                   <button
                     id="header-profile-link-nav"
                     onClick={() => { setIsDropdownOpen(false); navigate('/dashboard/profile'); }}
-                    className="text-left text-white/95 hover:text-white transition-colors flex items-center shrink-0 cursor-pointer"
+                    className="text-left text-white/95 hover:text-white transition-colors flex items-center shrink-0 cursor-pointer w-full h-[28px] lg:h-[22px] gap-[12px] lg:gap-[8px]"
                     style={{
                       background: 'transparent',
                       border: 'none',
                       padding: 0,
-                      width: '147px',
-                      height: '22px',
-                      gap: '8px',
                       opacity: 1
                     }}
                   >
                     <img
                       src="/coins/profile.png"
                       alt="Profile"
-                      className="shrink-0 object-contain"
-                      style={{
-                        width: '22px',
-                        height: '22px',
-                        opacity: 1
-                      }}
+                      className="shrink-0 object-contain w-[28px] h-[28px] lg:w-[22px] lg:h-[22px]"
+                      style={{ opacity: 1 }}
                     />
                     <span
-                      className="font-['Barlow_Condensed'] flex items-center overflow-visible whitespace-nowrap text-white"
+                      className="font-['Barlow_Condensed'] flex items-center overflow-visible whitespace-nowrap text-[20px] lg:text-[16px] text-white"
                       style={{
-                        width: '47px',
-                        height: '19px',
                         fontFamily: "'Barlow Condensed', sans-serif",
                         fontWeight: 600,
-                        fontSize: '16px',
                         lineHeight: '120%',
                         letterSpacing: '0%',
                         verticalAlign: 'middle',
@@ -681,35 +667,25 @@ const Header = ({ onChatToggle, chatOpen, fullWidth }) => {
                   <button
                     id="header-vip-link-nav"
                     onClick={() => { setIsDropdownOpen(false); navigate('/dashboard/vip'); }}
-                    className="text-left text-white/95 hover:text-white transition-colors flex items-center shrink-0 cursor-pointer"
+                    className="text-left text-white/95 hover:text-white transition-colors flex items-center shrink-0 cursor-pointer w-full h-[28px] lg:h-[22px] gap-[12px] lg:gap-[8px]"
                     style={{
                       background: 'transparent',
                       border: 'none',
                       padding: 0,
-                      width: '147px',
-                      height: '22px',
-                      gap: '8px',
                       opacity: 1
                     }}
                   >
                     <img
                       src="/coins/vipstar.png"
                       alt="VIP Status"
-                      className="shrink-0 object-contain"
-                      style={{
-                        width: '22px',
-                        height: '22px',
-                        opacity: 1
-                      }}
+                      className="shrink-0 object-contain w-[28px] h-[28px] lg:w-[22px] lg:h-[22px]"
+                      style={{ opacity: 1 }}
                     />
                     <span
-                      className="font-['Barlow_Condensed'] flex items-center overflow-visible whitespace-nowrap text-white"
+                      className="font-['Barlow_Condensed'] flex items-center overflow-visible whitespace-nowrap text-[20px] lg:text-[16px] text-white"
                       style={{
-                        width: '47px',
-                        height: '19px',
                         fontFamily: "'Barlow Condensed', sans-serif",
                         fontWeight: 600,
-                        fontSize: '16px',
                         lineHeight: '120%',
                         letterSpacing: '0%',
                         verticalAlign: 'middle',
@@ -728,40 +704,30 @@ const Header = ({ onChatToggle, chatOpen, fullWidth }) => {
                       <button
                         id="header-missions-link-nav"
                         onClick={() => { setIsDropdownOpen(false); navigate('/dashboard/missions'); }}
-                        className="text-left text-white/95 hover:text-white transition-colors flex items-center shrink-0 cursor-pointer"
-                        style={{
-                          background: 'transparent',
-                          border: 'none',
-                          padding: 0,
-                          width: '147px',
-                          height: '22px',
-                          gap: '8px',
-                          opacity: 1
-                        }}
+                        className="text-left text-white/95 hover:text-white transition-colors flex items-center shrink-0 cursor-pointer w-full h-[28px] lg:h-[22px] gap-[12px] lg:gap-[8px]"
+                    style={{
+                      background: 'transparent',
+                      border: 'none',
+                      padding: 0,
+                      opacity: 1
+                    }}
                       >
                         <img
                           src="/coins/target.png"
                           alt="Missions"
-                          className="shrink-0 object-contain"
-                          style={{
-                            width: '22px',
-                            height: '22px',
-                            opacity: 1
-                          }}
+                          className="shrink-0 object-contain w-[28px] h-[28px] lg:w-[22px] lg:h-[22px]"
+                      style={{ opacity: 1 }}
                         />
                         <span
-                          className="font-['Barlow_Condensed'] flex items-center overflow-visible whitespace-nowrap text-white"
-                          style={{
-                            width: '47px',
-                            height: '19px',
-                            fontFamily: "'Barlow Condensed', sans-serif",
-                            fontWeight: 600,
-                            fontSize: '16px',
-                            lineHeight: '120%',
-                            letterSpacing: '0%',
-                            verticalAlign: 'middle',
-                            opacity: 1
-                          }}
+                          className="font-['Barlow_Condensed'] flex items-center overflow-visible whitespace-nowrap text-[20px] lg:text-[16px] text-white"
+                      style={{
+                        fontFamily: "'Barlow Condensed', sans-serif",
+                        fontWeight: 600,
+                        lineHeight: '120%',
+                        letterSpacing: '0%',
+                        verticalAlign: 'middle',
+                        opacity: 1
+                      }}
                         >
                           Missions
                         </span>
@@ -776,40 +742,30 @@ const Header = ({ onChatToggle, chatOpen, fullWidth }) => {
                       <button
                         id="header-admin-link"
                         onClick={() => { setIsDropdownOpen(false); navigate('/admin'); }}
-                        className="text-left text-amber-400 hover:text-amber-300 transition-colors flex items-center shrink-0 cursor-pointer"
-                        style={{
-                          background: 'transparent',
-                          border: 'none',
-                          padding: 0,
-                          width: '147px',
-                          height: '22px',
-                          gap: '8px',
-                          opacity: 1
-                        }}
+                        className="text-left text-amber-400 hover:text-amber-300 transition-colors flex items-center shrink-0 cursor-pointer w-full h-[28px] lg:h-[22px] gap-[12px] lg:gap-[8px]"
+                    style={{
+                      background: 'transparent',
+                      border: 'none',
+                      padding: 0,
+                      opacity: 1
+                    }}
                       >
                         <div
-                          className="flex items-center justify-center shrink-0"
-                          style={{
-                            width: '22px',
-                            height: '22px',
-                            opacity: 1
-                          }}
+                          className="flex items-center justify-center shrink-0 w-[28px] h-[28px] lg:w-[22px] lg:h-[22px]"
+                          style={{ opacity: 1 }}
                         >
-                          <FiSettings className="text-amber-400 text-sm" />
+                          <FiSettings className="text-amber-400 text-[20px] lg:text-sm" />
                         </div>
                         <span
-                          className="font-['Barlow_Condensed'] flex items-center overflow-visible whitespace-nowrap text-amber-400"
-                          style={{
-                            width: '47px',
-                            height: '19px',
-                            fontFamily: "'Barlow Condensed', sans-serif",
-                            fontWeight: 600,
-                            fontSize: '16px',
-                            lineHeight: '120%',
-                            letterSpacing: '0%',
-                            verticalAlign: 'middle',
-                            opacity: 1
-                          }}
+                          className="font-['Barlow_Condensed'] flex items-center overflow-visible whitespace-nowrap text-[20px] lg:text-[16px] text-amber-400"
+                      style={{
+                        fontFamily: "'Barlow Condensed', sans-serif",
+                        fontWeight: 600,
+                        lineHeight: '120%',
+                        letterSpacing: '0%',
+                        verticalAlign: 'middle',
+                        opacity: 1
+                      }}
                         >
                           Admin Panel
                         </span>
@@ -822,35 +778,25 @@ const Header = ({ onChatToggle, chatOpen, fullWidth }) => {
                   <button
                     id="header-logout-btn"
                     onClick={() => { setIsDropdownOpen(false); logout(); }}
-                    className="text-left text-red-400 hover:text-red-300 transition-colors flex items-center shrink-0 cursor-pointer"
+                    className="text-left text-red-400 hover:text-red-300 transition-colors flex items-center shrink-0 cursor-pointer w-full h-[28px] lg:h-[22px] gap-[12px] lg:gap-[8px]"
                     style={{
                       background: 'transparent',
                       border: 'none',
                       padding: 0,
-                      width: '147px',
-                      height: '22px',
-                      gap: '8px',
                       opacity: 1
                     }}
                   >
                     <img
                       src="/coins/logout.png"
                       alt="Sign Out"
-                      className="shrink-0 object-contain"
-                      style={{
-                        width: '22px',
-                        height: '22px',
-                        opacity: 1
-                      }}
+                      className="shrink-0 object-contain w-[28px] h-[28px] lg:w-[22px] lg:h-[22px]"
+                      style={{ opacity: 1 }}
                     />
                     <span
-                      className="font-['Barlow_Condensed'] flex items-center overflow-visible whitespace-nowrap text-red-400"
+                      className="font-['Barlow_Condensed'] flex items-center overflow-visible whitespace-nowrap text-[20px] lg:text-[16px] text-red-400"
                       style={{
-                        width: '47px',
-                        height: '19px',
                         fontFamily: "'Barlow Condensed', sans-serif",
                         fontWeight: 600,
-                        fontSize: '16px',
                         lineHeight: '120%',
                         letterSpacing: '0%',
                         verticalAlign: 'middle',
