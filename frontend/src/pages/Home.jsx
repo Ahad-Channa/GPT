@@ -240,38 +240,32 @@ const Home = () => {
         {globalStats.show && (
           <motion.div
             variants={item}
-            className="grid grid-cols-1 sm:grid-cols-2 gap-[10px] w-[1240px] mx-auto sm:h-[103px] shrink-0"
+            className="grid grid-cols-1 sm:grid-cols-2 gap-[10px] w-full max-w-[1240px] px-4 md:px-8 xl:px-0 mx-auto shrink-0"
           >
             {/* Total Users Card */}
             <div
-              className="relative overflow-hidden group"
+              className="relative overflow-hidden group w-full h-[120px] sm:h-[103px]"
               style={{
-                width: '100%',
                 maxWidth: '615px',
-                height: '103px',
                 borderRadius: '20px',
                 background: 'rgba(26, 27, 26, 1)',
                 backdropFilter: 'blur(74px)',
                 WebkitBackdropFilter: 'blur(74px)'
               }}
             >
-              <div className="relative z-10 w-full h-full">
+              <div className="relative z-10 w-full h-full flex items-center pl-[15px]">
                 <div
-                  className="absolute flex items-center justify-center"
+                  className="flex items-center justify-center shrink-0"
                   style={{
                     width: '72px',
                     height: '72px',
-                    top: '16px',
-                    left: '15px',
                     borderRadius: '10px',
-                    gap: '10px',
-                    padding: '10px',
                     background: 'rgba(73, 178, 101, 0.13)'
                   }}
                 >
                   <img src="/coins/people.png" alt="Members" className="object-contain" style={{ width: '42px', height: '42px' }} />
                 </div>
-                <div className="absolute flex flex-col justify-center gap-0" style={{ left: '105px', top: '0', bottom: '0' }}>
+                <div className="flex flex-col justify-center gap-0 ml-[18px]">
                   <p style={{
                     width: 'auto',
                     height: '18px',
@@ -300,34 +294,28 @@ const Home = () => {
 
             {/* Paid Out Card */}
             <div
-              className="relative overflow-hidden group"
+              className="relative overflow-hidden group w-full h-[120px] sm:h-[103px]"
               style={{
-                width: '100%',
                 maxWidth: '615px',
-                height: '103px',
                 borderRadius: '20px',
                 background: 'rgba(26, 27, 26, 1)',
                 backdropFilter: 'blur(74px)',
                 WebkitBackdropFilter: 'blur(74px)'
               }}
             >
-              <div className="relative z-10 w-full h-full">
+              <div className="relative z-10 w-full h-full flex items-center pl-[15px]">
                 <div
-                  className="absolute flex items-center justify-center"
+                  className="flex items-center justify-center shrink-0"
                   style={{
                     width: '72px',
                     height: '72px',
-                    top: '16px',
-                    left: '15px',
                     borderRadius: '10px',
-                    gap: '10px',
-                    padding: '10px',
                     background: 'rgba(73, 178, 101, 0.13)'
                   }}
                 >
                   <img src="/coins/paisa.png" alt="Paid" className="object-contain" style={{ width: '42px', height: '42px' }} />
                 </div>
-                <div className="absolute flex flex-col justify-center gap-0" style={{ left: '105px', top: '0', bottom: '0' }}>
+                <div className="flex flex-col justify-center gap-0 ml-[18px]">
                   <p style={{
                     width: 'auto',
                     height: '18px',
@@ -358,15 +346,14 @@ const Home = () => {
 
         {/* ─── Tabs & MAIN CONTENT WRAPPER ─────────────────── */}
         <div
-          className="mx-auto flex flex-col shrink-0"
-          style={{ width: '1240px', gap: '30px' }}
+          className="mx-auto flex flex-col shrink-0 px-4 md:px-8 xl:px-0 w-full max-w-[1240px]"
+          style={{ gap: '30px' }}
         >
           {/* ─── Quick Jump Tabs ───────────────────────────── */}
           <motion.div variants={item} className="sticky top-4 z-20">
             <div
-              className="flex items-center justify-center overflow-x-auto"
+              className="flex items-center justify-center overflow-x-auto w-full"
               style={{
-                width: '1240px',
                 height: '84px',
                 borderRadius: '10px',
                 padding: '18px',
@@ -407,9 +394,8 @@ const Home = () => {
               <motion.section 
                 ref={featuredRef} 
                 variants={item} 
-                className="flex flex-col shrink-0"
+                className="flex flex-col shrink-0 w-full"
                 style={{
-                  width: '1240px',
                   minHeight: '512px',
                   borderRadius: '20px',
                   gap: '18px',
@@ -517,11 +503,10 @@ const Home = () => {
               <motion.section 
                 ref={gamingRef} 
                 variants={item} 
-                className="shrink-0"
+                className="shrink-0 w-full"
                 style={{
                   display: 'flex',
                   flexDirection: 'column',
-                  width: '1240px',
                   minHeight: '469px',
                   borderRadius: '20px',
                   gap: '18px',
@@ -599,9 +584,8 @@ const Home = () => {
               <motion.section 
                 ref={surveysRef} 
                 variants={item} 
-                className="flex flex-col shrink-0"
+                className="flex flex-col shrink-0 w-full"
                 style={{
-                  width: '1240px',
                   minHeight: '323px',
                   borderRadius: '20px',
                   gap: '18px',
