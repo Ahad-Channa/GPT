@@ -412,7 +412,7 @@ const Header = ({ onChatToggle, chatOpen, fullWidth }) => {
       WebkitBackdropFilter: 'blur(24px)',
       boxShadow: '0px 4px 44px 0px rgba(0, 0, 0, 0.25)'
     }}>
-      <div className={`relative left-[10px] ${fullWidth ? 'max-w-[1600px]' : 'max-w-[1240px]'} mx-auto flex items-center justify-between px-4 md:px-8 xl:px-0 w-full`} style={{ height: '84px' }}>
+      <div className={`relative left-[10px] ${fullWidth ? 'max-w-[1600px]' : 'max-w-[1240px]'} mx-auto flex items-center justify-between px-4 md:px-8 xl:px-0 w-full h-[96px] lg:h-[84px]`}>
 
         {/* Group 1: Brand */}
         <button
