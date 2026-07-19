@@ -240,13 +240,12 @@ const Home = () => {
         {globalStats.show && (
           <motion.div
             variants={item}
-            className="grid grid-cols-1 sm:grid-cols-2 gap-[10px] w-full max-w-[1240px] px-4 md:px-8 xl:px-0 mx-auto shrink-0"
+            className="grid grid-cols-1 lg:grid-cols-2 gap-[10px] w-full lg:w-[1240px] px-4 lg:px-0 mx-auto lg:h-[103px] shrink-0"
           >
             {/* Total Users Card */}
             <div
-              className="relative overflow-hidden group w-full h-[120px] sm:h-[103px]"
+              className="relative overflow-hidden group w-full h-[140px] lg:h-[103px] max-w-full lg:max-w-[615px]"
               style={{
-                maxWidth: '615px',
                 borderRadius: '20px',
                 background: 'rgba(26, 27, 26, 1)',
                 backdropFilter: 'blur(74px)',
@@ -255,48 +254,52 @@ const Home = () => {
             >
               <div className="relative z-10 w-full h-full flex items-center pl-[15px]">
                 <div
-                  className="flex items-center justify-center shrink-0"
+                  className="flex items-center justify-center shrink-0 w-[92px] h-[92px] lg:w-[72px] lg:h-[72px]"
                   style={{
-                    width: '72px',
-                    height: '72px',
                     borderRadius: '10px',
                     background: 'rgba(73, 178, 101, 0.13)'
                   }}
                 >
-                  <img src="/coins/people.png" alt="Members" className="object-contain" style={{ width: '42px', height: '42px' }} />
+                  <img src="/coins/people.png" alt="Members" className="w-[50px] h-[50px] lg:w-[42px] lg:h-[42px] object-contain" />
                 </div>
                 <div className="flex flex-col justify-center gap-0 ml-[18px]">
-                  <p style={{
-                    width: 'auto',
-                    height: '18px',
-                    fontFamily: '"Barlow Condensed", sans-serif',
-                    fontWeight: 600,
-                    fontSize: '14px',
-                    lineHeight: '130%',
-                    color: 'rgba(255, 255, 255, 0.53)',
-                    margin: 0
-                  }}>Total Members</p>
-                  <div style={{
-                    width: 'auto',
-                    height: 'auto',
-                    fontFamily: '"Barlow Condensed", sans-serif',
-                    fontWeight: 600,
-                    fontSize: '44px',
-                    lineHeight: '120%',
-                    color: 'rgba(255, 255, 255, 1)'
-                  }}>
+                  <p 
+                    className="text-[20px] lg:text-[14px] leading-[130%]"
+                    style={{
+                      width: 'auto',
+                      fontFamily: '"Barlow Condensed", sans-serif',
+                      fontWeight: 600,
+                      color: 'rgba(255, 255, 255, 0.53)',
+                      margin: 0
+                    }}
+                  >
+                    Total Members
+                  </p>
+                  <div 
+                    className="text-[60px] lg:text-[44px] leading-[120%]"
+                    style={{
+                      width: 'auto',
+                      height: 'auto',
+                      fontFamily: '"Barlow Condensed", sans-serif',
+                      fontWeight: 600,
+                      color: 'rgba(255, 255, 255, 1)'
+                    }}
+                  >
                     {globalStats.totalUsers.toLocaleString()}
                   </div>
                 </div>
               </div>
-              <img src="/coins/1000337345.png" alt="Graphic" style={{ position: 'absolute', height: '103px', width: 'auto', bottom: '0px', right: '0px', opacity: 1, pointerEvents: 'none', objectFit: 'contain' }} />
+              <img 
+                src="/coins/1000337345.png" 
+                alt="Graphic" 
+                className="h-full lg:h-[103px] w-auto absolute bottom-0 right-0 opacity-100 pointer-events-none object-contain" 
+              />
             </div>
 
             {/* Paid Out Card */}
             <div
-              className="relative overflow-hidden group w-full h-[120px] sm:h-[103px]"
+              className="relative overflow-hidden group w-full h-[140px] lg:h-[103px] max-w-full lg:max-w-[615px]"
               style={{
-                maxWidth: '615px',
                 borderRadius: '20px',
                 background: 'rgba(26, 27, 26, 1)',
                 backdropFilter: 'blur(74px)',
@@ -305,54 +308,59 @@ const Home = () => {
             >
               <div className="relative z-10 w-full h-full flex items-center pl-[15px]">
                 <div
-                  className="flex items-center justify-center shrink-0"
+                  className="flex items-center justify-center shrink-0 w-[92px] h-[92px] lg:w-[72px] lg:h-[72px]"
                   style={{
-                    width: '72px',
-                    height: '72px',
                     borderRadius: '10px',
                     background: 'rgba(73, 178, 101, 0.13)'
                   }}
                 >
-                  <img src="/coins/paisa.png" alt="Paid" className="object-contain" style={{ width: '42px', height: '42px' }} />
+                  <img src="/coins/paisa.png" alt="Paid" className="w-[50px] h-[50px] lg:w-[42px] lg:h-[42px] object-contain" />
                 </div>
                 <div className="flex flex-col justify-center gap-0 ml-[18px]">
-                  <p style={{
-                    width: 'auto',
-                    height: '18px',
-                    fontFamily: '"Barlow Condensed", sans-serif',
-                    fontWeight: 600,
-                    fontSize: '14px',
-                    lineHeight: '130%',
-                    color: 'rgba(255, 255, 255, 0.53)',
-                    margin: 0
-                  }}>Total Paid Out</p>
-                  <div style={{
-                    width: 'auto',
-                    height: 'auto',
-                    fontFamily: '"Barlow Condensed", sans-serif',
-                    fontWeight: 600,
-                    fontSize: '44px',
-                    lineHeight: '120%',
-                    color: 'rgba(255, 255, 255, 1)'
-                  }}>
+                  <p 
+                    className="text-[20px] lg:text-[14px] leading-[130%]"
+                    style={{
+                      width: 'auto',
+                      fontFamily: '"Barlow Condensed", sans-serif',
+                      fontWeight: 600,
+                      color: 'rgba(255, 255, 255, 0.53)',
+                      margin: 0
+                    }}
+                  >
+                    Total Paid Out
+                  </p>
+                  <div 
+                    className="text-[60px] lg:text-[44px] leading-[120%]"
+                    style={{
+                      width: 'auto',
+                      height: 'auto',
+                      fontFamily: '"Barlow Condensed", sans-serif',
+                      fontWeight: 600,
+                      color: 'rgba(255, 255, 255, 1)'
+                    }}
+                  >
                     ${globalStats.totalPaidOut.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                   </div>
                 </div>
               </div>
-              <img src="/coins/1000337344.png" alt="Graphic" style={{ position: 'absolute', height: '103px', width: 'auto', bottom: '0px', right: '0px', opacity: 1, pointerEvents: 'none', objectFit: 'contain' }} />
+              <img 
+                src="/coins/1000337344.png" 
+                alt="Graphic" 
+                className="h-full lg:h-[103px] w-auto absolute bottom-0 right-0 opacity-100 pointer-events-none object-contain" 
+              />
             </div>
           </motion.div>
         )}
 
         {/* ─── Tabs & MAIN CONTENT WRAPPER ─────────────────── */}
         <div
-          className="mx-auto flex flex-col shrink-0 px-4 md:px-8 xl:px-0 w-full max-w-[1240px]"
+          className="mx-auto flex flex-col shrink-0 px-4 lg:px-0 w-full lg:w-[1240px]"
           style={{ gap: '30px' }}
         >
           {/* ─── Quick Jump Tabs ───────────────────────────── */}
           <motion.div variants={item} className="sticky top-4 z-20">
             <div
-              className="flex items-center justify-center overflow-x-auto w-full"
+              className="flex items-center justify-center overflow-x-auto w-full lg:w-[1240px]"
               style={{
                 height: '84px',
                 borderRadius: '10px',
@@ -394,7 +402,7 @@ const Home = () => {
               <motion.section 
                 ref={featuredRef} 
                 variants={item} 
-                className="flex flex-col shrink-0 w-full"
+                className="flex flex-col shrink-0 w-full lg:w-[1240px]"
                 style={{
                   minHeight: '512px',
                   borderRadius: '20px',
@@ -503,7 +511,7 @@ const Home = () => {
               <motion.section 
                 ref={gamingRef} 
                 variants={item} 
-                className="shrink-0 w-full"
+                className="shrink-0 w-full lg:w-[1240px]"
                 style={{
                   display: 'flex',
                   flexDirection: 'column',
@@ -584,7 +592,7 @@ const Home = () => {
               <motion.section 
                 ref={surveysRef} 
                 variants={item} 
-                className="flex flex-col shrink-0 w-full"
+                className="flex flex-col shrink-0 w-full lg:w-[1240px]"
                 style={{
                   minHeight: '323px',
                   borderRadius: '20px',
