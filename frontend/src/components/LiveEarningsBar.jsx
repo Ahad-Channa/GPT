@@ -103,10 +103,9 @@ const LiveEarningsBar = () => {
     <>
       {/* Removed overflow-hidden so the tooltip dropdown is visible */}
       <div 
-        className="w-full bg-black whitespace-nowrap flex items-center relative shadow-sm z-30 mx-auto"
+        className="w-full bg-black whitespace-nowrap flex items-center relative shadow-sm z-30 mx-auto h-[50px] lg:h-[88px]"
         style={{
           maxWidth: '1511px',
-          height: '88px',
           borderTop: '1px solid rgba(255, 255, 255, 0.4)',
           borderBottom: '1px solid rgba(255, 255, 255, 0.4)'
         }}
@@ -116,27 +115,25 @@ const LiveEarningsBar = () => {
         <div className="absolute right-0 w-32 h-full bg-gradient-to-l from-black to-transparent z-10 pointer-events-none" />
         
         {/* LIVE Indicator Box */}
-        <div className="flex items-center px-6 z-20 bg-black h-full relative cursor-default shrink-0">
+        <div className="flex items-center px-2 lg:px-6 z-20 bg-black h-full relative cursor-default shrink-0">
           <div 
-            className="flex items-center"
+            className="flex items-center lg:min-w-[112px]"
             style={{
               width: 'auto',
-              minWidth: '112px',
               height: 'auto',
               minHeight: '20px',
               gap: '6px',
               background: 'transparent',
-              padding: '2px 8px'
+              padding: '2px 4px'
             }}
           >
             <div className="w-2.5 h-2.5 rounded-full bg-[#49B265] animate-pulse drop-shadow-[0_0_8px_rgba(73,178,101,0.8)] shrink-0" />
-            <span style={{
+            <span className="text-[16px] lg:text-[28px]" style={{
               width: 'auto',
-              minWidth: '96px',
+              minWidth: 'auto',
               height: 'auto',
               fontFamily: '"Barlow Condensed", sans-serif',
               fontWeight: 700,
-              fontSize: '28px',
               lineHeight: '120%',
               color: 'rgba(73, 178, 101, 1)',
               display: 'block',
@@ -177,14 +174,12 @@ const LiveEarningsBar = () => {
                     animate={{ opacity: 1, x: 0, scale: 1 }}
                     exit={{ opacity: 0, scale: 0.9, transition: { duration: 0.2 } }}
                     transition={{ duration: 0.4, type: "spring", bounce: 0.3 }}
-                    className="inline-flex items-center group cursor-pointer transition-transform hover:scale-[1.02] relative shrink-0" 
+                    className={`${index >= 3 ? 'hidden lg:inline-flex' : 'inline-flex'} items-center group cursor-pointer transition-transform hover:scale-[1.02] relative shrink-0 h-[32px] lg:h-[46px] px-[10px] py-[6px] lg:px-[16px] lg:py-[10px]`} 
                     style={{
                       width: 'auto',
                       minWidth: 'fit-content',
-                      height: '46px',
                       borderRadius: '50px',
                       gap: '8px',
-                      padding: '10px 16px',
                       background: 'rgba(255, 255, 255, 0.14)',
                       pointerEvents: 'auto'
                     }}
@@ -193,8 +188,7 @@ const LiveEarningsBar = () => {
                     
                     {/* User Avatar */}
                     <div 
-                      className="relative rounded-full overflow-hidden shrink-0 transition-transform group-hover:scale-105"
-                      style={{ width: '26px', height: '26px' }}
+                      className="relative rounded-full overflow-hidden shrink-0 transition-transform group-hover:scale-105 w-[20px] h-[20px] lg:w-[26px] lg:h-[26px]"
                     >
                       <img 
                         src={tx.userId?.avatarUrl || `/avatars/avatar1.png`} 
@@ -206,16 +200,15 @@ const LiveEarningsBar = () => {
                     
                     {/* Base View (Username + Amount) */}
                     <div 
-                      className="flex items-center gap-[12px]"
-                      style={{ height: '18px' }}
+                      className="flex items-center gap-[6px] lg:gap-[12px]"
+                      style={{ height: 'auto' }}
                     >
                       <span 
-                        className="text-left shrink-0"
+                        className="text-left shrink-0 text-[14px] lg:text-[22px]"
                         style={{
                           height: 'auto',
                           fontFamily: '"Barlow Condensed", sans-serif',
                           fontWeight: 600,
-                          fontSize: '22px',
                           lineHeight: '120%',
                           color: 'rgba(255, 255, 255, 1)'
                         }}
@@ -224,35 +217,34 @@ const LiveEarningsBar = () => {
                       </span>
                       <div 
                         className="flex items-center shrink-0"
-                        style={{ height: '18px', gap: '3px' }}
+                        style={{ height: 'auto', gap: '3px' }}
                       >
                         {details.isCoin && (
                           <img 
                             src="/coins/Coin.png"
                             alt="Coin"
-                            style={{ width: '18px', height: '18px' }}
+                            className="w-[14px] h-[14px] lg:w-[18px] lg:h-[18px]"
                           />
                         )}
                         {!details.isCoin && details.isWithdrawal && (
                           <img 
                             src="/coins/paisa.png"
                             alt="Paisa"
-                            style={{ width: '18px', height: '18px', objectFit: 'contain' }}
+                            className="w-[14px] h-[14px] lg:w-[18px] lg:h-[18px] object-contain"
                           />
                         )}
                         <span 
+                          className="text-[12px] lg:text-[16px]"
                           style={details.isWithdrawal ? {
                             height: 'auto',
                             fontFamily: '"Barlow Condensed", sans-serif',
                             fontWeight: 700,
-                            fontSize: '16px',
                             lineHeight: '130%',
                             color: '#49B265'
                           } : {
                             height: 'auto',
                             fontFamily: '"Barlow Condensed", sans-serif',
                             fontWeight: 700,
-                            fontSize: '16px',
                             lineHeight: '130%',
                             backgroundImage: 'linear-gradient(180deg, #FEDF77 0%, #FCB91E 100%)',
                             WebkitBackgroundClip: 'text',

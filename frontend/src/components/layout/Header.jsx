@@ -72,7 +72,7 @@ const MobileHeaderNavItem = ({ path, icon, label }) => {
         gap: '3px',
         background: isActive ? 'rgba(73, 178, 101, 1)' : 'transparent',
         boxShadow: isActive ? '0px 2px 0px 0px rgba(39, 109, 58, 1)' : 'none',
-        border: isActive ? 'none' : '1px solid rgba(73, 178, 101, 0.3)',
+        border: 'none',
       }}
     >
       <img
@@ -590,11 +590,11 @@ const Header = ({ onChatToggle, chatOpen, fullWidth }) => {
                 />
               </div>
               <div
-                className="hidden lg:flex flex-col items-start justify-center flex-1 overflow-visible"
-                style={{ gap: 4 }}
+                className="flex flex-col items-start justify-center flex-1 overflow-visible"
+                style={{ gap: 1 }}
               >
                 <span
-                  className="text-white text-left whitespace-nowrap flex-shrink-0 text-[14px] leading-[14px]"
+                  className="text-white text-left whitespace-nowrap flex-shrink-0 text-[10px] lg:text-[14px] leading-[10px] lg:leading-[14px]"
                   style={{
                     width: '100%',
                     fontFamily: '"Barlow Condensed", sans-serif',
@@ -606,15 +606,15 @@ const Header = ({ onChatToggle, chatOpen, fullWidth }) => {
                 </span>
                 <span
                   className="flex items-center"
-                  style={{ minWidth: '39px', width: 'auto', height: 'auto', gap: '3px' }}
+                  style={{ minWidth: '20px', width: 'auto', height: 'auto', gap: '2px' }}
                 >
                   <img
                     src="/coins/Coin.png"
                     alt="Coin"
-                    className="w-[12px] h-[12px] object-contain flex-shrink-0"
+                    className="w-[8px] h-[8px] lg:w-[12px] lg:h-[12px] object-contain flex-shrink-0"
                   />
-                  <span className="text-[12px]" style={{
-                    minWidth: '24px',
+                  <span className="text-[9px] lg:text-[12px]" style={{
+                    minWidth: '16px',
                     width: 'auto',
                     height: 'auto',
                     fontFamily: '"Barlow Condensed", sans-serif',
@@ -632,27 +632,6 @@ const Header = ({ onChatToggle, chatOpen, fullWidth }) => {
                   }}>
                     {mongoUser?.walletBalance?.toLocaleString() ?? 0}
                   </span>
-                </span>
-              </div>
-              {/* Mobile: show coin balance inline */}
-              <div className="flex lg:hidden items-center" style={{ gap: '2px' }}>
-                <img
-                  src="/coins/Coin.png"
-                  alt="Coin"
-                  className="w-[10px] h-[10px] object-contain flex-shrink-0"
-                />
-                <span className="text-[10px]" style={{
-                  fontFamily: '"Barlow Condensed", sans-serif',
-                  fontWeight: 700,
-                  lineHeight: '130%',
-                  background: 'linear-gradient(180deg, #FEDF77 0%, #FCB91E 100%)',
-                  WebkitBackgroundClip: 'text',
-                  WebkitTextFillColor: 'transparent',
-                  backgroundClip: 'text',
-                  color: 'transparent',
-                  whiteSpace: 'nowrap'
-                }}>
-                  {mongoUser?.walletBalance?.toLocaleString() ?? 0}
                 </span>
               </div>
               <img

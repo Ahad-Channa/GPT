@@ -12,48 +12,32 @@ const container = { hidden: {}, show: { transition: { staggerChildren: 0.08 } } 
 const item = { hidden: { opacity: 0, y: 16 }, show: { opacity: 1, y: 0, transition: { duration: 0.4 } } };
 
 const TabButton = ({ active, onClick, iconSrc, label }) => {
-  const activeStyle = {
-    flex: 1,
-    height: '48px',
-    borderRadius: '10px',
-    padding: '10px 20px',
-    gap: '10px',
-    background: 'rgba(73, 178, 101, 1)',
-    boxShadow: '0px 4px 0px 0px rgba(39, 109, 58, 1)',
-    whiteSpace: 'nowrap'
-  };
-
-  const inactiveStyle = {
-    flex: 1,
-    height: '48px',
-    padding: '10px 20px',
-    gap: '10px',
-    whiteSpace: 'nowrap'
-  };
-
   return (
     <button
       onClick={onClick}
-      className="relative flex items-center justify-center text-white transition-all duration-200"
-      style={active ? activeStyle : inactiveStyle}
+      className={`relative flex flex-col lg:flex-row items-center justify-center text-white transition-all duration-200 flex-1 h-[40px] lg:h-[48px] px-1 lg:px-[20px] gap-0.5 lg:gap-[10px] whitespace-nowrap ${
+        active 
+          ? 'bg-[#49B265] rounded-[8px] lg:rounded-[10px] shadow-[0px_3px_0px_0px_#276D3A] lg:shadow-[0px_4px_0px_0px_#276D3A]' 
+          : 'bg-transparent'
+      }`}
     >
       {iconSrc && (
         <img 
           src={iconSrc} 
           alt="" 
-          className={`w-[24px] h-[24px] object-contain ${
+          className={`w-[14px] h-[14px] lg:w-[24px] lg:h-[24px] object-contain shrink-0 ${
             active ? 'brightness-0 invert' : ''
           }`}
           style={!active && iconSrc.includes('dodo') ? { filter: 'invert(58%) sepia(34%) saturate(760%) hue-rotate(85deg) brightness(96%) contrast(88%)' } : {}}
         />
       )}
-      <span style={{
-        fontFamily: '"Barlow Condensed", sans-serif',
-        fontWeight: active ? 700 : 600,
-        fontSize: '20px',
-        lineHeight: '32px',
-        letterSpacing: '0.5px'
-      }}>
+      <span 
+        className="font-barlow font-semibold text-[9px] lg:text-[20px] leading-[1] lg:leading-[32px] tracking-[0.2px] lg:tracking-[0.5px]"
+        style={{
+          fontFamily: '"Barlow Condensed", sans-serif',
+          fontWeight: active ? 700 : 600,
+        }}
+      >
         {label}
       </span>
     </button>
@@ -248,9 +232,8 @@ const Home = () => {
             variants={item}
             className="grid grid-cols-1 lg:grid-cols-2 gap-[10px] w-full lg:w-[1240px] px-4 lg:px-0 mx-auto lg:h-[103px] shrink-0"
           >
-            {/* Total Users Card */}
             <div
-              className="relative overflow-hidden group w-full h-[140px] lg:h-[103px] max-w-full lg:max-w-[615px]"
+              className="relative overflow-hidden group w-full h-[80px] lg:h-[103px] max-w-full lg:max-w-[615px]"
               style={{
                 borderRadius: '20px',
                 background: 'rgba(26, 27, 26, 1)',
@@ -258,19 +241,19 @@ const Home = () => {
                 WebkitBackdropFilter: 'blur(74px)'
               }}
             >
-              <div className="relative z-10 w-full h-full flex items-center pl-[15px]">
+              <div className="relative z-10 w-full h-full flex items-center flex-row-reverse justify-between px-[20px] lg:flex-row lg:justify-start lg:px-0 lg:pl-[15px]">
                 <div
-                  className="flex items-center justify-center shrink-0 w-[92px] h-[92px] lg:w-[72px] lg:h-[72px]"
+                  className="flex items-center justify-center shrink-0 w-[52px] h-[52px] lg:w-[72px] lg:h-[72px]"
                   style={{
                     borderRadius: '10px',
                     background: 'rgba(73, 178, 101, 0.13)'
                   }}
                 >
-                  <img src="/coins/people.png" alt="Members" className="w-[50px] h-[50px] lg:w-[42px] lg:h-[42px] object-contain" />
+                  <img src="/coins/people.png" alt="Members" className="w-[30px] h-[30px] lg:w-[42px] lg:h-[42px] object-contain" />
                 </div>
-                <div className="flex flex-col justify-center gap-0 ml-[18px]">
+                <div className="flex flex-col justify-center gap-0 lg:ml-[18px]">
                   <p 
-                    className="text-[20px] lg:text-[14px] leading-[130%]"
+                    className="text-[14px] leading-[130%]"
                     style={{
                       width: 'auto',
                       fontFamily: '"Barlow Condensed", sans-serif',
@@ -282,7 +265,7 @@ const Home = () => {
                     Total Members
                   </p>
                   <div 
-                    className="text-[60px] lg:text-[44px] leading-[120%]"
+                    className="text-[36px] lg:text-[44px] leading-[120%]"
                     style={{
                       width: 'auto',
                       height: 'auto',
@@ -302,9 +285,8 @@ const Home = () => {
               />
             </div>
 
-            {/* Paid Out Card */}
             <div
-              className="relative overflow-hidden group w-full h-[140px] lg:h-[103px] max-w-full lg:max-w-[615px]"
+              className="relative overflow-hidden group w-full h-[80px] lg:h-[103px] max-w-full lg:max-w-[615px]"
               style={{
                 borderRadius: '20px',
                 background: 'rgba(26, 27, 26, 1)',
@@ -312,19 +294,19 @@ const Home = () => {
                 WebkitBackdropFilter: 'blur(74px)'
               }}
             >
-              <div className="relative z-10 w-full h-full flex items-center pl-[15px]">
+              <div className="relative z-10 w-full h-full flex items-center flex-row-reverse justify-between px-[20px] lg:flex-row lg:justify-start lg:px-0 lg:pl-[15px]">
                 <div
-                  className="flex items-center justify-center shrink-0 w-[92px] h-[92px] lg:w-[72px] lg:h-[72px]"
+                  className="flex items-center justify-center shrink-0 w-[52px] h-[52px] lg:w-[72px] lg:h-[72px]"
                   style={{
                     borderRadius: '10px',
                     background: 'rgba(73, 178, 101, 0.13)'
                   }}
                 >
-                  <img src="/coins/paisa.png" alt="Paid" className="w-[50px] h-[50px] lg:w-[42px] lg:h-[42px] object-contain" />
+                  <img src="/coins/paisa.png" alt="Paid" className="w-[30px] h-[30px] lg:w-[42px] lg:h-[42px] object-contain" />
                 </div>
-                <div className="flex flex-col justify-center gap-0 ml-[18px]">
+                <div className="flex flex-col justify-center gap-0 lg:ml-[18px]">
                   <p 
-                    className="text-[20px] lg:text-[14px] leading-[130%]"
+                    className="text-[14px] leading-[130%]"
                     style={{
                       width: 'auto',
                       fontFamily: '"Barlow Condensed", sans-serif',
@@ -336,7 +318,7 @@ const Home = () => {
                     Total Paid Out
                   </p>
                   <div 
-                    className="text-[60px] lg:text-[44px] leading-[120%]"
+                    className="text-[36px] lg:text-[44px] leading-[120%]"
                     style={{
                       width: 'auto',
                       height: 'auto',
@@ -366,11 +348,9 @@ const Home = () => {
           {/* ─── Quick Jump Tabs ───────────────────────────── */}
           <motion.div variants={item} className="sticky top-4 z-20">
             <div
-              className="flex items-center justify-center overflow-x-auto w-full lg:w-[1240px]"
+              className="flex items-center justify-center overflow-x-auto w-full lg:w-[1240px] h-auto lg:h-[84px] p-2 lg:p-[18px]"
               style={{
-                height: '84px',
                 borderRadius: '10px',
-                padding: '18px',
                 background: 'rgba(44, 45, 44, 1)',
                 backdropFilter: 'blur(24px)',
                 WebkitBackdropFilter: 'blur(24px)',
@@ -378,10 +358,8 @@ const Home = () => {
               }}
             >
               <div
-                className="flex items-center justify-between"
+                className="flex items-center justify-between w-full h-[48px] gap-1 lg:gap-4"
                 style={{
-                  width: '100%',
-                  height: '48px',
                   borderRadius: '100px',
                   opacity: 1
                 }}
