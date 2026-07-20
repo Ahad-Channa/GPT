@@ -420,7 +420,7 @@ const Home = () => {
                   <img 
                     src="/coins/feature%20offer.png" 
                     alt="Featured Offers Graphic" 
-                    className="absolute right-0 lg:relative lg:right-auto w-[110px] h-[48px] lg:w-[332px] lg:h-[133px] object-contain shrink-0 opacity-100 pointer-events-none"
+                    className="absolute right-[-30px] lg:relative lg:right-auto w-[110px] h-[48px] lg:w-[332px] lg:h-[133px] object-contain shrink-0 opacity-100 pointer-events-none"
                   />
                 </div>
                 <div className="relative mt-2">
@@ -507,7 +507,7 @@ const Home = () => {
                   <img 
                     src="/coins/appimage.png" 
                     alt="Gaming & App Offers Graphic" 
-                    className="absolute right-0 lg:relative lg:right-auto w-[110px] h-[48px] lg:w-[332px] lg:h-[133px] object-contain shrink-0 opacity-100 pointer-events-none"
+                    className="absolute right-[-30px] lg:relative lg:right-auto w-[110px] h-[48px] lg:w-[332px] lg:h-[133px] object-contain shrink-0 opacity-100 pointer-events-none"
                   />
                 </div>
                 {loadingSettings ? (
@@ -560,14 +560,14 @@ const Home = () => {
                         Surveys
                       </h2>
                       <p className="font-barlow font-medium text-[10px] lg:text-[22px] leading-[1.2] text-[#888888] m-0 max-w-[140px] lg:max-w-none">
-                        Share your opinion for quick and easy rewards.
+                        Share your opinion for quick<br className="lg:hidden" /><span className="hidden lg:inline"> </span>and easy rewards.
                       </p>
                     </div>
                   </div>
                   <img 
                     src="/coins/survay.png" 
                     alt="Graphic" 
-                    className="absolute right-0 lg:relative lg:right-auto w-[110px] h-[48px] lg:w-[332px] lg:h-[133px] object-contain shrink-0 opacity-100 pointer-events-none"
+                    className="absolute right-[-30px] lg:relative lg:right-auto w-[110px] h-[48px] lg:w-[332px] lg:h-[133px] object-contain shrink-0 opacity-100 pointer-events-none"
                   />
                 </div>
                 {loadingSettings ? (

@@ -479,9 +479,13 @@ const Header = ({ onChatToggle, chatOpen, fullWidth }) => {
         </button>
 
         {/* Mobile inline nav: Earn & Withdraw */}
-        <div className="flex lg:hidden items-center" style={{ gap: '3px' }}>
-          <MobileHeaderNavItem path="/dashboard" icon="/coins/paisa.png" label="Earn" />
-          <MobileHeaderNavItem path="/dashboard/wallet" icon="/coins/wallet1.png" label="Withdraw" />
+        <div className="flex lg:hidden items-center ml-[4px]" style={{ gap: '0px' }}>
+          <div>
+            <MobileHeaderNavItem path="/dashboard" icon="/coins/paisa.png" label="Earn" />
+          </div>
+          <div style={{ marginLeft: '-2px' }}>
+            <MobileHeaderNavItem path="/dashboard/wallet" icon="/coins/wallet1.png" label="Withdraw" />
+          </div>
         </div>
 
         {/* Group 2: Main Links (Desktop) */}
@@ -507,23 +511,23 @@ const Header = ({ onChatToggle, chatOpen, fullWidth }) => {
           <button
             id="header-mobile-menu-btn"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="lg:hidden relative flex-shrink-0 flex items-center justify-center bg-transparent hover:bg-white/5 transition-colors w-[24px] h-[24px]"
+            className="lg:hidden relative flex-shrink-0 flex items-center justify-center bg-transparent hover:bg-white/5 transition-colors w-[22px] h-[22px]"
             style={{
               borderRadius: '6px',
               border: '1px solid rgba(73, 178, 101, 0.4)',
             }}
           >
             {mobileMenuOpen ? (
-              <FiX style={{ width: '14px', height: '14px', color: '#49B265' }} />
+              <FiX style={{ width: '12px', height: '12px', color: '#49B265' }} />
             ) : (
-              <FiMenu style={{ width: '14px', height: '14px', color: '#49B265' }} />
+              <FiMenu style={{ width: '12px', height: '12px', color: '#49B265' }} />
             )}
           </button>
           {/* Live Chat Button → sidebar */}
           <button
             id="header-livechat-btn"
             onClick={onChatToggle}
-            className={`relative flex-shrink-0 flex items-center justify-center transition-colors group w-[24px] h-[24px] lg:w-[48px] lg:h-[48px] ${chatOpen
+            className={`relative flex-shrink-0 flex items-center justify-center transition-colors group w-[22px] h-[22px] lg:w-[48px] lg:h-[48px] ${chatOpen
               ? 'bg-[#49B265]/20'
               : 'bg-transparent hover:bg-white/5'
               }`}
@@ -535,7 +539,7 @@ const Header = ({ onChatToggle, chatOpen, fullWidth }) => {
             <img
               src="/coins/chat.png"
               alt="Chat"
-              className="w-[14px] h-[14px] lg:w-[24px] lg:h-[24px] object-contain"
+              className="w-[12px] h-[12px] lg:w-[24px] lg:h-[24px] object-contain"
               style={{
                 filter: 'brightness(0) saturate(100%) invert(59%) sepia(33%) saturate(1030%) hue-rotate(86deg) brightness(93%) contrast(87%)'
               }}
@@ -549,7 +553,7 @@ const Header = ({ onChatToggle, chatOpen, fullWidth }) => {
           <button
             id="header-notifications-btn"
             onClick={togglePanel}
-            className="relative flex-shrink-0 flex items-center justify-center bg-transparent hover:bg-white/5 transition-colors group w-[24px] h-[24px] lg:w-[48px] lg:h-[48px]"
+            className="relative flex-shrink-0 flex items-center justify-center bg-transparent hover:bg-white/5 transition-colors group w-[22px] h-[22px] lg:w-[48px] lg:h-[48px]"
             style={{
               borderRadius: '6px',
               border: '1px solid rgba(73, 178, 101, 0.4)'
@@ -558,7 +562,7 @@ const Header = ({ onChatToggle, chatOpen, fullWidth }) => {
             <img
               src="/coins/noti.png"
               alt="Notifications"
-              className="w-[14px] h-[14px] lg:w-[24px] lg:h-[24px] object-contain"
+              className="w-[12px] h-[12px] lg:w-[24px] lg:h-[24px] object-contain"
             />
             {unreadCount > 0 && (
               <span className="absolute top-0.5 right-0.5 lg:top-2 lg:right-2.5 w-1.5 h-1.5 lg:w-2 lg:h-2 bg-[#49B265] rounded-full shadow-[0_0_8px_rgba(73,178,101,0.8)]" />
@@ -570,7 +574,7 @@ const Header = ({ onChatToggle, chatOpen, fullWidth }) => {
             <button
               id="header-profile-menu"
               onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-              className="flex items-center hover:bg-white/[0.05] transition-colors group flex-shrink-0 h-[30px] lg:h-[48px]"
+              className="flex items-center hover:bg-white/[0.05] transition-colors group flex-shrink-0 h-[22px] lg:h-[48px]"
               style={{
                 minWidth: 'auto',
                 width: 'auto',
@@ -581,7 +585,7 @@ const Header = ({ onChatToggle, chatOpen, fullWidth }) => {
               }}
             >
               <div
-                className="rounded-full overflow-hidden border border-white/10 flex-shrink-0 bg-[#111827] w-[22px] h-[22px] lg:w-[31px] lg:h-[31px]"
+                className="rounded-full overflow-hidden border border-white/10 flex-shrink-0 bg-[#111827] w-[18px] h-[18px] lg:w-[31px] lg:h-[31px]"
               >
                 <img
                   src={mongoUser?.avatarUrl || currentUser?.photoURL || `/avatars/avatar1.png`}
@@ -591,10 +595,10 @@ const Header = ({ onChatToggle, chatOpen, fullWidth }) => {
               </div>
               <div
                 className="flex flex-col items-start justify-center flex-1 overflow-visible"
-                style={{ gap: 1 }}
+                style={{ gap: 0 }}
               >
                 <span
-                  className="text-white text-left whitespace-nowrap flex-shrink-0 text-[10px] lg:text-[14px] leading-[10px] lg:leading-[14px]"
+                  className="text-white text-left whitespace-nowrap flex-shrink-0 text-[9px] lg:text-[14px] leading-[9px] lg:leading-[14px]"
                   style={{
                     width: '100%',
                     fontFamily: '"Barlow Condensed", sans-serif',
@@ -606,20 +610,20 @@ const Header = ({ onChatToggle, chatOpen, fullWidth }) => {
                 </span>
                 <span
                   className="flex items-center"
-                  style={{ minWidth: '20px', width: 'auto', height: 'auto', gap: '2px' }}
+                  style={{ minWidth: '16px', width: 'auto', height: 'auto', gap: '2px' }}
                 >
                   <img
                     src="/coins/Coin.png"
                     alt="Coin"
                     className="w-[8px] h-[8px] lg:w-[12px] lg:h-[12px] object-contain flex-shrink-0"
                   />
-                  <span className="text-[9px] lg:text-[12px]" style={{
+                  <span className="text-[8px] lg:text-[12px]" style={{
                     minWidth: '16px',
                     width: 'auto',
                     height: 'auto',
                     fontFamily: '"Barlow Condensed", sans-serif',
                     fontWeight: 700,
-                    lineHeight: '130%',
+                    lineHeight: '110%',
                     background: 'linear-gradient(180deg, #FEDF77 0%, #FCB91E 100%)',
                     WebkitBackgroundClip: 'text',
                     WebkitTextFillColor: 'transparent',
@@ -639,8 +643,8 @@ const Header = ({ onChatToggle, chatOpen, fullWidth }) => {
                 alt="Dropdown Arrow"
                 className={`transition-transform duration-200 flex-shrink-0 ${isDropdownOpen ? 'rotate-180' : ''}`}
                 style={{
-                  width: '12px',
-                  height: '12px',
+                  width: '10px',
+                  height: '10px',
                   objectFit: 'contain',
                   filter: 'brightness(0) saturate(100%) invert(59%) sepia(33%) saturate(1030%) hue-rotate(86deg) brightness(93%) contrast(87%)'
                 }}
