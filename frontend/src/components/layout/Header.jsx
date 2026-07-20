@@ -507,23 +507,23 @@ const Header = ({ onChatToggle, chatOpen, fullWidth }) => {
           <button
             id="header-mobile-menu-btn"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="lg:hidden relative flex-shrink-0 flex items-center justify-center bg-transparent hover:bg-white/5 transition-colors w-[30px] h-[30px]"
+            className="lg:hidden relative flex-shrink-0 flex items-center justify-center bg-transparent hover:bg-white/5 transition-colors w-[24px] h-[24px]"
             style={{
               borderRadius: '6px',
               border: '1px solid rgba(73, 178, 101, 0.4)',
             }}
           >
             {mobileMenuOpen ? (
-              <FiX style={{ width: '16px', height: '16px', color: '#49B265' }} />
+              <FiX style={{ width: '14px', height: '14px', color: '#49B265' }} />
             ) : (
-              <FiMenu style={{ width: '16px', height: '16px', color: '#49B265' }} />
+              <FiMenu style={{ width: '14px', height: '14px', color: '#49B265' }} />
             )}
           </button>
           {/* Live Chat Button → sidebar */}
           <button
             id="header-livechat-btn"
             onClick={onChatToggle}
-            className={`relative flex-shrink-0 flex items-center justify-center transition-colors group w-[30px] h-[30px] lg:w-[48px] lg:h-[48px] ${chatOpen
+            className={`relative flex-shrink-0 flex items-center justify-center transition-colors group w-[24px] h-[24px] lg:w-[48px] lg:h-[48px] ${chatOpen
               ? 'bg-[#49B265]/20'
               : 'bg-transparent hover:bg-white/5'
               }`}
@@ -535,7 +535,7 @@ const Header = ({ onChatToggle, chatOpen, fullWidth }) => {
             <img
               src="/coins/chat.png"
               alt="Chat"
-              className="w-[16px] h-[16px] lg:w-[24px] lg:h-[24px] object-contain"
+              className="w-[14px] h-[14px] lg:w-[24px] lg:h-[24px] object-contain"
               style={{
                 filter: 'brightness(0) saturate(100%) invert(59%) sepia(33%) saturate(1030%) hue-rotate(86deg) brightness(93%) contrast(87%)'
               }}
@@ -549,7 +549,7 @@ const Header = ({ onChatToggle, chatOpen, fullWidth }) => {
           <button
             id="header-notifications-btn"
             onClick={togglePanel}
-            className="relative flex-shrink-0 flex items-center justify-center bg-transparent hover:bg-white/5 transition-colors group w-[30px] h-[30px] lg:w-[48px] lg:h-[48px]"
+            className="relative flex-shrink-0 flex items-center justify-center bg-transparent hover:bg-white/5 transition-colors group w-[24px] h-[24px] lg:w-[48px] lg:h-[48px]"
             style={{
               borderRadius: '6px',
               border: '1px solid rgba(73, 178, 101, 0.4)'
@@ -558,7 +558,7 @@ const Header = ({ onChatToggle, chatOpen, fullWidth }) => {
             <img
               src="/coins/noti.png"
               alt="Notifications"
-              className="w-[16px] h-[16px] lg:w-[24px] lg:h-[24px] object-contain"
+              className="w-[14px] h-[14px] lg:w-[24px] lg:h-[24px] object-contain"
             />
             {unreadCount > 0 && (
               <span className="absolute top-0.5 right-0.5 lg:top-2 lg:right-2.5 w-1.5 h-1.5 lg:w-2 lg:h-2 bg-[#49B265] rounded-full shadow-[0_0_8px_rgba(73,178,101,0.8)]" />
