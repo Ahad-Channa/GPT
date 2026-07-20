@@ -42,16 +42,9 @@ const DashboardLayout = ({ children, showLiveBar = true, fullWidth = false }) =>
         style={{ background: 'rgba(44, 45, 44, 1)' }}
       >
         <div
-          className="flex flex-col items-center text-center w-full mx-auto"
+          className="flex flex-col items-center text-center w-full mx-auto px-4 lg:px-[100px] py-8 lg:pt-[40px] lg:pb-[22px] gap-8 lg:gap-[30px]"
           style={{
-            width: 1440,
-            maxWidth: '100%',
-            height: 266.9997863769531,
-            paddingTop: 40,
-            paddingRight: 100,
-            paddingBottom: 22,
-            paddingLeft: 100,
-            gap: 30,
+            maxWidth: 1440,
             opacity: 1,
             transform: 'rotate(0deg)',
             justifyContent: 'space-between'
@@ -100,15 +93,13 @@ const DashboardLayout = ({ children, showLiveBar = true, fullWidth = false }) =>
 
           {/* Middle Content */}
           <div
-            className="flex flex-col items-center text-center"
-            style={{ width: 1104, maxWidth: '100%', gap: 30 }}
+            className="flex flex-col items-center text-center w-full max-w-[1104px] gap-4 lg:gap-[30px]"
           >
             <p
-              className="m-0 p-0 flex items-center justify-center whitespace-nowrap"
+              className="m-0 p-0 flex items-center justify-center whitespace-normal lg:whitespace-nowrap px-4 lg:px-0"
               style={{
-                width: 1104,
-                maxWidth: '100%',
-                height: 14,
+                height: 'auto',
+                minHeight: 14,
                 fontFamily: '"Barlow Condensed", sans-serif',
                 fontWeight: 400,
                 fontSize: 20,
@@ -120,8 +111,7 @@ const DashboardLayout = ({ children, showLiveBar = true, fullWidth = false }) =>
               Complete offers, surveys, and tasks to earn real rewards. Join thousands of users already earning every day.
             </p>
             <div
-              className="flex justify-center items-center m-0 p-0"
-              style={{ width: 526, maxWidth: '100%', height: 11, gap: 20 }}
+              className="flex justify-center items-center m-0 p-0 flex-wrap lg:flex-nowrap gap-x-4 gap-y-2 lg:gap-[20px] w-full px-4 lg:px-0"
             >
               {[
                 { name: 'Features', href: '#features' },
@@ -136,11 +126,9 @@ const DashboardLayout = ({ children, showLiveBar = true, fullWidth = false }) =>
                     href={link.href}
                     className="hover:opacity-80 transition-opacity whitespace-nowrap flex items-center justify-center"
                     style={{
-                      height: 11,
                       fontFamily: '"Barlow Condensed", sans-serif',
                       fontWeight: 700,
                       fontSize: 16,
-                      lineHeight: '11px',
                       color: 'rgba(73, 178, 101, 1)',
                       textDecoration: 'none'
                     }}
@@ -149,8 +137,8 @@ const DashboardLayout = ({ children, showLiveBar = true, fullWidth = false }) =>
                   </a>
                   {idx < arr.length - 1 && (
                     <span
-                      className="flex items-center justify-center"
-                      style={{ color: '#fff', fontSize: 16, lineHeight: '11px' }}
+                      className="hidden lg:flex items-center justify-center"
+                      style={{ color: '#fff', fontSize: 16 }}
                     >
                       &bull;
                     </span>
@@ -161,53 +149,36 @@ const DashboardLayout = ({ children, showLiveBar = true, fullWidth = false }) =>
           </div>
 
           {/* Bottom Divider & Copyright */}
-          <div className="w-full flex flex-col items-center gap-4">
+          <div className="w-full flex flex-col items-center gap-4 mt-6 lg:mt-0 px-4 lg:px-0">
             <div
-              style={{
-                width: 1240,
-                maxWidth: '100%',
-                height: 0,
-                borderTop: '1px solid rgba(255, 255, 255, 0.3)'
-              }}
+              className="w-full border-t border-white/30"
+              style={{ maxWidth: 1240 }}
             />
             <div
-              className="flex items-center"
-              style={{
-                width: 1240,
-                maxWidth: '100%',
-                height: 34,
-                justifyContent: 'space-between',
-                opacity: 1,
-                transform: 'rotate(0deg)'
-              }}
+              className="flex flex-col-reverse lg:flex-row items-center justify-between w-full gap-4 lg:gap-0 pb-4 lg:pb-0"
+              style={{ maxWidth: 1240 }}
             >
               <p
-                className="m-0 p-0 flex items-center"
+                className="m-0 p-0 flex items-center text-center lg:text-left"
                 style={{
-                  width: 1004,
-                  height: 11,
                   fontFamily: '"Barlow Condensed", sans-serif',
                   fontWeight: 500,
                   fontSize: 16,
-                  lineHeight: '20px',
                   color: 'rgba(255, 255, 255, 1)'
                 }}
               >
                 © 2026 TaskMint. All rights reserved.
               </p>
               <div
-                className="flex items-center justify-between"
+                className="flex items-center justify-center lg:justify-between gap-4 lg:gap-[20px]"
                 style={{
-                  width: 164,
-                  height: 26,
-                  gap: 20,
                   color: 'rgba(73, 178, 101, 1)'
                 }}
               >
-                <FaFacebook className="hover:opacity-80 cursor-pointer transition-opacity flex-shrink-0" style={{ width: 26, height: 26, opacity: 1, transform: 'rotate(0deg)' }} />
-                <FaInstagram className="hover:opacity-80 cursor-pointer transition-opacity flex-shrink-0" style={{ width: 26, height: 26, opacity: 1, transform: 'rotate(0deg)' }} />
-                <FaYoutube className="hover:opacity-80 cursor-pointer transition-opacity flex-shrink-0" style={{ width: 26, height: 26, opacity: 1, transform: 'rotate(0deg)' }} />
-                <FaDiscord className="hover:opacity-80 cursor-pointer transition-opacity flex-shrink-0" style={{ width: 26, height: 26, opacity: 1, transform: 'rotate(0deg)' }} />
+                <FaFacebook className="hover:opacity-80 cursor-pointer transition-opacity flex-shrink-0" style={{ width: 26, height: 26 }} />
+                <FaInstagram className="hover:opacity-80 cursor-pointer transition-opacity flex-shrink-0" style={{ width: 26, height: 26 }} />
+                <FaYoutube className="hover:opacity-80 cursor-pointer transition-opacity flex-shrink-0" style={{ width: 26, height: 26 }} />
+                <FaDiscord className="hover:opacity-80 cursor-pointer transition-opacity flex-shrink-0" style={{ width: 26, height: 26 }} />
               </div>
             </div>
           </div>
