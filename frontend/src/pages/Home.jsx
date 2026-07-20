@@ -197,10 +197,11 @@ const Home = () => {
     { id: 'surveys', label: 'Surveys', iconSrc: '/coins/clipboard.png', count: surveyProviders.length, ref: surveysRef },
   ];
 
-  const [itemsPerPage, setItemsPerPage] = useState(() => window.innerWidth < 1024 ? 3 : 4);
+  const getItemsPerPage = () => window.innerWidth < 640 ? 2 : window.innerWidth < 1024 ? 3 : 4;
+  const [itemsPerPage, setItemsPerPage] = useState(getItemsPerPage);
 
   useEffect(() => {
-    const handleResize = () => setItemsPerPage(window.innerWidth < 1024 ? 3 : 4);
+    const handleResize = () => setItemsPerPage(getItemsPerPage());
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
@@ -395,54 +396,31 @@ const Home = () => {
                 }}
               >
                 <div 
-                  className="flex items-center justify-between w-full"
-                  style={{ height: '133px', gap: '16px' }}
+                  className="flex items-center justify-between w-full relative overflow-hidden lg:overflow-visible h-[48px] lg:h-[133px] gap-2 lg:gap-4"
                 >
-                  <div className="flex items-center" style={{ gap: '16px' }}>
-                  <div 
-                    className="flex items-center justify-center shrink-0"
-                    style={{
-                      width: '88px',
-                      height: '88px',
-                      borderRadius: '10px',
-                      padding: '10px 12px',
-                      gap: '6px',
-                      background: 'rgba(41, 253, 152, 0.1)'
-                    }}
-                  >
-                    <img 
-                      src="/coins/gift.png" 
-                      alt="Featured Offers" 
-                      style={{ width: '44px', height: '44px', objectFit: 'contain' }} 
-                    />
-                  </div>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                    <h2 style={{
-                      fontFamily: '"Barlow Condensed", sans-serif',
-                      fontWeight: 700,
-                      fontSize: '42px',
-                      lineHeight: '120%',
-                      color: 'rgba(255, 255, 255, 1)',
-                      margin: 0
-                    }}>
-                      Featured Offers
-                    </h2>
-                    <p style={{
-                      fontFamily: '"Barlow Condensed", sans-serif',
-                      fontWeight: 500,
-                      fontSize: '22px',
-                      lineHeight: '130%',
-                      color: 'rgba(136, 136, 136, 1)',
-                      margin: 0
-                    }}>
-                      High-reward direct tasks. Manual approval required.
-                    </p>
-                  </div>
+                  <div className="flex items-center gap-2 lg:gap-4 z-10 pl-1 lg:pl-0">
+                    <div 
+                      className="flex items-center justify-center shrink-0 w-[36px] h-[36px] lg:w-[88px] lg:h-[88px] rounded-[8px] lg:rounded-[10px] bg-[rgba(41,253,152,0.1)] p-1.5 lg:p-[10px_12px]"
+                    >
+                      <img 
+                        src="/coins/gift.png" 
+                        alt="Featured Offers" 
+                        className="w-[20px] h-[20px] lg:w-[44px] lg:h-[44px] object-contain"
+                      />
+                    </div>
+                    <div className="flex flex-col gap-0.5 lg:gap-1.5">
+                      <h2 className="font-barlow font-bold text-[16px] lg:text-[42px] leading-[1.1] text-white m-0">
+                        Featured Offers
+                      </h2>
+                      <p className="font-barlow font-medium text-[10px] lg:text-[22px] leading-[1.2] text-[#888888] m-0 max-w-[140px] lg:max-w-none">
+                        High-reward direct tasks. Manual approval required.
+                      </p>
+                    </div>
                   </div>
                   <img 
                     src="/coins/feature%20offer.png" 
                     alt="Featured Offers Graphic" 
-                    style={{ width: '332px', height: '133px', objectFit: 'contain', flexShrink: 0 }}
+                    className="absolute right-0 lg:relative lg:right-auto w-[110px] h-[48px] lg:w-[332px] lg:h-[133px] object-contain shrink-0 opacity-100 pointer-events-none"
                   />
                 </div>
                 <div className="relative mt-2">
@@ -494,11 +472,10 @@ const Home = () => {
               <motion.section 
                 ref={gamingRef} 
                 variants={item} 
-                className="shrink-0 w-full lg:w-[1240px]"
+                className="shrink-0 w-full lg:w-[1240px] lg:min-h-[469px]"
                 style={{
                   display: 'flex',
                   flexDirection: 'column',
-                  minHeight: '469px',
                   borderRadius: '20px',
                   gap: '18px',
                   padding: '20px',
@@ -506,54 +483,31 @@ const Home = () => {
                 }}
               >
                 <div 
-                  className="flex items-center justify-between w-full"
-                  style={{ height: '133px', gap: '16px' }}
+                  className="flex items-center justify-between w-full relative overflow-hidden lg:overflow-visible h-[48px] lg:h-[133px] gap-2 lg:gap-4"
                 >
-                  <div className="flex items-center" style={{ gap: '16px' }}>
-                  <div 
-                    className="flex items-center justify-center shrink-0"
-                    style={{
-                      width: '88px',
-                      height: '88px',
-                      borderRadius: '10px',
-                      padding: '10px 12px',
-                      gap: '6px',
-                      background: 'rgba(41, 253, 152, 0.1)'
-                    }}
-                  >
-                    <img 
-                      src="/coins/game.png" 
-                      alt="Gaming Offers" 
-                      style={{ width: '44px', height: '44px', objectFit: 'contain' }} 
-                    />
-                  </div>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                    <h2 style={{
-                      fontFamily: '"Barlow Condensed", sans-serif',
-                      fontWeight: 700,
-                      fontSize: '42px',
-                      lineHeight: '120%',
-                      color: 'rgba(255, 255, 255, 1)',
-                      margin: 0
-                    }}>
-                      Gaming & App Offers
-                    </h2>
-                    <p style={{
-                      fontFamily: '"Barlow Condensed", sans-serif',
-                      fontWeight: 500,
-                      fontSize: '22px',
-                      lineHeight: '130%',
-                      color: 'rgba(136, 136, 136, 1)',
-                      margin: 0
-                    }}>
-                      Play games to earn large amounts of points.
-                    </p>
-                  </div>
+                  <div className="flex items-center gap-2 lg:gap-4 z-10 pl-1 lg:pl-0">
+                    <div 
+                      className="flex items-center justify-center shrink-0 w-[36px] h-[36px] lg:w-[88px] lg:h-[88px] rounded-[8px] lg:rounded-[10px] bg-[rgba(41,253,152,0.1)] p-1.5 lg:p-[10px_12px]"
+                    >
+                      <img 
+                        src="/coins/game.png" 
+                        alt="Gaming Offers" 
+                        className="w-[20px] h-[20px] lg:w-[44px] lg:h-[44px] object-contain"
+                      />
+                    </div>
+                    <div className="flex flex-col gap-0.5 lg:gap-1.5">
+                      <h2 className="font-barlow font-bold text-[16px] lg:text-[42px] leading-[1.1] text-white m-0">
+                        Gaming & App Offers
+                      </h2>
+                      <p className="font-barlow font-medium text-[10px] lg:text-[22px] leading-[1.2] text-[#888888] m-0 max-w-[140px] lg:max-w-none">
+                        Play games to earn large amounts of points.
+                      </p>
+                    </div>
                   </div>
                   <img 
                     src="/coins/appimage.png" 
                     alt="Gaming & App Offers Graphic" 
-                    style={{ width: '332px', height: '133px', objectFit: 'contain', flexShrink: 0 }}
+                    className="absolute right-0 lg:relative lg:right-auto w-[110px] h-[48px] lg:w-[332px] lg:h-[133px] object-contain shrink-0 opacity-100 pointer-events-none"
                   />
                 </div>
                 {loadingSettings ? (
@@ -561,9 +515,14 @@ const Home = () => {
                 ) : gamingProviders.length === 0 ? (
                   <div className="glass-card p-8 border border-white/[0.05] flex justify-center opacity-50"><span className="text-slate-400 text-sm">No gaming offerwalls active.</span></div>
                 ) : (
-                  <div className={`grid ${gridColsClass} w-full`} style={{ gap: '14px' }}>
+                  <div 
+                    className="grid grid-rows-2 auto-cols-[calc(50%-7px)] grid-flow-col overflow-x-auto snap-x snap-mandatory sm:grid-rows-none sm:auto-cols-auto sm:grid-flow-row sm:grid-cols-4 lg:grid-cols-6 sm:overflow-visible w-full" 
+                    style={{ gap: '14px', scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+                  >
                     {gamingProviders.map(provider => (
-                      <ProviderCard key={provider.id} provider={provider} onClick={() => setActiveProvider(provider)} />
+                      <div key={provider.id} className="snap-start w-full h-full">
+                        <ProviderCard provider={provider} onClick={() => setActiveProvider(provider)} />
+                      </div>
                     ))}
                   </div>
                 )}
@@ -575,9 +534,8 @@ const Home = () => {
               <motion.section 
                 ref={surveysRef} 
                 variants={item} 
-                className="flex flex-col shrink-0 w-full lg:w-[1240px]"
+                className="flex flex-col shrink-0 w-full lg:w-[1240px] lg:min-h-[323px]"
                 style={{
-                  minHeight: '323px',
                   borderRadius: '20px',
                   gap: '18px',
                   padding: '20px',
@@ -585,38 +543,46 @@ const Home = () => {
                 }}
               >
                 <div 
-                  className="flex items-center justify-between w-full"
-                  style={{ height: '133px', gap: '16px' }}
+                  className="flex items-center justify-between w-full relative overflow-hidden lg:overflow-visible h-[48px] lg:h-[133px] gap-2 lg:gap-4"
                 >
-                  <div className="flex items-center" style={{ gap: '16px' }}>
+                  <div className="flex items-center gap-2 lg:gap-4 z-10 pl-1 lg:pl-0">
                     <div 
-                      className="flex items-center justify-center shrink-0"
-                      style={{ 
-                        width: '88px', 
-                        height: '88px', 
-                        borderRadius: '10px', 
-                        padding: '10px 12px',
-                        gap: '6px',
-                        background: 'rgba(41, 253, 152, 0.1)' 
-                      }}
+                      className="flex items-center justify-center shrink-0 w-[36px] h-[36px] lg:w-[88px] lg:h-[88px] rounded-[8px] lg:rounded-[10px] bg-[rgba(41,253,152,0.1)] p-1.5 lg:p-[10px_12px]"
                     >
-                      <img src="/coins/clicl.png" alt="Surveys" style={{ width: '44px', height: '44px', objectFit: 'contain' }} />
+                      <img 
+                        src="/coins/clicl.png" 
+                        alt="Surveys" 
+                        className="w-[20px] h-[20px] lg:w-[44px] lg:h-[44px] object-contain"
+                      />
                     </div>
-                    <div>
-                      <h2 className="font-bold text-white uppercase tracking-wider" style={{ fontFamily: '"Barlow Condensed", sans-serif', fontSize: '42px', lineHeight: '1.2' }}>Surveys</h2>
-                      <p className="text-slate-400" style={{ fontFamily: '"Barlow Condensed", sans-serif', fontSize: '22px' }}>Share your opinion for quick and easy rewards.</p>
+                    <div className="flex flex-col gap-0.5 lg:gap-1.5">
+                      <h2 className="font-barlow font-bold text-[16px] lg:text-[42px] leading-[1.1] text-white m-0 uppercase tracking-wider">
+                        Surveys
+                      </h2>
+                      <p className="font-barlow font-medium text-[10px] lg:text-[22px] leading-[1.2] text-[#888888] m-0 max-w-[140px] lg:max-w-none">
+                        Share your opinion for quick and easy rewards.
+                      </p>
                     </div>
                   </div>
-                  <img src="/coins/survay.png" alt="Graphic" style={{ width: '332px', height: '133px', objectFit: 'contain' }} />
+                  <img 
+                    src="/coins/survay.png" 
+                    alt="Graphic" 
+                    className="absolute right-0 lg:relative lg:right-auto w-[110px] h-[48px] lg:w-[332px] lg:h-[133px] object-contain shrink-0 opacity-100 pointer-events-none"
+                  />
                 </div>
                 {loadingSettings ? (
                   <div className="glass-card p-8 flex justify-center"><div className="w-8 h-8 rounded-full border-2 border-indigo-500 border-t-transparent animate-spin" /></div>
                 ) : surveyProviders.length === 0 ? (
                   <div className="glass-card p-8 border border-white/[0.05] flex justify-center opacity-50"><span className="text-slate-400 text-sm">No survey offerwalls active.</span></div>
                 ) : (
-                  <div className={`grid ${gridColsClass} w-full`} style={{ gap: '14px' }}>
+                  <div 
+                    className="grid grid-rows-2 auto-cols-[calc(50%-7px)] grid-flow-col overflow-x-auto snap-x snap-mandatory sm:grid-rows-none sm:auto-cols-auto sm:grid-flow-row sm:grid-cols-4 lg:grid-cols-6 sm:overflow-visible w-full" 
+                    style={{ gap: '14px', scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+                  >
                     {surveyProviders.map(provider => (
-                      <ProviderCard key={provider.id} provider={provider} onClick={() => setActiveProvider(provider)} />
+                      <div key={provider.id} className="snap-start w-full h-full">
+                        <ProviderCard provider={provider} onClick={() => setActiveProvider(provider)} />
+                      </div>
                     ))}
                   </div>
                 )}

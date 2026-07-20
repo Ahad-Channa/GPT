@@ -62,11 +62,8 @@ export const ProviderCard = ({ provider, onClick }) => {
     <motion.div
       variants={item}
       onClick={onClick}
-      className="cursor-pointer hover:border-indigo-500/40 transition-all flex flex-col items-center justify-center gap-2 group"
+      className="cursor-pointer hover:border-indigo-500/40 transition-all flex flex-col items-center justify-center gap-2 group w-full h-[70px] lg:w-[188px] lg:h-[132px] rounded-[10px] lg:rounded-[20px]"
       style={{
-        width: '188px',
-        height: '132px',
-        borderRadius: '20px',
         background: 'rgba(0, 0, 0, 0.36)',
         backdropFilter: 'blur(44px)',
         WebkitBackdropFilter: 'blur(44px)'
@@ -76,15 +73,13 @@ export const ProviderCard = ({ provider, onClick }) => {
         <img
           src={logoUrl}
           alt={provider.label}
-          className="group-hover:scale-110 transition-all"
-          style={{ width: '160px', height: '39px', objectFit: 'contain' }}
+          className="group-hover:scale-110 transition-all w-[80%] h-[24px] lg:w-[160px] lg:h-[39px] object-contain"
         />
       ) : (
         <div
-          className="group-hover:scale-110 transition-all flex items-center justify-center"
-          style={{ width: '160px', height: '39px' }}
+          className="group-hover:scale-110 transition-all flex items-center justify-center w-[80%] h-[24px] lg:w-[160px] lg:h-[39px]"
         >
-          <FiMonitor className="text-4xl text-indigo-400 group-hover:text-amber-400 transition-colors" />
+          <FiMonitor className="text-2xl lg:text-4xl text-indigo-400 group-hover:text-amber-400 transition-colors" />
         </div>
       )}
     </motion.div>
