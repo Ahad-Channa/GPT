@@ -15,24 +15,22 @@ const TabButton = ({ active, onClick, iconSrc, label }) => {
   return (
     <button
       onClick={onClick}
-      className={`relative flex flex-col lg:flex-row items-center justify-center text-white transition-all duration-200 flex-1 h-[40px] lg:h-[48px] px-1 lg:px-[20px] gap-0.5 lg:gap-[10px] whitespace-nowrap ${
-        active 
-          ? 'bg-[#49B265] rounded-[8px] lg:rounded-[10px] shadow-[0px_3px_0px_0px_#276D3A] lg:shadow-[0px_4px_0px_0px_#276D3A]' 
-          : 'bg-transparent'
-      }`}
+      className={`relative flex flex-row items-center justify-center text-white transition-all duration-200 flex-1 h-[26px] lg:h-[48px] px-[2px] lg:px-[20px] gap-[3px] lg:gap-[10px] whitespace-nowrap ${active
+        ? 'bg-[#49B265] rounded-[4px] lg:rounded-[10px] shadow-[0px_2px_0px_0px_#276D3A] lg:shadow-[0px_4px_0px_0px_#276D3A]'
+        : 'bg-transparent'
+        }`}
     >
       {iconSrc && (
-        <img 
-          src={iconSrc} 
-          alt="" 
-          className={`w-[14px] h-[14px] lg:w-[24px] lg:h-[24px] object-contain shrink-0 ${
-            active ? 'brightness-0 invert' : ''
-          }`}
+        <img
+          src={iconSrc}
+          alt=""
+          className={`w-[10px] h-[10px] lg:w-[24px] lg:h-[24px] object-contain shrink-0 ${active ? 'brightness-0 invert' : ''
+            }`}
           style={!active && iconSrc.includes('dodo') ? { filter: 'invert(58%) sepia(34%) saturate(760%) hue-rotate(85deg) brightness(96%) contrast(88%)' } : {}}
         />
       )}
-      <span 
-        className="font-barlow font-semibold text-[9px] lg:text-[20px] leading-[1] lg:leading-[32px] tracking-[0.2px] lg:tracking-[0.5px]"
+      <span
+        className="font-barlow font-semibold text-[8px] lg:text-[20px] leading-[1] lg:leading-[32px] tracking-[0.2px] lg:tracking-[0.5px]"
         style={{
           fontFamily: '"Barlow Condensed", sans-serif',
           fontWeight: active ? 700 : 600,
@@ -197,7 +195,7 @@ const Home = () => {
     { id: 'surveys', label: 'Surveys', iconSrc: '/coins/clipboard.png', count: surveyProviders.length, ref: surveysRef },
   ];
 
-  const getItemsPerPage = () => window.innerWidth < 640 ? 2 : window.innerWidth < 1024 ? 3 : 4;
+  const getItemsPerPage = () => window.innerWidth < 1024 ? 3 : 4;
   const [itemsPerPage, setItemsPerPage] = useState(getItemsPerPage);
 
   useEffect(() => {
@@ -225,7 +223,7 @@ const Home = () => {
 
   return (
     <DashboardLayout showLiveBar={true}>
-      <motion.div variants={container} initial="hidden" animate="show" className="space-y-8 pb-10">
+      <motion.div variants={container} initial="hidden" animate="show" className="space-y-3 lg:space-y-8 pb-4 lg:pb-10">
 
         {/* ─── Platform Stats ───────────────────────────── */}
         {globalStats.show && (
@@ -234,27 +232,26 @@ const Home = () => {
             className="grid grid-cols-1 lg:grid-cols-2 gap-[10px] w-full lg:w-[1240px] px-4 lg:px-0 mx-auto lg:h-[103px] shrink-0"
           >
             <div
-              className="relative overflow-hidden group w-full h-[80px] lg:h-[103px] max-w-full lg:max-w-[615px]"
+              className="relative overflow-hidden group w-full h-[55px] lg:h-[103px] max-w-full lg:max-w-[615px] rounded-[10px] lg:rounded-[20px]"
               style={{
-                borderRadius: '20px',
                 background: 'rgba(26, 27, 26, 1)',
                 backdropFilter: 'blur(74px)',
                 WebkitBackdropFilter: 'blur(74px)'
               }}
             >
-              <div className="relative z-10 w-full h-full flex items-center flex-row-reverse justify-between px-[20px] lg:flex-row lg:justify-start lg:px-0 lg:pl-[15px]">
+              <div className="relative z-10 w-full h-full flex items-center justify-start pl-[8px] lg:pl-[15px]">
                 <div
-                  className="flex items-center justify-center shrink-0 w-[52px] h-[52px] lg:w-[72px] lg:h-[72px]"
+                  className="flex items-center justify-center shrink-0 w-[42px] h-[42px] lg:w-[72px] lg:h-[72px]"
                   style={{
                     borderRadius: '10px',
                     background: 'rgba(73, 178, 101, 0.13)'
                   }}
                 >
-                  <img src="/coins/people.png" alt="Members" className="w-[30px] h-[30px] lg:w-[42px] lg:h-[42px] object-contain" />
+                  <img src="/coins/people.png" alt="Members" className="w-[24px] h-[24px] lg:w-[42px] lg:h-[42px] object-contain" />
                 </div>
-                <div className="flex flex-col justify-center gap-0 lg:ml-[18px]">
-                  <p 
-                    className="text-[14px] leading-[130%]"
+                <div className="flex flex-col justify-center gap-0 ml-2 lg:ml-[18px]">
+                  <p
+                    className="text-[10px] lg:text-[14px] leading-[130%]"
                     style={{
                       width: 'auto',
                       fontFamily: '"Barlow Condensed", sans-serif',
@@ -265,8 +262,8 @@ const Home = () => {
                   >
                     Total Members
                   </p>
-                  <div 
-                    className="text-[36px] lg:text-[44px] leading-[120%]"
+                  <div
+                    className="text-[24px] lg:text-[44px] leading-[120%]"
                     style={{
                       width: 'auto',
                       height: 'auto',
@@ -279,35 +276,34 @@ const Home = () => {
                   </div>
                 </div>
               </div>
-              <img 
-                src="/coins/1000337345.png" 
-                alt="Graphic" 
-                className="h-full lg:h-[103px] w-auto absolute bottom-0 right-0 opacity-100 pointer-events-none object-contain" 
+              <img
+                src="/coins/1000337345.png"
+                alt="Graphic"
+                className="h-full lg:h-[103px] w-auto absolute bottom-0 right-0 opacity-100 pointer-events-none object-contain"
               />
             </div>
 
             <div
-              className="relative overflow-hidden group w-full h-[80px] lg:h-[103px] max-w-full lg:max-w-[615px]"
+              className="relative overflow-hidden group w-full h-[55px] lg:h-[103px] max-w-full lg:max-w-[615px] rounded-[10px] lg:rounded-[20px]"
               style={{
-                borderRadius: '20px',
                 background: 'rgba(26, 27, 26, 1)',
                 backdropFilter: 'blur(74px)',
                 WebkitBackdropFilter: 'blur(74px)'
               }}
             >
-              <div className="relative z-10 w-full h-full flex items-center flex-row-reverse justify-between px-[20px] lg:flex-row lg:justify-start lg:px-0 lg:pl-[15px]">
+              <div className="relative z-10 w-full h-full flex items-center justify-start pl-[8px] lg:pl-[15px]">
                 <div
-                  className="flex items-center justify-center shrink-0 w-[52px] h-[52px] lg:w-[72px] lg:h-[72px]"
+                  className="flex items-center justify-center shrink-0 w-[42px] h-[42px] lg:w-[72px] lg:h-[72px]"
                   style={{
                     borderRadius: '10px',
                     background: 'rgba(73, 178, 101, 0.13)'
                   }}
                 >
-                  <img src="/coins/paisa.png" alt="Paid" className="w-[30px] h-[30px] lg:w-[42px] lg:h-[42px] object-contain" />
+                  <img src="/coins/paisa.png" alt="Paid" className="w-[24px] h-[24px] lg:w-[42px] lg:h-[42px] object-contain" />
                 </div>
-                <div className="flex flex-col justify-center gap-0 lg:ml-[18px]">
-                  <p 
-                    className="text-[14px] leading-[130%]"
+                <div className="flex flex-col justify-center gap-0 ml-2 lg:ml-[18px]">
+                  <p
+                    className="text-[10px] lg:text-[14px] leading-[130%]"
                     style={{
                       width: 'auto',
                       fontFamily: '"Barlow Condensed", sans-serif',
@@ -318,8 +314,8 @@ const Home = () => {
                   >
                     Total Paid Out
                   </p>
-                  <div 
-                    className="text-[36px] lg:text-[44px] leading-[120%]"
+                  <div
+                    className="text-[24px] lg:text-[44px] leading-[120%]"
                     style={{
                       width: 'auto',
                       height: 'auto',
@@ -332,10 +328,10 @@ const Home = () => {
                   </div>
                 </div>
               </div>
-              <img 
-                src="/coins/1000337344.png" 
-                alt="Graphic" 
-                className="h-full lg:h-[103px] w-auto absolute bottom-0 right-0 opacity-100 pointer-events-none object-contain" 
+              <img
+                src="/coins/1000337344.png"
+                alt="Graphic"
+                className="h-full lg:h-[103px] w-auto absolute bottom-0 right-0 opacity-100 pointer-events-none object-contain"
               />
             </div>
           </motion.div>
@@ -343,13 +339,12 @@ const Home = () => {
 
         {/* ─── Tabs & MAIN CONTENT WRAPPER ─────────────────── */}
         <div
-          className="mx-auto flex flex-col shrink-0 px-4 lg:px-0 w-full lg:w-[1240px]"
-          style={{ gap: '30px' }}
+          className="mx-auto flex flex-col shrink-0 px-4 lg:px-0 w-full lg:w-[1240px] gap-[12px] lg:gap-[30px]"
         >
           {/* ─── Quick Jump Tabs ───────────────────────────── */}
           <motion.div variants={item} className="sticky top-4 z-20">
             <div
-              className="flex items-center justify-center overflow-x-auto w-full lg:w-[1240px] h-auto lg:h-[84px] p-2 lg:p-[18px]"
+              className="flex items-center justify-center overflow-x-auto w-full lg:w-[1240px] h-auto lg:h-[84px] p-1.5 lg:p-[18px]"
               style={{
                 borderRadius: '10px',
                 background: 'rgba(44, 45, 44, 1)',
@@ -359,7 +354,7 @@ const Home = () => {
               }}
             >
               <div
-                className="flex items-center justify-between w-full h-[48px] gap-1 lg:gap-4"
+                className="flex items-center justify-between w-full h-[32px] lg:h-[48px] gap-1 lg:gap-4"
                 style={{
                   borderRadius: '100px',
                   opacity: 1
@@ -380,51 +375,48 @@ const Home = () => {
           </motion.div>
 
           {/* ─── MAIN CONTENT ─────────────────────────────────── */}
-          <div className="flex flex-col gap-[30px]">
+          <div className="flex flex-col gap-[20px] lg:gap-[30px]">
 
             {/* Section 1: Featured Offers */}
             {(filter === 'all' || filter === 'featured') && customOffers.length > 0 && (
-              <motion.section 
-                ref={featuredRef} 
-                variants={item} 
-                className="flex flex-col shrink-0 w-full lg:w-[1240px] min-h-[580px] lg:min-h-[512px]"
+              <motion.section
+                ref={featuredRef}
+                variants={item}
+                className="flex flex-col shrink-0 w-full lg:w-[1240px] min-h-[320px] lg:min-h-[512px] rounded-[10px] lg:rounded-[20px] p-[10px] lg:p-[20px] gap-[10px] lg:gap-[18px]"
                 style={{
-                  borderRadius: '20px',
-                  gap: '18px',
-                  padding: '20px',
                   background: 'rgba(255, 255, 255, 0.14)'
                 }}
               >
-                <div 
-                  className="flex items-center justify-between w-full relative overflow-hidden lg:overflow-visible h-[48px] lg:h-[133px] gap-2 lg:gap-4"
+                <div
+                  className="flex items-center justify-between w-full relative overflow-hidden lg:overflow-visible h-[60px] lg:h-[133px] gap-2 lg:gap-4"
                 >
-                  <div className="flex items-center gap-2 lg:gap-4 z-10 pl-1 lg:pl-0">
-                    <div 
-                      className="flex items-center justify-center shrink-0 w-[36px] h-[36px] lg:w-[88px] lg:h-[88px] rounded-[8px] lg:rounded-[10px] bg-[rgba(41,253,152,0.1)] p-1.5 lg:p-[10px_12px]"
+                  <div className="flex items-center gap-2 lg:gap-4 z-10">
+                    <div
+                      className="flex items-center justify-center shrink-0 w-[44px] h-[44px] lg:w-[88px] lg:h-[88px] rounded-[8px] lg:rounded-[10px] bg-[rgba(41,253,152,0.1)] p-1.5 lg:p-[10px_12px]"
                     >
-                      <img 
-                        src="/coins/gift.png" 
-                        alt="Featured Offers" 
-                        className="w-[20px] h-[20px] lg:w-[44px] lg:h-[44px] object-contain"
+                      <img
+                        src="/coins/gift.png"
+                        alt="Featured Offers"
+                        className="w-[24px] h-[24px] lg:w-[44px] lg:h-[44px] object-contain"
                       />
                     </div>
                     <div className="flex flex-col gap-0.5 lg:gap-1.5">
-                      <h2 className="font-barlow font-bold text-[16px] lg:text-[42px] leading-[1.1] text-white m-0">
+                      <h2 className="font-barlow font-bold text-[18px] lg:text-[42px] leading-[1.1] text-white m-0">
                         Featured Offers
                       </h2>
-                      <p className="font-barlow font-medium text-[10px] lg:text-[22px] leading-[1.2] text-[#888888] m-0 max-w-[140px] lg:max-w-none">
+                      <p className="font-barlow font-medium text-[11px] lg:text-[22px] leading-[1.2] text-[#888888] m-0 max-w-[140px] lg:max-w-none">
                         High-reward direct tasks. Manual approval required.
                       </p>
                     </div>
                   </div>
-                  <img 
-                    src="/coins/feature%20offer.png" 
-                    alt="Featured Offers Graphic" 
-                    className="absolute right-[-30px] lg:relative lg:right-auto w-[110px] h-[48px] lg:w-[332px] lg:h-[133px] object-contain shrink-0 opacity-100 pointer-events-none"
+                  <img
+                    src="/coins/feature%20offer.png"
+                    alt="Featured Offers Graphic"
+                    className="absolute right-[-40px] lg:relative lg:right-auto w-[140px] h-[60px] lg:w-[332px] lg:h-[133px] object-contain shrink-0 opacity-100 pointer-events-none"
                   />
                 </div>
                 <div className="relative mt-2">
-                  <div 
+                  <div
                     ref={featuredScrollRef}
                     onScroll={handleFeaturedScroll}
                     className="flex overflow-x-auto snap-x snap-mandatory"
@@ -442,22 +434,19 @@ const Home = () => {
                   </div>
 
                   {/* Dot Pagination */}
-                  <div className="flex justify-center mt-6">
-                    <div 
-                      className="flex items-center" 
-                      style={{ height: '12px', gap: '6px' }}
+                  <div className="flex justify-center mt-4 lg:mt-6">
+                    <div
+                      className="flex items-center h-[6px] lg:h-[12px] gap-[4px] lg:gap-[6px]"
                     >
                       {Array.from({ length: Math.ceil(customOffers.length / itemsPerPage) }).map((_, idx) => (
                         <button
                           key={idx}
                           onClick={() => scrollFeaturedToPage(idx)}
-                          className="transition-all duration-300 hover:opacity-80"
-                          style={{
-                            height: '12px',
-                            borderRadius: '30px',
-                            width: featuredActiveIndex === idx ? '42px' : '12px',
-                            background: featuredActiveIndex === idx ? 'rgba(73, 178, 101, 1)' : 'rgba(255, 255, 255, 0.2)'
-                          }}
+                          className={`transition-all duration-300 hover:opacity-80 rounded-[30px] h-[6px] lg:h-[12px] ${
+                            featuredActiveIndex === idx 
+                              ? 'w-[18px] lg:w-[42px] bg-[#49B265]' 
+                              : 'w-[6px] lg:w-[12px] bg-white/20'
+                          }`}
                           aria-label={`Go to page ${idx + 1}`}
                         />
                       ))}
@@ -469,45 +458,40 @@ const Home = () => {
 
             {/* Section 2: Gaming or App Offers */}
             {(filter === 'all' || filter === 'gaming') && (
-              <motion.section 
-                ref={gamingRef} 
-                variants={item} 
-                className="shrink-0 w-full lg:w-[1240px] lg:min-h-[469px]"
+              <motion.section
+                ref={gamingRef}
+                variants={item}
+                className="flex flex-col shrink-0 w-full lg:w-[1240px] lg:min-h-[469px] rounded-[10px] lg:rounded-[20px] p-[10px] lg:p-[20px] gap-[10px] lg:gap-[18px]"
                 style={{
-                  display: 'flex',
-                  flexDirection: 'column',
-                  borderRadius: '20px',
-                  gap: '18px',
-                  padding: '20px',
                   background: 'rgba(255, 255, 255, 0.14)'
                 }}
               >
-                <div 
-                  className="flex items-center justify-between w-full relative overflow-hidden lg:overflow-visible h-[48px] lg:h-[133px] gap-2 lg:gap-4"
+                <div
+                  className="flex items-center justify-between w-full relative overflow-hidden lg:overflow-visible h-[60px] lg:h-[133px] gap-2 lg:gap-4"
                 >
-                  <div className="flex items-center gap-2 lg:gap-4 z-10 pl-1 lg:pl-0">
-                    <div 
-                      className="flex items-center justify-center shrink-0 w-[36px] h-[36px] lg:w-[88px] lg:h-[88px] rounded-[8px] lg:rounded-[10px] bg-[rgba(41,253,152,0.1)] p-1.5 lg:p-[10px_12px]"
+                  <div className="flex items-center gap-2 lg:gap-4 z-10">
+                    <div
+                      className="flex items-center justify-center shrink-0 w-[44px] h-[44px] lg:w-[88px] lg:h-[88px] rounded-[8px] lg:rounded-[10px] bg-[rgba(41,253,152,0.1)] p-1.5 lg:p-[10px_12px]"
                     >
-                      <img 
-                        src="/coins/game.png" 
-                        alt="Gaming Offers" 
-                        className="w-[20px] h-[20px] lg:w-[44px] lg:h-[44px] object-contain"
+                      <img
+                        src="/coins/game.png"
+                        alt="Gaming Offers"
+                        className="w-[24px] h-[24px] lg:w-[44px] lg:h-[44px] object-contain"
                       />
                     </div>
                     <div className="flex flex-col gap-0.5 lg:gap-1.5">
-                      <h2 className="font-barlow font-bold text-[16px] lg:text-[42px] leading-[1.1] text-white m-0">
+                      <h2 className="font-barlow font-bold text-[18px] lg:text-[42px] leading-[1.1] text-white m-0">
                         Gaming & App Offers
                       </h2>
-                      <p className="font-barlow font-medium text-[10px] lg:text-[22px] leading-[1.2] text-[#888888] m-0 max-w-[140px] lg:max-w-none">
+                      <p className="font-barlow font-medium text-[11px] lg:text-[22px] leading-[1.2] text-[#888888] m-0 max-w-[140px] lg:max-w-none">
                         Play games to earn large amounts of points.
                       </p>
                     </div>
                   </div>
-                  <img 
-                    src="/coins/appimage.png" 
-                    alt="Gaming & App Offers Graphic" 
-                    className="absolute right-[-30px] lg:relative lg:right-auto w-[110px] h-[48px] lg:w-[332px] lg:h-[133px] object-contain shrink-0 opacity-100 pointer-events-none"
+                  <img
+                    src="/coins/appimage.png"
+                    alt="Gaming & App Offers Graphic"
+                    className="absolute right-[-40px] lg:relative lg:right-auto w-[140px] h-[60px] lg:w-[332px] lg:h-[133px] object-contain shrink-0 opacity-100 pointer-events-none"
                   />
                 </div>
                 {loadingSettings ? (
@@ -515,8 +499,8 @@ const Home = () => {
                 ) : gamingProviders.length === 0 ? (
                   <div className="glass-card p-8 border border-white/[0.05] flex justify-center opacity-50"><span className="text-slate-400 text-sm">No gaming offerwalls active.</span></div>
                 ) : (
-                  <div 
-                    className="grid grid-rows-2 auto-cols-[calc(50%-7px)] grid-flow-col overflow-x-auto snap-x snap-mandatory sm:grid-rows-none sm:auto-cols-auto sm:grid-flow-row sm:grid-cols-4 lg:grid-cols-6 sm:overflow-visible w-full" 
+                  <div
+                    className="grid grid-rows-2 auto-cols-[calc(50%-7px)] grid-flow-col overflow-x-auto snap-x snap-mandatory sm:grid-rows-none sm:auto-cols-auto sm:grid-flow-row sm:grid-cols-4 lg:grid-cols-6 sm:overflow-visible w-full"
                     style={{ gap: '14px', scrollbarWidth: 'none', msOverflowStyle: 'none' }}
                   >
                     {gamingProviders.map(provider => (
@@ -531,43 +515,40 @@ const Home = () => {
 
             {/* Section 3: Surveys */}
             {(filter === 'all' || filter === 'surveys') && (
-              <motion.section 
-                ref={surveysRef} 
-                variants={item} 
-                className="flex flex-col shrink-0 w-full lg:w-[1240px] lg:min-h-[323px]"
+              <motion.section
+                ref={surveysRef}
+                variants={item}
+                className="flex flex-col shrink-0 w-full lg:w-[1240px] lg:min-h-[323px] rounded-[10px] lg:rounded-[20px] p-[10px] lg:p-[20px] gap-[10px] lg:gap-[18px]"
                 style={{
-                  borderRadius: '20px',
-                  gap: '18px',
-                  padding: '20px',
                   background: 'rgba(255, 255, 255, 0.14)'
                 }}
               >
-                <div 
-                  className="flex items-center justify-between w-full relative overflow-hidden lg:overflow-visible h-[48px] lg:h-[133px] gap-2 lg:gap-4"
+                <div
+                  className="flex items-center justify-between w-full relative overflow-hidden lg:overflow-visible h-[60px] lg:h-[133px] gap-2 lg:gap-4"
                 >
-                  <div className="flex items-center gap-2 lg:gap-4 z-10 pl-1 lg:pl-0">
-                    <div 
-                      className="flex items-center justify-center shrink-0 w-[36px] h-[36px] lg:w-[88px] lg:h-[88px] rounded-[8px] lg:rounded-[10px] bg-[rgba(41,253,152,0.1)] p-1.5 lg:p-[10px_12px]"
+                  <div className="flex items-center gap-2 lg:gap-4 z-10">
+                    <div
+                      className="flex items-center justify-center shrink-0 w-[44px] h-[44px] lg:w-[88px] lg:h-[88px] rounded-[8px] lg:rounded-[10px] bg-[rgba(41,253,152,0.1)] p-1.5 lg:p-[10px_12px]"
                     >
-                      <img 
-                        src="/coins/clicl.png" 
-                        alt="Surveys" 
-                        className="w-[20px] h-[20px] lg:w-[44px] lg:h-[44px] object-contain"
+                      <img
+                        src="/coins/clicl.png"
+                        alt="Surveys"
+                        className="w-[24px] h-[24px] lg:w-[44px] lg:h-[44px] object-contain"
                       />
                     </div>
                     <div className="flex flex-col gap-0.5 lg:gap-1.5">
-                      <h2 className="font-barlow font-bold text-[16px] lg:text-[42px] leading-[1.1] text-white m-0 uppercase tracking-wider">
+                      <h2 className="font-barlow font-bold text-[18px] lg:text-[42px] leading-[1.1] text-white m-0 uppercase tracking-wider">
                         Surveys
                       </h2>
-                      <p className="font-barlow font-medium text-[10px] lg:text-[22px] leading-[1.2] text-[#888888] m-0 max-w-[140px] lg:max-w-none">
+                      <p className="font-barlow font-medium text-[11px] lg:text-[22px] leading-[1.2] text-[#888888] m-0 max-w-[140px] lg:max-w-none">
                         Share your opinion for quick<br className="lg:hidden" /><span className="hidden lg:inline"> </span>and easy rewards.
                       </p>
                     </div>
                   </div>
-                  <img 
-                    src="/coins/survay.png" 
-                    alt="Graphic" 
-                    className="absolute right-[-30px] lg:relative lg:right-auto w-[110px] h-[48px] lg:w-[332px] lg:h-[133px] object-contain shrink-0 opacity-100 pointer-events-none"
+                  <img
+                    src="/coins/survay.png"
+                    alt="Graphic"
+                    className="absolute right-[-40px] lg:relative lg:right-auto w-[140px] h-[60px] lg:w-[332px] lg:h-[133px] object-contain shrink-0 opacity-100 pointer-events-none"
                   />
                 </div>
                 {loadingSettings ? (
@@ -575,8 +556,8 @@ const Home = () => {
                 ) : surveyProviders.length === 0 ? (
                   <div className="glass-card p-8 border border-white/[0.05] flex justify-center opacity-50"><span className="text-slate-400 text-sm">No survey offerwalls active.</span></div>
                 ) : (
-                  <div 
-                    className="grid grid-rows-2 auto-cols-[calc(50%-7px)] grid-flow-col overflow-x-auto snap-x snap-mandatory sm:grid-rows-none sm:auto-cols-auto sm:grid-flow-row sm:grid-cols-4 lg:grid-cols-6 sm:overflow-visible w-full" 
+                  <div
+                    className="grid grid-rows-2 auto-cols-[calc(50%-7px)] grid-flow-col overflow-x-auto snap-x snap-mandatory sm:grid-rows-none sm:auto-cols-auto sm:grid-flow-row sm:grid-cols-4 lg:grid-cols-6 sm:overflow-visible w-full"
                     style={{ gap: '14px', scrollbarWidth: 'none', msOverflowStyle: 'none' }}
                   >
                     {surveyProviders.map(provider => (

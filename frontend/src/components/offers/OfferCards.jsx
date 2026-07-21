@@ -131,12 +131,9 @@ export const FeaturedOfferCard = ({ offer, onClick }) => {
     <motion.div
       variants={item}
       onClick={onClick}
-      className={`cursor-pointer transition-all flex flex-col group h-[370px] lg:h-[305px] ${isExpired ? 'opacity-50' : 'hover:scale-[1.02]'
+      className={`cursor-pointer transition-all flex flex-col group h-[185px] lg:h-[305px] rounded-[10px] lg:rounded-[20px] gap-2 lg:gap-4 p-2 lg:p-4 ${isExpired ? 'opacity-50' : 'hover:scale-[1.02]'
         }`}
       style={{
-        borderRadius: '20px',
-        gap: '16px',
-        padding: '16px',
         background: 'rgba(0, 0, 0, 0.36)',
         backdropFilter: 'blur(44px)',
         WebkitBackdropFilter: 'blur(44px)',
@@ -145,8 +142,7 @@ export const FeaturedOfferCard = ({ offer, onClick }) => {
     >
       {/* Cover area */}
       <div
-        className="w-full relative flex-shrink-0 overflow-hidden h-[165px] lg:h-[135px]"
-        style={{ borderRadius: '10px' }}
+        className="w-full relative flex-shrink-0 overflow-hidden h-[75px] lg:h-[135px] rounded-[6px] lg:rounded-[10px]"
       >
         {coverImgSrc ? (
           <img
@@ -157,11 +153,11 @@ export const FeaturedOfferCard = ({ offer, onClick }) => {
         ) : (
           <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-amber-900/30 via-[#131a2e] to-indigo-900/30">
             {emojiIcon ? (
-              <span className="text-6xl lg:text-5xl select-none group-hover:scale-110 transition-transform duration-300">
+              <span className="text-4xl lg:text-5xl select-none group-hover:scale-110 transition-transform duration-300">
                 {emojiIcon}
               </span>
             ) : (
-              <FiStar className="text-4xl text-amber-400/40 group-hover:text-amber-400/60 transition-colors" />
+              <FiStar className="text-2xl lg:text-4xl text-amber-400/40 group-hover:text-amber-400/60 transition-colors" />
             )}
           </div>
         )}
@@ -171,29 +167,26 @@ export const FeaturedOfferCard = ({ offer, onClick }) => {
 
       {/* Text info */}
       <div
-        className="flex flex-col w-full"
-        style={{ flex: 1, gap: '16px' }}
+        className="flex flex-col w-full flex-1 gap-[8px] lg:gap-[16px]"
       >
         <div
-          className="flex flex-col w-full"
-          style={{ gap: '6px' }}
+          className="flex flex-col w-full gap-[4px] lg:gap-[6px]"
         >
           <p
-            className="line-clamp-1 truncate text-[32px] lg:text-[26px]"
+            className="line-clamp-1 truncate text-[14px] lg:text-[26px] pb-[2px]"
             title={offer.title}
             style={{
               fontFamily: '"Barlow Condensed", sans-serif',
               fontWeight: 600,
               lineHeight: '120%',
               color: 'rgba(255, 255, 255, 1)',
-              margin: 0,
-              paddingBottom: '2px'
+              margin: 0
             }}
           >
             {offer.title}
           </p>
           <p
-            className="line-clamp-2 text-[20px] lg:text-[16px] h-[52px] lg:h-[42px]"
+            className="line-clamp-2 text-[10px] lg:text-[16px] h-[26px] lg:h-[42px]"
             style={{
               fontFamily: '"Barlow Condensed", sans-serif',
               fontWeight: 500,
@@ -206,19 +199,18 @@ export const FeaturedOfferCard = ({ offer, onClick }) => {
           </p>
         </div>
         <div
-          className="flex items-center mt-auto h-[32px] lg:h-[26px]"
-          style={{ gap: '3px' }}
+          className="flex items-center mt-auto h-[16px] lg:h-[26px] gap-[3px]"
         >
           <img
             src="/coins/Coin.png"
             alt="Coin"
-            className="w-[32px] h-[32px] lg:w-[26px] lg:h-[26px] object-contain"
+            className="w-[14px] h-[14px] lg:w-[26px] lg:h-[26px] object-contain"
             style={{
               filter: 'drop-shadow(0px 0px 14px rgba(254, 198, 53, 0.6))'
             }}
           />
           <span
-            className="text-[28px] lg:text-[22px] flex items-center"
+            className="text-[14px] lg:text-[22px] flex items-center"
             style={{
               fontFamily: '"Barlow Condensed", sans-serif',
               fontWeight: 700,
@@ -352,7 +344,7 @@ export const FeaturedOfferModal = ({ offer, token, onClose, onSubmitted }) => {
             <div className="w-full min-h-[108px] h-auto flex flex-col gap-4 shrink-0 opacity-100">
               {/* Heading and Description Wrapper */}
               <div className="w-full h-auto flex flex-col gap-[6px] opacity-100">
-                <h2 
+                <h2
                   className="w-full h-auto text-[36px] lg:text-[26px]"
                   style={{
                     fontFamily: '"Barlow Condensed", sans-serif',
@@ -364,7 +356,7 @@ export const FeaturedOfferModal = ({ offer, token, onClose, onSubmitted }) => {
                 >
                   {offer.title}
                 </h2>
-                <div 
+                <div
                   className="w-full h-auto text-[22px] lg:text-[16px]"
                   style={{
                     fontFamily: '"Barlow Condensed", sans-serif',
@@ -380,7 +372,7 @@ export const FeaturedOfferModal = ({ offer, token, onClose, onSubmitted }) => {
                 <img src="/coins/Coin.png" alt="coin" className="w-[30px] h-[30px] lg:w-[26px] lg:h-[26px] object-contain" style={{
                   filter: 'drop-shadow(0px 0px 14px rgba(254, 198, 53, 0.6))'
                 }} />
-                <span 
+                <span
                   className="text-[30px] lg:text-[22px] inline-flex items-center"
                   style={{
                     fontFamily: '"Barlow Condensed", sans-serif',
@@ -413,13 +405,13 @@ export const FeaturedOfferModal = ({ offer, token, onClose, onSubmitted }) => {
             </div>
             {/* Title and Description */}
             <div className="flex-1 flex flex-col gap-2 opacity-100 min-w-0">
-              <h2 
+              <h2
                 className="w-full text-[20px] lg:text-[28px] text-white font-semibold leading-none truncate"
                 style={{ fontFamily: '"Barlow Condensed", sans-serif', margin: 0 }}
               >
                 {offer.title}
               </h2>
-              <div 
+              <div
                 className="w-full text-xs text-[#888888] leading-tight"
                 style={{ fontFamily: '"Barlow Condensed", sans-serif' }}
               >
@@ -440,17 +432,17 @@ export const FeaturedOfferModal = ({ offer, token, onClose, onSubmitted }) => {
         <div className="custom-scrollbar" style={{ flex: 1, overflowX: 'hidden', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '16px', paddingRight: '4px' }}>
 
           {showProofForm ? (
-            <ProofUploadView 
-              offer={offer} 
-              token={token} 
-              API={API} 
+            <ProofUploadView
+              offer={offer}
+              token={token}
+              API={API}
               onSubmitted={() => {
                 setSubmissionStatus('pending');
                 setShowProofForm(false);
                 if (onSubmitted) onSubmitted();
-              }} 
+              }}
               onCancel={() => setShowProofForm(false)}
-              setResult={setResult} 
+              setResult={setResult}
             />
           ) : (
             <>
@@ -479,43 +471,43 @@ export const FeaturedOfferModal = ({ offer, token, onClose, onSubmitted }) => {
               {/* Requirements Section ALWAYS VISIBLE AND STICKY */}
               {!isStarted && offer.requirements && offer.requirements.length > 0 && (
                 <div className="w-full flex flex-col gap-2 shrink-0 sticky top-[-1px] z-20 bg-[#242424] pb-2 opacity-100">
-                    <h4 
-                      className="text-[20px] lg:text-[16px] text-white font-bold leading-normal"
-                      style={{ fontFamily: '"Barlow Condensed", sans-serif', margin: 0 }}
-                    >
-                      Requirements
-                    </h4>
-                    <div 
-                      className="w-full box-border h-auto shrink-0"
-                      style={{ 
-                        borderRadius: '12px', padding: '12px', display: 'flex', flexDirection: 'column', gap: '8px', 
-                        background: 'rgba(0, 0, 0, 0.36)', backdropFilter: 'blur(44px)', WebkitBackdropFilter: 'blur(44px)',
-                        opacity: 1 
-                      }}
-                    >
-                      {offer.requirements.map((req, i) => (
-                        <div key={i} className="flex items-start gap-1.5">
-                          <img 
-                            src="/coins/retik.png" 
-                            alt="bullet" 
-                            style={{ width: '14px', height: '14px', flexShrink: 0, marginTop: '2px' }} 
-                          />
-                          <p 
-                            className="text-[18px] lg:text-[16px] text-white font-medium leading-tight"
-                            style={{ fontFamily: '"Barlow Condensed", sans-serif', margin: 0 }}
-                          >
-                            {req}
-                          </p>
-                        </div>
-                      ))}
-                    </div>
+                  <h4
+                    className="text-[20px] lg:text-[16px] text-white font-bold leading-normal"
+                    style={{ fontFamily: '"Barlow Condensed", sans-serif', margin: 0 }}
+                  >
+                    Requirements
+                  </h4>
+                  <div
+                    className="w-full box-border h-auto shrink-0"
+                    style={{
+                      borderRadius: '12px', padding: '12px', display: 'flex', flexDirection: 'column', gap: '8px',
+                      background: 'rgba(0, 0, 0, 0.36)', backdropFilter: 'blur(44px)', WebkitBackdropFilter: 'blur(44px)',
+                      opacity: 1
+                    }}
+                  >
+                    {offer.requirements.map((req, i) => (
+                      <div key={i} className="flex items-start gap-1.5">
+                        <img
+                          src="/coins/retik.png"
+                          alt="bullet"
+                          style={{ width: '14px', height: '14px', flexShrink: 0, marginTop: '2px' }}
+                        />
+                        <p
+                          className="text-[18px] lg:text-[16px] text-white font-medium leading-tight"
+                          style={{ fontFamily: '"Barlow Condensed", sans-serif', margin: 0 }}
+                        >
+                          {req}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               )}
 
               {/* Boxes when started */}
               {isStarted && !alreadySubmitted && (
                 <div className="w-full flex flex-col gap-4 shrink-0">
-                  <div 
+                  <div
                     className="w-full h-auto"
                     style={{
                       borderRadius: '12px', padding: '12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '16px',
@@ -524,13 +516,13 @@ export const FeaturedOfferModal = ({ offer, token, onClose, onSubmitted }) => {
                     }}
                   >
                     <div className="flex flex-col gap-1 min-w-0 flex-1">
-                      <span 
+                      <span
                         className="text-[18px] lg:text-[14px] text-white font-bold leading-tight block truncate"
                         style={{ fontFamily: '"Barlow Condensed", sans-serif' }}
                       >
                         Offer link clicked
                       </span>
-                      <span 
+                      <span
                         className="text-[14px] lg:text-[11px] text-[#888888] font-medium leading-tight block truncate"
                         style={{ fontFamily: '"Barlow Condensed", sans-serif' }}
                       >
@@ -541,7 +533,7 @@ export const FeaturedOfferModal = ({ offer, token, onClose, onSubmitted }) => {
                       onClick={handleStartOffer}
                       className="h-[46px] lg:h-[38px] rounded-[10px] px-6 py-2 bg-[#27703a] border-none cursor-pointer flex items-center justify-center gap-2 shadow-[0_4px_0_#23502f] shrink-0"
                     >
-                      <span 
+                      <span
                         className="text-[18px] lg:text-[16px] text-white font-bold leading-none flex items-center justify-center"
                         style={{ fontFamily: '"Barlow Condensed", sans-serif' }}
                       >
@@ -552,13 +544,13 @@ export const FeaturedOfferModal = ({ offer, token, onClose, onSubmitted }) => {
 
                   {/* Submit Proof Details */}
                   <div className="w-full flex flex-col gap-2 shrink-0">
-                    <span 
+                    <span
                       className="text-base font-bold text-white leading-normal"
                       style={{ fontFamily: '"Barlow Condensed", sans-serif' }}
                     >
                       Submit Proof
                     </span>
-                    <span 
+                    <span
                       className="text-xs font-medium text-[#888888] leading-tight"
                       style={{ fontFamily: '"Barlow Condensed", sans-serif' }}
                     >
@@ -571,12 +563,12 @@ export const FeaturedOfferModal = ({ offer, token, onClose, onSubmitted }) => {
           )}
 
           {result && (
-            <div 
+            <div
               className="p-3 rounded-xl text-[18px] md:text-[13px] font-medium"
-              style={{ 
-                background: result.type === 'success' ? 'rgba(16, 185, 129, 0.1)' : 'rgba(244, 63, 94, 0.1)', 
-                border: `1px solid ${result.type === 'success' ? 'rgba(16, 185, 129, 0.2)' : 'rgba(244, 63, 94, 0.2)'}`, 
-                color: result.type === 'success' ? '#34d399' : '#fb7185' 
+              style={{
+                background: result.type === 'success' ? 'rgba(16, 185, 129, 0.1)' : 'rgba(244, 63, 94, 0.1)',
+                border: `1px solid ${result.type === 'success' ? 'rgba(16, 185, 129, 0.2)' : 'rgba(244, 63, 94, 0.2)'}`,
+                color: result.type === 'success' ? '#34d399' : '#fb7185'
               }}
             >
               {result.type === 'success' && <FiCheckCircle style={{ display: 'inline', marginRight: '4px' }} />}
@@ -588,11 +580,11 @@ export const FeaturedOfferModal = ({ offer, token, onClose, onSubmitted }) => {
         {/* Footer Actions */}
         <div style={{ marginTop: 'auto', flexShrink: 0 }}>
           {alreadySubmitted ? (
-            <div 
-              className="w-full text-center p-3 rounded-xl text-[#34d399] font-semibold text-[18px] md:text-[14px]" 
-              style={{ 
-                background: 'rgba(16, 185, 129, 0.1)', 
-                border: '1px solid rgba(16, 185, 129, 0.2)' 
+            <div
+              className="w-full text-center p-3 rounded-xl text-[#34d399] font-semibold text-[18px] md:text-[14px]"
+              style={{
+                background: 'rgba(16, 185, 129, 0.1)',
+                border: '1px solid rgba(16, 185, 129, 0.2)'
               }}
             >
               <FiCheckCircle style={{ display: 'inline', marginRight: '6px' }} />
@@ -611,10 +603,10 @@ export const FeaturedOfferModal = ({ offer, token, onClose, onSubmitted }) => {
                     }}
                   >
                     Start Offer
-                    <img 
-                      src="/coins/image.png" 
-                      alt="arrow" 
-                      className="w-[30px] h-[30px] md:w-[24px] md:h-[24px] object-contain" 
+                    <img
+                      src="/coins/image.png"
+                      alt="arrow"
+                      className="w-[30px] h-[30px] md:w-[24px] md:h-[24px] object-contain"
                     />
                   </button>
                 ) : (
@@ -627,10 +619,10 @@ export const FeaturedOfferModal = ({ offer, token, onClose, onSubmitted }) => {
                         padding: '10px 30px'
                       }}
                     >
-                      <img 
-                        src="/coins/upload.png" 
-                        alt="upload" 
-                        className="w-[30px] h-[30px] md:w-[24px] md:h-[24px] object-contain" 
+                      <img
+                        src="/coins/upload.png"
+                        alt="upload"
+                        className="w-[30px] h-[30px] md:w-[24px] md:h-[24px] object-contain"
                       />
                       Submit Proof
                     </button>

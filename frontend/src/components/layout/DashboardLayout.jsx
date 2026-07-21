@@ -42,7 +42,7 @@ const DashboardLayout = ({ children, showLiveBar = true, fullWidth = false }) =>
         style={{ background: 'rgba(44, 45, 44, 1)' }}
       >
         <div
-          className="flex flex-col items-center text-center w-full mx-auto px-4 lg:px-[100px] py-8 lg:pt-[40px] lg:pb-[22px] gap-8 lg:gap-[30px]"
+          className="flex flex-col items-center text-center w-full mx-auto px-4 lg:px-[100px] py-4 lg:pt-[40px] lg:pb-[22px] gap-4 lg:gap-[30px]"
           style={{
             maxWidth: 1440,
             opacity: 1,
@@ -52,39 +52,20 @@ const DashboardLayout = ({ children, showLiveBar = true, fullWidth = false }) =>
         >
           {/* Top Logo */}
           <div
-            className="flex items-center justify-center"
-            style={{
-              width: 210.99978637695312,
-              height: 51.999786376953125,
-              gap: 10,
-              opacity: 1,
-              transform: 'rotate(0deg)'
-            }}
+            className="flex items-center justify-center gap-[4px] lg:gap-[10px] h-[28px] lg:h-[52px]"
           >
             <img
               src="/coins/logo copy.png"
               alt="Logo"
-              style={{
-                width: 51.999786376953125,
-                height: 51.999786376953125,
-                objectFit: 'contain',
-                opacity: 1,
-                transform: 'rotate(0deg)'
-              }}
+              className="w-[28px] h-[28px] lg:w-[52px] lg:h-[52px] object-contain"
             />
             <span
-              className="whitespace-nowrap flex items-center"
+              className="whitespace-nowrap flex items-center text-[22px] lg:text-[46px]"
               style={{
-                width: 149,
-                height: 32,
                 fontFamily: '"Barlow Condensed", sans-serif',
                 fontWeight: 700,
-                fontSize: 46,
                 lineHeight: '100%',
-                letterSpacing: '0%',
-                color: 'rgba(255, 255, 255, 1)',
-                opacity: 1,
-                transform: 'rotate(0deg)'
+                color: 'rgba(255, 255, 255, 1)'
               }}
             >
               TaskMint
@@ -93,17 +74,13 @@ const DashboardLayout = ({ children, showLiveBar = true, fullWidth = false }) =>
 
           {/* Middle Content */}
           <div
-            className="flex flex-col items-center text-center w-full max-w-[1104px] gap-4 lg:gap-[30px]"
+            className="flex flex-col items-center text-center w-full max-w-[1104px] gap-2 lg:gap-[30px]"
           >
             <p
-              className="m-0 p-0 flex items-center justify-center whitespace-normal lg:whitespace-nowrap px-4 lg:px-0"
+              className="m-0 p-0 flex items-center justify-center whitespace-normal lg:whitespace-nowrap px-4 lg:px-0 text-[11px] leading-[14px] lg:text-[20px] lg:leading-[28px]"
               style={{
-                height: 'auto',
-                minHeight: 14,
                 fontFamily: '"Barlow Condensed", sans-serif',
                 fontWeight: 400,
-                fontSize: 20,
-                lineHeight: '28px',
                 textAlign: 'center',
                 color: 'rgba(209, 213, 219, 1)'
               }}
@@ -111,7 +88,7 @@ const DashboardLayout = ({ children, showLiveBar = true, fullWidth = false }) =>
               Complete offers, surveys, and tasks to earn real rewards. Join thousands of users already earning every day.
             </p>
             <div
-              className="flex justify-center items-center m-0 p-0 flex-wrap lg:flex-nowrap gap-x-4 gap-y-2 lg:gap-[20px] w-full px-4 lg:px-0"
+              className="flex justify-center items-center m-0 p-0 flex-wrap lg:flex-nowrap gap-x-2 gap-y-1 lg:gap-[20px] w-full px-4 lg:px-0"
             >
               {[
                 { name: 'Features', href: '#features' },
@@ -124,11 +101,10 @@ const DashboardLayout = ({ children, showLiveBar = true, fullWidth = false }) =>
                 <React.Fragment key={link.name}>
                   <a
                     href={link.href}
-                    className="hover:opacity-80 transition-opacity whitespace-nowrap flex items-center justify-center"
+                    className="hover:opacity-80 transition-opacity whitespace-nowrap flex items-center justify-center text-[10px] lg:text-[16px]"
                     style={{
                       fontFamily: '"Barlow Condensed", sans-serif',
                       fontWeight: 700,
-                      fontSize: 16,
                       color: 'rgba(73, 178, 101, 1)',
                       textDecoration: 'none'
                     }}
@@ -149,36 +125,35 @@ const DashboardLayout = ({ children, showLiveBar = true, fullWidth = false }) =>
           </div>
 
           {/* Bottom Divider & Copyright */}
-          <div className="w-full flex flex-col items-center gap-4 mt-6 lg:mt-0 px-4 lg:px-0">
+          <div className="w-full flex flex-col items-center gap-2 mt-2 lg:mt-0 px-4 lg:px-0">
             <div
               className="w-full border-t border-white/30"
               style={{ maxWidth: 1240 }}
             />
             <div
-              className="flex flex-col-reverse lg:flex-row items-center justify-between w-full gap-4 lg:gap-0 pb-4 lg:pb-0"
+              className="flex flex-col-reverse lg:flex-row items-center justify-between w-full gap-2 lg:gap-0 pb-2 lg:pb-0"
               style={{ maxWidth: 1240 }}
             >
               <p
-                className="m-0 p-0 flex items-center text-center lg:text-left"
+                className="m-0 p-0 flex items-center text-center lg:text-left text-[10px] lg:text-[16px]"
                 style={{
                   fontFamily: '"Barlow Condensed", sans-serif',
                   fontWeight: 500,
-                  fontSize: 16,
                   color: 'rgba(255, 255, 255, 1)'
                 }}
               >
                 © 2026 TaskMint. All rights reserved.
               </p>
               <div
-                className="flex items-center justify-center lg:justify-between gap-4 lg:gap-[20px]"
+                className="flex items-center justify-center lg:justify-between gap-3 lg:gap-[20px]"
                 style={{
                   color: 'rgba(73, 178, 101, 1)'
                 }}
               >
-                <FaFacebook className="hover:opacity-80 cursor-pointer transition-opacity flex-shrink-0" style={{ width: 26, height: 26 }} />
-                <FaInstagram className="hover:opacity-80 cursor-pointer transition-opacity flex-shrink-0" style={{ width: 26, height: 26 }} />
-                <FaYoutube className="hover:opacity-80 cursor-pointer transition-opacity flex-shrink-0" style={{ width: 26, height: 26 }} />
-                <FaDiscord className="hover:opacity-80 cursor-pointer transition-opacity flex-shrink-0" style={{ width: 26, height: 26 }} />
+                <FaFacebook className="hover:opacity-80 cursor-pointer transition-opacity flex-shrink-0 w-[14px] h-[14px] lg:w-[26px] lg:h-[26px]" />
+                <FaInstagram className="hover:opacity-80 cursor-pointer transition-opacity flex-shrink-0 w-[14px] h-[14px] lg:w-[26px] lg:h-[26px]" />
+                <FaYoutube className="hover:opacity-80 cursor-pointer transition-opacity flex-shrink-0 w-[14px] h-[14px] lg:w-[26px] lg:h-[26px]" />
+                <FaDiscord className="hover:opacity-80 cursor-pointer transition-opacity flex-shrink-0 w-[14px] h-[14px] lg:w-[26px] lg:h-[26px]" />
               </div>
             </div>
           </div>

@@ -103,14 +103,16 @@ const PublicProfileModal = ({ userId, onClose }) => {
           exit={{ opacity: 0, scale: 0.94, y: 16 }}
           transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
           onClick={(e) => e.stopPropagation()}
+          className="w-[92vw] sm:w-[500px]"
           style={{
-            width: '500px',
-            height: profile?.isPrivate ? '235px' : '615px',
+            height: profile?.isPrivate ? '235px' : 'auto',
+            maxHeight: '90vh',
             borderRadius: '20px',
             gap: '16px',
             padding: '16px',
             background: 'rgba(36, 36, 36, 1)',
-            overflow: 'hidden',
+            overflowY: 'auto',
+            overflowX: 'hidden',
             position: 'relative',
             zIndex: 9001,
             display: 'flex',
@@ -187,11 +189,10 @@ const PublicProfileModal = ({ userId, onClose }) => {
 
               {/* Profile Header Card */}
               <div style={{
-                width: '468px',
-                height: '56px',
+                width: '100%',
                 display: 'flex',
                 alignItems: 'center',
-                gap: '6px'
+                gap: '10px'
               }}>
                   {/* Avatar */}
                   <div style={{
@@ -207,13 +208,12 @@ const PublicProfileModal = ({ userId, onClose }) => {
                   </div>
 
                   {/* Info */}
-                  <div style={{ width: '376px', height: '50px', display: 'flex', flexDirection: 'column', gap: '4px', minWidth: '0' }}>
+                  <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '4px', minWidth: '0' }}>
                     <div style={{
-                      width: '376px',
-                      height: '20px',
+                      width: '100%',
                       display: 'flex',
                       alignItems: 'center',
-                      marginBottom: '6px'
+                      marginBottom: '2px'
                     }}>
                       <span style={{
                         fontFamily: '"Barlow Condensed", sans-serif',
@@ -232,7 +232,7 @@ const PublicProfileModal = ({ userId, onClose }) => {
                     </div>
 
                     {/* Badge row */}
-                    <div style={{ width: '376px', height: '18px', display: 'flex', gap: '16px', alignItems: 'center' }}>
+                    <div style={{ width: '100%', display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
                       {/* Rank — public only */}
                       {!profile.isPrivate && typeof profile.totalEarned !== 'undefined' && (() => {
                         const level = getLevelFromEarned(profile.totalEarned);
@@ -280,7 +280,7 @@ const PublicProfileModal = ({ userId, onClose }) => {
               {/* Private — earnings & history hidden */}
               {profile.isPrivate ? (
                 <div style={{
-                  width: '468px',
+                  width: '100%',
                   height: '131px',
                   borderRadius: '12px',
                   gap: '16px',
@@ -324,67 +324,29 @@ const PublicProfileModal = ({ userId, onClose }) => {
               ) : (
                 <>
                   {/* Four Stats Boxes */}
-                  <div style={{
-                    width: '468px',
-                    height: '78px',
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    gap: '6px',
-                    boxSizing: 'border-box',
-                    flexShrink: 0
-                  }}>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 w-full flex-shrink-0">
                     {/* Box 1: Coin's Earned */}
-                    <div style={{
-                      width: '112.5px',
-                      height: '78px',
-                      borderRadius: '12px',
-                      padding: '10px 14px',
+                    <div className="flex flex-col justify-between items-start box-border rounded-[12px] p-3" style={{
                       background: 'rgba(0, 0, 0, 0.36)',
                       backdropFilter: 'blur(44px)',
                       WebkitBackdropFilter: 'blur(44px)',
-                      display: 'flex',
-                      flexDirection: 'column',
-                      justifyContent: 'space-between',
-                      alignItems: 'flex-start',
-                      boxSizing: 'border-box',
                     }}>
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
                         <span style={{
-                          fontFamily: '"Barlow Condensed", sans-serif',
-                          fontWeight: 600,
-                          fontSize: '13px',
-                          lineHeight: '110%',
-                          color: 'rgba(255, 255, 255, 0.9)',
-                          whiteSpace: 'nowrap',
+                          fontFamily: '"Barlow Condensed", sans-serif', fontWeight: 600, fontSize: '13px', lineHeight: '110%', color: 'rgba(255, 255, 255, 0.9)', whiteSpace: 'nowrap',
                         }}>
                           Coin's Earned
                         </span>
                         <span style={{
-                          fontFamily: '"Barlow Condensed", sans-serif',
-                          fontWeight: 500,
-                          fontSize: '10px',
-                          lineHeight: '110%',
-                          color: 'rgba(136, 136, 136, 1)',
-                          whiteSpace: 'nowrap',
-                          marginTop: '-2px',
+                          fontFamily: '"Barlow Condensed", sans-serif', fontWeight: 500, fontSize: '10px', lineHeight: '110%', color: 'rgba(136, 136, 136, 1)', whiteSpace: 'nowrap', marginTop: '-2px',
                         }}>
                           This Month
                         </span>
                       </div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginTop: '2px' }}>
-                        <img src="/coins/Coin.png" alt="coin" style={{ width: '18px', height: '18px' }} />
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginTop: '6px' }}>
+                        <img src="/coins/Coin.png" alt="coin" style={{ width: '16px', height: '16px' }} />
                         <div style={{
-                          fontFamily: '"Barlow Condensed", sans-serif',
-                          fontWeight: 700,
-                          fontSize: '18px',
-                          lineHeight: '120%',
-                          backgroundImage: 'linear-gradient(180deg, #FEDF77 0%, #FCB91E 100%)',
-                          WebkitBackgroundClip: 'text',
-                          color: 'transparent',
-                          display: 'flex',
-                          alignItems: 'center',
-                          whiteSpace: 'nowrap',
-                          overflow: 'visible',
+                          fontFamily: '"Barlow Condensed", sans-serif', fontWeight: 700, fontSize: '16px', lineHeight: '120%', backgroundImage: 'linear-gradient(180deg, #FEDF77 0%, #FCB91E 100%)', WebkitBackgroundClip: 'text', color: 'transparent', display: 'flex', alignItems: 'center', whiteSpace: 'nowrap', overflow: 'visible',
                         }}>
                           {(profile.earningsThisMonth || 0).toLocaleString()}
                         </div>
@@ -392,57 +354,27 @@ const PublicProfileModal = ({ userId, onClose }) => {
                     </div>
 
                     {/* Box 2: Total Earning */}
-                    <div style={{
-                      width: '112.5px',
-                      height: '78px',
-                      borderRadius: '12px',
-                      padding: '10px 14px',
+                    <div className="flex flex-col justify-between items-start box-border rounded-[12px] p-3" style={{
                       background: 'rgba(0, 0, 0, 0.36)',
                       backdropFilter: 'blur(44px)',
                       WebkitBackdropFilter: 'blur(44px)',
-                      display: 'flex',
-                      flexDirection: 'column',
-                      justifyContent: 'space-between',
-                      alignItems: 'flex-start',
-                      boxSizing: 'border-box',
                     }}>
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
                         <span style={{
-                          fontFamily: '"Barlow Condensed", sans-serif',
-                          fontWeight: 600,
-                          fontSize: '13px',
-                          lineHeight: '110%',
-                          color: 'rgba(255, 255, 255, 0.9)',
-                          whiteSpace: 'nowrap',
+                          fontFamily: '"Barlow Condensed", sans-serif', fontWeight: 600, fontSize: '13px', lineHeight: '110%', color: 'rgba(255, 255, 255, 0.9)', whiteSpace: 'nowrap',
                         }}>
                           Total Earning
                         </span>
                         <span style={{
-                          fontFamily: '"Barlow Condensed", sans-serif',
-                          fontWeight: 500,
-                          fontSize: '10px',
-                          lineHeight: '110%',
-                          color: 'rgba(136, 136, 136, 1)',
-                          whiteSpace: 'nowrap',
-                          marginTop: '-2px',
+                          fontFamily: '"Barlow Condensed", sans-serif', fontWeight: 500, fontSize: '10px', lineHeight: '110%', color: 'rgba(136, 136, 136, 1)', whiteSpace: 'nowrap', marginTop: '-2px',
                         }}>
                           All Time
                         </span>
                       </div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginTop: '2px' }}>
-                        <img src="/coins/Coin.png" alt="coin" style={{ width: '18px', height: '18px' }} />
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginTop: '6px' }}>
+                        <img src="/coins/Coin.png" alt="coin" style={{ width: '16px', height: '16px' }} />
                         <div style={{
-                          fontFamily: '"Barlow Condensed", sans-serif',
-                          fontWeight: 700,
-                          fontSize: '18px',
-                          lineHeight: '120%',
-                          backgroundImage: 'linear-gradient(180deg, #FEDF77 0%, #FCB91E 100%)',
-                          WebkitBackgroundClip: 'text',
-                          color: 'transparent',
-                          display: 'flex',
-                          alignItems: 'center',
-                          whiteSpace: 'nowrap',
-                          overflow: 'visible',
+                          fontFamily: '"Barlow Condensed", sans-serif', fontWeight: 700, fontSize: '16px', lineHeight: '120%', backgroundImage: 'linear-gradient(180deg, #FEDF77 0%, #FCB91E 100%)', WebkitBackgroundClip: 'text', color: 'transparent', display: 'flex', alignItems: 'center', whiteSpace: 'nowrap', overflow: 'visible',
                         }}>
                           {(profile.totalEarned || 0).toLocaleString()}
                         </div>
@@ -450,104 +382,50 @@ const PublicProfileModal = ({ userId, onClose }) => {
                     </div>
 
                     {/* Box 3: Referred Affiliates */}
-                    <div style={{
-                      width: '112.5px',
-                      height: '78px',
-                      borderRadius: '12px',
-                      padding: '10px 14px',
+                    <div className="flex flex-col justify-between items-start box-border rounded-[12px] p-3" style={{
                       background: 'rgba(0, 0, 0, 0.36)',
                       backdropFilter: 'blur(44px)',
                       WebkitBackdropFilter: 'blur(44px)',
-                      display: 'flex',
-                      flexDirection: 'column',
-                      justifyContent: 'space-between',
-                      alignItems: 'flex-start',
-                      boxSizing: 'border-box',
                     }}>
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                        <span style={{
-                          fontFamily: '"Barlow Condensed", sans-serif',
-                          fontWeight: 600,
-                          fontSize: '13px',
-                          lineHeight: '110%',
-                          color: 'rgba(255, 255, 255, 0.9)',
-                          whiteSpace: 'nowrap',
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', width: '100%' }}>
+                        <span className="truncate w-full" style={{
+                          fontFamily: '"Barlow Condensed", sans-serif', fontWeight: 600, fontSize: '13px', lineHeight: '110%', color: 'rgba(255, 255, 255, 0.9)',
                         }}>
                           Referred Affiliates
                         </span>
                         <span style={{
-                          fontFamily: '"Barlow Condensed", sans-serif',
-                          fontWeight: 500,
-                          fontSize: '10px',
-                          lineHeight: '110%',
-                          color: 'rgba(136, 136, 136, 1)',
-                          whiteSpace: 'nowrap',
-                          marginTop: '-2px',
+                          fontFamily: '"Barlow Condensed", sans-serif', fontWeight: 500, fontSize: '10px', lineHeight: '110%', color: 'rgba(136, 136, 136, 1)', whiteSpace: 'nowrap', marginTop: '-2px',
                         }}>
                           All Time
                         </span>
                       </div>
                       <span style={{
-                        fontFamily: '"Barlow Condensed", sans-serif',
-                        fontWeight: 700,
-                        fontSize: '18px',
-                        lineHeight: '120%',
-                        color: 'rgba(73, 178, 101, 1)',
-                        display: 'flex',
-                        alignItems: 'center',
-                        marginTop: '2px',
+                        fontFamily: '"Barlow Condensed", sans-serif', fontWeight: 700, fontSize: '16px', lineHeight: '120%', color: 'rgba(73, 178, 101, 1)', display: 'flex', alignItems: 'center', marginTop: '8px',
                       }}>
                         {(profile.referredCount || 0).toLocaleString()}
                       </span>
                     </div>
 
                     {/* Box 4: Task Completed */}
-                    <div style={{
-                      width: '112.5px',
-                      height: '78px',
-                      borderRadius: '12px',
-                      padding: '10px 14px',
+                    <div className="flex flex-col justify-between items-start box-border rounded-[12px] p-3" style={{
                       background: 'rgba(0, 0, 0, 0.36)',
                       backdropFilter: 'blur(44px)',
                       WebkitBackdropFilter: 'blur(44px)',
-                      display: 'flex',
-                      flexDirection: 'column',
-                      justifyContent: 'space-between',
-                      alignItems: 'flex-start',
-                      boxSizing: 'border-box',
                     }}>
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                        <span style={{
-                          fontFamily: '"Barlow Condensed", sans-serif',
-                          fontWeight: 600,
-                          fontSize: '13px',
-                          lineHeight: '110%',
-                          color: 'rgba(255, 255, 255, 0.9)',
-                          whiteSpace: 'nowrap',
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', width: '100%' }}>
+                        <span className="truncate w-full" style={{
+                          fontFamily: '"Barlow Condensed", sans-serif', fontWeight: 600, fontSize: '13px', lineHeight: '110%', color: 'rgba(255, 255, 255, 0.9)',
                         }}>
                           Task Completed
                         </span>
                         <span style={{
-                          fontFamily: '"Barlow Condensed", sans-serif',
-                          fontWeight: 500,
-                          fontSize: '10px',
-                          lineHeight: '110%',
-                          color: 'rgba(136, 136, 136, 1)',
-                          whiteSpace: 'nowrap',
-                          marginTop: '-2px',
+                          fontFamily: '"Barlow Condensed", sans-serif', fontWeight: 500, fontSize: '10px', lineHeight: '110%', color: 'rgba(136, 136, 136, 1)', whiteSpace: 'nowrap', marginTop: '-2px',
                         }}>
                           All Time
                         </span>
                       </div>
                       <span style={{
-                        fontFamily: '"Barlow Condensed", sans-serif',
-                        fontWeight: 700,
-                        fontSize: '18px',
-                        lineHeight: '120%',
-                        color: 'rgba(73, 178, 101, 1)',
-                        display: 'flex',
-                        alignItems: 'center',
-                        marginTop: '2px',
+                        fontFamily: '"Barlow Condensed", sans-serif', fontWeight: 700, fontSize: '16px', lineHeight: '120%', color: 'rgba(73, 178, 101, 1)', display: 'flex', alignItems: 'center', marginTop: '8px',
                       }}>
                         {(profile.tasksCompletedCount || 0).toLocaleString()}
                       </span>
@@ -556,7 +434,7 @@ const PublicProfileModal = ({ userId, onClose }) => {
 
                   {/* Recent Activity — public profiles only */}
                   <div style={{
-                    width: '468px',
+                    width: '100%',
                     flex: 1,
                     display: 'flex',
                     flexDirection: 'column',
@@ -566,7 +444,7 @@ const PublicProfileModal = ({ userId, onClose }) => {
                     minHeight: 0
                   }}>
                     <div style={{
-                      width: '468px', height: '19px',
+                      width: '100%', height: '19px',
                       fontFamily: '"Barlow Condensed", sans-serif', fontWeight: 700, fontSize: '16px', lineHeight: '120%', color: 'rgba(255, 255, 255, 1)',
                       display: 'flex', alignItems: 'center'
                     }}>
@@ -604,18 +482,18 @@ const PublicProfileModal = ({ userId, onClose }) => {
                               <div
                                 key={offer._id}
                                 style={{
-                                  width: '468px', height: '62px',
+                                  width: '100%', height: 'auto',
                                   display: 'flex', alignItems: 'center',
-                                  justifyContent: 'space-between', gap: '16px',
-                                  padding: '12px', borderRadius: '12px',
+                                  justifyContent: 'space-between', gap: '8px',
+                                  padding: '10px 12px', borderRadius: '12px',
                                   background: 'rgba(0, 0, 0, 0.36)',
                                   backdropFilter: 'blur(44px)',
                                   border: 'none',
                                 }}
                               >
-                                <div style={{ flex: 1, minWidth: 0, height: '37px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                                <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: '4px' }}>
                                   <div style={{
-                                    width: '100%', height: '17px',
+                                    width: '100%',
                                     fontFamily: '"Barlow Condensed", sans-serif', fontWeight: 700, fontSize: '14px', lineHeight: '120%', color: 'rgba(255, 255, 255, 1)',
                                     letterSpacing: '0.5px',
                                     overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
@@ -623,7 +501,7 @@ const PublicProfileModal = ({ userId, onClose }) => {
                                     {heading}
                                   </div>
                                   <div style={{
-                                    width: '100%', height: '14px',
+                                    width: '100%',
                                     fontFamily: '"Barlow Condensed", sans-serif', fontWeight: 500, fontSize: '11px', lineHeight: '130%', color: 'rgba(136, 136, 136, 1)',
                                     letterSpacing: '0.5px',
                                     overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
@@ -631,11 +509,11 @@ const PublicProfileModal = ({ userId, onClose }) => {
                                     {subText}
                                   </div>
                                 </div>
-                                <div style={{ width: 'auto', height: '38px', display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '6px', flexShrink: 0 }}>
+                                <div style={{ width: 'auto', display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '4px', flexShrink: 0 }}>
                                   <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                                    <img src="/coins/Coin.png" alt="coin" style={{ width: '18px', height: '18px' }} />
+                                    <img src="/coins/Coin.png" alt="coin" style={{ width: '16px', height: '16px' }} />
                                     <div style={{
-                                      fontFamily: '"Barlow Condensed", sans-serif', fontWeight: 700, fontSize: '16px', lineHeight: '130%',
+                                      fontFamily: '"Barlow Condensed", sans-serif', fontWeight: 700, fontSize: '15px', lineHeight: '130%',
                                       backgroundImage: 'linear-gradient(180deg, #FEDF77 0%, #FCB91E 100%)',
                                       WebkitBackgroundClip: 'text', color: 'transparent'
                                     }}>
@@ -643,8 +521,8 @@ const PublicProfileModal = ({ userId, onClose }) => {
                                     </div>
                                   </div>
                                   <div style={{
-                                    width: 'auto', height: '14px',
-                                    fontFamily: '"Barlow Condensed", sans-serif', fontWeight: 500, fontSize: '11px', lineHeight: '130%', textAlign: 'right', color: 'rgba(136, 136, 136, 1)',
+                                    width: 'auto',
+                                    fontFamily: '"Barlow Condensed", sans-serif', fontWeight: 500, fontSize: '10px', lineHeight: '130%', textAlign: 'right', color: 'rgba(136, 136, 136, 1)',
                                     whiteSpace: 'nowrap'
                                   }}>
                                     {timeAgo(offer.createdAt)}
@@ -691,9 +569,9 @@ const PublicProfileModal = ({ userId, onClose }) => {
 
                             return (
                               <div style={{
-                                width: '468px', height: '32px',
+                                width: '100%',
                                 display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '5px',
-                                marginTop: 'auto',
+                                marginTop: '12px', paddingBottom: '8px'
                               }}>
                                 <CircleBtn
                                   isArrow

@@ -103,7 +103,7 @@ const LiveEarningsBar = () => {
     <>
       {/* Removed overflow-hidden so the tooltip dropdown is visible */}
       <div 
-        className="w-full bg-black whitespace-nowrap flex items-center relative shadow-sm z-30 mx-auto h-[50px] lg:h-[88px]"
+        className="w-full bg-black whitespace-nowrap flex items-center relative shadow-sm z-30 mx-auto h-[36px] lg:h-[88px]"
         style={{
           maxWidth: '1511px',
           borderTop: '1px solid rgba(255, 255, 255, 0.4)',
@@ -127,8 +127,8 @@ const LiveEarningsBar = () => {
               padding: '2px 4px'
             }}
           >
-            <div className="w-2.5 h-2.5 rounded-full bg-[#49B265] animate-pulse drop-shadow-[0_0_8px_rgba(73,178,101,0.8)] shrink-0" />
-            <span className="text-[16px] lg:text-[28px]" style={{
+            <div className="w-1.5 h-1.5 lg:w-2.5 lg:h-2.5 rounded-full bg-[#49B265] animate-pulse drop-shadow-[0_0_8px_rgba(73,178,101,0.8)] shrink-0" />
+            <span className="text-[12px] lg:text-[28px]" style={{
               width: 'auto',
               minWidth: 'auto',
               height: 'auto',
@@ -157,8 +157,7 @@ const LiveEarningsBar = () => {
               paddingTop: '150px',
               paddingBottom: '150px',
               marginTop: '-150px',
-              marginBottom: '-150px',
-              pointerEvents: 'none'
+              marginBottom: '-150px'
             }}
           >
             <AnimatePresence initial={false}>
@@ -174,21 +173,20 @@ const LiveEarningsBar = () => {
                     animate={{ opacity: 1, x: 0, scale: 1 }}
                     exit={{ opacity: 0, scale: 0.9, transition: { duration: 0.2 } }}
                     transition={{ duration: 0.4, type: "spring", bounce: 0.3 }}
-                    className={`${index >= 3 ? 'hidden lg:inline-flex' : 'inline-flex'} items-center group cursor-pointer transition-transform hover:scale-[1.02] relative shrink-0 h-[32px] lg:h-[46px] px-[10px] py-[6px] lg:px-[16px] lg:py-[10px]`} 
+                    className={`${index >= 3 ? 'hidden lg:inline-flex' : 'inline-flex'} items-center group cursor-pointer transition-transform hover:scale-[1.02] relative shrink-0 h-[24px] lg:h-[46px] px-[8px] py-[2px] lg:px-[16px] lg:py-[10px]`} 
                     style={{
                       width: 'auto',
                       minWidth: 'fit-content',
                       borderRadius: '50px',
                       gap: '8px',
-                      background: 'rgba(255, 255, 255, 0.14)',
-                      pointerEvents: 'auto'
+                      background: 'rgba(255, 255, 255, 0.14)'
                     }}
                     onClick={() => tx.userId?._id && setSelectedUserId(tx.userId._id)}
                   >
                     
                     {/* User Avatar */}
                     <div 
-                      className="relative rounded-full overflow-hidden shrink-0 transition-transform group-hover:scale-105 w-[20px] h-[20px] lg:w-[26px] lg:h-[26px]"
+                      className="relative rounded-full overflow-hidden shrink-0 transition-transform group-hover:scale-105 w-[14px] h-[14px] lg:w-[26px] lg:h-[26px]"
                     >
                       <img 
                         src={tx.userId?.avatarUrl || `/avatars/avatar1.png`} 
@@ -204,7 +202,7 @@ const LiveEarningsBar = () => {
                       style={{ height: 'auto' }}
                     >
                       <span 
-                        className="text-left shrink-0 text-[14px] lg:text-[22px]"
+                        className="text-left shrink-0 text-[10px] lg:text-[22px]"
                         style={{
                           height: 'auto',
                           fontFamily: '"Barlow Condensed", sans-serif',
@@ -223,18 +221,18 @@ const LiveEarningsBar = () => {
                           <img 
                             src="/coins/Coin.png"
                             alt="Coin"
-                            className="w-[14px] h-[14px] lg:w-[18px] lg:h-[18px]"
+                            className="w-[10px] h-[10px] lg:w-[18px] lg:h-[18px]"
                           />
                         )}
                         {!details.isCoin && details.isWithdrawal && (
                           <img 
                             src="/coins/paisa.png"
                             alt="Paisa"
-                            className="w-[14px] h-[14px] lg:w-[18px] lg:h-[18px] object-contain"
+                            className="w-[10px] h-[10px] lg:w-[18px] lg:h-[18px] object-contain"
                           />
                         )}
                         <span 
-                          className="text-[12px] lg:text-[16px]"
+                          className="text-[10px] lg:text-[16px]"
                           style={details.isWithdrawal ? {
                             height: 'auto',
                             fontFamily: '"Barlow Condensed", sans-serif',
@@ -260,15 +258,10 @@ const LiveEarningsBar = () => {
                     {/* Tooltip Box (Hover) */}
                     <div className="absolute top-[calc(100%+8px)] left-1/2 -translate-x-1/2 pointer-events-none opacity-0 translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-200 z-[100] drop-shadow-2xl">
                       <div 
-                        className="flex flex-col relative shadow-[0_10px_40px_rgba(0,0,0,0.6)]"
+                        className="flex flex-col relative shadow-[0_10px_40px_rgba(0,0,0,0.6)] min-w-[130px] lg:min-w-[167px] min-h-[70px] lg:min-h-[97px] rounded-[8px] lg:rounded-[12px] p-[8px] lg:p-[12px] gap-[6px] lg:gap-[10px]"
                         style={{
                           width: 'auto',
-                          minWidth: '167px',
                           height: 'auto',
-                          minHeight: '97px',
-                          borderRadius: '12px',
-                          gap: '10px',
-                          padding: '12px',
                           background: 'rgba(36, 36, 36, 1)',
                           backdropFilter: 'blur(44px)',
                           WebkitBackdropFilter: 'blur(44px)',
@@ -278,20 +271,18 @@ const LiveEarningsBar = () => {
                         {details.isWithdrawal ? (
                           <div className="flex flex-col relative z-10 h-full justify-between gap-[8px]">
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', width: '100%', height: 'auto' }}>
-                              <span style={{
+                              <span className="text-[12px] lg:text-[15px]" style={{
                                 fontFamily: '"Barlow Condensed", sans-serif',
                                 fontWeight: 700,
-                                fontSize: '15px',
                                 lineHeight: '120%',
                                 color: 'rgba(255, 255, 255, 1)',
                                 whiteSpace: 'nowrap'
                               }}>
                                 Withdrawal Completed
                               </span>
-                              <span style={{
+                              <span className="text-[10px] lg:text-[12px]" style={{
                                 fontFamily: '"Barlow Condensed", sans-serif',
                                 fontWeight: 500,
-                                fontSize: '12px',
                                 lineHeight: '130%',
                                 color: 'rgba(136, 136, 136, 1)'
                               }}>
@@ -300,10 +291,9 @@ const LiveEarningsBar = () => {
                             </div>
                             <div style={{ width: '100%', height: '0px', borderTop: '1px solid rgba(255, 255, 255, 0.12)', flexShrink: 0 }} />
                             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', minWidth: 'max-content', gap: '16px', height: '18px' }}>
-                              <span style={{ 
+                              <span className="text-[11px] lg:text-[13px]" style={{ 
                                 fontFamily: '"Barlow Condensed", sans-serif', 
                                 fontWeight: 500, 
-                                fontSize: '13px', 
                                 lineHeight: '130%', 
                                 color: 'rgba(255, 255, 255, 1)',
                                 whiteSpace: 'nowrap'
@@ -311,11 +301,10 @@ const LiveEarningsBar = () => {
                                 Amount
                               </span>
                               <div style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
-                                <img src="/coins/paisa.png" alt="Paisa" style={{ width: '18px', height: '18px', objectFit: 'contain' }} />
-                                <span style={{ 
+                                <img src="/coins/paisa.png" alt="Paisa" className="w-[14px] h-[14px] lg:w-[18px] lg:h-[18px]" style={{ objectFit: 'contain' }} />
+                                <span className="text-[13px] lg:text-[16px]" style={{ 
                                   fontFamily: '"Barlow Condensed", sans-serif', 
                                   fontWeight: 700, 
-                                  fontSize: '16px', 
                                   lineHeight: '130%', 
                                   color: '#49B265',
                                   whiteSpace: 'nowrap',
@@ -330,16 +319,16 @@ const LiveEarningsBar = () => {
                         ) : (
                           <div className="flex flex-col relative z-10 h-full justify-between gap-[10px]">
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', width: '100%', height: 'auto' }}>
-                              <span style={{
+                              <span className="text-[12px] lg:text-[14px]" style={{
                                 width: '100%', height: 'auto',
-                                fontFamily: '"Barlow Condensed", sans-serif', fontWeight: 700, fontSize: '14px', lineHeight: '120%', color: 'rgba(255, 255, 255, 1)',
+                                fontFamily: '"Barlow Condensed", sans-serif', fontWeight: 700, lineHeight: '120%', color: 'rgba(255, 255, 255, 1)',
                                 whiteSpace: 'normal', wordBreak: 'break-word'
                               }}>
                                 {details.task}
                               </span>
-                              <span style={{
+                              <span className="text-[9px] lg:text-[11px]" style={{
                                 width: '100%', height: '14px',
-                                fontFamily: '"Barlow Condensed", sans-serif', fontWeight: 500, fontSize: '11px', lineHeight: '130%', color: 'rgba(136, 136, 136, 1)',
+                                fontFamily: '"Barlow Condensed", sans-serif', fontWeight: 500, lineHeight: '130%', color: 'rgba(136, 136, 136, 1)',
                                 whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis'
                               }}>
                                 {details.taskCategory}
@@ -347,12 +336,11 @@ const LiveEarningsBar = () => {
                             </div>
                             <div style={{ width: '100%', height: '0px', borderTop: '1px solid rgba(255, 255, 255, 0.12)', flexShrink: 0 }} />
                             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', minWidth: 'max-content', gap: '16px', height: '18px' }}>
-                              <span style={{ 
+                              <span className="text-[11px] lg:text-[13px]" style={{ 
                                 width: '32px', 
                                 height: '17px', 
                                 fontFamily: '"Barlow Condensed", sans-serif', 
                                 fontWeight: 500, 
-                                fontSize: '13px', 
                                 lineHeight: '130%', 
                                 textAlign: 'right', 
                                 color: 'rgba(255, 255, 255, 1)',
@@ -361,12 +349,11 @@ const LiveEarningsBar = () => {
                                 Earned
                               </span>
                               <div style={{ display: 'flex', alignItems: 'center', height: '18px', gap: '3px' }}>
-                                <img src="/coins/Coin.png" alt="coin" style={{ width: '18px', height: '18px' }} />
-                                <span style={{ 
+                                <img src="/coins/Coin.png" alt="coin" className="w-[14px] h-[14px] lg:w-[18px] lg:h-[18px]" />
+                                <span className="text-[13px] lg:text-[16px]" style={{ 
                                   height: 'auto', 
                                   fontFamily: '"Barlow Condensed", sans-serif', 
                                   fontWeight: 700, 
-                                  fontSize: '16px', 
                                   lineHeight: '130%', 
                                   backgroundImage: 'linear-gradient(180deg, #FEDF77 0%, #FCB91E 100%)', 
                                   WebkitBackgroundClip: 'text', 
