@@ -229,7 +229,7 @@ const Home = () => {
         {globalStats.show && (
           <motion.div
             variants={item}
-            className="grid grid-cols-1 lg:grid-cols-2 gap-[10px] w-full lg:w-[1240px] px-4 lg:px-0 mx-auto lg:h-[103px] shrink-0"
+            className="grid grid-cols-2 gap-[10px] w-full lg:w-[1240px] px-4 lg:px-0 mx-auto lg:h-[103px] shrink-0"
           >
             <div
               className="relative overflow-hidden group w-full h-[55px] lg:h-[103px] max-w-full lg:max-w-[615px] rounded-[10px] lg:rounded-[20px]"
@@ -241,15 +241,15 @@ const Home = () => {
             >
               <div className="relative z-10 w-full h-full flex items-center justify-start pl-[8px] lg:pl-[15px]">
                 <div
-                  className="flex items-center justify-center shrink-0 w-[42px] h-[42px] lg:w-[72px] lg:h-[72px]"
+                  className="flex items-center justify-center shrink-0 w-[36px] h-[36px] sm:w-[42px] sm:h-[42px] lg:w-[72px] lg:h-[72px]"
                   style={{
                     borderRadius: '10px',
                     background: 'rgba(73, 178, 101, 0.13)'
                   }}
                 >
-                  <img src="/coins/people.png" alt="Members" className="w-[24px] h-[24px] lg:w-[42px] lg:h-[42px] object-contain" />
+                  <img src="/coins/people.png" alt="Members" className="w-[20px] h-[20px] sm:w-[24px] sm:h-[24px] lg:w-[42px] lg:h-[42px] object-contain" />
                 </div>
-                <div className="flex flex-col justify-center gap-0 ml-2 lg:ml-[18px]">
+                <div className="flex flex-col justify-center gap-0 ml-1 sm:ml-2 lg:ml-[18px]">
                   <p
                     className="text-[10px] lg:text-[14px] leading-[130%]"
                     style={{
@@ -263,7 +263,7 @@ const Home = () => {
                     Total Members
                   </p>
                   <div
-                    className="text-[24px] lg:text-[44px] leading-[120%]"
+                    className="text-[18px] sm:text-[24px] lg:text-[44px] leading-[120%]"
                     style={{
                       width: 'auto',
                       height: 'auto',
@@ -279,7 +279,7 @@ const Home = () => {
               <img
                 src="/coins/1000337345.png"
                 alt="Graphic"
-                className="h-full lg:h-[103px] w-auto absolute bottom-0 right-0 opacity-100 pointer-events-none object-contain"
+                className="hidden lg:block h-full lg:h-[103px] w-auto absolute bottom-0 right-0 opacity-100 pointer-events-none object-contain"
               />
             </div>
 
@@ -293,15 +293,15 @@ const Home = () => {
             >
               <div className="relative z-10 w-full h-full flex items-center justify-start pl-[8px] lg:pl-[15px]">
                 <div
-                  className="flex items-center justify-center shrink-0 w-[42px] h-[42px] lg:w-[72px] lg:h-[72px]"
+                  className="flex items-center justify-center shrink-0 w-[36px] h-[36px] sm:w-[42px] sm:h-[42px] lg:w-[72px] lg:h-[72px]"
                   style={{
                     borderRadius: '10px',
                     background: 'rgba(73, 178, 101, 0.13)'
                   }}
                 >
-                  <img src="/coins/paisa.png" alt="Paid" className="w-[24px] h-[24px] lg:w-[42px] lg:h-[42px] object-contain" />
+                  <img src="/coins/paisa.png" alt="Paid" className="w-[20px] h-[20px] sm:w-[24px] sm:h-[24px] lg:w-[42px] lg:h-[42px] object-contain" />
                 </div>
-                <div className="flex flex-col justify-center gap-0 ml-2 lg:ml-[18px]">
+                <div className="flex flex-col justify-center gap-0 ml-1 sm:ml-2 lg:ml-[18px]">
                   <p
                     className="text-[10px] lg:text-[14px] leading-[130%]"
                     style={{
@@ -315,7 +315,7 @@ const Home = () => {
                     Total Paid Out
                   </p>
                   <div
-                    className="text-[24px] lg:text-[44px] leading-[120%]"
+                    className="text-[18px] sm:text-[24px] lg:text-[44px] leading-[120%]"
                     style={{
                       width: 'auto',
                       height: 'auto',
@@ -331,7 +331,7 @@ const Home = () => {
               <img
                 src="/coins/1000337344.png"
                 alt="Graphic"
-                className="h-full lg:h-[103px] w-auto absolute bottom-0 right-0 opacity-100 pointer-events-none object-contain"
+                className="hidden lg:block h-full lg:h-[103px] w-auto absolute bottom-0 right-0 opacity-100 pointer-events-none object-contain"
               />
             </div>
           </motion.div>
@@ -412,18 +412,18 @@ const Home = () => {
                   <img
                     src="/coins/feature%20offer.png"
                     alt="Featured Offers Graphic"
-                    className="absolute right-[-40px] lg:relative lg:right-auto w-[140px] h-[60px] lg:w-[332px] lg:h-[133px] object-contain shrink-0 opacity-100 pointer-events-none"
+                    className="hidden lg:block absolute right-[-40px] lg:relative lg:right-auto w-[140px] h-[60px] lg:w-[332px] lg:h-[133px] object-contain shrink-0 opacity-100 pointer-events-none"
                   />
                 </div>
                 <div className="relative mt-2">
                   <div
                     ref={featuredScrollRef}
                     onScroll={handleFeaturedScroll}
-                    className="flex overflow-x-auto snap-x snap-mandatory"
+                    className="flex flex-col lg:flex-row overflow-visible lg:overflow-x-auto lg:snap-x lg:snap-mandatory gap-4 lg:gap-0"
                     style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
                   >
                     {Array.from({ length: Math.ceil(customOffers.length / itemsPerPage) }).map((_, pageIndex) => (
-                      <div key={pageIndex} className="min-w-full shrink-0 snap-start flex gap-4">
+                      <div key={pageIndex} className="min-w-full shrink-0 lg:snap-start flex gap-4">
                         {customOffers.slice(pageIndex * itemsPerPage, pageIndex * itemsPerPage + itemsPerPage).map(offer => (
                           <div key={offer._id} style={{ width: `calc(${100 / itemsPerPage}% - ${(itemsPerPage - 1) * 16 / itemsPerPage}px)` }}>
                             <FeaturedOfferCard offer={offer} onClick={() => setSelectedOffer(offer)} />
@@ -434,7 +434,7 @@ const Home = () => {
                   </div>
 
                   {/* Dot Pagination */}
-                  <div className="flex justify-center mt-4 lg:mt-6">
+                  <div className="hidden lg:flex justify-center mt-4 lg:mt-6">
                     <div
                       className="flex items-center h-[6px] lg:h-[12px] gap-[4px] lg:gap-[6px]"
                     >
@@ -491,7 +491,7 @@ const Home = () => {
                   <img
                     src="/coins/appimage.png"
                     alt="Gaming & App Offers Graphic"
-                    className="absolute right-[-40px] lg:relative lg:right-auto w-[140px] h-[60px] lg:w-[332px] lg:h-[133px] object-contain shrink-0 opacity-100 pointer-events-none"
+                    className="hidden lg:block absolute right-[-40px] lg:relative lg:right-auto w-[140px] h-[60px] lg:w-[332px] lg:h-[133px] object-contain shrink-0 opacity-100 pointer-events-none"
                   />
                 </div>
                 {loadingSettings ? (
@@ -500,8 +500,8 @@ const Home = () => {
                   <div className="glass-card p-8 border border-white/[0.05] flex justify-center opacity-50"><span className="text-slate-400 text-sm">No gaming offerwalls active.</span></div>
                 ) : (
                   <div
-                    className="grid grid-rows-2 auto-cols-[calc(50%-7px)] grid-flow-col overflow-x-auto snap-x snap-mandatory sm:grid-rows-none sm:auto-cols-auto sm:grid-flow-row sm:grid-cols-4 lg:grid-cols-6 sm:overflow-visible w-full"
-                    style={{ gap: '14px', scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+                    className="grid grid-cols-4 sm:grid-cols-4 lg:grid-cols-6 w-full"
+                    style={{ gap: '14px' }}
                   >
                     {gamingProviders.map(provider => (
                       <div key={provider.id} className="snap-start w-full h-full">
@@ -548,7 +548,7 @@ const Home = () => {
                   <img
                     src="/coins/survay.png"
                     alt="Graphic"
-                    className="absolute right-[-40px] lg:relative lg:right-auto w-[140px] h-[60px] lg:w-[332px] lg:h-[133px] object-contain shrink-0 opacity-100 pointer-events-none"
+                    className="hidden lg:block absolute right-[-40px] lg:relative lg:right-auto w-[140px] h-[60px] lg:w-[332px] lg:h-[133px] object-contain shrink-0 opacity-100 pointer-events-none"
                   />
                 </div>
                 {loadingSettings ? (
@@ -557,8 +557,8 @@ const Home = () => {
                   <div className="glass-card p-8 border border-white/[0.05] flex justify-center opacity-50"><span className="text-slate-400 text-sm">No survey offerwalls active.</span></div>
                 ) : (
                   <div
-                    className="grid grid-rows-2 auto-cols-[calc(50%-7px)] grid-flow-col overflow-x-auto snap-x snap-mandatory sm:grid-rows-none sm:auto-cols-auto sm:grid-flow-row sm:grid-cols-4 lg:grid-cols-6 sm:overflow-visible w-full"
-                    style={{ gap: '14px', scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+                    className="grid grid-cols-4 sm:grid-cols-4 lg:grid-cols-6 w-full"
+                    style={{ gap: '14px' }}
                   >
                     {surveyProviders.map(provider => (
                       <div key={provider.id} className="snap-start w-full h-full">

@@ -44,6 +44,7 @@ const CreateOfferModal = ({ onClose, onCreated, token }) => {
     icon: '',
     coverImage: '',
     requirements: '',
+    platforms: { desktop: false, android: false, ios: false },
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -63,6 +64,7 @@ const CreateOfferModal = ({ onClose, onCreated, token }) => {
           rewardAmount: Number(form.rewardAmount),
           expirationDate: form.expirationDate || null,
           requirements: form.requirements.split('\n').map(r => r.trim()).filter(Boolean),
+          platforms: form.platforms,
         }),
       });
       const data = await res.json();
@@ -244,6 +246,40 @@ const CreateOfferModal = ({ onClose, onCreated, token }) => {
               <option className="bg-slate-900" value="manual_approval">Manual Approval (user submits proof)</option>
               <option className="bg-slate-900" value="click">Click Tracking (auto-credit on click)</option>
             </select>
+          </div>
+
+          {/* Platforms */}
+          <div>
+            <label className="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-2">Available Platforms</label>
+            <div className="flex items-center gap-4">
+              <label className="flex items-center gap-2 text-sm text-white cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={form.platforms.desktop}
+                  onChange={(e) => setForm(f => ({ ...f, platforms: { ...f.platforms, desktop: e.target.checked } }))}
+                  className="accent-amber-500 w-4 h-4"
+                />
+                Desktop
+              </label>
+              <label className="flex items-center gap-2 text-sm text-white cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={form.platforms.android}
+                  onChange={(e) => setForm(f => ({ ...f, platforms: { ...f.platforms, android: e.target.checked } }))}
+                  className="accent-amber-500 w-4 h-4"
+                />
+                Android
+              </label>
+              <label className="flex items-center gap-2 text-sm text-white cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={form.platforms.ios}
+                  onChange={(e) => setForm(f => ({ ...f, platforms: { ...f.platforms, ios: e.target.checked } }))}
+                  className="accent-amber-500 w-4 h-4"
+                />
+                iOS
+              </label>
+            </div>
           </div>
 
           {error && (

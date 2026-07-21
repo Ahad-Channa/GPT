@@ -16,6 +16,11 @@ const customOfferSchema = new mongoose.Schema(
       default: 'manual_approval' 
     },
     requirements: [{ type: String }],
+    platforms: {
+      desktop: { type: Boolean, default: true },
+      android: { type: Boolean, default: true },
+      ios: { type: Boolean, default: true }
+    },
   },
   { timestamps: true }
 );

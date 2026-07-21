@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FiMonitor, FiInbox, FiStar, FiZap, FiExternalLink, FiCheckCircle, FiSend, FiLoader, FiX } from 'react-icons/fi';
+import { FaApple, FaAndroid, FaDesktop } from 'react-icons/fa';
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 import CoinDisplay from '../CoinDisplay';
@@ -62,7 +63,7 @@ export const ProviderCard = ({ provider, onClick }) => {
     <motion.div
       variants={item}
       onClick={onClick}
-      className="cursor-pointer hover:border-indigo-500/40 transition-all flex flex-col items-center justify-center gap-2 group w-full h-[70px] lg:w-[188px] lg:h-[132px] rounded-[10px] lg:rounded-[20px]"
+      className="cursor-pointer hover:border-indigo-500/40 transition-all flex flex-col items-center justify-center gap-2 group w-full h-[45px] lg:w-[188px] lg:h-[132px] rounded-[10px] lg:rounded-[20px]"
       style={{
         background: 'rgba(0, 0, 0, 0.36)',
         backdropFilter: 'blur(44px)',
@@ -131,7 +132,7 @@ export const FeaturedOfferCard = ({ offer, onClick }) => {
     <motion.div
       variants={item}
       onClick={onClick}
-      className={`cursor-pointer transition-all flex flex-col group h-[185px] lg:h-[305px] rounded-[10px] lg:rounded-[20px] gap-2 lg:gap-4 p-2 lg:p-4 ${isExpired ? 'opacity-50' : 'hover:scale-[1.02]'
+      className={`cursor-pointer transition-all flex flex-col group h-auto lg:h-[305px] rounded-[10px] lg:rounded-[20px] gap-2 lg:gap-4 p-2 lg:p-4 ${isExpired ? 'opacity-50' : 'hover:scale-[1.02]'
         }`}
       style={{
         background: 'rgba(0, 0, 0, 0.36)',
@@ -142,7 +143,7 @@ export const FeaturedOfferCard = ({ offer, onClick }) => {
     >
       {/* Cover area */}
       <div
-        className="w-full relative flex-shrink-0 overflow-hidden h-[75px] lg:h-[135px] rounded-[6px] lg:rounded-[10px]"
+        className="w-[75px] h-[75px] lg:w-full lg:h-[135px] mx-auto lg:mx-0 relative flex-shrink-0 overflow-hidden rounded-[10px]"
       >
         {coverImgSrc ? (
           <img
@@ -163,14 +164,23 @@ export const FeaturedOfferCard = ({ offer, onClick }) => {
         )}
         {/* Gradient overlay */}
         <div className="absolute inset-0 bg-gradient-to-t from-[#0f1728]/80 to-transparent" />
+        
+        {/* Platform Icons */}
+        {offer.platforms && (
+          <div className="absolute top-1 lg:top-2 right-1 lg:right-2 flex items-center gap-1 bg-black/60 backdrop-blur-md px-1.5 lg:px-2 py-1 rounded-md border border-white/10 z-10">
+            {offer.platforms.desktop && <FaDesktop className="text-white text-[8px] lg:text-[10px]" title="Desktop" />}
+            {offer.platforms.android && <FaAndroid className="text-emerald-400 text-[8px] lg:text-[10px]" title="Android" />}
+            {offer.platforms.ios && <FaApple className="text-white text-[8px] lg:text-[10px]" title="iOS" />}
+          </div>
+        )}
       </div>
 
       {/* Text info */}
       <div
-        className="flex flex-col w-full flex-1 gap-[8px] lg:gap-[16px]"
+        className="flex flex-col w-full flex-1 gap-[8px] lg:gap-[16px] items-center lg:items-start"
       >
         <div
-          className="flex flex-col w-full gap-[4px] lg:gap-[6px]"
+          className="flex flex-col w-full gap-[4px] lg:gap-[6px] text-center lg:text-left"
         >
           <p
             className="line-clamp-1 truncate text-[14px] lg:text-[26px] pb-[2px]"
@@ -186,7 +196,7 @@ export const FeaturedOfferCard = ({ offer, onClick }) => {
             {offer.title}
           </p>
           <p
-            className="line-clamp-2 text-[10px] lg:text-[16px] h-[26px] lg:h-[42px]"
+            className="hidden lg:block line-clamp-2 text-[10px] lg:text-[16px] h-[26px] lg:h-[42px]"
             style={{
               fontFamily: '"Barlow Condensed", sans-serif',
               fontWeight: 500,
@@ -199,7 +209,7 @@ export const FeaturedOfferCard = ({ offer, onClick }) => {
           </p>
         </div>
         <div
-          className="flex items-center mt-auto h-[16px] lg:h-[26px] gap-[3px]"
+          className="flex items-center justify-center lg:justify-start w-full mt-auto h-[16px] lg:h-[26px] gap-[3px]"
         >
           <img
             src="/coins/Coin.png"
