@@ -246,7 +246,7 @@ const Earn = () => {
                     <p className="text-xs text-slate-500 font-semibold tracking-wide uppercase mb-2">
                       {customOffers.length} Active {customOffers.length === 1 ? 'Offer' : 'Offers'} — Manual approval required after completion
                     </p>
-                    <div className="grid grid-cols-[repeat(auto-fill,minmax(200px,1fr))] gap-4">
+                    <div className="grid grid-cols-2 lg:grid-cols-[repeat(auto-fill,minmax(156px,1fr))] gap-3 lg:gap-4">
                       {customOffers.map(offer => (
                         <FeaturedOfferCard
                           key={offer._id}

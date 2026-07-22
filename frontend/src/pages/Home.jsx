@@ -195,8 +195,13 @@ const Home = () => {
     { id: 'surveys', label: 'Surveys', iconSrc: '/coins/clipboard.png', count: surveyProviders.length, ref: surveysRef },
   ];
 
-  const getItemsPerPage = () => window.innerWidth < 1024 ? 3 : 4;
-  const [itemsPerPage, setItemsPerPage] = useState(getItemsPerPage);
+  const getItemsPerPage = () => {
+    if (window.innerWidth < 480) return 2;
+    if (window.innerWidth < 768) return 3;
+    if (window.innerWidth < 1024) return 5;
+    return 7;
+  };
+  const [itemsPerPage, setItemsPerPage] = useState(getItemsPerPage());
 
   useEffect(() => {
     const handleResize = () => setItemsPerPage(getItemsPerPage());
@@ -229,7 +234,7 @@ const Home = () => {
         {globalStats.show && (
           <motion.div
             variants={item}
-            className="grid grid-cols-2 gap-[10px] w-full lg:w-[1240px] px-4 lg:px-0 mx-auto lg:h-[103px] shrink-0"
+            className="grid grid-cols-2 gap-[10px] w-full lg:w-[1240px] px-1 lg:px-0 mx-auto lg:h-[103px] shrink-0"
           >
             <div
               className="relative overflow-hidden group w-full h-[55px] lg:h-[103px] max-w-full lg:max-w-[615px] rounded-[10px] lg:rounded-[20px]"
@@ -339,7 +344,7 @@ const Home = () => {
 
         {/* ─── Tabs & MAIN CONTENT WRAPPER ─────────────────── */}
         <div
-          className="mx-auto flex flex-col shrink-0 px-4 lg:px-0 w-full lg:w-[1240px] gap-[12px] lg:gap-[30px]"
+          className="mx-auto flex flex-col shrink-0 px-1 lg:px-0 w-full lg:w-[1240px] gap-[12px] lg:gap-[30px]"
         >
           {/* ─── Quick Jump Tabs ───────────────────────────── */}
           <motion.div variants={item} className="sticky top-4 z-20">
@@ -382,7 +387,7 @@ const Home = () => {
               <motion.section
                 ref={featuredRef}
                 variants={item}
-                className="flex flex-col shrink-0 w-full lg:w-[1240px] min-h-[320px] lg:min-h-[512px] rounded-[10px] lg:rounded-[20px] p-[10px] lg:p-[20px] gap-[10px] lg:gap-[18px]"
+                className="flex flex-col shrink-0 w-full lg:w-[1240px] min-h-[320px] lg:min-h-[250px] rounded-[10px] lg:rounded-[20px] p-[10px] lg:p-[20px] gap-[10px] lg:gap-[18px]"
                 style={{
                   background: 'rgba(255, 255, 255, 0.14)'
                 }}
@@ -425,7 +430,7 @@ const Home = () => {
                     {Array.from({ length: Math.ceil(customOffers.length / itemsPerPage) }).map((_, pageIndex) => (
                       <div key={pageIndex} className="min-w-full shrink-0 lg:snap-start flex gap-4">
                         {customOffers.slice(pageIndex * itemsPerPage, pageIndex * itemsPerPage + itemsPerPage).map(offer => (
-                          <div key={offer._id} style={{ width: `calc(${100 / itemsPerPage}% - ${(itemsPerPage - 1) * 16 / itemsPerPage}px)` }}>
+                          <div key={offer._id} className="w-[calc(50%-8px)] lg:w-auto shrink-0">
                             <FeaturedOfferCard offer={offer} onClick={() => setSelectedOffer(offer)} />
                           </div>
                         ))}

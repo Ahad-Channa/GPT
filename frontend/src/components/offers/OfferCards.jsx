@@ -132,18 +132,17 @@ export const FeaturedOfferCard = ({ offer, onClick }) => {
     <motion.div
       variants={item}
       onClick={onClick}
-      className={`cursor-pointer transition-all flex flex-col group h-auto lg:h-[305px] rounded-[10px] lg:rounded-[20px] gap-2 lg:gap-4 p-2 lg:p-4 ${isExpired ? 'opacity-50' : 'hover:scale-[1.02]'
+      className={`cursor-pointer transition-all flex flex-col group h-auto rounded-[10px] lg:rounded-[10px] gap-2 lg:gap-2 p-2 lg:p-2 w-full lg:w-[156px] shrink-0 ${isExpired ? 'opacity-50' : 'hover:scale-[1.02]'
         }`}
       style={{
         background: 'rgba(0, 0, 0, 0.36)',
         backdropFilter: 'blur(44px)',
-        WebkitBackdropFilter: 'blur(44px)',
-        width: '100%'
+        WebkitBackdropFilter: 'blur(44px)'
       }}
     >
       {/* Cover area */}
       <div
-        className="w-[75px] h-[75px] lg:w-full lg:h-[135px] mx-auto lg:mx-0 relative flex-shrink-0 overflow-hidden rounded-[10px]"
+        className="w-full aspect-square lg:w-[140px] lg:h-[140px] relative flex-shrink-0 overflow-hidden rounded-[10px]"
       >
         {coverImgSrc ? (
           <img
@@ -154,36 +153,36 @@ export const FeaturedOfferCard = ({ offer, onClick }) => {
         ) : (
           <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-amber-900/30 via-[#131a2e] to-indigo-900/30">
             {emojiIcon ? (
-              <span className="text-4xl lg:text-5xl select-none group-hover:scale-110 transition-transform duration-300">
+              <span className="text-4xl lg:text-3xl select-none group-hover:scale-110 transition-transform duration-300">
                 {emojiIcon}
               </span>
             ) : (
-              <FiStar className="text-2xl lg:text-4xl text-amber-400/40 group-hover:text-amber-400/60 transition-colors" />
+              <FiStar className="text-2xl lg:text-3xl text-amber-400/40 group-hover:text-amber-400/60 transition-colors" />
             )}
           </div>
         )}
         {/* Gradient overlay */}
         <div className="absolute inset-0 bg-gradient-to-t from-[#0f1728]/80 to-transparent" />
-        
+
         {/* Platform Icons */}
         {offer.platforms && (
-          <div className="absolute top-1 lg:top-2 right-1 lg:right-2 flex items-center gap-1 bg-black/60 backdrop-blur-md px-1.5 lg:px-2 py-1 rounded-md border border-white/10 z-10">
-            {offer.platforms.desktop && <FaDesktop className="text-white text-[8px] lg:text-[10px]" title="Desktop" />}
-            {offer.platforms.android && <FaAndroid className="text-emerald-400 text-[8px] lg:text-[10px]" title="Android" />}
-            {offer.platforms.ios && <FaApple className="text-white text-[8px] lg:text-[10px]" title="iOS" />}
+          <div className="absolute top-1 lg:top-1.5 right-1 lg:right-1.5 flex items-center gap-1 bg-black/60 backdrop-blur-md px-1.5 lg:px-1.5 py-1 rounded-md border border-white/10 z-10">
+            {offer.platforms.desktop && <FaDesktop className="text-white text-[8px] lg:text-[9px]" title="Desktop" />}
+            {offer.platforms.android && <FaAndroid className="text-emerald-400 text-[8px] lg:text-[9px]" title="Android" />}
+            {offer.platforms.ios && <FaApple className="text-white text-[8px] lg:text-[9px]" title="iOS" />}
           </div>
         )}
       </div>
 
       {/* Text info */}
       <div
-        className="flex flex-col w-full flex-1 gap-[8px] lg:gap-[16px] items-center lg:items-start"
+        className="flex flex-col w-full flex-1 gap-[8px] lg:gap-[6px] items-start"
       >
         <div
-          className="flex flex-col w-full gap-[4px] lg:gap-[6px] text-center lg:text-left"
+          className="flex flex-col w-full gap-[4px] lg:gap-[4px] text-left"
         >
           <p
-            className="line-clamp-1 truncate text-[14px] lg:text-[26px] pb-[2px]"
+            className="line-clamp-1 truncate text-[14px] lg:text-[18px] pb-[2px]"
             title={offer.title}
             style={{
               fontFamily: '"Barlow Condensed", sans-serif',
@@ -196,7 +195,7 @@ export const FeaturedOfferCard = ({ offer, onClick }) => {
             {offer.title}
           </p>
           <p
-            className="hidden lg:block line-clamp-2 text-[10px] lg:text-[16px] h-[26px] lg:h-[42px]"
+            className="hidden line-clamp-2 text-[10px] lg:text-[13px] h-[26px] lg:h-[32px]"
             style={{
               fontFamily: '"Barlow Condensed", sans-serif',
               fontWeight: 500,
@@ -209,18 +208,15 @@ export const FeaturedOfferCard = ({ offer, onClick }) => {
           </p>
         </div>
         <div
-          className="flex items-center justify-center lg:justify-start w-full mt-auto h-[16px] lg:h-[26px] gap-[3px]"
+          className="flex items-center justify-start w-full mt-auto relative -top-[3px] lg:top-0 h-[16px] lg:h-[18px] gap-[3px] lg:gap-[4px]"
         >
           <img
             src="/coins/Coin.png"
             alt="Coin"
-            className="w-[14px] h-[14px] lg:w-[26px] lg:h-[26px] object-contain"
-            style={{
-              filter: 'drop-shadow(0px 0px 14px rgba(254, 198, 53, 0.6))'
-            }}
+            className="w-[12px] h-[12px] lg:w-[15px] lg:h-[15px] object-contain drop-shadow-[0_0_6px_rgba(254,198,53,0.9)] lg:drop-shadow-[0_0_6px_rgba(254,198,53,0.9)]"
           />
           <span
-            className="text-[14px] lg:text-[22px] flex items-center"
+            className="text-[12px] lg:text-[15px] flex items-center"
             style={{
               fontFamily: '"Barlow Condensed", sans-serif',
               fontWeight: 700,

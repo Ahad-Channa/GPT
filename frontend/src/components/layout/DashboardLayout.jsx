@@ -29,7 +29,7 @@ const DashboardLayout = ({ children, showLiveBar = true, fullWidth = false }) =>
       <div 
         className="transition-all duration-300 ease-in-out w-full flex-1"
       >
-        <main className={`relative z-10 w-full ${fullWidth ? 'max-w-[1600px]' : 'max-w-7xl'} mx-auto px-4 md:px-8 2xl:px-12 pt-4 pb-8 md:py-12 flex flex-col`}>
+        <main className={`relative z-10 w-full ${fullWidth ? 'max-w-[1600px]' : 'max-w-7xl'} mx-auto px-1 md:px-8 2xl:px-12 pt-4 pb-8 md:py-12 flex flex-col`}>
           {children}
         </main>
       </div>
