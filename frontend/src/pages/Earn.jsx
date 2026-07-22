@@ -192,7 +192,7 @@ const Earn = () => {
                 ) : surveyProviders.length === 0 ? (
                   renderEmptyState('Surveys')
                 ) : (
-                  <motion.div variants={container} initial="hidden" animate="show" className="grid grid-cols-[repeat(auto-fill,minmax(240px,1fr))] gap-4">
+                  <motion.div variants={container} initial="hidden" animate="show" className="grid grid-cols-2 sm:grid-cols-[repeat(auto-fill,minmax(240px,1fr))] gap-4">
                     {surveyProviders.map(provider => (
                       <ProviderCard key={provider.id} provider={provider} onClick={() => setActiveProvider(provider)} />
                     ))}
@@ -212,7 +212,7 @@ const Earn = () => {
                 ) : gamingProviders.length === 0 ? (
                   renderEmptyState('Gaming & App Offers')
                 ) : (
-                  <motion.div variants={container} initial="hidden" animate="show" className="grid grid-cols-[repeat(auto-fill,minmax(240px,1fr))] gap-4">
+                  <motion.div variants={container} initial="hidden" animate="show" className="grid grid-cols-2 sm:grid-cols-[repeat(auto-fill,minmax(240px,1fr))] gap-4">
                     {gamingProviders.map(provider => (
                       <ProviderCard key={provider.id} provider={provider} onClick={() => setActiveProvider(provider)} />
                     ))}

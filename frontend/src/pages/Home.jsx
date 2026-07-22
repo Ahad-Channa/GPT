@@ -505,7 +505,7 @@ const Home = () => {
                   <div className="glass-card p-8 border border-white/[0.05] flex justify-center opacity-50"><span className="text-slate-400 text-sm">No gaming offerwalls active.</span></div>
                 ) : (
                   <div
-                    className="grid grid-cols-4 sm:grid-cols-4 lg:grid-cols-6 w-full"
+                    className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 w-full"
                     style={{ gap: '14px' }}
                   >
                     {gamingProviders.map(provider => (
@@ -562,7 +562,7 @@ const Home = () => {
                   <div className="glass-card p-8 border border-white/[0.05] flex justify-center opacity-50"><span className="text-slate-400 text-sm">No survey offerwalls active.</span></div>
                 ) : (
                   <div
-                    className="grid grid-cols-4 sm:grid-cols-4 lg:grid-cols-6 w-full"
+                    className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 w-full"
                     style={{ gap: '14px' }}
                   >
                     {surveyProviders.map(provider => (

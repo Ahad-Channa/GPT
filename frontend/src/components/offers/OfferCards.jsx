@@ -63,7 +63,7 @@ export const ProviderCard = ({ provider, onClick }) => {
     <motion.div
       variants={item}
       onClick={onClick}
-      className="cursor-pointer hover:border-indigo-500/40 transition-all flex flex-col items-center justify-center gap-2 group w-full h-[45px] lg:w-[188px] lg:h-[132px] rounded-[10px] lg:rounded-[20px]"
+      className="cursor-pointer hover:border-indigo-500/40 transition-all flex flex-col items-center justify-center gap-2 group w-full h-[90px] lg:w-[188px] lg:h-[132px] rounded-[10px] lg:rounded-[20px]"
       style={{
         background: 'rgba(0, 0, 0, 0.36)',
         backdropFilter: 'blur(44px)',
@@ -74,13 +74,13 @@ export const ProviderCard = ({ provider, onClick }) => {
         <img
           src={logoUrl}
           alt={provider.label}
-          className="group-hover:scale-110 transition-all w-[80%] h-[24px] lg:w-[160px] lg:h-[39px] object-contain"
+          className="group-hover:scale-110 transition-all w-[70%] h-auto max-h-[50px] lg:max-h-none lg:w-[160px] lg:h-[39px] object-contain"
         />
       ) : (
         <div
-          className="group-hover:scale-110 transition-all flex items-center justify-center w-[80%] h-[24px] lg:w-[160px] lg:h-[39px]"
+          className="group-hover:scale-110 transition-all flex items-center justify-center w-[70%] h-auto lg:w-[160px] lg:h-[39px]"
         >
-          <FiMonitor className="text-2xl lg:text-4xl text-indigo-400 group-hover:text-amber-400 transition-colors" />
+          <FiMonitor className="text-3xl lg:text-4xl text-indigo-400 group-hover:text-amber-400 transition-colors" />
         </div>
       )}
     </motion.div>
@@ -166,7 +166,7 @@ export const FeaturedOfferCard = ({ offer, onClick }) => {
 
         {/* Platform Icons */}
         {offer.platforms && (
-          <div className="absolute top-1 lg:top-1.5 right-1 lg:right-1.5 flex items-center gap-1 bg-black/60 backdrop-blur-md px-1.5 lg:px-1.5 py-1 rounded-md border border-white/10 z-10">
+          <div className="absolute top-1 lg:top-1.5 left-1 lg:left-1.5 flex items-center gap-1 bg-black/60 backdrop-blur-md px-1.5 lg:px-1.5 py-1 rounded-md border border-white/10 z-10">
             {offer.platforms.desktop && <FaDesktop className="text-white text-[8px] lg:text-[9px]" title="Desktop" />}
             {offer.platforms.android && <FaAndroid className="text-emerald-400 text-[8px] lg:text-[9px]" title="Android" />}
             {offer.platforms.ios && <FaApple className="text-white text-[8px] lg:text-[9px]" title="iOS" />}
