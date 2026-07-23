@@ -168,28 +168,6 @@ const settingsSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
-    // Toggle for the entire Missions feature visibility for users
-    missionsEnabled: {
-      type: Boolean,
-      default: true,
-    },
-    // Block E — Mission Period Completion Bonus
-    // Extra reward when user completes ALL missions in a period
-    missionCompletionBonus: {
-      daily: {
-        enabled: { type: Boolean, default: true },
-        bonusAmount: { type: Number, default: 0, min: 0 },
-      },
-      weekly: {
-        enabled: { type: Boolean, default: true },
-        bonusAmount: { type: Number, default: 0, min: 0 },
-      },
-      monthly: {
-        enabled: { type: Boolean, default: true },
-        bonusAmount: { type: Number, default: 0, min: 0 },
-      },
-    },
-    // Block F — Book Rewards
     // When true: only users with a German IP see books in the withdrawal section
     // When false: all users worldwide can see and order books
     booksGermanyOnly: {

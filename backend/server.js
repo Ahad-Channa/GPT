@@ -83,7 +83,6 @@ const notificationsRoutes = require('./routes/notifications');
 const chatRoutes = require('./routes/chat');
 const supportRoutes = require('./routes/support');
 const vipRoutes = require('./routes/vip');
-const missionRoutes = require('./routes/missions');
 const booksRoutes = require('./routes/books');
 
 app.use('/api/auth', authRoutes);
@@ -98,7 +97,6 @@ app.use('/api/notifications', notificationsRoutes);
 app.use('/api/chat', chatRoutes);
 app.use('/api/support', supportRoutes);
 app.use('/api/vip', vipRoutes);
-app.use('/api/missions', missionRoutes);
 app.use('/api/books', booksRoutes);
 
 // Base Route
@@ -117,8 +115,6 @@ require('./utils/streakWarningJob');
 require('./utils/referralHoldJob');
 require('./utils/earningHoldJob');
 
-// Seed mission templates (idempotent)
-const { seedMissionTemplates, notifyNewMissions, sendMissionReminders } = require('./utils/missionUtils');
 
 // Daily: every day at midnight UTC
 cron.schedule('0 0 * * *', async () => {
@@ -153,47 +149,6 @@ cron.schedule('0 0 1 * *', async () => {
   }
 }, { timezone: 'UTC' });
 
-// ─── Mission Reset Crons ─────────────────────────────────────────────────────
-// Missions automatically expire at period boundaries — UserMission documents
-// from old periods simply remain in DB (no claims possible, periodKey mismatch).
-// We just log the rollover so it's visible in server logs.
-
-// Reminders: 2 hours before reset (22:00 UTC)
-cron.schedule('0 22 * * *', async () => {
-  console.log('[CRON] Running daily mission reminders...');
-  await sendMissionReminders('daily');
-  
-  const today = new Date();
-  // Weekly reminder: if today is Sunday (day 0)
-  if (today.getUTCDay() === 0) {
-    console.log('[CRON] Running weekly mission reminders...');
-    await sendMissionReminders('weekly');
-  }
-  
-  // Monthly reminder: if tomorrow is the 1st
-  const tomorrow = new Date(today);
-  tomorrow.setUTCDate(today.getUTCDate() + 1);
-  if (tomorrow.getUTCDate() === 1) {
-    console.log('[CRON] Running monthly mission reminders...');
-    await sendMissionReminders('monthly');
-  }
-}, { timezone: 'UTC' });
-
-// Rollovers at midnight UTC
-cron.schedule('0 0 * * *', async () => {
-  console.log('[CRON] Daily mission period rolled over — new periodKey active.');
-  await notifyNewMissions('daily');
-}, { timezone: 'UTC' });
-
-cron.schedule('0 0 * * 1', async () => {
-  console.log('[CRON] Weekly mission period rolled over — new periodKey active.');
-  await notifyNewMissions('weekly');
-}, { timezone: 'UTC' });
-
-cron.schedule('0 0 1 * *', async () => {
-  console.log('[CRON] Monthly mission period rolled over — new periodKey active.');
-  await notifyNewMissions('monthly');
-}, { timezone: 'UTC' });
 
 // ─── Socket.io Live Chat Setup ──────────────────────────────────────────
 const ChatMessage = require('./models/ChatMessage');
@@ -278,9 +233,6 @@ const PORT = process.env.PORT || 5000;
 // Start server AFTER MongoDB connects to prevent buffering timeouts
 connectDB()
   .then(async () => {
-    // Seed mission templates on startup (idempotent upsert)
-    await seedMissionTemplates();
-
     // MIGRATION: populate commissionGenerated for existing referral rewards
     try {
       const User = require('./models/User');

@@ -423,14 +423,12 @@ const Header = ({ onChatToggle, chatOpen, fullWidth }) => {
   const navigate = useNavigate();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [missionsEnabled, setMissionsEnabled] = useState(true);
   const dropdownRef = useRef(null);
 
   useEffect(() => {
     fetch(`${API}/public/stats`)
       .then(r => r.json())
       .then(d => {
-        if (d.success) setMissionsEnabled(d.missionsEnabled ?? true);
       })
       .catch(() => { });
   }, []);
@@ -737,43 +735,6 @@ const Header = ({ onChatToggle, chatOpen, fullWidth }) => {
 
                   <div className="w-full h-[1px] bg-white/5 shrink-0" />
 
-                  {/* Missions */}
-                  {missionsEnabled && (
-                    <>
-                      <button
-                        id="header-missions-link-nav"
-                        onClick={() => { setIsDropdownOpen(false); navigate('/dashboard/missions'); }}
-                        className="text-left text-white/95 hover:text-white transition-colors flex items-center shrink-0 cursor-pointer w-full h-[20px] lg:h-[22px] gap-[6px] lg:gap-[8px]"
-                    style={{
-                      background: 'transparent',
-                      border: 'none',
-                      padding: 0,
-                      opacity: 1
-                    }}
-                      >
-                        <img
-                          src="/coins/target.png"
-                          alt="Missions"
-                          className="shrink-0 object-contain w-[18px] h-[18px] lg:w-[22px] lg:h-[22px]"
-                      style={{ opacity: 1 }}
-                        />
-                        <span
-                          className="font-['Barlow_Condensed'] flex items-center overflow-visible whitespace-nowrap text-[13px] lg:text-[16px] text-white"
-                      style={{
-                        fontFamily: "'Barlow Condensed', sans-serif",
-                        fontWeight: 600,
-                        lineHeight: '120%',
-                        letterSpacing: '0%',
-                        verticalAlign: 'middle',
-                        opacity: 1
-                      }}
-                        >
-                          Missions
-                        </span>
-                      </button>
-                      <div className="w-full h-[1px] bg-white/5 shrink-0" />
-                    </>
-                  )}
 
                   {/* Admin Panel */}
                   {isAdmin && (

@@ -363,14 +363,11 @@ router.get('/settings', requirePermission('manage_withdrawals'), async (req, res
 // PUT update platform settings
 router.put('/settings', requirePermission('manage_withdrawals'), async (req, res) => {
   try {
-    const { withdrawalFeePercent, withdrawalMethods, coinsPerUSD, rewardEngine, referralConfig, earningHoldConfig, showGlobalStats, missionsEnabled } = req.body;
+    const { withdrawalFeePercent, withdrawalMethods, coinsPerUSD, rewardEngine, referralConfig, earningHoldConfig, showGlobalStats } = req.body;
     const settings = await Settings.getSingleton();
 
     if (showGlobalStats !== undefined) {
       settings.showGlobalStats = Boolean(showGlobalStats);
-    }
-    if (missionsEnabled !== undefined) {
-      settings.missionsEnabled = Boolean(missionsEnabled);
     }
 
     if (referralConfig !== undefined) {
@@ -761,13 +758,6 @@ router.put('/custom-offers/submissions/:id', requirePermission('manage_offerwall
                   : `+${refAmount} coins referral commission from ${freshUser.displayName || 'a referral'}'s custom offer is on hold for ${holdDays} day(s).`,
                 { amount: refAmount, sourceUserId: freshUser._id }
               );
-              // MISSION: Increment affiliate_offers for the referrer
-              try {
-                const { incrementMissionProgress } = require('../utils/missionUtils');
-                await incrementMissionProgress(referrer._id, 'affiliate_offers', 1);
-              } catch (mErr) {
-                console.error('[Referral/Mission] Error tracking affiliate_offers:', mErr.message);
-              }
               console.log(`[Referral] Commission created: ${refAmount} coins, status=${txStatus}, txId=${refTx._id}`);
               commissionResult = { fired: true, amount: refAmount, pct, holdDays, status: txStatus, txId: refTx._id };
             } else {
@@ -1929,13 +1919,6 @@ router.post('/proofs/:type/:id/:action', requirePermission('manage_offerwalls'),
                       : `+${refAmount} coins referral commission from ${user.displayName || 'a referral'}'s custom offer is on hold for ${holdDays} day(s).`,
                     { amount: refAmount, sourceUserId: user._id }
                   );
-                  // MISSION: Increment affiliate_offers for the referrer
-                  try {
-                    const { incrementMissionProgress } = require('../utils/missionUtils');
-                    await incrementMissionProgress(referrer._id, 'affiliate_offers', 1);
-                  } catch (mErr) {
-                    console.error('[Referral/Mission] Error tracking affiliate_offers:', mErr.message);
-                  }
                   console.log(`[Referral/ProofsHub] Commission created: ${refAmount} coins, status=${txStatus}`);
                 } else {
                   console.log(`[Referral/ProofsHub] refAmount is 0 (pct=${pct}, offerAmt=${offerAmount}) — skipped`);

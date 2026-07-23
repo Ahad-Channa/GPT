@@ -103,13 +103,6 @@ router.post('/sync', verifyToken, async (req, res) => {
           metadata: { userId: user._id, referrerId: user.referredBy }
         });
 
-        // MISSION: Increment referrals_made for the referrer
-        try {
-          const { incrementMissionProgress } = require('../utils/missionUtils');
-          await incrementMissionProgress(user.referredBy, 'referrals_made', 1);
-        } catch (err) {
-          console.error('[Mission Hook] Error processing referrals_made mission:', err);
-        }
       }
     } else {
       // Existing user: backfill referralCode if they don't have one yet

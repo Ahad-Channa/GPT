@@ -147,54 +147,6 @@ transactionSchema.post('save', async function (doc) {
     }
   }
 
-  // ─── MISSION PROGRESS TRACKING ─────────────────────────────────────────────
-  if (doc.status === 'completed') {
-    try {
-      const { incrementMissionProgress } = require('../utils/missionUtils');
-      
-      // 1. coins_earned (only from offer_reward and custom_offer_reward to avoid bonus-from-bonus)
-      if (doc.amount > 0 && ['offer_reward', 'custom_offer_reward'].includes(doc.transactionType)) {
-        await incrementMissionProgress(doc.userId, 'coins_earned', doc.amount);
-      }
-      
-      // 2. offers_completed
-      if (doc.transactionType === 'offer_reward') {
-        await incrementMissionProgress(doc.userId, 'offers_completed', 1);
-      }
-      
-      // 3. custom_offers_completed
-      if (doc.transactionType === 'custom_offer_reward') {
-        await incrementMissionProgress(doc.userId, 'custom_offers_completed', 1);
-      }
-      
-      // 4. daily_bonus_claimed
-      if (doc.transactionType === 'daily_bonus') {
-        await incrementMissionProgress(doc.userId, 'daily_bonus_claimed', 1);
-      }
-      
-      // 5. referral_earnings
-      if (doc.transactionType === 'referral_reward') {
-        await incrementMissionProgress(doc.userId, 'referral_earnings', doc.amount);
-      }
-      
-      // 6. promo_codes_used
-      if (doc.transactionType === 'promo_code') {
-        await incrementMissionProgress(doc.userId, 'promo_codes_used', 1);
-      }
-
-      // 7. withdrawals_made
-      if (doc.transactionType === 'withdrawal') {
-        await incrementMissionProgress(doc.userId, 'withdrawals_made', 1);
-      }
-
-      // 8. surveys_completed (tracked when offer_reward is completed via 'cpx' provider)
-      if (doc.transactionType === 'offer_reward' && doc.metadata?.providerId === 'cpx') {
-        await incrementMissionProgress(doc.userId, 'surveys_completed', 1);
-      }
-    } catch (err) {
-      console.error('[Transaction Hook] Error processing mission progress:', err);
-    }
-  }
 });
 
 module.exports = mongoose.model('Transaction', transactionSchema);

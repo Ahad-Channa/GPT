@@ -34,8 +34,7 @@ import AdminChat from './pages/admin/AdminChat';
 import AdminSupport from './pages/admin/AdminSupport';
 import AdminVip from './pages/admin/AdminVip';
 import VipPage from './pages/VipPage';
-import MissionPage from './pages/MissionPage';
-import AdminMissions from './pages/admin/AdminMissions';
+
 import AdminBooks from './pages/admin/AdminBooks';
 import NotificationPanel from './components/NotificationPanel';
 
@@ -209,14 +208,7 @@ function App() {
           </PrivateRoute>
         } 
       />
-      <Route 
-        path="/dashboard/missions" 
-        element={
-          <PrivateRoute>
-            <MissionPage />
-          </PrivateRoute>
-        } 
-      />
+
       
       {/* Admin Routes */}
       <Route 
@@ -230,7 +222,7 @@ function App() {
         <Route index element={<AdminOverview />} />
         <Route path="announcements" element={<AdminAnnouncements />} />
         <Route path="vip" element={<AdminVip />} />
-        <Route path="missions" element={<AdminMissions />} />
+
         <Route path="avatars" element={<AdminAvatars />} />
         <Route path="books" element={<AdminBooks />} />
         <Route path="admins" element={<AdminStaff />} />

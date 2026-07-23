@@ -86,7 +86,6 @@ const AdminSettings = () => {
   const [earnGate, setEarnGate] = useState([]);
   const [earnReward, setEarnReward] = useState([]);
   const [showGlobalStats, setShowGlobalStats] = useState(false);
-  const [missionsEnabled, setMissionsEnabled] = useState(true);
   const [earnHoldEnabled, setEarnHoldEnabled] = useState(false);
   const [earnHoldThreshold, setEarnHoldThreshold] = useState('');
   const [earnHoldDays, setEarnHoldDays] = useState('');
@@ -123,7 +122,6 @@ const AdminSettings = () => {
       setEarnHoldThreshold(String(data.settings.earningHoldConfig?.threshold ?? 5000));
       setEarnHoldDays(String(data.settings.earningHoldConfig?.holdDays ?? 30));
       setShowGlobalStats(Boolean(data.settings.showGlobalStats));
-      setMissionsEnabled(data.settings.missionsEnabled ?? true);
       setDirty(false);
     } catch (err) {
       setError(err.message || 'Failed to load settings');
@@ -191,7 +189,6 @@ const AdminSettings = () => {
             dailyBonusReward: earnReward.map(Number),
           },
           showGlobalStats,
-          missionsEnabled
         }),
       });
       const data = await res.json();
@@ -272,7 +269,6 @@ const AdminSettings = () => {
     setEarnHoldThreshold(String(settings.earningHoldConfig?.threshold ?? 5000));
     setEarnHoldDays(String(settings.earningHoldConfig?.holdDays ?? 30));
     setShowGlobalStats(Boolean(settings.showGlobalStats));
-    setMissionsEnabled(settings.missionsEnabled ?? true);
     setDirty(false);
     setError('');
     setSuccess('');

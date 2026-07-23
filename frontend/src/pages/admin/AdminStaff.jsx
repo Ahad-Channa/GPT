@@ -9,7 +9,6 @@ const AVAILABLE_PERMISSIONS = [
   { value: 'manage_withdrawals', label: 'Manage Withdrawals' },
   { value: 'manage_support',     label: 'Support Tickets' },
   { value: 'manage_chat',        label: 'Chat Moderation (Admin Panel)' },
-  { value: 'manage_missions',    label: 'Missions Management' },
   { value: 'manage_offerwalls',  label: 'Offerwall Config + Promos + Proofs' },
   { value: 'manage_admins',      label: 'Manage Admins (Rare / Dangerous)' },
 ];

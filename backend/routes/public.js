@@ -19,8 +19,6 @@ function scrubTransaction(tx) {
     scrubbed.description = 'Earned a Leaderboard Prize';
   } else if (scrubbed.transactionType === 'vip_reward') {
     scrubbed.description = 'Earned a VIP Reward';
-  } else if (scrubbed.transactionType === 'mission_reward') {
-    scrubbed.description = 'Completed a Mission';
   } else if (scrubbed.transactionType === 'daily_bonus') {
     scrubbed.description = 'Claimed Daily Bonus';
   } else if (scrubbed.transactionType === 'promo_code') {
@@ -124,7 +122,6 @@ router.get('/user/:id', async (req, res) => {
     }
 
     const settings = await Settings.findOne({}) || {};
-    const missionsEnabled = settings.missionsEnabled ?? true;
 
     const validTransactionTypes = [
       'offer_reward',
@@ -160,11 +157,7 @@ router.get('/user/:id', async (req, res) => {
 // Returns the 20 most recent earnings globally, intended for the Live Earning Bar.
 router.get('/recent-earnings', async (req, res) => {
   try {
-    const settings = await Settings.findOne({}) || {};
-    const missionsEnabled = settings.missionsEnabled ?? true;
-
     const validTransactionTypes = ['offer_reward', 'custom_offer_reward', 'daily_bonus', 'admin_adjustment', 'promo_code', 'leaderboard_reward', 'vip_reward'];
-    if (missionsEnabled) validTransactionTypes.push('mission_reward');
 
     let recentEarnings = await Transaction.find({
       $or: [
@@ -229,8 +222,7 @@ router.get('/stats', async (req, res) => {
       success: true, 
       totalUsers, 
       totalPaidOut: totalPaidOutUSD, 
-      showGlobalStats: settings.showGlobalStats,
-      missionsEnabled: settings.missionsEnabled ?? true 
+      showGlobalStats: settings.showGlobalStats
     });
   } catch (err) {
     console.error('[/api/public/stats] Error:', err);

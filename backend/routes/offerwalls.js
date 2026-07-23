@@ -252,14 +252,6 @@ const handlePostback = async (providerId, req, res, params) => {
             { amount: refAmount, sourceUserId: user._id }
           );
 
-          // MISSION: Increment affiliate_offers for the referrer
-          // (tracks how many of their affiliates have completed an offer this period)
-          try {
-            const { incrementMissionProgress } = require('../utils/missionUtils');
-            await incrementMissionProgress(referrer._id, 'affiliate_offers', 1);
-          } catch (mErr) {
-            console.error('[Referral/Mission] Error tracking affiliate_offers:', mErr.message);
-          }
         }
 
         // ── Signup Bonus (instant, first offer only) ─────────────────────────

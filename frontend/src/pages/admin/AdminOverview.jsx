@@ -25,9 +25,6 @@ const AdminOverview = () => {
     if (perms.includes('manage_chat')) {
       return <Navigate to="/admin/chat" replace />;
     }
-    if (perms.includes('manage_missions')) {
-      return <Navigate to="/admin/missions" replace />;
-    }
     if (perms.includes('manage_offerwalls')) {
       return <Navigate to="/admin/offerwalls" replace />;
     }
