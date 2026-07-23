@@ -126,7 +126,7 @@ export const ProofUploadView = ({ offer, token, API, onSubmitted, setResult, onC
       {/* Upload Proof Header */}
       <div style={{ width: '100%', height: 'auto', display: 'flex', flexDirection: 'column', gap: '4px', opacity: 1 }}>
         <h3 
-          className="text-[18px] lg:text-[16px]"
+          className="text-[14px] lg:text-[16px]"
           style={{
             width: '100%', height: 'auto', opacity: 1,
             fontFamily: '"Barlow Condensed", sans-serif', fontWeight: 700, fontStyle: 'normal',
@@ -136,7 +136,7 @@ export const ProofUploadView = ({ offer, token, API, onSubmitted, setResult, onC
           Upload Proof
         </h3>
         <p 
-          className="text-[12px] lg:text-[11px]"
+          className="text-[11px] lg:text-[11px]"
           style={{
             width: '100%', height: 'auto', opacity: 1,
             fontFamily: '"Barlow Condensed", sans-serif', fontWeight: 500, fontStyle: 'normal',
@@ -152,7 +152,7 @@ export const ProofUploadView = ({ offer, token, API, onSubmitted, setResult, onC
         onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
         onDragLeave={() => setIsDragging(false)}
         onDrop={handleDrop}
-        className="w-full h-[110px] lg:h-[185px]"
+        className="w-full h-auto min-h-[140px] lg:min-h-[185px]"
         style={{
           borderRadius: '12px',
           paddingTop: '16px',
@@ -187,7 +187,7 @@ export const ProofUploadView = ({ offer, token, API, onSubmitted, setResult, onC
         />
         <div style={{ width: '100%', height: 'auto', display: 'flex', flexDirection: 'column', gap: '4px', opacity: 1, alignItems: 'center', justifyContent: 'center' }}>
           <span 
-            className="text-[15px] lg:text-[16px]"
+            className="text-[14px] lg:text-[16px]"
             style={{ fontFamily: '"Barlow Condensed", sans-serif', fontWeight: 600, color: '#fff', lineHeight: 1 }}
           >
             Drag & drop files here
@@ -291,13 +291,13 @@ export const ProofUploadView = ({ offer, token, API, onSubmitted, setResult, onC
       {/* Additional Details */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', width: '100%' }}>
         <h3 
-          className="text-[18px] lg:text-[16px]"
+          className="text-[14px] lg:text-[16px]"
           style={{ fontFamily: '"Barlow Condensed", sans-serif', fontWeight: 700, color: '#fff', margin: 0, lineHeight: '1.2' }}
         >
           Additional Details (Optional)
         </h3>
         <p 
-          className="text-[12px] lg:text-[11px]"
+          className="text-[11px] lg:text-[11px]"
           style={{ fontFamily: '"Barlow Condensed", sans-serif', fontWeight: 500, color: '#888', margin: 0, lineHeight: '1.3' }}
         >
           Provide any extra information that can help us verify your completion.

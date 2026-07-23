@@ -209,7 +209,7 @@ export const FeaturedOfferCard = ({ offer, onClick }) => {
           <img
             src="/coins/Coin.png"
             alt="Coin"
-            className="w-[12px] h-[12px] lg:w-[15px] lg:h-[15px] object-contain drop-shadow-[0_0_6px_rgba(254,198,53,0.9)] lg:drop-shadow-[0_0_6px_rgba(254,198,53,0.9)]"
+            className="w-[12px] h-[12px] lg:w-[15px] lg:h-[15px] object-contain"
           />
           <span
             className="text-[12px] lg:text-[15px] flex items-center"
@@ -321,61 +321,60 @@ export const FeaturedOfferModal = ({ offer, token, onClose, onSubmitted }) => {
         {!showProofForm && (
           <button
             onClick={onClose}
-            className="absolute top-[26px] right-[16px] w-[36px] h-[36px] rounded-[10px] bg-white/10 text-white flex items-center justify-center cursor-pointer z-10 border-none"
+            className="absolute top-[12px] right-[12px] lg:top-[26px] lg:right-[16px] w-[26px] h-[26px] lg:w-[36px] lg:h-[36px] rounded-[8px] lg:rounded-[10px] bg-white/10 text-white flex items-center justify-center cursor-pointer z-10 border-none"
           >
-            <FiX size={16} />
+            <FiX className="w-[14px] h-[14px] lg:w-[16px] lg:h-[16px]" />
           </button>
         )}
 
         {/* Header Section */}
+        {/* Header Section */}
         {!showProofForm ? (
-          <>
+          <div className="flex flex-row gap-3 lg:gap-4 shrink-0">
             {/* Modal Header / Image */}
-            <div className="w-full h-[180px] lg:h-[159px] rounded-[10px] bg-white/5 flex items-center justify-center relative shrink-0 overflow-hidden">
+            <div className="w-[80px] h-[80px] lg:w-[159px] lg:h-[159px] rounded-[8px] lg:rounded-[10px] bg-white/5 flex items-center justify-center relative shrink-0 overflow-hidden">
               {(() => {
                 const coverImgSrc = offer.coverImage || (isIconUrl(offer.icon) ? offer.icon : null);
                 const emojiIcon = !coverImgSrc && offer.icon ? offer.icon : '🏆';
                 if (coverImgSrc) {
                   return <img src={coverImgSrc} alt={offer.title} className="w-full h-full object-cover rounded-[10px]" />;
                 }
-                return <span className="text-[64px] lg:text-[48px] select-none" style={{ filter: 'drop-shadow(0px 4px 10px rgba(0,0,0,0.5))' }}>{emojiIcon}</span>;
+                return <span className="text-[36px] lg:text-[48px] select-none" style={{ filter: 'drop-shadow(0px 4px 10px rgba(0,0,0,0.5))' }}>{emojiIcon}</span>;
               })()}
             </div>
 
             {/* Title, Description, and Coin Pill */}
-            <div className="w-full min-h-[108px] h-auto flex flex-col gap-4 shrink-0 opacity-100">
+            <div className="flex-1 min-h-0 lg:min-h-[108px] h-auto flex flex-col gap-1 lg:gap-4 shrink opacity-100 min-w-0 pr-4 lg:pr-0">
               {/* Heading and Description Wrapper */}
-              <div className="w-full h-auto flex flex-col gap-[6px] opacity-100">
+              <div className="w-full h-auto flex flex-col gap-1 lg:gap-[6px] opacity-100">
                 <h2
-                  className="w-full h-auto text-[36px] lg:text-[26px]"
+                  className="w-full h-auto text-[18px] lg:text-[26px] break-words"
                   style={{
                     fontFamily: '"Barlow Condensed", sans-serif',
                     fontWeight: 600,
                     color: 'rgba(255, 255, 255, 1)',
                     margin: 0,
-                    lineHeight: '1.2'
+                    lineHeight: '1.1'
                   }}
                 >
                   {offer.title}
                 </h2>
                 <div
-                  className="w-full h-auto text-[22px] lg:text-[16px]"
+                  className="w-full h-auto text-[12px] lg:text-[16px] break-words line-clamp-2 lg:line-clamp-none"
                   style={{
                     fontFamily: '"Barlow Condensed", sans-serif',
                     fontWeight: 500,
                     color: 'rgba(136, 136, 136, 1)',
-                    lineHeight: '1.3'
+                    lineHeight: '1.2'
                   }}
                 >
                   {offer.description.split('\n').map((line, i) => <p key={i} style={{ margin: 0, padding: 0 }}>{line}</p>)}
                 </div>
               </div>
-              <div className="flex items-center gap-[3px] self-start h-[36px] lg:h-[26px]">
-                <img src="/coins/Coin.png" alt="coin" className="w-[30px] h-[30px] lg:w-[26px] lg:h-[26px] object-contain" style={{
-                  filter: 'drop-shadow(0px 0px 14px rgba(254, 198, 53, 0.6))'
-                }} />
+              <div className="flex items-center gap-[3px] self-start h-[20px] lg:h-[26px] mt-1 lg:mt-auto">
+                <img src="/coins/Coin.png" alt="coin" className="w-[20px] h-[20px] lg:w-[26px] lg:h-[26px] object-contain" />
                 <span
-                  className="text-[30px] lg:text-[22px] inline-flex items-center"
+                  className="text-[18px] lg:text-[22px] inline-flex items-center"
                   style={{
                     fontFamily: '"Barlow Condensed", sans-serif',
                     fontWeight: 700,
@@ -391,11 +390,11 @@ export const FeaturedOfferModal = ({ offer, token, onClose, onSubmitted }) => {
                 </span>
               </div>
             </div>
-          </>
+          </div>
         ) : (
-          <div className="w-full flex items-center gap-1.5 shrink-0 opacity-100">
+          <div className="w-full flex flex-row items-center gap-3 shrink-0 opacity-100">
             {/* Small Image */}
-            <div className="w-[99px] h-[66px] rounded-md overflow-hidden shrink-0 bg-white/5">
+            <div className="w-[70px] h-[70px] lg:w-[99px] lg:h-[66px] rounded-[8px] overflow-hidden shrink-0 bg-white/5 flex items-center justify-center">
               {(() => {
                 const coverImgSrc = offer.coverImage || (isIconUrl(offer.icon) ? offer.icon : null);
                 const emojiIcon = !coverImgSrc && offer.icon ? offer.icon : '🏆';
@@ -406,15 +405,15 @@ export const FeaturedOfferModal = ({ offer, token, onClose, onSubmitted }) => {
               })()}
             </div>
             {/* Title and Description */}
-            <div className="flex-1 flex flex-col gap-2 opacity-100 min-w-0">
+            <div className="flex-1 flex flex-col gap-1 lg:gap-2 opacity-100 min-w-0 pr-2 lg:pr-0">
               <h2
-                className="w-full text-[20px] lg:text-[28px] text-white font-semibold leading-none truncate"
+                className="w-full text-[18px] lg:text-[28px] text-white font-semibold leading-none truncate"
                 style={{ fontFamily: '"Barlow Condensed", sans-serif', margin: 0 }}
               >
                 {offer.title}
               </h2>
               <div
-                className="w-full text-xs text-[#888888] leading-tight"
+                className="w-full text-[12px] lg:text-[14px] text-[#888888] leading-tight break-words line-clamp-2 lg:line-clamp-none"
                 style={{ fontFamily: '"Barlow Condensed", sans-serif' }}
               >
                 <p style={{ margin: 0, padding: 0 }}>Follow the steps below to submit your proof of completion for review.</p>
@@ -423,9 +422,9 @@ export const FeaturedOfferModal = ({ offer, token, onClose, onSubmitted }) => {
             {/* Inline Close Button for Proof Form */}
             <button
               onClick={onClose}
-              className="w-6 h-[66px] bg-transparent opacity-100 border-none text-white flex items-center justify-center cursor-pointer shrink-0 p-0"
+              className="w-6 h-auto self-start mt-1 lg:mt-0 lg:h-[66px] lg:self-center bg-transparent opacity-100 border-none text-white flex items-center justify-center cursor-pointer shrink-0 p-0"
             >
-              <FiX size={20} />
+              <FiX className="w-[16px] h-[16px] lg:w-[20px] lg:h-[20px]" />
             </button>
           </div>
         )}
@@ -457,12 +456,15 @@ export const FeaturedOfferModal = ({ offer, token, onClose, onSubmitted }) => {
                     </span>
                   )}
                   {alreadySubmitted && (
-                    <span style={{ padding: '4px 10px', borderRadius: '16px', fontSize: '12px', fontWeight: 'bold', background: 'rgba(16, 185, 129, 0.15)', color: '#34d399', border: '1px solid rgba(16, 185, 129, 0.2)' }}>
+                    <span 
+                      className="px-[10px] py-[4px] rounded-[16px] text-[12px] font-bold border bg-white/10 text-white border-white/10"
+                      style={{ fontFamily: '"Barlow Condensed", sans-serif' }}
+                    >
                       {submissionStatus === 'approved' ? '✓ Approved' : 'Submitted'}
                     </span>
                   )}
                   {isRejected && !alreadySubmitted && (
-                    <div style={{ width: '100%', background: 'rgba(244, 63, 94, 0.1)', border: '1px solid rgba(244, 63, 94, 0.2)', padding: '12px', borderRadius: '12px', color: '#fb7185', fontSize: '13px' }}>
+                    <div style={{ width: '100%', background: 'rgba(244, 63, 94, 0.1)', border: 'none', padding: '12px', borderRadius: '12px', color: '#fb7185', fontSize: '13px' }}>
                       <div style={{ fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' }}><FiInbox /> Submission Rejected</div>
                       {offer.adminNote && <div style={{ fontStyle: 'italic', opacity: 0.8 }}>Admin Note: "{offer.adminNote}"</div>}
                     </div>
@@ -474,7 +476,7 @@ export const FeaturedOfferModal = ({ offer, token, onClose, onSubmitted }) => {
               {!isStarted && offer.requirements && offer.requirements.length > 0 && (
                 <div className="w-full flex flex-col gap-2 shrink-0 sticky top-[-1px] z-20 bg-[#242424] pb-2 opacity-100">
                   <h4
-                    className="text-[20px] lg:text-[16px] text-white font-bold leading-normal"
+                    className="text-[14px] lg:text-[16px] text-white font-bold leading-normal"
                     style={{ fontFamily: '"Barlow Condensed", sans-serif', margin: 0 }}
                   >
                     Requirements
@@ -495,7 +497,7 @@ export const FeaturedOfferModal = ({ offer, token, onClose, onSubmitted }) => {
                           style={{ width: '14px', height: '14px', flexShrink: 0, marginTop: '2px' }}
                         />
                         <p
-                          className="text-[18px] lg:text-[16px] text-white font-medium leading-tight"
+                          className="text-[13px] lg:text-[16px] text-white font-medium leading-tight"
                           style={{ fontFamily: '"Barlow Condensed", sans-serif', margin: 0 }}
                         >
                           {req}
@@ -519,13 +521,13 @@ export const FeaturedOfferModal = ({ offer, token, onClose, onSubmitted }) => {
                   >
                     <div className="flex flex-col gap-1 min-w-0 flex-1">
                       <span
-                        className="text-[18px] lg:text-[14px] text-white font-bold leading-tight block truncate"
+                        className="text-[14px] lg:text-[14px] text-white font-bold leading-tight block truncate"
                         style={{ fontFamily: '"Barlow Condensed", sans-serif' }}
                       >
                         Offer link clicked
                       </span>
                       <span
-                        className="text-[14px] lg:text-[11px] text-[#888888] font-medium leading-tight block truncate"
+                        className="text-[11px] lg:text-[11px] text-[#888888] font-medium leading-tight block truncate"
                         style={{ fontFamily: '"Barlow Condensed", sans-serif' }}
                       >
                         Complete the offer requirements
@@ -533,10 +535,10 @@ export const FeaturedOfferModal = ({ offer, token, onClose, onSubmitted }) => {
                     </div>
                     <button
                       onClick={handleStartOffer}
-                      className="h-[46px] lg:h-[38px] rounded-[10px] px-6 py-2 bg-[#27703a] border-none cursor-pointer flex items-center justify-center gap-2 shadow-[0_4px_0_#23502f] shrink-0"
+                      className="h-[36px] lg:h-[38px] rounded-[8px] lg:rounded-[10px] px-4 lg:px-6 py-2 bg-[#27703a] border-none cursor-pointer flex items-center justify-center gap-2 shadow-[0_4px_0_#23502f] shrink-0"
                     >
                       <span
-                        className="text-[18px] lg:text-[16px] text-white font-bold leading-none flex items-center justify-center"
+                        className="text-[14px] lg:text-[16px] text-white font-bold leading-none flex items-center justify-center"
                         style={{ fontFamily: '"Barlow Condensed", sans-serif' }}
                       >
                         Resume Offer
@@ -545,9 +547,9 @@ export const FeaturedOfferModal = ({ offer, token, onClose, onSubmitted }) => {
                   </div>
 
                   {/* Submit Proof Details */}
-                  <div className="w-full flex flex-col gap-2 shrink-0">
+                  <div className="w-full flex flex-col gap-1 lg:gap-2 shrink-0">
                     <span
-                      className="text-base font-bold text-white leading-normal"
+                      className="text-[14px] lg:text-base font-bold text-white leading-normal"
                       style={{ fontFamily: '"Barlow Condensed", sans-serif' }}
                     >
                       Submit Proof
@@ -564,41 +566,30 @@ export const FeaturedOfferModal = ({ offer, token, onClose, onSubmitted }) => {
             </>
           )}
 
-          {result && (
+          {(result || alreadySubmitted) && (
             <div
-              className="p-3 rounded-xl text-[18px] md:text-[13px] font-medium"
+              className={`w-full text-center p-3 rounded-xl text-[18px] lg:text-[16px] font-medium border ${
+                (result?.type === 'success' || alreadySubmitted)
+                  ? 'bg-white/5 border-white/10 text-white'
+                  : 'bg-[#f43f5e1a] border-[#f43f5e33] text-[#fb7185]'
+              }`}
               style={{
-                background: result.type === 'success' ? 'rgba(16, 185, 129, 0.1)' : 'rgba(244, 63, 94, 0.1)',
-                border: `1px solid ${result.type === 'success' ? 'rgba(16, 185, 129, 0.2)' : 'rgba(244, 63, 94, 0.2)'}`,
-                color: result.type === 'success' ? '#34d399' : '#fb7185'
+                fontFamily: '"Barlow Condensed", sans-serif'
               }}
             >
-              {result.type === 'success' && <FiCheckCircle style={{ display: 'inline', marginRight: '4px' }} />}
-              {result.message}
+              {result?.message || (submissionStatus === 'approved' ? 'Offer Approved! Reward granted.' : 'Proof submitted! Awaiting admin review.')}
             </div>
           )}
         </div>
 
         {/* Footer Actions */}
         <div style={{ marginTop: 'auto', flexShrink: 0 }}>
-          {alreadySubmitted ? (
-            <div
-              className="w-full text-center p-3 rounded-xl text-[#34d399] font-semibold text-[18px] md:text-[14px]"
-              style={{
-                background: 'rgba(16, 185, 129, 0.1)',
-                border: '1px solid rgba(16, 185, 129, 0.2)'
-              }}
-            >
-              <FiCheckCircle style={{ display: 'inline', marginRight: '6px' }} />
-              {submissionStatus === 'approved' ? 'Offer Approved! Reward granted.' : 'Proof Submitted — Awaiting Review'}
-            </div>
-          ) : (
-            !isExpired && (
+          {!alreadySubmitted && !isExpired && (
               <>
                 {!isStarted ? (
                   <button
                     onClick={handleStartOffer}
-                    className="w-full h-[60px] md:h-[48px] rounded-[10px] bg-[#49b265] text-white border-none font-bold text-[22px] md:text-[18px] leading-none flex items-center justify-center gap-2.5 cursor-pointer shadow-[0_4px_0_#276d3a]"
+                    className="w-full h-[48px] rounded-[8px] lg:rounded-[10px] bg-[#49b265] text-white border-none font-bold text-[18px] leading-none flex items-center justify-center gap-2.5 cursor-pointer shadow-[0_4px_0_#276d3a]"
                     style={{
                       fontFamily: '"Barlow Condensed", sans-serif',
                       padding: '10px 30px'
@@ -608,14 +599,14 @@ export const FeaturedOfferModal = ({ offer, token, onClose, onSubmitted }) => {
                     <img
                       src="/coins/image.png"
                       alt="arrow"
-                      className="w-[30px] h-[30px] md:w-[24px] md:h-[24px] object-contain"
+                      className="w-[24px] h-[24px] object-contain"
                     />
                   </button>
                 ) : (
                   !showProofForm && (
                     <button
                       onClick={() => { setShowProofForm(true); setResult(null); }}
-                      className="w-full h-[60px] md:h-[48px] rounded-[10px] bg-[#49b265] text-white border-none font-bold text-[22px] md:text-[18px] leading-none flex items-center justify-center gap-2.5 cursor-pointer shadow-[0_4px_0_#276d3a]"
+                      className="w-full h-[48px] rounded-[8px] lg:rounded-[10px] bg-[#49b265] text-white border-none font-bold text-[18px] leading-none flex items-center justify-center gap-2.5 cursor-pointer shadow-[0_4px_0_#276d3a]"
                       style={{
                         fontFamily: '"Barlow Condensed", sans-serif',
                         padding: '10px 30px'
@@ -624,15 +615,14 @@ export const FeaturedOfferModal = ({ offer, token, onClose, onSubmitted }) => {
                       <img
                         src="/coins/upload.png"
                         alt="upload"
-                        className="w-[30px] h-[30px] md:w-[24px] md:h-[24px] object-contain"
+                        className="w-[24px] h-[24px] object-contain"
                       />
                       Submit Proof
                     </button>
                   )
                 )}
               </>
-            )
-          )}
+            )}
         </div>
       </motion.div>
     </motion.div>
