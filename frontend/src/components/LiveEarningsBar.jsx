@@ -150,14 +150,12 @@ const LiveEarningsBar = () => {
             .hide-scroll::-webkit-scrollbar { display: none; }
           `}</style>
           <div 
-            className="absolute inset-0 flex items-center gap-[6px] overflow-x-auto whitespace-nowrap hide-scroll px-4" 
+            className="absolute inset-0 flex items-center gap-[6px] overflow-x-auto whitespace-nowrap hide-scroll px-4 pointer-events-none" 
             style={{ 
               scrollbarWidth: 'none', 
               msOverflowStyle: 'none',
-              paddingTop: '150px',
-              paddingBottom: '150px',
-              marginTop: '-150px',
-              marginBottom: '-150px'
+              paddingBottom: '120px',
+              marginBottom: '-120px'
             }}
           >
             <AnimatePresence initial={false}>
@@ -173,7 +171,7 @@ const LiveEarningsBar = () => {
                     animate={{ opacity: 1, x: 0, scale: 1 }}
                     exit={{ opacity: 0, scale: 0.9, transition: { duration: 0.2 } }}
                     transition={{ duration: 0.4, type: "spring", bounce: 0.3 }}
-                    className={`inline-flex items-center group cursor-pointer transition-transform hover:scale-[1.02] relative shrink-0 h-[24px] lg:h-[46px] px-[8px] py-[2px] lg:px-[16px] lg:py-[10px]`} 
+                    className={`inline-flex items-center group cursor-pointer transition-transform hover:scale-[1.02] relative shrink-0 h-[24px] lg:h-[46px] px-[8px] py-[2px] lg:px-[16px] lg:py-[10px] pointer-events-auto`} 
                     style={{
                       width: 'auto',
                       minWidth: 'fit-content',
@@ -256,9 +254,9 @@ const LiveEarningsBar = () => {
                     </div>
 
                     {/* Tooltip Box (Hover) */}
-                    <div className="absolute top-[calc(100%+8px)] left-1/2 -translate-x-1/2 pointer-events-none opacity-0 translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-200 z-[100] drop-shadow-2xl">
+                    <div className="absolute top-[calc(100%+8px)] left-1/2 -translate-x-1/2 pointer-events-none opacity-0 translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-200 z-[100]">
                       <div 
-                        className="flex flex-col relative shadow-[0_10px_40px_rgba(0,0,0,0.6)] min-w-[130px] lg:min-w-[167px] min-h-[70px] lg:min-h-[97px] rounded-[8px] lg:rounded-[12px] p-[8px] lg:p-[12px] gap-[6px] lg:gap-[10px]"
+                        className="flex flex-col relative min-w-[130px] lg:min-w-[167px] min-h-[70px] lg:min-h-[97px] rounded-[8px] lg:rounded-[12px] p-[8px] lg:p-[12px] gap-[6px] lg:gap-[10px]"
                         style={{
                           width: 'auto',
                           height: 'auto',

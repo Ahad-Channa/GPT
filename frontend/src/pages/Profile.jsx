@@ -1902,7 +1902,7 @@ const Profile = () => {
         className="w-[1240px] shrink-0 mx-auto flex flex-col gap-[20px]"
       >
         {/* ─── PROFILE HERO ─────────────────────────────── */}
-        <div className="flex flex-col gap-[18px] bg-white/[0.14] rounded-[20px] border border-[#2A2A2E] p-[20px] backdrop-blur-[94px]">
+        <div className="flex flex-col gap-[18px] bg-white/[0.14] rounded-[20px] border border-[#2A2A2E] p-[20px] backdrop-blur-[94px] relative z-20">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 w-full">
             {/* Left side: Avatar + User Details */}
             <div className="flex flex-col sm:flex-row gap-[16px] items-start sm:items-center flex-1 min-w-0">
@@ -1918,7 +1918,7 @@ const Profile = () => {
               </div>
 
               {/* Identity details */}
-              <div className="flex flex-col gap-[10px] w-[824px] h-[104px]">
+              <div className="flex flex-col gap-[10px] w-full max-w-[824px] h-[104px]">
                 <div className="flex items-center w-auto h-[50px]">
                   <h1 className="text-[42px] font-bold text-white font-['Barlow_Condensed'] leading-[120%] whitespace-nowrap">
                     {mongoUser?.displayName || 'Anonymous'}
@@ -1948,7 +1948,7 @@ const Profile = () => {
             </div>
 
             {/* Right side: Action buttons */}
-            <div className="flex items-center gap-3 shrink-0">
+            <div className="flex items-center gap-3 shrink-0 relative z-10">
               <button
                 onClick={() => setShowSettings(true)}
                 title="Account Settings"
