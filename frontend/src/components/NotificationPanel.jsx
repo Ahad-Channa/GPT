@@ -77,11 +77,12 @@ function NotificationMessage({ message, metadata, onLinkClick }) {
     if (!metadata?.link || !metadata?.linkText) {
         return (
             <div style={{
-                width: '280px',
-                height: '38px',
+                width: '100%',
+                height: 'auto',
+                maxHeight: '38px',
                 fontFamily: '"Barlow Condensed", sans-serif',
                 fontWeight: 500,
-                fontSize: '16px',
+                fontSize: '15px',
                 lineHeight: '18px',
                 color: 'rgba(255, 255, 255, 0.6)',
                 overflow: 'hidden',
@@ -101,11 +102,12 @@ function NotificationMessage({ message, metadata, onLinkClick }) {
     if (parts.length < 2) {
         return (
             <div style={{
-                width: '280px',
-                height: '38px',
+                width: '100%',
+                height: 'auto',
+                maxHeight: '38px',
                 fontFamily: '"Barlow Condensed", sans-serif',
                 fontWeight: 500,
-                fontSize: '16px',
+                fontSize: '15px',
                 lineHeight: '18px',
                 color: 'rgba(255, 255, 255, 0.6)',
                 overflow: 'hidden',
@@ -216,7 +218,7 @@ export default function NotificationPanel() {
                             }}
                         >
                             <div style={{
-                                width: '360px',
+                                width: '100%',
                                 height: '29px',
                                 display: 'flex',
                                 alignItems: 'center',
@@ -316,8 +318,9 @@ export default function NotificationPanel() {
                                             }
                                         }}
                                         style={{
-                                            width: '360px',
-                                            height: '114px',
+                                            width: '100%',
+                                            height: 'auto',
+                                            minHeight: '100px',
                                             boxSizing: 'border-box',
                                             borderRadius: '12px',
                                             padding: '14px 12px',
@@ -338,17 +341,17 @@ export default function NotificationPanel() {
                                             
                                             <div style={{
                                                 width: '100%',
-                                                height: '86px',
+                                                height: 'auto',
                                                 display: 'flex',
                                                 flexDirection: 'column',
-                                                gap: '14px',
-                                                justifyContent: 'flex-start',
+                                                gap: '10px',
+                                                justifyContent: 'space-between',
                                                 minWidth: 0,
                                                 boxSizing: 'border-box'
                                             }}>
                                                 <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                                                     <h3 style={{
-                                                        width: '100%',
+                                                        width: 'calc(100% - 20px)',
                                                         height: 'auto',
                                                         fontFamily: '"Barlow Condensed", sans-serif',
                                                         fontWeight: 600,
@@ -373,7 +376,7 @@ export default function NotificationPanel() {
                                                 </div>
                                                 
                                                 <span style={{ 
-                                                    width: '42px',
+                                                    width: 'auto',
                                                     height: '13px',
                                                     fontFamily: '"Barlow Condensed", sans-serif',
                                                     fontWeight: 600,

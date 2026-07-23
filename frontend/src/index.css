@@ -303,6 +303,12 @@
   flex-direction: column;
 }
 
+@media (min-width: 1024px) {
+  .notification-panel-card {
+    width: 290px;
+  }
+}
+
 /* ─── Toast Notifications Fix ─────────────────────────────────── */
 .custom-toast div[role="status"],
 .custom-toast .go3958315143, /* Fallback for react-hot-toast generic inner wrapper if role="status" is overridden */

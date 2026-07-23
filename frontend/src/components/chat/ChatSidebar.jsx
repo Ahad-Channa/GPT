@@ -222,9 +222,9 @@ const MessageRow = ({ msg, canModerate, onDelete, deletingId, onUserClick }) => 
       </div>
 
       {/* ── Right Column: Username, Role & Message ── */}
-      <div style={{ display: 'flex', flexDirection: 'column', width: '304px', minHeight: '43px', gap: '6px' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minWidth: 0, minHeight: '43px', gap: '6px' }}>
         <div style={{ 
-          width: '304px', height: '18px', 
+          width: '100%', height: '18px', 
           display: 'flex', alignItems: 'center', gap: '6px' 
         }}>
           <button
@@ -246,14 +246,14 @@ const MessageRow = ({ msg, canModerate, onDelete, deletingId, onUserClick }) => 
           </button>
 
           {/* Role / VIP badge on Top Right */}
-          <div style={{ display: 'flex', alignItems: 'center', minWidth: '95px', justifyContent: 'flex-end' }}>
+          <div style={{ display: 'flex', alignItems: 'center', minWidth: 'auto', flexShrink: 0, justifyContent: 'flex-end' }}>
             <RoleSymbol user={msg.user} />
           </div>
         </div>
 
         {/* Message text */}
         <div style={{ 
-          width: '304px',
+          width: '100%',
           color: 'rgba(136, 136, 136, 1)', 
           fontSize: '16px', 
           fontWeight: 500,
@@ -464,9 +464,9 @@ const ChatSidebar = ({ isOpen, onClose }) => {
           <motion.div
             initial={{ x: '100%' }} animate={{ x: 0 }} exit={{ x: '100%' }}
             transition={{ type: 'spring', damping: 30, stiffness: 240 }}
+            className="w-full max-w-[400px] lg:w-[290px]"
             style={{
               position: 'fixed', right: 0, top: 0, bottom: 0,
-              width: 400, maxWidth: '100vw',
               background: 'rgba(26, 27, 26, 1)',
               borderLeft: '1px solid rgba(255,255,255,0.07)',
               boxShadow: '-20px 4px 34px 0px rgba(0, 0, 0, 0.6)',
@@ -516,21 +516,24 @@ const ChatSidebar = ({ isOpen, onClose }) => {
             }}>
               {/* Top Row: Tabs Container */}
               <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%' }}>
-                <div style={{
-                  width: '360px', height: '84px',
-                  background: 'rgba(44, 45, 44, 1)',
-                  borderRadius: '10px',
-                  padding: '18px',
-                  boxSizing: 'border-box',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center'
-                }}>
-                  <div style={{
-                    width: '324px', height: '48px',
+                <div 
+                  className="w-full max-w-[360px] lg:w-[250px] h-[72px] lg:h-[60px] p-[14px] lg:p-[8px]"
+                  style={{
+                    background: 'rgba(44, 45, 44, 1)',
+                    borderRadius: '10px',
+                    boxSizing: 'border-box',
                     display: 'flex',
-                    borderRadius: '10px'
-                  }}>
+                    alignItems: 'center',
+                    justifyContent: 'center'
+                  }}
+                >
+                  <div 
+                    className="w-[324px] lg:w-[234px] h-[44px] lg:h-[40px]"
+                    style={{
+                      display: 'flex',
+                      borderRadius: '10px'
+                    }}
+                  >
                     {[
                       { key: 'chat', title: 'Live Chat' },
                       { key: 'support', title: 'Support' }
@@ -540,19 +543,19 @@ const ChatSidebar = ({ isOpen, onClose }) => {
                         <button
                           key={key}
                           onClick={() => setActiveTab(key)}
+                          className="w-[162px] lg:w-[117px] h-[44px] lg:h-[40px] text-[18px] lg:text-[16px]"
                           style={{
-                            width: '162px', height: '48px',
-                            padding: '10px 20px', gap: '10px',
+                            padding: '6px 12px', gap: '8px',
                             border: 'none', cursor: 'pointer',
-                            fontSize: '20px', fontWeight: 700, lineHeight: '32px',
+                            fontWeight: 700, lineHeight: '24px',
                             borderRadius: '10px',
                             background: active ? 'rgba(73, 178, 101, 1)' : 'transparent',
                             color: active ? '#ffffff' : '#94a3b8',
-                            boxShadow: active ? '0px 4px 0px 0px rgba(39, 109, 58, 1)' : 'none',
+                            boxShadow: active ? '0px 3px 0px 0px rgba(39, 109, 58, 1)' : 'none',
                             transition: 'all 0.2s',
                             fontFamily: '"Barlow Condensed", sans-serif',
                             letterSpacing: '0px',
-                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            display: 'flex', alignItems: 'center', justifyCenter: 'center',
                             flexShrink: 0
                           }}
                         >
@@ -567,28 +570,31 @@ const ChatSidebar = ({ isOpen, onClose }) => {
               {/* Bottom Row: Online Count */}
               {activeTab === 'chat' && (
                 <div style={{ display: 'flex', justifyContent: 'flex-end', marginRight: '-20px' }}>
-                  <div style={{
-                    width: '108px', height: '30px',
-                    boxSizing: 'border-box',
-                    display: 'flex', alignItems: 'center', gap: '6px',
-                    background: 'rgba(73, 178, 101, 0.23)', 
-                    padding: '8px 28px 8px 8px',
-                    borderTopLeftRadius: '100px',
-                    borderBottomLeftRadius: '100px',
-                    borderTopRightRadius: 0,
-                    borderBottomRightRadius: 0
-                  }}>
-                    <div style={{ width: 10, height: 10, borderRadius: '50%', background: 'rgba(73, 178, 101, 1)', flexShrink: 0 }} />
-                    <span style={{ 
-                      fontFamily: '"Barlow Condensed", sans-serif',
-                      fontWeight: 600,
-                      fontSize: '20px',
-                      lineHeight: '32px',
-                      letterSpacing: '0px',
-                      color: 'rgba(255, 255, 255, 1)',
-                      whiteSpace: 'nowrap',
-                      display: 'flex', alignItems: 'center', height: '14px'
-                    }}>
+                  <div 
+                    className="w-[108px] lg:w-[88px] h-[30px] lg:h-[24px] px-[8px] pr-[28px] lg:pr-[20px] py-[8px] lg:py-[4px]"
+                    style={{
+                      boxSizing: 'border-box',
+                      display: 'flex', alignItems: 'center', gap: '5px',
+                      background: 'rgba(73, 178, 101, 0.23)', 
+                      borderTopLeftRadius: '100px',
+                      borderBottomLeftRadius: '100px',
+                      borderTopRightRadius: 0,
+                      borderBottomRightRadius: 0
+                    }}
+                  >
+                    <div className="w-2.5 h-2.5 lg:w-2 lg:h-2 rounded-full bg-[#49B265] shrink-0" />
+                    <span 
+                      className="text-[20px] lg:text-[15px]"
+                      style={{ 
+                        fontFamily: '"Barlow Condensed", sans-serif',
+                        fontWeight: 600,
+                        lineHeight: '20px',
+                        letterSpacing: '0px',
+                        color: 'rgba(255, 255, 255, 1)',
+                        whiteSpace: 'nowrap',
+                        display: 'flex', alignItems: 'center', height: '14px'
+                      }}
+                    >
                       {liveCount} online
                     </span>
                   </div>
@@ -686,7 +692,7 @@ const ChatSidebar = ({ isOpen, onClose }) => {
                           placeholder="Message everyone…"
                           maxLength={500}
                           style={{
-                            width: '360px', height: '48px', boxSizing: 'border-box',
+                            width: '100%', height: '48px', boxSizing: 'border-box',
                             background: 'transparent',
                             border: '1px solid rgba(73, 178, 101, 1)',
                             borderRadius: '10px', padding: '10px 40px 10px 20px',

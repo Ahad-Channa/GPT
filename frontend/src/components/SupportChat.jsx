@@ -141,7 +141,8 @@ const MessageRow = ({ msg, isOwn, mongoUser }) => {
         gap: '8px',
         minHeight: '71px',
         boxSizing: 'border-box',
-        flexShrink: 0
+        flexShrink: 0,
+        width: '100%'
       }}
     >
       {/* ── Left Column: Avatar & Timestamp ── */}
@@ -174,9 +175,9 @@ const MessageRow = ({ msg, isOwn, mongoUser }) => {
       </div>
 
       {/* ── Right Column: Username, Role & Message ── */}
-      <div style={{ display: 'flex', flexDirection: 'column', width: '304px', minHeight: '43px', gap: '6px' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minWidth: 0, minHeight: '43px', gap: '6px' }}>
         <div style={{ 
-          width: '304px', height: '18px', 
+          width: '100%', height: '18px', 
           display: 'flex', alignItems: 'center', gap: '6px' 
         }}>
           <div style={{
@@ -192,14 +193,14 @@ const MessageRow = ({ msg, isOwn, mongoUser }) => {
           </div>
 
           {/* Role / VIP badge on Top Right */}
-          <div style={{ display: 'flex', alignItems: 'center', minWidth: '95px', justifyContent: 'flex-end' }}>
+          <div style={{ display: 'flex', alignItems: 'center', minWidth: 'auto', flexShrink: 0, justifyContent: 'flex-end' }}>
             <RoleSymbol user={senderUser} />
           </div>
         </div>
 
         {/* Message text */}
         <div style={{ 
-          width: '304px',
+          width: '100%',
           color: 'rgba(136, 136, 136, 1)', 
           fontSize: '16px', 
           fontWeight: 500,
@@ -398,7 +399,7 @@ const SupportChat = ({ socket }) => {
                 gap: '6px', textAlign: 'center'
               }}>
                 <p style={{ 
-                  margin: 0, width: '360px', height: '38px',
+                  margin: 0, width: '100%', height: '38px',
                   fontFamily: '"Barlow Condensed", sans-serif',
                   fontWeight: 700, fontSize: '32px',
                   lineHeight: '120%', color: '#f8fafc',
@@ -407,11 +408,12 @@ const SupportChat = ({ socket }) => {
                   Contact Support
                 </p>
                 <p style={{ 
-                  margin: 0, width: '360px', height: '58px',
+                  margin: 0, width: '100%', height: 'auto',
                   fontFamily: '"Barlow Condensed", sans-serif',
-                  fontWeight: 500, fontSize: '22px',
+                  fontWeight: 500, fontSize: '20px',
                   lineHeight: '130%', color: '#64748b',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center'
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  textAlign: 'center'
                 }}>
                   Send us a message below and our team will respond as soon as possible.
                 </p>
@@ -452,7 +454,7 @@ const SupportChat = ({ socket }) => {
               maxLength={2000}
               disabled={sending}
               style={{
-                width: '360px', height: '48px', boxSizing: 'border-box',
+                width: '100%', height: '48px', boxSizing: 'border-box',
                 background: 'transparent',
                 border: '1px solid rgba(73, 178, 101, 1)',
                 borderRadius: '10px', padding: '10px 40px 10px 20px',
