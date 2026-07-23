@@ -99,19 +99,15 @@ export const OfferwallCard = ({ provider, userId }) => {
   }
 
   return (
-    <div className="glass-card overflow-hidden border border-white/[0.05]" style={{ height: '800px' }}>
-      <div className="flex items-center justify-between px-4 py-3 border-b border-white/[0.05] bg-white/[0.02]">
-        <span className="text-sm font-semibold text-slate-300">{provider.label}</span>
-        <span className="text-xs text-emerald-400 flex items-center gap-1">
-          <span className="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-pulse inline-block" />
-          Live
-        </span>
-      </div>
+    <div 
+      className="glass-card overflow-y-auto overflow-x-hidden border border-white/[0.05] w-full h-full"
+      style={{ WebkitOverflowScrolling: 'touch' }}
+    >
       <iframe
         src={url}
         title={`${provider.label} Offerwall`}
-        className="w-full border-none"
-        style={{ height: 'calc(100% - 44px)' }}
+        className="w-full h-full border-none block"
+        style={{ minHeight: '100%' }}
         sandbox="allow-scripts allow-same-origin allow-popups allow-forms allow-popups-to-escape-sandbox"
       />
     </div>

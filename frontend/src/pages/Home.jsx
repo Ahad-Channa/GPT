@@ -67,6 +67,18 @@ const Home = () => {
   const [filter, setFilter] = useState('all');
   const [selectedOffer, setSelectedOffer] = useState(null);
 
+  useEffect(() => {
+    if (activeProvider || selectedOffer) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [activeProvider, selectedOffer]);
+
+
   const featuredRef = useRef(null);
   const gamingRef = useRef(null);
   const surveysRef = useRef(null);
@@ -210,21 +222,6 @@ const Home = () => {
   }, []);
   const gridColsClass = 'grid-cols-2 sm:grid-cols-4 lg:grid-cols-6';
 
-  if (activeProvider) {
-    return (
-      <DashboardLayout>
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-4">
-          <button
-            onClick={() => setActiveProvider(null)}
-            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white/[0.05] hover:bg-white/[0.1] text-slate-300 transition-all font-semibold text-sm w-fit"
-          >
-            <span className="text-lg">←</span> Back to Dashboard
-          </button>
-          <OfferwallCard provider={activeProvider} userId={mongoUser?._id} />
-        </motion.div>
-      </DashboardLayout>
-    );
-  }
 
   return (
     <DashboardLayout showLiveBar={true}>
@@ -447,11 +444,10 @@ const Home = () => {
                         <button
                           key={idx}
                           onClick={() => scrollFeaturedToPage(idx)}
-                          className={`transition-all duration-300 hover:opacity-80 rounded-[30px] h-[6px] lg:h-[12px] ${
-                            featuredActiveIndex === idx 
-                              ? 'w-[18px] lg:w-[42px] bg-[#49B265]' 
+                          className={`transition-all duration-300 hover:opacity-80 rounded-[30px] h-[6px] lg:h-[12px] ${featuredActiveIndex === idx
+                              ? 'w-[18px] lg:w-[42px] bg-[#49B265]'
                               : 'w-[6px] lg:w-[12px] bg-white/20'
-                          }`}
+                            }`}
                           aria-label={`Go to page ${idx + 1}`}
                         />
                       ))}
@@ -580,6 +576,43 @@ const Home = () => {
       </motion.div>
 
       <AnimatePresence>
+        {activeProvider && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm"
+            onClick={() => setActiveProvider(null)}
+          >
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              onClick={(e) => e.stopPropagation()}
+              className="relative flex flex-col gap-3 lg:gap-4 p-3 lg:p-4 rounded-[16px] lg:rounded-[20px] bg-[#242424] w-[90%] lg:w-[1000px] h-[70vh] lg:h-[90vh] box-border overflow-hidden"
+            >
+              <div className="flex items-center justify-between shrink-0 relative h-[36px] lg:h-auto">
+                <div className="flex items-center gap-3 max-w-[30%] lg:max-w-none z-10">
+                  <span className="text-[14px] lg:text-[22px] font-bold text-white tracking-wide truncate" style={{ fontFamily: '"Barlow Condensed", sans-serif' }}>{activeProvider.label}</span>
+                </div>
+                <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center gap-1.5 lg:gap-2 pointer-events-none z-0">
+                  <img src="/coins/logo copy.png" alt="TaskMint Logo" className="w-[16px] h-[16px] lg:w-[24px] lg:h-[24px] object-contain" />
+                  <span className="text-white font-bold tracking-widest text-[16px] lg:text-[20px]" style={{ fontFamily: '"Barlow Condensed", sans-serif', lineHeight: '1' }}>TaskMint</span>
+                </div>
+                <button
+                  onClick={() => setActiveProvider(null)}
+                  className="w-[36px] h-[36px] rounded-[10px] bg-white/10 text-white flex items-center justify-center cursor-pointer border-none hover:bg-white/20 transition-all z-10"
+                >
+                  <svg stroke="currentColor" fill="none" strokeWidth="2" viewBox="0 0 24 24" strokeLinecap="round" strokeLinejoin="round" height="16" width="16" xmlns="http://www.w3.org/2000/svg"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                </button>
+              </div>
+              <div className="flex-1 rounded-[10px] overflow-hidden min-h-0 relative">
+                <OfferwallCard provider={activeProvider} userId={mongoUser?._id} />
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+
         {selectedOffer && (
           <FeaturedOfferModal
             offer={selectedOffer}
