@@ -52,12 +52,12 @@ const DashboardLayout = ({ children, showLiveBar = true, fullWidth = false }) =>
         >
           {/* Top Logo */}
           <div
-            className="flex items-center justify-center gap-[4px] lg:gap-[10px] h-[28px] lg:h-[52px]"
+            className="relative flex items-center justify-center w-full h-[28px] lg:h-[52px] lg:gap-[10px]"
           >
             <img
               src="/coins/logo copy.png"
               alt="Logo"
-              className="w-[28px] h-[28px] lg:w-[52px] lg:h-[52px] object-contain"
+              className="absolute right-[calc(50%+42px)] lg:static w-[28px] h-[28px] lg:w-[52px] lg:h-[52px] object-contain"
             />
             <span
               className="whitespace-nowrap flex items-center text-[22px] lg:text-[46px]"

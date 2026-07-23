@@ -222,7 +222,7 @@ export default function DailyBonus() {
                     </span>
                  </button>
                  <div className="flex flex-col items-center justify-center w-[188px] h-[50px] gap-[2px]">
-                    <span className="text-white/40 text-[18px] font-semibold font-['Barlow_Condensed'] leading-none tracking-normal whitespace-nowrap">Day rest in</span>
+                    <span className="text-white/40 text-[18px] font-semibold font-['Barlow_Condensed'] leading-none tracking-normal whitespace-nowrap">Resets in</span>
                     <div className="text-white text-[36px] font-semibold font-['Barlow_Condensed'] leading-none tracking-normal whitespace-nowrap flex justify-center items-center">
                        {resetTimer || '00 : 00 : 00'}
                     </div>

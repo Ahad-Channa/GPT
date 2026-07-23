@@ -505,22 +505,7 @@ const Header = ({ onChatToggle, chatOpen, fullWidth }) => {
           className="relative right-0 lg:right-[-7px] flex items-center shrink-0 h-[30px] lg:h-[48px]"
           style={{ gap: '3px' }}
         >
-          {/* Mobile Hamburger Button - visible only below lg */}
-          <button
-            id="header-mobile-menu-btn"
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="lg:hidden relative flex-shrink-0 flex items-center justify-center bg-transparent hover:bg-white/5 transition-colors w-[22px] h-[22px]"
-            style={{
-              borderRadius: '6px',
-              border: '1px solid rgba(73, 178, 101, 0.4)',
-            }}
-          >
-            {mobileMenuOpen ? (
-              <FiX style={{ width: '12px', height: '12px', color: '#49B265' }} />
-            ) : (
-              <FiMenu style={{ width: '12px', height: '12px', color: '#49B265' }} />
-            )}
-          </button>
+
           {/* Live Chat Button → sidebar */}
           <button
             id="header-livechat-btn"
@@ -700,6 +685,93 @@ const Header = ({ onChatToggle, chatOpen, fullWidth }) => {
 
                   <div className="w-full h-[1px] bg-white/5 shrink-0" />
 
+                  {/* Daily Bonus (Mobile only) */}
+                  <button
+                    onClick={() => { setIsDropdownOpen(false); navigate('/dashboard/daily-bonus'); }}
+                    className="lg:hidden text-left text-white/95 hover:text-white transition-colors flex items-center shrink-0 cursor-pointer w-full h-[20px] lg:h-[22px] gap-[6px] lg:gap-[8px]"
+                    style={{
+                      background: 'transparent',
+                      border: 'none',
+                      padding: 0,
+                      opacity: 1
+                    }}
+                  >
+                    <img
+                      src="/coins/gift1.png"
+                      alt="Daily Bonus"
+                      className="shrink-0 object-contain w-[18px] h-[18px] lg:w-[22px] lg:h-[22px]"
+                    />
+                    <span
+                      className="font-['Barlow_Condensed'] flex items-center overflow-visible whitespace-nowrap text-[13px] lg:text-[16px] text-white"
+                      style={{
+                        fontFamily: "'Barlow Condensed', sans-serif",
+                        fontWeight: 600,
+                        lineHeight: '120%'
+                      }}
+                    >
+                      Daily Bonus
+                    </span>
+                  </button>
+                  <div className="lg:hidden w-full h-[1px] bg-white/5 shrink-0" />
+
+                  {/* Leaderboard (Mobile only) */}
+                  <button
+                    onClick={() => { setIsDropdownOpen(false); navigate('/dashboard/leaderboard'); }}
+                    className="lg:hidden text-left text-white/95 hover:text-white transition-colors flex items-center shrink-0 cursor-pointer w-full h-[20px] lg:h-[22px] gap-[6px] lg:gap-[8px]"
+                    style={{
+                      background: 'transparent',
+                      border: 'none',
+                      padding: 0,
+                      opacity: 1
+                    }}
+                  >
+                    <img
+                      src="/coins/cup.png"
+                      alt="Leaderboard"
+                      className="shrink-0 object-contain w-[18px] h-[18px] lg:w-[22px] lg:h-[22px]"
+                    />
+                    <span
+                      className="font-['Barlow_Condensed'] flex items-center overflow-visible whitespace-nowrap text-[13px] lg:text-[16px] text-white"
+                      style={{
+                        fontFamily: "'Barlow Condensed', sans-serif",
+                        fontWeight: 600,
+                        lineHeight: '120%'
+                      }}
+                    >
+                      Leaderboard
+                    </span>
+                  </button>
+                  <div className="lg:hidden w-full h-[1px] bg-white/5 shrink-0" />
+
+                  {/* Affiliates (Mobile only) */}
+                  <button
+                    onClick={() => { setIsDropdownOpen(false); navigate('/dashboard/affiliates'); }}
+                    className="lg:hidden text-left text-white/95 hover:text-white transition-colors flex items-center shrink-0 cursor-pointer w-full h-[20px] lg:h-[22px] gap-[6px] lg:gap-[8px]"
+                    style={{
+                      background: 'transparent',
+                      border: 'none',
+                      padding: 0,
+                      opacity: 1
+                    }}
+                  >
+                    <img
+                      src="/coins/person1.png"
+                      alt="Affiliates"
+                      className="shrink-0 object-contain w-[18px] h-[18px] lg:w-[22px] lg:h-[22px]"
+                    />
+                    <span
+                      className="font-['Barlow_Condensed'] flex items-center overflow-visible whitespace-nowrap text-[13px] lg:text-[16px] text-white"
+                      style={{
+                        fontFamily: "'Barlow Condensed', sans-serif",
+                        fontWeight: 600,
+                        lineHeight: '120%'
+                      }}
+                    >
+                      Affiliates
+                    </span>
+                  </button>
+                  <div className="lg:hidden w-full h-[1px] bg-white/5 shrink-0" />
+
                   {/* VIP Status */}
                   <button
                     id="header-vip-link-nav"
@@ -813,29 +885,7 @@ const Header = ({ onChatToggle, chatOpen, fullWidth }) => {
         </div>
       </div>
 
-      {/* Mobile Collapsible Nav Menu - only visible below lg */}
-      <AnimatePresence>
-        {mobileMenuOpen && (
-          <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: 'auto', opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.25, ease: 'easeInOut' }}
-            className="lg:hidden overflow-hidden"
-            style={{
-              background: 'rgba(10, 10, 10, 0.98)',
-              borderTop: '1px solid rgba(73, 178, 101, 0.15)',
-              boxShadow: '0px 8px 24px rgba(0, 0, 0, 0.4)',
-            }}
-          >
-            <div className="flex flex-col gap-1 px-3 py-2">
-              <MobileDailyBonusChip onClose={() => setMobileMenuOpen(false)} />
-              <MobileNavItem path="/dashboard/leaderboard" icon="/coins/cup.png" label="Leaderboard" onClose={() => setMobileMenuOpen(false)} />
-              <MobileNavItem path="/dashboard/affiliates" icon="/coins/person1.png" label="Affiliates" onClose={() => setMobileMenuOpen(false)} />
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+
     </header>
   );
 };
