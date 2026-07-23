@@ -111,7 +111,7 @@ const PodiumCard = ({ rank, user, prize, onClick }) => {
             />
           </div>
         )}
-        <div className={`${styles.avatarSize} rounded-[20px] ${styles.ring} ${styles.avatarShadow} bg-slate-800 flex items-center justify-center`}>
+        <div className={`${styles.avatarSize} rounded-[20px] ${styles.ring} ${styles.avatarShadow} bg-transparent flex items-center justify-center`}>
           <img src={user.avatarUrl || user.avatar || '/avatars/avatar1.png'} className="w-full h-full object-cover rounded-[16px]" alt={user.displayName} />
         </div>
       </div>
@@ -273,7 +273,7 @@ const PeriodPanel = ({ data, periodName, onProfileClick }) => {
                   #{currentRank}
                 </div>
                 <div className="flex items-center gap-[16px] overflow-hidden w-full">
-                  <div className="w-[60px] h-[60px] rounded-[10px] overflow-hidden bg-slate-800 flex-shrink-0">
+                  <div className="w-[60px] h-[60px] rounded-[10px] overflow-hidden bg-transparent flex-shrink-0">
                     <img src={user.avatarUrl || user.avatar || '/avatars/avatar1.png'} className="w-full h-full object-cover" alt={user.displayName} />
                   </div>
                   <div
@@ -319,7 +319,7 @@ const PeriodPanel = ({ data, periodName, onProfileClick }) => {
                 {data.currentUser.rank === '-' ? '-' : `#${data.currentUser.rank}`}
               </div>
               <div className="flex items-center gap-[16px] overflow-hidden w-full">
-                <div className="w-[60px] h-[60px] rounded-[10px] overflow-hidden bg-slate-800 flex-shrink-0">
+                <div className="w-[60px] h-[60px] rounded-[10px] overflow-hidden bg-transparent flex-shrink-0">
                   <img src={data.currentUser.avatarUrl || data.currentUser.avatar || '/avatars/avatar1.png'} className="w-full h-full object-cover" alt={data.currentUser.displayName} />
                 </div>
                 <div

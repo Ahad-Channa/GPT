@@ -656,9 +656,9 @@ const Header = ({ onChatToggle, chatOpen, fullWidth }) => {
                   animate={{ opacity: 1, y: 0, scale: 1 }}
                   transition={{ duration: 0.15 }}
                   className="absolute right-0 z-50 flex flex-col backdrop-blur-[44px] w-[160px] lg:w-[171px] p-[10px] lg:p-[12px] gap-[8px] lg:gap-[12px] top-[46px] lg:top-[58px]"
-                    style={{
-                      background: 'rgba(36, 36, 36, 1)',
-                      borderRadius: '10px',
+                  style={{
+                    background: 'rgba(36, 36, 36, 1)',
+                    borderRadius: '10px',
                     boxShadow: '0px 4px 20px rgba(0, 0, 0, 0.4)',
                     border: '1px solid rgba(255, 255, 255, 0.08)'
                   }}
@@ -743,12 +743,12 @@ const Header = ({ onChatToggle, chatOpen, fullWidth }) => {
                         id="header-admin-link"
                         onClick={() => { setIsDropdownOpen(false); navigate('/admin'); }}
                         className="text-left text-amber-400 hover:text-amber-300 transition-colors flex items-center shrink-0 cursor-pointer w-full h-[20px] lg:h-[22px] gap-[6px] lg:gap-[8px]"
-                    style={{
-                      background: 'transparent',
-                      border: 'none',
-                      padding: 0,
-                      opacity: 1
-                    }}
+                        style={{
+                          background: 'transparent',
+                          border: 'none',
+                          padding: 0,
+                          opacity: 1
+                        }}
                       >
                         <div
                           className="flex items-center justify-center shrink-0 w-[18px] h-[18px] lg:w-[22px] lg:h-[22px]"
@@ -758,14 +758,14 @@ const Header = ({ onChatToggle, chatOpen, fullWidth }) => {
                         </div>
                         <span
                           className="font-['Barlow_Condensed'] flex items-center overflow-visible whitespace-nowrap text-[13px] lg:text-[16px] text-amber-400"
-                      style={{
-                        fontFamily: "'Barlow Condensed', sans-serif",
-                        fontWeight: 600,
-                        lineHeight: '120%',
-                        letterSpacing: '0%',
-                        verticalAlign: 'middle',
-                        opacity: 1
-                      }}
+                          style={{
+                            fontFamily: "'Barlow Condensed', sans-serif",
+                            fontWeight: 600,
+                            lineHeight: '120%',
+                            letterSpacing: '0%',
+                            verticalAlign: 'middle',
+                            opacity: 1
+                          }}
                         >
                           Admin Panel
                         </span>

@@ -198,7 +198,7 @@ const PublicProfileModal = ({ userId, onClose }) => {
                   <div style={{
                     width: '56px', height: '56px', borderRadius: '10px',
                     overflow: 'hidden', flexShrink: 0,
-                    border: '1px solid var(--S1, rgba(73, 178, 101, 1))',
+                    border: 'none',
                   }}>
                     <img
                       src={profile.avatarUrl || `/avatars/avatar1.png`}

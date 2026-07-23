@@ -173,7 +173,7 @@ const LiveEarningsBar = () => {
                     animate={{ opacity: 1, x: 0, scale: 1 }}
                     exit={{ opacity: 0, scale: 0.9, transition: { duration: 0.2 } }}
                     transition={{ duration: 0.4, type: "spring", bounce: 0.3 }}
-                    className={`${index >= 3 ? 'hidden lg:inline-flex' : 'inline-flex'} items-center group cursor-pointer transition-transform hover:scale-[1.02] relative shrink-0 h-[24px] lg:h-[46px] px-[8px] py-[2px] lg:px-[16px] lg:py-[10px]`} 
+                    className={`inline-flex items-center group cursor-pointer transition-transform hover:scale-[1.02] relative shrink-0 h-[24px] lg:h-[46px] px-[8px] py-[2px] lg:px-[16px] lg:py-[10px]`} 
                     style={{
                       width: 'auto',
                       minWidth: 'fit-content',
