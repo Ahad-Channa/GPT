@@ -5,7 +5,7 @@ import Header from '../components/layout/Header';
 import {
   FiGlobe, FiLogIn, FiArrowRight, FiUsers, FiDollarSign,
   FiUserPlus, FiCheckSquare, FiGift, FiLayers, FiZap,
-  FiMonitor, FiActivity, FiClipboard, FiChevronDown, FiUser
+  FiMonitor, FiActivity, FiClipboard, FiChevronDown, FiUser, FiMenu, FiX
 } from 'react-icons/fi';
 import { LuGamepad2, LuBadgePercent } from 'react-icons/lu';
 import {
@@ -50,22 +50,18 @@ const Landing = () => {
           <Header />
         </div>
       ) : (
-        <nav className="w-full relative z-50 py-6 px-8 flex justify-between items-center max-w-7xl mx-auto h-[106px]">
+        <nav className="w-full relative z-50 py-2 lg:py-6 px-2 md:px-8 flex justify-between items-center max-w-7xl mx-auto h-[44px] lg:h-[106px]">
           {/* Logo */}
-          <div className="flex items-center gap-2 cursor-pointer">
+          <div className="flex items-center gap-1 lg:gap-2 cursor-pointer">
             <img
               src="/coins/logo copy.png"
               alt="Logo"
-              style={{
-                width: 53.985984802246094,
-                height: 53.98569107055664
-              }}
+              className="w-[22px] h-[22px] lg:w-[54px] lg:h-[54px] object-contain"
             />
             <span
-              className="font-bold tracking-tight text-white"
+              className="font-bold tracking-tight text-white flex items-center text-[14px] lg:text-[28px]"
               style={{
                 fontFamily: '"Barlow Condensed", sans-serif',
-                fontSize: '28px',
                 lineHeight: '30.15px'
               }}
             >
@@ -74,59 +70,45 @@ const Landing = () => {
           </div>
 
           {/* Links */}
-          <div className="hidden md:flex items-center gap-8 font-['Barlow_Condensed'] font-semibold text-[22px] leading-none tracking-normal text-white">
-            <a href="#" className="hover:text-[#29FD98] transition-colors">Home</a>
+          <div className="flex items-center gap-[6px] sm:gap-[10px] lg:gap-8 font-['Barlow_Condensed'] font-semibold text-[10px] sm:text-[14px] lg:text-[22px] leading-none tracking-normal text-white">
+            <a href="#hero" className="hover:text-[#29FD98] transition-colors">Home</a>
             <a href="#earn" className="hover:text-[#29FD98] transition-colors">Earn</a>
-            <a href="#how-it-works" className="hover:text-[#29FD98] transition-colors">How it Works</a>
+            <a href="#how-it-works" className="hover:text-[#29FD98] transition-colors whitespace-nowrap">How it Works</a>
             <a href="#features" className="hover:text-[#29FD98] transition-colors">Features</a>
             <a href="#faq" className="hover:text-[#29FD98] transition-colors">FAQ</a>
           </div>
 
           {/* Right Actions */}
           <div
-            className="flex items-center"
-            style={{ width: 282, height: 48, gap: 10 }}
+            className="flex items-center justify-end w-auto lg:w-[282px] h-[22px] lg:h-[48px] gap-[4px] lg:gap-[10px]"
           >
             <div
-              className="hidden sm:flex items-center justify-center cursor-pointer text-white transition-all hover:brightness-110 active:translate-y-[4px] active:shadow-none"
+              className="flex sm:flex items-center justify-center cursor-pointer text-white transition-all hover:brightness-110 active:translate-y-[4px] active:shadow-none lg:w-[104px] lg:h-[48px] h-[22px] px-1 lg:px-[14px] rounded-[6px] lg:rounded-[10px] gap-1 lg:gap-[8px]"
               style={{
-                width: 104,
-                height: 48,
-                borderRadius: 10,
-                /* Using a slightly tighter padding to ensure all 3 elements fit inside the 104px width */
-                padding: '10px 14px',
-                gap: 8,
                 background: 'rgba(39, 112, 58, 1)',
                 boxShadow: '0px 4px 0px 0px rgba(35, 80, 47, 1)'
               }}
             >
-              <img src="/coins/globe.png" alt="Lang" className="w-5 h-5 object-contain" />
-              <span className="font-['Barlow_Condensed'] font-semibold text-[18px] leading-none tracking-normal">
+              <img src="/coins/globe.png" alt="Lang" className="w-[8px] h-[8px] lg:w-5 lg:h-5 object-contain" />
+              <span className="font-['Barlow_Condensed'] font-semibold text-[8px] lg:text-[18px] leading-none tracking-normal">
                 Eng
               </span>
-              <img src="/coins/arrow.png" alt="Arrow" className="w-3 h-3 object-contain" />
+              <img src="/coins/arrow.png" alt="Arrow" className="w-2 h-2 lg:w-3 lg:h-3 object-contain" />
             </div>
             <button
-              onClick={() => navigate('/login?tab=register')}
-              className="flex items-center justify-center text-white transition-all hover:brightness-110 active:translate-y-[4px] active:shadow-none"
+              onClick={() => navigate('/login')}
+              className="flex items-center justify-center text-white transition-all hover:brightness-110 active:translate-y-[4px] active:shadow-none w-[50px] sm:w-[70px] lg:w-[168px] h-[22px] lg:h-[48px] px-1 lg:px-6 gap-[2px] lg:gap-[10px] rounded-[6px] lg:rounded-[10px]"
               style={{
-                width: 168,
-                height: 48,
-                borderRadius: 10,
-                padding: '10px 24px',
-                gap: 10,
                 background: 'rgba(73, 178, 101, 1)',
                 boxShadow: '0px 4px 0px 0px rgba(45, 110, 62, 1)'
               }}
             >
-              <span className="font-['Barlow_Condensed'] font-bold text-[18px] leading-none tracking-normal">
+              <span className="font-['Barlow_Condensed'] font-bold text-[8px] sm:text-[10px] lg:text-[18px] leading-none tracking-normal whitespace-nowrap">
                 Get Started
               </span>
               <div
-                className="bg-white"
+                className="bg-white w-[6px] h-[6px] lg:w-[18px] lg:h-[18px] hidden sm:block"
                 style={{
-                  width: 18,
-                  height: 18,
                   WebkitMaskImage: 'url(/coins/image.png)',
                   WebkitMaskSize: 'contain',
                   WebkitMaskRepeat: 'no-repeat',
@@ -144,9 +126,8 @@ const Landing = () => {
 
       {/* Header Bottom Line */}
       <div
-        className="absolute left-1/2 -translate-x-1/2 z-40"
+        className="absolute left-1/2 -translate-x-1/2 z-40 top-[44px] lg:top-[106px]"
         style={{
-          top: 106,
           width: '100%',
           maxWidth: 1240,
           borderBottom: '1px solid rgba(255, 255, 255, 0.4)'
