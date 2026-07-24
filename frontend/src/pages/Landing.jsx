@@ -20,6 +20,13 @@ const Landing = () => {
   const { currentUser } = useAuth();
   const [stats, setStats] = useState({ totalUsers: 0, totalPaidOut: 0 });
   const [openFaq, setOpenFaq] = useState(null);
+  const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' ? window.innerWidth < 1024 : false);
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 1024);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -135,22 +142,31 @@ const Landing = () => {
       />
 
       {/* HERO SECTION */}
-      <section className="relative pt-[72px] pb-[53px] md:pb-[85px] px-6 lg:px-8 max-w-7xl mx-auto flex flex-col lg:flex-row items-start gap-12 lg:gap-8">
+      <section className={isMobile ? "relative pt-8 pb-[40px] px-4 max-w-7xl mx-auto flex flex-col items-start gap-6" : "relative pt-[72px] pb-[53px] md:pb-[85px] px-6 lg:px-8 max-w-7xl mx-auto flex flex-col lg:flex-row items-start gap-12 lg:gap-8"}>
         {/* Left text */}
         <div className="flex-1 w-full z-10">
           <div
             className="flex flex-col text-left"
-            style={{ width: 654, height: 297, gap: 50, opacity: 1 }}
+            style={!isMobile ? { width: 654, height: 297, gap: 50, opacity: 1 } : { width: '100%', height: 'auto', gap: 16, opacity: 1 }}
           >
             <h1
               className="font-bold text-white m-0"
-              style={{
+              style={!isMobile ? {
                 width: 654,
                 height: 112,
                 fontFamily: '"Barlow Condensed", sans-serif',
                 fontWeight: 700,
                 fontSize: 62,
                 lineHeight: '69px',
+                letterSpacing: '0%',
+                opacity: 1
+              } : {
+                width: '100%',
+                height: 'auto',
+                fontFamily: '"Barlow Condensed", sans-serif',
+                fontWeight: 700,
+                fontSize: 32,
+                lineHeight: '38px',
                 letterSpacing: '0%',
                 opacity: 1
               }}
@@ -160,13 +176,23 @@ const Landing = () => {
             </h1>
             <p
               className="m-0"
-              style={{
+              style={!isMobile ? {
                 width: 654,
                 height: 47,
                 fontFamily: '"Barlow Condensed", sans-serif',
                 fontWeight: 400,
                 fontSize: 22,
                 lineHeight: '32px',
+                letterSpacing: '0%',
+                color: 'rgba(209, 213, 219, 1)',
+                opacity: 1
+              } : {
+                width: '100%',
+                height: 'auto',
+                fontFamily: '"Barlow Condensed", sans-serif',
+                fontWeight: 400,
+                fontSize: 15,
+                lineHeight: '22px',
                 letterSpacing: '0%',
                 color: 'rgba(209, 213, 219, 1)',
                 opacity: 1
@@ -177,9 +203,15 @@ const Landing = () => {
 
             <div
               className="flex items-center justify-start"
-              style={{
+              style={!isMobile ? {
                 width: 410,
                 height: 48,
+                gap: 10,
+                opacity: 1
+              } : {
+                width: '100%',
+                maxWidth: 410,
+                height: 'auto',
                 gap: 10,
                 opacity: 1
               }}
@@ -187,7 +219,7 @@ const Landing = () => {
               <button
                 onClick={() => navigate('/login')}
                 className="flex items-center justify-center text-white transition-all hover:brightness-110 active:translate-y-[4px] active:shadow-none"
-                style={{
+                style={!isMobile ? {
                   width: 200,
                   height: 48,
                   borderRadius: 10,
@@ -196,13 +228,22 @@ const Landing = () => {
                   opacity: 1,
                   backgroundColor: 'rgba(39, 112, 58, 1)',
                   boxShadow: '0px 4px 0px 0px rgba(35, 80, 47, 1)'
+                } : {
+                  width: '50%',
+                  height: 40,
+                  borderRadius: 8,
+                  padding: '8px 12px',
+                  gap: 6,
+                  opacity: 1,
+                  backgroundColor: 'rgba(39, 112, 58, 1)',
+                  boxShadow: '0px 4px 0px 0px rgba(35, 80, 47, 1)'
                 }}
               >
-                <img src="/coins/login.png" alt="Login Icon" style={{ width: 24, height: 24, objectFit: 'contain' }} />
+                <img src="/coins/login.png" alt="Login Icon" style={!isMobile ? { width: 24, height: 24, objectFit: 'contain' } : { width: 18, height: 18, objectFit: 'contain' }} />
                 <span style={{
                   fontFamily: '"Barlow Condensed", sans-serif',
                   fontWeight: 700,
-                  fontSize: 18,
+                  fontSize: !isMobile ? 18 : 14,
                   lineHeight: '100%'
                 }}>
                   Login
@@ -211,7 +252,7 @@ const Landing = () => {
               <button
                 onClick={() => navigate('/login?tab=register')}
                 className="flex items-center justify-center text-white transition-all hover:brightness-110 active:translate-y-[4px] active:shadow-none"
-                style={{
+                style={!isMobile ? {
                   width: 200,
                   height: 48,
                   borderRadius: 10,
@@ -220,21 +261,41 @@ const Landing = () => {
                   opacity: 1,
                   background: 'rgba(73, 178, 101, 1)',
                   boxShadow: '0px 4px 0px 0px rgba(45, 110, 62, 1)'
+                } : {
+                  width: '50%',
+                  height: 40,
+                  borderRadius: 8,
+                  padding: '8px 12px',
+                  gap: 6,
+                  opacity: 1,
+                  background: 'rgba(73, 178, 101, 1)',
+                  boxShadow: '0px 4px 0px 0px rgba(45, 110, 62, 1)'
                 }}
               >
                 <span style={{
                   fontFamily: '"Barlow Condensed", sans-serif',
                   fontWeight: 700,
-                  fontSize: 18,
+                  fontSize: !isMobile ? 18 : 14,
                   lineHeight: '100%'
                 }}>
                   Start Earning
                 </span>
                 <div
                   className="bg-white"
-                  style={{
+                  style={!isMobile ? {
                     width: 18,
                     height: 18,
+                    WebkitMaskImage: 'url(/coins/image.png)',
+                    WebkitMaskSize: 'contain',
+                    WebkitMaskRepeat: 'no-repeat',
+                    WebkitMaskPosition: 'center',
+                    maskImage: 'url(/coins/image.png)',
+                    maskSize: 'contain',
+                    maskRepeat: 'no-repeat',
+                    maskPosition: 'center'
+                  } : {
+                    width: 14,
+                    height: 14,
                     WebkitMaskImage: 'url(/coins/image.png)',
                     WebkitMaskSize: 'contain',
                     WebkitMaskRepeat: 'no-repeat',
@@ -252,9 +313,9 @@ const Landing = () => {
 
         {/* Right image */}
         <div
-          className="flex-1 w-full relative z-0 flex justify-center lg:justify-end mt-12 lg:-mt-[55px]"
+          className={!isMobile ? "flex-1 w-full relative z-0 flex justify-center lg:justify-end mt-4 lg:-mt-[55px]" : "hidden"}
         >
-          <div className="drop-shadow-2xl" style={{ width: 577, minWidth: 577, height: 577, opacity: 1, transform: 'translateX(-30px)' }}>
+          <div className="drop-shadow-2xl" style={!isMobile ? { width: 577, minWidth: 577, height: 577, opacity: 1, transform: 'translateX(-30px)' } : { width: '100%', maxWidth: 577, height: 260, opacity: 1 }}>
             <div
               style={{
                 width: '100%',
@@ -278,10 +339,10 @@ const Landing = () => {
         </div>
 
         {/* Floating Stats Box */}
-        <div className="absolute z-20 left-1/2 -translate-x-1/2 w-[90%] md:w-[1240px] max-w-[1240px] bottom-0 translate-y-1/2 lg:translate-y-0 lg:bottom-auto lg:top-[448px]">
+        <div className={!isMobile ? "absolute z-20 left-1/2 -translate-x-1/2 w-[90%] md:w-[1240px] max-w-[1240px] bottom-0 translate-y-1/2 lg:translate-y-0 lg:bottom-auto lg:top-[448px]" : "relative z-20 w-full mt-2 px-2"}>
           <div
-            className="flex flex-col md:flex-row items-center w-full"
-            style={{
+            className="flex flex-row items-center w-full"
+            style={!isMobile ? {
               width: 1240,
               height: 120,
               borderRadius: 20,
@@ -291,23 +352,32 @@ const Landing = () => {
               backgroundColor: 'rgba(129, 129, 129, 0.2)',
               backdropFilter: 'blur(64px)',
               WebkitBackdropFilter: 'blur(64px)'
+            } : {
+              width: '100%',
+              borderRadius: 12,
+              gap: 8,
+              padding: '12px 10px',
+              opacity: 1,
+              backgroundColor: 'rgba(129, 129, 129, 0.2)',
+              backdropFilter: 'blur(64px)',
+              WebkitBackdropFilter: 'blur(64px)',
+              justifyContent: 'flex-start'
             }}
           >
-            <div className="w-full flex items-center max-w-[540px]" style={{ height: 40, gap: 14 }}>
-              <img src="/coins/people.png" alt="Users" style={{ width: 40, height: 40, objectFit: 'contain' }} />
-              <span style={{ display: 'inline-block', width: 440, height: 24, opacity: 1, fontFamily: '"Barlow Condensed", sans-serif', fontWeight: 700, fontSize: 24, lineHeight: '24px', letterSpacing: '0%', textTransform: 'capitalize', color: 'rgba(255, 255, 255, 1)', verticalAlign: 'middle' }}>Total Users</span>
-              <span style={{ display: 'inline-block', width: 'auto', minWidth: 32, height: 24, opacity: 1, fontFamily: '"Barlow Condensed", sans-serif', fontWeight: 700, fontSize: 44, lineHeight: '24px', letterSpacing: '0%', textAlign: 'center', verticalAlign: 'middle', textTransform: 'capitalize', color: 'rgba(255, 255, 255, 1)' }}>
+            <div className={!isMobile ? "w-full flex items-center justify-start max-w-[540px]" : "flex items-center justify-start flex-1"} style={!isMobile ? { height: 40, gap: 14 } : { height: 'auto', gap: 6 }}>
+              <img src="/coins/people.png" alt="Users" style={{ width: !isMobile ? 40 : 22, height: !isMobile ? 40 : 22, objectFit: 'contain' }} />
+              <span style={{ display: 'inline-block', width: !isMobile ? 440 : 'auto', height: !isMobile ? 24 : 'auto', opacity: 1, fontFamily: '"Barlow Condensed", sans-serif', fontWeight: 700, fontSize: !isMobile ? 24 : 13, lineHeight: !isMobile ? '24px' : '100%', letterSpacing: '0%', textTransform: 'capitalize', color: 'rgba(255, 255, 255, 1)', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>Total Users:</span>
+              <span style={{ display: 'inline-block', width: 'auto', minWidth: !isMobile ? 32 : 'auto', height: !isMobile ? 24 : 'auto', opacity: 1, fontFamily: '"Barlow Condensed", sans-serif', fontWeight: 700, fontSize: !isMobile ? 44 : 16, lineHeight: !isMobile ? '24px' : '100%', letterSpacing: '0%', textAlign: 'center', verticalAlign: 'middle', textTransform: 'capitalize', color: 'rgba(255, 255, 255, 1)', marginLeft: !isMobile ? 0 : 8, whiteSpace: 'nowrap' }}>
                 {(stats.totalUsers || 16).toLocaleString()}
               </span>
             </div>
 
-            <div className="hidden md:block w-px h-[60px] bg-white/10" />
-            <div className="md:hidden w-full h-px bg-white/10" />
+            <div className={!isMobile ? "w-px h-[60px] bg-white/10" : "w-px h-[24px] bg-white/20 mx-1"} />
 
-            <div className="w-full flex items-center max-w-[540px]" style={{ height: 40, gap: 14 }}>
-              <img src="/coins/doller.png" alt="Paid" style={{ width: 40, height: 40, objectFit: 'contain' }} />
-              <span style={{ display: 'inline-block', width: 440, height: 24, opacity: 1, fontFamily: '"Barlow Condensed", sans-serif', fontWeight: 700, fontSize: 24, lineHeight: '24px', letterSpacing: '0%', textTransform: 'capitalize', color: 'rgba(255, 255, 255, 1)', verticalAlign: 'middle' }}>Total Paid</span>
-              <span style={{ display: 'inline-block', width: 'auto', minWidth: 32, height: 24, opacity: 1, fontFamily: '"Barlow Condensed", sans-serif', fontWeight: 700, fontSize: 44, lineHeight: '24px', letterSpacing: '0%', textAlign: 'center', verticalAlign: 'middle', textTransform: 'capitalize', color: 'rgba(255, 255, 255, 1)' }}>
+            <div className={!isMobile ? "w-full flex items-center justify-start max-w-[540px]" : "flex items-center justify-start flex-1"} style={!isMobile ? { height: 40, gap: 14 } : { height: 'auto', gap: 6 }}>
+              <img src="/coins/doller.png" alt="Paid" style={{ width: !isMobile ? 40 : 22, height: !isMobile ? 40 : 22, objectFit: 'contain' }} />
+              <span style={{ display: 'inline-block', width: !isMobile ? 440 : 'auto', height: !isMobile ? 24 : 'auto', opacity: 1, fontFamily: '"Barlow Condensed", sans-serif', fontWeight: 700, fontSize: !isMobile ? 24 : 13, lineHeight: !isMobile ? '24px' : '100%', letterSpacing: '0%', textTransform: 'capitalize', color: 'rgba(255, 255, 255, 1)', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>Total Paid:</span>
+              <span style={{ display: 'inline-block', width: 'auto', minWidth: !isMobile ? 32 : 'auto', height: !isMobile ? 24 : 'auto', opacity: 1, fontFamily: '"Barlow Condensed", sans-serif', fontWeight: 700, fontSize: !isMobile ? 44 : 16, lineHeight: !isMobile ? '24px' : '100%', letterSpacing: '0%', textAlign: 'center', verticalAlign: 'middle', textTransform: 'capitalize', color: 'rgba(255, 255, 255, 1)', marginLeft: !isMobile ? 0 : 8, whiteSpace: 'nowrap' }}>
                 ${(stats.totalPaidOut || 31.33).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </span>
             </div>
@@ -316,52 +386,29 @@ const Landing = () => {
       </section>
 
       {/* HOW IT WORKS */}
-      <section id="how-it-works" className="pt-0 pb-24 px-6 relative bg-[#050505] flex justify-center w-full">
-        <div 
-          className="flex flex-col mx-auto"
-          style={{
-            width: 1240,
-            maxWidth: '100%',
-            height: 337,
-            gap: 40,
-            opacity: 1
-          }}
+      <section id="how-it-works" className="pt-0 lg:pt-0 pb-12 lg:pb-24 px-4 lg:px-6 relative bg-[#050505] flex justify-center w-full">
+        <div
+          className="flex flex-col mx-auto w-full max-w-[1240px] h-auto gap-8 lg:gap-[40px]"
         >
           <div
-            className="flex flex-col items-center justify-center mx-auto"
-            style={{ width: 374, height: 85, gap: 30, opacity: 1 }}
+            className="flex flex-col items-center justify-center mx-auto w-full max-w-[374px] h-auto gap-2 lg:gap-[30px]"
           >
             <h2
-              className="font-bold text-white m-0 flex items-center justify-center"
+              className="font-bold text-white m-0 flex items-center justify-center text-[34px] sm:text-[44px] lg:text-[58px] leading-[40px] lg:leading-[48px] text-center w-auto h-auto"
               style={{
-                width: 272,
-                height: 41,
-                opacity: 1,
                 fontFamily: '"Barlow Condensed", sans-serif',
                 fontWeight: 700,
-                fontSize: 58,
-                lineHeight: '48px',
-                letterSpacing: '0%',
-                textAlign: 'center',
-                verticalAlign: 'middle'
+                letterSpacing: '0%'
               }}
             >
               How It Works
             </h2>
             <p
-              className="m-0 flex items-center justify-center"
+              className="m-0 flex items-center justify-center text-[15px] sm:text-[18px] lg:text-[20px] leading-[22px] lg:leading-[28px] text-center text-gray-300 w-auto h-auto px-2"
               style={{
-                width: 374,
-                height: 14,
-                opacity: 1,
                 fontFamily: '"Barlow Condensed", sans-serif',
                 fontWeight: 400,
-                fontSize: 20,
-                lineHeight: '28px',
-                letterSpacing: '0%',
-                color: 'rgba(209, 213, 219, 1)',
-                textAlign: 'center',
-                verticalAlign: 'middle'
+                letterSpacing: '0%'
               }}
             >
               Get started in seconds. No complicated setup required.
@@ -369,8 +416,7 @@ const Landing = () => {
           </div>
 
           <div
-            className="grid grid-cols-1 md:grid-cols-3 mx-auto"
-            style={{ width: 1240, maxWidth: '100%', height: 212, gap: 20 }}
+            className="grid grid-cols-3 mx-auto w-full max-w-[1240px] h-auto gap-2 lg:gap-[20px]"
           >
             {[
               { icon: '/coins/persontik.png', step: 1, title: 'Sign Up', desc: 'Create your free account in seconds and get instant access to the platform.' },
@@ -379,55 +425,31 @@ const Landing = () => {
             ].map((item, idx) => (
               <div
                 key={idx}
-                className="hover:brightness-110 transition-all group relative"
+                className="hover:brightness-110 transition-all group relative w-full h-auto lg:h-[212px] rounded-[12px] lg:rounded-[20px] p-2 lg:p-0 overflow-hidden"
                 style={{
-                  width: 400,
-                  height: 212,
-                  borderRadius: 20,
                   background: 'rgba(26, 27, 26, 1)',
                   boxShadow: '0px 4px 80px 0px rgba(0, 0, 0, 0.15)',
                   backdropFilter: 'blur(44px)',
-                  WebkitBackdropFilter: 'blur(44px)',
-                  border: 'none',
-                  opacity: 1
+                  WebkitBackdropFilter: 'blur(44px)'
                 }}
               >
-                <div>
+                <div className="flex items-start justify-between w-full lg:block">
                   <img
                     src={item.icon}
                     alt={item.title}
-                    className="object-contain"
-                    style={{ 
-                      width: 44, 
-                      height: 44, 
-                      opacity: 1, 
-                      position: 'absolute', 
-                      top: 24, 
-                      left: 24 
-                    }}
+                    className="object-contain w-4 h-4 lg:w-[44px] lg:h-[44px] static lg:absolute lg:top-[24px] lg:left-[24px]"
                   />
                   <div
-                    className="absolute flex items-center justify-center"
+                    className="flex items-center justify-center absolute top-0 right-2 lg:left-[304px] lg:right-auto w-[24px] lg:w-[70px] h-[24px] lg:h-[68px] px-1 lg:px-[30px] gap-[10px] rounded-b-[6px] rounded-t-none lg:rounded-b-[10px]"
                     style={{
-                      width: 70,
-                      height: 68,
-                      top: 0,
-                      left: 304,
-                      padding: '10px 30px',
-                      gap: 10,
-                      background: 'rgba(50, 50, 50, 1)',
-                      borderBottomRightRadius: 10,
-                      borderBottomLeftRadius: 10
+                      background: 'rgba(50, 50, 50, 1)'
                     }}
                   >
                     <span
-                      className="text-white flex items-center justify-center"
+                      className="text-white flex items-center justify-center text-[12px] lg:text-[38px]"
                       style={{
-                        width: 11,
-                        height: 27,
                         fontFamily: '"Barlow Condensed", sans-serif',
                         fontWeight: 700,
-                        fontSize: 38,
                         lineHeight: '100%'
                       }}
                     >
@@ -436,36 +458,24 @@ const Landing = () => {
                   </div>
                 </div>
                 <div
-                  className="flex flex-col absolute"
-                  style={{ width: 351.9999084472656, height: 77, gap: 12, top: 102, left: 24, opacity: 1 }}
+                  className="flex flex-col mt-2 lg:mt-0 lg:absolute lg:top-[102px] lg:left-[24px] w-full lg:w-[352px] gap-1 lg:gap-[12px]"
                 >
                   <h3
-                    className="font-semibold text-white m-0"
+                    className="font-semibold text-white m-0 text-[13px] sm:text-[16px] lg:text-[24px]"
                     style={{
-                      width: 351.9999084472656,
-                      height: 17,
                       fontFamily: '"Barlow Condensed", sans-serif',
                       fontWeight: 600,
-                      fontSize: 24,
                       lineHeight: '100%',
-                      opacity: 1,
                       letterSpacing: '0.5px'
                     }}
                   >
                     {item.title}
                   </h3>
                   <p
-                    className="m-0 flex items-center"
+                    className="m-0 flex items-center text-[10px] sm:text-[13px] lg:text-[17px] leading-[14px] sm:leading-[18px] lg:leading-[24px] text-gray-400"
                     style={{
-                      width: 351.9999084472656,
-                      height: 48,
                       fontFamily: '"Barlow Condensed", sans-serif',
-                      fontWeight: 500,
-                      fontSize: 17,
-                      lineHeight: '24px',
-                      color: 'rgba(156, 163, 175, 1)',
-                      opacity: 1,
-                      verticalAlign: 'middle'
+                      fontWeight: 500
                     }}
                   >
                     {item.desc}
@@ -480,54 +490,33 @@ const Landing = () => {
       {/* WHY CHOOSE US */}
       <section
         id="features"
-        className="mx-auto flex flex-col"
+        className="mx-auto flex flex-col w-full max-w-[1440px] h-auto py-12 lg:py-[100px] px-4 lg:px-[100px] gap-2 lg:gap-[10px]"
         style={{
-          width: 1440,
-          maxWidth: '100%',
-          height: 721,
-          padding: '100px',
-          gap: 10,
           background: 'rgba(26, 27, 26, 1)',
           backdropFilter: 'blur(75px)',
           WebkitBackdropFilter: 'blur(75px)'
         }}
       >
         <div
-          className="flex flex-col mx-auto"
-          style={{ width: 1240, maxWidth: '100%', height: 521, gap: 50 }}
+          className="flex flex-col mx-auto w-full max-w-[1240px] h-auto gap-8 lg:gap-[50px]"
         >
           <div
-            className="flex flex-col items-center mx-auto"
-            style={{ width: 323, height: 85, gap: 30 }}
+            className="flex flex-col items-center mx-auto w-full max-w-[323px] h-auto gap-2 lg:gap-[30px]"
           >
             <h2
-              className="font-bold m-0"
+              className="font-bold m-0 text-white text-[34px] sm:text-[44px] lg:text-[58px] leading-[40px] lg:leading-[48px] text-center w-auto h-auto"
               style={{
-                width: 319,
-                height: 41,
                 fontFamily: '"Barlow Condensed", sans-serif',
-                fontWeight: 700,
-                fontSize: 58,
-                lineHeight: '48px',
-                textAlign: 'center',
-                verticalAlign: 'middle',
-                color: 'rgba(255, 255, 255, 1)'
+                fontWeight: 700
               }}
             >
               Why Choose Us
             </h2>
             <p
-              className="m-0"
+              className="m-0 text-[15px] sm:text-[18px] lg:text-[20px] leading-[22px] lg:leading-[28px] text-center text-gray-300 w-auto h-auto"
               style={{
-                width: 323,
-                height: 14,
                 fontFamily: '"Barlow Condensed", sans-serif',
-                fontWeight: 400,
-                fontSize: 20,
-                lineHeight: '28px',
-                textAlign: 'center',
-                verticalAlign: 'middle',
-                color: 'rgba(209, 213, 219, 1)'
+                fontWeight: 400
               }}
             >
               Powerful features designed specifically for you.
@@ -535,8 +524,7 @@ const Landing = () => {
           </div>
 
           <div
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 mx-auto"
-            style={{ width: 1240, maxWidth: '100%', height: 472, gap: 20 }}
+            className="grid grid-cols-2 lg:grid-cols-3 mx-auto w-full max-w-[1240px] h-auto gap-2 sm:gap-4 lg:gap-[20px]"
           >
             {[
               { icon: '/coins/walls.png', title: 'Multiple Offerwalls', desc: 'Discover various earning options in one place.' },
@@ -548,14 +536,8 @@ const Landing = () => {
             ].map((item, idx) => (
               <div
                 key={idx}
-                className="flex flex-col items-center transition-colors group"
+                className="flex flex-col items-center transition-colors group w-full h-auto lg:h-[183px] rounded-[16px] lg:rounded-[20px] p-2 sm:p-5 lg:p-[20px_12px_24px_12px] gap-1 lg:gap-[12px]"
                 style={{
-                  width: 400,
-                  maxWidth: '100%',
-                  height: 183,
-                  borderRadius: 20,
-                  padding: '20px 12px 24px 12px',
-                  gap: 12,
                   background: 'rgba(255, 255, 255, 0.08)',
                   boxShadow: '0px 4px 80px 0px rgba(0, 0, 0, 0.15)',
                   backdropFilter: 'blur(44px)',
@@ -563,42 +545,29 @@ const Landing = () => {
                 }}
               >
                 <div
-                  className="flex items-center justify-center mb-0"
-                  style={{ width: 94, height: 94, borderRadius: 20, gap: 10, background: 'transparent' }}
+                  className="flex items-center justify-center mb-0 w-[24px] h-[24px] lg:w-[64px] lg:h-[64px]"
+                  style={{ borderRadius: 20, gap: 10, background: 'transparent' }}
                 >
-                  <img src={item.icon} alt={item.title} style={{ width: 44, height: 44, objectFit: 'contain' }} />
+                  <img src={item.icon} alt={item.title} className="w-4 h-4 lg:w-[44px] lg:h-[44px] object-contain" />
                 </div>
                 <div
-                  className="flex flex-col items-center"
-                  style={{ width: 376, height: 53, gap: 12 }}
+                  className="flex flex-col items-center w-full max-w-[376px] h-auto gap-1 lg:gap-[12px]"
                 >
                   <h3
-                    className="font-bold m-0"
+                    className="font-bold m-0 text-white text-[13px] sm:text-[20px] lg:text-[24px] text-center"
                     style={{
-                      width: 376,
-                      height: 17,
                       fontFamily: '"Barlow Condensed", sans-serif',
                       fontWeight: 700,
-                      fontSize: 24,
-                      lineHeight: '100%',
-                      textAlign: 'center',
-                      color: 'rgba(255, 255, 255, 1)'
+                      lineHeight: '100%'
                     }}
                   >
                     {item.title}
                   </h3>
                   <p
-                    className="m-0"
+                    className="m-0 text-[10px] sm:text-[15px] lg:text-[17px] leading-[14px] sm:leading-[22px] lg:leading-[24px] text-center text-gray-300"
                     style={{
-                      width: 376,
-                      height: 24,
                       fontFamily: '"Barlow Condensed", sans-serif',
-                      fontWeight: 500,
-                      fontSize: 17,
-                      lineHeight: '24px',
-                      textAlign: 'center',
-                      verticalAlign: 'middle',
-                      color: 'rgba(189, 189, 189, 1)'
+                      fontWeight: 500
                     }}
                   >
                     {item.desc}
@@ -611,43 +580,27 @@ const Landing = () => {
       </section>
 
       {/* START EARNING WITH */}
-      <section className="py-24 px-6 bg-[#050505]">
+      <section id="earn" className="py-12 lg:py-24 px-4 lg:px-6 bg-[#050505]">
         <div
-          className="flex flex-col mx-auto"
-          style={{ width: 1240, maxWidth: '100%', height: 318, gap: 50 }}
+          className="flex flex-col mx-auto w-full max-w-[1240px] h-auto gap-8 lg:gap-[50px]"
         >
           <div
-            className="flex flex-col items-center mx-auto"
-            style={{ width: 452, height: 85, gap: 30 }}
+            className="flex flex-col items-center mx-auto w-full max-w-[452px] h-auto gap-2 lg:gap-[30px]"
           >
             <h2
-              className="font-bold m-0"
+              className="font-bold m-0 text-white text-[34px] sm:text-[44px] lg:text-[58px] leading-[40px] lg:leading-[48px] text-center w-auto h-auto"
               style={{
-                width: 384,
-                height: 41,
                 fontFamily: '"Barlow Condensed", sans-serif',
-                fontWeight: 700,
-                fontSize: 58,
-                lineHeight: '48px',
-                textAlign: 'center',
-                verticalAlign: 'middle',
-                color: 'rgba(255, 255, 255, 1)'
+                fontWeight: 700
               }}
             >
               Start Earning With
             </h2>
             <p
-              className="m-0"
+              className="m-0 text-[15px] sm:text-[18px] lg:text-[20px] leading-[22px] lg:leading-[28px] text-center text-gray-300 w-auto h-auto"
               style={{
-                width: 452,
-                height: 14,
                 fontFamily: '"Barlow Condensed", sans-serif',
-                fontWeight: 400,
-                fontSize: 20,
-                lineHeight: '28px',
-                textAlign: 'center',
-                verticalAlign: 'middle',
-                color: 'rgba(209, 213, 219, 1)'
+                fontWeight: 400
               }}
             >
               Multiple ways to stack your coins. Choose what works best for you.
@@ -655,8 +608,7 @@ const Landing = () => {
           </div>
 
           <div
-            className="grid grid-cols-1 md:grid-cols-3 mx-auto"
-            style={{ width: 1240, maxWidth: '100%', height: 270, gap: 24 }}
+            className="grid grid-cols-3 mx-auto w-full max-w-[1240px] h-auto gap-2 lg:gap-[24px]"
           >
             {[
               { icon: '/coins/clicl.png', title: 'Surveys', desc: 'Share your opinion on various topics and get rewarded instantly.' },
@@ -665,14 +617,8 @@ const Landing = () => {
             ].map((item, idx) => (
               <div
                 key={idx}
-                className="flex flex-col items-center transition-colors group"
+                className="flex flex-col items-center transition-colors group w-full h-auto lg:h-[183px] rounded-[12px] lg:rounded-[20px] p-2 lg:p-5 gap-1 lg:gap-2"
                 style={{
-                  width: '397.33px',
-                  maxWidth: '100%',
-                  height: 183,
-                  borderRadius: 20,
-                  padding: '20px',
-                  gap: 2,
                   background: 'rgba(26, 27, 26, 1)',
                   boxShadow: '0px 4px 80px 0px rgba(0, 0, 0, 0.15)',
                   backdropFilter: 'blur(44px)',
@@ -680,41 +626,27 @@ const Landing = () => {
                 }}
               >
                 <div
-                  className="flex items-center justify-center mb-0"
-                  style={{ width: 94, height: 94, borderRadius: 100, gap: 10, background: 'transparent', transform: 'translateY(-11px)' }}
+                  className="flex items-center justify-center mb-0 w-[32px] h-[32px] lg:w-[64px] lg:h-[64px]"
+                  style={{ borderRadius: 100, gap: 10, background: 'transparent' }}
                 >
-                  <img src={item.icon} alt={item.title} style={{ width: 44, height: 44, objectFit: 'contain' }} />
+                  <img src={item.icon} alt={item.title} className="w-4 h-4 lg:w-[44px] lg:h-[44px] object-contain" />
                 </div>
-                <div className="flex flex-col items-center" style={{ gap: 1, width: '100%' }}>
+                <div className="flex flex-col items-center gap-1 w-full">
                   <h3
-                    className="font-bold m-0"
+                    className="font-bold m-0 text-white text-[13px] sm:text-[16px] lg:text-[24px] text-center"
                     style={{
-                      width: '100%',
-                      height: 17,
                       fontFamily: '"Barlow Condensed", sans-serif',
                       fontWeight: 700,
-                      fontSize: 24,
-                      lineHeight: '100%',
-                      textAlign: 'center',
-                      color: 'rgba(255, 255, 255, 1)',
-                      transform: 'translateY(-8px)'
+                      lineHeight: '100%'
                     }}
                   >
                     {item.title}
                   </h3>
                   <p
-                    className="m-0 flex items-center justify-center"
+                    className="m-0 text-[10px] sm:text-[13px] lg:text-[17px] leading-[14px] sm:leading-[18px] lg:leading-[24px] text-center text-gray-400"
                     style={{
-                      width: '357.33px',
-                      maxWidth: '100%',
-                      height: 48,
                       fontFamily: '"Barlow Condensed", sans-serif',
-                      fontWeight: 500,
-                      fontSize: 17,
-                      lineHeight: '24px',
-                      textAlign: 'center',
-                      verticalAlign: 'middle',
-                      color: 'rgba(189, 189, 189, 1)'
+                      fontWeight: 500
                     }}
                   >
                     {item.desc}
@@ -727,16 +659,10 @@ const Landing = () => {
       </section>
 
       {/* FAQ SECTION */}
-      <section id="faq" className="py-12 px-6 bg-[#050505]" style={{ marginTop: -38 }}>
+      <section id="faq" className="py-8 lg:py-12 px-4 lg:px-6 bg-[#050505] lg:-mt-[38px]">
         <div
-          className="flex flex-col mx-auto"
+          className="flex flex-col mx-auto w-full max-w-[1240px] h-auto rounded-[16px] lg:rounded-[20px] p-5 sm:p-8 lg:p-[60px_40px] gap-6 lg:gap-[50px]"
           style={{
-            width: 1240,
-            maxWidth: '100%',
-            height: 557,
-            borderRadius: 20,
-            padding: '60px 40px',
-            gap: 50,
             background: 'rgba(255, 255, 255, 0.08)',
             boxShadow: '0px 4px 80px 0px rgba(0, 0, 0, 0.15)',
             backdropFilter: 'blur(44px)',
@@ -744,37 +670,22 @@ const Landing = () => {
           }}
         >
           <div
-            className="flex flex-col items-center mx-auto"
-            style={{ width: 581, height: 85, gap: 30 }}
+            className="flex flex-col items-center mx-auto w-full max-w-[581px] h-auto gap-2 lg:gap-[30px]"
           >
             <h2
-              className="font-bold m-0 whitespace-nowrap"
+              className="font-bold m-0 text-white text-[30px] sm:text-[44px] lg:text-[58px] leading-[36px] lg:leading-[48px] text-center w-auto h-auto"
               style={{
-                width: 581,
-                height: 41,
                 fontFamily: '"Barlow Condensed", sans-serif',
-                fontWeight: 700,
-                fontSize: 58,
-                lineHeight: '48px',
-                textAlign: 'center',
-                verticalAlign: 'middle',
-                color: 'rgba(255, 255, 255, 1)'
+                fontWeight: 700
               }}
             >
               Frequently Asked Questions
             </h2>
             <p
-              className="m-0"
+              className="m-0 text-[15px] sm:text-[18px] lg:text-[20px] leading-[22px] lg:leading-[28px] text-center text-gray-300 w-auto h-auto"
               style={{
-                width: 232,
-                height: 14,
                 fontFamily: '"Barlow Condensed", sans-serif',
-                fontWeight: 400,
-                fontSize: 20,
-                lineHeight: '28px',
-                textAlign: 'center',
-                verticalAlign: 'middle',
-                color: 'rgba(209, 213, 219, 1)'
+                fontWeight: 400
               }}
             >
               Got questions? We've got answers.
@@ -782,8 +693,7 @@ const Landing = () => {
           </div>
 
           <div
-            className="grid grid-cols-1 md:grid-cols-2 mx-auto"
-            style={{ width: 1160, maxWidth: '100%', gap: 16 }}
+            className="grid grid-cols-2 mx-auto w-full max-w-[1160px] gap-2 lg:gap-4"
           >
             {[
               { q: "How do I earn money?", a: "By completing offers, surveys, and tasks on the platform." },
@@ -798,14 +708,8 @@ const Landing = () => {
                 <div
                   key={i}
                   onClick={() => setOpenFaq(isOpen ? null : i)}
-                  className="flex flex-col justify-start cursor-pointer transition-all duration-300 overflow-hidden"
+                  className="flex flex-col justify-start cursor-pointer transition-all duration-300 overflow-hidden w-full h-auto min-h-[40px] lg:min-h-[76px] gap-1 sm:gap-2 lg:gap-[10px] rounded-[10px] lg:rounded-[20px] p-2 sm:p-4 lg:p-[22px_30px]"
                   style={{
-                    width: 570,
-                    maxWidth: '100%',
-                    height: isOpen ? 110 : 76,
-                    gap: 10,
-                    borderRadius: 20,
-                    padding: '22px 30px',
                     background: 'rgba(44, 45, 44, 1)',
                     backdropFilter: 'blur(54px)',
                     WebkitBackdropFilter: 'blur(54px)',
@@ -814,25 +718,19 @@ const Landing = () => {
                 >
                   <div className="flex justify-between items-center w-full">
                     <span
-                      className="font-bold m-0 whitespace-nowrap overflow-hidden text-ellipsis"
+                      className="font-bold m-0 text-white text-[12px] sm:text-[16px] lg:text-[22px] leading-[14px] sm:leading-[22px] lg:leading-[32px]"
                       style={{
-                        width: '470.6px',
-                        maxWidth: '100%',
-                        height: 32,
                         fontFamily: '"Barlow Condensed", sans-serif',
-                        fontWeight: 700,
-                        fontSize: 22,
-                        lineHeight: '32px',
-                        color: 'rgba(255, 255, 255, 1)'
+                        fontWeight: 700
                       }}
                     >
                       {faq.q}
                     </span>
                     <div
-                      className={`bg-[#29FD98] transition-transform duration-300 ${isOpen ? '-rotate-180' : ''}`}
+                      className={`bg-[#29FD98] transition-transform duration-300 shrink-0 ${isOpen ? '-rotate-180' : ''}`}
                       style={{
-                        width: 24,
-                        height: 24,
+                        width: 14,
+                        height: 14,
                         WebkitMaskImage: 'url(/coins/arrow.png)',
                         WebkitMaskSize: 'contain',
                         WebkitMaskRepeat: 'no-repeat',
@@ -844,25 +742,21 @@ const Landing = () => {
                       }}
                     />
                   </div>
-                  <div
-                    className={`transition-all duration-300 flex items-start overflow-hidden ${isOpen ? 'opacity-100 max-h-[60px]' : 'opacity-0 max-h-0'}`}
-                  >
-                    <p
-                      className="m-0 overflow-hidden text-ellipsis whitespace-nowrap"
-                      style={{
-                        width: 510,
-                        maxWidth: '100%',
-                        height: 24,
-                        fontFamily: '"Barlow Condensed", sans-serif',
-                        fontWeight: 500,
-                        fontSize: 20,
-                        lineHeight: '24px',
-                        color: 'rgba(130, 127, 141, 1)'
-                      }}
+                  {isOpen && (
+                    <div
+                      className="transition-all duration-300 flex items-start overflow-hidden mt-1"
                     >
-                      {faq.a}
-                    </p>
-                  </div>
+                      <p
+                        className="m-0 text-[10px] sm:text-[14px] lg:text-[20px] leading-[14px] sm:leading-[20px] lg:leading-[24px] text-gray-300"
+                        style={{
+                          fontFamily: '"Barlow Condensed", sans-serif',
+                          fontWeight: 500
+                        }}
+                      >
+                        {faq.a}
+                      </p>
+                    </div>
+                  )}
                 </div>
               )
             })}
@@ -872,21 +766,10 @@ const Landing = () => {
 
       {/* PAYOUT OPTIONS */}
       <div
-        className="mx-auto overflow-hidden flex items-center"
+        className="mx-auto overflow-hidden flex items-center w-full max-w-[1440px] h-[70px] lg:h-[106px] py-3 lg:py-[30px] border-y border-white/40"
         style={{
-          width: 1440,
-          maxWidth: '100%',
-          height: 106,
-          paddingTop: 30,
-          paddingBottom: 30,
-          borderTopWidth: 1,
-          borderBottomWidth: 1,
-          borderStyle: 'solid',
-          borderColor: 'rgba(255, 255, 255, 0.4)',
           backdropFilter: 'blur(64px)',
-          WebkitBackdropFilter: 'blur(64px)',
-          opacity: 1,
-          transform: 'rotate(0deg)'
+          WebkitBackdropFilter: 'blur(64px)'
         }}
       >
         <div className="flex animate-[marquee_40s_linear_infinite] whitespace-nowrap">
@@ -898,23 +781,11 @@ const Landing = () => {
                 { Icon: FaAmazon, text: "Amazon" },
                 { Icon: FiGift, text: "Gift Cards" }
               ].map((item, idx) => (
-                <div key={idx} className="flex items-center gap-3 text-white whitespace-nowrap" style={{ marginRight: 100 }}>
-                  <item.Icon style={{ fontSize: 32 }} />
-                  <span style={{
-                    width: 84,
-                    height: 46,
-                    display: 'inline-block',
-                    fontFamily: '"Barlow Condensed", sans-serif',
-                    fontWeight: 700,
-                    fontStyle: 'normal',
-                    fontSize: 28.75,
-                    lineHeight: '46px',
-                    letterSpacing: '0%',
-                    verticalAlign: 'middle',
-                    color: 'rgba(255, 255, 255, 1)',
-                    opacity: 1,
-                    transform: 'rotate(0deg)'
-                  }}>
+                <div key={idx} className="flex items-center gap-2 lg:gap-3 text-white whitespace-nowrap mr-12 lg:mr-[100px]">
+                  <item.Icon className="text-[20px] lg:text-[32px]" />
+                  <span
+                    className="font-['Barlow_Condensed'] font-bold text-[18px] lg:text-[28.75px] text-white"
+                  >
                     {item.text}
                   </span>
                 </div>
@@ -926,48 +797,26 @@ const Landing = () => {
 
       {/* BOTTOM CTA */}
       <section
-        className="w-full flex justify-center"
-        style={{ background: 'rgba(27, 28, 27, 1)' }}
+        className="w-full flex justify-center bg-[rgba(27,28,27,1)]"
       >
         <div
-          className="flex flex-col md:flex-row items-center justify-between w-full"
-          style={{
-            width: 1440,
-            maxWidth: '100%',
-            height: 158,
-            padding: '40px 100px',
-            justifyContent: 'space-between'
-          }}
+          className="flex flex-col md:flex-row items-center justify-between w-full max-w-[1440px] h-auto lg:h-[158px] py-8 lg:py-[40px] px-6 lg:px-[100px] gap-6 lg:gap-0"
         >
           <div
-            className="flex flex-col justify-start"
-            style={{ width: 1072, height: 78, gap: 30 }}
+            className="flex flex-col justify-start w-full lg:w-[1072px] h-auto gap-2 lg:gap-[30px] text-center lg:text-left"
           >
             <h2
-              className="m-0 whitespace-nowrap flex items-center"
+              className="m-0 text-white text-[30px] sm:text-[38px] lg:text-[48px] leading-[36px] lg:leading-[48px] font-bold"
               style={{
-                width: 341,
-                height: 34,
-                fontFamily: '"Barlow Condensed", sans-serif',
-                fontWeight: 700,
-                fontSize: 48,
-                lineHeight: '48px',
-                color: 'rgba(255, 255, 255, 1)'
+                fontFamily: '"Barlow Condensed", sans-serif'
               }}
             >
               Start Earning Today
             </h2>
             <p
-              className="m-0 whitespace-nowrap flex items-center"
+              className="m-0 text-white/60 text-[15px] sm:text-[18px] lg:text-[20px] leading-[22px] lg:leading-[28px] font-medium"
               style={{
-                width: 1072,
-                maxWidth: '100%',
-                height: 14,
-                fontFamily: '"Barlow Condensed", sans-serif',
-                fontWeight: 500,
-                fontSize: 20,
-                lineHeight: '28px',
-                color: 'rgba(255, 255, 255, 0.53)'
+                fontFamily: '"Barlow Condensed", sans-serif'
               }}
             >
               Join now and start making real money right now!
@@ -975,37 +824,20 @@ const Landing = () => {
           </div>
           <button
             onClick={() => navigate('/login?tab=register')}
-            className="flex items-center justify-center text-white transition-all hover:brightness-110 active:translate-y-[4px] active:shadow-none"
+            className="flex items-center justify-center text-white transition-all hover:brightness-110 active:translate-y-[4px] active:shadow-none w-full sm:w-[168px] h-[44px] lg:h-[48px] rounded-[10px] px-6 gap-[10px]"
             style={{
-              width: 168,
-              height: 48,
-              borderRadius: 10,
-              padding: '10px 30px',
-              gap: 10,
               background: 'rgba(73, 178, 101, 1)',
               boxShadow: '0px 4px 0px 0px rgba(39, 109, 58, 1)'
             }}
           >
             <span
-              className="whitespace-nowrap flex items-center justify-center m-0 p-0"
-              style={{
-                width: 74,
-                height: 13,
-                fontFamily: '"Barlow Condensed", sans-serif',
-                fontWeight: 700,
-                fontStyle: 'normal',
-                fontSize: 18,
-                lineHeight: '100%',
-                letterSpacing: '0%'
-              }}
+              className="whitespace-nowrap flex items-center justify-center m-0 p-0 text-[16px] lg:text-[18px] font-bold font-['Barlow_Condensed']"
             >
               Get Started
             </span>
             <div
-              className="bg-white"
+              className="bg-white w-[16px] h-[16px] lg:w-[18px] lg:h-[18px]"
               style={{
-                width: 18,
-                height: 18,
                 WebkitMaskImage: 'url(/coins/image.png)',
                 WebkitMaskSize: 'contain',
                 WebkitMaskRepeat: 'no-repeat',
@@ -1022,20 +854,13 @@ const Landing = () => {
 
       {/* FOOTER */}
       <footer
-        className="w-full flex justify-center border-t border-[#333] mt-auto shrink-0"
+        className="w-full flex justify-center border-t border-[#333] shrink-0 items-start"
         style={{ background: 'rgba(44, 45, 44, 1)' }}
       >
         <div
-          className="flex flex-col items-center text-center w-full mx-auto"
+          className="flex flex-col items-center text-center w-full mx-auto px-4 lg:px-[100px] py-6 lg:pt-[40px] lg:pb-[22px] gap-6 lg:gap-[30px]"
           style={{
-            width: 1440,
-            maxWidth: '100%',
-            height: 266.9997863769531,
-            paddingTop: 40,
-            paddingRight: 100,
-            paddingBottom: 22,
-            paddingLeft: 100,
-            gap: 30,
+            maxWidth: 1440,
             opacity: 1,
             transform: 'rotate(0deg)',
             justifyContent: 'space-between'
@@ -1043,39 +868,20 @@ const Landing = () => {
         >
           {/* Top Logo */}
           <div
-            className="flex items-center justify-center"
-            style={{
-              width: 210.99978637695312,
-              height: 51.999786376953125,
-              gap: 10,
-              opacity: 1,
-              transform: 'rotate(0deg)'
-            }}
+            className="relative flex items-center justify-center w-full h-[32px] lg:h-[52px] lg:gap-[10px]"
           >
             <img
               src="/coins/logo copy.png"
               alt="Logo"
-              style={{
-                width: 51.999786376953125,
-                height: 51.999786376953125,
-                objectFit: 'contain',
-                opacity: 1,
-                transform: 'rotate(0deg)'
-              }}
+              className="absolute right-[calc(50%+48px)] lg:static w-[32px] h-[32px] lg:w-[52px] lg:h-[52px] object-contain"
             />
             <span
-              className="whitespace-nowrap flex items-center"
+              className="whitespace-nowrap flex items-center text-[26px] lg:text-[46px]"
               style={{
-                width: 149,
-                height: 32,
                 fontFamily: '"Barlow Condensed", sans-serif',
                 fontWeight: 700,
-                fontSize: 46,
                 lineHeight: '100%',
-                letterSpacing: '0%',
-                color: 'rgba(255, 255, 255, 1)',
-                opacity: 1,
-                transform: 'rotate(0deg)'
+                color: 'rgba(255, 255, 255, 1)'
               }}
             >
               TaskMint
@@ -1084,19 +890,13 @@ const Landing = () => {
 
           {/* Middle Content */}
           <div
-            className="flex flex-col items-center text-center"
-            style={{ width: 1104, maxWidth: '100%', gap: 30 }}
+            className="flex flex-col items-center text-center w-full max-w-[1104px] gap-3 lg:gap-[30px]"
           >
             <p
-              className="m-0 p-0 flex items-center justify-center whitespace-nowrap"
+              className="m-0 p-0 flex items-center justify-center whitespace-normal lg:whitespace-nowrap px-4 lg:px-0 text-[13px] leading-[18px] lg:text-[20px] lg:leading-[28px]"
               style={{
-                width: 1104,
-                maxWidth: '100%',
-                height: 14,
                 fontFamily: '"Barlow Condensed", sans-serif',
                 fontWeight: 400,
-                fontSize: 20,
-                lineHeight: '28px',
                 textAlign: 'center',
                 color: 'rgba(209, 213, 219, 1)'
               }}
@@ -1104,8 +904,7 @@ const Landing = () => {
               Complete offers, surveys, and tasks to earn real rewards. Join thousands of users already earning every day.
             </p>
             <div
-              className="flex justify-center items-center m-0 p-0"
-              style={{ width: 526, maxWidth: '100%', height: 11, gap: 20 }}
+              className="flex justify-center items-center m-0 p-0 flex-wrap lg:flex-nowrap gap-x-[12px] gap-y-2 lg:gap-[20px] w-full px-2 lg:px-0"
             >
               {[
                 { name: 'Features', href: '#features' },
@@ -1118,13 +917,10 @@ const Landing = () => {
                 <React.Fragment key={link.name}>
                   <a
                     href={link.href}
-                    className="hover:opacity-80 transition-opacity whitespace-nowrap flex items-center justify-center"
+                    className="hover:opacity-80 transition-opacity whitespace-nowrap flex items-center justify-center text-[12px] sm:text-[14px] lg:text-[16px]"
                     style={{
-                      height: 11,
                       fontFamily: '"Barlow Condensed", sans-serif',
                       fontWeight: 700,
-                      fontSize: 16,
-                      lineHeight: '11px',
                       color: 'rgba(73, 178, 101, 1)',
                       textDecoration: 'none'
                     }}
@@ -1133,8 +929,8 @@ const Landing = () => {
                   </a>
                   {idx < arr.length - 1 && (
                     <span
-                      className="flex items-center justify-center"
-                      style={{ color: '#fff', fontSize: 16, lineHeight: '11px' }}
+                      className="hidden lg:flex items-center justify-center"
+                      style={{ color: '#fff', fontSize: 16 }}
                     >
                       &bull;
                     </span>
@@ -1145,53 +941,35 @@ const Landing = () => {
           </div>
 
           {/* Bottom Divider & Copyright */}
-          <div className="w-full flex flex-col items-center gap-4">
+          <div className="w-full flex flex-col items-center gap-3 mt-2 lg:mt-0 px-2 lg:px-0">
             <div
-              style={{
-                width: 1240,
-                maxWidth: '100%',
-                height: 0,
-                borderTop: '1px solid rgba(255, 255, 255, 0.3)'
-              }}
+              className="w-full border-t border-white/30"
+              style={{ maxWidth: 1240 }}
             />
             <div
-              className="flex items-center"
-              style={{
-                width: 1240,
-                maxWidth: '100%',
-                height: 34,
-                justifyContent: 'space-between',
-                opacity: 1,
-                transform: 'rotate(0deg)'
-              }}
+              className="flex flex-col-reverse lg:flex-row items-center justify-between w-full gap-3 lg:gap-0 pb-2 lg:pb-0"
+              style={{ maxWidth: 1240 }}
             >
               <p
-                className="m-0 p-0 flex items-center"
+                className="m-0 p-0 flex items-center text-center lg:text-left text-[12px] lg:text-[16px]"
                 style={{
-                  width: 1004,
-                  height: 11,
                   fontFamily: '"Barlow Condensed", sans-serif',
                   fontWeight: 500,
-                  fontSize: 16,
-                  lineHeight: '20px',
                   color: 'rgba(255, 255, 255, 1)'
                 }}
               >
                 © 2026 TaskMint. All rights reserved.
               </p>
               <div
-                className="flex items-center justify-between"
+                className="flex items-center justify-center lg:justify-between gap-4 lg:gap-[20px]"
                 style={{
-                  width: 164,
-                  height: 26,
-                  gap: 20,
                   color: 'rgba(73, 178, 101, 1)'
                 }}
               >
-                <FaFacebook className="hover:opacity-80 cursor-pointer transition-opacity flex-shrink-0" style={{ width: 26, height: 26, opacity: 1, transform: 'rotate(0deg)' }} />
-                <FaInstagram className="hover:opacity-80 cursor-pointer transition-opacity flex-shrink-0" style={{ width: 26, height: 26, opacity: 1, transform: 'rotate(0deg)' }} />
-                <FaYoutube className="hover:opacity-80 cursor-pointer transition-opacity flex-shrink-0" style={{ width: 26, height: 26, opacity: 1, transform: 'rotate(0deg)' }} />
-                <FaDiscord className="hover:opacity-80 cursor-pointer transition-opacity flex-shrink-0" style={{ width: 26, height: 26, opacity: 1, transform: 'rotate(0deg)' }} />
+                <FaFacebook className="hover:opacity-80 cursor-pointer transition-opacity flex-shrink-0 w-[18px] h-[18px] lg:w-[26px] lg:h-[26px]" />
+                <FaInstagram className="hover:opacity-80 cursor-pointer transition-opacity flex-shrink-0 w-[18px] h-[18px] lg:w-[26px] lg:h-[26px]" />
+                <FaYoutube className="hover:opacity-80 cursor-pointer transition-opacity flex-shrink-0 w-[18px] h-[18px] lg:w-[26px] lg:h-[26px]" />
+                <FaDiscord className="hover:opacity-80 cursor-pointer transition-opacity flex-shrink-0 w-[18px] h-[18px] lg:w-[26px] lg:h-[26px]" />
               </div>
             </div>
           </div>
