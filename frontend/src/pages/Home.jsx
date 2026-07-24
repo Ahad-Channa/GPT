@@ -596,8 +596,8 @@ const Home = () => {
                   <span className="text-[14px] lg:text-[22px] font-bold text-white tracking-wide truncate" style={{ fontFamily: '"Barlow Condensed", sans-serif' }}>{activeProvider.label}</span>
                 </div>
                 <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center gap-1.5 lg:gap-2 pointer-events-none z-0">
-                  <img src="/coins/logo copy.png" alt="TaskMint Logo" className="w-[16px] h-[16px] lg:w-[24px] lg:h-[24px] object-contain" />
-                  <span className="text-white font-bold tracking-widest text-[16px] lg:text-[20px]" style={{ fontFamily: '"Barlow Condensed", sans-serif', lineHeight: '1' }}>TaskMint</span>
+                  <img src="/coins/logo copy.png" alt="TaskMint Logo" className="w-[16px] h-[16px] lg:w-[32px] lg:h-[32px] object-contain" />
+                  <span className="text-white font-bold tracking-widest text-[16px] lg:text-[24px]" style={{ fontFamily: '"Barlow Condensed", sans-serif', lineHeight: '1' }}>TaskMint</span>
                 </div>
                 <button
                   onClick={() => setActiveProvider(null)}

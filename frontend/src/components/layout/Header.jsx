@@ -577,7 +577,7 @@ const Header = ({ onChatToggle, chatOpen, fullWidth }) => {
                 />
               </div>
               <div
-                className="flex flex-col items-start justify-center flex-1 overflow-visible"
+                className="flex flex-col items-start justify-between flex-1 overflow-visible h-[18px] lg:h-[31px]"
                 style={{ gap: 0 }}
               >
                 <span
@@ -592,7 +592,7 @@ const Header = ({ onChatToggle, chatOpen, fullWidth }) => {
                   {mongoUser?.displayName || 'User'}
                 </span>
                 <span
-                  className="flex items-center"
+                  className="flex items-center lg:translate-y-[2.5px]"
                   style={{ minWidth: '16px', width: 'auto', height: 'auto', gap: '2px' }}
                 >
                   <img

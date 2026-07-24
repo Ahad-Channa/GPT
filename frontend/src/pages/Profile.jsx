@@ -269,7 +269,7 @@ const CustomizationModal = ({ isOpen, onClose, mongoUser, token, setMongoUser })
                           <div className="text-white font-semibold text-[16px] leading-none truncate mb-[6px]">{avatar.name}</div>
                           <div className="text-[12px] text-[#49b265] font-semibold leading-none mb-[6px]">{avatar.quantity ?? 'Unlimited'} Available</div>
                           <div className="flex items-center gap-[4px]">
-                            <img src="/coins/Coin.png" alt="Coins" className="w-[14px] h-[14px] object-contain" style={{ filter: 'drop-shadow(0px 0px 10px rgba(254, 198, 53, 0.6))' }} />
+                            <img src="/coins/Coin.png" alt="Coins" className="w-[14px] h-[14px] object-contain" />
                             <span className="text-[#fbbf24] font-bold text-[14px] leading-none">{avatar.price}</span>
                           </div>
                         </div>
@@ -378,7 +378,7 @@ const CustomizationModal = ({ isOpen, onClose, mongoUser, token, setMongoUser })
                     <div className="flex justify-between items-center pb-[8px] border-b border-white/5 last:border-0 last:pb-0">
                       <span className="text-white font-semibold">Price</span>
                       <div className="flex items-center gap-[4px]">
-                        <img src="/coins/Coin.png" alt="Coins" className="w-[16px] h-[16px] object-contain" style={{ filter: 'drop-shadow(0px 0px 10px rgba(254, 198, 53, 0.6))' }} />
+                        <img src="/coins/Coin.png" alt="Coins" className="w-[16px] h-[16px] object-contain" />
                         <span className="text-[#fbbf24] font-bold text-[16px] leading-none">{previewAvatar.price}</span>
                       </div>
                     </div>

@@ -351,7 +351,7 @@ export default function DailyBonus() {
                       </div>
                       <div className="flex justify-between items-center w-[358.66px] h-[26px] shrink-0">
                          <div className="flex items-center w-auto h-[26px] gap-[4px] shrink-0 overflow-visible">
-                            <img src="/coins/Coin.png" alt="Coin" className="w-[26px] h-[26px] shrink-0 object-contain overflow-visible" style={{ filter: 'drop-shadow(0px 0px 14px rgba(254, 198, 53, 0.6))' }} />
+                            <img src="/coins/Coin.png" alt="Coin" className="w-[26px] h-[26px] shrink-0 object-contain overflow-visible" />
                             <span className="w-auto h-auto m-0 p-0 text-[28px] font-bold font-['Barlow_Condensed'] leading-none tracking-normal whitespace-nowrap bg-gradient-to-b from-[#FEDF77] to-[#FCB91E] text-transparent bg-clip-text flex items-center shrink-0 pb-[2px]">
                                {milestone.reward}
                             </span>

@@ -58,7 +58,7 @@ const LiveEarningsTicker = () => {
               </div>
               <span className="text-slate-500">earned</span>
               <span className="text-emerald-400 font-bold flex items-center">
-                +{earning.amount?.toLocaleString()} <img src="/coin.png" className="w-3 h-3 ml-1 drop-shadow-md" alt="C" onError={(e) => e.target.style.display='none'}/>
+                +{earning.amount?.toLocaleString()} <img src="/coin.png" className="w-3 h-3 ml-1" alt="C" onError={(e) => e.target.style.display='none'}/>
               </span>
               <span className="text-slate-500 truncate max-w-[120px]">
                 {earning.description ? earning.description : 'from an offer'}

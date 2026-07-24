@@ -555,7 +555,7 @@ const ChatSidebar = ({ isOpen, onClose }) => {
                             transition: 'all 0.2s',
                             fontFamily: '"Barlow Condensed", sans-serif',
                             letterSpacing: '0px',
-                            display: 'flex', alignItems: 'center', justifyCenter: 'center',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
                             flexShrink: 0
                           }}
                         >

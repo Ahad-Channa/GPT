@@ -79,17 +79,11 @@ function NotificationMessage({ message, metadata, onLinkClick }) {
             <div style={{
                 width: '100%',
                 height: 'auto',
-                maxHeight: '38px',
                 fontFamily: '"Barlow Condensed", sans-serif',
                 fontWeight: 500,
                 fontSize: '15px',
                 lineHeight: '18px',
-                color: 'rgba(255, 255, 255, 0.6)',
-                overflow: 'hidden',
-                display: '-webkit-box',
-                WebkitLineClamp: 2,
-                WebkitBoxOrient: 'vertical',
-                textOverflow: 'ellipsis'
+                color: 'rgba(255, 255, 255, 0.6)'
             }}>
                 {message}
             </div>
@@ -104,17 +98,11 @@ function NotificationMessage({ message, metadata, onLinkClick }) {
             <div style={{
                 width: '100%',
                 height: 'auto',
-                maxHeight: '38px',
                 fontFamily: '"Barlow Condensed", sans-serif',
                 fontWeight: 500,
                 fontSize: '15px',
                 lineHeight: '18px',
-                color: 'rgba(255, 255, 255, 0.6)',
-                overflow: 'hidden',
-                display: '-webkit-box',
-                WebkitLineClamp: 2,
-                WebkitBoxOrient: 'vertical',
-                textOverflow: 'ellipsis'
+                color: 'rgba(255, 255, 255, 0.6)'
             }}>
                 {message}
             </div>
@@ -124,17 +112,12 @@ function NotificationMessage({ message, metadata, onLinkClick }) {
     return (
         <div style={{
             width: '100%',
-            height: '38px',
+            height: 'auto',
             fontFamily: '"Barlow Condensed", sans-serif',
             fontWeight: 500,
             fontSize: '16px',
             lineHeight: '18px',
-            color: 'rgba(255, 255, 255, 0.6)',
-            overflow: 'hidden',
-            display: '-webkit-box',
-            WebkitLineClamp: 2,
-            WebkitBoxOrient: 'vertical',
-            textOverflow: 'ellipsis'
+            color: 'rgba(255, 255, 255, 0.6)'
         }}>
             {parts[0]}
             <button

@@ -223,7 +223,7 @@ export const FeaturedOfferCard = ({ offer, onClick }) => {
               backgroundClip: 'text'
             }}
           >
-            +<CoinDisplay amount={offer.rewardAmount} showIcon={false} />
+            <CoinDisplay amount={offer.rewardAmount} showIcon={false} />
           </span>
         </div>
       </div>
@@ -321,7 +321,7 @@ export const FeaturedOfferModal = ({ offer, token, onClose, onSubmitted }) => {
         {!showProofForm && (
           <button
             onClick={onClose}
-            className="absolute top-[12px] right-[12px] lg:top-[26px] lg:right-[16px] w-[26px] h-[26px] lg:w-[36px] lg:h-[36px] rounded-[8px] lg:rounded-[10px] bg-white/10 text-white flex items-center justify-center cursor-pointer z-10 border-none"
+            className="absolute top-[12px] right-[12px] lg:top-[16px] lg:right-[16px] w-[26px] h-[26px] lg:w-[36px] lg:h-[36px] rounded-[8px] lg:rounded-[10px] bg-white/10 text-white flex items-center justify-center cursor-pointer z-10 border-none"
           >
             <FiX className="w-[14px] h-[14px] lg:w-[16px] lg:h-[16px]" />
           </button>
@@ -360,7 +360,7 @@ export const FeaturedOfferModal = ({ offer, token, onClose, onSubmitted }) => {
                   {offer.title}
                 </h2>
                 <div
-                  className="w-full h-auto text-[12px] lg:text-[16px] break-words line-clamp-2 lg:line-clamp-none"
+                  className="w-full h-auto text-[12px] lg:text-[16px] break-words text-justify"
                   style={{
                     fontFamily: '"Barlow Condensed", sans-serif',
                     fontWeight: 500,
@@ -370,24 +370,6 @@ export const FeaturedOfferModal = ({ offer, token, onClose, onSubmitted }) => {
                 >
                   {offer.description.split('\n').map((line, i) => <p key={i} style={{ margin: 0, padding: 0 }}>{line}</p>)}
                 </div>
-              </div>
-              <div className="flex items-center gap-[3px] self-start h-[20px] lg:h-[26px] mt-1 lg:mt-auto">
-                <img src="/coins/Coin.png" alt="coin" className="w-[20px] h-[20px] lg:w-[26px] lg:h-[26px] object-contain" />
-                <span
-                  className="text-[18px] lg:text-[22px] inline-flex items-center"
-                  style={{
-                    fontFamily: '"Barlow Condensed", sans-serif',
-                    fontWeight: 700,
-                    background: 'linear-gradient(180deg, #FEDF77 0%, #FCB91E 100%)',
-                    WebkitBackgroundClip: 'text',
-                    WebkitTextFillColor: 'transparent',
-                    backgroundClip: 'text',
-                    color: 'transparent',
-                    whiteSpace: 'nowrap'
-                  }}
-                >
-                  +{(offer.rewardAmount || 0).toLocaleString()}
-                </span>
               </div>
             </div>
           </div>
@@ -413,7 +395,7 @@ export const FeaturedOfferModal = ({ offer, token, onClose, onSubmitted }) => {
                 {offer.title}
               </h2>
               <div
-                className="w-full text-[12px] lg:text-[14px] text-[#888888] leading-tight break-words line-clamp-2 lg:line-clamp-none"
+                className="w-full text-[12px] lg:text-[14px] text-[#888888] leading-tight break-words"
                 style={{ fontFamily: '"Barlow Condensed", sans-serif' }}
               >
                 <p style={{ margin: 0, padding: 0 }}>Follow the steps below to submit your proof of completion for review.</p>
@@ -430,7 +412,7 @@ export const FeaturedOfferModal = ({ offer, token, onClose, onSubmitted }) => {
         )}
 
         {/* Modal Body (Scrollable) */}
-        <div className="custom-scrollbar" style={{ flex: 1, overflowX: 'hidden', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '16px', paddingRight: '4px' }}>
+        <div className="hide-scrollbar" style={{ flex: 1, overflowX: 'hidden', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '16px', paddingRight: '4px' }}>
 
           {showProofForm ? (
             <ProofUploadView
@@ -473,14 +455,39 @@ export const FeaturedOfferModal = ({ offer, token, onClose, onSubmitted }) => {
               )}
 
               {/* Requirements Section ALWAYS VISIBLE AND STICKY */}
-              {!isStarted && offer.requirements && offer.requirements.length > 0 && (
-                <div className="w-full flex flex-col gap-2 shrink-0 sticky top-[-1px] z-20 bg-[#242424] pb-2 opacity-100">
-                  <h4
-                    className="text-[14px] lg:text-[16px] text-white font-bold leading-normal"
-                    style={{ fontFamily: '"Barlow Condensed", sans-serif', margin: 0 }}
-                  >
-                    Requirements
-                  </h4>
+              <div className="w-full flex flex-col gap-2 shrink-0 opacity-100">
+                <div className="flex justify-between items-center w-full lg:sticky lg:top-[-1px] lg:z-20 lg:bg-[#242424] lg:pb-2 lg:pt-1">
+                  {offer.requirements && offer.requirements.length > 0 ? (
+                    <h4
+                      className="text-[14px] lg:text-[16px] text-white font-bold leading-normal"
+                      style={{ fontFamily: '"Barlow Condensed", sans-serif', margin: 0 }}
+                    >
+                      Requirements
+                    </h4>
+                  ) : (
+                    <div></div>
+                  )}
+                  <div className="flex items-center gap-[3px] h-[20px] lg:h-[26px]">
+                    <img src="/coins/Coin.png" alt="coin" className="w-[20px] h-[20px] lg:w-[26px] lg:h-[26px] object-contain" />
+                    <span
+                      className="text-[18px] lg:text-[22px] inline-flex items-center"
+                      style={{
+                        fontFamily: '"Barlow Condensed", sans-serif',
+                        fontWeight: 700,
+                        background: 'linear-gradient(180deg, #FEDF77 0%, #FCB91E 100%)',
+                        WebkitBackgroundClip: 'text',
+                        WebkitTextFillColor: 'transparent',
+                        backgroundClip: 'text',
+                        color: 'transparent',
+                        whiteSpace: 'nowrap'
+                      }}
+                    >
+                      {(offer.rewardAmount || 0).toLocaleString()}
+                    </span>
+                  </div>
+                </div>
+                {offer.requirements && offer.requirements.length > 0 && (
+
                   <div
                     className="w-full box-border h-auto shrink-0"
                     style={{
@@ -505,8 +512,8 @@ export const FeaturedOfferModal = ({ offer, token, onClose, onSubmitted }) => {
                       </div>
                     ))}
                   </div>
-                </div>
-              )}
+                )}
+              </div>
 
               {/* Boxes when started */}
               {isStarted && !alreadySubmitted && (

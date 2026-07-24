@@ -59,7 +59,7 @@ const LiveEarningsBar = () => {
     if (tx.transactionType === 'withdrawal') {
       const method = tx.method ? tx.method.charAt(0).toUpperCase() + tx.method.slice(1) : 'Withdrawal';
       return {
-        amountStr: `$${(Math.abs(tx.amount) / 1000).toFixed(2)}`,
+        amountStr: `${(Math.abs(tx.amount) / 1000).toFixed(2)}$`,
         isCoin: false,
         isWithdrawal: true,
         method: method,
@@ -89,7 +89,7 @@ const LiveEarningsBar = () => {
     }
 
     return {
-      amountStr: `+${Math.abs(tx.amount).toLocaleString()}`,
+      amountStr: `${Math.abs(tx.amount).toLocaleString()}`,
       isCoin: true,
       isWithdrawal: false,
       offerwall,
