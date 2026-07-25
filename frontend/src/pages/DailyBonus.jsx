@@ -346,8 +346,8 @@ export default function DailyBonus() {
                          <div className="flex flex-row items-center w-full md:w-[358.66px] h-auto md:h-[91px] gap-1 sm:gap-2 md:gap-[16px] shrink-0">
                             <img src={`/coins/st${milestone.target}.png`} alt={`${milestone.target} Day Streak`} className="w-[34px] h-[38px] sm:w-[40px] sm:h-[45px] md:w-[81px] md:h-[91px] object-contain shrink-0" />
                             <div className="flex flex-col flex-1 min-w-0 h-auto gap-0 md:gap-1 shrink-0 items-start justify-center">
-                               <h3 className="w-full text-left h-auto m-0 p-0 text-white text-[9px] sm:text-[11px] md:text-[32px] font-semibold font-['Barlow_Condensed'] leading-[120%] tracking-normal whitespace-nowrap overflow-hidden text-ellipsis">{milestone.title}</h3>
-                               <p className="w-full text-left h-auto m-0 p-0 text-white/60 text-[6.5px] sm:text-[7.5px] md:text-[18px] font-medium font-['Barlow_Condensed'] leading-[120%] tracking-normal whitespace-nowrap overflow-hidden text-ellipsis">{milestone.sub}</p>
+                               <h3 className="w-full text-left h-auto m-0 p-0 text-white text-[9px] sm:text-[11px] md:text-[32px] font-semibold font-['Barlow_Condensed'] leading-[110%] md:leading-[120%] tracking-normal whitespace-normal md:whitespace-nowrap md:overflow-hidden md:text-ellipsis">{milestone.title}</h3>
+                               <p className="w-full text-left h-auto m-0 p-0 text-white/60 text-[6.5px] sm:text-[7.5px] md:text-[18px] font-medium font-['Barlow_Condensed'] leading-[110%] md:leading-[120%] tracking-normal whitespace-normal md:whitespace-nowrap md:overflow-hidden md:text-ellipsis">{milestone.sub}</p>
                             </div>
                          </div>
                          
