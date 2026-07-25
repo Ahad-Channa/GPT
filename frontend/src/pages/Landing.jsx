@@ -212,7 +212,7 @@ const Landing = () => {
                 width: '100%',
                 maxWidth: 410,
                 height: 'auto',
-                gap: 10,
+                gap: 12,
                 opacity: 1
               }}
             >
@@ -229,7 +229,7 @@ const Landing = () => {
                   backgroundColor: 'rgba(39, 112, 58, 1)',
                   boxShadow: '0px 4px 0px 0px rgba(35, 80, 47, 1)'
                 } : {
-                  width: '50%',
+                  width: 135,
                   height: 40,
                   borderRadius: 8,
                   padding: '8px 12px',
@@ -262,7 +262,7 @@ const Landing = () => {
                   background: 'rgba(73, 178, 101, 1)',
                   boxShadow: '0px 4px 0px 0px rgba(45, 110, 62, 1)'
                 } : {
-                  width: '50%',
+                  width: 135,
                   height: 40,
                   borderRadius: 8,
                   padding: '8px 12px',
@@ -416,7 +416,7 @@ const Landing = () => {
           </div>
 
           <div
-            className="grid grid-cols-3 mx-auto w-full max-w-[1240px] h-auto gap-2 lg:gap-[20px]"
+            className="grid grid-cols-1 lg:grid-cols-3 mx-auto w-full max-w-[1240px] h-auto gap-4 lg:gap-[20px]"
           >
             {[
               { icon: '/coins/persontik.png', step: 1, title: 'Sign Up', desc: 'Create your free account in seconds and get instant access to the platform.' },
@@ -425,7 +425,7 @@ const Landing = () => {
             ].map((item, idx) => (
               <div
                 key={idx}
-                className="hover:brightness-110 transition-all group relative w-full h-auto lg:h-[212px] rounded-[12px] lg:rounded-[20px] p-2 lg:p-0 overflow-hidden"
+                className="hover:brightness-110 transition-all group relative w-full h-auto lg:h-[212px] rounded-[16px] lg:rounded-[20px] p-6 lg:p-0 overflow-hidden"
                 style={{
                   background: 'rgba(26, 27, 26, 1)',
                   boxShadow: '0px 4px 80px 0px rgba(0, 0, 0, 0.15)',
@@ -437,16 +437,16 @@ const Landing = () => {
                   <img
                     src={item.icon}
                     alt={item.title}
-                    className="object-contain w-4 h-4 lg:w-[44px] lg:h-[44px] static lg:absolute lg:top-[24px] lg:left-[24px]"
+                    className="object-contain w-10 h-10 lg:w-[44px] lg:h-[44px] static lg:absolute lg:top-[24px] lg:left-[24px]"
                   />
                   <div
-                    className="flex items-center justify-center absolute top-0 right-2 lg:left-[304px] lg:right-auto w-[24px] lg:w-[70px] h-[24px] lg:h-[68px] px-1 lg:px-[30px] gap-[10px] rounded-b-[6px] rounded-t-none lg:rounded-b-[10px]"
+                    className="flex items-center justify-center absolute top-0 right-6 lg:left-[304px] lg:right-auto w-[48px] lg:w-[70px] h-[48px] lg:h-[68px] px-2 lg:px-[30px] gap-[10px] rounded-b-[8px] rounded-t-none lg:rounded-b-[10px]"
                     style={{
                       background: 'rgba(50, 50, 50, 1)'
                     }}
                   >
                     <span
-                      className="text-white flex items-center justify-center text-[12px] lg:text-[38px]"
+                      className="text-white flex items-center justify-center text-[24px] lg:text-[38px]"
                       style={{
                         fontFamily: '"Barlow Condensed", sans-serif',
                         fontWeight: 700,
@@ -458,10 +458,10 @@ const Landing = () => {
                   </div>
                 </div>
                 <div
-                  className="flex flex-col mt-2 lg:mt-0 lg:absolute lg:top-[102px] lg:left-[24px] w-full lg:w-[352px] gap-1 lg:gap-[12px]"
+                  className="flex flex-col mt-4 lg:mt-0 lg:absolute lg:top-[102px] lg:left-[24px] w-full lg:w-[352px] gap-2 lg:gap-[12px]"
                 >
                   <h3
-                    className="font-semibold text-white m-0 text-[13px] sm:text-[16px] lg:text-[24px]"
+                    className="font-semibold text-white m-0 text-[20px] lg:text-[24px]"
                     style={{
                       fontFamily: '"Barlow Condensed", sans-serif',
                       fontWeight: 600,
@@ -472,7 +472,7 @@ const Landing = () => {
                     {item.title}
                   </h3>
                   <p
-                    className="m-0 flex items-center text-[10px] sm:text-[13px] lg:text-[17px] leading-[14px] sm:leading-[18px] lg:leading-[24px] text-gray-400"
+                    className="m-0 flex items-center text-[15px] lg:text-[17px] leading-[22px] lg:leading-[24px] text-gray-400"
                     style={{
                       fontFamily: '"Barlow Condensed", sans-serif',
                       fontWeight: 500
@@ -524,7 +524,7 @@ const Landing = () => {
           </div>
 
           <div
-            className="grid grid-cols-2 lg:grid-cols-3 mx-auto w-full max-w-[1240px] h-auto gap-2 sm:gap-4 lg:gap-[20px]"
+            className="grid grid-cols-1 lg:grid-cols-3 mx-auto w-full max-w-[1240px] h-auto gap-4 lg:gap-[20px]"
           >
             {[
               { icon: '/coins/walls.png', title: 'Multiple Offerwalls', desc: 'Discover various earning options in one place.' },
@@ -536,7 +536,7 @@ const Landing = () => {
             ].map((item, idx) => (
               <div
                 key={idx}
-                className="flex flex-col items-center transition-colors group w-full h-auto lg:h-[183px] rounded-[16px] lg:rounded-[20px] p-2 sm:p-5 lg:p-[20px_12px_24px_12px] gap-1 lg:gap-[12px]"
+                className="flex flex-col items-center transition-colors group w-full h-auto lg:h-[183px] rounded-[16px] lg:rounded-[20px] p-6 lg:p-[20px_12px_24px_12px] gap-4 lg:gap-[12px]"
                 style={{
                   background: 'rgba(255, 255, 255, 0.08)',
                   boxShadow: '0px 4px 80px 0px rgba(0, 0, 0, 0.15)',
@@ -545,16 +545,16 @@ const Landing = () => {
                 }}
               >
                 <div
-                  className="flex items-center justify-center mb-0 w-[24px] h-[24px] lg:w-[64px] lg:h-[64px]"
+                  className="flex items-center justify-center mb-0 w-[40px] h-[40px] lg:w-[64px] lg:h-[64px]"
                   style={{ borderRadius: 20, gap: 10, background: 'transparent' }}
                 >
-                  <img src={item.icon} alt={item.title} className="w-4 h-4 lg:w-[44px] lg:h-[44px] object-contain" />
+                  <img src={item.icon} alt={item.title} className="w-10 h-10 lg:w-[44px] lg:h-[44px] object-contain" />
                 </div>
                 <div
-                  className="flex flex-col items-center w-full max-w-[376px] h-auto gap-1 lg:gap-[12px]"
+                  className="flex flex-col items-center w-full max-w-[376px] h-auto gap-2 lg:gap-[12px]"
                 >
                   <h3
-                    className="font-bold m-0 text-white text-[13px] sm:text-[20px] lg:text-[24px] text-center"
+                    className="font-bold m-0 text-white text-[20px] lg:text-[24px] text-center"
                     style={{
                       fontFamily: '"Barlow Condensed", sans-serif',
                       fontWeight: 700,
@@ -564,7 +564,7 @@ const Landing = () => {
                     {item.title}
                   </h3>
                   <p
-                    className="m-0 text-[10px] sm:text-[15px] lg:text-[17px] leading-[14px] sm:leading-[22px] lg:leading-[24px] text-center text-gray-300"
+                    className="m-0 text-[15px] lg:text-[17px] leading-[22px] lg:leading-[24px] text-center text-gray-300"
                     style={{
                       fontFamily: '"Barlow Condensed", sans-serif',
                       fontWeight: 500
@@ -608,7 +608,7 @@ const Landing = () => {
           </div>
 
           <div
-            className="grid grid-cols-3 mx-auto w-full max-w-[1240px] h-auto gap-2 lg:gap-[24px]"
+            className="grid grid-cols-1 lg:grid-cols-3 mx-auto w-full max-w-[1240px] h-auto gap-4 lg:gap-[24px]"
           >
             {[
               { icon: '/coins/clicl.png', title: 'Surveys', desc: 'Share your opinion on various topics and get rewarded instantly.' },
@@ -617,7 +617,7 @@ const Landing = () => {
             ].map((item, idx) => (
               <div
                 key={idx}
-                className="flex flex-col items-center transition-colors group w-full h-auto lg:h-[183px] rounded-[12px] lg:rounded-[20px] p-2 lg:p-5 gap-1 lg:gap-2"
+                className="flex flex-col items-center transition-colors group w-full h-auto lg:h-[183px] rounded-[16px] lg:rounded-[20px] p-6 lg:p-5 gap-4 lg:gap-2"
                 style={{
                   background: 'rgba(26, 27, 26, 1)',
                   boxShadow: '0px 4px 80px 0px rgba(0, 0, 0, 0.15)',
@@ -626,14 +626,14 @@ const Landing = () => {
                 }}
               >
                 <div
-                  className="flex items-center justify-center mb-0 w-[32px] h-[32px] lg:w-[64px] lg:h-[64px]"
+                  className="flex items-center justify-center mb-0 w-[40px] h-[40px] lg:w-[64px] lg:h-[64px]"
                   style={{ borderRadius: 100, gap: 10, background: 'transparent' }}
                 >
-                  <img src={item.icon} alt={item.title} className="w-4 h-4 lg:w-[44px] lg:h-[44px] object-contain" />
+                  <img src={item.icon} alt={item.title} className="w-10 h-10 lg:w-[44px] lg:h-[44px] object-contain" />
                 </div>
                 <div className="flex flex-col items-center gap-1 w-full">
                   <h3
-                    className="font-bold m-0 text-white text-[13px] sm:text-[16px] lg:text-[24px] text-center"
+                    className="font-bold m-0 text-white text-[20px] lg:text-[24px] text-center"
                     style={{
                       fontFamily: '"Barlow Condensed", sans-serif',
                       fontWeight: 700,
@@ -643,7 +643,7 @@ const Landing = () => {
                     {item.title}
                   </h3>
                   <p
-                    className="m-0 text-[10px] sm:text-[13px] lg:text-[17px] leading-[14px] sm:leading-[18px] lg:leading-[24px] text-center text-gray-400"
+                    className="m-0 text-[15px] lg:text-[17px] leading-[22px] lg:leading-[24px] text-center text-gray-400"
                     style={{
                       fontFamily: '"Barlow Condensed", sans-serif',
                       fontWeight: 500
@@ -693,7 +693,7 @@ const Landing = () => {
           </div>
 
           <div
-            className="grid grid-cols-2 mx-auto w-full max-w-[1160px] gap-2 lg:gap-4"
+            className="grid grid-cols-1 lg:grid-cols-2 mx-auto w-full max-w-[1160px] gap-4 lg:gap-4"
           >
             {[
               { q: "How do I earn money?", a: "By completing offers, surveys, and tasks on the platform." },
@@ -708,7 +708,7 @@ const Landing = () => {
                 <div
                   key={i}
                   onClick={() => setOpenFaq(isOpen ? null : i)}
-                  className="flex flex-col justify-start cursor-pointer transition-all duration-300 overflow-hidden w-full h-auto min-h-[40px] lg:min-h-[76px] gap-1 sm:gap-2 lg:gap-[10px] rounded-[10px] lg:rounded-[20px] p-2 sm:p-4 lg:p-[22px_30px]"
+                  className="flex flex-col justify-start cursor-pointer transition-all duration-300 overflow-hidden w-full h-auto min-h-[60px] lg:min-h-[76px] gap-2 sm:gap-2 lg:gap-[10px] rounded-[16px] lg:rounded-[20px] p-6 lg:p-[22px_30px]"
                   style={{
                     background: 'rgba(44, 45, 44, 1)',
                     backdropFilter: 'blur(54px)',
@@ -718,7 +718,7 @@ const Landing = () => {
                 >
                   <div className="flex justify-between items-center w-full">
                     <span
-                      className="font-bold m-0 text-white text-[12px] sm:text-[16px] lg:text-[22px] leading-[14px] sm:leading-[22px] lg:leading-[32px]"
+                      className="font-bold m-0 text-white text-[16px] lg:text-[22px] leading-[24px] lg:leading-[32px]"
                       style={{
                         fontFamily: '"Barlow Condensed", sans-serif',
                         fontWeight: 700
@@ -727,10 +727,8 @@ const Landing = () => {
                       {faq.q}
                     </span>
                     <div
-                      className={`bg-[#29FD98] transition-transform duration-300 shrink-0 ${isOpen ? '-rotate-180' : ''}`}
+                      className={`bg-[#29FD98] transition-transform duration-300 shrink-0 w-[24px] h-[24px] lg:w-[14px] lg:h-[14px] ${isOpen ? '-rotate-180' : ''}`}
                       style={{
-                        width: 14,
-                        height: 14,
                         WebkitMaskImage: 'url(/coins/arrow.png)',
                         WebkitMaskSize: 'contain',
                         WebkitMaskRepeat: 'no-repeat',
@@ -747,7 +745,7 @@ const Landing = () => {
                       className="transition-all duration-300 flex items-start overflow-hidden mt-1"
                     >
                       <p
-                        className="m-0 text-[10px] sm:text-[14px] lg:text-[20px] leading-[14px] sm:leading-[20px] lg:leading-[24px] text-gray-300"
+                        className="m-0 text-[15px] lg:text-[20px] leading-[22px] lg:leading-[24px] text-gray-300"
                         style={{
                           fontFamily: '"Barlow Condensed", sans-serif',
                           fontWeight: 500
@@ -824,7 +822,7 @@ const Landing = () => {
           </div>
           <button
             onClick={() => navigate('/login?tab=register')}
-            className="flex items-center justify-center text-white transition-all hover:brightness-110 active:translate-y-[4px] active:shadow-none w-full sm:w-[168px] h-[44px] lg:h-[48px] rounded-[10px] px-6 gap-[10px]"
+            className="flex items-center justify-center text-white transition-all hover:brightness-110 active:translate-y-[4px] active:shadow-none w-auto sm:w-[168px] h-[44px] lg:h-[48px] rounded-[10px] px-6 gap-[10px]"
             style={{
               background: 'rgba(73, 178, 101, 1)',
               boxShadow: '0px 4px 0px 0px rgba(39, 109, 58, 1)'
