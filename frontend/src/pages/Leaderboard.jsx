@@ -19,74 +19,77 @@ const PERIOD_META = {
   monthly: { label: 'Monthly' },
 };
 
-const LaurelLeft = () => <img src="/coins/leaf.png" alt="" className="w-[80px] h-[96px] md:w-[113px] md:h-[136px] object-contain" />;
-const LaurelRight = () => <img src="/coins/leaf.png" alt="" className="w-[80px] h-[96px] md:w-[113px] md:h-[136px] object-contain scale-x-[-1]" />;
+const LaurelLeft = () => <img src="/coins/leaf.png" alt="" className="w-[50px] h-[60px] md:w-[113px] md:h-[136px] object-contain" />;
+const LaurelRight = () => <img src="/coins/leaf.png" alt="" className="w-[50px] h-[60px] md:w-[113px] md:h-[136px] object-contain scale-x-[-1]" />;
 
 /* ── Podium Card ─────────────────────────────────────────────── */
-const PodiumCard = ({ rank, user, prize, onClick }) => {
-  if (!user) return <div className="w-full max-w-[280px] hidden md:block opacity-0 pointer-events-none" />;
+const PodiumCard = ({ rank, user, prize, onClick, className = '' }) => {
+  if (!user) return <div className={`w-full max-w-[280px] hidden md:block opacity-0 pointer-events-none ${className}`} />;
 
   const styles = {
     1: {
-      container: 'mt-0 z-10 w-[35%] md:w-[390px] h-[240px] md:h-[320px] justify-end',
-      crown: 'w-[40px] h-[40px] md:w-[54px] md:h-[54px] -top-[35px] md:-top-[45px]',
+      container: 'mt-0 z-10 w-[260px] md:max-w-none md:w-[390px] h-[260px] md:h-[320px] justify-end',
+      crown: 'w-[54px] h-[54px] md:w-[54px] md:h-[54px] -top-[45px] md:-top-[45px]',
       ring: 'p-[4px] bg-gradient-to-b from-[#FEDF77] to-[#FCB91E]',
       bg: "bg-[url('/coins/platform.png')] bg-[length:100%_100%] bg-center bg-no-repeat",
       clip: 'none',
-      paddingTop: 'pt-10 md:pt-16',
-      avatarSize: 'w-20 h-20 md:w-[112px] md:h-[112px]',
-      height: 'h-[130px] md:h-[172px]',
+      paddingTop: 'pt-[60px] md:pt-16',
+      avatarSize: 'w-[96px] h-[96px] md:w-[112px] md:h-[112px]',
+      height: 'h-[140px] md:h-[172px]',
       avatarShadow: 'shadow-[0px_9px_0px_0px_rgba(147,121,10,1)]',
-      avatarPosition: 'bottom-[124px] md:bottom-[163px]',
-      layoutWrapper: 'flex-row justify-between w-full max-w-[340px] h-[32px] mx-auto mb-3 items-center',
-      nameStyle: { fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 600, fontSize: '32px', lineHeight: '1.2' },
-      nameClass: 'text-white truncate max-w-[167px] text-left leading-[32px]',
-      scoreClass: 'flex items-center gap-[8px]',
-      scoreStyle: { fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 700, fontSize: '32px', lineHeight: '1.3' },
+      avatarPosition: 'bottom-[130px] md:bottom-[163px]',
+      layoutWrapper: 'flex-col md:flex-row justify-center md:justify-between w-full max-w-full md:max-w-[340px] h-auto md:h-[32px] mx-auto mb-1 md:mb-3 items-center gap-0.5 md:gap-0',
+      nameStyle: { fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 600, lineHeight: '1.2' },
+      nameClass: 'text-white md:truncate max-w-full md:max-w-[167px] text-center md:text-left leading-[1.1] md:leading-[1.2] text-[24px] md:text-[32px] break-words line-clamp-2 md:line-clamp-none',
+      scoreClass: 'flex items-center justify-center md:justify-end gap-[4px] md:gap-[8px] w-full md:w-auto',
+      scoreStyle: { fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 700, lineHeight: '1.3' },
+      scoreTextClass: 'text-[22px] md:text-[32px] text-transparent bg-clip-text bg-gradient-to-b from-[#FEDF77] to-[#FCB91E]',
       prizeBg: 'bg-[#FFD80C]/[0.13]',
     },
     2: {
-      container: 'mt-[48px] md:mt-[67px] z-0 w-[28%] md:w-[369px] h-[220px] md:h-[303px] justify-end',
-      crown: 'w-[40px] h-[40px] md:w-[54px] md:h-[54px] -top-[35px] md:-top-[45px]',
+      container: 'mt-0 md:mt-[67px] z-0 w-[240px] md:max-w-none md:w-[369px] h-[240px] md:h-[303px] justify-end',
+      crown: 'w-[48px] h-[48px] md:w-[54px] md:h-[54px] -top-[35px] md:-top-[45px]',
       crownColor: 'rgba(217, 217, 217, 1)',
       ring: 'p-[4px] bg-gradient-to-b from-[#D9D9D9] to-[#828282]',
       bg: "bg-[url('/coins/platform.png')] bg-[length:100%_100%] bg-center bg-no-repeat",
       clip: 'none',
       paddingTop: 'pt-10 md:pt-16',
       avatarSize: 'w-[80px] h-[80px] md:w-[106px] md:h-[106px]',
-      height: 'h-[120px] md:h-[163px]',
+      height: 'h-[130px] md:h-[163px]',
       avatarShadow: 'shadow-[0px_9px_0px_0px_rgba(73,73,73,1)]',
-      avatarPosition: 'bottom-[115px] md:bottom-[154px]',
-      layoutWrapper: 'flex-row justify-between w-full max-w-[320px] h-[32px] mx-auto mb-3 items-center gap-1 md:gap-0',
-      nameStyle: { fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 600, fontSize: '32px', lineHeight: '1.2' },
-      nameClass: 'text-white truncate max-w-[100px] md:max-w-[120px] text-left leading-[32px]',
-      scoreClass: 'flex items-center gap-[8px]',
-      scoreStyle: { fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 700, fontSize: '32px', lineHeight: '1.3' },
+      avatarPosition: 'bottom-[120px] md:bottom-[154px]',
+      layoutWrapper: 'flex-col md:flex-row justify-center md:justify-between w-full max-w-full md:max-w-[320px] h-auto md:h-[32px] mx-auto mb-1 md:mb-3 items-center gap-0.5 md:gap-0',
+      nameStyle: { fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 600, lineHeight: '1.2' },
+      nameClass: 'text-white md:truncate max-w-full md:max-w-[120px] text-center md:text-left leading-[1.1] md:leading-[1.2] text-[20px] md:text-[32px] break-words line-clamp-2 md:line-clamp-none',
+      scoreClass: 'flex items-center justify-center md:justify-end gap-[4px] md:gap-[8px] w-full md:w-auto',
+      scoreStyle: { fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 700, lineHeight: '1.3' },
+      scoreTextClass: 'text-[18px] md:text-[32px] text-transparent bg-clip-text bg-gradient-to-b from-[#D9D9D9] to-[#828282]', // actually prize is fixed to gold, but user coins are gold too. original used global styles
       prizeBg: 'bg-white/[0.13]',
     },
     3: {
-      container: 'mt-[48px] md:mt-[67px] z-0 w-[28%] md:w-[369px] h-[220px] md:h-[303px] justify-end',
-      crown: 'w-[40px] h-[40px] md:w-[54px] md:h-[54px] -top-[35px] md:-top-[45px]',
+      container: 'mt-0 md:mt-[67px] z-0 w-[240px] md:max-w-none md:w-[369px] h-[240px] md:h-[303px] justify-end',
+      crown: 'w-[48px] h-[48px] md:w-[54px] md:h-[54px] -top-[35px] md:-top-[45px]',
       crownColor: 'rgba(174, 90, 16, 1)',
       ring: 'p-[4px] bg-gradient-to-b from-[#C08965] to-[#AE580E]',
       bg: "bg-[url('/coins/platform.png')] bg-[length:100%_100%] bg-center bg-no-repeat",
       clip: 'none',
       paddingTop: 'pt-10 md:pt-16',
       avatarSize: 'w-[80px] h-[80px] md:w-[106px] md:h-[106px]',
-      height: 'h-[120px] md:h-[163px]',
+      height: 'h-[130px] md:h-[163px]',
       avatarShadow: 'shadow-[0px_9px_0px_0px_rgba(121,63,23,1)]',
-      avatarPosition: 'bottom-[115px] md:bottom-[154px]',
-      layoutWrapper: 'flex-row justify-between w-full max-w-[320px] h-[32px] mx-auto mb-3 items-center gap-1 md:gap-0',
-      nameStyle: { fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 600, fontSize: '32px', lineHeight: '1.2' },
-      nameClass: 'text-white truncate max-w-[100px] md:max-w-[120px] text-left leading-[32px]',
-      scoreClass: 'flex items-center gap-[8px]',
-      scoreStyle: { fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 700, fontSize: '32px', lineHeight: '1.3' },
+      avatarPosition: 'bottom-[120px] md:bottom-[154px]',
+      layoutWrapper: 'flex-col md:flex-row justify-center md:justify-between w-full max-w-full md:max-w-[320px] h-auto md:h-[32px] mx-auto mb-1 md:mb-3 items-center gap-0.5 md:gap-0',
+      nameStyle: { fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 600, lineHeight: '1.2' },
+      nameClass: 'text-white md:truncate max-w-full md:max-w-[120px] text-center md:text-left leading-[1.1] md:leading-[1.2] text-[20px] md:text-[32px] break-words line-clamp-2 md:line-clamp-none',
+      scoreClass: 'flex items-center justify-center md:justify-end gap-[4px] md:gap-[8px] w-full md:w-auto',
+      scoreStyle: { fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 700, lineHeight: '1.3' },
+      scoreTextClass: 'text-[18px] md:text-[32px] text-transparent bg-clip-text bg-gradient-to-b from-[#C08965] to-[#AE580E]',
       prizeBg: 'bg-[#FF8C00]/[0.15]',
     }
   }[rank];
 
   return (
-    <div className={`relative flex flex-col items-center ${styles.container}`}>
+    <div className={`relative flex flex-col items-center ${styles.container} ${className}`}>
       {/* Avatar Wrapper */}
       <div className={`absolute left-1/2 -translate-x-1/2 flex flex-col items-center z-20 ${styles.avatarPosition}`}>
         {rank === 1 ? (
@@ -119,25 +122,27 @@ const PodiumCard = ({ rank, user, prize, onClick }) => {
       {/* Podium Block */}
       <div
         onClick={() => onClick(user.userId)}
-        className={`w-full ${styles.bg} ${styles.height || ''} ${rank !== 1 ? 'rounded-b-2xl shadow-2xl pb-4' : 'justify-end pb-3 md:pb-5'} cursor-pointer hover:brightness-110 transition-all flex flex-col ${styles.paddingTop} px-3 md:px-5`}
+        className={`w-full ${styles.bg} ${styles.height || ''} ${rank !== 1 ? 'rounded-b-2xl shadow-2xl pb-4' : 'pb-3 md:pb-5'} cursor-pointer hover:brightness-110 transition-all flex flex-col px-3 md:px-5 ${
+          prize > 0 ? `${styles.paddingTop} ${rank === 1 ? 'justify-end' : 'justify-start'}` : 'justify-center pt-[30px] md:pt-[40px]'
+        }`}
         style={styles.clip !== 'none' ? { clipPath: styles.clip } : {}}
       >
         <div className={`flex ${styles.layoutWrapper}`}>
           <div className={styles.nameClass} style={styles.nameStyle}>{user.displayName}</div>
           <div className={styles.scoreClass}>
-            <img src="/coins/Coin.png" alt="Coin" className="w-[32px] h-[32px] object-contain" />
-            <span className="text-transparent bg-clip-text bg-gradient-to-b from-[#FEDF77] to-[#FCB91E]" style={styles.scoreStyle}>
+            <img src="/coins/Coin.png" alt="Coin" className="w-[20px] h-[20px] md:w-[32px] md:h-[32px] object-contain" />
+            <span className={styles.scoreTextClass} style={styles.scoreStyle}>
               {user.coinsEarned?.toLocaleString() || 0}
             </span>
           </div>
         </div>
 
         {prize > 0 && (
-          <div className={`w-full max-w-[340px] h-[52px] ${styles.prizeBg} rounded-[10px] flex justify-between items-center px-[20px] py-[10px] mx-auto`}>
-            <span style={{ fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 600, fontSize: '15.15px', lineHeight: '1.2' }} className="text-white text-center">REWARD</span>
-            <div className="flex items-center gap-[8px]">
-              <img src="/coins/Coin.png" alt="Coin" className="w-[32px] h-[32px] object-contain" />
-              <span className="text-transparent bg-clip-text bg-gradient-to-b from-[#FEDF77] to-[#FCB91E]" style={styles.scoreStyle}>
+          <div className={`w-full max-w-[340px] h-[40px] md:h-[52px] ${styles.prizeBg} rounded-[6px] md:rounded-[10px] flex justify-between items-center px-[10px] md:px-[20px] py-[6px] md:py-[10px] mx-auto mt-2 md:mt-0`}>
+            <span style={{ fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 600, lineHeight: '1.2' }} className="text-white text-center text-[16px] md:text-[15.15px]">REWARD</span>
+            <div className="flex items-center gap-[4px] md:gap-[8px]">
+              <img src="/coins/Coin.png" alt="Coin" className="w-[20px] h-[20px] md:w-[32px] md:h-[32px] object-contain" />
+              <span className="text-transparent bg-clip-text bg-gradient-to-b from-[#FEDF77] to-[#FCB91E] text-[20px] md:text-[32px]" style={{ fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 700, lineHeight: '1.3' }}>
                 {prize.toLocaleString()}
               </span>
             </div>
@@ -170,9 +175,9 @@ const LeaderboardCountdown = ({ targetDate }) => {
 
   if (!timeLeft) return null;
   return (
-    <div className="flex items-center justify-center gap-[6px] px-[20px] py-[12px] bg-[#49B265]/[0.23] rounded-[100px] mx-auto mb-8 w-auto min-w-[246px] h-[48px]">
-      <img src="/coins/clock.png" alt="Clock" className="w-[24px] h-[24px] object-contain shrink-0" />
-      <span style={{ fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 600, fontSize: '20px', lineHeight: '32px' }} className="text-white whitespace-nowrap text-center">
+    <div className="flex items-center justify-center gap-[6px] px-[16px] md:px-[20px] py-[8px] md:py-[12px] bg-[#49B265]/[0.23] rounded-[100px] mx-auto mb-6 md:mb-8 w-auto min-w-[200px] md:min-w-[246px] h-[36px] md:h-[48px]">
+      <img src="/coins/clock.png" alt="Clock" className="w-[18px] h-[18px] md:w-[24px] md:h-[24px] object-contain shrink-0" />
+      <span style={{ fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 600 }} className="text-[16px] md:text-[20px] leading-[24px] md:leading-[32px] text-white whitespace-nowrap text-center">
         Reset in {timeLeft}
       </span>
     </div>
@@ -230,22 +235,22 @@ const PeriodPanel = ({ data, periodName, onProfileClick }) => {
   return (
     <div className="flex flex-col items-center w-full mt-4 md:mt-8">
       {/* Podium */}
-      <div className="flex flex-row items-start justify-center w-full gap-2 md:gap-4 mb-0">
-        <PodiumCard rank={2} user={top3[0]} prize={getPrize(2)} onClick={onProfileClick} />
-        <PodiumCard rank={1} user={top3[1]} prize={getPrize(1)} onClick={onProfileClick} />
-        <PodiumCard rank={3} user={top3[2]} prize={getPrize(3)} onClick={onProfileClick} />
+      <div className="flex flex-col md:flex-row items-center md:items-start justify-center w-full gap-2 md:gap-4 mb-4 md:mb-0">
+        <PodiumCard rank={2} user={top3[0]} prize={getPrize(2)} onClick={onProfileClick} className="order-2 md:order-1" />
+        <PodiumCard rank={1} user={top3[1]} prize={getPrize(1)} onClick={onProfileClick} className="order-1 md:order-2" />
+        <PodiumCard rank={3} user={top3[2]} prize={getPrize(3)} onClick={onProfileClick} className="order-3 md:order-3" />
       </div>
 
       {data?.cycleEnd && <LeaderboardCountdown targetDate={data.cycleEnd} />}
 
       {/* List rows 4+ */}
-      <div className="w-full max-w-[1240px] mx-auto bg-[#242424] rounded-[30px] p-[30px] shadow-2xl mt-4 flex flex-col gap-[10px]">
-        
+      <div className="w-full max-w-[1240px] mx-auto bg-[#242424] rounded-[16px] md:rounded-[30px] p-[10px] md:p-[30px] shadow-2xl mt-4 flex flex-col gap-[10px]">
+
         <div
-          className="grid grid-cols-[74px_521px_1fr_1fr] gap-[50px] w-full h-[62px] pt-[10px] pb-[30px] pl-[40px] pr-[95px] rounded-[20px] text-white/40"
-          style={{ fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 600, fontSize: '32px', lineHeight: '1.2' }}
+          className="grid grid-cols-[40px_1fr_60px_60px] md:grid-cols-[74px_521px_1fr_1fr] gap-[6px] md:gap-[50px] w-full h-auto md:h-[62px] pt-[10px] pb-[10px] md:pb-[30px] pl-[10px] md:pl-[40px] pr-[10px] md:pr-[95px] rounded-[10px] md:rounded-[20px] text-white/40 text-[16px] md:text-[32px]"
+          style={{ fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 600, lineHeight: '1.2' }}
         >
-          <div>Rank</div>
+          <div className="text-center md:text-left">Rank</div>
           <div>User</div>
           <div>Earning</div>
           <div>Prize</div>
@@ -264,41 +269,41 @@ const PeriodPanel = ({ data, periodName, onProfileClick }) => {
                 variants={item}
                 key={user.userId || idx}
                 onClick={() => onProfileClick(user.userId)}
-                className="grid grid-cols-[74px_521px_1fr_1fr] gap-[50px] items-center w-full h-[119px] bg-[#171717] rounded-[20px] pt-[29px] pb-[30px] pl-[40px] pr-[95px] cursor-pointer hover:brightness-110 transition-all"
+                className="grid grid-cols-[40px_1fr_60px_60px] md:grid-cols-[74px_521px_1fr_1fr] gap-[6px] md:gap-[50px] items-center w-full min-h-[50px] md:h-[119px] bg-[#171717] rounded-[10px] md:rounded-[20px] py-[10px] md:py-0 px-[10px] md:pl-[40px] md:pr-[10px] md:pr-[95px] cursor-pointer hover:brightness-110 transition-all"
               >
                 <div
-                  className="text-white"
-                  style={{ fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 600, fontSize: '32px', lineHeight: '1.2' }}
+                  className="text-white text-[20px] md:text-[32px] text-center md:text-left"
+                  style={{ fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 600, lineHeight: '1.2' }}
                 >
                   #{currentRank}
                 </div>
-                <div className="flex items-center gap-[16px] overflow-hidden w-full">
-                  <div className="w-[60px] h-[60px] rounded-[10px] overflow-hidden bg-transparent flex-shrink-0">
+                <div className="flex items-center gap-[8px] md:gap-[16px] overflow-hidden min-w-0">
+                  <div className="w-[36px] h-[36px] md:w-[60px] md:h-[60px] rounded-[8px] md:rounded-[10px] overflow-hidden bg-transparent shrink-0">
                     <img src={user.avatarUrl || user.avatar || '/avatars/avatar1.png'} className="w-full h-full object-cover" alt={user.displayName} />
                   </div>
                   <div
-                    className="text-white truncate"
-                    style={{ fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 600, fontSize: '32px', lineHeight: '1.2' }}
+                    className="text-white truncate text-[18px] md:text-[32px]"
+                    style={{ fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 600, lineHeight: '1.2' }}
                   >
                     {user.displayName}
                   </div>
                 </div>
-                <div className="flex items-center gap-[8px]">
-                  <img src="/coins/Coin.png" alt="Coin" className="w-[32px] h-[32px] object-contain shrink-0" />
-                  <span className="text-transparent bg-clip-text bg-gradient-to-b from-[#FEDF77] to-[#FCB91E]" style={{ fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 700, fontSize: '32px', lineHeight: '1.3' }}>
+                <div className="flex items-center gap-[4px] md:gap-[8px]">
+                  <img src="/coins/Coin.png" alt="Coin" className="w-[16px] h-[16px] md:w-[32px] md:h-[32px] object-contain shrink-0" />
+                  <span className="text-transparent bg-clip-text bg-gradient-to-b from-[#FEDF77] to-[#FCB91E] text-[16px] md:text-[32px] truncate" style={{ fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 700, lineHeight: '1.3' }}>
                     {user.coinsEarned?.toLocaleString() || 0}
                   </span>
                 </div>
-                <div className="flex items-center gap-[8px]">
+                <div className="flex items-center gap-[4px] md:gap-[8px]">
                   {prize > 0 ? (
                     <>
-                      <img src="/coins/Coin.png" alt="Coin" className="w-[32px] h-[32px] object-contain shrink-0" />
-                      <span className="text-transparent bg-clip-text bg-gradient-to-b from-[#FEDF77] to-[#FCB91E]" style={{ fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 700, fontSize: '32px', lineHeight: '1.3' }}>
+                      <img src="/coins/Coin.png" alt="Coin" className="w-[16px] h-[16px] md:w-[32px] md:h-[32px] object-contain shrink-0" />
+                      <span className="text-transparent bg-clip-text bg-gradient-to-b from-[#FEDF77] to-[#FCB91E] text-[16px] md:text-[32px] truncate" style={{ fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 700, lineHeight: '1.3' }}>
                         {prize.toLocaleString()}
                       </span>
                     </>
                   ) : (
-                    <span className="text-slate-600 text-sm">—</span>
+                    <span className="text-slate-600 text-[16px] md:text-sm">—</span>
                   )}
                 </div>
               </motion.div>
@@ -310,33 +315,33 @@ const PeriodPanel = ({ data, periodName, onProfileClick }) => {
               variants={item}
               key={data.currentUser.userId}
               onClick={() => onProfileClick(data.currentUser.userId)}
-              className="grid grid-cols-[74px_521px_1fr_1fr] gap-[50px] items-center w-full h-[119px] bg-[#1a1a1a] border border-[#FC1E1E]/30 rounded-[20px] pt-[29px] pb-[30px] pl-[40px] pr-[95px] cursor-pointer hover:brightness-110 transition-all mt-4"
+              className="grid grid-cols-[40px_1fr_60px_60px] md:grid-cols-[74px_521px_1fr_1fr] gap-[6px] md:gap-[50px] items-center w-full min-h-[50px] md:h-[119px] bg-[#1a1a1a] border border-[#FC1E1E]/30 rounded-[10px] md:rounded-[20px] py-[10px] md:py-0 px-[10px] md:pl-[40px] md:pr-[10px] md:pr-[95px] cursor-pointer hover:brightness-110 transition-all mt-4"
             >
               <div
-                className="text-white"
-                style={{ fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 600, fontSize: '32px', lineHeight: '1.2' }}
+                className="text-white text-[20px] md:text-[32px] text-center md:text-left"
+                style={{ fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 600, lineHeight: '1.2' }}
               >
                 {data.currentUser.rank === '-' ? '-' : `#${data.currentUser.rank}`}
               </div>
-              <div className="flex items-center gap-[16px] overflow-hidden w-full">
-                <div className="w-[60px] h-[60px] rounded-[10px] overflow-hidden bg-transparent flex-shrink-0">
+              <div className="flex items-center gap-[8px] md:gap-[16px] overflow-hidden min-w-0">
+                <div className="w-[36px] h-[36px] md:w-[60px] md:h-[60px] rounded-[8px] md:rounded-[10px] overflow-hidden bg-transparent shrink-0">
                   <img src={data.currentUser.avatarUrl || data.currentUser.avatar || '/avatars/avatar1.png'} className="w-full h-full object-cover" alt={data.currentUser.displayName} />
                 </div>
                 <div
-                  className="text-white truncate"
-                  style={{ fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 600, fontSize: '32px', lineHeight: '1.2' }}
+                  className="text-white truncate text-[18px] md:text-[32px]"
+                  style={{ fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 600, lineHeight: '1.2' }}
                 >
-                  {data.currentUser.displayName} (You)
+                  {data.currentUser.displayName} <span className="text-[14px] md:text-base text-white/50">(You)</span>
                 </div>
               </div>
-              <div className="flex items-center gap-[8px]">
-                <img src="/coins/Coin.png" alt="Coin" className="w-[32px] h-[32px] object-contain shrink-0" />
-                <span className="text-transparent bg-clip-text bg-gradient-to-b from-[#FEDF77] to-[#FCB91E]" style={{ fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 700, fontSize: '32px', lineHeight: '1.3' }}>
+              <div className="flex items-center gap-[4px] md:gap-[8px]">
+                <img src="/coins/Coin.png" alt="Coin" className="w-[16px] h-[16px] md:w-[32px] md:h-[32px] object-contain shrink-0" />
+                <span className="text-transparent bg-clip-text bg-gradient-to-b from-[#FEDF77] to-[#FCB91E] text-[16px] md:text-[32px] truncate" style={{ fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 700, lineHeight: '1.3' }}>
                   {data.currentUser.coinsEarned?.toLocaleString() || 0}
                 </span>
               </div>
-              <div className="flex items-center gap-[8px]">
-                <span className="text-slate-600 text-sm">—</span>
+              <div className="flex items-center gap-[4px] md:gap-[8px]">
+                <span className="text-slate-600 text-[16px] md:text-sm">—</span>
               </div>
             </motion.div>
           )}
@@ -386,18 +391,18 @@ const Leaderboard = () => {
       <motion.div variants={container} initial="hidden" animate="show" className="pb-16 px-4 md:px-8 max-w-[1600px] w-full mx-auto">
 
         {/* Header */}
-        <motion.div variants={item} className="flex items-center justify-center gap-1 md:gap-2 mt-8 mb-8">
+        <motion.div variants={item} className="flex items-center justify-center gap-1 md:gap-2 mt-2 md:mt-8 mb-4 md:mb-8">
           <LaurelLeft />
-          <div className="flex flex-col items-center text-center gap-[6px]">
+          <div className="flex flex-col items-center text-center gap-[2px] md:gap-[6px]">
             <h1
-              className="text-white text-center font-bold"
-              style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '68px', lineHeight: '120%' }}
+              className="text-white text-center font-bold text-[36px] md:text-[68px]"
+              style={{ fontFamily: "'Barlow Condensed', sans-serif", lineHeight: '120%' }}
             >
               Leaderboard
             </h1>
             <p
-              className="text-[#888888] font-medium"
-              style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '26px', lineHeight: '130%' }}
+              className="text-[#888888] font-medium text-[14px] md:text-[26px]"
+              style={{ fontFamily: "'Barlow Condensed', sans-serif", lineHeight: '130%' }}
             >
               Top users ranked by earnings — win prizes every cycle!
             </p>
@@ -419,20 +424,20 @@ const Leaderboard = () => {
           <>
             {/* Period tabs */}
             <motion.div variants={item} className="flex justify-center mb-6">
-              <div className="w-[355px] h-[84px] bg-[#2C2D2C] backdrop-blur-[24px] shadow-[0_4px_44px_rgba(0,0,0,0.25)] rounded-[10px] p-[18px] flex">
-                <div className="w-[319px] h-[48px] flex">
+              <div className="w-[90%] max-w-[355px] h-auto md:h-[84px] bg-[#2C2D2C] backdrop-blur-[24px] shadow-[0_4px_44px_rgba(0,0,0,0.25)] rounded-[10px] p-2 md:p-[18px] flex">
+                <div className="w-full flex gap-1 md:gap-2 justify-center">
                   {enabledPeriods.map(period => {
                     const isActive = activeTab === period;
                     return (
                       <button
                         key={period}
                         onClick={() => setActiveTab(period)}
-                        className={`w-[159.5px] h-[48px] flex items-center justify-center rounded-[10px] gap-[10px] py-[10px] px-[20px] transition-all duration-200 ${isActive
-                            ? 'bg-[#49B265] text-white shadow-[0px_4px_0px_0px_rgba(39,109,58,1)]'
-                            : 'text-[#888888] hover:text-white'
+                        className={`flex-1 h-[40px] md:h-[48px] flex items-center justify-center rounded-[8px] md:rounded-[10px] py-[6px] md:py-[10px] px-[10px] md:px-[20px] transition-all duration-200 ${isActive
+                          ? 'bg-[#49B265] text-white shadow-[0px_2px_0px_0px_rgba(39,109,58,1)] md:shadow-[0px_4px_0px_0px_rgba(39,109,58,1)]'
+                          : 'text-[#888888] hover:text-white'
                           }`}
                       >
-                        <span style={{ fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 700, fontSize: '20px', lineHeight: '32px' }}>
+                        <span className="text-[14px] md:text-[20px]" style={{ fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 700, lineHeight: '32px' }}>
                           {PERIOD_META[period].label}
                         </span>
                       </button>
