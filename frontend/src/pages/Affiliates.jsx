@@ -36,14 +36,12 @@ const Pagination = ({ page, totalPages, onNext, onPrev, onPageClick }) => {
       <button
         onClick={onClick}
         disabled={disabled}
-        className="transition-all hover:brightness-110"
+        className={`transition-all hover:brightness-110 flex items-center justify-center rounded-full shrink-0 w-[32px] h-[32px] text-[16px] sm:w-[52px] sm:h-[52px] sm:text-[26px]`}
         style={{
-          width: '52px', height: '52px', borderRadius: '52px',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
           background: isGreen ? 'rgba(73, 178, 101, 1)' : (isArrow ? 'transparent' : '#2A2A2A'),
           border: isArrow ? '1px solid rgba(73, 178, 101, 1)' : '1px solid transparent',
           color: isGreen || !isArrow ? '#fff' : 'rgba(73, 178, 101, 1)',
-          fontFamily: '"Barlow Condensed", sans-serif', fontWeight: 600, fontSize: '26px',
+          fontFamily: '"Barlow Condensed", sans-serif', fontWeight: 600,
           cursor: disabled ? 'default' : 'pointer',
           opacity: disabled ? 0.3 : 1,
           boxSizing: 'border-box',
@@ -55,10 +53,9 @@ const Pagination = ({ page, totalPages, onNext, onPrev, onPageClick }) => {
   };
 
   return (
-    <div className="pt-6 pb-2 flex items-center justify-center gap-[10px]">
+    <div className="pt-6 pb-2 flex items-center justify-center gap-[6px] sm:gap-[10px]">
       <CircleBtn isArrow disabled={page === 1} onClick={onPrev}>
-        <div style={{
-          width: '16px', height: '16px',
+        <div className="w-[10px] h-[10px] sm:w-[16px] sm:h-[16px]" style={{
           backgroundColor: 'rgba(73, 178, 101, 1)',
           WebkitMaskImage: 'url(/coins/leftarrow.png)',
           WebkitMaskSize: 'contain',
@@ -79,14 +76,12 @@ const Pagination = ({ page, totalPages, onNext, onPrev, onPageClick }) => {
       ))}
 
       <CircleBtn isArrow disabled={page === totalPages} onClick={onNext}>
-        <div style={{
-          width: '16px', height: '16px',
+        <div className="w-[10px] h-[10px] sm:w-[16px] sm:h-[16px]" style={{
           backgroundColor: 'rgba(73, 178, 101, 1)',
           WebkitMaskImage: 'url(/coins/leftarrow.png)',
           WebkitMaskSize: 'contain',
           WebkitMaskRepeat: 'no-repeat',
           WebkitMaskPosition: 'center',
-          transform: 'rotate(0deg)'
         }} />
       </CircleBtn>
     </div>
@@ -261,17 +256,17 @@ const Affiliates = () => {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="max-w-[1240px] mx-auto w-full space-y-8"
+        className="max-w-[1240px] mx-auto w-full space-y-4 lg:space-y-8 px-4 lg:px-0"
       >
         {/* Header Section */}
-        <div className="relative w-[1240px] lg:mt-[49px] shrink-0">
-          <div className="flex flex-col gap-[6px] w-full max-w-[866px] h-auto lg:h-[122px] relative z-10">
-            <h1 style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="font-bold text-[68px] leading-[120%] text-white tracking-normal m-0 p-0">Affiliate Program</h1>
-            <p style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="font-medium text-[26px] leading-[130%] text-[#888888] tracking-normal m-0 p-0 max-w-[866px] h-auto lg:h-[34px] lg:whitespace-nowrap">
+        <div className="relative w-full lg:w-[1240px] lg:mt-[49px] shrink-0 flex flex-col items-center lg:items-start text-center lg:text-left mt-6 lg:mt-0">
+          <div className="flex flex-col gap-[6px] w-full max-w-[866px] h-auto lg:h-[122px] relative z-10 items-center lg:items-start">
+            <h1 style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="font-bold text-[40px] lg:text-[68px] leading-[120%] text-white tracking-normal m-0 p-0">Affiliate Program</h1>
+            <p style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="font-medium text-[18px] lg:text-[26px] leading-[130%] text-[#888888] tracking-normal m-0 p-0 max-w-[866px] h-auto lg:h-[34px] lg:whitespace-nowrap px-4 lg:px-0">
               Invite friends and earn {statsLoading ? '...' : (stats.referralPercentage != null ? `${stats.referralPercentage}%` : '10%')} of their earnings — forever! The more you invite, the more you earn.
             </p>
           </div>
-          <div className="relative lg:absolute lg:right-[-28.53px] lg:top-[-49px] w-[365.53px] h-[243.69px] shrink-0 pointer-events-none z-0 mt-8 lg:mt-0">
+          <div className="hidden lg:block relative lg:absolute lg:right-[-28.53px] lg:top-[-49px] w-[250px] lg:w-[365.53px] h-[166px] lg:h-[243.69px] shrink-0 pointer-events-none z-0 mt-6 lg:mt-0 mx-auto lg:mx-0">
             <img
               src="/coins/heroaffli.png"
               alt="Affiliate Hero"
@@ -295,25 +290,25 @@ const Affiliates = () => {
         </div>
 
         {/* Lower Group (Stats, Referral Link, Tabs, Tables) */}
-        <div className="flex flex-col gap-[20px] w-[1240px] shrink-0">
+        <div className="flex flex-col gap-[20px] w-full lg:w-[1240px] shrink-0">
           <div className="w-full">
             {/* Stats Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 w-full lg:w-[1240px] lg:h-[156px] gap-[10px] shrink-0">
-              <div className="flex flex-col w-full h-[156px] rounded-[20px] p-[20px] gap-[22px] bg-[#1a1b1a] backdrop-blur-[74px]">
-                <div className="flex flex-col w-fit min-w-[123px] h-[81px] gap-[12px] whitespace-nowrap">
-                  <h3 style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="w-[123px] h-[29px] font-bold text-[22px] leading-[130%] text-white tracking-normal m-0 p-0">Total Affiliates</h3>
-                  <div style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="w-[84px] h-[40px] font-bold text-[50px] leading-[120%] tracking-normal text-[#49b265] m-0 p-0 flex items-center align-middle">
+            <div className="grid grid-cols-2 lg:grid-cols-4 w-full lg:w-[1240px] h-auto lg:h-[156px] gap-[10px] shrink-0">
+              <div className="flex flex-col w-full h-auto lg:h-[156px] rounded-[14px] lg:rounded-[20px] p-[16px] lg:p-[20px] gap-[16px] lg:gap-[22px] bg-[#1a1b1a] backdrop-blur-[74px]">
+                <div className="flex flex-col w-fit min-w-full lg:min-w-[123px] h-auto lg:h-[81px] gap-[8px] lg:gap-[12px] whitespace-normal lg:whitespace-nowrap">
+                  <h3 style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="w-full lg:w-[123px] h-auto lg:h-[29px] font-bold text-[18px] lg:text-[22px] leading-[130%] text-white tracking-normal m-0 p-0">Total Affiliates</h3>
+                  <div style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="w-full lg:w-[84px] h-auto lg:h-[40px] font-bold text-[32px] lg:text-[50px] leading-[120%] tracking-normal text-[#49b265] m-0 p-0 flex items-center align-middle">
                     {statsLoading ? '...' : stats.totalAffiliates}
                   </div>
                 </div>
-                <p style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="w-full h-auto font-semibold text-[18px] leading-[130%] text-white/50 tracking-normal m-0 p-0">Active referred users</p>
+                <p style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="w-full h-auto font-semibold text-[14px] lg:text-[18px] leading-[130%] text-white/50 tracking-normal m-0 p-0">Active referred users</p>
               </div>
 
-              <div className="flex flex-col w-full h-[156px] rounded-[20px] p-[20px] gap-[22px] bg-[#1a1b1a] backdrop-blur-[74px]">
-                <div className="flex flex-col w-fit min-w-[123px] h-[81px] gap-[12px] whitespace-nowrap">
-                  <h3 style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="w-[123px] h-[29px] font-bold text-[22px] leading-[130%] text-white tracking-normal m-0 p-0">Lifetime Earnings</h3>
-                  <div className="flex items-center gap-[6px] h-[40px]">
-                    <img src="/coins/Coin.png" alt="Coin" className="w-[40px] h-[40px] shrink-0 object-contain" />
+              <div className="flex flex-col w-full h-auto lg:h-[156px] rounded-[14px] lg:rounded-[20px] p-[16px] lg:p-[20px] gap-[16px] lg:gap-[22px] bg-[#1a1b1a] backdrop-blur-[74px]">
+                <div className="flex flex-col w-fit min-w-full lg:min-w-[123px] h-auto lg:h-[81px] gap-[8px] lg:gap-[12px] whitespace-normal lg:whitespace-nowrap">
+                  <h3 style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="w-full lg:w-[123px] h-auto lg:h-[29px] font-bold text-[18px] lg:text-[22px] leading-[130%] text-white tracking-normal m-0 p-0">Lifetime Earnings</h3>
+                  <div className="flex items-center gap-[4px] lg:gap-[6px] h-auto lg:h-[40px]">
+                    <img src="/coins/Coin.png" alt="Coin" className="w-[24px] h-[24px] lg:w-[40px] lg:h-[40px] shrink-0 object-contain" />
                     <div
                       style={{
                         fontFamily: "'Barlow Condensed', sans-serif",
@@ -322,20 +317,20 @@ const Affiliates = () => {
                         backgroundClip: 'text',
                         color: 'transparent'
                       }}
-                      className="font-bold text-[50px] leading-none tracking-normal m-0 p-0 flex items-center pb-[6px]"
+                      className="font-bold text-[32px] lg:text-[50px] leading-none tracking-normal m-0 p-0 flex items-center pb-[2px] lg:pb-[6px]"
                     >
                       {statsLoading ? '...' : stats.totalAffiliateEarnings.toLocaleString()}
                     </div>
                   </div>
                 </div>
-                <p style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="w-full h-auto font-semibold text-[18px] leading-[130%] text-white/50 tracking-normal m-0 p-0">Total coins earned from referrals</p>
+                <p style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="w-full h-auto font-semibold text-[14px] lg:text-[18px] leading-[130%] text-white/50 tracking-normal m-0 p-0">Total coins earned</p>
               </div>
 
-              <div className="flex flex-col w-full h-[156px] rounded-[20px] p-[20px] gap-[22px] bg-[#1a1b1a] backdrop-blur-[74px]">
-                <div className="flex flex-col w-fit min-w-[123px] h-[81px] gap-[12px] whitespace-nowrap">
-                  <h3 style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="w-[123px] h-[29px] font-bold text-[22px] leading-[130%] text-white tracking-normal m-0 p-0">30-Day Earnings</h3>
-                  <div className="flex items-center gap-[6px] h-[40px]">
-                    <img src="/coins/Coin.png" alt="Coin" className="w-[40px] h-[40px] shrink-0 object-contain" />
+              <div className="flex flex-col w-full h-auto lg:h-[156px] rounded-[14px] lg:rounded-[20px] p-[16px] lg:p-[20px] gap-[16px] lg:gap-[22px] bg-[#1a1b1a] backdrop-blur-[74px]">
+                <div className="flex flex-col w-fit min-w-full lg:min-w-[123px] h-auto lg:h-[81px] gap-[8px] lg:gap-[12px] whitespace-normal lg:whitespace-nowrap">
+                  <h3 style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="w-full lg:w-[123px] h-auto lg:h-[29px] font-bold text-[18px] lg:text-[22px] leading-[130%] text-white tracking-normal m-0 p-0">30-Day Earnings</h3>
+                  <div className="flex items-center gap-[4px] lg:gap-[6px] h-auto lg:h-[40px]">
+                    <img src="/coins/Coin.png" alt="Coin" className="w-[24px] h-[24px] lg:w-[40px] lg:h-[40px] shrink-0 object-contain" />
                     <div
                       style={{
                         fontFamily: "'Barlow Condensed', sans-serif",
@@ -344,20 +339,20 @@ const Affiliates = () => {
                         backgroundClip: 'text',
                         color: 'transparent'
                       }}
-                      className="font-bold text-[50px] leading-none tracking-normal m-0 p-0 flex items-center pb-[6px]"
+                      className="font-bold text-[32px] lg:text-[50px] leading-none tracking-normal m-0 p-0 flex items-center pb-[2px] lg:pb-[6px]"
                     >
                       {statsLoading ? '...' : stats.last30DaysEarnings.toLocaleString()}
                     </div>
                   </div>
                 </div>
-                <p style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="w-full h-auto font-semibold text-[18px] leading-[130%] text-white/50 tracking-normal m-0 p-0">Coins earned in the last 30 days</p>
+                <p style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="w-full h-auto font-semibold text-[14px] lg:text-[18px] leading-[130%] text-white/50 tracking-normal m-0 p-0">Earned in 30 days</p>
               </div>
 
-              <div className="flex flex-col w-full h-[156px] rounded-[20px] p-[20px] gap-[22px] bg-[#1a1b1a] backdrop-blur-[74px]">
-                <div className="flex flex-col w-fit min-w-[123px] h-[81px] gap-[12px] whitespace-nowrap">
-                  <h3 style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="w-fit min-w-[123px] h-[29px] font-bold text-[22px] leading-[130%] text-white tracking-normal m-0 p-0">Pending Commissions</h3>
-                  <div className="flex items-center gap-[6px] h-[40px]">
-                    <img src="/coins/Coin.png" alt="Coin" className="w-[40px] h-[40px] shrink-0 object-contain" />
+              <div className="flex flex-col w-full h-auto lg:h-[156px] rounded-[14px] lg:rounded-[20px] p-[16px] lg:p-[20px] gap-[16px] lg:gap-[22px] bg-[#1a1b1a] backdrop-blur-[74px]">
+                <div className="flex flex-col w-fit min-w-full lg:min-w-[123px] h-auto lg:h-[81px] gap-[8px] lg:gap-[12px] whitespace-normal lg:whitespace-nowrap">
+                  <h3 style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="w-full min-w-full lg:min-w-[123px] h-auto lg:h-[29px] font-bold text-[18px] lg:text-[22px] leading-[130%] text-white tracking-normal m-0 p-0">Pending Coins</h3>
+                  <div className="flex items-center gap-[4px] lg:gap-[6px] h-auto lg:h-[40px]">
+                    <img src="/coins/Coin.png" alt="Coin" className="w-[24px] h-[24px] lg:w-[40px] lg:h-[40px] shrink-0 object-contain" />
                     <div
                       style={{
                         fontFamily: "'Barlow Condensed', sans-serif",
@@ -366,82 +361,82 @@ const Affiliates = () => {
                         backgroundClip: 'text',
                         color: 'transparent'
                       }}
-                      className="font-bold text-[50px] leading-none tracking-normal m-0 p-0 flex items-center pb-[6px]"
+                      className="font-bold text-[32px] lg:text-[50px] leading-none tracking-normal m-0 p-0 flex items-center pb-[2px] lg:pb-[6px]"
                     >
                       {statsLoading ? '...' : stats.pendingCommissions.toLocaleString()}
                     </div>
                   </div>
                 </div>
-                <p style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="w-full h-auto font-semibold text-[18px] leading-[130%] text-white/50 tracking-normal m-0 p-0">
-                  {statsLoading ? '...' : `${stats.pendingCount} hold(s) - releases after ${stats.holdDays}d`}
+                <p style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="w-full h-auto font-semibold text-[14px] lg:text-[18px] leading-[130%] text-white/50 tracking-normal m-0 p-0">
+                  {statsLoading ? '...' : `${stats.pendingCount} hold(s)`}
                 </p>
               </div>
             </div>
           </div>
 
           {/* Referral Link Section */}
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between w-full lg:w-[1240px] h-auto sm:h-[120px] rounded-[20px] p-[20px] gap-[18px] bg-white/[0.14]">
+          <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between w-full lg:w-[1240px] h-auto lg:h-[120px] rounded-[20px] p-[16px] lg:p-[20px] gap-[16px] lg:gap-[18px] bg-white/[0.14]">
             <div className="flex flex-col w-full lg:w-[591px] lg:h-[76px] gap-[6px]">
-              <h2 style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="w-full lg:h-[41px] font-bold text-[34px] leading-[120%] text-white tracking-normal m-0 p-0">Your Unique Referral Link</h2>
-              <p style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="w-full lg:h-[29px] font-medium text-[22px] leading-[130%] text-[#888888] tracking-normal m-0 p-0">Share this link anywhere to start earning passive income.</p>
+              <h2 style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="w-full lg:h-[41px] font-bold text-[24px] lg:text-[34px] leading-[120%] text-white tracking-normal m-0 p-0">Your Unique Referral Link</h2>
+              <p style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="w-full lg:h-[29px] font-medium text-[16px] lg:text-[22px] leading-[130%] text-[#888888] tracking-normal m-0 p-0">Share this link anywhere to start earning passive income.</p>
             </div>
 
-            <div className="flex flex-col sm:flex-row items-center justify-between w-full lg:w-[591px] lg:h-[80px] rounded-[10px] border border-[#49b265] bg-white/[0.08] p-[16px]">
+            <div className="flex flex-row items-center justify-between w-full lg:w-[591px] h-[60px] lg:h-[80px] rounded-[10px] border border-[#49b265] bg-white/[0.08] p-[8px] lg:p-[16px] gap-[8px]">
               <input
                 type="text"
                 readOnly
                 value={`${window.location.origin}/r/${mongoUser?.referralCode || ''}`}
                 style={{ fontFamily: "'Barlow Condensed', sans-serif" }}
-                className="w-full lg:w-[453px] lg:h-[20px] bg-transparent text-white font-medium text-[18px] leading-[20px] tracking-normal outline-none align-middle m-0 p-0"
+                className="w-full lg:w-[453px] lg:h-[20px] bg-transparent text-white font-medium text-[16px] lg:text-[18px] leading-[20px] tracking-normal outline-none align-middle m-0 p-0 min-w-0"
               />
               <button
                 onClick={() => copyToClipboard(`${window.location.origin}/r/${mongoUser?.referralCode}`)}
-                className="w-[106px] h-[48px] rounded-[10px] flex items-center justify-center bg-[#49b265] hover:bg-[#3bb770] text-white transition-all gap-[10px] py-[10px] px-[20px] shadow-[0px_4px_0px_0px_rgba(39,109,58,1)] active:translate-y-[2px] active:shadow-[0px_2px_0px_0px_rgba(39,109,58,1)] shrink-0"
+                className="w-[80px] lg:w-[106px] h-[40px] lg:h-[48px] rounded-[10px] flex items-center justify-center bg-[#49b265] hover:bg-[#3bb770] text-white transition-all gap-[6px] lg:gap-[10px] py-[8px] lg:py-[10px] px-[12px] lg:px-[20px] shadow-[0px_4px_0px_0px_rgba(39,109,58,1)] active:translate-y-[2px] active:shadow-[0px_2px_0px_0px_rgba(39,109,58,1)] shrink-0"
               >
-                <img src="/coins/copy.png" alt="Copy" className="w-[24px] h-[24px] shrink-0 object-contain" />
-                <span style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="w-[32px] h-[13px] font-bold text-[18px] leading-[100%] tracking-normal m-0 p-0 flex items-center justify-center">Copy</span>
+                <img src="/coins/copy.png" alt="Copy" className="w-[18px] lg:w-[24px] h-[18px] lg:h-[24px] shrink-0 object-contain" />
+                <span style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="w-auto lg:w-[32px] h-[13px] font-bold text-[16px] lg:text-[18px] leading-[100%] tracking-normal m-0 p-0 flex items-center justify-center">Copy</span>
               </button>
             </div>
           </div>
 
           {/* Tabs section */}
-          <div className="w-full lg:w-[1239px] lg:h-[84px] bg-[#2c2d2c] backdrop-blur-[24px] shadow-[0px_4px_44px_0px_rgba(0,0,0,0.25)] rounded-[10px] p-[18px] flex items-center overflow-hidden lg:overflow-visible">
-            <div className="w-full lg:w-[1203px] lg:h-[48px] rounded-[100px] flex flex-col sm:flex-row gap-[20px] lg:justify-between items-center">
+          <div className="w-full lg:w-[1239px] h-auto lg:h-[84px] bg-[#2c2d2c] backdrop-blur-[24px] shadow-[0px_4px_44px_0px_rgba(0,0,0,0.25)] rounded-[10px] p-[6px] lg:p-[18px] flex items-center">
+            <div className="w-full lg:w-[1203px] lg:h-[48px] rounded-[100px] flex flex-row gap-[4px] lg:gap-[20px] lg:justify-between items-center">
               <button
                 onClick={() => setActiveTab('recent')}
-                className={`transition-all flex justify-center items-center gap-[10px] py-[10px] px-[20px] rounded-[10px] text-[16px] font-bold shrink-0 flex-1 h-[48px] ${activeTab === 'recent'
-                  ? 'bg-[#49b265] text-white shadow-[0px_4px_0px_0px_rgba(39,109,58,1)]'
+                className={`flex-1 transition-all flex justify-center items-center gap-[4px] lg:gap-[10px] py-[6px] lg:py-[10px] px-[4px] lg:px-[20px] rounded-[8px] lg:rounded-[10px] h-[36px] lg:h-[48px] ${activeTab === 'recent'
+                  ? 'bg-[#49b265] text-white shadow-[0px_2px_0px_0px_rgba(39,109,58,1)] lg:shadow-[0px_4px_0px_0px_rgba(39,109,58,1)]'
                   : 'text-white hover:bg-white/5'
                   }`}
               >
-                <img src="/coins/paisa.png" alt="Recent" className={`w-[24px] h-[24px] shrink-0 object-contain ${activeTab === 'recent' ? 'brightness-0 invert' : ''}`} />
-                <span style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="h-[32px] font-bold text-[20px] leading-[32px] text-white tracking-normal m-0 p-0 flex items-center justify-center whitespace-nowrap">Recent Affiliate Earnings</span>
+                <img src="/coins/paisa.png" alt="Recent" className={`w-[12px] h-[12px] lg:w-[24px] lg:h-[24px] shrink-0 object-contain ${activeTab === 'recent' ? 'brightness-0 invert' : ''}`} />
+                <span style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="font-bold text-[11px] sm:text-[14px] lg:text-[20px] leading-[100%] text-white tracking-normal m-0 p-0 flex items-center justify-center whitespace-nowrap">Recent Affiliate Earnings</span>
               </button>
               <button
                 onClick={() => setActiveTab('users')}
-                className={`transition-all flex justify-center items-center gap-[10px] py-[10px] px-[20px] rounded-[10px] text-[16px] font-bold shrink-0 flex-1 h-[48px] ${activeTab === 'users'
-                  ? 'bg-[#49b265] text-white shadow-[0px_4px_0px_0px_rgba(39,109,58,1)]'
+                className={`flex-1 transition-all flex justify-center items-center gap-[4px] lg:gap-[10px] py-[6px] lg:py-[10px] px-[4px] lg:px-[20px] rounded-[8px] lg:rounded-[10px] h-[36px] lg:h-[48px] ${activeTab === 'users'
+                  ? 'bg-[#49b265] text-white shadow-[0px_2px_0px_0px_rgba(39,109,58,1)] lg:shadow-[0px_4px_0px_0px_rgba(39,109,58,1)]'
                   : 'text-white hover:bg-white/5'
                   }`}
               >
-                <img src="/coins/persons.png" alt="Users" className={`w-[24px] h-[24px] shrink-0 object-contain ${activeTab === 'users' ? 'brightness-0 invert' : ''}`} />
-                <span style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="h-[32px] font-bold text-[20px] leading-[32px] text-white tracking-normal m-0 p-0 flex items-center justify-center whitespace-nowrap">Referred Users</span>
+                <img src="/coins/persons.png" alt="Users" className={`w-[12px] h-[12px] lg:w-[24px] lg:h-[24px] shrink-0 object-contain ${activeTab === 'users' ? 'brightness-0 invert' : ''}`} />
+                <span style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="font-bold text-[11px] sm:text-[14px] lg:text-[20px] leading-[100%] text-white tracking-normal m-0 p-0 flex items-center justify-center whitespace-nowrap">Referred Users</span>
               </button>
               <button
                 onClick={() => setActiveTab('pending')}
-                className={`transition-all flex justify-center items-center gap-[10px] py-[10px] px-[20px] rounded-[10px] text-[16px] font-bold shrink-0 flex-1 h-[48px] ${activeTab === 'pending'
-                  ? 'bg-[#49b265] text-white shadow-[0px_4px_0px_0px_rgba(39,109,58,1)]'
+                className={`flex-1 transition-all flex justify-center items-center gap-[4px] lg:gap-[10px] py-[6px] lg:py-[10px] px-[4px] lg:px-[20px] rounded-[8px] lg:rounded-[10px] h-[36px] lg:h-[48px] ${activeTab === 'pending'
+                  ? 'bg-[#49b265] text-white shadow-[0px_2px_0px_0px_rgba(39,109,58,1)] lg:shadow-[0px_4px_0px_0px_rgba(39,109,58,1)]'
                   : 'text-white hover:bg-white/5'
                   }`}
               >
-                <img src="/coins/clock.png" alt="Pending" className={`w-[24px] h-[24px] shrink-0 object-contain ${activeTab === 'pending' ? 'brightness-0 invert' : ''}`} />
-                <span style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="h-[32px] font-bold text-[20px] leading-[32px] text-white tracking-normal m-0 p-0 flex items-center justify-center whitespace-nowrap">Pending Affiliate Earnings</span>
+                <img src="/coins/clock.png" alt="Pending" className={`w-[12px] h-[12px] lg:w-[24px] lg:h-[24px] shrink-0 object-contain ${activeTab === 'pending' ? 'brightness-0 invert' : ''}`} />
+                <span style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="font-bold text-[11px] sm:text-[14px] lg:text-[20px] leading-[100%] text-white tracking-normal m-0 p-0 flex items-center justify-center whitespace-nowrap">Pending Affiliate Earnings</span>
               </button>
             </div>
           </div>
 
           {/* Table Content Section */}
-          <div className="w-full lg:w-[1240px] lg:h-[630px] bg-[#242424] rounded-[30px] p-[30px] flex flex-col gap-[10px] mt-4">
+          <div className="w-full lg:w-[1240px] min-h-[400px] lg:h-auto bg-[#242424] rounded-[20px] lg:rounded-[30px] p-[16px] lg:p-[30px] flex flex-col gap-[10px] mt-4 mb-[80px] lg:mb-0">
 
             {activeTab === 'recent' && (
               <div>
@@ -455,31 +450,31 @@ const Affiliates = () => {
                 ) : referrals.dataList.length === 0 ? (
                   <p className="text-center py-8" style={{ fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 700, fontSize: '20px', lineHeight: '120%', color: 'white' }}>No referral earnings yet.</p>
                 ) : (
-                  <div className="overflow-x-auto">
-                    <div className="min-w-[1180px]">
-                      <div className="w-[1180px] h-[58px] rounded-[20px] pt-[10px] pr-[95px] pb-[30px] pl-[40px] grid grid-cols-[313px_repeat(4,minmax(0,1fr))] gap-[50px] border-b border-[#2a2d36]">
-                        <div style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="h-[18px] font-semibold text-[26px] leading-[120%] text-[rgba(255,255,255,0.4)] whitespace-nowrap">User</div>
-                        <div style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="h-[18px] font-semibold text-[26px] leading-[120%] text-[rgba(255,255,255,0.4)] whitespace-nowrap">Date</div>
-                        <div style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="h-[18px] font-semibold text-[26px] leading-[120%] text-[rgba(255,255,255,0.4)] whitespace-nowrap">Earning</div>
-                        <div style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="h-[18px] font-semibold text-[26px] leading-[120%] text-[rgba(255,255,255,0.4)] whitespace-nowrap">Commission ({statsLoading ? '...' : (stats.referralPercentage != null ? `${stats.referralPercentage}%` : '10%')})</div>
-                        <div style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="h-[18px] font-semibold text-[26px] leading-[120%] text-[rgba(255,255,255,0.4)] whitespace-nowrap pl-[50px]">Status</div>
+                  <div className="w-full">
+                    <div className="w-full lg:min-w-[1180px]">
+                      <div className="w-full lg:w-[1180px] h-auto lg:h-[58px] rounded-[10px] lg:rounded-[20px] pt-[8px] pb-[8px] px-[4px] lg:pt-[10px] lg:pr-[95px] lg:pb-[30px] lg:pl-[40px] grid grid-cols-[minmax(0,1.2fr)_minmax(0,1.1fr)_minmax(0,1.1fr)_minmax(0,1.4fr)_minmax(0,1fr)] lg:grid-cols-[313px_repeat(4,minmax(0,1fr))] gap-[6px] sm:gap-[10px] lg:gap-[50px] border-b border-[#2a2d36] items-center">
+                        <div style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="font-semibold text-[16px] lg:text-[26px] leading-[120%] text-[rgba(255,255,255,0.4)] break-words">User</div>
+                        <div style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="font-semibold text-[16px] lg:text-[26px] leading-[120%] text-[rgba(255,255,255,0.4)] break-words">Date</div>
+                        <div style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="font-semibold text-[16px] lg:text-[26px] leading-[120%] text-[rgba(255,255,255,0.4)] break-words">Earning</div>
+                        <div style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="font-semibold text-[16px] lg:text-[26px] leading-[120%] text-[rgba(255,255,255,0.4)] break-words">Comms ({statsLoading ? '...' : (stats.referralPercentage != null ? `${stats.referralPercentage}%` : '10%')})</div>
+                        <div style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="font-semibold text-[16px] lg:text-[26px] leading-[120%] text-[rgba(255,255,255,0.4)] lg:pl-[50px] break-words">Status</div>
                       </div>
-                      <div className="flex flex-col gap-[10px]">
+                      <div className="flex flex-col gap-[6px] lg:gap-[10px] mt-[6px] lg:mt-0">
                         {referrals.dataList.map(tx => (
-                          <div key={tx._id} className="w-[1180px] h-[82px] bg-[#171717] rounded-[20px] pt-[20px] pr-[95px] pb-[20px] pl-[40px] grid grid-cols-[313px_repeat(4,minmax(0,1fr))] gap-[50px] items-center hover:bg-[#1a1a1a] transition-colors">
-                            <div className="flex items-center gap-[10px]">
-                              <img src={tx.linkedTransactionId?.userId?.avatarUrl || tx.linkedTransactionId?.userId?.photoURL || `https://api.dicebear.com/7.x/bottts/svg?seed=${tx._id}`} className="w-[42px] h-[42px] rounded-[10px] bg-[#15171e] object-cover shrink-0" alt="avatar" />
-                              <span style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="font-semibold text-[28px] leading-[120%] text-white truncate">{tx.linkedTransactionId?.userId?.displayName || 'Unknown User'}</span>
+                          <div key={tx._id} className="w-full lg:w-[1180px] h-auto lg:h-[82px] bg-[#171717] rounded-[8px] lg:rounded-[20px] py-[10px] px-[4px] lg:pt-[20px] lg:pr-[95px] lg:pb-[20px] lg:pl-[40px] grid grid-cols-[minmax(0,1.2fr)_minmax(0,1.1fr)_minmax(0,1.1fr)_minmax(0,1.4fr)_minmax(0,1fr)] lg:grid-cols-[313px_repeat(4,minmax(0,1fr))] gap-[6px] sm:gap-[10px] lg:gap-[50px] items-center hover:bg-[#1a1a1a] transition-colors">
+                            <div className="flex items-center gap-[6px] lg:gap-[10px] min-w-0">
+                              <img src={tx.linkedTransactionId?.userId?.avatarUrl || tx.linkedTransactionId?.userId?.photoURL || `https://api.dicebear.com/7.x/bottts/svg?seed=${tx._id}`} className="w-[20px] h-[20px] sm:w-[24px] sm:h-[24px] lg:w-[42px] lg:h-[42px] rounded-[4px] lg:rounded-[10px] bg-[#15171e] object-cover shrink-0" alt="avatar" />
+                              <span style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="font-semibold text-[13px] min-[375px]:text-[14px] sm:text-[16px] lg:text-[28px] leading-[120%] text-white truncate block">{tx.linkedTransactionId?.userId?.displayName || 'Unknown User'}</span>
                             </div>
-                            <div style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="text-white font-semibold text-[28px] leading-[120%]">{new Date(tx.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</div>
-                            <div className="flex items-center gap-[6px] font-semibold text-[#fbbf24] text-[28px] leading-[120%]" style={{ fontFamily: "'Barlow Condensed', sans-serif" }}>
-                              <img src="/coins/Coin.png" alt="Coin" className="w-[24px] h-[24px] shrink-0 object-contain" /> {(tx.amount * 10).toLocaleString()}
+                            <div style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="text-white font-semibold text-[13px] min-[375px]:text-[14px] sm:text-[16px] lg:text-[28px] leading-[120%] truncate">{new Date(tx.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: '2-digit' })}</div>
+                            <div className="flex items-center whitespace-nowrap gap-[2px] lg:gap-[6px] font-semibold text-[#fbbf24] text-[13px] min-[375px]:text-[14px] sm:text-[16px] lg:text-[28px] leading-[120%]" style={{ fontFamily: "'Barlow Condensed', sans-serif" }}>
+                              <img src="/coins/Coin.png" alt="Coin" className="w-[14px] h-[14px] lg:w-[24px] lg:h-[24px] shrink-0 object-contain" /> {(tx.amount * 10).toLocaleString()}
                             </div>
-                            <div className="flex items-center gap-[6px] font-semibold text-[#fbbf24] text-[28px] leading-[120%]" style={{ fontFamily: "'Barlow Condensed', sans-serif" }}>
-                              <img src="/coins/Coin.png" alt="Coin" className="w-[24px] h-[24px] shrink-0 object-contain" /> {tx.amount.toLocaleString()}
+                            <div className="flex items-center whitespace-nowrap gap-[2px] lg:gap-[6px] font-semibold text-[#fbbf24] text-[13px] min-[375px]:text-[14px] sm:text-[16px] lg:text-[28px] leading-[120%]" style={{ fontFamily: "'Barlow Condensed', sans-serif" }}>
+                              <img src="/coins/Coin.png" alt="Coin" className="w-[14px] h-[14px] lg:w-[24px] lg:h-[24px] shrink-0 object-contain" /> {tx.amount.toLocaleString()}
                             </div>
-                            <div className="flex items-center pl-[50px]">
-                              <span style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className={`inline-flex items-center justify-center px-[20px] py-[4px] rounded-[100px] text-[22px] leading-[120%] font-semibold ${tx.status === 'hold' ? 'bg-[#fbbf24]/10 text-[#fbbf24]' : 'bg-[#153423] text-[#4ade80]'}`}>
+                            <div className="flex items-center lg:pl-[50px]">
+                              <span style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className={`inline-flex items-center justify-center px-[8px] lg:px-[20px] py-[3px] lg:py-[4px] rounded-[100px] text-[13px] sm:text-[14px] lg:text-[22px] leading-[120%] font-semibold ${tx.status === 'hold' ? 'bg-[#fbbf24]/10 text-[#fbbf24]' : 'bg-[#153423] text-[#4ade80]'}`}>
                                 {tx.status === 'hold' ? 'Pending' : 'Paid'}
                               </span>
                             </div>
@@ -514,40 +509,40 @@ const Affiliates = () => {
                   <p className="text-center py-8" style={{ fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 700, fontSize: '20px', lineHeight: '120%', color: 'white' }}>No referred users yet.</p>
                 ) : (
                   <>
-                    <div className="overflow-x-auto">
-                      <div className="min-w-[1180px]">
-                        <div className="w-[1180px] h-[58px] rounded-[20px] pt-[10px] pr-[95px] pb-[30px] pl-[40px] grid grid-cols-[313px_repeat(4,minmax(0,1fr))] gap-[50px] border-b border-[#2a2d36]">
-                          <div style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="h-[18px] font-semibold text-[26px] leading-[120%] text-[rgba(255,255,255,0.4)] whitespace-nowrap">User</div>
-                          <div style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="h-[18px] font-semibold text-[26px] leading-[120%] text-[rgba(255,255,255,0.4)] whitespace-nowrap">Joined Date</div>
-                          <div style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="h-[18px] font-semibold text-[26px] leading-[120%] text-[rgba(255,255,255,0.4)] whitespace-nowrap">Total Earning</div>
-                          <div style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="h-[18px] font-semibold text-[26px] leading-[120%] text-[rgba(255,255,255,0.4)] whitespace-nowrap">Your Commission</div>
-                          <div style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="h-[18px] font-semibold text-[26px] leading-[120%] text-[rgba(255,255,255,0.4)] whitespace-nowrap pl-[50px]">Status</div>
-                        </div>
+                  <div className="w-full">
+                    <div className="w-full lg:min-w-[1180px]">
+                      <div className="w-full lg:w-[1180px] h-auto lg:h-[58px] rounded-[10px] lg:rounded-[20px] pt-[8px] pb-[8px] px-[4px] lg:pt-[10px] lg:pr-[95px] lg:pb-[30px] lg:pl-[40px] grid grid-cols-[minmax(0,1.2fr)_minmax(0,1.2fr)_minmax(0,1.3fr)_minmax(0,1.3fr)_minmax(0,1fr)] lg:grid-cols-[313px_repeat(4,minmax(0,1fr))] gap-[6px] sm:gap-[10px] lg:gap-[50px] border-b border-[#2a2d36] items-center">
+                        <div style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="font-semibold text-[16px] lg:text-[26px] leading-[120%] text-[rgba(255,255,255,0.4)] break-words">User</div>
+                        <div style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="font-semibold text-[16px] lg:text-[26px] leading-[120%] text-[rgba(255,255,255,0.4)] break-words">Joined Date</div>
+                        <div style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="font-semibold text-[16px] lg:text-[26px] leading-[120%] text-[rgba(255,255,255,0.4)] break-words">Total Earning</div>
+                        <div style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="font-semibold text-[16px] lg:text-[26px] leading-[120%] text-[rgba(255,255,255,0.4)] break-words">Your Comms</div>
+                        <div style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="font-semibold text-[16px] lg:text-[26px] leading-[120%] text-[rgba(255,255,255,0.4)] lg:pl-[50px] break-words">Status</div>
+                      </div>
 
-                        <div className="flex flex-col gap-[10px]">
-                          {referredUsersData.users.map(u => (
-                            <div key={u._id} className="w-[1180px] h-[82px] bg-[#171717] rounded-[20px] pt-[20px] pr-[95px] pb-[20px] pl-[40px] grid grid-cols-[313px_repeat(4,minmax(0,1fr))] gap-[50px] items-center hover:bg-[#1a1a1a] transition-colors">
-                              <div className="flex items-center gap-[10px]">
-                                <img src={u.avatarUrl || u.photoURL || `https://api.dicebear.com/7.x/bottts/svg?seed=${u.displayName}`} className="w-[42px] h-[42px] rounded-[10px] bg-[#15171e] object-cover shrink-0" alt="avatar" />
-                                <span style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="font-semibold text-[28px] leading-[120%] text-white truncate">{u.displayName}</span>
-                              </div>
-                              <div style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="text-white font-semibold text-[28px] leading-[120%]">{new Date(u.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</div>
-                              <div className="flex items-center gap-[6px] font-semibold text-[#fbbf24] text-[28px] leading-[120%]" style={{ fontFamily: "'Barlow Condensed', sans-serif" }}>
-                                <img src="/coins/Coin.png" alt="Coin" className="w-[24px] h-[24px] shrink-0 object-contain" /> {(u.totalEarned || 0).toLocaleString()}
-                              </div>
-                              <div className="flex items-center gap-[6px] font-semibold text-[#fbbf24] text-[28px] leading-[120%]" style={{ fontFamily: "'Barlow Condensed', sans-serif" }}>
-                                <img src="/coins/Coin.png" alt="Coin" className="w-[24px] h-[24px] shrink-0 object-contain" /> {(u.referralEarnings > 0 ? u.referralEarnings : Math.floor((u.totalEarned || 0) * ((stats.referralPercentage || 10) / 100))).toLocaleString()}
-                              </div>
-                              <div className="flex items-center pl-[50px]">
-                                <span style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="inline-flex items-center justify-center px-[20px] py-[4px] rounded-[100px] text-[22px] leading-[120%] font-semibold bg-[#153423] text-[#4ade80]">
-                                  Active
-                                </span>
-                              </div>
+                      <div className="flex flex-col gap-[6px] lg:gap-[10px] mt-[6px] lg:mt-0">
+                        {referredUsersData.users.map(u => (
+                          <div key={u._id} className="w-full lg:w-[1180px] h-auto lg:h-[82px] bg-[#171717] rounded-[8px] lg:rounded-[20px] py-[10px] px-[4px] lg:pt-[20px] lg:pr-[95px] lg:pb-[20px] lg:pl-[40px] grid grid-cols-[minmax(0,1.2fr)_minmax(0,1.2fr)_minmax(0,1.3fr)_minmax(0,1.3fr)_minmax(0,1fr)] lg:grid-cols-[313px_repeat(4,minmax(0,1fr))] gap-[6px] sm:gap-[10px] lg:gap-[50px] items-center hover:bg-[#1a1a1a] transition-colors">
+                            <div className="flex items-center gap-[6px] lg:gap-[10px] min-w-0">
+                              <img src={u.avatarUrl || u.photoURL || `https://api.dicebear.com/7.x/bottts/svg?seed=${u.displayName}`} className="w-[20px] h-[20px] sm:w-[24px] sm:h-[24px] lg:w-[42px] lg:h-[42px] rounded-[4px] lg:rounded-[10px] bg-[#15171e] object-cover shrink-0" alt="avatar" />
+                              <span style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="font-semibold text-[13px] min-[375px]:text-[14px] sm:text-[16px] lg:text-[28px] leading-[120%] text-white truncate block">{u.displayName}</span>
                             </div>
-                          ))}
-                        </div>
+                            <div style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="text-white font-semibold text-[13px] min-[375px]:text-[14px] sm:text-[16px] lg:text-[28px] leading-[120%] truncate">{new Date(u.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: '2-digit' })}</div>
+                            <div className="flex items-center whitespace-nowrap gap-[2px] lg:gap-[6px] font-semibold text-[#fbbf24] text-[13px] min-[375px]:text-[14px] sm:text-[16px] lg:text-[28px] leading-[120%]" style={{ fontFamily: "'Barlow Condensed', sans-serif" }}>
+                              <img src="/coins/Coin.png" alt="Coin" className="w-[14px] h-[14px] lg:w-[24px] lg:h-[24px] shrink-0 object-contain" /> {(u.totalEarned || 0).toLocaleString()}
+                            </div>
+                            <div className="flex items-center whitespace-nowrap gap-[2px] lg:gap-[6px] font-semibold text-[#fbbf24] text-[13px] min-[375px]:text-[14px] sm:text-[16px] lg:text-[28px] leading-[120%]" style={{ fontFamily: "'Barlow Condensed', sans-serif" }}>
+                              <img src="/coins/Coin.png" alt="Coin" className="w-[14px] h-[14px] lg:w-[24px] lg:h-[24px] shrink-0 object-contain" /> {(u.referralEarnings > 0 ? u.referralEarnings : Math.floor((u.totalEarned || 0) * ((stats.referralPercentage || 10) / 100))).toLocaleString()}
+                            </div>
+                            <div className="flex items-center lg:pl-[50px]">
+                              <span style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="inline-flex items-center justify-center px-[8px] lg:px-[20px] py-[3px] lg:py-[4px] rounded-[100px] text-[13px] sm:text-[14px] lg:text-[22px] leading-[120%] font-semibold bg-[#153423] text-[#4ade80]">
+                                Active
+                              </span>
+                            </div>
+                          </div>
+                        ))}
                       </div>
                     </div>
+                  </div>
                     <Pagination
                       page={referredUsersData.page}
                       totalPages={referredUsersData.totalPages}
@@ -571,32 +566,32 @@ const Affiliates = () => {
                   <p className="text-center py-8" style={{ fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 700, fontSize: '20px', lineHeight: '120%', color: 'white' }}>No affiliate earnings on hold right now.</p>
                 ) : (
                   <>
-                    <div className="overflow-x-auto">
-                      <div className="min-w-[1180px]">
-                        <div className="w-[1180px] h-[58px] rounded-[20px] pt-[10px] pr-[95px] pb-[30px] pl-[40px] grid grid-cols-[313px_repeat(4,minmax(0,1fr))] gap-[50px] border-b border-[#2a2d36]">
-                          <div style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="h-[18px] font-semibold text-[26px] leading-[120%] text-[rgba(255,255,255,0.4)] whitespace-nowrap">User</div>
-                          <div style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="h-[18px] font-semibold text-[26px] leading-[120%] text-[rgba(255,255,255,0.4)] whitespace-nowrap">Earning Date</div>
-                          <div style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="h-[18px] font-semibold text-[26px] leading-[120%] text-[rgba(255,255,255,0.4)] whitespace-nowrap">Earning</div>
-                          <div style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="h-[18px] font-semibold text-[26px] leading-[120%] text-[rgba(255,255,255,0.4)] whitespace-nowrap">Commission ({statsLoading ? '...' : (stats.referralPercentage != null ? `${stats.referralPercentage}%` : '10%')})</div>
-                          <div style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="h-[18px] font-semibold text-[26px] leading-[120%] text-[rgba(255,255,255,0.4)] whitespace-nowrap pl-[50px]">Release In</div>
+                    <div className="w-full">
+                      <div className="w-full lg:min-w-[1180px]">
+                        <div className="w-full lg:w-[1180px] h-auto lg:h-[58px] rounded-[10px] lg:rounded-[20px] pt-[8px] pb-[8px] px-[4px] lg:pt-[10px] lg:pr-[95px] lg:pb-[30px] lg:pl-[40px] grid grid-cols-[minmax(0,1.2fr)_minmax(0,1.1fr)_minmax(0,1.1fr)_minmax(0,1.4fr)_minmax(0,1fr)] lg:grid-cols-[313px_repeat(4,minmax(0,1fr))] gap-[6px] sm:gap-[10px] lg:gap-[50px] border-b border-[#2a2d36] items-center">
+                          <div style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="font-semibold text-[16px] lg:text-[26px] leading-[120%] text-[rgba(255,255,255,0.4)] break-words">User</div>
+                          <div style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="font-semibold text-[16px] lg:text-[26px] leading-[120%] text-[rgba(255,255,255,0.4)] break-words">Date</div>
+                          <div style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="font-semibold text-[16px] lg:text-[26px] leading-[120%] text-[rgba(255,255,255,0.4)] break-words">Earning</div>
+                          <div style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="font-semibold text-[16px] lg:text-[26px] leading-[120%] text-[rgba(255,255,255,0.4)] break-words">Comms ({statsLoading ? '...' : (stats.referralPercentage != null ? `${stats.referralPercentage}%` : '10%')})</div>
+                          <div style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="font-semibold text-[16px] lg:text-[26px] leading-[120%] text-[rgba(255,255,255,0.4)] lg:pl-[50px] break-words">Release In</div>
                         </div>
 
-                        <div className="flex flex-col gap-[10px]">
+                        <div className="flex flex-col gap-[6px] lg:gap-[10px] mt-[6px] lg:mt-0">
                           {currentPendingHolds.map(tx => (
-                            <div key={tx._id} className="w-[1180px] h-[82px] bg-[#171717] rounded-[20px] pt-[20px] pr-[95px] pb-[20px] pl-[40px] grid grid-cols-[313px_repeat(4,minmax(0,1fr))] gap-[50px] items-center hover:bg-[#1a1a1a] transition-colors">
-                              <div className="flex items-center gap-[10px]">
-                                <img src={tx.linkedTransactionId?.userId?.avatarUrl || tx.linkedTransactionId?.userId?.photoURL || `https://api.dicebear.com/7.x/bottts/svg?seed=${tx._id}`} className="w-[42px] h-[42px] rounded-[10px] bg-[#15171e] object-cover shrink-0" alt="avatar" />
-                                <span style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="font-semibold text-[28px] leading-[120%] text-white truncate">{tx.linkedTransactionId?.userId?.displayName || 'Unknown User'}</span>
+                            <div key={tx._id} className="w-full lg:w-[1180px] h-auto lg:h-[82px] bg-[#171717] rounded-[8px] lg:rounded-[20px] py-[10px] px-[4px] lg:pt-[20px] lg:pr-[95px] lg:pb-[20px] lg:pl-[40px] grid grid-cols-[minmax(0,1.2fr)_minmax(0,1.1fr)_minmax(0,1.1fr)_minmax(0,1.4fr)_minmax(0,1fr)] lg:grid-cols-[313px_repeat(4,minmax(0,1fr))] gap-[6px] sm:gap-[10px] lg:gap-[50px] items-center hover:bg-[#1a1a1a] transition-colors">
+                              <div className="flex items-center gap-[6px] lg:gap-[10px] min-w-0">
+                                <img src={tx.linkedTransactionId?.userId?.avatarUrl || tx.linkedTransactionId?.userId?.photoURL || `https://api.dicebear.com/7.x/bottts/svg?seed=${tx._id}`} className="w-[20px] h-[20px] sm:w-[24px] sm:h-[24px] lg:w-[42px] lg:h-[42px] rounded-[4px] lg:rounded-[10px] bg-[#15171e] object-cover shrink-0" alt="avatar" />
+                                <span style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="font-semibold text-[13px] min-[375px]:text-[14px] sm:text-[16px] lg:text-[28px] leading-[120%] text-white truncate block">{tx.linkedTransactionId?.userId?.displayName || 'Unknown'}</span>
                               </div>
-                              <div style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="text-white font-semibold text-[28px] leading-[120%]">{new Date(tx.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</div>
-                              <div className="flex items-center gap-[6px] font-semibold text-[#fbbf24] text-[28px] leading-[120%]" style={{ fontFamily: "'Barlow Condensed', sans-serif" }}>
-                                <img src="/coins/Coin.png" alt="Coin" className="w-[24px] h-[24px] shrink-0 object-contain" /> {(tx.amount * 10).toLocaleString()}
+                              <div style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="text-white font-semibold text-[13px] min-[375px]:text-[14px] sm:text-[16px] lg:text-[28px] leading-[120%] truncate">{new Date(tx.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: '2-digit' })}</div>
+                              <div className="flex items-center whitespace-nowrap gap-[2px] lg:gap-[6px] font-semibold text-[#fbbf24] text-[13px] min-[375px]:text-[14px] sm:text-[16px] lg:text-[28px] leading-[120%]" style={{ fontFamily: "'Barlow Condensed', sans-serif" }}>
+                                <img src="/coins/Coin.png" alt="Coin" className="w-[14px] h-[14px] lg:w-[24px] lg:h-[24px] shrink-0 object-contain" /> {(tx.amount * 10).toLocaleString()}
                               </div>
-                              <div className="flex items-center gap-[6px] font-semibold text-[#fbbf24] text-[28px] leading-[120%]" style={{ fontFamily: "'Barlow Condensed', sans-serif" }}>
-                                <img src="/coins/Coin.png" alt="Coin" className="w-[24px] h-[24px] shrink-0 object-contain" /> {tx.amount.toLocaleString()}
+                              <div className="flex items-center whitespace-nowrap gap-[2px] lg:gap-[6px] font-semibold text-[#fbbf24] text-[13px] min-[375px]:text-[14px] sm:text-[16px] lg:text-[28px] leading-[120%]" style={{ fontFamily: "'Barlow Condensed', sans-serif" }}>
+                                <img src="/coins/Coin.png" alt="Coin" className="w-[14px] h-[14px] lg:w-[24px] lg:h-[24px] shrink-0 object-contain" /> {tx.amount.toLocaleString()}
                               </div>
-                              <div className="flex items-center pl-[50px]">
-                                <span style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="text-[#888888] font-semibold text-[28px] leading-[120%]">
+                              <div className="flex items-center lg:pl-[50px]">
+                                <span style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="text-[#888888] font-semibold text-[13px] sm:text-[14px] lg:text-[28px] leading-[120%] break-words">
                                   {calculateReleaseIn(tx.releaseDate)}
                                 </span>
                               </div>
