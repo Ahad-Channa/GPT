@@ -2270,7 +2270,7 @@ const Profile = () => {
                                       ? 'bg-rose-500/10 text-rose-400 border-rose-500/20'
                                       : 'bg-[#153423] text-[#4ade80] border-[#4ade80]/20'
                                     }`}>
-                                    {tx.status === 'completed' ? 'Completed' : tx.status}
+                                    {tx.status === 'completed' ? 'Completed' : tx.status.charAt(0).toUpperCase() + tx.status.slice(1)}
                                   </span>
                                 </div>
                               </div>

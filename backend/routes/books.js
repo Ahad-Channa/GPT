@@ -14,7 +14,7 @@ const { verifyToken } = require('../middlewares/authMiddleware');
 /* ─── Multer — memory storage (images saved as base64 in MongoDB) ── */
 const upload = multer({
   storage: multer.memoryStorage(),
-  limits: { 
+  limits: {
     fileSize: 5 * 1024 * 1024, // 5 MB per file
     fieldSize: 15 * 1024 * 1024 // 15 MB per field to allow large base64 strings
   },
@@ -382,7 +382,7 @@ router.post('/order', verifyToken, async (req, res) => {
 router.get('/admin/list', verifyToken, requireAdmin, async (req, res) => {
   try {
     const books = await Book.find().sort({ createdAt: -1 }).lean();
-    
+
     // Fix hardcoded localhost URLs in DB
     const currentBase = process.env.BACKEND_URL || 'http://localhost:5000';
     books.forEach(b => {
@@ -599,10 +599,10 @@ router.get('/admin/orders', verifyToken, requireAdmin, async (req, res) => {
 router.put('/admin/orders/:id', verifyToken, requireAdmin, async (req, res) => {
   try {
     const { status, adminNote, trackingNumber } = req.body;
-    
+
     const existingOrder = await BookOrder.findById(req.params.id);
     if (!existingOrder) return res.status(404).json({ success: false, error: 'Order not found' });
-    
+
     if (existingOrder.status === 'cancelled') {
       return res.status(400).json({ success: false, error: 'Cannot update a cancelled order.' });
     }
@@ -617,7 +617,7 @@ router.put('/admin/orders/:id', verifyToken, requireAdmin, async (req, res) => {
     if (status === 'cancelled' && existingOrder.status !== 'cancelled') {
       await User.findByIdAndUpdate(order.userId._id, { $inc: { walletBalance: order.coinCost } });
       if (order.transactionId) {
-        await Transaction.findByIdAndUpdate(order.transactionId, { status: 'reversed' });
+        await Transaction.findByIdAndUpdate(order.transactionId, { status: 'rejected' });
       }
       await Notification.create({
         userId: order.userId._id,
