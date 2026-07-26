@@ -2126,8 +2126,8 @@ const Profile = () => {
                           </div>
                           <div className="flex flex-col gap-[10px] mt-[10px]">
                             {paginatedCompleted.map(offer => (
-                              <div key={offer._id} className="w-[1180px] h-[82px] bg-[#171717] rounded-[20px] pt-[20px] pr-[95px] pb-[20px] pl-[40px] grid grid-cols-[2fr_1fr_1fr] gap-[20px] items-center hover:bg-[#1a1a1a] transition-colors">
-                                <span style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="font-semibold text-[28px] leading-[120%] text-white truncate">{offer.title}</span>
+                              <div key={offer._id} className="w-[1180px] min-h-[82px] bg-[#171717] rounded-[20px] pt-[20px] pr-[95px] pb-[20px] pl-[40px] grid grid-cols-[2fr_1fr_1fr] gap-[20px] items-center hover:bg-[#1a1a1a] transition-colors">
+                                <span style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="font-semibold text-[28px] leading-[120%] text-white">{offer.title}</span>
                                 <span style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="text-white font-semibold text-[28px] leading-[120%]">{offer.completedAt ? new Date(offer.completedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'N/A'}</span>
                                 <div className="flex items-center gap-[6px] font-semibold text-[#fbbf24] text-[28px] leading-[120%]" style={{ fontFamily: "'Barlow Condensed', sans-serif" }}>
                                   <img src="/coins/Coin.png" alt="Coin" className="w-[24px] h-[24px] shrink-0 object-contain" />
@@ -2187,8 +2187,8 @@ const Profile = () => {
                                 ? `${offer.daysRemaining}d`
                                 : offer.isReadyToRelease ? 'Ready' : 'N/A';
                               return (
-                                <div key={offer._id} className="w-[1180px] h-[82px] bg-[#171717] rounded-[20px] pt-[20px] pr-[95px] pb-[20px] pl-[40px] grid grid-cols-[300px_repeat(4,1fr)] gap-[20px] items-center hover:bg-[#1a1a1a] transition-colors">
-                                  <span style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="font-semibold text-[28px] leading-[120%] text-white truncate">{offer.description}</span>
+                                <div key={offer._id} className="w-[1180px] min-h-[82px] bg-[#171717] rounded-[20px] pt-[20px] pr-[95px] pb-[20px] pl-[40px] grid grid-cols-[300px_repeat(4,1fr)] gap-[20px] items-center hover:bg-[#1a1a1a] transition-colors">
+                                  <span style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="font-semibold text-[28px] leading-[120%] text-white">{offer.description}</span>
                                   <span style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="text-white font-semibold text-[28px] leading-[120%]">{offer.createdAt ? new Date(offer.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'N/A'}</span>
                                   <div className="flex items-center gap-[6px] font-semibold text-[#fbbf24] text-[28px] leading-[120%]" style={{ fontFamily: "'Barlow Condensed', sans-serif" }}>
                                     <img src="/coins/Coin.png" alt="Coin" className="w-[24px] h-[24px] shrink-0 object-contain" />
@@ -2249,14 +2249,14 @@ const Profile = () => {
                             const isDebit = tx.amount < 0;
                             const isPending = tx.status === 'pending';
                             return (
-                              <div key={tx._id} className="w-[1180px] h-[82px] bg-[#171717] rounded-[20px] pt-[20px] pr-[95px] pb-[20px] pl-[40px] grid grid-cols-[180px_180px_1fr_180px_150px] gap-[20px] items-center hover:bg-[#1a1a1a] transition-colors">
+                              <div key={tx._id} className="w-[1180px] min-h-[82px] bg-[#171717] rounded-[20px] pt-[20px] pr-[95px] pb-[20px] pl-[40px] grid grid-cols-[180px_180px_1fr_180px_150px] gap-[20px] items-center hover:bg-[#1a1a1a] transition-colors">
                                 <span style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="text-white font-semibold text-[28px] leading-[120%]">
                                   {tx.createdAt ? new Date(tx.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'N/A'}
                                 </span>
                                 <span style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="text-white font-semibold text-[28px] leading-[120%] truncate">
                                   {config.label}
                                 </span>
-                                <span style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="text-white font-semibold text-[28px] leading-[120%] truncate">
+                                <span style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="text-white font-semibold text-[28px] leading-[120%]">
                                   {tx.description}
                                 </span>
                                 <div className="flex items-center gap-[6px] font-semibold text-[#fbbf24] text-[28px] leading-[120%]" style={{ fontFamily: "'Barlow Condensed', sans-serif" }}>
@@ -2317,8 +2317,8 @@ const Profile = () => {
                         </div>
                         <div className="flex flex-col gap-[10px] mt-[10px]">
                           {chargebacks.dataList.map(tx => (
-                            <div key={tx._id} className="w-[1180px] h-[82px] bg-[#171717] rounded-[20px] pt-[20px] pr-[95px] pb-[20px] pl-[40px] grid grid-cols-[2fr_1fr_1fr] gap-[20px] items-center hover:bg-[#1a1a1a] transition-colors">
-                              <span style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="font-semibold text-[28px] leading-[120%] text-white truncate">{tx.description}</span>
+                            <div key={tx._id} className="w-[1180px] min-h-[82px] bg-[#171717] rounded-[20px] pt-[20px] pr-[95px] pb-[20px] pl-[40px] grid grid-cols-[2fr_1fr_1fr] gap-[20px] items-center hover:bg-[#1a1a1a] transition-colors">
+                              <span style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="font-semibold text-[28px] leading-[120%] text-white">{tx.description}</span>
                               <span style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="text-white font-semibold text-[28px] leading-[120%]">{tx.createdAt ? new Date(tx.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'N/A'}</span>
                               <div className="flex items-center gap-[6px] font-semibold text-[#fbbf24] text-[28px] leading-[120%]" style={{ fontFamily: "'Barlow Condensed', sans-serif" }}>
                                 <img src="/coins/Coin.png" alt="Coin" className="w-[24px] h-[24px] shrink-0 object-contain" />

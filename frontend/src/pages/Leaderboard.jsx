@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import DashboardLayout from '../components/layout/DashboardLayout';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -33,14 +33,14 @@ const PodiumCard = ({ rank, user, prize, onClick, className = '' }) => {
       ring: 'p-[4px] bg-gradient-to-b from-[#FEDF77] to-[#FCB91E]',
       bg: "bg-[url('/coins/platform.png')] bg-[length:100%_100%] bg-center bg-no-repeat",
       clip: 'none',
-      paddingTop: 'pt-[60px] md:pt-16',
+      paddingTop: 'pt-10 md:pt-16',
       avatarSize: 'w-[96px] h-[96px] md:w-[112px] md:h-[112px]',
       height: 'h-[140px] md:h-[172px]',
       avatarShadow: 'shadow-[0px_9px_0px_0px_rgba(147,121,10,1)]',
       avatarPosition: 'bottom-[130px] md:bottom-[163px]',
-      layoutWrapper: 'flex-col md:flex-row justify-center md:justify-between w-full max-w-full md:max-w-[340px] h-auto md:h-[32px] mx-auto mb-1 md:mb-3 items-center gap-0.5 md:gap-0',
+      layoutWrapper: 'flex-col md:flex-row justify-center md:justify-between w-full max-w-full md:max-w-[340px] h-auto md:min-h-[32px] mx-auto mb-1 md:mb-3 items-center md:items-start gap-0.5 md:gap-0',
       nameStyle: { fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 600, lineHeight: '1.2' },
-      nameClass: 'text-white md:truncate max-w-full md:max-w-[167px] text-center md:text-left leading-[1.1] md:leading-[1.2] text-[24px] md:text-[32px] break-words line-clamp-2 md:line-clamp-none',
+      nameClass: 'text-white max-w-full md:max-w-[240px] text-center md:text-left leading-[1.1] md:leading-[1.2] text-[24px] md:text-[32px] break-words line-clamp-2',
       scoreClass: 'flex items-center justify-center md:justify-end gap-[4px] md:gap-[8px] w-full md:w-auto',
       scoreStyle: { fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 700, lineHeight: '1.3' },
       scoreTextClass: 'text-[22px] md:text-[32px] text-transparent bg-clip-text bg-gradient-to-b from-[#FEDF77] to-[#FCB91E]',
@@ -78,9 +78,9 @@ const PodiumCard = ({ rank, user, prize, onClick, className = '' }) => {
       height: 'h-[130px] md:h-[163px]',
       avatarShadow: 'shadow-[0px_9px_0px_0px_rgba(121,63,23,1)]',
       avatarPosition: 'bottom-[120px] md:bottom-[154px]',
-      layoutWrapper: 'flex-col md:flex-row justify-center md:justify-between w-full max-w-full md:max-w-[320px] h-auto md:h-[32px] mx-auto mb-1 md:mb-3 items-center gap-0.5 md:gap-0',
+      layoutWrapper: 'flex-col md:flex-row justify-center md:justify-between w-full max-w-full md:max-w-[320px] h-auto md:min-h-[32px] mx-auto mb-1 md:mb-3 items-center md:items-start gap-0.5 md:gap-0',
       nameStyle: { fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 600, lineHeight: '1.2' },
-      nameClass: 'text-white md:truncate max-w-full md:max-w-[120px] text-center md:text-left leading-[1.1] md:leading-[1.2] text-[20px] md:text-[32px] break-words line-clamp-2 md:line-clamp-none',
+      nameClass: 'text-white max-w-full md:max-w-[240px] text-center md:text-left leading-[1.1] md:leading-[1.2] text-[20px] md:text-[32px] break-words line-clamp-2',
       scoreClass: 'flex items-center justify-center md:justify-end gap-[4px] md:gap-[8px] w-full md:w-auto',
       scoreStyle: { fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 700, lineHeight: '1.3' },
       scoreTextClass: 'text-[18px] md:text-[32px] text-transparent bg-clip-text bg-gradient-to-b from-[#C08965] to-[#AE580E]',
@@ -123,12 +123,12 @@ const PodiumCard = ({ rank, user, prize, onClick, className = '' }) => {
       <div
         onClick={() => onClick(user.userId)}
         className={`w-full ${styles.bg} ${styles.height || ''} ${rank !== 1 ? 'rounded-b-2xl shadow-2xl pb-4' : 'pb-3 md:pb-5'} cursor-pointer hover:brightness-110 transition-all flex flex-col px-3 md:px-5 ${
-          prize > 0 ? `${styles.paddingTop} ${rank === 1 ? 'justify-end' : 'justify-start'}` : 'justify-center pt-[30px] md:pt-[40px]'
+          prize > 0 ? `${styles.paddingTop} justify-start ${rank === 1 ? 'md:justify-end' : ''}` : 'justify-center pt-[30px] md:pt-[40px]'
         }`}
         style={styles.clip !== 'none' ? { clipPath: styles.clip } : {}}
       >
         <div className={`flex ${styles.layoutWrapper}`}>
-          <div className={styles.nameClass} style={styles.nameStyle}>{user.displayName}</div>
+          <div className={styles.nameClass} style={styles.nameStyle}>#{rank} {user.displayName}</div>
           <div className={styles.scoreClass}>
             <img src="/coins/Coin.png" alt="Coin" className="w-[20px] h-[20px] md:w-[32px] md:h-[32px] object-contain" />
             <span className={styles.scoreTextClass} style={styles.scoreStyle}>
@@ -232,6 +232,36 @@ const PeriodPanel = ({ data, periodName, onProfileClick }) => {
     }
   };
 
+  const renderCurrentUserRow = () => (
+    <motion.div
+      variants={item}
+      key={data.currentUser.userId}
+      onClick={() => onProfileClick(data.currentUser.userId)}
+      className="grid grid-cols-[40px_1fr_60px_60px] md:grid-cols-[74px_521px_1fr_1fr] gap-[6px] md:gap-[50px] items-center w-full min-h-[50px] md:h-[119px] bg-[#1a1a1a] rounded-[10px] md:rounded-[20px] py-[10px] md:py-0 px-[10px] md:pl-[40px] md:pr-[10px] md:pr-[95px] cursor-pointer hover:brightness-110 transition-all mt-4 mb-2"
+    >
+      <div className="text-white text-[20px] md:text-[32px] text-center md:text-left" style={{ fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 600, lineHeight: '1.2' }}>
+        {/* No rank text */}
+      </div>
+      <div className="flex items-center gap-[8px] md:gap-[16px] overflow-hidden min-w-0">
+        <div className="w-[36px] h-[36px] md:w-[60px] md:h-[60px] rounded-[8px] md:rounded-[10px] overflow-hidden bg-transparent shrink-0">
+          <img src={data.currentUser.avatarUrl || data.currentUser.avatar || '/avatars/avatar1.png'} className="w-full h-full object-cover" alt={data.currentUser.displayName} />
+        </div>
+        <div className="text-white truncate text-[18px] md:text-[32px]" style={{ fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 600, lineHeight: '1.2' }}>
+          {data.currentUser.displayName} <span className="text-[14px] md:text-base text-white/50">(You)</span>
+        </div>
+      </div>
+      <div className="flex items-center gap-[4px] md:gap-[8px]">
+        <img src="/coins/Coin.png" alt="Coin" className="w-[16px] h-[16px] md:w-[32px] md:h-[32px] object-contain shrink-0" />
+        <span className="text-transparent bg-clip-text bg-gradient-to-b from-[#FEDF77] to-[#FCB91E] text-[16px] md:text-[32px] truncate" style={{ fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 700, lineHeight: '1.3' }}>
+          {data.currentUser.coinsEarned?.toLocaleString() || 0}
+        </span>
+      </div>
+      <div className="flex items-center gap-[4px] md:gap-[8px]">
+        <span className="text-slate-600 text-[16px] md:text-sm">—</span>
+      </div>
+    </motion.div>
+  );
+
   return (
     <div className="flex flex-col items-center w-full mt-4 md:mt-8">
       {/* Podium */}
@@ -265,86 +295,57 @@ const PeriodPanel = ({ data, periodName, onProfileClick }) => {
             const currentRank = idx + 4;
             const prize = getPrize(currentRank);
             return (
-              <motion.div
-                variants={item}
-                key={user.userId || idx}
-                onClick={() => onProfileClick(user.userId)}
-                className="grid grid-cols-[40px_1fr_60px_60px] md:grid-cols-[74px_521px_1fr_1fr] gap-[6px] md:gap-[50px] items-center w-full min-h-[50px] md:h-[119px] bg-[#171717] rounded-[10px] md:rounded-[20px] py-[10px] md:py-0 px-[10px] md:pl-[40px] md:pr-[10px] md:pr-[95px] cursor-pointer hover:brightness-110 transition-all"
-              >
-                <div
-                  className="text-white text-[20px] md:text-[32px] text-center md:text-left"
-                  style={{ fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 600, lineHeight: '1.2' }}
+              <React.Fragment key={user.userId || idx}>
+                <motion.div
+                  variants={item}
+                  onClick={() => onProfileClick(user.userId)}
+                  className="grid grid-cols-[40px_1fr_60px_60px] md:grid-cols-[74px_521px_1fr_1fr] gap-[6px] md:gap-[50px] items-center w-full min-h-[50px] md:h-[119px] bg-[#171717] rounded-[10px] md:rounded-[20px] py-[10px] md:py-0 px-[10px] md:pl-[40px] md:pr-[10px] md:pr-[95px] cursor-pointer hover:brightness-110 transition-all"
                 >
-                  #{currentRank}
-                </div>
-                <div className="flex items-center gap-[8px] md:gap-[16px] overflow-hidden min-w-0">
-                  <div className="w-[36px] h-[36px] md:w-[60px] md:h-[60px] rounded-[8px] md:rounded-[10px] overflow-hidden bg-transparent shrink-0">
-                    <img src={user.avatarUrl || user.avatar || '/avatars/avatar1.png'} className="w-full h-full object-cover" alt={user.displayName} />
-                  </div>
                   <div
-                    className="text-white truncate text-[18px] md:text-[32px]"
+                    className="text-white text-[20px] md:text-[32px] text-center md:text-left"
                     style={{ fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 600, lineHeight: '1.2' }}
                   >
-                    {user.displayName}
+                    #{currentRank}
                   </div>
-                </div>
-                <div className="flex items-center gap-[4px] md:gap-[8px]">
-                  <img src="/coins/Coin.png" alt="Coin" className="w-[16px] h-[16px] md:w-[32px] md:h-[32px] object-contain shrink-0" />
-                  <span className="text-transparent bg-clip-text bg-gradient-to-b from-[#FEDF77] to-[#FCB91E] text-[16px] md:text-[32px] truncate" style={{ fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 700, lineHeight: '1.3' }}>
-                    {user.coinsEarned?.toLocaleString() || 0}
-                  </span>
-                </div>
-                <div className="flex items-center gap-[4px] md:gap-[8px]">
-                  {prize > 0 ? (
-                    <>
-                      <img src="/coins/Coin.png" alt="Coin" className="w-[16px] h-[16px] md:w-[32px] md:h-[32px] object-contain shrink-0" />
-                      <span className="text-transparent bg-clip-text bg-gradient-to-b from-[#FEDF77] to-[#FCB91E] text-[16px] md:text-[32px] truncate" style={{ fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 700, lineHeight: '1.3' }}>
-                        {prize.toLocaleString()}
-                      </span>
-                    </>
-                  ) : (
-                    <span className="text-slate-600 text-[16px] md:text-sm">—</span>
-                  )}
-                </div>
-              </motion.div>
+                  <div className="flex items-center gap-[8px] md:gap-[16px] overflow-hidden min-w-0">
+                    <div className="w-[36px] h-[36px] md:w-[60px] md:h-[60px] rounded-[8px] md:rounded-[10px] overflow-hidden bg-transparent shrink-0">
+                      <img src={user.avatarUrl || user.avatar || '/avatars/avatar1.png'} className="w-full h-full object-cover" alt={user.displayName} />
+                    </div>
+                    <div
+                      className="text-white truncate text-[18px] md:text-[32px]"
+                      style={{ fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 600, lineHeight: '1.2' }}
+                    >
+                      {user.displayName}
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-[4px] md:gap-[8px]">
+                    <img src="/coins/Coin.png" alt="Coin" className="w-[16px] h-[16px] md:w-[32px] md:h-[32px] object-contain shrink-0" />
+                    <span className="text-transparent bg-clip-text bg-gradient-to-b from-[#FEDF77] to-[#FCB91E] text-[16px] md:text-[32px] truncate" style={{ fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 700, lineHeight: '1.3' }}>
+                      {user.coinsEarned?.toLocaleString() || 0}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-[4px] md:gap-[8px]">
+                    {prize > 0 ? (
+                      <>
+                        <img src="/coins/Coin.png" alt="Coin" className="w-[16px] h-[16px] md:w-[32px] md:h-[32px] object-contain shrink-0" />
+                        <span className="text-transparent bg-clip-text bg-gradient-to-b from-[#FEDF77] to-[#FCB91E] text-[16px] md:text-[32px] truncate" style={{ fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 700, lineHeight: '1.3' }}>
+                          {prize.toLocaleString()}
+                        </span>
+                      </>
+                    ) : (
+                      <span className="text-slate-600 text-[16px] md:text-sm">—</span>
+                    )}
+                  </div>
+                </motion.div>
+
+                {/* Current User extra row inserted after #5 (which is idx === 1) */}
+                {idx === 1 && data?.currentUser && !rankings.some(r => String(r.userId) === String(data.currentUser.userId)) && renderCurrentUserRow()}
+              </React.Fragment>
             );
           })}
-          {/* Current User extra row at bottom if they aren't in the list */}
-          {data?.currentUser && !rankings.some(r => String(r.userId) === String(data.currentUser.userId)) && (
-            <motion.div
-              variants={item}
-              key={data.currentUser.userId}
-              onClick={() => onProfileClick(data.currentUser.userId)}
-              className="grid grid-cols-[40px_1fr_60px_60px] md:grid-cols-[74px_521px_1fr_1fr] gap-[6px] md:gap-[50px] items-center w-full min-h-[50px] md:h-[119px] bg-[#1a1a1a] border border-[#FC1E1E]/30 rounded-[10px] md:rounded-[20px] py-[10px] md:py-0 px-[10px] md:pl-[40px] md:pr-[10px] md:pr-[95px] cursor-pointer hover:brightness-110 transition-all mt-4"
-            >
-              <div
-                className="text-white text-[20px] md:text-[32px] text-center md:text-left"
-                style={{ fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 600, lineHeight: '1.2' }}
-              >
-                {data.currentUser.rank === '-' ? '-' : `#${data.currentUser.rank}`}
-              </div>
-              <div className="flex items-center gap-[8px] md:gap-[16px] overflow-hidden min-w-0">
-                <div className="w-[36px] h-[36px] md:w-[60px] md:h-[60px] rounded-[8px] md:rounded-[10px] overflow-hidden bg-transparent shrink-0">
-                  <img src={data.currentUser.avatarUrl || data.currentUser.avatar || '/avatars/avatar1.png'} className="w-full h-full object-cover" alt={data.currentUser.displayName} />
-                </div>
-                <div
-                  className="text-white truncate text-[18px] md:text-[32px]"
-                  style={{ fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 600, lineHeight: '1.2' }}
-                >
-                  {data.currentUser.displayName} <span className="text-[14px] md:text-base text-white/50">(You)</span>
-                </div>
-              </div>
-              <div className="flex items-center gap-[4px] md:gap-[8px]">
-                <img src="/coins/Coin.png" alt="Coin" className="w-[16px] h-[16px] md:w-[32px] md:h-[32px] object-contain shrink-0" />
-                <span className="text-transparent bg-clip-text bg-gradient-to-b from-[#FEDF77] to-[#FCB91E] text-[16px] md:text-[32px] truncate" style={{ fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 700, lineHeight: '1.3' }}>
-                  {data.currentUser.coinsEarned?.toLocaleString() || 0}
-                </span>
-              </div>
-              <div className="flex items-center gap-[4px] md:gap-[8px]">
-                <span className="text-slate-600 text-[16px] md:text-sm">—</span>
-              </div>
-            </motion.div>
-          )}
+          
+          {/* Current User extra row at bottom if they aren't in the list AND there were less than 2 others */}
+          {others.length < 2 && data?.currentUser && !rankings.some(r => String(r.userId) === String(data.currentUser.userId)) && renderCurrentUserRow()}
         </motion.div>
       </div>
     </div>
@@ -401,7 +402,7 @@ const Leaderboard = () => {
               Leaderboard
             </h1>
             <p
-              className="text-[#888888] font-medium text-[14px] md:text-[26px]"
+              className="text-[#888888] font-medium text-[12px] whitespace-nowrap md:whitespace-normal md:text-[26px]"
               style={{ fontFamily: "'Barlow Condensed', sans-serif", lineHeight: '130%' }}
             >
               Top users ranked by earnings — win prizes every cycle!

@@ -592,7 +592,7 @@ const Header = ({ onChatToggle, chatOpen, fullWidth }) => {
                   {mongoUser?.displayName || 'User'}
                 </span>
                 <span
-                  className="flex items-center lg:translate-y-[2.5px]"
+                  className="flex items-center lg:translate-y-[1px]"
                   style={{ minWidth: '16px', width: 'auto', height: 'auto', gap: '2px' }}
                 >
                   <img

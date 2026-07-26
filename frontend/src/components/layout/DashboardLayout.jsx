@@ -15,7 +15,7 @@ const DashboardLayout = ({ children, showLiveBar = true, fullWidth = false }) =>
   }, [chatOpen]);
 
   return (
-    <div className="relative min-h-screen bg-black text-gray-300 overflow-x-hidden flex flex-col">
+    <div className="relative min-h-[100dvh] bg-black text-gray-300 overflow-x-hidden flex flex-col">
       {/* Ambient Background Glows */}
       {/* <div className="ambient-bg" aria-hidden="true" /> */}
 
@@ -38,8 +38,8 @@ const DashboardLayout = ({ children, showLiveBar = true, fullWidth = false }) =>
 
       {/* FOOTER */}
       <footer
-        className="w-full flex justify-center border-t border-[#333] shrink-0 items-start"
-        style={{ background: 'rgba(44, 45, 44, 1)' }}
+        className="w-full flex justify-center border-t border-[#333] shrink-0 items-start relative z-10"
+        style={{ background: 'rgba(44, 45, 44, 1)', boxShadow: '0 500px 0 0 rgba(44, 45, 44, 1)' }}
       >
         <div
           className="flex flex-col items-center text-center w-full mx-auto px-4 lg:px-[100px] py-4 lg:pt-[40px] lg:pb-[22px] gap-4 lg:gap-[30px]"
