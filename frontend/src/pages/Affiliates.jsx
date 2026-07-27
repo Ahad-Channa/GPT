@@ -387,7 +387,7 @@ const Affiliates = () => {
                 readOnly
                 value={`${window.location.origin}/r/${mongoUser?.referralCode || ''}`}
                 style={{ fontFamily: "'Barlow Condensed', sans-serif" }}
-                className="w-full lg:w-[453px] lg:h-[20px] bg-transparent text-white font-medium text-[16px] lg:text-[18px] leading-[20px] tracking-normal outline-none align-middle m-0 p-0 min-w-0"
+                className="w-full lg:w-[453px] lg:h-[20px] bg-transparent text-white font-medium text-[13px] sm:text-[14px] lg:text-[18px] leading-[20px] tracking-normal outline-none align-middle m-0 p-0 min-w-0"
               />
               <button
                 onClick={() => copyToClipboard(`${window.location.origin}/r/${mongoUser?.referralCode}`)}
@@ -401,36 +401,36 @@ const Affiliates = () => {
 
           {/* Tabs section */}
           <div className="w-full lg:w-[1239px] h-auto lg:h-[84px] bg-[#2c2d2c] backdrop-blur-[24px] shadow-[0px_4px_44px_0px_rgba(0,0,0,0.25)] rounded-[10px] p-[6px] lg:p-[18px] flex items-center">
-            <div className="w-full lg:w-[1203px] lg:h-[48px] rounded-[100px] flex flex-row gap-[4px] lg:gap-[20px] lg:justify-between items-center">
+            <div className="w-full lg:w-[1203px] lg:h-[48px] rounded-[100px] flex flex-row gap-[4px] lg:gap-[20px] lg:justify-between items-stretch lg:items-center">
               <button
                 onClick={() => setActiveTab('recent')}
-                className={`flex-1 transition-all flex justify-center items-center gap-[4px] lg:gap-[10px] py-[6px] lg:py-[10px] px-[4px] lg:px-[20px] rounded-[8px] lg:rounded-[10px] h-[36px] lg:h-[48px] ${activeTab === 'recent'
+                className={`flex-1 transition-all flex justify-center items-center gap-[4px] lg:gap-[10px] py-[6px] lg:py-[10px] px-[4px] lg:px-[20px] rounded-[8px] lg:rounded-[10px] h-auto min-h-[36px] lg:h-[48px] ${activeTab === 'recent'
                   ? 'bg-[#49b265] text-white shadow-[0px_2px_0px_0px_rgba(39,109,58,1)] lg:shadow-[0px_4px_0px_0px_rgba(39,109,58,1)]'
                   : 'text-white hover:bg-white/5'
                   }`}
               >
                 <img src="/coins/paisa.png" alt="Recent" className={`w-[12px] h-[12px] lg:w-[24px] lg:h-[24px] shrink-0 object-contain ${activeTab === 'recent' ? 'brightness-0 invert' : ''}`} />
-                <span style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="font-bold text-[11px] sm:text-[14px] lg:text-[20px] leading-[100%] text-white tracking-normal m-0 p-0 flex items-center justify-center whitespace-nowrap">Recent Affiliate Earnings</span>
+                <span style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="font-bold text-[11px] sm:text-[14px] lg:text-[20px] leading-[110%] lg:leading-[100%] text-white tracking-normal m-0 p-0 flex items-center justify-center whitespace-normal lg:whitespace-nowrap text-center">Recent Affiliate Earnings</span>
               </button>
               <button
                 onClick={() => setActiveTab('users')}
-                className={`flex-1 transition-all flex justify-center items-center gap-[4px] lg:gap-[10px] py-[6px] lg:py-[10px] px-[4px] lg:px-[20px] rounded-[8px] lg:rounded-[10px] h-[36px] lg:h-[48px] ${activeTab === 'users'
+                className={`flex-1 transition-all flex justify-center items-center gap-[4px] lg:gap-[10px] py-[6px] lg:py-[10px] px-[4px] lg:px-[20px] rounded-[8px] lg:rounded-[10px] h-auto min-h-[36px] lg:h-[48px] ${activeTab === 'users'
                   ? 'bg-[#49b265] text-white shadow-[0px_2px_0px_0px_rgba(39,109,58,1)] lg:shadow-[0px_4px_0px_0px_rgba(39,109,58,1)]'
                   : 'text-white hover:bg-white/5'
                   }`}
               >
                 <img src="/coins/persons.png" alt="Users" className={`w-[12px] h-[12px] lg:w-[24px] lg:h-[24px] shrink-0 object-contain ${activeTab === 'users' ? 'brightness-0 invert' : ''}`} />
-                <span style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="font-bold text-[11px] sm:text-[14px] lg:text-[20px] leading-[100%] text-white tracking-normal m-0 p-0 flex items-center justify-center whitespace-nowrap">Referred Users</span>
+                <span style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="font-bold text-[11px] sm:text-[14px] lg:text-[20px] leading-[110%] lg:leading-[100%] text-white tracking-normal m-0 p-0 flex items-center justify-center whitespace-normal lg:whitespace-nowrap text-center">Referred Users</span>
               </button>
               <button
                 onClick={() => setActiveTab('pending')}
-                className={`flex-1 transition-all flex justify-center items-center gap-[4px] lg:gap-[10px] py-[6px] lg:py-[10px] px-[4px] lg:px-[20px] rounded-[8px] lg:rounded-[10px] h-[36px] lg:h-[48px] ${activeTab === 'pending'
+                className={`flex-1 transition-all flex justify-center items-center gap-[4px] lg:gap-[10px] py-[6px] lg:py-[10px] px-[4px] lg:px-[20px] rounded-[8px] lg:rounded-[10px] h-auto min-h-[36px] lg:h-[48px] ${activeTab === 'pending'
                   ? 'bg-[#49b265] text-white shadow-[0px_2px_0px_0px_rgba(39,109,58,1)] lg:shadow-[0px_4px_0px_0px_rgba(39,109,58,1)]'
                   : 'text-white hover:bg-white/5'
                   }`}
               >
                 <img src="/coins/clock.png" alt="Pending" className={`w-[12px] h-[12px] lg:w-[24px] lg:h-[24px] shrink-0 object-contain ${activeTab === 'pending' ? 'brightness-0 invert' : ''}`} />
-                <span style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="font-bold text-[11px] sm:text-[14px] lg:text-[20px] leading-[100%] text-white tracking-normal m-0 p-0 flex items-center justify-center whitespace-nowrap">Pending Affiliate Earnings</span>
+                <span style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="font-bold text-[11px] sm:text-[14px] lg:text-[20px] leading-[110%] lg:leading-[100%] text-white tracking-normal m-0 p-0 flex items-center justify-center whitespace-normal lg:whitespace-nowrap text-center">Pending Affiliate Earnings</span>
               </button>
             </div>
           </div>
