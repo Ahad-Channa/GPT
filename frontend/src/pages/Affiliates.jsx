@@ -387,7 +387,7 @@ const Affiliates = () => {
                 readOnly
                 value={`${window.location.origin}/r/${mongoUser?.referralCode || ''}`}
                 style={{ fontFamily: "'Barlow Condensed', sans-serif" }}
-                className="w-full lg:w-[453px] lg:h-[20px] bg-transparent text-white font-medium text-[13px] sm:text-[14px] lg:text-[18px] leading-[20px] tracking-normal outline-none align-middle m-0 p-0 min-w-0"
+                className="w-full lg:w-[453px] lg:h-[20px] bg-transparent text-white font-medium text-[11px] sm:text-[12px] lg:text-[18px] leading-[20px] tracking-normal outline-none align-middle m-0 p-0 min-w-0"
               />
               <button
                 onClick={() => copyToClipboard(`${window.location.origin}/r/${mongoUser?.referralCode}`)}
