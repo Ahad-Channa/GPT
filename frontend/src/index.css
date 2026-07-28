@@ -310,8 +310,32 @@
 }
 
 /* ─── Toast Notifications Fix ─────────────────────────────────── */
+.custom-toast {
+  min-width: 276px;
+  max-width: 400px;
+  font-size: 22px;
+}
+
 .custom-toast div[role="status"],
-.custom-toast .go3958315143, /* Fallback for react-hot-toast generic inner wrapper if role="status" is overridden */
+.custom-toast .go3958315143, /* Fallback for react-hot-toast generic inner wrapper */
 .custom-toast > div {
   white-space: nowrap !important;
+}
+
+@media (max-width: 768px) {
+  .custom-toast {
+    min-width: 90vw !important;
+    max-width: 95vw !important;
+    font-size: clamp(14px, 4.5vw, 22px) !important;
+    padding: 18px 20px !important;
+    border-radius: 24px !important;
+  }
+  
+  .custom-toast div[role="status"],
+  .custom-toast .go3958315143,
+  .custom-toast > div {
+    white-space: normal !important;
+    text-align: center;
+    word-break: break-word;
+  }
 }

@@ -91,7 +91,9 @@ router.get('/status', requireAuth, async (req, res) => {
     // Build levels array with status
     const levels = dynamicLevels.map((lvl, idx) => {
       const reached   = totalEarned >= lvl.threshold;
-      const claimed   = claimedKeys.has(lvl.key);
+      // Only treat as "claimed" if user has also reached the current threshold.
+      // If admin raised the threshold after the user claimed, the old claim is stale.
+      const claimed   = claimedKeys.has(lvl.key) && reached;
       const claimable = reached && !claimed && configMap[lvl.key] > 0;
       return {
         ...lvl,

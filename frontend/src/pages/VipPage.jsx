@@ -184,10 +184,10 @@ const VipPage = () => {
       <div className="w-full max-w-[1240px] mx-auto space-y-8 pb-20 pt-4">
 
         {/* Heading Section */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 relative w-[1240px] shrink-0">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 relative w-full md:w-[1240px] shrink-0 px-4 md:px-0">
           <div className="flex flex-col gap-[6px]">
-            <h1 className="m-0 p-0 font-bold text-[68px] leading-[120%] text-white font-['Barlow_Condensed'] whitespace-nowrap">VIP Status</h1>
-            <p className="m-0 p-0 font-medium text-[26px] leading-[130%] text-[#888888] font-['Barlow_Condensed']">Higher rewards. Bigger perks. More earning power.</p>
+            <h1 className="m-0 p-0 font-bold text-4xl md:text-[68px] leading-[120%] text-white font-['Barlow_Condensed'] whitespace-normal md:whitespace-nowrap">VIP Status</h1>
+            <p className="m-0 p-0 font-medium text-lg md:text-[26px] leading-[130%] text-[#888888] font-['Barlow_Condensed']">Higher rewards. Bigger perks. More earning power.</p>
           </div>
           <div className="hidden md:block absolute right-[-3px] -top-[36px] opacity-100 pointer-events-none w-[391px] h-[249px] z-0">
             <img
@@ -213,23 +213,22 @@ const VipPage = () => {
         </div>
 
         {/* Top Status Card */}
-        <div className="bg-[#242424] rounded-[20px] px-6 md:px-[40px] py-[30px] border border-[#2A2A2E] flex flex-col md:flex-row items-center justify-between gap-[40px] w-[1240px] md:h-[177px] shrink-0 backdrop-blur-[94px]">
+        <div className="bg-[#242424] mx-4 md:mx-0 rounded-[20px] px-6 md:px-[40px] py-[30px] border border-[#2A2A2E] flex flex-col md:flex-row items-start md:items-center justify-between gap-6 md:gap-[40px] w-auto md:w-[1240px] h-auto md:h-[177px] shrink-0 md:shrink-0 backdrop-blur-[94px]">
 
           {/* Left Section: Current Rank */}
-          <div className="flex flex-col items-start justify-between min-w-[176px] h-[118px] shrink-0 pr-2">
+          <div className="flex flex-col items-start justify-between min-w-[176px] h-auto md:h-[118px] shrink-0 pr-2 gap-4 md:gap-0 w-full md:w-auto">
             <div className="flex flex-col gap-0 w-full">
-              <h2 className="text-white text-[22px] font-bold font-['Barlow_Condensed'] leading-[130%] m-0 p-0 w-[105px] h-[29px] whitespace-nowrap">Current rank</h2>
-              <div className="flex items-center gap-[10px] mt-[8px] w-full h-[55px] overflow-visible">
+              <h2 className="text-white text-lg md:text-[22px] font-bold font-['Barlow_Condensed'] leading-[130%] m-0 p-0 w-auto md:w-[105px] h-auto md:h-[29px] whitespace-normal md:whitespace-nowrap">Current rank</h2>
+              <div className="flex items-center gap-[10px] mt-1 md:mt-[8px] w-full h-auto md:h-[55px] overflow-visible">
                 {currentLevel && (
                   <img
                     src={`/coins/${currentLevel.tier === 'Diamond' ? 'dimond' : currentLevel.tier === 'Opal' ? 'opelbadge' : currentLevel.tier.toLowerCase()}.png`}
                     alt={`${currentLevel.tier} Badge`}
-                    style={{ width: '49.22px', height: '55px' }}
-                    className="object-contain shrink-0"
+                    className="object-contain shrink-0 w-[40px] md:w-[49.22px] h-[45px] md:h-[55px]"
                   />
                 )}
                 <span
-                  className="font-bold text-[60px] font-['Barlow_Condensed'] leading-[120%] whitespace-nowrap"
+                  className="font-bold text-4xl md:text-[60px] font-['Barlow_Condensed'] leading-[120%] whitespace-nowrap"
                   style={{
                     backgroundImage: currentLevel ? TIER_STYLES[currentLevel.tier]?.gradient : 'linear-gradient(180deg, #FEDF77 0%, #FCB91E 100%)',
                     WebkitBackgroundClip: 'text',
@@ -241,8 +240,8 @@ const VipPage = () => {
                 </span>
               </div>
             </div>
-            <div className="flex items-center gap-[6px] w-[116px] h-[15px] shrink-0 mt-auto">
-              <span className="text-white text-[16px] font-medium font-['Barlow_Condensed'] leading-[130%] w-[70px] h-[11px] flex items-center whitespace-nowrap">Total Earned</span>
+            <div className="flex items-center justify-between md:justify-start gap-[6px] w-full md:w-[116px] h-auto md:h-[15px] shrink-0 mt-2 md:mt-auto">
+              <span className="text-white text-sm md:text-[16px] font-medium font-['Barlow_Condensed'] leading-[130%] w-auto md:w-[70px] h-auto md:h-[11px] flex items-center whitespace-nowrap">Total Earned</span>
               <div className="flex items-center gap-[4px] h-[15px]">
                 <img src="/coins/Coin.png" alt="Coin" className="w-[15px] h-[15px] shrink-0 object-contain" />
                 <span
@@ -261,17 +260,18 @@ const VipPage = () => {
           </div>
 
           {/* Vertical Divider */}
-          <div className="w-[1px] h-[117px] bg-white/10 shrink-0" />
+          <div className="hidden md:block w-[1px] h-[117px] bg-white/10 shrink-0" />
+          <div className="md:hidden w-full h-[1px] bg-white/10 shrink-0" />
 
           {/* Middle Section: Progress */}
           {nextLevel ? (
-            <div className="flex flex-col flex-1 max-w-[704px] h-[84px] gap-[20px] justify-center">
+            <div className="flex flex-col flex-1 max-w-full md:max-w-[704px] h-auto md:h-[84px] gap-3 md:gap-[20px] justify-center w-full">
               <div className="flex justify-between items-center w-full">
-                <span className="text-white text-[22px] font-medium font-['Barlow_Condensed'] leading-[130%] tracking-normal whitespace-nowrap">
+                <span className="text-white text-lg md:text-[22px] font-medium font-['Barlow_Condensed'] leading-[130%] tracking-normal whitespace-normal md:whitespace-nowrap">
                   Progress to {getLevelLabel(nextLevel)}
                 </span>
                 <span
-                  className="font-bold text-[24px] font-['Barlow_Condensed'] leading-[130%] tracking-normal whitespace-nowrap"
+                  className="font-bold text-xl md:text-[24px] font-['Barlow_Condensed'] leading-[130%] tracking-normal whitespace-nowrap"
                   style={{
                     backgroundImage: 'linear-gradient(180deg, #FEDF77 0%, #FCB91E 100%)',
                     WebkitBackgroundClip: 'text',
@@ -284,7 +284,7 @@ const VipPage = () => {
               </div>
 
               {/* Progress Bar Container */}
-              <div className="w-full h-[12px] bg-[#3A3A3A] rounded-[30px] overflow-hidden shrink-0">
+              <div className="w-full h-[10px] md:h-[12px] bg-[#3A3A3A] rounded-[30px] overflow-hidden shrink-0">
                 <div
                   className="h-full rounded-[30px] transition-all duration-500 ease-out"
                   style={{
@@ -294,14 +294,13 @@ const VipPage = () => {
                 />
               </div>
 
-              <div className="flex items-center w-full gap-[6px]">
-                <span className="text-[#888888] text-[16px] font-medium font-['Barlow_Condensed'] leading-[130%] tracking-normal whitespace-nowrap">Earn</span>
+              <div className="flex flex-wrap md:flex-nowrap items-center w-full gap-[6px]">
+                <span className="text-[#888888] text-sm md:text-[16px] font-medium font-['Barlow_Condensed'] leading-[130%] tracking-normal whitespace-nowrap">Earn</span>
                 <div className="flex items-center gap-[3px]">
-                  <img src="/coins/Coin.png" alt="Coin" className="w-[15px] h-[15px] shrink-0" />
+                  <img src="/coins/Coin.png" alt="Coin" className="w-[13px] h-[13px] md:w-[15px] md:h-[15px] shrink-0" />
                   <span
-                    className="text-[16px] font-medium font-['Barlow_Condensed'] leading-[130%] tracking-normal whitespace-nowrap flex items-center"
+                    className="text-sm md:text-[16px] font-medium font-['Barlow_Condensed'] leading-[130%] tracking-normal whitespace-nowrap flex items-center"
                     style={{
-                      height: '11px',
                       backgroundImage: 'linear-gradient(180deg, #FEDF77 0%, #FCB91E 100%)',
                       WebkitBackgroundClip: 'text',
                       backgroundClip: 'text',
@@ -311,15 +310,14 @@ const VipPage = () => {
                     {coinsToNext.toLocaleString()}
                   </span>
                 </div>
-                <span className="text-[#888888] text-[16px] font-medium font-['Barlow_Condensed'] leading-[130%] tracking-normal whitespace-nowrap">
+                <span className="text-[#888888] text-sm md:text-[16px] font-medium font-['Barlow_Condensed'] leading-[130%] tracking-normal whitespace-nowrap">
                   more coins needed - Unlock
                 </span>
                 <div className="flex items-center gap-[3px]">
-                  <img src="/coins/Coin.png" alt="Coin" className="w-[15px] h-[15px] shrink-0" />
+                  <img src="/coins/Coin.png" alt="Coin" className="w-[13px] h-[13px] md:w-[15px] md:h-[15px] shrink-0" />
                   <span
-                    className="text-[16px] font-medium font-['Barlow_Condensed'] leading-[130%] tracking-normal whitespace-nowrap flex items-center"
+                    className="text-sm md:text-[16px] font-medium font-['Barlow_Condensed'] leading-[130%] tracking-normal whitespace-nowrap flex items-center"
                     style={{
-                      height: '11px',
                       backgroundImage: 'linear-gradient(180deg, #FEDF77 0%, #FCB91E 100%)',
                       WebkitBackgroundClip: 'text',
                       backgroundClip: 'text',
@@ -329,19 +327,19 @@ const VipPage = () => {
                     {nextLevel.rewardAmount.toLocaleString()}
                   </span>
                 </div>
-                <span className="text-[#888888] text-[16px] font-medium font-['Barlow_Condensed'] leading-[130%] tracking-normal whitespace-nowrap">
+                <span className="text-[#888888] text-sm md:text-[16px] font-medium font-['Barlow_Condensed'] leading-[130%] tracking-normal whitespace-nowrap">
                   bonus
                 </span>
               </div>
             </div>
           ) : (
-            <div className="flex flex-col flex-1 max-w-[704px] h-[84px] gap-[20px] justify-center">
+            <div className="flex flex-col flex-1 max-w-full md:max-w-[704px] h-auto md:h-[84px] gap-3 md:gap-[20px] justify-center w-full">
               <div className="flex justify-between items-center w-full">
-                <span className="text-white text-[22px] font-medium font-['Barlow_Condensed'] leading-[130%] tracking-normal whitespace-nowrap">
+                <span className="text-white text-lg md:text-[22px] font-medium font-['Barlow_Condensed'] leading-[130%] tracking-normal whitespace-normal md:whitespace-nowrap">
                   Max Rank Achieved
                 </span>
                 <span
-                  className="font-bold text-[24px] font-['Barlow_Condensed'] leading-[130%] tracking-normal whitespace-nowrap"
+                  className="font-bold text-xl md:text-[24px] font-['Barlow_Condensed'] leading-[130%] tracking-normal whitespace-nowrap"
                   style={{
                     backgroundImage: currentLevel ? TIER_STYLES[currentLevel.tier]?.gradient : 'linear-gradient(180deg, #FEDF77 0%, #FCB91E 100%)',
                     WebkitBackgroundClip: 'text',
@@ -354,7 +352,7 @@ const VipPage = () => {
               </div>
 
               {/* Progress Bar Container */}
-              <div className="w-full h-[12px] bg-[#3A3A3A] rounded-[30px] overflow-hidden shrink-0">
+              <div className="w-full h-[10px] md:h-[12px] bg-[#3A3A3A] rounded-[30px] overflow-hidden shrink-0">
                 <div
                   className="h-full rounded-[30px] transition-all duration-500 ease-out"
                   style={{
@@ -364,13 +362,12 @@ const VipPage = () => {
                 />
               </div>
 
-              <div className="flex items-center justify-between w-full">
+              <div className="flex flex-col md:flex-row items-start md:items-center justify-between w-full gap-2 md:gap-0">
                 <div className="flex items-center gap-[6px]">
-                  <img src="/coins/Coin.png" alt="Coin" className="w-[15px] h-[15px] shrink-0" />
+                  <img src="/coins/Coin.png" alt="Coin" className="w-[13px] h-[13px] md:w-[15px] md:h-[15px] shrink-0" />
                   <span
-                    className="text-[16px] font-medium font-['Barlow_Condensed'] leading-[130%] tracking-normal whitespace-nowrap flex items-center"
+                    className="text-sm md:text-[16px] font-medium font-['Barlow_Condensed'] leading-[130%] tracking-normal whitespace-nowrap flex items-center"
                     style={{
-                      height: '21px',
                       backgroundImage: 'linear-gradient(180deg, #FEDF77 0%, #FCB91E 100%)',
                       WebkitBackgroundClip: 'text',
                       backgroundClip: 'text',
@@ -379,16 +376,14 @@ const VipPage = () => {
                   >
                     {totalEarned?.toLocaleString() || currentLevel?.threshold?.toLocaleString() || 0} / {currentLevel?.threshold?.toLocaleString() || 0}
                   </span>
-                  <span 
-                    className="text-[#888888] text-[16px] font-medium font-['Barlow_Condensed'] leading-[130%] tracking-normal whitespace-nowrap flex items-center"
-                    style={{ height: '21px' }}
+                  <span
+                    className="text-[#888888] text-sm md:text-[16px] font-medium font-['Barlow_Condensed'] leading-[130%] tracking-normal whitespace-nowrap flex items-center"
                   >
                     coins
                   </span>
                 </div>
-                <span 
-                  className="text-white text-[16px] font-medium font-['Barlow_Condensed'] leading-[130%] tracking-normal whitespace-nowrap flex items-center justify-end"
-                  style={{ width: '254px', height: '21px' }}
+                <span
+                  className="text-white text-sm md:text-[16px] font-medium font-['Barlow_Condensed'] leading-[130%] tracking-normal whitespace-normal md:whitespace-nowrap flex items-center md:justify-end"
                 >
                   Congratulations! You've reached the highest rank.
                 </span>
@@ -397,14 +392,15 @@ const VipPage = () => {
           )}
 
           {/* Vertical Divider */}
-          <div className="w-[1px] h-[117px] bg-white/10 shrink-0" />
+          <div className="hidden md:block w-[1px] h-[117px] bg-white/10 shrink-0" />
+          <div className="md:hidden w-full h-[1px] bg-white/10 shrink-0" />
 
           {/* Right Section: Rank Level */}
-          <div className="flex flex-col items-center justify-between w-[120px] h-[89px] shrink-0">
-            <span className="text-[#888888] text-[22px] font-bold font-['Barlow_Condensed'] uppercase leading-[130%] w-[87px] h-[29px] text-center whitespace-nowrap">Rank Level</span>
-            <div className="flex items-center justify-center w-[120px] h-[42px] mt-[18px] overflow-visible">
+          <div className="flex flex-row md:flex-col items-center md:items-center justify-between w-full md:w-[120px] h-auto md:h-[89px] shrink-0">
+            <span className="text-[#888888] text-lg md:text-[22px] font-bold font-['Barlow_Condensed'] uppercase leading-[130%] w-auto md:w-[87px] h-auto md:h-[29px] text-left md:text-center whitespace-nowrap">Rank Level</span>
+            <div className="flex items-center justify-end md:justify-center w-auto md:w-[120px] h-auto md:h-[42px] md:mt-[18px] overflow-visible">
               <span
-                className="font-bold text-[60px] font-['Barlow_Condensed'] leading-[120%] whitespace-nowrap"
+                className="font-bold text-4xl md:text-[60px] font-['Barlow_Condensed'] leading-[120%] whitespace-nowrap"
                 style={{
                   backgroundImage: 'linear-gradient(180deg, #FEDF77 0%, #FCB91E 100%)',
                   WebkitBackgroundClip: 'text',
@@ -420,7 +416,7 @@ const VipPage = () => {
         </div>
 
         {/* Level Grid by Tier */}
-        <div className="flex flex-col gap-[20px] w-[1240px]">
+        <div className="flex flex-col gap-[20px] w-full md:w-[1240px] px-4 md:px-0">
           {tiers.map(tierName => {
             const tierLevels = levels.filter(l => l.tier === tierName);
             if (tierLevels.length === 0) return null;
@@ -429,11 +425,10 @@ const VipPage = () => {
             const isCurrentTier = currentLevel?.tier === tierName;
 
             return (
-              <div 
-                key={tierName} 
-                className={`relative bg-[#242424] rounded-[20px] pt-[20px] pr-[20px] pb-[20px] pl-[40px] border flex flex-col md:flex-row gap-[30px] items-center w-[1240px] md:h-[181px] shrink-0 backdrop-blur-[94px] ${
-                  isCurrentTier ? 'border-transparent' : 'border-[#2A2A2E]'
-                }`}
+              <div
+                key={tierName}
+                className={`relative bg-[#242424] rounded-[20px] p-6 md:pt-[20px] md:pr-[20px] md:pb-[20px] md:pl-[40px] border flex flex-col md:flex-row gap-6 md:gap-[30px] items-start md:items-center w-full md:w-[1240px] h-auto md:h-[181px] shrink-0 backdrop-blur-[94px] ${isCurrentTier ? 'border-transparent' : 'border-[#2A2A2E]'
+                  }`}
               >
                 {isCurrentTier && (
                   <div
@@ -449,28 +444,28 @@ const VipPage = () => {
                   />
                 )}
                 {/* Left Tier Sidebar */}
-                <div className="flex flex-col items-center justify-between text-center w-[110px] shrink-0 h-[141px]">
+                <div className="flex flex-row md:flex-col items-center justify-start md:justify-between text-left md:text-center w-full md:w-[110px] shrink-0 h-auto md:h-[141px] gap-4 md:gap-0">
                   <img
                     src={`/coins/${tierName === 'Diamond' ? 'dimond' : tierName === 'Opal' ? 'opelbadge' : tierName.toLowerCase()}.png`}
                     alt={`${tierName} Shield`}
-                    className="w-[43.32px] h-[48.41px] object-contain shrink-0"
+                    className="w-[40px] md:w-[43.32px] h-[45px] md:h-[48.41px] object-contain shrink-0"
                   />
 
                   {/* Heading & Below Text Wrapper */}
-                  <div className="flex flex-col justify-between items-center w-[91px] h-[36px] overflow-visible">
+                  <div className="flex flex-col justify-center md:justify-between items-start md:items-center w-auto md:w-[91px] h-auto md:h-[36px] overflow-visible">
                     {/* Heading */}
-                    <h3 className="text-white text-[22px] font-bold font-['Barlow_Condensed'] leading-[130%] text-center m-0 p-0 w-[91px] h-[15px] flex items-center justify-center overflow-visible whitespace-nowrap">
+                    <h3 className="text-white text-[20px] md:text-[22px] font-bold font-['Barlow_Condensed'] leading-[130%] text-left md:text-center m-0 p-0 w-auto md:w-[91px] h-auto md:h-[15px] flex items-center justify-start md:justify-center overflow-visible whitespace-nowrap">
                       {tierName} Tier
                     </h3>
                     {/* Below Text */}
-                    <p className="text-white/50 text-[16px] font-medium font-['Barlow_Condensed'] leading-[130%] text-center m-0 p-0 w-[72px] h-[11px] flex items-center justify-center overflow-visible whitespace-nowrap">
+                    <p className="text-white/50 text-[14px] md:text-[16px] font-medium font-['Barlow_Condensed'] leading-[130%] text-left md:text-center m-0 p-0 w-auto md:w-[72px] h-auto md:h-[11px] flex items-center justify-start md:justify-center overflow-visible whitespace-nowrap mt-1 md:mt-0">
                       {meta.subtext}
                     </p>
                   </div>
 
                   {/* Badge */}
                   <div
-                    className="flex items-center justify-center overflow-visible"
+                    className="ml-auto md:ml-0 flex items-center justify-center overflow-visible"
                     style={{
                       width: '49px',
                       height: '18px',
@@ -503,30 +498,31 @@ const VipPage = () => {
 
 
                 {/* Vertical Divider */}
-                <div className="w-[1px] h-[120px] bg-white/10 shrink-0" />
+                <div className="hidden md:block w-[1px] h-[120px] bg-white/10 shrink-0" />
+                <div className="md:hidden w-full h-[1px] bg-white/10 shrink-0" />
 
                 {/* Right Level Cards Grid */}
-                <div className="flex gap-[10px] items-center w-[1010px] h-[141px] shrink-0">
+                <div className="flex flex-col md:flex-row gap-[10px] items-center w-full md:w-[1010px] h-auto md:h-[141px] shrink-0 overflow-visible pb-2 md:pb-0">
                   {tierLevels.map((lvl) => {
                     return (
                       <div
                         key={lvl.key}
-                        className={`relative rounded-[20px] p-[16px] border flex flex-col justify-between h-[135px] w-[330px] shrink-0 transition-all duration-300 backdrop-blur-[44px]
+                        className={`relative rounded-[20px] p-[16px] border flex flex-col justify-between h-[135px] w-full md:w-[330px] shrink-0 transition-all duration-300 backdrop-blur-[44px]
                           ${lvl.reached ? 'border-[#2A2A2E]' : 'border-[#2A2A2E]/40 opacity-70'}`}
                         style={{
                           background: 'rgba(0, 0, 0, 0.36)'
                         }}
                       >
                         {/* Top Half of Card (Header & Reached checkmark layout) */}
-                        <div className="flex items-center justify-between w-[298px] h-[45px] gap-[16px] shrink-0 overflow-visible">
+                        <div className="flex items-center justify-between w-full h-auto md:h-[45px] gap-[10px] md:gap-[16px] shrink-0 overflow-visible">
                           {/* Text block */}
-                          <div className="flex flex-col justify-between items-start w-[254px] h-[45px] shrink-0 overflow-visible">
+                          <div className="flex flex-col justify-between items-start w-auto md:w-[254px] h-auto md:h-[45px] shrink-0 overflow-visible flex-1">
                             {/* Heading */}
-                            <h4 className="text-white text-[26px] font-semibold font-['Barlow_Condensed'] leading-[120%] m-0 p-0 w-[75px] h-[18px] flex items-center overflow-visible whitespace-nowrap">
+                            <h4 className="text-white text-xl md:text-[26px] font-semibold font-['Barlow_Condensed'] leading-[120%] m-0 p-0 w-auto md:w-[75px] h-auto md:h-[18px] flex items-center overflow-visible whitespace-nowrap">
                               {getLevelLabel(lvl)}
                             </h4>
                             {/* Requires text */}
-                            <p className="text-[#888888] text-[16px] font-medium font-['Barlow_Condensed'] leading-[130%] m-0 p-0 flex items-center overflow-visible whitespace-nowrap">
+                            <p className="text-[#888888] text-sm md:text-[16px] font-medium font-['Barlow_Condensed'] leading-[130%] m-0 p-0 flex items-center overflow-visible whitespace-nowrap mt-1 md:mt-0">
                               Requires {lvl.threshold.toLocaleString()} coins
                             </p>
                           </div>
@@ -536,10 +532,10 @@ const VipPage = () => {
                             <img
                               src="/coins/tik1.png"
                               alt="Reached"
-                              className="w-[28px] h-[28px] shrink-0 object-contain"
+                              className="w-[24px] md:w-[28px] h-[24px] md:h-[28px] shrink-0 object-contain"
                             />
                           ) : (
-                            <div className="w-[28px] h-[28px] shrink-0" />
+                            <div className="w-[24px] md:w-[28px] h-[24px] md:h-[28px] shrink-0" />
                           )}
                         </div>
 
@@ -553,11 +549,11 @@ const VipPage = () => {
                             <img
                               src="/coins/Coin.png"
                               alt="Coin"
-                              className="w-[26px] h-[26px] shrink-0 object-contain overflow-visible"
+                              className="w-[22px] md:w-[26px] h-[22px] md:h-[26px] shrink-0 object-contain overflow-visible"
                               style={{ filter: 'drop-shadow(0px 0px 14px rgba(254, 198, 53, 0.6))' }}
                             />
                             <span
-                              className="text-[28px] font-bold font-['Barlow_Condensed'] leading-none tracking-normal whitespace-nowrap flex items-center shrink-0 pb-[2px]"
+                              className="text-[24px] md:text-[28px] font-bold font-['Barlow_Condensed'] leading-none tracking-normal whitespace-nowrap flex items-center shrink-0 pb-[2px]"
                               style={{
                                 backgroundImage: 'linear-gradient(180deg, #FEDF77 0%, #FCB91E 100%)',
                                 WebkitBackgroundClip: 'text',
@@ -590,17 +586,17 @@ const VipPage = () => {
                               </button>
                             ) : lvl.claimed ? (
                               <span
-                                className="font-bold font-['Barlow_Condensed'] text-[20px] leading-[100%] text-right flex items-center justify-end overflow-visible whitespace-nowrap"
+                                className="font-bold font-['Barlow_Condensed'] text-[18px] md:text-[20px] leading-[100%] text-right flex items-center justify-end overflow-visible whitespace-nowrap"
                                 style={
                                   TIER_COLORS[tierName]?.textGradient
-                                  ? {
+                                    ? {
                                       width: '58px',
                                       backgroundImage: TIER_COLORS[tierName].textGradient,
                                       WebkitBackgroundClip: 'text',
                                       backgroundClip: 'text',
                                       color: 'transparent'
                                     }
-                                  : {
+                                    : {
                                       width: '58px',
                                       color: TIER_COLORS[tierName]?.text || '#FF8C00'
                                     }
@@ -613,10 +609,10 @@ const VipPage = () => {
                                 <img
                                   src="/coins/lockpe.png"
                                   alt="Locked"
-                                  className="w-[24px] h-[24px] shrink-0 object-contain"
+                                  className="w-[20px] md:w-[24px] h-[20px] md:h-[24px] shrink-0 object-contain"
                                 />
                                 <span
-                                  className="text-white font-semibold font-['Barlow_Condensed'] text-[20px] leading-[32px] text-center flex items-center justify-center overflow-visible whitespace-nowrap"
+                                  className="text-white font-semibold font-['Barlow_Condensed'] text-[18px] md:text-[20px] leading-[32px] text-center flex items-center justify-center overflow-visible whitespace-nowrap"
                                   style={{
                                     width: '51px',
                                     height: '32px'
@@ -633,7 +629,7 @@ const VipPage = () => {
                   })}
                   {tierName === 'Opal' && (
                     <div
-                      className="ml-auto shrink-0 relative flex items-center justify-center rounded-[40px] gap-[10px]"
+                      className="mx-auto md:ml-auto md:mr-0 shrink-0 relative flex items-center justify-center rounded-[40px] gap-[10px] mt-2 md:mt-0"
                       style={{
                         width: '112px',
                         height: '47px',
