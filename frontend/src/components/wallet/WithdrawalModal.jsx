@@ -82,11 +82,18 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess, filterType }) 
 
   const overlayRef = useRef(null);
 
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   const isGiftCard = method === 'giftcard';
-  const modalWidth = isGiftCard && step === 2 ? '700px' : '500px';
-  const modalHeight = isGiftCard && step === 2 ? '881px' : (step === 1 ? '339px' : step === 2 ? '740px' : step === 4 ? '379px' : 'auto');
-  const contentWidth = isGiftCard && step === 2 ? '668px' : '468px';
-  const textWidth = isGiftCard && step === 2 ? '608px' : '408px';
+  const modalWidth = isMobile ? '100%' : (isGiftCard && step === 2 ? '700px' : '500px');
+  const modalHeight = isMobile ? 'auto' : (isGiftCard && step === 2 ? '881px' : (step === 1 ? '339px' : step === 2 ? '740px' : step === 4 ? '379px' : 'auto'));
+  const contentWidth = isMobile ? '100%' : (isGiftCard && step === 2 ? '668px' : '468px');
+  const textWidth = isMobile ? '100%' : (isGiftCard && step === 2 ? '608px' : '408px');
 
   const { coinsPerUSD, withdrawalMethods = [], exchangeRates } = settings;
 
@@ -214,18 +221,19 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess, filterType }) 
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.95, y: 12 }}
         transition={{ duration: 0.2 }}
-        className={`relative bg-[#242424] border border-white/[0.08] shadow-2xl max-w-[95vw] flex flex-col my-auto ${
-          step === 1
-            ? 'h-[339px] shrink-0 overflow-hidden'
-            : step === 2
-            ? (isGiftCard ? 'h-[881px] shrink-0 overflow-hidden' : 'h-[740px] shrink-0 overflow-hidden')
-            : step === 4
-            ? 'h-[379px] shrink-0 overflow-hidden'
+        className={`relative bg-[#242424] border border-white/[0.08] shadow-2xl max-w-[95vw] md:max-w-none flex flex-col my-auto overflow-hidden ${
+          !isMobile && step === 1
+            ? 'h-[339px] shrink-0'
+            : !isMobile && step === 2
+            ? (isGiftCard ? 'h-[881px] shrink-0' : 'h-[740px] shrink-0')
+            : !isMobile && step === 4
+            ? 'h-[379px] shrink-0'
             : 'h-auto max-h-[90vh] overflow-y-auto custom-scrollbar overflow-x-hidden'
         }`}
         style={{
           width: modalWidth,
           height: modalHeight,
+          minHeight: isMobile ? '300px' : 'auto',
           borderRadius: '20px',
           padding: '16px',
           paddingBottom: (step === 2 || step === 3) ? '24px' : '16px',
@@ -394,7 +402,7 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess, filterType }) 
                 >
                   Select Gift Card
                 </label>
-                <div className="grid grid-cols-4 gap-2">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
                   {BRANDS.map((brand) => {
                     const isSelected = giftCardBrand === brand.id;
                     return (
@@ -404,8 +412,8 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess, filterType }) 
                         onClick={() => setGiftCardBrand(brand.id)}
                         className="flex items-center justify-center transition-all cursor-pointer overflow-hidden"
                         style={{
-                          width: '161px',
-                          height: '90px',
+                          width: isMobile ? '100%' : '161px',
+                          height: isMobile ? '70px' : '90px',
                           borderRadius: '10px',
                           background: 'rgba(23, 23, 23, 1)',
                           borderWidth: '2px',
@@ -466,10 +474,9 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess, filterType }) 
                   }}
                 />
                 <div
-                  className="flex flex-col shrink-0 relative z-10"
+                  className="flex flex-col flex-1 min-w-0 relative z-10"
                   style={{
-                    width: '395px',
-                    height: '41px',
+                    height: 'auto',
                     gap: '6px',
                     opacity: 1,
                   }}
@@ -489,9 +496,9 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess, filterType }) 
                     {selectedMethod.label}
                   </p>
                   <p
-                    className="font-medium font-['Barlow_Condensed'] leading-[130%]"
+                    className="font-medium font-['Barlow_Condensed'] leading-[130%] truncate"
                     style={{
-                      width: '395px',
+                      width: '100%',
                       height: '21px',
                       fontFamily: 'Barlow Condensed',
                       fontWeight: 500,

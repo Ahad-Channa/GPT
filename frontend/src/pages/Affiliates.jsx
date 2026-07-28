@@ -6,6 +6,7 @@ import { FiUsers, FiTrendingUp, FiCopy, FiInbox, FiClock, FiChevronLeft, FiChevr
 import { toast } from 'react-hot-toast';
 import CoinDisplay from '../components/CoinDisplay';
 import CoinIcon from '../components/CoinIcon';
+import FitText from '../components/FitText';
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
@@ -410,7 +411,7 @@ const Affiliates = () => {
                   }`}
               >
                 <img src="/coins/paisa.png" alt="Recent" className={`w-[12px] h-[12px] lg:w-[24px] lg:h-[24px] shrink-0 object-contain ${activeTab === 'recent' ? 'brightness-0 invert' : ''}`} />
-                <span style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="font-bold text-[11px] sm:text-[14px] lg:text-[20px] leading-[110%] lg:leading-[100%] text-white tracking-normal m-0 p-0 flex items-center justify-center whitespace-normal lg:whitespace-nowrap text-center">Recent Affiliate Earnings</span>
+                <span style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="font-bold text-[11px] sm:text-[14px] lg:text-[20px] leading-[110%] lg:leading-[100%] text-white tracking-normal m-0 p-0 flex items-center justify-start lg:justify-center whitespace-normal lg:whitespace-nowrap text-left lg:text-center">Recent Affiliate Earnings</span>
               </button>
               <button
                 onClick={() => setActiveTab('users')}
@@ -420,7 +421,7 @@ const Affiliates = () => {
                   }`}
               >
                 <img src="/coins/persons.png" alt="Users" className={`w-[12px] h-[12px] lg:w-[24px] lg:h-[24px] shrink-0 object-contain ${activeTab === 'users' ? 'brightness-0 invert' : ''}`} />
-                <span style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="font-bold text-[11px] sm:text-[14px] lg:text-[20px] leading-[110%] lg:leading-[100%] text-white tracking-normal m-0 p-0 flex items-center justify-center whitespace-normal lg:whitespace-nowrap text-center">Referred Users</span>
+                <span style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="font-bold text-[11px] sm:text-[14px] lg:text-[20px] leading-[110%] lg:leading-[100%] text-white tracking-normal m-0 p-0 flex items-center justify-start lg:justify-center whitespace-normal lg:whitespace-nowrap text-left lg:text-center">Referred Users</span>
               </button>
               <button
                 onClick={() => setActiveTab('pending')}
@@ -430,7 +431,7 @@ const Affiliates = () => {
                   }`}
               >
                 <img src="/coins/clock.png" alt="Pending" className={`w-[12px] h-[12px] lg:w-[24px] lg:h-[24px] shrink-0 object-contain ${activeTab === 'pending' ? 'brightness-0 invert' : ''}`} />
-                <span style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="font-bold text-[11px] sm:text-[14px] lg:text-[20px] leading-[110%] lg:leading-[100%] text-white tracking-normal m-0 p-0 flex items-center justify-center whitespace-normal lg:whitespace-nowrap text-center">Pending Affiliate Earnings</span>
+                <span style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="font-bold text-[11px] sm:text-[14px] lg:text-[20px] leading-[110%] lg:leading-[100%] text-white tracking-normal m-0 p-0 flex items-center justify-start lg:justify-center whitespace-normal lg:whitespace-nowrap text-left lg:text-center">Pending Affiliate Earnings</span>
               </button>
             </div>
           </div>
@@ -464,7 +465,7 @@ const Affiliates = () => {
                           <div key={tx._id} className="w-full lg:w-[1180px] h-auto lg:h-[82px] bg-[#171717] rounded-[8px] lg:rounded-[20px] py-[10px] px-[4px] lg:pt-[20px] lg:pr-[95px] lg:pb-[20px] lg:pl-[40px] grid grid-cols-[minmax(0,1.2fr)_minmax(0,1.1fr)_minmax(0,1.1fr)_minmax(0,1.4fr)_minmax(0,1fr)] lg:grid-cols-[313px_repeat(4,minmax(0,1fr))] gap-[6px] sm:gap-[10px] lg:gap-[50px] items-center hover:bg-[#1a1a1a] transition-colors">
                             <div className="flex items-center gap-[6px] lg:gap-[10px] min-w-0">
                               <img src={tx.linkedTransactionId?.userId?.avatarUrl || tx.linkedTransactionId?.userId?.photoURL || `https://api.dicebear.com/7.x/bottts/svg?seed=${tx._id}`} className="w-[20px] h-[20px] sm:w-[24px] sm:h-[24px] lg:w-[42px] lg:h-[42px] rounded-[4px] lg:rounded-[10px] bg-[#15171e] object-cover shrink-0" alt="avatar" />
-                              <span style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="font-semibold text-[13px] min-[375px]:text-[14px] sm:text-[16px] lg:text-[28px] leading-[120%] text-white truncate block">{tx.linkedTransactionId?.userId?.displayName || 'Unknown User'}</span>
+                              <div style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="font-semibold text-[13px] min-[375px]:text-[14px] sm:text-[16px] lg:text-[28px] leading-[120%] text-white min-w-0 flex-1 flex"><FitText>{tx.linkedTransactionId?.userId?.displayName || 'Unknown User'}</FitText></div>
                             </div>
                             <div style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="text-white font-semibold text-[13px] min-[375px]:text-[14px] sm:text-[16px] lg:text-[28px] leading-[120%] truncate">{new Date(tx.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: '2-digit' })}</div>
                             <div className="flex items-center whitespace-nowrap gap-[2px] lg:gap-[6px] font-semibold text-[#fbbf24] text-[13px] min-[375px]:text-[14px] sm:text-[16px] lg:text-[28px] leading-[120%]" style={{ fontFamily: "'Barlow Condensed', sans-serif" }}>
@@ -524,7 +525,7 @@ const Affiliates = () => {
                           <div key={u._id} className="w-full lg:w-[1180px] h-auto lg:h-[82px] bg-[#171717] rounded-[8px] lg:rounded-[20px] py-[10px] px-[4px] lg:pt-[20px] lg:pr-[95px] lg:pb-[20px] lg:pl-[40px] grid grid-cols-[minmax(0,1.2fr)_minmax(0,1.2fr)_minmax(0,1.3fr)_minmax(0,1.3fr)_minmax(0,1fr)] lg:grid-cols-[313px_repeat(4,minmax(0,1fr))] gap-[6px] sm:gap-[10px] lg:gap-[50px] items-center hover:bg-[#1a1a1a] transition-colors">
                             <div className="flex items-center gap-[6px] lg:gap-[10px] min-w-0">
                               <img src={u.avatarUrl || u.photoURL || `https://api.dicebear.com/7.x/bottts/svg?seed=${u.displayName}`} className="w-[20px] h-[20px] sm:w-[24px] sm:h-[24px] lg:w-[42px] lg:h-[42px] rounded-[4px] lg:rounded-[10px] bg-[#15171e] object-cover shrink-0" alt="avatar" />
-                              <span style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="font-semibold text-[13px] min-[375px]:text-[14px] sm:text-[16px] lg:text-[28px] leading-[120%] text-white truncate block">{u.displayName}</span>
+                              <div style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="font-semibold text-[13px] min-[375px]:text-[14px] sm:text-[16px] lg:text-[28px] leading-[120%] text-white min-w-0 flex-1 flex"><FitText>{u.displayName}</FitText></div>
                             </div>
                             <div style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="text-white font-semibold text-[13px] min-[375px]:text-[14px] sm:text-[16px] lg:text-[28px] leading-[120%] truncate">{new Date(u.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: '2-digit' })}</div>
                             <div className="flex items-center whitespace-nowrap gap-[2px] lg:gap-[6px] font-semibold text-[#fbbf24] text-[13px] min-[375px]:text-[14px] sm:text-[16px] lg:text-[28px] leading-[120%]" style={{ fontFamily: "'Barlow Condensed', sans-serif" }}>
@@ -581,7 +582,7 @@ const Affiliates = () => {
                             <div key={tx._id} className="w-full lg:w-[1180px] h-auto lg:h-[82px] bg-[#171717] rounded-[8px] lg:rounded-[20px] py-[10px] px-[4px] lg:pt-[20px] lg:pr-[95px] lg:pb-[20px] lg:pl-[40px] grid grid-cols-[minmax(0,1.2fr)_minmax(0,1.1fr)_minmax(0,1.1fr)_minmax(0,1.4fr)_minmax(0,1fr)] lg:grid-cols-[313px_repeat(4,minmax(0,1fr))] gap-[6px] sm:gap-[10px] lg:gap-[50px] items-center hover:bg-[#1a1a1a] transition-colors">
                               <div className="flex items-center gap-[6px] lg:gap-[10px] min-w-0">
                                 <img src={tx.linkedTransactionId?.userId?.avatarUrl || tx.linkedTransactionId?.userId?.photoURL || `https://api.dicebear.com/7.x/bottts/svg?seed=${tx._id}`} className="w-[20px] h-[20px] sm:w-[24px] sm:h-[24px] lg:w-[42px] lg:h-[42px] rounded-[4px] lg:rounded-[10px] bg-[#15171e] object-cover shrink-0" alt="avatar" />
-                                <span style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="font-semibold text-[13px] min-[375px]:text-[14px] sm:text-[16px] lg:text-[28px] leading-[120%] text-white truncate block">{tx.linkedTransactionId?.userId?.displayName || 'Unknown'}</span>
+                                <div style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="font-semibold text-[13px] min-[375px]:text-[14px] sm:text-[16px] lg:text-[28px] leading-[120%] text-white min-w-0 flex-1 flex"><FitText>{tx.linkedTransactionId?.userId?.displayName || 'Unknown'}</FitText></div>
                               </div>
                               <div style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="text-white font-semibold text-[13px] min-[375px]:text-[14px] sm:text-[16px] lg:text-[28px] leading-[120%] truncate">{new Date(tx.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: '2-digit' })}</div>
                               <div className="flex items-center whitespace-nowrap gap-[2px] lg:gap-[6px] font-semibold text-[#fbbf24] text-[13px] min-[375px]:text-[14px] sm:text-[16px] lg:text-[28px] leading-[120%]" style={{ fontFamily: "'Barlow Condensed', sans-serif" }}>

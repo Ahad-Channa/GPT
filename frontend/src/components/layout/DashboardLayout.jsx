@@ -15,7 +15,7 @@ const DashboardLayout = ({ children, showLiveBar = true, fullWidth = false }) =>
   }, [chatOpen]);
 
   return (
-    <div className="relative min-h-[100dvh] bg-black text-gray-300 overflow-x-hidden flex flex-col">
+    <div className="relative min-h-[100dvh] bg-[#2C2D2C] md:bg-black text-gray-300 overflow-x-hidden flex flex-col">
       {/* Ambient Background Glows */}
       {/* <div className="ambient-bg" aria-hidden="true" /> */}
 
@@ -27,7 +27,7 @@ const DashboardLayout = ({ children, showLiveBar = true, fullWidth = false }) =>
 
       {/* Main Content Wrapper */}
       <div 
-        className="transition-all duration-300 ease-in-out w-full flex-1"
+        className="transition-all duration-300 ease-in-out w-full flex-1 bg-black md:bg-transparent"
       >
         <main className={`relative z-10 w-full ${fullWidth ? 'max-w-[1600px]' : 'max-w-7xl'} mx-auto px-1 md:px-8 2xl:px-12 pt-4 pb-8 md:py-12 flex flex-col`}>
           {children}

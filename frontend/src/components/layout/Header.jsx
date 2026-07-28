@@ -9,6 +9,7 @@ import { FaTrophy } from 'react-icons/fa6';
 import CoinDisplay from '../CoinDisplay';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
+import FitText from '../FitText';
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
@@ -580,17 +581,16 @@ const Header = ({ onChatToggle, chatOpen, fullWidth }) => {
                 className="flex flex-col items-start justify-between flex-1 overflow-visible h-[18px] lg:h-[31px]"
                 style={{ gap: 0 }}
               >
-                <span
-                  className="text-white text-left whitespace-nowrap flex-shrink-0 text-[9px] lg:text-[14px] leading-[9px] lg:leading-[14px]"
+                <div
+                  className="text-white text-left whitespace-nowrap flex-shrink-0 text-[9px] lg:text-[14px] leading-[9px] lg:leading-[14px] flex min-w-0"
                   style={{
                     width: '100%',
                     fontFamily: '"Barlow Condensed", sans-serif',
-                    fontWeight: 600,
-                    display: 'block'
+                    fontWeight: 600
                   }}
                 >
-                  {mongoUser?.displayName || 'User'}
-                </span>
+                  <FitText>{mongoUser?.displayName || 'User'}</FitText>
+                </div>
                 <span
                   className="flex items-center lg:translate-y-[1px]"
                   style={{ minWidth: '16px', width: 'auto', height: 'auto', gap: '2px' }}

@@ -75,58 +75,54 @@ const PromoCodeRedeem = ({ onSuccess }) => {
 
   return (
     <>
-      <motion.div variants={item} className="flex flex-col md:flex-row items-start md:items-center justify-between w-[1240px] md:h-[120px] rounded-[20px] p-[20px] bg-[#242424] shrink-0 gap-[18px] relative">
-        <div className="flex flex-col gap-[6px] w-full md:w-[591px] md:h-[76px] shrink-0 justify-between">
-          <h2 className="m-0 p-0 font-bold font-['Barlow_Condensed'] text-[34px] leading-[120%] text-white w-full md:w-[591px] md:h-[41px] flex items-center shrink-0">
+      <motion.div variants={item} className="flex flex-col md:flex-row items-start md:items-center justify-between w-full rounded-[20px] p-[20px] bg-[#242424] shrink-0 gap-[18px] relative border border-white/[0.04]">
+        <div className="flex flex-col gap-[6px] w-full md:w-[591px] h-auto shrink-0 justify-between">
+          <h2 className="m-0 p-0 font-bold font-['Barlow_Condensed'] text-[28px] md:text-[34px] leading-[120%] text-white w-full h-auto flex items-center shrink-0">
             Redeem Promo Code
           </h2>
-          <p className="m-0 p-0 font-medium font-['Barlow_Condensed'] text-[22px] leading-[130%] text-[#888888] w-full md:w-[591px] md:h-[29px] flex items-center shrink-0">
+          <p className="m-0 p-0 font-medium font-['Barlow_Condensed'] text-[18px] md:text-[22px] leading-[130%] text-[#888888] w-full h-auto flex items-center shrink-0">
             Have a code? Enter it below to claim free coins.
           </p>
         </div>
 
-        <form onSubmit={handleRedeem} className="flex items-center w-full md:w-[591px] md:h-[80px] bg-[rgba(255,255,255,0.08)] border border-[#49B265] rounded-[10px] p-[16px] justify-between gap-[10px] shrink-0">
+        <form onSubmit={handleRedeem} className="flex items-center w-full md:w-[591px] md:h-[80px] bg-[rgba(255,255,255,0.08)] border border-[#49B265] rounded-[10px] p-[10px] md:p-[16px] justify-between gap-[10px] shrink-0">
           <input
             type="text"
             value={code}
             onChange={(e) => setCode(e.target.value.toUpperCase())}
             placeholder="Enter code here..."
-            className="w-full md:w-[466px] h-[20px] bg-transparent text-white placeholder-white/50 font-medium font-['Barlow_Condensed'] text-[22px] leading-[20px] align-middle focus:outline-none border-none p-0 uppercase"
+            className="w-full md:w-[466px] h-auto md:h-[20px] bg-transparent text-white placeholder-white/50 font-medium font-['Barlow_Condensed'] text-[18px] md:text-[22px] leading-[20px] align-middle focus:outline-none border-none p-0 uppercase"
             disabled={loading}
           />
           <button
             type="submit"
             disabled={loading || !code.trim()}
-            className="flex items-center justify-center w-[93px] h-[48px] rounded-[10px] gap-[10px] py-[10px] px-[20px] bg-[#49B265] shadow-[0_4px_0_0_#276D3A] hover:bg-[#49B265]/90 hover:translate-y-[1px] hover:shadow-[0_3px_0_0_#276D3A] active:translate-y-[4px] active:shadow-none transition-all disabled:opacity-50 disabled:translate-y-0 disabled:shadow-[0_4px_0_0_#276D3A] shrink-0"
+            className="flex items-center justify-center w-auto md:w-[93px] h-[40px] md:h-[48px] rounded-[10px] gap-[10px] py-[10px] px-[16px] md:px-[20px] bg-[#49B265] shadow-[0_4px_0_0_#276D3A] hover:bg-[#49B265]/90 hover:translate-y-[1px] hover:shadow-[0_3px_0_0_#276D3A] active:translate-y-[4px] active:shadow-none transition-all disabled:opacity-50 disabled:translate-y-0 disabled:shadow-[0_4px_0_0_#276D3A] shrink-0"
           >
-            <span className="font-bold font-['Barlow_Condensed'] text-[18px] leading-none text-white whitespace-nowrap">
+            <span className="font-bold font-['Barlow_Condensed'] text-[16px] md:text-[18px] leading-none text-white whitespace-nowrap">
               {loading ? '...' : 'Redeem'}
             </span>
           </button>
         </form>
       </motion.div>
 
-      {/* ── Promo Result Popup — rendered via portal so it escapes transform stacking context ── */}
-      {createPortal(
+      {typeof document !== 'undefined' && createPortal(
         <AnimatePresence>
           {popup && (
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="fixed inset-0 z-[9999] flex items-center justify-center p-4"
-              style={{ background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)' }}
+              className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm"
+              onClick={() => setPopup(null)}
             >
               <motion.div
-                initial={{ opacity: 0, scale: 0.95, y: 12 }}
-                animate={{ opacity: 1, scale: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.95, y: 12 }}
-                transition={{ duration: 0.2 }}
+                initial={{ scale: 0.95, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.95, opacity: 0 }}
                 onClick={(e) => e.stopPropagation()}
-                className="relative bg-[#242424] border border-white/[0.08] shadow-2xl flex flex-col items-center gap-[24px]"
-                style={{ width: '500px', borderRadius: '20px', padding: '32px 16px 28px' }}
+                className="flex flex-col items-center justify-center w-full max-w-[500px] h-auto md:h-[339px] bg-[#242424] rounded-[20px] p-[16px] border border-white/[0.08] shadow-2xl relative gap-[20px]"
               >
-                {/* Icon */}
                 <div
                   className="flex items-center justify-center rounded-full shrink-0"
                   style={{
@@ -142,11 +138,11 @@ const PromoCodeRedeem = ({ onSuccess }) => {
                 </div>
 
                 {/* Title */}
-                <div className="flex flex-col items-center gap-[8px] w-[468px]">
-                  <h2 className="m-0 p-0 font-bold font-['Barlow_Condensed'] text-[34px] leading-[120%] text-white text-center">
+                <div className="flex flex-col items-center gap-[8px] w-full px-4">
+                  <h2 className="m-0 p-0 font-bold font-['Barlow_Condensed'] text-[28px] md:text-[34px] leading-[120%] text-white text-center">
                     {popup.type === 'success' ? 'Code Redeemed!' : 'Redemption Failed'}
                   </h2>
-                  <p className="m-0 p-0 font-medium font-['Barlow_Condensed'] text-[22px] leading-[130%] text-[#888888] text-center">
+                  <p className="m-0 p-0 font-medium font-['Barlow_Condensed'] text-[18px] md:text-[22px] leading-[130%] text-[#888888] text-center">
                     {popup.type === 'success'
                       ? <span className="flex items-center justify-center gap-2">+<CoinDisplay amount={popup.coins} size={18} /> added to your wallet!</span>
                       : popup.text}
@@ -156,7 +152,7 @@ const PromoCodeRedeem = ({ onSuccess }) => {
                 {/* Close button */}
                 <button
                   onClick={() => setPopup(null)}
-                  className="flex items-center justify-center w-[468px] h-[48px] rounded-[10px] gap-[10px] px-[30px] py-[10px] bg-[#49B265] shadow-[0_4px_0_0_#276D3A] hover:bg-[#49B265]/90 hover:translate-y-[1px] hover:shadow-[0_3px_0_0_#276D3A] active:translate-y-[4px] active:shadow-none transition-all"
+                  className="flex items-center justify-center w-full max-w-[468px] h-[48px] rounded-[10px] gap-[10px] px-[30px] py-[10px] bg-[#49B265] shadow-[0_4px_0_0_#276D3A] hover:bg-[#49B265]/90 hover:translate-y-[1px] hover:shadow-[0_3px_0_0_#276D3A] active:translate-y-[4px] active:shadow-none transition-all"
                 >
                   <span className="font-bold font-['Barlow_Condensed'] text-[18px] leading-none text-white">
                     {popup.type === 'success' ? 'Awesome!' : 'Try Again'}
@@ -258,13 +254,13 @@ const Wallet = () => {
 
   return (
     <DashboardLayout>
-      <motion.div variants={container} initial="hidden" animate="show" className="space-y-8 max-w-[1240px] mx-auto w-full">
+      <motion.div variants={container} initial="hidden" animate="show" className="space-y-8 max-w-[1240px] mx-auto w-full px-4 md:px-0">
 
         {/* ── Page Header ───────────────────────────────────────── */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 relative w-[1240px] shrink-0">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 md:mb-8 relative w-full shrink-0">
           <div className="flex flex-col gap-[6px] relative z-10">
-            <h1 className="m-0 p-0 font-bold text-[68px] leading-[120%] text-white font-['Barlow_Condensed'] whitespace-nowrap">Withdraw</h1>
-            <p className="m-0 p-0 font-medium text-[26px] leading-[130%] text-[#888888] font-['Barlow_Condensed']">Choose your preferred withdrawal method and convert your coins into real rewards.</p>
+            <h1 className="m-0 p-0 font-bold text-[36px] sm:text-[48px] md:text-[68px] leading-[120%] text-white font-['Barlow_Condensed'] whitespace-nowrap">Withdraw</h1>
+            <p className="m-0 p-0 font-medium text-[16px] sm:text-[20px] md:text-[26px] leading-[130%] text-[#888888] font-['Barlow_Condensed']">Choose your preferred withdrawal method and convert your coins into real rewards.</p>
           </div>
           <div className="hidden md:block absolute right-[-3px] -top-[36px] opacity-100 pointer-events-none w-[317px] h-[226px] z-0">
             <img
@@ -277,15 +273,15 @@ const Wallet = () => {
         </div>
 
         {/* ── Balance Hero Card ─────────────────────────────────── */}
-        <motion.div variants={item} className="relative overflow-hidden rounded-[20px] bg-[#242424] py-[30px] px-[40px] flex items-center justify-between gap-[40px] w-[1240px] h-[138px] backdrop-blur-[94px] shrink-0">
-          <p className="w-[931px] h-[36px] m-0 p-0 text-white font-bold font-['Barlow_Condensed'] text-[28px] leading-[130%] uppercase whitespace-nowrap">
+        <motion.div variants={item} className="relative overflow-hidden rounded-[20px] bg-[#242424] py-[20px] px-[20px] md:py-[30px] md:px-[40px] flex items-center justify-between gap-[20px] md:gap-[40px] w-full h-auto md:h-[138px] backdrop-blur-[94px] shrink-0 border border-white/[0.04]">
+          <p className="w-auto h-auto m-0 p-0 text-white font-bold font-['Barlow_Condensed'] text-[24px] md:text-[28px] leading-[130%] uppercase whitespace-nowrap">
             Your Balance
           </p>
-          <div className="flex flex-col items-end justify-center w-[189px] h-[78px] gap-[18px] shrink-0">
-            <div className="flex items-center w-auto h-[44px] gap-[6px] shrink-0 overflow-visible">
-              <img src="/coins/Coin.png" alt="Coin" className="w-[44px] h-[44px] shrink-0 object-contain" />
+          <div className="flex flex-col items-end justify-center w-auto h-auto gap-[10px] md:gap-[18px] shrink-0">
+            <div className="flex items-center w-auto h-[36px] md:h-[44px] gap-[6px] shrink-0 overflow-visible">
+              <img src="/coins/Coin.png" alt="Coin" className="w-[36px] h-[36px] md:w-[44px] md:h-[44px] shrink-0 object-contain" />
               <p
-                className="w-auto h-auto m-0 p-0 font-bold font-['Barlow_Condensed'] text-[60px] leading-none tracking-normal whitespace-nowrap flex items-center shrink-0 pb-[6px]"
+                className="w-auto h-auto m-0 p-0 font-bold font-['Barlow_Condensed'] text-[42px] md:text-[60px] leading-none tracking-normal whitespace-nowrap flex items-center shrink-0 pb-[4px] md:pb-[6px]"
                 style={{
                   backgroundImage: 'linear-gradient(180deg, #FEDF77 0%, #FCB91E 100%)',
                   WebkitBackgroundClip: 'text',
@@ -322,32 +318,32 @@ const Wallet = () => {
         </motion.div>
 
         {/* ── Withdrawal Options ───────────────────────────────────── */}
-        <motion.div variants={item} className="flex flex-col md:flex-row justify-start gap-[20px] w-[1240px] shrink-0">
+        <motion.div variants={item} className="flex flex-col md:flex-row justify-start gap-[20px] w-full shrink-0">
 
           {/* Card 1: PayPal & Litecoin */}
           <div className="bg-white/[0.14] rounded-[20px] p-[20px] flex flex-col gap-[18px] w-full md:w-[400px] md:h-[445px] hover:bg-white/[0.18] transition-colors shrink-0">
             <div className="flex justify-center w-full">
               <img src="/coins/paylite.png" alt="PayPal and Litecoin" className="w-[249px] h-[126px] object-contain" />
             </div>
-            <div className="flex flex-col w-[360px] h-[105px] gap-[6px]">
-              <h3 className="w-[360px] h-[41px] m-0 p-0 font-bold font-['Barlow_Condensed'] text-[34px] leading-[120%] text-white">
+            <div className="flex flex-col w-full md:w-[360px] h-auto md:h-[105px] gap-[6px]">
+              <h3 className="w-full h-auto m-0 p-0 font-bold font-['Barlow_Condensed'] text-[28px] md:text-[34px] leading-[120%] text-white">
                 PayPal & Litecoin
               </h3>
-              <p className="w-[360px] h-[58px] m-0 p-0 font-medium font-['Barlow_Condensed'] text-[22px] leading-[130%] text-[#888888]">
+              <p className="w-full h-auto m-0 p-0 font-medium font-['Barlow_Condensed'] text-[18px] md:text-[22px] leading-[130%] text-[#888888]">
                 Withdraw your earnings to your PayPal account or Litecoin wallet.
               </p>
             </div>
 
-            <div className="flex flex-col w-[360px] h-[72px] gap-[14px]">
-              <div className="flex items-center w-[360px] h-[29px] gap-[18px]">
+            <div className="flex flex-col w-full h-auto gap-[14px]">
+              <div className="flex items-center w-full gap-[18px]">
                 <img src="/coins/paypal.png" alt="PayPal" className="w-[24px] h-[24px] object-contain" />
-                <span className="w-[52px] h-[29px] m-0 p-0 font-medium font-['Barlow_Condensed'] text-[22px] leading-[130%] text-white">
+                <span className="w-auto h-auto m-0 p-0 font-medium font-['Barlow_Condensed'] text-[18px] md:text-[22px] leading-[130%] text-white">
                   PayPal
                 </span>
               </div>
-              <div className="flex items-center w-[360px] h-[29px] gap-[18px]">
+              <div className="flex items-center w-full gap-[18px]">
                 <img src="/coins/litecoin.png" alt="Litecoin" className="w-[24px] h-[24px] object-contain" />
-                <span className="w-[52px] h-[29px] m-0 p-0 font-medium font-['Barlow_Condensed'] text-[22px] leading-[130%] text-white">
+                <span className="w-auto h-auto m-0 p-0 font-medium font-['Barlow_Condensed'] text-[18px] md:text-[22px] leading-[130%] text-white">
                   Litecoin
                 </span>
               </div>
@@ -356,7 +352,7 @@ const Wallet = () => {
             <button
               onClick={() => handleOpenWithdrawal('paypal_litecoin')}
               disabled={settingsLoad}
-              className="flex items-center justify-center w-[360px] h-[48px] gap-[10px] rounded-[10px] px-[30px] py-[10px] bg-[#49B265] shadow-[0_4px_0_0_#276D3A] hover:bg-[#49B265]/90 hover:translate-y-[1px] hover:shadow-[0_3px_0_0_#276D3A] active:translate-y-[4px] active:shadow-none transition-all mt-auto shrink-0"
+              className="flex items-center justify-center w-full h-[48px] gap-[10px] rounded-[10px] px-[30px] py-[10px] bg-[#49B265] shadow-[0_4px_0_0_#276D3A] hover:bg-[#49B265]/90 hover:translate-y-[1px] hover:shadow-[0_3px_0_0_#276D3A] active:translate-y-[4px] active:shadow-none transition-all mt-auto shrink-0"
             >
               <span className="m-0 p-0 font-bold font-['Barlow_Condensed'] text-[18px] leading-none text-white whitespace-nowrap">
                 Withdraw Now
@@ -367,27 +363,27 @@ const Wallet = () => {
 
           {/* Card 2: Gift Cards */}
           <div className="bg-white/[0.14] rounded-[20px] p-[20px] flex flex-col gap-[18px] w-full md:w-[400px] md:h-[445px] hover:bg-white/[0.18] transition-colors shrink-0">
-            <div className="flex justify-center w-[360px]">
+            <div className="flex justify-center w-full">
               <img src="/coins/giftcard.png" alt="Gift Cards" className="w-[330px] h-[126px] object-contain" />
             </div>
-            <div className="flex flex-col w-[360px] h-[105px] gap-[6px]">
-              <h3 className="w-[360px] h-[41px] m-0 p-0 font-bold font-['Barlow_Condensed'] text-[34px] leading-[120%] text-white">
+            <div className="flex flex-col w-full h-auto md:h-[105px] gap-[6px]">
+              <h3 className="w-full h-auto m-0 p-0 font-bold font-['Barlow_Condensed'] text-[28px] md:text-[34px] leading-[120%] text-white">
                 Gift Cards
               </h3>
-              <p className="w-[360px] h-[58px] m-0 p-0 font-medium font-['Barlow_Condensed'] text-[22px] leading-[130%] text-[#888888]">
+              <p className="w-full h-auto m-0 p-0 font-medium font-['Barlow_Condensed'] text-[18px] md:text-[22px] leading-[130%] text-[#888888]">
                 Choose from a variety of popular gift cards and treat yourself.
               </p>
             </div>
 
-            <div className="flex items-center w-[360px] h-[72px] gap-[8px]">
-              <div className="flex items-center justify-center w-[114.66px] h-[60px] rounded-[10px] border border-white/[0.22] bg-[#111111] shrink-0">
+            <div className="flex items-center w-full h-auto gap-[8px] overflow-hidden">
+              <div className="flex items-center justify-center flex-1 h-[60px] rounded-[10px] border border-white/[0.22] bg-[#111111] shrink-0">
                 <img src="/coins/amazon.png" alt="Amazon" className="w-[86px] h-[24px] object-contain" />
               </div>
-              <div className="flex items-center justify-center w-[114.66px] h-[60px] rounded-[10px] border border-white/[0.22] bg-[#111111] shrink-0">
+              <div className="flex items-center justify-center flex-1 h-[60px] rounded-[10px] border border-white/[0.22] bg-[#111111] shrink-0">
                 <img src="/coins/netflix.png" alt="Netflix" className="w-[86px] h-[24px] object-contain" />
               </div>
-              <div className="flex items-center justify-center w-[114.66px] h-[60px] rounded-[10px] border border-white/[0.22] bg-[#111111] shrink-0">
-                <span className="w-[61px] h-[29px] m-0 p-0 text-white font-medium font-['Barlow_Condensed'] text-[22px] leading-[130%] whitespace-nowrap text-center">
+              <div className="flex items-center justify-center flex-1 h-[60px] rounded-[10px] border border-white/[0.22] bg-[#111111] shrink-0">
+                <span className="w-auto h-auto m-0 p-0 text-white font-medium font-['Barlow_Condensed'] text-[18px] md:text-[22px] leading-[130%] whitespace-nowrap text-center">
                   +5 More
                 </span>
               </div>
@@ -396,7 +392,7 @@ const Wallet = () => {
             <button
               onClick={() => handleOpenWithdrawal('giftcards')}
               disabled={settingsLoad}
-              className="flex items-center justify-center w-[360px] h-[48px] gap-[10px] rounded-[10px] px-[30px] py-[10px] bg-[#49B265] shadow-[0_4px_0_0_#276D3A] hover:bg-[#49B265]/90 hover:translate-y-[1px] hover:shadow-[0_3px_0_0_#276D3A] active:translate-y-[4px] active:shadow-none transition-all mt-auto shrink-0"
+              className="flex items-center justify-center w-full h-[48px] gap-[10px] rounded-[10px] px-[30px] py-[10px] bg-[#49B265] shadow-[0_4px_0_0_#276D3A] hover:bg-[#49B265]/90 hover:translate-y-[1px] hover:shadow-[0_3px_0_0_#276D3A] active:translate-y-[4px] active:shadow-none transition-all mt-auto shrink-0"
             >
               <span className="m-0 p-0 font-bold font-['Barlow_Condensed'] text-[18px] leading-none text-white whitespace-nowrap">
                 Withdraw Now
@@ -408,28 +404,28 @@ const Wallet = () => {
           {/* Card 3: Your Books */}
           {booksVisible && (
             <div className="bg-white/[0.14] rounded-[20px] p-[20px] flex flex-col gap-[18px] w-full md:w-[400px] md:h-[445px] hover:bg-white/[0.18] transition-colors shrink-0">
-              <div className="flex justify-center w-[360px]">
+              <div className="flex justify-center w-full">
                 <img src="/coins/books.png" alt="Your Books" className="w-[321px] h-[126px] object-contain" />
               </div>
-              <div className="flex flex-col w-[360px] h-[105px] gap-[6px]">
-                <h3 className="w-[360px] h-[41px] m-0 p-0 font-bold font-['Barlow_Condensed'] text-[34px] leading-[120%] text-white">
+              <div className="flex flex-col w-full h-auto gap-[6px]">
+                <h3 className="w-full h-auto m-0 p-0 font-bold font-['Barlow_Condensed'] text-[28px] md:text-[34px] leading-[120%] text-white">
                   Your Books
                 </h3>
-                <p className="w-[360px] h-[58px] m-0 p-0 font-medium font-['Barlow_Condensed'] text-[22px] leading-[130%] text-[#888888]">
+                <p className="w-full h-auto m-0 p-0 font-medium font-['Barlow_Condensed'] text-[18px] md:text-[22px] leading-[130%] text-[#888888]">
                   Redeem your coins for my books. Personally signed - only in Germany.
                 </p>
               </div>
 
-              <div className="flex flex-col w-[360px] h-[72px] gap-[14px]">
-                <div className="flex items-center w-[360px] h-[29px] gap-[18px]">
-                  <img src="/coins/signature.png" alt="Signature" className="w-[26px] h-[26px] object-contain" />
-                  <span className="h-[29px] m-0 p-0 font-medium font-['Barlow_Condensed'] text-[22px] leading-[130%] text-white whitespace-nowrap">
+              <div className="flex flex-col w-full h-auto gap-[14px]">
+                <div className="flex items-center w-full gap-[18px]">
+                  <img src="/coins/signature.png" alt="Signature" className="w-[26px] h-[26px] object-contain shrink-0" />
+                  <span className="h-auto m-0 p-0 font-medium font-['Barlow_Condensed'] text-[18px] md:text-[22px] leading-[130%] text-white">
                     Personal signature possible
                   </span>
                 </div>
-                <div className="flex items-center w-[360px] h-[29px] gap-[18px]">
-                  <img src="/coins/truck.png" alt="Truck" className="w-[26px] h-[26px] object-contain" />
-                  <span className="h-[29px] m-0 p-0 font-medium font-['Barlow_Condensed'] text-[22px] leading-[130%] text-white whitespace-nowrap">
+                <div className="flex items-center w-full gap-[18px]">
+                  <img src="/coins/truck.png" alt="Truck" className="w-[26px] h-[26px] object-contain shrink-0" />
+                  <span className="h-auto m-0 p-0 font-medium font-['Barlow_Condensed'] text-[18px] md:text-[22px] leading-[130%] text-white">
                     Shipping only within Germany
                   </span>
                 </div>
@@ -437,7 +433,7 @@ const Wallet = () => {
 
               <button
                 onClick={() => setShowBookSelector(true)}
-                className="flex items-center justify-center w-[360px] h-[48px] gap-[10px] rounded-[10px] px-[30px] py-[10px] bg-[#49B265] shadow-[0_4px_0_0_#276D3A] hover:bg-[#49B265]/90 hover:translate-y-[1px] hover:shadow-[0_3px_0_0_#276D3A] active:translate-y-[4px] active:shadow-none transition-all mt-auto shrink-0"
+                className="flex items-center justify-center w-full h-[48px] gap-[10px] rounded-[10px] px-[30px] py-[10px] bg-[#49B265] shadow-[0_4px_0_0_#276D3A] hover:bg-[#49B265]/90 hover:translate-y-[1px] hover:shadow-[0_3px_0_0_#276D3A] active:translate-y-[4px] active:shadow-none transition-all mt-auto shrink-0"
               >
                 <span className="m-0 p-0 font-bold font-['Barlow_Condensed'] text-[18px] leading-none text-white whitespace-nowrap">
                   Order Now

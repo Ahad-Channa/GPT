@@ -7,6 +7,7 @@ import { FaCrown } from 'react-icons/fa';
 import PublicProfileModal from '../components/PublicProfileModal';
 import CoinDisplay from '../components/CoinDisplay';
 import CoinIcon from '../components/CoinIcon';
+import FitText from '../components/FitText';
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
@@ -41,6 +42,7 @@ const PodiumCard = ({ rank, user, prize, onClick, className = '' }) => {
       layoutWrapper: 'flex-col md:flex-row justify-center md:justify-between w-full max-w-full md:max-w-[340px] h-auto md:min-h-[32px] mx-auto mb-1 md:mb-3 items-center md:items-start gap-0.5 md:gap-0',
       nameStyle: { fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 600, lineHeight: '1.2' },
       nameClass: 'text-white max-w-full md:max-w-[240px] text-center md:text-left leading-[1.1] md:leading-[1.2] text-[24px] md:text-[32px] break-words line-clamp-2',
+      rankColorClass: 'text-transparent bg-clip-text bg-gradient-to-b from-[#FEDF77] to-[#FCB91E]',
       scoreClass: 'flex items-center justify-center md:justify-end gap-[4px] md:gap-[8px] w-full md:w-auto',
       scoreStyle: { fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 700, lineHeight: '1.3' },
       scoreTextClass: 'text-[22px] md:text-[32px] text-transparent bg-clip-text bg-gradient-to-b from-[#FEDF77] to-[#FCB91E]',
@@ -61,6 +63,7 @@ const PodiumCard = ({ rank, user, prize, onClick, className = '' }) => {
       layoutWrapper: 'flex-col md:flex-row justify-center md:justify-between w-full max-w-full md:max-w-[320px] h-auto md:h-[32px] mx-auto mb-1 md:mb-3 items-center gap-0.5 md:gap-0',
       nameStyle: { fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 600, lineHeight: '1.2' },
       nameClass: 'text-white md:truncate max-w-full md:max-w-[120px] text-center md:text-left leading-[1.1] md:leading-[1.2] text-[20px] md:text-[32px] break-words line-clamp-2 md:line-clamp-none',
+      rankColorClass: 'text-transparent bg-clip-text bg-gradient-to-b from-[#D9D9D9] to-[#828282]',
       scoreClass: 'flex items-center justify-center md:justify-end gap-[4px] md:gap-[8px] w-full md:w-auto',
       scoreStyle: { fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 700, lineHeight: '1.3' },
       scoreTextClass: 'text-[18px] md:text-[32px] text-transparent bg-clip-text bg-gradient-to-b from-[#D9D9D9] to-[#828282]', // actually prize is fixed to gold, but user coins are gold too. original used global styles
@@ -81,6 +84,7 @@ const PodiumCard = ({ rank, user, prize, onClick, className = '' }) => {
       layoutWrapper: 'flex-col md:flex-row justify-center md:justify-between w-full max-w-full md:max-w-[320px] h-auto md:min-h-[32px] mx-auto mb-1 md:mb-3 items-center md:items-start gap-0.5 md:gap-0',
       nameStyle: { fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 600, lineHeight: '1.2' },
       nameClass: 'text-white max-w-full md:max-w-[240px] text-center md:text-left leading-[1.1] md:leading-[1.2] text-[20px] md:text-[32px] break-words line-clamp-2',
+      rankColorClass: 'text-transparent bg-clip-text bg-gradient-to-b from-[#C08965] to-[#AE580E]',
       scoreClass: 'flex items-center justify-center md:justify-end gap-[4px] md:gap-[8px] w-full md:w-auto',
       scoreStyle: { fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 700, lineHeight: '1.3' },
       scoreTextClass: 'text-[18px] md:text-[32px] text-transparent bg-clip-text bg-gradient-to-b from-[#C08965] to-[#AE580E]',
@@ -128,7 +132,9 @@ const PodiumCard = ({ rank, user, prize, onClick, className = '' }) => {
         style={styles.clip !== 'none' ? { clipPath: styles.clip } : {}}
       >
         <div className={`flex ${styles.layoutWrapper}`}>
-          <div className={styles.nameClass} style={styles.nameStyle}>#{rank} {user.displayName}</div>
+          <div className={styles.nameClass} style={styles.nameStyle}>
+            <span className={styles.rankColorClass}>#{rank}</span> {user.displayName}
+          </div>
           <div className={styles.scoreClass}>
             <img src="/coins/Coin.png" alt="Coin" className="w-[20px] h-[20px] md:w-[32px] md:h-[32px] object-contain" />
             <span className={styles.scoreTextClass} style={styles.scoreStyle}>
@@ -237,7 +243,7 @@ const PeriodPanel = ({ data, periodName, onProfileClick }) => {
       variants={item}
       key={data.currentUser.userId}
       onClick={() => onProfileClick(data.currentUser.userId)}
-      className="grid grid-cols-[40px_1fr_60px_60px] md:grid-cols-[74px_521px_1fr_1fr] gap-[6px] md:gap-[50px] items-center w-full min-h-[50px] md:h-[119px] bg-[#1a1a1a] rounded-[10px] md:rounded-[20px] py-[10px] md:py-0 px-[10px] md:pl-[40px] md:pr-[10px] md:pr-[95px] cursor-pointer hover:brightness-110 transition-all mt-4 mb-2"
+      className="grid grid-cols-[40px_1fr_60px_60px] md:grid-cols-[74px_521px_1fr_1fr] gap-[6px] md:gap-[50px] items-center w-full min-h-[50px] md:h-[119px] bg-[#1a1a1a] rounded-[10px] md:rounded-[20px] py-[10px] md:py-0 px-[10px] md:pl-[40px] md:pr-[10px] md:pr-[95px] cursor-pointer hover:brightness-110 transition-all"
     >
       <div className="text-white text-[20px] md:text-[32px] text-center md:text-left" style={{ fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 600, lineHeight: '1.2' }}>
         {/* No rank text */}
@@ -246,8 +252,8 @@ const PeriodPanel = ({ data, periodName, onProfileClick }) => {
         <div className="w-[36px] h-[36px] md:w-[60px] md:h-[60px] rounded-[8px] md:rounded-[10px] overflow-hidden bg-transparent shrink-0">
           <img src={data.currentUser.avatarUrl || data.currentUser.avatar || '/avatars/avatar1.png'} className="w-full h-full object-cover" alt={data.currentUser.displayName} />
         </div>
-        <div className="text-white truncate text-[18px] md:text-[32px]" style={{ fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 600, lineHeight: '1.2' }}>
-          {data.currentUser.displayName} <span className="text-[14px] md:text-base text-white/50">(You)</span>
+        <div className="text-white text-[18px] md:text-[32px] min-w-0 flex-1 flex" style={{ fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 600, lineHeight: '1.2' }}>
+          <FitText>{data.currentUser.displayName} <span className="text-[14px] md:text-base text-white/50 ml-1">(You)</span></FitText>
         </div>
       </div>
       <div className="flex items-center gap-[4px] md:gap-[8px]">
@@ -312,10 +318,10 @@ const PeriodPanel = ({ data, periodName, onProfileClick }) => {
                       <img src={user.avatarUrl || user.avatar || '/avatars/avatar1.png'} className="w-full h-full object-cover" alt={user.displayName} />
                     </div>
                     <div
-                      className="text-white truncate text-[18px] md:text-[32px]"
+                      className="text-white text-[18px] md:text-[32px] min-w-0 flex-1 flex"
                       style={{ fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 600, lineHeight: '1.2' }}
                     >
-                      {user.displayName}
+                      <FitText>{user.displayName}</FitText>
                     </div>
                   </div>
                   <div className="flex items-center gap-[4px] md:gap-[8px]">

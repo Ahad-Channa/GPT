@@ -76,6 +76,13 @@ const BookDetailModal = ({ book, onClose, onOrder, balance }) => {
   const [previewIdx, setPreviewIdx] = useState(0);
   const [lightboxIdx, setLightboxIdx] = useState(null);
 
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   const nextPreview = () => {
     if (previewIdx + 3 < validImages.length) setPreviewIdx(p => p + 1);
   };
@@ -100,21 +107,21 @@ const BookDetailModal = ({ book, onClose, onOrder, balance }) => {
       onClick={onClose}>
       <motion.div initial={{ scale: 0.93, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.93, opacity: 0 }}
         transition={{ duration: 0.22 }}
-        className="bg-[#242424] rounded-[20px] w-[700px] h-[808px] my-auto flex flex-col p-[16px] gap-[16px] shadow-2xl relative border border-white/[0.08]"
+        className="bg-[#242424] rounded-[20px] w-full max-w-[95vw] md:w-[700px] h-auto max-h-[85vh] md:h-[808px] my-auto flex flex-col p-[16px] gap-[16px] shadow-2xl relative border border-white/[0.08] overflow-y-auto"
         onClick={e => e.stopPropagation()}>
 
         {/* Header */}
         <div className="flex items-center w-full h-[24px] gap-[6px] shrink-0">
-          <h2 className="w-[638px] text-white font-bold font-['Barlow_Condensed'] text-[16px] leading-[120%]">Book Details</h2>
+          <h2 className="flex-1 text-white font-bold font-['Barlow_Condensed'] text-[16px] leading-[120%]">Book Details</h2>
           <button onClick={onClose} className="text-[#888888] hover:text-white transition-colors flex items-center justify-center w-[24px] h-[24px]">
             <FiX size={24} strokeWidth={1} />
           </button>
         </div>
 
         {/* Book Info */}
-        <div className="flex flex-row w-[668px] h-[401px] gap-[16px] shrink-0">
+        <div className="flex flex-col md:flex-row w-full md:w-[668px] md:h-[401px] gap-[16px] shrink-0">
           {/* Cover */}
-          <div className="w-[161px] h-[246px] shrink-0">
+          <div className="w-[161px] h-[246px] mx-auto md:mx-0 shrink-0">
             {book.coverImage ? (
               <img src={book.coverImage.startsWith('data:') || book.coverImage.startsWith('http') ? book.coverImage : `${BACKEND}${book.coverImage}`} alt={book.title} className="w-full h-full object-cover rounded-md drop-shadow-2xl"
                 onError={(e) => { e.target.style.display = 'none'; }} />
@@ -126,15 +133,15 @@ const BookDetailModal = ({ book, onClose, onOrder, balance }) => {
           </div>
 
           {/* Right — Info */}
-          <div className="flex flex-col w-[491px] shrink-0">
+          <div className="flex flex-col w-full md:w-[491px] shrink-0">
             {/* Title & Order Group */}
-            <div className="flex flex-col w-[491px] min-h-[150px] gap-[22px] shrink-0">
-              <h3 className="w-[491px] text-white font-semibold font-['Barlow_Condensed'] text-[26px] leading-[120%]">
+            <div className="flex flex-col w-full md:w-[491px] min-h-[150px] gap-[22px] shrink-0 items-center md:items-start text-center md:text-left">
+              <h3 className="w-full text-white font-semibold font-['Barlow_Condensed'] text-[26px] leading-[120%]">
                 {book.title}
               </h3>
 
-              <div className="flex items-center gap-[14px] w-[491px] h-[48px] shrink-0">
-                <div className="flex items-center gap-[3px] w-[238.5px] h-[26px]">
+              <div className="flex flex-col md:flex-row items-center gap-[14px] w-full md:w-[491px] md:h-[48px] shrink-0">
+                <div className="flex items-center justify-center md:justify-start gap-[3px] w-full md:w-[238.5px] h-[26px]">
                   <img src="/coins/Coin.png" alt="Coin" className="w-[26px] h-[26px] object-contain rounded-full shadow-[0px_14px_34px_0px_rgba(254,198,53,0.3)]" />
                   <span className="font-bold font-['Barlow_Condensed'] text-[32px] leading-none bg-clip-text text-transparent bg-gradient-to-b from-[#FEDF77] to-[#FCB91E]">
                     {book.coinCost.toLocaleString()}
@@ -154,11 +161,11 @@ const BookDetailModal = ({ book, onClose, onOrder, balance }) => {
             </div>
 
             {book.description && (
-              <div className="flex flex-col w-[491px] min-h-[235px] gap-[6px] mt-[16px] shrink-0">
-                <h4 className="w-[491px] min-h-[17px] text-white font-bold font-['Barlow_Condensed'] text-[14px] leading-[120%]">
+              <div className="flex flex-col w-full md:w-[491px] md:min-h-[235px] gap-[6px] mt-[16px] shrink-0">
+                <h4 className="w-full md:w-[491px] min-h-[17px] text-white font-bold font-['Barlow_Condensed'] text-[14px] leading-[120%]">
                   Description
                 </h4>
-                <div className="w-[491px] min-h-[212px] text-[#888888] font-medium font-['Barlow_Condensed'] text-[14px] leading-[130%] whitespace-pre-wrap">
+                <div className="w-full md:w-[491px] min-h-[212px] text-[#888888] font-medium font-['Barlow_Condensed'] text-[14px] leading-[130%] whitespace-pre-wrap text-left">
                   {book.description}
                 </div>
               </div>
@@ -168,8 +175,8 @@ const BookDetailModal = ({ book, onClose, onOrder, balance }) => {
 
         {/* Preview Section */}
         {validImages.length > 0 && (
-          <div className="bg-[rgba(0,0,0,0.36)] backdrop-blur-[44px] rounded-[20px] w-[668px] h-[319px] p-[16px] flex flex-col gap-[16px] shrink-0">
-            <h4 className="w-[636px] h-[15px] text-white font-semibold font-['Barlow_Condensed'] text-[21px] leading-[120%] flex items-center">Book Preview</h4>
+          <div className="bg-[rgba(0,0,0,0.36)] backdrop-blur-[44px] rounded-[20px] w-full md:w-[668px] h-auto md:h-[319px] p-[16px] flex flex-col gap-[16px] shrink-0">
+            <h4 className="w-full md:w-[636px] h-[15px] text-white font-semibold font-['Barlow_Condensed'] text-[21px] leading-[120%] flex items-center">Book Preview</h4>
             <div className="flex items-center justify-between">
               <button
                 onClick={prevPreview}
@@ -178,12 +185,12 @@ const BookDetailModal = ({ book, onClose, onOrder, balance }) => {
               >
                 <img src="/coins/leftarrow.png" alt="Previous" className="w-[16px] h-[16px] object-contain rotate-180" />
               </button>
-              <div className="flex gap-[16px] justify-center overflow-hidden">
-                {validImages.slice(previewIdx, previewIdx + 3).map((url, i) => (
+              <div className="flex gap-[8px] md:gap-[16px] justify-center overflow-x-auto w-full max-w-[220px] md:max-w-none [&::-webkit-scrollbar]:hidden">
+                {validImages.slice(previewIdx, previewIdx + (isMobile ? 1 : 3)).map((url, i) => (
                   <div
                     key={i}
                     onClick={() => setLightboxIdx(previewIdx + i)}
-                    className="bg-white rounded-[3px] overflow-hidden flex-shrink-0 w-[177px] h-[256px] flex items-center justify-center cursor-pointer hover:ring-2 hover:ring-[#49B265] transition-all"
+                    className="bg-white rounded-[3px] overflow-hidden flex-shrink-0 w-full md:w-[177px] h-[256px] flex items-center justify-center cursor-pointer hover:ring-2 hover:ring-[#49B265] transition-all"
                   >
                     <img src={url} alt={`Preview ${i + 1}`} className="w-full h-full object-cover" />
                   </div>
@@ -340,7 +347,7 @@ const OrderModal = ({ book, onClose, onSuccess, balance }) => {
         onClick={handleDone}>
         <motion.div initial={{ scale: 0.93, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.93, opacity: 0 }}
           transition={{ duration: 0.22 }}
-          className="bg-[#242424] rounded-[20px] w-[500px] h-[379px] my-auto flex flex-col items-center p-[16px] gap-[20px] shadow-2xl relative border border-white/[0.08]"
+          className="bg-[#242424] rounded-[20px] w-full max-w-[95vw] md:w-[500px] h-auto md:h-[379px] py-10 md:py-[16px] my-auto flex flex-col items-center p-[16px] gap-[20px] shadow-2xl relative border border-white/[0.08]"
           onClick={e => e.stopPropagation()}>
 
           <button onClick={handleDone} className="absolute top-4 right-4 w-[36px] h-[36px] rounded-[10px] bg-white/[0.11] hover:bg-white/[0.18] transition-colors flex items-center justify-between px-[8px] text-white shrink-0">
@@ -353,15 +360,15 @@ const OrderModal = ({ book, onClose, onSuccess, balance }) => {
             <FiCheck size={36} strokeWidth={3} />
           </div>
 
-          <h2 className="text-white font-bold font-['Barlow_Condensed'] text-[28px] leading-[120%] tracking-normal m-0 p-0 text-center uppercase w-[468px] h-[34px] flex items-center justify-center shrink-0">
+          <h2 className="text-white font-bold font-['Barlow_Condensed'] text-[24px] md:text-[28px] leading-[120%] tracking-normal m-0 p-0 text-center uppercase w-full md:w-[468px] h-auto md:h-[34px] flex items-center justify-center shrink-0">
             Order Submitted!
           </h2>
 
-          <div className="flex flex-col gap-[6px] items-center w-[468px] h-[85px] shrink-0 justify-center overflow-y-auto custom-scrollbar">
-            <p className="font-medium font-['Barlow_Condensed'] text-[18px] leading-[130%] m-0 p-0 text-center w-[468px]" style={{ color: 'var(--Text-text-sheen, rgba(136, 136, 136, 1))' }}>
+          <div className="flex flex-col gap-[6px] items-center w-full md:w-[468px] h-auto md:h-[85px] shrink-0 justify-center overflow-y-auto custom-scrollbar">
+            <p className="font-medium font-['Barlow_Condensed'] text-[16px] md:text-[18px] leading-[130%] m-0 p-0 text-center w-full md:w-[468px]" style={{ color: 'var(--Text-text-sheen, rgba(136, 136, 136, 1))' }}>
               You have successfully order book &ldquo;{book.title}&rdquo;
             </p>
-            <p className="font-medium font-['Barlow_Condensed'] text-[18px] leading-[130%] m-0 p-0 text-center w-[468px]" style={{ color: 'var(--Text-text-sheen, rgba(136, 136, 136, 1))' }}>
+            <p className="font-medium font-['Barlow_Condensed'] text-[16px] md:text-[18px] leading-[130%] m-0 p-0 text-center w-full md:w-[468px]" style={{ color: 'var(--Text-text-sheen, rgba(136, 136, 136, 1))' }}>
               Our team will process your order within 1-3 business days. Check your email for updates.
             </p>
           </div>
@@ -385,12 +392,12 @@ const OrderModal = ({ book, onClose, onSuccess, balance }) => {
       onClick={onClose}>
       <motion.div initial={{ scale: 0.93, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.93, opacity: 0 }}
         transition={{ duration: 0.22 }}
-        className="bg-[#242424] rounded-[20px] w-[700px] h-[835px] my-auto flex flex-col p-[16px] gap-[16px] shadow-2xl relative border border-white/[0.08]"
+        className="bg-[#242424] rounded-[20px] w-full max-w-[95vw] md:w-[700px] h-auto max-h-[90vh] md:h-[835px] my-auto flex flex-col p-[16px] gap-[16px] shadow-2xl relative border border-white/[0.08] overflow-y-auto"
         onClick={e => e.stopPropagation()}>
 
         {/* Header */}
-        <div className="flex items-center w-[668px] h-[24px] gap-[6px] shrink-0">
-          <h2 className="w-[638px] h-[19px] text-white font-bold font-['Barlow_Condensed'] text-[16px] leading-[120%]">Order Book</h2>
+        <div className="flex items-center w-full md:w-[668px] h-[24px] gap-[6px] shrink-0">
+          <h2 className="flex-1 text-white font-bold font-['Barlow_Condensed'] text-[16px] leading-[120%]">Order Book</h2>
           <button onClick={onClose} className="w-[24px] h-[24px] flex items-center justify-center text-white/50 hover:text-white transition-colors shrink-0">
             <FiX size={24} strokeWidth={1.5} />
           </button>
@@ -399,7 +406,7 @@ const OrderModal = ({ book, onClose, onSuccess, balance }) => {
         <form onSubmit={handleSubmit} className="flex flex-col gap-[16px]">
 
           {/* Book Info Header */}
-          <div className="flex w-[668px] h-[119px] gap-[16px] shrink-0 items-center">
+          <div className="flex flex-col md:flex-row w-full md:w-[668px] h-auto md:h-[119px] gap-[16px] shrink-0 items-center md:items-start text-center md:text-left">
             <div className="w-[78px] h-[119px] shrink-0 overflow-hidden shadow-lg rounded-[3px]">
               {book.coverImage ? (
                 <img src={book.coverImage.startsWith('data:') || book.coverImage.startsWith('http') ? book.coverImage : `${BACKEND}${book.coverImage}`} alt={book.title} className="w-full h-full object-cover"
@@ -408,11 +415,11 @@ const OrderModal = ({ book, onClose, onSuccess, balance }) => {
                 <div className="w-full h-full flex items-center justify-center"><FiBook className="text-slate-600 text-3xl" /></div>
               )}
             </div>
-            <div className="flex flex-col w-[574px] min-h-[89px] gap-[16px] shrink-0">
-              <h3 className="w-[574px] min-h-[41px] text-white font-semibold font-['Barlow_Condensed'] text-[22px] leading-[120%] line-clamp-2">
+            <div className="flex flex-col w-full md:w-[574px] min-h-[89px] gap-[16px] shrink-0 items-center md:items-start">
+              <h3 className="w-full text-white font-semibold font-['Barlow_Condensed'] text-[22px] leading-[120%] line-clamp-2">
                 {book.title}
               </h3>
-              <div className="flex items-center gap-[3px] w-[237px] h-[26px]">
+              <div className="flex items-center justify-center md:justify-start gap-[3px] w-full md:w-[237px] h-[26px]">
                 <img src="/coins/Coin.png" alt="Coin" className="w-[26px] h-[26px] object-contain rounded-full shadow-[0px_14px_34px_0px_rgba(254,198,53,0.3)] shrink-0" />
                 <span className="font-bold font-['Barlow_Condensed'] text-[24px] leading-none bg-clip-text text-transparent bg-gradient-to-b from-[#FEDF77] to-[#FCB91E]">
                   {book.coinCost ? book.coinCost.toLocaleString() : "0"}
@@ -422,16 +429,16 @@ const OrderModal = ({ book, onClose, onSuccess, balance }) => {
           </div>
 
           {/* Shipping Address */}
-          <div className="bg-[rgba(0,0,0,0.36)] backdrop-blur-[44px] rounded-[20px] w-[668px] h-[327px] p-[16px] flex flex-col gap-[16px] shrink-0">
-            <h3 className="w-[636px] h-[15px] text-white font-semibold font-['Barlow_Condensed'] text-[21px] leading-[120%] shrink-0">Shipping Address</h3>
+          <div className="bg-[rgba(0,0,0,0.36)] backdrop-blur-[44px] rounded-[20px] w-full md:w-[668px] h-auto md:h-[327px] p-[16px] flex flex-col gap-[16px] shrink-0">
+            <h3 className="w-full md:w-[636px] h-[15px] text-white font-semibold font-['Barlow_Condensed'] text-[21px] leading-[120%] shrink-0">Shipping Address</h3>
 
-            <div className="w-[636px] h-[264px] shrink-0 grid grid-cols-2 gap-[12px]">
+            <div className="w-full md:w-[636px] h-auto md:h-[264px] shrink-0 grid grid-cols-2 gap-[12px]">
               <div className="flex flex-col gap-[4px] col-span-2 sm:col-span-1">
                 <label className="w-fit h-[20px] text-white font-medium font-['Barlow_Condensed'] text-[16px] leading-[20px] tracking-[-0.01em] flex items-center shrink-0">Full Name</label>
                 <div className="w-full h-[56px] bg-[rgba(255,255,255,0.08)] rounded-[10px] py-[16px] px-[20px] flex justify-between items-center">
                   <img src="/coins/orman.png" alt="User" className="w-[24px] h-[24px] shrink-0" />
                   <input type="text" required value={form.fullName} onChange={e => set('fullName', e.target.value)}
-                    className="w-[236px] h-[20px] bg-transparent text-white font-medium font-['Barlow_Condensed'] text-[18px] leading-[20px] placeholder:text-[#898D8F] focus:outline-none border-none p-0"
+                    className="flex-1 w-full h-[20px] bg-transparent text-white font-medium font-['Barlow_Condensed'] text-[18px] leading-[20px] placeholder:text-[#898D8F] focus:outline-none border-none p-0 ml-2"
                     placeholder="Emmy" />
                 </div>
               </div>
@@ -440,8 +447,8 @@ const OrderModal = ({ book, onClose, onSuccess, balance }) => {
                 <div className="w-full h-[56px] bg-[rgba(255,255,255,0.08)] rounded-[10px] py-[16px] px-[20px] flex justify-between items-center">
                   <img src="/coins/orsms.png" alt="Email" className="w-[24px] h-[24px] shrink-0" />
                   <input type="email" required value={form.email} onChange={e => set('email', e.target.value)}
-                    className="w-[236px] h-[20px] bg-transparent text-white font-medium font-['Barlow_Condensed'] text-[18px] leading-[20px] placeholder:text-[#898D8F] focus:outline-none border-none p-0"
-                    placeholder="emmy@gmail.com" />
+                    className="flex-1 w-full h-[20px] bg-transparent text-white font-medium font-['Barlow_Condensed'] text-[18px] leading-[20px] placeholder:text-[#898D8F] focus:outline-none border-none p-0 ml-2"
+                    placeholder="emmy@example.com" />
                 </div>
               </div>
               <div className="flex flex-col gap-[4px] col-span-2">
@@ -449,7 +456,7 @@ const OrderModal = ({ book, onClose, onSuccess, balance }) => {
                 <div className="w-full h-[56px] bg-[rgba(255,255,255,0.08)] rounded-[10px] py-[16px] px-[20px] flex justify-between items-center">
                   <img src="/coins/orloc.png" alt="Location" className="w-[24px] h-[24px] shrink-0" />
                   <input type="text" required value={form.address} onChange={e => set('address', e.target.value)}
-                    className="w-[560px] h-[20px] bg-transparent text-white font-medium font-['Barlow_Condensed'] text-[18px] leading-[20px] placeholder:text-[#898D8F] focus:outline-none border-none p-0"
+                    className="flex-1 w-full h-[20px] bg-transparent text-white font-medium font-['Barlow_Condensed'] text-[18px] leading-[20px] placeholder:text-[#898D8F] focus:outline-none border-none p-0 ml-2"
                     placeholder="Enter Your complete address" />
                 </div>
               </div>
@@ -457,7 +464,7 @@ const OrderModal = ({ book, onClose, onSuccess, balance }) => {
                 <label className="w-fit h-[20px] text-white font-medium font-['Barlow_Condensed'] text-[16px] leading-[20px] tracking-[-0.01em] flex items-center shrink-0">City</label>
                 <div className="w-full h-[56px] bg-[rgba(255,255,255,0.08)] rounded-[10px] py-[16px] px-[20px] flex justify-start items-center">
                   <input type="text" required value={form.city} onChange={e => set('city', e.target.value)}
-                    className="w-full h-[20px] bg-transparent text-white font-medium font-['Barlow_Condensed'] text-[18px] leading-[20px] placeholder:text-[#898D8F] focus:outline-none border-none p-0"
+                    className="flex-1 w-full h-[20px] bg-transparent text-white font-medium font-['Barlow_Condensed'] text-[18px] leading-[20px] placeholder:text-[#898D8F] focus:outline-none border-none p-0 ml-2"
                     placeholder="Enter Your City" />
                 </div>
               </div>
@@ -466,7 +473,7 @@ const OrderModal = ({ book, onClose, onSuccess, balance }) => {
                 <div className="w-full h-[56px] bg-[rgba(255,255,255,0.08)] rounded-[10px] py-[16px] px-[20px] flex justify-between items-center">
                   <img src="/coins/orloc.png" alt="Zipcode" className="w-[24px] h-[24px] shrink-0" />
                   <input type="text" required value={form.zipcode} onChange={e => set('zipcode', e.target.value)}
-                    className="w-[236px] h-[20px] bg-transparent text-white font-medium font-['Barlow_Condensed'] text-[18px] leading-[20px] placeholder:text-[#898D8F] focus:outline-none border-none p-0"
+                    className="flex-1 w-full h-[20px] bg-transparent text-white font-medium font-['Barlow_Condensed'] text-[18px] leading-[20px] placeholder:text-[#898D8F] focus:outline-none border-none p-0 ml-2"
                     placeholder="12345" />
                 </div>
               </div>
@@ -474,8 +481,8 @@ const OrderModal = ({ book, onClose, onSuccess, balance }) => {
           </div>
 
           {/* Personal Signature */}
-          <div className="bg-[rgba(0,0,0,0.36)] backdrop-blur-[44px] rounded-[20px] w-[668px] p-[16px] flex flex-col gap-[16px] shrink-0">
-            <h3 className="w-[636px] h-[15px] text-white font-semibold font-['Barlow_Condensed'] text-[21px] leading-[120%] shrink-0">Personal Signature</h3>
+          <div className="bg-[rgba(0,0,0,0.36)] backdrop-blur-[44px] rounded-[20px] w-full md:w-[668px] p-[16px] flex flex-col gap-[16px] shrink-0">
+            <h3 className="w-full md:w-[636px] h-[15px] text-white font-semibold font-['Barlow_Condensed'] text-[21px] leading-[120%] shrink-0">Personal Signature</h3>
 
             <label className="flex items-center gap-[12px] cursor-pointer w-fit">
               <button type="button" onClick={() => set('wantsSignature', !form.wantsSignature)}
@@ -510,7 +517,7 @@ const OrderModal = ({ book, onClose, onSuccess, balance }) => {
               {submitting ? 'Placing Order...' : 'Order Book Now'}
               {!submitting && <FiArrowRight size={20} strokeWidth={2.5} />}
             </button>
-            <p className="w-[668px] h-[20px] text-[rgba(137,141,143,1)] font-medium font-['Barlow_Condensed'] text-[18px] leading-[20px] text-center flex items-center justify-center shrink-0">
+            <p className="w-full md:w-[668px] h-auto md:h-[20px] text-[rgba(137,141,143,1)] font-medium font-['Barlow_Condensed'] text-[16px] md:text-[18px] leading-[20px] text-center flex items-center justify-center shrink-0">
               After ordering, the book will be shipped within 3-5 business days
             </p>
           </div>
@@ -534,6 +541,13 @@ const MyBooksSection = ({ balance, onBalanceUpdate, onClose, preFetchedBooks, pr
 
   const [detailBook, setDetailBook] = useState(null);
   const [orderBook, setOrderBook] = useState(null);
+
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   const updateBooksState = useCallback((newBooksOrFn) => {
     setBooks(prev => {
@@ -638,12 +652,12 @@ const MyBooksSection = ({ balance, onBalanceUpdate, onClose, preFetchedBooks, pr
       onClick={onClose}>
       <motion.div initial={{ scale: 0.93, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.93, opacity: 0 }}
         transition={{ duration: 0.22 }}
-        className="bg-[#242424] rounded-[20px] w-[700px] h-[720px] my-auto flex flex-col p-[16px] gap-[16px] shadow-2xl relative border border-white/[0.08]"
+        className="bg-[#242424] rounded-[20px] w-[95vw] md:w-[700px] h-[85vh] md:h-[720px] my-auto flex flex-col p-[16px] gap-[16px] shadow-2xl relative border border-white/[0.08]"
         onClick={e => e.stopPropagation()}>
 
         {/* Header */}
-        <div className="flex items-center w-[668px] h-[24px] gap-[6px] shrink-0">
-          <h2 className="w-[638px] h-[19px] text-white font-bold font-['Barlow_Condensed'] text-[16px] leading-[120%] flex items-center">Select Book to Order</h2>
+        <div className="flex items-center w-full h-[24px] gap-[6px] shrink-0">
+          <h2 className="flex-1 text-white font-bold font-['Barlow_Condensed'] text-[16px] leading-[120%] flex items-center">Select Book to Order</h2>
           <button onClick={onClose} className="text-[#888888] hover:text-white transition-colors flex items-center justify-center w-[24px] h-[24px]">
             <FiX size={24} strokeWidth={1.5} />
           </button>
@@ -656,7 +670,7 @@ const MyBooksSection = ({ balance, onBalanceUpdate, onClose, preFetchedBooks, pr
           </div>
         ) : (
           /* Books Grid */
-          <div className="w-[668px] h-[648px] overflow-x-auto overflow-y-hidden select-none [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+          <div className="w-full md:w-[668px] flex-1 md:h-[648px] overflow-y-auto md:overflow-y-hidden overflow-x-hidden md:overflow-x-auto select-none [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
           {books.length === 0 ? (
             <div className="flex flex-col items-center justify-center gap-3 py-20 text-center w-full h-full">
               <div className="w-12 h-12 rounded-2xl bg-white/[0.03] border border-white/[0.06] flex items-center justify-center">
@@ -665,6 +679,49 @@ const MyBooksSection = ({ balance, onBalanceUpdate, onClose, preFetchedBooks, pr
               <p className="text-slate-500 text-sm">No books available right now.</p>
             </div>
           ) : (() => {
+            if (isMobile) {
+              return (
+                <div className="grid grid-cols-2 gap-[14px] p-0.5 pb-[20px]">
+                  {books.map((book) => (
+                    <button
+                      key={book._id}
+                      onClick={() => setDetailBook(book)}
+                      className="flex flex-col items-center w-full h-auto aspect-[2/3] gap-[10px] rounded-[16px] p-[12px] bg-[rgba(0,0,0,0.36)] backdrop-blur-[44px] hover:scale-[1.02] transition-all cursor-pointer text-left overflow-hidden"
+                    >
+                      {/* Cover */}
+                      <div className="flex items-center justify-center w-full flex-1 min-h-0 overflow-hidden">
+                        {book.coverImage ? (
+                          <img src={book.coverImage.startsWith('data:') || book.coverImage.startsWith('http') ? book.coverImage : `${BACKEND}${book.coverImage}`} alt={book.title}
+                            className="w-full h-full object-contain drop-shadow-lg"
+                            onError={(e) => { e.target.style.display = 'none'; }} />
+                        ) : (
+                          <FiBook className="text-slate-600 text-3xl" />
+                        )}
+                      </div>
+
+                      {/* Info */}
+                      <div className="flex flex-col w-full h-[60px] justify-between shrink-0">
+                        <p className="m-0 p-0 font-semibold font-['Barlow_Condensed'] text-[16px] leading-[120%] text-white line-clamp-2">
+                          {book.title}
+                        </p>
+                        <div className="flex items-center w-full h-[20px] gap-[3px] mt-1">
+                          <img
+                            src="/coins/Coin.png"
+                            alt="Coin"
+                            className="w-[18px] h-[18px] object-contain rounded-full shadow-[0px_14px_34px_0px_rgba(254,198,53,0.3)] flex-shrink-0"
+                          />
+                          <span className="flex items-center pt-[2px] m-0 font-bold font-['Barlow_Condensed'] text-[18px] leading-none bg-clip-text text-transparent bg-gradient-to-b from-[#FEDF77] to-[#FCB91E]">
+                            {book.coinCost.toLocaleString()}
+                          </span>
+                        </div>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              );
+            }
+
+            // Desktop logic
             const cols = Math.max(3, Math.ceil(books.length / 2));
             const reorderedBooks = Array(cols * 2).fill(null);
             books.forEach((book, i) => {
