@@ -13,6 +13,7 @@ const notificationSchema = new mongoose.Schema(
       enum: [
         'welcome',
         'offer_reward',
+        'direct_offer_reward',      // Direct partner offer credited via S2S postback
         'withdrawal_submitted',
         'withdrawal_approved',
         'withdrawal_rejected',

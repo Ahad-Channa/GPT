@@ -5,6 +5,7 @@ import { FiUsers, FiGift, FiDollarSign, FiClipboard, FiMonitor, FiInbox } from '
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ProviderCard, OfferwallCard, FeaturedOfferCard, FeaturedOfferModal } from '../components/offers/OfferCards';
+import { DirectOfferCard, DirectOfferModal } from '../components/offers/DirectOfferCard';
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
@@ -59,6 +60,7 @@ const Home = () => {
 
   const [settings, setSettings] = useState(null);
   const [customOffers, setCustomOffers] = useState([]);
+  const [directOffers, setDirectOffers] = useState([]);
   const [loadingSettings, setLoadingSettings] = useState(true);
   const [loadingOffers, setLoadingOffers] = useState(true);
   const [token, setToken] = useState(null);
@@ -66,6 +68,13 @@ const Home = () => {
   const [activeProvider, setActiveProvider] = useState(null);
   const [filter, setFilter] = useState('all');
   const [selectedOffer, setSelectedOffer] = useState(null);
+  const [selectedDirectOffer, setSelectedDirectOffer] = useState(null);
+
+  // Merge both offer types for the featured carousel
+  const allFeaturedOffers = [
+    ...directOffers.map(o => ({ ...o, _isDirectOffer: true })),
+    ...customOffers,
+  ];
 
   useEffect(() => {
     if (activeProvider || selectedOffer) {
@@ -180,6 +189,23 @@ const Home = () => {
     fetchOffers();
   }, [token]);
 
+  // Fetch active direct offers (S2S auto-tracked)
+  useEffect(() => {
+    if (!token) return;
+    const fetchDirectOffers = async () => {
+      try {
+        const res = await fetch(`${API}/direct-offers`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const data = await res.json();
+        if (data.success) setDirectOffers(data.offers);
+      } catch (err) {
+        console.error('Failed to load direct offers:', err);
+      }
+    };
+    fetchDirectOffers();
+  }, [token]);
+
   const scrollTo = (ref, filterType) => {
     setFilter(filterType);
     if (ref && ref.current) {
@@ -202,7 +228,7 @@ const Home = () => {
 
   const tabs = [
     { id: 'all', label: 'All Operations', iconSrc: '/coins/dodo.png' },
-    { id: 'featured', label: 'Featured Offers', iconSrc: '/coins/gift.png', count: customOffers.length, ref: featuredRef },
+    { id: 'featured', label: 'Featured Offers', iconSrc: '/coins/gift.png', count: allFeaturedOffers.length, ref: featuredRef },
     { id: 'gaming', label: 'Gaming & Apps', iconSrc: '/coins/game.png', count: gamingProviders.length, ref: gamingRef },
     { id: 'surveys', label: 'Surveys', iconSrc: '/coins/clipboard.png', count: surveyProviders.length, ref: surveysRef },
   ];
@@ -380,42 +406,27 @@ const Home = () => {
           <div className="flex flex-col gap-[20px] lg:gap-[30px]">
 
             {/* Section 1: Featured Offers */}
-            {(filter === 'all' || filter === 'featured') && customOffers.length > 0 && (
+            {(filter === 'all' || filter === 'featured') && allFeaturedOffers.length > 0 && (
               <motion.section
                 ref={featuredRef}
                 variants={item}
                 className="flex flex-col shrink-0 w-full lg:w-[1240px] min-h-[320px] lg:min-h-[250px] rounded-[10px] lg:rounded-[20px] p-[10px] lg:p-[20px] gap-[10px] lg:gap-[18px]"
-                style={{
-                  background: 'rgba(255, 255, 255, 0.14)'
-                }}
+                style={{ background: 'rgba(255, 255, 255, 0.14)' }}
               >
-                <div
-                  className="flex items-center justify-between w-full relative overflow-hidden lg:overflow-visible h-[60px] lg:h-[133px] gap-2 lg:gap-4"
-                >
+                <div className="flex items-center justify-between w-full relative overflow-hidden lg:overflow-visible h-[60px] lg:h-[133px] gap-2 lg:gap-4">
                   <div className="flex items-center gap-2 lg:gap-4 z-10">
-                    <div
-                      className="flex items-center justify-center shrink-0 w-[44px] h-[44px] lg:w-[88px] lg:h-[88px] rounded-[8px] lg:rounded-[10px] bg-[rgba(41,253,152,0.1)] p-1.5 lg:p-[10px_12px]"
-                    >
-                      <img
-                        src="/coins/gift.png"
-                        alt="Featured Offers"
-                        className="w-[24px] h-[24px] lg:w-[44px] lg:h-[44px] object-contain"
-                      />
+                    <div className="flex items-center justify-center shrink-0 w-[44px] h-[44px] lg:w-[88px] lg:h-[88px] rounded-[8px] lg:rounded-[10px] bg-[rgba(41,253,152,0.1)] p-1.5 lg:p-[10px_12px]">
+                      <img src="/coins/gift.png" alt="Featured Offers" className="w-[24px] h-[24px] lg:w-[44px] lg:h-[44px] object-contain" />
                     </div>
                     <div className="flex flex-col gap-0.5 lg:gap-1.5">
-                      <h2 className="font-barlow font-bold text-[18px] lg:text-[42px] leading-[1.1] text-white m-0">
-                        Featured Offers
-                      </h2>
+                      <h2 className="font-barlow font-bold text-[18px] lg:text-[42px] leading-[1.1] text-white m-0">Featured Offers</h2>
                       <p className="font-barlow font-medium text-[11px] lg:text-[22px] leading-[1.2] text-[#888888] m-0 max-w-[140px] lg:max-w-none">
-                        High-reward direct tasks. Manual approval required.
+                        {directOffers.length > 0 ? 'Auto-tracked & manual reward offers.' : 'High-reward direct tasks. Manual approval required.'}
                       </p>
                     </div>
                   </div>
-                  <img
-                    src="/coins/feature%20offer.png"
-                    alt="Featured Offers Graphic"
-                    className="hidden lg:block absolute right-[-40px] lg:relative lg:right-auto w-[140px] h-[60px] lg:w-[332px] lg:h-[133px] object-contain shrink-0 opacity-100 pointer-events-none"
-                  />
+                  <img src="/coins/feature%20offer.png" alt="Featured Offers Graphic"
+                    className="hidden lg:block absolute right-[-40px] lg:relative lg:right-auto w-[140px] h-[60px] lg:w-[332px] lg:h-[133px] object-contain shrink-0 opacity-100 pointer-events-none" />
                 </div>
                 <div className="relative mt-2">
                   <div
@@ -424,30 +435,31 @@ const Home = () => {
                     className="flex flex-col lg:flex-row overflow-visible lg:overflow-x-auto lg:snap-x lg:snap-mandatory gap-4 lg:gap-0"
                     style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
                   >
-                    {Array.from({ length: Math.ceil(customOffers.length / itemsPerPage) }).map((_, pageIndex) => (
+                    {Array.from({ length: Math.ceil(allFeaturedOffers.length / itemsPerPage) }).map((_, pageIndex) => (
                       <div key={pageIndex} className="min-w-full shrink-0 lg:snap-start flex gap-4">
-                        {customOffers.slice(pageIndex * itemsPerPage, pageIndex * itemsPerPage + itemsPerPage).map(offer => (
+                        {allFeaturedOffers.slice(pageIndex * itemsPerPage, pageIndex * itemsPerPage + itemsPerPage).map(offer => (
                           <div key={offer._id} className="w-[calc(50%-8px)] lg:w-auto shrink-0">
-                            <FeaturedOfferCard offer={offer} onClick={() => setSelectedOffer(offer)} />
+                            {offer._isDirectOffer ? (
+                              <DirectOfferCard
+                                offer={offer}
+                                onClick={() => setSelectedDirectOffer(offer)}
+                              />
+                            ) : (
+                              <FeaturedOfferCard offer={offer} onClick={() => setSelectedOffer(offer)} />
+                            )}
                           </div>
                         ))}
                       </div>
                     ))}
                   </div>
-
                   {/* Dot Pagination */}
                   <div className="hidden lg:flex justify-center mt-4 lg:mt-6">
-                    <div
-                      className="flex items-center h-[6px] lg:h-[12px] gap-[4px] lg:gap-[6px]"
-                    >
-                      {Array.from({ length: Math.ceil(customOffers.length / itemsPerPage) }).map((_, idx) => (
+                    <div className="flex items-center h-[6px] lg:h-[12px] gap-[4px] lg:gap-[6px]">
+                      {Array.from({ length: Math.ceil(allFeaturedOffers.length / itemsPerPage) }).map((_, idx) => (
                         <button
                           key={idx}
                           onClick={() => scrollFeaturedToPage(idx)}
-                          className={`transition-all duration-300 hover:opacity-80 rounded-[30px] h-[6px] lg:h-[12px] ${featuredActiveIndex === idx
-                              ? 'w-[18px] lg:w-[42px] bg-[#49B265]'
-                              : 'w-[6px] lg:w-[12px] bg-white/20'
-                            }`}
+                          className={`transition-all duration-300 hover:opacity-80 rounded-[30px] h-[6px] lg:h-[12px] ${featuredActiveIndex === idx ? 'w-[18px] lg:w-[42px] bg-[#49B265]' : 'w-[6px] lg:w-[12px] bg-white/20'}`}
                           aria-label={`Go to page ${idx + 1}`}
                         />
                       ))}
@@ -618,6 +630,19 @@ const Home = () => {
             offer={selectedOffer}
             token={token}
             onClose={() => setSelectedOffer(null)}
+          />
+        )}
+
+        {selectedDirectOffer && (
+          <DirectOfferModal
+            offer={selectedDirectOffer}
+            token={token}
+            onClose={() => setSelectedDirectOffer(null)}
+            onClicked={(offerId) => {
+              setDirectOffers(prev =>
+                prev.map(o => o._id === offerId ? { ...o, clickStatus: 'clicked' } : o)
+              );
+            }}
           />
         )}
       </AnimatePresence>

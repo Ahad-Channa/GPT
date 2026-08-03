@@ -27,6 +27,7 @@ import AdminSettings from './pages/admin/AdminSettings';
 import AdminOfferwalls from './pages/admin/AdminOfferwalls';
 import AdminPromoCodes from './pages/admin/AdminPromoCodes';
 import AdminCustomOffers from './pages/admin/AdminCustomOffers';
+import AdminDirectOffers from './pages/admin/AdminDirectOffers';
 import AdminLeaderboard from './pages/admin/AdminLeaderboard';
 import AdminProofs from './pages/admin/AdminProofs';
 import AdminAvatars from './pages/admin/AdminAvatars';
@@ -228,6 +229,7 @@ function App() {
         <Route path="promocodes" element={<AdminPromoCodes />} />
         <Route path="users" element={<AdminUsers />} />
         <Route path="featured-offers" element={<AdminCustomOffers />} />
+        <Route path="direct-offers" element={<AdminDirectOffers />} />
         <Route path="proofs" element={<AdminProofs />} />
         <Route path="leaderboard" element={<AdminLeaderboard />} />
         <Route path="chat" element={<AdminChat />} />

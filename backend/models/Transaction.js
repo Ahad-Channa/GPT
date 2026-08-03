@@ -13,6 +13,7 @@ const transactionSchema = new mongoose.Schema(
       enum: [
         'offer_reward',        // Offer Reward
         'custom_offer_reward', // Custom Offer Reward
+        'direct_offer_reward', // Direct Partner Offer Reward (S2S postback)
         'daily_bonus',         // Daily Bonus
         'referral_reward',     // Referral Reward
         'withdrawal',          // Withdrawal
@@ -42,7 +43,7 @@ const transactionSchema = new mongoose.Schema(
     // Fraud tracking / Advanced relation linking
     sourceType: {
       type: String,
-      enum: ['offer', 'referral', 'daily_bonus', 'withdrawal', 'chargeback', 'leaderboard', 'admin', 'promo', 'vip', 'mission', 'system'],
+      enum: ['offer', 'direct_offer', 'referral', 'daily_bonus', 'withdrawal', 'chargeback', 'leaderboard', 'admin', 'promo', 'vip', 'mission', 'system'],
       default: null,
     },
     sourceId: {
@@ -101,7 +102,7 @@ transactionSchema.index({ status: 1, transactionType: 1 });
 transactionSchema.post('save', async function (doc) {
   if (
     doc.status === 'completed' &&
-    ['offer_reward', 'custom_offer_reward'].includes(doc.transactionType) &&
+    ['offer_reward', 'custom_offer_reward', 'direct_offer_reward'].includes(doc.transactionType) &&
     doc.amount > 0
   ) {
     try {
