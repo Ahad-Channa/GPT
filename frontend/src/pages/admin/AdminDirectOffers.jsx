@@ -4,7 +4,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   FiLink, FiPlus, FiTrash2, FiToggleLeft, FiToggleRight,
   FiExternalLink, FiCheckCircle, FiXCircle, FiClock,
-  FiLoader, FiRefreshCw, FiEye, FiCopy, FiActivity
+  FiLoader, FiRefreshCw, FiEye, FiCopy, FiActivity,
+  FiChevronDown, FiChevronUp, FiSettings
 } from 'react-icons/fi';
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
@@ -46,11 +47,21 @@ const OfferFormModal = ({ offer, onClose, onSaved, token }) => {
     requirements: (offer?.requirements || []).join('\n'),
     platforms: offer?.platforms || { desktop: true, android: true, ios: true },
     isActive: offer?.isActive !== undefined ? offer.isActive : true,
+    postbackMapping: {
+      clickIdParam:       offer?.postbackMapping?.clickIdParam       || 'click_id',
+      transactionIdParam: offer?.postbackMapping?.transactionIdParam || 'txn_id',
+      payoutParam:        offer?.postbackMapping?.payoutParam        || 'payout',
+      statusParam:        offer?.postbackMapping?.statusParam        || 'status',
+      approvedValue:      offer?.postbackMapping?.approvedValue      || 'approved',
+      rejectedValue:      offer?.postbackMapping?.rejectedValue      || 'rejected',
+    },
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [showMapping, setShowMapping] = useState(false);
 
   const set = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.value }));
+  const setMapping = (k) => (e) => setForm((f) => ({ ...f, postbackMapping: { ...f.postbackMapping, [k]: e.target.value } }));
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -69,6 +80,7 @@ const OfferFormModal = ({ offer, onClose, onSaved, token }) => {
           expirationDate: form.expirationDate || null,
           requirements: form.requirements.split('\n').map(r => r.trim()).filter(Boolean),
           platforms: form.platforms,
+          postbackMapping: form.postbackMapping,
         }),
       });
       const data = await res.json();
@@ -167,6 +179,53 @@ const OfferFormModal = ({ offer, onClose, onSaved, token }) => {
               Offer is Active
             </label>
           )}
+
+          {/* Postback Parameter Mapping — Collapsible */}
+          <div className="border border-white/10 rounded-lg overflow-hidden">
+            <button
+              type="button"
+              onClick={() => setShowMapping(m => !m)}
+              className="w-full flex items-center justify-between px-3 py-2 bg-white/[0.03] hover:bg-white/[0.06] transition-colors text-left"
+            >
+              <span className="flex items-center gap-2 text-xs font-semibold text-slate-400">
+                <FiSettings className="text-indigo-400" /> Postback Parameter Mapping
+              </span>
+              {showMapping ? <FiChevronUp className="text-slate-500" /> : <FiChevronDown className="text-slate-500" />}
+            </button>
+            {showMapping && (
+              <div className="p-3 space-y-3 border-t border-white/5">
+                <p className="text-[11px] text-slate-500">
+                  Configure which query parameter names this advertiser uses. Leave defaults if unsure.
+                </p>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className={labelCls}>Click ID Parameter</label>
+                    <input className={inputCls} value={form.postbackMapping.clickIdParam} onChange={setMapping('clickIdParam')} placeholder="e.g. clickid, subid, click_id" />
+                  </div>
+                  <div>
+                    <label className={labelCls}>Transaction ID Parameter</label>
+                    <input className={inputCls} value={form.postbackMapping.transactionIdParam} onChange={setMapping('transactionIdParam')} placeholder="e.g. txn_id, tid" />
+                  </div>
+                  <div>
+                    <label className={labelCls}>Payout / Revenue Parameter</label>
+                    <input className={inputCls} value={form.postbackMapping.payoutParam} onChange={setMapping('payoutParam')} placeholder="e.g. payout, reward, commission" />
+                  </div>
+                  <div>
+                    <label className={labelCls}>Status Parameter</label>
+                    <input className={inputCls} value={form.postbackMapping.statusParam} onChange={setMapping('statusParam')} placeholder="e.g. status, event, action" />
+                  </div>
+                  <div>
+                    <label className={labelCls}>Approved Value</label>
+                    <input className={inputCls} value={form.postbackMapping.approvedValue} onChange={setMapping('approvedValue')} placeholder="e.g. approved, conversion, 1" />
+                  </div>
+                  <div>
+                    <label className={labelCls}>Rejected Value</label>
+                    <input className={inputCls} value={form.postbackMapping.rejectedValue} onChange={setMapping('rejectedValue')} placeholder="e.g. rejected, chargeback, 0" />
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
 
           {error && <p className="text-rose-400 text-sm">{error}</p>}
 
@@ -390,8 +449,14 @@ const AdminDirectOffers = () => {
 
   const backendBaseUrl = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:5000';
 
-  const buildPostbackUrl = (secret) =>
-    `${backendBaseUrl}/api/direct-offers/postback?click_id={CLICK_ID}&status=approved&secret=${secret}`;
+  const buildPostbackUrl = (offer) => {
+    const m = offer.postbackMapping || {};
+    const clickIdParam = m.clickIdParam || 'click_id';
+    const statusParam  = m.statusParam  || 'status';
+    const approvedVal  = m.approvedValue || 'approved';
+    const payoutParam  = m.payoutParam  || 'payout';
+    return `${backendBaseUrl}/api/direct-offers/postback?${clickIdParam}={CLICK_ID}&${statusParam}=${approvedVal}&${payoutParam}={PAYOUT}&secret=${offer.postbackSecretKey}`;
+  };
 
   return (
     <div className="space-y-6">
@@ -479,19 +544,30 @@ const AdminDirectOffers = () => {
                       </div>
                     </div>
 
+                    {/* Parameter mapping summary */}
+                    {offer.postbackMapping && (
+                      <div className="flex flex-wrap gap-x-4 gap-y-1 text-[10px] text-slate-500">
+                        <span>Click ID: <strong className="text-slate-400">{offer.postbackMapping.clickIdParam || 'click_id'}</strong></span>
+                        <span>Status: <strong className="text-slate-400">{offer.postbackMapping.statusParam || 'status'}</strong></span>
+                        <span>Approved: <strong className="text-emerald-400">{offer.postbackMapping.approvedValue || 'approved'}</strong></span>
+                        <span>Rejected: <strong className="text-rose-400">{offer.postbackMapping.rejectedValue || 'rejected'}</strong></span>
+                        <span>Payout: <strong className="text-slate-400">{offer.postbackMapping.payoutParam || 'payout'}</strong></span>
+                      </div>
+                    )}
+
                     <div>
                       <p className="text-[11px] text-slate-500 mb-1">Give this URL to your advertiser:</p>
                       <div className="flex items-start gap-2">
                         <code className="text-[10px] text-slate-300 font-mono bg-black/30 px-2 py-1 rounded break-all flex-1">
-                          {buildPostbackUrl(offer.postbackSecretKey)}
+                          {buildPostbackUrl(offer)}
                         </code>
-                        <button onClick={() => copySecret(buildPostbackUrl(offer.postbackSecretKey), offer._id + 'url')}
+                        <button onClick={() => copySecret(buildPostbackUrl(offer), offer._id + 'url')}
                           className="text-slate-500 hover:text-white flex-shrink-0 mt-1" title="Copy postback URL">
                           {copiedId === offer._id + 'url' ? <FiCheckCircle className="text-emerald-400" /> : <FiCopy />}
                         </button>
                       </div>
                       <p className="text-[10px] text-slate-600 mt-1">
-                        Replace <code className="text-slate-500">{'{'+'CLICK_ID'+'}'}</code> with the actual click_id parameter from your tracking link.
+                        Replace <code className="text-slate-500">{'{CLICK_ID}'}</code> with the actual click ID and <code className="text-slate-500">{'{PAYOUT}'}</code> with the payout amount.
                       </p>
                     </div>
                   </div>

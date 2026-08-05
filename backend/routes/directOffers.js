@@ -116,15 +116,16 @@ router.post('/click/:offerId', verifyToken, async (req, res) => {
     // Increment offer click counter
     await DirectOffer.findByIdAndUpdate(offer._id, { $inc: { totalClicks: 1 } });
 
-    // Build target URL with click_id appended
+    // Build target URL with click_id appended (use configured param name)
+    const clickIdParam = offer.postbackMapping?.clickIdParam || 'click_id';
     let targetUrl = offer.advertiserUrl;
     try {
       const url = new URL(targetUrl);
-      url.searchParams.set('click_id', clickId);
+      url.searchParams.set(clickIdParam, clickId);
       targetUrl = url.toString();
     } catch {
       const separator = targetUrl.includes('?') ? '&' : '?';
-      targetUrl = `${targetUrl}${separator}click_id=${clickId}`;
+      targetUrl = `${targetUrl}${separator}${encodeURIComponent(clickIdParam)}=${clickId}`;
     }
 
     return res.status(200).json({ success: true, url: targetUrl, clickId });
@@ -138,70 +139,92 @@ router.post('/click/:offerId', verifyToken, async (req, res) => {
 // GET /api/direct-offers/postback
 // PUBLIC (no auth) — Called by advertiser's server to confirm a conversion
 //
-// Expected query params:
-//   click_id  — The UUID we generated when the user clicked
-//   status    — "approved" | "rejected"
-//   secret    — The offer's postbackSecretKey (set in admin)
-//   payout    — (optional) USD amount advertiser is paying you
+// Each offer has its own postbackMapping that defines which query-param names
+// the advertiser uses.  The only fixed param is "secret" (authentication).
+//
+// Flow: secret → find offer → read dynamic params → find clickLog → process
 //
 // Returns "1" on success (industry standard), "0" on failure
 // ─────────────────────────────────────────────────────────────────────────────
 router.get('/postback', async (req, res) => {
-  const { click_id, status, secret, payout } = req.query;
+  const { secret } = req.query;
 
-  // Basic param validation
-  if (!click_id || !status || !secret) {
-    console.warn('[Postback] Missing required params:', req.query);
-    return res.status(200).send('0'); // Return 0 but 200 status so advertiser doesn't retry forever
-  }
-
-  const normalizedStatus = status.toLowerCase();
-  if (!['approved', 'rejected'].includes(normalizedStatus)) {
-    console.warn('[Postback] Invalid status value:', status);
+  // Secret is always required — it's our auth mechanism
+  if (!secret) {
+    console.warn('[Postback] Missing secret param:', req.query);
     return res.status(200).send('0');
   }
 
   try {
-    // Find the click log
-    const clickLog = await ClickLog.findOne({ clickId: click_id }).populate('offerId');
-    if (!clickLog) {
-      console.warn('[Postback] ClickLog not found for click_id:', click_id);
-      return res.status(200).send('1'); // Silently OK — may have been already processed
-    }
-
-    const offer = clickLog.offerId;
+    // ── Step 1: Find the offer by its unique secret key ───────────────────
+    const offer = await DirectOffer.findOne({ postbackSecretKey: secret });
     if (!offer) {
-      console.warn('[Postback] Offer not found for clickLog:', click_id);
-      return res.status(200).send('1');
+      console.error('[Postback] No offer found for secret:', secret.slice(0, 8) + '...');
+      return res.status(200).send('0');
     }
 
-    // Validate the secret
-    if (offer.postbackSecretKey !== secret) {
-      console.error('[Postback] Secret mismatch for offer:', offer._id, '| click_id:', click_id);
+    // ── Step 2: Read dynamic params using this offer's mapping ───────────
+    const mapping = offer.postbackMapping || {};
+    const clickIdParam   = mapping.clickIdParam   || 'click_id';
+    const statusParam    = mapping.statusParam     || 'status';
+    const payoutParam    = mapping.payoutParam     || 'payout';
+    const approvedValue  = (mapping.approvedValue  || 'approved').toLowerCase();
+    const rejectedValue  = (mapping.rejectedValue  || 'rejected').toLowerCase();
+
+    const clickIdValue  = req.query[clickIdParam];
+    const statusValue   = req.query[statusParam];
+    const payoutValue   = req.query[payoutParam];
+
+    if (!clickIdValue) {
+      console.warn(`[Postback] Missing click ID param "${clickIdParam}":`, req.query);
       return res.status(200).send('0');
+    }
+
+    // ── Step 3: Determine approved vs rejected ───────────────────────────
+    let normalizedStatus;
+    if (statusValue) {
+      const sv = statusValue.toLowerCase();
+      if (sv === approvedValue) {
+        normalizedStatus = 'approved';
+      } else if (sv === rejectedValue) {
+        normalizedStatus = 'rejected';
+      } else {
+        // Unknown status value — default to approved (many networks only fire on success)
+        console.warn(`[Postback] Unknown status value "${statusValue}", treating as approved`);
+        normalizedStatus = 'approved';
+      }
+    } else {
+      // No status param sent — many advertisers only call postback on approval
+      normalizedStatus = 'approved';
+    }
+
+    // ── Step 4: Find the click log ───────────────────────────────────────
+    const clickLog = await ClickLog.findOne({ clickId: clickIdValue, offerId: offer._id });
+    if (!clickLog) {
+      console.warn(`[Postback] ClickLog not found for ${clickIdParam}:`, clickIdValue);
+      return res.status(200).send('1'); // Silently OK — may have been already processed
     }
 
     // Idempotency: if already processed, silently return success
     if (clickLog.status === 'approved' || clickLog.status === 'rejected') {
-      console.log('[Postback] Already processed click_id:', click_id, '| Status:', clickLog.status);
+      console.log('[Postback] Already processed click_id:', clickIdValue, '| Status:', clickLog.status);
       return res.status(200).send('1');
     }
 
     if (normalizedStatus === 'rejected') {
-      // Mark as rejected
       clickLog.status = 'rejected';
       clickLog.convertedAt = new Date();
       await clickLog.save();
 
       await DirectOffer.findByIdAndUpdate(offer._id, { $inc: { totalRejected: 1 } });
-      console.log('[Postback] Click rejected. click_id:', click_id);
+      console.log('[Postback] Click rejected. click_id:', clickIdValue);
       return res.status(200).send('1');
     }
 
     // ── APPROVAL FLOW ──────────────────────────────────────────────────────
     const user = await User.findById(clickLog.userId);
     if (!user) {
-      console.warn('[Postback] User not found for click_id:', click_id);
+      console.warn('[Postback] User not found for click_id:', clickIdValue);
       return res.status(200).send('1');
     }
 
@@ -214,11 +237,10 @@ router.get('/postback', async (req, res) => {
     }
 
     const coinsToCredit = clickLog.rewardAmount;
-    const payoutAmount = payout ? parseFloat(payout) || 0 : offer.advertiserPayoutAmount || 0;
+    const payoutAmount = payoutValue ? parseFloat(payoutValue) || 0 : offer.advertiserPayoutAmount || 0;
 
     // Credit user wallet
     const newBalance = user.walletBalance + coinsToCredit;
-    const newTotalEarned = user.totalEarned + coinsToCredit;
 
     await User.findByIdAndUpdate(user._id, {
       $inc: { walletBalance: coinsToCredit, totalEarned: coinsToCredit },
@@ -237,10 +259,10 @@ router.get('/postback', async (req, res) => {
       metadata: {
         offerId: offer._id,
         offerTitle: offer.title,
-        clickId: click_id,
+        clickId: clickIdValue,
         advertiserPayout: payoutAmount,
       },
-      externalId: `direct:${click_id}`, // Prevents duplicate crediting
+      externalId: `direct:${clickIdValue}`, // Prevents duplicate crediting
     });
 
     // Update click log

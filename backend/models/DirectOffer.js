@@ -24,6 +24,15 @@ const directOfferSchema = new mongoose.Schema(
       required: true,
       default: () => crypto.randomBytes(24).toString('hex'), // Auto-generate on creation
     },
+    // Configurable postback parameter mapping — each advertiser may use different macros
+    postbackMapping: {
+      clickIdParam:       { type: String, default: 'click_id' },   // Query param that contains our click ID
+      transactionIdParam: { type: String, default: 'txn_id' },     // Query param for advertiser's transaction ID
+      payoutParam:        { type: String, default: 'payout' },     // Query param for payout/revenue amount
+      statusParam:        { type: String, default: 'status' },     // Query param for conversion status
+      approvedValue:      { type: String, default: 'approved' },   // Value that means "approved"
+      rejectedValue:      { type: String, default: 'rejected' },   // Value that means "rejected"
+    },
     // Stats (denormalized for fast admin view)
     totalClicks: { type: Number, default: 0 },
     totalApproved: { type: Number, default: 0 },
