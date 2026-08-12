@@ -12,7 +12,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import toast from 'react-hot-toast';
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
-const SOCKET_URL = API.replace('/api', '');
+const SOCKET_URL = API.replace(/\/api\/?$/, '');
 
 import { useNavigate } from 'react-router-dom';
 import { FaCrown } from 'react-icons/fa';

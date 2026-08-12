@@ -7,7 +7,7 @@ import { FiSend, FiTrash2, FiUsers, FiMessageSquare, FiZap, FiHeadphones, FiShie
 import toast from 'react-hot-toast';
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
-const SOCKET_URL = API.replace('/api', '');
+const SOCKET_URL = API.replace(/\/api\/?$/, '');
 
 /* ─── Helpers ────────────────────────────────── */
 const getInitials = (name) => (name || '?').slice(0, 2).toUpperCase();

@@ -447,7 +447,7 @@ const AdminDirectOffers = () => {
     }).catch(() => {});
   };
 
-  const backendBaseUrl = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:5000';
+  const backendBaseUrl = import.meta.env.VITE_API_URL?.replace(/\/api\/?$/, '') || 'http://localhost:5000';
 
   const buildPostbackUrl = (offer) => {
     const m = offer.postbackMapping || {};

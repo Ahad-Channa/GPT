@@ -10,7 +10,7 @@ import CoinIcon from '../CoinIcon';
 import toast from 'react-hot-toast';
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
-const BACKEND = (import.meta.env.VITE_API_URL || 'http://localhost:5000/api').replace('/api', '');
+const BACKEND = (import.meta.env.VITE_API_URL || 'http://localhost:5000/api').replace(/\/api\/?$/, '');
 
 let openModalsCount = 0;
 const updateBodyScrollLock = (isLocked) => {

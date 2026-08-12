@@ -8,7 +8,7 @@ import VipBadge from '../VipBadge';
 import { getLevelFromEarned } from '../../utils/vipLevels';
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
-const SOCKET_URL = API.replace('/api', '');
+const SOCKET_URL = API.replace(/\/api\/?$/, '');
 
 /* ─── helpers ─────────────────────────────── */
 const getAvatar = (user) => user?.avatarUrl || null;

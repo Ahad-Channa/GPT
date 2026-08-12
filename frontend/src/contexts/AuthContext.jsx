@@ -247,7 +247,7 @@ export const AuthProvider = ({ children }) => {
 
                 // ── Socket: identify this browser tab so the server can push balance updates ──
                 const socketUrl = import.meta.env.VITE_API_URL
-                    ? import.meta.env.VITE_API_URL.replace('/api', '')
+                    ? import.meta.env.VITE_API_URL.replace(/\/api\/?$/, '')
                     : 'http://localhost:5000';
 
                 // Re-use existing socket if still connected

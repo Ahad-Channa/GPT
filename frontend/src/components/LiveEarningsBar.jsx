@@ -7,7 +7,7 @@ import { io } from 'socket.io-client';
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 const SOCKET_URL = import.meta.env.VITE_API_URL
-  ? import.meta.env.VITE_API_URL.replace('/api', '')
+  ? import.meta.env.VITE_API_URL.replace(/\/api\/?$/, '')
   : 'http://localhost:5000';
 
 const LiveEarningsBar = () => {

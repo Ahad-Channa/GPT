@@ -8,7 +8,7 @@ import {
 import toast from 'react-hot-toast';
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
-const SOCKET_URL = API.replace('/api', '');
+const SOCKET_URL = API.replace(/\/api\/?$/, '');
 
 const AdminChat = () => {
   const { currentUser, isPrimaryAdmin } = useAuth();

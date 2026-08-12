@@ -7,7 +7,7 @@ import {
 import io from 'socket.io-client';
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
-const SOCKET_URL = API.replace('/api', '');
+const SOCKET_URL = API.replace(/\/api\/?$/, '');
 
 const getInitials = (name) => (name || '?').slice(0, 2).toUpperCase();
 const getHue = (name) => name ? [...name].reduce((a, c) => a + c.charCodeAt(0), 0) % 360 : 210;

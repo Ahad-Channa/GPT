@@ -7,7 +7,7 @@ import {
 import toast from 'react-hot-toast';
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
-const BACKEND = (import.meta.env.VITE_API_URL || 'http://localhost:5000/api').replace('/api', '');
+const BACKEND = (import.meta.env.VITE_API_URL || 'http://localhost:5000/api').replace(/\/api\/?$/, '');
 
 const STATUS_COLORS = {
   pending: 'bg-amber-500/15 text-amber-300 border-amber-500/30',

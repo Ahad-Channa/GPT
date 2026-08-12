@@ -3,7 +3,7 @@ import { useAuth } from './AuthContext';
 import io from 'socket.io-client';
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
-const SOCKET_URL = API.replace('/api', '');
+const SOCKET_URL = API.replace(/\/api\/?$/, '');
 
 
 const NotificationContext = createContext();
