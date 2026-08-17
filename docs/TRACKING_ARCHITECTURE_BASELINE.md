@@ -330,7 +330,7 @@ Later migration target:
 
 ## ProviderConfig Phase 2 Design
 
-Phase 2 should add a dedicated `ProviderConfig` model rather than storing full provider integration configuration in `Settings`.
+Phase 2 adds a dedicated `ProviderConfig` model rather than storing full provider integration configuration in `Settings`.
 
 Proposed fields:
 
@@ -365,7 +365,77 @@ Proposed fields:
 
 Sensitive credentials must never be returned in normal admin API responses. Admin responses should expose only safe indicators such as `secretConfigured: true` and masked identifiers where useful.
 
-Actual database implementation belongs to Phase 2.
+Phase 2 implementation notes:
+
+- The model lives at `backend/models/ProviderConfig.js`.
+- Sensitive nested credentials are configured with `select: false` and are removed from `toObject`/`toJSON` output.
+- Normal admin responses in later phases must still explicitly avoid selecting credential fields.
+- No real credentials are hard-coded.
+- Existing `Settings.offerwallProviders` remains untouched in Phase 2 for runtime compatibility.
+
+## Phase 2 Data Model Baseline
+
+Phase 2 adds additive-only database foundations without wiring them into live postback or reward routes.
+
+`backend/models/ClickLog.js` is extended, not replaced. Existing direct-offer fields remain valid:
+
+- `clickId` remains required and unique.
+- `offerId` remains the legacy `DirectOffer` reference for current direct-offer code.
+- Direct-offer clicks still require `offerId` through schema validation.
+- Generic provider/offerwall clicks can omit `offerId` and instead require `campaignId`, `campaignType`, `providerId`, and `providerType`.
+- `userId`, `ip`, `userAgent`, `device`, `country`, `status`, `rewardAmount`, `advertiserPayout`, `convertedAt`, and `transactionId` remain.
+
+New optional/defaulted tracking fields:
+
+- `providerId`
+- `providerType`
+- `campaignType`
+- `campaignId`
+- `trackingParams`
+- `destinationUrl`
+- `redirectUrl`
+- `rewardSnapshot`
+
+New `ClickLog` indexes:
+
+- `{ providerId: 1, createdAt: -1 }`
+- `{ providerId: 1, userId: 1, createdAt: -1 }`
+- `{ campaignType: 1, campaignId: 1, createdAt: -1 }`
+
+`backend/models/Conversion.js` records future durable conversion lifecycle state:
+
+- Provider identity and provider transaction ID.
+- Click, user, campaign/offer references.
+- Incoming and normalized statuses.
+- Event type, payout, reward amount, processing state.
+- Linked reward/reversal transaction IDs.
+- Original conversion linkage for reversals.
+- Rejection/error reason and security validation summary.
+
+Conversion idempotency indexes:
+
+- Unique partial `{ providerId: 1, providerTransactionId: 1 }` for normal providers that supply transaction IDs.
+- Unique partial `{ idempotencyKey: 1 }` for explicitly generated fallback keys where a provider genuinely has no transaction ID.
+
+Providers without transaction IDs must not invent unsafe uniqueness. Later phases must generate a documented idempotency key from stable provider-supported fields, such as provider + click ID + event type, only when that behavior is valid for the provider.
+
+`backend/models/PostbackLog.js` stores sanitized diagnostic data only:
+
+- Provider, route, method, sanitized query/body/headers.
+- Mapped fields.
+- Source IP and user-agent.
+- Security and processing result.
+- Duplicate flag and rejection reason.
+- Linked click/conversion/user/transaction IDs.
+
+`backend/services/tracking/postbackSanitizer.js` provides recursive redaction/masking for future logging. Phase 2 does not wire PostbackLog into production routes.
+
+`backend/models/Transaction.js` remains compatible. Phase 2 only adds optional conversion linkage:
+
+- `conversionId`
+- `reversalOfConversionId`
+
+Existing `externalId`, transaction types, wallet history behavior, withdrawal logic, referral linkage, and daily bonus post-save hook remain unchanged.
 
 ## Future Service Migration Map
 
@@ -384,6 +454,25 @@ The current logic should later move as follows:
 The existing code uses Mongoose but does not currently prove whether the production MongoDB deployment supports multi-document transactions. MongoDB transactions generally require a replica set or sharded cluster. The current code only reads `MONGODB_URI` in `backend/config/db.js`, so Phase 1 cannot safely assume transaction support.
 
 Phase 2 or Phase 6 should verify transaction capability against the actual deployment before implementing the final reward pipeline.
+
+### Database Atomicity Capability
+
+From the repository alone, runtime MongoDB transaction support is still unknown.
+
+What can be determined:
+
+- The backend uses Mongoose in `backend/config/db.js`.
+- The connection URI comes from `MONGODB_URI`.
+- No current code checks whether the deployment is a replica set or sharded cluster.
+- No current reward path uses Mongoose sessions or transactions.
+
+What cannot be determined without runtime verification:
+
+- Whether production MongoDB is Atlas replica set, standalone MongoDB, or another topology.
+- Whether multi-document transactions are available for the deployed cluster.
+- Whether all collections involved in reward processing are transaction-compatible in the deployed environment.
+
+Phase 6 must verify this at runtime or through deployment configuration before choosing the final atomic reward implementation. Mongoose session support alone is not proof that the database topology supports transactions.
 
 Preferred path if MongoDB transactions are supported:
 
@@ -406,6 +495,37 @@ Fallback path if unsupported:
 - Return idempotent success for already-processed conversions without changing balances.
 
 No existing reward behavior is changed in Phase 1.
+
+No existing reward behavior is changed in Phase 2.
+
+## Phase 2 Backward Compatibility and Migration Safety
+
+Phase 2 does not run destructive migrations or mutate production data.
+
+Compatibility guarantees:
+
+- Existing users are unaffected.
+- Existing balances are untouched.
+- Existing `Transaction` documents remain valid.
+- Existing `ClickLog` documents remain readable because all ClickLog changes are additive or defaulted.
+- Existing direct-offer ClickLog creation remains valid because those routes already provide `offerId`.
+- Future generic provider ClickLogs do not need fake `DirectOffer` references.
+- Existing route behavior remains unchanged because new models/services are not imported by live routes.
+
+Index rollout plan for later deployments:
+
+1. Deploy additive schema changes.
+2. Allow Mongoose/MongoDB to create non-conflicting indexes in a controlled deployment window.
+3. Verify partial unique indexes on `Conversion` before routing traffic to the conversion engine.
+4. Backfill old ClickLogs only if a later phase needs historical provider/campaign fields; such a backfill should be non-destructive and separately reviewed.
+5. Move postback traffic to shared services only after indexes exist.
+
+Rollback considerations:
+
+- New models are additive and can remain unused if a rollback is needed.
+- Existing route files do not depend on new models in Phase 2.
+- Optional `Transaction` fields do not affect existing transaction reads/writes.
+- Existing `ClickLog.offerId` behavior remains intact.
 
 ## Sensitive Postback Logging Rules
 

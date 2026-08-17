@@ -55,6 +55,16 @@ const transactionSchema = new mongoose.Schema(
       ref: 'Transaction',
       default: null, // Used to link referral_reward/chargeback to the original offer_reward
     },
+    conversionId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Conversion',
+      default: null,
+    },
+    reversalOfConversionId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Conversion',
+      default: null,
+    },
     holdUntil: {
       type: Date,
       default: null,
@@ -97,6 +107,8 @@ const transactionSchema = new mongoose.Schema(
 // Index for fast history queries
 transactionSchema.index({ userId: 1, createdAt: -1 });
 transactionSchema.index({ status: 1, transactionType: 1 });
+transactionSchema.index({ conversionId: 1 }, { sparse: true });
+transactionSchema.index({ reversalOfConversionId: 1 }, { sparse: true });
 
 // Post-save hook to initialize Day 1 daily bonus timer on first completed earning
 transactionSchema.post('save', async function (doc) {
