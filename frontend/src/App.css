@@ -1,0 +1,4 @@
+/* App-level reset — Vite defaults cleared */
+* {
+  box-sizing: border-box;
+}

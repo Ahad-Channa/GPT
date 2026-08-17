@@ -1,0 +1,341 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@keyframes bonusPulse {
+  0%, 100% { box-shadow: 0 0 18px rgba(245,158,11,0.7), 0 0 40px rgba(245,158,11,0.3); }
+  50%       { box-shadow: 0 0 32px rgba(245,158,11,1),   0 0 70px rgba(245,158,11,0.55); }
+}
+
+@layer base {
+  body {
+    background-color: #05100a;
+    color: #c8d6ef;
+    font-family: 'Barlow', system-ui, sans-serif;
+    font-feature-settings: 'cv01' 0, 'zero' 0; /* Disable slashed zeros in Barlow and others */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    overflow-x: hidden;
+    overflow-y: auto;
+  }
+
+  .clean-numbers {
+    font-family: 'Barlow', system-ui, sans-serif !important;
+    font-variant-numeric: normal;
+    font-feature-settings: 'cv01' 0, 'zero' 0;
+  }
+
+  .font-mono {
+    font-family: 'Barlow', system-ui, sans-serif !important;
+    font-variant-numeric: normal !important;
+    font-feature-settings: 'cv01' 0, 'zero' 0 !important;
+  }
+
+  ::selection {
+    background-color: rgba(37, 99, 235, 0.35);
+    color: #dbeafe;
+  }
+}
+
+/* ─── Custom Scrollbar ─────────────────────────────────────── */
+@media (min-width: 1024px) {
+  ::-webkit-scrollbar { width: 4px; height: 4px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: rgba(37,99,235,0.3); border-radius: 2px; }
+  ::-webkit-scrollbar-thumb:hover { background: rgba(37,99,235,0.6); }
+}
+
+@media (max-width: 1023px) {
+  ::-webkit-scrollbar { display: none; }
+  * { scrollbar-width: none; -ms-overflow-style: none; }
+}
+
+.hide-scrollbar::-webkit-scrollbar { display: none; }
+.hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* ─── Glass Card ────────────────────────────────────────────── */
+.glass-card {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 16px;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  transition: border-color 0.25s ease, box-shadow 0.25s ease;
+}
+.glass-card:hover {
+  border-color: rgba(37, 99, 235, 0.25);
+  box-shadow: 0 0 24px rgba(37, 99, 235, 0.08);
+}
+
+/* ─── Stat Card ─────────────────────────────────────────────── */
+.stat-card {
+  background: linear-gradient(135deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.01) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 16px;
+  padding: 1.5rem;
+  transition: transform 0.2s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+  position: relative;
+  overflow: hidden;
+}
+.stat-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(37,99,235,0.4), transparent);
+}
+.stat-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(37,99,235,0.25);
+  box-shadow: 0 8px 32px rgba(37, 99, 235, 0.1);
+}
+
+/* ─── Gradient Text ─────────────────────────────────────────── */
+.gradient-text {
+  background: linear-gradient(135deg, #60a5fa 0%, #3b82f6 50%, #0ea5e9 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ─── Glow Button ───────────────────────────────────────────── */
+.btn-glow {
+  background: linear-gradient(135deg, #1d4ed8, #2563eb);
+  border: 1px solid rgba(37,99,235,0.4);
+  border-radius: 12px;
+  color: white;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 15px rgba(37, 99, 235, 0.2);
+}
+.btn-glow:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 25px rgba(37, 99, 235, 0.35);
+  background: linear-gradient(135deg, #2563eb, #3b82f6);
+}
+.btn-glow:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* ─── Ambient Background Glow ───────────────────────────────── */
+.ambient-bg {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+}
+.ambient-bg::before {
+  content: '';
+  position: absolute;
+  width: 600px;
+  height: 600px;
+  top: -200px;
+  left: -100px;
+  background: radial-gradient(circle, rgba(29,78,216,0.12) 0%, transparent 70%);
+  animation: float-slow 12s ease-in-out infinite alternate;
+}
+.ambient-bg::after {
+  content: '';
+  position: absolute;
+  width: 500px;
+  height: 500px;
+  bottom: -150px;
+  right: -100px;
+  background: radial-gradient(circle, rgba(14,165,233,0.1) 0%, transparent 70%);
+  animation: float-slow 10s ease-in-out infinite alternate-reverse;
+}
+
+@keyframes float-slow {
+  from { transform: translate(0, 0) scale(1); }
+  to   { transform: translate(30px, 20px) scale(1.05); }
+}
+
+/* ─── Input ─────────────────────────────────────────────────── */
+.premium-input {
+  width: 100%;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 12px;
+  padding: 0.75rem 1rem 0.75rem 2.75rem;
+  color: #e2e8f0;
+  font-size: 0.9rem;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.premium-input::placeholder { color: rgba(255,255,255,0.2); }
+.premium-input:focus {
+  border-color: rgba(37,99,235,0.5);
+  box-shadow: 0 0 0 3px rgba(37,99,235,0.12);
+}
+
+/* ─── Badge ─────────────────────────────────────────────────── */
+.badge-cyan {
+  background: rgba(6,182,212,0.12);
+  color: #22d3ee;
+  border: 1px solid rgba(6,182,212,0.25);
+  border-radius: 6px;
+  padding: 2px 8px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.badge-blue {
+  background: rgba(37,99,235,0.12);
+  color: #60a5fa;
+  border: 1px solid rgba(37,99,235,0.25);
+  border-radius: 6px;
+  padding: 2px 8px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.badge-emerald {
+  background: rgba(16,185,129,0.12);
+  color: #34d399;
+  border: 1px solid rgba(16,185,129,0.25);
+  border-radius: 6px;
+  padding: 2px 8px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.badge-red {
+  background: rgba(239,68,68,0.12);
+  color: #f87171;
+  border: 1px solid rgba(239,68,68,0.25);
+  border-radius: 6px;
+  padding: 2px 8px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.badge-amber {
+  background: rgba(245,158,11,0.12);
+  color: #fbbf24;
+  border: 1px solid rgba(245,158,11,0.25);
+  border-radius: 6px;
+  padding: 2px 8px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* ─── Section Divider ───────────────────────────────────────── */
+.section-divider {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.06), transparent);
+  margin: 2rem 0;
+}
+
+/* ─── Additional Badge Variants ─────────────────────────────── */
+.badge-indigo {
+  background: rgba(99,102,241,0.12);
+  color: #818cf8;
+  border: 1px solid rgba(99,102,241,0.25);
+  border-radius: 6px;
+  padding: 2px 8px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.badge-violet {
+  background: rgba(139,92,246,0.12);
+  color: #a78bfa;
+  border: 1px solid rgba(139,92,246,0.25);
+  border-radius: 6px;
+  padding: 2px 8px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.badge-orange {
+  background: rgba(249,115,22,0.12);
+  color: #fb923c;
+  border: 1px solid rgba(249,115,22,0.25);
+  border-radius: 6px;
+  padding: 2px 8px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* ─── Shadow Glow Utilities ─────────────────────────────────── */
+.shadow-glow {
+  box-shadow: 0 4px 20px rgba(37, 99, 235, 0.2);
+}
+.shadow-glow-lg {
+  box-shadow: 0 6px 30px rgba(37, 99, 235, 0.35);
+}
+.shadow-card {
+  box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+}
+
+/* ─── Spin Keyframe (loading spinners) ───────────────────────── */
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+/* ─── Notification Panel Floating Card (now Sidebar) ─────────── */
+.notification-panel-card {
+  position: fixed;
+  z-index: 9999;
+  width: 400px;
+  max-width: 100vw;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  background: rgba(26, 27, 26, 1);
+  box-shadow: -20px 4px 34px 0px rgba(0, 0, 0, 0.6);
+  border-left: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  flex-direction: column;
+}
+
+@media (min-width: 1024px) {
+  .notification-panel-card {
+    width: 290px;
+  }
+}
+
+/* ─── Toast Notifications Fix ─────────────────────────────────── */
+.custom-toast {
+  min-width: 276px;
+  max-width: 400px;
+  font-size: 22px;
+}
+
+.custom-toast div[role="status"],
+.custom-toast .go3958315143, /* Fallback for react-hot-toast generic inner wrapper */
+.custom-toast > div {
+  white-space: nowrap !important;
+}
+
+@media (max-width: 768px) {
+  .custom-toast {
+    min-width: 90vw !important;
+    max-width: 95vw !important;
+    font-size: clamp(14px, 4.5vw, 22px) !important;
+    padding: 18px 20px !important;
+    border-radius: 24px !important;
+  }
+  
+  .custom-toast div[role="status"],
+  .custom-toast .go3958315143,
+  .custom-toast > div {
+    white-space: normal !important;
+    text-align: center;
+    word-break: break-word;
+  }
+}

@@ -1,0 +1,28 @@
+const mongoose = require('mongoose');
+
+const customOfferSubmissionSchema = new mongoose.Schema(
+  {
+    offerId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'CustomOffer',
+      required: true
+    },
+    userId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      required: true
+    },
+    proofText: { type: String, default: '' },
+    proofImage: { type: String, default: '' }, // Legacy fallback
+    proofImages: { type: [String], default: [] }, // New array for multiple images
+    status: {
+      type: String,
+      enum: ['started', 'pending', 'approved', 'rejected', 'chargebacked'],
+      default: 'started'
+    },
+    adminNote: { type: String, default: '' }
+  },
+  { timestamps: true }
+);
+
+module.exports = mongoose.model('CustomOfferSubmission', customOfferSubmissionSchema);

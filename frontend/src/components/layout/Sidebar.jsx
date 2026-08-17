@@ -1,0 +1,84 @@
+import { Link, useLocation } from 'react-router-dom';
+import {
+  FiDollarSign,
+  FiTarget,
+  FiRepeat,
+  FiGift,
+  FiAward,
+  FiTag,
+  FiUsers,
+  FiHelpCircle
+} from 'react-icons/fi';
+import { FaTrophy } from 'react-icons/fa6';
+
+const Sidebar = () => {
+  const location = useLocation();
+
+  const menuItems = [
+    { name: 'Earn', icon: <FiDollarSign />, path: '/dashboard' },
+    { name: 'Offers', icon: <FiTarget />, path: '/dashboard/offers' },
+    { name: 'Withdraw', icon: <FiRepeat />, path: '/dashboard/withdraw' },
+    { name: 'Rewards', icon: <FiGift />, path: '/dashboard/rewards' },
+    { name: 'Leaderboard', icon: <FaTrophy className="transition-all duration-300 group-hover:drop-shadow-[0_0_8px_rgba(251,191,36,0.8)] group-hover:text-amber-400" />, path: '/dashboard/leaderboard', badge: 'LIVE' },
+    { name: 'Coupons', icon: <FiTag />, path: '/dashboard/coupons' },
+    { name: 'Affiliates', icon: <FiUsers />, path: '/dashboard/affiliates' },
+    { name: 'Support', icon: <FiHelpCircle />, path: '/dashboard/faq' },
+  ];
+
+  return (
+    <aside className="w-72 bg-[#08080c] border-r border-white/5 hidden md:flex flex-col h-full relative z-30">
+
+      {/* Brand */}
+      <Link to="/" className="p-8 flex items-center gap-3 group">
+        <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center shadow-[0_0_15px_rgba(99,102,241,0.2)] group-hover:shadow-[0_0_20px_rgba(99,102,241,0.4)] transition-all">
+          <span className="font-bold text-white text-sm">GPT</span>
+        </div>
+        <span className="text-xl font-bold tracking-tight text-white flex flex-col leading-none">
+          GPT<span className="text-[10px] text-slate-500 font-medium tracking-widest uppercase mt-0.5">Platform</span>
+        </span>
+      </Link>
+
+      {/* Navigation */}
+      <nav className="flex-1 px-4 py-2 space-y-2 overflow-y-auto">
+        {menuItems.map((item) => {
+          const isActive = location.pathname === item.path;
+          return (
+            <Link
+              key={item.name}
+              to={item.path}
+              className={`flex items-center justify-between px-4 py-3.5 rounded-2xl transition-all duration-300 group ${
+                item.name === 'Earn'
+                  ? isActive
+                    ? 'bg-gradient-to-r from-cyan-500 to-blue-500 text-white shadow-[0_0_15px_rgba(6,182,212,0.4)] border border-cyan-400/50'
+                    : 'bg-gradient-to-r from-cyan-500/10 to-blue-500/10 text-cyan-400 border border-cyan-500/20 hover:from-cyan-500/20 hover:to-blue-500/20 shadow-[0_0_10px_rgba(6,182,212,0.1)] hover:shadow-[0_0_15px_rgba(6,182,212,0.2)]'
+                  : isActive
+                    ? 'bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 shadow-[inset_0_0_20px_rgba(99,102,241,0.05)]'
+                    : 'text-slate-400 hover:bg-white/5 hover:text-slate-200 border border-transparent'
+                }`}
+            >
+              <div className="flex items-center gap-4">
+                <span className={`text-[18px] transition-transform duration-300 group-hover:scale-110 ${
+                  item.name === 'Earn'
+                    ? isActive ? 'text-white' : 'text-cyan-400'
+                    : isActive ? 'text-indigo-400' : 'text-slate-500 group-hover:text-slate-300'
+                }`}>
+                  {item.icon}
+                </span>
+                <span className={`font-medium text-sm tracking-wide ${item.name === 'Earn' && !isActive ? 'text-cyan-400' : ''}`}>{item.name}</span>
+              </div>
+
+              {item.badge && (
+                <span className="text-[9px] uppercase font-bold tracking-widest bg-violet-500/20 text-violet-300 px-2.5 py-1 rounded-full border border-violet-500/20">
+                  {item.badge}
+                </span>
+              )}
+            </Link>
+          );
+        })}
+      </nav>
+
+    </aside>
+  );
+};
+
+export default Sidebar;
