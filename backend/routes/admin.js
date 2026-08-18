@@ -16,6 +16,10 @@ const notify = require('../utils/notify');
 const { notifyAdmins } = require('../utils/adminNotify');
 const { emitWalletUpdate, emitToUser } = require('../utils/walletEvents');
 const { processVipLevelUp } = require('../utils/vipUtils');
+const {
+  normalizeDisplayPlacements,
+  parseAllowedCountriesInput,
+} = require('../utils/directOfferInput');
 const AdminNotification = require('../models/AdminNotification');
 const Avatar = require('../models/Avatar');
 const multer = require('multer');
@@ -2146,7 +2150,7 @@ router.post('/direct-offers', requirePermission('manage_offerwalls'), async (req
     const {
       title, description, rewardAmount, advertiserPayoutAmount,
       advertiserUrl, isActive, expirationDate, icon, coverImage,
-      platforms, requirements, postbackMapping,
+      platforms, requirements, postbackMapping, allowedCountries, displayPlacements,
     } = req.body;
 
     if (!title || !description || !rewardAmount || !advertiserUrl) {
@@ -2163,6 +2167,8 @@ router.post('/direct-offers', requirePermission('manage_offerwalls'), async (req
       expirationDate: expirationDate || null,
       icon: icon || null,
       coverImage: coverImage || null,
+      displayPlacements: normalizeDisplayPlacements(displayPlacements),
+      allowedCountries: parseAllowedCountriesInput(allowedCountries),
       platforms: platforms || { desktop: true, android: true, ios: true },
       requirements: requirements || [],
       postbackMapping: postbackMapping || {},
@@ -2173,7 +2179,7 @@ router.post('/direct-offers', requirePermission('manage_offerwalls'), async (req
     res.status(201).json({ success: true, offer });
   } catch (error) {
     console.error('[/api/admin/direct-offers POST] Error:', error);
-    res.status(500).json({ success: false, error: 'Failed to create direct offer' });
+    res.status(error.statusCode || 500).json({ success: false, error: error.statusCode ? error.message : 'Failed to create direct offer' });
   }
 });
 
@@ -2183,7 +2189,7 @@ router.put('/direct-offers/:id', requirePermission('manage_offerwalls'), async (
     const {
       title, description, rewardAmount, advertiserPayoutAmount,
       advertiserUrl, isActive, expirationDate, icon, coverImage,
-      platforms, requirements, postbackMapping,
+      platforms, requirements, postbackMapping, allowedCountries, displayPlacements,
     } = req.body;
 
     const offer = await DirectOffer.findByIdAndUpdate(
@@ -2198,6 +2204,8 @@ router.put('/direct-offers/:id', requirePermission('manage_offerwalls'), async (
         ...(expirationDate !== undefined && { expirationDate: expirationDate || null }),
         ...(icon !== undefined && { icon }),
         ...(coverImage !== undefined && { coverImage }),
+        ...(displayPlacements !== undefined && { displayPlacements: normalizeDisplayPlacements(displayPlacements) }),
+        ...(allowedCountries !== undefined && { allowedCountries: parseAllowedCountriesInput(allowedCountries) }),
         ...(platforms !== undefined && { platforms }),
         ...(requirements !== undefined && { requirements }),
         ...(postbackMapping !== undefined && { postbackMapping }),
@@ -2211,7 +2219,7 @@ router.put('/direct-offers/:id', requirePermission('manage_offerwalls'), async (
     res.json({ success: true, offer });
   } catch (error) {
     console.error('[/api/admin/direct-offers PUT] Error:', error);
-    res.status(500).json({ success: false, error: 'Failed to update direct offer' });
+    res.status(error.statusCode || 500).json({ success: false, error: error.statusCode ? error.message : 'Failed to update direct offer' });
   }
 });
 

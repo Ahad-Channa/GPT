@@ -123,6 +123,10 @@ const userSchema = new mongoose.Schema(
       type: String,
       default: null,
     },
+    phase4RewardBridgeClaims: [{
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Conversion',
+    }],
   },
   { timestamps: true }
 );

@@ -45,6 +45,11 @@ const OfferFormModal = ({ offer, onClose, onSaved, token }) => {
     icon: offer?.icon || '',
     coverImage: offer?.coverImage || '',
     requirements: (offer?.requirements || []).join('\n'),
+    allowedCountries: (offer?.allowedCountries || []).join(', '),
+    displayPlacements: {
+      featured: offer?.displayPlacements?.featured !== undefined ? offer.displayPlacements.featured : true,
+      brandedOfferwall: offer?.displayPlacements?.brandedOfferwall || false,
+    },
     platforms: offer?.platforms || { desktop: true, android: true, ios: true },
     isActive: offer?.isActive !== undefined ? offer.isActive : true,
     postbackMapping: {
@@ -79,6 +84,8 @@ const OfferFormModal = ({ offer, onClose, onSaved, token }) => {
           advertiserPayoutAmount: Number(form.advertiserPayoutAmount) || 0,
           expirationDate: form.expirationDate || null,
           requirements: form.requirements.split('\n').map(r => r.trim()).filter(Boolean),
+          allowedCountries: form.allowedCountries.split(',').map(c => c.trim()).filter(Boolean),
+          displayPlacements: form.displayPlacements,
           platforms: form.platforms,
           postbackMapping: form.postbackMapping,
         }),
@@ -160,6 +167,29 @@ const OfferFormModal = ({ offer, onClose, onSaved, token }) => {
           <div>
             <label className={labelCls}>Expiration Date</label>
             <input type="date" className={inputCls} value={form.expirationDate} onChange={set('expirationDate')} />
+          </div>
+          <div>
+            <label className={labelCls}>Allowed Countries <span className="text-slate-600 font-normal">(ISO-2, comma separated; blank = global)</span></label>
+            <input className={inputCls} value={form.allowedCountries} onChange={set('allowedCountries')} placeholder="US, GB, DE" />
+          </div>
+          <div>
+            <label className={labelCls}>Placements</label>
+            <div className="flex flex-wrap gap-3">
+              {[
+                ['featured', 'Featured Offers'],
+                ['brandedOfferwall', 'Branded Offerwall'],
+              ].map(([key, label]) => (
+                <label key={key} className="flex items-center gap-1.5 text-xs text-slate-300 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={form.displayPlacements[key]}
+                    onChange={e => setForm(f => ({ ...f, displayPlacements: { ...f.displayPlacements, [key]: e.target.checked } }))}
+                    className="accent-indigo-500"
+                  />
+                  {label}
+                </label>
+              ))}
+            </div>
           </div>
           <div>
             <label className={labelCls}>Platforms</label>
@@ -522,6 +552,11 @@ const AdminDirectOffers = () => {
                   <div className="flex flex-wrap gap-4 mt-3 text-xs text-slate-400">
                     <span>💰 <strong className="text-amber-400">{offer.rewardAmount?.toLocaleString()}</strong> coins reward</span>
                     <span>💵 ${offer.advertiserPayoutAmount || 0} payout</span>
+                    <span>Placement: <strong className="text-slate-300">{[
+                      offer.displayPlacements?.featured !== false ? 'Featured' : null,
+                      offer.displayPlacements?.brandedOfferwall ? 'Branded Offerwall' : null,
+                    ].filter(Boolean).join(' + ') || 'Hidden'}</strong></span>
+                    <span>Countries: <strong className="text-slate-300">{offer.allowedCountries?.length ? offer.allowedCountries.join(', ') : 'Global'}</strong></span>
                     <span>👆 <strong className="text-white">{offer.totalClicks || 0}</strong> clicks</span>
                     <span>✓ <strong className="text-emerald-400">{offer.totalApproved || 0}</strong> approved</span>
                     <span>✗ <strong className="text-rose-400">{offer.totalRejected || 0}</strong> rejected</span>

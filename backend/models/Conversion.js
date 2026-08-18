@@ -75,7 +75,7 @@ const conversionSchema = new mongoose.Schema(
     },
     processingState: {
       type: String,
-      enum: ['received', 'claimed', 'processed', 'duplicate', 'ignored', 'failed'],
+      enum: ['received', 'claimed', 'processing', 'processed', 'duplicate', 'ignored', 'failed'],
       default: 'received',
       index: true,
     },

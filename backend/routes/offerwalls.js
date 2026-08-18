@@ -20,8 +20,13 @@ const PROVIDER_SECRET_MAP = {
   revu:      'REVU_SECRET',
 };
 
-// Generic Postback Handler
-const handlePostback = async (providerId, req, res, params) => {
+// Legacy offerwall compatibility handler.
+//
+// These existing provider routes do not currently resolve a stored ClickLog, so
+// Phase 4 intentionally keeps them isolated instead of treating provider-supplied
+// user IDs as the new generic standard. Later phases should migrate offerwall
+// traffic only after outbound offerwall clicks are tracked through clickService.
+const handleLegacyOfferwallPostback = async (providerId, req, res, params) => {
   try {
     const { userId, providerUnits, transactionId, secretParam } = params;
 
@@ -313,7 +318,7 @@ const handlePostback = async (providerId, req, res, params) => {
 
 router.get('/postback/cpx', (req, res) => {
   // CPX: user_id, reward, trans_id, hash
-  handlePostback('cpx', req, res, {
+  handleLegacyOfferwallPostback('cpx', req, res, {
     userId: req.query.user_id,
     providerUnits: req.query.reward,
     transactionId: req.query.trans_id,
@@ -322,7 +327,7 @@ router.get('/postback/cpx', (req, res) => {
 });
 
 router.get('/postback/adgem', (req, res) => {
-  handlePostback('adgem', req, res, {
+  handleLegacyOfferwallPostback('adgem', req, res, {
     userId: req.query.user_id,
     providerUnits: req.query.amount,
     transactionId: req.query.oid,
@@ -331,7 +336,7 @@ router.get('/postback/adgem', (req, res) => {
 });
 
 router.get('/postback/lootably', (req, res) => {
-  handlePostback('lootably', req, res, {
+  handleLegacyOfferwallPostback('lootably', req, res, {
     userId: req.query.user_id,
     providerUnits: req.query.revenue,
     transactionId: req.query.transaction_id,
@@ -340,7 +345,7 @@ router.get('/postback/lootably', (req, res) => {
 });
 
 router.get('/postback/torox', (req, res) => {
-  handlePostback('torox', req, res, {
+  handleLegacyOfferwallPostback('torox', req, res, {
     userId: req.query.user_id,
     providerUnits: req.query.reward,
     transactionId: req.query.txid,
@@ -349,7 +354,7 @@ router.get('/postback/torox', (req, res) => {
 });
 
 router.get('/postback/primeearn', (req, res) => {
-  handlePostback('primeearn', req, res, {
+  handleLegacyOfferwallPostback('primeearn', req, res, {
     userId: req.query.user_id,
     providerUnits: req.query.amount,
     transactionId: req.query.offer_id,
@@ -358,7 +363,7 @@ router.get('/postback/primeearn', (req, res) => {
 });
 
 router.get('/postback/ayet', (req, res) => {
-  handlePostback('ayet', req, res, {
+  handleLegacyOfferwallPostback('ayet', req, res, {
     userId: req.query.uid,
     providerUnits: req.query.payout,
     transactionId: req.query.sid,
@@ -367,7 +372,7 @@ router.get('/postback/ayet', (req, res) => {
 });
 
 router.get('/postback/adtowall', (req, res) => {
-  handlePostback('adtowall', req, res, {
+  handleLegacyOfferwallPostback('adtowall', req, res, {
     userId: req.query.user_id,
     providerUnits: req.query.points,
     transactionId: req.query.transaction_id,
@@ -376,7 +381,7 @@ router.get('/postback/adtowall', (req, res) => {
 });
 
 router.get('/postback/revu', (req, res) => {
-  handlePostback('revu', req, res, {
+  handleLegacyOfferwallPostback('revu', req, res, {
     userId: req.query.pub_user_id,
     providerUnits: req.query.amount,
     transactionId: req.query.ref,
