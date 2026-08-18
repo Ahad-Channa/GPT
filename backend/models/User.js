@@ -123,6 +123,8 @@ const userSchema = new mongoose.Schema(
       type: String,
       default: null,
     },
+    // Temporary direct-offer bridge guard for Phase 4/5 only. Phase 6 must
+    // replace this with the final reward ledger/atomic processing model.
     phase4RewardBridgeClaims: [{
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Conversion',

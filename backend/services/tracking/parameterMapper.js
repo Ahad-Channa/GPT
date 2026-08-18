@@ -17,6 +17,7 @@ const FIELD_LIMITS = {
   eventType: 64,
   providerUserId: 128,
 };
+const EXTRA_FIELD_LIMIT = 512;
 
 const pickSourceValue = ({ query = {}, body = {} }, key) => {
   if (!key) return undefined;
@@ -52,7 +53,7 @@ const mapPostbackParameters = ({ query = {}, body = {}, mappings = {}, requiredF
     const sourceKey = mappings[canonicalName];
     const rawValue = pickSourceValue({ query, body }, sourceKey);
     suppliedFields[canonicalName] = hasSourceValue({ query, body }, sourceKey);
-    if (Array.isArray(rawValue) || (rawValue !== null && typeof rawValue === 'object')) {
+    if (Array.isArray(rawValue) || (rawValue !== null && typeof rawValue === 'object') || typeof rawValue === 'boolean') {
       invalidFields.push(`${canonicalName} has invalid ${getValueType(rawValue)} value`);
       mapped[canonicalName] = '';
       continue;
@@ -67,7 +68,12 @@ const mapPostbackParameters = ({ query = {}, body = {}, mappings = {}, requiredF
   const extraMappings = mappings.extra && typeof mappings.extra === 'object' ? mappings.extra : {};
   for (const [canonicalName, sourceKey] of Object.entries(extraMappings)) {
     if (!/^[a-zA-Z][a-zA-Z0-9_]*$/.test(canonicalName)) continue;
-    extra[canonicalName] = normalizeValue(pickSourceValue({ query, body }, sourceKey));
+    const rawValue = pickSourceValue({ query, body }, sourceKey);
+    if (Array.isArray(rawValue) || (rawValue !== null && typeof rawValue === 'object') || typeof rawValue === 'boolean') {
+      continue;
+    }
+    const normalized = normalizeValue(rawValue);
+    extra[canonicalName] = normalized.length > EXTRA_FIELD_LIMIT ? normalized.slice(0, EXTRA_FIELD_LIMIT) : normalized;
   }
 
   const missingFields = requiredFields.filter((field) => !normalizeValue(mapped[field]));

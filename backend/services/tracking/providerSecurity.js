@@ -38,10 +38,16 @@ const renderTemplate = (template, { mapped = {}, secret = '' }) =>
     return mapped[key] === undefined || mapped[key] === null ? '' : String(mapped[key]);
   });
 
+const normalizeIp = (ip) => {
+  const value = String(ip || '').trim();
+  return value.startsWith('::ffff:') ? value.slice(7) : value;
+};
+
 const isIpAllowed = (ip, allowlist = []) => {
   if (!Array.isArray(allowlist) || allowlist.length === 0) return true;
-  if (!ip || !net.isIP(ip)) return false;
-  return allowlist.includes(ip);
+  const normalizedIp = normalizeIp(ip);
+  if (!normalizedIp || !net.isIP(normalizedIp)) return false;
+  return allowlist.map(normalizeIp).includes(normalizedIp);
 };
 
 const compareSignatures = (supplied, expected, security = {}) => {
@@ -52,12 +58,21 @@ const compareSignatures = (supplied, expected, security = {}) => {
   return safeCompare(supplied, expected);
 };
 
+const normalizeSecretValue = (value) => {
+  if (typeof value !== 'string' && typeof value !== 'number') return '';
+  return String(value).trim();
+};
+
 const resolveSecret = (security = {}) => {
-  if (security.secretValue) return String(security.secretValue);
-  if (security.credentials?.sharedSecret) return String(security.credentials.sharedSecret);
-  if (security.credentials?.token) return String(security.credentials.token);
-  if (security.credentials?.apiKey) return String(security.credentials.apiKey);
-  if (security.secretEnvVar) return String(process.env[security.secretEnvVar] || '');
+  const directSecret = normalizeSecretValue(security.secretValue);
+  if (directSecret) return directSecret;
+  const sharedSecret = normalizeSecretValue(security.credentials?.sharedSecret);
+  if (sharedSecret) return sharedSecret;
+  const token = normalizeSecretValue(security.credentials?.token);
+  if (token) return token;
+  const apiKey = normalizeSecretValue(security.credentials?.apiKey);
+  if (apiKey) return apiKey;
+  if (security.secretEnvVar) return normalizeSecretValue(process.env[security.secretEnvVar] || '');
   return '';
 };
 
@@ -146,6 +161,7 @@ const validateProviderSecurity = ({ providerConfig = {}, req, mapped = {} }) => 
 
 module.exports = {
   isIpAllowed,
+  normalizeIp,
   compareSignatures,
   renderTemplate,
   safeCompare,

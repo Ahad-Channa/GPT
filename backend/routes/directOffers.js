@@ -337,8 +337,8 @@ router.get('/postback', async (req, res) => {
   const { secret } = req.query;
 
   // Secret is always required — it's our auth mechanism
-  if (!secret) {
-    console.warn('[Postback] Missing secret param:', req.query);
+  if (typeof secret !== 'string' || !secret.trim()) {
+    console.warn('[Postback] Missing or malformed secret param.');
     return res.status(200).send('0');
   }
 
@@ -368,5 +368,10 @@ router.get('/postback', async (req, res) => {
     return res.status(200).send('0');
   }
 });
+
+router.__testInternals = {
+  applyValidatedDirectOfferRewardBridge,
+  buildDirectOfferProviderConfig,
+};
 
 module.exports = router;

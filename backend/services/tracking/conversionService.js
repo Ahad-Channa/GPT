@@ -38,6 +38,26 @@ const canTransitionStatus = (fromStatus, toStatus) =>
 const sanitizeLogText = (value) =>
   sanitizePostbackPayload({ value: String(value || '').slice(0, 500) }).value;
 
+const buildTransitionUpdate = ({ mapped, internalStatus, payoutAmount, providerConfig, security }) => ({
+  $set: {
+    incomingStatus: mapped.status,
+    internalStatus,
+    eventType: mapped.eventType || 'conversion',
+    payout: {
+      amount: payoutAmount,
+      currency: providerConfig.providerSettings?.payoutCurrency || 'USD',
+    },
+    security: {
+      method: security.method || '',
+      checked: Boolean(security.checked),
+      passed: Boolean(security.passed),
+      reason: security.reason || '',
+    },
+    'metadata.providerUserId': mapped.providerUserId || '',
+    'metadata.mappedExtra': mapped.extra || {},
+  },
+});
+
 const providerResponse = (providerConfig = {}, result) => {
   const responseConfig = providerConfig.responseConfig || {};
   if (result.isDuplicate) {
@@ -180,27 +200,45 @@ const createOrResolveConversion = async ({
           throw transitionError;
         }
 
-        existing.incomingStatus = mapped.status;
-        existing.internalStatus = internalStatus;
-        existing.eventType = mapped.eventType || 'conversion';
-        existing.payout = {
-          amount: payoutAmount,
-          currency: providerConfig.providerSettings?.payoutCurrency || 'USD',
-        };
-        existing.security = {
-          method: security.method || '',
-          checked: Boolean(security.checked),
-          passed: Boolean(security.passed),
-          reason: security.reason || '',
-        };
-        existing.metadata = {
-          ...(existing.metadata || {}),
-          providerUserId: mapped.providerUserId || '',
-          mappedExtra: mapped.extra || {},
-        };
         if (existing.processingState === 'processed' && internalStatus === 'approved') {
           return { conversion: existing, isDuplicate: true, shouldProcess: false, transition: 'duplicate_processed' };
         }
+        const transitionUpdate = buildTransitionUpdate({ mapped, internalStatus, payoutAmount, providerConfig, security });
+        if (typeof conversionModel.findOneAndUpdate === 'function') {
+          const transitioned = await conversionModel.findOneAndUpdate(
+            {
+              providerId: providerConfig.providerId,
+              providerTransactionId: mapped.transactionId,
+              internalStatus: existing.internalStatus,
+            },
+            transitionUpdate,
+            { new: true }
+          );
+          if (transitioned) {
+            return { conversion: transitioned, isDuplicate: false, shouldProcess: true, transition: 'updated' };
+          }
+          const current = await conversionModel.findOne({
+            providerId: providerConfig.providerId,
+            providerTransactionId: mapped.transactionId,
+          });
+          if (current && isSameStatusDuplicate(current.internalStatus, internalStatus)) {
+            return { conversion: current, isDuplicate: true, shouldProcess: false, transition: 'duplicate' };
+          }
+          const transitionError = new Error(`Invalid conversion status transition: ${current?.internalStatus || existing.internalStatus} -> ${internalStatus}`);
+          transitionError.code = 'INVALID_STATUS_TRANSITION';
+          transitionError.existingConversion = current || existing;
+          throw transitionError;
+        }
+        existing.incomingStatus = transitionUpdate.$set.incomingStatus;
+        existing.internalStatus = transitionUpdate.$set.internalStatus;
+        existing.eventType = transitionUpdate.$set.eventType;
+        existing.payout = transitionUpdate.$set.payout;
+        existing.security = transitionUpdate.$set.security;
+        existing.metadata = {
+          ...(existing.metadata || {}),
+          providerUserId: transitionUpdate.$set['metadata.providerUserId'],
+          mappedExtra: transitionUpdate.$set['metadata.mappedExtra'],
+        };
         if (typeof existing.save === 'function') await existing.save();
         return { conversion: existing, isDuplicate: false, shouldProcess: true, transition: 'updated' };
       }

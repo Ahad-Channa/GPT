@@ -20,6 +20,15 @@ const PROVIDER_SECRET_MAP = {
   revu:      'REVU_SECRET',
 };
 
+const isSafePostbackScalar = (value, maxLength = 128) =>
+  typeof value === 'string' && value.trim().length > 0 && value.trim().length <= maxLength;
+
+const parseLegacyProviderUnits = (value) => {
+  if (!isSafePostbackScalar(value, 64) || !/^-?\d+(\.\d+)?$/.test(value.trim())) return null;
+  const parsed = Number(value.trim());
+  return Number.isFinite(parsed) ? parsed : null;
+};
+
 // Legacy offerwall compatibility handler.
 //
 // These existing provider routes do not currently resolve a stored ClickLog, so
@@ -38,6 +47,18 @@ const handleLegacyOfferwallPostback = async (providerId, req, res, params) => {
       return res.status(200).send('1');
     }
 
+    if (
+      !isSafePostbackScalar(userId) ||
+      !isSafePostbackScalar(transactionId) ||
+      !isSafePostbackScalar(secretParam, 256)
+    ) {
+      console.warn(`[Reward Engine] ${providerId} postback rejected because required values are malformed.`);
+      return res.status(401).send('0');
+    }
+    const normalizedUserId = userId.trim();
+    const normalizedTransactionId = transactionId.trim();
+    const normalizedSecretParam = secretParam.trim();
+
     // 3. Validate hash/secret
     const envSecretKey = PROVIDER_SECRET_MAP[providerId];
     const envSecret = process.env[envSecretKey];
@@ -50,16 +71,16 @@ const handleLegacyOfferwallPostback = async (providerId, req, res, params) => {
       if (providerId === 'cpx') {
         // CPX MD5 validation: MD5(trans_id + "-" + secure_hash)
         const expectedHash = crypto.createHash('md5')
-          .update(`${transactionId}-${envSecret}`)
+          .update(`${normalizedTransactionId}-${envSecret}`)
           .digest('hex');
           
-        if (secretParam !== expectedHash) {
-          console.error(`[Reward Engine] CPX MD5 signature mismatch! Expected: ${expectedHash}, Got: ${secretParam}`);
+        if (normalizedSecretParam !== expectedHash) {
+          console.error(`[Reward Engine] CPX MD5 signature mismatch! Expected: ${expectedHash}, Got: ${normalizedSecretParam}`);
           return res.status(401).send('0');
         }
       } else {
         // Fallback for others that use a direct secret match until implemented individually
-        if (secretParam !== envSecret) {
+        if (normalizedSecretParam !== envSecret) {
           console.warn(`[Reward Engine] ${providerId} invalid secret attempt.`);
           return res.status(401).send('0');
         }
@@ -67,16 +88,22 @@ const handleLegacyOfferwallPostback = async (providerId, req, res, params) => {
     }
 
     // 6. Convert: platformCoins = Math.floor(providerUnits * provider.conversionRatio)
-    const platformCoins = Math.floor(parseFloat(providerUnits) * provider.conversionRatio);
+    const parsedProviderUnits = parseLegacyProviderUnits(providerUnits);
+    if (parsedProviderUnits === null) {
+      console.warn(`[Reward Engine] ${providerId} postback rejected because provider units are malformed.`);
+      return res.status(401).send('0');
+    }
+
+    const platformCoins = Math.floor(parsedProviderUnits * provider.conversionRatio);
     if (isNaN(platformCoins) || platformCoins === 0) {
       return res.status(200).send('1'); // bad amount, silently ignore
     }
 
     // 7. Build externalId = `${providerId}:${transactionId}`
-    const externalId = `${providerId}:${transactionId}`;
+    const externalId = `${providerId}:${normalizedTransactionId}`;
 
     // Find User early to support chargebacks
-    const user = await User.findById(userId);
+    const user = await User.findById(normalizedUserId);
     if (!user) {
       return res.status(200).send('1');
     }

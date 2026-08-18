@@ -6,9 +6,11 @@ const mongoose = require('mongoose');
 const ClickLog = require('../models/ClickLog');
 const Conversion = require('../models/Conversion');
 const PostbackLog = require('../models/PostbackLog');
+const ProviderConfig = require('../models/ProviderConfig');
 const { processPostback } = require('../services/tracking/conversionService');
-const { parsePayout } = require('../services/tracking/parameterMapper');
-const { validateProviderSecurity } = require('../services/tracking/providerSecurity');
+const { mapPostbackParameters, parsePayout } = require('../services/tracking/parameterMapper');
+const { MAX_STRING_LENGTH, sanitizePostbackPayload } = require('../services/tracking/postbackSanitizer');
+const { isIpAllowed, safeCompare, validateProviderSecurity } = require('../services/tracking/providerSecurity');
 
 const makeReq = ({ query = {}, body = {}, headers = {}, ip = '203.0.113.77', trustProxy = true } = {}) => ({
   method: Object.keys(body).length ? 'POST' : 'GET',
@@ -30,6 +32,7 @@ const providerConfig = (overrides = {}) => ({
     transactionId: 'txn_id',
     status: 'status',
     payout: 'payout',
+    eventType: 'event_type',
     providerUserId: 'user_id',
     extra: { campaignId: 'campaign_id', reward: 'reward' },
   },
@@ -186,6 +189,18 @@ test('valid hash/HMAC signatures pass exact comparison and bad case does not pas
     req: makeReq({ query: { sig: hmac } }),
     mapped: { clickId: 'click' },
   }).passed, true);
+
+  assert.equal(safeCompare('short', 'much-longer'), false);
+  assert.equal(validateProviderSecurity({
+    providerConfig: providerConfig({ security: { method: 'sha256', signatureParam: 'sig', hashTemplate: '{clickId}{secret}', secretValue: 's' } }),
+    req: makeReq({ query: { sig: 'not-hex' } }),
+    mapped: { clickId: 'click' },
+  }).passed, false);
+  assert.equal(validateProviderSecurity({
+    providerConfig: providerConfig({ security: { method: 'sha256', signatureParam: 'sig', hashTemplate: '{clickId}{secret}', secretValue: 's' } }),
+    req: makeReq({ query: { sig: hash, click_id: 'tampered' } }),
+    mapped: { clickId: 'tampered' },
+  }).passed, false);
 });
 
 test('URL manipulation cannot override trusted user, reward, campaign, or provider', async () => {
@@ -247,6 +262,29 @@ test('payout validation rejects malformed, negative, and oversized supplied valu
   }
 });
 
+test('canonical mapped fields reject unsafe types and oversized values', () => {
+  const result = mapPostbackParameters({
+    query: {
+      click_id: true,
+      txn_id: 'txn',
+      status: 'approved',
+      payout: '1',
+      event_type: { nested: 'bad' },
+      user_id: 'u'.repeat(129),
+      campaign_id: 'c',
+      reward: 'r'.repeat(800),
+    },
+    mappings: providerConfig().parameterMappings,
+    requiredFields: ['clickId', 'transactionId', 'status'],
+  });
+
+  assert.equal(result.isValid, false);
+  assert.match(result.invalidFields.join(' '), /clickId/);
+  assert.match(result.invalidFields.join(' '), /eventType/);
+  assert.match(result.invalidFields.join(' '), /providerUserId/);
+  assert.equal(result.mapped.extra.reward.length, 512);
+});
+
 test('IP allowlist honors trusted proxy setting and required allowlist mode', () => {
   const config = providerConfig({
     ipAllowlist: ['203.0.113.77'],
@@ -259,6 +297,7 @@ test('IP allowlist honors trusted proxy setting and required allowlist mode', ()
     req: makeReq({ query: { secret: 'secret-1' } }),
     mapped: {},
   }).passed, false);
+  assert.equal(isIpAllowed('::ffff:203.0.113.77', ['203.0.113.77']), true);
 });
 
 test('nested sensitive values and error text are sanitized in PostbackLog', async () => {
@@ -281,6 +320,57 @@ test('nested sensitive values and error text are sanitized in PostbackLog', asyn
   assert.equal(log.sanitizedQuery.nested.apiKey, '[REDACTED]');
   assert.equal(log.sanitizedHeaders.authorization, '[REDACTED]');
   assert.equal(String(log.rejectionReason).includes('secret-1'), false);
+
+  const sanitized = sanitizePostbackPayload({
+    body: 'x'.repeat(MAX_STRING_LENGTH + 100),
+    secretMessage: 'actual-secret-value',
+    nested: { authorization: 'Bearer actual-secret-value' },
+  });
+  assert.equal(sanitized.secretMessage, '[REDACTED]');
+  assert.equal(sanitized.nested.authorization, '[REDACTED]');
+  assert.ok(sanitized.body.length < MAX_STRING_LENGTH + 20);
+});
+
+test('ProviderConfig credentials require explicit secure selection and malformed credentials fail closed', () => {
+  const config = new ProviderConfig({
+    providerId: 'credential-check',
+    name: 'Credential Check',
+    security: {
+      method: 'shared_secret',
+      tokenParam: 'secret',
+      credentials: { sharedSecret: 'stored-secret' },
+    },
+  });
+
+  assert.equal(config.toObject().security.credentials, undefined);
+  assert.equal(config.toJSON().security.credentials, undefined);
+  assert.equal(validateProviderSecurity({
+    providerConfig: { ...providerConfig(), security: { method: 'shared_secret', tokenParam: 'secret', credentials: { sharedSecret: 'stored-secret' } } },
+    req: makeReq({ query: { secret: 'stored-secret' } }),
+    mapped: {},
+  }).passed, true);
+  assert.equal(validateProviderSecurity({
+    providerConfig: { ...providerConfig(), security: { method: 'shared_secret', tokenParam: 'secret', credentials: { sharedSecret: '' } } },
+    req: makeReq({ query: { secret: '' } }),
+    mapped: {},
+  }).passed, false);
+  assert.equal(validateProviderSecurity({
+    providerConfig: { ...providerConfig(), security: { method: 'shared_secret', tokenParam: 'secret', credentials: { sharedSecret: { value: 'stored-secret' } } } },
+    req: makeReq({ query: { secret: '[object Object]' } }),
+    mapped: {},
+  }).passed, false);
+});
+
+test('exaggerated provider payout is stored as revenue metadata and does not change user reward snapshot', async () => {
+  const click = makeClick({ rewardAmount: 777 });
+  const { result } = await runPostback({
+    click,
+    req: makeReq({ query: { click_id: click.clickId, txn_id: 'txn-big-payout', status: 'approved', payout: '999999999', secret: 'secret-1' } }),
+  });
+
+  assert.equal(result.ok, true);
+  assert.equal(result.conversion.payout.amount, 999999999);
+  assert.equal(result.conversion.rewardAmount, 777);
 });
 
 test('simultaneous duplicate approved postbacks create one Conversion and idempotent duplicates', async () => {
@@ -324,4 +414,51 @@ test('replay after processed conversion is idempotent and not reward-bridge elig
   assert.equal(result.isDuplicate, true);
   assert.equal(result.shouldProcessRewardBridge, false);
   assert.equal(adapters.conversions.length, 1);
+});
+
+test('competing duplicate status transitions cannot both win', async () => {
+  const click = makeClick();
+  const existing = new Conversion({
+    providerId: 'direct',
+    providerTransactionId: 'txn-transition-race',
+    clickId: click.clickId,
+    clickLogId: click._id,
+    userId: click.userId,
+    campaignType: click.campaignType,
+    campaignId: click.campaignId,
+    offerId: click.offerId,
+    incomingStatus: 'pending',
+    internalStatus: 'pending',
+    processingState: 'claimed',
+  });
+  const adapters = makeAdapters({ click, existing: [existing] });
+  adapters.conversionModel.findOneAndUpdate = async (query, update) => {
+    if (
+      existing.providerId === query.providerId &&
+      existing.providerTransactionId === query.providerTransactionId &&
+      existing.internalStatus === query.internalStatus
+    ) {
+      Object.assign(existing, update.$set);
+      return existing;
+    }
+    return null;
+  };
+
+  const [approved, rejected] = await Promise.all([
+    runPostback({
+      click,
+      adapters,
+      req: makeReq({ query: { click_id: click.clickId, txn_id: 'txn-transition-race', status: 'approved', secret: 'secret-1' } }),
+    }),
+    runPostback({
+      click,
+      adapters,
+      req: makeReq({ query: { click_id: click.clickId, txn_id: 'txn-transition-race', status: 'rejected', secret: 'secret-1' } }),
+    }),
+  ]);
+
+  const results = [approved.result, rejected.result];
+  assert.equal(results.filter((result) => result.ok).length, 1);
+  assert.equal(results.filter((result) => !result.ok && /Invalid conversion status transition/.test(result.rejectionReason)).length, 1);
+  assert.equal(['approved', 'rejected'].includes(existing.internalStatus), true);
 });
