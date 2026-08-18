@@ -35,6 +35,9 @@ const parseLegacyProviderUnits = (value) => {
 // Phase 4 intentionally keeps them isolated instead of treating provider-supplied
 // user IDs as the new generic standard. Later phases should migrate offerwall
 // traffic only after outbound offerwall clicks are tracked through clickService.
+// Phase 6 reward/reversal services require exact Conversion linkage, which these
+// legacy routes do not have yet; Phase 10 should migrate them once tracked clicks
+// exist for each provider.
 const handleLegacyOfferwallPostback = async (providerId, req, res, params) => {
   try {
     const { userId, providerUnits, transactionId, secretParam } = params;
@@ -111,17 +114,7 @@ const handleLegacyOfferwallPostback = async (providerId, req, res, params) => {
     // CHARGEBACK HANDLING: If the offerwall returns negative, it's reversing an offer.
     if (platformCoins < 0) {
       const originalTxId = req.query.original_transaction_id || externalId;
-      // Try to find original by the provided ID, or match exact amount logically
-      let originalTx = await Transaction.findOne({ externalId: originalTxId });
-      if (!originalTx) {
-        originalTx = await Transaction.findOne({
-          userId: user._id,
-          transactionType: 'offer_reward',
-          'metadata.providerId': providerId,
-          amount: Math.abs(platformCoins),
-          status: 'completed'
-        }).sort({ createdAt: -1 });
-      }
+      const originalTx = await Transaction.findOne({ externalId: originalTxId });
 
       if (originalTx && originalTx.status !== 'reversed') {
         const { notifyAdmins } = require('../utils/adminNotify'); // require locally to prevent circular dep initially or rely on file top require

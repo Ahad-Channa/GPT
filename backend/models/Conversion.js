@@ -75,8 +75,8 @@ const conversionSchema = new mongoose.Schema(
     },
     processingState: {
       type: String,
-      enum: ['received', 'claimed', 'processing', 'processed', 'duplicate', 'ignored', 'failed'],
-      default: 'received',
+      enum: ['pending', 'claimed', 'processing', 'processed', 'failed', 'reversal_processing', 'reversed', 'reversal_failed'],
+      default: 'pending',
       index: true,
     },
     rewardTransactionId: {
@@ -147,5 +147,7 @@ conversionSchema.index(
 conversionSchema.index({ providerId: 1, clickId: 1, eventType: 1, createdAt: -1 });
 conversionSchema.index({ userId: 1, createdAt: -1 });
 conversionSchema.index({ campaignType: 1, campaignId: 1, createdAt: -1 });
+conversionSchema.index({ rewardTransactionId: 1 }, { sparse: true });
+conversionSchema.index({ reversalTransactionId: 1 }, { sparse: true });
 
 module.exports = mongoose.model('Conversion', conversionSchema);

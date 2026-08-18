@@ -386,10 +386,10 @@ test('simultaneous duplicate approved postbacks create one Conversion and idempo
   assert.equal(adapters.conversions.length, 1);
   assert.equal(results.filter(({ result }) => result.ok).length, 8);
   assert.ok(results.some(({ result }) => result.lifecycleTransition === 'created'));
-  assert.ok(results.some(({ result }) => result.isDuplicate || result.lifecycleTransition === 'retry_reward_bridge'));
+  assert.ok(results.some(({ result }) => result.isDuplicate || result.lifecycleTransition === 'retry_financial_processing'));
 });
 
-test('replay after processed conversion is idempotent and not reward-bridge eligible', async () => {
+test('replay after processed conversion is idempotent and not financial-processing eligible', async () => {
   const click = makeClick();
   const existing = new Conversion({
     providerId: 'direct',
@@ -412,7 +412,7 @@ test('replay after processed conversion is idempotent and not reward-bridge elig
   });
   assert.equal(result.ok, true);
   assert.equal(result.isDuplicate, true);
-  assert.equal(result.shouldProcessRewardBridge, false);
+  assert.equal(result.shouldProcessFinancial, false);
   assert.equal(adapters.conversions.length, 1);
 });
 

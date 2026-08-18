@@ -3,16 +3,13 @@ const router = express.Router();
 const DirectOffer = require('../models/DirectOffer');
 const ClickLog = require('../models/ClickLog');
 const User = require('../models/User');
-const Transaction = require('../models/Transaction');
-const Conversion = require('../models/Conversion');
-const notify = require('../utils/notify');
-const { emitWalletUpdate } = require('../utils/walletEvents');
+const { emitToUser, emitWalletUpdate } = require('../utils/walletEvents');
 const { verifyToken } = require('../middlewares/authMiddleware');
 const { processVipLevelUp } = require('../utils/vipUtils');
 const { createDirectOfferClick } = require('../services/tracking/clickService');
 const { processPostback } = require('../services/tracking/conversionService');
-
-const PHASE4_BRIDGE_CLAIM_LIMIT = 500;
+const { processReward } = require('../services/rewards/rewardService');
+const { processReversal } = require('../services/rewards/reversalService');
 
 // ─────────────────────────────────────────────────────────────────────────────
 // GET /api/direct-offers
@@ -138,191 +135,10 @@ const buildDirectOfferProviderConfig = (offer) => {
     ipAllowlist: [],
     providerSettings: {
       requiredFields: ['clickId', 'transactionId', 'status'],
-      temporaryRewardBridge: 'direct_offer_legacy_reward_bridge_phase6_removal',
     },
   };
 };
 
-// Temporary Phase 4 bridge: keeps existing direct-offer wallet behavior only after
-// shared mapping, security, ClickLog resolution, status mapping, and Conversion
-// idempotency accept the postback. Phase 6 should replace this with the final
-// atomic reward/reversal service.
-const applyValidatedDirectOfferRewardBridge = async ({ offer, result }) => {
-  if (!result?.ok || !result.shouldProcessRewardBridge) return;
-
-  const clickLog = result.clickLog;
-  const conversion = result.conversion;
-  const clickIdValue = result.mapped.clickId;
-  const payoutAmount = result.mapped.payout ? parseFloat(result.mapped.payout) || 0 : offer.advertiserPayoutAmount || 0;
-
-  if (result.internalStatus === 'pending') {
-    clickLog.status = 'pending';
-    await clickLog.save();
-    return;
-  }
-
-  if (result.internalStatus === 'reversed') {
-    return;
-  }
-
-  if (result.internalStatus !== 'approved' && result.internalStatus !== 'rejected') {
-    return;
-  }
-
-  if (result.internalStatus === 'rejected') {
-    if (clickLog.status === 'rejected' || clickLog.status === 'approved') return;
-    clickLog.status = 'rejected';
-    clickLog.convertedAt = new Date();
-    await clickLog.save();
-
-    await DirectOffer.findByIdAndUpdate(offer._id, { $inc: { totalRejected: 1 } });
-    console.log('[Postback] Click rejected. click_id:', clickIdValue);
-    return;
-  }
-
-  if (clickLog.status === 'approved') {
-    return;
-  }
-
-  const claimedConversion = conversion?._id
-    ? await Conversion.findOneAndUpdate(
-      {
-        _id: conversion._id,
-        internalStatus: 'approved',
-        processingState: { $in: ['claimed', 'failed'] },
-        rewardTransactionId: null,
-      },
-      {
-        $set: {
-          processingState: 'processing',
-          errorReason: '',
-        },
-      },
-      { new: true }
-    )
-    : null;
-
-  if (conversion?._id && !claimedConversion) {
-    return;
-  }
-
-  try {
-    const user = await User.findById(clickLog.userId);
-    if (!user) {
-      console.warn('[Postback] User not found for click_id:', clickIdValue);
-      throw new Error('User not found for direct-offer reward bridge.');
-    }
-
-    if (user.isBanned) {
-      clickLog.status = 'rejected';
-      clickLog.convertedAt = new Date();
-      await clickLog.save();
-      console.warn('[Postback] Banned user attempted postback. userId:', user._id);
-      throw new Error('Banned user rejected by direct-offer reward bridge.');
-    }
-
-    const coinsToCredit = clickLog.rewardAmount;
-    const walletClaimId = conversion?._id;
-    const updatedUser = walletClaimId
-      ? await User.findOneAndUpdate(
-        {
-          _id: user._id,
-          phase4RewardBridgeClaims: { $ne: walletClaimId },
-        },
-        {
-          $inc: { walletBalance: coinsToCredit, totalEarned: coinsToCredit },
-          $addToSet: { phase4RewardBridgeClaims: walletClaimId },
-        },
-        { new: true }
-      )
-      : await User.findByIdAndUpdate(
-        user._id,
-        { $inc: { walletBalance: coinsToCredit, totalEarned: coinsToCredit } },
-        { new: true }
-      );
-
-    const effectiveUser = updatedUser || await User.findById(user._id);
-    const newBalance = effectiveUser.walletBalance;
-    const externalId = `direct:${clickIdValue}`;
-    let tx = await Transaction.findOne({ externalId });
-
-    if (!tx) {
-      tx = await Transaction.create({
-        userId: user._id,
-        transactionType: 'direct_offer_reward',
-        amount: coinsToCredit,
-        balanceAfter: newBalance,
-        description: `Direct offer reward: ${offer.title}`,
-        status: 'completed',
-        sourceType: 'offer',
-        sourceId: offer._id,
-        metadata: {
-          offerId: offer._id,
-          offerTitle: offer.title,
-          clickId: clickIdValue,
-          advertiserTransactionId: result.mapped.transactionId,
-          advertiserPayout: payoutAmount,
-          walletApplied: Boolean(updatedUser),
-        },
-        externalId,
-        conversionId: conversion?._id || null,
-      });
-    }
-
-    clickLog.status = 'approved';
-    clickLog.convertedAt = new Date();
-    clickLog.advertiserPayout = payoutAmount;
-    clickLog.transactionId = tx._id;
-    await clickLog.save();
-
-    if (conversion?._id) {
-      const claimUser = await User.findById(user._id).select('phase4RewardBridgeClaims');
-      if (claimUser?.phase4RewardBridgeClaims?.length > PHASE4_BRIDGE_CLAIM_LIMIT) {
-        claimUser.phase4RewardBridgeClaims = claimUser.phase4RewardBridgeClaims.slice(-PHASE4_BRIDGE_CLAIM_LIMIT);
-        await claimUser.save();
-      }
-      await Conversion.findByIdAndUpdate(conversion._id, {
-        $set: {
-          processingState: 'processed',
-          rewardTransactionId: tx._id,
-          errorReason: '',
-        },
-      });
-    }
-
-    await DirectOffer.findByIdAndUpdate(offer._id, { $inc: { totalApproved: 1 } });
-
-    await notify(
-      user._id,
-      'direct_offer_reward',
-      '🎉 Offer Completed!',
-      `You earned ${coinsToCredit.toLocaleString()} coins from "${offer.title}".`,
-      { txId: tx._id, amount: coinsToCredit, offerTitle: offer.title }
-    );
-
-    emitWalletUpdate(user.firebaseUid, newBalance);
-
-    try {
-      await processVipLevelUp(user._id);
-    } catch (vipErr) {
-      console.error('[Postback] VIP level up check failed:', vipErr.message);
-    }
-
-    console.log(`[Postback] ✅ Approved. User: ${user._id} | Offer: ${offer.title} | Coins: +${coinsToCredit}`);
-  } catch (error) {
-    if (conversion?._id) {
-      await Conversion.findByIdAndUpdate(conversion._id, {
-        $set: {
-          processingState: 'failed',
-          errorReason: error.message || 'Direct-offer reward bridge failed.',
-        },
-      });
-    }
-    throw error;
-  }
-};
-
-// ─────────────────────────────────────────────────────────────────────────────
 // GET /api/direct-offers/postback
 // PUBLIC (no auth) — Called by advertiser's server to confirm a conversion
 //
@@ -358,8 +174,32 @@ router.get('/postback', async (req, res) => {
       expectedCampaignId: offer._id,
     });
 
-    if (result.ok && result.shouldProcessRewardBridge) {
-      await applyValidatedDirectOfferRewardBridge({ offer, result });
+    if (result.ok && result.internalStatus === 'pending' && result.clickLog) {
+      await ClickLog.findByIdAndUpdate(result.clickLog._id, { $set: { status: 'pending' } });
+    }
+
+    if (result.ok && result.internalStatus === 'rejected' && result.clickLog) {
+      await ClickLog.findByIdAndUpdate(result.clickLog._id, {
+        $set: { status: 'rejected', convertedAt: new Date() },
+      });
+      await DirectOffer.findByIdAndUpdate(offer._id, { $inc: { totalRejected: 1 } });
+    }
+
+    if (result.ok && result.shouldProcessFinancial && result.internalStatus === 'approved') {
+      await processReward({
+        conversion: result.conversion,
+        hooks: {
+          emitWalletUpdate,
+          processVipLevelUp: (user, amount) => processVipLevelUp(user, amount, emitToUser),
+        },
+      });
+    }
+
+    if (result.ok && result.shouldProcessFinancial && result.internalStatus === 'reversed') {
+      await processReversal({
+        conversion: result.conversion,
+        hooks: { emitWalletUpdate },
+      });
     }
 
     return res.status(result.response.status).send(result.response.body);
@@ -370,7 +210,6 @@ router.get('/postback', async (req, res) => {
 });
 
 router.__testInternals = {
-  applyValidatedDirectOfferRewardBridge,
   buildDirectOfferProviderConfig,
 };
 

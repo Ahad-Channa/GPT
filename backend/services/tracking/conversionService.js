@@ -188,7 +188,7 @@ const createOrResolveConversion = async ({
       if (existing) {
         if (isSameStatusDuplicate(existing.internalStatus, internalStatus)) {
           if (internalStatus === 'approved' && ['claimed', 'failed'].includes(existing.processingState)) {
-            return { conversion: existing, isDuplicate: false, shouldProcess: true, transition: 'retry_reward_bridge' };
+            return { conversion: existing, isDuplicate: false, shouldProcess: true, transition: 'retry_financial_processing' };
           }
           return { conversion: existing, isDuplicate: true, shouldProcess: false, transition: 'duplicate' };
         }
@@ -476,7 +476,7 @@ const processPostback = async ({
       ok: true,
       processingResult: conversionResult.isDuplicate ? 'duplicate' : 'accepted',
       isDuplicate: conversionResult.isDuplicate,
-      shouldProcessRewardBridge: Boolean(conversionResult.shouldProcess),
+      shouldProcessFinancial: Boolean(conversionResult.shouldProcess),
       lifecycleTransition: conversionResult.transition || 'created',
       providerId: config.providerId,
       mapped: mappedResult.mapped,

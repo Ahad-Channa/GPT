@@ -422,7 +422,7 @@ test('conversion lifecycle supports pending to approved and duplicate status ide
     postbackLogModel: adapters.postbackLogModel,
   });
   assert.equal(pendingDuplicate.isDuplicate, true);
-  assert.equal(pendingDuplicate.shouldProcessRewardBridge, false);
+  assert.equal(pendingDuplicate.shouldProcessFinancial, false);
 
   const approved = await processPostback({
     providerConfig: baseProviderConfig(),
@@ -437,7 +437,7 @@ test('conversion lifecycle supports pending to approved and duplicate status ide
   assert.equal(approved.ok, true);
   assert.equal(approved.isDuplicate, false);
   assert.equal(approved.internalStatus, 'approved');
-  assert.equal(approved.shouldProcessRewardBridge, true);
+  assert.equal(approved.shouldProcessFinancial, true);
 
   approved.conversion.processingState = 'processed';
   approved.conversion.rewardTransactionId = new mongoose.Types.ObjectId();
@@ -452,10 +452,10 @@ test('conversion lifecycle supports pending to approved and duplicate status ide
     postbackLogModel: adapters.postbackLogModel,
   });
   assert.equal(approvedDuplicate.isDuplicate, true);
-  assert.equal(approvedDuplicate.shouldProcessRewardBridge, false);
+  assert.equal(approvedDuplicate.shouldProcessFinancial, false);
 });
 
-test('failed approved bridge state is retryable but processed approved is not', async () => {
+test('failed approved financial state is retryable but processed approved is not', async () => {
   const clickLog = makeClickLog();
   const existing = new Conversion({
     providerId: 'direct',
@@ -485,8 +485,8 @@ test('failed approved bridge state is retryable but processed approved is not', 
 
   assert.equal(retry.ok, true);
   assert.equal(retry.isDuplicate, false);
-  assert.equal(retry.shouldProcessRewardBridge, true);
-  assert.equal(retry.lifecycleTransition, 'retry_reward_bridge');
+  assert.equal(retry.shouldProcessFinancial, true);
+  assert.equal(retry.lifecycleTransition, 'retry_financial_processing');
 });
 
 test('rejected duplicate is idempotent and invalid status transitions reject safely', async () => {
