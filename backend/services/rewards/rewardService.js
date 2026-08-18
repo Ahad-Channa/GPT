@@ -23,15 +23,32 @@ const queryOne = async (query, session) => withSession(query, session);
 const findTransactionByExternalId = (transactionModel, externalId, session) =>
   queryOne(transactionModel.findOne({ externalId }), session);
 
+const ensureSameTransactionIntent = (existing, payload) => {
+  if (!existing) return;
+  const sameConversion = String(existing.conversionId || '') === String(payload.conversionId || '');
+  const sameUser = String(existing.userId || '') === String(payload.userId || '');
+  const sameType = existing.transactionType === payload.transactionType;
+  const sameAmount = Number(existing.amount) === Number(payload.amount);
+  if (!sameConversion || !sameUser || !sameType || !sameAmount) {
+    throw new Error(`Conflicting transaction exists for externalId ${payload.externalId}.`);
+  }
+};
+
 const createTransactionIdempotent = async ({ transactionModel, payload, session }) => {
   const existing = await findTransactionByExternalId(transactionModel, payload.externalId, session);
-  if (existing) return { transaction: existing, created: false };
+  if (existing) {
+    ensureSameTransactionIntent(existing, payload);
+    return { transaction: existing, created: false };
+  }
   try {
     return { transaction: await createOne(transactionModel, payload, session), created: true };
   } catch (error) {
     if (error?.code === 11000) {
       const transaction = await findTransactionByExternalId(transactionModel, payload.externalId, session);
-      if (transaction) return { transaction, created: false };
+      if (transaction) {
+        ensureSameTransactionIntent(transaction, payload);
+        return { transaction, created: false };
+      }
     }
     throw error;
   }
@@ -63,9 +80,6 @@ const markRewardFailed = async (conversionModel, conversionId, error, session) =
 
 const createReferralReward = async ({ settingsModel, transactionModel, userModel, rewardTx, user, rewardAmount, session }) => {
   if (!user?.referredBy || rewardAmount <= 0) return null;
-  const existing = await findTransactionByExternalId(transactionModel, referralExternalId(rewardTx.conversionId), session);
-  if (existing) return existing;
-
   const settings = await queryOne(settingsModel.getSingleton(), session);
   const referrer = await queryOne(userModel.findById(user.referredBy), session);
   if (!referrer) return null;
@@ -76,20 +90,7 @@ const createReferralReward = async ({ settingsModel, transactionModel, userModel
   const amount = Math.floor(rewardAmount * (pct / 100));
   if (amount <= 0) return null;
 
-  await userModel.updateOne({ _id: referrer._id }, { $inc: { referralEarnings: amount } }, { session });
-  await userModel.updateOne({ _id: user._id }, { $inc: { commissionGenerated: amount } }, { session });
-
   const status = holdDays === 0 ? 'completed' : 'hold';
-  let balanceAfter = referrer.walletBalance || 0;
-  if (status === 'completed') {
-    const updatedReferrer = await userModel.findOneAndUpdate(
-      { _id: referrer._id },
-      { $inc: { walletBalance: amount } },
-      { new: true, session }
-    );
-    balanceAfter = updatedReferrer.walletBalance;
-  }
-
   const holdUntil = status === 'hold' ? new Date(Date.now() + holdDays * 24 * 60 * 60 * 1000) : null;
   const { transaction } = await createTransactionIdempotent({
     transactionModel,
@@ -102,7 +103,7 @@ const createReferralReward = async ({ settingsModel, transactionModel, userModel
       linkedTransactionId: rewardTx._id,
       conversionId: rewardTx.conversionId,
       amount,
-      balanceAfter,
+      balanceAfter: referrer.walletBalance || 0,
       description: 'Referral Reward from Offer',
       status,
       holdUntil,
@@ -110,9 +111,34 @@ const createReferralReward = async ({ settingsModel, transactionModel, userModel
       metadata: {
         sourceUserId: user._id,
         rewardTransactionId: rewardTx._id,
+        walletApplied: false,
       },
     },
   });
+
+  if (transaction.status === 'completed' && transaction.metadata?.walletApplied === true) return transaction;
+
+  const referrerUpdate = status === 'completed'
+    ? {
+      $inc: { walletBalance: amount, referralEarnings: amount },
+      $addToSet: { appliedFinancialTransactionIds: transaction._id },
+    }
+    : {
+      $inc: { referralEarnings: amount },
+      $addToSet: { appliedFinancialTransactionIds: transaction._id },
+    };
+  const updatedReferrer = await userModel.findOneAndUpdate(
+    { _id: referrer._id, appliedFinancialTransactionIds: { $ne: transaction._id } },
+    referrerUpdate,
+    { new: true, session }
+  );
+  await userModel.updateOne({ _id: user._id }, { $inc: { commissionGenerated: updatedReferrer ? amount : 0 } }, { session });
+
+  if (updatedReferrer) {
+    transaction.balanceAfter = status === 'completed' ? updatedReferrer.walletBalance : referrer.walletBalance || 0;
+    transaction.metadata = { ...(transaction.metadata || {}), walletApplied: status === 'completed' };
+    if (typeof transaction.save === 'function') await transaction.save({ session });
+  }
   return transaction;
 };
 
@@ -165,8 +191,14 @@ const processReward = async ({
       if (!user) throw new Error('User not found for reward.');
       if (user.isBanned) throw new Error('Banned user cannot receive reward.');
 
-      const rewardAmount = Number(clickLog.rewardAmount || claimed.rewardAmount || 0);
-      if (!Number.isFinite(rewardAmount) || rewardAmount <= 0) throw new Error('Invalid trusted reward amount.');
+      const rewardAmount = Number(clickLog.rewardAmount);
+      if (!Number.isSafeInteger(rewardAmount) || rewardAmount <= 0) throw new Error('Invalid trusted click reward amount.');
+      if (
+        clickLog.rewardSnapshot?.amount !== undefined &&
+        Number(clickLog.rewardSnapshot.amount) !== rewardAmount
+      ) {
+        throw new Error('Click reward snapshot is inconsistent.');
+      }
       const externalId = rewardExternalId(claimed._id);
       const balanceBefore = user.walletBalance || 0;
 
@@ -197,16 +229,20 @@ const processReward = async ({
       if (failurePoint === 'after-transaction-before-wallet') throw new Error('Injected reward failure after transaction.');
 
       const updatedUser = await userModel.findOneAndUpdate(
-        { _id: user._id },
-        { $inc: { walletBalance: rewardAmount, totalEarned: rewardAmount } },
+        { _id: user._id, appliedFinancialTransactionIds: { $ne: rewardTx._id } },
+        {
+          $inc: { walletBalance: rewardAmount, totalEarned: rewardAmount },
+          $addToSet: { appliedFinancialTransactionIds: rewardTx._id },
+        },
         { new: true, session }
       );
-      if (!updatedUser) throw new Error('Failed to update user wallet.');
+      const effectiveUser = updatedUser || await queryOne(userModel.findById(user._id), session);
+      if (!effectiveUser) throw new Error('Failed to update user wallet.');
 
       if (failurePoint === 'after-wallet-before-finalize') throw new Error('Injected reward failure after wallet.');
 
       rewardTx.status = 'completed';
-      rewardTx.balanceAfter = updatedUser.walletBalance;
+      rewardTx.balanceAfter = effectiveUser.walletBalance;
       rewardTx.metadata = { ...(rewardTx.metadata || {}), walletApplied: true };
       if (typeof rewardTx.save === 'function') await rewardTx.save({ session });
 
@@ -250,8 +286,8 @@ const processReward = async ({
         session,
       });
 
-      sideEffects.push({ user: updatedUser, rewardAmount, rewardTx, referralTransaction });
-      return { ok: true, duplicate: false, conversion: finalized || applyUpdate(claimed, { $set: { processingState: 'processed', rewardTransactionId: rewardTx._id } }), rewardTransaction: rewardTx, referralTransaction, walletBalance: updatedUser.walletBalance, strategy };
+      sideEffects.push({ user: effectiveUser, rewardAmount, rewardTx, referralTransaction });
+      return { ok: true, duplicate: false, conversion: finalized || applyUpdate(claimed, { $set: { processingState: 'processed', rewardTransactionId: rewardTx._id } }), rewardTransaction: rewardTx, referralTransaction, walletBalance: effectiveUser.walletBalance, strategy };
     } catch (error) {
       await markRewardFailed(conversionModel, claimed._id, error, session);
       throw error;

@@ -123,6 +123,13 @@ const userSchema = new mongoose.Schema(
       type: String,
       default: null,
     },
+    // Permanent ledger idempotency guard. Each financial Transaction whose
+    // wallet effect has been applied is recorded here so non-transactional
+    // fallback retries cannot apply the same ledger entry twice.
+    appliedFinancialTransactionIds: [{
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Transaction',
+    }],
   },
   { timestamps: true }
 );

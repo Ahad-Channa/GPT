@@ -14,15 +14,32 @@ const queryOne = async (query, session) => withSession(query, session);
 const findTransactionByExternalId = (transactionModel, externalId, session) =>
   queryOne(transactionModel.findOne({ externalId }), session);
 
+const ensureSameTransactionIntent = (existing, payload) => {
+  if (!existing) return;
+  const sameConversion = String(existing.conversionId || '') === String(payload.conversionId || '');
+  const sameUser = String(existing.userId || '') === String(payload.userId || '');
+  const sameType = existing.transactionType === payload.transactionType;
+  const sameAmount = Number(existing.amount) === Number(payload.amount);
+  if (!sameConversion || !sameUser || !sameType || !sameAmount) {
+    throw new Error(`Conflicting transaction exists for externalId ${payload.externalId}.`);
+  }
+};
+
 const createTransactionIdempotent = async ({ transactionModel, payload, session }) => {
   const existing = await findTransactionByExternalId(transactionModel, payload.externalId, session);
-  if (existing) return { transaction: existing, created: false };
+  if (existing) {
+    ensureSameTransactionIntent(existing, payload);
+    return { transaction: existing, created: false };
+  }
   try {
     return { transaction: await createOne(transactionModel, payload, session), created: true };
   } catch (error) {
     if (error?.code === 11000) {
       const transaction = await findTransactionByExternalId(transactionModel, payload.externalId, session);
-      if (transaction) return { transaction, created: false };
+      if (transaction) {
+        ensureSameTransactionIntent(transaction, payload);
+        return { transaction, created: false };
+      }
     }
     throw error;
   }
@@ -51,24 +68,6 @@ const reverseReferralReward = async ({ conversion, rewardTx, transactionModel, u
   if (!referralTx || referralTx.status === 'reversed') return null;
 
   let balanceAfter = referralTx.balanceAfter || 0;
-  if (referralTx.status === 'completed') {
-    const updatedReferrer = await userModel.findOneAndUpdate(
-      { _id: referralTx.userId },
-      { $inc: { walletBalance: -Math.abs(referralTx.amount), referralEarnings: -Math.abs(referralTx.amount) } },
-      { new: true, session }
-    );
-    balanceAfter = updatedReferrer.walletBalance;
-  } else {
-    await userModel.updateOne(
-      { _id: referralTx.userId },
-      { $inc: { referralEarnings: -Math.abs(referralTx.amount) } },
-      { session }
-    );
-  }
-
-  referralTx.status = 'reversed';
-  if (typeof referralTx.save === 'function') await referralTx.save({ session });
-
   const { transaction } = await createTransactionIdempotent({
     transactionModel,
     session,
@@ -78,7 +77,7 @@ const reverseReferralReward = async ({ conversion, rewardTx, transactionModel, u
       amount: -Math.abs(referralTx.amount),
       balanceAfter,
       description: 'Referral reward reversed after offer chargeback',
-      status: 'completed',
+      status: 'pending',
       sourceType: 'chargeback',
       sourceId: rewardTx._id,
       linkedTransactionId: referralTx._id,
@@ -88,9 +87,43 @@ const reverseReferralReward = async ({ conversion, rewardTx, transactionModel, u
       metadata: {
         originalReferralTransactionId: referralTx._id,
         originalRewardTransactionId: rewardTx._id,
+        walletApplied: false,
       },
     },
   });
+
+  if (referralTx.metadata?.reversalApplied === true) return null;
+
+  if (referralTx.status === 'completed') {
+    const updatedReferrer = await userModel.findOneAndUpdate(
+      { _id: referralTx.userId, appliedFinancialTransactionIds: { $ne: transaction._id } },
+      {
+        $inc: { walletBalance: -Math.abs(referralTx.amount), referralEarnings: -Math.abs(referralTx.amount) },
+        $addToSet: { appliedFinancialTransactionIds: transaction._id },
+      },
+      { new: true, session }
+    );
+    balanceAfter = updatedReferrer?.walletBalance ?? balanceAfter;
+  } else {
+    const updatedReferrer = await userModel.findOneAndUpdate(
+      { _id: referralTx.userId, appliedFinancialTransactionIds: { $ne: transaction._id } },
+      {
+        $inc: { referralEarnings: -Math.abs(referralTx.amount) },
+        $addToSet: { appliedFinancialTransactionIds: transaction._id },
+      },
+      { new: true, session }
+    );
+    balanceAfter = updatedReferrer?.walletBalance ?? balanceAfter;
+  }
+
+  referralTx.status = 'reversed';
+  referralTx.metadata = { ...(referralTx.metadata || {}), reversalApplied: true };
+  if (typeof referralTx.save === 'function') await referralTx.save({ session });
+
+  transaction.status = 'completed';
+  transaction.balanceAfter = balanceAfter;
+  transaction.metadata = { ...(transaction.metadata || {}), walletApplied: true };
+  if (typeof transaction.save === 'function') await transaction.save({ session });
   return transaction;
 };
 
@@ -156,9 +189,9 @@ const processReversal = async ({
           conversionId: claimed._id,
           reversalOfConversionId: claimed._id,
           externalId: reversalExternalId(claimed._id),
-          metadata: {
-            originalRewardTransactionId: rewardTx._id,
-            walletApplied: false,
+      metadata: {
+        originalRewardTransactionId: rewardTx._id,
+        walletApplied: false,
           },
         },
       });
@@ -166,16 +199,20 @@ const processReversal = async ({
       if (failurePoint === 'after-transaction-before-wallet') throw new Error('Injected reversal failure after transaction.');
 
       const updatedUser = await userModel.findOneAndUpdate(
-        { _id: user._id },
-        { $inc: { walletBalance: reversalAmount, totalEarned: reversalAmount } },
+        { _id: user._id, appliedFinancialTransactionIds: { $ne: reversalTx._id } },
+        {
+          $inc: { walletBalance: reversalAmount, totalEarned: reversalAmount },
+          $addToSet: { appliedFinancialTransactionIds: reversalTx._id },
+        },
         { new: true, session }
       );
-      if (!updatedUser) throw new Error('Failed to deduct user wallet.');
+      const effectiveUser = updatedUser || await queryOne(userModel.findById(user._id), session);
+      if (!effectiveUser) throw new Error('Failed to deduct user wallet.');
 
       if (failurePoint === 'after-wallet-before-finalize') throw new Error('Injected reversal failure after wallet.');
 
       reversalTx.status = 'completed';
-      reversalTx.balanceAfter = updatedUser.walletBalance;
+      reversalTx.balanceAfter = effectiveUser.walletBalance;
       reversalTx.metadata = { ...(reversalTx.metadata || {}), walletApplied: true };
       if (typeof reversalTx.save === 'function') await reversalTx.save({ session });
 
@@ -199,8 +236,8 @@ const processReversal = async ({
         { new: true, session }
       );
 
-      sideEffects.push({ user: updatedUser, reversalAmount, reversalTx });
-      return { ok: true, duplicate: false, conversion: finalized || claimed, reversalTransaction: reversalTx, referralReversalTransaction, walletBalance: updatedUser.walletBalance, strategy };
+      sideEffects.push({ user: effectiveUser, reversalAmount, reversalTx });
+      return { ok: true, duplicate: false, conversion: finalized || claimed, reversalTransaction: reversalTx, referralReversalTransaction, walletBalance: effectiveUser.walletBalance, strategy };
     } catch (error) {
       await conversionModel.findByIdAndUpdate(
         claimed._id,
