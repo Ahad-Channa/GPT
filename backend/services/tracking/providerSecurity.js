@@ -4,8 +4,8 @@ const net = require('net');
 const { getClientIp } = require('../../utils/geo');
 
 const safeCompare = (a, b) => {
-  const left = Buffer.from(String(a || ''));
-  const right = Buffer.from(String(b || ''));
+  const left = Buffer.from(String(a ?? ''), 'utf8');
+  const right = Buffer.from(String(b ?? ''), 'utf8');
   if (left.length !== right.length) return false;
   return crypto.timingSafeEqual(left, right);
 };
@@ -13,15 +13,23 @@ const safeCompare = (a, b) => {
 const getRequestValue = (req, key) => {
   if (!key) return '';
   const queryValue = req?.query?.[key];
-  if (queryValue !== undefined) return Array.isArray(queryValue) ? String(queryValue[0] || '') : String(queryValue || '');
+  if (queryValue !== undefined) {
+    if (Array.isArray(queryValue) || (queryValue && typeof queryValue === 'object')) return '';
+    return String(queryValue || '');
+  }
   const bodyValue = req?.body?.[key];
-  if (bodyValue !== undefined) return Array.isArray(bodyValue) ? String(bodyValue[0] || '') : String(bodyValue || '');
+  if (bodyValue !== undefined) {
+    if (Array.isArray(bodyValue) || (bodyValue && typeof bodyValue === 'object')) return '';
+    return String(bodyValue || '');
+  }
   return '';
 };
 
 const getHeaderValue = (req, name) => {
   if (!name) return '';
-  return String(req?.headers?.[String(name).toLowerCase()] || '');
+  const value = req?.headers?.[String(name).toLowerCase()];
+  if (Array.isArray(value) || (value && typeof value === 'object')) return '';
+  return String(value || '');
 };
 
 const renderTemplate = (template, { mapped = {}, secret = '' }) =>
@@ -34,6 +42,14 @@ const isIpAllowed = (ip, allowlist = []) => {
   if (!Array.isArray(allowlist) || allowlist.length === 0) return true;
   if (!ip || !net.isIP(ip)) return false;
   return allowlist.includes(ip);
+};
+
+const compareSignatures = (supplied, expected, security = {}) => {
+  if (!supplied) return false;
+  if (security.caseInsensitiveSignature === true) {
+    return safeCompare(String(supplied).toLowerCase(), String(expected).toLowerCase());
+  }
+  return safeCompare(supplied, expected);
 };
 
 const resolveSecret = (security = {}) => {
@@ -49,6 +65,10 @@ const validateProviderSecurity = ({ providerConfig = {}, req, mapped = {} }) => 
   const security = providerConfig.security || {};
   const method = security.method || 'none';
   const sourceIp = getClientIp(req);
+
+  if (security.ipAllowlistRequired === true && (!Array.isArray(providerConfig.ipAllowlist) || providerConfig.ipAllowlist.length === 0)) {
+    return { checked: true, passed: false, method, reason: 'IP allowlist is required but not configured.', sourceIp };
+  }
 
   if (!isIpAllowed(sourceIp, providerConfig.ipAllowlist || [])) {
     return { checked: true, passed: false, method, reason: 'IP address is not allowed.', sourceIp };
@@ -67,11 +87,12 @@ const validateProviderSecurity = ({ providerConfig = {}, req, mapped = {} }) => 
     const supplied = security.headerName
       ? getHeaderValue(req, security.headerName)
       : getRequestValue(req, security.tokenParam || security.signatureParam || 'secret');
+    const passed = safeCompare(supplied, secret);
     return {
       checked: true,
-      passed: safeCompare(supplied, secret),
+      passed,
       method,
-      reason: safeCompare(supplied, secret) ? '' : 'Shared secret mismatch.',
+      reason: passed ? '' : 'Shared secret mismatch.',
       sourceIp,
     };
   }
@@ -81,15 +102,19 @@ const validateProviderSecurity = ({ providerConfig = {}, req, mapped = {} }) => 
       return { checked: true, passed: false, method, reason: 'Signature template is not configured.', sourceIp };
     }
     const supplied = getRequestValue(req, security.signatureParam);
+    if (!supplied) {
+      return { checked: true, passed: false, method, reason: 'Signature is missing.', sourceIp };
+    }
     const expected = crypto
       .createHash(method)
       .update(renderTemplate(security.hashTemplate, { mapped, secret }))
       .digest('hex');
+    const passed = compareSignatures(supplied, expected, security);
     return {
       checked: true,
-      passed: safeCompare(String(supplied).toLowerCase(), expected.toLowerCase()),
+      passed,
       method,
-      reason: safeCompare(String(supplied).toLowerCase(), expected.toLowerCase()) ? '' : 'Signature mismatch.',
+      reason: passed ? '' : 'Signature mismatch.',
       sourceIp,
     };
   }
@@ -99,15 +124,19 @@ const validateProviderSecurity = ({ providerConfig = {}, req, mapped = {} }) => 
       return { checked: true, passed: false, method, reason: 'HMAC configuration is incomplete.', sourceIp };
     }
     const supplied = getRequestValue(req, security.signatureParam);
+    if (!supplied) {
+      return { checked: true, passed: false, method, reason: 'Signature is missing.', sourceIp };
+    }
     const expected = crypto
       .createHmac(security.hashAlgorithm, secret)
       .update(renderTemplate(security.hashTemplate, { mapped, secret: '' }))
       .digest('hex');
+    const passed = compareSignatures(supplied, expected, security);
     return {
       checked: true,
-      passed: safeCompare(String(supplied).toLowerCase(), expected.toLowerCase()),
+      passed,
       method,
-      reason: safeCompare(String(supplied).toLowerCase(), expected.toLowerCase()) ? '' : 'HMAC signature mismatch.',
+      reason: passed ? '' : 'HMAC signature mismatch.',
       sourceIp,
     };
   }
@@ -117,6 +146,7 @@ const validateProviderSecurity = ({ providerConfig = {}, req, mapped = {} }) => 
 
 module.exports = {
   isIpAllowed,
+  compareSignatures,
   renderTemplate,
   safeCompare,
   validateProviderSecurity,

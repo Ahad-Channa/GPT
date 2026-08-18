@@ -35,6 +35,9 @@ const isSameStatusDuplicate = (fromStatus, toStatus) => fromStatus === toStatus;
 const canTransitionStatus = (fromStatus, toStatus) =>
   (ALLOWED_STATUS_TRANSITIONS[fromStatus] || []).includes(toStatus);
 
+const sanitizeLogText = (value) =>
+  sanitizePostbackPayload({ value: String(value || '').slice(0, 500) }).value;
+
 const providerResponse = (providerConfig = {}, result) => {
   const responseConfig = providerConfig.responseConfig || {};
   if (result.isDuplicate) {
@@ -85,7 +88,7 @@ const writePostbackLog = async ({
       },
       processingResult: result.processingResult,
       isDuplicate: Boolean(result.isDuplicate),
-      rejectionReason: result.rejectionReason || '',
+      rejectionReason: sanitizeLogText(result.rejectionReason || ''),
       clickLogId: clickLog?._id || null,
       conversionId: conversion?._id || null,
       userId: clickLog?.userId || null,
@@ -252,11 +255,15 @@ const processPostback = async ({
     });
 
     if (!mappedResult.isValid) {
+      const validationReason = [
+        mappedResult.missingFields.length ? `Missing required mapped field(s): ${mappedResult.missingFields.join(', ')}` : '',
+        mappedResult.invalidFields.length ? `Invalid mapped field(s): ${mappedResult.invalidFields.join(', ')}` : '',
+      ].filter(Boolean).join('; ');
       const result = createResult({
         ...baseResult,
         mapped: mappedResult.mapped,
         sanitizedMapped: mappedResult.sanitizedMapped,
-        rejectionReason: `Missing required mapped field(s): ${mappedResult.missingFields.join(', ')}`,
+        rejectionReason: validationReason,
       });
       result.response = providerResponse(config, result);
       await writePostbackLog({

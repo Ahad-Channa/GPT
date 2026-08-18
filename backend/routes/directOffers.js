@@ -12,6 +12,8 @@ const { processVipLevelUp } = require('../utils/vipUtils');
 const { createDirectOfferClick } = require('../services/tracking/clickService');
 const { processPostback } = require('../services/tracking/conversionService');
 
+const PHASE4_BRIDGE_CLAIM_LIMIT = 500;
+
 // ─────────────────────────────────────────────────────────────────────────────
 // GET /api/direct-offers
 // Public (with token): list active direct offers with user's click status
@@ -274,6 +276,11 @@ const applyValidatedDirectOfferRewardBridge = async ({ offer, result }) => {
     await clickLog.save();
 
     if (conversion?._id) {
+      const claimUser = await User.findById(user._id).select('phase4RewardBridgeClaims');
+      if (claimUser?.phase4RewardBridgeClaims?.length > PHASE4_BRIDGE_CLAIM_LIMIT) {
+        claimUser.phase4RewardBridgeClaims = claimUser.phase4RewardBridgeClaims.slice(-PHASE4_BRIDGE_CLAIM_LIMIT);
+        await claimUser.save();
+      }
       await Conversion.findByIdAndUpdate(conversion._id, {
         $set: {
           processingState: 'processed',

@@ -43,7 +43,8 @@ const handleLegacyOfferwallPostback = async (providerId, req, res, params) => {
     const envSecret = process.env[envSecretKey];
 
     if (!envSecret) {
-      console.warn(`[Reward Engine] ${providerId} postback received but ${envSecretKey} is not set. Skipping validation (dev mode).`);
+      console.warn(`[Reward Engine] ${providerId} postback rejected because ${envSecretKey} is not configured.`);
+      return res.status(401).send('0');
     } else {
       // Provider specific validation
       if (providerId === 'cpx') {
@@ -59,9 +60,8 @@ const handleLegacyOfferwallPostback = async (providerId, req, res, params) => {
       } else {
         // Fallback for others that use a direct secret match until implemented individually
         if (secretParam !== envSecret) {
-          // Temporarily bypassing direct match rejections in dev if others use complex signatures
-          // console.warn(`[Reward Engine] ${providerId} invalid secret attempt.`);
-          // return res.status(401).send('0');
+          console.warn(`[Reward Engine] ${providerId} invalid secret attempt.`);
+          return res.status(401).send('0');
         }
       }
     }

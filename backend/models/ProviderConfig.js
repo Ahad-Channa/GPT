@@ -37,6 +37,7 @@ const providerConfigSchema = new mongoose.Schema(
       status: { type: String, default: 'status' },
       payout: { type: String, default: 'payout' },
       eventType: { type: String, default: 'event_type' },
+      providerUserId: { type: String, default: 'user_id' },
       extra: { type: mongoose.Schema.Types.Mixed, default: {} },
     },
     statusMappings: {
@@ -48,7 +49,7 @@ const providerConfigSchema = new mongoose.Schema(
     security: {
       method: {
         type: String,
-        enum: ['none', 'shared_secret', 'md5', 'sha256', 'hmac', 'token', 'custom_adapter'],
+        enum: ['none', 'shared_secret', 'md5', 'sha1', 'sha256', 'sha512', 'hmac', 'token', 'custom_adapter'],
         default: 'none',
       },
       signatureParam: { type: String, default: '' },
@@ -56,6 +57,8 @@ const providerConfigSchema = new mongoose.Schema(
       headerName: { type: String, default: '' },
       hashAlgorithm: { type: String, default: '' },
       hashTemplate: { type: String, default: '' },
+      caseInsensitiveSignature: { type: Boolean, default: false },
+      ipAllowlistRequired: { type: Boolean, default: false },
       secretEnvVar: { type: String, default: '' },
       adapterKey: { type: String, default: '' },
       config: { type: mongoose.Schema.Types.Mixed, default: {} },

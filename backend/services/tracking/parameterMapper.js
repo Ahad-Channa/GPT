@@ -9,11 +9,26 @@ const CANONICAL_FIELDS = new Set([
   'providerUserId',
 ]);
 
+const FIELD_LIMITS = {
+  clickId: 128,
+  transactionId: 128,
+  status: 64,
+  payout: 64,
+  eventType: 64,
+  providerUserId: 128,
+};
+
 const pickSourceValue = ({ query = {}, body = {} }, key) => {
   if (!key) return undefined;
   if (Object.prototype.hasOwnProperty.call(query, key)) return query[key];
   if (Object.prototype.hasOwnProperty.call(body, key)) return body[key];
   return undefined;
+};
+
+const getValueType = (value) => {
+  if (Array.isArray(value)) return 'array';
+  if (value !== null && typeof value === 'object') return 'object';
+  return typeof value;
 };
 
 const hasSourceValue = ({ query = {}, body = {} }, key) => {
@@ -22,7 +37,6 @@ const hasSourceValue = ({ query = {}, body = {} }, key) => {
 };
 
 const normalizeValue = (value) => {
-  if (Array.isArray(value)) return normalizeValue(value[0]);
   if (value === undefined || value === null) return '';
   if (typeof value === 'object') return '';
   return String(value).trim();
@@ -32,11 +46,22 @@ const mapPostbackParameters = ({ query = {}, body = {}, mappings = {}, requiredF
   const mapped = {};
   const extra = {};
   const suppliedFields = {};
+  const invalidFields = [];
 
   for (const canonicalName of CANONICAL_FIELDS) {
     const sourceKey = mappings[canonicalName];
+    const rawValue = pickSourceValue({ query, body }, sourceKey);
     suppliedFields[canonicalName] = hasSourceValue({ query, body }, sourceKey);
-    mapped[canonicalName] = normalizeValue(pickSourceValue({ query, body }, sourceKey));
+    if (Array.isArray(rawValue) || (rawValue !== null && typeof rawValue === 'object')) {
+      invalidFields.push(`${canonicalName} has invalid ${getValueType(rawValue)} value`);
+      mapped[canonicalName] = '';
+      continue;
+    }
+
+    mapped[canonicalName] = normalizeValue(rawValue);
+    if (mapped[canonicalName] && mapped[canonicalName].length > FIELD_LIMITS[canonicalName]) {
+      invalidFields.push(`${canonicalName} exceeds maximum length`);
+    }
   }
 
   const extraMappings = mappings.extra && typeof mappings.extra === 'object' ? mappings.extra : {};
@@ -56,6 +81,7 @@ const mapPostbackParameters = ({ query = {}, body = {}, mappings = {}, requiredF
       extra,
     },
     suppliedFields,
+    invalidFields,
     sanitizedMapped: {
       ...sanitizedMapped,
       payout: sanitizedMapped.payout === '' ? null : sanitizedMapped.payout,
@@ -63,7 +89,7 @@ const mapPostbackParameters = ({ query = {}, body = {}, mappings = {}, requiredF
       extra: sanitizedMapped.extra || {},
     },
     missingFields,
-    isValid: missingFields.length === 0,
+    isValid: missingFields.length === 0 && invalidFields.length === 0,
   };
 };
 
@@ -82,7 +108,7 @@ const parsePayout = (value) => {
   }
 
   const amount = Number(normalized);
-  if (!Number.isFinite(amount) || amount < 0) {
+  if (!Number.isFinite(amount) || amount < 0 || amount > 1000000000) {
     const error = new Error('Invalid payout amount.');
     error.code = 'INVALID_PAYOUT';
     throw error;
