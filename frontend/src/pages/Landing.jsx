@@ -49,7 +49,14 @@ const Landing = () => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-[#050505] text-white font-sans overflow-x-hidden selection:bg-[#29FD98] selection:text-black flex flex-col">
+    <div 
+      className="min-h-screen text-gray-900 font-sans overflow-x-hidden selection:bg-[#29FD98] selection:text-black flex flex-col mx-auto"
+      style={{
+        maxWidth: '1440px',
+        width: '100%',
+        background: 'linear-gradient(0deg, #FAFAFA, #FAFAFA), linear-gradient(0deg, #FFFFFF, #FFFFFF)'
+      }}
+    >
 
       {/* NAVBAR */}
       {currentUser ? (
@@ -57,75 +64,54 @@ const Landing = () => {
           <Header />
         </div>
       ) : (
-        <nav className="w-full relative z-50 py-2 lg:py-6 px-2 md:px-8 flex justify-between items-center max-w-7xl mx-auto h-[44px] lg:h-[106px]">
+        <nav 
+          className="relative z-50 flex justify-between items-center w-full px-4 md:px-8 lg:px-0 mx-auto"
+          style={{
+            maxWidth: '1328px',
+            height: '80px',
+            paddingTop: '12px',
+            paddingBottom: '12px',
+          }}
+        >
           {/* Logo */}
-          <div className="flex items-center gap-1 lg:gap-2 cursor-pointer">
+          <div className="flex items-center cursor-pointer">
             <img
-              src="/coins/logo copy.png"
-              alt="Logo"
-              className="w-[22px] h-[22px] lg:w-[54px] lg:h-[54px] object-contain"
+              src="/coins/logo final.svg"
+              alt="TaskMint Logo"
+              className="object-contain"
+              style={{ width: '161px', height: '28.53px' }}
             />
-            <span
-              className="font-bold tracking-tight text-white flex items-center text-[14px] lg:text-[28px]"
-              style={{
-                fontFamily: '"Barlow Condensed", sans-serif',
-                lineHeight: '30.15px'
-              }}
-            >
-              TaskMint
-            </span>
           </div>
 
           {/* Links */}
-          <div className="flex items-center gap-[6px] sm:gap-[10px] lg:gap-8 font-['Barlow_Condensed'] font-semibold text-[10px] sm:text-[14px] lg:text-[22px] leading-none tracking-normal text-white">
-            <a href="#hero" className="hover:text-[#29FD98] transition-colors">Home</a>
-            <a href="#earn" className="hover:text-[#29FD98] transition-colors">Earn</a>
-            <a href="#how-it-works" className="hover:text-[#29FD98] transition-colors whitespace-nowrap">How it Works</a>
-            <a href="#features" className="hover:text-[#29FD98] transition-colors">Features</a>
-            <a href="#faq" className="hover:text-[#29FD98] transition-colors">FAQ</a>
+          <div className="hidden lg:flex items-center gap-8 font-medium text-[15px] text-gray-700">
+            <a href="#hero" className="hover:text-black transition-colors">Home</a>
+            <a href="#earn" className="hover:text-black transition-colors">Earn</a>
+            <a href="#how-it-works" className="hover:text-black transition-colors whitespace-nowrap">How it works</a>
+            <a href="#features" className="hover:text-black transition-colors">Features</a>
+            <a href="#faq" className="hover:text-black transition-colors">FAQ</a>
           </div>
 
           {/* Right Actions */}
-          <div
-            className="flex items-center justify-end w-auto lg:w-[282px] h-[22px] lg:h-[48px] gap-[4px] lg:gap-[10px]"
-          >
-            <div
-              className="flex sm:flex items-center justify-center cursor-pointer text-white transition-all hover:brightness-110 active:translate-y-[4px] active:shadow-none lg:w-[104px] lg:h-[48px] h-[22px] px-1 lg:px-[14px] rounded-[6px] lg:rounded-[10px] gap-1 lg:gap-[8px]"
-              style={{
-                background: 'rgba(39, 112, 58, 1)',
-                boxShadow: '0px 4px 0px 0px rgba(35, 80, 47, 1)'
-              }}
-            >
-              <img src="/coins/globe.png" alt="Lang" className="w-[8px] h-[8px] lg:w-5 lg:h-5 object-contain" />
-              <span className="font-['Barlow_Condensed'] font-semibold text-[8px] lg:text-[18px] leading-none tracking-normal">
-                Eng
-              </span>
-              <img src="/coins/arrow.png" alt="Arrow" className="w-2 h-2 lg:w-3 lg:h-3 object-contain" />
-            </div>
+          <div className="hidden lg:flex items-center gap-3">
             <button
               onClick={() => navigate('/login')}
-              className="flex items-center justify-center text-white transition-all hover:brightness-110 active:translate-y-[4px] active:shadow-none w-[50px] sm:w-[70px] lg:w-[168px] h-[22px] lg:h-[48px] px-1 lg:px-6 gap-[2px] lg:gap-[10px] rounded-[6px] lg:rounded-[10px]"
-              style={{
-                background: 'rgba(73, 178, 101, 1)',
-                boxShadow: '0px 4px 0px 0px rgba(45, 110, 62, 1)'
-              }}
+              className="px-6 py-2.5 rounded-full border border-gray-200 bg-white text-gray-800 font-semibold text-[14px] hover:bg-gray-50 transition-colors shadow-sm"
             >
-              <span className="font-['Barlow_Condensed'] font-bold text-[8px] sm:text-[10px] lg:text-[18px] leading-none tracking-normal whitespace-nowrap">
-                Get Started
-              </span>
-              <div
-                className="bg-white w-[6px] h-[6px] lg:w-[18px] lg:h-[18px] hidden sm:block"
-                style={{
-                  WebkitMaskImage: 'url(/coins/image.png)',
-                  WebkitMaskSize: 'contain',
-                  WebkitMaskRepeat: 'no-repeat',
-                  WebkitMaskPosition: 'center',
-                  maskImage: 'url(/coins/image.png)',
-                  maskSize: 'contain',
-                  maskRepeat: 'no-repeat',
-                  maskPosition: 'center'
-                }}
-              />
+              Login
+            </button>
+            <button
+              onClick={() => navigate('/login?tab=register')}
+              className="px-6 py-2.5 rounded-full bg-[#2A3441] text-white font-semibold text-[14px] hover:bg-[#1E2631] transition-colors shadow-sm"
+            >
+              Create Account
+            </button>
+          </div>
+          
+          {/* Mobile Menu Button */}
+          <div className="lg:hidden flex items-center">
+            <button className="text-gray-900 text-2xl">
+              <FiMenu />
             </button>
           </div>
         </nav>
