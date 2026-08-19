@@ -84,25 +84,52 @@ const Landing = () => {
           </div>
 
           {/* Links */}
-          <div className="hidden lg:flex items-center gap-8 font-medium text-[15px] text-gray-700">
-            <a href="#hero" className="hover:text-black transition-colors">Home</a>
-            <a href="#earn" className="hover:text-black transition-colors">Earn</a>
-            <a href="#how-it-works" className="hover:text-black transition-colors whitespace-nowrap">How it works</a>
-            <a href="#features" className="hover:text-black transition-colors">Features</a>
-            <a href="#faq" className="hover:text-black transition-colors">FAQ</a>
+          <div className="hidden lg:flex items-center gap-[40px]">
+            <a href="#hero" className="hover:text-black transition-colors" style={{ fontFamily: 'Poppins, sans-serif', fontWeight: 500, fontSize: '16px', lineHeight: '28px', color: 'rgba(30, 30, 30, 1)' }}>Home</a>
+            <a href="#earn" className="hover:text-black transition-colors" style={{ fontFamily: 'Poppins, sans-serif', fontWeight: 500, fontSize: '16px', lineHeight: '28px', color: 'rgba(30, 30, 30, 1)' }}>Earn</a>
+            <a href="#how-it-works" className="hover:text-black transition-colors whitespace-nowrap" style={{ fontFamily: 'Poppins, sans-serif', fontWeight: 500, fontSize: '16px', lineHeight: '28px', color: 'rgba(30, 30, 30, 1)' }}>How it works</a>
+            <a href="#features" className="hover:text-black transition-colors" style={{ fontFamily: 'Poppins, sans-serif', fontWeight: 500, fontSize: '16px', lineHeight: '28px', color: 'rgba(30, 30, 30, 1)' }}>Features</a>
+            <a href="#faq" className="hover:text-black transition-colors" style={{ fontFamily: 'Poppins, sans-serif', fontWeight: 500, fontSize: '16px', lineHeight: '28px', color: 'rgba(30, 30, 30, 1)' }}>FAQ</a>
           </div>
 
           {/* Right Actions */}
-          <div className="hidden lg:flex items-center gap-3">
+          <div className="hidden lg:flex items-center gap-[5px] w-[287px] h-[49px]">
             <button
               onClick={() => navigate('/login')}
-              className="px-6 py-2.5 rounded-full border border-gray-200 bg-white text-gray-800 font-semibold text-[14px] hover:bg-gray-50 transition-colors shadow-sm"
+              className="flex items-center justify-center hover:bg-gray-50 transition-colors shadow-sm whitespace-nowrap"
+              style={{
+                width: '99px',
+                height: '49px',
+                padding: '19px 28px',
+                gap: '10px',
+                borderRadius: '80px',
+                border: '1px solid rgba(0, 0, 0, 0.1)',
+                background: 'rgba(255, 255, 255, 1)',
+                fontFamily: 'Poppins, sans-serif',
+                fontWeight: 500,
+                fontSize: '16px',
+                lineHeight: '28px',
+                color: 'rgba(0, 0, 0, 1)'
+              }}
             >
               Login
             </button>
             <button
               onClick={() => navigate('/login?tab=register')}
-              className="px-6 py-2.5 rounded-full bg-[#2A3441] text-white font-semibold text-[14px] hover:bg-[#1E2631] transition-colors shadow-sm"
+              className="flex items-center justify-center hover:bg-[#1E2631] transition-colors shadow-sm whitespace-nowrap"
+              style={{
+                width: '183px',
+                height: '49px',
+                padding: '19px 28px',
+                gap: '10px',
+                borderRadius: '80px',
+                background: 'rgba(36, 50, 77, 1)',
+                fontFamily: 'Poppins, sans-serif',
+                fontWeight: 500,
+                fontSize: '16px',
+                lineHeight: '28px',
+                color: 'rgba(255, 255, 255, 1)'
+              }}
             >
               Create Account
             </button>
