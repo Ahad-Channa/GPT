@@ -50,13 +50,26 @@ const Landing = () => {
 
   return (
     <div 
-      className="min-h-screen text-gray-900 font-sans overflow-x-hidden selection:bg-[#29FD98] selection:text-black flex flex-col mx-auto"
+      className="min-h-screen relative text-gray-900 font-sans overflow-x-hidden selection:bg-[#29FD98] selection:text-black flex flex-col mx-auto"
       style={{
         maxWidth: '1440px',
         width: '100%',
         background: 'linear-gradient(0deg, #FAFAFA, #FAFAFA), linear-gradient(0deg, #FFFFFF, #FFFFFF)'
       }}
     >
+      {/* Absolute Right Hero Image (Overlaps header) */}
+      {!isMobile && (
+        <div 
+          className="absolute top-0 right-0 z-0 pointer-events-none"
+          style={{ width: 755, height: 587 }}
+        >
+          <img
+            src="/coins/hero section image.png"
+            alt="Hero Background"
+            className="w-full h-full object-fill"
+          />
+        </div>
+      )}
 
       {/* NAVBAR */}
       {currentUser ? (
@@ -155,245 +168,181 @@ const Landing = () => {
       />
 
       {/* HERO SECTION */}
-      <section className={isMobile ? "relative pt-8 pb-[40px] px-4 max-w-7xl mx-auto flex flex-col items-start gap-6" : "relative pt-[72px] pb-[53px] md:pb-[85px] px-6 lg:px-8 max-w-7xl mx-auto flex flex-col lg:flex-row items-start gap-12 lg:gap-8"}>
-        {/* Left text */}
-        <div className="flex-1 w-full z-10">
-          <div
-            className="flex flex-col text-left"
-            style={!isMobile ? { width: 654, height: 297, gap: 50, opacity: 1 } : { width: '100%', height: 'auto', gap: 16, opacity: 1 }}
+      <section 
+        className={isMobile ? "relative pt-8 pb-[40px] px-4 w-full mx-auto flex flex-col items-start gap-6" : "relative w-full mx-auto flex justify-center px-4 md:px-8 lg:px-0"}
+        style={!isMobile ? { height: 507, opacity: 1 } : {}}
+      >
+        <div 
+          className="w-full h-full flex flex-col lg:flex-row items-center relative z-10"
+          style={!isMobile ? { maxWidth: 1328 } : {}}
+        >
+          {/* Left Content */}
+          <div 
+            className="z-10 flex flex-col gap-6 lg:gap-10"
+            style={!isMobile ? {
+              width: 664,
+              height: 469,
+              paddingTop: 40,
+              paddingBottom: 16,
+              opacity: 1
+            } : {
+              width: '100%',
+              padding: '32px 0px'
+            }}
+          >
+          <div 
+            className="flex flex-col text-left" 
+            style={!isMobile ? { width: 608, gap: 40 } : { width: '100%', gap: 24 }}
           >
             <h1
-              className="font-bold text-white m-0"
+              className="m-0"
               style={!isMobile ? {
-                width: 654,
-                height: 112,
-                fontFamily: '"Barlow Condensed", sans-serif',
+                width: 608,
+                height: 96,
+                fontFamily: '"Bricolage Grotesque", sans-serif',
                 fontWeight: 700,
-                fontSize: 62,
-                lineHeight: '69px',
-                letterSpacing: '0%',
-                opacity: 1
+                fontSize: 55,
+                lineHeight: '60px',
+                letterSpacing: '-0.02em',
+                color: 'rgba(14, 15, 12, 1)'
               } : {
-                width: '100%',
-                height: 'auto',
-                fontFamily: '"Barlow Condensed", sans-serif',
+                fontFamily: '"Bricolage Grotesque", sans-serif',
                 fontWeight: 700,
-                fontSize: 32,
-                lineHeight: '38px',
-                letterSpacing: '0%',
-                opacity: 1
+                fontSize: 36,
+                lineHeight: '44px',
+                color: 'rgba(14, 15, 12, 1)'
               }}
             >
               Your Time Has Value<br />
-              <span style={{ color: 'rgba(73, 178, 101, 1)' }}>Get Rewarded For It</span>
+              Get Rewarded For It
             </h1>
             <p
               className="m-0"
               style={!isMobile ? {
-                width: 654,
-                height: 47,
-                fontFamily: '"Barlow Condensed", sans-serif',
-                fontWeight: 400,
-                fontSize: 22,
-                lineHeight: '32px',
-                letterSpacing: '0%',
-                color: 'rgba(209, 213, 219, 1)',
-                opacity: 1
+                width: 539,
+                height: 37,
+                fontFamily: '"Poppins", sans-serif',
+                fontWeight: 500,
+                fontSize: 16,
+                lineHeight: '26px',
+                color: 'rgba(14, 15, 12, 1)'
               } : {
-                width: '100%',
-                height: 'auto',
-                fontFamily: '"Barlow Condensed", sans-serif',
-                fontWeight: 400,
+                fontFamily: '"Poppins", sans-serif',
+                fontWeight: 500,
                 fontSize: 15,
-                lineHeight: '22px',
-                letterSpacing: '0%',
-                color: 'rgba(209, 213, 219, 1)',
-                opacity: 1
+                lineHeight: '24px',
+                color: 'rgba(14, 15, 12, 1)'
               }}
             >
               Complete offers, surveys, and tasks to earn real rewards. Join thousands of users already earning every day.
             </p>
 
-            <div
-              className="flex items-center justify-start"
-              style={!isMobile ? {
-                width: 410,
-                height: 48,
-                gap: 10,
-                opacity: 1
-              } : {
-                width: '100%',
-                maxWidth: 410,
-                height: 'auto',
-                gap: 12,
-                opacity: 1
-              }}
+            <div 
+              className="flex items-center"
+              style={{ width: 264, height: 49, gap: 5 }}
             >
               <button
-                onClick={() => navigate('/login')}
-                className="flex items-center justify-center text-white transition-all hover:brightness-110 active:translate-y-[4px] active:shadow-none"
-                style={!isMobile ? {
-                  width: 200,
-                  height: 48,
-                  borderRadius: 10,
-                  padding: '10px 30px 10px 30px',
+                onClick={() => navigate('/login?tab=register')}
+                className="flex items-center justify-center transition-all hover:bg-[#2A3544]"
+                style={{
+                  width: 160,
+                  height: 49,
+                  padding: '19px 28px',
                   gap: 10,
-                  opacity: 1,
-                  backgroundColor: 'rgba(39, 112, 58, 1)',
-                  boxShadow: '0px 4px 0px 0px rgba(35, 80, 47, 1)'
-                } : {
-                  width: 135,
-                  height: 40,
-                  borderRadius: 8,
-                  padding: '8px 12px',
-                  gap: 6,
-                  opacity: 1,
-                  backgroundColor: 'rgba(39, 112, 58, 1)',
-                  boxShadow: '0px 4px 0px 0px rgba(35, 80, 47, 1)'
+                  borderRadius: 80,
+                  backgroundColor: 'rgba(36, 50, 77, 1)',
+                  fontFamily: '"Poppins", sans-serif',
+                  fontWeight: 500,
+                  fontSize: 16,
+                  lineHeight: '28px',
+                  color: 'rgba(255, 255, 255, 1)'
                 }}
               >
-                <img src="/coins/login.png" alt="Login Icon" style={!isMobile ? { width: 24, height: 24, objectFit: 'contain' } : { width: 18, height: 18, objectFit: 'contain' }} />
-                <span style={{
-                  fontFamily: '"Barlow Condensed", sans-serif',
-                  fontWeight: 700,
-                  fontSize: !isMobile ? 18 : 14,
-                  lineHeight: '100%'
-                }}>
-                  Login
-                </span>
+                Start Earning
               </button>
               <button
-                onClick={() => navigate('/login?tab=register')}
-                className="flex items-center justify-center text-white transition-all hover:brightness-110 active:translate-y-[4px] active:shadow-none"
-                style={!isMobile ? {
-                  width: 200,
-                  height: 48,
-                  borderRadius: 10,
-                  padding: '10px 30px 10px 30px',
+                onClick={() => navigate('/login')}
+                className="flex items-center justify-center transition-all hover:bg-gray-200"
+                style={{
+                  width: 99,
+                  height: 49,
+                  padding: '19px 28px',
                   gap: 10,
-                  opacity: 1,
-                  background: 'rgba(73, 178, 101, 1)',
-                  boxShadow: '0px 4px 0px 0px rgba(45, 110, 62, 1)'
-                } : {
-                  width: 135,
-                  height: 40,
-                  borderRadius: 8,
-                  padding: '8px 12px',
-                  gap: 6,
-                  opacity: 1,
-                  background: 'rgba(73, 178, 101, 1)',
-                  boxShadow: '0px 4px 0px 0px rgba(45, 110, 62, 1)'
+                  borderRadius: 80,
+                  backgroundColor: 'rgba(239, 239, 239, 1)',
+                  fontFamily: '"Poppins", sans-serif',
+                  fontWeight: 500,
+                  fontSize: 16,
+                  lineHeight: '28px',
+                  color: 'rgba(0, 0, 0, 1)'
                 }}
               >
-                <span style={{
-                  fontFamily: '"Barlow Condensed", sans-serif',
-                  fontWeight: 700,
-                  fontSize: !isMobile ? 18 : 14,
-                  lineHeight: '100%'
-                }}>
-                  Start Earning
-                </span>
-                <div
-                  className="bg-white"
-                  style={!isMobile ? {
-                    width: 18,
-                    height: 18,
-                    WebkitMaskImage: 'url(/coins/image.png)',
-                    WebkitMaskSize: 'contain',
-                    WebkitMaskRepeat: 'no-repeat',
-                    WebkitMaskPosition: 'center',
-                    maskImage: 'url(/coins/image.png)',
-                    maskSize: 'contain',
-                    maskRepeat: 'no-repeat',
-                    maskPosition: 'center'
-                  } : {
-                    width: 14,
-                    height: 14,
-                    WebkitMaskImage: 'url(/coins/image.png)',
-                    WebkitMaskSize: 'contain',
-                    WebkitMaskRepeat: 'no-repeat',
-                    WebkitMaskPosition: 'center',
-                    maskImage: 'url(/coins/image.png)',
-                    maskSize: 'contain',
-                    maskRepeat: 'no-repeat',
-                    maskPosition: 'center'
-                  }}
-                />
+                Login
               </button>
             </div>
           </div>
-        </div>
 
-        {/* Right image */}
-        <div
-          className={!isMobile ? "flex-1 w-full relative z-0 flex justify-center lg:justify-end mt-4 lg:-mt-[55px]" : "hidden"}
-        >
-          <div className="drop-shadow-2xl" style={!isMobile ? { width: 577, minWidth: 577, height: 577, opacity: 1, transform: 'translateX(-30px)' } : { width: '100%', maxWidth: 577, height: 260, opacity: 1 }}>
-            <div
-              style={{
-                width: '100%',
-                height: '100%',
-                backgroundImage: `linear-gradient(rgba(182, 242, 198, 1), rgba(182, 242, 198, 1)), url('/coins/hero.png')`,
-                backgroundBlendMode: 'color',
-                backgroundSize: 'contain',
-                backgroundRepeat: 'no-repeat',
-                backgroundPosition: 'center',
-                WebkitMaskImage: `url('/coins/hero.png')`,
-                WebkitMaskSize: 'contain',
-                WebkitMaskRepeat: 'no-repeat',
-                WebkitMaskPosition: 'center',
-                maskImage: `url('/coins/hero.png')`,
-                maskSize: 'contain',
-                maskRepeat: 'no-repeat',
-                maskPosition: 'center'
-              }}
-            />
-          </div>
-        </div>
-
-        {/* Floating Stats Box */}
-        <div className={!isMobile ? "absolute z-20 left-1/2 -translate-x-1/2 w-[90%] md:w-[1240px] max-w-[1240px] bottom-0 translate-y-1/2 lg:translate-y-0 lg:bottom-auto lg:top-[448px]" : "relative z-20 w-full mt-2 px-2"}>
-          <div
-            className="flex flex-row items-center w-full"
-            style={!isMobile ? {
-              width: 1240,
-              height: 120,
-              borderRadius: 20,
-              gap: 40,
-              padding: 40,
-              opacity: 1,
-              backgroundColor: 'rgba(129, 129, 129, 0.2)',
-              backdropFilter: 'blur(64px)',
-              WebkitBackdropFilter: 'blur(64px)'
-            } : {
-              width: '100%',
-              borderRadius: 12,
-              gap: 8,
-              padding: '12px 10px',
-              opacity: 1,
-              backgroundColor: 'rgba(129, 129, 129, 0.2)',
-              backdropFilter: 'blur(64px)',
-              WebkitBackdropFilter: 'blur(64px)',
-              justifyContent: 'flex-start'
-            }}
+          {/* Stats below buttons */}
+          <div 
+            className="flex items-center"
+            style={{ width: 520, height: 45, gap: 60 }}
           >
-            <div className={!isMobile ? "w-full flex items-center justify-start max-w-[540px]" : "flex items-center justify-start flex-1"} style={!isMobile ? { height: 40, gap: 14 } : { height: 'auto', gap: 6 }}>
-              <img src="/coins/people.png" alt="Users" style={{ width: !isMobile ? 40 : 22, height: !isMobile ? 40 : 22, objectFit: 'contain' }} />
-              <span style={{ display: 'inline-block', width: !isMobile ? 440 : 'auto', height: !isMobile ? 24 : 'auto', opacity: 1, fontFamily: '"Barlow Condensed", sans-serif', fontWeight: 700, fontSize: !isMobile ? 24 : 13, lineHeight: !isMobile ? '24px' : '100%', letterSpacing: '0%', textTransform: 'capitalize', color: 'rgba(255, 255, 255, 1)', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>Total Users:</span>
-              <span style={{ display: 'inline-block', width: 'auto', minWidth: !isMobile ? 32 : 'auto', height: !isMobile ? 24 : 'auto', opacity: 1, fontFamily: '"Barlow Condensed", sans-serif', fontWeight: 700, fontSize: !isMobile ? 44 : 16, lineHeight: !isMobile ? '24px' : '100%', letterSpacing: '0%', textAlign: 'center', verticalAlign: 'middle', textTransform: 'capitalize', color: 'rgba(255, 255, 255, 1)', marginLeft: !isMobile ? 0 : 8, whiteSpace: 'nowrap' }}>
-                {(stats.totalUsers || 16).toLocaleString()}
-              </span>
+            {/* Total Users */}
+            <div className="flex items-center gap-4">
+              <img 
+                src="/coins/total user.png" 
+                alt="Users" 
+                className="object-contain" 
+                style={{ width: 44, height: 44, paddingTop: 3.3, paddingBottom: 3.3 }} 
+              />
+              <div className="flex flex-col" style={{ width: 109, height: 43, gap: 15 }}>
+                <span className="uppercase" style={{ 
+                  width: 109, height: 8, 
+                  fontFamily: '"Poppins", sans-serif', fontWeight: 500, fontSize: 12, 
+                  lineHeight: '28px', letterSpacing: '0.08em', color: 'rgba(14, 15, 12, 1)',
+                  display: 'flex', alignItems: 'center'
+                }}>
+                  Total Users:
+                </span>
+                <span style={{ 
+                  width: 109, height: 20, 
+                  fontFamily: '"Bricolage Grotesque", sans-serif', fontWeight: 700, fontSize: 30, 
+                  lineHeight: '72px', letterSpacing: '-0.02em', color: 'rgba(14, 15, 12, 1)',
+                  display: 'flex', alignItems: 'center'
+                }}>
+                  {stats.totalUsers.toLocaleString()}
+                </span>
+              </div>
             </div>
 
-            <div className={!isMobile ? "w-px h-[60px] bg-white/10" : "w-px h-[24px] bg-white/20 mx-1"} />
-
-            <div className={!isMobile ? "w-full flex items-center justify-start max-w-[540px]" : "flex items-center justify-start flex-1"} style={!isMobile ? { height: 40, gap: 14 } : { height: 'auto', gap: 6 }}>
-              <img src="/coins/doller.png" alt="Paid" style={{ width: !isMobile ? 40 : 22, height: !isMobile ? 40 : 22, objectFit: 'contain' }} />
-              <span style={{ display: 'inline-block', width: !isMobile ? 440 : 'auto', height: !isMobile ? 24 : 'auto', opacity: 1, fontFamily: '"Barlow Condensed", sans-serif', fontWeight: 700, fontSize: !isMobile ? 24 : 13, lineHeight: !isMobile ? '24px' : '100%', letterSpacing: '0%', textTransform: 'capitalize', color: 'rgba(255, 255, 255, 1)', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>Total Paid:</span>
-              <span style={{ display: 'inline-block', width: 'auto', minWidth: !isMobile ? 32 : 'auto', height: !isMobile ? 24 : 'auto', opacity: 1, fontFamily: '"Barlow Condensed", sans-serif', fontWeight: 700, fontSize: !isMobile ? 44 : 16, lineHeight: !isMobile ? '24px' : '100%', letterSpacing: '0%', textAlign: 'center', verticalAlign: 'middle', textTransform: 'capitalize', color: 'rgba(255, 255, 255, 1)', marginLeft: !isMobile ? 0 : 8, whiteSpace: 'nowrap' }}>
-                ${(stats.totalPaidOut || 31.33).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-              </span>
+            {/* Total Paid */}
+            <div className="flex items-center gap-4">
+              <img 
+                src="/coins/total paid.png" 
+                alt="Paid" 
+                className="object-contain" 
+                style={{ width: 45, height: 45 }} 
+              />
+              <div className="flex flex-col" style={{ width: 230, height: 43, gap: 15 }}>
+                <span className="uppercase" style={{ 
+                  width: 230, height: 8, 
+                  fontFamily: '"Poppins", sans-serif', fontWeight: 500, fontSize: 12, 
+                  lineHeight: '28px', letterSpacing: '0.08em', color: 'rgba(14, 15, 12, 1)',
+                  display: 'flex', alignItems: 'center'
+                }}>
+                  Total Paid:
+                </span>
+                <span style={{ 
+                  width: 230, height: 20, 
+                  fontFamily: '"Bricolage Grotesque", sans-serif', fontWeight: 700, fontSize: 30, 
+                  lineHeight: '72px', letterSpacing: '-0.02em', color: 'rgba(14, 15, 12, 1)',
+                  display: 'flex', alignItems: 'center'
+                }}>
+                  ${stats.totalPaidOut.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                </span>
+              </div>
             </div>
+          </div>
           </div>
         </div>
       </section>
