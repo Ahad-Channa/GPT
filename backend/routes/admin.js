@@ -39,7 +39,17 @@ const SECURITY_METHODS = ['none', 'shared_secret', 'md5', 'sha1', 'sha256', 'sha
 const INTERNAL_STATUSES = ['pending', 'approved', 'rejected', 'reversed'];
 const PROCESSING_STATES = ['pending', 'claimed', 'processing', 'processed', 'failed', 'reversal_processing', 'reversed', 'reversal_failed'];
 const POSTBACK_RESULTS = ['received', 'accepted', 'rejected', 'duplicate', 'ignored', 'error'];
+const CLICK_STATUSES = ['clicked', 'pending', 'approved', 'rejected'];
+const CAMPAIGN_TYPES = ['direct_offer', 'offerwall', 'campaign', 'generic'];
 const PARAM_NAME_RE = /^[A-Za-z0-9_.:-]{1,80}$/;
+const CREDENTIAL_REQUIRED_METHODS = ['shared_secret', 'token', 'md5', 'sha1', 'sha256', 'sha512', 'hmac'];
+const SENSITIVE_ADMIN_KEY_PATTERN = /(authorization|bearer|api[_-]?key|secret|password|private[_-]?key|access[_-]?token|refresh[_-]?token|credential|client[_-]?secret)/i;
+
+const validationError = (message) => {
+  const error = new Error(message);
+  error.statusCode = 400;
+  return error;
+};
 
 const clampInt = (value, fallback, min, max) => {
   const parsed = parseInt(value, 10);
@@ -53,7 +63,11 @@ const getPagination = (query = {}) => {
   return { page, limit, skip: (page - 1) * limit };
 };
 
-const cleanString = (value, max = 200) => String(value || '').trim().slice(0, max);
+const cleanString = (value, max = 200) => {
+  if (value === undefined || value === null) return '';
+  if (typeof value === 'object') throw validationError('Expected a scalar string value.');
+  return String(value).trim().slice(0, max);
+};
 const cleanProviderId = (value) => cleanString(value, 80).toLowerCase();
 
 const hasOwn = (obj, key) => Object.prototype.hasOwnProperty.call(obj || {}, key);
@@ -76,6 +90,9 @@ const normalizeAliases = (values, field) => {
 };
 
 const validateStatusMappings = (statusMappings = {}) => {
+  if (!statusMappings || typeof statusMappings !== 'object' || Array.isArray(statusMappings)) {
+    throw validationError('statusMappings must be an object.');
+  }
   const normalized = {
     pending: normalizeAliases(statusMappings.pending || ['pending'], 'pending aliases'),
     approved: normalizeAliases(statusMappings.approved || ['approved'], 'approved aliases'),
@@ -94,7 +111,37 @@ const validateStatusMappings = (statusMappings = {}) => {
   return normalized;
 };
 
+const sanitizeProviderSettings = (settings = {}) => {
+  if (!settings || typeof settings !== 'object' || Array.isArray(settings)) return {};
+  return Object.fromEntries(Object.entries(settings).slice(0, 100).map(([key, value]) => {
+    const cleanKey = cleanString(key, 120);
+    if (SENSITIVE_ADMIN_KEY_PATTERN.test(cleanKey)) return [cleanKey, '[REDACTED]'];
+    return [cleanKey, boundAdminPayload(value)];
+  }));
+};
+
+const validateProviderSettings = (settings = {}) => {
+  if (!settings || typeof settings !== 'object' || Array.isArray(settings)) return {};
+  for (const key of Object.keys(settings)) {
+    if (SENSITIVE_ADMIN_KEY_PATTERN.test(key)) {
+      throw validationError('Sensitive provider settings must use the write-only secret field or secretEnvVar.');
+    }
+  }
+  return boundAdminPayload(settings);
+};
+
+const normalizeExtraParameterMappings = (extra = {}) => {
+  if (!extra || typeof extra !== 'object' || Array.isArray(extra)) return {};
+  return Object.fromEntries(Object.entries(extra).map(([key, value]) => [
+    validateParamName(key, 'extra mapping key', true),
+    validateParamName(value, `extra mapping ${key}`, true),
+  ]));
+};
+
 const validateParameterMappings = (parameterMappings = {}) => {
+  if (!parameterMappings || typeof parameterMappings !== 'object' || Array.isArray(parameterMappings)) {
+    throw validationError('parameterMappings must be an object.');
+  }
   const normalized = {
     clickId: validateParamName(parameterMappings.clickId || 'click_id', 'clickId mapping', true),
     transactionId: validateParamName(parameterMappings.transactionId || 'transaction_id', 'transactionId mapping', true),
@@ -102,33 +149,40 @@ const validateParameterMappings = (parameterMappings = {}) => {
     payout: validateParamName(parameterMappings.payout || 'payout', 'payout mapping'),
     eventType: validateParamName(parameterMappings.eventType || 'event_type', 'eventType mapping'),
     providerUserId: validateParamName(parameterMappings.providerUserId || 'user_id', 'providerUserId mapping'),
-    extra: typeof parameterMappings.extra === 'object' && parameterMappings.extra && !Array.isArray(parameterMappings.extra)
-      ? parameterMappings.extra
-      : {},
+    extra: normalizeExtraParameterMappings(parameterMappings.extra),
   };
-  const required = [normalized.clickId, normalized.transactionId, normalized.status];
-  if (new Set(required).size !== required.length) {
-    throw new Error('Required parameter mappings cannot use duplicate names.');
+  const configured = Object.entries(normalized)
+    .filter(([key, value]) => key !== 'extra' && value)
+    .map(([, value]) => value);
+  if (new Set(configured).size !== configured.length) {
+    throw new Error('Parameter mappings cannot use duplicate names.');
   }
   return normalized;
 };
 
 const validateSecurityConfig = (security = {}, existing = {}) => {
+  if (!security || typeof security !== 'object' || Array.isArray(security)) {
+    throw validationError('security must be an object.');
+  }
+  if (hasOwn(security, 'credentials')) {
+    throw validationError('Credentials must be updated through the write-only secret field.');
+  }
+  const methodChanged = hasOwn(security, 'method') && security.method !== existing.method;
   const method = cleanString(security.method || existing.method || 'none', 40);
   if (!SECURITY_METHODS.includes(method)) throw new Error('Unsupported security method.');
 
   const normalized = {
     method,
-    signatureParam: validateParamName(security.signatureParam ?? existing.signatureParam ?? '', 'signatureParam'),
-    tokenParam: validateParamName(security.tokenParam ?? existing.tokenParam ?? '', 'tokenParam'),
-    headerName: cleanString(security.headerName ?? existing.headerName ?? '', 120),
-    hashAlgorithm: cleanString(security.hashAlgorithm ?? existing.hashAlgorithm ?? '', 40),
-    hashTemplate: cleanString(security.hashTemplate ?? existing.hashTemplate ?? '', 500),
+    signatureParam: validateParamName(security.signatureParam ?? (methodChanged ? '' : existing.signatureParam) ?? '', 'signatureParam'),
+    tokenParam: validateParamName(security.tokenParam ?? (methodChanged ? '' : existing.tokenParam) ?? '', 'tokenParam'),
+    headerName: cleanString(security.headerName ?? (methodChanged ? '' : existing.headerName) ?? '', 120),
+    hashAlgorithm: cleanString(security.hashAlgorithm ?? (methodChanged ? '' : existing.hashAlgorithm) ?? '', 40),
+    hashTemplate: cleanString(security.hashTemplate ?? (methodChanged ? '' : existing.hashTemplate) ?? '', 500),
     caseInsensitiveSignature: Boolean(security.caseInsensitiveSignature ?? existing.caseInsensitiveSignature),
     ipAllowlistRequired: Boolean(security.ipAllowlistRequired ?? existing.ipAllowlistRequired),
-    secretEnvVar: cleanString(security.secretEnvVar ?? existing.secretEnvVar ?? '', 120),
-    adapterKey: cleanString(security.adapterKey ?? existing.adapterKey ?? '', 120),
-    config: typeof (security.config ?? existing.config) === 'object' && !Array.isArray(security.config ?? existing.config)
+    secretEnvVar: cleanString(security.secretEnvVar ?? (methodChanged ? '' : existing.secretEnvVar) ?? '', 120),
+    adapterKey: cleanString(security.adapterKey ?? (methodChanged ? '' : existing.adapterKey) ?? '', 120),
+    config: typeof (security.config ?? (methodChanged ? {} : existing.config)) === 'object' && !Array.isArray(security.config ?? (methodChanged ? {} : existing.config))
       ? (security.config ?? existing.config)
       : {},
   };
@@ -143,6 +197,41 @@ const validateSecurityConfig = (security = {}, existing = {}) => {
     throw new Error('Signature security requires hashTemplate or adapterKey.');
   }
   return normalized;
+};
+
+const parseWriteOnlySecret = (value) => {
+  if (value === undefined) return { supplied: false, value: '' };
+  if (typeof value !== 'string') throw validationError('Secret must be a string.');
+  const secret = value.trim();
+  if (secret.length > 500) throw validationError('Secret is too long.');
+  return { supplied: true, value: secret };
+};
+
+const assertProviderCredentialState = ({ security, existingCredentials, incomingSecret = '', removeSecret = false }) => {
+  if (!CREDENTIAL_REQUIRED_METHODS.includes(security.method)) return;
+  const hasCredential = Boolean(existingCredentials || incomingSecret || security.secretEnvVar);
+  if (removeSecret && !security.secretEnvVar) {
+    throw validationError('Cannot remove credential while selected security method requires one.');
+  }
+  if (!hasCredential) {
+    throw validationError('Selected security method requires a credential or secretEnvVar.');
+  }
+};
+
+const applyWriteOnlyProviderSecret = ({ nextSecurity, existingCredentials, secretInput, removeSecret }) => {
+  const credentials = removeSecret
+    ? undefined
+    : secretInput.value
+      ? { secret: secretInput.value }
+      : existingCredentials;
+  assertProviderCredentialState({
+    security: nextSecurity,
+    existingCredentials: credentials,
+    removeSecret,
+  });
+  if (credentials) nextSecurity.credentials = credentials;
+  else delete nextSecurity.credentials;
+  return nextSecurity;
 };
 
 const normalizeIpAllowlist = (list) => {
@@ -166,6 +255,7 @@ const serializeProviderConfig = (provider) => {
     delete doc.security.credentials;
     doc.security.credentialsConfigured = credentialsConfigured;
   }
+  doc.providerSettings = sanitizeProviderSettings(doc.providerSettings);
   return doc;
 };
 
@@ -175,6 +265,45 @@ const sanitizeDirectOfferAdmin = (offer) => {
   delete doc.postbackSecretKey;
   return doc;
 };
+
+const boundAdminPayload = (value, depth = 0) => {
+  if (depth > 4) return '[Truncated]';
+  if (value === null || value === undefined) return value;
+  if (typeof value === 'string') return value.length > 1000 ? `${value.slice(0, 1000)}...[Truncated]` : value;
+  if (typeof value !== 'object') return value;
+  if (Array.isArray(value)) return value.slice(0, 50).map((item) => boundAdminPayload(item, depth + 1));
+  return Object.fromEntries(Object.entries(value).slice(0, 100).map(([key, item]) => [
+    cleanString(key, 120),
+    SENSITIVE_ADMIN_KEY_PATTERN.test(key) ? '[REDACTED]' : boundAdminPayload(item, depth + 1),
+  ]));
+};
+
+const serializeClickLogAdmin = (click) => ({
+  _id: click._id,
+  clickId: click.clickId,
+  providerId: click.providerId,
+  providerType: click.providerType,
+  campaignType: click.campaignType,
+  campaignId: click.campaignId,
+  offer: click.offerId ? {
+    _id: click.offerId._id || click.offerId,
+    title: click.offerId.title,
+    rewardAmount: click.offerId.rewardAmount,
+  } : null,
+  user: click.userId ? {
+    _id: click.userId._id || click.userId,
+    displayName: click.userId.displayName,
+    email: click.userId.email,
+  } : null,
+  country: click.country,
+  device: click.device,
+  status: click.status,
+  rewardAmount: click.rewardAmount,
+  advertiserPayout: click.advertiserPayout,
+  convertedAt: click.convertedAt,
+  transactionId: click.transactionId,
+  createdAt: click.createdAt,
+});
 
 // Configure multer for Avatar uploads
 const storage = multer.diskStorage({
@@ -677,10 +806,16 @@ router.get('/provider-configs', requirePermission('manage_offerwalls'), async (r
     const filter = {};
     const providerId = cleanProviderId(req.query.providerId);
     const type = cleanString(req.query.type, 40);
+    const enabled = cleanString(req.query.enabled, 10);
     if (providerId) filter.providerId = providerId;
-    if (type && PROVIDER_TYPES.includes(type)) filter.type = type;
-    if (req.query.enabled === 'true') filter.enabled = true;
-    if (req.query.enabled === 'false') filter.enabled = false;
+    if (type) {
+      if (!PROVIDER_TYPES.includes(type)) return res.status(400).json({ success: false, error: 'Invalid provider type' });
+      filter.type = type;
+    }
+    if (enabled) {
+      if (!['true', 'false'].includes(enabled)) return res.status(400).json({ success: false, error: 'Invalid enabled filter' });
+      filter.enabled = enabled === 'true';
+    }
 
     const [providers, total] = await Promise.all([
       ProviderConfig.find(filter).sort({ providerId: 1 }).skip(skip).limit(limit),
@@ -694,7 +829,20 @@ router.get('/provider-configs', requirePermission('manage_offerwalls'), async (r
     });
   } catch (error) {
     console.error('[/api/admin/provider-configs GET] Error:', error);
-    res.status(500).json({ success: false, error: 'Failed to fetch provider configs' });
+    res.status(error.statusCode || 500).json({ success: false, error: error.statusCode ? error.message : 'Failed to fetch provider configs' });
+  }
+});
+
+// GET /api/admin/provider-configs/:providerId — sanitized provider detail
+router.get('/provider-configs/:providerId', requirePermission('manage_offerwalls'), async (req, res) => {
+  try {
+    const providerId = cleanProviderId(req.params.providerId);
+    const provider = await ProviderConfig.findOne({ providerId });
+    if (!provider) return res.status(404).json({ success: false, error: 'Provider config not found' });
+    res.json({ success: true, provider: serializeProviderConfig(provider) });
+  } catch (error) {
+    console.error('[/api/admin/provider-configs/:providerId GET] Error:', error);
+    res.status(error.statusCode || 500).json({ success: false, error: error.statusCode ? error.message : 'Failed to fetch provider config' });
   }
 });
 
@@ -707,9 +855,13 @@ router.post('/provider-configs', requirePermission('manage_offerwalls'), async (
     if (!PROVIDER_TYPES.includes(type)) return res.status(400).json({ success: false, error: 'Invalid provider type' });
 
     const security = validateSecurityConfig(req.body.security || {});
-    if (req.body.secret && cleanString(req.body.secret, 500)) {
-      security.credentials = { secret: cleanString(req.body.secret, 500) };
-    }
+    const secretInput = parseWriteOnlySecret(req.body.secret);
+    applyWriteOnlyProviderSecret({
+      nextSecurity: security,
+      existingCredentials: undefined,
+      secretInput,
+      removeSecret: false,
+    });
 
     const provider = await ProviderConfig.create({
       providerId,
@@ -722,9 +874,7 @@ router.post('/provider-configs', requirePermission('manage_offerwalls'), async (
       security,
       responseConfig: normalizeResponseConfig(req.body.responseConfig || {}),
       ipAllowlist: normalizeIpAllowlist(req.body.ipAllowlist || []),
-      providerSettings: typeof req.body.providerSettings === 'object' && req.body.providerSettings && !Array.isArray(req.body.providerSettings)
-        ? req.body.providerSettings
-        : {},
+      providerSettings: validateProviderSettings(req.body.providerSettings || {}),
     });
 
     await createLog(req.dbUser._id, 'CREATE_PROVIDER_CONFIG', null, { providerId });
@@ -741,6 +891,9 @@ router.put('/provider-configs/:providerId', requirePermission('manage_offerwalls
     const providerId = cleanProviderId(req.params.providerId);
     const provider = await ProviderConfig.findOne({ providerId }).select('+security.credentials');
     if (!provider) return res.status(404).json({ success: false, error: 'Provider config not found' });
+    const existingCredentials = provider.security?.credentials;
+    const secretInput = parseWriteOnlySecret(req.body.secret);
+    const removeSecret = req.body.removeSecret === true;
 
     if (hasOwn(req.body, 'name')) provider.name = cleanString(req.body.name, 120) || provider.providerId;
     if (hasOwn(req.body, 'label')) provider.label = cleanString(req.body.label, 120);
@@ -752,28 +905,17 @@ router.put('/provider-configs/:providerId', requirePermission('manage_offerwalls
     if (hasOwn(req.body, 'enabled')) provider.enabled = Boolean(req.body.enabled);
     if (hasOwn(req.body, 'parameterMappings')) provider.parameterMappings = validateParameterMappings(req.body.parameterMappings);
     if (hasOwn(req.body, 'statusMappings')) provider.statusMappings = validateStatusMappings(req.body.statusMappings);
-    if (hasOwn(req.body, 'security')) {
-      const security = validateSecurityConfig(req.body.security, provider.security || {});
-      if (provider.security?.credentials) security.credentials = provider.security.credentials;
-      provider.security = security;
-    }
-    if (hasOwn(req.body, 'secret')) {
-      const secret = cleanString(req.body.secret, 500);
-      if (secret) {
-        provider.security = provider.security || {};
-        provider.security.credentials = { secret };
-      }
-    }
-    if (req.body.removeSecret === true) {
-      provider.security = provider.security || {};
-      provider.security.credentials = undefined;
-    }
+    const nextSecurity = validateSecurityConfig(hasOwn(req.body, 'security') ? req.body.security : {}, provider.security || {});
+    provider.security = applyWriteOnlyProviderSecret({
+      nextSecurity,
+      existingCredentials,
+      secretInput,
+      removeSecret,
+    });
     if (hasOwn(req.body, 'responseConfig')) provider.responseConfig = normalizeResponseConfig(req.body.responseConfig);
     if (hasOwn(req.body, 'ipAllowlist')) provider.ipAllowlist = normalizeIpAllowlist(req.body.ipAllowlist);
     if (hasOwn(req.body, 'providerSettings')) {
-      provider.providerSettings = typeof req.body.providerSettings === 'object' && req.body.providerSettings && !Array.isArray(req.body.providerSettings)
-        ? req.body.providerSettings
-        : {};
+      provider.providerSettings = validateProviderSettings(req.body.providerSettings);
     }
 
     await provider.save();
@@ -1827,17 +1969,31 @@ router.get('/conversions', requirePermission('manage_offerwalls'), async (req, r
     const user = cleanString(req.query.user, 120);
 
     if (providerId) filter.providerId = providerId;
-    if (internalStatus && INTERNAL_STATUSES.includes(internalStatus)) filter.internalStatus = internalStatus;
-    if (processingState && PROCESSING_STATES.includes(processingState)) filter.processingState = processingState;
+    if (internalStatus) {
+      if (!INTERNAL_STATUSES.includes(internalStatus)) return res.status(400).json({ success: false, error: 'Invalid internal status filter' });
+      filter.internalStatus = internalStatus;
+    }
+    if (processingState) {
+      if (!PROCESSING_STATES.includes(processingState)) return res.status(400).json({ success: false, error: 'Invalid processing state filter' });
+      filter.processingState = processingState;
+    }
     if (clickId) filter.clickId = clickId;
     if (transactionId) filter.providerTransactionId = transactionId;
-    if (user && mongoose.Types.ObjectId.isValid(user)) filter.userId = user;
-    if (req.query.from || req.query.to) {
+    if (user) {
+      if (!mongoose.Types.ObjectId.isValid(user)) return res.status(400).json({ success: false, error: 'Invalid user filter' });
+      filter.userId = user;
+    }
+    const fromRaw = cleanString(req.query.from, 80);
+    const toRaw = cleanString(req.query.to, 80);
+    if (fromRaw || toRaw) {
       filter.createdAt = {};
-      const from = new Date(req.query.from);
-      const to = new Date(req.query.to);
-      if (!Number.isNaN(from.getTime())) filter.createdAt.$gte = from;
-      if (!Number.isNaN(to.getTime())) filter.createdAt.$lte = to;
+      const from = fromRaw ? new Date(fromRaw) : null;
+      const to = toRaw ? new Date(toRaw) : null;
+      if (fromRaw && Number.isNaN(from.getTime())) return res.status(400).json({ success: false, error: 'Invalid from date' });
+      if (toRaw && Number.isNaN(to.getTime())) return res.status(400).json({ success: false, error: 'Invalid to date' });
+      if (from && to && from > to) return res.status(400).json({ success: false, error: 'from date must be before to date' });
+      if (from) filter.createdAt.$gte = from;
+      if (to) filter.createdAt.$lte = to;
     }
 
     const [conversions, total] = await Promise.all([
@@ -1891,7 +2047,7 @@ router.get('/conversions', requirePermission('manage_offerwalls'), async (req, r
     });
   } catch (error) {
     console.error('[/api/admin/conversions GET] Error:', error);
-    res.status(500).json({ success: false, error: 'Failed to fetch conversions' });
+    res.status(error.statusCode || 500).json({ success: false, error: error.statusCode ? error.message : 'Failed to fetch conversions' });
   }
 });
 
@@ -1903,10 +2059,10 @@ const serializePostbackLog = (log, includePayload = false) => {
     providerId: doc.providerId,
     route: doc.route,
     method: doc.method,
-    mappedFields: doc.mappedFields,
+    mappedFields: boundAdminPayload(doc.mappedFields || {}),
     sourceIp: doc.sourceIp,
     userAgent: doc.userAgent,
-    security: doc.security,
+    security: boundAdminPayload(doc.security || {}),
     processingResult: doc.processingResult,
     isDuplicate: doc.isDuplicate,
     rejectionReason: doc.rejectionReason,
@@ -1916,9 +2072,9 @@ const serializePostbackLog = (log, includePayload = false) => {
     transactionId: doc.transactionId,
   };
   if (includePayload) {
-    payload.sanitizedQuery = doc.sanitizedQuery || {};
-    payload.sanitizedBody = doc.sanitizedBody || {};
-    payload.sanitizedHeaders = doc.sanitizedHeaders || {};
+    payload.sanitizedQuery = boundAdminPayload(doc.sanitizedQuery || {});
+    payload.sanitizedBody = boundAdminPayload(doc.sanitizedBody || {});
+    payload.sanitizedHeaders = boundAdminPayload(doc.sanitizedHeaders || {});
   }
   return payload;
 };
@@ -1930,13 +2086,19 @@ router.get('/postback-logs', requirePermission('manage_offerwalls'), async (req,
     const filter = {};
     const providerId = cleanProviderId(req.query.providerId);
     const result = cleanString(req.query.processingResult, 40);
+    const duplicate = cleanString(req.query.duplicate, 10);
     const clickId = cleanString(req.query.clickId, 120);
     const transactionId = cleanString(req.query.transactionId, 160);
 
     if (providerId) filter.providerId = providerId;
-    if (result && POSTBACK_RESULTS.includes(result)) filter.processingResult = result;
-    if (req.query.duplicate === 'true') filter.isDuplicate = true;
-    if (req.query.duplicate === 'false') filter.isDuplicate = false;
+    if (result) {
+      if (!POSTBACK_RESULTS.includes(result)) return res.status(400).json({ success: false, error: 'Invalid processing result filter' });
+      filter.processingResult = result;
+    }
+    if (duplicate) {
+      if (!['true', 'false'].includes(duplicate)) return res.status(400).json({ success: false, error: 'Invalid duplicate filter' });
+      filter.isDuplicate = duplicate === 'true';
+    }
     if (clickId) filter['mappedFields.clickId'] = clickId;
     if (transactionId) filter['mappedFields.transactionId'] = transactionId;
 
@@ -1958,7 +2120,7 @@ router.get('/postback-logs', requirePermission('manage_offerwalls'), async (req,
     });
   } catch (error) {
     console.error('[/api/admin/postback-logs GET] Error:', error);
-    res.status(500).json({ success: false, error: 'Failed to fetch postback logs' });
+    res.status(error.statusCode || 500).json({ success: false, error: error.statusCode ? error.message : 'Failed to fetch postback logs' });
   }
 });
 
@@ -2732,22 +2894,25 @@ router.delete('/direct-offers/:id', requirePermission('manage_offerwalls'), asyn
 router.get('/direct-offers/:id/clicks', requirePermission('manage_offerwalls'), async (req, res) => {
   try {
     const { page, limit, skip } = getPagination(req.query);
-    const { status } = req.query;
+    const status = cleanString(req.query.status, 40);
     const query = { offerId: req.params.id };
-    if (status) query.status = status;
+    if (status) {
+      if (!CLICK_STATUSES.includes(status)) return res.status(400).json({ success: false, error: 'Invalid click status filter' });
+      query.status = status;
+    }
 
     const clicks = await ClickLog.find(query)
-      .populate('userId', 'displayName email walletBalance')
+      .populate('userId', 'displayName email')
       .sort({ createdAt: -1 })
       .limit(limit)
       .skip(skip)
       .lean();
 
     const total = await ClickLog.countDocuments(query);
-    res.json({ success: true, clicks, total, pagination: { page, limit, total, totalPages: Math.ceil(total / limit) } });
+    res.json({ success: true, clicks: clicks.map(serializeClickLogAdmin), total, pagination: { page, limit, total, totalPages: Math.ceil(total / limit) } });
   } catch (error) {
     console.error('[/api/admin/direct-offers/:id/clicks GET] Error:', error);
-    res.status(500).json({ success: false, error: 'Failed to fetch click logs' });
+    res.status(error.statusCode || 500).json({ success: false, error: error.statusCode ? error.message : 'Failed to fetch click logs' });
   }
 });
 
@@ -2755,15 +2920,36 @@ router.get('/direct-offers/:id/clicks', requirePermission('manage_offerwalls'), 
 router.get('/click-logs', requirePermission('manage_offerwalls'), async (req, res) => {
   try {
     const { page, limit, skip } = getPagination(req.query);
-    const { status, userId, offerId, providerId, providerType, campaignType, clickId } = req.query;
+    const status = cleanString(req.query.status, 40);
+    const userId = cleanString(req.query.userId, 120);
+    const offerId = cleanString(req.query.offerId, 120);
+    const providerId = cleanString(req.query.providerId, 80);
+    const providerType = cleanString(req.query.providerType, 60);
+    const campaignType = cleanString(req.query.campaignType, 60);
+    const clickId = cleanString(req.query.clickId, 120);
     const query = {};
-    if (status) query.status = status;
-    if (userId && mongoose.Types.ObjectId.isValid(userId)) query.userId = userId;
-    if (offerId && mongoose.Types.ObjectId.isValid(offerId)) query.offerId = offerId;
+    if (status) {
+      if (!CLICK_STATUSES.includes(status)) return res.status(400).json({ success: false, error: 'Invalid click status filter' });
+      query.status = status;
+    }
+    if (userId) {
+      if (!mongoose.Types.ObjectId.isValid(userId)) return res.status(400).json({ success: false, error: 'Invalid user filter' });
+      query.userId = userId;
+    }
+    if (offerId) {
+      if (!mongoose.Types.ObjectId.isValid(offerId)) return res.status(400).json({ success: false, error: 'Invalid offer filter' });
+      query.offerId = offerId;
+    }
     if (providerId) query.providerId = cleanProviderId(providerId);
-    if (providerType) query.providerType = cleanString(providerType, 60);
-    if (campaignType) query.campaignType = cleanString(campaignType, 60);
-    if (clickId) query.clickId = cleanString(clickId, 120);
+    if (providerType) {
+      if (!PROVIDER_TYPES.includes(providerType)) return res.status(400).json({ success: false, error: 'Invalid provider type filter' });
+      query.providerType = providerType;
+    }
+    if (campaignType) {
+      if (!CAMPAIGN_TYPES.includes(campaignType)) return res.status(400).json({ success: false, error: 'Invalid campaign type filter' });
+      query.campaignType = campaignType;
+    }
+    if (clickId) query.clickId = clickId;
 
     const clicks = await ClickLog.find(query)
       .populate('userId', 'displayName email')
@@ -2776,30 +2962,13 @@ router.get('/click-logs', requirePermission('manage_offerwalls'), async (req, re
     const total = await ClickLog.countDocuments(query);
     res.json({
       success: true,
-      clicks: clicks.map((click) => ({
-        _id: click._id,
-        clickId: click.clickId,
-        providerId: click.providerId,
-        providerType: click.providerType,
-        campaignType: click.campaignType,
-        campaignId: click.campaignId,
-        offer: click.offerId || null,
-        user: click.userId || null,
-        country: click.country,
-        device: click.device,
-        status: click.status,
-        rewardAmount: click.rewardAmount,
-        advertiserPayout: click.advertiserPayout,
-        convertedAt: click.convertedAt,
-        transactionId: click.transactionId,
-        createdAt: click.createdAt,
-      })),
+      clicks: clicks.map(serializeClickLogAdmin),
       total,
       pagination: { page, limit, total, totalPages: Math.ceil(total / limit) },
     });
   } catch (error) {
     console.error('[/api/admin/click-logs GET] Error:', error);
-    res.status(500).json({ success: false, error: 'Failed to fetch click logs' });
+    res.status(error.statusCode || 500).json({ success: false, error: error.statusCode ? error.message : 'Failed to fetch click logs' });
   }
 });
 
@@ -2912,9 +3081,15 @@ router.post('/click-logs/:clickId/reject', requirePermission('manage_offerwalls'
 router._phase8AdminHelpers = {
   getPagination,
   normalizeResponseConfig,
+  parseWriteOnlySecret,
   serializeProviderConfig,
+  serializeClickLogAdmin,
   sanitizeDirectOfferAdmin,
   serializePostbackLog,
+  applyWriteOnlyProviderSecret,
+  boundAdminPayload,
+  cleanString,
+  validateProviderSettings,
   validateParameterMappings,
   validateSecurityConfig,
   validateStatusMappings,
