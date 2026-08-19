@@ -10,6 +10,10 @@ const { verifyToken } = require('../middlewares/authMiddleware');
 const notify = require('../utils/notify');
 const { emitWalletUpdate } = require('../utils/walletEvents');
 const { notifyAdmins } = require('../utils/adminNotify');
+const {
+  REAL_OFFER_EARNING_TYPES,
+  getCompletedRealOfferEarningMatch,
+} = require('../utils/earningTypes');
 
 /* ─────────────────────────────────────────────────────────────────
    UTILITY: Fetch live USD rates via CoinGecko (free, no key needed)
@@ -540,7 +544,7 @@ router.get('/daily-bonus-status', verifyToken, async (req, res) => {
           $match: {
             userId: user._id,
             amount: { $gt: 0 },
-            transactionType: { $in: ['offer_reward', 'custom_offer_reward'] },
+            transactionType: { $in: REAL_OFFER_EARNING_TYPES },
             status: 'completed',
             createdAt: { $gte: windowStart }
           }
@@ -637,7 +641,7 @@ router.post('/daily-bonus', verifyToken, async (req, res) => {
         $match: {
           userId: user._id,
           amount: { $gt: 0 },
-          transactionType: { $in: ['offer_reward', 'custom_offer_reward'] },
+          transactionType: { $in: REAL_OFFER_EARNING_TYPES },
           status: 'completed',
           createdAt: { $gte: windowStart }
         }
@@ -833,14 +837,12 @@ router.get('/dashboard-stats', verifyToken, async (req, res) => {
     const user = await User.findOne({ firebaseUid: req.user.uid });
     if (!user) return res.status(404).json({ success: false, error: 'User not found' });
 
-    // Aggregate to count and sum offer_reward transactions
+    // Aggregate to count and sum real offer earning transactions
     const result = await Transaction.aggregate([
       {
-        $match: {
+        $match: getCompletedRealOfferEarningMatch({
           userId: user._id,
-          transactionType: { $in: ['offer_reward', 'custom_offer_reward'] },
-          status: 'completed'
-        }
+        })
       },
       {
         $group: {
@@ -858,6 +860,7 @@ router.get('/dashboard-stats', verifyToken, async (req, res) => {
       {
         $match: {
           userId: user._id,
+          transactionType: { $in: REAL_OFFER_EARNING_TYPES },
           amount: { $gt: 0 },
           status: 'completed',
           createdAt: { $gte: thirtyDaysAgo },
@@ -876,6 +879,7 @@ router.get('/dashboard-stats', verifyToken, async (req, res) => {
       {
         $match: {
           userId: user._id,
+          transactionType: { $in: REAL_OFFER_EARNING_TYPES },
           amount: { $gt: 0 },
           status: 'completed',
           description: { $not: /^Withdrawal Refund/ }

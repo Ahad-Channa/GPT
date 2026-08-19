@@ -3,6 +3,10 @@ const router = express.Router();
 const User = require('../models/User');
 const Transaction = require('../models/Transaction');
 const Settings = require('../models/Settings');
+const {
+  ACTIVE_EARNING_STATUSES,
+  REAL_OFFER_EARNING_TYPES,
+} = require('../utils/earningTypes');
 
 // ── Obfuscator Helper ────────────────────────────────────────────────────────
 // Sanitizes transaction descriptions for private profiles.
@@ -71,6 +75,7 @@ router.get('/user/:id', async (req, res) => {
           {
             $match: {
               userId: user._id,
+              transactionType: { $in: REAL_OFFER_EARNING_TYPES },
               amount: { $gt: 0 },
               status: 'completed',
               createdAt: { $gte: startOfCurrentMonth },
@@ -86,7 +91,7 @@ router.get('/user/:id', async (req, res) => {
         ]),
         Transaction.countDocuments({
           userId: user._id,
-          transactionType: { $in: ['offer_reward', 'custom_offer_reward'] },
+          transactionType: { $in: REAL_OFFER_EARNING_TYPES },
           status: 'completed'
         }),
         User.countDocuments({ referredBy: user._id })
@@ -123,10 +128,7 @@ router.get('/user/:id', async (req, res) => {
 
     const settings = await Settings.findOne({}) || {};
 
-    const validTransactionTypes = [
-      'offer_reward',
-      'custom_offer_reward',
-    ];
+    const validTransactionTypes = REAL_OFFER_EARNING_TYPES;
 
     // Fetch the user's latest 100 credited activities (public profiles only)
     const recentActiveOffers = await Transaction.find({
@@ -134,7 +136,7 @@ router.get('/user/:id', async (req, res) => {
       transactionType: {
         $in: validTransactionTypes
       },
-      status: { $in: ['completed', 'hold'] },
+      status: { $in: ACTIVE_EARNING_STATUSES },
       amount: { $gt: 0 }
     })
       .sort({ createdAt: -1 })
@@ -157,7 +159,7 @@ router.get('/user/:id', async (req, res) => {
 // Returns the 20 most recent earnings globally, intended for the Live Earning Bar.
 router.get('/recent-earnings', async (req, res) => {
   try {
-    const validTransactionTypes = ['offer_reward', 'custom_offer_reward', 'daily_bonus', 'admin_adjustment', 'promo_code', 'leaderboard_reward', 'vip_reward'];
+    const validTransactionTypes = [...REAL_OFFER_EARNING_TYPES, 'daily_bonus', 'admin_adjustment', 'promo_code', 'leaderboard_reward', 'vip_reward'];
 
     let recentEarnings = await Transaction.find({
       $or: [

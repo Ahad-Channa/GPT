@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { NavLink, Outlet, useNavigate, Navigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import {
-  FiGrid, FiUsers, FiShield, FiArrowRight, FiLogOut, FiZap, FiDollarSign, FiActivity, FiSliders, FiBox, FiTag, FiStar, FiTrendingUp, FiMessageSquare, FiInbox, FiImage, FiMessageCircle, FiHeadphones, FiAward, FiBook, FiLink
+  FiGrid, FiUsers, FiShield, FiArrowRight, FiLogOut, FiDollarSign, FiActivity, FiSliders, FiBox, FiTag, FiStar, FiTrendingUp, FiMessageSquare, FiInbox, FiImage, FiMessageCircle, FiHeadphones, FiAward, FiBook, FiLink, FiFileText
 } from 'react-icons/fi';
 import './Admin.css';
 
@@ -63,6 +63,9 @@ const AdminLayout = () => {
     ...(hasPerm('manage_offerwalls') ? [{ to: '/admin/promocodes', end: false, icon: FiTag, label: 'Promo Codes' }] : []),
     ...(hasPerm('manage_offerwalls') ? [{ to: '/admin/featured-offers', end: false, icon: FiStar, label: 'Featured Offers' }] : []),
     ...(hasPerm('manage_offerwalls') ? [{ to: '/admin/direct-offers', end: false, icon: FiLink, label: 'Direct Offers' }] : []),
+    ...(hasPerm('manage_offerwalls') ? [{ to: '/admin/providers', end: false, icon: FiShield, label: 'Providers' }] : []),
+    ...(hasPerm('manage_offerwalls') ? [{ to: '/admin/conversions', end: false, icon: FiActivity, label: 'Conversions' }] : []),
+    ...(hasPerm('manage_offerwalls') ? [{ to: '/admin/postback-logs', end: false, icon: FiFileText, label: 'Postback Logs' }] : []),
     ...(hasPerm('manage_offerwalls') ? [{ to: '/admin/proofs', end: false, icon: FiInbox, label: 'Proofs' }] : []),
 
 

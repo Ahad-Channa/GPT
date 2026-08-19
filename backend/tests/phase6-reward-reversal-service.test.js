@@ -86,6 +86,7 @@ const makeState = ({ referral = false, holdDays = 0 } = {}) => {
     referralPercentage: null,
     commissionGenerated: 0,
     appliedFinancialTransactionIds: [],
+    releasedEarningHoldTransactionIds: [],
   });
   const referrer = makeDoc({
     _id: referrerId,
@@ -94,6 +95,7 @@ const makeState = ({ referral = false, holdDays = 0 } = {}) => {
     totalEarned: 0,
     referralEarnings: 0,
     appliedFinancialTransactionIds: [],
+    releasedEarningHoldTransactionIds: [],
   });
   const click = makeDoc({
     _id: clickId,
@@ -272,6 +274,115 @@ test('approved reward is processed once with deterministic transaction identity'
   assert.equal(duplicate.duplicate, true);
   assert.equal(state.transactions.length, 1);
   assert.equal(state.user.walletBalance, 877);
+});
+
+test('direct reward follows earning hold config and held reversal does not deduct wallet', async () => {
+  const state = makeState();
+  state.settings.earningHoldConfig = { enabled: true, threshold: 1, holdDays: 7 };
+
+  await processReward({
+    conversion: state.conversion,
+    models: makeModels(state),
+    hooks: noSideEffects,
+    runInTransaction: transactionRunner(state),
+  });
+
+  const rewardTx = state.transactions.find((tx) => tx.externalId === rewardExternalId(state.conversion._id));
+  assert.equal(rewardTx.status, 'hold');
+  assert.equal(rewardTx.metadata.walletApplied, false);
+  assert.equal(rewardTx.metadata.holdApplied, true);
+  assert.ok(rewardTx.holdUntil instanceof Date);
+  assert.equal(state.user.walletBalance, 100);
+  assert.equal(state.user.totalEarned, 1277);
+
+  state.conversion.internalStatus = 'reversed';
+  await processReversal({
+    conversion: state.conversion,
+    models: makeModels(state),
+    hooks: { notify: async () => {}, emitWalletUpdate: () => {} },
+    runInTransaction: transactionRunner(state),
+  });
+
+  const reversalTx = state.transactions.find((tx) => tx.externalId === reversalExternalId(state.conversion._id));
+  assert.equal(reversalTx.amount, -777);
+  assert.equal(reversalTx.metadata.walletApplied, false);
+  assert.equal(rewardTx.status, 'reversed');
+  assert.equal(state.user.walletBalance, 100);
+  assert.equal(state.user.totalEarned, 500);
+});
+
+test('held reward release and reversal race is retryable and nets correctly after release', async () => {
+  const state = makeState();
+  state.settings.earningHoldConfig = { enabled: true, threshold: 1, holdDays: 7 };
+  await processReward({
+    conversion: state.conversion,
+    models: makeModels(state),
+    hooks: noSideEffects,
+    runInTransaction: transactionRunner(state),
+  });
+
+  const rewardTx = state.transactions.find((tx) => tx.externalId === rewardExternalId(state.conversion._id));
+  rewardTx.metadata.releaseState = 'processing';
+  state.conversion.internalStatus = 'reversed';
+
+  await assert.rejects(() => processReversal({
+    conversion: state.conversion,
+    models: makeModels(state),
+    hooks: { notify: async () => {}, emitWalletUpdate: () => {} },
+  }), /being released/);
+
+  assert.equal(state.user.walletBalance, 100);
+  assert.equal(state.user.totalEarned, 1277);
+  assert.equal(state.conversion.processingState, 'reversal_failed');
+
+  rewardTx.status = 'completed';
+  rewardTx.balanceAfter = 877;
+  rewardTx.metadata.releaseState = 'completed';
+  rewardTx.metadata.walletApplied = true;
+  state.user.walletBalance = 877;
+
+  await processReversal({
+    conversion: state.conversion,
+    models: makeModels(state),
+    hooks: { notify: async () => {}, emitWalletUpdate: () => {} },
+  });
+
+  const reversalTx = state.transactions.find((tx) => tx.externalId === reversalExternalId(state.conversion._id));
+  assert.equal(reversalTx.amount, -777);
+  assert.equal(reversalTx.metadata.walletApplied, true);
+  assert.equal(state.user.walletBalance, 100);
+  assert.equal(state.user.totalEarned, 500);
+  assert.equal(state.conversion.processingState, 'reversed');
+});
+
+test('duplicate reward does not duplicate notification socket vip or referral side effects', async () => {
+  const state = makeState({ referral: true, holdDays: 0 });
+  const calls = { notify: 0, emitWalletUpdate: 0, processVipLevelUp: 0 };
+  const hooks = {
+    notify: async () => { calls.notify += 1; },
+    emitWalletUpdate: () => { calls.emitWalletUpdate += 1; },
+    processVipLevelUp: async () => { calls.processVipLevelUp += 1; },
+  };
+
+  await processReward({
+    conversion: state.conversion,
+    models: makeModels(state),
+    hooks,
+    runInTransaction: transactionRunner(state),
+  });
+  await processReward({
+    conversion: state.conversion,
+    models: makeModels(state),
+    hooks,
+    runInTransaction: transactionRunner(state),
+  });
+
+  assert.equal(calls.notify, 1);
+  assert.equal(calls.emitWalletUpdate, 1);
+  assert.equal(calls.processVipLevelUp, 1);
+  assert.equal(state.transactions.filter((tx) => tx.externalId === rewardExternalId(state.conversion._id)).length, 1);
+  assert.equal(state.transactions.filter((tx) => tx.externalId === referralExternalId(state.conversion._id)).length, 1);
+  assert.equal(state.referrer.referralEarnings, 38);
 });
 
 test('pending and rejected conversions do not receive rewards', async () => {

@@ -1,4 +1,5 @@
 const express = require('express');
+const mongoose = require('mongoose');
 const router = express.Router();
 const User = require('../models/User');
 const Transaction = require('../models/Transaction');
@@ -9,6 +10,9 @@ const CustomOffer = require('../models/CustomOffer');
 const CustomOfferSubmission = require('../models/CustomOfferSubmission');
 const DirectOffer = require('../models/DirectOffer');
 const ClickLog = require('../models/ClickLog');
+const ProviderConfig = require('../models/ProviderConfig');
+const Conversion = require('../models/Conversion');
+const PostbackLog = require('../models/PostbackLog');
 const adminFirebase = require('../config/firebase');
 const { verifyToken } = require('../middlewares/authMiddleware');
 const { requireAdmin, requirePrimaryAdmin, requirePermission } = require('../middlewares/adminMiddleware');
@@ -20,11 +24,157 @@ const {
   normalizeDisplayPlacements,
   parseAllowedCountriesInput,
 } = require('../utils/directOfferInput');
+const {
+  REAL_OFFER_EARNING_TYPES,
+  getEarningHoldDecision,
+} = require('../utils/earningTypes');
 const AdminNotification = require('../models/AdminNotification');
 const Avatar = require('../models/Avatar');
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
+
+const PROVIDER_TYPES = ['offerwall', 'direct', 'affiliate_network', 'advertiser', 'internal'];
+const SECURITY_METHODS = ['none', 'shared_secret', 'md5', 'sha1', 'sha256', 'sha512', 'hmac', 'token', 'custom_adapter'];
+const INTERNAL_STATUSES = ['pending', 'approved', 'rejected', 'reversed'];
+const PROCESSING_STATES = ['pending', 'claimed', 'processing', 'processed', 'failed', 'reversal_processing', 'reversed', 'reversal_failed'];
+const POSTBACK_RESULTS = ['received', 'accepted', 'rejected', 'duplicate', 'ignored', 'error'];
+const PARAM_NAME_RE = /^[A-Za-z0-9_.:-]{1,80}$/;
+
+const clampInt = (value, fallback, min, max) => {
+  const parsed = parseInt(value, 10);
+  if (!Number.isFinite(parsed)) return fallback;
+  return Math.min(max, Math.max(min, parsed));
+};
+
+const getPagination = (query = {}) => {
+  const page = clampInt(query.page, 1, 1, 100000);
+  const limit = clampInt(query.limit, 25, 1, 100);
+  return { page, limit, skip: (page - 1) * limit };
+};
+
+const cleanString = (value, max = 200) => String(value || '').trim().slice(0, max);
+const cleanProviderId = (value) => cleanString(value, 80).toLowerCase();
+
+const hasOwn = (obj, key) => Object.prototype.hasOwnProperty.call(obj || {}, key);
+
+const validateParamName = (value, field, required = false) => {
+  const clean = cleanString(value, 80);
+  if (!clean) {
+    if (required) throw new Error(`${field} is required.`);
+    return '';
+  }
+  if (!PARAM_NAME_RE.test(clean)) throw new Error(`${field} contains invalid characters.`);
+  return clean;
+};
+
+const normalizeAliases = (values, field) => {
+  if (!Array.isArray(values)) throw new Error(`${field} must be an array.`);
+  const aliases = [...new Set(values.map((value) => cleanString(value, 80).toLowerCase()).filter(Boolean))];
+  if (aliases.length === 0) throw new Error(`${field} requires at least one alias.`);
+  return aliases;
+};
+
+const validateStatusMappings = (statusMappings = {}) => {
+  const normalized = {
+    pending: normalizeAliases(statusMappings.pending || ['pending'], 'pending aliases'),
+    approved: normalizeAliases(statusMappings.approved || ['approved'], 'approved aliases'),
+    rejected: normalizeAliases(statusMappings.rejected || ['rejected'], 'rejected aliases'),
+    reversal: normalizeAliases(statusMappings.reversal || statusMappings.reversed || ['reversed'], 'reversal aliases'),
+  };
+  const seen = new Map();
+  for (const [status, aliases] of Object.entries(normalized)) {
+    for (const alias of aliases) {
+      if (seen.has(alias) && seen.get(alias) !== status) {
+        throw new Error(`Status alias "${alias}" maps to both ${seen.get(alias)} and ${status}.`);
+      }
+      seen.set(alias, status);
+    }
+  }
+  return normalized;
+};
+
+const validateParameterMappings = (parameterMappings = {}) => {
+  const normalized = {
+    clickId: validateParamName(parameterMappings.clickId || 'click_id', 'clickId mapping', true),
+    transactionId: validateParamName(parameterMappings.transactionId || 'transaction_id', 'transactionId mapping', true),
+    status: validateParamName(parameterMappings.status || 'status', 'status mapping', true),
+    payout: validateParamName(parameterMappings.payout || 'payout', 'payout mapping'),
+    eventType: validateParamName(parameterMappings.eventType || 'event_type', 'eventType mapping'),
+    providerUserId: validateParamName(parameterMappings.providerUserId || 'user_id', 'providerUserId mapping'),
+    extra: typeof parameterMappings.extra === 'object' && parameterMappings.extra && !Array.isArray(parameterMappings.extra)
+      ? parameterMappings.extra
+      : {},
+  };
+  const required = [normalized.clickId, normalized.transactionId, normalized.status];
+  if (new Set(required).size !== required.length) {
+    throw new Error('Required parameter mappings cannot use duplicate names.');
+  }
+  return normalized;
+};
+
+const validateSecurityConfig = (security = {}, existing = {}) => {
+  const method = cleanString(security.method || existing.method || 'none', 40);
+  if (!SECURITY_METHODS.includes(method)) throw new Error('Unsupported security method.');
+
+  const normalized = {
+    method,
+    signatureParam: validateParamName(security.signatureParam ?? existing.signatureParam ?? '', 'signatureParam'),
+    tokenParam: validateParamName(security.tokenParam ?? existing.tokenParam ?? '', 'tokenParam'),
+    headerName: cleanString(security.headerName ?? existing.headerName ?? '', 120),
+    hashAlgorithm: cleanString(security.hashAlgorithm ?? existing.hashAlgorithm ?? '', 40),
+    hashTemplate: cleanString(security.hashTemplate ?? existing.hashTemplate ?? '', 500),
+    caseInsensitiveSignature: Boolean(security.caseInsensitiveSignature ?? existing.caseInsensitiveSignature),
+    ipAllowlistRequired: Boolean(security.ipAllowlistRequired ?? existing.ipAllowlistRequired),
+    secretEnvVar: cleanString(security.secretEnvVar ?? existing.secretEnvVar ?? '', 120),
+    adapterKey: cleanString(security.adapterKey ?? existing.adapterKey ?? '', 120),
+    config: typeof (security.config ?? existing.config) === 'object' && !Array.isArray(security.config ?? existing.config)
+      ? (security.config ?? existing.config)
+      : {},
+  };
+
+  if (['shared_secret', 'token'].includes(method) && !normalized.tokenParam && !normalized.headerName) {
+    throw new Error('Shared secret/token security requires tokenParam or headerName.');
+  }
+  if (['md5', 'sha1', 'sha256', 'sha512', 'hmac'].includes(method) && !normalized.signatureParam) {
+    throw new Error('Signature security requires signatureParam.');
+  }
+  if (['md5', 'sha1', 'sha256', 'sha512', 'hmac'].includes(method) && !normalized.hashTemplate && !normalized.adapterKey) {
+    throw new Error('Signature security requires hashTemplate or adapterKey.');
+  }
+  return normalized;
+};
+
+const normalizeIpAllowlist = (list) => {
+  if (!Array.isArray(list)) return [];
+  return [...new Set(list.map((item) => cleanString(item, 80)).filter(Boolean))].slice(0, 200);
+};
+
+const normalizeResponseConfig = (config = {}) => ({
+  successStatus: clampInt(config.successStatus, 200, 100, 599),
+  successBody: cleanString(config.successBody ?? '1', 500),
+  duplicateStatus: clampInt(config.duplicateStatus, 200, 100, 599),
+  duplicateBody: cleanString(config.duplicateBody ?? '1', 500),
+  errorStatus: clampInt(config.errorStatus, 200, 100, 599),
+  errorBody: cleanString(config.errorBody ?? '0', 500),
+});
+
+const serializeProviderConfig = (provider) => {
+  const doc = typeof provider.toObject === 'function' ? provider.toObject() : { ...provider };
+  const credentialsConfigured = Boolean(provider?.security?.credentials || doc?.security?.secretEnvVar);
+  if (doc.security) {
+    delete doc.security.credentials;
+    doc.security.credentialsConfigured = credentialsConfigured;
+  }
+  return doc;
+};
+
+const sanitizeDirectOfferAdmin = (offer) => {
+  const doc = typeof offer.toObject === 'function' ? offer.toObject() : { ...offer };
+  doc.postbackSecretConfigured = Boolean(doc.postbackSecretKey);
+  delete doc.postbackSecretKey;
+  return doc;
+};
 
 // Configure multer for Avatar uploads
 const storage = multer.diskStorage({
@@ -339,6 +489,8 @@ router.put('/withdrawals/:id/reject', requirePermission('manage_withdrawals'), a
 router.get('/settings', requirePermission('manage_withdrawals'), async (req, res) => {
   try {
     const settings = await Settings.getSingleton();
+    const providerConfigs = await ProviderConfig.find({}).select('providerId enabled type security.method updatedAt').lean();
+    const providerConfigMap = new Map(providerConfigs.map((config) => [config.providerId, config]));
 
     // Dynamically set secretConfigured
     const providers = settings.offerwallProviders.map(p => {
@@ -354,6 +506,18 @@ router.get('/settings', requirePermission('manage_withdrawals'), async (req, res
         revu: 'REVU_SECRET',
       };
       pObj.secretConfigured = !!process.env[envSecretMap[p.id]];
+      const providerConfig = providerConfigMap.get(pObj.id);
+      pObj.providerConfig = providerConfig ? {
+        configured: true,
+        enabled: Boolean(providerConfig.enabled),
+        type: providerConfig.type,
+        securityMethod: providerConfig.security?.method || 'none',
+        updatedAt: providerConfig.updatedAt,
+        readiness: providerConfig.enabled ? 'generic_tracking_ready' : 'configured_paused',
+      } : {
+        configured: false,
+        readiness: 'legacy_provider',
+      };
       return pObj;
     });
 
@@ -460,6 +624,163 @@ router.put('/offerwalls/:providerId', requirePermission('manage_offerwalls'), as
     res.json({ success: true, provider });
   } catch (error) {
     res.status(500).json({ success: false, error: 'Failed to update offerwall provider' });
+  }
+});
+
+router.get('/offerwall-providers', requirePermission('manage_offerwalls'), async (req, res) => {
+  try {
+    const settings = await Settings.getSingleton();
+    const providerConfigs = await ProviderConfig.find({}).select('providerId enabled type security.method updatedAt').lean();
+    const providerConfigMap = new Map(providerConfigs.map((config) => [config.providerId, config]));
+    const envSecretMap = {
+      cpx: 'CPX_HASH_KEY',
+      adgem: 'ADGEM_API_KEY',
+      lootably: 'LOOTABLY_SECRET',
+      torox: 'TOROX_SECRET',
+      primeearn: 'PRIMEEARN_SECRET',
+      ayet: 'AYET_SECRET',
+      adtowall: 'ADTOWALL_SECRET',
+      revu: 'REVU_SECRET',
+    };
+
+    const providers = settings.offerwallProviders.map((provider) => {
+      const pObj = provider.toObject ? provider.toObject() : { ...provider };
+      const providerConfig = providerConfigMap.get(pObj.id);
+      return {
+        ...pObj,
+        secretConfigured: !!process.env[envSecretMap[pObj.id]],
+        providerConfig: providerConfig ? {
+          configured: true,
+          enabled: Boolean(providerConfig.enabled),
+          type: providerConfig.type,
+          securityMethod: providerConfig.security?.method || 'none',
+          updatedAt: providerConfig.updatedAt,
+          readiness: providerConfig.enabled ? 'generic_tracking_ready' : 'configured_paused',
+        } : {
+          configured: false,
+          readiness: 'legacy_provider',
+        },
+      };
+    });
+
+    res.json({ success: true, providers });
+  } catch (error) {
+    console.error('[/api/admin/offerwall-providers GET] Error:', error);
+    res.status(500).json({ success: false, error: 'Failed to fetch offerwall providers' });
+  }
+});
+
+// GET /api/admin/provider-configs — generic tracking provider configuration
+router.get('/provider-configs', requirePermission('manage_offerwalls'), async (req, res) => {
+  try {
+    const { page, limit, skip } = getPagination(req.query);
+    const filter = {};
+    const providerId = cleanProviderId(req.query.providerId);
+    const type = cleanString(req.query.type, 40);
+    if (providerId) filter.providerId = providerId;
+    if (type && PROVIDER_TYPES.includes(type)) filter.type = type;
+    if (req.query.enabled === 'true') filter.enabled = true;
+    if (req.query.enabled === 'false') filter.enabled = false;
+
+    const [providers, total] = await Promise.all([
+      ProviderConfig.find(filter).sort({ providerId: 1 }).skip(skip).limit(limit),
+      ProviderConfig.countDocuments(filter),
+    ]);
+
+    res.json({
+      success: true,
+      providers: providers.map(serializeProviderConfig),
+      pagination: { page, limit, total, totalPages: Math.ceil(total / limit) },
+    });
+  } catch (error) {
+    console.error('[/api/admin/provider-configs GET] Error:', error);
+    res.status(500).json({ success: false, error: 'Failed to fetch provider configs' });
+  }
+});
+
+// POST /api/admin/provider-configs — create generic provider config
+router.post('/provider-configs', requirePermission('manage_offerwalls'), async (req, res) => {
+  try {
+    const providerId = cleanProviderId(req.body.providerId);
+    if (!providerId) return res.status(400).json({ success: false, error: 'providerId is required' });
+    const type = cleanString(req.body.type || 'offerwall', 40);
+    if (!PROVIDER_TYPES.includes(type)) return res.status(400).json({ success: false, error: 'Invalid provider type' });
+
+    const security = validateSecurityConfig(req.body.security || {});
+    if (req.body.secret && cleanString(req.body.secret, 500)) {
+      security.credentials = { secret: cleanString(req.body.secret, 500) };
+    }
+
+    const provider = await ProviderConfig.create({
+      providerId,
+      name: cleanString(req.body.name, 120) || providerId,
+      label: cleanString(req.body.label, 120),
+      type,
+      enabled: Boolean(req.body.enabled),
+      parameterMappings: validateParameterMappings(req.body.parameterMappings || {}),
+      statusMappings: validateStatusMappings(req.body.statusMappings || {}),
+      security,
+      responseConfig: normalizeResponseConfig(req.body.responseConfig || {}),
+      ipAllowlist: normalizeIpAllowlist(req.body.ipAllowlist || []),
+      providerSettings: typeof req.body.providerSettings === 'object' && req.body.providerSettings && !Array.isArray(req.body.providerSettings)
+        ? req.body.providerSettings
+        : {},
+    });
+
+    await createLog(req.dbUser._id, 'CREATE_PROVIDER_CONFIG', null, { providerId });
+    res.status(201).json({ success: true, provider: serializeProviderConfig(provider) });
+  } catch (error) {
+    const message = error.code === 11000 ? 'Provider ID already exists' : (error.message || 'Failed to create provider config');
+    res.status(400).json({ success: false, error: message });
+  }
+});
+
+// PUT /api/admin/provider-configs/:providerId — update generic provider config
+router.put('/provider-configs/:providerId', requirePermission('manage_offerwalls'), async (req, res) => {
+  try {
+    const providerId = cleanProviderId(req.params.providerId);
+    const provider = await ProviderConfig.findOne({ providerId }).select('+security.credentials');
+    if (!provider) return res.status(404).json({ success: false, error: 'Provider config not found' });
+
+    if (hasOwn(req.body, 'name')) provider.name = cleanString(req.body.name, 120) || provider.providerId;
+    if (hasOwn(req.body, 'label')) provider.label = cleanString(req.body.label, 120);
+    if (hasOwn(req.body, 'type')) {
+      const type = cleanString(req.body.type, 40);
+      if (!PROVIDER_TYPES.includes(type)) return res.status(400).json({ success: false, error: 'Invalid provider type' });
+      provider.type = type;
+    }
+    if (hasOwn(req.body, 'enabled')) provider.enabled = Boolean(req.body.enabled);
+    if (hasOwn(req.body, 'parameterMappings')) provider.parameterMappings = validateParameterMappings(req.body.parameterMappings);
+    if (hasOwn(req.body, 'statusMappings')) provider.statusMappings = validateStatusMappings(req.body.statusMappings);
+    if (hasOwn(req.body, 'security')) {
+      const security = validateSecurityConfig(req.body.security, provider.security || {});
+      if (provider.security?.credentials) security.credentials = provider.security.credentials;
+      provider.security = security;
+    }
+    if (hasOwn(req.body, 'secret')) {
+      const secret = cleanString(req.body.secret, 500);
+      if (secret) {
+        provider.security = provider.security || {};
+        provider.security.credentials = { secret };
+      }
+    }
+    if (req.body.removeSecret === true) {
+      provider.security = provider.security || {};
+      provider.security.credentials = undefined;
+    }
+    if (hasOwn(req.body, 'responseConfig')) provider.responseConfig = normalizeResponseConfig(req.body.responseConfig);
+    if (hasOwn(req.body, 'ipAllowlist')) provider.ipAllowlist = normalizeIpAllowlist(req.body.ipAllowlist);
+    if (hasOwn(req.body, 'providerSettings')) {
+      provider.providerSettings = typeof req.body.providerSettings === 'object' && req.body.providerSettings && !Array.isArray(req.body.providerSettings)
+        ? req.body.providerSettings
+        : {};
+    }
+
+    await provider.save();
+    await createLog(req.dbUser._id, 'UPDATE_PROVIDER_CONFIG', null, { providerId });
+    res.json({ success: true, provider: serializeProviderConfig(provider) });
+  } catch (error) {
+    res.status(400).json({ success: false, error: error.message || 'Failed to update provider config' });
   }
 });
 
@@ -1320,7 +1641,7 @@ router.get('/referral-debug/:userId', requirePermission('manage_users'), async (
     // Get all referral_reward transactions where THIS user's offers triggered commissions (linked)
     const offersThisUserCompleted = await Transaction.find({
       userId: user._id,
-      transactionType: { $in: ['offer_reward', 'custom_offer_reward'] },
+      transactionType: { $in: REAL_OFFER_EARNING_TYPES },
       status: 'completed',
     }).countDocuments();
 
@@ -1490,6 +1811,172 @@ router.get('/overview-stats', requirePrimaryAdmin, async (req, res) => {
     });
   } catch (e) {
     res.status(500).json({ success: false, error: 'Failed to fetch overview stats' });
+  }
+});
+
+// GET /api/admin/conversions — paginated conversion visibility
+router.get('/conversions', requirePermission('manage_offerwalls'), async (req, res) => {
+  try {
+    const { page, limit, skip } = getPagination(req.query);
+    const filter = {};
+    const providerId = cleanProviderId(req.query.providerId);
+    const internalStatus = cleanString(req.query.internalStatus, 40);
+    const processingState = cleanString(req.query.processingState, 60);
+    const clickId = cleanString(req.query.clickId, 120);
+    const transactionId = cleanString(req.query.transactionId, 160);
+    const user = cleanString(req.query.user, 120);
+
+    if (providerId) filter.providerId = providerId;
+    if (internalStatus && INTERNAL_STATUSES.includes(internalStatus)) filter.internalStatus = internalStatus;
+    if (processingState && PROCESSING_STATES.includes(processingState)) filter.processingState = processingState;
+    if (clickId) filter.clickId = clickId;
+    if (transactionId) filter.providerTransactionId = transactionId;
+    if (user && mongoose.Types.ObjectId.isValid(user)) filter.userId = user;
+    if (req.query.from || req.query.to) {
+      filter.createdAt = {};
+      const from = new Date(req.query.from);
+      const to = new Date(req.query.to);
+      if (!Number.isNaN(from.getTime())) filter.createdAt.$gte = from;
+      if (!Number.isNaN(to.getTime())) filter.createdAt.$lte = to;
+    }
+
+    const [conversions, total] = await Promise.all([
+      Conversion.find(filter)
+        .populate('userId', 'displayName email avatarUrl')
+        .populate('offerId', 'title')
+        .populate('rewardTransactionId', 'amount transactionType status balanceAfter createdAt')
+        .populate('reversalTransactionId', 'amount transactionType status balanceAfter createdAt')
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit)
+        .lean(),
+      Conversion.countDocuments(filter),
+    ]);
+
+    res.json({
+      success: true,
+      conversions: conversions.map((conversion) => ({
+        _id: conversion._id,
+        createdAt: conversion.createdAt,
+        providerId: conversion.providerId,
+        campaignType: conversion.campaignType,
+        campaignId: conversion.campaignId,
+        offer: conversion.offerId ? { _id: conversion.offerId._id, title: conversion.offerId.title } : null,
+        user: conversion.userId ? {
+          _id: conversion.userId._id,
+          displayName: conversion.userId.displayName,
+          email: conversion.userId.email,
+          avatarUrl: conversion.userId.avatarUrl,
+        } : null,
+        clickId: conversion.clickId,
+        providerTransactionId: conversion.providerTransactionId,
+        eventType: conversion.eventType,
+        incomingStatus: conversion.incomingStatus,
+        internalStatus: conversion.internalStatus,
+        payout: conversion.payout,
+        rewardAmount: conversion.rewardAmount,
+        processingState: conversion.processingState,
+        rewardTransaction: conversion.rewardTransactionId || null,
+        reversalTransaction: conversion.reversalTransactionId || null,
+        rejectionReason: conversion.rejectionReason,
+        errorReason: conversion.errorReason,
+        security: conversion.security ? {
+          checked: conversion.security.checked,
+          passed: conversion.security.passed,
+          method: conversion.security.method,
+          reason: conversion.security.reason,
+        } : null,
+      })),
+      pagination: { page, limit, total, totalPages: Math.ceil(total / limit) },
+    });
+  } catch (error) {
+    console.error('[/api/admin/conversions GET] Error:', error);
+    res.status(500).json({ success: false, error: 'Failed to fetch conversions' });
+  }
+});
+
+const serializePostbackLog = (log, includePayload = false) => {
+  const doc = typeof log.toObject === 'function' ? log.toObject() : log;
+  const payload = {
+    _id: doc._id,
+    createdAt: doc.createdAt,
+    providerId: doc.providerId,
+    route: doc.route,
+    method: doc.method,
+    mappedFields: doc.mappedFields,
+    sourceIp: doc.sourceIp,
+    userAgent: doc.userAgent,
+    security: doc.security,
+    processingResult: doc.processingResult,
+    isDuplicate: doc.isDuplicate,
+    rejectionReason: doc.rejectionReason,
+    clickLogId: doc.clickLogId,
+    conversion: doc.conversionId || null,
+    user: doc.userId || null,
+    transactionId: doc.transactionId,
+  };
+  if (includePayload) {
+    payload.sanitizedQuery = doc.sanitizedQuery || {};
+    payload.sanitizedBody = doc.sanitizedBody || {};
+    payload.sanitizedHeaders = doc.sanitizedHeaders || {};
+  }
+  return payload;
+};
+
+// GET /api/admin/postback-logs — paginated sanitized postback logs
+router.get('/postback-logs', requirePermission('manage_offerwalls'), async (req, res) => {
+  try {
+    const { page, limit, skip } = getPagination(req.query);
+    const filter = {};
+    const providerId = cleanProviderId(req.query.providerId);
+    const result = cleanString(req.query.processingResult, 40);
+    const clickId = cleanString(req.query.clickId, 120);
+    const transactionId = cleanString(req.query.transactionId, 160);
+
+    if (providerId) filter.providerId = providerId;
+    if (result && POSTBACK_RESULTS.includes(result)) filter.processingResult = result;
+    if (req.query.duplicate === 'true') filter.isDuplicate = true;
+    if (req.query.duplicate === 'false') filter.isDuplicate = false;
+    if (clickId) filter['mappedFields.clickId'] = clickId;
+    if (transactionId) filter['mappedFields.transactionId'] = transactionId;
+
+    const [logs, total] = await Promise.all([
+      PostbackLog.find(filter)
+        .populate('userId', 'displayName email')
+        .populate('conversionId', 'internalStatus processingState rewardAmount')
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit)
+        .lean(),
+      PostbackLog.countDocuments(filter),
+    ]);
+
+    res.json({
+      success: true,
+      logs: logs.map((log) => serializePostbackLog(log)),
+      pagination: { page, limit, total, totalPages: Math.ceil(total / limit) },
+    });
+  } catch (error) {
+    console.error('[/api/admin/postback-logs GET] Error:', error);
+    res.status(500).json({ success: false, error: 'Failed to fetch postback logs' });
+  }
+});
+
+// GET /api/admin/postback-logs/:id — sanitized detail view
+router.get('/postback-logs/:id', requirePermission('manage_offerwalls'), async (req, res) => {
+  try {
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+      return res.status(404).json({ success: false, error: 'Postback log not found' });
+    }
+    const log = await PostbackLog.findById(req.params.id)
+      .populate('userId', 'displayName email')
+      .populate('conversionId', 'internalStatus processingState rewardAmount rewardTransactionId reversalTransactionId')
+      .lean();
+    if (!log) return res.status(404).json({ success: false, error: 'Postback log not found' });
+    res.json({ success: true, log: serializePostbackLog(log, true) });
+  } catch (error) {
+    console.error('[/api/admin/postback-logs/:id GET] Error:', error);
+    res.status(500).json({ success: false, error: 'Failed to fetch postback log' });
   }
 });
 
@@ -2137,7 +2624,7 @@ router.delete('/avatars/:id', requirePermission('manage_users'), async (req, res
 router.get('/direct-offers', requirePermission('manage_offerwalls'), async (req, res) => {
   try {
     const offers = await DirectOffer.find().sort({ createdAt: -1 });
-    res.json({ success: true, offers });
+    res.json({ success: true, offers: offers.map(sanitizeDirectOfferAdmin) });
   } catch (error) {
     console.error('[/api/admin/direct-offers GET] Error:', error);
     res.status(500).json({ success: false, error: 'Failed to fetch direct offers' });
@@ -2176,7 +2663,7 @@ router.post('/direct-offers', requirePermission('manage_offerwalls'), async (req
     });
 
     await createLog(req.user._id, 'create_direct_offer', null, { offerId: offer._id, title });
-    res.status(201).json({ success: true, offer });
+    res.status(201).json({ success: true, offer: sanitizeDirectOfferAdmin(offer) });
   } catch (error) {
     console.error('[/api/admin/direct-offers POST] Error:', error);
     res.status(error.statusCode || 500).json({ success: false, error: error.statusCode ? error.message : 'Failed to create direct offer' });
@@ -2216,7 +2703,7 @@ router.put('/direct-offers/:id', requirePermission('manage_offerwalls'), async (
     if (!offer) return res.status(404).json({ success: false, error: 'Direct offer not found' });
 
     await createLog(req.user._id, 'update_direct_offer', null, { offerId: offer._id, title: offer.title });
-    res.json({ success: true, offer });
+    res.json({ success: true, offer: sanitizeDirectOfferAdmin(offer) });
   } catch (error) {
     console.error('[/api/admin/direct-offers PUT] Error:', error);
     res.status(error.statusCode || 500).json({ success: false, error: error.statusCode ? error.message : 'Failed to update direct offer' });
@@ -2234,7 +2721,7 @@ router.delete('/direct-offers/:id', requirePermission('manage_offerwalls'), asyn
     if (!offer) return res.status(404).json({ success: false, error: 'Direct offer not found' });
 
     await createLog(req.user._id, 'deactivate_direct_offer', null, { offerId: offer._id, title: offer.title });
-    res.json({ success: true, message: 'Direct offer deactivated', offer });
+    res.json({ success: true, message: 'Direct offer deactivated', offer: sanitizeDirectOfferAdmin(offer) });
   } catch (error) {
     console.error('[/api/admin/direct-offers DELETE] Error:', error);
     res.status(500).json({ success: false, error: 'Failed to deactivate direct offer' });
@@ -2244,18 +2731,20 @@ router.delete('/direct-offers/:id', requirePermission('manage_offerwalls'), asyn
 // GET /api/admin/direct-offers/:id/clicks — View click logs for a specific offer
 router.get('/direct-offers/:id/clicks', requirePermission('manage_offerwalls'), async (req, res) => {
   try {
-    const { page = 1, limit = 50, status } = req.query;
+    const { page, limit, skip } = getPagination(req.query);
+    const { status } = req.query;
     const query = { offerId: req.params.id };
     if (status) query.status = status;
 
     const clicks = await ClickLog.find(query)
       .populate('userId', 'displayName email walletBalance')
       .sort({ createdAt: -1 })
-      .limit(parseInt(limit))
-      .skip((parseInt(page) - 1) * parseInt(limit));
+      .limit(limit)
+      .skip(skip)
+      .lean();
 
     const total = await ClickLog.countDocuments(query);
-    res.json({ success: true, clicks, total });
+    res.json({ success: true, clicks, total, pagination: { page, limit, total, totalPages: Math.ceil(total / limit) } });
   } catch (error) {
     console.error('[/api/admin/direct-offers/:id/clicks GET] Error:', error);
     res.status(500).json({ success: false, error: 'Failed to fetch click logs' });
@@ -2265,21 +2754,49 @@ router.get('/direct-offers/:id/clicks', requirePermission('manage_offerwalls'), 
 // GET /api/admin/click-logs — View all click logs (global, with filters)
 router.get('/click-logs', requirePermission('manage_offerwalls'), async (req, res) => {
   try {
-    const { page = 1, limit = 50, status, userId, offerId } = req.query;
+    const { page, limit, skip } = getPagination(req.query);
+    const { status, userId, offerId, providerId, providerType, campaignType, clickId } = req.query;
     const query = {};
     if (status) query.status = status;
-    if (userId) query.userId = userId;
-    if (offerId) query.offerId = offerId;
+    if (userId && mongoose.Types.ObjectId.isValid(userId)) query.userId = userId;
+    if (offerId && mongoose.Types.ObjectId.isValid(offerId)) query.offerId = offerId;
+    if (providerId) query.providerId = cleanProviderId(providerId);
+    if (providerType) query.providerType = cleanString(providerType, 60);
+    if (campaignType) query.campaignType = cleanString(campaignType, 60);
+    if (clickId) query.clickId = cleanString(clickId, 120);
 
     const clicks = await ClickLog.find(query)
       .populate('userId', 'displayName email')
       .populate('offerId', 'title rewardAmount')
       .sort({ createdAt: -1 })
-      .limit(parseInt(limit))
-      .skip((parseInt(page) - 1) * parseInt(limit));
+      .limit(limit)
+      .skip(skip)
+      .lean();
 
     const total = await ClickLog.countDocuments(query);
-    res.json({ success: true, clicks, total });
+    res.json({
+      success: true,
+      clicks: clicks.map((click) => ({
+        _id: click._id,
+        clickId: click.clickId,
+        providerId: click.providerId,
+        providerType: click.providerType,
+        campaignType: click.campaignType,
+        campaignId: click.campaignId,
+        offer: click.offerId || null,
+        user: click.userId || null,
+        country: click.country,
+        device: click.device,
+        status: click.status,
+        rewardAmount: click.rewardAmount,
+        advertiserPayout: click.advertiserPayout,
+        convertedAt: click.convertedAt,
+        transactionId: click.transactionId,
+        createdAt: click.createdAt,
+      })),
+      total,
+      pagination: { page, limit, total, totalPages: Math.ceil(total / limit) },
+    });
   } catch (error) {
     console.error('[/api/admin/click-logs GET] Error:', error);
     res.status(500).json({ success: false, error: 'Failed to fetch click logs' });
@@ -2300,11 +2817,15 @@ router.post('/click-logs/:clickId/approve', requirePermission('manage_offerwalls
     if (!user) return res.status(404).json({ success: false, error: 'User not found' });
 
     const coinsToCredit = clickLog.rewardAmount;
-    const newBalance = user.walletBalance + coinsToCredit;
+    const settings = await Settings.getSingleton();
+    const holdDecision = getEarningHoldDecision(settings, coinsToCredit);
+    const newBalance = user.walletBalance + holdDecision.walletCredit;
 
-    await User.findByIdAndUpdate(user._id, {
-      $inc: { walletBalance: coinsToCredit, totalEarned: coinsToCredit },
-    });
+    const updatedUser = await User.findByIdAndUpdate(
+      user._id,
+      { $inc: { walletBalance: holdDecision.walletCredit, totalEarned: coinsToCredit } },
+      { new: true }
+    );
 
     const tx = await Transaction.create({
       userId: user._id,
@@ -2312,10 +2833,18 @@ router.post('/click-logs/:clickId/approve', requirePermission('manage_offerwalls
       amount: coinsToCredit,
       balanceAfter: newBalance,
       description: `Direct offer reward (manual): ${offer ? offer.title : 'Unknown Offer'}`,
-      status: 'completed',
+      status: holdDecision.status,
+      holdUntil: holdDecision.holdUntil,
       sourceType: 'direct_offer',
       sourceId: clickLog.offerId._id,
-      metadata: { clickId: req.params.clickId, manualApproval: true, adminId: req.user._id },
+      metadata: {
+        clickId: req.params.clickId,
+        manualApproval: true,
+        adminId: req.user._id,
+        walletApplied: holdDecision.walletCredit > 0,
+        holdApplied: holdDecision.status === 'hold',
+        holdDays: holdDecision.holdDays,
+      },
       externalId: `direct:${req.params.clickId}`,
     });
 
@@ -2331,14 +2860,18 @@ router.post('/click-logs/:clickId/approve', requirePermission('manage_offerwalls
     await notify(
       user._id,
       'direct_offer_reward',
-      '🎉 Offer Completed!',
-      `You earned ${coinsToCredit.toLocaleString()} coins from "${offer ? offer.title : 'Direct Offer'}".`,
+      holdDecision.status === 'hold' ? 'Offer Reward on Hold' : '🎉 Offer Completed!',
+      holdDecision.status === 'hold'
+        ? `Your reward of ${coinsToCredit.toLocaleString()} coins from "${offer ? offer.title : 'Direct Offer'}" is on hold.`
+        : `You earned ${coinsToCredit.toLocaleString()} coins from "${offer ? offer.title : 'Direct Offer'}".`,
       { txId: tx._id, amount: coinsToCredit }
     );
 
-    emitWalletUpdate(user.firebaseUid, newBalance);
+    if (holdDecision.walletCredit > 0) {
+      emitWalletUpdate(user.firebaseUid, newBalance);
+    }
 
-    try { await processVipLevelUp(user._id); } catch (e) { /* non-fatal */ }
+    try { await processVipLevelUp(updatedUser || user, coinsToCredit, emitToUser); } catch (e) { /* non-fatal */ }
 
     await createLog(req.user._id, 'manual_approve_click', user._id, { clickId: req.params.clickId, coins: coinsToCredit });
     res.json({ success: true, message: `Approved. Credited ${coinsToCredit} coins to ${user.displayName || user.email}` });
@@ -2375,5 +2908,16 @@ router.post('/click-logs/:clickId/reject', requirePermission('manage_offerwalls'
     res.status(500).json({ success: false, error: 'Failed to reject click' });
   }
 });
+
+router._phase8AdminHelpers = {
+  getPagination,
+  normalizeResponseConfig,
+  serializeProviderConfig,
+  sanitizeDirectOfferAdmin,
+  serializePostbackLog,
+  validateParameterMappings,
+  validateSecurityConfig,
+  validateStatusMappings,
+};
 
 module.exports = router;

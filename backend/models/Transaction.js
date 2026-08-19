@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const { isRealOfferEarningType } = require('../utils/earningTypes');
 
 const transactionSchema = new mongoose.Schema(
   {
@@ -114,7 +115,7 @@ transactionSchema.index({ reversalOfConversionId: 1 }, { sparse: true });
 transactionSchema.post('save', async function (doc) {
   if (
     doc.status === 'completed' &&
-    ['offer_reward', 'custom_offer_reward', 'direct_offer_reward'].includes(doc.transactionType) &&
+    isRealOfferEarningType(doc.transactionType) &&
     doc.amount > 0
   ) {
     try {

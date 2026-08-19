@@ -7,6 +7,7 @@ const User = require('../../models/User');
 const notify = require('../../utils/notify');
 const { emitToUser, emitWalletUpdate } = require('../../utils/walletEvents');
 const { processVipLevelUp } = require('../../utils/vipUtils');
+const { getEarningHoldDecision } = require('../../utils/earningTypes');
 const { createOne, runAtomic, withSession } = require('./atomicRunner');
 
 const rewardExternalId = (conversionId) => `conversion:${conversionId}:reward`;
@@ -201,6 +202,8 @@ const processReward = async ({
       }
       const externalId = rewardExternalId(claimed._id);
       const balanceBefore = user.walletBalance || 0;
+      const settings = await queryOne(settingsModel.getSingleton(), session);
+      const holdDecision = getEarningHoldDecision(settings, rewardAmount);
 
       const { transaction: rewardTx } = await createTransactionIdempotent({
         transactionModel,
@@ -212,6 +215,7 @@ const processReward = async ({
           balanceAfter: balanceBefore,
           description: `Direct offer reward${clickLog.offerId ? '' : ' conversion'}`,
           status: 'pending',
+          holdUntil: holdDecision.holdUntil,
           sourceType: 'offer',
           sourceId: claimed.offerId || clickLog.offerId || claimed.campaignId || null,
           conversionId: claimed._id,
@@ -221,6 +225,8 @@ const processReward = async ({
             advertiserTransactionId: claimed.providerTransactionId,
             advertiserPayout: claimed.payout?.amount || 0,
             walletApplied: false,
+            holdApplied: holdDecision.status === 'hold',
+            holdDays: holdDecision.holdDays,
           },
           externalId,
         },
@@ -231,7 +237,7 @@ const processReward = async ({
       const updatedUser = await userModel.findOneAndUpdate(
         { _id: user._id, appliedFinancialTransactionIds: { $ne: rewardTx._id } },
         {
-          $inc: { walletBalance: rewardAmount, totalEarned: rewardAmount },
+          $inc: { walletBalance: holdDecision.walletCredit, totalEarned: rewardAmount },
           $addToSet: { appliedFinancialTransactionIds: rewardTx._id },
         },
         { new: true, session }
@@ -241,9 +247,15 @@ const processReward = async ({
 
       if (failurePoint === 'after-wallet-before-finalize') throw new Error('Injected reward failure after wallet.');
 
-      rewardTx.status = 'completed';
+      rewardTx.status = holdDecision.status;
       rewardTx.balanceAfter = effectiveUser.walletBalance;
-      rewardTx.metadata = { ...(rewardTx.metadata || {}), walletApplied: true };
+      rewardTx.holdUntil = holdDecision.holdUntil;
+      rewardTx.metadata = {
+        ...(rewardTx.metadata || {}),
+        walletApplied: holdDecision.walletCredit > 0,
+        holdApplied: holdDecision.status === 'hold',
+        holdDays: holdDecision.holdDays,
+      };
       if (typeof rewardTx.save === 'function') await rewardTx.save({ session });
 
       await clickLogModel.findByIdAndUpdate(
@@ -286,7 +298,13 @@ const processReward = async ({
         session,
       });
 
-      sideEffects.push({ user: effectiveUser, rewardAmount, rewardTx, referralTransaction });
+      sideEffects.push({
+        user: effectiveUser,
+        rewardAmount,
+        rewardTx,
+        referralTransaction,
+        walletApplied: holdDecision.walletCredit > 0,
+      });
       return { ok: true, duplicate: false, conversion: finalized || applyUpdate(claimed, { $set: { processingState: 'processed', rewardTransactionId: rewardTx._id } }), rewardTransaction: rewardTx, referralTransaction, walletBalance: effectiveUser.walletBalance, strategy };
     } catch (error) {
       await markRewardFailed(conversionModel, claimed._id, error, session);
@@ -296,14 +314,19 @@ const processReward = async ({
 
   for (const effect of sideEffects) {
     try {
+      const isHeld = effect.rewardTx.status === 'hold';
       await (hooks.notify || notify)(
         effect.user._id,
         'direct_offer_reward',
-        'Offer Completed!',
-        `You earned ${effect.rewardAmount.toLocaleString()} coins from an offer.`,
+        isHeld ? 'Offer Reward on Hold' : 'Offer Completed!',
+        isHeld
+          ? `You completed an offer for ${effect.rewardAmount.toLocaleString()} coins. The reward is on hold.`
+          : `You earned ${effect.rewardAmount.toLocaleString()} coins from an offer.`,
         { txId: effect.rewardTx._id, amount: effect.rewardAmount }
       );
-      (hooks.emitWalletUpdate || emitWalletUpdate)(effect.user.firebaseUid, effect.user.walletBalance);
+      if (effect.walletApplied) {
+        (hooks.emitWalletUpdate || emitWalletUpdate)(effect.user.firebaseUid, effect.user.walletBalance);
+      }
       await (hooks.processVipLevelUp || processVipLevelUp)(effect.user, effect.rewardAmount, emitToUser);
     } catch (error) {
       console.error('[rewardService] Post-commit side effect failed:', error.message);

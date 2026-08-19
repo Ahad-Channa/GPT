@@ -94,7 +94,8 @@ const reverseReferralReward = async ({ conversion, rewardTx, transactionModel, u
 
   if (referralTx.metadata?.reversalApplied === true) return null;
 
-  if (referralTx.status === 'completed') {
+  const referralWalletWasApplied = referralTx.status === 'completed';
+  if (referralWalletWasApplied) {
     const updatedReferrer = await userModel.findOneAndUpdate(
       { _id: referralTx.userId, appliedFinancialTransactionIds: { $ne: transaction._id } },
       {
@@ -122,7 +123,10 @@ const reverseReferralReward = async ({ conversion, rewardTx, transactionModel, u
 
   transaction.status = 'completed';
   transaction.balanceAfter = balanceAfter;
-  transaction.metadata = { ...(transaction.metadata || {}), walletApplied: true };
+  transaction.metadata = {
+    ...(transaction.metadata || {}),
+    walletApplied: referralWalletWasApplied,
+  };
   if (typeof transaction.save === 'function') await transaction.save({ session });
   return transaction;
 };
@@ -166,12 +170,20 @@ const processReversal = async ({
       if (failurePoint === 'after-claim-before-transaction') throw new Error('Injected reversal failure after claim.');
 
       const rewardTx = await queryOne(transactionModel.findById(claimed.rewardTransactionId), session);
-      if (!rewardTx || rewardTx.status !== 'completed') throw new Error('Original reward transaction is not completed.');
+      const rewardAlreadyMarkedReversed = rewardTx?.status === 'reversed' && rewardTx.metadata?.reversalApplied === true;
+      if (!rewardTx || (!['completed', 'hold'].includes(rewardTx.status) && !rewardAlreadyMarkedReversed)) {
+        throw new Error('Original reward transaction is not completed or held.');
+      }
+      if (rewardTx.status === 'hold' && rewardTx.metadata?.releaseState === 'processing') {
+        throw new Error('Original reward transaction is being released; retry reversal.');
+      }
       if (String(rewardTx.conversionId || '') !== String(claimed._id)) throw new Error('Reward transaction does not match conversion.');
 
       const user = await queryOne(userModel.findById(claimed.userId), session);
       if (!user) throw new Error('User not found for reversal.');
       const reversalAmount = -Math.abs(rewardTx.amount);
+      const walletWasApplied = rewardTx.status === 'completed' && rewardTx.metadata?.walletApplied !== false;
+      const walletDelta = walletWasApplied ? reversalAmount : 0;
 
       const { transaction: reversalTx } = await createTransactionIdempotent({
         transactionModel,
@@ -201,7 +213,7 @@ const processReversal = async ({
       const updatedUser = await userModel.findOneAndUpdate(
         { _id: user._id, appliedFinancialTransactionIds: { $ne: reversalTx._id } },
         {
-          $inc: { walletBalance: reversalAmount, totalEarned: reversalAmount },
+          $inc: { walletBalance: walletDelta, totalEarned: reversalAmount },
           $addToSet: { appliedFinancialTransactionIds: reversalTx._id },
         },
         { new: true, session }
@@ -213,8 +225,12 @@ const processReversal = async ({
 
       reversalTx.status = 'completed';
       reversalTx.balanceAfter = effectiveUser.walletBalance;
-      reversalTx.metadata = { ...(reversalTx.metadata || {}), walletApplied: true };
+      reversalTx.metadata = { ...(reversalTx.metadata || {}), walletApplied: walletWasApplied };
       if (typeof reversalTx.save === 'function') await reversalTx.save({ session });
+
+      rewardTx.status = 'reversed';
+      rewardTx.metadata = { ...(rewardTx.metadata || {}), reversalApplied: true };
+      if (typeof rewardTx.save === 'function') await rewardTx.save({ session });
 
       const referralReversalTransaction = await reverseReferralReward({
         conversion: claimed,

@@ -130,6 +130,10 @@ const userSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Transaction',
     }],
+    releasedEarningHoldTransactionIds: [{
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Transaction',
+    }],
   },
   { timestamps: true }
 );

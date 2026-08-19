@@ -485,7 +485,7 @@ const AdminDirectOffers = () => {
     const statusParam  = m.statusParam  || 'status';
     const approvedVal  = m.approvedValue || 'approved';
     const payoutParam  = m.payoutParam  || 'payout';
-    return `${backendBaseUrl}/api/direct-offers/postback?${clickIdParam}={CLICK_ID}&${statusParam}=${approvedVal}&${payoutParam}={PAYOUT}&secret=${offer.postbackSecretKey}`;
+    return `${backendBaseUrl}/api/direct-offers/postback?${clickIdParam}={CLICK_ID}&${statusParam}=${approvedVal}&${payoutParam}={PAYOUT}&secret={SECRET}`;
   };
 
   return (
@@ -567,15 +567,12 @@ const AdminDirectOffers = () => {
                     <p className="text-xs text-slate-500 font-semibold uppercase tracking-wide">Postback Setup</p>
 
                     <div>
-                      <p className="text-[11px] text-slate-500 mb-1">Secret Key:</p>
+                      <p className="text-[11px] text-slate-500 mb-1">Security:</p>
                       <div className="flex items-center gap-2">
-                        <code className="text-xs text-indigo-300 font-mono bg-indigo-500/10 px-2 py-0.5 rounded truncate max-w-xs">
-                          {offer.postbackSecretKey}
-                        </code>
-                        <button onClick={() => copySecret(offer.postbackSecretKey, offer._id + 'secret')}
-                          className="text-slate-500 hover:text-white flex-shrink-0" title="Copy secret">
-                          {copiedId === offer._id + 'secret' ? <FiCheckCircle className="text-emerald-400" /> : <FiCopy />}
-                        </button>
+                        <span className={`text-xs font-semibold px-2 py-0.5 rounded border ${offer.postbackSecretConfigured ? 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20' : 'text-amber-400 bg-amber-500/10 border-amber-500/20'}`}>
+                          {offer.postbackSecretConfigured ? 'Secret configured' : 'Secret not configured'}
+                        </span>
+                        <span className="text-[11px] text-slate-500">Stored server-side only.</span>
                       </div>
                     </div>
 
@@ -602,7 +599,7 @@ const AdminDirectOffers = () => {
                         </button>
                       </div>
                       <p className="text-[10px] text-slate-600 mt-1">
-                        Replace <code className="text-slate-500">{'{CLICK_ID}'}</code> with the actual click ID and <code className="text-slate-500">{'{PAYOUT}'}</code> with the payout amount.
+                        Replace <code className="text-slate-500">{'{CLICK_ID}'}</code>, <code className="text-slate-500">{'{PAYOUT}'}</code>, and <code className="text-slate-500">{'{SECRET}'}</code> in the advertiser system.
                       </p>
                     </div>
                   </div>
