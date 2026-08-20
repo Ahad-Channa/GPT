@@ -21,6 +21,7 @@ const Landing = () => {
   const [stats, setStats] = useState({ totalUsers: 0, totalPaidOut: 0 });
   const [openFaq, setOpenFaq] = useState(null);
   const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' ? window.innerWidth < 1024 : false);
+  const [isDarkMode, setIsDarkMode] = useState(false);
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 1024);
@@ -49,7 +50,7 @@ const Landing = () => {
   }, []);
 
   return (
-    <div 
+    <div
       className="min-h-screen relative text-gray-900 font-sans overflow-x-hidden selection:bg-[#29FD98] selection:text-black flex flex-col mx-auto"
       style={{
         maxWidth: '1440px',
@@ -59,7 +60,7 @@ const Landing = () => {
     >
       {/* Absolute Right Hero Image (Overlaps header) */}
       {!isMobile && (
-        <div 
+        <div
           className="absolute top-0 right-0 z-0 pointer-events-none"
           style={{ width: 755, height: 587 }}
         >
@@ -77,7 +78,7 @@ const Landing = () => {
           <Header />
         </div>
       ) : (
-        <nav 
+        <nav
           className="relative z-50 flex justify-between items-center w-full px-4 md:px-8 lg:px-0 mx-auto"
           style={{
             maxWidth: '1328px',
@@ -147,7 +148,7 @@ const Landing = () => {
               Create Account
             </button>
           </div>
-          
+
           {/* Mobile Menu Button */}
           <div className="lg:hidden flex items-center">
             <button className="text-gray-900 text-2xl">
@@ -168,16 +169,16 @@ const Landing = () => {
       />
 
       {/* HERO SECTION */}
-      <section 
+      <section
         className={isMobile ? "relative pt-8 pb-[40px] px-4 w-full mx-auto flex flex-col items-start gap-6" : "relative w-full mx-auto flex justify-center px-4 md:px-8 lg:px-0"}
         style={!isMobile ? { height: 507, opacity: 1 } : {}}
       >
-        <div 
+        <div
           className="w-full h-full flex flex-col lg:flex-row items-center relative z-10"
           style={!isMobile ? { maxWidth: 1328 } : {}}
         >
           {/* Left Content */}
-          <div 
+          <div
             className="z-10 flex flex-col gap-6 lg:gap-10"
             style={!isMobile ? {
               width: 664,
@@ -190,254 +191,274 @@ const Landing = () => {
               padding: '32px 0px'
             }}
           >
-          <div 
-            className="flex flex-col text-left" 
-            style={!isMobile ? { width: 608, gap: 40 } : { width: '100%', gap: 24 }}
-          >
-            <h1
-              className="m-0"
-              style={!isMobile ? {
-                width: 608,
-                height: 96,
-                fontFamily: '"Bricolage Grotesque", sans-serif',
-                fontWeight: 700,
-                fontSize: 55,
-                lineHeight: '60px',
-                letterSpacing: '-0.02em',
-                color: 'rgba(14, 15, 12, 1)'
-              } : {
-                fontFamily: '"Bricolage Grotesque", sans-serif',
-                fontWeight: 700,
-                fontSize: 36,
-                lineHeight: '44px',
-                color: 'rgba(14, 15, 12, 1)'
-              }}
+            <div
+              className="flex flex-col text-left"
+              style={!isMobile ? { width: 608, gap: 40 } : { width: '100%', gap: 24 }}
             >
-              Your Time Has Value<br />
-              Get Rewarded For It
-            </h1>
-            <p
-              className="m-0"
-              style={!isMobile ? {
-                width: 539,
-                height: 37,
-                fontFamily: '"Poppins", sans-serif',
-                fontWeight: 500,
-                fontSize: 16,
-                lineHeight: '26px',
-                color: 'rgba(14, 15, 12, 1)'
-              } : {
-                fontFamily: '"Poppins", sans-serif',
-                fontWeight: 500,
-                fontSize: 15,
-                lineHeight: '24px',
-                color: 'rgba(14, 15, 12, 1)'
-              }}
-            >
-              Complete offers, surveys, and tasks to earn real rewards. Join thousands of users already earning every day.
-            </p>
+              <h1
+                className="m-0"
+                style={!isMobile ? {
+                  width: 608,
+                  height: 96,
+                  fontFamily: '"Bricolage Grotesque", sans-serif',
+                  fontWeight: 700,
+                  fontSize: 55,
+                  lineHeight: '60px',
+                  letterSpacing: '-0.02em',
+                  color: 'rgba(14, 15, 12, 1)'
+                } : {
+                  fontFamily: '"Bricolage Grotesque", sans-serif',
+                  fontWeight: 700,
+                  fontSize: 36,
+                  lineHeight: '44px',
+                  color: 'rgba(14, 15, 12, 1)'
+                }}
+              >
+                Your Time Has Value<br />
+                Get Rewarded For It
+              </h1>
+              <p
+                className="m-0"
+                style={!isMobile ? {
+                  width: 539,
+                  height: 37,
+                  fontFamily: '"Poppins", sans-serif',
+                  fontWeight: 500,
+                  fontSize: 16,
+                  lineHeight: '26px',
+                  color: 'rgba(14, 15, 12, 1)'
+                } : {
+                  fontFamily: '"Poppins", sans-serif',
+                  fontWeight: 500,
+                  fontSize: 15,
+                  lineHeight: '24px',
+                  color: 'rgba(14, 15, 12, 1)'
+                }}
+              >
+                Complete offers, surveys, and tasks to earn real rewards. Join thousands of users already earning every day.
+              </p>
 
-            <div 
+              <div
+                className="flex items-center"
+                style={{ width: 264, height: 49, gap: 5 }}
+              >
+                <button
+                  onClick={() => navigate('/login?tab=register')}
+                  className="flex items-center justify-center transition-all hover:bg-[#2A3544]"
+                  style={{
+                    width: 160,
+                    height: 49,
+                    padding: '19px 28px',
+                    gap: 10,
+                    borderRadius: 80,
+                    backgroundColor: 'rgba(36, 50, 77, 1)',
+                    fontFamily: '"Poppins", sans-serif',
+                    fontWeight: 500,
+                    fontSize: 16,
+                    lineHeight: '28px',
+                    color: 'rgba(255, 255, 255, 1)'
+                  }}
+                >
+                  Start Earning
+                </button>
+                <button
+                  onClick={() => navigate('/login')}
+                  className="flex items-center justify-center transition-all hover:bg-gray-200"
+                  style={{
+                    width: 99,
+                    height: 49,
+                    padding: '19px 28px',
+                    gap: 10,
+                    borderRadius: 80,
+                    backgroundColor: 'rgba(239, 239, 239, 1)',
+                    fontFamily: '"Poppins", sans-serif',
+                    fontWeight: 500,
+                    fontSize: 16,
+                    lineHeight: '28px',
+                    color: 'rgba(0, 0, 0, 1)'
+                  }}
+                >
+                  Login
+                </button>
+              </div>
+            </div>
+
+            {/* Stats below buttons */}
+            <div
               className="flex items-center"
-              style={{ width: 264, height: 49, gap: 5 }}
+              style={{ width: 520, height: 45, gap: 60 }}
             >
-              <button
-                onClick={() => navigate('/login?tab=register')}
-                className="flex items-center justify-center transition-all hover:bg-[#2A3544]"
-                style={{
-                  width: 160,
-                  height: 49,
-                  padding: '19px 28px',
-                  gap: 10,
-                  borderRadius: 80,
-                  backgroundColor: 'rgba(36, 50, 77, 1)',
-                  fontFamily: '"Poppins", sans-serif',
-                  fontWeight: 500,
-                  fontSize: 16,
-                  lineHeight: '28px',
-                  color: 'rgba(255, 255, 255, 1)'
-                }}
-              >
-                Start Earning
-              </button>
-              <button
-                onClick={() => navigate('/login')}
-                className="flex items-center justify-center transition-all hover:bg-gray-200"
-                style={{
-                  width: 99,
-                  height: 49,
-                  padding: '19px 28px',
-                  gap: 10,
-                  borderRadius: 80,
-                  backgroundColor: 'rgba(239, 239, 239, 1)',
-                  fontFamily: '"Poppins", sans-serif',
-                  fontWeight: 500,
-                  fontSize: 16,
-                  lineHeight: '28px',
-                  color: 'rgba(0, 0, 0, 1)'
-                }}
-              >
-                Login
-              </button>
-            </div>
-          </div>
+              {/* Total Users */}
+              <div className="flex items-center gap-4">
+                <img
+                  src="/coins/total user.png"
+                  alt="Users"
+                  className="object-contain"
+                  style={{ width: 44, height: 44, paddingTop: 3.3, paddingBottom: 3.3 }}
+                />
+                <div className="flex flex-col" style={{ width: 109, height: 43, gap: 15 }}>
+                  <span className="uppercase" style={{
+                    width: 109, height: 8,
+                    fontFamily: '"Poppins", sans-serif', fontWeight: 500, fontSize: 12,
+                    lineHeight: '28px', letterSpacing: '0.08em', color: 'rgba(14, 15, 12, 1)',
+                    display: 'flex', alignItems: 'center'
+                  }}>
+                    Total Users:
+                  </span>
+                  <span style={{
+                    width: 109, height: 20,
+                    fontFamily: '"Bricolage Grotesque", sans-serif', fontWeight: 700, fontSize: 30,
+                    lineHeight: '72px', letterSpacing: '-0.02em', color: 'rgba(14, 15, 12, 1)',
+                    display: 'flex', alignItems: 'center'
+                  }}>
+                    {stats.totalUsers.toLocaleString()}
+                  </span>
+                </div>
+              </div>
 
-          {/* Stats below buttons */}
-          <div 
-            className="flex items-center"
-            style={{ width: 520, height: 45, gap: 60 }}
-          >
-            {/* Total Users */}
-            <div className="flex items-center gap-4">
-              <img 
-                src="/coins/total user.png" 
-                alt="Users" 
-                className="object-contain" 
-                style={{ width: 44, height: 44, paddingTop: 3.3, paddingBottom: 3.3 }} 
-              />
-              <div className="flex flex-col" style={{ width: 109, height: 43, gap: 15 }}>
-                <span className="uppercase" style={{ 
-                  width: 109, height: 8, 
-                  fontFamily: '"Poppins", sans-serif', fontWeight: 500, fontSize: 12, 
-                  lineHeight: '28px', letterSpacing: '0.08em', color: 'rgba(14, 15, 12, 1)',
-                  display: 'flex', alignItems: 'center'
-                }}>
-                  Total Users:
-                </span>
-                <span style={{ 
-                  width: 109, height: 20, 
-                  fontFamily: '"Bricolage Grotesque", sans-serif', fontWeight: 700, fontSize: 30, 
-                  lineHeight: '72px', letterSpacing: '-0.02em', color: 'rgba(14, 15, 12, 1)',
-                  display: 'flex', alignItems: 'center'
-                }}>
-                  {stats.totalUsers.toLocaleString()}
-                </span>
+              {/* Total Paid */}
+              <div className="flex items-center gap-4">
+                <img
+                  src="/coins/total paid.png"
+                  alt="Paid"
+                  className="object-contain"
+                  style={{ width: 45, height: 45 }}
+                />
+                <div className="flex flex-col" style={{ width: 230, height: 43, gap: 15 }}>
+                  <span className="uppercase" style={{
+                    width: 230, height: 8,
+                    fontFamily: '"Poppins", sans-serif', fontWeight: 500, fontSize: 12,
+                    lineHeight: '28px', letterSpacing: '0.08em', color: 'rgba(14, 15, 12, 1)',
+                    display: 'flex', alignItems: 'center'
+                  }}>
+                    Total Paid:
+                  </span>
+                  <span style={{
+                    width: 230, height: 20,
+                    fontFamily: '"Bricolage Grotesque", sans-serif', fontWeight: 700, fontSize: 30,
+                    lineHeight: '72px', letterSpacing: '-0.02em', color: 'rgba(14, 15, 12, 1)',
+                    display: 'flex', alignItems: 'center'
+                  }}>
+                    ${stats.totalPaidOut.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                  </span>
+                </div>
               </div>
             </div>
-
-            {/* Total Paid */}
-            <div className="flex items-center gap-4">
-              <img 
-                src="/coins/total paid.png" 
-                alt="Paid" 
-                className="object-contain" 
-                style={{ width: 45, height: 45 }} 
-              />
-              <div className="flex flex-col" style={{ width: 230, height: 43, gap: 15 }}>
-                <span className="uppercase" style={{ 
-                  width: 230, height: 8, 
-                  fontFamily: '"Poppins", sans-serif', fontWeight: 500, fontSize: 12, 
-                  lineHeight: '28px', letterSpacing: '0.08em', color: 'rgba(14, 15, 12, 1)',
-                  display: 'flex', alignItems: 'center'
-                }}>
-                  Total Paid:
-                </span>
-                <span style={{ 
-                  width: 230, height: 20, 
-                  fontFamily: '"Bricolage Grotesque", sans-serif', fontWeight: 700, fontSize: 30, 
-                  lineHeight: '72px', letterSpacing: '-0.02em', color: 'rgba(14, 15, 12, 1)',
-                  display: 'flex', alignItems: 'center'
-                }}>
-                  ${stats.totalPaidOut.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
-                </span>
-              </div>
-            </div>
-          </div>
           </div>
         </div>
       </section>
 
       {/* HOW IT WORKS */}
-      <section id="how-it-works" className="pt-0 lg:pt-0 pb-12 lg:pb-24 px-4 lg:px-6 relative bg-[#050505] flex justify-center w-full">
+      <section id="how-it-works" className="py-12 lg:py-24 px-4 lg:px-6 relative bg-transparent flex justify-center w-full z-10">
         <div
-          className="flex flex-col mx-auto w-full max-w-[1240px] h-auto gap-8 lg:gap-[40px]"
+          className="flex flex-col mx-auto w-full h-auto gap-[55px]"
+          style={{ maxWidth: 1328 }}
         >
+          {/* Header */}
           <div
-            className="flex flex-col items-center justify-center mx-auto w-full max-w-[374px] h-auto gap-2 lg:gap-[30px]"
+            className="flex flex-col items-center justify-center mx-auto"
+            style={{ width: 500, height: 69, gap: 25 }}
           >
             <h2
-              className="font-bold text-white m-0 flex items-center justify-center text-[34px] sm:text-[44px] lg:text-[58px] leading-[40px] lg:leading-[48px] text-center w-auto h-auto"
+              className="m-0 text-center flex items-center justify-center"
               style={{
-                fontFamily: '"Barlow Condensed", sans-serif',
+                width: 314,
+                height: 33,
+                fontFamily: '"Bricolage Grotesque", sans-serif',
                 fontWeight: 700,
-                letterSpacing: '0%'
+                fontSize: 50,
+                lineHeight: '72px',
+                color: 'rgba(14, 15, 12, 1)',
+                letterSpacing: '-0.02em'
               }}
             >
               How It Works
             </h2>
             <p
-              className="m-0 flex items-center justify-center text-[15px] sm:text-[18px] lg:text-[20px] leading-[22px] lg:leading-[28px] text-center text-gray-300 w-auto h-auto px-2"
+              className="m-0 text-center flex items-center justify-center"
               style={{
-                fontFamily: '"Barlow Condensed", sans-serif',
-                fontWeight: 400,
-                letterSpacing: '0%'
+                width: 500,
+                height: 11,
+                fontFamily: '"Poppins", sans-serif',
+                fontWeight: 500,
+                fontSize: 16,
+                lineHeight: '28px',
+                color: 'rgba(14, 15, 12, 1)'
               }}
             >
               Get started in seconds. No complicated setup required.
             </p>
           </div>
 
-          <div
-            className="grid grid-cols-1 lg:grid-cols-3 mx-auto w-full max-w-[1240px] h-auto gap-4 lg:gap-[20px]"
-          >
+          {/* Steps */}
+          <div className="relative flex flex-col lg:flex-row items-start justify-between mx-auto w-full gap-[40px] lg:gap-[20px]">
+
             {[
-              { icon: '/coins/persontik.png', step: 1, title: 'Sign Up', desc: 'Create your free account in seconds and get instant access to the platform.' },
-              { icon: '/coins/clipboard.png', step: 2, title: 'Complete Tasks', desc: 'Choose from hundreds of offers, surveys, and apps to complete at your own pace.' },
-              { icon: '/coins/gift.png', step: 3, title: 'Earn Rewards', desc: 'Get coins and convert them into real money, crypto, or gift cards instantly.' },
+              {
+                icon: '/coins/s1.png',
+                step: 'STEP 01',
+                title: 'Sign Up',
+                desc: 'Create your free account in seconds and get instant access to the platform.'
+              },
+              {
+                icon: '/coins/s2.png',
+                step: 'STEP 02',
+                title: 'Complete Tasks',
+                desc: 'Choose from hundreds of offers, surveys, and apps to complete at your own pace.'
+              },
+              {
+                icon: '/coins/s3.png',
+                step: 'STEP 03',
+                title: 'Earn Rewards',
+                desc: 'Get coins and convert them into real money, crypto, or gift cards instantly.'
+              },
             ].map((item, idx) => (
-              <div
-                key={idx}
-                className="hover:brightness-110 transition-all group relative w-full h-auto lg:h-[212px] rounded-[16px] lg:rounded-[20px] p-6 lg:p-0 overflow-hidden"
-                style={{
-                  background: 'rgba(26, 27, 26, 1)',
-                  boxShadow: '0px 4px 80px 0px rgba(0, 0, 0, 0.15)',
-                  backdropFilter: 'blur(44px)',
-                  WebkitBackdropFilter: 'blur(44px)'
-                }}
-              >
-                <div className="flex items-start justify-between w-full lg:block">
-                  <img
-                    src={item.icon}
-                    alt={item.title}
-                    className="object-contain w-10 h-10 lg:w-[44px] lg:h-[44px] static lg:absolute lg:top-[24px] lg:left-[24px]"
-                  />
-                  <div
-                    className="flex items-center justify-center absolute top-0 right-6 lg:left-[304px] lg:right-auto w-[48px] lg:w-[70px] h-[48px] lg:h-[68px] px-2 lg:px-[30px] gap-[10px] rounded-b-[8px] rounded-t-none lg:rounded-b-[10px]"
-                    style={{
-                      background: 'rgba(50, 50, 50, 1)'
-                    }}
-                  >
+              <div key={idx} className="flex flex-row items-start gap-[20px] w-full lg:w-[400px] z-10" style={{ background: 'linear-gradient(0deg, #FAFAFA, #FAFAFA), linear-gradient(0deg, #FFFFFF, #FFFFFF)' }}>
+                {/* Icon */}
+                <div className="shrink-0" style={{ width: 90, height: 90 }}>
+                  <img src={item.icon} alt={item.title} style={{ width: 90, height: 90, transform: 'rotate(0deg)', opacity: 1, objectFit: 'contain' }} />
+                </div>
+                {/* Content */}
+                <div className="flex flex-col gap-[8px] mt-[-6px]">
+                  <div className="flex flex-col gap-0">
                     <span
-                      className="text-white flex items-center justify-center text-[24px] lg:text-[38px]"
+                      className="uppercase"
                       style={{
-                        fontFamily: '"Barlow Condensed", sans-serif',
-                        fontWeight: 700,
-                        lineHeight: '100%'
+                        fontFamily: '"Poppins", sans-serif',
+                        fontWeight: 500,
+                        fontSize: 12,
+                        lineHeight: '28px',
+                        letterSpacing: '0.08em',
+                        color: 'rgba(14, 15, 12, 1)',
+                        opacity: 1
                       }}
                     >
                       {item.step}
                     </span>
+                    <h3
+                      className="m-0 mt-[-4px]"
+                      style={{
+                        fontFamily: '"Bricolage Grotesque", sans-serif',
+                        fontWeight: 700,
+                        fontSize: 22,
+                        lineHeight: '28px',
+                        color: 'rgba(14, 15, 12, 1)',
+                        letterSpacing: '-0.02em',
+                        opacity: 1
+                      }}
+                    >
+                      {item.title}
+                    </h3>
                   </div>
-                </div>
-                <div
-                  className="flex flex-col mt-4 lg:mt-0 lg:absolute lg:top-[102px] lg:left-[24px] w-full lg:w-[352px] gap-2 lg:gap-[12px]"
-                >
-                  <h3
-                    className="font-semibold text-white m-0 text-[20px] lg:text-[24px]"
-                    style={{
-                      fontFamily: '"Barlow Condensed", sans-serif',
-                      fontWeight: 600,
-                      lineHeight: '100%',
-                      letterSpacing: '0.5px'
-                    }}
-                  >
-                    {item.title}
-                  </h3>
                   <p
-                    className="m-0 flex items-center text-[15px] lg:text-[17px] leading-[22px] lg:leading-[24px] text-gray-400"
+                    className="m-0"
                     style={{
-                      fontFamily: '"Barlow Condensed", sans-serif',
-                      fontWeight: 500
+                      fontFamily: '"Poppins", sans-serif',
+                      fontWeight: 500,
+                      fontSize: 12,
+                      lineHeight: '20px',
+                      color: 'rgba(14, 15, 12, 1)',
+                      opacity: 1
                     }}
                   >
                     {item.desc}
@@ -452,84 +473,103 @@ const Landing = () => {
       {/* WHY CHOOSE US */}
       <section
         id="features"
-        className="mx-auto flex flex-col w-full max-w-[1440px] h-auto py-12 lg:py-[100px] px-4 lg:px-[100px] gap-2 lg:gap-[10px]"
+        className="mx-auto flex flex-col lg:flex-row items-center w-full max-w-[1440px] lg:h-[558px] py-12 lg:py-0 relative z-10"
         style={{
-          background: 'rgba(26, 27, 26, 1)',
-          backdropFilter: 'blur(75px)',
-          WebkitBackdropFilter: 'blur(75px)'
+          background: 'transparent',
+          gap: '10px'
         }}
       >
-        <div
-          className="flex flex-col mx-auto w-full max-w-[1240px] h-auto gap-8 lg:gap-[50px]"
-        >
+        {/* Left Image */}
+        <div className="flex-shrink-0 w-full lg:w-[720px] h-auto lg:h-[558px] pl-4 lg:pl-[56px] pr-4 lg:pr-[24px]">
+          <img src="/coins/why chose us.png" alt="Why Choose Us" className="w-full h-full object-cover rounded-[32px]" />
+        </div>
+
+        {/* Right Content */}
+        <div className="flex flex-col w-full px-4 lg:px-[24px] justify-center">
+          {/* Heading & Sub */}
           <div
-            className="flex flex-col items-center mx-auto w-full max-w-[323px] h-auto gap-2 lg:gap-[30px]"
+            className="flex flex-col items-start"
+            style={{ width: 472, height: 74, gap: 30, marginBottom: 50, marginTop: -30 }}
           >
             <h2
-              className="font-bold m-0 text-white text-[34px] sm:text-[44px] lg:text-[58px] leading-[40px] lg:leading-[48px] text-center w-auto h-auto"
+              className="m-0 text-left flex items-center"
               style={{
-                fontFamily: '"Barlow Condensed", sans-serif',
-                fontWeight: 700
+                width: 472,
+                height: 33,
+                fontFamily: '"Bricolage Grotesque", sans-serif',
+                fontWeight: 700,
+                fontSize: 50,
+                lineHeight: '72px',
+                letterSpacing: '-0.02em',
+                color: 'rgba(14, 15, 12, 1)'
               }}
             >
               Why Choose Us
             </h2>
             <p
-              className="m-0 text-[15px] sm:text-[18px] lg:text-[20px] leading-[22px] lg:leading-[28px] text-center text-gray-300 w-auto h-auto"
+              className="m-0 text-left flex items-center"
               style={{
-                fontFamily: '"Barlow Condensed", sans-serif',
-                fontWeight: 400
+                width: 472,
+                height: 11,
+                fontFamily: '"Poppins", sans-serif',
+                fontWeight: 500,
+                fontSize: 16,
+                lineHeight: '28px',
+                color: 'rgba(14, 15, 12, 1)'
               }}
             >
               Powerful features designed specifically for you.
             </p>
           </div>
 
+          {/* Features Grid */}
           <div
-            className="grid grid-cols-1 lg:grid-cols-3 mx-auto w-full max-w-[1240px] h-auto gap-4 lg:gap-[20px]"
+            className="grid grid-cols-1 lg:grid-cols-2"
+            style={{ width: 608, height: 306, gap: 24 }}
           >
             {[
-              { icon: '/coins/walls.png', title: 'Multiple Offerwalls', desc: 'Discover various earning options in one place.' },
-              { icon: '/coins/fast.png', title: 'Fast Payouts', desc: 'Withdraw your earnings quickly and securely' },
-              { icon: '/coins/gift.png', title: 'Daily Bonus', desc: 'Earn extra rewards every day you stay active' },
-              { icon: '/coins/presentations.png', title: 'VIP Progress', desc: 'Level up and unlock better rewards' },
-              { icon: '/coins/persons.png', title: 'Referral System', desc: 'Refer friends and earn a share of their income.' },
-              { icon: '/coins/live.png', title: 'Live Activity', desc: 'See real-time earnings across the platform' },
+              { icon: '/coins/multi.png', title: 'Multiple Offer walls', desc: 'Discover various earning options in one place.' },
+              { icon: '/coins/vip copy.png', title: 'VIP Progress', desc: 'Level up and unlock better rewards' },
+              { icon: '/coins/fast copy.png', title: 'Fast Payouts', desc: 'Withdraw your earnings quickly and securely' },
+              { icon: '/coins/referl.png', title: 'Referral System', desc: 'Refer friends and earn a share of their income.' },
+              { icon: '/coins/daily.png', title: 'Daily Bonus', desc: 'Earn extra rewards every day you stay active' },
+              { icon: '/coins/live copy.png', title: 'Live Activity', desc: 'See real-time earnings across the platform' },
             ].map((item, idx) => (
               <div
                 key={idx}
-                className="flex flex-col items-center transition-colors group w-full h-auto lg:h-[183px] rounded-[16px] lg:rounded-[20px] p-6 lg:p-[20px_12px_24px_12px] gap-4 lg:gap-[12px]"
-                style={{
-                  background: 'rgba(255, 255, 255, 0.08)',
-                  boxShadow: '0px 4px 80px 0px rgba(0, 0, 0, 0.15)',
-                  backdropFilter: 'blur(44px)',
-                  WebkitBackdropFilter: 'blur(44px)'
-                }}
+                className="flex flex-row items-center pt-[16px] pb-[8px] gap-[16px]"
+                style={{ width: 292, borderTop: '1px solid rgba(226, 226, 225, 1)' }}
               >
                 <div
-                  className="flex items-center justify-center mb-0 w-[40px] h-[40px] lg:w-[64px] lg:h-[64px]"
-                  style={{ borderRadius: 20, gap: 10, background: 'transparent' }}
+                  className="flex-shrink-0 flex items-center justify-center"
+                  style={{ width: 48, height: 48 }}
                 >
-                  <img src={item.icon} alt={item.title} className="w-10 h-10 lg:w-[44px] lg:h-[44px] object-contain" />
+                  <img src={item.icon} alt={item.title} className="w-full h-full object-contain" />
                 </div>
                 <div
-                  className="flex flex-col items-center w-full max-w-[376px] h-auto gap-2 lg:gap-[12px]"
+                  className="flex flex-col items-start text-left w-full"
+                  style={{ gap: 2, paddingTop: 6 }}
                 >
-                  <h3
-                    className="font-bold m-0 text-white text-[20px] lg:text-[24px] text-center"
+                  <div
+                    className="m-0 font-medium"
                     style={{
-                      fontFamily: '"Barlow Condensed", sans-serif',
-                      fontWeight: 700,
-                      lineHeight: '100%'
+                      fontFamily: '"Bricolage Grotesque", sans-serif',
+                      fontWeight: 500,
+                      fontSize: 18,
+                      lineHeight: '22px',
+                      color: 'rgba(14, 15, 12, 1)'
                     }}
                   >
                     {item.title}
-                  </h3>
+                  </div>
                   <p
-                    className="m-0 text-[15px] lg:text-[17px] leading-[22px] lg:leading-[24px] text-center text-gray-300"
+                    className="m-0"
                     style={{
-                      fontFamily: '"Barlow Condensed", sans-serif',
-                      fontWeight: 500
+                      fontFamily: '"Poppins", sans-serif',
+                      fontWeight: 400,
+                      fontSize: 14,
+                      lineHeight: '20px',
+                      color: 'rgba(14, 15, 12, 1)'
                     }}
                   >
                     {item.desc}
@@ -538,31 +578,111 @@ const Landing = () => {
               </div>
             ))}
           </div>
+
+          {/* Buttons */}
+          <div
+            className="flex flex-row items-center mt-[40px]"
+            style={{ width: 264, height: 49, gap: 5 }}
+          >
+            <button
+              className="flex items-center justify-center text-white"
+              style={{
+                width: 160,
+                height: 49,
+                gap: 10,
+                borderRadius: 80,
+                paddingTop: 19,
+                paddingRight: 28,
+                paddingBottom: 19,
+                paddingLeft: 28,
+                background: 'rgba(36, 50, 77, 1)'
+              }}
+            >
+              <span style={{
+                width: 104,
+                height: 11,
+                fontFamily: '"Poppins", sans-serif',
+                fontWeight: 500,
+                fontSize: 16,
+                lineHeight: '28px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: 'rgba(255, 255, 255, 1)'
+              }}>
+                Start Earning
+              </span>
+            </button>
+            <button
+              className="flex items-center justify-center text-black"
+              style={{
+                width: 99,
+                height: 49,
+                gap: 10,
+                borderRadius: 80,
+                paddingTop: 19,
+                paddingRight: 28,
+                paddingBottom: 19,
+                paddingLeft: 28,
+                background: 'rgba(239, 239, 239, 1)'
+              }}
+            >
+              <span style={{
+                width: 43,
+                height: 11,
+                fontFamily: '"Poppins", sans-serif',
+                fontWeight: 500,
+                fontSize: 16,
+                lineHeight: '28px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: 'rgba(0, 0, 0, 1)'
+              }}>
+                Login
+              </span>
+            </button>
+          </div>
         </div>
       </section>
 
       {/* START EARNING WITH */}
-      <section id="earn" className="py-12 lg:py-24 px-4 lg:px-6 bg-[#050505]">
+      <section id="earn" className="py-12 lg:py-24 px-4 lg:px-6 bg-transparent">
         <div
-          className="flex flex-col mx-auto w-full max-w-[1240px] h-auto gap-8 lg:gap-[50px]"
+          className="flex flex-col mx-auto w-full h-auto gap-8 lg:gap-[50px]"
+          style={{ maxWidth: 1328 }}
         >
           <div
-            className="flex flex-col items-center mx-auto w-full max-w-[452px] h-auto gap-2 lg:gap-[30px]"
+            className="flex flex-col items-center justify-center mx-auto"
+            style={{ width: 652, height: 69, gap: 25 }}
           >
             <h2
-              className="font-bold m-0 text-white text-[34px] sm:text-[44px] lg:text-[58px] leading-[40px] lg:leading-[48px] text-center w-auto h-auto"
+              className="m-0 flex items-center justify-center"
               style={{
-                fontFamily: '"Barlow Condensed", sans-serif',
-                fontWeight: 700
+                width: 434,
+                height: 33,
+                fontFamily: '"Bricolage Grotesque", sans-serif',
+                fontWeight: 700,
+                fontSize: 50,
+                lineHeight: '72px',
+                letterSpacing: '-0.02em',
+                textAlign: 'center',
+                color: 'rgba(14, 15, 12, 1)'
               }}
             >
               Start Earning With
             </h2>
             <p
-              className="m-0 text-[15px] sm:text-[18px] lg:text-[20px] leading-[22px] lg:leading-[28px] text-center text-gray-300 w-auto h-auto"
+              className="m-0 flex items-center justify-center"
               style={{
-                fontFamily: '"Barlow Condensed", sans-serif',
-                fontWeight: 400
+                width: 534,
+                height: 11,
+                fontFamily: '"Poppins", sans-serif',
+                fontWeight: 500,
+                fontSize: 16,
+                lineHeight: '28px',
+                textAlign: 'center',
+                color: 'rgba(14, 15, 12, 1)'
               }}
             >
               Multiple ways to stack your coins. Choose what works best for you.
@@ -570,99 +690,76 @@ const Landing = () => {
           </div>
 
           <div
-            className="grid grid-cols-1 lg:grid-cols-3 mx-auto w-full max-w-[1240px] h-auto gap-4 lg:gap-[24px]"
+            className="grid grid-cols-1 lg:grid-cols-3 mx-auto w-full"
+            style={{ width: 1328, maxWidth: '100%', height: 368, gap: 22 }}
           >
-            {[
-              { icon: '/coins/clicl.png', title: 'Surveys', desc: 'Share your opinion on various topics and get rewarded instantly.' },
-              { icon: '/coins/game.png', title: 'Apps & Games', desc: 'Download apps or play new games. Reach milestones to earn big.' },
-              { icon: '/coins/persantage.png', title: 'Featured Offers', desc: 'Sign up for services or trials to earn the highest paying rewards.' },
-            ].map((item, idx) => (
-              <div
+            {['/coins/sew1.png', '/coins/sew2.png', '/coins/sew3.png'].map((imgSrc, idx) => (
+              <img
                 key={idx}
-                className="flex flex-col items-center transition-colors group w-full h-auto lg:h-[183px] rounded-[16px] lg:rounded-[20px] p-6 lg:p-5 gap-4 lg:gap-2"
-                style={{
-                  background: 'rgba(26, 27, 26, 1)',
-                  boxShadow: '0px 4px 80px 0px rgba(0, 0, 0, 0.15)',
-                  backdropFilter: 'blur(44px)',
-                  WebkitBackdropFilter: 'blur(44px)'
-                }}
-              >
-                <div
-                  className="flex items-center justify-center mb-0 w-[40px] h-[40px] lg:w-[64px] lg:h-[64px]"
-                  style={{ borderRadius: 100, gap: 10, background: 'transparent' }}
-                >
-                  <img src={item.icon} alt={item.title} className="w-10 h-10 lg:w-[44px] lg:h-[44px] object-contain" />
-                </div>
-                <div className="flex flex-col items-center gap-1 w-full">
-                  <h3
-                    className="font-bold m-0 text-white text-[20px] lg:text-[24px] text-center"
-                    style={{
-                      fontFamily: '"Barlow Condensed", sans-serif',
-                      fontWeight: 700,
-                      lineHeight: '100%'
-                    }}
-                  >
-                    {item.title}
-                  </h3>
-                  <p
-                    className="m-0 text-[15px] lg:text-[17px] leading-[22px] lg:leading-[24px] text-center text-gray-400"
-                    style={{
-                      fontFamily: '"Barlow Condensed", sans-serif',
-                      fontWeight: 500
-                    }}
-                  >
-                    {item.desc}
-                  </p>
-                </div>
-              </div>
+                src={imgSrc}
+                alt={`Start Earning Option ${idx + 1}`}
+                className="w-full object-contain mx-auto"
+                style={{ maxWidth: '100%', width: 428, height: 368 }}
+              />
             ))}
           </div>
         </div>
       </section>
 
       {/* FAQ SECTION */}
-      <section id="faq" className="py-8 lg:py-12 px-4 lg:px-6 bg-[#050505] lg:-mt-[38px]">
+      <section id="faq" className="pt-8 pb-0 lg:pt-8 lg:pb-0 px-4 lg:px-6 bg-transparent">
         <div
-          className="flex flex-col mx-auto w-full max-w-[1240px] h-auto rounded-[16px] lg:rounded-[20px] p-5 sm:p-8 lg:p-[60px_40px] gap-6 lg:gap-[50px]"
-          style={{
-            background: 'rgba(255, 255, 255, 0.08)',
-            boxShadow: '0px 4px 80px 0px rgba(0, 0, 0, 0.15)',
-            backdropFilter: 'blur(44px)',
-            WebkitBackdropFilter: 'blur(44px)'
-          }}
+          className="flex flex-col lg:flex-row mx-auto w-full items-start"
+          style={{ maxWidth: 1328, minHeight: 504, gap: 114 }}
         >
+          {/* Left Side */}
           <div
-            className="flex flex-col items-center mx-auto w-full max-w-[581px] h-auto gap-2 lg:gap-[30px]"
+            className="flex flex-col items-start w-full lg:w-[45%]"
+            style={{ width: 562, maxWidth: '100%', height: 138, gap: 40 }}
           >
             <h2
-              className="font-bold m-0 text-white text-[30px] sm:text-[44px] lg:text-[58px] leading-[36px] lg:leading-[48px] text-center w-auto h-auto"
+              className="m-0"
               style={{
-                fontFamily: '"Barlow Condensed", sans-serif',
-                fontWeight: 700
+                width: 562,
+                maxWidth: '100%',
+                height: 87,
+                fontFamily: '"Bricolage Grotesque", sans-serif',
+                fontWeight: 700,
+                fontSize: 50,
+                lineHeight: '54px',
+                letterSpacing: '-0.02em',
+                color: 'rgba(14, 15, 12, 1)'
               }}
             >
-              Frequently Asked Questions
+              Frequently<br/>Asked Questions
             </h2>
             <p
-              className="m-0 text-[15px] sm:text-[18px] lg:text-[20px] leading-[22px] lg:leading-[28px] text-center text-gray-300 w-auto h-auto"
+              className="m-0"
               style={{
-                fontFamily: '"Barlow Condensed", sans-serif',
-                fontWeight: 400
+                width: 279,
+                maxWidth: '100%',
+                height: 11,
+                fontFamily: '"Poppins", sans-serif',
+                fontWeight: 500,
+                fontSize: 16,
+                lineHeight: '28px',
+                color: 'rgba(14, 15, 12, 1)'
               }}
             >
               Got questions? We've got answers.
             </p>
           </div>
 
+          {/* Right Side */}
           <div
-            className="grid grid-cols-1 lg:grid-cols-2 mx-auto w-full max-w-[1160px] gap-4 lg:gap-4"
+            className="flex flex-col w-full lg:w-[55%]"
           >
             {[
               { q: "How do I earn money?", a: "By completing offers, surveys, and tasks on the platform." },
-              { q: "Is it free to use?", a: "Yes, it is 100% free to join and start earning." },
               { q: "When do I get paid?", a: "You can withdraw your earnings instantly at any time." },
-              { q: "Why was my reward not credited?", a: "Sometimes tracking takes a bit longer. Contact support if you need help." },
               { q: "How do i can contact you?", a: "You can reach us through our 24/7 support ticket system." },
+              { q: "Is it free to use?", a: "Yes, it is 100% free to join and start earning." },
+              { q: "Why was my reward not credited?", a: "Sometimes tracking takes a bit longer. Contact support if you need help." },
               { q: "What is the minimum payout?", a: "The minimum payout is only $5 for most withdrawal methods." }
             ].map((faq, i) => {
               const isOpen = openFaq === i;
@@ -670,47 +767,57 @@ const Landing = () => {
                 <div
                   key={i}
                   onClick={() => setOpenFaq(isOpen ? null : i)}
-                  className="flex flex-col justify-start cursor-pointer transition-all duration-300 overflow-hidden w-full h-auto min-h-[60px] lg:min-h-[76px] gap-2 sm:gap-2 lg:gap-[10px] rounded-[16px] lg:rounded-[20px] p-6 lg:p-[22px_30px]"
+                  className="flex flex-col justify-start cursor-pointer transition-all duration-300 overflow-hidden w-full"
                   style={{
-                    background: 'rgba(44, 45, 44, 1)',
-                    backdropFilter: 'blur(54px)',
-                    WebkitBackdropFilter: 'blur(54px)',
-                    boxShadow: '0px 4px 34px 0px rgba(0, 0, 0, 0.05)'
+                    width: 652,
+                    maxWidth: '100%',
+                    minHeight: 69,
+                    gap: 25,
+                    borderRadius: 20,
+                    padding: '28px 20px 28px 20px',
+                    background: isOpen ? 'rgba(246, 245, 237, 1)' : 'transparent',
                   }}
                 >
-                  <div className="flex justify-between items-center w-full">
+                  <div 
+                    className="flex justify-between items-center"
+                    style={{ width: '100%', height: 13 }}
+                  >
                     <span
-                      className="font-bold m-0 text-white text-[16px] lg:text-[22px] leading-[24px] lg:leading-[32px]"
+                      className="m-0"
                       style={{
-                        fontFamily: '"Barlow Condensed", sans-serif',
-                        fontWeight: 700
+                        fontFamily: '"Bricolage Grotesque", sans-serif',
+                        fontWeight: 500,
+                        fontSize: 20,
+                        lineHeight: '22px',
+                        color: 'rgba(14, 15, 12, 1)',
+                        display: 'flex',
+                        alignItems: 'center'
                       }}
                     >
                       {faq.q}
                     </span>
                     <div
-                      className={`bg-[#29FD98] transition-transform duration-300 shrink-0 w-[24px] h-[24px] lg:w-[14px] lg:h-[14px] ${isOpen ? '-rotate-180' : ''}`}
+                      className="transition-transform duration-300 flex items-center justify-center shrink-0"
                       style={{
-                        WebkitMaskImage: 'url(/coins/arrow.png)',
-                        WebkitMaskSize: 'contain',
-                        WebkitMaskRepeat: 'no-repeat',
-                        WebkitMaskPosition: 'center',
-                        maskImage: 'url(/coins/arrow.png)',
-                        maskSize: 'contain',
-                        maskRepeat: 'no-repeat',
-                        maskPosition: 'center'
+                        transform: isOpen ? 'rotate(0deg)' : 'rotate(180deg)',
                       }}
-                    />
+                    >
+                      <img src="/coins/arup.png" alt="Toggle FAQ" style={{ width: 16, height: 10, objectFit: 'contain' }} />
+                    </div>
                   </div>
                   {isOpen && (
                     <div
-                      className="transition-all duration-300 flex items-start overflow-hidden mt-1"
+                      className="transition-all duration-300 flex items-start overflow-hidden"
                     >
                       <p
-                        className="m-0 text-[15px] lg:text-[20px] leading-[22px] lg:leading-[24px] text-gray-300"
+                        className="m-0"
                         style={{
-                          fontFamily: '"Barlow Condensed", sans-serif',
-                          fontWeight: 500
+                          width: 394,
+                          maxWidth: '100%',
+                          fontFamily: '"Poppins", sans-serif',
+                          fontWeight: 400,
+                          fontSize: 14,
+                          color: 'rgba(14, 15, 12, 0.7)'
                         }}
                       >
                         {faq.a}
@@ -724,214 +831,371 @@ const Landing = () => {
         </div>
       </section>
 
-      {/* PAYOUT OPTIONS */}
-      <div
-        className="mx-auto overflow-hidden flex items-center w-full max-w-[1440px] h-[70px] lg:h-[106px] py-3 lg:py-[30px] border-y border-white/40"
-        style={{
-          backdropFilter: 'blur(64px)',
-          WebkitBackdropFilter: 'blur(64px)'
-        }}
-      >
-        <div className="flex animate-[marquee_40s_linear_infinite] whitespace-nowrap">
-          {[...Array(4)].map((_, i) => (
-            <React.Fragment key={i}>
-              {[
-                { Icon: FaBitcoin, text: "Litecoin" },
-                { Icon: FaPaypal, text: "PayPal" },
-                { Icon: FaAmazon, text: "Amazon" },
-                { Icon: FiGift, text: "Gift Cards" }
-              ].map((item, idx) => (
-                <div key={idx} className="flex items-center gap-2 lg:gap-3 text-white whitespace-nowrap mr-12 lg:mr-[100px]">
-                  <item.Icon className="text-[20px] lg:text-[32px]" />
-                  <span
-                    className="font-['Barlow_Condensed'] font-bold text-[18px] lg:text-[28.75px] text-white"
-                  >
-                    {item.text}
-                  </span>
-                </div>
-              ))}
-            </React.Fragment>
-          ))}
-        </div>
-      </div>
-
-      {/* BOTTOM CTA */}
-      <section
-        className="w-full flex justify-center bg-[rgba(27,28,27,1)]"
-      >
+      {/* GET STARTED & PAYOUT OPTIONS */}
+      <section className="pt-0 pb-12 lg:pt-0 lg:pb-24 px-4 lg:px-6 w-full flex justify-center bg-transparent">
         <div
-          className="flex flex-col md:flex-row items-center justify-between w-full max-w-[1440px] h-auto lg:h-[158px] py-8 lg:py-[40px] px-6 lg:px-[100px] gap-6 lg:gap-0"
+          className="flex flex-col mx-auto w-full relative"
+          style={{
+            maxWidth: 1328,
+            minHeight: 245,
+            gap: 55,
+            borderRadius: 24,
+            padding: '40px 0px 6px 0px',
+            background: 'rgba(239, 239, 239, 1)',
+            overflow: 'hidden'
+          }}
         >
-          <div
-            className="flex flex-col justify-start w-full lg:w-[1072px] h-auto gap-2 lg:gap-[30px] text-center lg:text-left"
+          <div 
+            className="flex flex-col w-full z-10 mx-auto px-4 lg:px-0"
+            style={{
+              width: 1248,
+              maxWidth: '100%',
+              height: 80,
+              gap: 20
+            }}
           >
-            <h2
-              className="m-0 text-white text-[30px] sm:text-[38px] lg:text-[48px] leading-[36px] lg:leading-[48px] font-bold"
+            <div
+              className="flex items-center"
               style={{
-                fontFamily: '"Barlow Condensed", sans-serif'
+                width: 1248,
+                maxWidth: '100%',
+                height: 49,
+                gap: 623
               }}
             >
-              Start Earning Today
-            </h2>
+              <h2
+                className="m-0"
+                style={{
+                  width: 465,
+                  maxWidth: '100%',
+                  height: 33,
+                  fontFamily: '"Bricolage Grotesque", sans-serif',
+                  fontWeight: 700,
+                  fontSize: 50,
+                  lineHeight: '54px',
+                  letterSpacing: '-0.02em',
+                  color: 'rgba(14, 15, 12, 1)'
+                }}
+              >
+                Start Earning Today
+              </h2>
+              <button
+                onClick={() => navigate('/login?tab=register')}
+                className="flex items-center justify-center transition-all hover:brightness-110 active:translate-y-[2px] h-[48px] rounded-[24px] px-8"
+                style={{
+                  background: '#2D3346',
+                  color: 'white',
+                  width: 160
+                }}
+              >
+                <span
+                  className="whitespace-nowrap m-0 p-0 text-[16px] font-medium"
+                  style={{ fontFamily: '"Poppins", sans-serif' }}
+                >
+                  Start Earning
+                </span>
+              </button>
+            </div>
+            
             <p
-              className="m-0 text-white/60 text-[15px] sm:text-[18px] lg:text-[20px] leading-[22px] lg:leading-[28px] font-medium"
+              className="m-0"
               style={{
-                fontFamily: '"Barlow Condensed", sans-serif'
+                width: 1248,
+                maxWidth: '100%',
+                height: 11,
+                fontFamily: '"Poppins", sans-serif',
+                fontWeight: 500,
+                fontSize: 16,
+                lineHeight: '28px',
+                color: 'rgba(14, 15, 12, 1)'
               }}
             >
               Join now and start making real money right now!
             </p>
           </div>
-          <button
-            onClick={() => navigate('/login?tab=register')}
-            className="flex items-center justify-center text-white transition-all hover:brightness-110 active:translate-y-[4px] active:shadow-none w-auto sm:w-[168px] h-[44px] lg:h-[48px] rounded-[10px] px-6 gap-[10px]"
+
+          <div
+            className="flex w-full overflow-hidden mx-auto px-4 lg:px-0"
             style={{
-              background: 'rgba(73, 178, 101, 1)',
-              boxShadow: '0px 4px 0px 0px rgba(39, 109, 58, 1)'
+              width: 1322,
+              maxWidth: '100%',
+              height: 64,
+              borderRadius: 20,
+              paddingTop: 16,
+              paddingBottom: 16,
+              background: 'rgba(222, 223, 247, 1)',
+              position: 'relative'
             }}
           >
-            <span
-              className="whitespace-nowrap flex items-center justify-center m-0 p-0 text-[16px] lg:text-[18px] font-bold font-['Barlow_Condensed']"
-            >
-              Get Started
-            </span>
-            <div
-              className="bg-white w-[16px] h-[16px] lg:w-[18px] lg:h-[18px]"
-              style={{
-                WebkitMaskImage: 'url(/coins/image.png)',
-                WebkitMaskSize: 'contain',
-                WebkitMaskRepeat: 'no-repeat',
-                WebkitMaskPosition: 'center',
-                maskImage: 'url(/coins/image.png)',
-                maskSize: 'contain',
-                maskRepeat: 'no-repeat',
-                maskPosition: 'center'
-              }}
-            />
-          </button>
-        </div>
-      </section>
-
-      {/* FOOTER */}
-      <footer
-        className="w-full flex justify-center border-t border-[#333] shrink-0 items-start"
-        style={{ background: 'rgba(44, 45, 44, 1)' }}
-      >
-        <div
-          className="flex flex-col items-center text-center w-full mx-auto px-4 lg:px-[100px] py-6 lg:pt-[40px] lg:pb-[22px] gap-6 lg:gap-[30px]"
-          style={{
-            maxWidth: 1440,
-            opacity: 1,
-            transform: 'rotate(0deg)',
-            justifyContent: 'space-between'
-          }}
-        >
-          {/* Top Logo */}
-          <div
-            className="relative flex items-center justify-center w-full h-[32px] lg:h-[52px] lg:gap-[10px]"
-          >
-            <img
-              src="/coins/logo copy.png"
-              alt="Logo"
-              className="absolute right-[calc(50%+48px)] lg:static w-[32px] h-[32px] lg:w-[52px] lg:h-[52px] object-contain"
-            />
-            <span
-              className="whitespace-nowrap flex items-center text-[26px] lg:text-[46px]"
-              style={{
-                fontFamily: '"Barlow Condensed", sans-serif',
-                fontWeight: 700,
-                lineHeight: '100%',
-                color: 'rgba(255, 255, 255, 1)'
-              }}
-            >
-              TaskMint
-            </span>
-          </div>
-
-          {/* Middle Content */}
-          <div
-            className="flex flex-col items-center text-center w-full max-w-[1104px] gap-3 lg:gap-[30px]"
-          >
-            <p
-              className="m-0 p-0 flex items-center justify-center whitespace-normal lg:whitespace-nowrap px-4 lg:px-0 text-[13px] leading-[18px] lg:text-[20px] lg:leading-[28px]"
-              style={{
-                fontFamily: '"Barlow Condensed", sans-serif',
-                fontWeight: 400,
-                textAlign: 'center',
-                color: 'rgba(209, 213, 219, 1)'
-              }}
-            >
-              Complete offers, surveys, and tasks to earn real rewards. Join thousands of users already earning every day.
-            </p>
-            <div
-              className="flex justify-center items-center m-0 p-0 flex-wrap lg:flex-nowrap gap-x-[12px] gap-y-2 lg:gap-[20px] w-full px-2 lg:px-0"
-            >
-              {[
-                { name: 'Features', href: '#features' },
-                { name: 'FAQ', href: '#faq' },
-                { name: 'Blog', href: '#' },
-                { name: 'Terms of Use', href: '#' },
-                { name: 'Privacy Policy', href: '#' },
-                { name: 'Support', href: '#' }
-              ].map((link, idx, arr) => (
-                <React.Fragment key={link.name}>
-                  <a
-                    href={link.href}
-                    className="hover:opacity-80 transition-opacity whitespace-nowrap flex items-center justify-center text-[12px] sm:text-[14px] lg:text-[16px]"
-                    style={{
-                      fontFamily: '"Barlow Condensed", sans-serif',
-                      fontWeight: 700,
-                      color: 'rgba(73, 178, 101, 1)',
-                      textDecoration: 'none'
-                    }}
-                  >
-                    {link.name}
-                  </a>
-                  {idx < arr.length - 1 && (
-                    <span
-                      className="hidden lg:flex items-center justify-center"
-                      style={{ color: '#fff', fontSize: 16 }}
-                    >
-                      &bull;
-                    </span>
-                  )}
+            <div className="flex animate-[marquee_40s_linear_infinite] whitespace-nowrap items-center w-max" style={{ gap: 56 }}>
+              {[...Array(8)].map((_, i) => (
+                <React.Fragment key={i}>
+                  {[
+                    { src: "/coins/LTC.png", text: "Litecoin" },
+                    { src: "/coins/giftcard copy.png", text: "Gift Card" },
+                    { src: "/coins/amazon copy.png", text: "Amazon" },
+                    { src: "/coins/paypal copy.png", text: "Paypal" }
+                  ].map((item, idx) => (
+                    <div key={`${i}-${idx}`} className="flex items-center gap-2">
+                      <div className="flex items-center justify-center shrink-0">
+                        <img 
+                          src={item.src} 
+                          alt={item.text}
+                          style={{
+                            width: 25.92,
+                            height: 31.9015,
+                            objectFit: 'contain'
+                          }}
+                        />
+                      </div>
+                      <span 
+                        className="m-0 whitespace-nowrap"
+                        style={{
+                          height: 13,
+                          fontFamily: '"Bricolage Grotesque", sans-serif',
+                          fontWeight: 700,
+                          fontSize: 20,
+                          lineHeight: '72px',
+                          letterSpacing: '-0.02em',
+                          color: 'rgba(99, 101, 168, 1)',
+                          display: 'flex',
+                          alignItems: 'center'
+                        }}
+                      >
+                        {item.text}
+                      </span>
+                    </div>
+                  ))}
                 </React.Fragment>
               ))}
             </div>
           </div>
+        </div>
+      </section>
 
-          {/* Bottom Divider & Copyright */}
-          <div className="w-full flex flex-col items-center gap-3 mt-2 lg:mt-0 px-2 lg:px-0">
-            <div
-              className="w-full border-t border-white/30"
-              style={{ maxWidth: 1240 }}
+      {/* NEW FOOTER */}
+      <footer className="w-full flex justify-center py-12 px-4 lg:px-6 bg-transparent shrink-0">
+        <div
+          className="flex flex-col lg:flex-row justify-between w-full mx-auto"
+          style={{
+            maxWidth: 1328,
+            minHeight: 715,
+            gap: 40
+          }}
+        >
+          {/* Left Panel */}
+          <div
+            className="relative flex flex-col items-center shrink-0 overflow-hidden"
+            style={{
+              width: 427,
+              height: 715,
+              justifyContent: 'space-between',
+              opacity: 1,
+              borderRadius: 24,
+              paddingTop: 50,
+              paddingRight: 32,
+              paddingBottom: 24,
+              paddingLeft: 32,
+              background: 'rgba(249, 247, 241, 1)'
+            }}
+          >
+            {/* Background Image */}
+            <img 
+              src="/coins/side.png" 
+              alt="Background graphics"
+              className="absolute bottom-0 left-0 w-full h-auto z-0"
             />
-            <div
-              className="flex flex-col-reverse lg:flex-row items-center justify-between w-full gap-3 lg:gap-0 pb-2 lg:pb-0"
-              style={{ maxWidth: 1240 }}
+
+            {/* Logo area */}
+            <div 
+              className="flex flex-col items-center z-10"
+              style={{
+                width: 363,
+                height: 140.586,
+                gap: 22
+              }}
             >
-              <p
-                className="m-0 p-0 flex items-center text-center lg:text-left text-[12px] lg:text-[16px]"
+              <img 
+                src="/coins/logo final.svg" 
+                alt="taskmint logo"
                 style={{
-                  fontFamily: '"Barlow Condensed", sans-serif',
-                  fontWeight: 500,
-                  color: 'rgba(255, 255, 255, 1)'
+                  width: 228.998,
+                  height: 40.586,
+                  objectFit: 'contain'
                 }}
-              >
-                © 2026 TaskMint. All rights reserved.
+              />
+              <p className="m-0 text-[18px] font-bold text-gray-900" style={{ fontFamily: '"Bricolage Grotesque", sans-serif', lineHeight: '1' }}>
+                Complete tasks. Earn rewards.
               </p>
-              <div
-                className="flex items-center justify-center lg:justify-between gap-4 lg:gap-[20px]"
+              
+              <div 
+                className="flex items-center"
                 style={{
-                  color: 'rgba(73, 178, 101, 1)'
+                  width: 263,
+                  height: 44,
+                  gap: 27,
+                  borderRadius: 50,
+                  paddingTop: 8,
+                  paddingRight: 11,
+                  paddingBottom: 8,
+                  paddingLeft: 11,
+                  background: 'rgba(255, 255, 255, 1)'
                 }}
               >
-                <FaFacebook className="hover:opacity-80 cursor-pointer transition-opacity flex-shrink-0 w-[18px] h-[18px] lg:w-[26px] lg:h-[26px]" />
-                <FaInstagram className="hover:opacity-80 cursor-pointer transition-opacity flex-shrink-0 w-[18px] h-[18px] lg:w-[26px] lg:h-[26px]" />
-                <FaYoutube className="hover:opacity-80 cursor-pointer transition-opacity flex-shrink-0 w-[18px] h-[18px] lg:w-[26px] lg:h-[26px]" />
-                <FaDiscord className="hover:opacity-80 cursor-pointer transition-opacity flex-shrink-0 w-[18px] h-[18px] lg:w-[26px] lg:h-[26px]" />
+                <span 
+                  className="flex items-center text-gray-800 m-0 whitespace-nowrap"
+                  style={{ 
+                    width: 156,
+                    height: 10,
+                    fontFamily: '"Poppins", sans-serif',
+                    fontWeight: 500,
+                    fontSize: 14,
+                    lineHeight: '28px',
+                    letterSpacing: 0
+                  }}
+                >
+                  Change to dark mode
+                </span>
+                <div 
+                  className={`rounded-full flex items-center shrink-0 cursor-pointer transition-colors duration-300 ${isDarkMode ? 'justify-end' : 'justify-start'}`}
+                  onClick={() => setIsDarkMode(!isDarkMode)}
+                  style={{
+                    width: 58,
+                    height: 28,
+                    background: isDarkMode ? '#0eb957' : 'rgba(248, 246, 238, 1)',
+                    boxShadow: '0px 3px 3px 0px rgba(56, 63, 71, 0.1) inset',
+                    padding: 3
+                  }}
+                >
+                  <div 
+                    className="bg-white rounded-full shadow-sm" 
+                    style={{
+                      width: 22,
+                      height: 22,
+                      boxShadow: '0px 2px 4px rgba(0,0,0,0.1)'
+                    }}
+                  />
+                </div>
               </div>
             </div>
+
+            {/* Socials */}
+            <div className="flex w-full justify-end items-center gap-3 z-10 relative">
+              <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-sm cursor-pointer hover:bg-gray-50 transition-colors">
+                <FaFacebook className="text-gray-900 text-lg" />
+              </div>
+              <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-sm cursor-pointer hover:bg-gray-50 transition-colors">
+                <FaInstagram className="text-gray-900 text-lg" />
+              </div>
+              <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-sm cursor-pointer hover:bg-gray-50 transition-colors">
+                <FaYoutube className="text-gray-900 text-lg" />
+              </div>
+            </div>
+          </div>
+
+          {/* Right Area */}
+          <div className="flex flex-col flex-1 h-full pt-4">
+            
+            {/* Top Section */}
+            <div className="flex justify-between w-full">
+              <div className="flex gap-24">
+                <div className="flex flex-col gap-6">
+                  <h4 className="m-0 text-[18px] font-bold text-gray-900" style={{ fontFamily: '"Bricolage Grotesque", sans-serif' }}>Quick Links</h4>
+                  <ul className="flex flex-col gap-4 list-none p-0 m-0">
+                    {['Home', 'Earn', 'Leaderboard', 'Affiliates', 'Withdraw', 'Daily Bonus'].map((link) => (
+                      <li key={link}>
+                        <a href="#" className="text-[14px] text-gray-500 hover:text-gray-900 transition-colors no-underline" style={{ fontFamily: '"Poppins", sans-serif' }}>{link}</a>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+                <div className="flex flex-col gap-6">
+                  <h4 className="m-0 text-[18px] font-bold text-gray-900" style={{ fontFamily: '"Bricolage Grotesque", sans-serif' }}>Resources</h4>
+                  <ul className="flex flex-col gap-4 list-none p-0 m-0">
+                    {['Features', 'FAQ', 'Blog', 'Terms of Use', 'Privacy Policy', 'Support'].map((link) => (
+                      <li key={link}>
+                        <a href="#" className="text-[14px] text-gray-500 hover:text-gray-900 transition-colors no-underline" style={{ fontFamily: '"Poppins", sans-serif' }}>{link}</a>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+
+              {/* Banner */}
+              <div 
+                className="w-[420px] rounded-[24px] p-8 flex flex-col gap-2 relative overflow-hidden h-fit"
+                style={{
+                  background: 'linear-gradient(135deg, #e3effd 0%, #c5defb 100%)'
+                }}
+              >
+                <h3 className="m-0 text-[28px] font-bold text-[#1e2335] leading-tight w-[70%]" style={{ fontFamily: '"Bricolage Grotesque", sans-serif' }}>
+                  Will You Be the Next Top Earner?
+                </h3>
+                <p className="m-0 mt-2 text-[14px] text-[#4a5578] leading-relaxed w-[60%]" style={{ fontFamily: '"Poppins", sans-serif' }}>
+                  Complete tasks, climb the ranks, and win prizes.
+                </p>
+                {/* Simulated arrow graphic using a simple div for now */}
+                <div className="absolute right-[-20px] bottom-[-20px] opacity-80" style={{ transform: 'rotate(-15deg)' }}>
+                  <svg width="150" height="150" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M4 19L20 5M20 5V15M20 5H10" stroke="#3b82f6" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                </div>
+              </div>
+            </div>
+
+            {/* Middle Section (Trustpilot) */}
+            <div className="flex items-center justify-between w-full mt-auto mb-10 pt-10">
+              <div className="flex flex-col gap-2 items-start">
+                <img 
+                  src="/coins/trust plot.png" 
+                  alt="Trustpilot rating" 
+                  style={{
+                    width: 169,
+                    height: 81,
+                    objectFit: 'contain'
+                  }}
+                />
+                <span className="text-[13px] text-gray-900 font-bold" style={{ fontFamily: '"Poppins", sans-serif' }}>
+                  Trust score 5 | 145 reviews
+                </span>
+              </div>
+              <button 
+                className="bg-[#2a3044] hover:bg-[#1a1e2e] transition-colors text-white font-medium text-[15px] px-8 py-4 rounded-[24px]"
+                style={{ fontFamily: '"Poppins", sans-serif' }}
+              >
+                Leave a review
+              </button>
+            </div>
+
+            {/* Bottom Section (Testimonials) */}
+            <div className="flex items-center gap-6 w-full">
+              {[
+                { name: 'Marc P. Morris', text: 'Mauris lacus risus, mattis id elit vitae, suscipit varius sapien. Proin et volutpat justo. Sed at turpis ex. Orci varius natoque penatibus et magnis dis parturient montes, nascetur', avatar: '/coins/person1.png' },
+                { name: 'Ashley C. Fields', text: 'Proin et volutpat justo. Sed at turpis ex. Mauris lacus risus, mattis id elit vitae, suscipit varius sapien. Proin et volutpat justo. Sed at turpis ex. Orci varius natoque penatibus', avatar: '/coins/person1.png' },
+                { name: 'John R. Allen', text: 'Sed at turpis ex. Orci varius natoque penatibus et magnis Mauris lacus risus, mattis id elit vitae, suscipit varius sapien. Proin et volutpat justo. Sed at turpis ex. Orci varius natoque', avatar: '/coins/person1.png' }
+              ].map((review, i) => (
+                <div key={i} className="flex-1 bg-[#f6f5ed] rounded-[24px] p-6 flex flex-col gap-4">
+                  <div className="flex items-center gap-3">
+                    <img src={review.avatar} alt={review.name} className="w-[42px] h-[42px] rounded-full object-cover bg-gray-200" />
+                    <div className="flex flex-col">
+                      <span className="font-bold text-[15px] text-gray-900" style={{ fontFamily: '"Bricolage Grotesque", sans-serif' }}>{review.name}</span>
+                      <div className="flex text-[#00b67a] text-[12px] gap-[2px]">★★★★★</div>
+                    </div>
+                  </div>
+                  <p className="m-0 text-[12px] text-gray-600 leading-relaxed" style={{ fontFamily: '"Poppins", sans-serif' }}>
+                    {review.text}
+                  </p>
+                </div>
+              ))}
+            </div>
+
+            {/* Copyright */}
+            <div className="w-full mt-12">
+              <p className="m-0 text-[13px] text-gray-500 font-medium" style={{ fontFamily: '"Poppins", sans-serif' }}>
+                © 2026 TaskMint. All rights reserved.
+              </p>
+            </div>
+
           </div>
         </div>
       </footer>
