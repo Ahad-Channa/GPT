@@ -489,7 +489,7 @@ const Landing = () => {
           {/* Heading & Sub */}
           <div
             className="flex flex-col items-start"
-            style={{ width: 472, height: 74, gap: 30, marginBottom: 50, marginTop: -30 }}
+            style={{ width: 472, height: 74, gap: 30, marginBottom: 50, marginTop: -15 }}
           >
             <h2
               className="m-0 text-left flex items-center"
@@ -537,7 +537,7 @@ const Landing = () => {
             ].map((item, idx) => (
               <div
                 key={idx}
-                className="flex flex-row items-center pt-[16px] pb-[8px] gap-[16px]"
+                className="flex flex-row items-center pt-[16px] pb-[8px] gap-[16px] group cursor-pointer"
                 style={{ width: 292, borderTop: '1px solid rgba(226, 226, 225, 1)' }}
               >
                 <div
@@ -563,13 +563,12 @@ const Landing = () => {
                     {item.title}
                   </div>
                   <p
-                    className="m-0"
+                    className="m-0 text-[#0e0f0c] group-hover:text-gray-500 transition-colors duration-300"
                     style={{
                       fontFamily: '"Poppins", sans-serif',
                       fontWeight: 400,
                       fontSize: 14,
                       lineHeight: '20px',
-                      color: 'rgba(14, 15, 12, 1)'
                     }}
                   >
                     {item.desc}
@@ -581,7 +580,7 @@ const Landing = () => {
 
           {/* Buttons */}
           <div
-            className="flex flex-row items-center mt-[40px]"
+            className="flex flex-row items-center mt-[50px]"
             style={{ width: 264, height: 49, gap: 5 }}
           >
             <button
@@ -731,7 +730,7 @@ const Landing = () => {
                 color: 'rgba(14, 15, 12, 1)'
               }}
             >
-              Frequently<br/>Asked Questions
+              Frequently<br />Asked Questions
             </h2>
             <p
               className="m-0"
@@ -778,7 +777,7 @@ const Landing = () => {
                     background: isOpen ? 'rgba(246, 245, 237, 1)' : 'transparent',
                   }}
                 >
-                  <div 
+                  <div
                     className="flex justify-between items-center"
                     style={{ width: '100%', height: 13 }}
                   >
@@ -832,7 +831,7 @@ const Landing = () => {
       </section>
 
       {/* GET STARTED & PAYOUT OPTIONS */}
-      <section className="pt-0 pb-12 lg:pt-0 lg:pb-24 px-4 lg:px-6 w-full flex justify-center bg-transparent">
+      <section className="pt-0 pb-4 lg:pt-0 lg:pb-8 px-4 lg:px-6 w-full flex justify-center bg-transparent">
         <div
           className="flex flex-col mx-auto w-full relative"
           style={{
@@ -845,7 +844,7 @@ const Landing = () => {
             overflow: 'hidden'
           }}
         >
-          <div 
+          <div
             className="flex flex-col w-full z-10 mx-auto px-4 lg:px-0"
             style={{
               width: 1248,
@@ -896,7 +895,7 @@ const Landing = () => {
                 </span>
               </button>
             </div>
-            
+
             <p
               className="m-0"
               style={{
@@ -938,8 +937,8 @@ const Landing = () => {
                   ].map((item, idx) => (
                     <div key={`${i}-${idx}`} className="flex items-center gap-2">
                       <div className="flex items-center justify-center shrink-0">
-                        <img 
-                          src={item.src} 
+                        <img
+                          src={item.src}
                           alt={item.text}
                           style={{
                             width: 25.92,
@@ -948,7 +947,7 @@ const Landing = () => {
                           }}
                         />
                       </div>
-                      <span 
+                      <span
                         className="m-0 whitespace-nowrap"
                         style={{
                           height: 13,
@@ -974,7 +973,7 @@ const Landing = () => {
       </section>
 
       {/* NEW FOOTER */}
-      <footer className="w-full flex justify-center py-12 px-4 lg:px-6 bg-transparent shrink-0">
+      <footer className="w-full flex justify-center pt-4 pb-12 px-4 lg:px-6 bg-transparent shrink-0">
         <div
           className="flex flex-col lg:flex-row justify-between w-full mx-auto"
           style={{
@@ -1000,14 +999,14 @@ const Landing = () => {
             }}
           >
             {/* Background Image */}
-            <img 
-              src="/coins/side.png" 
+            <img
+              src="/coins/side.png"
               alt="Background graphics"
-              className="absolute bottom-0 left-0 w-full h-auto z-0"
+              className="absolute bottom-0 left-[-13px] w-full h-auto z-0"
             />
 
             {/* Logo area */}
-            <div 
+            <div
               className="flex flex-col items-center z-10"
               style={{
                 width: 363,
@@ -1015,8 +1014,8 @@ const Landing = () => {
                 gap: 22
               }}
             >
-              <img 
-                src="/coins/logo final.svg" 
+              <img
+                src="/coins/Taksmint WHITE BACKGROUND PNG.png"
                 alt="taskmint logo"
                 style={{
                   width: 228.998,
@@ -1027,8 +1026,8 @@ const Landing = () => {
               <p className="m-0 text-[18px] font-bold text-gray-900" style={{ fontFamily: '"Bricolage Grotesque", sans-serif', lineHeight: '1' }}>
                 Complete tasks. Earn rewards.
               </p>
-              
-              <div 
+
+              <div
                 className="flex items-center"
                 style={{
                   width: 263,
@@ -1042,9 +1041,9 @@ const Landing = () => {
                   background: 'rgba(255, 255, 255, 1)'
                 }}
               >
-                <span 
+                <span
                   className="flex items-center text-gray-800 m-0 whitespace-nowrap"
-                  style={{ 
+                  style={{
                     width: 156,
                     height: 10,
                     fontFamily: '"Poppins", sans-serif',
@@ -1056,7 +1055,7 @@ const Landing = () => {
                 >
                   Change to dark mode
                 </span>
-                <div 
+                <div
                   className={`rounded-full flex items-center shrink-0 cursor-pointer transition-colors duration-300 ${isDarkMode ? 'justify-end' : 'justify-start'}`}
                   onClick={() => setIsDarkMode(!isDarkMode)}
                   style={{
@@ -1067,8 +1066,8 @@ const Landing = () => {
                     padding: 3
                   }}
                 >
-                  <div 
-                    className="bg-white rounded-full shadow-sm" 
+                  <div
+                    className="bg-white rounded-full shadow-sm"
                     style={{
                       width: 22,
                       height: 22,
@@ -1080,41 +1079,115 @@ const Landing = () => {
             </div>
 
             {/* Socials */}
-            <div className="flex w-full justify-end items-center gap-3 z-10 relative">
-              <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-sm cursor-pointer hover:bg-gray-50 transition-colors">
-                <FaFacebook className="text-gray-900 text-lg" />
-              </div>
-              <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-sm cursor-pointer hover:bg-gray-50 transition-colors">
-                <FaInstagram className="text-gray-900 text-lg" />
-              </div>
-              <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-sm cursor-pointer hover:bg-gray-50 transition-colors">
-                <FaYoutube className="text-gray-900 text-lg" />
-              </div>
+            <div
+              className="flex justify-end items-center z-10 relative"
+              style={{ width: 363, height: 36, gap: 4, transform: 'translateX(18px)' }}
+            >
+              {[
+                { src: '/coins/fbo.png', alt: 'Facebook' },
+                { src: '/coins/iso.png', alt: 'Instagram' },
+                { src: '/coins/yoo.png', alt: 'YouTube' }
+              ].map((icon, idx) => (
+                <div
+                  key={idx}
+                  className="flex items-center justify-center cursor-pointer hover:opacity-80 transition-opacity"
+                  style={{
+                    width: 36,
+                    height: 36,
+                    borderRadius: 75.42,
+                    opacity: 1
+                  }}
+                >
+                  <img
+                    src={icon.src}
+                    alt={icon.alt}
+                    style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+                  />
+                </div>
+              ))}
             </div>
           </div>
 
           {/* Right Area */}
           <div className="flex flex-col flex-1 h-full pt-4">
-            
+
             {/* Top Section */}
             <div className="flex justify-between w-full">
-              <div className="flex gap-24">
-                <div className="flex flex-col gap-6">
-                  <h4 className="m-0 text-[18px] font-bold text-gray-900" style={{ fontFamily: '"Bricolage Grotesque", sans-serif' }}>Quick Links</h4>
-                  <ul className="flex flex-col gap-4 list-none p-0 m-0">
+              <div className="flex" style={{ width: 289, height: 273, gap: 80 }}>
+                <div className="flex flex-col" style={{ width: 108, height: 273, gap: 40 }}>
+                  <h4
+                    className="m-0"
+                    style={{
+                      width: 108,
+                      height: 13,
+                      fontFamily: '"Bricolage Grotesque", sans-serif',
+                      fontWeight: 700,
+                      fontSize: 20,
+                      lineHeight: '32px',
+                      letterSpacing: '-0.02em',
+                      textAlign: 'center',
+                      color: '#0E0F0C'
+                    }}
+                  >
+                    Quick Links
+                  </h4>
+                  <ul className="flex flex-col list-none p-0 m-0" style={{ width: 91, height: 220, gap: 32 }}>
                     {['Home', 'Earn', 'Leaderboard', 'Affiliates', 'Withdraw', 'Daily Bonus'].map((link) => (
-                      <li key={link}>
-                        <a href="#" className="text-[14px] text-gray-500 hover:text-gray-900 transition-colors no-underline" style={{ fontFamily: '"Poppins", sans-serif' }}>{link}</a>
+                      <li key={link} className="flex items-center" style={{ height: 10 }}>
+                        <a
+                          href="#"
+                          className="no-underline hover:opacity-100 transition-opacity"
+                          style={{
+                            fontFamily: '"Poppins", sans-serif',
+                            fontWeight: 400,
+                            fontSize: 14,
+                            lineHeight: '20px',
+                            opacity: 0.56,
+                            color: '#0E0F0C',
+                            whiteSpace: 'nowrap'
+                          }}
+                        >
+                          {link}
+                        </a>
                       </li>
                     ))}
                   </ul>
                 </div>
-                <div className="flex flex-col gap-6">
-                  <h4 className="m-0 text-[18px] font-bold text-gray-900" style={{ fontFamily: '"Bricolage Grotesque", sans-serif' }}>Resources</h4>
-                  <ul className="flex flex-col gap-4 list-none p-0 m-0">
+                <div className="flex flex-col" style={{ width: 101, height: 273, gap: 40 }}>
+                  <h4
+                    className="m-0"
+                    style={{
+                      width: 108,
+                      height: 13,
+                      fontFamily: '"Bricolage Grotesque", sans-serif',
+                      fontWeight: 700,
+                      fontSize: 20,
+                      lineHeight: '32px',
+                      letterSpacing: '-0.02em',
+                      textAlign: 'center',
+                      color: '#0E0F0C'
+                    }}
+                  >
+                    Resources
+                  </h4>
+                  <ul className="flex flex-col list-none p-0 m-0" style={{ width: 91, height: 220, gap: 32 }}>
                     {['Features', 'FAQ', 'Blog', 'Terms of Use', 'Privacy Policy', 'Support'].map((link) => (
-                      <li key={link}>
-                        <a href="#" className="text-[14px] text-gray-500 hover:text-gray-900 transition-colors no-underline" style={{ fontFamily: '"Poppins", sans-serif' }}>{link}</a>
+                      <li key={link} className="flex items-center" style={{ height: 10 }}>
+                        <a
+                          href="#"
+                          className="no-underline hover:opacity-100 transition-opacity"
+                          style={{
+                            fontFamily: '"Poppins", sans-serif',
+                            fontWeight: 400,
+                            fontSize: 14,
+                            lineHeight: '20px',
+                            opacity: 0.56,
+                            color: '#0E0F0C',
+                            whiteSpace: 'nowrap'
+                          }}
+                        >
+                          {link}
+                        </a>
                       </li>
                     ))}
                   </ul>
@@ -1122,33 +1195,26 @@ const Landing = () => {
               </div>
 
               {/* Banner */}
-              <div 
-                className="w-[420px] rounded-[24px] p-8 flex flex-col gap-2 relative overflow-hidden h-fit"
-                style={{
-                  background: 'linear-gradient(135deg, #e3effd 0%, #c5defb 100%)'
-                }}
+              <div
+                className="w-[420px] flex justify-center items-center relative h-fit"
               >
-                <h3 className="m-0 text-[28px] font-bold text-[#1e2335] leading-tight w-[70%]" style={{ fontFamily: '"Bricolage Grotesque", sans-serif' }}>
-                  Will You Be the Next Top Earner?
-                </h3>
-                <p className="m-0 mt-2 text-[14px] text-[#4a5578] leading-relaxed w-[60%]" style={{ fontFamily: '"Poppins", sans-serif' }}>
-                  Complete tasks, climb the ranks, and win prizes.
-                </p>
-                {/* Simulated arrow graphic using a simple div for now */}
-                <div className="absolute right-[-20px] bottom-[-20px] opacity-80" style={{ transform: 'rotate(-15deg)' }}>
-                  <svg width="150" height="150" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M4 19L20 5M20 5V15M20 5H10" stroke="#3b82f6" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
-                  </svg>
-                </div>
+                <img
+                  src="/coins/wybt.png"
+                  alt="Top Earner Graphic"
+                  className="pointer-events-none w-full h-auto"
+                  style={{
+                    objectFit: 'contain'
+                  }}
+                />
               </div>
             </div>
 
             {/* Middle Section (Trustpilot) */}
-            <div className="flex items-center justify-between w-full mt-auto mb-10 pt-10">
+            <div className="flex items-center justify-between w-full mt-auto mb-6 pt-6">
               <div className="flex flex-col gap-2 items-start">
-                <img 
-                  src="/coins/trust plot.png" 
-                  alt="Trustpilot rating" 
+                <img
+                  src="/coins/trust plot.png"
+                  alt="Trustpilot rating"
                   style={{
                     width: 169,
                     height: 81,
@@ -1159,7 +1225,7 @@ const Landing = () => {
                   Trust score 5 | 145 reviews
                 </span>
               </div>
-              <button 
+              <button
                 className="bg-[#2a3044] hover:bg-[#1a1e2e] transition-colors text-white font-medium text-[15px] px-8 py-4 rounded-[24px]"
                 style={{ fontFamily: '"Poppins", sans-serif' }}
               >
@@ -1168,30 +1234,43 @@ const Landing = () => {
             </div>
 
             {/* Bottom Section (Testimonials) */}
-            <div className="flex items-center gap-6 w-full">
+            <div
+              className="flex items-center w-full"
+              style={{ gap: 16 }}
+            >
               {[
-                { name: 'Marc P. Morris', text: 'Mauris lacus risus, mattis id elit vitae, suscipit varius sapien. Proin et volutpat justo. Sed at turpis ex. Orci varius natoque penatibus et magnis dis parturient montes, nascetur', avatar: '/coins/person1.png' },
-                { name: 'Ashley C. Fields', text: 'Proin et volutpat justo. Sed at turpis ex. Mauris lacus risus, mattis id elit vitae, suscipit varius sapien. Proin et volutpat justo. Sed at turpis ex. Orci varius natoque penatibus', avatar: '/coins/person1.png' },
-                { name: 'John R. Allen', text: 'Sed at turpis ex. Orci varius natoque penatibus et magnis Mauris lacus risus, mattis id elit vitae, suscipit varius sapien. Proin et volutpat justo. Sed at turpis ex. Orci varius natoque', avatar: '/coins/person1.png' }
-              ].map((review, i) => (
-                <div key={i} className="flex-1 bg-[#f6f5ed] rounded-[24px] p-6 flex flex-col gap-4">
-                  <div className="flex items-center gap-3">
-                    <img src={review.avatar} alt={review.name} className="w-[42px] h-[42px] rounded-full object-cover bg-gray-200" />
-                    <div className="flex flex-col">
-                      <span className="font-bold text-[15px] text-gray-900" style={{ fontFamily: '"Bricolage Grotesque", sans-serif' }}>{review.name}</span>
-                      <div className="flex text-[#00b67a] text-[12px] gap-[2px]">★★★★★</div>
-                    </div>
-                  </div>
-                  <p className="m-0 text-[12px] text-gray-600 leading-relaxed" style={{ fontFamily: '"Poppins", sans-serif' }}>
-                    {review.text}
-                  </p>
-                </div>
+                '/coins/mar.png',
+                '/coins/ash.png',
+                '/coins/john.png'
+              ].map((src, i) => (
+                <img
+                  key={i}
+                  src={src}
+                  alt={`Feedback ${i + 1}`}
+                  style={{
+                    width: 295,
+                    height: 215,
+                    borderRadius: 20,
+                    objectFit: 'contain'
+                  }}
+                />
               ))}
             </div>
 
             {/* Copyright */}
-            <div className="w-full mt-12">
-              <p className="m-0 text-[13px] text-gray-500 font-medium" style={{ fontFamily: '"Poppins", sans-serif' }}>
+            <div className="mt-6 flex w-full">
+              <p
+                className="m-0 whitespace-nowrap"
+                style={{
+                  width: 853,
+                  height: 10,
+                  fontFamily: '"Poppins", sans-serif',
+                  fontWeight: 400,
+                  fontSize: 14,
+                  lineHeight: '20px',
+                  color: 'rgba(0, 0, 0, 1)'
+                }}
+              >
                 © 2026 TaskMint. All rights reserved.
               </p>
             </div>
