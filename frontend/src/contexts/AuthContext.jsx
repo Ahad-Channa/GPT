@@ -14,6 +14,7 @@ import {
 } from 'firebase/auth';
 import { auth, googleProvider } from '../config/firebase';
 import { io } from 'socket.io-client';
+import { generateFingerprint } from '../utils/fingerprint';
 
 // Global fetch interceptor to inject 2FA token
 const originalFetch = window.fetch;
@@ -59,13 +60,14 @@ export const AuthProvider = ({ children }) => {
         try {
             const token = await user.getIdToken();
             const ref = localStorage.getItem('ref');
+            const fingerprint = await generateFingerprint();
             const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/auth/sync`, {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${token}`,
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify(ref ? { ref } : {})
+                body: JSON.stringify({ ...(ref ? { ref } : {}), fingerprint })
             });
             const data = await res.json();
             if (data.isBanned || (data.success && data.user?.isBanned)) {
@@ -81,6 +83,20 @@ export const AuthProvider = ({ children }) => {
                     setTwoFactorRequired(true);
                 } else {
                     setTwoFactorRequired(false);
+                }
+                // Show VPN/proxy warning if detected
+                if (data.fraudWarning) {
+                    import('react-hot-toast').then(({ default: toast }) => {
+                        toast.error('⚠️ VPN or proxy detected. Some features may be restricted.', {
+                            duration: 8000,
+                            style: {
+                                background: '#1a0a0a',
+                                border: '1px solid rgba(239,68,68,0.4)',
+                                color: '#fca5a5',
+                                fontWeight: 600,
+                            },
+                        });
+                    });
                 }
             }
         } catch (error) {

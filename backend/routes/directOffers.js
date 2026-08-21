@@ -8,6 +8,7 @@ const Transaction = require('../models/Transaction');
 const notify = require('../utils/notify');
 const { emitWalletUpdate } = require('../utils/walletEvents');
 const { verifyToken } = require('../middlewares/authMiddleware');
+const { fraudCheck } = require('../middlewares/fraudCheck');
 const { processVipLevelUp } = require('../utils/vipUtils');
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -71,7 +72,7 @@ router.get('/', verifyToken, async (req, res) => {
 // Authenticated: log a click and return the target URL as JSON.
 // Frontend uses this to open the offer in a new tab after logging the click.
 // ─────────────────────────────────────────────────────────────────────────────
-router.post('/click/:offerId', verifyToken, async (req, res) => {
+router.post('/click/:offerId', verifyToken, fraudCheck('offer_click', 'full'), async (req, res) => {
   try {
     const user = await User.findOne({ firebaseUid: req.user.uid });
     if (!user) return res.status(404).json({ success: false, error: 'User not found' });

@@ -7,6 +7,7 @@ const Settings = require('../models/Settings');
 const PromoCode = require('../models/PromoCode');
 const Avatar = require('../models/Avatar');
 const { verifyToken } = require('../middlewares/authMiddleware');
+const { fraudCheck } = require('../middlewares/fraudCheck');
 const notify = require('../utils/notify');
 const { emitWalletUpdate } = require('../utils/walletEvents');
 const { notifyAdmins } = require('../utils/adminNotify');
@@ -312,9 +313,15 @@ router.get('/history', verifyToken, async (req, res) => {
    6. Atomically deduct balance
    7. Create Transaction record (status: pending)
 ───────────────────────────────────────────────────────────────── */
-router.post('/withdraw', verifyToken, async (req, res) => {
+router.post('/withdraw', verifyToken, fraudCheck('withdrawal', 'full'), async (req, res) => {
   try {
     const { method, amount, payoutDestination, brand } = req.body;
+
+    // --- 0. Check fraud status ---
+    const withdrawUser = await User.findOne({ firebaseUid: req.user.uid });
+    if (withdrawUser && withdrawUser.fraudStatus === 'blocked') {
+      return res.status(403).json({ success: false, error: 'Your account has been flagged for suspicious activity. Please contact support.' });
+    }
 
     // --- 1. Basic input validation ---
     if (!method || !amount || !payoutDestination) {

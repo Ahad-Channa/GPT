@@ -3,7 +3,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import {
   FiCopy, FiSearch, FiX, FiCheck, FiLoader, FiMessageSquare,
   FiEye, FiUser, FiDollarSign, FiActivity, FiGift, FiChevronDown,
-  FiCheckCircle, FiInfo
+  FiCheckCircle, FiInfo, FiShield, FiAlertTriangle
 } from 'react-icons/fi';
 
 import toast from 'react-hot-toast';
@@ -16,9 +16,14 @@ const UserDetailModal = ({ user, onClose, currentUser }) => {
   const [tab, setTab] = useState('overview');
   const [transactions, setTransactions] = useState([]);
   const [loadingTx, setLoadingTx] = useState(false);
+  const [linkedAccounts, setLinkedAccounts] = useState([]);
+  const [loadingLinked, setLoadingLinked] = useState(false);
+  const [fraudStatusSelect, setFraudStatusSelect] = useState(user.fraudStatus || 'clean');
+  const [savingFraud, setSavingFraud] = useState(false);
 
   useEffect(() => {
     if (tab === 'activity' && user) fetchTransactions();
+    if (tab === 'fraud' && user) fetchLinkedAccounts();
   }, [tab, user]);
 
   const fetchTransactions = async () => {
@@ -34,6 +39,43 @@ const UserDetailModal = ({ user, onClose, currentUser }) => {
       console.error(e);
     }
     setLoadingTx(false);
+  };
+
+  const fetchLinkedAccounts = async () => {
+    setLoadingLinked(true);
+    try {
+      const token = await currentUser.getIdToken();
+      const res = await fetch(`${API}/admin/linked-accounts/${user._id}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const data = await res.json();
+      if (data.success) setLinkedAccounts(data.linkedAccounts);
+    } catch (e) {
+      console.error(e);
+    }
+    setLoadingLinked(false);
+  };
+
+  const handleFraudStatusChange = async (newStatus) => {
+    setSavingFraud(true);
+    try {
+      const token = await currentUser.getIdToken();
+      const res = await fetch(`${API}/admin/fraud-status/${user._id}`, {
+        method: 'PATCH',
+        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ fraudStatus: newStatus }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setFraudStatusSelect(newStatus);
+        toast.success(`Fraud status updated to ${newStatus}`);
+      } else {
+        toast.error(data.error || 'Failed to update');
+      }
+    } catch (e) {
+      toast.error('Failed to update fraud status');
+    }
+    setSavingFraud(false);
   };
 
   if (!user) return null;
@@ -97,6 +139,17 @@ const UserDetailModal = ({ user, onClose, currentUser }) => {
                   ADMIN
                 </span>
               )}
+              {(user.fraudStatus && user.fraudStatus !== 'clean') && (
+                <span style={{
+                  marginLeft: '0.5rem', fontSize: '0.65rem',
+                  color: user.fraudStatus === 'blocked' ? '#f87171' : user.fraudStatus === 'flagged' ? '#fb923c' : '#fbbf24',
+                  background: user.fraudStatus === 'blocked' ? 'rgba(239,68,68,0.1)' : user.fraudStatus === 'flagged' ? 'rgba(251,146,60,0.1)' : 'rgba(251,191,36,0.1)',
+                  padding: '2px 8px', borderRadius: '1rem',
+                  border: `1px solid ${user.fraudStatus === 'blocked' ? 'rgba(239,68,68,0.2)' : user.fraudStatus === 'flagged' ? 'rgba(251,146,60,0.2)' : 'rgba(251,191,36,0.2)'}`,
+                }}>
+                  {user.fraudStatus === 'blocked' ? '🚫 BLOCKED' : user.fraudStatus === 'flagged' ? '⚠️ FLAGGED' : '👀 SUSPICIOUS'}
+                </span>
+              )}
             </h3>
             <p style={{ color: '#64748b', fontSize: '0.82rem', margin: '2px 0 0' }}>{user.email}</p>
           </div>
@@ -107,6 +160,7 @@ const UserDetailModal = ({ user, onClose, currentUser }) => {
           {[
             { key: 'overview', label: 'Overview', icon: FiUser },
             { key: 'activity', label: 'Activity', icon: FiActivity },
+            { key: 'fraud', label: 'Fraud', icon: FiShield },
           ].map(({ key, label, icon: Icon }) => (
             <button
               key={key}
@@ -133,6 +187,9 @@ const UserDetailModal = ({ user, onClose, currentUser }) => {
               { label: 'Referral Earnings', value: <CoinDisplay amount={user.commissionGenerated || 0} size={14} compact={false} />, color: '#22d3ee' },
               { label: 'Daily Streak', value: `${user.dailyBonusStreak || 0} days`, color: '#fb923c' },
               { label: 'Fraud Flag', value: user.fraudFlag || 0, color: user.fraudFlag > 0 ? '#f87171' : '#475569' },
+              { label: 'Fraud Status', value: (user.fraudStatus || 'clean').toUpperCase(), color: user.fraudStatus === 'blocked' ? '#f87171' : user.fraudStatus === 'flagged' ? '#fb923c' : user.fraudStatus === 'suspicious' ? '#fbbf24' : '#34d399' },
+              { label: 'Last IP', value: user.lastIp || '—', color: '#94a3b8' },
+              { label: 'Last Country', value: user.lastCountry || '—', color: '#94a3b8' },
               { label: 'Referral %', value: user.referralPercentage !== null && user.referralPercentage !== undefined ? `${user.referralPercentage}% (override)` : 'Global default', color: '#94a3b8' },
               { label: 'Referred By', value: user.referredBy ? `Yes (tracked)` : 'Organic', color: '#94a3b8' },
               { label: 'Joined', value: user.createdAt ? new Date(user.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '—', color: '#94a3b8' },
@@ -229,6 +286,117 @@ const UserDetailModal = ({ user, onClose, currentUser }) => {
                 </div>
               </div>
             )}
+          </div>
+        )}
+
+        {/* ── Fraud Tab ── */}
+        {tab === 'fraud' && (
+          <div>
+            {/* Fraud Status Manager */}
+            <div style={{ background: '#151d2e', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '0.875rem', padding: '1rem', marginBottom: '1rem' }}>
+              <p style={{ fontSize: '0.67rem', fontWeight: 700, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.05em', margin: '0 0 8px' }}>
+                <FiShield size={11} style={{ marginRight: 4, verticalAlign: 'middle' }} /> Fraud Status
+              </p>
+              <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                <select
+                  value={fraudStatusSelect}
+                  onChange={(e) => setFraudStatusSelect(e.target.value)}
+                  style={{
+                    flex: 1, background: '#0b101e', border: '1px solid rgba(255,255,255,0.1)',
+                    borderRadius: '0.5rem', color: '#cbd5e1', padding: '0.5rem 0.75rem',
+                    fontSize: '0.85rem', outline: 'none',
+                  }}
+                >
+                  <option value="clean">✅ Clean</option>
+                  <option value="suspicious">👀 Suspicious</option>
+                  <option value="flagged">⚠️ Flagged</option>
+                  <option value="blocked">🚫 Blocked</option>
+                </select>
+                <button
+                  className="action-btn primary"
+                  onClick={() => handleFraudStatusChange(fraudStatusSelect)}
+                  disabled={savingFraud || fraudStatusSelect === (user.fraudStatus || 'clean')}
+                  style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', whiteSpace: 'nowrap' }}
+                >
+                  {savingFraud ? <FiLoader style={{ animation: 'spin 1s linear infinite' }} /> : <FiCheck size={12} />}
+                  Save
+                </button>
+              </div>
+            </div>
+
+            {/* IP History */}
+            <div style={{ background: '#151d2e', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '0.875rem', padding: '1rem', marginBottom: '1rem' }}>
+              <p style={{ fontSize: '0.67rem', fontWeight: 700, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.05em', margin: '0 0 8px' }}>
+                IP History ({(user.ipHistory || []).length})
+              </p>
+              {(user.ipHistory && user.ipHistory.length > 0) ? (
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem' }}>
+                  {user.ipHistory.map((ip, i) => (
+                    <span key={i} style={{
+                      fontSize: '0.72rem', color: ip === user.lastIp ? '#818cf8' : '#64748b',
+                      background: ip === user.lastIp ? 'rgba(99,102,241,0.1)' : '#0b101e',
+                      padding: '3px 8px', borderRadius: '0.5rem',
+                      border: `1px solid ${ip === user.lastIp ? 'rgba(99,102,241,0.3)' : 'rgba(255,255,255,0.05)'}`,
+                      fontFamily: "'Barlow', system-ui, sans-serif",
+                    }}>
+                      {ip} {ip === user.lastIp && '(current)'}
+                    </span>
+                  ))}
+                </div>
+              ) : (
+                <p style={{ fontSize: '0.8rem', color: '#475569', margin: 0 }}>No IP history recorded yet.</p>
+              )}
+            </div>
+
+            {/* Linked Accounts */}
+            <div style={{ background: '#151d2e', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '0.875rem', padding: '1rem' }}>
+              <p style={{ fontSize: '0.67rem', fontWeight: 700, color: '#fb923c', textTransform: 'uppercase', letterSpacing: '0.05em', margin: '0 0 8px' }}>
+                <FiAlertTriangle size={11} style={{ marginRight: 4, verticalAlign: 'middle' }} /> Linked Accounts
+              </p>
+              {loadingLinked ? (
+                <div style={{ display: 'flex', justifyContent: 'center', padding: '1.5rem' }}>
+                  <FiLoader style={{ animation: 'spin 1s linear infinite', fontSize: 20, color: '#6366f1' }} />
+                </div>
+              ) : linkedAccounts.length === 0 ? (
+                <p style={{ fontSize: '0.8rem', color: '#34d399', margin: 0 }}>✅ No linked accounts detected.</p>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                  {linkedAccounts.map(acc => (
+                    <div key={acc._id} style={{
+                      background: '#0b101e', border: '1px solid rgba(251,146,60,0.15)',
+                      borderRadius: '0.75rem', padding: '0.75rem',
+                    }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.4rem' }}>
+                        <div>
+                          <span style={{ color: '#cbd5e1', fontWeight: 600, fontSize: '0.85rem' }}>{acc.displayName || '—'}</span>
+                          <span style={{ color: '#475569', fontSize: '0.75rem', marginLeft: '0.5rem' }}>{acc.email}</span>
+                        </div>
+                        {acc.fraudStatus && acc.fraudStatus !== 'clean' && (
+                          <span style={{
+                            fontSize: '0.6rem', fontWeight: 600,
+                            color: acc.fraudStatus === 'blocked' ? '#f87171' : '#fb923c',
+                            background: acc.fraudStatus === 'blocked' ? 'rgba(239,68,68,0.1)' : 'rgba(251,146,60,0.1)',
+                            padding: '2px 6px', borderRadius: '0.5rem',
+                          }}>
+                            {acc.fraudStatus.toUpperCase()}
+                          </span>
+                        )}
+                      </div>
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.3rem' }}>
+                        {(acc.matchReasons || []).map((reason, i) => (
+                          <span key={i} style={{
+                            fontSize: '0.65rem', color: '#fb923c', background: 'rgba(251,146,60,0.08)',
+                            padding: '2px 6px', borderRadius: '0.4rem', border: '1px solid rgba(251,146,60,0.15)',
+                          }}>
+                            {reason}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         )}
       </div>

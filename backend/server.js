@@ -14,6 +14,7 @@ const connectDB = require('./config/db');
 require('./config/firebase'); // Initializes Firebase App
 
 const app = express();
+app.set('trust proxy', 1); // Trust first proxy (Nginx) so req.ip = real client IP
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {

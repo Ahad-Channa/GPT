@@ -103,6 +103,25 @@ const userSchema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
+    fraudStatus: {
+      type: String,
+      enum: ['clean', 'suspicious', 'flagged', 'blocked'],
+      default: 'clean',
+    },
+    lastIp: {
+      type: String,
+      default: '',
+    },
+    lastCountry: {
+      type: String,
+      default: '',
+    },
+    ipHistory: [{
+      type: String,
+    }],
+    deviceFingerprints: [{
+      type: String,
+    }],
     commissionGenerated: {
       type: Number,
       default: 0,

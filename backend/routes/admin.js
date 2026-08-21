@@ -9,6 +9,7 @@ const CustomOffer = require('../models/CustomOffer');
 const CustomOfferSubmission = require('../models/CustomOfferSubmission');
 const DirectOffer = require('../models/DirectOffer');
 const ClickLog = require('../models/ClickLog');
+const FraudLog = require('../models/FraudLog');
 const adminFirebase = require('../config/firebase');
 const { verifyToken } = require('../middlewares/authMiddleware');
 const { requireAdmin, requirePrimaryAdmin, requirePermission } = require('../middlewares/adminMiddleware');
@@ -2365,6 +2366,125 @@ router.post('/click-logs/:clickId/reject', requirePermission('manage_offerwalls'
   } catch (error) {
     console.error('[/api/admin/click-logs/:clickId/reject] Error:', error);
     res.status(500).json({ success: false, error: 'Failed to reject click' });
+  }
+});
+
+// ─── ANTI-FRAUD: Fraud Logs, Linked Accounts, Status Management ───────────
+
+/* GET /api/admin/fraud-logs
+   Paginated list of fraud check logs for admin review.
+   Query: ?page=1&limit=20&action=blocked&userId=xxx */
+router.get('/fraud-logs', verifyToken, requireAdmin, requirePermission('manage_users'), async (req, res) => {
+  try {
+    const page = Math.max(1, parseInt(req.query.page, 10) || 1);
+    const limit = Math.min(100, Math.max(1, parseInt(req.query.limit, 10) || 20));
+    const skip = (page - 1) * limit;
+
+    const filter = {};
+    if (req.query.action) filter.action = req.query.action;
+    if (req.query.userId) filter.userId = req.query.userId;
+    if (req.query.ip) filter.ip = req.query.ip;
+
+    const [logs, total] = await Promise.all([
+      FraudLog.find(filter)
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit)
+        .populate('userId', 'displayName email avatarUrl fraudStatus fraudFlag'),
+      FraudLog.countDocuments(filter),
+    ]);
+
+    res.json({
+      success: true,
+      logs,
+      pagination: { page, limit, total, pages: Math.ceil(total / limit) },
+    });
+  } catch (error) {
+    console.error('[/api/admin/fraud-logs] Error:', error);
+    res.status(500).json({ success: false, error: 'Failed to fetch fraud logs' });
+  }
+});
+
+/* GET /api/admin/linked-accounts/:userId
+   Find accounts that share the same IP or device fingerprint with a given user.
+   Used to detect multi-accounting. */
+router.get('/linked-accounts/:userId', verifyToken, requireAdmin, requirePermission('manage_users'), async (req, res) => {
+  try {
+    const user = await User.findById(req.params.userId);
+    if (!user) return res.status(404).json({ success: false, error: 'User not found' });
+
+    const conditions = [];
+
+    // Match by shared IPs
+    if (user.ipHistory && user.ipHistory.length > 0) {
+      conditions.push({ ipHistory: { $in: user.ipHistory } });
+    }
+    if (user.lastIp) {
+      conditions.push({ lastIp: user.lastIp });
+    }
+
+    // Match by shared device fingerprints
+    if (user.deviceFingerprints && user.deviceFingerprints.length > 0) {
+      conditions.push({ deviceFingerprints: { $in: user.deviceFingerprints } });
+    }
+
+    if (conditions.length === 0) {
+      return res.json({ success: true, linkedAccounts: [] });
+    }
+
+    const linkedAccounts = await User.find({
+      $or: conditions,
+      _id: { $ne: user._id },
+    }).select('displayName email avatarUrl fraudFlag fraudStatus lastIp lastCountry createdAt ipHistory deviceFingerprints');
+
+    // Annotate each linked account with match reasons
+    const annotated = linkedAccounts.map(linked => {
+      const reasons = [];
+      const sharedIps = (linked.ipHistory || []).filter(ip => (user.ipHistory || []).includes(ip));
+      if (sharedIps.length > 0) reasons.push(`Shared IPs: ${sharedIps.join(', ')}`);
+      if (linked.lastIp && linked.lastIp === user.lastIp) reasons.push(`Same current IP: ${linked.lastIp}`);
+      const sharedFp = (linked.deviceFingerprints || []).filter(fp => (user.deviceFingerprints || []).includes(fp));
+      if (sharedFp.length > 0) reasons.push(`Shared device fingerprint`);
+      return { ...linked.toObject(), matchReasons: reasons };
+    });
+
+    res.json({ success: true, linkedAccounts: annotated });
+  } catch (error) {
+    console.error('[/api/admin/linked-accounts] Error:', error);
+    res.status(500).json({ success: false, error: 'Failed to fetch linked accounts' });
+  }
+});
+
+/* PATCH /api/admin/fraud-status/:userId
+   Manually update a user's fraud status (clean / suspicious / flagged / blocked). */
+router.patch('/fraud-status/:userId', verifyToken, requireAdmin, requirePermission('manage_users'), async (req, res) => {
+  try {
+    const { fraudStatus } = req.body;
+    const validStatuses = ['clean', 'suspicious', 'flagged', 'blocked'];
+    if (!validStatuses.includes(fraudStatus)) {
+      return res.status(400).json({ success: false, error: `Invalid status. Must be one of: ${validStatuses.join(', ')}` });
+    }
+
+    const user = await User.findByIdAndUpdate(
+      req.params.userId,
+      { fraudStatus },
+      { returnDocument: 'after' }
+    );
+    if (!user) return res.status(404).json({ success: false, error: 'User not found' });
+
+    // Log the admin action
+    const adminUser = await User.findOne({ firebaseUid: req.user.uid });
+    await AdminLog.create({
+      adminId: adminUser._id,
+      action: 'update_fraud_status',
+      targetUserId: user._id,
+      details: { newStatus: fraudStatus },
+    });
+
+    res.json({ success: true, user });
+  } catch (error) {
+    console.error('[/api/admin/fraud-status] Error:', error);
+    res.status(500).json({ success: false, error: 'Failed to update fraud status' });
   }
 });
 

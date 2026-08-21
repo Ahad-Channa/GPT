@@ -6,6 +6,7 @@ const Transaction = require('../models/Transaction');
 const CustomOfferSubmission = require('../models/CustomOfferSubmission');
 const UserActivityLog = require('../models/UserActivityLog');
 const { verifyToken } = require('../middlewares/authMiddleware');
+const { fraudCheck, getClientIp } = require('../middlewares/fraudCheck');
 const notify = require('../utils/notify');
 const { notifyAdmins } = require('../utils/adminNotify');
 const Avatar = require('../models/Avatar');
@@ -26,10 +27,10 @@ async function generateUniqueReferralCode() {
 
 // POST /api/auth/sync
 // Validates Firebase token. If user doesn't exist in MongoDB, inserts them securely.
-router.post('/sync', verifyToken, async (req, res) => {
+router.post('/sync', verifyToken, fraudCheck('auth_sync', 'light'), async (req, res) => {
   try {
     const { uid, email, name, picture } = req.user;
-    const { ref } = req.body || {};
+    const { ref, fingerprint } = req.body || {};
     
     let user = await User.findOne({ firebaseUid: uid });
     let isNewUser = false;
@@ -76,6 +77,26 @@ router.post('/sync', verifyToken, async (req, res) => {
       await user.save();
       isNewUser = true;
       console.log(`Registration success: ${email} synchronized via Firebase. Assigned username: ${uniqueName}`);
+
+      // ── Anti-fraud: check for multi-account via fingerprint ──
+      if (fingerprint) {
+        const linkedAccounts = await User.find({
+          deviceFingerprints: fingerprint,
+          _id: { $ne: user._id },
+        }).select('_id displayName email');
+        if (linkedAccounts.length > 0) {
+          user.fraudFlag = (user.fraudFlag || 0) + 1;
+          user.fraudStatus = 'flagged';
+          await user.save();
+          await notifyAdmins({
+            category: 'users',
+            type: 'multi_account_detected',
+            message: `🚨 Multi-account detected! ${user.displayName} shares device fingerprint with: ${linkedAccounts.map(a => a.displayName).join(', ')}`,
+            permissionRequired: 'manage_users',
+            metadata: { userId: user._id, linkedAccountIds: linkedAccounts.map(a => a._id) },
+          });
+        }
+      }
 
       // Send Welcome Notification
       await notify(
@@ -130,11 +151,15 @@ router.post('/sync', verifyToken, async (req, res) => {
       }
     }
 
+    // Attach fraud warning to response if proxy/VPN was detected
+    const fraudWarning = req.fraud?.flagged || false;
+
     res.status(200).json({
       success: true,
       user,
       isNewUser,
       twoFactorRequired,
+      fraudWarning,
     });
   } catch (error) {
     console.error('[/api/auth/sync] Database Error:', error);
