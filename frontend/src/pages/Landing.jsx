@@ -61,17 +61,25 @@ const Landing = () => {
     return () => clearInterval(intv);
   }, []);
 
+  useEffect(() => {
+    const originalBg = document.body.style.backgroundColor;
+    document.body.style.backgroundColor = '#FAFAFA';
+    return () => {
+      document.body.style.backgroundColor = originalBg;
+    };
+  }, []);
+
   return (
-    <div
-      className="min-h-screen relative text-gray-900 font-sans overflow-x-hidden selection:bg-[#29FD98] selection:text-black flex flex-col mx-auto"
-      style={{
-        maxWidth: '1440px',
-        width: '100%',
-        background: 'linear-gradient(0deg, #FAFAFA, #FAFAFA), linear-gradient(0deg, #FFFFFF, #FFFFFF)'
-      }}
-    >
-      {/* Absolute Right Hero Image (Overlaps header) */}
-      {!isMobile && (
+    <div className="w-full min-h-screen bg-[#FAFAFA] text-gray-900 font-sans overflow-x-hidden selection:bg-[#29FD98] selection:text-black flex flex-col items-center">
+      <div
+        className="min-h-screen relative text-gray-900 font-sans flex flex-col mx-auto w-full"
+        style={{
+          maxWidth: '1440px',
+          background: 'linear-gradient(0deg, #FAFAFA, #FAFAFA), linear-gradient(0deg, #FFFFFF, #FFFFFF)'
+        }}
+      >
+        {/* Absolute Right Hero Image (Overlaps header) */}
+        {!isMobile && (
         <div
           className="absolute top-0 right-0 z-0 pointer-events-none"
           style={{ width: 755, height: 587 }}
@@ -1514,7 +1522,7 @@ const Landing = () => {
           </div>
 
           {/* Right Area */}
-          <div className="flex flex-col flex-1 h-full pt-4 w-full max-w-[440px] lg:max-w-none mx-auto lg:mx-0">
+          <div className="flex flex-col flex-1 min-w-0 h-full pt-4 w-full max-w-[440px] lg:max-w-[861px] mx-auto lg:mx-0">
 
             {/* Top Section */}
             <div className="flex flex-col lg:flex-row justify-between items-center lg:items-start w-full gap-8 lg:gap-0">
@@ -1661,7 +1669,7 @@ const Landing = () => {
             {/* Bottom Section (Testimonials) */}
             <div
               className="flex items-center w-full overflow-x-auto hide-scrollbar lg:overflow-visible pb-2"
-              style={{ gap: 16 }}
+              style={{ gap: isMobile ? 16 : 14 }}
             >
               {[
                 '/coins/mar.png',
@@ -1672,10 +1680,16 @@ const Landing = () => {
                   key={i}
                   src={src}
                   alt={`Feedback ${i + 1}`}
-                  className="shrink-0"
-                  style={{
+                  className="shrink-0 lg:shrink lg:flex-1 min-w-0"
+                  style={isMobile ? {
                     width: 295,
                     height: 215,
+                    borderRadius: 20,
+                    objectFit: 'contain'
+                  } : {
+                    width: 'calc((100% - 28px) / 3)',
+                    maxWidth: 278,
+                    height: 'auto',
                     borderRadius: 20,
                     objectFit: 'contain'
                   }}
@@ -1712,6 +1726,7 @@ const Landing = () => {
         onClose={() => setAuthModal(prev => ({ ...prev, isOpen: false }))}
         initialTab={authModal.tab}
       />
+      </div>
     </div>
   );
 };
