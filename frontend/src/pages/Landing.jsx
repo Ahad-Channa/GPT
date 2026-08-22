@@ -1026,7 +1026,7 @@ const Landing = () => {
 
           {/* Right Side */}
           <div
-            className="flex flex-col items-center lg:items-start w-full max-w-[424px] lg:max-w-[652px] lg:w-[55%]"
+            className="flex flex-col items-center lg:items-start w-full max-w-[424px] lg:max-w-[652px] lg:w-[55%] lg:-translate-y-[20px]"
           >
             {[
               { q: "How do I earn money?", a: "By completing offers, surveys, and tasks on the platform." },
@@ -1535,7 +1535,7 @@ const Landing = () => {
                   paddingRight: 0,
                   paddingLeft: isMobile ? 24 : 0,
                   gap: isMobile ? 104 : 80,
-                  transform: isMobile ? 'none' : 'translateY(-27px)'
+                  transform: isMobile ? 'none' : 'translateY(-23.5px)'
                 }}
               >
                 <div className="flex flex-col" style={{ width: 108, height: 273, gap: 40 }}>
@@ -1709,7 +1709,7 @@ const Landing = () => {
                   fontSize: 14,
                   lineHeight: '20px',
                   color: 'rgba(0, 0, 0, 1)',
-                  transform: isMobile ? 'none' : 'translateY(-6px)'
+                  transform: isMobile ? 'none' : 'translateY(-1px)'
                 }}
               >
                 © 2026 TaskMint. All rights reserved.
