@@ -24,6 +24,7 @@ const Landing = () => {
   const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' ? window.innerWidth < 1024 : false);
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [authModal, setAuthModal] = useState({ isOpen: false, tab: 'login' });
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -92,23 +93,30 @@ const Landing = () => {
         <nav
           className="relative z-50 flex justify-between items-center w-full px-4 md:px-8 lg:px-0 mx-auto"
           style={{
-            maxWidth: '1328px',
-            height: '80px',
+            maxWidth: isMobile ? '408px' : '1328px',
+            height: isMobile ? '71px' : '80px',
             paddingTop: '12px',
             paddingBottom: '12px',
           }}
         >
           {/* Logo */}
-          <div className="flex items-center cursor-pointer">
+          <div
+            className="flex items-center cursor-pointer"
+            onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+          >
             <img
               src="/coins/logo final.svg"
               alt="TaskMint Logo"
               className="object-contain"
-              style={{ width: '161px', height: '28.53px' }}
+              style={{
+                width: isMobile ? '148px' : '161px',
+                height: isMobile ? '26.23px' : '28.53px',
+                opacity: 1,
+              }}
             />
           </div>
 
-          {/* Links */}
+          {/* Links (Desktop) */}
           <div className="hidden lg:flex items-center gap-[40px]">
             <a href="#hero" className="hover:text-black transition-colors" style={{ fontFamily: 'Poppins, sans-serif', fontWeight: 500, fontSize: '16px', lineHeight: '28px', color: 'rgba(30, 30, 30, 1)' }}>Home</a>
             <a href="#earn" className="hover:text-black transition-colors" style={{ fontFamily: 'Poppins, sans-serif', fontWeight: 500, fontSize: '16px', lineHeight: '28px', color: 'rgba(30, 30, 30, 1)' }}>Earn</a>
@@ -117,7 +125,7 @@ const Landing = () => {
             <a href="#faq" className="hover:text-black transition-colors" style={{ fontFamily: 'Poppins, sans-serif', fontWeight: 500, fontSize: '16px', lineHeight: '28px', color: 'rgba(30, 30, 30, 1)' }}>FAQ</a>
           </div>
 
-          {/* Right Actions */}
+          {/* Right Actions (Desktop) */}
           <div className="hidden lg:flex items-center gap-[5px] w-[287px] h-[49px]">
             <button
               onClick={() => currentUser ? navigate('/dashboard') : setAuthModal({ isOpen: true, tab: 'login' })}
@@ -160,13 +168,114 @@ const Landing = () => {
             </button>
           </div>
 
-          {/* Mobile Menu Button */}
+          {/* Mobile Menu Dropdown Circle Button */}
           <div className="lg:hidden flex items-center">
-            <button className="text-gray-900 text-2xl">
-              <FiMenu />
+            <button
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="flex items-center justify-center rounded-full text-white transition-transform active:scale-95 shadow-md cursor-pointer"
+              style={{
+                width: '47px',
+                height: '47px',
+                backgroundColor: 'rgba(36, 50, 77, 1)',
+                opacity: 1,
+              }}
+            >
+              {mobileMenuOpen ? <FiX className="w-6 h-6 text-white" /> : <FiMenu className="w-6 h-6 text-white" />}
             </button>
           </div>
         </nav>
+      )}
+
+      {/* Mobile Drawer Menu */}
+      {!currentUser && mobileMenuOpen && (
+        <div className="lg:hidden relative z-50 px-4 mb-4 mx-auto w-full" style={{ maxWidth: '408px' }}>
+          <div className="bg-white rounded-3xl p-6 shadow-xl border border-gray-100 flex flex-col gap-4">
+            <div className="flex flex-col gap-3 text-left">
+              <a
+                href="#hero"
+                onClick={() => setMobileMenuOpen(false)}
+                className="py-2 px-3 text-[#1E1E1E] font-medium text-[16px] hover:bg-gray-50 rounded-xl"
+                style={{ fontFamily: 'Poppins, sans-serif' }}
+              >
+                Home
+              </a>
+              <a
+                href="#earn"
+                onClick={() => setMobileMenuOpen(false)}
+                className="py-2 px-3 text-[#1E1E1E] font-medium text-[16px] hover:bg-gray-50 rounded-xl"
+                style={{ fontFamily: 'Poppins, sans-serif' }}
+              >
+                Earn
+              </a>
+              <a
+                href="#how-it-works"
+                onClick={() => setMobileMenuOpen(false)}
+                className="py-2 px-3 text-[#1E1E1E] font-medium text-[16px] hover:bg-gray-50 rounded-xl"
+                style={{ fontFamily: 'Poppins, sans-serif' }}
+              >
+                How it works
+              </a>
+              <a
+                href="#features"
+                onClick={() => setMobileMenuOpen(false)}
+                className="py-2 px-3 text-[#1E1E1E] font-medium text-[16px] hover:bg-gray-50 rounded-xl"
+                style={{ fontFamily: 'Poppins, sans-serif' }}
+              >
+                Features
+              </a>
+              <a
+                href="#faq"
+                onClick={() => setMobileMenuOpen(false)}
+                className="py-2 px-3 text-[#1E1E1E] font-medium text-[16px] hover:bg-gray-50 rounded-xl"
+                style={{ fontFamily: 'Poppins, sans-serif' }}
+              >
+                FAQ
+              </a>
+            </div>
+
+            <div className="flex items-center justify-center gap-[14px] pt-3 pb-1 border-t border-gray-100 w-full">
+              <button
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  setAuthModal({ isOpen: true, tab: 'login' });
+                }}
+                className="flex items-center justify-center hover:bg-gray-50 transition-colors shadow-sm whitespace-nowrap cursor-pointer"
+                style={{
+                  width: '120px',
+                  height: '52px',
+                  borderRadius: '80px',
+                  border: '1px solid rgba(0, 0, 0, 0.15)',
+                  background: 'rgba(255, 255, 255, 1)',
+                  fontFamily: 'Poppins, sans-serif',
+                  fontWeight: 500,
+                  fontSize: '16px',
+                  color: 'rgba(0, 0, 0, 1)',
+                }}
+              >
+                Login
+              </button>
+              <button
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  setAuthModal({ isOpen: true, tab: 'register' });
+                }}
+                className="flex items-center justify-center hover:bg-[#1E2631] transition-colors shadow-sm whitespace-nowrap cursor-pointer"
+                style={{
+                  width: '205px',
+                  height: '52px',
+                  borderRadius: '80px',
+                  background: 'rgba(36, 50, 77, 1)',
+                  fontFamily: 'Poppins, sans-serif',
+                  fontWeight: 500,
+                  fontSize: '16px',
+                  color: 'rgba(255, 255, 255, 1)',
+                }}
+              >
+                Create Account
+              </button>
+            </div>
+          </div>
+        </div>
       )}
 
       {/* Header Bottom Line */}
@@ -203,8 +312,8 @@ const Landing = () => {
             }}
           >
             <div
-              className="flex flex-col text-left"
-              style={!isMobile ? { width: 608, gap: 40 } : { width: '100%', gap: 24 }}
+              className={isMobile ? "flex flex-col items-center text-center mx-auto w-full gap-6" : "flex flex-col text-left"}
+              style={!isMobile ? { width: 608, gap: 40 } : { maxWidth: 424 }}
             >
               <h1
                 className="m-0"
@@ -218,15 +327,30 @@ const Landing = () => {
                   letterSpacing: '-0.02em',
                   color: 'rgba(14, 15, 12, 1)'
                 } : {
+                  width: '100%',
+                  maxWidth: 424,
                   fontFamily: '"Bricolage Grotesque", sans-serif',
                   fontWeight: 700,
-                  fontSize: 36,
-                  lineHeight: '44px',
+                  fontSize: 'clamp(42px, 14vw, 64px)',
+                  lineHeight: 'clamp(38px, 12.5vw, 56px)',
+                  letterSpacing: '-0.02em',
+                  textAlign: 'center',
                   color: 'rgba(14, 15, 12, 1)'
                 }}
               >
-                Your Time Has Value<br />
-                Get Rewarded For It
+                {isMobile ? (
+                  <>
+                    Your Time<br />
+                    Has Value Get<br />
+                    Rewarded<br />
+                    For It
+                  </>
+                ) : (
+                  <>
+                    Your Time Has Value<br />
+                    Get Rewarded For It
+                  </>
+                )}
               </h1>
               <p
                 className="m-0"
@@ -239,18 +363,30 @@ const Landing = () => {
                   lineHeight: '26px',
                   color: 'rgba(14, 15, 12, 1)'
                 } : {
+                  width: '100%',
+                  maxWidth: 400,
                   fontFamily: '"Poppins", sans-serif',
                   fontWeight: 500,
-                  fontSize: 15,
-                  lineHeight: '24px',
+                  fontSize: 'clamp(13px, 3.8vw, 15.5px)',
+                  lineHeight: '26px',
+                  letterSpacing: '0%',
+                  textAlign: 'center',
                   color: 'rgba(14, 15, 12, 1)'
                 }}
               >
-                Complete offers, surveys, and tasks to earn real rewards. Join thousands of users already earning every day.
+                {isMobile ? (
+                  <>
+                    <span className="block whitespace-nowrap">Complete offers, surveys, and tasks to earn real</span>
+                    <span className="block whitespace-nowrap">rewards. Join thousands of users already earning</span>
+                    <span className="block whitespace-nowrap">every day.</span>
+                  </>
+                ) : (
+                  'Complete offers, surveys, and tasks to earn real rewards. Join thousands of users already earning every day.'
+                )}
               </p>
 
               <div
-                className="flex items-center"
+                className={isMobile ? "flex items-center justify-center mx-auto" : "flex items-center"}
                 style={{ width: 264, height: 49, gap: 5 }}
               >
                 <button
@@ -296,16 +432,21 @@ const Landing = () => {
 
             {/* Stats below buttons */}
             <div
-              className="flex items-center"
-              style={{ width: 520, height: 45, gap: 60 }}
+              className={isMobile ? "flex items-center justify-between w-full mx-auto" : "flex items-center"}
+              style={!isMobile ? { width: 520, height: 45, gap: 60 } : { maxWidth: 360, marginTop: 39, gap: 20 }}
             >
               {/* Total Users */}
-              <div className="flex items-center gap-4">
+              <div className="flex items-center gap-3 sm:gap-4">
                 <img
                   src="/coins/total user.png"
                   alt="Users"
-                  className="object-contain"
-                  style={{ width: 44, height: 44, paddingTop: 3.3, paddingBottom: 3.3 }}
+                  className="object-contain flex-shrink-0"
+                  style={{
+                    width: isMobile ? 54 : 44,
+                    height: isMobile ? 54 : 44,
+                    paddingTop: isMobile ? 0 : 3.3,
+                    paddingBottom: isMobile ? 0 : 3.3
+                  }}
                 />
                 <div className="flex flex-col" style={{ width: 109, height: 43, gap: 15 }}>
                   <span className="uppercase" style={{
@@ -328,16 +469,21 @@ const Landing = () => {
               </div>
 
               {/* Total Paid */}
-              <div className="flex items-center gap-4">
+              <div className="flex items-center gap-3 sm:gap-4">
                 <img
                   src="/coins/total paid.png"
                   alt="Paid"
-                  className="object-contain"
-                  style={{ width: 45, height: 45 }}
+                  className="object-contain flex-shrink-0"
+                  style={{
+                    width: isMobile ? 54 : 44,
+                    height: isMobile ? 54 : 44,
+                    paddingTop: isMobile ? 0 : 3.3,
+                    paddingBottom: isMobile ? 0 : 3.3
+                  }}
                 />
-                <div className="flex flex-col" style={{ width: 230, height: 43, gap: 15 }}>
+                <div className="flex flex-col" style={{ height: 43, gap: 15 }}>
                   <span className="uppercase" style={{
-                    width: 230, height: 8,
+                    height: 8,
                     fontFamily: '"Poppins", sans-serif', fontWeight: 500, fontSize: 12,
                     lineHeight: '28px', letterSpacing: '0.08em', color: 'rgba(14, 15, 12, 1)',
                     display: 'flex', alignItems: 'center'
@@ -345,7 +491,7 @@ const Landing = () => {
                     Total Paid:
                   </span>
                   <span style={{
-                    width: 230, height: 20,
+                    height: 20,
                     fontFamily: '"Bricolage Grotesque", sans-serif', fontWeight: 700, fontSize: 30,
                     lineHeight: '72px', letterSpacing: '-0.02em', color: 'rgba(14, 15, 12, 1)',
                     display: 'flex', alignItems: 'center'
@@ -355,24 +501,42 @@ const Landing = () => {
                 </div>
               </div>
             </div>
+
+            {/* Mobile Hero Graphic Image */}
+            {isMobile && (
+              <div
+                className="w-[calc(100%+2rem)] -mx-4 flex justify-center items-center mt-8 overflow-hidden"
+              >
+                <img
+                  src="/coins/mobile hero.png"
+                  alt="Mobile Hero Graphic"
+                  className="w-full h-auto object-cover"
+                  style={{
+                    maxWidth: '440px',
+                    width: '100%',
+                    opacity: 1,
+                  }}
+                />
+              </div>
+            )}
           </div>
         </div>
       </section>
 
       {/* HOW IT WORKS */}
-      <section id="how-it-works" className="py-12 lg:py-24 px-4 lg:px-6 relative bg-transparent flex justify-center w-full z-10">
+      <section id="how-it-works" className={isMobile ? "py-10 px-5 relative bg-transparent flex justify-center w-full z-10" : "py-12 lg:py-24 px-4 lg:px-6 relative bg-transparent flex justify-center w-full z-10"}>
         <div
-          className="flex flex-col mx-auto w-full h-auto gap-[55px]"
-          style={{ maxWidth: 1328 }}
+          className="flex flex-col mx-auto w-full h-auto"
+          style={!isMobile ? { maxWidth: 1328, gap: 55 } : { maxWidth: 440, gap: 64 }}
         >
           {/* Header */}
           <div
             className="flex flex-col items-center justify-center mx-auto"
-            style={{ width: 500, height: 69, gap: 25 }}
+            style={!isMobile ? { width: 500, height: 69, gap: 25 } : { width: '100%', maxWidth: 400, gap: 16 }}
           >
             <h2
               className="m-0 text-center flex items-center justify-center"
-              style={{
+              style={!isMobile ? {
                 width: 314,
                 height: 33,
                 fontFamily: '"Bricolage Grotesque", sans-serif',
@@ -381,13 +545,23 @@ const Landing = () => {
                 lineHeight: '72px',
                 color: 'rgba(14, 15, 12, 1)',
                 letterSpacing: '-0.02em'
+              } : {
+                width: '100%',
+                maxWidth: 301,
+                fontFamily: '"Bricolage Grotesque", sans-serif',
+                fontWeight: 700,
+                fontSize: 'clamp(36px, 10vw, 48px)',
+                lineHeight: '56px',
+                letterSpacing: '-0.02em',
+                textAlign: 'center',
+                color: 'rgba(14, 15, 12, 1)'
               }}
             >
               How It Works
             </h2>
             <p
               className="m-0 text-center flex items-center justify-center"
-              style={{
+              style={!isMobile ? {
                 width: 500,
                 height: 11,
                 fontFamily: '"Poppins", sans-serif',
@@ -395,9 +569,25 @@ const Landing = () => {
                 fontSize: 16,
                 lineHeight: '28px',
                 color: 'rgba(14, 15, 12, 1)'
+              } : {
+                width: '100%',
+                maxWidth: 400,
+                fontFamily: '"Poppins", sans-serif',
+                fontWeight: 500,
+                fontSize: 18,
+                lineHeight: '28px',
+                letterSpacing: '0%',
+                textAlign: 'center',
+                color: 'rgba(14, 15, 12, 1)'
               }}
             >
-              Get started in seconds. No complicated setup required.
+              {isMobile ? (
+                <>
+                  Get started in seconds. No complicated<br />setup required.
+                </>
+              ) : (
+                'Get started in seconds. No complicated setup required.'
+              )}
             </p>
           </div>
 
@@ -424,14 +614,18 @@ const Landing = () => {
                 desc: 'Get coins and convert them into real money, crypto, or gift cards instantly.'
               },
             ].map((item, idx) => (
-              <div key={idx} className="flex flex-row items-start gap-[20px] w-full lg:w-[400px] z-10" style={{ background: 'linear-gradient(0deg, #FAFAFA, #FAFAFA), linear-gradient(0deg, #FFFFFF, #FFFFFF)' }}>
+              <div
+                key={idx}
+                className={isMobile ? "flex flex-col items-center text-center w-full mx-auto gap-4 z-10" : "flex flex-row items-start gap-[20px] w-full lg:w-[400px] z-10"}
+                style={{ background: 'transparent' }}
+              >
                 {/* Icon */}
-                <div className="shrink-0" style={{ width: 90, height: 90 }}>
-                  <img src={item.icon} alt={item.title} style={{ width: 90, height: 90, transform: 'rotate(0deg)', opacity: 1, objectFit: 'contain' }} />
+                <div className="shrink-0 flex items-center justify-center" style={{ width: isMobile ? 80 : 90, height: isMobile ? 80 : 90 }}>
+                  <img src={item.icon} alt={item.title} style={{ width: isMobile ? 80 : 90, height: isMobile ? 80 : 90, transform: 'rotate(0deg)', opacity: 1, objectFit: 'contain' }} />
                 </div>
                 {/* Content */}
-                <div className="flex flex-col gap-[8px] mt-[-6px]">
-                  <div className="flex flex-col gap-0">
+                <div className={isMobile ? "flex flex-col items-center text-center gap-2" : "flex flex-col gap-[8px] mt-[-6px]"}>
+                  <div className={isMobile ? "flex flex-col items-center gap-0" : "flex flex-col gap-0"}>
                     <span
                       className="uppercase"
                       style={{
@@ -441,21 +635,25 @@ const Landing = () => {
                         lineHeight: '28px',
                         letterSpacing: '0.08em',
                         color: 'rgba(14, 15, 12, 1)',
-                        opacity: 1
+                        opacity: 1,
+                        textAlign: isMobile ? 'center' : 'left'
                       }}
                     >
                       {item.step}
                     </span>
                     <h3
-                      className="m-0 mt-[-4px]"
+                      className="m-0"
                       style={{
+                        width: isMobile ? '100%' : 'auto',
+                        maxWidth: isMobile ? 360 : 'none',
                         fontFamily: '"Bricolage Grotesque", sans-serif',
                         fontWeight: 700,
-                        fontSize: 22,
-                        lineHeight: '28px',
+                        fontSize: isMobile ? 24 : 22,
+                        lineHeight: isMobile ? '32px' : '28px',
                         color: 'rgba(14, 15, 12, 1)',
                         letterSpacing: '-0.02em',
-                        opacity: 1
+                        opacity: 1,
+                        textAlign: isMobile ? 'center' : 'left'
                       }}
                     >
                       {item.title}
@@ -464,12 +662,16 @@ const Landing = () => {
                   <p
                     className="m-0"
                     style={{
+                      width: isMobile ? '100%' : 'auto',
+                      maxWidth: isMobile ? 360 : 'none',
                       fontFamily: '"Poppins", sans-serif',
                       fontWeight: 500,
                       fontSize: 12,
                       lineHeight: '20px',
+                      letterSpacing: '0%',
                       color: 'rgba(14, 15, 12, 1)',
-                      opacity: 1
+                      opacity: 1,
+                      textAlign: isMobile ? 'center' : 'left'
                     }}
                   >
                     {item.desc}
@@ -485,29 +687,30 @@ const Landing = () => {
       <section
         id="features"
         className="mx-auto flex flex-col lg:flex-row items-center w-full max-w-[1440px] lg:h-[558px] py-12 lg:py-0 relative z-10"
-        style={{
+        style={!isMobile ? {
           background: 'transparent',
           gap: '10px'
+        } : {
+          maxWidth: '440px',
+          paddingRight: '4px',
+          paddingLeft: '4px',
+          gap: '32px',
+          background: 'transparent'
         }}
       >
-        {/* Left Image */}
-        <div className="flex-shrink-0 w-full lg:w-[720px] h-auto lg:h-[558px] pl-4 lg:pl-[56px] pr-4 lg:pr-[24px]">
-          <img src="/coins/why chose us.png" alt="Why Choose Us" className="w-full h-full object-cover rounded-[32px]" />
-        </div>
-
-        {/* Right Content */}
+        {/* Content (First on mobile, Second on Desktop) */}
         <div
-          className="flex flex-col w-full px-4 lg:px-[24px] justify-center"
-          style={{ transform: 'translateY(10px)' }}
+          className="order-1 lg:order-2 flex flex-col w-full px-2 sm:px-4 lg:px-[24px] justify-center"
+          style={!isMobile ? { transform: 'translateY(10px)' } : {}}
         >
           {/* Heading & Sub */}
           <div
-            className="flex flex-col items-start"
-            style={{ width: 472, height: 74, gap: 30, marginBottom: 50, marginTop: -15 }}
+            className="flex flex-col items-start w-full"
+            style={!isMobile ? { width: 472, height: 74, gap: 30, marginBottom: 50, marginTop: -15 } : { gap: 12, marginBottom: 24 }}
           >
             <h2
               className="m-0 text-left flex items-center"
-              style={{
+              style={!isMobile ? {
                 width: 472,
                 height: 33,
                 fontFamily: '"Bricolage Grotesque", sans-serif',
@@ -516,19 +719,32 @@ const Landing = () => {
                 lineHeight: '72px',
                 letterSpacing: '-0.02em',
                 color: 'rgba(14, 15, 12, 1)'
+              } : {
+                fontFamily: '"Bricolage Grotesque", sans-serif',
+                fontWeight: 700,
+                fontSize: 'clamp(36px, 10vw, 48px)',
+                lineHeight: '52px',
+                letterSpacing: '-0.02em',
+                color: 'rgba(14, 15, 12, 1)'
               }}
             >
               Why Choose Us
             </h2>
             <p
               className="m-0 text-left flex items-center"
-              style={{
+              style={!isMobile ? {
                 width: 472,
                 height: 11,
                 fontFamily: '"Poppins", sans-serif',
                 fontWeight: 500,
                 fontSize: 16,
                 lineHeight: '28px',
+                color: 'rgba(14, 15, 12, 1)'
+              } : {
+                fontFamily: '"Poppins", sans-serif',
+                fontWeight: 500,
+                fontSize: 16,
+                lineHeight: '24px',
                 color: 'rgba(14, 15, 12, 1)'
               }}
             >
@@ -538,21 +754,28 @@ const Landing = () => {
 
           {/* Features Grid */}
           <div
-            className="grid grid-cols-1 lg:grid-cols-2"
-            style={{ width: 608, height: 306, gap: 24 }}
+            className="grid grid-cols-1 lg:grid-cols-2 w-full"
+            style={!isMobile ? { width: 608, height: 306, gap: 24 } : { gap: 0 }}
           >
-            {[
+            {(isMobile ? [
+              { icon: '/coins/multi.png', title: 'Multiple Offer walls', desc: 'Discover various earning options in one place.' },
+              { icon: '/coins/fast copy.png', title: 'Fast Payouts', desc: 'Withdraw your earnings quickly and securely' },
+              { icon: '/coins/daily.png', title: 'Daily Bonus', desc: 'Earn extra rewards every day you stay active' },
+              { icon: '/coins/vip copy.png', title: 'VIP Progress', desc: 'Level up and unlock better rewards' },
+              { icon: '/coins/referl.png', title: 'Referral System', desc: 'Refer friends and earn a share of their income.' },
+              { icon: '/coins/live copy.png', title: 'Live Activity', desc: 'See real-time earnings across the platform' },
+            ] : [
               { icon: '/coins/multi.png', title: 'Multiple Offer walls', desc: 'Discover various earning options in one place.' },
               { icon: '/coins/vip copy.png', title: 'VIP Progress', desc: 'Level up and unlock better rewards' },
               { icon: '/coins/fast copy.png', title: 'Fast Payouts', desc: 'Withdraw your earnings quickly and securely' },
               { icon: '/coins/referl.png', title: 'Referral System', desc: 'Refer friends and earn a share of their income.' },
               { icon: '/coins/daily.png', title: 'Daily Bonus', desc: 'Earn extra rewards every day you stay active' },
               { icon: '/coins/live copy.png', title: 'Live Activity', desc: 'See real-time earnings across the platform' },
-            ].map((item, idx) => (
+            ]).map((item, idx) => (
               <div
                 key={idx}
-                className="flex flex-row items-center pt-[16px] pb-[8px] gap-[16px] group cursor-pointer"
-                style={{ width: 292, borderTop: '1px solid rgba(226, 226, 225, 1)' }}
+                className="flex flex-row items-center pt-[16px] pb-[16px] lg:pb-[8px] gap-[16px] group cursor-pointer w-full"
+                style={!isMobile ? { width: 292, borderTop: '1px solid rgba(226, 226, 225, 1)' } : { width: '100%', borderTop: '1px solid rgba(226, 226, 225, 1)' }}
               >
                 <div
                   className="flex-shrink-0 flex items-center justify-center"
@@ -562,13 +785,13 @@ const Landing = () => {
                 </div>
                 <div
                   className="flex flex-col items-start text-left w-full"
-                  style={{ gap: 2, paddingTop: 6 }}
+                  style={{ gap: 2, paddingTop: 2 }}
                 >
                   <div
                     className="m-0 font-medium"
                     style={{
                       fontFamily: '"Bricolage Grotesque", sans-serif',
-                      fontWeight: 500,
+                      fontWeight: 600,
                       fontSize: 18,
                       lineHeight: '22px',
                       color: 'rgba(14, 15, 12, 1)'
@@ -594,7 +817,7 @@ const Landing = () => {
 
           {/* Buttons */}
           <div
-            className="flex flex-row items-center mt-[50px]"
+            className="flex flex-row items-center mt-[32px] lg:mt-[50px]"
             style={{ width: 264, height: 49, gap: 5 }}
           >
             <button
@@ -613,8 +836,6 @@ const Landing = () => {
               }}
             >
               <span style={{
-                width: 104,
-                height: 11,
                 fontFamily: '"Poppins", sans-serif',
                 fontWeight: 500,
                 fontSize: 16,
@@ -643,8 +864,6 @@ const Landing = () => {
               }}
             >
               <span style={{
-                width: 43,
-                height: 11,
                 fontFamily: '"Poppins", sans-serif',
                 fontWeight: 500,
                 fontSize: 16,
@@ -659,21 +878,34 @@ const Landing = () => {
             </button>
           </div>
         </div>
+
+        {/* Image (Second on mobile, First on Desktop) */}
+        <div
+          className="order-2 lg:order-1 flex-shrink-0 w-full lg:w-[720px] h-auto lg:h-[558px] px-0 lg:pl-[56px] lg:pr-[24px] mt-6 lg:mt-0 flex justify-center mx-auto"
+          style={isMobile ? { width: 'calc(100% + 8px)', maxWidth: 'calc(100% + 8px)', marginLeft: '-4px', marginRight: '-4px' } : {}}
+        >
+          <img
+            src={isMobile ? "/coins/whychosemobile.png" : "/coins/why chose us.png"}
+            alt="Why Choose Us"
+            className="w-full h-auto object-cover rounded-[24px] lg:rounded-[32px]"
+            style={isMobile ? { width: '100%', opacity: 1 } : { width: '100%', height: '100%' }}
+          />
+        </div>
       </section>
 
       {/* START EARNING WITH */}
-      <section id="earn" className="py-12 lg:py-24 px-4 lg:px-6 bg-transparent">
+      <section id="earn" className={isMobile ? "py-10 px-0 bg-transparent flex justify-center w-full" : "py-12 lg:py-24 px-4 lg:px-6 bg-transparent"}>
         <div
-          className="flex flex-col mx-auto w-full h-auto gap-8 lg:gap-[50px]"
-          style={{ maxWidth: 1328 }}
+          className="flex flex-col mx-auto w-full h-auto"
+          style={!isMobile ? { maxWidth: 1328, gap: 50 } : { maxWidth: 440, gap: 48 }}
         >
           <div
-            className="flex flex-col items-center justify-center mx-auto"
-            style={{ width: 652, height: 69, gap: 25 }}
+            className="flex flex-col items-center justify-center mx-auto px-4"
+            style={!isMobile ? { width: 652, height: 69, gap: 25 } : { width: '100%', maxWidth: 400, gap: 16 }}
           >
             <h2
               className="m-0 flex items-center justify-center"
-              style={{
+              style={!isMobile ? {
                 width: 434,
                 height: 33,
                 fontFamily: '"Bricolage Grotesque", sans-serif',
@@ -683,13 +915,23 @@ const Landing = () => {
                 letterSpacing: '-0.02em',
                 textAlign: 'center',
                 color: 'rgba(14, 15, 12, 1)'
+              } : {
+                width: '100%',
+                maxWidth: 400,
+                fontFamily: '"Bricolage Grotesque", sans-serif',
+                fontWeight: 700,
+                fontSize: 'clamp(36px, 10vw, 48px)',
+                lineHeight: '52px',
+                letterSpacing: '-0.02em',
+                textAlign: 'center',
+                color: 'rgba(14, 15, 12, 1)'
               }}
             >
               Start Earning With
             </h2>
             <p
-              className="m-0 flex items-center justify-center"
-              style={{
+              className="m-0 flex flex-col items-center justify-center text-center"
+              style={!isMobile ? {
                 width: 534,
                 height: 11,
                 fontFamily: '"Poppins", sans-serif',
@@ -698,23 +940,40 @@ const Landing = () => {
                 lineHeight: '28px',
                 textAlign: 'center',
                 color: 'rgba(14, 15, 12, 1)'
+              } : {
+                width: '100%',
+                maxWidth: 400,
+                fontFamily: '"Poppins", sans-serif',
+                fontWeight: 500,
+                fontSize: 'clamp(14px, 3.9vw, 17.5px)',
+                lineHeight: '28px',
+                letterSpacing: '0%',
+                textAlign: 'center',
+                color: 'rgba(14, 15, 12, 1)'
               }}
             >
-              Multiple ways to stack your coins. Choose what works best for you.
+              {isMobile ? (
+                <>
+                  <span className="block whitespace-nowrap">Multiple ways to stack your coins. Choose</span>
+                  <span className="block whitespace-nowrap">what works best for you.</span>
+                </>
+              ) : (
+                'Multiple ways to stack your coins. Choose what works best for you.'
+              )}
             </p>
           </div>
 
           <div
-            className="grid grid-cols-1 lg:grid-cols-3 mx-auto w-full"
-            style={{ width: 1328, maxWidth: '100%', height: 368, gap: 22 }}
+            className="grid grid-cols-1 lg:grid-cols-3 mx-auto w-full px-0"
+            style={!isMobile ? { width: 1328, maxWidth: '100%', height: 368, gap: 22 } : { maxWidth: 440, height: 'auto', gap: 20 }}
           >
             {['/coins/sew1.png', '/coins/sew2.png', '/coins/sew3.png'].map((imgSrc, idx) => (
               <img
                 key={idx}
                 src={imgSrc}
                 alt={`Start Earning Option ${idx + 1}`}
-                className="w-full object-contain mx-auto"
-                style={{ maxWidth: '100%', width: 428, height: 368 }}
+                className="w-full object-cover sm:object-contain mx-auto"
+                style={!isMobile ? { maxWidth: '100%', width: 428, height: 368 } : { width: '100%', maxWidth: '100%', height: 'auto' }}
               />
             ))}
           </div>
