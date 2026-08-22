@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import Header from '../components/layout/Header';
+import AuthModal from '../components/AuthModal';
 import {
   FiGlobe, FiLogIn, FiArrowRight, FiUsers, FiDollarSign,
   FiUserPlus, FiCheckSquare, FiGift, FiLayers, FiZap,
@@ -22,6 +23,16 @@ const Landing = () => {
   const [openFaq, setOpenFaq] = useState(null);
   const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' ? window.innerWidth < 1024 : false);
   const [isDarkMode, setIsDarkMode] = useState(false);
+  const [authModal, setAuthModal] = useState({ isOpen: false, tab: 'login' });
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('tab') === 'register') {
+      setAuthModal({ isOpen: true, tab: 'register' });
+    } else if (params.get('tab') === 'login' || params.get('login') === 'true') {
+      setAuthModal({ isOpen: true, tab: 'login' });
+    }
+  }, []);
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 1024);
@@ -109,8 +120,8 @@ const Landing = () => {
           {/* Right Actions */}
           <div className="hidden lg:flex items-center gap-[5px] w-[287px] h-[49px]">
             <button
-              onClick={() => navigate('/login')}
-              className="flex items-center justify-center hover:bg-gray-50 transition-colors shadow-sm whitespace-nowrap"
+              onClick={() => currentUser ? navigate('/dashboard') : setAuthModal({ isOpen: true, tab: 'login' })}
+              className="flex items-center justify-center hover:bg-gray-50 transition-colors shadow-sm whitespace-nowrap cursor-pointer"
               style={{
                 width: '99px',
                 height: '49px',
@@ -129,8 +140,8 @@ const Landing = () => {
               Login
             </button>
             <button
-              onClick={() => navigate('/login?tab=register')}
-              className="flex items-center justify-center hover:bg-[#1E2631] transition-colors shadow-sm whitespace-nowrap"
+              onClick={() => currentUser ? navigate('/dashboard') : setAuthModal({ isOpen: true, tab: 'register' })}
+              className="flex items-center justify-center hover:bg-[#1E2631] transition-colors shadow-sm whitespace-nowrap cursor-pointer"
               style={{
                 width: '183px',
                 height: '49px',
@@ -243,8 +254,8 @@ const Landing = () => {
                 style={{ width: 264, height: 49, gap: 5 }}
               >
                 <button
-                  onClick={() => navigate('/login?tab=register')}
-                  className="flex items-center justify-center transition-all hover:bg-[#2A3544]"
+                  onClick={() => currentUser ? navigate('/dashboard') : setAuthModal({ isOpen: true, tab: 'register' })}
+                  className="flex items-center justify-center transition-all hover:bg-[#2A3544] cursor-pointer"
                   style={{
                     width: 160,
                     height: 49,
@@ -262,8 +273,8 @@ const Landing = () => {
                   Start Earning
                 </button>
                 <button
-                  onClick={() => navigate('/login')}
-                  className="flex items-center justify-center transition-all hover:bg-gray-200"
+                  onClick={() => currentUser ? navigate('/dashboard') : setAuthModal({ isOpen: true, tab: 'login' })}
+                  className="flex items-center justify-center transition-all hover:bg-gray-200 cursor-pointer"
                   style={{
                     width: 99,
                     height: 49,
@@ -485,7 +496,10 @@ const Landing = () => {
         </div>
 
         {/* Right Content */}
-        <div className="flex flex-col w-full px-4 lg:px-[24px] justify-center">
+        <div
+          className="flex flex-col w-full px-4 lg:px-[24px] justify-center"
+          style={{ transform: 'translateY(10px)' }}
+        >
           {/* Heading & Sub */}
           <div
             className="flex flex-col items-start"
@@ -584,7 +598,8 @@ const Landing = () => {
             style={{ width: 264, height: 49, gap: 5 }}
           >
             <button
-              className="flex items-center justify-center text-white"
+              onClick={() => currentUser ? navigate('/dashboard') : setAuthModal({ isOpen: true, tab: 'register' })}
+              className="flex items-center justify-center text-white cursor-pointer hover:bg-[#1E2631] transition-colors"
               style={{
                 width: 160,
                 height: 49,
@@ -613,7 +628,8 @@ const Landing = () => {
               </span>
             </button>
             <button
-              className="flex items-center justify-center text-black"
+              onClick={() => currentUser ? navigate('/dashboard') : setAuthModal({ isOpen: true, tab: 'login' })}
+              className="flex items-center justify-center text-black cursor-pointer hover:bg-gray-200 transition-colors"
               style={{
                 width: 99,
                 height: 49,
@@ -879,8 +895,8 @@ const Landing = () => {
                 Start Earning Today
               </h2>
               <button
-                onClick={() => navigate('/login?tab=register')}
-                className="flex items-center justify-center transition-all hover:brightness-110 active:translate-y-[2px] h-[48px] rounded-[24px] px-8"
+                onClick={() => currentUser ? navigate('/dashboard') : setAuthModal({ isOpen: true, tab: 'register' })}
+                className="flex items-center justify-center transition-all hover:brightness-110 active:translate-y-[2px] h-[48px] rounded-[24px] px-8 cursor-pointer"
                 style={{
                   background: '#2D3346',
                   color: 'white',
@@ -1113,7 +1129,7 @@ const Landing = () => {
 
             {/* Top Section */}
             <div className="flex justify-between w-full">
-              <div className="flex" style={{ width: 289, height: 273, gap: 80 }}>
+              <div className="flex" style={{ width: 289, height: 273, gap: 80, transform: 'translateY(-27px)' }}>
                 <div className="flex flex-col" style={{ width: 108, height: 273, gap: 40 }}>
                   <h4
                     className="m-0"
@@ -1268,7 +1284,8 @@ const Landing = () => {
                   fontWeight: 400,
                   fontSize: 14,
                   lineHeight: '20px',
-                  color: 'rgba(0, 0, 0, 1)'
+                  color: 'rgba(0, 0, 0, 1)',
+                  transform: 'translateY(-6px)'
                 }}
               >
                 © 2026 TaskMint. All rights reserved.
@@ -1278,6 +1295,13 @@ const Landing = () => {
           </div>
         </div>
       </footer>
+
+      {/* Auth Modal Popup */}
+      <AuthModal
+        isOpen={authModal.isOpen}
+        onClose={() => setAuthModal(prev => ({ ...prev, isOpen: false }))}
+        initialTab={authModal.tab}
+      />
     </div>
   );
 };

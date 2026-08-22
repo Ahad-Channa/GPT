@@ -3,7 +3,6 @@ import { Routes, Route, Navigate, useParams } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { useAuth } from './contexts/AuthContext';
 import Home from './pages/Home';
-import Login from './pages/Login';
 import ResetPassword from './pages/ResetPassword';
 import Landing from './pages/Landing';
 import Profile from './pages/Profile';
@@ -88,8 +87,8 @@ function App() {
   return (
     <>
       {currentUser && twoFactorRequired && <TwoFactorOverlay />}
-      <Toaster 
-        position="bottom-right" 
+      <Toaster
+        position="bottom-right"
         containerStyle={{ zIndex: 999999 }}
         toastOptions={{
           className: 'custom-toast',
@@ -118,126 +117,127 @@ function App() {
           error: {
             iconTheme: { primary: '#ef4444', secondary: '#0A0A0A' }
           }
-        }} 
+        }}
       />
       <NotificationPanel />
       <Routes>
-      <Route path="/" element={<Landing />} />
-      <Route path="/r/:code" element={<ReferralRedirect />} />
-      <Route path="/login" element={currentUser ? <Navigate to="/dashboard" replace /> : <Login />} />
-      <Route path="/reset-password" element={<ResetPassword />} />
-      <Route 
-        path="/dashboard" 
-        element={
-          <PrivateRoute>
-            <Home />
-          </PrivateRoute>
-        } 
-      />
-      <Route 
-        path="/dashboard/profile" 
-        element={
-          <PrivateRoute>
-            <Profile />
-          </PrivateRoute>
-        } 
-      />
-      <Route 
-        path="/dashboard/wallet" 
-        element={
-          <PrivateRoute>
-            <Wallet />
-          </PrivateRoute>
-        } 
-      />
-      <Route 
-        path="/dashboard/earn" 
-        element={
-          <PrivateRoute>
-            <Earn />
-          </PrivateRoute>
-        } 
-      />
-      <Route 
-        path="/dashboard/leaderboard" 
-        element={
-          <PrivateRoute>
-            <Leaderboard />
-          </PrivateRoute>
-        } 
-      />
-      <Route 
-        path="/dashboard/daily-bonus" 
-        element={
-          <PrivateRoute>
-            <DailyBonus />
-          </PrivateRoute>
-        } 
-      />
-      <Route 
-        path="/user/:id" 
-        element={
-          <PrivateRoute>
-            <PublicProfile />
-          </PrivateRoute>
-        } 
-      />
-      <Route 
-        path="/dashboard/chat" 
-        element={
-          <PrivateRoute>
-            <Chat />
-          </PrivateRoute>
-        } 
-      />
-      <Route 
-        path="/dashboard/affiliates" 
-        element={
-          <PrivateRoute>
-            <Affiliates />
-          </PrivateRoute>
-        } 
-      />
-      <Route 
-        path="/dashboard/vip" 
-        element={
-          <PrivateRoute>
-            <VipPage />
-          </PrivateRoute>
-        } 
-      />
+        <Route path="/" element={<Landing />} />
+        <Route path="/r/:code" element={<ReferralRedirect />} />
+        <Route path="/login" element={currentUser ? <Navigate to="/dashboard" replace /> : <Navigate to="/?tab=login" replace />} />
+        <Route path="/register" element={currentUser ? <Navigate to="/dashboard" replace /> : <Navigate to="/?tab=register" replace />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
+        <Route
+          path="/dashboard"
+          element={
+            <PrivateRoute>
+              <Home />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/dashboard/profile"
+          element={
+            <PrivateRoute>
+              <Profile />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/dashboard/wallet"
+          element={
+            <PrivateRoute>
+              <Wallet />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/dashboard/earn"
+          element={
+            <PrivateRoute>
+              <Earn />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/dashboard/leaderboard"
+          element={
+            <PrivateRoute>
+              <Leaderboard />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/dashboard/daily-bonus"
+          element={
+            <PrivateRoute>
+              <DailyBonus />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/user/:id"
+          element={
+            <PrivateRoute>
+              <PublicProfile />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/dashboard/chat"
+          element={
+            <PrivateRoute>
+              <Chat />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/dashboard/affiliates"
+          element={
+            <PrivateRoute>
+              <Affiliates />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/dashboard/vip"
+          element={
+            <PrivateRoute>
+              <VipPage />
+            </PrivateRoute>
+          }
+        />
 
-      
-      {/* Admin Routes */}
-      <Route 
-        path="/admin" 
-        element={
-          <PrivateRoute>
-            {hasAdminAccess ? <AdminLayout /> : <Navigate to="/dashboard" replace />}
-          </PrivateRoute>
-        }
-      >
-        <Route index element={<AdminOverview />} />
-        <Route path="announcements" element={<AdminAnnouncements />} />
-        <Route path="vip" element={<AdminVip />} />
 
-        <Route path="avatars" element={<AdminAvatars />} />
-        <Route path="books" element={<AdminBooks />} />
-        <Route path="admins" element={<AdminStaff />} />
-        <Route path="withdrawals" element={<AdminWithdrawals />} />
-        <Route path="offerwalls" element={<AdminOfferwalls />} />
-        <Route path="promocodes" element={<AdminPromoCodes />} />
-        <Route path="users" element={<AdminUsers />} />
-        <Route path="featured-offers" element={<AdminCustomOffers />} />
-        <Route path="direct-offers" element={<AdminDirectOffers />} />
-        <Route path="proofs" element={<AdminProofs />} />
-        <Route path="leaderboard" element={<AdminLeaderboard />} />
-        <Route path="chat" element={<AdminChat />} />
-        <Route path="support" element={<AdminSupport />} />
-        <Route path="logs" element={<AdminLogs />} />
-        <Route path="settings" element={<AdminSettings />} />
-      </Route>
-    </Routes>
+        {/* Admin Routes */}
+        <Route
+          path="/admin"
+          element={
+            <PrivateRoute>
+              {hasAdminAccess ? <AdminLayout /> : <Navigate to="/dashboard" replace />}
+            </PrivateRoute>
+          }
+        >
+          <Route index element={<AdminOverview />} />
+          <Route path="announcements" element={<AdminAnnouncements />} />
+          <Route path="vip" element={<AdminVip />} />
+
+          <Route path="avatars" element={<AdminAvatars />} />
+          <Route path="books" element={<AdminBooks />} />
+          <Route path="admins" element={<AdminStaff />} />
+          <Route path="withdrawals" element={<AdminWithdrawals />} />
+          <Route path="offerwalls" element={<AdminOfferwalls />} />
+          <Route path="promocodes" element={<AdminPromoCodes />} />
+          <Route path="users" element={<AdminUsers />} />
+          <Route path="featured-offers" element={<AdminCustomOffers />} />
+          <Route path="direct-offers" element={<AdminDirectOffers />} />
+          <Route path="proofs" element={<AdminProofs />} />
+          <Route path="leaderboard" element={<AdminLeaderboard />} />
+          <Route path="chat" element={<AdminChat />} />
+          <Route path="support" element={<AdminSupport />} />
+          <Route path="logs" element={<AdminLogs />} />
+          <Route path="settings" element={<AdminSettings />} />
+        </Route>
+      </Routes>
     </>
   );
 }

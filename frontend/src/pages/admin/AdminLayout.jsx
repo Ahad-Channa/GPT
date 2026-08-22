@@ -89,10 +89,10 @@ const AdminLayout = () => {
   const roleLabel = isPrimaryAdmin
     ? 'Primary Admin'
     : isAdmin
-    ? 'Admin'
-    : isSupportAgent
-    ? 'Support Agent'
-    : 'Staff';
+      ? 'Admin'
+      : isSupportAgent
+        ? 'Support Agent'
+        : 'Staff';
 
   return (
     <div className="admin-layout">
