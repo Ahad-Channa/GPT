@@ -981,52 +981,44 @@ const Landing = () => {
       </section>
 
       {/* FAQ SECTION */}
-      <section id="faq" className="pt-8 pb-0 lg:pt-8 lg:pb-0 px-4 lg:px-6 bg-transparent">
+      <section id="faq" className="pt-8 pb-12 sm:pb-16 lg:pt-8 lg:pb-0 px-2 lg:px-6 bg-transparent w-full">
         <div
-          className="flex flex-col lg:flex-row mx-auto w-full items-start"
-          style={{ maxWidth: 1328, minHeight: 504, gap: 114 }}
+          className="flex flex-col lg:flex-row mx-auto w-full items-center lg:items-start max-w-[440px] lg:max-w-[1328px] gap-[56px] lg:gap-[114px]"
         >
           {/* Left Side */}
           <div
-            className="flex flex-col items-start w-full lg:w-[45%]"
-            style={{ width: 562, maxWidth: '100%', height: 138, gap: 40 }}
+            className="flex flex-col items-center text-center lg:items-start lg:text-left w-full max-w-[424px] lg:max-w-[562px] lg:w-[45%] gap-4 lg:gap-[40px]"
           >
             <h2
-              className="m-0"
+              className="m-0 text-center lg:text-left w-full max-w-[424px] lg:max-w-[562px]"
               style={{
-                width: 562,
-                maxWidth: '100%',
-                height: 87,
                 fontFamily: '"Bricolage Grotesque", sans-serif',
                 fontWeight: 700,
-                fontSize: 50,
-                lineHeight: '54px',
                 letterSpacing: '-0.02em',
                 color: 'rgba(14, 15, 12, 1)'
               }}
             >
-              Frequently<br />Asked Questions
+              <span className="block text-[40px] sm:text-[48px] lg:text-[50px] leading-[44px] sm:leading-[48px] lg:leading-[54px]">
+                Frequently<br />Asked Questions
+              </span>
             </h2>
             <p
-              className="m-0"
+              className="m-0 text-center lg:text-left w-full max-w-[314px] lg:max-w-[279px]"
               style={{
-                width: 279,
-                maxWidth: '100%',
-                height: 11,
                 fontFamily: '"Poppins", sans-serif',
                 fontWeight: 500,
-                fontSize: 16,
-                lineHeight: '28px',
                 color: 'rgba(14, 15, 12, 1)'
               }}
             >
-              Got questions? We've got answers.
+              <span className="block text-[18px] lg:text-[16px] leading-[28px]">
+                Got questions? We've got answers.
+              </span>
             </p>
           </div>
 
           {/* Right Side */}
           <div
-            className="flex flex-col w-full lg:w-[55%]"
+            className="flex flex-col items-center lg:items-start w-full max-w-[424px] lg:max-w-[652px] lg:w-[55%]"
           >
             {[
               { q: "How do I earn money?", a: "By completing offers, surveys, and tasks on the platform." },
@@ -1041,11 +1033,9 @@ const Landing = () => {
                 <div
                   key={i}
                   onClick={() => setOpenFaq(isOpen ? null : i)}
-                  className="flex flex-col justify-start cursor-pointer transition-all duration-300 overflow-hidden w-full"
+                  className="flex flex-col justify-start cursor-pointer transition-all duration-300 overflow-hidden w-full max-w-[424px] lg:max-w-[652px]"
                   style={{
-                    width: 652,
-                    maxWidth: '100%',
-                    minHeight: 69,
+                    minHeight: isOpen ? 139 : 69,
                     gap: 25,
                     borderRadius: 20,
                     padding: '28px 20px 28px 20px',
@@ -1053,8 +1043,8 @@ const Landing = () => {
                   }}
                 >
                   <div
-                    className="flex justify-between items-center"
-                    style={{ width: '100%', height: 13 }}
+                    className="flex justify-between items-center w-full"
+                    style={{ minHeight: 22 }}
                   >
                     <span
                       className="m-0"
@@ -1071,7 +1061,7 @@ const Landing = () => {
                       {faq.q}
                     </span>
                     <div
-                      className="transition-transform duration-300 flex items-center justify-center shrink-0"
+                      className="transition-transform duration-300 flex items-center justify-center shrink-0 ml-2"
                       style={{
                         transform: isOpen ? 'rotate(0deg)' : 'rotate(180deg)',
                       }}
@@ -1091,6 +1081,7 @@ const Landing = () => {
                           fontFamily: '"Poppins", sans-serif',
                           fontWeight: 400,
                           fontSize: 14,
+                          lineHeight: '20px',
                           color: 'rgba(14, 15, 12, 0.7)'
                         }}
                       >
@@ -1099,16 +1090,155 @@ const Landing = () => {
                     </div>
                   )}
                 </div>
-              )
+              );
             })}
           </div>
         </div>
       </section>
 
       {/* GET STARTED & PAYOUT OPTIONS */}
-      <section className="pt-0 pb-4 lg:pt-0 lg:pb-8 px-4 lg:px-6 w-full flex justify-center bg-transparent">
+      <section className="pt-4 pb-6 sm:pt-6 sm:pb-8 lg:pt-0 lg:pb-8 px-2 lg:px-6 w-full flex justify-center bg-transparent">
+        
+        {/* MOBILE VERSION (< 1024px) */}
         <div
-          className="flex flex-col mx-auto w-full relative"
+          className="flex lg:hidden flex-col items-center justify-between mx-auto w-full relative"
+          style={{
+            maxWidth: 424,
+            minHeight: 517,
+            borderRadius: 24,
+            paddingTop: 40,
+            paddingBottom: 40,
+            background: 'rgba(239, 239, 239, 1)',
+            overflow: 'hidden',
+            gap: 28
+          }}
+        >
+          {/* 1. Heading */}
+          <div className="flex flex-col items-center justify-center w-full px-6 text-center">
+            <h2
+              className="m-0 text-center"
+              style={{
+                maxWidth: 376,
+                width: '100%',
+                fontFamily: '"Bricolage Grotesque", sans-serif',
+                fontWeight: 700,
+                fontSize: 'clamp(38px, 12vw, 56px)',
+                lineHeight: 'clamp(42px, 12vw, 56px)',
+                letterSpacing: '-0.02em',
+                color: 'rgba(14, 15, 12, 1)'
+              }}
+            >
+              Start Earning<br />Today
+            </h2>
+          </div>
+
+          {/* 2. Button */}
+          <div className="flex justify-center w-full px-6">
+            <button
+              onClick={() => currentUser ? navigate('/dashboard') : setAuthModal({ isOpen: true, tab: 'register' })}
+              className="flex items-center justify-center transition-all hover:brightness-105 active:scale-95 shadow-sm cursor-pointer"
+              style={{
+                width: 260,
+                maxWidth: '100%',
+                height: 64,
+                padding: '10px 28px',
+                gap: 10,
+                borderRadius: 80,
+                backgroundColor: 'rgba(142, 249, 165, 1)',
+                border: 'none'
+              }}
+            >
+              <span
+                className="whitespace-nowrap m-0 p-0"
+                style={{
+                  fontFamily: '"Poppins", sans-serif',
+                  fontWeight: 600,
+                  fontSize: 18,
+                  color: 'rgba(14, 15, 12, 1)'
+                }}
+              >
+                Start Earning
+              </span>
+            </button>
+          </div>
+
+          {/* 3. Marquee Carousel */}
+          <div
+            className="flex w-full overflow-hidden relative items-center"
+            style={{
+              width: '100%',
+              height: 64,
+              paddingTop: 16,
+              paddingBottom: 16,
+              background: 'rgba(222, 223, 247, 1)',
+            }}
+          >
+            <div className="flex animate-[marquee_25s_linear_infinite] whitespace-nowrap items-center w-max" style={{ gap: 40 }}>
+              {[...Array(8)].map((_, i) => (
+                <React.Fragment key={i}>
+                  {[
+                    { src: "/coins/paypal copy.png", text: "Paypal" },
+                    { src: "/coins/LTC.png", text: "Litecoin" },
+                    { src: "/coins/giftcard copy.png", text: "Gift Card" },
+                    { src: "/coins/amazon copy.png", text: "Amazon" }
+                  ].map((item, idx) => (
+                    <div key={`${i}-${idx}`} className="flex items-center gap-2">
+                      <div className="flex items-center justify-center shrink-0">
+                        <img
+                          src={item.src}
+                          alt={item.text}
+                          style={{
+                            width: 26,
+                            height: 32,
+                            objectFit: 'contain'
+                          }}
+                        />
+                      </div>
+                      <span
+                        className="m-0 whitespace-nowrap"
+                        style={{
+                          fontFamily: '"Bricolage Grotesque", sans-serif',
+                          fontWeight: 700,
+                          fontSize: 18,
+                          lineHeight: '24px',
+                          letterSpacing: '-0.02em',
+                          color: 'rgba(99, 101, 168, 1)',
+                          display: 'flex',
+                          alignItems: 'center'
+                        }}
+                      >
+                        {item.text}
+                      </span>
+                    </div>
+                  ))}
+                </React.Fragment>
+              ))}
+            </div>
+          </div>
+
+          {/* 4. Below Text */}
+          <div className="flex flex-col items-center justify-center w-full px-6 text-center">
+            <p
+              className="m-0 text-center"
+              style={{
+                maxWidth: 376,
+                width: '100%',
+                fontFamily: '"Bricolage Grotesque", sans-serif',
+                fontWeight: 700,
+                fontSize: 24,
+                lineHeight: '32px',
+                letterSpacing: '-0.02em',
+                color: 'rgba(14, 15, 12, 1)'
+              }}
+            >
+              Join now and start making real money right now!
+            </p>
+          </div>
+        </div>
+
+        {/* DESKTOP VERSION (>= 1024px) - 100% UNTOUCHED */}
+        <div
+          className="hidden lg:flex flex-col mx-auto w-full relative"
           style={{
             maxWidth: 1328,
             minHeight: 245,
@@ -1248,21 +1378,21 @@ const Landing = () => {
       </section>
 
       {/* NEW FOOTER */}
-      <footer className="w-full flex justify-center pt-4 pb-12 px-4 lg:px-6 bg-transparent shrink-0">
+      <footer className="w-full flex justify-center pt-4 pb-12 px-2 lg:px-6 bg-transparent shrink-0">
         <div
-          className="flex flex-col lg:flex-row justify-between w-full mx-auto"
+          className="flex flex-col lg:flex-row justify-between w-full max-w-[440px] lg:max-w-[1328px] mx-auto items-center lg:items-start"
           style={{
-            maxWidth: 1328,
-            minHeight: 715,
+            minHeight: isMobile ? 571 : 715,
             gap: 40
           }}
         >
           {/* Left Panel */}
           <div
-            className="relative flex flex-col items-center shrink-0 overflow-hidden"
+            className="relative flex flex-col items-center shrink-0 overflow-hidden w-full max-w-[427px] h-[571px] lg:h-[715px] mx-auto lg:mx-0"
             style={{
               width: 427,
-              height: 715,
+              maxWidth: '100%',
+              height: isMobile ? 571 : 715,
               justifyContent: 'space-between',
               opacity: 1,
               borderRadius: 24,
@@ -1384,14 +1514,25 @@ const Landing = () => {
           </div>
 
           {/* Right Area */}
-          <div className="flex flex-col flex-1 h-full pt-4">
+          <div className="flex flex-col flex-1 h-full pt-4 w-full max-w-[440px] lg:max-w-none mx-auto lg:mx-0">
 
             {/* Top Section */}
-            <div className="flex justify-between w-full">
-              <div className="flex" style={{ width: 289, height: 273, gap: 80, transform: 'translateY(-27px)' }}>
+            <div className="flex flex-col lg:flex-row justify-between items-center lg:items-start w-full gap-8 lg:gap-0">
+              <div
+                className="flex justify-start w-full"
+                style={{
+                  width: isMobile ? 424 : 289,
+                  maxWidth: '100%',
+                  height: 273,
+                  paddingRight: 0,
+                  paddingLeft: isMobile ? 24 : 0,
+                  gap: isMobile ? 104 : 80,
+                  transform: isMobile ? 'none' : 'translateY(-27px)'
+                }}
+              >
                 <div className="flex flex-col" style={{ width: 108, height: 273, gap: 40 }}>
                   <h4
-                    className="m-0"
+                    className="m-0 text-left"
                     style={{
                       width: 108,
                       height: 13,
@@ -1400,7 +1541,7 @@ const Landing = () => {
                       fontSize: 20,
                       lineHeight: '32px',
                       letterSpacing: '-0.02em',
-                      textAlign: 'center',
+                      textAlign: 'left',
                       color: '#0E0F0C'
                     }}
                   >
@@ -1411,12 +1552,13 @@ const Landing = () => {
                       <li key={link} className="flex items-center" style={{ height: 10 }}>
                         <a
                           href="#"
-                          className="no-underline hover:opacity-100 transition-opacity"
+                          className="no-underline hover:opacity-100 transition-opacity text-left"
                           style={{
                             fontFamily: '"Poppins", sans-serif',
                             fontWeight: 400,
                             fontSize: 14,
                             lineHeight: '20px',
+                            letterSpacing: '0%',
                             opacity: 0.56,
                             color: '#0E0F0C',
                             whiteSpace: 'nowrap'
@@ -1428,9 +1570,9 @@ const Landing = () => {
                     ))}
                   </ul>
                 </div>
-                <div className="flex flex-col" style={{ width: 101, height: 273, gap: 40 }}>
+                <div className="flex flex-col" style={{ width: 108, height: 273, gap: 40 }}>
                   <h4
-                    className="m-0"
+                    className="m-0 text-left"
                     style={{
                       width: 108,
                       height: 13,
@@ -1439,7 +1581,7 @@ const Landing = () => {
                       fontSize: 20,
                       lineHeight: '32px',
                       letterSpacing: '-0.02em',
-                      textAlign: 'center',
+                      textAlign: 'left',
                       color: '#0E0F0C'
                     }}
                   >
@@ -1450,12 +1592,13 @@ const Landing = () => {
                       <li key={link} className="flex items-center" style={{ height: 10 }}>
                         <a
                           href="#"
-                          className="no-underline hover:opacity-100 transition-opacity"
+                          className="no-underline hover:opacity-100 transition-opacity text-left"
                           style={{
                             fontFamily: '"Poppins", sans-serif',
                             fontWeight: 400,
                             fontSize: 14,
                             lineHeight: '20px',
+                            letterSpacing: '0%',
                             opacity: 0.56,
                             color: '#0E0F0C',
                             whiteSpace: 'nowrap'
@@ -1471,13 +1614,20 @@ const Landing = () => {
 
               {/* Banner */}
               <div
-                className="w-[420px] flex justify-center items-center relative h-fit"
+                className="w-full flex justify-center items-center relative h-fit"
+                style={{
+                  width: isMobile ? 424 : 420,
+                  maxWidth: '100%',
+                  height: isMobile ? 199.28 : 'auto'
+                }}
               >
                 <img
                   src="/coins/wybt.png"
                   alt="Top Earner Graphic"
-                  className="pointer-events-none w-full h-auto"
+                  className="pointer-events-none w-full h-full object-contain"
                   style={{
+                    width: isMobile ? 424 : '100%',
+                    height: isMobile ? 199.28 : 'auto',
                     objectFit: 'contain'
                   }}
                 />
@@ -1510,7 +1660,7 @@ const Landing = () => {
 
             {/* Bottom Section (Testimonials) */}
             <div
-              className="flex items-center w-full"
+              className="flex items-center w-full overflow-x-auto hide-scrollbar lg:overflow-visible pb-2"
               style={{ gap: 16 }}
             >
               {[
@@ -1522,6 +1672,7 @@ const Landing = () => {
                   key={i}
                   src={src}
                   alt={`Feedback ${i + 1}`}
+                  className="shrink-0"
                   style={{
                     width: 295,
                     height: 215,
@@ -1533,18 +1684,18 @@ const Landing = () => {
             </div>
 
             {/* Copyright */}
-            <div className="mt-6 flex w-full">
+            <div className="mt-6 flex w-full justify-center lg:justify-start">
               <p
-                className="m-0 whitespace-nowrap"
+                className="m-0 text-center lg:text-left"
                 style={{
                   width: 853,
-                  height: 10,
+                  maxWidth: '100%',
                   fontFamily: '"Poppins", sans-serif',
                   fontWeight: 400,
                   fontSize: 14,
                   lineHeight: '20px',
                   color: 'rgba(0, 0, 0, 1)',
-                  transform: 'translateY(-6px)'
+                  transform: isMobile ? 'none' : 'translateY(-6px)'
                 }}
               >
                 © 2026 TaskMint. All rights reserved.

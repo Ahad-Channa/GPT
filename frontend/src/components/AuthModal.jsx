@@ -169,12 +169,12 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }) {
         >
           {/* Header Card (606px x 176px) */}
           <div
-            className="relative rounded-[24px] overflow-hidden flex flex-col justify-center w-full"
+            className="relative rounded-[20px] sm:rounded-[24px] overflow-hidden flex flex-col justify-center w-full"
             style={{
               maxWidth: '606px',
-              height: '176px',
+              minHeight: '145px',
               background: 'rgba(250, 247, 240, 1)',
-              padding: '24px 32px',
+              padding: '20px 20px 20px 24px',
             }}
           >
             {/* Close Button */}
@@ -184,8 +184,8 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }) {
               style={{
                 width: '22px',
                 height: '22px',
-                top: '8px',
-                right: '8px',
+                top: '10px',
+                right: '10px',
               }}
               aria-label="Close popup"
             >
@@ -203,16 +203,13 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }) {
             />
 
             {/* Header Content */}
-            <div className="relative z-20 text-left flex flex-col" style={{ maxWidth: '100%' }}>
-              <div className="flex flex-col" style={{ height: 56, gap: 20 }}>
+            <div className="relative z-20 text-left flex flex-col pr-8 sm:pr-24" style={{ maxWidth: '100%' }}>
+              <div className="flex flex-col gap-1 sm:gap-2">
                 <h2
-                  className="m-0 flex items-center whitespace-nowrap"
+                  className="m-0 flex items-center text-[24px] sm:text-[35px] leading-[30px] sm:leading-[50px]"
                   style={{
-                    height: 23,
                     fontFamily: '"Bricolage Grotesque", sans-serif',
                     fontWeight: 700,
-                    fontSize: '35px',
-                    lineHeight: '60px',
                     letterSpacing: '-0.02em',
                     color: 'rgba(14, 15, 12, 1)',
                   }}
@@ -223,16 +220,12 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }) {
                 </h2>
 
                 <p
-                  className="m-0 flex items-center whitespace-nowrap"
+                  className="m-0 text-[13px] sm:text-[16px] leading-[20px] sm:leading-[26px]"
                   style={{
-                    height: 13,
                     fontFamily: '"Poppins", sans-serif',
                     fontWeight: 500,
-                    fontSize: tab === 'forgot' ? '15px' : '16px',
-                    lineHeight: '26px',
                     letterSpacing: '0%',
                     color: 'rgba(14, 15, 12, 1)',
-                    whiteSpace: 'nowrap',
                   }}
                 >
                   {tab === 'login' && 'Login into your account to access all features'}
@@ -248,7 +241,7 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }) {
                   height: '4px',
                   borderRadius: '20px',
                   background: 'rgba(85, 88, 211, 1)',
-                  marginTop: '16px',
+                  marginTop: '12px',
                 }}
               />
             </div>
@@ -401,7 +394,7 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }) {
 
                 {/* Remember Me & Forgot Password Row */}
                 {tab === 'login' && (
-                  <div className="flex items-center justify-between px-1 w-full" style={{ maxWidth: '567px' }}>
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2.5 sm:gap-0 px-1 w-full" style={{ maxWidth: '567px' }}>
                     <label className="flex items-center gap-2 cursor-pointer select-none">
                       <input
                         type="checkbox"
@@ -430,11 +423,11 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }) {
                       </span>
                     </label>
                     <div
-                      className="flex items-center"
+                      className="flex items-center flex-wrap"
                       style={{
                         fontFamily: '"Poppins", sans-serif',
                         fontWeight: 400,
-                        fontSize: '15px',
+                        fontSize: '14.5px',
                         lineHeight: '26px',
                         letterSpacing: '0%',
                       }}
@@ -445,11 +438,11 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }) {
                       <button
                         type="button"
                         onClick={() => setTab('forgot')}
-                        className="cursor-pointer hover:underline p-0"
+                        className="cursor-pointer hover:underline p-0 font-semibold"
                         style={{
                           fontFamily: '"Poppins", sans-serif',
                           fontWeight: 600,
-                          fontSize: '15px',
+                          fontSize: '14.5px',
                           lineHeight: '26px',
                           color: 'rgba(36, 50, 77, 1)',
                         }}
@@ -463,12 +456,12 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }) {
                 {/* Terms Agreement Checkbox for Register */}
                 {tab === 'register' && (
                   <div className="flex items-center gap-2 px-1 w-full" style={{ maxWidth: '567px' }}>
-                    <label className="flex items-center gap-2 cursor-pointer select-none">
+                    <label className="flex items-start sm:items-center gap-2 cursor-pointer select-none">
                       <input
                         type="checkbox"
                         checked={agreeTerms}
                         onChange={(e) => setAgreeTerms(e.target.checked)}
-                        className="cursor-pointer accent-[#24324D] flex-shrink-0"
+                        className="cursor-pointer accent-[#24324D] flex-shrink-0 mt-1 sm:mt-0"
                         style={{
                           width: '15px',
                           height: '15px',
@@ -477,26 +470,33 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }) {
                         }}
                       />
                       <span
-                        className="flex items-center whitespace-nowrap"
+                        className="flex flex-col sm:flex-row sm:items-center text-left"
                         style={{
                           maxWidth: '544px',
-                          whiteSpace: 'nowrap',
                           fontFamily: '"Poppins", sans-serif',
                           fontWeight: 400,
-                          fontSize: '14.5px',
-                          lineHeight: '26px',
+                          fontSize: '13.5px',
+                          lineHeight: '22px',
                           letterSpacing: '-0.01em',
                           color: 'rgba(0, 0, 0, 0.6)',
                           opacity: 1,
                         }}
                       >
-                        By signing up, you agree to our&nbsp;
-                        <span style={{ fontWeight: 600, color: 'rgba(36, 50, 77, 1)' }}>
-                          Terms and Conditions
+                        <span className="whitespace-nowrap sm:whitespace-normal">
+                          By signing up, you agree to our{' '}
+                          <span style={{ fontWeight: 600, color: 'rgba(36, 50, 77, 1)' }}>
+                            Terms and
+                          </span>
                         </span>
-                        &nbsp;&&nbsp;
-                        <span style={{ fontWeight: 600, color: 'rgba(36, 50, 77, 1)' }}>
-                          Privacy Policy.
+                        <span className="whitespace-nowrap sm:whitespace-normal">
+                          <span className="hidden sm:inline">&nbsp;</span>
+                          <span style={{ fontWeight: 600, color: 'rgba(36, 50, 77, 1)' }}>
+                            Conditions
+                          </span>
+                          &nbsp;&&nbsp;
+                          <span style={{ fontWeight: 600, color: 'rgba(36, 50, 77, 1)' }}>
+                            Privacy Policy.
+                          </span>
                         </span>
                       </span>
                     </label>
