@@ -14,10 +14,10 @@ const isIconUrl = (icon) =>
 
 // Status badge config
 const STATUS_CONFIG = {
-  clicked:  { label: 'In Progress', color: 'text-amber-400',  bg: 'bg-amber-500/10  border-amber-500/20'  },
-  pending:  { label: 'Pending',     color: 'text-amber-400',  bg: 'bg-amber-500/10  border-amber-500/20'  },
-  approved: { label: 'Approved ✓',  color: 'text-emerald-400', bg: 'bg-emerald-500/10 border-emerald-500/20' },
-  rejected: { label: 'Rejected',    color: 'text-rose-400',   bg: 'bg-rose-500/10   border-rose-500/20'   },
+  clicked: { label: 'In Progress', color: 'text-amber-400', bg: 'bg-amber-500/10  border-amber-500/20' },
+  pending: { label: 'Pending', color: 'text-amber-400', bg: 'bg-amber-500/10  border-amber-500/20' },
+  approved: { label: 'Approved ✓', color: 'text-emerald-400', bg: 'bg-emerald-500/10 border-emerald-500/20' },
+  rejected: { label: 'Rejected', color: 'text-rose-400', bg: 'bg-rose-500/10   border-rose-500/20' },
 };
 
 // ─── Small Card shown in the grid ────────────────────────────────────────────
@@ -26,66 +26,124 @@ export const DirectOfferCard = ({ offer, onClick }) => {
   const coverImgSrc = offer.coverImage || (isIconUrl(offer.icon) ? offer.icon : null);
   const emojiIcon = !coverImgSrc && offer.icon ? offer.icon : null;
   const statusCfg = offer.clickStatus ? STATUS_CONFIG[offer.clickStatus] : null;
+  const rewardVal = offer.rewardAmount ?? offer.points ?? offer.reward ?? 1250000;
 
   return (
     <motion.div
       variants={item}
       onClick={onClick}
-      className={`cursor-pointer transition-all flex flex-col group h-auto rounded-[10px] gap-2 p-2 w-full lg:w-[156px] shrink-0 ${isExpired ? 'opacity-50' : 'hover:scale-[1.02]'}`}
+      className={`cursor-pointer flex flex-col shrink-0 bg-white shadow-[0_4px_20px_rgba(0,0,0,0.03)] border border-gray-100/80 ${
+        isExpired ? 'opacity-50' : ''
+      }`}
       style={{
-        background: 'rgba(0, 0, 0, 0.36)',
-        backdropFilter: 'blur(44px)',
-        WebkitBackdropFilter: 'blur(44px)',
+        width: '181.14px',
+        height: '246.53px',
+        borderRadius: '20px',
+        paddingTop: '8px',
+        paddingBottom: '15px',
+        paddingLeft: '7.14px',
+        paddingRight: '7.14px',
+        gap: '15px',
+        background: 'rgba(255, 255, 255, 1)',
+        boxSizing: 'border-box',
       }}
     >
       {/* Cover area */}
-      <div className="w-full aspect-square lg:w-[140px] lg:h-[140px] relative flex-shrink-0 overflow-hidden rounded-[10px]">
+      <div
+        className="relative flex-shrink-0 overflow-hidden rounded-[16px] bg-[#F3F4F6]"
+        style={{
+          width: '166.86px',
+          height: '166.86px',
+        }}
+      >
         {coverImgSrc ? (
           <img
             src={coverImgSrc}
             alt={offer.title}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+            draggable="false"
+            className="w-full h-full object-cover pointer-events-none select-none"
           />
+        ) : offer.gradient ? (
+          <div className={`w-full h-full bg-gradient-to-br ${offer.gradient} flex items-center justify-center`}>
+            {offer.iconType === 'percent' && (
+              <div className="w-10 h-10 rounded-xl bg-white/30 backdrop-blur-sm flex items-center justify-center shadow-inner">
+                <span className="text-white font-black text-xl">%</span>
+              </div>
+            )}
+            {offer.iconType === 'game' && (
+              <div className="w-10 h-10 rounded-xl bg-white/30 backdrop-blur-sm flex items-center justify-center shadow-inner">
+                <span className="text-white text-2xl">🎮</span>
+              </div>
+            )}
+            {offer.iconType === 'survey' && (
+              <div className="w-10 h-10 rounded-xl bg-white/30 backdrop-blur-sm flex items-center justify-center shadow-inner">
+                <span className="text-white text-2xl">📋</span>
+              </div>
+            )}
+          </div>
         ) : (
-          <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-indigo-900/30 via-[#131a2e] to-purple-900/30">
+          <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-indigo-500/20 to-purple-500/20">
             {emojiIcon ? (
-              <span className="text-4xl lg:text-3xl select-none group-hover:scale-110 transition-transform duration-300">
+              <span className="text-3xl select-none">
                 {emojiIcon}
               </span>
             ) : (
-              <FiZap className="text-2xl lg:text-3xl text-indigo-400/40 group-hover:text-indigo-400/60 transition-colors" />
+              <FiZap className="text-3xl text-indigo-500" />
             )}
           </div>
         )}
-        {/* Gradient overlay */}
-        <div className="absolute inset-0 bg-gradient-to-t from-[#0f1728]/80 to-transparent" />
 
-        {/* S2S Badge (top right) */}
-        <div className="absolute top-1 right-1 bg-indigo-500/80 backdrop-blur-md px-1.5 py-0.5 rounded-md border border-indigo-400/30 z-10">
-          <span className="text-[8px] lg:text-[9px] text-white font-bold tracking-wide">AUTO</span>
-        </div>
-
-        {/* Platform Icons */}
-        {offer.platforms && (
-          <div className="absolute top-1 lg:top-1.5 left-1 lg:left-1.5 flex items-center gap-1 bg-black/60 backdrop-blur-md px-1.5 py-1 rounded-md border border-white/10 z-10">
-            {offer.platforms.desktop && <FaDesktop className="text-white text-[8px] lg:text-[9px]" title="Desktop" />}
-            {offer.platforms.android && <FaAndroid className="text-emerald-400 text-[8px] lg:text-[9px]" title="Android" />}
-            {offer.platforms.ios && <FaApple className="text-white text-[8px] lg:text-[9px]" title="iOS" />}
+        {/* Top Center Platform Pill — only show selected platforms */}
+        {(offer.platforms ? (offer.platforms.desktop || offer.platforms.android || offer.platforms.ios) : true) && (
+          <div
+            className="absolute top-0 left-1/2 -translate-x-1/2 flex items-center justify-center z-10"
+            style={{
+              width: '95.7px',
+              height: '22.82px',
+              paddingTop: '4px',
+              paddingRight: '16px',
+              paddingBottom: '4px',
+              paddingLeft: '16px',
+              gap: '8px',
+              borderBottomRightRadius: '16px',
+              borderBottomLeftRadius: '16px',
+              background: 'rgba(255, 255, 255, 1)',
+              boxSizing: 'border-box',
+              opacity: 1,
+            }}
+          >
+            {(!offer.platforms || offer.platforms.desktop) && (
+              <img
+                src="/coins/desko.png"
+                alt="Desktop"
+                style={{ width: '12px', height: '12px', opacity: 1, objectFit: 'contain', flexShrink: 0 }}
+              />
+            )}
+            {(!offer.platforms || offer.platforms.android) && (
+              <svg style={{ width: '12px', height: '12px', opacity: 1, flexShrink: 0 }} className="text-[#22C55E]" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M17.523 15.3414c-.5511 0-.9993-.4486-.9993-.9997s.4482-.9993.9993-.9993c.551 0 .9993.4482.9993.9993.0001.5511-.4482.9997-.9993.9997m-11.046 0c-.5511 0-.9993-.4486-.9993-.9997s.4482-.9993.9993-.9993c.5511 0 .9993.4482.9993.9993 0 .5511-.4482.9997-.9993.9997m11.4045-6.02l1.9973-3.4592a.416.416 0 00-.1521-.5676.416.416 0 00-.5676.1521l-2.0223 3.503C15.5902 8.411 13.8533 8.081 12 8.081s-3.5902.33-5.1367.8697L4.841 5.4477a.4161.4161 0 00-.5677-.1521.4157.4157 0 00-.1521.5676l1.9973 3.4592C2.6889 11.1867.3432 14.6589 0 18.761h24c-.3432-4.1021-2.6889-7.5743-6.1185-9.4396" />
+              </svg>
+            )}
+            {(!offer.platforms || offer.platforms.ios) && (
+              <svg style={{ width: '12px', height: '12px', opacity: 1, flexShrink: 0 }} className="text-gray-900" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 6.37c.62-.75 1.04-1.8 0.92-2.85-.9.04-1.99.6-2.63 1.35-.57.65-1.07 1.72-.94 2.74 1.01.08 2.03-.49 2.65-1.24z" />
+              </svg>
+            )}
           </div>
         )}
       </div>
 
       {/* Text info */}
-      <div className="flex flex-col w-full flex-1 gap-[6px] items-start">
+      <div className="flex flex-col w-full text-left justify-between min-h-0">
         <p
-          className="line-clamp-1 truncate text-[14px] lg:text-[18px] pb-[2px]"
+          className="truncate text-[#0E0F0C]"
           title={offer.title}
           style={{
-            fontFamily: '"Barlow Condensed", sans-serif',
-            fontWeight: 600,
-            lineHeight: '120%',
-            color: 'rgba(255, 255, 255, 1)',
-            margin: 0,
+            fontFamily: '"Bricolage Grotesque", sans-serif',
+            fontWeight: 700,
+            fontSize: '14px',
+            lineHeight: '18px',
+            letterSpacing: '-0.02em',
           }}
         >
           {offer.title}
@@ -93,26 +151,51 @@ export const DirectOfferCard = ({ offer, onClick }) => {
 
         {/* Status OR reward */}
         {statusCfg ? (
-          <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded border ${statusCfg.color} ${statusCfg.bg}`}
-            style={{ fontFamily: '"Barlow Condensed", sans-serif' }}>
+          <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded border mt-1 w-fit ${statusCfg.color} ${statusCfg.bg}`}
+            style={{ fontFamily: '"Poppins", sans-serif' }}>
             {statusCfg.label}
           </span>
         ) : (
-          <div className="flex items-center justify-start w-full h-[16px] lg:h-[18px] gap-[3px] lg:gap-[4px]">
-            <img src="/coins/Coin.png" alt="Coin" className="w-[12px] h-[12px] lg:w-[15px] lg:h-[15px] object-contain" />
-            <span
-              className="text-[12px] lg:text-[15px] flex items-center"
+          <div
+            className="flex items-center"
+            style={{
+              minWidth: '81px',
+              width: 'fit-content',
+              height: '19.67px',
+              borderRadius: '10px',
+              paddingTop: '4px',
+              paddingRight: '6px',
+              paddingBottom: '4px',
+              paddingLeft: '6px',
+              gap: '2px',
+              background: 'rgba(249, 247, 241, 1)',
+              boxSizing: 'border-box',
+            }}
+          >
+            <img
+              src="/coins/procoinicon.png"
+              alt="Coin"
               style={{
-                fontFamily: '"Barlow Condensed", sans-serif',
+                width: '9px',
+                height: '10px',
+                opacity: 1,
+                flexShrink: 0,
+                objectFit: 'contain',
+              }}
+            />
+            <span
+              style={{
+                fontFamily: '"Poppins", sans-serif',
                 fontWeight: 700,
-                lineHeight: '130%',
-                background: 'linear-gradient(180deg, #FEDF77 0%, #FCB91E 100%)',
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-                backgroundClip: 'text',
+                fontSize: '12px',
+                lineHeight: '1',
+                letterSpacing: '0%',
+                color: 'rgba(231, 171, 24, 1)',
+                display: 'inline-flex',
+                alignItems: 'center',
               }}
             >
-              <CoinDisplay amount={offer.rewardAmount} showIcon={false} />
+              {rewardVal.toLocaleString()}
             </span>
           </div>
         )}
@@ -237,9 +320,9 @@ export const DirectOfferModal = ({ offer, token, onClose, onClicked }) => {
               {clickStatus === 'pending' && <FiClock />}
               {clickStatus === 'rejected' && <FiXCircle />}
               {clickStatus === 'approved' ? 'Reward credited automatically!' :
-               clickStatus === 'clicked' ? 'Offer started — complete the requirements below.' :
-               clickStatus === 'pending' ? 'Awaiting advertiser confirmation...' :
-               'Conversion not confirmed by advertiser.'}
+                clickStatus === 'clicked' ? 'Offer started — complete the requirements below.' :
+                  clickStatus === 'pending' ? 'Awaiting advertiser confirmation...' :
+                    'Conversion not confirmed by advertiser.'}
             </div>
           )}
 
@@ -296,9 +379,8 @@ export const DirectOfferModal = ({ offer, token, onClose, onClicked }) => {
 
           {/* Error message */}
           {result && (
-            <div className={`w-full text-center p-3 rounded-xl text-[14px] font-medium border ${
-              result.type === 'error' ? 'bg-[#f43f5e1a] border-[#f43f5e33] text-[#fb7185]' : 'bg-white/5 border-white/10 text-white'
-            }`} style={{ fontFamily: '"Barlow Condensed", sans-serif' }}>
+            <div className={`w-full text-center p-3 rounded-xl text-[14px] font-medium border ${result.type === 'error' ? 'bg-[#f43f5e1a] border-[#f43f5e33] text-[#fb7185]' : 'bg-white/5 border-white/10 text-white'
+              }`} style={{ fontFamily: '"Barlow Condensed", sans-serif' }}>
               {result.message}
             </div>
           )}

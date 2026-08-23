@@ -1,6 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
-import { FiActivity } from 'react-icons/fi';
-import CoinIcon from './CoinIcon';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import PublicProfileModal from './PublicProfileModal';
 import { io } from 'socket.io-client';
@@ -10,75 +8,188 @@ const SOCKET_URL = import.meta.env.VITE_API_URL
   ? import.meta.env.VITE_API_URL.replace(/\/api\/?$/, '')
   : 'http://localhost:5000';
 
-const LiveEarningsBar = () => {
-  const [earnings, setEarnings] = useState([]);
-  const [selectedUserId, setSelectedUserId] = useState(null);
-  const socketRef = useRef(null);
+// Global cache in memory so navigating across pages has ZERO delay and NO fake flash
+let cachedEarningsGlobal = [];
 
+// Avatar color palette for letter badges
+const AVATAR_COLORS = [
+  'bg-[#F59E0B]', // Amber
+  'bg-[#22C55E]', // Green
+  'bg-[#6366F1]', // Indigo
+  'bg-[#06B6D4]', // Cyan
+  'bg-[#8B5CF6]', // Purple
+  'bg-[#EC4899]', // Pink
+  'bg-[#10B981]', // Emerald
+  'bg-[#3B82F6]', // Blue
+];
+
+const getAvatarColor = (name = '') => {
+  let hash = 0;
+  for (let i = 0; i < name.length; i++) {
+    hash = name.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  const index = Math.abs(hash) % AVATAR_COLORS.length;
+  return AVATAR_COLORS[index];
+};
+
+const LiveEarningsBar = () => {
+  const [earnings, setEarnings] = useState(() => cachedEarningsGlobal);
+  const [selectedUserId, setSelectedUserId] = useState(null);
+  const [hasMore, setHasMore] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const socketRef = useRef(null);
+  const scrollContainerRef = useRef(null);
+  const isFetchingMoreRef = useRef(false);
+
+  // Sync state with global cache
+  const updateEarnings = useCallback((updater) => {
+    setEarnings((prev) => {
+      const next = typeof updater === 'function' ? updater(prev) : updater;
+      cachedEarningsGlobal = next;
+      return next;
+    });
+  }, []);
+
+  // Initial fetch on mount (only replaces if cache is empty or refreshes)
   useEffect(() => {
-    const fetchEarnings = async () => {
+    const fetchInitial = async () => {
       try {
-        const res = await fetch(`${API}/public/recent-earnings`);
+        const res = await fetch(`${API}/public/recent-earnings?limit=20&skip=0`);
         const data = await res.json();
-        if (data.success && data.earnings?.length > 0) {
-          setEarnings(data.earnings);
+        if (data.success && Array.isArray(data.earnings)) {
+          updateEarnings(data.earnings);
+          if (data.earnings.length < 20) setHasMore(false);
         }
       } catch (err) {
-        console.error('Failed to load recent earnings frontend', err);
+        console.error('Failed to load recent earnings', err);
       }
     };
-    fetchEarnings();
-    // Polling as fallback for historical data
-    const intv = setInterval(fetchEarnings, 15000);
 
-    // ── Real-time socket listener for instant live feed updates ──────────────
-    // When a leaderboard reward (or other major earning) fires server-side,
-    // the backend emits 'newEarning' globally so ALL users see it immediately.
-    socketRef.current = io(SOCKET_URL, { transports: ['websocket', 'polling'] });
-    socketRef.current.on('newEarning', (newTx) => {
-      setEarnings(prev => {
-        // Prepend the new transaction and cap the list at 20 items
-        const updated = [newTx, ...prev.filter(t => t._id !== newTx._id)].slice(0, 20);
-        return updated;
+    if (cachedEarningsGlobal.length === 0) {
+      fetchInitial();
+    }
+
+    // Socket listener for real-time live feed updates
+    try {
+      socketRef.current = io(SOCKET_URL, { transports: ['websocket', 'polling'] });
+      socketRef.current.on('newEarning', (newTx) => {
+        updateEarnings((prev) => {
+          const updated = [newTx, ...prev.filter((t) => t._id !== newTx._id)];
+          return updated;
+        });
       });
-    });
+    } catch (err) {
+      console.warn('Socket connection error:', err);
+    }
 
     return () => {
-      clearInterval(intv);
       if (socketRef.current) {
         socketRef.current.disconnect();
         socketRef.current = null;
       }
     };
-  }, []);
+  }, [updateEarnings]);
 
-  if (earnings.length === 0) return null;
+  // Load more when scrolled near the end
+  const loadMore = useCallback(async () => {
+    if (isFetchingMoreRef.current || !hasMore) return;
+    isFetchingMoreRef.current = true;
+    setLoadingMore(true);
 
-  // Helper to determine display details
+    try {
+      const currentCount = cachedEarningsGlobal.length;
+      const res = await fetch(`${API}/public/recent-earnings?limit=20&skip=${currentCount}`);
+      const data = await res.json();
+      if (data.success && Array.isArray(data.earnings)) {
+        if (data.earnings.length === 0) {
+          setHasMore(false);
+        } else {
+          updateEarnings((prev) => {
+            const existingIds = new Set(prev.map((e) => e._id));
+            const newItems = data.earnings.filter((e) => !existingIds.has(e._id));
+            return [...prev, ...newItems];
+          });
+          if (data.earnings.length < 20) {
+            setHasMore(false);
+          }
+        }
+      }
+    } catch (err) {
+      console.error('Failed to load more earnings', err);
+    } finally {
+      isFetchingMoreRef.current = false;
+      setLoadingMore(false);
+    }
+  }, [hasMore, updateEarnings]);
+
+  // Scroll event handler for horizontal infinite scroll + wheel support
+  const handleScroll = () => {
+    const el = scrollContainerRef.current;
+    if (!el) return;
+    const { scrollLeft, clientWidth, scrollWidth } = el;
+    if (scrollWidth - (scrollLeft + clientWidth) < 250) {
+      loadMore();
+    }
+  };
+
+  const handleWheel = (e) => {
+    if (scrollContainerRef.current) {
+      if (e.deltaY !== 0) {
+        scrollContainerRef.current.scrollLeft += e.deltaY;
+        handleScroll();
+      }
+    }
+  };
+
+  // Format details helper - absolutely no negative numbers or minus signs
   const getDetails = (tx) => {
-    if (tx.transactionType === 'withdrawal') {
+    const rawAmount = Math.abs(Number(tx.amount) || 0);
+
+    if (tx.isWithdrawal || tx.transactionType === 'withdrawal') {
       const method = tx.method ? tx.method.charAt(0).toUpperCase() + tx.method.slice(1) : 'Withdrawal';
+      const usdValue = rawAmount >= 1000 
+        ? (rawAmount / 1000).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 })
+        : rawAmount.toLocaleString();
+
       return {
-        amountStr: `${(Math.abs(tx.amount) / 1000).toFixed(2)}$`,
+        amountStr: `$${usdValue}`,
         isCoin: false,
         isWithdrawal: true,
-        method: method,
-        color: 'text-[#49B265]' // Different color for withdrawals
+        method,
+        color: 'rgba(2, 121, 64, 1)',
       };
     }
-    
+
     // Earnings
     let offerwall = 'System';
     let task = 'Completed Task';
     let taskCategory = 'Task: System Bonus';
-    
-    if (tx.transactionType === 'daily_bonus') { task = 'Daily Bonus'; offerwall = 'Rewards'; taskCategory = 'Task: Claimed Daily Bonus'; }
-    else if (tx.transactionType === 'leaderboard_reward') { task = 'Leaderboard Prize'; offerwall = 'Rewards'; taskCategory = 'Task: Leaderboard Prize'; }
-    else if (tx.transactionType === 'vip_reward') { task = 'VIP Reward'; offerwall = 'Rewards'; taskCategory = 'Task: VIP Reward'; }
-    else if (tx.transactionType === 'mission_reward') { task = 'Mission Reward'; offerwall = 'Rewards'; taskCategory = 'Task: Completed Mission'; }
-    else if (tx.transactionType === 'admin_adjustment') { task = 'Admin Bonus'; offerwall = 'System'; taskCategory = 'Task: Admin Adjustment'; }
-    else if (tx.transactionType === 'promo_code') { task = 'Promo Code'; offerwall = 'Rewards'; taskCategory = 'Task: Redeemed Promo Code'; }
-    else {
+
+    if (tx.transactionType === 'daily_bonus') {
+      task = 'Daily Bonus';
+      offerwall = 'Rewards';
+      taskCategory = 'Task: Claimed Daily Bonus';
+    } else if (tx.transactionType === 'leaderboard_reward') {
+      task = 'Leaderboard Prize';
+      offerwall = 'Rewards';
+      taskCategory = 'Task: Leaderboard Prize';
+    } else if (tx.transactionType === 'vip_reward') {
+      task = 'VIP Reward';
+      offerwall = 'Rewards';
+      taskCategory = 'Task: VIP Reward';
+    } else if (tx.transactionType === 'mission_reward') {
+      task = 'Mission Reward';
+      offerwall = 'Rewards';
+      taskCategory = 'Task: Completed Mission';
+    } else if (tx.transactionType === 'admin_adjustment') {
+      task = 'Admin Bonus';
+      offerwall = 'System';
+      taskCategory = 'Task: Admin Adjustment';
+    } else if (tx.transactionType === 'promo_code') {
+      task = 'Promo Code';
+      offerwall = 'Rewards';
+      taskCategory = 'Task: Redeemed Promo Code';
+    } else {
       if (tx.metadata?.offerwall) {
         offerwall = tx.metadata.offerwall;
         taskCategory = `Task: Completed ${tx.metadata.offerwall} offer`;
@@ -88,295 +199,432 @@ const LiveEarningsBar = () => {
       if (tx.description) task = tx.description;
     }
 
+    const amountStr = rawAmount.toLocaleString();
+
     return {
-      amountStr: `${Math.abs(tx.amount).toLocaleString()}`,
+      amountStr,
       isCoin: true,
       isWithdrawal: false,
       offerwall,
       task,
       taskCategory,
-      color: 'text-[#FACC15]'
+      color: 'rgba(231, 171, 24, 1)',
     };
   };
 
   return (
     <>
-      {/* Removed overflow-hidden so the tooltip dropdown is visible */}
-      <div 
-        className="w-full bg-black whitespace-nowrap flex items-center relative shadow-sm z-30 mx-auto h-[36px] lg:h-[88px]"
+      <style>{`
+        .hide-scroll::-webkit-scrollbar { display: none; }
+        .hide-scroll {
+          -ms-overflow-style: none;
+          scrollbar-width: none;
+        }
+      `}</style>
+
+      {/* Main Container */}
+      <section
+        id="live-feed-bar"
+        className="w-full relative z-30 flex items-center transition-all select-none"
         style={{
-          maxWidth: '1511px',
-          borderTop: '1px solid rgba(255, 255, 255, 0.4)',
-          borderBottom: '1px solid rgba(255, 255, 255, 0.4)'
+          height: '52px',
+          background: 'rgba(222, 223, 247, 1)',
+          paddingTop: '8px',
+          paddingBottom: '8px',
+          opacity: 1,
+          transform: 'rotate(0deg)',
         }}
       >
-        
-        {/* Fade Gradients for smooth edges */}
-        <div className="absolute right-0 w-32 h-full bg-gradient-to-l from-black to-transparent z-10 pointer-events-none" />
-        
-        {/* LIVE Indicator Box */}
-        <div className="flex items-center px-2 lg:px-6 z-20 bg-black h-full relative cursor-default shrink-0">
-          <div 
-            className="flex items-center lg:min-w-[112px]"
-            style={{
-              width: 'auto',
-              height: 'auto',
-              minHeight: '20px',
-              gap: '6px',
-              background: 'transparent',
-              padding: '2px 4px'
-            }}
-          >
-            <div className="w-1.5 h-1.5 lg:w-2.5 lg:h-2.5 rounded-full bg-[#49B265] animate-pulse drop-shadow-[0_0_8px_rgba(73,178,101,0.8)] shrink-0" />
-            <span className="text-[12px] lg:text-[28px]" style={{
-              width: 'auto',
-              minWidth: 'auto',
-              height: 'auto',
-              fontFamily: '"Barlow Condensed", sans-serif',
-              fontWeight: 700,
-              lineHeight: '120%',
-              color: 'rgba(73, 178, 101, 1)',
-              display: 'block',
-              textShadow: '0px 0px 10px rgba(41, 253, 152, 0.2)'
-            }}>
+        {/* Left Section: "• Live Feed" Title & Live Pulse (Fixed on left) */}
+        <div
+          className="flex items-center shrink-0 z-20 pl-4 md:pl-8 lg:pl-[56px] pr-2 h-full relative"
+          style={{
+            background: 'rgba(222, 223, 247, 1)',
+            gap: '8px',
+          }}
+        >
+          <div className="flex items-center gap-[8px]">
+            {/* Live Indicator Dot with subtle ambient glow */}
+            <span className="relative flex h-[10px] w-[10px] items-center justify-center">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#10B981] opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-[8px] w-[8px] bg-[#10B981] shadow-[0_0_8px_rgba(16,185,129,0.6)]"></span>
+            </span>
+
+            {/* Live Feed Title - Exact Spec */}
+            <span
+              style={{
+                fontFamily: '"Bricolage Grotesque", sans-serif',
+                fontWeight: 700,
+                fontSize: '18px',
+                lineHeight: '100%',
+                letterSpacing: '-0.02em',
+                color: '#0E0F0C',
+                opacity: 1,
+                transform: 'rotate(0deg)',
+                display: 'inline-flex',
+                alignItems: 'center',
+                whiteSpace: 'nowrap',
+              }}
+            >
               Live Feed
             </span>
           </div>
+
+          {/* Natural 20px Edge Fade */}
+          <div
+            className="absolute left-full top-0 bottom-0 w-5 pointer-events-none z-20"
+            style={{
+              background: 'linear-gradient(to right, rgba(222, 223, 247, 1) 0%, rgba(222, 223, 247, 0) 100%)',
+            }}
+          />
         </div>
 
-        {/* Live Items Container - Scrollable */}
+        {/* Right Fade Mask */}
+        <div
+          className="absolute right-0 top-0 bottom-0 w-6 pointer-events-none z-10"
+          style={{
+            background: 'linear-gradient(to left, rgba(222, 223, 247, 1) 0%, rgba(222, 223, 247, 0) 100%)',
+          }}
+        />
+
+        {/* Scrollable Container */}
         <div className="relative flex-1 h-full z-0">
-          <style>{`
-            .hide-scroll::-webkit-scrollbar { display: none; }
-          `}</style>
-          <div 
-            className="absolute inset-0 flex items-center gap-[6px] overflow-x-auto whitespace-nowrap hide-scroll px-4 pointer-events-none" 
-            style={{ 
-              scrollbarWidth: 'none', 
+          <div
+            ref={scrollContainerRef}
+            onWheel={handleWheel}
+            onScroll={handleScroll}
+            className="absolute inset-0 flex items-center gap-[6px] overflow-x-auto whitespace-nowrap hide-scroll pl-1 pr-6 cursor-grab active:cursor-grabbing pointer-events-auto"
+            style={{
+              scrollbarWidth: 'none',
               msOverflowStyle: 'none',
-              paddingBottom: '120px',
-              marginBottom: '-120px'
+              scrollBehavior: 'smooth',
             }}
           >
-            <AnimatePresence initial={false}>
-              {earnings.map((tx, index) => {
-                const details = getDetails(tx);
-                const coinId = (index % 2) + 1;
-                
-                return (
-                  <motion.div 
-                    key={tx._id}
-                    layout
-                    initial={{ opacity: 0, x: -30, scale: 0.95 }}
-                    animate={{ opacity: 1, x: 0, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.9, transition: { duration: 0.2 } }}
-                    transition={{ duration: 0.4, type: "spring", bounce: 0.3 }}
-                    className={`inline-flex items-center group cursor-pointer transition-transform hover:scale-[1.02] relative shrink-0 h-[24px] lg:h-[46px] px-[8px] py-[2px] lg:px-[16px] lg:py-[10px] pointer-events-auto`} 
+            {earnings.length === 0 ? (
+              /* Subtle loading skeleton chips if first visit has 0 cache */
+              <div className="flex items-center gap-[6px]">
+                {[1, 2, 3, 4, 5, 6].map((n) => (
+                  <div
+                    key={`skel-${n}`}
+                    className="animate-pulse flex items-center shrink-0"
                     style={{
-                      width: 'auto',
-                      minWidth: 'fit-content',
-                      borderRadius: '50px',
-                      gap: '8px',
-                      background: 'rgba(255, 255, 255, 0.14)'
+                      width: '120px',
+                      height: '36px',
+                      borderRadius: '30px',
+                      background: 'rgba(255, 255, 255, 0.6)',
+                      gap: '8.57px',
+                      padding: '6px 14px 6px 6px',
                     }}
-                    onClick={() => tx.userId?._id && setSelectedUserId(tx.userId._id)}
                   >
-                    
-                    {/* User Avatar */}
-                    <div 
-                      className="relative rounded-full overflow-hidden shrink-0 transition-transform group-hover:scale-105 w-[14px] h-[14px] lg:w-[26px] lg:h-[26px]"
+                    <div className="w-[24px] h-[24px] rounded-full bg-black/10 shrink-0" />
+                    <div className="h-3 w-12 bg-black/10 rounded" />
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <AnimatePresence initial={false}>
+                {earnings.map((tx, idx) => {
+                  const details = getDetails(tx);
+                  const displayName = tx.userId?.displayName || 'User';
+                  const initialLetter = (displayName.charAt(0) || 'U').toUpperCase();
+                  const avatarColor = getAvatarColor(displayName);
+                  const key = tx._id || `item-${idx}`;
+
+                  return (
+                    <motion.div
+                      key={key}
+                      layout
+                      initial={{ opacity: 0, scale: 0.95 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.8 }}
+                      transition={{ duration: 0.2 }}
+                      onClick={() => tx.userId?._id && setSelectedUserId(tx.userId._id)}
+                      className="group relative inline-flex items-center shrink-0 transition-transform hover:scale-[1.02] cursor-pointer shadow-sm pointer-events-auto"
+                      style={{
+                        width: 'auto',
+                        minWidth: 'fit-content',
+                        height: '36px',
+                        borderRadius: '30px',
+                        opacity: 1,
+                        transform: 'rotate(0deg)',
+                        gap: '8.57px',
+                        paddingTop: '6px',
+                        paddingRight: '14px',
+                        paddingBottom: '6px',
+                        paddingLeft: '6px',
+                        background: 'rgba(255, 255, 255, 1)',
+                        boxSizing: 'border-box',
+                      }}
                     >
-                      <img 
-                        src={tx.userId?.avatarUrl || `/avatars/avatar1.png`} 
-                        className="w-full h-full object-cover" 
-                        alt="Avatar"
-                        onError={(e) => e.target.style.display='none'}
-                      />
-                    </div>
-                    
-                    {/* Base View (Username + Amount) */}
-                    <div 
-                      className="flex items-center gap-[6px] lg:gap-[12px]"
-                      style={{ height: 'auto' }}
-                    >
-                      <span 
-                        className="text-left shrink-0 text-[10px] lg:text-[22px]"
+                      {/* Avatar Circle: 24px x 24px, border-radius: 25.71px */}
+                      <div
+                        className="shrink-0 overflow-hidden flex items-center justify-center shadow-inner"
                         style={{
-                          height: 'auto',
-                          fontFamily: '"Barlow Condensed", sans-serif',
-                          fontWeight: 600,
-                          lineHeight: '120%',
-                          color: 'rgba(255, 255, 255, 1)'
+                          width: '24px',
+                          height: '24px',
+                          borderRadius: '25.71px',
+                          opacity: 1,
+                          transform: 'rotate(0deg)',
                         }}
                       >
-                        {tx.userId?.displayName || 'User'}
-                      </span>
-                      <div 
-                        className="flex items-center shrink-0"
-                        style={{ height: 'auto', gap: '3px' }}
-                      >
-                        {details.isCoin && (
-                          <img 
-                            src="/coins/Coin.png"
-                            alt="Coin"
-                            className="w-[10px] h-[10px] lg:w-[18px] lg:h-[18px]"
+                        {tx.userId?.avatarUrl ? (
+                          <img
+                            src={tx.userId.avatarUrl}
+                            alt={displayName}
+                            className="w-full h-full object-cover"
+                            onError={(e) => {
+                              e.target.style.display = 'none';
+                            }}
                           />
+                        ) : (
+                          <div
+                            className={`w-full h-full ${avatarColor} text-white flex items-center justify-center text-[11px] font-bold uppercase select-none`}
+                          >
+                            {initialLetter}
+                          </div>
                         )}
-                        {!details.isCoin && details.isWithdrawal && (
-                          <img 
-                            src="/coins/paisa.png"
-                            alt="Paisa"
-                            className="w-[10px] h-[10px] lg:w-[18px] lg:h-[18px] object-contain"
-                          />
-                        )}
-                        <span 
-                          className="text-[10px] lg:text-[16px]"
-                          style={details.isWithdrawal ? {
-                            height: 'auto',
-                            fontFamily: '"Barlow Condensed", sans-serif',
+                      </div>
+
+                      {/* Username & Amount Container */}
+                      <div className="flex items-center gap-[6px] shrink-0 whitespace-nowrap">
+                        {/* Username - Exact Spec */}
+                        <span
+                          style={{
+                            fontFamily: '"Bricolage Grotesque", sans-serif',
                             fontWeight: 700,
-                            lineHeight: '130%',
-                            color: '#49B265'
-                          } : {
-                            height: 'auto',
-                            fontFamily: '"Barlow Condensed", sans-serif',
-                            fontWeight: 700,
-                            lineHeight: '130%',
-                            backgroundImage: 'linear-gradient(180deg, #FEDF77 0%, #FCB91E 100%)',
-                            WebkitBackgroundClip: 'text',
-                            backgroundClip: 'text',
-                            color: 'transparent'
+                            fontSize: '18px',
+                            lineHeight: '100%',
+                            letterSpacing: '-0.02em',
+                            color: 'rgba(14, 15, 12, 1)',
+                            opacity: 1,
+                            transform: 'rotate(0deg)',
+                            whiteSpace: 'nowrap',
+                            display: 'inline-flex',
+                            alignItems: 'center',
                           }}
                         >
-                          {details.amountStr}
+                          {displayName}
                         </span>
-                      </div>
-                    </div>
 
-                    {/* Tooltip Box (Hover) */}
-                    <div className="absolute top-[calc(100%+8px)] left-1/2 -translate-x-1/2 pointer-events-none opacity-0 translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-200 z-[100]">
-                      <div 
-                        className="flex flex-col relative min-w-[130px] lg:min-w-[167px] min-h-[70px] lg:min-h-[97px] rounded-[8px] lg:rounded-[12px] p-[8px] lg:p-[12px] gap-[6px] lg:gap-[10px]"
-                        style={{
-                          width: 'auto',
-                          height: 'auto',
-                          background: 'rgba(36, 36, 36, 1)',
-                          backdropFilter: 'blur(44px)',
-                          WebkitBackdropFilter: 'blur(44px)',
-                          boxSizing: 'border-box'
-                        }}
-                      >
-                        {details.isWithdrawal ? (
-                          <div className="flex flex-col relative z-10 h-full justify-between gap-[8px]">
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', width: '100%', height: 'auto' }}>
-                              <span className="text-[12px] lg:text-[15px]" style={{
-                                fontFamily: '"Barlow Condensed", sans-serif',
-                                fontWeight: 700,
-                                lineHeight: '120%',
-                                color: 'rgba(255, 255, 255, 1)',
-                                whiteSpace: 'nowrap'
-                              }}>
-                                Withdrawal Completed
+                        {/* Amount & Coin / Currency */}
+                        <div className="flex items-center gap-[3px] shrink-0">
+                          {details.isCoin ? (
+                            <>
+                              <img
+                                src="/coins/procoinicon.png"
+                                alt="Coin"
+                                style={{
+                                  width: '9px',
+                                  height: '10px',
+                                  opacity: 1,
+                                  transform: 'rotate(0deg)',
+                                  objectFit: 'contain',
+                                  flexShrink: 0,
+                                }}
+                                onError={(e) => {
+                                  e.target.style.display = 'none';
+                                }}
+                              />
+                              <span
+                                style={{
+                                  fontFamily: 'Poppins, sans-serif',
+                                  fontWeight: 500,
+                                  fontSize: '14px',
+                                  lineHeight: '100%',
+                                  letterSpacing: '0%',
+                                  color: 'rgba(231, 171, 24, 1)',
+                                  opacity: 1,
+                                  transform: 'rotate(0deg)',
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  whiteSpace: 'nowrap',
+                                }}
+                              >
+                                {details.amountStr}
                               </span>
-                              <span className="text-[10px] lg:text-[12px]" style={{
-                                fontFamily: '"Barlow Condensed", sans-serif',
+                            </>
+                          ) : (
+                            <span
+                              style={{
+                                fontFamily: 'Poppins, sans-serif',
                                 fontWeight: 500,
-                                lineHeight: '130%',
-                                color: 'rgba(136, 136, 136, 1)'
-                              }}>
-                                Method: {details.method}
-                              </span>
-                            </div>
-                            <div style={{ width: '100%', height: '0px', borderTop: '1px solid rgba(255, 255, 255, 0.12)', flexShrink: 0 }} />
-                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', minWidth: 'max-content', gap: '16px', height: '18px' }}>
-                              <span className="text-[11px] lg:text-[13px]" style={{ 
-                                fontFamily: '"Barlow Condensed", sans-serif', 
-                                fontWeight: 500, 
-                                lineHeight: '130%', 
-                                color: 'rgba(255, 255, 255, 1)',
-                                whiteSpace: 'nowrap'
-                              }}>
-                                Amount
-                              </span>
-                              <div style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
-                                <img src="/coins/paisa.png" alt="Paisa" className="w-[14px] h-[14px] lg:w-[18px] lg:h-[18px]" style={{ objectFit: 'contain' }} />
-                                <span className="text-[13px] lg:text-[16px]" style={{ 
-                                  fontFamily: '"Barlow Condensed", sans-serif', 
-                                  fontWeight: 700, 
-                                  lineHeight: '130%', 
-                                  color: '#49B265',
-                                  whiteSpace: 'nowrap',
-                                  display: 'flex',
-                                  alignItems: 'center'
-                                }}>
-                                  {details.amountStr}
-                                </span>
-                              </div>
-                            </div>
-                          </div>
-                        ) : (
-                          <div className="flex flex-col relative z-10 h-full justify-between gap-[10px]">
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', width: '100%', height: 'auto' }}>
-                              <span className="text-[12px] lg:text-[14px]" style={{
-                                width: '100%', height: 'auto',
-                                fontFamily: '"Barlow Condensed", sans-serif', fontWeight: 700, lineHeight: '120%', color: 'rgba(255, 255, 255, 1)',
-                                whiteSpace: 'normal', wordBreak: 'break-word'
-                              }}>
-                                {details.task}
-                              </span>
-                              <span className="text-[9px] lg:text-[11px]" style={{
-                                width: '100%', height: '14px',
-                                fontFamily: '"Barlow Condensed", sans-serif', fontWeight: 500, lineHeight: '130%', color: 'rgba(136, 136, 136, 1)',
-                                whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis'
-                              }}>
-                                {details.taskCategory}
-                              </span>
-                            </div>
-                            <div style={{ width: '100%', height: '0px', borderTop: '1px solid rgba(255, 255, 255, 0.12)', flexShrink: 0 }} />
-                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', minWidth: 'max-content', gap: '16px', height: '18px' }}>
-                              <span className="text-[11px] lg:text-[13px]" style={{ 
-                                width: '32px', 
-                                height: '17px', 
-                                fontFamily: '"Barlow Condensed", sans-serif', 
-                                fontWeight: 500, 
-                                lineHeight: '130%', 
-                                textAlign: 'right', 
-                                color: 'rgba(255, 255, 255, 1)',
-                                whiteSpace: 'nowrap'
-                              }}>
-                                Earned
-                              </span>
-                              <div style={{ display: 'flex', alignItems: 'center', height: '18px', gap: '3px' }}>
-                                <img src="/coins/Coin.png" alt="coin" className="w-[14px] h-[14px] lg:w-[18px] lg:h-[18px]" />
-                                <span className="text-[13px] lg:text-[16px]" style={{ 
-                                  height: 'auto', 
-                                  fontFamily: '"Barlow Condensed", sans-serif', 
-                                  fontWeight: 700, 
-                                  lineHeight: '130%', 
-                                  backgroundImage: 'linear-gradient(180deg, #FEDF77 0%, #FCB91E 100%)', 
-                                  WebkitBackgroundClip: 'text', 
-                                  color: 'transparent',
-                                  whiteSpace: 'nowrap',
-                                  display: 'flex',
-                                  alignItems: 'center'
-                                }}>
-                                  {details.amountStr}
-                                </span>
-                              </div>
-                            </div>
-                          </div>
-                        )}
-                        
+                                fontSize: '14px',
+                                lineHeight: '100%',
+                                letterSpacing: '0%',
+                                color: 'rgba(2, 121, 64, 1)',
+                                opacity: 1,
+                                transform: 'rotate(0deg)',
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                whiteSpace: 'nowrap',
+                              }}
+                            >
+                              {details.amountStr}
+                            </span>
+                          )}
+                        </div>
                       </div>
-                    </div>
-                    
-                  </motion.div>
-                );
-              })}
-            </AnimatePresence>
+
+                      {/* Original Tooltip Box (Hover) */}
+                      <div className="absolute top-[calc(100%+8px)] left-1/2 -translate-x-1/2 pointer-events-none opacity-0 translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-200 z-[999]">
+                        <div
+                          className="flex flex-col relative min-w-[150px] lg:min-w-[170px] min-h-[70px] rounded-[12px] p-[10px] lg:p-[12px] gap-[8px] shadow-2xl border border-white/10"
+                          style={{
+                            width: 'auto',
+                            height: 'auto',
+                            background: 'rgba(36, 36, 36, 0.96)',
+                            backdropFilter: 'blur(44px)',
+                            WebkitBackdropFilter: 'blur(44px)',
+                            boxSizing: 'border-box',
+                          }}
+                        >
+                          {details.isWithdrawal ? (
+                            <div className="flex flex-col relative z-10 h-full justify-between gap-[8px]">
+                              <div className="flex flex-col gap-[2px] w-full">
+                                <span
+                                  className="text-[13px] lg:text-[14px]"
+                                  style={{
+                                    fontFamily: '"Barlow Condensed", sans-serif',
+                                    fontWeight: 700,
+                                    lineHeight: '120%',
+                                    color: 'rgba(255, 255, 255, 1)',
+                                    whiteSpace: 'nowrap',
+                                  }}
+                                >
+                                  Withdrawal Completed
+                                </span>
+                                <span
+                                  className="text-[11px]"
+                                  style={{
+                                    fontFamily: '"Barlow Condensed", sans-serif',
+                                    fontWeight: 500,
+                                    lineHeight: '130%',
+                                    color: 'rgba(170, 170, 170, 1)',
+                                  }}
+                                >
+                                  Method: {details.method}
+                                </span>
+                              </div>
+                              <div className="w-full h-0 border-t border-white/10 shrink-0" />
+                              <div className="flex items-center justify-between w-full min-w-max gap-4 h-[18px]">
+                                <span
+                                  className="text-[12px]"
+                                  style={{
+                                    fontFamily: '"Barlow Condensed", sans-serif',
+                                    fontWeight: 500,
+                                    color: 'rgba(255, 255, 255, 1)',
+                                    whiteSpace: 'nowrap',
+                                  }}
+                                >
+                                  Amount
+                                </span>
+                                <div className="flex items-center gap-1">
+                                  <img
+                                    src="/coins/paisa.png"
+                                    alt="Paisa"
+                                    className="w-[14px] h-[14px] object-contain"
+                                  />
+                                  <span
+                                    className="text-[13px] lg:text-[15px]"
+                                    style={{
+                                      fontFamily: '"Barlow Condensed", sans-serif',
+                                      fontWeight: 700,
+                                      color: '#49B265',
+                                      whiteSpace: 'nowrap',
+                                    }}
+                                  >
+                                    {details.amountStr}
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
+                          ) : (
+                            <div className="flex flex-col relative z-10 h-full justify-between gap-[8px]">
+                              <div className="flex flex-col gap-[3px] w-full">
+                                <span
+                                  className="text-[13px] lg:text-[14px]"
+                                  style={{
+                                    width: '100%',
+                                    fontFamily: '"Barlow Condensed", sans-serif',
+                                    fontWeight: 700,
+                                    lineHeight: '120%',
+                                    color: 'rgba(255, 255, 255, 1)',
+                                    whiteSpace: 'normal',
+                                    wordBreak: 'break-word',
+                                  }}
+                                >
+                                  {details.task}
+                                </span>
+                                <span
+                                  className="text-[10px] lg:text-[11px]"
+                                  style={{
+                                    width: '100%',
+                                    fontFamily: '"Barlow Condensed", sans-serif',
+                                    fontWeight: 500,
+                                    lineHeight: '130%',
+                                    color: 'rgba(170, 170, 170, 1)',
+                                    whiteSpace: 'nowrap',
+                                    overflow: 'hidden',
+                                    textOverflow: 'ellipsis',
+                                  }}
+                                >
+                                  {details.taskCategory}
+                                </span>
+                              </div>
+                              <div className="w-full h-0 border-t border-white/10 shrink-0" />
+                              <div className="flex items-center justify-between w-full min-w-max gap-4 h-[18px]">
+                                <span
+                                  className="text-[12px]"
+                                  style={{
+                                    fontFamily: '"Barlow Condensed", sans-serif',
+                                    fontWeight: 500,
+                                    color: 'rgba(255, 255, 255, 1)',
+                                    whiteSpace: 'nowrap',
+                                  }}
+                                >
+                                  Earned
+                                </span>
+                                <div className="flex items-center gap-1">
+                                  <img
+                                    src="/coins/Coin.png"
+                                    alt="Coin"
+                                    className="w-[14px] h-[14px] object-contain"
+                                  />
+                                  <span
+                                    className="text-[13px] lg:text-[15px]"
+                                    style={{
+                                      fontFamily: '"Barlow Condensed", sans-serif',
+                                      fontWeight: 700,
+                                      backgroundImage: 'linear-gradient(180deg, #FEDF77 0%, #FCB91E 100%)',
+                                      WebkitBackgroundClip: 'text',
+                                      backgroundClip: 'text',
+                                      color: 'transparent',
+                                      whiteSpace: 'nowrap',
+                                    }}
+                                  >
+                                    {details.amountStr}
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </motion.div>
+                  );
+                })}
+
+                {/* Loading indicator when scrolling loads more items */}
+                {loadingMore && (
+                  <div className="flex items-center gap-2 pl-2 pr-4 shrink-0">
+                    <div className="w-4 h-4 rounded-full border-2 border-indigo-500 border-t-transparent animate-spin" />
+                  </div>
+                )}
+              </AnimatePresence>
+            )}
           </div>
         </div>
-      </div>
+      </section>
 
       {/* Public Profile Modal */}
       {selectedUserId && (

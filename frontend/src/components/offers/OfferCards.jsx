@@ -22,30 +22,42 @@ export const buildProviderUrl = (provider, userId) => {
 };
 
 const getProviderLogo = (id) => {
-  const lowerId = id?.toLowerCase();
+  const lowerId = id?.toLowerCase()?.trim();
 
   const localLogos = {
-    lootably: '/coins/lotablily.png',
-    revu: '/coins/revu.png',
+    goodpicks: '/coins/GP.png',
+    goodpick: '/coins/GP.png',
+    'good-picks': '/coins/GP.png',
+    'good picks': '/coins/GP.png',
+    gp: '/coins/GP.png',
+    lootably: '/coins/LP.png',
+    lp: '/coins/LP.png',
+    primeearn: '/coins/PS.png',
+    'prime-earn': '/coins/PS.png',
+    'prime surveys': '/coins/PS.png',
+    primesurveys: '/coins/PS.png',
+    ps: '/coins/PS.png',
     torox: '/coins/torox.png',
-    ayet: '/coins/aye.png',
-    'ayet-studios': '/coins/aye.png',
-    'ayet studios': '/coins/aye.png',
+    revu: '/coins/revu.png',
+    adtowall: '/coins/aw.png',
+    aw: '/coins/aw.png',
+    cpx: '/coins/CPR.png',
+    'cpx-research': '/coins/CPR.png',
+    'cpx research': '/coins/CPR.png',
+    cpr: '/coins/CPR.png',
+    adgem: '/coins/AD.png',
+    ad: '/coins/AD.png',
+    ayet: '/coins/AYE copy.png',
+    'ayet-studios': '/coins/AYE copy.png',
+    'ayet studios': '/coins/AYE copy.png',
+    aye: '/coins/AYE copy.png',
+    adscend: '/coins/admedia.png',
+    adscendmedia: '/coins/admedia.png',
+    'adscend media': '/coins/admedia.png',
+    admedia: '/coins/admedia.png',
     timewall: '/coins/wall.png',
     notik: '/coins/me.png',
     mmwall: '/coins/mmwakk.png',
-    cpx: '/coins/CPXR.png',
-    'cpx-research': '/coins/CPXR.png',
-    'cpx research': '/coins/CPXR.png',
-    adgem: '/coins/adgem.png',
-    primeearn: '/coins/primesur.png',
-    'prime-earn': '/coins/primesur.png',
-    'prime surveys': '/coins/primesur.png',
-    primesurveys: '/coins/primesur.png',
-    adtowall: '/coins/adtowall.png',
-    adscend: '/coins/adsendm.png',
-    adscendmedia: '/coins/adsendm.png',
-    'adscend media': '/coins/adsendm.png'
   };
 
   if (localLogos[lowerId]) {
@@ -63,24 +75,31 @@ export const ProviderCard = ({ provider, onClick }) => {
     <motion.div
       variants={item}
       onClick={onClick}
-      className="cursor-pointer hover:border-indigo-500/40 transition-all flex flex-col items-center justify-center gap-2 group w-full h-[90px] lg:w-[188px] lg:h-[132px] rounded-[10px] lg:rounded-[20px]"
+      className="cursor-pointer flex flex-col items-center justify-center shrink-0"
       style={{
-        background: 'rgba(0, 0, 0, 0.36)',
-        backdropFilter: 'blur(44px)',
-        WebkitBackdropFilter: 'blur(44px)'
+        width: '323px',
+        maxWidth: '100%',
+        height: '76px',
+        borderRadius: '24px',
+        background: 'rgba(249, 247, 241, 1)',
+        border: '1px solid rgba(223, 225, 209, 1)',
+        gap: '10px',
+        opacity: 1,
+        transform: 'rotate(0deg)',
+        boxSizing: 'border-box',
       }}
     >
       {logoUrl ? (
         <img
           src={logoUrl}
           alt={provider.label}
-          className="group-hover:scale-110 transition-all w-[70%] h-auto max-h-[50px] lg:max-h-none lg:w-[160px] lg:h-[39px] object-contain"
+          className="w-auto max-w-[170px] h-[36px] object-contain select-none"
         />
       ) : (
         <div
-          className="group-hover:scale-110 transition-all flex items-center justify-center w-[70%] h-auto lg:w-[160px] lg:h-[39px]"
+          className="flex items-center justify-center w-[160px] h-[38px]"
         >
-          <FiMonitor className="text-3xl lg:text-4xl text-indigo-400 group-hover:text-amber-400 transition-colors" />
+          <FiMonitor className="text-3xl text-indigo-400" />
         </div>
       )}
     </motion.div>
@@ -99,7 +118,7 @@ export const OfferwallCard = ({ provider, userId }) => {
   }
 
   return (
-    <div 
+    <div
       className="glass-card overflow-y-auto overflow-x-hidden border border-white/[0.05] w-full h-full"
       style={{ WebkitOverflowScrolling: 'touch' }}
     >
@@ -119,111 +138,170 @@ const isIconUrl = (icon) => icon && (icon.startsWith('http') || icon.startsWith(
 
 export const FeaturedOfferCard = ({ offer, onClick }) => {
   const isExpired = offer.expirationDate && new Date(offer.expirationDate) < new Date();
-
-  // Priority: coverImage > icon URL > emoji icon > nothing
   const coverImgSrc = offer.coverImage || (isIconUrl(offer.icon) ? offer.icon : null);
   const emojiIcon = !coverImgSrc && offer.icon ? offer.icon : null;
+  const rewardVal = offer.rewardAmount ?? offer.points ?? offer.reward ?? 1250000;
 
   return (
     <motion.div
       variants={item}
       onClick={onClick}
-      className={`cursor-pointer transition-all flex flex-col group h-auto rounded-[10px] lg:rounded-[10px] gap-2 lg:gap-2 p-2 lg:p-2 w-full lg:w-[156px] shrink-0 ${isExpired ? 'opacity-50' : 'hover:scale-[1.02]'
-        }`}
+      className={`cursor-pointer flex flex-col shrink-0 bg-white shadow-[0_4px_20px_rgba(0,0,0,0.03)] border border-gray-100/80 ${
+        isExpired ? 'opacity-50' : ''
+      }`}
       style={{
-        background: 'rgba(0, 0, 0, 0.36)',
-        backdropFilter: 'blur(44px)',
-        WebkitBackdropFilter: 'blur(44px)'
+        width: '181.14px',
+        height: '246.53px',
+        borderRadius: '20px',
+        paddingTop: '8px',
+        paddingBottom: '15px',
+        paddingLeft: '7.14px',
+        paddingRight: '7.14px',
+        gap: '15px',
+        background: 'rgba(255, 255, 255, 1)',
+        boxSizing: 'border-box',
       }}
     >
       {/* Cover area */}
       <div
-        className="w-full aspect-square lg:w-[140px] lg:h-[140px] relative flex-shrink-0 overflow-hidden rounded-[10px]"
+        className="relative flex-shrink-0 overflow-hidden rounded-[16px] bg-[#F3F4F6]"
+        style={{
+          width: '166.86px',
+          height: '166.86px',
+        }}
       >
         {coverImgSrc ? (
           <img
             src={coverImgSrc}
             alt={offer.title}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+            draggable="false"
+            className="w-full h-full object-cover pointer-events-none select-none"
           />
+        ) : offer.gradient ? (
+          <div className={`w-full h-full bg-gradient-to-br ${offer.gradient} flex items-center justify-center`}>
+            {offer.iconType === 'percent' && (
+              <div className="w-10 h-10 rounded-xl bg-white/30 backdrop-blur-sm flex items-center justify-center shadow-inner">
+                <span className="text-white font-black text-xl">%</span>
+              </div>
+            )}
+            {offer.iconType === 'game' && (
+              <div className="w-10 h-10 rounded-xl bg-white/30 backdrop-blur-sm flex items-center justify-center shadow-inner">
+                <span className="text-white text-2xl">🎮</span>
+              </div>
+            )}
+            {offer.iconType === 'survey' && (
+              <div className="w-10 h-10 rounded-xl bg-white/30 backdrop-blur-sm flex items-center justify-center shadow-inner">
+                <span className="text-white text-2xl">📋</span>
+              </div>
+            )}
+          </div>
         ) : (
-          <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-amber-900/30 via-[#131a2e] to-indigo-900/30">
+          <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-orange-400/20 to-pink-500/20">
             {emojiIcon ? (
-              <span className="text-4xl lg:text-3xl select-none group-hover:scale-110 transition-transform duration-300">
+              <span className="text-3xl select-none">
                 {emojiIcon}
               </span>
             ) : (
-              <FiStar className="text-2xl lg:text-3xl text-amber-400/40 group-hover:text-amber-400/60 transition-colors" />
+              <FiStar className="text-3xl text-amber-500" />
             )}
           </div>
         )}
-        {/* Gradient overlay */}
-        <div className="absolute inset-0 bg-gradient-to-t from-[#0f1728]/80 to-transparent" />
 
-        {/* Platform Icons */}
-        {offer.platforms && (
-          <div className="absolute top-1 lg:top-1.5 left-1 lg:left-1.5 flex items-center gap-1 bg-black/60 backdrop-blur-md px-1.5 lg:px-1.5 py-1 rounded-md border border-white/10 z-10">
-            {offer.platforms.desktop && <FaDesktop className="text-white text-[8px] lg:text-[9px]" title="Desktop" />}
-            {offer.platforms.android && <FaAndroid className="text-emerald-400 text-[8px] lg:text-[9px]" title="Android" />}
-            {offer.platforms.ios && <FaApple className="text-white text-[8px] lg:text-[9px]" title="iOS" />}
+        {/* Top Center Platform Pill — only show selected platforms */}
+        {(offer.platforms ? (offer.platforms.desktop || offer.platforms.android || offer.platforms.ios) : true) && (
+          <div
+            className="absolute top-0 left-1/2 -translate-x-1/2 flex items-center justify-center z-10"
+            style={{
+              width: '95.7px',
+              height: '22.82px',
+              paddingTop: '4px',
+              paddingRight: '16px',
+              paddingBottom: '4px',
+              paddingLeft: '16px',
+              gap: '8px',
+              borderBottomRightRadius: '16px',
+              borderBottomLeftRadius: '16px',
+              background: 'rgba(255, 255, 255, 1)',
+              boxSizing: 'border-box',
+              opacity: 1,
+            }}
+          >
+            {(!offer.platforms || offer.platforms.desktop) && (
+              <img
+                src="/coins/desko.png"
+                alt="Desktop"
+                style={{ width: '12px', height: '12px', opacity: 1, objectFit: 'contain', flexShrink: 0 }}
+              />
+            )}
+            {(!offer.platforms || offer.platforms.android) && (
+              <svg style={{ width: '12px', height: '12px', opacity: 1, flexShrink: 0 }} className="text-[#22C55E]" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M17.523 15.3414c-.5511 0-.9993-.4486-.9993-.9997s.4482-.9993.9993-.9993c.551 0 .9993.4482.9993.9993.0001.5511-.4482.9997-.9993.9997m-11.046 0c-.5511 0-.9993-.4486-.9993-.9997s.4482-.9993.9993-.9993c.5511 0 .9993.4482.9993.9993 0 .5511-.4482.9997-.9993.9997m11.4045-6.02l1.9973-3.4592a.416.416 0 00-.1521-.5676.416.416 0 00-.5676.1521l-2.0223 3.503C15.5902 8.411 13.8533 8.081 12 8.081s-3.5902.33-5.1367.8697L4.841 5.4477a.4161.4161 0 00-.5677-.1521.4157.4157 0 00-.1521.5676l1.9973 3.4592C2.6889 11.1867.3432 14.6589 0 18.761h24c-.3432-4.1021-2.6889-7.5743-6.1185-9.4396" />
+              </svg>
+            )}
+            {(!offer.platforms || offer.platforms.ios) && (
+              <svg style={{ width: '12px', height: '12px', opacity: 1, flexShrink: 0 }} className="text-gray-900" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 6.37c.62-.75 1.04-1.8 0.92-2.85-.9.04-1.99.6-2.63 1.35-.57.65-1.07 1.72-.94 2.74 1.01.08 2.03-.49 2.65-1.24z" />
+              </svg>
+            )}
           </div>
         )}
       </div>
 
-      {/* Text info */}
-      <div
-        className="flex flex-col w-full flex-1 gap-[8px] lg:gap-[6px] items-start"
-      >
-        <div
-          className="flex flex-col w-full gap-[4px] lg:gap-[4px] text-left"
+      {/* Info */}
+      <div className="flex flex-col w-full text-left justify-between min-h-0">
+        <p
+          className="truncate text-[#0E0F0C]"
+          title={offer.title}
+          style={{
+            fontFamily: '"Bricolage Grotesque", sans-serif',
+            fontWeight: 700,
+            fontSize: '14px',
+            lineHeight: '18px',
+            letterSpacing: '-0.02em',
+          }}
         >
-          <p
-            className="line-clamp-1 truncate text-[14px] lg:text-[18px] pb-[2px]"
-            title={offer.title}
-            style={{
-              fontFamily: '"Barlow Condensed", sans-serif',
-              fontWeight: 600,
-              lineHeight: '120%',
-              color: 'rgba(255, 255, 255, 1)',
-              margin: 0
-            }}
-          >
-            {offer.title}
-          </p>
-          <p
-            className="hidden line-clamp-2 text-[10px] lg:text-[13px] h-[26px] lg:h-[32px]"
-            style={{
-              fontFamily: '"Barlow Condensed", sans-serif',
-              fontWeight: 500,
-              lineHeight: '130%',
-              color: 'rgba(136, 136, 136, 1)',
-              margin: 0
-            }}
-          >
-            {offer.description || 'Complete this offer to earn rewards.'}
-          </p>
-        </div>
+          {offer.title}
+        </p>
         <div
-          className="flex items-center justify-start w-full mt-auto relative -top-[3px] lg:top-0 h-[16px] lg:h-[18px] gap-[3px] lg:gap-[4px]"
+          className="flex items-center"
+          style={{
+            minWidth: '81px',
+            width: 'fit-content',
+            height: '19.67px',
+            borderRadius: '10px',
+            paddingTop: '4px',
+            paddingRight: '6px',
+            paddingBottom: '4px',
+            paddingLeft: '6px',
+            gap: '2px',
+            background: 'rgba(249, 247, 241, 1)',
+            boxSizing: 'border-box',
+          }}
         >
           <img
-            src="/coins/Coin.png"
-            alt="Coin"
-            className="w-[12px] h-[12px] lg:w-[15px] lg:h-[15px] object-contain"
+            src="/coins/procoinicon.png"
+            alt="coin"
+            style={{
+              width: '9px',
+              height: '10px',
+              opacity: 1,
+              flexShrink: 0,
+              objectFit: 'contain',
+            }}
           />
           <span
-            className="text-[12px] lg:text-[15px] flex items-center"
             style={{
-              fontFamily: '"Barlow Condensed", sans-serif',
+              fontFamily: '"Poppins", sans-serif',
               fontWeight: 700,
-              lineHeight: '130%',
-              background: 'linear-gradient(180deg, #FEDF77 0%, #FCB91E 100%)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              backgroundClip: 'text'
+              fontSize: '12px',
+              lineHeight: '1',
+              letterSpacing: '0%',
+              color: 'rgba(231, 171, 24, 1)',
+              display: 'inline-flex',
+              alignItems: 'center',
             }}
           >
-            <CoinDisplay amount={offer.rewardAmount} showIcon={false} />
+            {rewardVal.toLocaleString()}
           </span>
         </div>
       </div>
@@ -438,7 +516,7 @@ export const FeaturedOfferModal = ({ offer, token, onClose, onSubmitted }) => {
                     </span>
                   )}
                   {alreadySubmitted && (
-                    <span 
+                    <span
                       className="px-[10px] py-[4px] rounded-[16px] text-[12px] font-bold border bg-white/10 text-white border-white/10"
                       style={{ fontFamily: '"Barlow Condensed", sans-serif' }}
                     >
@@ -575,11 +653,10 @@ export const FeaturedOfferModal = ({ offer, token, onClose, onSubmitted }) => {
 
           {(result || alreadySubmitted) && (
             <div
-              className={`w-full text-center p-3 rounded-xl text-[18px] lg:text-[16px] font-medium border ${
-                (result?.type === 'success' || alreadySubmitted)
+              className={`w-full text-center p-3 rounded-xl text-[18px] lg:text-[16px] font-medium border ${(result?.type === 'success' || alreadySubmitted)
                   ? 'bg-white/5 border-white/10 text-white'
                   : 'bg-[#f43f5e1a] border-[#f43f5e33] text-[#fb7185]'
-              }`}
+                }`}
               style={{
                 fontFamily: '"Barlow Condensed", sans-serif'
               }}
@@ -592,44 +669,44 @@ export const FeaturedOfferModal = ({ offer, token, onClose, onSubmitted }) => {
         {/* Footer Actions */}
         <div style={{ marginTop: 'auto', flexShrink: 0 }}>
           {!alreadySubmitted && !isExpired && (
-              <>
-                {!isStarted ? (
+            <>
+              {!isStarted ? (
+                <button
+                  onClick={handleStartOffer}
+                  className="w-full h-[48px] rounded-[8px] lg:rounded-[10px] bg-[#49b265] text-white border-none font-bold text-[18px] leading-none flex items-center justify-center gap-2.5 cursor-pointer shadow-[0_4px_0_#276d3a]"
+                  style={{
+                    fontFamily: '"Barlow Condensed", sans-serif',
+                    padding: '10px 30px'
+                  }}
+                >
+                  Start Offer
+                  <img
+                    src="/coins/image.png"
+                    alt="arrow"
+                    className="w-[24px] h-[24px] object-contain"
+                  />
+                </button>
+              ) : (
+                !showProofForm && (
                   <button
-                    onClick={handleStartOffer}
+                    onClick={() => { setShowProofForm(true); setResult(null); }}
                     className="w-full h-[48px] rounded-[8px] lg:rounded-[10px] bg-[#49b265] text-white border-none font-bold text-[18px] leading-none flex items-center justify-center gap-2.5 cursor-pointer shadow-[0_4px_0_#276d3a]"
                     style={{
                       fontFamily: '"Barlow Condensed", sans-serif',
                       padding: '10px 30px'
                     }}
                   >
-                    Start Offer
                     <img
-                      src="/coins/image.png"
-                      alt="arrow"
+                      src="/coins/upload.png"
+                      alt="upload"
                       className="w-[24px] h-[24px] object-contain"
                     />
+                    Submit Proof
                   </button>
-                ) : (
-                  !showProofForm && (
-                    <button
-                      onClick={() => { setShowProofForm(true); setResult(null); }}
-                      className="w-full h-[48px] rounded-[8px] lg:rounded-[10px] bg-[#49b265] text-white border-none font-bold text-[18px] leading-none flex items-center justify-center gap-2.5 cursor-pointer shadow-[0_4px_0_#276d3a]"
-                      style={{
-                        fontFamily: '"Barlow Condensed", sans-serif',
-                        padding: '10px 30px'
-                      }}
-                    >
-                      <img
-                        src="/coins/upload.png"
-                        alt="upload"
-                        className="w-[24px] h-[24px] object-contain"
-                      />
-                      Submit Proof
-                    </button>
-                  )
-                )}
-              </>
-            )}
+                )
+              )}
+            </>
+          )}
         </div>
       </motion.div>
     </motion.div>

@@ -108,14 +108,15 @@ const settingsSchema = new mongoose.Schema(
         }
       ],
       default: [
-        { id: 'cpx', label: 'CPX Research', enabled: false, conversionRatio: 100, secretConfigured: false, category: 'surveys' },
-        { id: 'adgem', label: 'AdGem', enabled: false, conversionRatio: 100, secretConfigured: false, category: 'gaming' },
-        { id: 'lootably', label: 'Lootably', enabled: false, conversionRatio: 100, secretConfigured: false, category: 'mixed' },
-        { id: 'torox', label: 'Torox', enabled: false, conversionRatio: 100, secretConfigured: false, category: 'gaming' },
-        { id: 'primeearn', label: 'Prime Earn', enabled: false, conversionRatio: 100, secretConfigured: false, category: 'surveys' },
-        { id: 'ayet', label: 'Ayet Studios', enabled: false, conversionRatio: 100, secretConfigured: false, category: 'mixed' },
-        { id: 'adtowall', label: 'AdToWall', enabled: false, conversionRatio: 100, secretConfigured: false, category: 'mixed' },
-        { id: 'revu', label: 'Revu', enabled: false, conversionRatio: 100, secretConfigured: false, category: 'surveys' }
+        { id: 'goodpicks', label: 'Goodpicks', enabled: true, conversionRatio: 100, secretConfigured: false, category: 'gaming' },
+        { id: 'lootably', label: 'Lootably', enabled: true, conversionRatio: 100, secretConfigured: false, category: 'mixed' },
+        { id: 'primeearn', label: 'Prime Surveys', enabled: true, conversionRatio: 100, secretConfigured: false, category: 'surveys' },
+        { id: 'torox', label: 'Torox', enabled: true, conversionRatio: 100, secretConfigured: false, category: 'gaming' },
+        { id: 'revu', label: 'Revu', enabled: true, conversionRatio: 100, secretConfigured: false, category: 'mixed' },
+        { id: 'adtowall', label: 'AdToWall', enabled: true, conversionRatio: 100, secretConfigured: false, category: 'mixed' },
+        { id: 'cpx', label: 'CPX Research', enabled: true, conversionRatio: 100, secretConfigured: false, category: 'surveys' },
+        { id: 'adgem', label: 'AdGem', enabled: true, conversionRatio: 100, secretConfigured: false, category: 'gaming' },
+        { id: 'ayet', label: 'Ayet Studios', enabled: true, conversionRatio: 100, secretConfigured: false, category: 'mixed' },
       ]
     },
     // Block D — Leaderboard Configuration
@@ -183,6 +184,28 @@ settingsSchema.statics.getSingleton = async function () {
   let settings = await this.findOne({ _singleton: 'platform_settings' });
   if (!settings) {
     settings = await this.create({ _singleton: 'platform_settings' });
+  } else if (settings.offerwallProviders) {
+    const stdProviders = [
+      { id: 'goodpicks', label: 'Goodpicks', enabled: true, conversionRatio: 100, secretConfigured: false, category: 'gaming' },
+      { id: 'lootably', label: 'Lootably', enabled: true, conversionRatio: 100, secretConfigured: false, category: 'mixed' },
+      { id: 'primeearn', label: 'Prime Surveys', enabled: true, conversionRatio: 100, secretConfigured: false, category: 'surveys' },
+      { id: 'torox', label: 'Torox', enabled: true, conversionRatio: 100, secretConfigured: false, category: 'gaming' },
+      { id: 'revu', label: 'Revu', enabled: true, conversionRatio: 100, secretConfigured: false, category: 'mixed' },
+      { id: 'adtowall', label: 'AdToWall', enabled: true, conversionRatio: 100, secretConfigured: false, category: 'mixed' },
+      { id: 'cpx', label: 'CPX Research', enabled: true, conversionRatio: 100, secretConfigured: false, category: 'surveys' },
+      { id: 'adgem', label: 'AdGem', enabled: true, conversionRatio: 100, secretConfigured: false, category: 'gaming' },
+      { id: 'ayet', label: 'Ayet Studios', enabled: true, conversionRatio: 100, secretConfigured: false, category: 'mixed' },
+    ];
+    let modified = false;
+    for (const p of stdProviders) {
+      if (!settings.offerwallProviders.some(existing => existing.id === p.id)) {
+        settings.offerwallProviders.push(p);
+        modified = true;
+      }
+    }
+    if (modified) {
+      await settings.save();
+    }
   }
   return settings;
 };

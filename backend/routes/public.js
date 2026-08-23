@@ -154,9 +154,12 @@ router.get('/user/:id', async (req, res) => {
 });
 
 // ── GET /api/public/recent-earnings ───────────────────────────────────────────
-// Returns the 20 most recent earnings globally, intended for the Live Earning Bar.
+// Returns the recent earnings globally with pagination (default 20 items).
 router.get('/recent-earnings', async (req, res) => {
   try {
+    const limit = Math.min(Math.max(parseInt(req.query.limit) || 20, 1), 50);
+    const skip = Math.max(parseInt(req.query.skip) || 0, 0);
+
     const validTransactionTypes = ['offer_reward', 'custom_offer_reward', 'daily_bonus', 'admin_adjustment', 'promo_code', 'leaderboard_reward', 'vip_reward'];
 
     let recentEarnings = await Transaction.find({
@@ -173,7 +176,8 @@ router.get('/recent-earnings', async (req, res) => {
       ]
     })
       .sort({ createdAt: -1 })
-      .limit(20)
+      .skip(skip)
+      .limit(limit)
       .populate('userId', 'displayName avatarUrl isPrivate')
       .lean();
 

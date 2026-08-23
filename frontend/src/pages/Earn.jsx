@@ -134,8 +134,43 @@ const Earn = () => {
   }, [token]);
 
   const enabledProviders = settings?.offerwalls || [];
-  const surveyProviders = enabledProviders.filter(p => p.category === 'surveys');
-  const gamingProviders = enabledProviders.filter(p => p.category === 'gaming' || p.category === 'mixed');
+
+  const defaultSurveyList = [
+    { id: 'cpx', label: 'CPX Research', category: 'surveys', enabled: true },
+    { id: 'primeearn', label: 'Prime Surveys', category: 'surveys', enabled: true },
+    { id: 'adscend', label: 'AdscendMedia', category: 'surveys', enabled: true },
+  ];
+
+  const surveyProviders = defaultSurveyList;
+
+  const defaultBase8 = [
+    { id: 'adgem', label: 'AdGem', category: 'gaming', enabled: true },
+    { id: 'torox', label: 'Torox', category: 'gaming', enabled: true },
+    { id: 'lootably', label: 'Lootably', category: 'mixed', enabled: true },
+    { id: 'cpx', label: 'CPX Research', category: 'surveys', enabled: true },
+    { id: 'primeearn', label: 'Prime Surveys', category: 'surveys', enabled: true },
+    { id: 'ayet', label: 'Ayet Studios', category: 'mixed', enabled: true },
+    { id: 'adtowall', label: 'AdToWall', category: 'mixed', enabled: true },
+    { id: 'revu', label: 'Revu', category: 'mixed', enabled: true },
+  ];
+
+  const baseProviders = enabledProviders.filter(p => p.id !== 'goodpicks');
+  const combinedBase = [...baseProviders];
+  for (const def of defaultBase8) {
+    if (!combinedBase.some(p => p.id === def.id)) {
+      combinedBase.push(def);
+    }
+  }
+
+  const goodpicksItem = enabledProviders.find(p => p.id === 'goodpicks') || {
+    id: 'goodpicks',
+    label: 'Goodpicks',
+    category: 'gaming',
+    enabled: true
+  };
+
+  // 9 items total: 4 on line 1, 4 on line 2, and Goodpicks as the 9th at start of line 3
+  const gamingProviders = [...combinedBase.slice(0, 8), goodpicksItem];
 
   const tabs = [
     { id: 'surveys',  label: 'Surveys',        icon: FiCheckCircle, count: surveyProviders.length },
