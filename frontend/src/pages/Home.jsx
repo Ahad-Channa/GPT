@@ -371,234 +371,290 @@ const Home = () => {
   }, []);
   const gridColsClass = 'grid-cols-2 sm:grid-cols-4 lg:grid-cols-6';
 
+  const headerContent = {
+    all: {
+      icon: <FeaturedOfferBadge />,
+      title: 'Featured Offers',
+      subtitle: 'High-reward direct tasks. Manual approval required.',
+    },
+    featured: {
+      icon: <FeaturedOfferBadge />,
+      title: 'Featured Offers',
+      subtitle: 'High-reward direct tasks. Manual approval required.',
+    },
+    gaming: {
+      icon: (
+        <img
+          src="/coins/gameseciton.png"
+          alt="Gaming Offers"
+          className="flex-shrink-0 object-contain select-none"
+          style={{
+            width: '67.19999694824219px',
+            height: '67.19999694824219px',
+            opacity: 1,
+            transform: 'rotate(0deg)',
+          }}
+        />
+      ),
+      title: 'Gaming & App Offers',
+      subtitle: 'Play games to earn large amounts of points.',
+    },
+    surveys: {
+      icon: (
+        <img
+          src="/coins/survay section.png"
+          alt="Surveys"
+          className="flex-shrink-0 object-contain select-none"
+          style={{
+            width: '67.19999694824219px',
+            height: '67.19999694824219px',
+            opacity: 1,
+            transform: 'rotate(0deg)',
+          }}
+        />
+      ),
+      title: 'Surveys',
+      subtitle: 'Share your opinion for quick and easy rewards.',
+    },
+  };
+
+  const currentHeader = headerContent[filter] || headerContent.all;
+
 
   return (
-    <DashboardLayout showLiveBar={true}>
-      <motion.div variants={container} initial="hidden" animate="show" className="space-y-3 lg:space-y-8 pb-4 lg:pb-10">
+    <DashboardLayout showLiveBar={true} fullWidth={true}>
+      <motion.div variants={container} initial="hidden" animate="show" className="w-full flex flex-col">
 
-        {/* ─── Platform Stats (Top Count Pill) ───────────────────────────── */}
-        <motion.div
-          variants={item}
-          className="flex items-center justify-center w-full mx-auto -mt-[8px] mb-4 lg:mb-8 px-4"
-        >
-          <div
-            className="flex items-center justify-between sm:justify-around w-full max-w-[520px] lg:max-w-[580px] px-8 sm:px-14 lg:px-16 py-3 sm:py-4 gap-6 sm:gap-12 lg:gap-16 transition-all"
-            style={{
-              width: '100%',
-              maxWidth: '580px',
-              borderRadius: '0px 0px 70px 70px',
-              background: 'rgba(255, 255, 255, 1)',
-              boxShadow: '0px 10px 30px -5px rgba(0, 0, 0, 0.06)',
-            }}
-          >
-            {/* Total Users */}
-            <div className="flex items-center gap-2.5 sm:gap-3.5 shrink-0">
-              <img
-                src="/coins/total user.png"
-                alt="Users"
-                className="w-[32px] h-[32px] sm:w-[38px] sm:h-[38px] lg:w-[44px] lg:h-[44px] object-contain flex-shrink-0 -translate-y-[5px]"
-              />
-              <div className="flex flex-col justify-center min-w-0">
-                <span
-                  className="uppercase"
-                  style={{
-                    fontFamily: '"Poppins", sans-serif',
-                    fontWeight: 500,
-                    fontSize: '12px',
-                    lineHeight: '18px',
-                    color: 'rgba(14, 15, 12, 1)',
-                    opacity: 1,
-                    transform: 'rotate(0deg)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    whiteSpace: 'nowrap',
-                  }}
-                >
-                  TOTAL USERS:
-                </span>
-                <span
-                  className="text-[18px] sm:text-[22px] lg:text-[28px] font-bold text-[#0E0F0C] leading-tight whitespace-nowrap"
-                  style={{
-                    fontFamily: '"Bricolage Grotesque", sans-serif',
-                    fontWeight: 700,
-                    letterSpacing: '-0.02em',
-                    whiteSpace: 'nowrap',
-                    width: 'auto',
-                  }}
-                >
-                  {(globalStats.totalUsers ?? 0).toLocaleString()}
-                </span>
-              </div>
-            </div>
-
-            {/* Total Paid */}
-            <div className="flex items-center gap-2.5 sm:gap-3.5 shrink-0">
-              <img
-                src="/coins/total paid.png"
-                alt="Paid"
-                className="w-[32px] h-[32px] sm:w-[38px] sm:h-[38px] lg:w-[44px] lg:h-[44px] object-contain flex-shrink-0"
-              />
-              <div className="flex flex-col justify-center min-w-0">
-                <span
-                  className="uppercase"
-                  style={{
-                    fontFamily: '"Poppins", sans-serif',
-                    fontWeight: 500,
-                    fontSize: '12px',
-                    lineHeight: '18px',
-                    color: 'rgba(14, 15, 12, 1)',
-                    opacity: 1,
-                    transform: 'rotate(0deg)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    whiteSpace: 'nowrap',
-                  }}
-                >
-                  TOTAL PAID:
-                </span>
-                <span
-                  className="text-[18px] sm:text-[22px] lg:text-[28px] font-bold text-[#0E0F0C] leading-tight whitespace-nowrap"
-                  style={{
-                    fontFamily: '"Bricolage Grotesque", sans-serif',
-                    fontWeight: 700,
-                    letterSpacing: '-0.02em',
-                    whiteSpace: 'nowrap',
-                    width: 'auto',
-                  }}
-                >
-                  ${(globalStats.totalPaidOut ?? 0).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
-                </span>
-              </div>
-            </div>
-          </div>
-        </motion.div>
-
-        {/* ─── MAIN CONTENT WRAPPER ─────────────────── */}
+        {/* ─── Top Banner Area (Warm Background: rgba(249, 247, 241, 1)) ─── */}
         <div
-          className="flex flex-col shrink-0 w-full gap-[20px] lg:gap-[36px]"
+          className="w-full transition-colors duration-300"
+          style={{ background: 'rgba(249, 247, 241, 1)' }}
         >
-          {/* Header Row: Title & Subtitle on left, Filter Tabs on right (Always Visible) */}
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-3.5 md:gap-4 w-full">
-            {/* Left: Orange Scalloped Badge + Title + Subtitle */}
-            <div
-              className="flex items-center"
-              style={{
-                gap: '5.25px',
-                opacity: 1,
-                transform: 'rotate(0deg)',
-              }}
+          <div className="w-full max-w-[1328px] mx-auto px-4 md:px-8 lg:px-0 space-y-3 lg:space-y-6 pb-6 lg:pb-10">
+
+            {/* ─── Platform Stats (Top Count Pill) ───────────────────────────── */}
+            <motion.div
+              variants={item}
+              className="flex items-center justify-center w-full mx-auto -mt-[8px] mb-4 lg:mb-8 px-4"
             >
-              <FeaturedOfferBadge />
               <div
-                className="flex flex-col justify-center"
+                className="flex items-center justify-between sm:justify-around w-full max-w-[520px] lg:max-w-[580px] px-8 sm:px-14 lg:px-16 py-3 sm:py-4 gap-6 sm:gap-12 lg:gap-16 transition-all"
                 style={{
-                  maxWidth: '371px',
-                  minHeight: '44px',
-                  gap: '16px',
+                  width: '100%',
+                  maxWidth: '580px',
+                  borderRadius: '0px 0px 70px 70px',
+                  background: 'rgba(255, 255, 255, 1)',
+                  boxShadow: '0px 10px 30px -5px rgba(0, 0, 0, 0.06)',
+                }}
+              >
+                {/* Total Users */}
+                <div className="flex items-center gap-2.5 sm:gap-3.5 shrink-0">
+                  <img
+                    src="/coins/total user.png"
+                    alt="Users"
+                    className="w-[32px] h-[32px] sm:w-[38px] sm:h-[38px] lg:w-[44px] lg:h-[44px] object-contain flex-shrink-0 -translate-y-[5px]"
+                  />
+                  <div className="flex flex-col justify-center min-w-0">
+                    <span
+                      className="uppercase"
+                      style={{
+                        fontFamily: '"Poppins", sans-serif',
+                        fontWeight: 500,
+                        fontSize: '12px',
+                        lineHeight: '18px',
+                        color: 'rgba(14, 15, 12, 1)',
+                        opacity: 1,
+                        transform: 'rotate(0deg)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        whiteSpace: 'nowrap',
+                      }}
+                    >
+                      TOTAL USERS:
+                    </span>
+                    <span
+                      className="text-[18px] sm:text-[22px] lg:text-[28px] font-bold text-[#0E0F0C] leading-tight whitespace-nowrap"
+                      style={{
+                        fontFamily: '"Bricolage Grotesque", sans-serif',
+                        fontWeight: 700,
+                        letterSpacing: '-0.02em',
+                        whiteSpace: 'nowrap',
+                        width: 'auto',
+                      }}
+                    >
+                      {(globalStats.totalUsers ?? 0).toLocaleString()}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Total Paid */}
+                <div className="flex items-center gap-2.5 sm:gap-3.5 shrink-0">
+                  <img
+                    src="/coins/total paid.png"
+                    alt="Paid"
+                    className="w-[32px] h-[32px] sm:w-[38px] sm:h-[38px] lg:w-[44px] lg:h-[44px] object-contain flex-shrink-0 -translate-y-[5px]"
+                  />
+                  <div className="flex flex-col justify-center min-w-0">
+                    <span
+                      className="uppercase"
+                      style={{
+                        fontFamily: '"Poppins", sans-serif',
+                        fontWeight: 500,
+                        fontSize: '12px',
+                        lineHeight: '18px',
+                        color: 'rgba(14, 15, 12, 1)',
+                        opacity: 1,
+                        transform: 'rotate(0deg)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        whiteSpace: 'nowrap',
+                      }}
+                    >
+                      TOTAL PAID:
+                    </span>
+                    <span
+                      className="text-[18px] sm:text-[22px] lg:text-[28px] font-bold text-[#0E0F0C] leading-tight whitespace-nowrap"
+                      style={{
+                        fontFamily: '"Bricolage Grotesque", sans-serif',
+                        fontWeight: 700,
+                        letterSpacing: '-0.02em',
+                        whiteSpace: 'nowrap',
+                        width: 'auto',
+                      }}
+                    >
+                      ${(globalStats.totalPaidOut ?? 0).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+
+            {/* Header Row: Title & Subtitle on left, Filter Tabs on right (Always Visible) */}
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3.5 md:gap-4 w-full">
+              {/* Left: Dynamic Icon + Title + Subtitle */}
+              <div
+                className="flex items-center"
+                style={{
+                  gap: '5.25px',
                   opacity: 1,
                   transform: 'rotate(0deg)',
                 }}
               >
-                <h2
+                {currentHeader.icon}
+                <div
+                  className="flex flex-col justify-center"
                   style={{
-                    fontFamily: '"Bricolage Grotesque", sans-serif',
-                    fontWeight: 700,
-                    fontSize: '27px',
-                    lineHeight: '18px',
-                    letterSpacing: '-0.02em',
-                    color: '#0E0F0C',
+                    maxWidth: '371px',
+                    minHeight: '44px',
+                    gap: '4px',
                     opacity: 1,
                     transform: 'rotate(0deg)',
-                    margin: 0,
-                    whiteSpace: 'nowrap',
                   }}
                 >
-                  Featured Offers
-                </h2>
-                <p
-                  style={{
-                    fontFamily: '"Poppins", sans-serif',
-                    fontWeight: 500,
-                    fontSize: '14px',
-                    lineHeight: '14px',
-                    letterSpacing: '0%',
-                    color: 'rgba(14, 15, 12, 0.7)',
-                    opacity: 1,
-                    transform: 'rotate(0deg)',
-                    margin: 0,
-                    whiteSpace: 'nowrap',
-                  }}
-                >
-                  High-reward direct tasks. Manual approval required.
-                </p>
+                  <h2
+                    style={{
+                      fontFamily: '"Bricolage Grotesque", sans-serif',
+                      fontWeight: 700,
+                      fontSize: '27px',
+                      lineHeight: '1.1',
+                      letterSpacing: '-0.02em',
+                      color: '#0E0F0C',
+                      opacity: 1,
+                      transform: 'rotate(0deg)',
+                      margin: 0,
+                      whiteSpace: 'nowrap',
+                    }}
+                  >
+                    {currentHeader.title}
+                  </h2>
+                  <p
+                    style={{
+                      fontFamily: '"Poppins", sans-serif',
+                      fontWeight: 500,
+                      fontSize: '14px',
+                      lineHeight: '14px',
+                      letterSpacing: '0%',
+                      color: 'rgba(14, 15, 12, 0.7)',
+                      opacity: 1,
+                      transform: 'rotate(0deg)',
+                      margin: 0,
+                      whiteSpace: 'nowrap',
+                    }}
+                  >
+                    {currentHeader.subtitle}
+                  </p>
+                </div>
+              </div>
+
+              {/* Right: Inline Filter Tabs */}
+              <div className="flex items-center gap-1 sm:gap-2 overflow-x-auto pb-1 sm:pb-0 scrollbar-none">
+                {tabs.map((tab) => (
+                  <TabButton
+                    key={tab.id}
+                    active={filter === tab.id}
+                    onClick={() => scrollTo(tab.ref, tab.id)}
+                    iconSrc={tab.iconSrc}
+                    label={tab.label}
+                  />
+                ))}
               </div>
             </div>
 
-            {/* Right: Inline Filter Tabs */}
-            <div className="flex items-center gap-1 sm:gap-2 overflow-x-auto pb-1 sm:pb-0 scrollbar-none">
-              {tabs.map((tab) => (
-                <TabButton
-                  key={tab.id}
-                  active={filter === tab.id}
-                  onClick={() => scrollTo(tab.ref, tab.id)}
-                  iconSrc={tab.iconSrc}
-                  label={tab.label}
-                />
-              ))}
-            </div>
-          </div>
-
-          {/* Section 1: Featured Offers Cards */}
-          {(filter === 'all' || filter === 'featured') && (
-            <motion.section
-              ref={featuredRef}
-              variants={item}
-              className="flex flex-col shrink-0 w-full"
-            >
-              {displayFeaturedOffers.length === 0 ? (
-                <div className="w-full py-8 text-center bg-white rounded-[20px] border border-gray-100/80 shadow-sm text-gray-400 text-sm font-medium">
-                  No featured offers available right now.
-                </div>
-              ) : (
-                <div className="w-full">
-                  <div
-                    ref={featuredScrollRef}
-                    onMouseDown={handleFeaturedMouseDown}
-                    onMouseMove={handleFeaturedMouseMove}
-                    onMouseUp={handleFeaturedMouseUpOrLeave}
-                    onMouseLeave={handleFeaturedMouseUpOrLeave}
-                    onWheel={handleFeaturedWheel}
-                    onScroll={handleFeaturedScroll}
-                    className="flex overflow-x-auto gap-[15px] w-full scrollbar-none cursor-grab active:cursor-grabbing select-none pb-2"
-                    style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
-                  >
-                    {displayFeaturedOffers.map((offer) => (
-                      <div key={offer._id} className="shrink-0 w-[181.14px]">
-                        {offer._isDirectOffer ? (
-                          <DirectOfferCard
-                            offer={offer}
-                            onClick={() => {
-                              if (!hasMovedRef.current && !hasMovedDrag) setSelectedDirectOffer(offer);
-                            }}
-                          />
-                        ) : (
-                          <FeaturedOfferCard
-                            offer={offer}
-                            onClick={() => {
-                              if (!hasMovedRef.current && !hasMovedDrag) setSelectedOffer(offer);
-                            }}
-                          />
-                        )}
-                      </div>
-                    ))}
+            {/* Section 1: Featured Offers Cards */}
+            {(filter === 'all' || filter === 'featured') && (
+              <motion.section
+                ref={featuredRef}
+                variants={item}
+                className="flex flex-col shrink-0 w-full"
+              >
+                {displayFeaturedOffers.length === 0 ? (
+                  <div className="w-full py-8 text-center bg-white rounded-[20px] border border-gray-100/80 shadow-sm text-gray-400 text-sm font-medium">
+                    No featured offers available right now.
                   </div>
-                </div>
-              )}
-            </motion.section>
-          )}
+                ) : (
+                  <div className="w-full">
+                    <div
+                      ref={featuredScrollRef}
+                      onMouseDown={handleFeaturedMouseDown}
+                      onMouseMove={handleFeaturedMouseMove}
+                      onMouseUp={handleFeaturedMouseUpOrLeave}
+                      onMouseLeave={handleFeaturedMouseUpOrLeave}
+                      onWheel={handleFeaturedWheel}
+                      onScroll={handleFeaturedScroll}
+                      className="flex overflow-x-auto gap-[15px] w-full scrollbar-none cursor-grab active:cursor-grabbing select-none pb-2"
+                      style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+                    >
+                      {displayFeaturedOffers.map((offer) => (
+                        <div key={offer._id} className="shrink-0 w-[181.14px]">
+                          {offer._isDirectOffer ? (
+                            <DirectOfferCard
+                              offer={offer}
+                              onClick={() => {
+                                if (!hasMovedRef.current && !hasMovedDrag) setSelectedDirectOffer(offer);
+                              }}
+                            />
+                          ) : (
+                            <FeaturedOfferCard
+                              offer={offer}
+                              onClick={() => {
+                                if (!hasMovedRef.current && !hasMovedDrag) setSelectedOffer(offer);
+                              }}
+                            />
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </motion.section>
+            )}
 
-          {/* ─── MAIN CONTENT ─────────────────────────────────── */}
-          <div className="flex flex-col gap-[20px] lg:gap-[30px] w-full">
+          </div>
+        </div>
+
+        {/* ─── Lower Main Content Area (With Spacing) ─────────────────────── */}
+        <div className="w-full pt-8 sm:pt-10 lg:pt-14 pb-8 sm:pb-12 lg:pb-16">
+          <div className="w-full max-w-[1328px] mx-auto px-4 md:px-8 lg:px-0 flex flex-col gap-[28px] lg:gap-[40px]">
 
             {/* Section 2: Gaming or App Offers */}
             {(filter === 'all' || filter === 'gaming') && (
@@ -610,53 +666,55 @@ const Home = () => {
                   minHeight: '337px',
                 }}
               >
-                {/* Header with icon and typography */}
-                <div className="flex items-center" style={{ gap: '5.25px' }}>
-                  <img
-                    src="/coins/gameseciton.png"
-                    alt="Gaming Offers"
-                    className="flex-shrink-0 object-contain select-none"
-                    style={{
-                      width: '67.19999694824219px',
-                      height: '67.19999694824219px',
-                      opacity: 1,
-                      transform: 'rotate(0deg)',
-                    }}
-                  />
-                  <div
-                    className="flex flex-col justify-center"
-                    style={{
-                      maxWidth: '371px',
-                      minHeight: '46px',
-                      opacity: 1,
-                    }}
-                  >
-                    <h2
-                      className="text-[#0E0F0C] m-0"
+                {/* Header with icon and typography (only when filter === 'all') */}
+                {filter === 'all' && (
+                  <div className="flex items-center" style={{ gap: '5.25px' }}>
+                    <img
+                      src="/coins/gameseciton.png"
+                      alt="Gaming Offers"
+                      className="flex-shrink-0 object-contain select-none"
                       style={{
-                        fontFamily: '"Bricolage Grotesque", sans-serif',
-                        fontWeight: 700,
-                        fontSize: '30px',
-                        lineHeight: '1',
-                        letterSpacing: '-0.02em',
+                        width: '67.19999694824219px',
+                        height: '67.19999694824219px',
+                        opacity: 1,
+                        transform: 'rotate(0deg)',
+                      }}
+                    />
+                    <div
+                      className="flex flex-col justify-center"
+                      style={{
+                        maxWidth: '371px',
+                        minHeight: '46px',
+                        opacity: 1,
                       }}
                     >
-                      Gaming & App Offers
-                    </h2>
-                    <p
-                      className="text-[#0E0F0C] m-0 mt-[4px]"
-                      style={{
-                        fontFamily: '"Poppins", sans-serif',
-                        fontWeight: 500,
-                        fontSize: '14px',
-                        lineHeight: '1.2',
-                        letterSpacing: '0%',
-                      }}
-                    >
-                      Play games to earn large amounts of points.
-                    </p>
+                      <h2
+                        className="text-[#0E0F0C] m-0"
+                        style={{
+                          fontFamily: '"Bricolage Grotesque", sans-serif',
+                          fontWeight: 700,
+                          fontSize: '30px',
+                          lineHeight: '1',
+                          letterSpacing: '-0.02em',
+                        }}
+                      >
+                        Gaming & App Offers
+                      </h2>
+                      <p
+                        className="text-[#0E0F0C] m-0 mt-[4px]"
+                        style={{
+                          fontFamily: '"Poppins", sans-serif',
+                          fontWeight: 500,
+                          fontSize: '14px',
+                          lineHeight: '1.2',
+                          letterSpacing: '0%',
+                        }}
+                      >
+                        Play games to earn large amounts of points.
+                      </p>
+                    </div>
                   </div>
-                </div>
+                )}
 
                 {loadingSettings ? (
                   <div className="p-8 flex justify-center"><div className="w-8 h-8 rounded-full border-2 border-emerald-500 border-t-transparent animate-spin" /></div>
@@ -683,52 +741,54 @@ const Home = () => {
                 variants={item}
                 className="flex flex-col shrink-0 w-full max-w-[1328px] gap-[20px]"
               >
-                <div className="flex items-center" style={{ gap: '5.25px' }}>
-                  <img
-                    src="/coins/survay section.png"
-                    alt="Surveys"
-                    className="flex-shrink-0 object-contain select-none"
-                    style={{
-                      width: '67.19999694824219px',
-                      height: '67.19999694824219px',
-                      opacity: 1,
-                      transform: 'rotate(0deg)',
-                    }}
-                  />
-                  <div
-                    className="flex flex-col justify-center"
-                    style={{
-                      maxWidth: '371px',
-                      minHeight: '46px',
-                      opacity: 1,
-                    }}
-                  >
-                    <h2
-                      className="text-[#0E0F0C] m-0"
+                {filter === 'all' && (
+                  <div className="flex items-center" style={{ gap: '5.25px' }}>
+                    <img
+                      src="/coins/survay section.png"
+                      alt="Surveys"
+                      className="flex-shrink-0 object-contain select-none"
                       style={{
-                        fontFamily: '"Bricolage Grotesque", sans-serif',
-                        fontWeight: 700,
-                        fontSize: '30px',
-                        lineHeight: '1',
-                        letterSpacing: '-0.02em',
+                        width: '67.19999694824219px',
+                        height: '67.19999694824219px',
+                        opacity: 1,
+                        transform: 'rotate(0deg)',
+                      }}
+                    />
+                    <div
+                      className="flex flex-col justify-center"
+                      style={{
+                        maxWidth: '371px',
+                        minHeight: '46px',
+                        opacity: 1,
                       }}
                     >
-                      Surveys
-                    </h2>
-                    <p
-                      className="text-[#0E0F0C] m-0 mt-[4px]"
-                      style={{
-                        fontFamily: '"Poppins", sans-serif',
-                        fontWeight: 500,
-                        fontSize: '14px',
-                        lineHeight: '1.2',
-                        letterSpacing: '0%',
-                      }}
-                    >
-                      Share your opinion for quick and easy rewards.
-                    </p>
+                      <h2
+                        className="text-[#0E0F0C] m-0"
+                        style={{
+                          fontFamily: '"Bricolage Grotesque", sans-serif',
+                          fontWeight: 700,
+                          fontSize: '30px',
+                          lineHeight: '1',
+                          letterSpacing: '-0.02em',
+                        }}
+                      >
+                        Surveys
+                      </h2>
+                      <p
+                        className="text-[#0E0F0C] m-0 mt-[4px]"
+                        style={{
+                          fontFamily: '"Poppins", sans-serif',
+                          fontWeight: 500,
+                          fontSize: '14px',
+                          lineHeight: '1.2',
+                          letterSpacing: '0%',
+                        }}
+                      >
+                        Share your opinion for quick and easy rewards.
+                      </p>
+                    </div>
                   </div>
-                </div>
+                )}
                 {loadingSettings ? (
                   <div className="p-8 flex justify-center"><div className="w-8 h-8 rounded-full border-2 border-indigo-500 border-t-transparent animate-spin" /></div>
                 ) : surveyProviders.length === 0 ? (

@@ -66,6 +66,10 @@ const userSchema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
+    dailyBonusLongestStreak: {
+      type: Number,
+      default: 0,
+    },
     dailyBonusTimerStart: {
       type: Date,
       default: null,

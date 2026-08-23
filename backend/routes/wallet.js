@@ -581,6 +581,7 @@ router.get('/daily-bonus-status', verifyToken, async (req, res) => {
       // When already claimed: show the streak the user just earned (current DB value = streak)
       // When not yet claimed: show the streak they currently have (same DB value = streak)
       streak,
+      longestStreak: Math.max(user.dailyBonusLongestStreak || 0, streak),
       rewardToday,
       rewardTomorrow,
       rewardDay10,
@@ -664,6 +665,7 @@ router.post('/daily-bonus', verifyToken, async (req, res) => {
     }
 
     const rewardAmount = getRewardForDay(streak);
+    const newLongestStreak = Math.max(user.dailyBonusLongestStreak || 0, streak);
 
     // 4. ATOMIC update — optimistic lock on lastDailyBonusClaim prevents double-claims
     const updatedUser = await User.findOneAndUpdate(
@@ -675,6 +677,7 @@ router.post('/daily-bonus', verifyToken, async (req, res) => {
         $set: {
           lastDailyBonusClaim: now,
           dailyBonusStreak: streak,
+          dailyBonusLongestStreak: newLongestStreak,
           dailyBonusTimerStart: null, // legacy field — keep clearing it
         },
       },
