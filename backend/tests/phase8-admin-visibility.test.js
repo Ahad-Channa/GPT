@@ -212,6 +212,7 @@ test('security validation rejects incomplete methods fail-closed', () => {
   assert.equal(validateSecurityConfig({ method: 'none' }).method, 'none');
   assert.throws(() => validateSecurityConfig({ method: 'shared_secret' }), /requires tokenParam or headerName/);
   assert.throws(() => validateSecurityConfig({ method: 'hmac', signatureParam: 'sig' }), /requires hashTemplate or adapterKey/);
+  assert.throws(() => validateSecurityConfig({ method: 'custom_adapter' }), /requires adapterKey/);
   assert.throws(() => validateSecurityConfig({ method: 'unsupported' }), /Unsupported/);
   assert.throws(() => validateProviderSettings({ apiKey: 'should-not-persist' }), /Sensitive provider settings/);
 });
@@ -379,6 +380,8 @@ test('frontend admin pages do not render plaintext provider or direct-offer secr
   const postbackLogs = read('frontend/src/pages/admin/AdminPostbackLogs.jsx');
   assert.match(providers, /type="password"/);
   assert.match(providers, /Blank secret fields preserve/);
+  assert.match(providers, /hashAlgorithm/);
+  assert.match(providers, /adapterKey/);
   assert.doesNotMatch(directOffers, /postbackSecretKey/);
   assert.match(directOffers, /secret=\{SECRET\}/);
   assert.doesNotMatch(postbackLogs, /secretValue|postbackSecretKey|authorization:\s*`Bearer/);

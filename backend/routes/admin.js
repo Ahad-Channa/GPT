@@ -196,6 +196,9 @@ const validateSecurityConfig = (security = {}, existing = {}) => {
   if (['md5', 'sha1', 'sha256', 'sha512', 'hmac'].includes(method) && !normalized.hashTemplate && !normalized.adapterKey) {
     throw new Error('Signature security requires hashTemplate or adapterKey.');
   }
+  if (method === 'custom_adapter' && !normalized.adapterKey) {
+    throw new Error('Custom adapter security requires adapterKey.');
+  }
   return normalized;
 };
 

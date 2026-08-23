@@ -29,7 +29,9 @@ const emptyForm = {
     signatureParam: '',
     tokenParam: '',
     headerName: '',
+    hashAlgorithm: '',
     hashTemplate: '',
+    adapterKey: '',
     caseInsensitiveSignature: false,
     ipAllowlistRequired: false,
   },
@@ -159,8 +161,14 @@ const ProviderForm = ({ selected, token, onSaved }) => {
         <input className={input} type="password" value={form.secret} onChange={e => set('secret', e.target.value)} placeholder={selected?.security?.credentialsConfigured ? 'Replace secret' : 'Set secret'} />
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mt-3">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-3 mt-3">
+        <input className={input} value={form.security.headerName || ''} onChange={e => setNested('security', 'headerName', e.target.value)} placeholder="header name" />
+        <input className={input} value={form.security.hashAlgorithm || ''} onChange={e => setNested('security', 'hashAlgorithm', e.target.value)} placeholder="HMAC algorithm" />
         <input className={input} value={form.security.hashTemplate || ''} onChange={e => setNested('security', 'hashTemplate', e.target.value)} placeholder="hash template or leave blank" />
+        <input className={input} value={form.security.adapterKey || ''} onChange={e => setNested('security', 'adapterKey', e.target.value)} placeholder="adapter key" />
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mt-3">
         <input className={input} value={form.ipAllowlist || ''} onChange={e => set('ipAllowlist', e.target.value)} placeholder="IP allowlist, comma separated" />
         <label className="flex items-center gap-2 text-sm text-slate-300">
           <input type="checkbox" checked={form.enabled} onChange={e => set('enabled', e.target.checked)} /> Enabled
