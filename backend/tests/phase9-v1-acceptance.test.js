@@ -8,6 +8,8 @@ const Conversion = require('../models/Conversion');
 const PostbackLog = require('../models/PostbackLog');
 const { processPostback } = require('../services/tracking/conversionService');
 const { validateProviderSecurity } = require('../services/tracking/providerSecurity');
+const { processReward } = require('../services/rewards/rewardService');
+const { processReversal } = require('../services/rewards/reversalService');
 
 const makeReq = ({ query = {}, body = {}, method = 'GET', headers = {}, ip = '203.0.113.9', trustProxy = true } = {}) => ({
   method,
@@ -167,6 +169,129 @@ const makeAdapters = ({ clickLog = makeClick(), existingConversions = [] } = {})
   };
 };
 
+const q = (value) => ({
+  session() {
+    return this;
+  },
+  then(resolve, reject) {
+    return Promise.resolve(value).then(resolve, reject);
+  },
+});
+
+const matches = (doc, query = {}) => Object.entries(query).every(([key, expected]) => {
+  const actual = key.split('.').reduce((target, part) => target?.[part], doc);
+  if (expected && typeof expected === 'object' && !Array.isArray(expected) && !(expected instanceof mongoose.Types.ObjectId)) {
+    if (expected.$in) return expected.$in.includes(actual);
+    if (Object.prototype.hasOwnProperty.call(expected, '$ne')) {
+      if (Array.isArray(actual)) return !actual.some((item) => String(item) === String(expected.$ne));
+      return String(actual || '') !== String(expected.$ne || '');
+    }
+  }
+  return String(actual || '') === String(expected || '');
+});
+
+const applyUpdate = (doc, update = {}) => {
+  if (!doc) return doc;
+  if (update.$set) {
+    for (const [key, value] of Object.entries(update.$set)) {
+      const parts = key.split('.');
+      let target = doc;
+      while (parts.length > 1) {
+        const part = parts.shift();
+        target[part] = target[part] || {};
+        target = target[part];
+      }
+      target[parts[0]] = value;
+    }
+  }
+  if (update.$inc) {
+    for (const [key, value] of Object.entries(update.$inc)) {
+      doc[key] = (doc[key] || 0) + value;
+    }
+  }
+  if (update.$addToSet) {
+    for (const [key, value] of Object.entries(update.$addToSet)) {
+      doc[key] = doc[key] || [];
+      if (!doc[key].some((item) => String(item) === String(value))) doc[key].push(value);
+    }
+  }
+  return doc;
+};
+
+const asDoc = (payload) => ({
+  _id: payload._id || new mongoose.Types.ObjectId(),
+  ...payload,
+  async save() {
+    return this;
+  },
+});
+
+const makeFinancialModels = ({ user, click, conversions, transactions, settings }) => ({
+  Conversion: {
+    findById(id) {
+      return q(conversions.find((item) => String(item._id) === String(id)) || null);
+    },
+    async findOneAndUpdate(query, update) {
+      const doc = conversions.find((item) => matches(item, query));
+      return applyUpdate(doc, update) || null;
+    },
+    async findByIdAndUpdate(id, update) {
+      const doc = conversions.find((item) => String(item._id) === String(id));
+      return applyUpdate(doc, update) || null;
+    },
+  },
+  ClickLog: {
+    findById(id) {
+      return q(String(click._id) === String(id) ? click : null);
+    },
+    async findByIdAndUpdate(id, update) {
+      return String(click._id) === String(id) ? applyUpdate(click, update) : null;
+    },
+  },
+  DirectOffer: {
+    async findByIdAndUpdate() {
+      return {};
+    },
+  },
+  Settings: {
+    getSingleton() {
+      return q(settings);
+    },
+  },
+  Transaction: {
+    findOne(query) {
+      return q(transactions.find((item) => matches(item, query)) || null);
+    },
+    findById(id) {
+      return q(transactions.find((item) => String(item._id) === String(id)) || null);
+    },
+    async create(payloadOrArray) {
+      const payload = Array.isArray(payloadOrArray) ? payloadOrArray[0] : payloadOrArray;
+      if (payload.externalId && transactions.some((item) => item.externalId === payload.externalId)) {
+        const error = new Error('duplicate key');
+        error.code = 11000;
+        throw error;
+      }
+      const tx = asDoc(payload);
+      transactions.push(tx);
+      return Array.isArray(payloadOrArray) ? [tx] : tx;
+    },
+  },
+  User: {
+    findById(id) {
+      return q(String(user._id) === String(id) ? user : null);
+    },
+    async findOneAndUpdate(query, update) {
+      return matches(user, query) ? applyUpdate(user, update) : null;
+    },
+    async updateOne(query, update) {
+      const matched = String(user._id) === String(query._id);
+      if (matched) applyUpdate(user, update);
+      return { modifiedCount: matched ? 1 : 0 };
+    },
+  },
+});
+
 const approvedQuery = (overrides = {}) => ({
   cid: 'phase9-click',
   tx: 'phase9-tx',
@@ -310,6 +435,20 @@ test('Phase 9 signature primitive QA covers shared secret, HMAC, MD5, SHA-family
     req: makeReq({ ip: '203.0.113.9', query: { secret: 'phase9-secret' } }),
     mapped,
   }).passed, false);
+
+  const customAdapter = validateProviderSecurity({
+    providerConfig: providerConfig({
+      security: {
+        method: 'custom_adapter',
+        adapterKey: 'unknown_adapter',
+        secretValue: 'phase9-secret',
+      },
+    }),
+    req: makeReq({ query: { secret: 'phase9-secret' } }),
+    mapped,
+  });
+  assert.equal(customAdapter.passed, false);
+  assert.match(customAdapter.reason, /adapter is not available/);
 });
 
 test('Phase 9 duplicate, replay, and concurrent duplicate acceptance creates one auditable conversion', async () => {
@@ -386,4 +525,116 @@ test('Phase 9 conversion lifecycle acceptance verifies pending transitions and d
     postbackLogModel: adapters.postbackLogModel,
   });
   assert.equal(duplicateReversal.isDuplicate, true);
+});
+
+test('Phase 9 full mock provider proof covers click, signed conversion, reward, logs, and reversal', async () => {
+  const user = asDoc({
+    _id: new mongoose.Types.ObjectId(),
+    firebaseUid: 'phase9-user',
+    walletBalance: 1000,
+    totalEarned: 0,
+    isBanned: false,
+    appliedFinancialTransactionIds: [],
+    releasedEarningHoldTransactionIds: [],
+  });
+  const click = makeClick({
+    clickId: 'phase9-e2e-click',
+    userId: user._id,
+    rewardAmount: 432,
+    rewardSnapshot: { amount: 432, currency: 'coins', source: 'mock-provider' },
+  });
+  const adapters = makeAdapters({ clickLog: click });
+  const signedConfig = providerConfig({
+    security: {
+      method: 'sha256',
+      signatureParam: 'sig',
+      hashTemplate: '{clickId}:{transactionId}:{secret}',
+      secretValue: 'phase9-secret',
+    },
+  });
+  const conversionSig = crypto
+    .createHash('sha256')
+    .update('phase9-e2e-click:phase9-e2e-tx:phase9-secret')
+    .digest('hex');
+
+  const conversionResult = await processPostback({
+    providerConfig: signedConfig,
+    req: makeReq({
+      query: approvedQuery({
+        cid: 'phase9-e2e-click',
+        tx: 'phase9-e2e-tx',
+        sig: conversionSig,
+        secret: undefined,
+      }),
+    }),
+    route: '/api/postbacks/qa-provider',
+    clickLogModel: adapters.clickLogModel,
+    conversionModel: adapters.conversionModel,
+    postbackLogModel: adapters.postbackLogModel,
+  });
+  assert.equal(conversionResult.ok, true);
+  assert.equal(adapters.logs[0].processingResult, 'accepted');
+
+  const transactions = [];
+  const financialModels = makeFinancialModels({
+    user,
+    click,
+    conversions: adapters.conversions,
+    transactions,
+    settings: { referralConfig: { holdDays: 0, globalPercentage: 5 }, earningHoldConfig: { enabled: false } },
+  });
+  const hooks = {
+    notify: async () => {},
+    emitWalletUpdate: () => {},
+    processVipLevelUp: async () => {},
+  };
+  const rewardResult = await processReward({
+    conversion: adapters.conversions[0],
+    models: financialModels,
+    hooks,
+  });
+
+  assert.equal(rewardResult.ok, true);
+  assert.equal(transactions.length, 1);
+  assert.equal(transactions[0].amount, 432);
+  assert.equal(user.walletBalance, 1432);
+  assert.equal(user.totalEarned, 432);
+  assert.equal(adapters.conversions[0].processingState, 'processed');
+
+  const reversalSig = crypto
+    .createHash('sha256')
+    .update('phase9-e2e-click:phase9-e2e-tx:phase9-secret')
+    .digest('hex');
+  const reversalPostback = await processPostback({
+    providerConfig: signedConfig,
+    req: makeReq({
+      query: approvedQuery({
+        cid: 'phase9-e2e-click',
+        tx: 'phase9-e2e-tx',
+        state: 'chargeback',
+        sig: reversalSig,
+        secret: undefined,
+      }),
+    }),
+    route: '/api/postbacks/qa-provider',
+    clickLogModel: adapters.clickLogModel,
+    conversionModel: adapters.conversionModel,
+    postbackLogModel: adapters.postbackLogModel,
+  });
+  assert.equal(reversalPostback.ok, true);
+  assert.equal(reversalPostback.internalStatus, 'reversed');
+
+  const reversalResult = await processReversal({
+    conversion: adapters.conversions[0],
+    models: financialModels,
+    hooks,
+  });
+
+  assert.equal(reversalResult.ok, true);
+  assert.equal(transactions.length, 2);
+  assert.equal(transactions[1].amount, -432);
+  assert.equal(user.walletBalance, 1000);
+  assert.equal(adapters.conversions[0].processingState, 'reversed');
+  assert.equal(adapters.logs.length, 2);
+  assert.equal(JSON.stringify(adapters.logs).includes('phase9-secret'), false);
 });

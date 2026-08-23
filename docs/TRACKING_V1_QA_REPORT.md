@@ -38,7 +38,7 @@ Acceptance coverage is distributed across the phase-specific suites:
 - Phase 8 admin visibility/security
 - Phase 9 final V1 acceptance
 
-Final total after Phase 9: 109 backend automated tests, all passing.
+Final total after Phase 9 readiness verification: 110 backend automated tests, all passing.
 
 ## Acceptance Matrix Summary
 
@@ -54,8 +54,11 @@ Summary:
 - Concurrency acceptance: PASS
 - Hold/referral/VIP/daily bonus/leaderboard integration: PASS
 - Admin visibility/security: PASS
-- Legacy route regression: PASS by automated route/service coverage and frontend build
+- Legacy tested compatibility: PASS by automated route/service coverage and frontend build
+- Full legacy production smoke: BLOCKED BY ENVIRONMENT until deployed Firebase/database/payment/provider dependencies are available
 - Real provider-specific behavior: REQUIRES REAL PROVIDER IN PHASE 10
+- Custom adapter registry safety: PASS
+- Full mock provider click-to-reversal proof: PASS
 
 ## Security Results
 
@@ -70,6 +73,10 @@ The reusable security primitives are tested with:
 - IP allowlist
 
 These are generic primitive tests only. Compatibility with any specific provider formula requires Phase 10 official provider documentation and sandbox/live traffic.
+
+`hashTemplate` is data/config only. It is rendered by simple `{field}` token replacement in `backend/services/tracking/providerSecurity.js`; there is no JavaScript evaluation, shell execution, dynamic function construction, or arbitrary template engine execution.
+
+Custom security adapters must be registered inside `backend/services/tracking/providerAdapterRegistry.js`. Admin-supplied `adapterKey` values are validated against that internal registry, cannot be filesystem paths, and unknown keys fail closed. There is no dynamic `require()` or import based on admin input.
 
 ## Concurrency Results
 
@@ -93,6 +100,17 @@ Phase 6 verifies:
 - Duplicate reversal does not deduct twice.
 - Ledger reconciliation invariants hold.
 
+Phase 9 also includes a full simulated provider proof:
+
+- Taskmint mock click
+- Provider-style signed conversion postback
+- Parameter mapping and signature validation
+- Conversion creation
+- Sanitized PostbackLog creation
+- Reward processing and wallet credit
+- Provider-style chargeback postback
+- Reversal processing and wallet deduction
+
 ## Admin Security Results
 
 Phase 8 and Phase 9 verification confirm:
@@ -110,6 +128,25 @@ Phase 8 and Phase 9 verification confirm:
 - Production geo/country detection requires the app to run behind a correctly trusted proxy/CDN. The app must not broadly trust arbitrary `X-Forwarded-For` or country headers.
 - MongoDB transaction behavior depends on deployment topology. The code supports transaction attempts where available and safe fallback behavior where unsupported.
 - Real provider acceptance requires official provider docs, sandbox/live credentials, and actual provider callbacks in Phase 10.
+- No `.env.example` file currently exists in this repository. Phase 10 should add placeholder-only env names only when a real provider requires environment-backed secrets; actual credentials must not be committed.
+
+## Phase 10 Client / Provider Checklist
+
+Phase 10 requires the client/provider to supply or confirm:
+
+- Official publisher integration documentation
+- Provider account approval and access to the relevant dashboard
+- Chosen integration method and provider/offerwall ID
+- API/public identifier if required by the provider
+- Secret/private key supplied out-of-band, never committed to source
+- Official click/postback parameter names
+- Official signature algorithm and formula
+- Whether a generic `hashTemplate` is sufficient or a registered internal adapter is required
+- Test/sandbox conversion functionality
+- Official postback URL configuration location in the provider dashboard
+- Reversal/chargeback documentation and supported status values
+- Official provider IP ranges if allowlisting is required
+- Production domain, trusted proxy/CDN behavior, and public callback URL
 
 ## Real-Provider Items Deferred To Phase 10
 
@@ -125,9 +162,10 @@ The following are intentionally not marked complete in Phase 9:
 
 ## Remaining Defects
 
-Two Phase 9 acceptance defects were found and fixed:
+Three Phase 9 acceptance/readiness defects were found and fixed:
 
 - `custom_adapter` security configuration could be saved without `adapterKey`, creating a misleading provider configuration. It now rejects without `adapterKey`.
 - The admin ProviderConfig form exposed HMAC/custom-adapter methods but did not expose `hashAlgorithm` or `adapterKey`. The UI now includes those non-secret fields and the Phase 8 admin test asserts they remain present.
+- `adapterKey` was not backed by an internal allowlist/registry. It now validates against `providerAdapterRegistry`, rejects path-like/arbitrary keys, and runtime custom adapter security fails closed when no internal adapter is registered.
 
 No additional unresolved V1 acceptance defects are currently known.

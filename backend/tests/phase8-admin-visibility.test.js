@@ -213,6 +213,8 @@ test('security validation rejects incomplete methods fail-closed', () => {
   assert.throws(() => validateSecurityConfig({ method: 'shared_secret' }), /requires tokenParam or headerName/);
   assert.throws(() => validateSecurityConfig({ method: 'hmac', signatureParam: 'sig' }), /requires hashTemplate or adapterKey/);
   assert.throws(() => validateSecurityConfig({ method: 'custom_adapter' }), /requires adapterKey/);
+  assert.throws(() => validateSecurityConfig({ method: 'custom_adapter', adapterKey: '../unsafe' }), /invalid characters/);
+  assert.throws(() => validateSecurityConfig({ method: 'custom_adapter', adapterKey: 'unknown_adapter' }), /Unknown provider adapterKey/);
   assert.throws(() => validateSecurityConfig({ method: 'unsupported' }), /Unsupported/);
   assert.throws(() => validateProviderSettings({ apiKey: 'should-not-persist' }), /Sensitive provider settings/);
 });

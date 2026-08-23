@@ -33,6 +33,7 @@ const Avatar = require('../models/Avatar');
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
+const { validateProviderAdapterKey } = require('../services/tracking/providerAdapterRegistry');
 
 const PROVIDER_TYPES = ['offerwall', 'direct', 'affiliate_network', 'advertiser', 'internal'];
 const SECURITY_METHODS = ['none', 'shared_secret', 'md5', 'sha1', 'sha256', 'sha512', 'hmac', 'token', 'custom_adapter'];
@@ -192,6 +193,9 @@ const validateSecurityConfig = (security = {}, existing = {}) => {
   }
   if (['md5', 'sha1', 'sha256', 'sha512', 'hmac'].includes(method) && !normalized.signatureParam) {
     throw new Error('Signature security requires signatureParam.');
+  }
+  if (normalized.adapterKey) {
+    normalized.adapterKey = validateProviderAdapterKey(normalized.adapterKey);
   }
   if (['md5', 'sha1', 'sha256', 'sha512', 'hmac'].includes(method) && !normalized.hashTemplate && !normalized.adapterKey) {
     throw new Error('Signature security requires hashTemplate or adapterKey.');

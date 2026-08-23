@@ -2,6 +2,7 @@ const crypto = require('crypto');
 const net = require('net');
 
 const { getClientIp } = require('../../utils/geo');
+const { getProviderAdapter } = require('./providerAdapterRegistry');
 
 const safeCompare = (a, b) => {
   const left = Buffer.from(String(a ?? ''), 'utf8');
@@ -152,6 +153,21 @@ const validateProviderSecurity = ({ providerConfig = {}, req, mapped = {} }) => 
       passed,
       method,
       reason: passed ? '' : 'HMAC signature mismatch.',
+      sourceIp,
+    };
+  }
+
+  if (method === 'custom_adapter') {
+    const adapter = getProviderAdapter(security.adapterKey);
+    if (!adapter || typeof adapter.validateSecurity !== 'function') {
+      return { checked: true, passed: false, method, reason: 'Provider security adapter is not available.', sourceIp };
+    }
+    const adapterResult = adapter.validateSecurity({ providerConfig, req, mapped, secret, sourceIp });
+    return {
+      checked: true,
+      passed: Boolean(adapterResult?.passed),
+      method,
+      reason: adapterResult?.passed ? '' : (adapterResult?.reason || 'Provider security adapter rejected the request.'),
       sourceIp,
     };
   }
