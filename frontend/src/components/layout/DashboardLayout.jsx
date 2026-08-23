@@ -38,7 +38,7 @@ const DashboardLayout = ({ children, showLiveBar = true, fullWidth = false }) =>
         className="transition-all duration-300 ease-in-out w-full flex-1 bg-[#FAFAFA]"
       >
         <main
-          className="relative z-10 w-full mx-auto px-4 md:px-8 lg:px-0 pt-0 pb-3 md:pb-4 flex flex-col"
+          className="w-full mx-auto px-4 md:px-8 lg:px-0 pt-0 pb-3 md:pb-4 flex flex-col"
           style={{ maxWidth: fullWidth ? '1600px' : '1328px' }}
         >
           {children}

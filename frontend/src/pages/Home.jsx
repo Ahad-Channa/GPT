@@ -81,13 +81,22 @@ const TabButton = ({ active, onClick, iconSrc, label }) => {
   );
 };
 
+// In-memory cache across route transitions for instantaneous page loading
+const homeCache = {
+  settings: null,
+  customOffers: null,
+  directOffers: null,
+  tasksDone: null,
+  globalStats: null,
+};
+
 const Home = () => {
   const { mongoUser, currentUser } = useAuth();
   const navigate = useNavigate();
   const displayName = mongoUser?.displayName || 'User';
   const balance = mongoUser?.walletBalance?.toFixed(2) ?? '0.00';
-  const [tasksDone, setTasksDone] = useState('...');
-  const [globalStats, setGlobalStats] = useState({ totalUsers: 0, totalPaidOut: 0, show: false });
+  const [tasksDone, setTasksDone] = useState(() => homeCache.tasksDone || '...');
+  const [globalStats, setGlobalStats] = useState(() => homeCache.globalStats || { totalUsers: 0, totalPaidOut: 0, show: false });
   const [chatOpen, setChatOpen] = useState(() => localStorage.getItem('chatOpen') === 'true');
 
   useEffect(() => {
@@ -96,11 +105,11 @@ const Home = () => {
     return () => window.removeEventListener('chatToggle', handleChatToggle);
   }, []);
 
-  const [settings, setSettings] = useState(null);
-  const [customOffers, setCustomOffers] = useState([]);
-  const [directOffers, setDirectOffers] = useState([]);
-  const [loadingSettings, setLoadingSettings] = useState(true);
-  const [loadingOffers, setLoadingOffers] = useState(true);
+  const [settings, setSettings] = useState(() => homeCache.settings);
+  const [customOffers, setCustomOffers] = useState(() => homeCache.customOffers || []);
+  const [directOffers, setDirectOffers] = useState(() => homeCache.directOffers || []);
+  const [loadingSettings, setLoadingSettings] = useState(() => !homeCache.settings);
+  const [loadingOffers, setLoadingOffers] = useState(() => !homeCache.customOffers && !homeCache.directOffers);
   const [token, setToken] = useState(null);
 
   const [activeProvider, setActiveProvider] = useState(null);
@@ -139,12 +148,10 @@ const Home = () => {
   const [visibleFeaturedCount, setVisibleFeaturedCount] = useState(14);
 
   const handleFeaturedScroll = () => {
-    const el = featuredScrollRef.current;
-    if (!el) return;
-    const { scrollLeft, clientWidth, scrollWidth } = el;
-    // When user scrolls near the end or scrolls past 7 items
-    if (scrollWidth - (scrollLeft + clientWidth) < 450 || scrollLeft >= (visibleFeaturedCount - 7) * 196) {
-      setVisibleFeaturedCount((prev) => {
+    if (!featuredScrollRef.current) return;
+    const { scrollLeft, scrollWidth, clientWidth } = featuredScrollRef.current;
+    if (scrollLeft + clientWidth >= scrollWidth - 250) {
+      setVisibleFeaturedCount(prev => {
         if (prev < allFeaturedOffers.length) {
           return Math.min(prev + 7, allFeaturedOffers.length);
         }
@@ -156,10 +163,9 @@ const Home = () => {
   const handleFeaturedMouseDown = (e) => {
     if (!featuredScrollRef.current) return;
     isDraggingFeatured.current = true;
+    hasMovedRef.current = false;
     dragStartX.current = e.pageX - featuredScrollRef.current.offsetLeft;
     dragScrollLeft.current = featuredScrollRef.current.scrollLeft;
-    hasMovedRef.current = false;
-    setHasMovedDrag(false);
   };
 
   const handleFeaturedMouseMove = (e) => {
@@ -167,7 +173,7 @@ const Home = () => {
     e.preventDefault();
     const x = e.pageX - featuredScrollRef.current.offsetLeft;
     const walk = (x - dragStartX.current) * 1.5;
-    if (Math.abs(walk) > 4) {
+    if (Math.abs(x - dragStartX.current) > 5) {
       hasMovedRef.current = true;
       setHasMovedDrag(true);
     }
@@ -180,12 +186,12 @@ const Home = () => {
     setTimeout(() => {
       hasMovedRef.current = false;
       setHasMovedDrag(false);
-    }, 80);
+    }, 50);
   };
 
   const handleFeaturedWheel = (e) => {
     if (!featuredScrollRef.current) return;
-    if (e.deltaY !== 0) {
+    if (Math.abs(e.deltaX) < Math.abs(e.deltaY)) {
       featuredScrollRef.current.scrollLeft += e.deltaY;
       handleFeaturedScroll();
     }
@@ -197,95 +203,81 @@ const Home = () => {
     }
   }, [currentUser]);
 
+  // Parallel background fetching & caching for ultra-fast instant transitions
   useEffect(() => {
-    const fetchStats = async () => {
-      try {
-        if (!token) return;
-        const res = await fetch(`${API}/wallet/dashboard-stats`, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        const data = await res.json();
-        if (data.success) {
-          setTasksDone(data.totalTasksCompleted.toString());
-        }
-      } catch (err) {
-        console.error('Failed to fetch dashboard stats', err);
-      }
-    };
-    const fetchGlobalStats = async () => {
-      try {
-        const res = await fetch(`${API}/public/stats`);
-        const data = await res.json();
-        if (data.success) {
-          setGlobalStats({ totalUsers: data.totalUsers, totalPaidOut: data.totalPaidOut, show: data.showGlobalStats });
-        }
-      } catch (err) {
-        console.error('Failed to fetch global stats', err);
-      }
-    };
-    if (token) fetchStats();
-    fetchGlobalStats();
-  }, [token]);
+    let isMounted = true;
 
-  useEffect(() => {
-    if (!token) return;
-    const fetchSettings = async () => {
+    const fetchAll = async () => {
       try {
-        const res = await fetch(`${API}/wallet/settings`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        const data = await res.json();
-        if (data.success) setSettings(data);
-      } catch (err) {
-        console.error('Failed to load earn settings:', err);
-      } finally {
-        setLoadingSettings(false);
-      }
-    };
-    fetchSettings();
-  }, [token]);
+        const headers = token ? { Authorization: `Bearer ${token}` } : {};
 
-  useEffect(() => {
-    if (!token) return;
-    const fetchOffers = async () => {
-      try {
-        const res = await fetch(`${API}/custom-offers`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        const data = await res.json();
-        if (data.success) {
+        const fetchPublicStats = fetch(`${API}/public/stats`).then(r => r.json()).catch(() => null);
+        const fetchDashboardStats = token ? fetch(`${API}/wallet/dashboard-stats`, { headers }).then(r => r.json()).catch(() => null) : Promise.resolve(null);
+        const fetchWalletSettings = token ? fetch(`${API}/wallet/settings`, { headers }).then(r => r.json()).catch(() => null) : Promise.resolve(null);
+        const fetchCustomOffers = token ? fetch(`${API}/custom-offers`, { headers }).then(r => r.json()).catch(() => null) : Promise.resolve(null);
+        const fetchDirectOffers = token ? fetch(`${API}/direct-offers`, { headers }).then(r => r.json()).catch(() => null) : Promise.resolve(null);
+
+        const [publicStatsData, dashStatsData, settingsData, customData, directData] = await Promise.all([
+          fetchPublicStats,
+          fetchDashboardStats,
+          fetchWalletSettings,
+          fetchCustomOffers,
+          fetchDirectOffers,
+        ]);
+
+        if (!isMounted) return;
+
+        if (publicStatsData?.success) {
+          const gs = {
+            totalUsers: publicStatsData.totalUsers,
+            totalPaidOut: publicStatsData.totalPaidOut,
+            show: publicStatsData.showGlobalStats,
+          };
+          homeCache.globalStats = gs;
+          setGlobalStats(gs);
+        }
+
+        if (dashStatsData?.success) {
+          const td = dashStatsData.totalTasksCompleted?.toString() || '0';
+          homeCache.tasksDone = td;
+          setTasksDone(td);
+        }
+
+        if (settingsData?.success) {
+          homeCache.settings = settingsData;
+          setSettings(settingsData);
+        }
+
+        if (customData?.success) {
           const now = new Date();
-          const visibleOffers = data.offers.filter(o => {
+          const visibleOffers = customData.offers.filter(o => {
             const isApproved = o.submissionStatus === 'approved';
             const isExpired = o.expirationDate && new Date(o.expirationDate) < now;
             return !isApproved && !isExpired;
           });
+          homeCache.customOffers = visibleOffers;
           setCustomOffers(visibleOffers);
         }
-      } catch (err) {
-        console.error('Failed to load featured offers:', err);
-      } finally {
-        setLoadingOffers(false);
-      }
-    };
-    fetchOffers();
-  }, [token]);
 
-  // Fetch active direct offers (S2S auto-tracked)
-  useEffect(() => {
-    if (!token) return;
-    const fetchDirectOffers = async () => {
-      try {
-        const res = await fetch(`${API}/direct-offers`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        const data = await res.json();
-        if (data.success) setDirectOffers(data.offers);
+        if (directData?.success) {
+          homeCache.directOffers = directData.offers;
+          setDirectOffers(directData.offers);
+        }
       } catch (err) {
-        console.error('Failed to load direct offers:', err);
+        console.error('Failed to load dashboard data:', err);
+      } finally {
+        if (isMounted) {
+          setLoadingOffers(false);
+          setLoadingSettings(false);
+        }
       }
     };
-    fetchDirectOffers();
+
+    fetchAll();
+
+    return () => {
+      isMounted = false;
+    };
   }, [token]);
 
   const scrollTo = (ref, filterType) => {
@@ -765,7 +757,7 @@ const Home = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm"
+            className="fixed inset-0 z-[99999] flex items-center justify-center p-4 bg-black/75 backdrop-blur-md"
             onClick={() => setActiveProvider(null)}
           >
             <motion.div

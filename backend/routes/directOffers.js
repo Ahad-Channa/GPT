@@ -36,33 +36,43 @@ const getIp = (req) =>
 router.get('/', verifyToken, async (req, res) => {
   try {
     const now = new Date();
-    const user = await User.findOne({ firebaseUid: req.user.uid });
+    const user = await User.findOne({ firebaseUid: req.user.uid }).select('_id').lean();
 
     const offers = await DirectOffer.find({
       isActive: true,
       $or: [{ expirationDate: null }, { expirationDate: { $gt: now } }],
-    }).select('-postbackSecretKey'); // Never expose the secret to frontend
+    }).select('-postbackSecretKey').lean();
 
     if (!user) {
-      return res.status(200).json({ success: true, offers: offers.map(o => ({ ...o.toObject(), clickStatus: null })) });
+      return res.status(200).json({ success: true, offers: offers.map(o => ({ ...o, clickStatus: null, clickId: null })) });
     }
 
-    // Attach the user's latest click status for each offer
-    const offersWithStatus = await Promise.all(
-      offers.map(async (offer) => {
-        const latestClick = await ClickLog.findOne({ offerId: offer._id, userId: user._id })
-          .sort({ createdAt: -1 });
-        return {
-          ...offer.toObject(),
-          clickStatus: latestClick ? latestClick.status : null,
-          clickId: latestClick ? latestClick.clickId : null,
-        };
-      })
-    );
+    // Single query for user's click logs instead of N individual queries
+    const userClicks = await ClickLog.find({ userId: user._id })
+      .sort({ createdAt: -1 })
+      .select('offerId status clickId')
+      .lean();
+
+    const clickMap = {};
+    for (const c of userClicks) {
+      const offId = c.offerId?.toString();
+      if (offId && !clickMap[offId]) {
+        clickMap[offId] = c;
+      }
+    }
+
+    const offersWithStatus = offers.map((offer) => {
+      const click = clickMap[offer._id.toString()];
+      return {
+        ...offer,
+        clickStatus: click ? click.status : null,
+        clickId: click ? click.clickId : null,
+      };
+    });
 
     res.status(200).json({ success: true, offers: offersWithStatus });
   } catch (error) {
-    console.error('[GET /api/direct-offers] Error:', error);
+    console.error('[/api/direct-offers] Error:', error);
     res.status(500).json({ success: false, error: 'Failed to fetch direct offers' });
   }
 });

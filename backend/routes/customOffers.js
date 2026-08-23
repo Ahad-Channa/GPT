@@ -5,18 +5,24 @@ const CustomOfferSubmission = require('../models/CustomOfferSubmission');
 const { verifyToken } = require('../middlewares/authMiddleware');
 const User = require('../models/User');
 
-// GET /api/custom-offers (Public/User) - Get active custom offers
 router.get('/', verifyToken, async (req, res) => {
   try {
-    const user = await User.findOne({ firebaseUid: req.user.uid });
-    const offers = await CustomOffer.find({ isActive: true });
+    const user = await User.findOne({ firebaseUid: req.user.uid }).select('_id').lean();
+    const offers = await CustomOffer.find({ isActive: true }).lean();
     
-    // Attach user submission status to each offer so frontend knows if it's pending/approved/rejected
-    let offersWithStatus = offers.map(o => ({ ...o.toObject(), submissionStatus: null, adminNote: null }));
+    let offersWithStatus = offers.map(o => ({ ...o, submissionStatus: null, adminNote: null }));
     if (user) {
-      const submissions = await CustomOfferSubmission.find({ userId: user._id });
+      const submissions = await CustomOfferSubmission.find({ userId: user._id })
+        .select('offerId status adminNote')
+        .lean();
+      
+      const subMap = {};
+      for (const s of submissions) {
+        if (s.offerId) subMap[s.offerId.toString()] = s;
+      }
+
       offersWithStatus = offersWithStatus.map(offer => {
-        const sub = submissions.find(s => s.offerId.toString() === offer._id.toString());
+        const sub = subMap[offer._id.toString()];
         if (sub) {
           return { ...offer, submissionStatus: sub.status, adminNote: sub.adminNote };
         }
