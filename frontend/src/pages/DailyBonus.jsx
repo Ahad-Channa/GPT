@@ -314,8 +314,8 @@ export default function DailyBonus() {
                       style={{
                         fontFamily: '"Poppins", sans-serif',
                         fontWeight: 500,
-                        fontSize: '14px',
-                        lineHeight: '14px',
+                        fontSize: '16px',
+                        lineHeight: '22px',
                         letterSpacing: '0%',
                         color: '#0E0F0C',
                         opacity: 1,
@@ -327,15 +327,14 @@ export default function DailyBonus() {
                     <div
                       className="flex items-center mt-2"
                       style={{
-                        maxWidth: '337px',
-                        minHeight: '12.22px',
-                        gap: '4px',
+                        maxWidth: '400px',
+                        gap: '5px',
                         opacity: 1,
                         transform: 'rotate(0deg)',
                         fontFamily: '"Poppins", sans-serif',
                         fontWeight: 500,
-                        fontSize: '14px',
-                        lineHeight: '14px',
+                        fontSize: '16px',
+                        lineHeight: '22px',
                         letterSpacing: '0%',
                         whiteSpace: 'nowrap',
                       }}
@@ -345,8 +344,8 @@ export default function DailyBonus() {
                         src="/coins/coinbonushero.png"
                         alt="Coin"
                         style={{
-                          width: '12.22px',
-                          height: '12.22px',
+                          width: '14px',
+                          height: '14px',
                           objectFit: 'contain',
                         }}
                         className="shrink-0"
@@ -537,16 +536,15 @@ export default function DailyBonus() {
                 </div>
 
                 {/* Claim Button & Timer */}
-                <div className="flex flex-col items-center gap-2 w-full">
+                <div className="flex flex-col items-center gap-1 w-full">
                   <button
                     type="button"
                     onClick={claimBonus}
                     disabled={claiming || !isUnlocked || status.alreadyClaimed}
-                    className={`w-full mx-auto flex items-center justify-center select-none transition-all ${
-                      !isUnlocked || status.alreadyClaimed
-                        ? 'cursor-not-allowed'
-                        : 'hover:opacity-90 active:scale-[0.99] cursor-pointer shadow-sm'
-                    }`}
+                    className={`w-full mx-auto flex items-center justify-center select-none transition-all ${!isUnlocked || status.alreadyClaimed
+                      ? 'cursor-not-allowed'
+                      : 'hover:opacity-90 active:scale-[0.99] cursor-pointer shadow-sm'
+                      }`}
                     style={{
                       width: '100%',
                       maxWidth: '364px',
@@ -600,19 +598,19 @@ export default function DailyBonus() {
                       {claiming
                         ? 'Claiming...'
                         : status.alreadyClaimed
-                        ? 'Claimed'
-                        : 'Claim Reward'}
+                          ? 'Claimed'
+                          : 'Claim Reward'}
                     </span>
                   </button>
 
-                  <div className="flex items-center justify-center gap-1.5 mt-1">
+                  <div className="flex items-center justify-center gap-1.5 -mt-0.5">
                     <span
                       style={{
-                        width: '63px',
+                        width: 'auto',
                         fontFamily: '"Poppins", sans-serif',
                         fontWeight: 500,
-                        fontSize: '14px',
-                        lineHeight: '18px',
+                        fontSize: '16px',
+                        lineHeight: '20px',
                         letterSpacing: '0%',
                         color: '#0E0F0C',
                         opacity: 1,
@@ -626,8 +624,8 @@ export default function DailyBonus() {
                       style={{
                         fontFamily: '"Bricolage Grotesque", sans-serif',
                         fontWeight: 700,
-                        fontSize: '16px',
-                        lineHeight: '16px',
+                        fontSize: '18px',
+                        lineHeight: '20px',
                         letterSpacing: '-0.02em',
                         color: 'rgba(36, 50, 77, 1)',
                         opacity: 1,
@@ -651,7 +649,6 @@ export default function DailyBonus() {
               className="w-full shadow-sm flex flex-col justify-between"
               style={{
                 width: '100%',
-                maxWidth: '1328px',
                 minHeight: '176px',
                 opacity: 1,
                 transform: 'rotate(0deg)',
@@ -720,8 +717,8 @@ export default function DailyBonus() {
                           cycleStreak === 0
                             ? '0%'
                             : cycleStreak >= 10
-                            ? '100%'
-                            : `${6.95 + (cycleStreak - 1) * 9.567}%`,
+                              ? '100%'
+                              : `${6.95 + (cycleStreak - 1) * 9.567}%`,
                         borderRadius: '30px',
                         background: 'rgba(36, 50, 77, 1)',
                       }}
@@ -864,7 +861,6 @@ export default function DailyBonus() {
               className="flex flex-col w-full"
               style={{
                 width: '100%',
-                maxWidth: '1326px',
                 minHeight: '219px',
                 gap: '40px',
                 opacity: 1,
@@ -937,7 +933,6 @@ export default function DailyBonus() {
                       className="shadow-sm flex flex-row items-center justify-between"
                       style={{
                         width: '100%',
-                        maxWidth: '426px',
                         minHeight: '135px',
                         opacity: 1,
                         transform: 'rotate(0deg)',
@@ -1076,7 +1071,6 @@ export default function DailyBonus() {
                           className="relative flex items-center justify-end overflow-hidden"
                           style={{
                             width: '100%',
-                            maxWidth: '295px',
                             height: '20px',
                             opacity: 1,
                             transform: 'rotate(0deg)',

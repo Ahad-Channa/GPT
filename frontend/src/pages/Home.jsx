@@ -33,11 +33,10 @@ const TabButton = ({ active, onClick, iconSrc, label }) => {
     <button
       type="button"
       onClick={onClick}
-      className={`relative z-10 flex items-center justify-center transition-all duration-200 cursor-pointer whitespace-nowrap select-none shrink-0 ${
-        active
-          ? 'bg-[#1E2538] text-white shadow-sm'
-          : 'text-[#0E0F0C] hover:bg-black/5'
-      }`}
+      className={`relative z-10 flex items-center justify-center transition-all duration-200 cursor-pointer whitespace-nowrap select-none shrink-0 ${active
+        ? 'bg-[#1E2538] text-white shadow-sm'
+        : 'text-[#0E0F0C] hover:bg-black/5'
+        }`}
       style={{
         width: '154px',
         height: '37px',
@@ -492,7 +491,7 @@ const Home = () => {
                   <img
                     src="/coins/total paid.png"
                     alt="Paid"
-                    className="w-[32px] h-[32px] sm:w-[38px] sm:h-[38px] lg:w-[44px] lg:h-[44px] object-contain flex-shrink-0 -translate-y-[5px]"
+                    className="w-[32px] h-[32px] sm:w-[38px] sm:h-[38px] lg:w-[44px] lg:h-[44px] object-contain flex-shrink-0 translate-y-[1px]"
                   />
                   <div className="flex flex-col justify-center min-w-0">
                     <span

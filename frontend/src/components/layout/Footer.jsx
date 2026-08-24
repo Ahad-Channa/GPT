@@ -360,7 +360,7 @@ const Footer = () => {
                 fontSize: 14,
                 lineHeight: '20px',
                 color: 'rgba(0, 0, 0, 1)',
-                transform: isMobile ? 'none' : 'translateY(-1px)'
+                transform: 'translateY(1px)'
               }}
             >
               © 2026 TaskMint. All rights reserved.

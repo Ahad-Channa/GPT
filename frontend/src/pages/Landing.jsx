@@ -487,7 +487,8 @@ const Landing = () => {
                     width: isMobile ? 54 : 44,
                     height: isMobile ? 54 : 44,
                     paddingTop: isMobile ? 0 : 3.3,
-                    paddingBottom: isMobile ? 0 : 3.3
+                    paddingBottom: isMobile ? 0 : 3.3,
+                    transform: 'translateY(4px)',
                   }}
                 />
                 <div className="flex flex-col" style={{ height: 43, gap: 15 }}>
@@ -695,10 +696,10 @@ const Landing = () => {
       {/* WHY CHOOSE US */}
       <section
         id="features"
-        className="mx-auto flex flex-col lg:flex-row items-center w-full max-w-[1440px] lg:h-[558px] py-12 lg:py-0 relative z-10"
+        className="mx-auto flex flex-col lg:flex-row items-center justify-between w-full max-w-[1328px] px-4 md:px-8 lg:px-0 lg:h-[558px] py-12 lg:py-0 relative z-10"
         style={!isMobile ? {
           background: 'transparent',
-          gap: '10px'
+          gap: '40px'
         } : {
           maxWidth: '440px',
           paddingRight: '4px',
@@ -709,7 +710,7 @@ const Landing = () => {
       >
         {/* Content (First on mobile, Second on Desktop) */}
         <div
-          className="order-1 lg:order-2 flex flex-col w-full px-2 sm:px-4 lg:px-[24px] justify-center"
+          className="order-1 lg:order-2 flex flex-col w-full lg:flex-1 justify-center"
           style={!isMobile ? { transform: 'translateY(10px)' } : {}}
         >
           {/* Heading & Sub */}
@@ -890,7 +891,7 @@ const Landing = () => {
 
         {/* Image (Second on mobile, First on Desktop) */}
         <div
-          className="order-2 lg:order-1 flex-shrink-0 w-full lg:w-[720px] h-auto lg:h-[558px] px-0 lg:pl-[56px] lg:pr-[24px] mt-6 lg:mt-0 flex justify-center mx-auto"
+          className="order-2 lg:order-1 flex-shrink-0 w-full lg:w-[640px] h-auto lg:h-[558px] px-0 mt-6 lg:mt-0 flex justify-start"
           style={isMobile ? { width: 'calc(100% + 8px)', maxWidth: 'calc(100% + 8px)', marginLeft: '-4px', marginRight: '-4px' } : {}}
         >
           <img

@@ -265,15 +265,14 @@ export const FeaturedOfferCard = ({ offer, onClick }) => {
         <div
           className="flex items-center"
           style={{
-            minWidth: '81px',
             width: 'fit-content',
             height: '19.67px',
             borderRadius: '10px',
             paddingTop: '4px',
-            paddingRight: '6px',
+            paddingRight: '8px',
             paddingBottom: '4px',
             paddingLeft: '6px',
-            gap: '2px',
+            gap: '4px',
             background: 'rgba(249, 247, 241, 1)',
             boxSizing: 'border-box',
           }}
