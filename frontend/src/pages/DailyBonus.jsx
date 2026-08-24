@@ -904,7 +904,7 @@ export default function DailyBonus() {
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 lg:gap-5 w-full">
                 {[
                   {
-                    badgeSrc: '/coins/st10.png',
+                    badgeSrc: '/coins/streak (2).png',
                     title: '10 Day Streak',
                     sub: 'Keep going!',
                     target: 10,
@@ -912,7 +912,7 @@ export default function DailyBonus() {
                     barColor: '#F97316', // Orange
                   },
                   {
-                    badgeSrc: '/coins/st20.png',
+                    badgeSrc: '/coins/streak (3).png',
                     title: '20 Day Streak',
                     sub: 'Almost there!',
                     target: 20,
@@ -920,7 +920,7 @@ export default function DailyBonus() {
                     barColor: '#10B981', // Emerald/Teal
                   },
                   {
-                    badgeSrc: '/coins/st30.png',
+                    badgeSrc: '/coins/streak (1).png',
                     title: '30 Day Streak',
                     sub: 'Ultimate champion!',
                     target: 30,
@@ -966,19 +966,59 @@ export default function DailyBonus() {
                       />
 
                       {/* Right Content */}
-                      <div className="flex-1 flex flex-col justify-between h-full gap-2.5 min-w-0">
+                      <div
+                        className="flex-1 flex flex-col justify-between min-w-0"
+                        style={{
+                          width: '100%',
+                          maxWidth: '304px',
+                          height: '75px',
+                          opacity: 1,
+                          transform: 'rotate(0deg)',
+                          gap: '18px',
+                          boxSizing: 'border-box',
+                        }}
+                      >
                         {/* Top: Title & Sub + Reward Pill */}
                         <div className="flex items-start justify-between gap-2">
-                          <div className="min-w-0">
+                          <div
+                            style={{
+                              width: '140px',
+                              height: '37px',
+                              opacity: 1,
+                              transform: 'rotate(0deg)',
+                              gap: '12px',
+                              display: 'flex',
+                              flexDirection: 'column',
+                              justifyContent: 'space-between',
+                            }}
+                          >
                             <h3
-                              className="text-[16px] font-bold text-[#0E0F0C] leading-tight m-0 truncate"
-                              style={{ fontFamily: '"Bricolage Grotesque", sans-serif' }}
+                              style={{
+                                width: '140px',
+                                fontFamily: '"Bricolage Grotesque", sans-serif',
+                                fontWeight: 700,
+                                fontSize: '22px',
+                                lineHeight: '22px',
+                                letterSpacing: '-0.02em',
+                                color: '#000000',
+                                margin: 0,
+                                whiteSpace: 'nowrap',
+                              }}
                             >
                               {milestone.title}
                             </h3>
                             <p
-                              className="text-[12px] text-gray-500 font-medium m-0 mt-0.5 truncate"
-                              style={{ fontFamily: '"Poppins", sans-serif' }}
+                              style={{
+                                width: '140px',
+                                fontFamily: '"Poppins", sans-serif',
+                                fontWeight: 500,
+                                fontSize: '14px',
+                                lineHeight: '18px',
+                                letterSpacing: '0%',
+                                color: '#000000',
+                                margin: 0,
+                                whiteSpace: 'nowrap',
+                              }}
                             >
                               {milestone.sub}
                             </p>
