@@ -698,12 +698,24 @@ export default function DailyBonus() {
 
               {/* Timeline Bar & Nodes */}
               <div className="w-full overflow-x-auto scrollbar-none py-3">
-                <div className="relative min-w-[720px] w-full flex items-center justify-between px-6">
+                <div className="relative min-w-[720px] w-full max-w-[1259px] mx-auto flex items-center justify-between px-6">
                   {/* Background Connecting Line */}
-                  <div className="absolute left-[36px] right-[36px] top-[20px] h-[6px] bg-[#EBE9E2] rounded-full -translate-y-1/2 z-0">
+                  <div
+                    className="absolute left-[36px] right-[36px] top-[19px] -translate-y-1/2 z-0 overflow-hidden"
+                    style={{
+                      height: '19px',
+                      borderRadius: '30px',
+                      background: 'rgba(237, 234, 225, 1)',
+                      boxShadow: '0px 4px 4px 0px rgba(0, 0, 0, 0.05) inset',
+                    }}
+                  >
                     <div
-                      className="h-full bg-[#1E2538] rounded-full transition-all duration-500"
-                      style={{ width: `${progressLinePercent}%` }}
+                      className="h-full transition-all duration-500"
+                      style={{
+                        width: `${progressLinePercent}%`,
+                        borderRadius: '30px',
+                        background: 'rgba(36, 50, 77, 1)',
+                      }}
                     />
                   </div>
 
@@ -716,20 +728,56 @@ export default function DailyBonus() {
                       <div key={day} className="relative z-10 flex flex-col items-center gap-2">
                         {/* Circle Node */}
                         <div
-                          className={`w-[40px] h-[40px] rounded-full flex items-center justify-center transition-all shrink-0 ${
+                          className="flex items-center justify-center transition-all shrink-0 select-none"
+                          style={
                             isClaimed
-                              ? 'bg-[#1E2538] text-white shadow-sm'
+                              ? {
+                                  width: '38px',
+                                  height: '38px',
+                                  borderRadius: '30px',
+                                  background: 'rgba(36, 50, 77, 1)',
+                                  color: '#FFFFFF',
+                                }
                               : isTodayActive
-                              ? 'bg-[#1E2538] text-white shadow-md ring-4 ring-[#1E2538]/10'
-                              : 'bg-[#F4F2EC] text-gray-400 border border-gray-200/50'
-                          }`}
+                              ? {
+                                  width: '38px',
+                                  height: '38px',
+                                  borderRadius: '30px',
+                                  background: 'rgba(36, 50, 77, 1)',
+                                  color: '#FFFFFF',
+                                  boxShadow: '0 0 0 6px rgba(237, 234, 225, 1)',
+                                }
+                              : {
+                                  width: '38px',
+                                  height: '38px',
+                                  borderRadius: '30px',
+                                  background: 'rgba(237, 234, 225, 1)',
+                                  boxShadow: '0px 4px 4px 0px rgba(0, 0, 0, 0.05) inset',
+                                  paddingTop: '10px',
+                                  paddingRight: '11px',
+                                  paddingBottom: '10px',
+                                  paddingLeft: '12px',
+                                  boxSizing: 'border-box',
+                                }
+                          }
                         >
                           {isClaimed ? (
                             <FiCheck className="text-[16px] stroke-[3]" />
                           ) : isTodayActive ? (
-                            <span className="font-bold text-[13px] tracking-widest leading-none mb-1">...</span>
+                            <span className="font-bold text-[13px] tracking-widest leading-none mb-0.5">...</span>
                           ) : (
-                            <FiLock className="text-[13px] text-gray-400" />
+                            <img
+                              src="/coins/lock1.png"
+                              alt="Locked"
+                              style={{
+                                width: '15px',
+                                height: '17.61px',
+                                objectFit: 'contain',
+                                opacity: 0.35,
+                                filter: 'grayscale(1) brightness(0.8)',
+                              }}
+                              className="shrink-0"
+                            />
                           )}
                         </div>
 
