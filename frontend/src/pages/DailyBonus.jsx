@@ -707,6 +707,9 @@ export default function DailyBonus() {
                       borderRadius: '30px',
                       background: 'rgba(237, 234, 225, 1)',
                       boxShadow: '0px 4px 4px 0px rgba(0, 0, 0, 0.05) inset',
+                      paddingLeft: '3px',
+                      paddingRight: '3px',
+                      boxSizing: 'border-box',
                     }}
                   >
                     <div
@@ -718,7 +721,7 @@ export default function DailyBonus() {
                             ? '0%'
                             : cycleStreak === 10
                             ? '100%'
-                            : `${3.4 + ((cycleStreak - 1) / 9) * 93.2}%`,
+                            : `${3.2 + ((cycleStreak - 1) / 9) * 93.6}%`,
                         borderRadius: '30px',
                         background: 'rgba(36, 50, 77, 1)',
                       }}
