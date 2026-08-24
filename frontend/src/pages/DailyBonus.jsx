@@ -85,7 +85,8 @@ export default function DailyBonus() {
   const isUnlocked = status.gateUnlocked || earned >= required;
   const remainingToUnlock = Math.max(0, required - earned);
 
-  const displayDays = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+  const cycleBase = Math.floor((streak === 0 ? 0 : streak - 1) / 10) * 10;
+  const displayDays = Array.from({ length: 10 }, (_, i) => cycleBase + i + 1);
   const cycleStreak = streak % 10 === 0 && streak > 0 ? 10 : streak % 10;
   const progressLinePercent = Math.min(100, Math.max(0, ((cycleStreak) / 9) * 100));
 
@@ -585,7 +586,7 @@ export default function DailyBonus() {
                         fontFamily: '"Poppins", sans-serif',
                         fontWeight: 500,
                         fontSize: '16px',
-                        lineHeight: '16px',
+                        lineHeight: '28px',
                         letterSpacing: '0%',
                         color:
                           !isUnlocked || status.alreadyClaimed
@@ -646,18 +647,50 @@ export default function DailyBonus() {
         <div className="w-full pt-8 sm:pt-10 lg:pt-12 pb-12 sm:pb-16">
           <div className="w-full max-w-[1328px] mx-auto px-4 md:px-8 lg:px-0 flex flex-col gap-6 sm:gap-8">
             {/* ─── Middle Section: Current Streak (10-Day Timeline Card) ──── */}
-            <div className="w-full bg-white rounded-[24px] border border-gray-100/90 shadow-sm p-6 sm:p-8 flex flex-col gap-6">
+            <div
+              className="w-full shadow-sm flex flex-col justify-between"
+              style={{
+                width: '100%',
+                maxWidth: '1328px',
+                minHeight: '176px',
+                opacity: 1,
+                transform: 'rotate(0deg)',
+                borderRadius: '30px',
+                background: 'rgba(249, 247, 241, 1)',
+                padding: '24px 32px',
+                boxSizing: 'border-box',
+                gap: '24px',
+              }}
+            >
               {/* Header */}
               <div className="flex items-center justify-between w-full">
                 <h2
-                  className="text-[20px] sm:text-[24px] font-bold text-[#0E0F0C] m-0"
-                  style={{ fontFamily: '"Bricolage Grotesque", sans-serif' }}
+                  style={{
+                    width: '189px',
+                    fontFamily: '"Bricolage Grotesque", sans-serif',
+                    fontWeight: 700,
+                    fontSize: '27px',
+                    lineHeight: '27px',
+                    letterSpacing: '-0.02em',
+                    color: '#000000',
+                    margin: 0,
+                    whiteSpace: 'nowrap',
+                  }}
                 >
                   Current Streak
                 </h2>
                 <span
-                  className="text-[16px] sm:text-[18px] font-bold text-[#1E2538]"
-                  style={{ fontFamily: '"Bricolage Grotesque", sans-serif' }}
+                  style={{
+                    minWidth: '86px',
+                    fontFamily: '"Bricolage Grotesque", sans-serif',
+                    fontWeight: 700,
+                    fontSize: '20px',
+                    lineHeight: '20px',
+                    letterSpacing: '-0.02em',
+                    color: 'rgba(36, 50, 77, 1)',
+                    textAlign: 'right',
+                    whiteSpace: 'nowrap',
+                  }}
                 >
                   {cycleStreak}/10Days
                 </span>
