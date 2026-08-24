@@ -754,8 +754,7 @@ export default function DailyBonus() {
                                   width: '38px',
                                   height: '38px',
                                   borderRadius: '30px',
-                                  background: 'rgba(36, 50, 77, 1)',
-                                  color: '#FFFFFF',
+                                  background: 'rgba(237, 234, 225, 1)',
                                 }
                               : isTodayActive
                               ? {
@@ -781,7 +780,28 @@ export default function DailyBonus() {
                           }
                         >
                           {isClaimed ? (
-                            <FiCheck className="text-[16px] stroke-[3]" />
+                            <div
+                              className="flex items-center justify-center shrink-0"
+                              style={{
+                                width: '28px',
+                                height: '28px',
+                                borderRadius: '30px',
+                                background: 'linear-gradient(180deg, #586A8C 0%, #24324D 100%)',
+                                padding: '6px',
+                                boxSizing: 'border-box',
+                              }}
+                            >
+                              <img
+                                src="/coins/tikstre.png"
+                                alt="Claimed"
+                                style={{
+                                  width: '12px',
+                                  height: '12px',
+                                  objectFit: 'contain',
+                                }}
+                                className="shrink-0"
+                              />
+                            </div>
                           ) : isTodayActive ? (
                             <span className="font-bold text-[13px] tracking-widest leading-none mb-0.5">...</span>
                           ) : (
