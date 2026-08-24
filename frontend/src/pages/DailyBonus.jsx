@@ -745,78 +745,98 @@ export default function DailyBonus() {
                           transform: 'rotate(0deg)',
                         }}
                       >
-                        {/* Circle Node */}
-                        <div
-                          className="flex items-center justify-center transition-all shrink-0 select-none"
-                          style={
-                            isClaimed
-                              ? {
-                                  width: '38px',
-                                  height: '38px',
-                                  borderRadius: '30px',
-                                  background: 'rgba(237, 234, 225, 1)',
-                                }
-                              : isTodayActive
-                              ? {
-                                  width: '38px',
-                                  height: '38px',
-                                  borderRadius: '30px',
-                                  background: 'rgba(36, 50, 77, 1)',
-                                  color: '#FFFFFF',
-                                  boxShadow: '0 0 0 6px rgba(237, 234, 225, 1)',
-                                }
-                              : {
-                                  width: '38px',
-                                  height: '38px',
-                                  borderRadius: '30px',
-                                  background: 'rgba(237, 234, 225, 1)',
-                                  boxShadow: '0px 4px 4px 0px rgba(0, 0, 0, 0.05) inset',
-                                  paddingTop: '10px',
-                                  paddingRight: '11px',
-                                  paddingBottom: '10px',
-                                  paddingLeft: '12px',
-                                  boxSizing: 'border-box',
-                                }
-                          }
-                        >
+                        {/* Circle Node Container */}
+                        <div className="w-[38px] h-[38px] flex items-center justify-center shrink-0">
                           {isClaimed ? (
                             <div
                               className="flex items-center justify-center shrink-0"
                               style={{
-                                width: '28px',
-                                height: '28px',
+                                width: '38px',
+                                height: '38px',
                                 borderRadius: '30px',
-                                background: 'linear-gradient(180deg, #586A8C 0%, #24324D 100%)',
-                                padding: '6px',
+                                background: 'rgba(237, 234, 225, 1)',
+                              }}
+                            >
+                              <div
+                                className="flex items-center justify-center shrink-0"
+                                style={{
+                                  width: '28px',
+                                  height: '28px',
+                                  borderRadius: '30px',
+                                  background: 'linear-gradient(180deg, #586A8C 0%, #24324D 100%)',
+                                  padding: '6px',
+                                  boxSizing: 'border-box',
+                                }}
+                              >
+                                <img
+                                  src="/coins/tikstre.png"
+                                  alt="Claimed"
+                                  style={{
+                                    width: '12px',
+                                    height: '12px',
+                                    objectFit: 'contain',
+                                  }}
+                                  className="shrink-0"
+                                />
+                              </div>
+                            </div>
+                          ) : isTodayActive ? (
+                            <div
+                              className="flex items-center justify-center shrink-0"
+                              style={{
+                                width: '52px',
+                                height: '52px',
+                                borderRadius: '30px',
+                                background: 'rgba(237, 234, 225, 1)',
+                              }}
+                            >
+                              <div
+                                className="flex items-center justify-center shrink-0"
+                                style={{
+                                  width: '38.32px',
+                                  height: '38.32px',
+                                  borderRadius: '30px',
+                                  background: 'linear-gradient(180deg, #586A8C 0%, #24324D 100%)',
+                                  padding: '6px',
+                                  boxSizing: 'border-box',
+                                }}
+                              >
+                                <div className="flex items-center gap-[3px]">
+                                  <span className="w-[4px] h-[4px] rounded-full bg-white block" />
+                                  <span className="w-[4px] h-[4px] rounded-full bg-white block" />
+                                  <span className="w-[4px] h-[4px] rounded-full bg-white block" />
+                                </div>
+                              </div>
+                            </div>
+                          ) : (
+                            <div
+                              className="flex items-center justify-center shrink-0"
+                              style={{
+                                width: '38px',
+                                height: '38px',
+                                borderRadius: '30px',
+                                background: 'rgba(237, 234, 225, 1)',
+                                boxShadow: '0px 4px 4px 0px rgba(0, 0, 0, 0.05) inset',
+                                paddingTop: '10px',
+                                paddingRight: '11px',
+                                paddingBottom: '10px',
+                                paddingLeft: '12px',
                                 boxSizing: 'border-box',
                               }}
                             >
                               <img
-                                src="/coins/tikstre.png"
-                                alt="Claimed"
+                                src="/coins/lock1.png"
+                                alt="Locked"
                                 style={{
-                                  width: '12px',
-                                  height: '12px',
+                                  width: '15px',
+                                  height: '17.61px',
                                   objectFit: 'contain',
+                                  opacity: 0.35,
+                                  filter: 'grayscale(1) brightness(0.8)',
                                 }}
                                 className="shrink-0"
                               />
                             </div>
-                          ) : isTodayActive ? (
-                            <span className="font-bold text-[13px] tracking-widest leading-none mb-0.5">...</span>
-                          ) : (
-                            <img
-                              src="/coins/lock1.png"
-                              alt="Locked"
-                              style={{
-                                width: '15px',
-                                height: '17.61px',
-                                objectFit: 'contain',
-                                opacity: 0.35,
-                                filter: 'grayscale(1) brightness(0.8)',
-                              }}
-                              className="shrink-0"
-                            />
                           )}
                         </div>
 
@@ -840,17 +860,41 @@ export default function DailyBonus() {
             </div>
 
             {/* ─── Lower Section: Streak Milestones ───────────────────────── */}
-            <div className="flex flex-col gap-4 w-full">
-              <div>
+            <div
+              className="flex flex-col w-full"
+              style={{
+                width: '100%',
+                maxWidth: '1326px',
+                minHeight: '219px',
+                gap: '40px',
+                opacity: 1,
+                transform: 'rotate(0deg)',
+              }}
+            >
+              <div className="flex flex-col gap-1">
                 <h2
-                  className="text-[20px] sm:text-[24px] font-bold text-[#0E0F0C] m-0"
-                  style={{ fontFamily: '"Bricolage Grotesque", sans-serif' }}
+                  style={{
+                    fontFamily: '"Bricolage Grotesque", sans-serif',
+                    fontWeight: 700,
+                    fontSize: '27px',
+                    lineHeight: '27px',
+                    letterSpacing: '-0.02em',
+                    color: '#000000',
+                    margin: 0,
+                  }}
                 >
                   Streak Milestones
                 </h2>
                 <p
-                  className="text-[13px] sm:text-[14px] text-gray-500 font-medium m-0 mt-0.5"
-                  style={{ fontFamily: '"Poppins", sans-serif' }}
+                  style={{
+                    fontFamily: '"Poppins", sans-serif',
+                    fontWeight: 500,
+                    fontSize: '14px',
+                    lineHeight: '28px',
+                    letterSpacing: '0%',
+                    color: '#000000',
+                    margin: 0,
+                  }}
                 >
                   Bonus coins for hitting these streaks
                 </p>
