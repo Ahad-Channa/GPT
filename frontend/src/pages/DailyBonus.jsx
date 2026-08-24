@@ -934,65 +934,90 @@ export default function DailyBonus() {
                   return (
                     <div
                       key={milestone.target}
-                      className="bg-white rounded-[20px] border border-gray-100/90 shadow-sm p-5 flex flex-col justify-between gap-5"
+                      className="shadow-sm flex flex-row items-center justify-between"
+                      style={{
+                        width: '100%',
+                        maxWidth: '426px',
+                        minHeight: '135px',
+                        opacity: 1,
+                        transform: 'rotate(0deg)',
+                        borderRadius: '20px',
+                        gap: '19px',
+                        paddingTop: '30px',
+                        paddingRight: '20px',
+                        paddingBottom: '30px',
+                        paddingLeft: '15px',
+                        background: 'rgba(249, 247, 241, 1)',
+                        boxSizing: 'border-box',
+                      }}
                     >
-                      {/* Card Top: Badge + Title + Reward Pill */}
-                      <div className="flex items-start justify-between gap-3">
-                        <div className="flex items-center gap-3">
-                          <img
-                            src={milestone.badgeSrc}
-                            alt={milestone.title}
-                            className="w-[46px] h-[46px] object-contain shrink-0"
-                          />
-                          <div>
+                      {/* Left Badge Image */}
+                      <img
+                        src={milestone.badgeSrc}
+                        alt={milestone.title}
+                        style={{
+                          width: '75px',
+                          height: '75px',
+                          opacity: 1,
+                          transform: 'rotate(0deg)',
+                          objectFit: 'contain',
+                        }}
+                        className="shrink-0"
+                      />
+
+                      {/* Right Content */}
+                      <div className="flex-1 flex flex-col justify-between h-full gap-2.5 min-w-0">
+                        {/* Top: Title & Sub + Reward Pill */}
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="min-w-0">
                             <h3
-                              className="text-[16px] font-bold text-[#0E0F0C] leading-tight m-0"
+                              className="text-[16px] font-bold text-[#0E0F0C] leading-tight m-0 truncate"
                               style={{ fontFamily: '"Bricolage Grotesque", sans-serif' }}
                             >
                               {milestone.title}
                             </h3>
                             <p
-                              className="text-[12px] text-gray-400 font-medium m-0 mt-0.5"
+                              className="text-[12px] text-gray-500 font-medium m-0 mt-0.5 truncate"
                               style={{ fontFamily: '"Poppins", sans-serif' }}
                             >
                               {milestone.sub}
                             </p>
                           </div>
+
+                          {/* Reward Pill */}
+                          <div className="bg-[#FFF9EA] px-2.5 py-1 rounded-full flex items-center gap-1 shrink-0 border border-[#FDE68A]/30">
+                            <img
+                              src="/coins/Coin.png"
+                              alt="Coin"
+                              className="w-3.5 h-3.5 object-contain shrink-0"
+                            />
+                            <span
+                              className="text-[12px] font-bold text-[#E5A00D] leading-none"
+                              style={{ fontFamily: '"Bricolage Grotesque", sans-serif' }}
+                            >
+                              {milestone.reward} coins
+                            </span>
+                          </div>
                         </div>
 
-                        {/* Reward Pill */}
-                        <div className="bg-[#FFF9EA] px-2.5 py-1 rounded-full flex items-center gap-1 shrink-0 border border-[#FDE68A]/30">
-                          <img
-                            src="/coins/Coin.png"
-                            alt="Coin"
-                            className="w-3.5 h-3.5 object-contain shrink-0"
-                          />
+                        {/* Bottom: Progress Bar + Days Count */}
+                        <div className="flex items-center justify-between gap-3">
+                          <div className="flex-1 h-[8px] bg-[#E8E6DF] rounded-full overflow-hidden">
+                            <div
+                              className="h-full rounded-full transition-all duration-500"
+                              style={{
+                                width: `${milestonePercent}%`,
+                                backgroundColor: milestone.barColor,
+                              }}
+                            />
+                          </div>
                           <span
-                            className="text-[12px] font-bold text-[#E5A00D] leading-none"
+                            className="text-[12px] font-bold text-gray-700 shrink-0 whitespace-nowrap"
                             style={{ fontFamily: '"Bricolage Grotesque", sans-serif' }}
                           >
-                            {milestone.reward} coins
+                            {currentProgress} / {milestone.target} Days
                           </span>
                         </div>
-                      </div>
-
-                      {/* Card Bottom: Progress Bar + Days Count */}
-                      <div className="flex items-center justify-between gap-3">
-                        <div className="flex-1 h-[8px] bg-[#E8E6DF] rounded-full overflow-hidden">
-                          <div
-                            className="h-full rounded-full transition-all duration-500"
-                            style={{
-                              width: `${milestonePercent}%`,
-                              backgroundColor: milestone.barColor,
-                            }}
-                          />
-                        </div>
-                        <span
-                          className="text-[12px] font-bold text-gray-700 shrink-0"
-                          style={{ fontFamily: '"Bricolage Grotesque", sans-serif' }}
-                        >
-                          {currentProgress} / {milestone.target} Days
-                        </span>
                       </div>
                     </div>
                   );
