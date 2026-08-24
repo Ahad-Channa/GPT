@@ -909,7 +909,7 @@ export default function DailyBonus() {
                     sub: 'Keep going!',
                     target: 10,
                     reward: status.rewardDay10 ?? 500,
-                    barColor: '#F97316', // Orange
+                    barColor: 'rgba(248, 158, 83, 1)', // Orange #F89E53
                   },
                   {
                     badgeSrc: '/coins/streak (3).png',
@@ -917,7 +917,7 @@ export default function DailyBonus() {
                     sub: 'Almost there!',
                     target: 20,
                     reward: status.rewardDay20 ?? 2498,
-                    barColor: '#10B981', // Emerald/Teal
+                    barColor: 'rgba(84, 188, 161, 1)', // Emerald/Teal #54BCA1
                   },
                   {
                     badgeSrc: '/coins/streak (1).png',
@@ -925,7 +925,7 @@ export default function DailyBonus() {
                     sub: 'Ultimate champion!',
                     target: 30,
                     reward: status.rewardDay30 ?? 5000,
-                    barColor: '#3B82F6', // Blue
+                    barColor: 'rgba(79, 157, 247, 1)', // Blue #4F9DF7
                   },
                 ].map((milestone) => {
                   const currentProgress = Math.min(streak, milestone.target);
@@ -1028,14 +1028,14 @@ export default function DailyBonus() {
                           <div
                             className="flex items-center justify-center shrink-0"
                             style={{
-                              minWidth: '94px',
+                              width: 'auto',
                               height: '20px',
                               opacity: 1,
                               transform: 'rotate(0deg)',
                               borderRadius: '50px',
-                              gap: '2px',
+                              gap: '4px',
                               paddingTop: '5px',
-                              paddingRight: '7px',
+                              paddingRight: '8px',
                               paddingBottom: '5px',
                               paddingLeft: '7px',
                               background: 'rgba(255, 255, 255, 1)',
@@ -1056,7 +1056,7 @@ export default function DailyBonus() {
                             />
                             <span
                               style={{
-                                width: '69px',
+                                width: 'auto',
                                 fontFamily: '"Poppins", sans-serif',
                                 fontWeight: 500,
                                 fontSize: '14px',
@@ -1064,7 +1064,6 @@ export default function DailyBonus() {
                                 letterSpacing: '0%',
                                 color: 'rgba(231, 171, 24, 1)',
                                 whiteSpace: 'nowrap',
-                                textAlign: 'center',
                               }}
                             >
                               {milestone.reward} coins
@@ -1072,20 +1071,41 @@ export default function DailyBonus() {
                           </div>
                         </div>
 
-                        {/* Bottom: Progress Bar + Days Count */}
-                        <div className="flex items-center justify-between gap-3">
-                          <div className="flex-1 h-[8px] bg-[#E8E6DF] rounded-full overflow-hidden">
-                            <div
-                              className="h-full rounded-full transition-all duration-500"
-                              style={{
-                                width: `${milestonePercent}%`,
-                                backgroundColor: milestone.barColor,
-                              }}
-                            />
-                          </div>
+                        {/* Bottom: Progress Bar with Inside Text */}
+                        <div
+                          className="relative flex items-center justify-end overflow-hidden"
+                          style={{
+                            width: '100%',
+                            maxWidth: '295px',
+                            height: '20px',
+                            opacity: 1,
+                            transform: 'rotate(0deg)',
+                            borderRadius: '30px',
+                            background: 'rgba(255, 255, 255, 1)',
+                            paddingRight: '14px',
+                            boxSizing: 'border-box',
+                          }}
+                        >
+                          <div
+                            className="absolute left-0 top-0 bottom-0 transition-all duration-500"
+                            style={{
+                              width: `${milestonePercent}%`,
+                              borderRadius: '30px',
+                              background: milestone.barColor,
+                            }}
+                          />
                           <span
-                            className="text-[12px] font-bold text-gray-700 shrink-0 whitespace-nowrap"
-                            style={{ fontFamily: '"Bricolage Grotesque", sans-serif' }}
+                            className="relative z-10 select-none whitespace-nowrap"
+                            style={{
+                              width: '68px',
+                              fontFamily: '"Poppins", sans-serif',
+                              fontWeight: 500,
+                              fontSize: '12px',
+                              lineHeight: '20px',
+                              letterSpacing: '0%',
+                              color: '#000000',
+                              textAlign: 'right',
+                            }}
                           >
                             {currentProgress} / {milestone.target} Days
                           </span>
