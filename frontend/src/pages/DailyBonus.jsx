@@ -701,7 +701,7 @@ export default function DailyBonus() {
                 <div className="relative min-w-[720px] w-full max-w-[1259px] mx-auto flex items-center justify-between px-6">
                   {/* Background Connecting Line */}
                   <div
-                    className="absolute left-[36px] right-[36px] top-[19px] -translate-y-1/2 z-0 overflow-hidden"
+                    className="absolute left-0 right-0 top-[19px] -translate-y-1/2 z-0 overflow-hidden"
                     style={{
                       height: '19px',
                       borderRadius: '30px',
@@ -712,7 +712,12 @@ export default function DailyBonus() {
                     <div
                       className="h-full transition-all duration-500"
                       style={{
-                        width: `${progressLinePercent}%`,
+                        width:
+                          cycleStreak === 0
+                            ? '0%'
+                            : cycleStreak === 10
+                            ? '100%'
+                            : `${((cycleStreak - 0.5) / 9) * 90 + 5}%`,
                         borderRadius: '30px',
                         background: 'rgba(36, 50, 77, 1)',
                       }}
@@ -725,7 +730,18 @@ export default function DailyBonus() {
                     const isTodayActive = day === cycleStreak + 1 && isUnlocked && !status.alreadyClaimed;
 
                     return (
-                      <div key={day} className="relative z-10 flex flex-col items-center gap-2">
+                      <div
+                        key={day}
+                        className="relative z-10 flex flex-col items-center justify-center"
+                        style={{
+                          width: '126.9px',
+                          maxWidth: '127px',
+                          height: '54px',
+                          gap: '8px',
+                          opacity: 1,
+                          transform: 'rotate(0deg)',
+                        }}
+                      >
                         {/* Circle Node */}
                         <div
                           className="flex items-center justify-center transition-all shrink-0 select-none"
@@ -783,10 +799,13 @@ export default function DailyBonus() {
 
                         {/* Day Label */}
                         <span
-                          className={`text-[12px] font-medium ${
-                            isClaimed || isTodayActive ? 'text-[#1E2538] font-bold' : 'text-gray-400'
-                          }`}
-                          style={{ fontFamily: '"Poppins", sans-serif' }}
+                          className="text-[12px] font-medium"
+                          style={{
+                            fontFamily: '"Poppins", sans-serif',
+                            color: isClaimed || isTodayActive ? '#0E0F0C' : '#8E8E93',
+                            fontWeight: isClaimed || isTodayActive ? 600 : 500,
+                            whiteSpace: 'nowrap',
+                          }}
                         >
                           Day {day}
                         </span>
