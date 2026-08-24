@@ -719,9 +719,9 @@ export default function DailyBonus() {
                         width:
                           cycleStreak === 0
                             ? '0%'
-                            : cycleStreak === 10
+                            : cycleStreak >= 10
                             ? '100%'
-                            : `${3.2 + ((cycleStreak - 1) / 9) * 93.6}%`,
+                            : `${6.95 + (cycleStreak - 1) * 9.567}%`,
                         borderRadius: '30px',
                         background: 'rgba(36, 50, 77, 1)',
                       }}
