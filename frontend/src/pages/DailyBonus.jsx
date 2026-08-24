@@ -701,7 +701,7 @@ export default function DailyBonus() {
                 <div className="relative min-w-[720px] w-full max-w-[1259px] mx-auto flex items-center justify-between px-6">
                   {/* Background Connecting Line */}
                   <div
-                    className="absolute left-0 right-0 top-[19px] -translate-y-1/2 z-0 overflow-hidden"
+                    className="absolute left-0 right-0 top-[19px] -translate-y-1/2 z-0 overflow-hidden flex items-center"
                     style={{
                       height: '19px',
                       borderRadius: '30px',
@@ -710,14 +710,15 @@ export default function DailyBonus() {
                     }}
                   >
                     <div
-                      className="h-full transition-all duration-500"
+                      className="transition-all duration-500"
                       style={{
+                        height: '11px',
                         width:
                           cycleStreak === 0
                             ? '0%'
                             : cycleStreak === 10
                             ? '100%'
-                            : `${((cycleStreak - 0.5) / 9) * 90 + 5}%`,
+                            : `${3.4 + ((cycleStreak - 1) / 9) * 93.2}%`,
                         borderRadius: '30px',
                         background: 'rgba(36, 50, 77, 1)',
                       }}
@@ -732,11 +733,10 @@ export default function DailyBonus() {
                     return (
                       <div
                         key={day}
-                        className="relative z-10 flex flex-col items-center justify-center"
+                        className="relative z-10 flex flex-col items-center justify-start"
                         style={{
                           width: '126.9px',
                           maxWidth: '127px',
-                          height: '54px',
                           gap: '8px',
                           opacity: 1,
                           transform: 'rotate(0deg)',
