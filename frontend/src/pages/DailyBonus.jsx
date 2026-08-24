@@ -1025,15 +1025,47 @@ export default function DailyBonus() {
                           </div>
 
                           {/* Reward Pill */}
-                          <div className="bg-[#FFF9EA] px-2.5 py-1 rounded-full flex items-center gap-1 shrink-0 border border-[#FDE68A]/30">
+                          <div
+                            className="flex items-center justify-center shrink-0"
+                            style={{
+                              minWidth: '94px',
+                              height: '20px',
+                              opacity: 1,
+                              transform: 'rotate(0deg)',
+                              borderRadius: '50px',
+                              gap: '2px',
+                              paddingTop: '5px',
+                              paddingRight: '7px',
+                              paddingBottom: '5px',
+                              paddingLeft: '7px',
+                              background: 'rgba(255, 255, 255, 1)',
+                              boxSizing: 'border-box',
+                            }}
+                          >
                             <img
-                              src="/coins/Coin.png"
+                              src="/coins/coinbonushero.png"
                               alt="Coin"
-                              className="w-3.5 h-3.5 object-contain shrink-0"
+                              style={{
+                                width: '9px',
+                                height: '10px',
+                                opacity: 1,
+                                transform: 'rotate(0deg)',
+                                objectFit: 'contain',
+                              }}
+                              className="shrink-0"
                             />
                             <span
-                              className="text-[12px] font-bold text-[#E5A00D] leading-none"
-                              style={{ fontFamily: '"Bricolage Grotesque", sans-serif' }}
+                              style={{
+                                width: '69px',
+                                fontFamily: '"Poppins", sans-serif',
+                                fontWeight: 500,
+                                fontSize: '14px',
+                                lineHeight: '14px',
+                                letterSpacing: '0%',
+                                color: 'rgba(231, 171, 24, 1)',
+                                whiteSpace: 'nowrap',
+                                textAlign: 'center',
+                              }}
                             >
                               {milestone.reward} coins
                             </span>
