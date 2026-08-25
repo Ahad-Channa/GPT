@@ -13,6 +13,18 @@ const PERIOD_META = {
   monthly: { label: 'Monthly' },
 };
 
+const formatCoins = (val) => {
+  if (val === undefined || val === null || isNaN(val) || Number(val) === 0) return '0';
+  const num = Number(val);
+  if (Number.isInteger(num)) {
+    return num.toLocaleString('en-US');
+  }
+  return num.toLocaleString('en-US', {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 2,
+  });
+};
+
 /* ── Medal Badge ─────────────────────────────────────────────── */
 const MedalBadge = ({ rank }) => {
   if (rank === 2) {
@@ -209,12 +221,12 @@ const PodiumCard = ({ rank, user, prize, onClick, isCenter = false }) => {
                 whiteSpace: 'nowrap',
               }}
             >
-              {user.coinsEarned?.toLocaleString(undefined, { minimumFractionDigits: 1, maximumFractionDigits: 1 }) || '0.0'}
+              {formatCoins(user.coinsEarned)}
             </span>
           </div>
         </div>
 
-        {/* Box 2: Reward (122x75) */}
+        {/* Box 2: Prize (122x75) */}
         <div
           onClick={() => onClick(user.userId)}
           className="flex flex-col justify-center overflow-hidden"
@@ -247,7 +259,7 @@ const PodiumCard = ({ rank, user, prize, onClick, isCenter = false }) => {
               whiteSpace: 'nowrap',
             }}
           >
-            Reward
+            Prize
           </span>
           <div className="flex items-center gap-1">
             <img
@@ -270,7 +282,7 @@ const PodiumCard = ({ rank, user, prize, onClick, isCenter = false }) => {
                 whiteSpace: 'nowrap',
               }}
             >
-              {prize?.toLocaleString(undefined, { minimumFractionDigits: 1, maximumFractionDigits: 1 }) || '0.0'}
+              {formatCoins(prize)}
             </span>
           </div>
         </div>
@@ -772,7 +784,7 @@ const Leaderboard = () => {
                   whiteSpace: 'nowrap',
                 }}
               >
-                {user.coinsEarned?.toLocaleString(undefined, { minimumFractionDigits: 1, maximumFractionDigits: 1 }) || '0.0'}
+                {formatCoins(user.coinsEarned)}
               </span>
             </div>
           </div>
@@ -823,7 +835,7 @@ const Leaderboard = () => {
                       whiteSpace: 'nowrap',
                     }}
                   >
-                    {prize.toLocaleString(undefined, { minimumFractionDigits: 1, maximumFractionDigits: 1 })}
+                    {formatCoins(prize)}
                   </span>
                 </>
               ) : (

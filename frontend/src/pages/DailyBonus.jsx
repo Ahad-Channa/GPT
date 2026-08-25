@@ -7,6 +7,18 @@ import { FiCheck, FiLock } from 'react-icons/fi';
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
+const formatCoins = (val) => {
+  if (val === undefined || val === null || isNaN(val) || Number(val) === 0) return '0';
+  const num = Number(val);
+  if (Number.isInteger(num)) {
+    return num.toLocaleString('en-US');
+  }
+  return num.toLocaleString('en-US', {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 2,
+  });
+};
+
 function useCountdown(target) {
   const [display, setDisplay] = useState('');
   useEffect(() => {
@@ -227,7 +239,7 @@ export default function DailyBonus() {
                           whiteSpace: 'nowrap',
                         }}
                       >
-                        {status.rewardToday || 800} Coins
+                        {formatCoins(status.rewardToday || 800)} Coins
                       </span>
                     </div>
                   </div>
@@ -279,7 +291,7 @@ export default function DailyBonus() {
                           whiteSpace: 'nowrap',
                         }}
                       >
-                        {earned.toLocaleString()} / {required.toLocaleString()}
+                        {formatCoins(earned)} / {formatCoins(required)}
                       </span>
                     </div>
                   </div>
@@ -351,7 +363,7 @@ export default function DailyBonus() {
                         className="shrink-0"
                       />
                       <span style={{ color: 'rgba(231, 171, 24, 1)' }}>
-                        {remainingToUnlock.toLocaleString()} Coins
+                        {formatCoins(remainingToUnlock)} Coins
                       </span>
                       <span style={{ color: '#0E0F0C' }}>more to unlock your bonus</span>
                     </div>
@@ -530,7 +542,7 @@ export default function DailyBonus() {
                         whiteSpace: 'nowrap',
                       }}
                     >
-                      {status.rewardTomorrow || 1000} Coins
+                      {formatCoins(status.rewardTomorrow || 1000)} Coins
                     </span>
                   </div>
                 </div>
@@ -1061,7 +1073,7 @@ export default function DailyBonus() {
                                 whiteSpace: 'nowrap',
                               }}
                             >
-                              {milestone.reward} coins
+                              {formatCoins(milestone.reward)} coins
                             </span>
                           </div>
                         </div>

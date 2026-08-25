@@ -2,11 +2,8 @@ import { useState, useEffect } from 'react';
 import DashboardLayout from '../components/layout/DashboardLayout';
 import { useAuth } from '../contexts/AuthContext';
 import { motion } from 'framer-motion';
-import { FiUsers, FiTrendingUp, FiCopy, FiInbox, FiClock, FiChevronLeft, FiChevronRight } from 'react-icons/fi';
+import { FiUsers, FiClock, FiChevronLeft, FiChevronRight, FiFileText } from 'react-icons/fi';
 import { toast } from 'react-hot-toast';
-import CoinDisplay from '../components/CoinDisplay';
-import CoinIcon from '../components/CoinIcon';
-import FitText from '../components/FitText';
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
@@ -19,72 +16,80 @@ const calculateReleaseIn = (releaseDateStr) => {
   return `${d}d ${h}h`;
 };
 
-const Pagination = ({ page, totalPages, onNext, onPrev, onPageClick }) => {
-  if (totalPages <= 1) return null;
-
-  const visiblePages = [];
-  if (totalPages <= 3) {
-    for (let i = 1; i <= totalPages; i++) visiblePages.push(i);
-  } else {
-    let start = Math.min(Math.max(1, page - 1), totalPages - 2);
-    if (page === 1) start = 1;
-    visiblePages.push(start, start + 1, start + 2);
+const formatCoinAmount = (amount) => {
+  if (amount === undefined || amount === null || isNaN(amount) || Number(amount) === 0) return '0';
+  const num = Number(amount);
+  if (Number.isInteger(num)) {
+    return num.toLocaleString('en-US');
   }
+  return num.toLocaleString('en-US', {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 2,
+  });
+};
 
-  const CircleBtn = ({ active, disabled, onClick, children, isArrow }) => {
-    const isGreen = active;
-    return (
-      <button
-        onClick={onClick}
-        disabled={disabled}
-        className={`transition-all hover:brightness-110 flex items-center justify-center rounded-full shrink-0 w-[32px] h-[32px] text-[16px] sm:w-[52px] sm:h-[52px] sm:text-[26px]`}
-        style={{
-          background: isGreen ? 'rgba(73, 178, 101, 1)' : (isArrow ? 'transparent' : '#2A2A2A'),
-          border: isArrow ? '1px solid rgba(73, 178, 101, 1)' : '1px solid transparent',
-          color: isGreen || !isArrow ? '#fff' : 'rgba(73, 178, 101, 1)',
-          fontFamily: '"Barlow Condensed", sans-serif', fontWeight: 600,
-          cursor: disabled ? 'default' : 'pointer',
-          opacity: disabled ? 0.3 : 1,
-          boxSizing: 'border-box',
-        }}
-      >
-        {children}
-      </button>
-    );
-  };
+const formatDate = (dateStr) => {
+  if (!dateStr) return 'N/A';
+  return new Date(dateStr).toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+  });
+};
+
+const Pagination = ({ page, totalPages, onNext, onPrev }) => {
+  const canGoNext = page < (totalPages || 1);
+  const canGoPrev = page > 1;
+
+  // When there is need to move next -> right side active (pointing right)
+  // When no more move to next -> left side shows active (pointing left)
+  const isRightActive = canGoNext || (!canGoPrev && !canGoNext);
+  const isLeftActive = !canGoNext && canGoPrev;
 
   return (
-    <div className="pt-6 pb-2 flex items-center justify-center gap-[6px] sm:gap-[10px]">
-      <CircleBtn isArrow disabled={page === 1} onClick={onPrev}>
-        <div className="w-[10px] h-[10px] sm:w-[16px] sm:h-[16px]" style={{
-          backgroundColor: 'rgba(73, 178, 101, 1)',
-          WebkitMaskImage: 'url(/coins/leftarrow.png)',
-          WebkitMaskSize: 'contain',
-          WebkitMaskRepeat: 'no-repeat',
-          WebkitMaskPosition: 'center',
-          transform: 'rotate(180deg)'
-        }} />
-      </CircleBtn>
+    <div
+      className="pt-6 sm:pt-8 flex items-center justify-center"
+      style={{ gap: '10px' }}
+    >
+      <button
+        onClick={onPrev}
+        disabled={!canGoPrev}
+        className="transition-all cursor-pointer flex items-center justify-center shrink-0 disabled:cursor-not-allowed"
+        style={{
+          width: '40px',
+          height: '40px',
+          borderRadius: '100px',
+          gap: '10px',
+          boxSizing: 'border-box',
+          opacity: 1,
+          background: isLeftActive ? 'rgba(36, 50, 77, 1)' : 'transparent',
+          border: isLeftActive ? 'none' : '1px solid rgba(36, 50, 77, 1)',
+          color: isLeftActive ? '#FFFFFF' : 'rgba(36, 50, 77, 1)',
+        }}
+        aria-label="Previous page"
+      >
+        <FiChevronLeft className="w-5 h-5" />
+      </button>
 
-      {visiblePages.map(p => (
-        <CircleBtn
-          key={p}
-          active={page === p}
-          onClick={() => onPageClick && onPageClick(p)}
-        >
-          {p}
-        </CircleBtn>
-      ))}
-
-      <CircleBtn isArrow disabled={page === totalPages} onClick={onNext}>
-        <div className="w-[10px] h-[10px] sm:w-[16px] sm:h-[16px]" style={{
-          backgroundColor: 'rgba(73, 178, 101, 1)',
-          WebkitMaskImage: 'url(/coins/leftarrow.png)',
-          WebkitMaskSize: 'contain',
-          WebkitMaskRepeat: 'no-repeat',
-          WebkitMaskPosition: 'center',
-        }} />
-      </CircleBtn>
+      <button
+        onClick={onNext}
+        disabled={!canGoNext}
+        className="transition-all cursor-pointer flex items-center justify-center shrink-0 disabled:cursor-not-allowed"
+        style={{
+          width: '40px',
+          height: '40px',
+          borderRadius: '100px',
+          gap: '10px',
+          boxSizing: 'border-box',
+          opacity: 1,
+          background: isRightActive ? 'rgba(36, 50, 77, 1)' : 'transparent',
+          border: isRightActive ? 'none' : '1px solid rgba(36, 50, 77, 1)',
+          color: isRightActive ? '#FFFFFF' : 'rgba(36, 50, 77, 1)',
+        }}
+        aria-label="Next page"
+      >
+        <FiChevronRight className="w-5 h-5" />
+      </button>
     </div>
   );
 };
@@ -136,7 +141,15 @@ const useHistory = (token, type, endpoint = '/wallet/history') => {
 };
 
 const useAffiliateStats = (token) => {
-  const [stats, setStats] = useState({ totalAffiliates: 0, totalAffiliateEarnings: 0, last30DaysEarnings: 0, referralPercentage: null, pendingCommissions: 0, pendingCount: 0, holdDays: 30 });
+  const [stats, setStats] = useState({
+    totalAffiliates: 0,
+    totalAffiliateEarnings: 0,
+    last30DaysEarnings: 0,
+    referralPercentage: 15,
+    pendingCommissions: 0,
+    pendingCount: 0,
+    holdDays: 30
+  });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -149,10 +162,10 @@ const useAffiliateStats = (token) => {
         const data = await res.json();
         if (data.success) {
           setStats({
-            totalAffiliates: data.totalAffiliates,
-            totalAffiliateEarnings: data.totalAffiliateEarnings,
-            last30DaysEarnings: data.last30DaysEarnings,
-            referralPercentage: data.referralPercentage ?? null,
+            totalAffiliates: data.totalAffiliates ?? 0,
+            totalAffiliateEarnings: data.totalAffiliateEarnings ?? 0,
+            last30DaysEarnings: data.last30DaysEarnings ?? 0,
+            referralPercentage: data.referralPercentage ?? 15,
             pendingCommissions: data.pendingCommissions ?? 0,
             pendingCount: data.pendingCount ?? 0,
             holdDays: data.holdDays ?? 30,
@@ -226,7 +239,7 @@ const Affiliates = () => {
   // Local pagination for pending holds
   const [pendingPage, setPendingPage] = useState(1);
   const itemsPerPage = 5;
-  const totalPendingPages = Math.ceil(affiliateHolds.length / itemsPerPage);
+  const totalPendingPages = Math.max(1, Math.ceil(affiliateHolds.length / itemsPerPage));
   const currentPendingHolds = affiliateHolds.slice((pendingPage - 1) * itemsPerPage, pendingPage * itemsPerPage);
 
   useEffect(() => {
@@ -247,372 +260,1251 @@ const Affiliates = () => {
     fetchHolds();
   }, [token]);
 
+  const referralCode = mongoUser?.referralCode || '';
+  const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'https://taskmint.me';
+  const referralUrl = referralCode ? `${baseUrl}/r/${referralCode}` : `${baseUrl}/r/`;
+
   const copyToClipboard = (text) => {
+    if (!text) return;
     navigator.clipboard.writeText(text);
     toast.success('Copied to clipboard!');
   };
 
+  const currentPercentage = stats.referralPercentage ?? 15;
+
   return (
-    <DashboardLayout>
+    <DashboardLayout showLiveBar={true} fullWidth={true}>
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
+        initial={{ opacity: 0, y: 15 }}
         animate={{ opacity: 1, y: 0 }}
-        className="max-w-[1240px] mx-auto w-full space-y-4 lg:space-y-8 px-4 lg:px-0"
+        transition={{ duration: 0.3 }}
+        className="w-full flex flex-col items-center"
       >
-        {/* Header Section */}
-        <div className="relative w-full lg:w-[1240px] lg:mt-[49px] shrink-0 flex flex-col items-center lg:items-start text-center lg:text-left mt-6 lg:mt-0">
-          <div className="flex flex-col gap-[6px] w-full max-w-[866px] h-auto lg:h-[122px] relative z-10 items-center lg:items-start">
-            <h1 style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="font-bold text-[40px] lg:text-[68px] leading-[120%] text-white tracking-normal m-0 p-0">Affiliate Program</h1>
-            <p style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="font-medium text-[18px] lg:text-[26px] leading-[130%] text-[#888888] tracking-normal m-0 p-0 max-w-[866px] h-auto lg:h-[34px] lg:whitespace-nowrap px-4 lg:px-0">
-              Invite friends and earn {statsLoading ? '...' : (stats.referralPercentage != null ? `${stats.referralPercentage}%` : '10%')} of their earnings — forever! The more you invite, the more you earn.
-            </p>
-          </div>
-          <div className="hidden lg:block relative lg:absolute lg:right-[-28.53px] lg:top-[-49px] w-[250px] lg:w-[365.53px] h-[166px] lg:h-[243.69px] shrink-0 pointer-events-none z-0 mt-6 lg:mt-0 mx-auto lg:mx-0">
-            <img
-              src="/coins/heroaffli.png"
-              alt="Affiliate Hero"
-              className="w-full h-full object-contain"
-            />
+        {/* ─── Top Banner Area (Warm Background: rgba(249, 247, 241, 1)) ─── */}
+        <div
+          className="w-full flex justify-center items-center transition-colors duration-300"
+          style={{
+            background: 'rgba(249, 247, 241, 1)',
+            minHeight: '366px',
+            opacity: 1,
+            transform: 'rotate(0deg)',
+          }}
+        >
+          <div className="w-full max-w-[1328px] mx-auto px-4 md:px-8 lg:px-0 py-8 sm:py-10 flex flex-col justify-center gap-6 sm:gap-8">
+            {/* Page Title & Subtitle */}
             <div
-              className="absolute inset-0 mix-blend-color"
               style={{
-                backgroundColor: 'rgba(73, 178, 101, 1)',
-                WebkitMaskImage: 'url(/coins/heroaffli.png)',
-                WebkitMaskSize: 'contain',
-                WebkitMaskRepeat: 'no-repeat',
-                WebkitMaskPosition: 'center',
-                maskImage: 'url(/coins/heroaffli.png)',
-                maskSize: 'contain',
-                maskRepeat: 'no-repeat',
-                maskPosition: 'center',
+                maxWidth: '665px',
+                minHeight: '44px',
+                gap: '16px',
+                opacity: 1,
+                transform: 'rotate(0deg)',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'center',
               }}
-            />
+            >
+              <h1
+                style={{
+                  fontFamily: '"Bricolage Grotesque", sans-serif',
+                  fontWeight: 700,
+                  fontSize: '27px',
+                  lineHeight: '18px',
+                  letterSpacing: '-0.02em',
+                  color: '#000000',
+                  margin: 0,
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                Affiliate Program
+              </h1>
+              <p
+                style={{
+                  fontFamily: '"Poppins", sans-serif',
+                  fontWeight: 500,
+                  fontSize: '14px',
+                  lineHeight: '14px',
+                  letterSpacing: '0%',
+                  color: '#000000',
+                  margin: 0,
+                }}
+              >
+                Invite friends and earn {currentPercentage}% of their earnings — forever! The more you invite, the more you earn.
+              </p>
+            </div>
+
+            {/* 4 Top Metric Cards (Whole Layout: 1326x160, gap: 10px; Each Card: 324x160, radius: 25px) */}
+            <div
+              className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 w-full"
+              style={{
+                maxWidth: '1326px',
+                minHeight: '160px',
+                gap: '10px',
+                opacity: 1,
+              }}
+            >
+              {/* Card 1: Total Affiliates */}
+              <div
+                className="w-full flex flex-col justify-between"
+                style={{
+                  maxWidth: '324px',
+                  height: '160px',
+                  borderRadius: '25px',
+                  paddingTop: '23px',
+                  paddingRight: '23px',
+                  paddingBottom: '25px',
+                  paddingLeft: '23px',
+                  gap: '10px',
+                  background: 'rgba(255, 255, 255, 1)',
+                  boxSizing: 'border-box',
+                  opacity: 1,
+                }}
+              >
+                <div
+                  style={{
+                    minHeight: '30px',
+                    fontFamily: '"Bricolage Grotesque", sans-serif',
+                    fontWeight: 700,
+                    fontSize: '45px',
+                    lineHeight: '30px',
+                    letterSpacing: '-0.02em',
+                    color: '#1E293B',
+                    display: 'flex',
+                    alignItems: 'center',
+                  }}
+                >
+                  {statsLoading ? '0' : (stats.totalAffiliates || 0)}
+                </div>
+                <div
+                  style={{
+                    maxWidth: '164px',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'center',
+                    gap: '10px',
+                  }}
+                >
+                  <h3
+                    style={{
+                      fontFamily: '"Bricolage Grotesque", sans-serif',
+                      fontWeight: 700,
+                      fontSize: '20px',
+                      lineHeight: '1.2',
+                      letterSpacing: '-0.02em',
+                      color: '#000000',
+                      margin: 0,
+                      whiteSpace: 'nowrap',
+                    }}
+                  >
+                    Total Affiliates
+                  </h3>
+                  <p
+                    style={{
+                      fontFamily: '"Poppins", sans-serif',
+                      fontWeight: 400,
+                      fontSize: '14px',
+                      lineHeight: '1.2',
+                      letterSpacing: '0%',
+                      color: '#6B7280',
+                      margin: 0,
+                      whiteSpace: 'nowrap',
+                    }}
+                  >
+                    Active referred users
+                  </p>
+                </div>
+              </div>
+
+              {/* Card 2: Lifetime Earnings */}
+              <div
+                className="w-full flex flex-col justify-between"
+                style={{
+                  maxWidth: '324px',
+                  height: '160px',
+                  borderRadius: '25px',
+                  paddingTop: '23px',
+                  paddingRight: '23px',
+                  paddingBottom: '25px',
+                  paddingLeft: '23px',
+                  gap: '10px',
+                  background: 'rgba(255, 255, 255, 1)',
+                  boxSizing: 'border-box',
+                  opacity: 1,
+                }}
+              >
+                <div
+                  style={{
+                    minHeight: '30px',
+                    fontFamily: '"Bricolage Grotesque", sans-serif',
+                    fontWeight: 700,
+                    fontSize: '45px',
+                    lineHeight: '30px',
+                    letterSpacing: '-0.02em',
+                    color: 'rgba(231, 171, 24, 1)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                  }}
+                >
+                  <img
+                    src="/coins/coinofaffliation.png"
+                    alt="Coin"
+                    style={{ width: '28px', height: '28px', objectFit: 'contain' }}
+                    className="shrink-0"
+                  />
+                  <span>{statsLoading ? '0' : formatCoinAmount(stats.totalAffiliateEarnings || 0)}</span>
+                </div>
+                <div
+                  style={{
+                    maxWidth: '164px',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'center',
+                    gap: '10px',
+                  }}
+                >
+                  <h3
+                    style={{
+                      fontFamily: '"Bricolage Grotesque", sans-serif',
+                      fontWeight: 700,
+                      fontSize: '20px',
+                      lineHeight: '1.2',
+                      letterSpacing: '-0.02em',
+                      color: '#000000',
+                      margin: 0,
+                      whiteSpace: 'nowrap',
+                    }}
+                  >
+                    Lifetime Earnings
+                  </h3>
+                  <p
+                    style={{
+                      fontFamily: '"Poppins", sans-serif',
+                      fontWeight: 400,
+                      fontSize: '14px',
+                      lineHeight: '1.2',
+                      letterSpacing: '0%',
+                      color: '#6B7280',
+                      margin: 0,
+                      whiteSpace: 'nowrap',
+                    }}
+                  >
+                    Total coins earned
+                  </p>
+                </div>
+              </div>
+
+              {/* Card 3: 30-Day Earnings */}
+              <div
+                className="w-full flex flex-col justify-between"
+                style={{
+                  maxWidth: '324px',
+                  height: '160px',
+                  borderRadius: '25px',
+                  paddingTop: '23px',
+                  paddingRight: '23px',
+                  paddingBottom: '25px',
+                  paddingLeft: '23px',
+                  gap: '10px',
+                  background: 'rgba(255, 255, 255, 1)',
+                  boxSizing: 'border-box',
+                  opacity: 1,
+                }}
+              >
+                <div
+                  style={{
+                    minHeight: '30px',
+                    fontFamily: '"Bricolage Grotesque", sans-serif',
+                    fontWeight: 700,
+                    fontSize: '45px',
+                    lineHeight: '30px',
+                    letterSpacing: '-0.02em',
+                    color: 'rgba(231, 171, 24, 1)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                  }}
+                >
+                  <img
+                    src="/coins/coinofaffliation.png"
+                    alt="Coin"
+                    style={{ width: '28px', height: '28px', objectFit: 'contain' }}
+                    className="shrink-0"
+                  />
+                  <span>{statsLoading ? '0' : formatCoinAmount(stats.last30DaysEarnings || 0)}</span>
+                </div>
+                <div
+                  style={{
+                    maxWidth: '164px',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'center',
+                    gap: '10px',
+                  }}
+                >
+                  <h3
+                    style={{
+                      fontFamily: '"Bricolage Grotesque", sans-serif',
+                      fontWeight: 700,
+                      fontSize: '20px',
+                      lineHeight: '1.2',
+                      letterSpacing: '-0.02em',
+                      color: '#000000',
+                      margin: 0,
+                      whiteSpace: 'nowrap',
+                    }}
+                  >
+                    30-Day Earnings
+                  </h3>
+                  <p
+                    style={{
+                      fontFamily: '"Poppins", sans-serif',
+                      fontWeight: 400,
+                      fontSize: '14px',
+                      lineHeight: '1.2',
+                      letterSpacing: '0%',
+                      color: '#6B7280',
+                      margin: 0,
+                      whiteSpace: 'nowrap',
+                    }}
+                  >
+                    Earned in 30 days
+                  </p>
+                </div>
+              </div>
+
+              {/* Card 4: Pending Coins */}
+              <div
+                className="w-full flex flex-col justify-between"
+                style={{
+                  maxWidth: '324px',
+                  height: '160px',
+                  borderRadius: '25px',
+                  paddingTop: '23px',
+                  paddingRight: '23px',
+                  paddingBottom: '25px',
+                  paddingLeft: '23px',
+                  gap: '10px',
+                  background: 'rgba(255, 255, 255, 1)',
+                  boxSizing: 'border-box',
+                  opacity: 1,
+                }}
+              >
+                <div
+                  style={{
+                    minHeight: '30px',
+                    fontFamily: '"Bricolage Grotesque", sans-serif',
+                    fontWeight: 700,
+                    fontSize: '45px',
+                    lineHeight: '30px',
+                    letterSpacing: '-0.02em',
+                    color: 'rgba(231, 171, 24, 1)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                  }}
+                >
+                  <img
+                    src="/coins/coinofaffliation.png"
+                    alt="Coin"
+                    style={{ width: '28px', height: '28px', objectFit: 'contain' }}
+                    className="shrink-0"
+                  />
+                  <span>{statsLoading ? '0' : formatCoinAmount(stats.pendingCommissions || 0)}</span>
+                </div>
+                <div
+                  style={{
+                    maxWidth: '164px',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'center',
+                    gap: '10px',
+                  }}
+                >
+                  <h3
+                    style={{
+                      fontFamily: '"Bricolage Grotesque", sans-serif',
+                      fontWeight: 700,
+                      fontSize: '20px',
+                      lineHeight: '1.2',
+                      letterSpacing: '-0.02em',
+                      color: '#000000',
+                      margin: 0,
+                      whiteSpace: 'nowrap',
+                    }}
+                  >
+                    Pending Coins
+                  </h3>
+                  <p
+                    style={{
+                      fontFamily: '"Poppins", sans-serif',
+                      fontWeight: 400,
+                      fontSize: '14px',
+                      lineHeight: '1.2',
+                      letterSpacing: '0%',
+                      color: '#6B7280',
+                      margin: 0,
+                      whiteSpace: 'nowrap',
+                    }}
+                  >
+                    {statsLoading ? '0' : (stats.pendingCount || 0)} hold(s)
+                  </p>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
-        {/* Lower Group (Stats, Referral Link, Tabs, Tables) */}
-        <div className="flex flex-col gap-[20px] w-full lg:w-[1240px] shrink-0">
-          <div className="w-full">
-            {/* Stats Grid */}
-            <div className="grid grid-cols-2 lg:grid-cols-4 w-full lg:w-[1240px] h-auto lg:h-[156px] gap-[10px] shrink-0">
-              <div className="flex flex-col w-full h-auto lg:h-[156px] rounded-[14px] lg:rounded-[20px] p-[16px] lg:p-[20px] gap-[16px] lg:gap-[22px] bg-[#1a1b1a] backdrop-blur-[74px]">
-                <div className="flex flex-col w-fit min-w-full lg:min-w-[123px] h-auto lg:h-[81px] gap-[8px] lg:gap-[12px] whitespace-normal lg:whitespace-nowrap">
-                  <h3 style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="w-full lg:w-[123px] h-auto lg:h-[29px] font-bold text-[18px] lg:text-[22px] leading-[130%] text-white tracking-normal m-0 p-0">Total Affiliates</h3>
-                  <div style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="w-full lg:w-[84px] h-auto lg:h-[40px] font-bold text-[32px] lg:text-[50px] leading-[120%] tracking-normal text-[#49b265] m-0 p-0 flex items-center align-middle">
-                    {statsLoading ? '...' : stats.totalAffiliates}
-                  </div>
-                </div>
-                <p style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="w-full h-auto font-semibold text-[14px] lg:text-[18px] leading-[130%] text-white/50 tracking-normal m-0 p-0">Active referred users</p>
-              </div>
-
-              <div className="flex flex-col w-full h-auto lg:h-[156px] rounded-[14px] lg:rounded-[20px] p-[16px] lg:p-[20px] gap-[16px] lg:gap-[22px] bg-[#1a1b1a] backdrop-blur-[74px]">
-                <div className="flex flex-col w-fit min-w-full lg:min-w-[123px] h-auto lg:h-[81px] gap-[8px] lg:gap-[12px] whitespace-normal lg:whitespace-nowrap">
-                  <h3 style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="w-full lg:w-[123px] h-auto lg:h-[29px] font-bold text-[18px] lg:text-[22px] leading-[130%] text-white tracking-normal m-0 p-0">Lifetime Earnings</h3>
-                  <div className="flex items-center gap-[4px] lg:gap-[6px] h-auto lg:h-[40px]">
-                    <img src="/coins/Coin.png" alt="Coin" className="w-[24px] h-[24px] lg:w-[40px] lg:h-[40px] shrink-0 object-contain" />
-                    <div
-                      style={{
-                        fontFamily: "'Barlow Condensed', sans-serif",
-                        backgroundImage: 'linear-gradient(180deg, #FEDF77 0%, #FCB91E 100%)',
-                        WebkitBackgroundClip: 'text',
-                        backgroundClip: 'text',
-                        color: 'transparent'
-                      }}
-                      className="font-bold text-[32px] lg:text-[50px] leading-none tracking-normal m-0 p-0 flex items-center pb-[2px] lg:pb-[6px]"
-                    >
-                      {statsLoading ? '...' : stats.totalAffiliateEarnings.toLocaleString()}
-                    </div>
-                  </div>
-                </div>
-                <p style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="w-full h-auto font-semibold text-[14px] lg:text-[18px] leading-[130%] text-white/50 tracking-normal m-0 p-0">Total coins earned</p>
-              </div>
-
-              <div className="flex flex-col w-full h-auto lg:h-[156px] rounded-[14px] lg:rounded-[20px] p-[16px] lg:p-[20px] gap-[16px] lg:gap-[22px] bg-[#1a1b1a] backdrop-blur-[74px]">
-                <div className="flex flex-col w-fit min-w-full lg:min-w-[123px] h-auto lg:h-[81px] gap-[8px] lg:gap-[12px] whitespace-normal lg:whitespace-nowrap">
-                  <h3 style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="w-full lg:w-[123px] h-auto lg:h-[29px] font-bold text-[18px] lg:text-[22px] leading-[130%] text-white tracking-normal m-0 p-0">30-Day Earnings</h3>
-                  <div className="flex items-center gap-[4px] lg:gap-[6px] h-auto lg:h-[40px]">
-                    <img src="/coins/Coin.png" alt="Coin" className="w-[24px] h-[24px] lg:w-[40px] lg:h-[40px] shrink-0 object-contain" />
-                    <div
-                      style={{
-                        fontFamily: "'Barlow Condensed', sans-serif",
-                        backgroundImage: 'linear-gradient(180deg, #FEDF77 0%, #FCB91E 100%)',
-                        WebkitBackgroundClip: 'text',
-                        backgroundClip: 'text',
-                        color: 'transparent'
-                      }}
-                      className="font-bold text-[32px] lg:text-[50px] leading-none tracking-normal m-0 p-0 flex items-center pb-[2px] lg:pb-[6px]"
-                    >
-                      {statsLoading ? '...' : stats.last30DaysEarnings.toLocaleString()}
-                    </div>
-                  </div>
-                </div>
-                <p style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="w-full h-auto font-semibold text-[14px] lg:text-[18px] leading-[130%] text-white/50 tracking-normal m-0 p-0">Earned in 30 days</p>
-              </div>
-
-              <div className="flex flex-col w-full h-auto lg:h-[156px] rounded-[14px] lg:rounded-[20px] p-[16px] lg:p-[20px] gap-[16px] lg:gap-[22px] bg-[#1a1b1a] backdrop-blur-[74px]">
-                <div className="flex flex-col w-fit min-w-full lg:min-w-[123px] h-auto lg:h-[81px] gap-[8px] lg:gap-[12px] whitespace-normal lg:whitespace-nowrap">
-                  <h3 style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="w-full min-w-full lg:min-w-[123px] h-auto lg:h-[29px] font-bold text-[18px] lg:text-[22px] leading-[130%] text-white tracking-normal m-0 p-0">Pending Coins</h3>
-                  <div className="flex items-center gap-[4px] lg:gap-[6px] h-auto lg:h-[40px]">
-                    <img src="/coins/Coin.png" alt="Coin" className="w-[24px] h-[24px] lg:w-[40px] lg:h-[40px] shrink-0 object-contain" />
-                    <div
-                      style={{
-                        fontFamily: "'Barlow Condensed', sans-serif",
-                        backgroundImage: 'linear-gradient(180deg, #FEDF77 0%, #FCB91E 100%)',
-                        WebkitBackgroundClip: 'text',
-                        backgroundClip: 'text',
-                        color: 'transparent'
-                      }}
-                      className="font-bold text-[32px] lg:text-[50px] leading-none tracking-normal m-0 p-0 flex items-center pb-[2px] lg:pb-[6px]"
-                    >
-                      {statsLoading ? '...' : stats.pendingCommissions.toLocaleString()}
-                    </div>
-                  </div>
-                </div>
-                <p style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="w-full h-auto font-semibold text-[14px] lg:text-[18px] leading-[130%] text-white/50 tracking-normal m-0 p-0">
-                  {statsLoading ? '...' : `${stats.pendingCount} hold(s)`}
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {/* Referral Link Section */}
-          <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between w-full lg:w-[1240px] h-auto lg:h-[120px] rounded-[20px] p-[16px] lg:p-[20px] gap-[16px] lg:gap-[18px] bg-white/[0.14]">
-            <div className="flex flex-col w-full lg:w-[591px] lg:h-[76px] gap-[6px]">
-              <h2 style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="w-full lg:h-[41px] font-bold text-[24px] lg:text-[34px] leading-[120%] text-white tracking-normal m-0 p-0">Your Unique Referral Link</h2>
-              <p style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="w-full lg:h-[29px] font-medium text-[16px] lg:text-[22px] leading-[130%] text-[#888888] tracking-normal m-0 p-0">Share this link anywhere to start earning passive income.</p>
+        {/* ─── Lower Main Content Area (Max Width 1328px like Daily Bonus and Earn) ─── */}
+        <div className="w-full max-w-[1328px] mx-auto px-4 md:px-8 lg:px-0 pt-8 sm:pt-10 pb-12 sm:pb-16 flex flex-col gap-6 sm:gap-8">
+          {/* Unique Referral Link Card */}
+          <div
+            className="w-full flex flex-col justify-between transition-colors"
+            style={{
+              maxWidth: '1328px',
+              minHeight: '212px',
+              borderRadius: '30px',
+              paddingTop: '36px',
+              paddingRight: '28px',
+              paddingBottom: '39px',
+              paddingLeft: '30px',
+              gap: '25px',
+              background: 'rgba(249, 247, 241, 1)',
+              boxSizing: 'border-box',
+              opacity: 1,
+            }}
+          >
+            <div
+              style={{
+                maxWidth: '403px',
+                minHeight: '44px',
+                gap: '16px',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'center',
+                opacity: 1,
+              }}
+            >
+              <h2
+                style={{
+                  fontFamily: '"Bricolage Grotesque", sans-serif',
+                  fontWeight: 700,
+                  fontSize: '27px',
+                  lineHeight: '18px',
+                  letterSpacing: '-0.02em',
+                  color: '#000000',
+                  margin: 0,
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                Your Unique Referral Link
+              </h2>
+              <p
+                style={{
+                  fontFamily: '"Poppins", sans-serif',
+                  fontWeight: 500,
+                  fontSize: '14px',
+                  lineHeight: '14px',
+                  letterSpacing: '0%',
+                  color: '#000000',
+                  margin: 0,
+                }}
+              >
+                Share this link anywhere to start earning passive income.
+              </p>
             </div>
 
-            <div className="flex flex-row items-center justify-between w-full lg:w-[591px] h-[60px] lg:h-[80px] rounded-[10px] border border-[#49b265] bg-white/[0.08] p-[8px] lg:p-[16px] gap-[8px]">
+            {/* Referral Link Field (1270x66, radius: 50px, background: white, padding: 8px 10px 9px 25px) */}
+            <div
+              className="w-full flex items-center justify-between shadow-xs transition-colors"
+              style={{
+                maxWidth: '1270px',
+                height: '66px',
+                borderRadius: '50px',
+                paddingTop: '8px',
+                paddingRight: '10px',
+                paddingBottom: '9px',
+                paddingLeft: '25px',
+                background: 'rgba(255, 255, 255, 1)',
+                boxSizing: 'border-box',
+                opacity: 1,
+              }}
+            >
               <input
                 type="text"
                 readOnly
-                value={`${window.location.origin}/r/${mongoUser?.referralCode || ''}`}
-                style={{ fontFamily: "'Barlow Condensed', sans-serif" }}
-                className="w-full lg:w-[453px] lg:h-[20px] bg-transparent text-white font-medium text-[11px] sm:text-[12px] lg:text-[18px] leading-[20px] tracking-normal outline-none align-middle m-0 p-0 min-w-0"
+                value={referralUrl}
+                style={{
+                  fontFamily: '"Poppins", sans-serif',
+                  fontWeight: 400,
+                  fontSize: '16px',
+                  lineHeight: '26px',
+                  letterSpacing: '0%',
+                  color: '#000000',
+                  background: 'transparent',
+                  border: 'none',
+                  outline: 'none',
+                  width: '100%',
+                  minWidth: 0,
+                  paddingRight: '12px',
+                }}
               />
               <button
-                onClick={() => copyToClipboard(`${window.location.origin}/r/${mongoUser?.referralCode}`)}
-                className="w-[80px] lg:w-[106px] h-[40px] lg:h-[48px] rounded-[10px] flex items-center justify-center bg-[#49b265] hover:bg-[#3bb770] text-white transition-all gap-[6px] lg:gap-[10px] py-[8px] lg:py-[10px] px-[12px] lg:px-[20px] shadow-[0px_4px_0px_0px_rgba(39,109,58,1)] active:translate-y-[2px] active:shadow-[0px_2px_0px_0px_rgba(39,109,58,1)] shrink-0"
+                onClick={() => copyToClipboard(referralUrl)}
+                className="active:scale-95 transition-transform shrink-0 cursor-pointer flex items-center justify-center"
+                style={{
+                  width: '99px',
+                  height: '49px',
+                  borderRadius: '80px',
+                  background: 'rgba(36, 50, 77, 1)',
+                  gap: '10px',
+                  border: 'none',
+                  outline: 'none',
+                  opacity: 1,
+                  boxSizing: 'border-box',
+                }}
               >
-                <img src="/coins/copy.png" alt="Copy" className="w-[18px] lg:w-[24px] h-[18px] lg:h-[24px] shrink-0 object-contain" />
-                <span style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="w-auto lg:w-[32px] h-[13px] font-bold text-[16px] lg:text-[18px] leading-[100%] tracking-normal m-0 p-0 flex items-center justify-center">Copy</span>
+                <span
+                  style={{
+                    fontFamily: '"Poppins", sans-serif',
+                    fontWeight: 500,
+                    fontSize: '16px',
+                    lineHeight: '28px',
+                    letterSpacing: '0%',
+                    color: '#FFFFFF',
+                    whiteSpace: 'nowrap',
+                  }}
+                >
+                  Copy
+                </span>
               </button>
             </div>
           </div>
 
-          {/* Tabs section */}
-          <div className="w-full lg:w-[1239px] h-auto lg:h-[84px] bg-[#2c2d2c] backdrop-blur-[24px] shadow-[0px_4px_44px_0px_rgba(0,0,0,0.25)] rounded-[10px] p-[6px] lg:p-[18px] flex items-center">
-            <div className="w-full lg:w-[1203px] lg:h-[48px] rounded-[100px] flex flex-row gap-[4px] lg:gap-[20px] lg:justify-between items-stretch lg:items-center">
+          {/* Lower Section: Tabs & Table Card (1328x625, background: rgba(249, 247, 241, 1), radius: 30px) */}
+          <div
+            className="w-full flex flex-col justify-between transition-colors"
+            style={{
+              maxWidth: '1328px',
+              minHeight: '625px',
+              borderRadius: '30px',
+              paddingTop: '32px',
+              paddingRight: '28px',
+              paddingBottom: '32px',
+              paddingLeft: '28px',
+              background: 'rgba(249, 247, 241, 1)',
+              boxSizing: 'border-box',
+              opacity: 1,
+            }}
+          >
+            {/* Centered Segmented Control Tabs (Single line: gap: 5px) */}
+            <div className="flex items-center justify-center flex-nowrap gap-[5px] mx-auto mb-6 overflow-x-auto hide-scroll">
               <button
                 onClick={() => setActiveTab('recent')}
-                className={`flex-1 transition-all flex justify-center items-center gap-[4px] lg:gap-[10px] py-[6px] lg:py-[10px] px-[4px] lg:px-[20px] rounded-[8px] lg:rounded-[10px] h-auto min-h-[36px] lg:h-[48px] ${activeTab === 'recent'
-                  ? 'bg-[#49b265] text-white shadow-[0px_2px_0px_0px_rgba(39,109,58,1)] lg:shadow-[0px_4px_0px_0px_rgba(39,109,58,1)]'
-                  : 'text-white hover:bg-white/5'
-                  }`}
+                className="transition-all cursor-pointer flex items-center justify-center shrink-0"
+                style={{
+                  height: '37px',
+                  borderRadius: '40px',
+                  paddingTop: '11px',
+                  paddingRight: '18px',
+                  paddingBottom: '11px',
+                  paddingLeft: '18px',
+                  gap: '8px',
+                  background: activeTab === 'recent' ? 'rgba(36, 50, 77, 1)' : 'transparent',
+                  color: activeTab === 'recent' ? '#FFFFFF' : '#000000',
+                  border: 'none',
+                  outline: 'none',
+                  boxSizing: 'border-box',
+                  opacity: 1,
+                }}
               >
-                <img src="/coins/paisa.png" alt="Recent" className={`w-[12px] h-[12px] lg:w-[24px] lg:h-[24px] shrink-0 object-contain ${activeTab === 'recent' ? 'brightness-0 invert' : ''}`} />
-                <span style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="font-bold text-[11px] sm:text-[14px] lg:text-[20px] leading-[110%] lg:leading-[100%] text-white tracking-normal m-0 p-0 flex items-center justify-start lg:justify-center whitespace-normal lg:whitespace-nowrap text-left lg:text-center">Recent Affiliate Earnings</span>
+                <img
+                  src="/coins/recentaffilation.png"
+                  alt="Recent"
+                  style={{
+                    width: '16px',
+                    height: '16px',
+                    objectFit: 'contain',
+                    filter: activeTab === 'recent' ? 'brightness(0) invert(1)' : 'brightness(0)',
+                  }}
+                  className="shrink-0 transition-all"
+                />
+                <span
+                  style={{
+                    fontFamily: '"Bricolage Grotesque", sans-serif',
+                    fontWeight: 700,
+                    fontSize: '14px',
+                    lineHeight: '100%',
+                    letterSpacing: '0%',
+                    color: activeTab === 'recent' ? '#FFFFFF' : '#000000',
+                    whiteSpace: 'nowrap',
+                  }}
+                >
+                  Recent Affiliate Earnings
+                </span>
               </button>
+
               <button
                 onClick={() => setActiveTab('users')}
-                className={`flex-1 transition-all flex justify-center items-center gap-[4px] lg:gap-[10px] py-[6px] lg:py-[10px] px-[4px] lg:px-[20px] rounded-[8px] lg:rounded-[10px] h-auto min-h-[36px] lg:h-[48px] ${activeTab === 'users'
-                  ? 'bg-[#49b265] text-white shadow-[0px_2px_0px_0px_rgba(39,109,58,1)] lg:shadow-[0px_4px_0px_0px_rgba(39,109,58,1)]'
-                  : 'text-white hover:bg-white/5'
-                  }`}
+                className="transition-all cursor-pointer flex items-center justify-center shrink-0"
+                style={{
+                  height: '37px',
+                  borderRadius: '40px',
+                  paddingTop: '11px',
+                  paddingRight: '18px',
+                  paddingBottom: '11px',
+                  paddingLeft: '18px',
+                  gap: '8px',
+                  background: activeTab === 'users' ? 'rgba(36, 50, 77, 1)' : 'transparent',
+                  color: activeTab === 'users' ? '#FFFFFF' : '#000000',
+                  border: 'none',
+                  outline: 'none',
+                  boxSizing: 'border-box',
+                  opacity: 1,
+                }}
               >
-                <img src="/coins/persons.png" alt="Users" className={`w-[12px] h-[12px] lg:w-[24px] lg:h-[24px] shrink-0 object-contain ${activeTab === 'users' ? 'brightness-0 invert' : ''}`} />
-                <span style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="font-bold text-[11px] sm:text-[14px] lg:text-[20px] leading-[110%] lg:leading-[100%] text-white tracking-normal m-0 p-0 flex items-center justify-start lg:justify-center whitespace-normal lg:whitespace-nowrap text-left lg:text-center">Referred Users</span>
+                <img
+                  src="/coins/refereduser.png"
+                  alt="Users"
+                  style={{
+                    width: '16px',
+                    height: '16px',
+                    objectFit: 'contain',
+                    filter: activeTab === 'users' ? 'brightness(0) invert(1)' : 'brightness(0)',
+                  }}
+                  className="shrink-0 transition-all"
+                />
+                <span
+                  style={{
+                    fontFamily: '"Bricolage Grotesque", sans-serif',
+                    fontWeight: 700,
+                    fontSize: '14px',
+                    lineHeight: '100%',
+                    letterSpacing: '0%',
+                    color: activeTab === 'users' ? '#FFFFFF' : '#000000',
+                    whiteSpace: 'nowrap',
+                  }}
+                >
+                  Referred Users
+                </span>
               </button>
+
               <button
                 onClick={() => setActiveTab('pending')}
-                className={`flex-1 transition-all flex justify-center items-center gap-[4px] lg:gap-[10px] py-[6px] lg:py-[10px] px-[4px] lg:px-[20px] rounded-[8px] lg:rounded-[10px] h-auto min-h-[36px] lg:h-[48px] ${activeTab === 'pending'
-                  ? 'bg-[#49b265] text-white shadow-[0px_2px_0px_0px_rgba(39,109,58,1)] lg:shadow-[0px_4px_0px_0px_rgba(39,109,58,1)]'
-                  : 'text-white hover:bg-white/5'
-                  }`}
+                className="transition-all cursor-pointer flex items-center justify-center shrink-0"
+                style={{
+                  height: '37px',
+                  borderRadius: '40px',
+                  paddingTop: '11px',
+                  paddingRight: '18px',
+                  paddingBottom: '11px',
+                  paddingLeft: '18px',
+                  gap: '8px',
+                  background: activeTab === 'pending' ? 'rgba(36, 50, 77, 1)' : 'transparent',
+                  color: activeTab === 'pending' ? '#FFFFFF' : '#000000',
+                  border: 'none',
+                  outline: 'none',
+                  boxSizing: 'border-box',
+                  opacity: 1,
+                }}
               >
-                <img src="/coins/clock.png" alt="Pending" className={`w-[12px] h-[12px] lg:w-[24px] lg:h-[24px] shrink-0 object-contain ${activeTab === 'pending' ? 'brightness-0 invert' : ''}`} />
-                <span style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="font-bold text-[11px] sm:text-[14px] lg:text-[20px] leading-[110%] lg:leading-[100%] text-white tracking-normal m-0 p-0 flex items-center justify-start lg:justify-center whitespace-normal lg:whitespace-nowrap text-left lg:text-center">Pending Affiliate Earnings</span>
+                <img
+                  src="/coins/pendignaff.png"
+                  alt="Pending"
+                  style={{
+                    width: '16px',
+                    height: '16px',
+                    objectFit: 'contain',
+                    filter: activeTab === 'pending' ? 'brightness(0) invert(1)' : 'brightness(0)',
+                  }}
+                  className="shrink-0 transition-all"
+                />
+                <span
+                  style={{
+                    fontFamily: '"Bricolage Grotesque", sans-serif',
+                    fontWeight: 700,
+                    fontSize: '14px',
+                    lineHeight: '100%',
+                    letterSpacing: '0%',
+                    color: activeTab === 'pending' ? '#FFFFFF' : '#000000',
+                    whiteSpace: 'nowrap',
+                  }}
+                >
+                  Pending Affiliate Earnings
+                </span>
               </button>
             </div>
-          </div>
 
-          {/* Table Content Section */}
-          <div className="w-full lg:w-[1240px] min-h-[400px] lg:h-auto bg-[#242424] rounded-[20px] lg:rounded-[30px] p-[16px] lg:p-[30px] flex flex-col gap-[10px] mt-4 mb-[80px] lg:mb-0">
-
-            {activeTab === 'recent' && (
-              <div>
-                {referrals.loading ? (
-                  <div className="animate-pulse flex flex-col gap-4">
-                    <div className="h-8 bg-white/5 rounded w-full"></div>
-                    <div className="h-12 bg-white/5 rounded w-full"></div>
-                  </div>
-                ) : referrals.error ? (
-                  <p className="text-rose-400 text-center py-8">{referrals.error}</p>
-                ) : referrals.dataList.length === 0 ? (
-                  <p className="text-center py-8" style={{ fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 700, fontSize: '20px', lineHeight: '120%', color: 'white' }}>No referral earnings yet.</p>
-                ) : (
-                  <div className="w-full">
-                    <div className="w-full lg:min-w-[1180px]">
-                      <div className="w-full lg:w-[1180px] h-auto lg:h-[58px] rounded-[10px] lg:rounded-[20px] pt-[8px] pb-[8px] px-[4px] lg:pt-[10px] lg:pr-[95px] lg:pb-[30px] lg:pl-[40px] grid grid-cols-[minmax(0,1.2fr)_minmax(0,1.1fr)_minmax(0,1.1fr)_minmax(0,1.4fr)_minmax(0,1fr)] lg:grid-cols-[313px_repeat(4,minmax(0,1fr))] gap-[6px] sm:gap-[10px] lg:gap-[50px] border-b border-[#2a2d36] items-center">
-                        <div style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="font-semibold text-[16px] lg:text-[26px] leading-[120%] text-[rgba(255,255,255,0.4)] break-words">User</div>
-                        <div style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="font-semibold text-[16px] lg:text-[26px] leading-[120%] text-[rgba(255,255,255,0.4)] break-words">Date</div>
-                        <div style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="font-semibold text-[16px] lg:text-[26px] leading-[120%] text-[rgba(255,255,255,0.4)] break-words">Earning</div>
-                        <div style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="font-semibold text-[16px] lg:text-[26px] leading-[120%] text-[rgba(255,255,255,0.4)] break-words">Comms ({statsLoading ? '...' : (stats.referralPercentage != null ? `${stats.referralPercentage}%` : '10%')})</div>
-                        <div style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="font-semibold text-[16px] lg:text-[26px] leading-[120%] text-[rgba(255,255,255,0.4)] lg:pl-[50px] break-words">Status</div>
-                      </div>
-                      <div className="flex flex-col gap-[6px] lg:gap-[10px] mt-[6px] lg:mt-0">
-                        {referrals.dataList.map(tx => (
-                          <div key={tx._id} className="w-full lg:w-[1180px] h-auto lg:h-[82px] bg-[#171717] rounded-[8px] lg:rounded-[20px] py-[10px] px-[4px] lg:pt-[20px] lg:pr-[95px] lg:pb-[20px] lg:pl-[40px] grid grid-cols-[minmax(0,1.2fr)_minmax(0,1.1fr)_minmax(0,1.1fr)_minmax(0,1.4fr)_minmax(0,1fr)] lg:grid-cols-[313px_repeat(4,minmax(0,1fr))] gap-[6px] sm:gap-[10px] lg:gap-[50px] items-center hover:bg-[#1a1a1a] transition-colors">
-                            <div className="flex items-center gap-[6px] lg:gap-[10px] min-w-0">
-                              <img src={tx.linkedTransactionId?.userId?.avatarUrl || tx.linkedTransactionId?.userId?.photoURL || `https://api.dicebear.com/7.x/bottts/svg?seed=${tx._id}`} className="w-[20px] h-[20px] sm:w-[24px] sm:h-[24px] lg:w-[42px] lg:h-[42px] rounded-[4px] lg:rounded-[10px] bg-[#15171e] object-cover shrink-0" alt="avatar" />
-                              <div style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="font-semibold text-[13px] min-[375px]:text-[14px] sm:text-[16px] lg:text-[28px] leading-[120%] text-white min-w-0 flex-1 flex"><FitText>{tx.linkedTransactionId?.userId?.displayName || 'Unknown User'}</FitText></div>
-                            </div>
-                            <div style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="text-white font-semibold text-[13px] min-[375px]:text-[14px] sm:text-[16px] lg:text-[28px] leading-[120%] truncate">{new Date(tx.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: '2-digit' })}</div>
-                            <div className="flex items-center whitespace-nowrap gap-[2px] lg:gap-[6px] font-semibold text-[#fbbf24] text-[13px] min-[375px]:text-[14px] sm:text-[16px] lg:text-[28px] leading-[120%]" style={{ fontFamily: "'Barlow Condensed', sans-serif" }}>
-                              <img src="/coins/Coin.png" alt="Coin" className="w-[14px] h-[14px] lg:w-[24px] lg:h-[24px] shrink-0 object-contain" /> {(tx.amount * 10).toLocaleString()}
-                            </div>
-                            <div className="flex items-center whitespace-nowrap gap-[2px] lg:gap-[6px] font-semibold text-[#fbbf24] text-[13px] min-[375px]:text-[14px] sm:text-[16px] lg:text-[28px] leading-[120%]" style={{ fontFamily: "'Barlow Condensed', sans-serif" }}>
-                              <img src="/coins/Coin.png" alt="Coin" className="w-[14px] h-[14px] lg:w-[24px] lg:h-[24px] shrink-0 object-contain" /> {tx.amount.toLocaleString()}
-                            </div>
-                            <div className="flex items-center lg:pl-[50px]">
-                              <span style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className={`inline-flex items-center justify-center px-[8px] lg:px-[20px] py-[3px] lg:py-[4px] rounded-[100px] text-[13px] sm:text-[14px] lg:text-[22px] leading-[120%] font-semibold ${tx.status === 'hold' ? 'bg-[#fbbf24]/10 text-[#fbbf24]' : 'bg-[#153423] text-[#4ade80]'}`}>
-                                {tx.status === 'hold' ? 'Pending' : 'Paid'}
-                              </span>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
+            {/* Inner White Card for Table Content */}
+            <div className="bg-white rounded-[24px] p-6 sm:p-8 w-full shadow-xs border border-[#E5E7EB]/60">
+              {/* Tab 1: Recent Affiliate Earnings */}
+              {activeTab === 'recent' && (
+                <div>
+                  {referrals.loading ? (
+                    <div className="animate-pulse space-y-4 py-6">
+                      <div className="h-6 bg-gray-200/70 rounded w-full"></div>
+                      <div className="h-14 bg-gray-200/70 rounded w-full"></div>
+                      <div className="h-14 bg-gray-200/70 rounded w-full"></div>
                     </div>
-                  </div>
-                )}
-                {!referrals.loading && !referrals.error && referrals.dataList.length > 0 && (
-                  <Pagination
-                    page={referrals.page}
-                    totalPages={referrals.totalPages}
-                    onNext={referrals.nextPage}
-                    onPrev={referrals.prevPage}
-                    onPageClick={referrals.goToPage}
-                  />
-                )}
-              </div>
-            )}
-
-            {activeTab === 'users' && (
-              <div>
-                {referredUsersData.loading ? (
-                  <div className="animate-pulse flex flex-col gap-4">
-                    <div className="h-8 bg-white/5 rounded w-full"></div>
-                    <div className="h-12 bg-white/5 rounded w-full"></div>
-                  </div>
-                ) : referredUsersData.error ? (
-                  <p className="text-rose-400 text-center py-8">{referredUsersData.error}</p>
-                ) : referredUsersData.users.length === 0 ? (
-                  <p className="text-center py-8" style={{ fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 700, fontSize: '20px', lineHeight: '120%', color: 'white' }}>No referred users yet.</p>
-                ) : (
-                  <>
-                  <div className="w-full">
-                    <div className="w-full lg:min-w-[1180px]">
-                      <div className="w-full lg:w-[1180px] h-auto lg:h-[58px] rounded-[10px] lg:rounded-[20px] pt-[8px] pb-[8px] px-[4px] lg:pt-[10px] lg:pr-[95px] lg:pb-[30px] lg:pl-[40px] grid grid-cols-[minmax(0,1.2fr)_minmax(0,1.2fr)_minmax(0,1.3fr)_minmax(0,1.3fr)_minmax(0,1fr)] lg:grid-cols-[313px_repeat(4,minmax(0,1fr))] gap-[6px] sm:gap-[10px] lg:gap-[50px] border-b border-[#2a2d36] items-center">
-                        <div style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="font-semibold text-[16px] lg:text-[26px] leading-[120%] text-[rgba(255,255,255,0.4)] break-words">User</div>
-                        <div style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="font-semibold text-[16px] lg:text-[26px] leading-[120%] text-[rgba(255,255,255,0.4)] break-words">Joined Date</div>
-                        <div style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="font-semibold text-[16px] lg:text-[26px] leading-[120%] text-[rgba(255,255,255,0.4)] break-words">Total Earning</div>
-                        <div style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="font-semibold text-[16px] lg:text-[26px] leading-[120%] text-[rgba(255,255,255,0.4)] break-words">Your Comms</div>
-                        <div style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="font-semibold text-[16px] lg:text-[26px] leading-[120%] text-[rgba(255,255,255,0.4)] lg:pl-[50px] break-words">Status</div>
-                      </div>
-
-                      <div className="flex flex-col gap-[6px] lg:gap-[10px] mt-[6px] lg:mt-0">
-                        {referredUsersData.users.map(u => (
-                          <div key={u._id} className="w-full lg:w-[1180px] h-auto lg:h-[82px] bg-[#171717] rounded-[8px] lg:rounded-[20px] py-[10px] px-[4px] lg:pt-[20px] lg:pr-[95px] lg:pb-[20px] lg:pl-[40px] grid grid-cols-[minmax(0,1.2fr)_minmax(0,1.2fr)_minmax(0,1.3fr)_minmax(0,1.3fr)_minmax(0,1fr)] lg:grid-cols-[313px_repeat(4,minmax(0,1fr))] gap-[6px] sm:gap-[10px] lg:gap-[50px] items-center hover:bg-[#1a1a1a] transition-colors">
-                            <div className="flex items-center gap-[6px] lg:gap-[10px] min-w-0">
-                              <img src={u.avatarUrl || u.photoURL || `https://api.dicebear.com/7.x/bottts/svg?seed=${u.displayName}`} className="w-[20px] h-[20px] sm:w-[24px] sm:h-[24px] lg:w-[42px] lg:h-[42px] rounded-[4px] lg:rounded-[10px] bg-[#15171e] object-cover shrink-0" alt="avatar" />
-                              <div style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="font-semibold text-[13px] min-[375px]:text-[14px] sm:text-[16px] lg:text-[28px] leading-[120%] text-white min-w-0 flex-1 flex"><FitText>{u.displayName}</FitText></div>
-                            </div>
-                            <div style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="text-white font-semibold text-[13px] min-[375px]:text-[14px] sm:text-[16px] lg:text-[28px] leading-[120%] truncate">{new Date(u.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: '2-digit' })}</div>
-                            <div className="flex items-center whitespace-nowrap gap-[2px] lg:gap-[6px] font-semibold text-[#fbbf24] text-[13px] min-[375px]:text-[14px] sm:text-[16px] lg:text-[28px] leading-[120%]" style={{ fontFamily: "'Barlow Condensed', sans-serif" }}>
-                              <img src="/coins/Coin.png" alt="Coin" className="w-[14px] h-[14px] lg:w-[24px] lg:h-[24px] shrink-0 object-contain" /> {(u.totalEarned || 0).toLocaleString()}
-                            </div>
-                            <div className="flex items-center whitespace-nowrap gap-[2px] lg:gap-[6px] font-semibold text-[#fbbf24] text-[13px] min-[375px]:text-[14px] sm:text-[16px] lg:text-[28px] leading-[120%]" style={{ fontFamily: "'Barlow Condensed', sans-serif" }}>
-                              <img src="/coins/Coin.png" alt="Coin" className="w-[14px] h-[14px] lg:w-[24px] lg:h-[24px] shrink-0 object-contain" /> {(u.referralEarnings > 0 ? u.referralEarnings : Math.floor((u.totalEarned || 0) * ((stats.referralPercentage || 10) / 100))).toLocaleString()}
-                            </div>
-                            <div className="flex items-center lg:pl-[50px]">
-                              <span style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="inline-flex items-center justify-center px-[8px] lg:px-[20px] py-[3px] lg:py-[4px] rounded-[100px] text-[13px] sm:text-[14px] lg:text-[22px] leading-[120%] font-semibold bg-[#153423] text-[#4ade80]">
-                                Active
-                              </span>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
+                  ) : referrals.error ? (
+                    <p className="text-rose-500 text-center py-8 font-medium">{referrals.error}</p>
+                  ) : referrals.dataList.length === 0 ? (
+                    <div className="text-center py-12 text-[#6B7280] font-medium text-sm sm:text-base">
+                      No referral earnings yet.
                     </div>
-                  </div>
-                    <Pagination
-                      page={referredUsersData.page}
-                      totalPages={referredUsersData.totalPages}
-                      onNext={referredUsersData.nextPage}
-                      onPrev={referredUsersData.prevPage}
-                      onPageClick={referredUsersData.goToPage}
-                    />
-                  </>
-                )}
-              </div>
-            )}
-
-            {activeTab === 'pending' && (
-              <div>
-                {holdsLoading ? (
-                  <div className="animate-pulse flex flex-col gap-4">
-                    <div className="h-8 bg-white/5 rounded w-full"></div>
-                    <div className="h-12 bg-white/5 rounded w-full"></div>
-                  </div>
-                ) : currentPendingHolds.length === 0 ? (
-                  <p className="text-center py-8" style={{ fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 700, fontSize: '20px', lineHeight: '120%', color: 'white' }}>No affiliate earnings on hold right now.</p>
-                ) : (
-                  <>
-                    <div className="w-full">
-                      <div className="w-full lg:min-w-[1180px]">
-                        <div className="w-full lg:w-[1180px] h-auto lg:h-[58px] rounded-[10px] lg:rounded-[20px] pt-[8px] pb-[8px] px-[4px] lg:pt-[10px] lg:pr-[95px] lg:pb-[30px] lg:pl-[40px] grid grid-cols-[minmax(0,1.2fr)_minmax(0,1.1fr)_minmax(0,1.1fr)_minmax(0,1.4fr)_minmax(0,1fr)] lg:grid-cols-[313px_repeat(4,minmax(0,1fr))] gap-[6px] sm:gap-[10px] lg:gap-[50px] border-b border-[#2a2d36] items-center">
-                          <div style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="font-semibold text-[16px] lg:text-[26px] leading-[120%] text-[rgba(255,255,255,0.4)] break-words">User</div>
-                          <div style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="font-semibold text-[16px] lg:text-[26px] leading-[120%] text-[rgba(255,255,255,0.4)] break-words">Date</div>
-                          <div style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="font-semibold text-[16px] lg:text-[26px] leading-[120%] text-[rgba(255,255,255,0.4)] break-words">Earning</div>
-                          <div style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="font-semibold text-[16px] lg:text-[26px] leading-[120%] text-[rgba(255,255,255,0.4)] break-words">Comms ({statsLoading ? '...' : (stats.referralPercentage != null ? `${stats.referralPercentage}%` : '10%')})</div>
-                          <div style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="font-semibold text-[16px] lg:text-[26px] leading-[120%] text-[rgba(255,255,255,0.4)] lg:pl-[50px] break-words">Release In</div>
+                  ) : (
+                    <div className="overflow-x-auto">
+                      <div
+                        className="min-w-[680px] w-full flex flex-col gap-[21px]"
+                        style={{ maxWidth: '1248px', minHeight: '399px', opacity: 1 }}
+                      >
+                        {/* Table Header (No bottom line, Poppins 14px 400 uppercase, rgba(14, 15, 12, 0.6)) */}
+                        <div
+                          className="grid grid-cols-[1.6fr_1.2fr_1.2fr_1.2fr_1fr] items-center"
+                          style={{
+                            fontFamily: '"Poppins", sans-serif',
+                            fontWeight: 400,
+                            fontSize: '14px',
+                            lineHeight: '26px',
+                            letterSpacing: '0.06em',
+                            textTransform: 'uppercase',
+                            color: 'rgba(14, 15, 12, 0.6)',
+                          }}
+                        >
+                          <div>USER</div>
+                          <div>DATE</div>
+                          <div>EARNING</div>
+                          <div>COMMS({currentPercentage}%)</div>
+                          <div className="text-right sm:text-left sm:pl-4">STATUS</div>
                         </div>
 
-                        <div className="flex flex-col gap-[6px] lg:gap-[10px] mt-[6px] lg:mt-0">
-                          {currentPendingHolds.map(tx => (
-                            <div key={tx._id} className="w-full lg:w-[1180px] h-auto lg:h-[82px] bg-[#171717] rounded-[8px] lg:rounded-[20px] py-[10px] px-[4px] lg:pt-[20px] lg:pr-[95px] lg:pb-[20px] lg:pl-[40px] grid grid-cols-[minmax(0,1.2fr)_minmax(0,1.1fr)_minmax(0,1.1fr)_minmax(0,1.4fr)_minmax(0,1fr)] lg:grid-cols-[313px_repeat(4,minmax(0,1fr))] gap-[6px] sm:gap-[10px] lg:gap-[50px] items-center hover:bg-[#1a1a1a] transition-colors">
-                              <div className="flex items-center gap-[6px] lg:gap-[10px] min-w-0">
-                                <img src={tx.linkedTransactionId?.userId?.avatarUrl || tx.linkedTransactionId?.userId?.photoURL || `https://api.dicebear.com/7.x/bottts/svg?seed=${tx._id}`} className="w-[20px] h-[20px] sm:w-[24px] sm:h-[24px] lg:w-[42px] lg:h-[42px] rounded-[4px] lg:rounded-[10px] bg-[#15171e] object-cover shrink-0" alt="avatar" />
-                                <div style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="font-semibold text-[13px] min-[375px]:text-[14px] sm:text-[16px] lg:text-[28px] leading-[120%] text-white min-w-0 flex-1 flex"><FitText>{tx.linkedTransactionId?.userId?.displayName || 'Unknown'}</FitText></div>
+                        {/* Table Rows (Divider: 1px solid rgba(0, 0, 0, 0.1), Row height: 60px) */}
+                        <div className="divide-y divide-[rgba(0,0,0,0.1)] flex flex-col">
+                          {referrals.dataList.map((tx) => {
+                            const avatar = tx.linkedTransactionId?.userId?.avatarUrl ||
+                              tx.linkedTransactionId?.userId?.photoURL ||
+                              `https://api.dicebear.com/7.x/adventurer/svg?seed=${tx._id}`;
+                            const username = tx.linkedTransactionId?.userId?.displayName || 'Xyz';
+                            const earningVal = (tx.amount * (100 / (currentPercentage || 15))) || (tx.amount * 10);
+                            const commVal = tx.amount;
+
+                            return (
+                              <div
+                                key={tx._id}
+                                className="grid grid-cols-[1.6fr_1.2fr_1.2fr_1.2fr_1fr] items-center py-5 transition-colors"
+                                style={{ minHeight: '60px' }}
+                              >
+                                {/* User */}
+                                <div className="flex items-center gap-3 min-w-0 pr-2">
+                                  <img
+                                    src={avatar}
+                                    alt={username}
+                                    style={{
+                                      width: '40px',
+                                      height: '40px',
+                                      borderRadius: '100px',
+                                      objectFit: 'cover',
+                                      opacity: 1,
+                                    }}
+                                    className="bg-gray-200 border border-gray-100 shrink-0"
+                                  />
+                                  <span
+                                    style={{
+                                      fontFamily: '"Bricolage Grotesque", sans-serif',
+                                      fontWeight: 700,
+                                      fontSize: '16px',
+                                      lineHeight: '100%',
+                                      letterSpacing: '0%',
+                                      color: '#000000',
+                                    }}
+                                    className="truncate max-w-[180px] sm:max-w-none"
+                                  >
+                                    {username}
+                                  </span>
+                                </div>
+
+                                {/* Date */}
+                                <div
+                                  style={{
+                                    fontFamily: '"Poppins", sans-serif',
+                                    fontWeight: 500,
+                                    fontSize: '16px',
+                                    lineHeight: '26px',
+                                    letterSpacing: '0%',
+                                    color: '#000000',
+                                  }}
+                                  className="truncate"
+                                >
+                                  {formatDate(tx.createdAt)}
+                                </div>
+
+                                {/* Earning */}
+                                <div className="flex items-center gap-1.5 min-w-0">
+                                  <img
+                                    src="/coins/coinofaffliation.png"
+                                    alt="Coin"
+                                    className="w-[18px] h-[18px] object-contain shrink-0"
+                                  />
+                                  <span
+                                    style={{
+                                      fontFamily: '"Poppins", sans-serif',
+                                      fontWeight: 600,
+                                      fontSize: '16px',
+                                      lineHeight: '26px',
+                                      letterSpacing: '0%',
+                                      color: 'rgba(190, 146, 0, 1)',
+                                    }}
+                                    className="truncate"
+                                  >
+                                    {formatCoinAmount(earningVal)}
+                                  </span>
+                                </div>
+
+                                {/* Comms */}
+                                <div className="flex items-center gap-1.5 min-w-0">
+                                  <img
+                                    src="/coins/coinofaffliation.png"
+                                    alt="Coin"
+                                    className="w-[18px] h-[18px] object-contain shrink-0"
+                                  />
+                                  <span
+                                    style={{
+                                      fontFamily: '"Poppins", sans-serif',
+                                      fontWeight: 600,
+                                      fontSize: '16px',
+                                      lineHeight: '26px',
+                                      letterSpacing: '0%',
+                                      color: 'rgba(190, 146, 0, 1)',
+                                    }}
+                                    className="truncate"
+                                  >
+                                    {formatCoinAmount(commVal)}
+                                  </span>
+                                </div>
+
+                                {/* Status */}
+                                <div className="text-right sm:text-left sm:pl-4">
+                                  <span
+                                    className="inline-flex items-center justify-center shrink-0"
+                                    style={{
+                                      height: '33px',
+                                      borderRadius: '40px',
+                                      paddingTop: '11px',
+                                      paddingRight: '18px',
+                                      paddingBottom: '11px',
+                                      paddingLeft: '18px',
+                                      gap: '8px',
+                                      background: 'rgba(36, 50, 77, 1)',
+                                      color: '#FFFFFF',
+                                      fontFamily: '"Poppins", sans-serif',
+                                      fontWeight: 500,
+                                      fontSize: '16px',
+                                      lineHeight: '100%',
+                                      letterSpacing: '0%',
+                                      boxSizing: 'border-box',
+                                      opacity: 1,
+                                      whiteSpace: 'nowrap',
+                                    }}
+                                  >
+                                    {tx.status === 'hold' ? 'Pending' : 'Paid'}
+                                  </span>
+                                </div>
                               </div>
-                              <div style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="text-white font-semibold text-[13px] min-[375px]:text-[14px] sm:text-[16px] lg:text-[28px] leading-[120%] truncate">{new Date(tx.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: '2-digit' })}</div>
-                              <div className="flex items-center whitespace-nowrap gap-[2px] lg:gap-[6px] font-semibold text-[#fbbf24] text-[13px] min-[375px]:text-[14px] sm:text-[16px] lg:text-[28px] leading-[120%]" style={{ fontFamily: "'Barlow Condensed', sans-serif" }}>
-                                <img src="/coins/Coin.png" alt="Coin" className="w-[14px] h-[14px] lg:w-[24px] lg:h-[24px] shrink-0 object-contain" /> {(tx.amount * 10).toLocaleString()}
-                              </div>
-                              <div className="flex items-center whitespace-nowrap gap-[2px] lg:gap-[6px] font-semibold text-[#fbbf24] text-[13px] min-[375px]:text-[14px] sm:text-[16px] lg:text-[28px] leading-[120%]" style={{ fontFamily: "'Barlow Condensed', sans-serif" }}>
-                                <img src="/coins/Coin.png" alt="Coin" className="w-[14px] h-[14px] lg:w-[24px] lg:h-[24px] shrink-0 object-contain" /> {tx.amount.toLocaleString()}
-                              </div>
-                              <div className="flex items-center lg:pl-[50px]">
-                                <span style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="text-[#888888] font-semibold text-[13px] sm:text-[14px] lg:text-[28px] leading-[120%] break-words">
-                                  {calculateReleaseIn(tx.releaseDate)}
-                                </span>
-                              </div>
-                            </div>
-                          ))}
+                            );
+                          })}
                         </div>
                       </div>
                     </div>
-                    <Pagination
-                      page={pendingPage}
-                      totalPages={totalPendingPages}
-                      onNext={() => setPendingPage(p => Math.min(totalPendingPages, p + 1))}
-                      onPrev={() => setPendingPage(p => Math.max(1, p - 1))}
-                      onPageClick={setPendingPage}
-                    />
-                  </>
-                )}
-              </div>
-            )}
+                  )}
+                </div>
+              )}
 
+              {/* Tab 2: Referred Users */}
+              {activeTab === 'users' && (
+                <div>
+                  {referredUsersData.loading ? (
+                    <div className="animate-pulse space-y-4 py-6">
+                      <div className="h-6 bg-gray-200/70 rounded w-full"></div>
+                      <div className="h-14 bg-gray-200/70 rounded w-full"></div>
+                      <div className="h-14 bg-gray-200/70 rounded w-full"></div>
+                    </div>
+                  ) : referredUsersData.error ? (
+                    <p className="text-rose-500 text-center py-8 font-medium">{referredUsersData.error}</p>
+                  ) : referredUsersData.users.length === 0 ? (
+                    <div className="text-center py-12 text-[#6B7280] font-medium text-sm sm:text-base">
+                      No referred users yet.
+                    </div>
+                  ) : (
+                    <div className="overflow-x-auto">
+                      <div
+                        className="min-w-[680px] w-full flex flex-col gap-[21px]"
+                        style={{ maxWidth: '1248px', minHeight: '399px', opacity: 1 }}
+                      >
+                        {/* Table Header */}
+                        <div
+                          className="grid grid-cols-[1.6fr_1.2fr_1.2fr_1.2fr_1fr] items-center"
+                          style={{
+                            fontFamily: '"Poppins", sans-serif',
+                            fontWeight: 400,
+                            fontSize: '14px',
+                            lineHeight: '26px',
+                            letterSpacing: '0.06em',
+                            textTransform: 'uppercase',
+                            color: 'rgba(14, 15, 12, 0.6)',
+                          }}
+                        >
+                          <div>USER</div>
+                          <div>JOINED DATE</div>
+                          <div>TOTAL EARNING</div>
+                          <div>YOUR COMMS</div>
+                          <div className="text-right sm:text-left sm:pl-4">STATUS</div>
+                        </div>
+
+                        {/* Table Rows (Divider: 1px solid rgba(0, 0, 0, 0.1), Row height: 60px) */}
+                        <div className="divide-y divide-[rgba(0,0,0,0.1)] flex flex-col">
+                          {referredUsersData.users.map((u) => {
+                            const avatar = u.avatarUrl || u.photoURL || `https://api.dicebear.com/7.x/adventurer/svg?seed=${u.displayName}`;
+                            const commsEarned = u.referralEarnings > 0
+                              ? u.referralEarnings
+                              : ((u.totalEarned || 0) * (currentPercentage / 100));
+
+                            return (
+                              <div
+                                key={u._id}
+                                className="grid grid-cols-[1.6fr_1.2fr_1.2fr_1.2fr_1fr] items-center py-5 transition-colors"
+                                style={{ minHeight: '60px' }}
+                              >
+                                {/* User */}
+                                <div className="flex items-center gap-3 min-w-0 pr-2">
+                                  <img
+                                    src={avatar}
+                                    alt={u.displayName}
+                                    style={{
+                                      width: '40px',
+                                      height: '40px',
+                                      borderRadius: '100px',
+                                      objectFit: 'cover',
+                                      opacity: 1,
+                                    }}
+                                    className="bg-gray-200 border border-gray-100 shrink-0"
+                                  />
+                                  <span
+                                    style={{
+                                      fontFamily: '"Bricolage Grotesque", sans-serif',
+                                      fontWeight: 700,
+                                      fontSize: '16px',
+                                      lineHeight: '100%',
+                                      letterSpacing: '0%',
+                                      color: '#000000',
+                                    }}
+                                    className="truncate max-w-[180px] sm:max-w-none"
+                                  >
+                                    {u.displayName}
+                                  </span>
+                                </div>
+
+                                {/* Joined Date */}
+                                <div
+                                  style={{
+                                    fontFamily: '"Poppins", sans-serif',
+                                    fontWeight: 500,
+                                    fontSize: '16px',
+                                    lineHeight: '26px',
+                                    letterSpacing: '0%',
+                                    color: '#000000',
+                                  }}
+                                  className="truncate"
+                                >
+                                  {formatDate(u.createdAt)}
+                                </div>
+
+                                {/* Total Earning */}
+                                <div className="flex items-center gap-1.5 min-w-0">
+                                  <img
+                                    src="/coins/coinofaffliation.png"
+                                    alt="Coin"
+                                    className="w-[18px] h-[18px] object-contain shrink-0"
+                                  />
+                                  <span
+                                    style={{
+                                      fontFamily: '"Poppins", sans-serif',
+                                      fontWeight: 600,
+                                      fontSize: '16px',
+                                      lineHeight: '26px',
+                                      letterSpacing: '0%',
+                                      color: 'rgba(190, 146, 0, 1)',
+                                    }}
+                                    className="truncate"
+                                  >
+                                    {formatCoinAmount(u.totalEarned || 0)}
+                                  </span>
+                                </div>
+
+                                {/* Your Comms */}
+                                <div className="flex items-center gap-1.5 min-w-0">
+                                  <img
+                                    src="/coins/coinofaffliation.png"
+                                    alt="Coin"
+                                    className="w-[18px] h-[18px] object-contain shrink-0"
+                                  />
+                                  <span
+                                    style={{
+                                      fontFamily: '"Poppins", sans-serif',
+                                      fontWeight: 600,
+                                      fontSize: '16px',
+                                      lineHeight: '26px',
+                                      letterSpacing: '0%',
+                                      color: 'rgba(190, 146, 0, 1)',
+                                    }}
+                                    className="truncate"
+                                  >
+                                    {formatCoinAmount(commsEarned)}
+                                  </span>
+                                </div>
+
+                                {/* Status */}
+                                <div className="text-right sm:text-left sm:pl-4">
+                                  <span
+                                    className="inline-flex items-center justify-center shrink-0"
+                                    style={{
+                                      height: '33px',
+                                      borderRadius: '40px',
+                                      paddingTop: '11px',
+                                      paddingRight: '18px',
+                                      paddingBottom: '11px',
+                                      paddingLeft: '18px',
+                                      gap: '8px',
+                                      background: 'rgba(36, 50, 77, 1)',
+                                      color: '#FFFFFF',
+                                      fontFamily: '"Poppins", sans-serif',
+                                      fontWeight: 500,
+                                      fontSize: '16px',
+                                      lineHeight: '100%',
+                                      letterSpacing: '0%',
+                                      boxSizing: 'border-box',
+                                      opacity: 1,
+                                      whiteSpace: 'nowrap',
+                                    }}
+                                  >
+                                    Active
+                                  </span>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Tab 3: Pending Affiliate Earnings */}
+              {activeTab === 'pending' && (
+                <div>
+                  {holdsLoading ? (
+                    <div className="animate-pulse space-y-4 py-6">
+                      <div className="h-6 bg-gray-200/70 rounded w-full"></div>
+                      <div className="h-14 bg-gray-200/70 rounded w-full"></div>
+                      <div className="h-14 bg-gray-200/70 rounded w-full"></div>
+                    </div>
+                  ) : currentPendingHolds.length === 0 ? (
+                    <div className="text-center py-12 text-[#6B7280] font-medium text-sm sm:text-base">
+                      No affiliate earnings on hold right now.
+                    </div>
+                  ) : (
+                    <div className="overflow-x-auto">
+                      <div
+                        className="min-w-[680px] w-full flex flex-col gap-[21px]"
+                        style={{ maxWidth: '1248px', minHeight: '399px', opacity: 1 }}
+                      >
+                        {/* Table Header */}
+                        <div
+                          className="grid grid-cols-[1.6fr_1.2fr_1.2fr_1.2fr_1fr] items-center"
+                          style={{
+                            fontFamily: '"Poppins", sans-serif',
+                            fontWeight: 400,
+                            fontSize: '14px',
+                            lineHeight: '26px',
+                            letterSpacing: '0.06em',
+                            textTransform: 'uppercase',
+                            color: 'rgba(14, 15, 12, 0.6)',
+                          }}
+                        >
+                          <div>USER</div>
+                          <div>DATE</div>
+                          <div>EARNING</div>
+                          <div>COMMS({currentPercentage}%)</div>
+                          <div className="text-right sm:text-left sm:pl-4">RELEASE IN</div>
+                        </div>
+
+                        {/* Table Rows (Divider: 1px solid rgba(0, 0, 0, 0.1), Row height: 60px) */}
+                        <div className="divide-y divide-[rgba(0,0,0,0.1)] flex flex-col">
+                          {currentPendingHolds.map((tx) => {
+                            const avatar = tx.linkedTransactionId?.userId?.avatarUrl ||
+                              tx.linkedTransactionId?.userId?.photoURL ||
+                              `https://api.dicebear.com/7.x/adventurer/svg?seed=${tx._id}`;
+                            const username = tx.linkedTransactionId?.userId?.displayName || 'Unknown';
+                            const earningVal = (tx.amount * (100 / (currentPercentage || 15))) || (tx.amount * 10);
+                            const commVal = tx.amount;
+
+                            return (
+                              <div
+                                key={tx._id}
+                                className="grid grid-cols-[1.6fr_1.2fr_1.2fr_1.2fr_1fr] items-center py-5 transition-colors"
+                                style={{ minHeight: '60px' }}
+                              >
+                                {/* User */}
+                                <div className="flex items-center gap-3 min-w-0 pr-2">
+                                  <img
+                                    src={avatar}
+                                    alt={username}
+                                    style={{
+                                      width: '40px',
+                                      height: '40px',
+                                      borderRadius: '100px',
+                                      objectFit: 'cover',
+                                      opacity: 1,
+                                    }}
+                                    className="bg-gray-200 border border-gray-100 shrink-0"
+                                  />
+                                  <span
+                                    style={{
+                                      fontFamily: '"Bricolage Grotesque", sans-serif',
+                                      fontWeight: 700,
+                                      fontSize: '16px',
+                                      lineHeight: '100%',
+                                      letterSpacing: '0%',
+                                      color: '#000000',
+                                    }}
+                                    className="truncate max-w-[180px] sm:max-w-none"
+                                  >
+                                    {username}
+                                  </span>
+                                </div>
+
+                                {/* Date */}
+                                <div
+                                  style={{
+                                    fontFamily: '"Poppins", sans-serif',
+                                    fontWeight: 500,
+                                    fontSize: '16px',
+                                    lineHeight: '26px',
+                                    letterSpacing: '0%',
+                                    color: '#000000',
+                                  }}
+                                  className="truncate"
+                                >
+                                  {formatDate(tx.createdAt)}
+                                </div>
+
+                                {/* Earning */}
+                                <div className="flex items-center gap-1.5 min-w-0">
+                                  <img
+                                    src="/coins/coinofaffliation.png"
+                                    alt="Coin"
+                                    className="w-[18px] h-[18px] object-contain shrink-0"
+                                  />
+                                  <span
+                                    style={{
+                                      fontFamily: '"Poppins", sans-serif',
+                                      fontWeight: 600,
+                                      fontSize: '16px',
+                                      lineHeight: '26px',
+                                      letterSpacing: '0%',
+                                      color: 'rgba(190, 146, 0, 1)',
+                                    }}
+                                    className="truncate"
+                                  >
+                                    {formatCoinAmount(earningVal)}
+                                  </span>
+                                </div>
+
+                                {/* Comms */}
+                                <div className="flex items-center gap-1.5 min-w-0">
+                                  <img
+                                    src="/coins/coinofaffliation.png"
+                                    alt="Coin"
+                                    className="w-[18px] h-[18px] object-contain shrink-0"
+                                  />
+                                  <span
+                                    style={{
+                                      fontFamily: '"Poppins", sans-serif',
+                                      fontWeight: 600,
+                                      fontSize: '16px',
+                                      lineHeight: '26px',
+                                      letterSpacing: '0%',
+                                      color: 'rgba(190, 146, 0, 1)',
+                                    }}
+                                    className="truncate"
+                                  >
+                                    {formatCoinAmount(commVal)}
+                                  </span>
+                                </div>
+
+                                {/* Release In */}
+                                <div className="text-right sm:text-left sm:pl-4">
+                                  <span
+                                    className="inline-flex items-center justify-center shrink-0"
+                                    style={{
+                                      height: '33px',
+                                      borderRadius: '40px',
+                                      paddingTop: '11px',
+                                      paddingRight: '18px',
+                                      paddingBottom: '11px',
+                                      paddingLeft: '18px',
+                                      gap: '8px',
+                                      background: 'rgba(36, 50, 77, 1)',
+                                      color: '#FFFFFF',
+                                      fontFamily: '"Poppins", sans-serif',
+                                      fontWeight: 500,
+                                      fontSize: '16px',
+                                      lineHeight: '100%',
+                                      letterSpacing: '0%',
+                                      boxSizing: 'border-box',
+                                      opacity: 1,
+                                      whiteSpace: 'nowrap',
+                                    }}
+                                  >
+                                    {calculateReleaseIn(tx.releaseDate)}
+                                  </span>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* Pagination at the bottom of the section */}
+            {activeTab === 'recent' && referrals.dataList.length > 0 && (
+              <Pagination
+                page={referrals.page}
+                totalPages={referrals.totalPages || 1}
+                onNext={referrals.nextPage}
+                onPrev={referrals.prevPage}
+              />
+            )}
+            {activeTab === 'users' && referredUsersData.users.length > 0 && (
+              <Pagination
+                page={referredUsersData.page}
+                totalPages={referredUsersData.totalPages || 1}
+                onNext={referredUsersData.nextPage}
+                onPrev={referredUsersData.prevPage}
+              />
+            )}
+            {activeTab === 'pending' && currentPendingHolds.length > 0 && (
+              <Pagination
+                page={pendingPage}
+                totalPages={totalPendingPages || 1}
+                onNext={() => setPendingPage((p) => Math.min(totalPendingPages, p + 1))}
+                onPrev={() => setPendingPage((p) => Math.max(1, p - 1))}
+              />
+            )}
           </div>
         </div>
       </motion.div>

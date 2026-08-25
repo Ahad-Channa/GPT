@@ -1,21 +1,13 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import DashboardLayout from '../components/layout/DashboardLayout';
 import { useAuth } from '../contexts/AuthContext';
 import WithdrawalModal from '../components/wallet/WithdrawalModal';
 import MyBooksSection from '../components/wallet/MyBooksSection';
-
-import { formatCoins } from '../config/platform';
 import CoinDisplay from '../components/CoinDisplay';
-import CoinIcon from '../components/CoinIcon';
-import {
-  FiArrowRight,
-  FiGift,
-  FiCheck,
-  FiAlertCircle,
-} from 'react-icons/fi';
-import { FaPaypal, FaAmazon } from 'react-icons/fa';
+import { FiCheck, FiFeather, FiTruck } from 'react-icons/fi';
+import { FaPaypal } from 'react-icons/fa';
 import { SiLitecoin, SiNetflix, SiGoogleplay } from 'react-icons/si';
 
 const container = { hidden: {}, show: { transition: { staggerChildren: 0.07 } } };
@@ -27,7 +19,7 @@ const PromoCodeRedeem = ({ onSuccess }) => {
   const [loading, setLoading] = useState(false);
   const [popup, setPopup] = useState(null); // { type: 'success'|'error', text: '' }
 
-  // Lock scroll when popup is open — only button can close it
+  // Lock scroll when popup is open
   useEffect(() => {
     if (!popup) return;
     document.body.style.overflow = 'hidden';
@@ -75,33 +67,118 @@ const PromoCodeRedeem = ({ onSuccess }) => {
 
   return (
     <>
-      <motion.div variants={item} className="flex flex-col md:flex-row items-start md:items-center justify-between w-full rounded-[20px] p-[20px] bg-[#242424] shrink-0 gap-[18px] relative border border-white/[0.04]">
-        <div className="flex flex-col gap-[6px] w-full md:w-[591px] h-auto shrink-0 justify-between">
-          <h2 className="m-0 p-0 font-bold font-['Barlow_Condensed'] text-[28px] md:text-[34px] leading-[120%] text-white w-full h-auto flex items-center shrink-0">
+      <motion.div
+        variants={item}
+        className="w-full flex flex-col justify-between shrink-0 shadow-sm"
+        style={{
+          width: '100%',
+          maxWidth: '1328px',
+          minHeight: '212px',
+          borderRadius: '30px',
+          background: 'rgba(249, 247, 241, 1)',
+          paddingTop: '36px',
+          paddingRight: '28px',
+          paddingBottom: '39px',
+          paddingLeft: '30px',
+          gap: '25px',
+          boxSizing: 'border-box',
+          opacity: 1,
+        }}
+      >
+        <div
+          className="flex flex-col justify-center"
+          style={{
+            width: '100%',
+            maxWidth: '331px',
+            height: '46px',
+            gap: '16px',
+            boxSizing: 'border-box',
+            opacity: 1,
+          }}
+        >
+          <h2
+            style={{
+              fontFamily: '"Bricolage Grotesque", sans-serif',
+              fontWeight: 700,
+              fontSize: '30px',
+              lineHeight: '20px',
+              letterSpacing: '-0.02em',
+              color: '#000000',
+              width: '100%',
+              maxWidth: '298px',
+              height: '20px',
+              display: 'flex',
+              alignItems: 'center',
+              margin: 0,
+              padding: 0,
+              opacity: 1,
+            }}
+          >
             Redeem Promo Code
           </h2>
-          <p className="m-0 p-0 font-medium font-['Barlow_Condensed'] text-[18px] md:text-[22px] leading-[130%] text-[#888888] w-full h-auto flex items-center shrink-0">
+          <p
+            style={{
+              fontFamily: '"Poppins", sans-serif',
+              fontWeight: 500,
+              fontSize: '14px',
+              lineHeight: '10px',
+              letterSpacing: '0%',
+              color: '#000000',
+              width: '100%',
+              maxWidth: '331px',
+              height: '10px',
+              display: 'flex',
+              alignItems: 'center',
+              margin: 0,
+              padding: 0,
+              opacity: 1,
+            }}
+          >
             Have a code? Enter it below to claim free coins.
           </p>
         </div>
 
-        <form onSubmit={handleRedeem} className="flex items-center w-full md:w-[591px] md:h-[80px] bg-[rgba(255,255,255,0.08)] border border-[#49B265] rounded-[10px] p-[10px] md:p-[16px] justify-between gap-[10px] shrink-0">
+        <form
+          onSubmit={handleRedeem}
+          className="w-full flex items-center justify-between shadow-none border-none outline-none"
+          style={{
+            width: '100%',
+            maxWidth: '1270px',
+            height: '66px',
+            borderRadius: '50px',
+            paddingTop: '8px',
+            paddingRight: '10px',
+            paddingBottom: '9px',
+            paddingLeft: '25px',
+            background: 'rgba(255, 255, 255, 1)',
+            justifyContent: 'space-between',
+            boxSizing: 'border-box',
+            opacity: 1,
+          }}
+        >
           <input
             type="text"
             value={code}
             onChange={(e) => setCode(e.target.value.toUpperCase())}
-            placeholder="Enter code here..."
-            className="w-full md:w-[466px] h-auto md:h-[20px] bg-transparent text-white placeholder-white/50 font-medium font-['Barlow_Condensed'] text-[18px] md:text-[22px] leading-[20px] align-middle focus:outline-none border-none p-0 uppercase"
+            placeholder="Enter code here"
+            className="w-full bg-transparent border-none outline-none p-0 uppercase placeholder:text-black/56"
+            style={{
+              fontFamily: '"Poppins", sans-serif',
+              fontWeight: 400,
+              fontSize: '14px',
+              lineHeight: '20px',
+              letterSpacing: '0%',
+              color: 'rgba(0, 0, 0, 1)',
+            }}
             disabled={loading}
           />
           <button
             type="submit"
             disabled={loading || !code.trim()}
-            className="flex items-center justify-center w-auto md:w-[93px] h-[40px] md:h-[48px] rounded-[10px] gap-[10px] py-[10px] px-[16px] md:px-[20px] bg-[#49B265] shadow-[0_4px_0_0_#276D3A] hover:bg-[#49B265]/90 hover:translate-y-[1px] hover:shadow-[0_3px_0_0_#276D3A] active:translate-y-[4px] active:shadow-none transition-all disabled:opacity-50 disabled:translate-y-0 disabled:shadow-[0_4px_0_0_#276D3A] shrink-0"
+            className="h-[44px] sm:h-[48px] px-8 sm:px-10 rounded-full bg-[#1E2538] hover:bg-[#151b29] text-white font-semibold text-[15px] flex items-center justify-center shrink-0 transition-all disabled:opacity-40 cursor-pointer disabled:cursor-not-allowed shadow-sm"
+            style={{ fontFamily: '"Poppins", sans-serif' }}
           >
-            <span className="font-bold font-['Barlow_Condensed'] text-[16px] md:text-[18px] leading-none text-white whitespace-nowrap">
-              {loading ? '...' : 'Redeem'}
-            </span>
+            {loading ? '...' : 'Redeem'}
           </button>
         </form>
       </motion.div>
@@ -121,28 +198,35 @@ const PromoCodeRedeem = ({ onSuccess }) => {
                 animate={{ scale: 1, opacity: 1 }}
                 exit={{ scale: 0.95, opacity: 0 }}
                 onClick={(e) => e.stopPropagation()}
-                className="flex flex-col items-center justify-center w-full max-w-[500px] h-auto md:h-[339px] bg-[#242424] rounded-[20px] p-[16px] border border-white/[0.08] shadow-2xl relative gap-[20px]"
+                className="flex flex-col items-center justify-center w-full max-w-[480px] bg-white rounded-[24px] p-8 border border-gray-100 shadow-2xl relative gap-5"
               >
                 <div
                   className="flex items-center justify-center rounded-full shrink-0"
                   style={{
-                    width: 72, height: 72,
-                    background: popup.type === 'success' ? 'rgba(73,178,101,0.15)' : 'transparent',
+                    width: 72,
+                    height: 72,
+                    background: popup.type === 'success' ? 'rgba(73,178,101,0.15)' : 'rgba(239, 68, 68, 0.1)',
                   }}
                 >
                   {popup.type === 'success' ? (
                     <FiCheck size={36} className="text-[#49B265]" />
                   ) : (
-                    <img src="/coins/war2.png" alt="Error" className="w-[64px] h-[64px] object-contain" />
+                    <img src="/coins/war2.png" alt="Error" className="w-[48px] h-[48px] object-contain" />
                   )}
                 </div>
 
                 {/* Title */}
-                <div className="flex flex-col items-center gap-[8px] w-full px-4">
-                  <h2 className="m-0 p-0 font-bold font-['Barlow_Condensed'] text-[28px] md:text-[34px] leading-[120%] text-white text-center">
+                <div className="flex flex-col items-center gap-2 w-full px-4 text-center">
+                  <h2
+                    className="m-0 p-0 font-bold text-[26px] text-[#0E0F0C]"
+                    style={{ fontFamily: '"Bricolage Grotesque", sans-serif' }}
+                  >
                     {popup.type === 'success' ? 'Code Redeemed!' : 'Redemption Failed'}
                   </h2>
-                  <p className="m-0 p-0 font-medium font-['Barlow_Condensed'] text-[18px] md:text-[22px] leading-[130%] text-[#888888] text-center">
+                  <p
+                    className="m-0 p-0 font-medium text-[15px] text-[#71717A]"
+                    style={{ fontFamily: '"Poppins", sans-serif' }}
+                  >
                     {popup.type === 'success'
                       ? <span className="flex items-center justify-center gap-2">+<CoinDisplay amount={popup.coins} size={18} /> added to your wallet!</span>
                       : popup.text}
@@ -152,11 +236,10 @@ const PromoCodeRedeem = ({ onSuccess }) => {
                 {/* Close button */}
                 <button
                   onClick={() => setPopup(null)}
-                  className="flex items-center justify-center w-full max-w-[468px] h-[48px] rounded-[10px] gap-[10px] px-[30px] py-[10px] bg-[#49B265] shadow-[0_4px_0_0_#276D3A] hover:bg-[#49B265]/90 hover:translate-y-[1px] hover:shadow-[0_3px_0_0_#276D3A] active:translate-y-[4px] active:shadow-none transition-all"
+                  className="flex items-center justify-center w-full h-[48px] rounded-full bg-[#1E2538] hover:bg-[#151b29] text-white font-semibold text-[15px] transition-all mt-2 cursor-pointer"
+                  style={{ fontFamily: '"Poppins", sans-serif' }}
                 >
-                  <span className="font-bold font-['Barlow_Condensed'] text-[18px] leading-none text-white">
-                    {popup.type === 'success' ? 'Awesome!' : 'Try Again'}
-                  </span>
+                  {popup.type === 'success' ? 'Awesome!' : 'Try Again'}
                 </button>
               </motion.div>
             </motion.div>
@@ -167,11 +250,6 @@ const PromoCodeRedeem = ({ onSuccess }) => {
     </>
   );
 };
-
-
-
-
-
 
 const Wallet = () => {
   const { currentUser, mongoUser, setMongoUser } = useAuth();
@@ -184,8 +262,6 @@ const Wallet = () => {
   const [books, setBooks] = useState([]);
   const [booksVisible, setBooksVisible] = useState(false);
   const [booksLoading, setBooksLoading] = useState(true);
-
-
 
   // Load wallet settings (fee %, methods, live rate)
   useEffect(() => {
@@ -248,210 +324,513 @@ const Wallet = () => {
     setShowWithdraw(true);
   };
 
-  const scrollToBooks = () => {
-    document.getElementById('my-books-section')?.scrollIntoView({ behavior: 'smooth' });
-  };
-
   return (
-    <DashboardLayout>
-      <motion.div variants={container} initial="hidden" animate="show" className="space-y-8 max-w-[1240px] mx-auto w-full px-4 md:px-0">
-
-        {/* ── Page Header ───────────────────────────────────────── */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 md:mb-8 relative w-full shrink-0">
-          <div className="flex flex-col gap-[6px] relative z-10">
-            <h1 className="m-0 p-0 font-bold text-[36px] sm:text-[48px] md:text-[68px] leading-[120%] text-white font-['Barlow_Condensed'] whitespace-nowrap">Withdraw</h1>
-            <p className="m-0 p-0 font-medium text-[16px] sm:text-[20px] md:text-[26px] leading-[130%] text-[#888888] font-['Barlow_Condensed']">Choose your preferred withdrawal method and convert your coins into real rewards.</p>
-          </div>
-          <div className="hidden md:block absolute right-[-3px] -top-[36px] opacity-100 pointer-events-none w-[317px] h-[226px] z-0">
-            <img
-              src="/coins/withdarwhero.png"
-              alt="Wallet Illustration"
-              className="absolute inset-0 w-full h-full object-contain object-right z-10 drop-shadow-2xl"
-              onError={(e) => e.target.style.display = 'none'}
-            />
-          </div>
-        </div>
-
-        {/* ── Balance Hero Card ─────────────────────────────────── */}
-        <motion.div variants={item} className="relative overflow-hidden rounded-[20px] bg-[#242424] py-[20px] px-[20px] md:py-[30px] md:px-[40px] flex items-center justify-between gap-[20px] md:gap-[40px] w-full h-auto md:h-[138px] backdrop-blur-[94px] shrink-0 border border-white/[0.04]">
-          <p className="w-auto h-auto m-0 p-0 text-white font-bold font-['Barlow_Condensed'] text-[24px] md:text-[28px] leading-[130%] uppercase whitespace-nowrap">
-            Your Balance
-          </p>
-          <div className="flex flex-col items-end justify-center w-auto h-auto gap-[10px] md:gap-[18px] shrink-0">
-            <div className="flex items-center w-auto h-[36px] md:h-[44px] gap-[6px] shrink-0 overflow-visible">
-              <img src="/coins/Coin.png" alt="Coin" className="w-[36px] h-[36px] md:w-[44px] md:h-[44px] shrink-0 object-contain" />
-              <p
-                className="w-auto h-auto m-0 p-0 font-bold font-['Barlow_Condensed'] text-[42px] md:text-[60px] leading-none tracking-normal whitespace-nowrap flex items-center shrink-0 pb-[4px] md:pb-[6px]"
+    <DashboardLayout showLiveBar={true} fullWidth={true}>
+      <div className="w-full min-h-[calc(100vh-200px)] flex flex-col items-center">
+        {/* ─── Top Banner Area (Warm Background: rgba(249, 247, 241, 1)) ─── */}
+        <div
+          className="w-full flex justify-center items-center transition-colors duration-300"
+          style={{
+            background: 'rgba(249, 247, 241, 1)',
+            minHeight: '248px',
+            opacity: 1,
+            transform: 'rotate(0deg)',
+          }}
+        >
+          <div
+            className="w-full mx-auto px-4 md:px-0 py-6 sm:py-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-6"
+            style={{
+              maxWidth: '960px',
+              minHeight: '165px',
+              boxSizing: 'border-box',
+            }}
+          >
+            {/* Title & Description */}
+            <div
+              className="flex flex-col justify-center"
+              style={{
+                width: '100%',
+                maxWidth: '354px',
+                minHeight: '70px',
+                gap: '16px',
+                opacity: 1,
+                boxSizing: 'border-box',
+              }}
+            >
+              <h1
                 style={{
-                  backgroundImage: 'linear-gradient(180deg, #FEDF77 0%, #FCB91E 100%)',
-                  WebkitBackgroundClip: 'text',
-                  backgroundClip: 'text',
-                  color: 'transparent'
+                  fontFamily: '"Bricolage Grotesque", sans-serif',
+                  fontWeight: 700,
+                  fontSize: '27px',
+                  lineHeight: '18px',
+                  letterSpacing: '-0.02em',
+                  color: '#000000',
+                  margin: 0,
+                  padding: 0,
                 }}
               >
-                {balance.toLocaleString()}
+                Withdraw
+              </h1>
+              <p
+                style={{
+                  fontFamily: '"Poppins", sans-serif',
+                  fontWeight: 500,
+                  fontSize: '14px',
+                  lineHeight: '26px',
+                  letterSpacing: '0%',
+                  color: '#000000',
+                  margin: 0,
+                  padding: 0,
+                  maxWidth: '354px',
+                }}
+              >
+                Choose your preferred withdrawal method and convert your coins into real rewards.
               </p>
             </div>
-            {settings && (
-              <div className="flex items-center gap-1 font-semibold font-['Barlow_Condensed'] text-[20px] uppercase tracking-wide">
-                <div className="flex items-center w-[52px] h-[16px] gap-[3px]">
+
+            {/* Your Balance Card */}
+            <motion.div
+              variants={item}
+              className="bg-white shadow-sm flex flex-col shrink-0"
+              style={{
+                width: '100%',
+                maxWidth: '402px',
+                height: '165px',
+                borderRadius: '20px',
+                padding: '5px',
+                boxSizing: 'border-box',
+                opacity: 1,
+              }}
+            >
+              {/* Header Ribbon / Pill */}
+              <div
+                className="flex items-center"
+                style={{
+                  width: '100%',
+                  maxWidth: '392px',
+                  height: '50px',
+                  borderRadius: '14px',
+                  background: 'rgba(36, 50, 77, 0.08)',
+                  paddingLeft: '16px',
+                  gap: '10px',
+                  boxSizing: 'border-box',
+                  opacity: 1,
+                }}
+              >
+                <span
+                  style={{
+                    fontFamily: '"Bricolage Grotesque", sans-serif',
+                    fontWeight: 700,
+                    fontSize: '15px',
+                    lineHeight: '10px',
+                    letterSpacing: '-0.02em',
+                    color: '#24324D',
+                    minWidth: '93px',
+                    height: '10px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    opacity: 1,
+                  }}
+                >
+                  Your Balance
+                </span>
+              </div>
+
+              {/* Balance & Rate Details (Vertically Centered in remaining space, slightly above) */}
+              <div className="flex-1 flex flex-col items-center justify-center gap-3.5 -translate-y-[4px]">
+                <div
+                  className="flex items-center justify-center gap-1.5"
+                  style={{
+                    height: '27px',
+                    opacity: 1,
+                  }}
+                >
                   <img
-                    src="/coins/Coin.png"
+                    src="/coins/withdraw coin.png"
                     alt="Coin"
-                    className="w-[16px] h-[16px] object-contain"
+                    className="w-[24px] h-[24px] object-contain shrink-0"
                   />
                   <span
                     style={{
-                      backgroundImage: 'linear-gradient(180deg, #FEDF77 0%, #FCB91E 100%)',
-                      WebkitBackgroundClip: 'text',
-                      backgroundClip: 'text',
-                      color: 'transparent'
+                      fontFamily: '"Bricolage Grotesque", sans-serif',
+                      fontWeight: 700,
+                      fontSize: '41px',
+                      lineHeight: '27px',
+                      letterSpacing: '-0.02em',
+                      color: '#D99806',
+                      height: '27px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      opacity: 1,
                     }}
                   >
-                    {settings.coinsPerUSD.toLocaleString()}
+                    {balance.toLocaleString('en-US')}
                   </span>
                 </div>
-                <span className="text-white ml-1">= 1 USD</span>
+                <div
+                  className="flex items-center justify-center gap-1.5 mt-0.5"
+                  style={{
+                    minWidth: '103px',
+                    height: '11px',
+                    opacity: 1,
+                  }}
+                >
+                  <img
+                    src="/coins/procoinicon.png"
+                    alt="Coin"
+                    className="w-[12px] h-[12px] object-contain shrink-0"
+                  />
+                  <span
+                    style={{
+                      fontFamily: '"Poppins", sans-serif',
+                      fontWeight: 500,
+                      fontSize: '16px',
+                      lineHeight: '28px',
+                      letterSpacing: '0%',
+                      color: '#D99806',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '4px',
+                    }}
+                  >
+                    {settings?.coinsPerUSD ? settings.coinsPerUSD.toLocaleString('en-US') : '1,000'}
+                    <span style={{ color: '#000000' }}>= 1 USD</span>
+                  </span>
+                </div>
               </div>
-            )}
+            </motion.div>
           </div>
-        </motion.div>
+        </div>
 
-        {/* ── Withdrawal Options ───────────────────────────────────── */}
-        <motion.div variants={item} className="flex flex-col md:flex-row justify-start gap-[20px] w-full shrink-0">
+        {/* ── Main Content Area ───────────────────────────────────────── */}
+        <motion.div
+          variants={container}
+          initial="hidden"
+          animate="show"
+          className="w-full max-w-[1328px] mx-auto px-4 md:px-8 lg:px-0 py-8 sm:py-10 flex flex-col gap-8"
+        >
 
-          {/* Card 1: PayPal & Litecoin */}
-          <div className="bg-white/[0.14] rounded-[20px] p-[20px] flex flex-col gap-[18px] w-full md:w-[400px] md:h-[445px] hover:bg-white/[0.18] transition-colors shrink-0">
-            <div className="flex justify-center w-full">
-              <img src="/coins/paylite.png" alt="PayPal and Litecoin" className="w-[249px] h-[126px] object-contain" />
-            </div>
-            <div className="flex flex-col w-full md:w-[360px] h-auto md:h-[105px] gap-[6px]">
-              <h3 className="w-full h-auto m-0 p-0 font-bold font-['Barlow_Condensed'] text-[28px] md:text-[34px] leading-[120%] text-white">
-                PayPal & Litecoin
-              </h3>
-              <p className="w-full h-auto m-0 p-0 font-medium font-['Barlow_Condensed'] text-[18px] md:text-[22px] leading-[130%] text-[#888888]">
-                Withdraw your earnings to your PayPal account or Litecoin wallet.
-              </p>
-            </div>
-
-            <div className="flex flex-col w-full h-auto gap-[14px]">
-              <div className="flex items-center w-full gap-[18px]">
-                <img src="/coins/paypal.png" alt="PayPal" className="w-[24px] h-[24px] object-contain" />
-                <span className="w-auto h-auto m-0 p-0 font-medium font-['Barlow_Condensed'] text-[18px] md:text-[22px] leading-[130%] text-white">
-                  PayPal
-                </span>
-              </div>
-              <div className="flex items-center w-full gap-[18px]">
-                <img src="/coins/litecoin.png" alt="Litecoin" className="w-[24px] h-[24px] object-contain" />
-                <span className="w-auto h-auto m-0 p-0 font-medium font-['Barlow_Condensed'] text-[18px] md:text-[22px] leading-[130%] text-white">
-                  Litecoin
-                </span>
-              </div>
-            </div>
-
-            <button
-              onClick={() => handleOpenWithdrawal('paypal_litecoin')}
-              disabled={settingsLoad}
-              className="flex items-center justify-center w-full h-[48px] gap-[10px] rounded-[10px] px-[30px] py-[10px] bg-[#49B265] shadow-[0_4px_0_0_#276D3A] hover:bg-[#49B265]/90 hover:translate-y-[1px] hover:shadow-[0_3px_0_0_#276D3A] active:translate-y-[4px] active:shadow-none transition-all mt-auto shrink-0"
+          {/* ── Withdrawal Options Cards (3 Columns) ────────────────────── */}
+          <motion.div
+            variants={item}
+            className="flex flex-col lg:flex-row items-center lg:items-stretch justify-center w-full mx-auto"
+            style={{
+              width: '100%',
+              maxWidth: '1327px',
+              minHeight: '462px',
+              gap: '23px',
+              opacity: 1,
+            }}
+          >
+            {/* Card 1: PayPal & Litecoin */}
+            <div
+              className="flex flex-col justify-between shrink-0 shadow-sm"
+              style={{
+                width: '100%',
+                maxWidth: '427px',
+                height: '462px',
+                borderRadius: '30px',
+                background: 'rgba(249, 247, 241, 1)',
+                padding: '6px 6px 20px 6px',
+                boxSizing: 'border-box',
+                opacity: 1,
+              }}
             >
-              <span className="m-0 p-0 font-bold font-['Barlow_Condensed'] text-[18px] leading-none text-white whitespace-nowrap">
-                Withdraw Now
-              </span>
-              <img src="/coins/ar.png" alt="Arrow" className="w-[24px] h-[24px] object-contain" />
-            </button>
-          </div>
+              <div className="flex flex-col">
+                {/* Banner Area Image */}
+                <div
+                  className="w-full flex items-center justify-center overflow-hidden"
+                  style={{
+                    width: '100%',
+                    maxWidth: '416px',
+                    height: '252px',
+                    borderRadius: '24px',
+                    opacity: 1,
+                  }}
+                >
+                  <img
+                    src="/coins/paypalbox1.png"
+                    alt="PayPal & Litecoin"
+                    className="w-full h-full object-contain"
+                  />
+                </div>
 
-          {/* Card 2: Gift Cards */}
-          <div className="bg-white/[0.14] rounded-[20px] p-[20px] flex flex-col gap-[18px] w-full md:w-[400px] md:h-[445px] hover:bg-white/[0.18] transition-colors shrink-0">
-            <div className="flex justify-center w-full">
-              <img src="/coins/giftcard.png" alt="Gift Cards" className="w-[330px] h-[126px] object-contain" />
-            </div>
-            <div className="flex flex-col w-full h-auto md:h-[105px] gap-[6px]">
-              <h3 className="w-full h-auto m-0 p-0 font-bold font-['Barlow_Condensed'] text-[28px] md:text-[34px] leading-[120%] text-white">
-                Gift Cards
-              </h3>
-              <p className="w-full h-auto m-0 p-0 font-medium font-['Barlow_Condensed'] text-[18px] md:text-[22px] leading-[130%] text-[#888888]">
-                Choose from a variety of popular gift cards and treat yourself.
-              </p>
+                {/* Content */}
+                <div className="px-3.5 mt-3">
+                  <h3
+                    style={{
+                      fontFamily: '"Bricolage Grotesque", sans-serif',
+                      fontWeight: 700,
+                      fontSize: '26px',
+                      lineHeight: '17px',
+                      letterSpacing: '-0.02em',
+                      color: '#0E0F0C',
+                      width: '100%',
+                      maxWidth: '379px',
+                      height: '17px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      margin: 0,
+                      padding: 0,
+                      opacity: 1,
+                    }}
+                  >
+                    PayPal & Litecoin
+                  </h3>
+                  <p
+                    style={{
+                      fontFamily: '"Poppins", sans-serif',
+                      fontWeight: 500,
+                      fontSize: '14px',
+                      lineHeight: '25px',
+                      letterSpacing: '0%',
+                      color: '#71717A',
+                      width: '100%',
+                      maxWidth: '296px',
+                      minHeight: '35px',
+                      margin: 0,
+                      padding: 0,
+                      marginTop: '12px',
+                      opacity: 1,
+                    }}
+                  >
+                    Withdraw your earnings to your PayPal account or Litecoin wallet.
+                  </p>
+                </div>
+              </div>
+
+              {/* Action Button */}
+              <div className="w-full flex justify-center px-3.5">
+                <button
+                  onClick={() => handleOpenWithdrawal('paypal_litecoin')}
+                  disabled={settingsLoad}
+                  className="w-full flex items-center justify-center transition-colors cursor-pointer bg-white text-black hover:bg-[#24324D] hover:text-white active:bg-[#24324D] active:text-white disabled:opacity-50 shadow-none border-none outline-none"
+                  style={{
+                    maxWidth: '379px',
+                    height: '49px',
+                    borderRadius: '80px',
+                    padding: '19px 28px',
+                    gap: '10px',
+                    fontFamily: '"Poppins", sans-serif',
+                    fontWeight: 600,
+                    fontSize: '15px',
+                    boxSizing: 'border-box',
+                    opacity: 1,
+                  }}
+                >
+                  Withdraw Now
+                </button>
+              </div>
             </div>
 
-            <div className="flex items-center w-full h-auto gap-[8px] overflow-hidden">
-              <div className="flex items-center justify-center flex-1 h-[60px] rounded-[10px] border border-white/[0.22] bg-[#111111] shrink-0">
-                <img src="/coins/amazon.png" alt="Amazon" className="w-[86px] h-[24px] object-contain" />
-              </div>
-              <div className="flex items-center justify-center flex-1 h-[60px] rounded-[10px] border border-white/[0.22] bg-[#111111] shrink-0">
-                <img src="/coins/netflix.png" alt="Netflix" className="w-[86px] h-[24px] object-contain" />
-              </div>
-              <div className="flex items-center justify-center flex-1 h-[60px] rounded-[10px] border border-white/[0.22] bg-[#111111] shrink-0">
-                <span className="w-auto h-auto m-0 p-0 text-white font-medium font-['Barlow_Condensed'] text-[18px] md:text-[22px] leading-[130%] whitespace-nowrap text-center">
-                  +5 More
-                </span>
-              </div>
-            </div>
-
-            <button
-              onClick={() => handleOpenWithdrawal('giftcards')}
-              disabled={settingsLoad}
-              className="flex items-center justify-center w-full h-[48px] gap-[10px] rounded-[10px] px-[30px] py-[10px] bg-[#49B265] shadow-[0_4px_0_0_#276D3A] hover:bg-[#49B265]/90 hover:translate-y-[1px] hover:shadow-[0_3px_0_0_#276D3A] active:translate-y-[4px] active:shadow-none transition-all mt-auto shrink-0"
+            {/* Card 2: Gift Cards */}
+            <div
+              className="flex flex-col justify-between shrink-0 shadow-sm"
+              style={{
+                width: '100%',
+                maxWidth: '427px',
+                height: '462px',
+                borderRadius: '30px',
+                background: 'rgba(249, 247, 241, 1)',
+                padding: '6px 6px 20px 6px',
+                boxSizing: 'border-box',
+                opacity: 1,
+              }}
             >
-              <span className="m-0 p-0 font-bold font-['Barlow_Condensed'] text-[18px] leading-none text-white whitespace-nowrap">
-                Withdraw Now
-              </span>
-              <img src="/coins/ar.png" alt="Arrow" className="w-[24px] h-[24px] object-contain" />
-            </button>
-          </div>
-
-          {/* Card 3: Your Books */}
-          {booksVisible && (
-            <div className="bg-white/[0.14] rounded-[20px] p-[20px] flex flex-col gap-[18px] w-full md:w-[400px] md:h-[445px] hover:bg-white/[0.18] transition-colors shrink-0">
-              <div className="flex justify-center w-full">
-                <img src="/coins/books.png" alt="Your Books" className="w-[321px] h-[126px] object-contain" />
-              </div>
-              <div className="flex flex-col w-full h-auto gap-[6px]">
-                <h3 className="w-full h-auto m-0 p-0 font-bold font-['Barlow_Condensed'] text-[28px] md:text-[34px] leading-[120%] text-white">
-                  Your Books
-                </h3>
-                <p className="w-full h-auto m-0 p-0 font-medium font-['Barlow_Condensed'] text-[18px] md:text-[22px] leading-[130%] text-[#888888]">
-                  Redeem your coins for my books. Personally signed - only in Germany.
-                </p>
-              </div>
-
-              <div className="flex flex-col w-full h-auto gap-[14px]">
-                <div className="flex items-center w-full gap-[18px]">
-                  <img src="/coins/signature.png" alt="Signature" className="w-[26px] h-[26px] object-contain shrink-0" />
-                  <span className="h-auto m-0 p-0 font-medium font-['Barlow_Condensed'] text-[18px] md:text-[22px] leading-[130%] text-white">
-                    Personal signature possible
-                  </span>
+              <div className="flex flex-col">
+                {/* Banner Area Image */}
+                <div
+                  className="w-full flex items-center justify-center overflow-hidden"
+                  style={{
+                    width: '100%',
+                    maxWidth: '416px',
+                    height: '252px',
+                    borderRadius: '24px',
+                    opacity: 1,
+                  }}
+                >
+                  <img
+                    src="/coins/giftcardbox2.png"
+                    alt="Gift Cards"
+                    className="w-full h-full object-contain"
+                  />
                 </div>
-                <div className="flex items-center w-full gap-[18px]">
-                  <img src="/coins/truck.png" alt="Truck" className="w-[26px] h-[26px] object-contain shrink-0" />
-                  <span className="h-auto m-0 p-0 font-medium font-['Barlow_Condensed'] text-[18px] md:text-[22px] leading-[130%] text-white">
-                    Shipping only within Germany
-                  </span>
+
+                {/* Content */}
+                <div className="px-3.5 mt-3">
+                  <h3
+                    style={{
+                      fontFamily: '"Bricolage Grotesque", sans-serif',
+                      fontWeight: 700,
+                      fontSize: '26px',
+                      lineHeight: '17px',
+                      letterSpacing: '-0.02em',
+                      color: '#0E0F0C',
+                      width: '100%',
+                      maxWidth: '379px',
+                      height: '17px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      margin: 0,
+                      padding: 0,
+                      opacity: 1,
+                    }}
+                  >
+                    Gift Cards
+                  </h3>
+                  <p
+                    style={{
+                      fontFamily: '"Poppins", sans-serif',
+                      fontWeight: 500,
+                      fontSize: '14px',
+                      lineHeight: '25px',
+                      letterSpacing: '0%',
+                      color: '#71717A',
+                      width: '100%',
+                      maxWidth: '296px',
+                      minHeight: '35px',
+                      margin: 0,
+                      padding: 0,
+                      marginTop: '12px',
+                      opacity: 1,
+                    }}
+                  >
+                    Choose from a variety of popular gift cards and treat yourself.
+                  </p>
                 </div>
               </div>
 
-              <button
-                onClick={() => setShowBookSelector(true)}
-                className="flex items-center justify-center w-full h-[48px] gap-[10px] rounded-[10px] px-[30px] py-[10px] bg-[#49B265] shadow-[0_4px_0_0_#276D3A] hover:bg-[#49B265]/90 hover:translate-y-[1px] hover:shadow-[0_3px_0_0_#276D3A] active:translate-y-[4px] active:shadow-none transition-all mt-auto shrink-0"
-              >
-                <span className="m-0 p-0 font-bold font-['Barlow_Condensed'] text-[18px] leading-none text-white whitespace-nowrap">
-                  Order Now
-                </span>
-                <img src="/coins/ar.png" alt="Arrow" className="w-[24px] h-[24px] object-contain" />
-              </button>
+              {/* Action Button */}
+              <div className="w-full flex justify-center px-3.5">
+                <button
+                  onClick={() => handleOpenWithdrawal('giftcards')}
+                  disabled={settingsLoad}
+                  className="w-full flex items-center justify-center transition-colors cursor-pointer bg-white text-black hover:bg-[#24324D] hover:text-white active:bg-[#24324D] active:text-white disabled:opacity-50 shadow-none border-none outline-none"
+                  style={{
+                    maxWidth: '379px',
+                    height: '49px',
+                    borderRadius: '80px',
+                    padding: '19px 28px',
+                    gap: '10px',
+                    fontFamily: '"Poppins", sans-serif',
+                    fontWeight: 600,
+                    fontSize: '15px',
+                    boxSizing: 'border-box',
+                    opacity: 1,
+                  }}
+                >
+                  Withdraw Now
+                </button>
+              </div>
             </div>
-          )}
 
+            {/* Card 3: Your Books */}
+            <div
+              className="flex flex-col justify-between shrink-0 shadow-sm"
+              style={{
+                width: '100%',
+                maxWidth: '427px',
+                height: '462px',
+                borderRadius: '30px',
+                background: 'rgba(249, 247, 241, 1)',
+                padding: '6px 6px 20px 6px',
+                boxSizing: 'border-box',
+                opacity: 1,
+              }}
+            >
+              <div className="flex flex-col">
+                {/* Banner Area Image */}
+                <div
+                  className="w-full flex items-center justify-center overflow-hidden"
+                  style={{
+                    width: '100%',
+                    maxWidth: '416px',
+                    height: '252px',
+                    borderRadius: '24px',
+                    opacity: 1,
+                  }}
+                >
+                  <img
+                    src="/coins/bookcardbox3.png"
+                    alt="Your Books"
+                    className="w-full h-full object-contain"
+                  />
+                </div>
+
+                {/* Content */}
+                <div className="px-3.5 mt-3">
+                  <h3
+                    style={{
+                      fontFamily: '"Bricolage Grotesque", sans-serif',
+                      fontWeight: 700,
+                      fontSize: '26px',
+                      lineHeight: '17px',
+                      letterSpacing: '-0.02em',
+                      color: '#0E0F0C',
+                      width: '100%',
+                      maxWidth: '379px',
+                      height: '17px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      margin: 0,
+                      padding: 0,
+                      opacity: 1,
+                    }}
+                  >
+                    Your Books
+                  </h3>
+                  <p
+                    style={{
+                      fontFamily: '"Poppins", sans-serif',
+                      fontWeight: 500,
+                      fontSize: '14px',
+                      lineHeight: '25px',
+                      letterSpacing: '0%',
+                      color: '#71717A',
+                      width: '100%',
+                      maxWidth: '296px',
+                      minHeight: '35px',
+                      margin: 0,
+                      padding: 0,
+                      marginTop: '12px',
+                      opacity: 1,
+                    }}
+                  >
+                    Redeem your coins for my books. Personally signed - only in Germany.
+                  </p>
+                </div>
+              </div>
+
+              {/* Action Button */}
+              <div className="w-full flex justify-center px-3.5">
+                <button
+                  onClick={() => setShowBookSelector(true)}
+                  className="w-full flex items-center justify-center transition-colors cursor-pointer bg-white text-black hover:bg-[#24324D] hover:text-white active:bg-[#24324D] active:text-white disabled:opacity-50 shadow-none border-none outline-none"
+                  style={{
+                    maxWidth: '379px',
+                    height: '49px',
+                    borderRadius: '80px',
+                    padding: '19px 28px',
+                    gap: '10px',
+                    fontFamily: '"Poppins", sans-serif',
+                    fontWeight: 600,
+                    fontSize: '15px',
+                    boxSizing: 'border-box',
+                    opacity: 1,
+                  }}
+                >
+                  Withdraw Now
+                </button>
+              </div>
+            </div>
+          </motion.div>
+
+          {/* ── Promo Code Redeemer ─────────────────────────────────────── */}
+          <PromoCodeRedeem onSuccess={handleWithdrawSuccess} />
         </motion.div>
+      </div>
 
-
-        {/* ── Promo Code Redeemer ───────────────────────────────── */}
-        <PromoCodeRedeem onSuccess={handleWithdrawSuccess} />
-
-      </motion.div>
-
-      {/* ── Withdrawal Modal ──────────────────────────────────── */}
+      {/* ── Withdrawal Modal ────────────────────────────────────────── */}
       <AnimatePresence>
         {showWithdraw && settings && (
           <WithdrawalModal
@@ -464,7 +843,7 @@ const Wallet = () => {
         )}
       </AnimatePresence>
 
-      {/* ── Select Book Modal ─────────────────────────────────── */}
+      {/* ── Select Book Modal ───────────────────────────────────────── */}
       <AnimatePresence>
         {showBookSelector && (
           <MyBooksSection

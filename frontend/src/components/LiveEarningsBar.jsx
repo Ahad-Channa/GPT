@@ -37,6 +37,7 @@ const LiveEarningsBar = () => {
   const [selectedUserId, setSelectedUserId] = useState(null);
   const [hasMore, setHasMore] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
+  const [hoveredData, setHoveredData] = useState(null);
   const socketRef = useRef(null);
   const scrollContainerRef = useRef(null);
   const isFetchingMoreRef = useRef(false);
@@ -124,6 +125,7 @@ const LiveEarningsBar = () => {
 
   // Scroll event handler for horizontal infinite scroll + wheel support
   const handleScroll = () => {
+    if (hoveredData) setHoveredData(null);
     const el = scrollContainerRef.current;
     if (!el) return;
     const { scrollLeft, clientWidth, scrollWidth } = el;
@@ -215,17 +217,17 @@ const LiveEarningsBar = () => {
   return (
     <>
       <style>{`
-        .hide-scroll::-webkit-scrollbar { display: none; }
+        .hide-scroll::-webkit-scrollbar { display: none !important; width: 0 !important; height: 0 !important; }
         .hide-scroll {
-          -ms-overflow-style: none;
-          scrollbar-width: none;
+          -ms-overflow-style: none !important;
+          scrollbar-width: none !important;
         }
       `}</style>
 
       {/* Main Container */}
       <section
         id="live-feed-bar"
-        className="w-full relative z-30 flex items-center transition-all select-none"
+        className="w-full relative z-30 flex items-center transition-all select-none overflow-hidden"
         style={{
           height: '52px',
           background: 'rgba(222, 223, 247, 1)',
@@ -288,12 +290,12 @@ const LiveEarningsBar = () => {
         />
 
         {/* Scrollable Container */}
-        <div className="relative flex-1 h-full z-0">
+        <div className="relative flex-1 h-full z-0 overflow-hidden">
           <div
             ref={scrollContainerRef}
             onWheel={handleWheel}
             onScroll={handleScroll}
-            className="absolute inset-0 flex items-center gap-[6px] overflow-x-auto whitespace-nowrap hide-scroll pl-1 pr-6 cursor-grab active:cursor-grabbing pointer-events-auto"
+            className="absolute inset-0 flex items-center gap-[6px] overflow-x-auto overflow-y-hidden whitespace-nowrap hide-scroll pl-1 pr-6 cursor-grab active:cursor-grabbing pointer-events-auto"
             style={{
               scrollbarWidth: 'none',
               msOverflowStyle: 'none',
@@ -339,7 +341,17 @@ const LiveEarningsBar = () => {
                       exit={{ opacity: 0, scale: 0.8 }}
                       transition={{ duration: 0.2 }}
                       onClick={() => tx.userId?._id && setSelectedUserId(tx.userId._id)}
-                      className="group relative inline-flex items-center shrink-0 transition-transform hover:scale-[1.02] cursor-pointer shadow-sm pointer-events-auto"
+                      onMouseEnter={(e) => {
+                        const rect = e.currentTarget.getBoundingClientRect();
+                        setHoveredData({
+                          tx,
+                          details,
+                          top: rect.bottom + 8,
+                          left: rect.left + rect.width / 2,
+                        });
+                      }}
+                      onMouseLeave={() => setHoveredData(null)}
+                      className="relative inline-flex items-center shrink-0 transition-transform hover:scale-[1.02] cursor-pointer shadow-sm pointer-events-auto"
                       style={{
                         width: 'auto',
                         minWidth: 'fit-content',
@@ -464,152 +476,6 @@ const LiveEarningsBar = () => {
                           )}
                         </div>
                       </div>
-
-                      {/* Original Tooltip Box (Hover) */}
-                      <div className="absolute top-[calc(100%+8px)] left-1/2 -translate-x-1/2 pointer-events-none opacity-0 translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-200 z-[999]">
-                        <div
-                          className="flex flex-col relative min-w-[150px] lg:min-w-[170px] min-h-[70px] rounded-[12px] p-[10px] lg:p-[12px] gap-[8px] shadow-2xl border border-white/10"
-                          style={{
-                            width: 'auto',
-                            height: 'auto',
-                            background: 'rgba(36, 36, 36, 0.96)',
-                            backdropFilter: 'blur(44px)',
-                            WebkitBackdropFilter: 'blur(44px)',
-                            boxSizing: 'border-box',
-                          }}
-                        >
-                          {details.isWithdrawal ? (
-                            <div className="flex flex-col relative z-10 h-full justify-between gap-[8px]">
-                              <div className="flex flex-col gap-[2px] w-full">
-                                <span
-                                  className="text-[13px] lg:text-[14px]"
-                                  style={{
-                                    fontFamily: '"Barlow Condensed", sans-serif',
-                                    fontWeight: 700,
-                                    lineHeight: '120%',
-                                    color: 'rgba(255, 255, 255, 1)',
-                                    whiteSpace: 'nowrap',
-                                  }}
-                                >
-                                  Withdrawal Completed
-                                </span>
-                                <span
-                                  className="text-[11px]"
-                                  style={{
-                                    fontFamily: '"Barlow Condensed", sans-serif',
-                                    fontWeight: 500,
-                                    lineHeight: '130%',
-                                    color: 'rgba(170, 170, 170, 1)',
-                                  }}
-                                >
-                                  Method: {details.method}
-                                </span>
-                              </div>
-                              <div className="w-full h-0 border-t border-white/10 shrink-0" />
-                              <div className="flex items-center justify-between w-full min-w-max gap-4 h-[18px]">
-                                <span
-                                  className="text-[12px]"
-                                  style={{
-                                    fontFamily: '"Barlow Condensed", sans-serif',
-                                    fontWeight: 500,
-                                    color: 'rgba(255, 255, 255, 1)',
-                                    whiteSpace: 'nowrap',
-                                  }}
-                                >
-                                  Amount
-                                </span>
-                                <div className="flex items-center gap-1">
-                                  <img
-                                    src="/coins/paisa.png"
-                                    alt="Paisa"
-                                    className="w-[14px] h-[14px] object-contain"
-                                  />
-                                  <span
-                                    className="text-[13px] lg:text-[15px]"
-                                    style={{
-                                      fontFamily: '"Barlow Condensed", sans-serif',
-                                      fontWeight: 700,
-                                      color: '#49B265',
-                                      whiteSpace: 'nowrap',
-                                    }}
-                                  >
-                                    {details.amountStr}
-                                  </span>
-                                </div>
-                              </div>
-                            </div>
-                          ) : (
-                            <div className="flex flex-col relative z-10 h-full justify-between gap-[8px]">
-                              <div className="flex flex-col gap-[3px] w-full">
-                                <span
-                                  className="text-[13px] lg:text-[14px]"
-                                  style={{
-                                    width: '100%',
-                                    fontFamily: '"Barlow Condensed", sans-serif',
-                                    fontWeight: 700,
-                                    lineHeight: '120%',
-                                    color: 'rgba(255, 255, 255, 1)',
-                                    whiteSpace: 'normal',
-                                    wordBreak: 'break-word',
-                                  }}
-                                >
-                                  {details.task}
-                                </span>
-                                <span
-                                  className="text-[10px] lg:text-[11px]"
-                                  style={{
-                                    width: '100%',
-                                    fontFamily: '"Barlow Condensed", sans-serif',
-                                    fontWeight: 500,
-                                    lineHeight: '130%',
-                                    color: 'rgba(170, 170, 170, 1)',
-                                    whiteSpace: 'nowrap',
-                                    overflow: 'hidden',
-                                    textOverflow: 'ellipsis',
-                                  }}
-                                >
-                                  {details.taskCategory}
-                                </span>
-                              </div>
-                              <div className="w-full h-0 border-t border-white/10 shrink-0" />
-                              <div className="flex items-center justify-between w-full min-w-max gap-4 h-[18px]">
-                                <span
-                                  className="text-[12px]"
-                                  style={{
-                                    fontFamily: '"Barlow Condensed", sans-serif',
-                                    fontWeight: 500,
-                                    color: 'rgba(255, 255, 255, 1)',
-                                    whiteSpace: 'nowrap',
-                                  }}
-                                >
-                                  Earned
-                                </span>
-                                <div className="flex items-center gap-1">
-                                  <img
-                                    src="/coins/Coin.png"
-                                    alt="Coin"
-                                    className="w-[14px] h-[14px] object-contain"
-                                  />
-                                  <span
-                                    className="text-[13px] lg:text-[15px]"
-                                    style={{
-                                      fontFamily: '"Barlow Condensed", sans-serif',
-                                      fontWeight: 700,
-                                      backgroundImage: 'linear-gradient(180deg, #FEDF77 0%, #FCB91E 100%)',
-                                      WebkitBackgroundClip: 'text',
-                                      backgroundClip: 'text',
-                                      color: 'transparent',
-                                      whiteSpace: 'nowrap',
-                                    }}
-                                  >
-                                    {details.amountStr}
-                                  </span>
-                                </div>
-                              </div>
-                            </div>
-                          )}
-                        </div>
-                      </div>
                     </motion.div>
                   );
                 })}
@@ -625,6 +491,159 @@ const LiveEarningsBar = () => {
           </div>
         </div>
       </section>
+
+      {/* Floating Hover Tooltip: Rendered outside the scroll container directly below the hovered item */}
+      {hoveredData && (
+        <div
+          className="fixed z-[9999] pointer-events-none transition-opacity duration-150"
+          style={{
+            top: `${hoveredData.top}px`,
+            left: `${hoveredData.left}px`,
+            transform: 'translateX(-50%)',
+          }}
+        >
+          <div
+            className="flex flex-col min-w-[150px] lg:min-w-[170px] rounded-[12px] p-[10px] lg:p-[12px] gap-[8px] shadow-2xl border border-white/10"
+            style={{
+              background: 'rgba(36, 36, 36, 0.96)',
+              backdropFilter: 'blur(44px)',
+              WebkitBackdropFilter: 'blur(44px)',
+              boxSizing: 'border-box',
+            }}
+          >
+            {hoveredData.details.isWithdrawal ? (
+              <div className="flex flex-col relative z-10 h-full justify-between gap-[8px]">
+                <div className="flex flex-col gap-[2px] w-full">
+                  <span
+                    className="text-[13px] lg:text-[14px]"
+                    style={{
+                      fontFamily: '"Barlow Condensed", sans-serif',
+                      fontWeight: 700,
+                      lineHeight: '120%',
+                      color: 'rgba(255, 255, 255, 1)',
+                      whiteSpace: 'nowrap',
+                    }}
+                  >
+                    Withdrawal Completed
+                  </span>
+                  <span
+                    className="text-[11px]"
+                    style={{
+                      fontFamily: '"Barlow Condensed", sans-serif',
+                      fontWeight: 500,
+                      lineHeight: '130%',
+                      color: 'rgba(170, 170, 170, 1)',
+                    }}
+                  >
+                    Method: {hoveredData.details.method}
+                  </span>
+                </div>
+                <div className="w-full h-0 border-t border-white/10 shrink-0" />
+                <div className="flex items-center justify-between w-full min-w-max gap-4 h-[18px]">
+                  <span
+                    className="text-[12px]"
+                    style={{
+                      fontFamily: '"Barlow Condensed", sans-serif',
+                      fontWeight: 500,
+                      color: 'rgba(255, 255, 255, 1)',
+                      whiteSpace: 'nowrap',
+                    }}
+                  >
+                    Amount
+                  </span>
+                  <div className="flex items-center gap-1">
+                    <img
+                      src="/coins/paisa.png"
+                      alt="Paisa"
+                      className="w-[14px] h-[14px] object-contain"
+                    />
+                    <span
+                      className="text-[13px] lg:text-[15px]"
+                      style={{
+                        fontFamily: '"Barlow Condensed", sans-serif',
+                        fontWeight: 700,
+                        color: '#49B265',
+                        whiteSpace: 'nowrap',
+                      }}
+                    >
+                      {hoveredData.details.amountStr}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="flex flex-col relative z-10 h-full justify-between gap-[8px]">
+                <div className="flex flex-col gap-[3px] w-full">
+                  <span
+                    className="text-[13px] lg:text-[14px]"
+                    style={{
+                      width: '100%',
+                      fontFamily: '"Barlow Condensed", sans-serif',
+                      fontWeight: 700,
+                      lineHeight: '120%',
+                      color: 'rgba(255, 255, 255, 1)',
+                      whiteSpace: 'normal',
+                      wordBreak: 'break-word',
+                    }}
+                  >
+                    {hoveredData.details.task}
+                  </span>
+                  <span
+                    className="text-[10px] lg:text-[11px]"
+                    style={{
+                      width: '100%',
+                      fontFamily: '"Barlow Condensed", sans-serif',
+                      fontWeight: 500,
+                      lineHeight: '130%',
+                      color: 'rgba(170, 170, 170, 1)',
+                      whiteSpace: 'nowrap',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                    }}
+                  >
+                    {hoveredData.details.taskCategory}
+                  </span>
+                </div>
+                <div className="w-full h-0 border-t border-white/10 shrink-0" />
+                <div className="flex items-center justify-between w-full min-w-max gap-4 h-[18px]">
+                  <span
+                    className="text-[12px]"
+                    style={{
+                      fontFamily: '"Barlow Condensed", sans-serif',
+                      fontWeight: 500,
+                      color: 'rgba(255, 255, 255, 1)',
+                      whiteSpace: 'nowrap',
+                    }}
+                  >
+                    Earned
+                  </span>
+                  <div className="flex items-center gap-1">
+                    <img
+                      src="/coins/Coin.png"
+                      alt="Coin"
+                      className="w-[14px] h-[14px] object-contain"
+                    />
+                    <span
+                      className="text-[13px] lg:text-[15px]"
+                      style={{
+                        fontFamily: '"Barlow Condensed", sans-serif',
+                        fontWeight: 700,
+                        backgroundImage: 'linear-gradient(180deg, #FEDF77 0%, #FCB91E 100%)',
+                        WebkitBackgroundClip: 'text',
+                        backgroundClip: 'text',
+                        color: 'transparent',
+                        whiteSpace: 'nowrap',
+                      }}
+                    >
+                      {hoveredData.details.amountStr}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Public Profile Modal */}
       {selectedUserId && (

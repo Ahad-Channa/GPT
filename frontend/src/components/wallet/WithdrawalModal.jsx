@@ -1,14 +1,13 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { useAuth } from '../../contexts/AuthContext';
-import { CURRENCY_NAME, formatCoins } from '../../config/platform';
 import toast from 'react-hot-toast';
 import {
-  FiX, FiArrowRight, FiArrowLeft, FiAlertCircle,
-  FiCheckCircle, FiLoader, FiInfo, FiCreditCard, FiMail,
+  FiX, FiAlertCircle, FiLoader,
 } from 'react-icons/fi';
-
-
+import { FaPaypal } from 'react-icons/fa';
+import { SiLitecoin } from 'react-icons/si';
+import { BsPatchCheckFill } from 'react-icons/bs';
 
 let openModalsCount = 0;
 const updateBodyScrollLock = (isLocked) => {
@@ -27,31 +26,16 @@ const updateBodyScrollLock = (isLocked) => {
 const METHOD_CONFIG = {
   litecoin: {
     label: 'Litecoin',
-    icon: 'Ł',
-    iconBg: 'from-amber-500/20 to-amber-600/10',
-    iconColor: 'text-amber-400',
-    border: 'border-amber-500/30',
-    activeBorder: 'border-amber-400',
     placeholder: 'Your Litecoin address (LTC...)',
     hint: 'We will send LTC to this address at the live market rate.',
   },
   paypal: {
     label: 'PayPal',
-    icon: '💳',
-    iconBg: 'from-blue-500/20 to-blue-600/10',
-    iconColor: 'text-blue-400',
-    border: 'border-blue-500/30',
-    activeBorder: 'border-blue-400',
     placeholder: 'Your PayPal email address',
     hint: 'Funds will be sent as a PayPal Friends & Family transfer.',
   },
   giftcard: {
     label: 'Gift Card',
-    icon: '🎁',
-    iconBg: 'from-violet-500/20 to-violet-600/10',
-    iconColor: 'text-violet-400',
-    border: 'border-violet-500/30',
-    activeBorder: 'border-violet-400',
     placeholder: 'Your email to receive gift card',
     hint: 'Gift card will be emailed within 1-3 business days.',
   },
@@ -82,20 +66,7 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess, filterType }) 
 
   const overlayRef = useRef(null);
 
-  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
-  useEffect(() => {
-    const handleResize = () => setIsMobile(window.innerWidth < 768);
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
-
-  const isGiftCard = method === 'giftcard';
-  const modalWidth = isMobile ? '100%' : (isGiftCard && step === 2 ? '700px' : '500px');
-  const modalHeight = isMobile ? 'auto' : (isGiftCard && step === 2 ? '881px' : (step === 1 ? '339px' : step === 2 ? '740px' : step === 4 ? '379px' : 'auto'));
-  const contentWidth = isMobile ? '100%' : (isGiftCard && step === 2 ? '668px' : '468px');
-  const textWidth = isMobile ? '100%' : (isGiftCard && step === 2 ? '608px' : '408px');
-
-  const { coinsPerUSD, withdrawalMethods = [], exchangeRates } = settings;
+  const { coinsPerUSD = 1000, withdrawalMethods = [] } = settings;
 
   // Filter methods based on filterType
   const filteredMethods = withdrawalMethods.filter(m => {
@@ -111,7 +82,7 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess, filterType }) 
     return 0;
   });
 
-  // Default to Paypal if available
+  // Default to Paypal or Litecoin if available
   useEffect(() => {
     if (!method && orderedMethods.length > 0) {
       const hasPaypal = orderedMethods.some(m => m.id === 'paypal');
@@ -209,138 +180,167 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess, filterType }) 
   const selectedMinCoins = selectedMethod ? selectedMethod.minUSD * coinsPerUSD : 0;
   const canContinue = method && balance >= selectedMinCoins;
 
+  const isGiftCard = method === 'giftcard';
+
   return (
     <div
       ref={overlayRef}
       onClick={handleOverlayClick}
       className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto"
-      style={{ background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(6px)' }}
+      style={{ background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)' }}
     >
       <motion.div
-        initial={{ opacity: 0, scale: 0.95, y: 12 }}
+        initial={{ opacity: 0, scale: 0.96, y: 10 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
-        exit={{ opacity: 0, scale: 0.95, y: 12 }}
+        exit={{ opacity: 0, scale: 0.96, y: 10 }}
         transition={{ duration: 0.2 }}
-        className={`relative bg-[#242424] border border-white/[0.08] shadow-2xl max-w-[95vw] md:max-w-none flex flex-col my-auto overflow-hidden ${
-          !isMobile && step === 1
-            ? 'h-[339px] shrink-0'
-            : !isMobile && step === 2
-            ? (isGiftCard ? 'h-[881px] shrink-0' : 'h-[740px] shrink-0')
-            : !isMobile && step === 4
-            ? 'h-[379px] shrink-0'
-            : 'h-auto max-h-[90vh] overflow-y-auto custom-scrollbar overflow-x-hidden'
-        }`}
+        className="relative bg-white shadow-2xl rounded-[30px] w-full p-[10px] flex flex-col my-auto overflow-hidden border border-gray-100 box-border gap-2"
         style={{
-          width: modalWidth,
-          height: modalHeight,
-          minHeight: isMobile ? '300px' : 'auto',
-          borderRadius: '20px',
-          padding: '16px',
-          paddingBottom: (step === 2 || step === 3) ? '24px' : '16px',
-          gap: (step === 2 || step === 3) ? '16px' : '20px',
-          transform: 'rotate(0deg)',
+          width: '100%',
+          maxWidth: isGiftCard && step === 2 ? '680px' : '626px',
+          minHeight: step === 1 ? '339px' : step === 4 ? '402px' : 'auto',
+          height: step === 1 ? '339px' : step === 4 ? '402px' : 'auto',
+          background: '#FFFFFF',
+          borderRadius: '30px',
           opacity: 1,
-          background: 'rgba(36, 36, 36, 1)',
         }}
         onClick={e => e.stopPropagation()}
       >
-        {/* Header / Close Button */}
-        {step < 4 ? (
+        {/* Header & Close Button Box */}
+        {step < 4 && (
           <div
-            className="flex items-start justify-between h-[63px] gap-[16px] shrink-0 relative"
+            className="w-full flex flex-col justify-between shrink-0 relative"
             style={{
-              width: contentWidth,
-              height: '63px',
-              gap: '16px',
-              transform: 'rotate(0deg)',
+              width: '100%',
+              maxWidth: '606px',
+              height: '143px',
+              borderRadius: '16px',
+              background: 'rgba(248, 245, 239, 1)',
+              padding: '34px 20px 14px 20px',
+              boxSizing: 'border-box',
               opacity: 1,
             }}
           >
-            <div className="flex flex-col gap-[6px] shrink-0" style={{ width: `calc(${contentWidth} - 52px)` }}>
-              <h2
-                className="m-0 p-0 text-[28px] font-bold font-['Barlow_Condensed'] text-white leading-[120%] flex items-center"
-                style={{
-                  width: `calc(${contentWidth} - 52px)`,
-                  height: '34px',
-                  fontFamily: 'Barlow Condensed',
-                  fontWeight: 700,
-                  fontSize: '28px',
-                  lineHeight: '120%',
-                  letterSpacing: '0%',
-                  opacity: 1,
-                  transform: 'rotate(0deg)',
-                }}
-              >
-                {method === 'giftcard' ? (
-                  step === 2 ? 'Redeem Gift Card' : 'Confirm Redemption'
-                ) : (
-                  step === 1 ? 'Select Withdrawal Method' : step === 2 ? 'Enter Details' : 'Confirm Withdrawal'
-                )}
-              </h2>
-              <p
-                className="m-0 p-0 text-[18px] font-medium font-['Barlow_Condensed'] leading-[130%] flex items-center"
-                style={{
-                  width: `calc(${contentWidth} - 52px)`,
-                  height: '23px',
-                  fontFamily: 'Barlow Condensed',
-                  fontWeight: 500,
-                  fontSize: '18px',
-                  lineHeight: '130%',
-                  letterSpacing: '0%',
-                  color: 'var(--Text-text-sheen, rgba(136, 136, 136, 1))',
-                  opacity: 1,
-                  transform: 'rotate(0deg)',
-                }}
-              >
-                {method === 'giftcard' ? `Step ${step - 1} of 2` : `Step ${step} of 3`}
-              </p>
-            </div>
-
+            {/* Close Button Absolute Top-Right */}
             <button
               id="withdrawal-modal-close"
               onClick={onClose}
-              className="w-[36px] h-[36px] rounded-[10px] bg-white/[0.11] hover:bg-white/[0.18] transition-colors flex items-center justify-between px-[8px] text-white shrink-0"
+              className="absolute top-[16px] right-[20px] rounded-full bg-black text-white flex items-center justify-center hover:bg-gray-800 transition-colors shrink-0 cursor-pointer z-10"
               style={{
-                width: '36px',
-                height: '36px',
-                borderRadius: '10px',
-                transform: 'rotate(0deg)',
+                width: '22px',
+                height: '22px',
                 opacity: 1,
-                background: 'rgba(255, 255, 255, 0.11)',
+              }}
+              title="Close"
+            >
+              <FiX size={13} strokeWidth={2.5} />
+            </button>
+
+            {/* Whole Header Layout (565x78) */}
+            <div
+              className="flex flex-col justify-between"
+              style={{
+                width: '100%',
+                maxWidth: '565px',
+                height: '78px',
+                gap: '16px',
+                boxSizing: 'border-box',
+                opacity: 1,
               }}
             >
-              <div className="w-full flex justify-center items-center">
-                <FiX size={20} strokeWidth={2} />
+              <div className="flex flex-col">
+                <h2
+                  style={{
+                    fontFamily: '"Bricolage Grotesque", sans-serif',
+                    fontWeight: 700,
+                    fontSize: '35px',
+                    lineHeight: '23px',
+                    letterSpacing: '-0.02em',
+                    color: '#000000',
+                    width: '100%',
+                    maxWidth: '438px',
+                    height: '23px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    margin: 0,
+                    padding: 0,
+                    opacity: 1,
+                  }}
+                >
+                  {isGiftCard ? (
+                    step === 2 ? 'Redeem Gift Card' : 'Confirm Redemption'
+                  ) : (
+                    step === 1 ? 'Select Withdrawal Method' : step === 2 ? 'Enter Details' : 'Confirm Withdrawal'
+                  )}
+                </h2>
+                <p
+                  style={{
+                    fontFamily: '"Poppins", sans-serif',
+                    fontWeight: 500,
+                    fontSize: '16px',
+                    lineHeight: '13px',
+                    letterSpacing: '0%',
+                    color: '#000000',
+                    width: '100%',
+                    maxWidth: '565px',
+                    height: '13px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    margin: 0,
+                    padding: 0,
+                    marginTop: '16px',
+                    opacity: 1,
+                  }}
+                >
+                  {isGiftCard ? `Step ${step - 1} of 2` : `Step ${step} of 3`}
+                </p>
               </div>
-            </button>
-          </div>
-        ) : (
-          <button
-            id="withdrawal-modal-close"
-            onClick={onClose}
-            className="absolute top-[16px] right-[16px] w-[36px] h-[36px] rounded-[10px] bg-white/[0.11] hover:bg-white/[0.18] transition-colors flex items-center justify-between px-[8px] text-white z-10 shrink-0"
-            style={{
-              width: '36px',
-              height: '36px',
-              borderRadius: '10px',
-              transform: 'rotate(0deg)',
-              opacity: 1,
-              background: 'rgba(255, 255, 255, 0.11)',
-            }}
-          >
-            <div className="w-full flex justify-center items-center">
-              <FiX size={20} strokeWidth={2} />
+
+              {/* 3-Segment Progress Bar */}
+              <div className="flex items-center gap-1.5 w-full">
+                <div
+                  className={`transition-all ${
+                    step >= 1 ? 'bg-[#5B6BF5]' : 'bg-[#ECECF4]'
+                  }`}
+                  style={{
+                    height: '6px',
+                    borderRadius: '20px',
+                    flex: 1,
+                    opacity: 1,
+                  }}
+                />
+                <div
+                  className={`transition-all ${
+                    step >= 2 ? 'bg-[#5B6BF5]' : 'bg-[#ECECF4]'
+                  }`}
+                  style={{
+                    height: '6px',
+                    borderRadius: '20px',
+                    flex: 1,
+                    opacity: 1,
+                  }}
+                />
+                <div
+                  className={`transition-all ${
+                    step >= 3 ? 'bg-[#5B6BF5]' : 'bg-[#ECECF4]'
+                  }`}
+                  style={{
+                    height: '6px',
+                    borderRadius: '20px',
+                    flex: 1,
+                    opacity: 1,
+                  }}
+                />
+              </div>
             </div>
-          </button>
+          </div>
         )}
 
-        {/* Content Body */}
+        {/* ── STEP 1: Select Withdrawal Method ────────────────────────────── */}
         {step === 1 && (
-          <>
-            <div className="flex flex-col gap-[12px] w-full shrink-0">
+          <div className="flex flex-col w-full">
+            <div className="flex items-center justify-between gap-3 w-full mb-3">
               {orderedMethods.map((m) => {
-                const cfg = METHOD_CONFIG[m.id];
-                if (!cfg) return null;
                 const minCoins = m.minUSD * coinsPerUSD;
                 const canSelect = balance >= minCoins;
                 const isSelected = method === m.id;
@@ -348,61 +348,154 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess, filterType }) 
                   <button
                     key={m.id}
                     id={`method-${m.id}`}
+                    type="button"
                     onClick={() => { if (canSelect) { setMethod(m.id); setError(''); } }}
                     disabled={!canSelect}
-                    className={`w-full h-[68px] flex items-center gap-4 px-[16px] py-[12px] rounded-[10px] border transition-all text-left bg-[rgba(0,0,0,0.36)] ${
+                    className={`flex items-center transition-all text-left border border-transparent ${
                       isSelected
-                        ? 'border-[#49B265]'
-                        : 'border-white/[0.08] hover:bg-[rgba(0,0,0,0.42)] hover:border-white/[0.12]'
+                        ? 'bg-[#1E2538] text-white shadow-sm'
+                        : 'bg-[#F9F7F1] hover:bg-[#f4efe3] text-[#0E0F0C]'
                     } ${canSelect ? 'cursor-pointer' : 'opacity-40 cursor-not-allowed'}`}
+                    style={{
+                      width: '100%',
+                      maxWidth: '297px',
+                      height: '90px',
+                      borderRadius: '16px',
+                      paddingTop: '8px',
+                      paddingRight: '20px',
+                      paddingBottom: '8px',
+                      paddingLeft: '8px',
+                      gap: '10px',
+                      boxSizing: 'border-box',
+                      opacity: 1,
+                    }}
                   >
-                    <img
-                      src={m.id === 'paypal' ? '/coins/paypal.png' : '/coins/litecoin.png'}
-                      alt={m.label}
-                      className="w-[37px] h-[37px] object-contain shrink-0"
-                    />
-                    <div className="flex-1 min-w-0">
-                      <p className="text-[20px] font-semibold font-['Barlow_Condensed'] text-white leading-[120%] w-[48px] h-[14px] whitespace-nowrap flex items-center">
-                        {m.id === 'paypal' ? 'Paypal' : 'Litecoin'}
-                      </p>
-                      <p className="text-[14px] font-medium font-['Barlow_Condensed'] text-[#888888] leading-tight mt-0.5">
-                        Minimum Withdrawal {minCoins.toLocaleString()} Coins
-                      </p>
+                    {/* Left Icon Box (74x74) */}
+                    <div
+                      className="bg-white flex items-center justify-center shadow-xs shrink-0"
+                      style={{
+                        width: '74px',
+                        height: '74px',
+                        borderRadius: '10px',
+                        paddingTop: '14px',
+                        paddingRight: '17px',
+                        paddingBottom: '13px',
+                        paddingLeft: '17px',
+                        gap: '10px',
+                        boxSizing: 'border-box',
+                        opacity: 1,
+                      }}
+                    >
+                      {m.id === 'paypal' ? (
+                        <FaPaypal className="text-[#00457C] text-[34px]" />
+                      ) : (
+                        <SiLitecoin className="text-[#345D9D] text-[34px]" />
+                      )}
+                    </div>
+
+                    {/* Method Details */}
+                    <div className="flex flex-col justify-center min-w-0" style={{ gap: '6px' }}>
+                      <span
+                        style={{
+                          fontFamily: '"Bricolage Grotesque", sans-serif',
+                          fontWeight: 700,
+                          fontSize: '20px',
+                          lineHeight: '13px',
+                          letterSpacing: '-0.02em',
+                          color: isSelected ? '#FFFFFF' : '#000000',
+                          width: '137px',
+                          height: '13px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          margin: 0,
+                          padding: 0,
+                          opacity: 1,
+                        }}
+                      >
+                        {m.id === 'paypal' ? 'PayPal' : 'Litecoin'}
+                      </span>
+                      <span
+                        style={{
+                          fontFamily: '"Poppins", sans-serif',
+                          fontWeight: 400,
+                          fontSize: '12px',
+                          lineHeight: '17px',
+                          letterSpacing: '0%',
+                          color: isSelected ? 'rgba(255, 255, 255, 0.85)' : '#000000',
+                          width: '137px',
+                          height: '31px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          margin: 0,
+                          padding: 0,
+                          opacity: 1,
+                        }}
+                      >
+                        Minimum withdrawal<br />{minCoins.toLocaleString()} coin
+                      </span>
                     </div>
                   </button>
                 );
               })}
             </div>
 
+            {/* Action Button */}
             <button
               id="withdrawal-next-btn"
+              type="button"
               onClick={() => { if (canContinue) { setStep(2); setError(''); } }}
               disabled={!canContinue}
-              className="w-full h-[48px] bg-[#49B265] text-white rounded-[10px] font-bold font-['Barlow_Condensed'] text-[20px] shadow-[0_4px_0_0_#276D3A] hover:bg-[#49B265]/90 hover:translate-y-[1px] hover:shadow-[0_3px_0_0_#276D3A] active:translate-y-[4px] active:shadow-none transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:translate-y-0 disabled:shadow-[0_4px_0_0_#276D3A] mt-auto shrink-0"
+              className="w-full flex items-center justify-center transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed shadow-none border-none outline-none"
+              style={{
+                width: '100%',
+                maxWidth: '604px',
+                height: '55px',
+                gap: '10px',
+                borderRadius: '30px',
+                paddingTop: '22px',
+                paddingRight: '28px',
+                paddingBottom: '22px',
+                paddingLeft: '28px',
+                background: 'rgba(36, 50, 77, 1)',
+                boxSizing: 'border-box',
+                opacity: !canContinue ? 0.45 : 1,
+                cursor: !canContinue ? 'not-allowed' : 'pointer',
+              }}
             >
-              Continue →
+              <span
+                style={{
+                  fontFamily: '"Poppins", sans-serif',
+                  fontWeight: 500,
+                  fontSize: '16px',
+                  lineHeight: '28px',
+                  letterSpacing: '0%',
+                  color: '#FFFFFF',
+                  width: '74px',
+                  height: '11px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  opacity: 1,
+                }}
+              >
+                Continue
+              </span>
             </button>
-          </>
+          </div>
         )}
 
+        {/* ── STEP 2: Enter Details ────────────────────────────────────────── */}
         {step === 2 && selectedConfig && selectedMethod && (
-          <>
-            {method === 'giftcard' ? (
-              <div className="flex flex-col gap-[8px] shrink-0" style={{ width: contentWidth }}>
+          <div className="flex flex-col gap-4 w-full">
+            {isGiftCard ? (
+              <div className="flex flex-col gap-2 w-full">
                 <label
-                  style={{
-                    fontFamily: 'Barlow Condensed',
-                    fontWeight: 700,
-                    fontSize: '22px',
-                    lineHeight: '20px',
-                    letterSpacing: '-1%',
-                    verticalAlign: 'middle',
-                    color: 'rgba(255, 255, 255, 1)',
-                  }}
+                  className="font-bold text-[16px] text-[#0E0F0C]"
+                  style={{ fontFamily: '"Bricolage Grotesque", sans-serif' }}
                 >
                   Select Gift Card
                 </label>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                   {BRANDS.map((brand) => {
                     const isSelected = giftCardBrand === brand.id;
                     return (
@@ -410,27 +503,11 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess, filterType }) 
                         key={brand.id}
                         type="button"
                         onClick={() => setGiftCardBrand(brand.id)}
-                        className="flex items-center justify-center transition-all cursor-pointer overflow-hidden"
-                        style={{
-                          width: isMobile ? '100%' : '161px',
-                          height: isMobile ? '70px' : '90px',
-                          borderRadius: '10px',
-                          background: 'rgba(23, 23, 23, 1)',
-                          borderWidth: '2px',
-                          borderStyle: 'solid',
-                          borderColor: isSelected ? 'rgba(73, 178, 101, 1)' : 'rgba(255, 255, 255, 0.08)',
-                          transform: 'rotate(0deg)',
-                          opacity: 1,
-                        }}
+                        className={`flex items-center justify-center p-2 rounded-[14px] border-2 transition-all cursor-pointer bg-[#F9F7F1] h-[72px] ${
+                          isSelected ? 'border-[#1E2538] bg-white shadow-sm' : 'border-transparent hover:border-gray-200'
+                        }`}
                       >
-                        <div
-                          className={`w-full h-full flex items-center justify-center transition-all duration-200 ${
-                            isSelected ? 'opacity-100' : 'opacity-40 hover:opacity-75'
-                          }`}
-                          style={{
-                            filter: isSelected ? 'none' : 'grayscale(100%)',
-                          }}
-                        >
+                        <div className={`w-full h-full flex items-center justify-center ${isSelected ? 'opacity-100' : 'opacity-50'}`}>
                           {brand.logo}
                         </div>
                       </button>
@@ -439,88 +516,136 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess, filterType }) 
                 </div>
               </div>
             ) : (
+              /* Selected Method Summary Pill */
               <div
-                className="flex items-center shrink-0 relative overflow-hidden"
+                className="flex items-center"
                 style={{
-                  width: contentWidth,
-                  height: '73px',
-                  borderRadius: '12px',
-                  gap: '8px',
+                  width: '100%',
+                  maxWidth: '606px',
+                  height: '90px',
+                  borderRadius: '15px',
+                  paddingTop: '8px',
+                  paddingRight: '20px',
+                  paddingBottom: '8px',
+                  paddingLeft: '8px',
+                  background: 'rgba(36, 50, 77, 1)',
+                  gap: '10px',
+                  boxSizing: 'border-box',
                   opacity: 1,
-                  paddingTop: '16px',
-                  paddingRight: '14px',
-                  paddingBottom: '16px',
-                  paddingLeft: '14px',
-                  border: '1px solid rgba(255, 255, 255, 0.08)',
                 }}
               >
-                {/* Background with mix-blend-mode */}
                 <div
-                  className="absolute inset-0 z-0 pointer-events-none"
+                  className="bg-white flex items-center justify-center shadow-xs shrink-0"
                   style={{
-                    background: 'rgba(0, 0, 0, 0.36)',
-                    mixBlendMode: 'luminosity',
-                  }}
-                />
-
-                <img
-                  src={method === 'paypal' ? '/coins/paypal.png' : method === 'litecoin' ? '/coins/litecoin.png' : '/coins/giftcard.png'}
-                  alt={selectedMethod.label}
-                  className="object-contain shrink-0 relative z-10"
-                  style={{
-                    width: '37px',
-                    height: '37px',
-                    opacity: 1,
-                  }}
-                />
-                <div
-                  className="flex flex-col flex-1 min-w-0 relative z-10"
-                  style={{
-                    height: 'auto',
-                    gap: '6px',
+                    width: '74px',
+                    height: '74px',
+                    borderRadius: '10px',
+                    paddingTop: '14px',
+                    paddingRight: '17px',
+                    paddingBottom: '13px',
+                    paddingLeft: '17px',
+                    gap: '10px',
+                    boxSizing: 'border-box',
                     opacity: 1,
                   }}
                 >
-                  <p
-                    className="font-semibold font-['Barlow_Condensed'] text-white whitespace-nowrap flex items-center"
+                  {method === 'paypal' ? (
+                    <FaPaypal className="text-[#00457C] text-[34px]" />
+                  ) : (
+                    <SiLitecoin className="text-[#345D9D] text-[34px]" />
+                  )}
+                </div>
+                <div
+                  className="flex flex-col justify-center min-w-0"
+                  style={{
+                    width: '100%',
+                    maxWidth: '437px',
+                    height: '43px',
+                    gap: '17px',
+                    boxSizing: 'border-box',
+                    opacity: 1,
+                  }}
+                >
+                  <span
                     style={{
-                      width: '57px',
-                      height: '14px',
-                      fontFamily: 'Barlow Condensed',
-                      fontWeight: 600,
-                      fontSize: '20px',
-                      lineHeight: '120%',
-                      letterSpacing: '0%',
+                      fontFamily: '"Bricolage Grotesque", sans-serif',
+                      fontWeight: 700,
+                      fontSize: '23px',
+                      lineHeight: '15px',
+                      letterSpacing: '-0.02em',
+                      color: '#FFFFFF',
+                      width: '100%',
+                      maxWidth: '437px',
+                      height: '15px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      margin: 0,
+                      padding: 0,
+                      opacity: 1,
                     }}
                   >
                     {selectedMethod.label}
-                  </p>
-                  <p
-                    className="font-medium font-['Barlow_Condensed'] leading-[130%] truncate"
+                  </span>
+                  <span
                     style={{
-                      width: '100%',
-                      height: '21px',
-                      fontFamily: 'Barlow Condensed',
-                      fontWeight: 500,
-                      fontSize: '16px',
+                      fontFamily: '"Poppins", sans-serif',
+                      fontWeight: 400,
+                      fontSize: method === 'paypal' ? '14px' : '16px',
+                      lineHeight: '16px',
                       letterSpacing: '0%',
-                      color: 'var(--Text-text-sheen, rgba(136, 136, 136, 1))',
+                      color: 'rgba(255, 255, 255, 0.75)',
+                      width: '100%',
+                      maxWidth: '500px',
+                      whiteSpace: 'nowrap',
+                      display: 'flex',
+                      alignItems: 'center',
+                      margin: 0,
+                      padding: 0,
+                      opacity: 1,
                     }}
                   >
                     {selectedConfig.hint}
-                  </p>
+                  </span>
                 </div>
               </div>
             )}
 
             {/* Amount input */}
-            <div className="flex flex-col gap-[6px] shrink-0">
-              <div className="flex justify-between items-center w-full">
-                <label className="text-[16px] font-medium text-white font-['Barlow_Condensed']">Enter Amount</label>
-                <span className="text-[14px] font-medium text-[#888888] font-['Barlow_Condensed']">Minimum: {minimumCoins.toLocaleString()} Coins</span>
-              </div>
-              <div className="relative flex items-center bg-white/[0.04] border border-white/[0.08] focus-within:border-[#49B265] rounded-[10px] h-[56px] w-full px-[16px] transition-all">
-                <img src="/coins/Coin.png" alt="Coin" className="w-[24px] h-[24px] object-contain mr-[10px] shrink-0" />
+            <div className="flex flex-col gap-2 w-full">
+              <label
+                style={{
+                  fontFamily: '"Poppins", sans-serif',
+                  fontWeight: 500,
+                  fontSize: '16px',
+                  lineHeight: '11px',
+                  letterSpacing: '0%',
+                  color: '#000000',
+                  width: '110px',
+                  height: '11px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  margin: 0,
+                  padding: 0,
+                  opacity: 1,
+                }}
+              >
+                Enter amount
+              </label>
+              <div
+                className="relative flex items-center w-full transition-all border-none outline-none shadow-none"
+                style={{
+                  width: '100%',
+                  maxWidth: '602px',
+                  height: '58px',
+                  gap: '10px',
+                  borderRadius: '50px',
+                  paddingLeft: '24px',
+                  paddingRight: '24px',
+                  background: 'rgba(239, 239, 239, 1)',
+                  boxSizing: 'border-box',
+                  opacity: 1,
+                }}
+              >
                 <input
                   id="withdrawal-amount"
                   type="number"
@@ -529,204 +654,284 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess, filterType }) 
                   step="1"
                   value={amount}
                   onChange={(e) => { setAmount(e.target.value); setError(''); }}
-                  placeholder={`Min ${minimumCoins.toLocaleString()}`}
-                  className="bg-transparent text-white font-medium font-['Barlow_Condensed'] text-[18px] leading-[20px] align-middle focus:outline-none border-none p-0 flex-1 h-full placeholder-white/30"
+                  placeholder={`Minimum: ${minimumCoins.toLocaleString()} Coins`}
+                  className="bg-transparent border-none outline-none p-0 flex-1 h-full placeholder:text-black/50"
+                  style={{
+                    fontFamily: '"Poppins", sans-serif',
+                    fontWeight: 400,
+                    fontSize: '15px',
+                    lineHeight: '26px',
+                    letterSpacing: '0%',
+                    color: 'rgba(0, 0, 0, 1)',
+                  }}
                 />
               </div>
               {amount && !meetsMinimum && (
-                <p className="text-red-400 text-xs mt-1 font-['Barlow_Condensed']">
+                <p className="text-red-500 text-xs mt-0.5" style={{ fontFamily: '"Poppins", sans-serif' }}>
                   Minimum is {minimumCoins.toLocaleString()} Coins
                 </p>
               )}
               {amount && !hasEnoughBalance && meetsMinimum && (
-                <p className="text-red-400 text-xs mt-1 font-['Barlow_Condensed']">
+                <p className="text-red-500 text-xs mt-0.5" style={{ fontFamily: '"Poppins", sans-serif' }}>
                   Insufficient balance (need {totalDeducted.toLocaleString()} including fee)
                 </p>
               )}
             </div>
 
             {/* Destination input */}
-            <div className="flex flex-col gap-[6px] shrink-0">
-              <label className="text-[16px] font-medium text-white font-['Barlow_Condensed']">
+            <div className="flex flex-col gap-2 w-full">
+              <label
+                style={{
+                  fontFamily: '"Poppins", sans-serif',
+                  fontWeight: 500,
+                  fontSize: '16px',
+                  lineHeight: '11px',
+                  letterSpacing: '0%',
+                  color: '#000000',
+                  width: '110px',
+                  height: '11px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  margin: 0,
+                  padding: 0,
+                  opacity: 1,
+                }}
+              >
                 {method === 'litecoin' ? 'LTC Address' : method === 'paypal' ? 'PayPal Email' : 'Email Address'}
               </label>
-              <div className="relative flex items-center bg-white/[0.04] border border-white/[0.08] focus-within:border-[#49B265] rounded-[10px] h-[56px] w-full px-[16px] transition-all">
-                {method === 'litecoin' ? (
-                  <img src="/coins/wallet1.png" alt="Wallet" className="w-[24px] h-[24px] object-contain mr-[10px] shrink-0" />
-                ) : (
-                  <img src="/coins/sms.png" alt="Mail" className="w-[24px] h-[24px] object-contain mr-[10px] shrink-0" />
-                )}
+              <div
+                className="relative flex items-center w-full transition-all border-none outline-none shadow-none"
+                style={{
+                  width: '100%',
+                  maxWidth: '602px',
+                  height: '58px',
+                  gap: '10px',
+                  borderRadius: '50px',
+                  paddingLeft: '24px',
+                  paddingRight: '24px',
+                  background: 'rgba(239, 239, 239, 1)',
+                  boxSizing: 'border-box',
+                  opacity: 1,
+                }}
+              >
                 <input
                   id="withdrawal-destination"
                   type={method === 'litecoin' ? 'text' : 'email'}
                   value={destination}
                   onChange={(e) => { setDestination(e.target.value); setError(''); }}
                   placeholder={selectedConfig.placeholder}
-                  className="bg-transparent text-white font-medium font-['Barlow_Condensed'] text-[18px] leading-[20px] align-middle focus:outline-none border-none p-0 flex-1 h-full placeholder-white/30"
+                  className="bg-transparent border-none outline-none p-0 flex-1 h-full placeholder:text-black/50"
+                  style={{
+                    fontFamily: '"Poppins", sans-serif',
+                    fontWeight: 400,
+                    fontSize: '15px',
+                    lineHeight: '26px',
+                    letterSpacing: '0%',
+                    color: 'rgba(0, 0, 0, 1)',
+                  }}
                 />
               </div>
-            </div>
 
-            {/* Warning Box */}
-            <div
-              className="flex items-start shrink-0"
-              style={{
-                width: contentWidth,
-                height: 'auto',
-                borderRadius: '12px',
-                gap: '8px',
-                opacity: 1,
-                paddingTop: '16px',
-                paddingRight: '14px',
-                paddingBottom: '16px',
-                paddingLeft: '14px',
-                background: 'rgba(226, 69, 69, 0.14)',
-                border: 'none'
-              }}
-            >
-              <img
-                src="/coins/war.png"
-                alt="Warning"
-                className="shrink-0 object-contain"
-                style={{
-                  width: '24px',
-                  height: '24px',
-                  opacity: 1,
-                }}
-              />
+              {/* Warning Disclaimer */}
               <p
-                className="font-medium font-['Barlow_Condensed']"
                 style={{
-                  width: textWidth,
-                  height: 'auto',
-                  fontFamily: 'Barlow Condensed',
+                  width: '100%',
+                  maxWidth: '602px',
+                  minHeight: '25px',
+                  fontFamily: '"Poppins", sans-serif',
                   fontWeight: 500,
-                  fontSize: '14px',
-                  lineHeight: '130%',
-                  color: 'rgba(226, 69, 69, 1)',
+                  fontSize: '12px',
+                  lineHeight: '17px',
                   letterSpacing: '0%',
+                  color: 'rgba(229, 9, 20, 1)',
                   margin: 0,
                   padding: 0,
+                  marginTop: '2px',
+                  opacity: 1,
                 }}
               >
                 {method === 'litecoin'
-                  ? 'Please double-check your LTC wallet address. Once the payout is processed, this action cannot be reversed. We are not responsible for lost rewards due to an incorrect address.'
-                  : 'Please make sure you enter the correct email address. Once the payout is processed, this action cannot be reversed. We are not responsible for lost rewards due to incorrect information.'
-                }
+                  ? '***Please double-check your LTC wallet address. Once the payout is processed, this action cannot be reversed. We are not responsible for lost rewards due to an incorrect address'
+                  : '***Please double-check your paypal email address. Once the payout is processed, this action cannot be reversed. We are not responsible for lost rewards due to an incorrect address'}
               </p>
             </div>
 
-            {/* Payout Breakdown */}
+            {/* Payout Breakdown Card (606x240) */}
             <div
-              className="flex flex-col shrink-0"
+              className="flex items-center justify-center w-full"
               style={{
-                width: contentWidth,
-                height: '158px',
-                gap: '12px',
+                width: '100%',
+                maxWidth: '606px',
+                height: '240px',
+                borderRadius: '16px',
+                background: 'rgba(248, 245, 239, 1)',
+                padding: '27px 16px',
+                boxSizing: 'border-box',
                 opacity: 1,
               }}
             >
-              <h4
-                className="font-semibold font-['Barlow_Condensed'] text-white"
-                style={{
-                  width: contentWidth,
-                  height: '14px',
-                  fontFamily: 'Barlow Condensed',
-                  fontWeight: 600,
-                  fontSize: '20px',
-                  lineHeight: '120%',
-                  letterSpacing: '0%',
-                  textTransform: 'none',
-                  display: 'flex',
-                  alignItems: 'center',
-                  margin: 0,
-                  padding: 0,
-                }}
-              >
-                Payout Breakdown
-              </h4>
-
+              {/* Four Elements as One Whole Layout (572.5x186, gap: 25px) */}
               <div
-                className="flex flex-col shrink-0 border border-white/[0.08]"
+                className="flex flex-col justify-between w-full"
                 style={{
-                  width: contentWidth,
-                  height: '132px',
-                  borderRadius: '12px',
-                  padding: '16px',
-                  gap: '14px',
-                  background: 'rgba(0, 0, 0, 0.36)',
-                  backdropFilter: 'blur(44px)',
+                  width: '100%',
+                  maxWidth: '572.5px',
+                  height: '186px',
+                  gap: '25px',
+                  boxSizing: 'border-box',
+                  opacity: 1,
                 }}
               >
-                <div className="flex justify-between items-center w-full">
-                  <span
+                <h4
+                  style={{
+                    fontFamily: '"Bricolage Grotesque", sans-serif',
+                    fontWeight: 700,
+                    fontSize: '20px',
+                    lineHeight: '13px',
+                    letterSpacing: '-0.02em',
+                    color: '#0E0F0C',
+                    width: '100%',
+                    maxWidth: '572.5px',
+                    height: '13px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    margin: 0,
+                    padding: 0,
+                    opacity: 1,
+                  }}
+                >
+                  Payout Breakdown
+                </h4>
+
+                <div className="flex flex-col gap-2 w-full">
+                  {/* Amount You Receive Pill */}
+                  <div
+                    className="bg-white flex justify-between items-center w-full"
                     style={{
-                      fontFamily: 'Barlow Condensed',
-                      fontWeight: 600,
-                      fontSize: '14px',
-                      lineHeight: '120%',
-                      color: '#ffffff',
+                      width: '100%',
+                      maxWidth: '572.5px',
+                      height: '53px',
+                      borderRadius: '11px',
+                      padding: '0 20px',
+                      boxSizing: 'border-box',
+                      opacity: 1,
                     }}
                   >
-                    Amount You Receive
-                  </span>
-                  <span
+                    <span
+                      style={{
+                        fontFamily: '"Poppins", sans-serif',
+                        fontWeight: 500,
+                        fontSize: '18px',
+                        lineHeight: '13px',
+                        letterSpacing: '0%',
+                        color: '#000000',
+                        width: '187px',
+                        height: '13px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        margin: 0,
+                        padding: 0,
+                        opacity: 1,
+                      }}
+                    >
+                      Amount You Receive
+                    </span>
+                    <span
+                      style={{
+                        fontFamily: '"Poppins", sans-serif',
+                        fontWeight: 500,
+                        fontSize: '18px',
+                        color: '#000000',
+                        display: 'flex',
+                        alignItems: 'center',
+                      }}
+                    >
+                      {youReceive.toLocaleString()}
+                    </span>
+                  </div>
+
+                  {/* Processing Fees Pill */}
+                  <div
+                    className="bg-white flex justify-between items-center w-full"
                     style={{
-                      fontFamily: 'Barlow Condensed',
-                      fontWeight: 600,
-                      fontSize: '14px',
-                      lineHeight: '120%',
-                      color: '#ffffff',
+                      width: '100%',
+                      maxWidth: '572.5px',
+                      height: '53px',
+                      borderRadius: '11px',
+                      padding: '0 20px',
+                      boxSizing: 'border-box',
+                      opacity: 1,
                     }}
                   >
-                    {youReceive.toLocaleString()}
-                  </span>
+                    <span
+                      style={{
+                        fontFamily: '"Poppins", sans-serif',
+                        fontWeight: 500,
+                        fontSize: '18px',
+                        lineHeight: '13px',
+                        letterSpacing: '0%',
+                        color: '#000000',
+                        minWidth: '187px',
+                        height: '13px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        margin: 0,
+                        padding: 0,
+                        opacity: 1,
+                      }}
+                    >
+                      Processing Fees ({methodFeePercent}%)
+                    </span>
+                    <span
+                      style={{
+                        fontFamily: '"Poppins", sans-serif',
+                        fontWeight: 500,
+                        fontSize: '18px',
+                        color: '#000000',
+                        display: 'flex',
+                        alignItems: 'center',
+                      }}
+                    >
+                      -{feeCoins.toLocaleString()}
+                    </span>
+                  </div>
                 </div>
 
-                <div className="flex justify-between items-center w-full">
+                {/* Total Deducted Row */}
+                <div
+                  className="flex justify-between items-center w-full px-1"
+                  style={{ opacity: 1 }}
+                >
                   <span
                     style={{
-                      fontFamily: 'Barlow Condensed',
-                      fontWeight: 600,
-                      fontSize: '14px',
-                      lineHeight: '120%',
-                      color: '#ffffff',
-                    }}
-                  >
-                    Processing Fees ({methodFeePercent}%)
-                  </span>
-                  <span
-                    style={{
-                      fontFamily: 'Barlow Condensed',
-                      fontWeight: 600,
-                      fontSize: '14px',
-                      lineHeight: '120%',
-                      color: '#ffffff',
-                    }}
-                  >
-                    -{feeCoins.toLocaleString()}
-                  </span>
-                </div>
-
-                <div style={{ height: '1px', backgroundColor: 'rgba(255, 255, 255, 0.1)', width: '100%', flexShrink: 0 }} />
-
-                <div className="flex justify-between items-center w-full text-[#49B265]">
-                  <span
-                    style={{
-                      fontFamily: 'Barlow Condensed',
+                      fontFamily: '"Bricolage Grotesque", sans-serif',
                       fontWeight: 700,
                       fontSize: '20px',
-                      lineHeight: '120%',
+                      lineHeight: '13px',
+                      letterSpacing: '-0.02em',
+                      color: '#000000',
+                      width: '275px',
+                      height: '13px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      margin: 0,
+                      padding: 0,
+                      opacity: 1,
                     }}
                   >
                     Total Deducted From Balance
                   </span>
                   <span
                     style={{
-                      fontFamily: 'Barlow Condensed',
+                      fontFamily: '"Bricolage Grotesque", sans-serif',
                       fontWeight: 700,
                       fontSize: '20px',
-                      lineHeight: '120%',
+                      lineHeight: '13px',
+                      letterSpacing: '-0.02em',
+                      color: '#000000',
+                      display: 'flex',
+                      alignItems: 'center',
+                      opacity: 1,
                     }}
                   >
                     {totalDeducted.toLocaleString()}
@@ -736,14 +941,16 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess, filterType }) 
             </div>
 
             {error && (
-              <div className="flex items-start gap-2 p-3 rounded-xl bg-red-500/10 border border-red-500/20">
-                <FiAlertCircle className="text-red-400 text-sm mt-0.5 flex-shrink-0" />
-                <p className="text-red-400 text-xs">{error}</p>
+              <div className="flex items-start gap-2 p-2.5 rounded-xl bg-red-50 border border-red-200">
+                <FiAlertCircle className="text-red-500 text-sm mt-0.5 shrink-0" />
+                <p className="text-red-600 text-xs m-0">{error}</p>
               </div>
             )}
 
+            {/* Actions */}
             <button
               id="withdrawal-next-btn"
+              type="button"
               onClick={() => {
                 if (!isValidAmount) { setError('Please enter a valid amount.'); return; }
                 if (!destination.trim()) { setError('Please enter your payout destination.'); return; }
@@ -751,194 +958,403 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess, filterType }) 
                 setStep(3);
               }}
               disabled={!isValidAmount || !destination.trim()}
-              className="bg-[#49B265] text-white font-bold font-['Barlow_Condensed'] text-[20px] shadow-[0_4px_0_0_#276D3A] hover:bg-[#49B265]/90 hover:translate-y-[1px] hover:shadow-[0_3px_0_0_#276D3A] active:translate-y-[4px] active:shadow-none transition-all flex items-center justify-center gap-[10px] mt-auto shrink-0"
+              className="w-full flex items-center justify-center transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed shadow-none border-none outline-none"
               style={{
-                width: contentWidth,
-                height: '48px',
-                borderRadius: '10px',
+                width: '100%',
+                maxWidth: '604px',
+                height: '55px',
                 gap: '10px',
-                opacity: (!isValidAmount || !destination.trim()) ? 0.5 : 1,
+                borderRadius: '30px',
+                paddingTop: '22px',
+                paddingRight: '28px',
+                paddingBottom: '22px',
+                paddingLeft: '28px',
+                background: 'rgba(36, 50, 77, 1)',
+                opacity: (!isValidAmount || !destination.trim()) ? 0.45 : 1,
                 cursor: (!isValidAmount || !destination.trim()) ? 'not-allowed' : 'pointer',
-                paddingTop: '10px',
-                paddingRight: '30px',
-                paddingBottom: '10px',
-                paddingLeft: '30px',
               }}
             >
-              Review Withdrawal <span className="ml-1">→</span>
+              <span
+                style={{
+                  fontFamily: '"Poppins", sans-serif',
+                  fontWeight: 500,
+                  fontSize: '16px',
+                  lineHeight: '28px',
+                  letterSpacing: '0%',
+                  color: '#FFFFFF',
+                  width: '154px',
+                  height: '11px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  opacity: 1,
+                }}
+              >
+                Review Withdrawal
+              </span>
             </button>
-          </>
+          </div>
         )}
 
+        {/* ── STEP 3: Confirm Withdrawal ───────────────────────────────────── */}
         {step === 3 && selectedConfig && selectedMethod && (
-          <div className="flex flex-col gap-[16px] w-full shrink-0">
-            {/* Confirm Details Box */}
+          <div className="flex flex-col gap-4 w-full">
+            {/* Payout Breakdown Card */}
             <div
-              className="flex flex-col shrink-0 border border-white/[0.08]"
+              className="flex flex-col justify-between w-full"
               style={{
-                width: contentWidth,
-                height: '195px',
-                borderRadius: '12px',
-                padding: '16px',
-                gap: '14px',
-                background: 'rgba(0, 0, 0, 0.36)',
-                backdropFilter: 'blur(44px)',
+                width: '100%',
+                maxWidth: '606px',
+                borderRadius: '16px',
+                background: 'rgba(248, 245, 239, 1)',
+                padding: '24px 16px',
+                gap: '20px',
+                boxSizing: 'border-box',
+                opacity: 1,
               }}
             >
-              <div className="flex justify-between items-center w-full">
-                <span style={{ fontFamily: 'Barlow Condensed', fontWeight: 600, fontSize: '14px', lineHeight: '120%', color: '#ffffff' }}>
-                  Method
-                </span>
-                <span style={{ fontFamily: 'Barlow Condensed', fontWeight: 600, fontSize: '14px', lineHeight: '120%', color: '#ffffff' }}>
-                  {method === 'giftcard' ? `${selectedMethod.label} (${giftCardBrand})` : selectedMethod.label}
-                </span>
+              <h4
+                style={{
+                  fontFamily: '"Bricolage Grotesque", sans-serif',
+                  fontWeight: 700,
+                  fontSize: '20px',
+                  lineHeight: '13px',
+                  letterSpacing: '-0.02em',
+                  color: '#0E0F0C',
+                  width: '100%',
+                  height: '13px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  margin: 0,
+                  padding: 0,
+                  opacity: 1,
+                }}
+              >
+                Payout Breakdown
+              </h4>
+
+              <div className="flex flex-col gap-2 w-full">
+                {/* Method Pill */}
+                <div
+                  className="bg-white flex justify-between items-center w-full shadow-xs"
+                  style={{
+                    width: '100%',
+                    height: '53px',
+                    borderRadius: '11px',
+                    padding: '0 20px',
+                    boxSizing: 'border-box',
+                  }}
+                >
+                  <span
+                    style={{
+                      fontFamily: '"Poppins", sans-serif',
+                      fontWeight: 500,
+                      fontSize: '18px',
+                      color: '#000000',
+                    }}
+                  >
+                    Method
+                  </span>
+                  <span
+                    style={{
+                      fontFamily: '"Poppins", sans-serif',
+                      fontWeight: 500,
+                      fontSize: '18px',
+                      color: '#000000',
+                    }}
+                  >
+                    {method === 'giftcard' ? `${selectedMethod.label} (${giftCardBrand})` : selectedMethod.label}
+                  </span>
+                </div>
+
+                {/* Destination Pill */}
+                <div
+                  className="bg-white flex justify-between items-center w-full shadow-xs"
+                  style={{
+                    width: '100%',
+                    height: '53px',
+                    borderRadius: '11px',
+                    padding: '0 20px',
+                    boxSizing: 'border-box',
+                  }}
+                >
+                  <span
+                    style={{
+                      fontFamily: '"Poppins", sans-serif',
+                      fontWeight: 500,
+                      fontSize: '18px',
+                      color: '#000000',
+                    }}
+                  >
+                    Destination
+                  </span>
+                  <span
+                    style={{
+                      fontFamily: '"Poppins", sans-serif',
+                      fontWeight: 500,
+                      fontSize: '18px',
+                      color: '#000000',
+                      maxWidth: '320px',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      whiteSpace: 'nowrap',
+                    }}
+                  >
+                    {destination}
+                  </span>
+                </div>
+
+                {/* Amount You Receive Pill */}
+                <div
+                  className="bg-white flex justify-between items-center w-full shadow-xs"
+                  style={{
+                    width: '100%',
+                    height: '53px',
+                    borderRadius: '11px',
+                    padding: '0 20px',
+                    boxSizing: 'border-box',
+                  }}
+                >
+                  <span
+                    style={{
+                      fontFamily: '"Poppins", sans-serif',
+                      fontWeight: 500,
+                      fontSize: '18px',
+                      color: '#000000',
+                    }}
+                  >
+                    Amount you recevie
+                  </span>
+                  <span
+                    style={{
+                      fontFamily: '"Poppins", sans-serif',
+                      fontWeight: 500,
+                      fontSize: '18px',
+                      color: '#000000',
+                    }}
+                  >
+                    {youReceive.toLocaleString()}
+                  </span>
+                </div>
+
+                {/* Processing Fees Pill */}
+                <div
+                  className="bg-white flex justify-between items-center w-full shadow-xs"
+                  style={{
+                    width: '100%',
+                    height: '53px',
+                    borderRadius: '11px',
+                    padding: '0 20px',
+                    boxSizing: 'border-box',
+                  }}
+                >
+                  <span
+                    style={{
+                      fontFamily: '"Poppins", sans-serif',
+                      fontWeight: 500,
+                      fontSize: '18px',
+                      color: '#000000',
+                    }}
+                  >
+                    Processing Fees ({methodFeePercent}%)
+                  </span>
+                  <span
+                    style={{
+                      fontFamily: '"Poppins", sans-serif',
+                      fontWeight: 500,
+                      fontSize: '18px',
+                      color: '#000000',
+                    }}
+                  >
+                    +{feeCoins.toLocaleString()}
+                  </span>
+                </div>
               </div>
 
-              <div className="flex justify-between items-center w-full">
-                <span style={{ fontFamily: 'Barlow Condensed', fontWeight: 600, fontSize: '14px', lineHeight: '120%', color: '#ffffff' }}>
-                  Destination
-                </span>
-                <span className="max-w-[240px] truncate" style={{ fontFamily: 'Barlow Condensed', fontWeight: 600, fontSize: '14px', lineHeight: '120%', color: '#ffffff' }}>
-                  {destination}
-                </span>
-              </div>
-
-              <div className="flex justify-between items-center w-full">
-                <span style={{ fontFamily: 'Barlow Condensed', fontWeight: 600, fontSize: '14px', lineHeight: '120%', color: '#ffffff' }}>
-                  Amount you receive
-                </span>
-                <span style={{ fontFamily: 'Barlow Condensed', fontWeight: 600, fontSize: '14px', lineHeight: '120%', color: '#ffffff' }}>
-                  {amountNum.toLocaleString()}
-                </span>
-              </div>
-
-              <div className="flex justify-between items-center w-full">
-                <span style={{ fontFamily: 'Barlow Condensed', fontWeight: 600, fontSize: '14px', lineHeight: '120%', color: '#ffffff' }}>
-                  Processing Fees ({methodFeePercent}%)
-                </span>
-                <span style={{ fontFamily: 'Barlow Condensed', fontWeight: 600, fontSize: '14px', lineHeight: '120%', color: '#ffffff' }}>
-                  +{feeCoins.toLocaleString()}
-                </span>
-              </div>
-
-              <div style={{ height: '1px', backgroundColor: 'rgba(255, 255, 255, 0.1)', width: '100%', flexShrink: 0 }} />
-
-              <div className="flex justify-between items-center w-full text-[#49B265]">
-                <span style={{ fontFamily: 'Barlow Condensed', fontWeight: 700, fontSize: '20px', lineHeight: '120%' }}>
+              {/* Total Deducted Row */}
+              <div
+                className="flex justify-between items-center w-full px-1"
+                style={{ opacity: 1 }}
+              >
+                <span
+                  style={{
+                    fontFamily: '"Bricolage Grotesque", sans-serif',
+                    fontWeight: 700,
+                    fontSize: '20px',
+                    lineHeight: '13px',
+                    letterSpacing: '-0.02em',
+                    color: '#000000',
+                    display: 'flex',
+                    alignItems: 'center',
+                  }}
+                >
                   Total Deducted From Balance
                 </span>
-                <span style={{ fontFamily: 'Barlow Condensed', fontWeight: 700, fontSize: '20px', lineHeight: '120%' }}>
+                <span
+                  style={{
+                    fontFamily: '"Bricolage Grotesque", sans-serif',
+                    fontWeight: 700,
+                    fontSize: '20px',
+                    lineHeight: '13px',
+                    letterSpacing: '-0.02em',
+                    color: '#000000',
+                    display: 'flex',
+                    alignItems: 'center',
+                  }}
+                >
                   {totalDeducted.toLocaleString()}
                 </span>
               </div>
             </div>
 
-            {/* Warning Box */}
-            <div
-              className="flex items-start shrink-0"
+            {/* Red Notice */}
+            <p
               style={{
-                width: contentWidth,
-                height: 'auto',
-                borderRadius: '12px',
-                gap: '8px',
+                fontFamily: '"Poppins", sans-serif',
+                fontWeight: 500,
+                fontSize: '12px',
+                lineHeight: '17px',
+                letterSpacing: '0%',
+                color: 'rgba(229, 9, 20, 1)',
+                margin: 0,
+                padding: 0,
                 opacity: 1,
-                paddingTop: '16px',
-                paddingRight: '14px',
-                paddingBottom: '16px',
-                paddingLeft: '14px',
-                background: 'rgba(226, 69, 69, 0.14)',
-                border: 'none'
               }}
             >
-              <img
-                src="/coins/war.png"
-                alt="Warning"
-                className="shrink-0 object-contain"
-                style={{
-                  width: '24px',
-                  height: '24px',
-                  opacity: 1,
-                }}
-              />
-              <p
-                className="font-medium font-['Barlow_Condensed']"
-                style={{
-                  width: textWidth,
-                  height: 'auto',
-                  fontFamily: 'Barlow Condensed',
-                  fontWeight: 500,
-                  fontSize: '14px',
-                  lineHeight: '130%',
-                  color: 'rgba(226, 69, 69, 1)',
-                  letterSpacing: '0%',
-                  margin: 0,
-                  padding: 0,
-                }}
-              >
-                This action is irreversible. Your balance will be deducted immediately and the request will be reviewed by our team.
-              </p>
-            </div>
+              This action is irreversible. Your balance will be deducted immediately and the request will be reviewed by our team.
+            </p>
 
             {error && (
-              <div className="flex items-start gap-2 p-3 rounded-xl bg-red-500/10 border border-red-500/20">
-                <FiAlertCircle className="text-red-400 text-sm mt-0.5 flex-shrink-0" />
-                <p className="text-red-400 text-xs">{error}</p>
+              <div className="flex items-start gap-2 p-2.5 rounded-xl bg-red-50 border border-red-200">
+                <FiAlertCircle className="text-red-500 text-sm mt-0.5 shrink-0" />
+                <p className="text-red-600 text-xs m-0">{error}</p>
               </div>
             )}
 
+            {/* Confirm Withdrawal Button */}
             <button
               id="withdrawal-confirm-btn"
+              type="button"
               onClick={handleSubmit}
               disabled={submitting}
-              className="bg-[#49B265] text-white font-bold font-['Barlow_Condensed'] text-[20px] shadow-[0_4px_0_0_#276D3A] hover:bg-[#49B265]/90 hover:translate-y-[1px] hover:shadow-[0_3px_0_0_#276D3A] active:translate-y-[4px] active:shadow-none transition-all flex items-center justify-center gap-[10px] mt-auto shrink-0"
+              className="w-full flex items-center justify-center transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed shadow-none border-none outline-none"
               style={{
-                width: contentWidth,
-                height: '48px',
-                borderRadius: '10px',
+                width: '100%',
+                maxWidth: '604px',
+                height: '55px',
                 gap: '10px',
-                opacity: submitting ? 0.5 : 1,
+                borderRadius: '30px',
+                paddingTop: '22px',
+                paddingRight: '28px',
+                paddingBottom: '22px',
+                paddingLeft: '28px',
+                background: 'rgba(36, 50, 77, 1)',
+                boxSizing: 'border-box',
+                opacity: submitting ? 0.6 : 1,
                 cursor: submitting ? 'not-allowed' : 'pointer',
-                paddingTop: '10px',
-                paddingRight: '30px',
-                paddingBottom: '10px',
-                paddingLeft: '30px',
               }}
             >
-              {submitting ? (
-                <><FiLoader className="animate-spin" /> Processing...</>
-              ) : (
-                <>Confirm Withdrawal <span className="ml-1">→</span></>
-              )}
+              <span
+                style={{
+                  fontFamily: '"Poppins", sans-serif',
+                  fontWeight: 500,
+                  fontSize: '16px',
+                  lineHeight: '28px',
+                  letterSpacing: '0%',
+                  color: '#FFFFFF',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  opacity: 1,
+                }}
+              >
+                {submitting ? (
+                  <><FiLoader className="animate-spin mr-2" /> Processing...</>
+                ) : (
+                  'Confirm Withdrawal'
+                )}
+              </span>
             </button>
           </div>
         )}
 
+        {/* ── STEP 4: Success ─────────────────────────────────────────────── */}
         {step === 4 && (
-          <div className="py-2 flex flex-col items-center gap-[20px] text-center w-full">
-              <img
-                src="/coins/tik1.png"
-                alt="Success"
-                className="w-[74px] h-[74px] object-contain shrink-0"
-                style={{ transform: 'rotate(0deg)', opacity: 1 }}
-              />
-            <h2 className="text-white font-bold font-['Barlow_Condensed'] text-[28px] leading-[120%] uppercase w-full">
-              Request Submitted!
-            </h2>
-            <div className="flex flex-col gap-[6px] items-center w-full">
-              <p className="text-[#888888] font-medium font-['Barlow_Condensed'] text-[18px] leading-[130%] m-0 p-0 text-center w-full">
-                Your withdrawal of <span className="text-white font-mono">{amountNum.toLocaleString()} Coins</span> via{' '}
-                <span className="text-white">{selectedMethod?.label}</span> has been submitted.
-              </p>
-              <p className="text-[#888888] font-medium font-['Barlow_Condensed'] text-[18px] leading-[130%] m-0 p-0 text-center w-full mt-2">
+          <div
+            className="relative w-full flex flex-col items-center justify-center text-center overflow-hidden px-8 py-6 box-border"
+            style={{
+              width: '100%',
+              maxWidth: '606px',
+              height: '382px',
+              background: 'rgba(248, 245, 239, 1)',
+              borderRadius: '20px',
+            }}
+          >
+            {/* Bottom Right Corner Background Image */}
+            <img
+              src="/coins/confirmbottom.png"
+              alt=""
+              className="absolute bottom-0 right-0 pointer-events-none z-0 select-none"
+              style={{
+                maxWidth: '260px',
+                objectFit: 'contain',
+              }}
+            />
+
+            {/* Content Box */}
+            <div className="relative z-10 flex flex-col items-center text-center w-full max-w-[500px]">
+              {/* Blue Verified Badge Image */}
+              <div className="flex items-center justify-center mb-3">
+                <img
+                  src="/coins/confooooom.png"
+                  alt="Success"
+                  className="w-[64px] h-[64px] object-contain"
+                />
+              </div>
+
+              {/* Title */}
+              <h2
+                className="text-[#000000] font-bold text-[32px] leading-tight m-0 mb-3"
+                style={{
+                  fontFamily: '"Bricolage Grotesque", sans-serif',
+                  letterSpacing: '-0.02em',
+                }}
+              >
+                Request Submitted!
+              </h2>
+
+              {/* Subtitle / Details */}
+              <p
+                className="text-[#000000] text-[15px] font-normal leading-[23px] m-0 mb-6"
+                style={{ fontFamily: '"Poppins", sans-serif' }}
+              >
+                Your withdrawal of <span className="font-bold">{amountNum ? amountNum.toLocaleString() : youReceive.toLocaleString()} Coins</span> via {selectedMethod?.label || (method === 'paypal' ? 'PayPal' : 'Litecoin')} has been submitted.
+                <br />
                 Our team will process your request within 1–3 business days. Check your transaction history for updates.
               </p>
+
+              {/* Done Button */}
+              <button
+                id="withdrawal-done-btn"
+                type="button"
+                onClick={onClose}
+                className="w-full flex items-center justify-center transition-all cursor-pointer shadow-none border-none outline-none"
+                style={{
+                  width: '100%',
+                  maxWidth: '440px',
+                  height: '55px',
+                  borderRadius: '30px',
+                  background: 'rgba(36, 50, 77, 1)',
+                  color: '#FFFFFF',
+                  fontFamily: '"Poppins", sans-serif',
+                  fontWeight: 500,
+                  fontSize: '16px',
+                  boxSizing: 'border-box',
+                }}
+              >
+                Done
+              </button>
             </div>
-            <button
-              onClick={onClose}
-              className="w-full h-[48px] bg-[#49B265] text-white rounded-[10px] font-bold font-['Barlow_Condensed'] text-[20px] shadow-[0_4px_0_0_#276D3A] hover:bg-[#49B265]/90 hover:translate-y-[1px] hover:shadow-[0_3px_0_0_#276D3A] active:translate-y-[4px] active:shadow-none transition-all flex items-center justify-center mt-4"
-            >
-              Done
-            </button>
           </div>
         )}
       </motion.div>
