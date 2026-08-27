@@ -464,7 +464,7 @@ const Wallet = () => {
                       opacity: 1,
                     }}
                   >
-                    {balance.toLocaleString('en-US')}
+                    {balance.toLocaleString('de-DE')}
                   </span>
                 </div>
                 <div
@@ -493,7 +493,7 @@ const Wallet = () => {
                       gap: '4px',
                     }}
                   >
-                    {settings?.coinsPerUSD ? settings.coinsPerUSD.toLocaleString('en-US') : '1,000'}
+                    {settings?.coinsPerUSD ? settings.coinsPerUSD.toLocaleString('de-DE') : '1.000'}
                     <span style={{ color: '#000000' }}>= 1 USD</span>
                   </span>
                 </div>

@@ -20,9 +20,9 @@ const formatCoinAmount = (amount) => {
   if (amount === undefined || amount === null || isNaN(amount) || Number(amount) === 0) return '0';
   const num = Number(amount);
   if (Number.isInteger(num)) {
-    return num.toLocaleString('en-US');
+    return num.toLocaleString('de-DE');
   }
-  return num.toLocaleString('en-US', {
+  return num.toLocaleString('de-DE', {
     minimumFractionDigits: 0,
     maximumFractionDigits: 2,
   });

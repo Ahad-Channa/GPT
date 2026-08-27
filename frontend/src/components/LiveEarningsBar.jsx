@@ -150,8 +150,8 @@ const LiveEarningsBar = () => {
     if (tx.isWithdrawal || tx.transactionType === 'withdrawal') {
       const method = tx.method ? tx.method.charAt(0).toUpperCase() + tx.method.slice(1) : 'Withdrawal';
       const usdValue = rawAmount >= 1000 
-        ? (rawAmount / 1000).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 })
-        : rawAmount.toLocaleString();
+        ? (rawAmount / 1000).toLocaleString('de-DE', { minimumFractionDigits: 0, maximumFractionDigits: 2 })
+        : rawAmount.toLocaleString('de-DE');
 
       return {
         amountStr: `$${usdValue}`,
@@ -201,7 +201,7 @@ const LiveEarningsBar = () => {
       if (tx.description) task = tx.description;
     }
 
-    const amountStr = rawAmount.toLocaleString();
+    const amountStr = rawAmount.toLocaleString('de-DE');
 
     return {
       amountStr,

@@ -149,7 +149,7 @@ const VipPage = () => {
       });
       const data = await res.json();
       if (data.success) {
-        toast.success(`🎉 Claimed ${data.rewardAmount.toLocaleString()} coins!`);
+        toast.success(`🎉 Claimed ${data.rewardAmount.toLocaleString('de-DE')} coins!`);
         fetchStatus();
       } else {
         toast.error(data.error || 'Failed to claim');
@@ -253,7 +253,7 @@ const VipPage = () => {
                     color: 'transparent'
                   }}
                 >
-                  {(totalEarned || 0).toLocaleString()}
+                  {(totalEarned || 0).toLocaleString('de-DE')}
                 </span>
               </div>
             </div>
@@ -307,7 +307,7 @@ const VipPage = () => {
                       color: 'transparent'
                     }}
                   >
-                    {coinsToNext.toLocaleString()}
+                    {coinsToNext.toLocaleString('de-DE')}
                   </span>
                 </div>
                 <span className="text-[#888888] text-sm md:text-[16px] font-medium font-['Barlow_Condensed'] leading-[130%] tracking-normal whitespace-nowrap">
@@ -324,7 +324,7 @@ const VipPage = () => {
                       color: 'transparent'
                     }}
                   >
-                    {nextLevel.rewardAmount.toLocaleString()}
+                    {nextLevel.rewardAmount.toLocaleString('de-DE')}
                   </span>
                 </div>
                 <span className="text-[#888888] text-sm md:text-[16px] font-medium font-['Barlow_Condensed'] leading-[130%] tracking-normal whitespace-nowrap">
@@ -374,7 +374,7 @@ const VipPage = () => {
                       color: 'transparent'
                     }}
                   >
-                    {totalEarned?.toLocaleString() || currentLevel?.threshold?.toLocaleString() || 0} / {currentLevel?.threshold?.toLocaleString() || 0}
+                    {totalEarned ? totalEarned.toLocaleString('de-DE') : (currentLevel?.threshold ? currentLevel.threshold.toLocaleString('de-DE') : 0)} / {currentLevel?.threshold ? currentLevel.threshold.toLocaleString('de-DE') : 0}
                   </span>
                   <span
                     className="text-[#888888] text-sm md:text-[16px] font-medium font-['Barlow_Condensed'] leading-[130%] tracking-normal whitespace-nowrap flex items-center"
@@ -523,7 +523,7 @@ const VipPage = () => {
                             </h4>
                             {/* Requires text */}
                             <p className="text-[#888888] text-sm md:text-[16px] font-medium font-['Barlow_Condensed'] leading-[130%] m-0 p-0 flex items-center overflow-visible whitespace-nowrap mt-1 md:mt-0">
-                              Requires {lvl.threshold.toLocaleString()} coins
+                              Requires {lvl.threshold.toLocaleString('de-DE')} coins
                             </p>
                           </div>
 
@@ -562,7 +562,7 @@ const VipPage = () => {
                                 filter: 'drop-shadow(0px 2px 4px rgba(0, 0, 0, 0.8))'
                               }}
                             >
-                              {lvl.rewardAmount.toLocaleString()}
+                              {lvl.rewardAmount.toLocaleString('de-DE')}
                             </span>
                           </div>
 

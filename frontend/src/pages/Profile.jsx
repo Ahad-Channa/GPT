@@ -176,7 +176,7 @@ const CustomizationModal = ({ isOpen, onClose, mongoUser, token, setMongoUser })
                   <div className="flex items-center justify-center gap-[6px] min-w-[111px] h-[32px]">
                     <img src="/coins/Coin.png" alt="Coins" className="w-[32px] h-[32px] object-contain shrink-0" />
                     <span className="font-bold text-[30px] leading-[1.2] text-transparent bg-clip-text bg-gradient-to-b from-[#FEDF77] to-[#FCB91E]">
-                      {(mongoUser?.walletBalance || 0).toLocaleString()}
+                      {(mongoUser?.walletBalance || 0).toLocaleString('de-DE')}
                     </span>
                   </div>
                 </div>
@@ -810,7 +810,7 @@ const ClickedOfferRow = ({ offer, token: initialToken, onRefresh }) => {
         {/* Reward */}
         <div className="flex items-center gap-[6px] font-semibold text-[#fbbf24] text-[28px] leading-[120%]" style={{ fontFamily: "'Barlow Condensed', sans-serif" }}>
           <img src="/coins/Coin.png" alt="Coin" className="w-[24px] h-[24px] shrink-0 object-contain" />
-          <span>{(offer.rewardAmount || 0).toLocaleString()}</span>
+          <span>{(offer.rewardAmount || 0).toLocaleString('de-DE')}</span>
         </div>
 
         {/* Status */}
@@ -1997,7 +1997,7 @@ const Profile = () => {
                     }}
                     className="font-bold text-[50px] leading-[120%]"
                   >
-                    {Math.max(mongoUser?.totalEarned || 0, profileStats.totalEarnedLifetime || 0).toLocaleString()}
+                    {Math.max(mongoUser?.totalEarned || 0, profileStats.totalEarnedLifetime || 0).toLocaleString('de-DE')}
                   </span>
                 </div>
               </div>
@@ -2020,7 +2020,7 @@ const Profile = () => {
                     }}
                     className="font-bold text-[50px] leading-[120%]"
                   >
-                    {(profileStats.earnings30Days || 0).toLocaleString()}
+                    {(profileStats.earnings30Days || 0).toLocaleString('de-DE')}
                   </span>
                 </div>
               </div>
@@ -2131,7 +2131,7 @@ const Profile = () => {
                                 <span style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="text-white font-semibold text-[28px] leading-[120%]">{offer.completedAt ? new Date(offer.completedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'N/A'}</span>
                                 <div className="flex items-center gap-[6px] font-semibold text-[#fbbf24] text-[28px] leading-[120%]" style={{ fontFamily: "'Barlow Condensed', sans-serif" }}>
                                   <img src="/coins/Coin.png" alt="Coin" className="w-[24px] h-[24px] shrink-0 object-contain" />
-                                  <span>{(offer.rewardAmount || 0).toLocaleString()}</span>
+                                  <span>{(offer.rewardAmount || 0).toLocaleString('de-DE')}</span>
                                 </div>
                               </div>
                             ))}
@@ -2192,7 +2192,7 @@ const Profile = () => {
                                   <span style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="text-white font-semibold text-[28px] leading-[120%]">{offer.createdAt ? new Date(offer.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'N/A'}</span>
                                   <div className="flex items-center gap-[6px] font-semibold text-[#fbbf24] text-[28px] leading-[120%]" style={{ fontFamily: "'Barlow Condensed', sans-serif" }}>
                                     <img src="/coins/Coin.png" alt="Coin" className="w-[24px] h-[24px] shrink-0 object-contain" />
-                                    <span>{(offer.amount || 0).toLocaleString()}</span>
+                                    <span>{(offer.amount || 0).toLocaleString('de-DE')}</span>
                                   </div>
                                   <span style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="text-white font-semibold text-[28px] leading-[120%]">{holdPeriodDays} days</span>
                                   <div style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className={`text-right font-semibold text-[28px] leading-[120%] ${offer.isReadyToRelease ? 'text-[#49b265]' : 'text-white'}`}>
@@ -2261,7 +2261,7 @@ const Profile = () => {
                                 </span>
                                 <div className="flex items-center gap-[6px] font-semibold text-[#fbbf24] text-[28px] leading-[120%]" style={{ fontFamily: "'Barlow Condensed', sans-serif" }}>
                                   <img src="/coins/Coin.png" alt="Coin" className="w-[24px] h-[24px] shrink-0 object-contain" />
-                                  <span>{isDebit ? '' : '+'}{tx.amount.toLocaleString()}</span>
+                                  <span>{isDebit ? '' : '+'}{tx.amount.toLocaleString('de-DE')}</span>
                                 </div>
                                 <div className="flex justify-start">
                                   <span style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className={`inline-flex items-center justify-center px-[20px] py-[4px] rounded-[100px] text-[22px] leading-[120%] font-semibold border ${isPending
@@ -2322,7 +2322,7 @@ const Profile = () => {
                               <span style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="text-white font-semibold text-[28px] leading-[120%]">{tx.createdAt ? new Date(tx.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'N/A'}</span>
                               <div className="flex items-center gap-[6px] font-semibold text-[#fbbf24] text-[28px] leading-[120%]" style={{ fontFamily: "'Barlow Condensed', sans-serif" }}>
                                 <img src="/coins/Coin.png" alt="Coin" className="w-[24px] h-[24px] shrink-0 object-contain" />
-                                <span>{Math.abs(tx.amount || 0).toLocaleString()}</span>
+                                <span>{Math.abs(tx.amount || 0).toLocaleString('de-DE')}</span>
                               </div>
                             </div>
                           ))}

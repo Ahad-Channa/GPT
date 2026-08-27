@@ -36,7 +36,7 @@ const CoinBadge = ({ amount, size = 'md' }) => {
   return (
     <span className={`inline-flex items-center font-bold text-amber-400 bg-amber-500/10 border border-amber-500/20 rounded-full ${cls}`}>
       <CoinIcon size={size === 'lg' ? 16 : 12} />
-      {amount.toLocaleString()}
+      {amount.toLocaleString('de-DE')}
     </span>
   );
 };
@@ -72,22 +72,27 @@ const PreviewCarousel = ({ images }) => {
 const BookDetailModal = ({ book, onClose, onOrder, balance }) => {
   const canAfford = balance >= book.coinCost;
   const hasOrder = !!book.userOrder;
-  const validImages = book.previewImages?.filter(Boolean) || [];
+  const validImages = (book.previewImages?.filter(Boolean) || []).map(url =>
+    url.startsWith('data:') || url.startsWith('http') ? url : `${BACKEND}${url}`
+  );
   const [previewIdx, setPreviewIdx] = useState(0);
   const [lightboxIdx, setLightboxIdx] = useState(null);
 
-  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+  const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' ? window.innerWidth < 768 : false);
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 768);
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
+  const itemsPerPage = isMobile ? 1 : 5;
+  const maxIdx = Math.max(0, validImages.length - itemsPerPage);
+
   const nextPreview = () => {
-    if (previewIdx + 3 < validImages.length) setPreviewIdx(p => p + 1);
+    setPreviewIdx(p => Math.min(maxIdx, p + 1));
   };
   const prevPreview = () => {
-    if (previewIdx > 0) setPreviewIdx(p => p - 1);
+    setPreviewIdx(p => Math.max(0, p - 1));
   };
 
   useEffect(() => {
@@ -101,112 +106,320 @@ const BookDetailModal = ({ book, onClose, onOrder, balance }) => {
     };
   }, []);
 
-  return createPortal(
-    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-      className="fixed inset-0 z-[99999] flex items-center justify-center bg-black/75 backdrop-blur-md p-4 overflow-y-auto"
-      onClick={onClose}>
-      <motion.div initial={{ scale: 0.93, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.93, opacity: 0 }}
-        transition={{ duration: 0.22 }}
-        className="bg-[#242424] rounded-[20px] w-full max-w-[95vw] md:w-[700px] h-auto max-h-[85vh] md:h-[808px] my-auto flex flex-col p-[16px] gap-[16px] shadow-2xl relative border border-white/[0.08] overflow-y-auto"
-        onClick={e => e.stopPropagation()}>
+  const visiblePreviews = validImages.slice(previewIdx, previewIdx + itemsPerPage);
 
+  return createPortal(
+    <>
+      <motion.div
+        initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 z-[99999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 overflow-y-auto"
+      onClick={onClose}
+    >
+      <motion.div
+        initial={{ scale: 0.96, opacity: 0, y: 10 }}
+        animate={{ scale: 1, opacity: 1, y: 0 }}
+        exit={{ scale: 0.96, opacity: 0, y: 10 }}
+        transition={{ duration: 0.2 }}
+        className="bg-white shadow-2xl relative border border-gray-100 box-border flex flex-col p-6 sm:p-8 my-auto overflow-hidden"
+        style={{
+          width: '100%',
+          maxWidth: '1072px',
+          height: 'auto',
+          maxHeight: '912px',
+          borderRadius: '25px',
+          background: 'rgba(255, 255, 255, 1)',
+          opacity: 1,
+          boxSizing: 'border-box',
+        }}
+        onClick={e => e.stopPropagation()}
+      >
         {/* Header */}
-        <div className="flex items-center w-full h-[24px] gap-[6px] shrink-0">
-          <h2 className="flex-1 text-white font-bold font-['Barlow_Condensed'] text-[16px] leading-[120%]">Book Details</h2>
-          <button onClick={onClose} className="text-[#888888] hover:text-white transition-colors flex items-center justify-center w-[24px] h-[24px]">
-            <FiX size={24} strokeWidth={1} />
+        <div className="flex items-center justify-between w-full mb-5 shrink-0">
+          <h2
+            style={{
+              fontFamily: '"Poppins", "Bricolage Grotesque", sans-serif',
+              fontWeight: 700,
+              fontSize: '24px',
+              lineHeight: '28px',
+              letterSpacing: '-0.02em',
+              color: '#000000',
+              margin: 0,
+              padding: 0,
+            }}
+          >
+            Book Details
+          </h2>
+          <button
+            onClick={onClose}
+            className="rounded-full bg-black text-white flex items-center justify-center hover:bg-gray-800 transition-colors shrink-0 cursor-pointer"
+            style={{
+              width: '24px',
+              height: '24px',
+            }}
+            title="Close"
+          >
+            <FiX size={14} strokeWidth={2.5} />
           </button>
         </div>
 
-        {/* Book Info */}
-        <div className="flex flex-col md:flex-row w-full md:w-[668px] md:h-[401px] gap-[16px] shrink-0">
-          {/* Cover */}
-          <div className="w-[161px] h-[246px] mx-auto md:mx-0 shrink-0">
-            {book.coverImage ? (
-              <img src={book.coverImage.startsWith('data:') || book.coverImage.startsWith('http') ? book.coverImage : `${BACKEND}${book.coverImage}`} alt={book.title} className="w-full h-full object-cover rounded-md drop-shadow-2xl"
-                onError={(e) => { e.target.style.display = 'none'; }} />
-            ) : (
-              <div className="w-full h-full rounded-xl bg-[#1a1a1a] flex items-center justify-center">
-                <FiBook className="text-slate-600 text-5xl" />
-              </div>
-            )}
-          </div>
+        {/* Scrollable Container for Modal Content */}
+        <div className="w-full flex-1 overflow-y-auto select-none [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] flex flex-col gap-6">
+          {/* Top Card: Book Main Info */}
+          <div
+            className="w-full flex flex-col md:flex-row gap-6 md:gap-7 items-center md:items-start shrink-0"
+            style={{
+              width: '100%',
+              maxWidth: '1015px',
+              minHeight: '400px',
+              background: 'rgba(248, 245, 239, 1)',
+              borderRadius: '20px',
+              padding: '8px 24px 24px 8px',
+              boxSizing: 'border-box',
+              opacity: 1,
+            }}
+          >
+            {/* Cover Card Container */}
+            <div
+              className="flex items-center justify-center shrink-0 mx-auto md:mx-0"
+              style={{
+                width: '185px',
+                height: '246px',
+                borderRadius: '10px',
+                background: 'rgba(255, 255, 255, 1)',
+                boxSizing: 'border-box',
+                opacity: 1,
+              }}
+            >
+              {book.coverImage ? (
+                <img
+                  src={book.coverImage.startsWith('data:') || book.coverImage.startsWith('http') ? book.coverImage : `${BACKEND}${book.coverImage}`}
+                  alt={book.title}
+                  className="object-contain"
+                  style={{
+                    width: '138px',
+                    height: '210px',
+                    opacity: 1,
+                  }}
+                  onError={(e) => { e.target.style.display = 'none'; }}
+                />
+              ) : (
+                <FiBook className="text-slate-400 text-4xl" />
+              )}
+            </div>
 
-          {/* Right — Info */}
-          <div className="flex flex-col w-full md:w-[491px] shrink-0">
-            {/* Title & Order Group */}
-            <div className="flex flex-col w-full md:w-[491px] min-h-[150px] gap-[22px] shrink-0 items-center md:items-start text-center md:text-left">
-              <h3 className="w-full text-white font-semibold font-['Barlow_Condensed'] text-[26px] leading-[120%]">
+            {/* Info Right */}
+            <div 
+              className="flex flex-col flex-1 min-w-0 w-full justify-between"
+              style={{
+                maxWidth: '767px',
+                height: '363px',
+                opacity: 1,
+              }}
+            >
+              {/* Title */}
+              <h3
+                style={{
+                  fontFamily: '"Poppins", sans-serif',
+                  fontWeight: 700,
+                  fontSize: '22px',
+                  lineHeight: '28px',
+                  letterSpacing: '-0.01em',
+                  color: '#000000',
+                  margin: 0,
+                  padding: 0,
+                  marginTop: '10px',
+                }}
+              >
                 {book.title}
               </h3>
 
-              <div className="flex flex-col md:flex-row items-center gap-[14px] w-full md:w-[491px] md:h-[48px] shrink-0">
-                <div className="flex items-center justify-center md:justify-start gap-[3px] w-full md:w-[238.5px] h-[26px]">
-                  <img src="/coins/Coin.png" alt="Coin" className="w-[26px] h-[26px] object-contain rounded-full shadow-[0px_14px_34px_0px_rgba(254,198,53,0.3)]" />
-                  <span className="font-bold font-['Barlow_Condensed'] text-[32px] leading-none bg-clip-text text-transparent bg-gradient-to-b from-[#FEDF77] to-[#FCB91E]">
-                    {book.coinCost.toLocaleString()}
-                  </span>
-                </div>
-                <button
-                  onClick={() => canAfford && onOrder(book)}
-                  disabled={!canAfford}
-                  className="flex items-center justify-center w-[238.5px] h-[48px] gap-[10px] rounded-[10px] px-[30px] py-[10px] bg-[#49B265] shadow-[0_4px_0_0_#276D3A] hover:bg-[#49B265]/90 hover:translate-y-[1px] hover:shadow-[0_3px_0_0_#276D3A] active:translate-y-[4px] active:shadow-none transition-all disabled:opacity-50 disabled:active:translate-y-0 disabled:hover:translate-y-0 disabled:hover:shadow-[0_4px_0_0_#276D3A]"
-                >
-                  <span className="font-bold font-['Barlow_Condensed'] text-[20px] leading-none text-white whitespace-nowrap">
+              {/* Price & Description Container */}
+              <div
+                className="flex flex-col w-full"
+                style={{
+                  width: '100%',
+                  height: '286px',
+                  background: 'rgba(255, 255, 255, 1)',
+                  borderRadius: '20px',
+                  gap: '17px',
+                  padding: '8px 12px 21px 12px',
+                  boxSizing: 'border-box',
+                  opacity: 1,
+                }}
+              >
+                {/* Price & Action Button */}
+                <div className="flex items-center justify-between gap-4 flex-wrap sm:flex-nowrap">
+                  <div className="flex items-center gap-2">
+                    <img
+                      src="/coins/gfitcoin.png"
+                      alt="Coins"
+                      className="w-6 h-6 object-contain shrink-0"
+                      onError={(e) => {
+                        e.currentTarget.src = '/coins/Coin.png';
+                      }}
+                    />
+                    <span
+                      style={{
+                        fontFamily: '"Poppins", sans-serif',
+                        fontWeight: 700,
+                        fontSize: '22px',
+                        lineHeight: '1',
+                        color: 'rgba(233, 179, 0, 1)',
+                      }}
+                    >
+                      {book.coinCost.toLocaleString('de-DE')}
+                    </span>
+                  </div>
+
+                  <button
+                    onClick={() => canAfford && onOrder(book)}
+                    disabled={!canAfford}
+                    className={`flex items-center justify-center font-semibold transition-all shrink-0 cursor-pointer ${
+                      canAfford
+                        ? 'bg-[#24324D] text-white hover:bg-[#1a2538] active:scale-95'
+                        : 'bg-[#24324D] text-white opacity-90 cursor-not-allowed'
+                    }`}
+                    style={{
+                      fontFamily: '"Poppins", sans-serif',
+                      fontSize: '14px',
+                      borderRadius: '9999px',
+                      height: '40px',
+                      padding: '0 24px',
+                    }}
+                  >
                     {canAfford ? 'Order Now' : 'Insufficient Coins'}
-                  </span>
-                  {canAfford && <img src="/coins/ar.png" alt="Arrow" className="w-[24px] h-[24px] object-contain shrink-0" />}
-                </button>
+                  </button>
+                </div>
+
+                {/* Description */}
+                {book.description && (
+                  <>
+                    <hr className="w-full border-black/5 m-0" />
+                    <div className="flex flex-col gap-1">
+                  <h4
+                    style={{
+                      fontFamily: '"Poppins", sans-serif',
+                      fontWeight: 700,
+                      fontSize: '15px',
+                      color: '#000000',
+                      margin: 0,
+                    }}
+                  >
+                    Description
+                  </h4>
+                  <p
+                    className="overflow-y-auto select-text pr-1 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
+                    style={{
+                      width: '100%',
+                      maxWidth: '743px',
+                      height: '148px',
+                      fontFamily: '"Poppins", sans-serif',
+                      fontWeight: 400,
+                      fontSize: '12px',
+                      lineHeight: '20px',
+                      color: '#333333',
+                      margin: 0,
+                      whiteSpace: 'pre-wrap',
+                      textAlign: 'justify',
+                    }}
+                  >
+                    {book.description}
+                  </p>
+                  </div>
+                  </>
+                )}
               </div>
             </div>
+          </div>
 
-            {book.description && (
-              <div className="flex flex-col w-full md:w-[491px] md:min-h-[235px] gap-[6px] mt-[16px] shrink-0">
-                <h4 className="w-full md:w-[491px] min-h-[17px] text-white font-bold font-['Barlow_Condensed'] text-[14px] leading-[120%]">
-                  Description
-                </h4>
-                <div className="w-full md:w-[491px] min-h-[212px] text-[#888888] font-medium font-['Barlow_Condensed'] text-[14px] leading-[130%] whitespace-pre-wrap text-left">
-                  {book.description}
+          {/* Book Preview Section */}
+          <div className="w-full flex flex-col shrink-0">
+            <h3
+              style={{
+                fontFamily: '"Poppins", "Bricolage Grotesque", sans-serif',
+                fontWeight: 700,
+                fontSize: '20px',
+                lineHeight: '24px',
+                letterSpacing: '-0.01em',
+                color: '#000000',
+                margin: '0 0 16px 0',
+              }}
+            >
+              Book Preview
+            </h3>
+
+            {validImages.length > 0 ? (
+              <>
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3.5 w-full">
+                  {visiblePreviews.map((url, i) => {
+                    const actualIdx = previewIdx + i;
+                    return (
+                      <div
+                        key={actualIdx}
+                        onClick={() => setLightboxIdx(actualIdx)}
+                        className="flex items-center justify-center p-2.5 rounded-[16px] cursor-pointer group transition-all hover:shadow-md"
+                        style={{
+                          background: 'rgba(248, 245, 239, 1)',
+                          height: '240px',
+                          boxSizing: 'border-box',
+                        }}
+                      >
+                        <div
+                          className="bg-white rounded-[4px] shadow-sm w-full h-full flex items-center justify-center p-2 overflow-hidden group-hover:scale-[1.02] transition-transform"
+                        >
+                          <img
+                            src={url}
+                            alt={`Preview ${actualIdx + 1}`}
+                            className="max-w-full max-h-full object-contain"
+                          />
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
+
+                {/* Carousel Navigation Arrows */}
+                <div className="flex items-center justify-center gap-3 mt-4">
+                  <button
+                    onClick={prevPreview}
+                    disabled={previewIdx === 0}
+                    className="w-9 h-9 rounded-full bg-[#24324D] text-white flex items-center justify-center hover:bg-[#1a2538] transition-colors disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+                    title="Previous"
+                  >
+                    <FiChevronLeft size={18} />
+                  </button>
+                  <button
+                    onClick={nextPreview}
+                    disabled={previewIdx >= maxIdx}
+                    className="w-9 h-9 rounded-full bg-white border border-[#CBD5E1] text-[#24324D] hover:bg-gray-50 flex items-center justify-center transition-colors disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+                    title="Next"
+                  >
+                    <FiChevronRight size={18} />
+                  </button>
+                </div>
+              </>
+            ) : (
+              <div
+                className="w-full flex items-center justify-center p-8 rounded-[16px] text-center"
+                style={{ background: 'rgba(248, 245, 239, 1)' }}
+              >
+                <p
+                  style={{
+                    fontFamily: '"Poppins", sans-serif',
+                    fontSize: '14px',
+                    color: '#666666',
+                    margin: 0,
+                  }}
+                >
+                  No preview pages available for this book.
+                </p>
               </div>
             )}
           </div>
         </div>
-
-        {/* Preview Section */}
-        {validImages.length > 0 && (
-          <div className="bg-[rgba(0,0,0,0.36)] backdrop-blur-[44px] rounded-[20px] w-full md:w-[668px] h-auto md:h-[319px] p-[16px] flex flex-col gap-[16px] shrink-0">
-            <h4 className="w-full md:w-[636px] h-[15px] text-white font-semibold font-['Barlow_Condensed'] text-[21px] leading-[120%] flex items-center">Book Preview</h4>
-            <div className="flex items-center justify-between">
-              <button
-                onClick={prevPreview}
-                disabled={previewIdx === 0}
-                className="w-[32px] h-[32px] flex-shrink-0 rounded-[32px] border-[1px] border-[#49B265] flex items-center justify-center hover:bg-[#49B265]/10 transition-colors disabled:opacity-30 disabled:hover:bg-transparent"
-              >
-                <img src="/coins/leftarrow.png" alt="Previous" className="w-[16px] h-[16px] object-contain rotate-180" />
-              </button>
-              <div className="flex gap-[8px] md:gap-[16px] justify-center overflow-x-auto w-full max-w-[220px] md:max-w-none [&::-webkit-scrollbar]:hidden">
-                {validImages.slice(previewIdx, previewIdx + (isMobile ? 1 : 3)).map((url, i) => (
-                  <div
-                    key={i}
-                    onClick={() => setLightboxIdx(previewIdx + i)}
-                    className="bg-white rounded-[3px] overflow-hidden flex-shrink-0 w-full md:w-[177px] h-[256px] flex items-center justify-center cursor-pointer hover:ring-2 hover:ring-[#49B265] transition-all"
-                  >
-                    <img src={url} alt={`Preview ${i + 1}`} className="w-full h-full object-cover" />
-                  </div>
-                ))}
-              </div>
-              <button
-                onClick={nextPreview}
-                disabled={previewIdx + 3 >= validImages.length}
-                className="w-[32px] h-[32px] flex-shrink-0 rounded-[32px] border-[1px] border-[#49B265] flex items-center justify-center hover:bg-[#49B265]/10 transition-colors disabled:opacity-30 disabled:hover:bg-transparent"
-              >
-                <img src="/coins/leftarrow.png" alt="Next" className="w-[16px] h-[16px] object-contain" />
-              </button>
-            </div>
-          </div>
-        )}
-
+      </motion.div>
       </motion.div>
 
       {/* Lightbox Overlay */}
@@ -216,7 +429,7 @@ const BookDetailModal = ({ book, onClose, onOrder, balance }) => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[100000] flex items-center justify-center bg-black/95 backdrop-blur-md p-4"
+            className="fixed inset-0 z-[100000] flex items-center justify-center bg-black/90 backdrop-blur-md p-4"
             onClick={(e) => {
               e.stopPropagation();
               setLightboxIdx(null);
@@ -227,7 +440,7 @@ const BookDetailModal = ({ book, onClose, onOrder, balance }) => {
                 e.stopPropagation();
                 setLightboxIdx(null);
               }}
-              className="absolute top-6 right-6 text-white/50 hover:text-white transition-colors"
+              className="absolute top-6 right-6 text-white/70 hover:text-white transition-colors cursor-pointer"
             >
               <FiX size={32} />
             </button>
@@ -236,7 +449,7 @@ const BookDetailModal = ({ book, onClose, onOrder, balance }) => {
               <img
                 src={validImages[lightboxIdx]}
                 alt={`Enlarged Preview ${lightboxIdx + 1}`}
-                className="max-w-full max-h-[90vh] object-contain rounded-lg shadow-2xl"
+                className="max-w-full max-h-[85vh] object-contain rounded-lg shadow-2xl"
               />
 
               {validImages.length > 1 && (
@@ -246,18 +459,18 @@ const BookDetailModal = ({ book, onClose, onOrder, balance }) => {
                       e.stopPropagation();
                       setLightboxIdx(prev => (prev > 0 ? prev - 1 : validImages.length - 1));
                     }}
-                    className="absolute left-4 md:left-12 p-3 rounded-full bg-white/10 text-white hover:bg-white/20 transition-colors"
+                    className="absolute left-4 md:left-8 p-3 rounded-full bg-white/10 text-white hover:bg-white/20 transition-colors cursor-pointer"
                   >
-                    <FiChevronLeft size={32} />
+                    <FiChevronLeft size={28} />
                   </button>
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
                       setLightboxIdx(prev => (prev < validImages.length - 1 ? prev + 1 : 0));
                     }}
-                    className="absolute right-4 md:right-12 p-3 rounded-full bg-white/10 text-white hover:bg-white/20 transition-colors"
+                    className="absolute right-4 md:right-8 p-3 rounded-full bg-white/10 text-white hover:bg-white/20 transition-colors cursor-pointer"
                   >
-                    <FiChevronRight size={32} />
+                    <FiChevronRight size={28} />
                   </button>
                 </>
               )}
@@ -265,14 +478,13 @@ const BookDetailModal = ({ book, onClose, onOrder, balance }) => {
           </motion.div>
         )}
       </AnimatePresence>
-
-    </motion.div>,
+    </>,
     document.body
   );
 };
 
 
-/* ── Order Book Modal (Screenshot 3) ─────────────────────────── */
+/* ── Order Book Modal ─────────────────────────── */
 const OrderModal = ({ book, onClose, onSuccess, balance }) => {
   const { currentUser, mongoUser } = useAuth();
   const [submitting, setSubmitting] = useState(false);
@@ -342,44 +554,111 @@ const OrderModal = ({ book, onClose, onSuccess, balance }) => {
 
   if (submitted) {
     return createPortal(
-      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-        className="fixed inset-0 z-[999999] flex items-center justify-center bg-black/75 backdrop-blur-md p-4 overflow-y-auto"
-        onClick={handleDone}>
-        <motion.div initial={{ scale: 0.93, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.93, opacity: 0 }}
-          transition={{ duration: 0.22 }}
-          className="bg-[#242424] rounded-[20px] w-full max-w-[95vw] md:w-[500px] h-auto md:h-[379px] py-10 md:py-[16px] my-auto flex flex-col items-center p-[16px] gap-[20px] shadow-2xl relative border border-white/[0.08]"
-          onClick={e => e.stopPropagation()}>
-
-          <button onClick={handleDone} className="absolute top-4 right-4 w-[36px] h-[36px] rounded-[10px] bg-white/[0.11] hover:bg-white/[0.18] transition-colors flex items-center justify-between px-[8px] text-white shrink-0">
-            <div className="w-full flex justify-center items-center">
-              <FiX size={20} strokeWidth={2} />
-            </div>
-          </button>
-
-          <div className="w-[64px] h-[64px] rounded-full bg-[#49B265] flex items-center justify-center text-[#1A1A1A] shrink-0 mt-[16px]">
-            <FiCheck size={36} strokeWidth={3} />
-          </div>
-
-          <h2 className="text-white font-bold font-['Barlow_Condensed'] text-[24px] md:text-[28px] leading-[120%] tracking-normal m-0 p-0 text-center uppercase w-full md:w-[468px] h-auto md:h-[34px] flex items-center justify-center shrink-0">
-            Order Submitted!
-          </h2>
-
-          <div className="flex flex-col gap-[6px] items-center w-full md:w-[468px] h-auto md:h-[85px] shrink-0 justify-center overflow-y-auto custom-scrollbar">
-            <p className="font-medium font-['Barlow_Condensed'] text-[16px] md:text-[18px] leading-[130%] m-0 p-0 text-center w-full md:w-[468px]" style={{ color: 'var(--Text-text-sheen, rgba(136, 136, 136, 1))' }}>
-              You have successfully order book &ldquo;{book.title}&rdquo;
-            </p>
-            <p className="font-medium font-['Barlow_Condensed'] text-[16px] md:text-[18px] leading-[130%] m-0 p-0 text-center w-full md:w-[468px]" style={{ color: 'var(--Text-text-sheen, rgba(136, 136, 136, 1))' }}>
-              Our team will process your order within 1-3 business days. Check your email for updates.
-            </p>
-          </div>
-
-          <button
-            onClick={handleDone}
-            className="w-full h-[48px] bg-[#49B265] text-white rounded-[10px] font-bold font-['Barlow_Condensed'] text-[20px] shadow-[0_4px_0_0_#276D3A] hover:bg-[#49B265]/90 hover:translate-y-[1px] hover:shadow-[0_3px_0_0_#276D3A] active:translate-y-[4px] active:shadow-none transition-all flex items-center justify-center mt-auto"
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        className="fixed inset-0 z-[999999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 overflow-y-auto"
+        onClick={handleDone}
+      >
+        <motion.div
+          initial={{ scale: 0.94, opacity: 0, y: 10 }}
+          animate={{ scale: 1, opacity: 1, y: 0 }}
+          exit={{ scale: 0.94, opacity: 0, y: 10 }}
+          transition={{ duration: 0.2 }}
+          className="relative bg-white shadow-2xl w-full flex flex-col my-auto overflow-hidden border border-gray-100 box-border p-[10px]"
+          style={{
+            width: '100%',
+            maxWidth: '626px',
+            minHeight: '402px',
+            background: 'rgba(255, 255, 255, 1)',
+            borderRadius: '30px',
+            opacity: 1,
+          }}
+          onClick={e => e.stopPropagation()}
+        >
+          <div
+            className="relative w-full flex flex-col items-center justify-center text-center overflow-hidden px-8 py-6 box-border"
+            style={{
+              width: '100%',
+              maxWidth: '606px',
+              height: '382px',
+              background: 'rgba(248, 245, 239, 1)',
+              borderRadius: '20px',
+            }}
           >
-            Done
-          </button>
+            {/* Bottom Right Corner Background Graphic */}
+            <img
+              src="/coins/confirmbottom.png"
+              alt=""
+              className="absolute bottom-0 right-0 pointer-events-none z-0 select-none"
+              style={{
+                maxWidth: '260px',
+                objectFit: 'contain',
+              }}
+            />
 
+            {/* Content Box */}
+            <div className="relative z-10 flex flex-col items-center text-center w-full max-w-[500px]">
+              {/* Blue Verified Badge Image */}
+              <div className="flex items-center justify-center mb-3">
+                <img
+                  src="/coins/confooooom.png"
+                  alt="Success"
+                  className="w-[64px] h-[64px] object-contain"
+                />
+              </div>
+
+              {/* Title */}
+              <h2
+                className="text-[#000000] font-bold text-[32px] leading-tight m-0 mb-3"
+                style={{
+                  fontFamily: '"Bricolage Grotesque", sans-serif',
+                  letterSpacing: '-0.02em',
+                }}
+              >
+                Order Submitted!
+              </h2>
+
+              {/* Book Title */}
+              <p
+                className="text-[#000000] text-[15px] font-normal leading-[23px] m-0 mb-1 line-clamp-2"
+                style={{ fontFamily: '"Poppins", sans-serif' }}
+              >
+                {book.title}
+              </p>
+
+              {/* Info Subtext */}
+              <p
+                className="text-[#000000] text-[15px] font-normal leading-[23px] m-0 mb-6"
+                style={{ fontFamily: '"Poppins", sans-serif' }}
+              >
+                Our team will process your order within 1-3 business days. Check transaction for info
+              </p>
+
+              {/* Done Button */}
+              <button
+                id="order-done-btn"
+                type="button"
+                onClick={handleDone}
+                className="w-full flex items-center justify-center transition-all cursor-pointer shadow-none border-none outline-none hover:bg-[#1a2538] active:scale-[0.99]"
+                style={{
+                  width: '100%',
+                  maxWidth: '440px',
+                  height: '55px',
+                  borderRadius: '30px',
+                  background: 'rgba(36, 50, 77, 1)',
+                  color: '#FFFFFF',
+                  fontFamily: '"Poppins", sans-serif',
+                  fontWeight: 500,
+                  fontSize: '16px',
+                  boxSizing: 'border-box',
+                }}
+              >
+                Done
+              </button>
+            </div>
+          </div>
         </motion.div>
       </motion.div>,
       document.body
@@ -387,142 +666,475 @@ const OrderModal = ({ book, onClose, onSuccess, balance }) => {
   }
 
   return createPortal(
-    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-      className="fixed inset-0 z-[999999] flex items-center justify-center bg-black/75 backdrop-blur-md p-4 overflow-y-auto"
-      onClick={onClose}>
-      <motion.div initial={{ scale: 0.93, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.93, opacity: 0 }}
-        transition={{ duration: 0.22 }}
-        className="bg-[#242424] rounded-[20px] w-full max-w-[95vw] md:w-[700px] h-auto max-h-[90vh] md:h-[835px] my-auto flex flex-col p-[16px] gap-[16px] shadow-2xl relative border border-white/[0.08] overflow-y-auto"
-        onClick={e => e.stopPropagation()}>
-
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 z-[999999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 overflow-y-auto"
+      onClick={onClose}
+    >
+      <motion.div
+        initial={{ scale: 0.96, opacity: 0, y: 10 }}
+        animate={{ scale: 1, opacity: 1, y: 0 }}
+        exit={{ scale: 0.96, opacity: 0, y: 10 }}
+        transition={{ duration: 0.2 }}
+        className="bg-white shadow-2xl relative border border-gray-100 box-border flex flex-col p-6 sm:p-8 md:p-9 my-auto overflow-hidden"
+        style={{
+          width: '100%',
+          maxWidth: '1072px',
+          height: 'auto',
+          maxHeight: '929px',
+          borderRadius: '25px',
+          background: 'rgba(255, 255, 255, 1)',
+          opacity: 1,
+          boxSizing: 'border-box',
+        }}
+        onClick={e => e.stopPropagation()}
+      >
         {/* Header */}
-        <div className="flex items-center w-full md:w-[668px] h-[24px] gap-[6px] shrink-0">
-          <h2 className="flex-1 text-white font-bold font-['Barlow_Condensed'] text-[16px] leading-[120%]">Order Book</h2>
-          <button onClick={onClose} className="w-[24px] h-[24px] flex items-center justify-center text-white/50 hover:text-white transition-colors shrink-0">
-            <FiX size={24} strokeWidth={1.5} />
+        <div className="flex items-center justify-between w-full mb-4 shrink-0">
+          <h2
+            style={{
+              fontFamily: '"Poppins", "Bricolage Grotesque", sans-serif',
+              fontWeight: 700,
+              fontSize: '24px',
+              lineHeight: '28px',
+              letterSpacing: '-0.02em',
+              color: '#000000',
+              margin: 0,
+              padding: 0,
+            }}
+          >
+            Book Details
+          </h2>
+          <button
+            onClick={onClose}
+            className="w-6 h-6 rounded-full bg-black text-white flex items-center justify-center hover:bg-gray-800 transition-colors shrink-0 cursor-pointer"
+            title="Close"
+          >
+            <FiX size={14} strokeWidth={2.5} />
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="flex flex-col gap-[16px]">
-
-          {/* Book Info Header */}
-          <div className="flex flex-col md:flex-row w-full md:w-[668px] h-auto md:h-[119px] gap-[16px] shrink-0 items-center md:items-start text-center md:text-left">
-            <div className="w-[78px] h-[119px] shrink-0 overflow-hidden shadow-lg rounded-[3px]">
+        {/* Scrollable Container */}
+        <div className="w-full flex-1 overflow-y-auto select-none [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] flex flex-col gap-5">
+          {/* Top Card: Selected Book Info Banner */}
+          <div
+            className="w-full flex items-center shrink-0"
+            style={{
+              width: '100%',
+              maxWidth: '1015px',
+              height: '163px',
+              background: 'rgba(248, 245, 239, 1)',
+              borderRadius: '16px',
+              padding: '8px 24px 8px 12px',
+              gap: '20px',
+              boxSizing: 'border-box',
+              opacity: 1,
+            }}
+          >
+            {/* Book Cover Container */}
+            <div
+              className="flex items-center justify-center shrink-0 bg-white"
+              style={{
+                width: '108px',
+                height: '147px',
+                borderRadius: '10px',
+                background: 'rgba(255, 255, 255, 1)',
+                boxShadow: '0 2px 10px rgba(0,0,0,0.06)',
+                padding: '6px',
+                boxSizing: 'border-box',
+              }}
+            >
               {book.coverImage ? (
-                <img src={book.coverImage.startsWith('data:') || book.coverImage.startsWith('http') ? book.coverImage : `${BACKEND}${book.coverImage}`} alt={book.title} className="w-full h-full object-cover"
-                  onError={(e) => { e.target.style.display = 'none'; }} />
+                <img
+                  src={book.coverImage.startsWith('data:') || book.coverImage.startsWith('http') ? book.coverImage : `${BACKEND}${book.coverImage}`}
+                  alt={book.title}
+                  className="max-h-full max-w-full object-contain"
+                  onError={(e) => { e.target.style.display = 'none'; }}
+                />
               ) : (
-                <div className="w-full h-full flex items-center justify-center"><FiBook className="text-slate-600 text-3xl" /></div>
+                <FiBook className="text-slate-400 text-3xl" />
               )}
             </div>
-            <div className="flex flex-col w-full md:w-[574px] min-h-[89px] gap-[16px] shrink-0 items-center md:items-start">
-              <h3 className="w-full text-white font-semibold font-['Barlow_Condensed'] text-[22px] leading-[120%] line-clamp-2">
+
+            {/* Info Right */}
+            <div
+              className="flex flex-col justify-center gap-2 flex-1 min-w-0"
+              style={{
+                maxWidth: '836px',
+                opacity: 1,
+              }}
+            >
+              <h3
+                className="line-clamp-2"
+                style={{
+                  width: '100%',
+                  maxWidth: '836px',
+                  fontFamily: '"Bricolage Grotesque", "Poppins", sans-serif',
+                  fontWeight: 700,
+                  fontSize: '23px',
+                  lineHeight: '28px',
+                  letterSpacing: '-0.02em',
+                  color: '#000000',
+                  margin: 0,
+                  padding: 0,
+                  opacity: 1,
+                }}
+              >
                 {book.title}
               </h3>
-              <div className="flex items-center justify-center md:justify-start gap-[3px] w-full md:w-[237px] h-[26px]">
-                <img src="/coins/Coin.png" alt="Coin" className="w-[26px] h-[26px] object-contain rounded-full shadow-[0px_14px_34px_0px_rgba(254,198,53,0.3)] shrink-0" />
-                <span className="font-bold font-['Barlow_Condensed'] text-[24px] leading-none bg-clip-text text-transparent bg-gradient-to-b from-[#FEDF77] to-[#FCB91E]">
-                  {book.coinCost ? book.coinCost.toLocaleString() : "0"}
+
+              <div className="flex items-center gap-2">
+                <img
+                  src="/coins/gfitcoin.png"
+                  alt="Coins"
+                  className="w-6 h-6 object-contain shrink-0"
+                  onError={(e) => {
+                    e.currentTarget.src = '/coins/Coin.png';
+                  }}
+                />
+                <span
+                  style={{
+                    fontFamily: '"Bricolage Grotesque", "Poppins", sans-serif',
+                    fontWeight: 700,
+                    fontSize: '22px',
+                    lineHeight: '1',
+                    color: 'rgba(233, 179, 0, 1)',
+                  }}
+                >
+                  {book.coinCost ? book.coinCost.toLocaleString('de-DE') : '0'}
                 </span>
               </div>
             </div>
           </div>
 
-          {/* Shipping Address */}
-          <div className="bg-[rgba(0,0,0,0.36)] backdrop-blur-[44px] rounded-[20px] w-full md:w-[668px] h-auto md:h-[327px] p-[16px] flex flex-col gap-[16px] shrink-0">
-            <h3 className="w-full md:w-[636px] h-[15px] text-white font-semibold font-['Barlow_Condensed'] text-[21px] leading-[120%] shrink-0">Shipping Address</h3>
+          <form onSubmit={handleSubmit} className="flex flex-col gap-5 w-full">
+            {/* Shipping Address Section */}
+            <div className="flex flex-col gap-3.5 w-full">
+              <h3
+                style={{
+                  width: '100%',
+                  maxWidth: '1017px',
+                  fontFamily: '"Bricolage Grotesque", sans-serif',
+                  fontWeight: 700,
+                  fontSize: '23px',
+                  lineHeight: '28px',
+                  letterSpacing: '-0.02em',
+                  color: '#000000',
+                  margin: 0,
+                  padding: 0,
+                  opacity: 1,
+                }}
+              >
+                Shipping Address
+              </h3>
 
-            <div className="w-full md:w-[636px] h-auto md:h-[264px] shrink-0 grid grid-cols-2 gap-[12px]">
-              <div className="flex flex-col gap-[4px] col-span-2 sm:col-span-1">
-                <label className="w-fit h-[20px] text-white font-medium font-['Barlow_Condensed'] text-[16px] leading-[20px] tracking-[-0.01em] flex items-center shrink-0">Full Name</label>
-                <div className="w-full h-[56px] bg-[rgba(255,255,255,0.08)] rounded-[10px] py-[16px] px-[20px] flex justify-between items-center">
-                  <img src="/coins/orman.png" alt="User" className="w-[24px] h-[24px] shrink-0" />
-                  <input type="text" required value={form.fullName} onChange={e => set('fullName', e.target.value)}
-                    className="flex-1 w-full h-[20px] bg-transparent text-white font-medium font-['Barlow_Condensed'] text-[18px] leading-[20px] placeholder:text-[#898D8F] focus:outline-none border-none p-0 ml-2"
-                    placeholder="Emmy" />
+              <div className="flex flex-col gap-4 w-full">
+                {/* Row 1: Full Name & Email Address */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="flex flex-col gap-1.5 w-full">
+                    <label
+                      style={{
+                        fontFamily: '"Poppins", sans-serif',
+                        fontWeight: 500,
+                        fontSize: '16px',
+                        lineHeight: '26px',
+                        letterSpacing: '0em',
+                        color: '#000000',
+                        opacity: 1,
+                        display: 'block',
+                      }}
+                    >
+                      Full Name
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={form.fullName}
+                      onChange={e => set('fullName', e.target.value)}
+                      placeholder="Enter your full name"
+                      className="w-full text-[#000000] placeholder:text-[#9CA3AF] px-6 text-[15px] focus:outline-none focus:ring-2 focus:ring-slate-400/50 border-none transition-all"
+                      style={{
+                        maxWidth: '499.5px',
+                        height: '58px',
+                        background: 'rgba(239, 239, 239, 1)',
+                        borderRadius: '50px',
+                        opacity: 1,
+                        fontFamily: '"Poppins", sans-serif',
+                        boxSizing: 'border-box',
+                      }}
+                    />
+                  </div>
+
+                  <div className="flex flex-col gap-1.5 w-full">
+                    <label
+                      style={{
+                        fontFamily: '"Poppins", sans-serif',
+                        fontWeight: 500,
+                        fontSize: '16px',
+                        lineHeight: '26px',
+                        letterSpacing: '0em',
+                        color: '#000000',
+                        opacity: 1,
+                        display: 'block',
+                      }}
+                    >
+                      Email Address
+                    </label>
+                    <input
+                      type="email"
+                      required
+                      value={form.email}
+                      onChange={e => set('email', e.target.value)}
+                      placeholder="Enter your email address"
+                      className="w-full text-[#000000] placeholder:text-[#9CA3AF] px-6 text-[15px] focus:outline-none focus:ring-2 focus:ring-slate-400/50 border-none transition-all"
+                      style={{
+                        maxWidth: '499.5px',
+                        height: '58px',
+                        background: 'rgba(239, 239, 239, 1)',
+                        borderRadius: '50px',
+                        opacity: 1,
+                        fontFamily: '"Poppins", sans-serif',
+                        boxSizing: 'border-box',
+                      }}
+                    />
+                  </div>
                 </div>
-              </div>
-              <div className="flex flex-col gap-[4px] col-span-2 sm:col-span-1">
-                <label className="w-fit h-[20px] text-white font-medium font-['Barlow_Condensed'] text-[16px] leading-[20px] tracking-[-0.01em] flex items-center shrink-0">Email</label>
-                <div className="w-full h-[56px] bg-[rgba(255,255,255,0.08)] rounded-[10px] py-[16px] px-[20px] flex justify-between items-center">
-                  <img src="/coins/orsms.png" alt="Email" className="w-[24px] h-[24px] shrink-0" />
-                  <input type="email" required value={form.email} onChange={e => set('email', e.target.value)}
-                    className="flex-1 w-full h-[20px] bg-transparent text-white font-medium font-['Barlow_Condensed'] text-[18px] leading-[20px] placeholder:text-[#898D8F] focus:outline-none border-none p-0 ml-2"
-                    placeholder="emmy@example.com" />
+
+                {/* Row 2: Address */}
+                <div className="flex flex-col gap-1.5 w-full">
+                  <label
+                    style={{
+                      fontFamily: '"Poppins", sans-serif',
+                      fontWeight: 500,
+                      fontSize: '16px',
+                      lineHeight: '26px',
+                      letterSpacing: '0em',
+                      color: '#000000',
+                      opacity: 1,
+                      display: 'block',
+                    }}
+                  >
+                    Address
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={form.address}
+                    onChange={e => set('address', e.target.value)}
+                    placeholder="Enter your complete address"
+                    className="w-full text-[#000000] placeholder:text-[#9CA3AF] px-6 text-[15px] focus:outline-none focus:ring-2 focus:ring-slate-400/50 border-none transition-all"
+                    style={{
+                      maxWidth: '1018px',
+                      height: '58px',
+                      background: 'rgba(239, 239, 239, 1)',
+                      borderRadius: '50px',
+                      opacity: 1,
+                      fontFamily: '"Poppins", sans-serif',
+                      boxSizing: 'border-box',
+                    }}
+                  />
                 </div>
-              </div>
-              <div className="flex flex-col gap-[4px] col-span-2">
-                <label className="w-fit h-[20px] text-white font-medium font-['Barlow_Condensed'] text-[16px] leading-[20px] tracking-[-0.01em] flex items-center shrink-0">Address</label>
-                <div className="w-full h-[56px] bg-[rgba(255,255,255,0.08)] rounded-[10px] py-[16px] px-[20px] flex justify-between items-center">
-                  <img src="/coins/orloc.png" alt="Location" className="w-[24px] h-[24px] shrink-0" />
-                  <input type="text" required value={form.address} onChange={e => set('address', e.target.value)}
-                    className="flex-1 w-full h-[20px] bg-transparent text-white font-medium font-['Barlow_Condensed'] text-[18px] leading-[20px] placeholder:text-[#898D8F] focus:outline-none border-none p-0 ml-2"
-                    placeholder="Enter Your complete address" />
-                </div>
-              </div>
-              <div className="flex flex-col gap-[4px] col-span-2 sm:col-span-1">
-                <label className="w-fit h-[20px] text-white font-medium font-['Barlow_Condensed'] text-[16px] leading-[20px] tracking-[-0.01em] flex items-center shrink-0">City</label>
-                <div className="w-full h-[56px] bg-[rgba(255,255,255,0.08)] rounded-[10px] py-[16px] px-[20px] flex justify-start items-center">
-                  <input type="text" required value={form.city} onChange={e => set('city', e.target.value)}
-                    className="flex-1 w-full h-[20px] bg-transparent text-white font-medium font-['Barlow_Condensed'] text-[18px] leading-[20px] placeholder:text-[#898D8F] focus:outline-none border-none p-0 ml-2"
-                    placeholder="Enter Your City" />
-                </div>
-              </div>
-              <div className="flex flex-col gap-[4px] col-span-2 sm:col-span-1">
-                <label className="w-fit h-[20px] text-white font-medium font-['Barlow_Condensed'] text-[16px] leading-[20px] tracking-[-0.01em] flex items-center shrink-0">Zipcode</label>
-                <div className="w-full h-[56px] bg-[rgba(255,255,255,0.08)] rounded-[10px] py-[16px] px-[20px] flex justify-between items-center">
-                  <img src="/coins/orloc.png" alt="Zipcode" className="w-[24px] h-[24px] shrink-0" />
-                  <input type="text" required value={form.zipcode} onChange={e => set('zipcode', e.target.value)}
-                    className="flex-1 w-full h-[20px] bg-transparent text-white font-medium font-['Barlow_Condensed'] text-[18px] leading-[20px] placeholder:text-[#898D8F] focus:outline-none border-none p-0 ml-2"
-                    placeholder="12345" />
+
+                {/* Row 3: City & Zipcode */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="flex flex-col gap-1.5 w-full">
+                    <label
+                      style={{
+                        fontFamily: '"Poppins", sans-serif',
+                        fontWeight: 500,
+                        fontSize: '16px',
+                        lineHeight: '26px',
+                        letterSpacing: '0em',
+                        color: '#000000',
+                        opacity: 1,
+                        display: 'block',
+                      }}
+                    >
+                      City
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={form.city}
+                      onChange={e => set('city', e.target.value)}
+                      placeholder="Enter your city"
+                      className="w-full text-[#000000] placeholder:text-[#9CA3AF] px-6 text-[15px] focus:outline-none focus:ring-2 focus:ring-slate-400/50 border-none transition-all"
+                      style={{
+                        maxWidth: '499.5px',
+                        height: '58px',
+                        background: 'rgba(239, 239, 239, 1)',
+                        borderRadius: '50px',
+                        opacity: 1,
+                        fontFamily: '"Poppins", sans-serif',
+                        boxSizing: 'border-box',
+                      }}
+                    />
+                  </div>
+
+                  <div className="flex flex-col gap-1.5 w-full">
+                    <label
+                      style={{
+                        fontFamily: '"Poppins", sans-serif',
+                        fontWeight: 500,
+                        fontSize: '16px',
+                        lineHeight: '26px',
+                        letterSpacing: '0em',
+                        color: '#000000',
+                        opacity: 1,
+                        display: 'block',
+                      }}
+                    >
+                      Zipcode
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={form.zipcode}
+                      onChange={e => set('zipcode', e.target.value)}
+                      placeholder="Enter zip code"
+                      className="w-full text-[#000000] placeholder:text-[#9CA3AF] px-6 text-[15px] focus:outline-none focus:ring-2 focus:ring-slate-400/50 border-none transition-all"
+                      style={{
+                        maxWidth: '499.5px',
+                        height: '58px',
+                        background: 'rgba(239, 239, 239, 1)',
+                        borderRadius: '50px',
+                        opacity: 1,
+                        fontFamily: '"Poppins", sans-serif',
+                        boxSizing: 'border-box',
+                      }}
+                    />
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
 
-          {/* Personal Signature */}
-          <div className="bg-[rgba(0,0,0,0.36)] backdrop-blur-[44px] rounded-[20px] w-full md:w-[668px] p-[16px] flex flex-col gap-[16px] shrink-0">
-            <h3 className="w-full md:w-[636px] h-[15px] text-white font-semibold font-['Barlow_Condensed'] text-[21px] leading-[120%] shrink-0">Personal Signature</h3>
+            {/* Personal Signature Section */}
+            <div className="flex flex-col gap-2 w-full">
+              <h3
+                style={{
+                  width: '100%',
+                  maxWidth: '1017px',
+                  fontFamily: '"Bricolage Grotesque", sans-serif',
+                  fontWeight: 700,
+                  fontSize: '23px',
+                  lineHeight: '28px',
+                  letterSpacing: '-0.02em',
+                  color: '#000000',
+                  margin: 0,
+                  padding: 0,
+                  opacity: 1,
+                }}
+              >
+                Personal Signature
+              </h3>
 
-            <label className="flex items-center gap-[12px] cursor-pointer w-fit">
-              <button type="button" onClick={() => set('wantsSignature', !form.wantsSignature)}
-                className={`w-[26px] h-[26px] rounded-[6px] border-[2px] flex items-center justify-center shrink-0 transition-all ${form.wantsSignature ? 'bg-[#49B265] border-[#49B265]' : 'border-[#49B265] bg-transparent'
-                  }`}>
-                {form.wantsSignature && <FiCheck size={16} strokeWidth={3} className="text-[#1A1A1A]" />}
-              </button>
-              <span className="w-[203px] h-[20px] text-white font-medium font-['Barlow_Condensed'] text-[16px] leading-[20px] flex items-center shrink-0">I would like a personal signature</span>
-            </label>
+              <div
+                onClick={() => set('wantsSignature', !form.wantsSignature)}
+                className="flex items-center gap-3 cursor-pointer select-none w-fit group py-1"
+              >
+                <div
+                  style={{
+                    width: '15px',
+                    height: '15px',
+                    borderRadius: '5px',
+                    border: '1px solid rgba(36, 50, 77, 1)',
+                    background: form.wantsSignature ? 'rgba(36, 50, 77, 1)' : '#FFFFFF',
+                    opacity: 1,
+                    boxSizing: 'border-box',
+                  }}
+                  className="flex items-center justify-center shrink-0 transition-all"
+                >
+                  {form.wantsSignature && <FiCheck size={10} strokeWidth={3.5} className="text-white" />}
+                </div>
+                <span
+                  style={{
+                    fontFamily: '"Poppins", sans-serif',
+                    fontWeight: 500,
+                    fontSize: '15px',
+                    color: '#000000',
+                    opacity: 1,
+                  }}
+                >
+                  I would like a personal signature
+                </span>
+              </div>
 
-            <AnimatePresence>
-              {form.wantsSignature && (
-                <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }}
-                  transition={{ duration: 0.2 }} className="overflow-hidden">
-                  <div className="flex flex-col gap-[8px] mt-[8px]">
-                    <label className="w-fit h-[20px] text-white font-medium font-['Barlow_Condensed'] text-[16px] leading-[20px] tracking-[-0.01em] flex items-center shrink-0">Name for Signature</label>
-                    <div className="w-full h-[56px] bg-[rgba(255,255,255,0.08)] rounded-[10px] py-[16px] px-[20px] flex justify-between items-center">
-                      <input type="text" value={form.signatureName} onChange={e => set('signatureName', e.target.value)}
-                        className="w-full h-[20px] bg-transparent text-white font-medium font-['Barlow_Condensed'] text-[18px] leading-[20px] placeholder:text-[#898D8F] focus:outline-none border-none p-0"
-                        placeholder="Emmy" />
+              <AnimatePresence>
+                {form.wantsSignature && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: 'auto', opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    transition={{ duration: 0.2 }}
+                    className="overflow-hidden mt-1"
+                  >
+                    <div className="flex flex-col gap-1.5 w-full">
+                      <label
+                        style={{
+                          fontFamily: '"Poppins", sans-serif',
+                          fontWeight: 500,
+                          fontSize: '16px',
+                          lineHeight: '26px',
+                          letterSpacing: '0em',
+                          color: '#000000',
+                          opacity: 1,
+                          display: 'block',
+                        }}
+                      >
+                        Name for Signature
+                      </label>
+                      <input
+                        type="text"
+                        value={form.signatureName}
+                        onChange={e => set('signatureName', e.target.value)}
+                        placeholder="Enter name for signature"
+                        className="w-full text-[#000000] placeholder:text-[#9CA3AF] px-6 text-[15px] focus:outline-none focus:ring-2 focus:ring-slate-400/50 border-none transition-all"
+                        style={{
+                          maxWidth: '1018px',
+                          height: '58px',
+                          background: 'rgba(239, 239, 239, 1)',
+                          borderRadius: '50px',
+                          opacity: 1,
+                          fontFamily: '"Poppins", sans-serif',
+                          boxSizing: 'border-box',
+                        }}
+                      />
                     </div>
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
 
-          {/* Submit Button */}
-          <div className="flex flex-col gap-[12px] mt-[8px]">
-            <button type="submit" disabled={submitting}
-              className="w-full h-[48px] bg-[#49B265] text-white rounded-[10px] font-bold font-['Barlow_Condensed'] text-[20px] shadow-[0_4px_0_0_#276D3A] hover:bg-[#49B265]/90 hover:translate-y-[1px] hover:shadow-[0_3px_0_0_#276D3A] active:translate-y-[4px] active:shadow-none transition-all flex items-center justify-center gap-[10px] disabled:opacity-50">
-              {submitting ? 'Placing Order...' : 'Order Book Now'}
-              {!submitting && <FiArrowRight size={20} strokeWidth={2.5} />}
-            </button>
-            <p className="w-full md:w-[668px] h-auto md:h-[20px] text-[rgba(137,141,143,1)] font-medium font-['Barlow_Condensed'] text-[16px] md:text-[18px] leading-[20px] text-center flex items-center justify-center shrink-0">
-              After ordering, the book will be shipped within 3-5 business days
-            </p>
-          </div>
-
-        </form>
+            {/* Submit Button & Subtext */}
+            <div className="flex flex-col gap-2.5 mt-1 w-full">
+              <button
+                type="submit"
+                disabled={submitting}
+                className="w-full bg-[#24324D] text-white rounded-full font-semibold text-[15px] hover:bg-[#1a2538] active:scale-[0.99] transition-all flex items-center justify-center disabled:opacity-50 cursor-pointer"
+                style={{
+                  height: '50px',
+                  fontFamily: '"Poppins", sans-serif',
+                }}
+              >
+                {submitting ? 'Placing Order...' : 'Order Book Now'}
+              </button>
+              <p
+                style={{
+                  fontFamily: '"Poppins", sans-serif',
+                  fontSize: '13px',
+                  color: '#777777',
+                  textAlign: 'center',
+                  margin: 0,
+                  padding: 0,
+                }}
+              >
+                After ordering, the book will be shipped within 3-5 business days
+              </p>
+            </div>
+          </form>
+        </div>
       </motion.div>
     </motion.div>,
     document.body
@@ -541,6 +1153,7 @@ const MyBooksSection = ({ balance, onBalanceUpdate, onClose, preFetchedBooks, pr
 
   const [detailBook, setDetailBook] = useState(null);
   const [orderBook, setOrderBook] = useState(null);
+  const [selectedBookId, setSelectedBookId] = useState(null);
 
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   useEffect(() => {
@@ -624,20 +1237,41 @@ const MyBooksSection = ({ balance, onBalanceUpdate, onClose, preFetchedBooks, pr
   if (!loading && !visible) {
     return createPortal(
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-        className="fixed inset-0 z-[99999] flex items-center justify-center bg-black/75 backdrop-blur-md p-4"
+        className="fixed inset-0 z-[99999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
         onClick={onClose}>
-        <motion.div initial={{ scale: 0.93, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.93, opacity: 0 }}
-          transition={{ duration: 0.22 }}
-          className="bg-[#242424] rounded-[20px] w-[500px] p-[24px] shadow-2xl relative flex flex-col items-center text-center gap-4 border border-white/[0.08]"
+        <motion.div initial={{ scale: 0.96, opacity: 0, y: 10 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.96, opacity: 0, y: 10 }}
+          transition={{ duration: 0.2 }}
+          className="bg-white rounded-[25px] w-full max-w-[500px] p-6 sm:p-8 shadow-2xl relative flex flex-col items-center text-center gap-4 border border-gray-100"
           onClick={e => e.stopPropagation()}>
-          <button onClick={onClose} className="absolute top-4 right-4 text-[#888888] hover:text-white transition-colors">
-            <FiX size={24} />
+          <button
+            onClick={onClose}
+            className="absolute top-4 right-4 rounded-full bg-black text-white flex items-center justify-center hover:bg-gray-800 transition-colors shrink-0 cursor-pointer"
+            style={{ width: '22px', height: '22px' }}
+            title="Close"
+          >
+            <FiX size={13} strokeWidth={2.5} />
           </button>
-          <div className="w-16 h-16 rounded-full bg-amber-500/10 flex items-center justify-center text-amber-500 mb-2">
-            <FiBook size={32} />
+          <div className="w-16 h-16 rounded-full bg-amber-50 flex items-center justify-center text-amber-600 mb-2">
+            <FiBook size={30} />
           </div>
-          <h2 className="text-white font-bold font-['Barlow_Condensed'] text-2xl uppercase">Germany Only Reward</h2>
-          <p className="text-[#888888] font-['Barlow_Condensed'] text-[18px]">
+          <h2
+            style={{
+              fontFamily: '"Bricolage Grotesque", sans-serif',
+              fontWeight: 700,
+              fontSize: '22px',
+              color: '#000000',
+            }}
+          >
+            Germany Only Reward
+          </h2>
+          <p
+            style={{
+              fontFamily: '"Poppins", sans-serif',
+              fontSize: '14px',
+              lineHeight: '22px',
+              color: '#666666',
+            }}
+          >
             Ordering physical books is currently only available for shipping addresses within Germany.
           </p>
         </motion.div>
@@ -648,133 +1282,187 @@ const MyBooksSection = ({ balance, onBalanceUpdate, onClose, preFetchedBooks, pr
 
   return createPortal(
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-      className="fixed inset-0 z-[99999] flex items-center justify-center bg-black/75 backdrop-blur-md p-4 overflow-y-auto"
+      className="fixed inset-0 z-[99999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 overflow-y-auto"
       onClick={onClose}>
-      <motion.div initial={{ scale: 0.93, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.93, opacity: 0 }}
-        transition={{ duration: 0.22 }}
-        className="bg-[#242424] rounded-[20px] w-[95vw] md:w-[700px] h-[85vh] md:h-[720px] my-auto flex flex-col p-[16px] gap-[16px] shadow-2xl relative border border-white/[0.08]"
+      <motion.div initial={{ scale: 0.96, opacity: 0, y: 10 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.96, opacity: 0, y: 10 }}
+        transition={{ duration: 0.2 }}
+        className="bg-white shadow-2xl relative border border-gray-100 box-border flex flex-col p-6 sm:p-8 my-auto"
+        style={{
+          width: '100%',
+          maxWidth: '1072px',
+          height: 'auto',
+          maxHeight: '921px',
+          borderRadius: '25px',
+          background: 'rgba(255, 255, 255, 1)',
+          opacity: 1,
+          boxSizing: 'border-box',
+        }}
         onClick={e => e.stopPropagation()}>
 
         {/* Header */}
-        <div className="flex items-center w-full h-[24px] gap-[6px] shrink-0">
-          <h2 className="flex-1 text-white font-bold font-['Barlow_Condensed'] text-[16px] leading-[120%] flex items-center">Select Book to Order</h2>
-          <button onClick={onClose} className="text-[#888888] hover:text-white transition-colors flex items-center justify-center w-[24px] h-[24px]">
-            <FiX size={24} strokeWidth={1.5} />
+        <div className="flex items-center justify-between w-full mb-5 shrink-0">
+          <h2
+            style={{
+              width: '339px',
+              height: '23px',
+              fontFamily: '"Bricolage Grotesque", sans-serif',
+              fontWeight: 700,
+              fontSize: '23px',
+              lineHeight: '23px',
+              letterSpacing: '-0.02em',
+              color: '#000000',
+              display: 'flex',
+              alignItems: 'center',
+              margin: 0,
+              padding: 0,
+              opacity: 1,
+            }}
+          >
+            Select Book to Order
+          </h2>
+          <button
+            onClick={onClose}
+            className="rounded-full bg-black text-white flex items-center justify-center hover:bg-gray-800 transition-colors shrink-0 cursor-pointer"
+            style={{
+              width: '22px',
+              height: '22px',
+            }}
+            title="Close"
+          >
+            <FiX size={13} strokeWidth={2.5} />
           </button>
         </div>
 
         {loading ? (
-          <div className="flex-1 flex flex-col items-center justify-center gap-3">
-            <div className="w-12 h-12 rounded-full border-2 border-[#49B265] border-t-transparent animate-spin" />
-            <p className="text-[#888888] font-['Barlow_Condensed'] text-[18px]">Loading books...</p>
+          <div className="flex flex-col items-center justify-center gap-3 py-20">
+            <div className="w-10 h-10 rounded-full border-2 border-amber-500 border-t-transparent animate-spin" />
+            <p
+              style={{
+                fontFamily: '"Poppins", sans-serif',
+                fontSize: '15px',
+                color: '#666666',
+              }}
+            >
+              Loading books...
+            </p>
           </div>
         ) : (
-          /* Books Grid */
-          <div className="w-full md:w-[668px] flex-1 md:h-[648px] overflow-y-auto md:overflow-y-hidden overflow-x-hidden md:overflow-x-auto select-none [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
-          {books.length === 0 ? (
-            <div className="flex flex-col items-center justify-center gap-3 py-20 text-center w-full h-full">
-              <div className="w-12 h-12 rounded-2xl bg-white/[0.03] border border-white/[0.06] flex items-center justify-center">
-                <FiBook className="text-slate-600 text-xl" />
-              </div>
-              <p className="text-slate-500 text-sm">No books available right now.</p>
-            </div>
-          ) : (() => {
-            if (isMobile) {
-              return (
-                <div className="grid grid-cols-2 gap-[14px] p-0.5 pb-[20px]">
-                  {books.map((book) => (
-                    <button
-                      key={book._id}
-                      onClick={() => setDetailBook(book)}
-                      className="flex flex-col items-center w-full h-auto aspect-[2/3] gap-[10px] rounded-[16px] p-[12px] bg-[rgba(0,0,0,0.36)] backdrop-blur-[44px] hover:scale-[1.02] transition-all cursor-pointer text-left overflow-hidden"
-                    >
-                      {/* Cover */}
-                      <div className="flex items-center justify-center w-full flex-1 min-h-0 overflow-hidden">
-                        {book.coverImage ? (
-                          <img src={book.coverImage.startsWith('data:') || book.coverImage.startsWith('http') ? book.coverImage : `${BACKEND}${book.coverImage}`} alt={book.title}
-                            className="w-full h-full object-contain drop-shadow-lg"
-                            onError={(e) => { e.target.style.display = 'none'; }} />
-                        ) : (
-                          <FiBook className="text-slate-600 text-3xl" />
-                        )}
-                      </div>
-
-                      {/* Info */}
-                      <div className="flex flex-col w-full h-[60px] justify-between shrink-0">
-                        <p className="m-0 p-0 font-semibold font-['Barlow_Condensed'] text-[16px] leading-[120%] text-white line-clamp-2">
-                          {book.title}
-                        </p>
-                        <div className="flex items-center w-full h-[20px] gap-[3px] mt-1">
-                          <img
-                            src="/coins/Coin.png"
-                            alt="Coin"
-                            className="w-[18px] h-[18px] object-contain rounded-full shadow-[0px_14px_34px_0px_rgba(254,198,53,0.3)] flex-shrink-0"
-                          />
-                          <span className="flex items-center pt-[2px] m-0 font-bold font-['Barlow_Condensed'] text-[18px] leading-none bg-clip-text text-transparent bg-gradient-to-b from-[#FEDF77] to-[#FCB91E]">
-                            {book.coinCost.toLocaleString()}
-                          </span>
-                        </div>
-                      </div>
-                    </button>
-                  ))}
+          /* Books Grid with hidden scrollbar */
+          <div className="w-full overflow-y-auto max-h-[830px] select-none [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+            {books.length === 0 ? (
+              <div className="flex flex-col items-center justify-center gap-3 py-20 text-center w-full">
+                <div className="w-12 h-12 rounded-2xl bg-amber-50 border border-amber-100 flex items-center justify-center text-amber-600">
+                  <FiBook size={24} />
                 </div>
-              );
-            }
-
-            // Desktop logic
-            const cols = Math.max(3, Math.ceil(books.length / 2));
-            const reorderedBooks = Array(cols * 2).fill(null);
-            books.forEach((book, i) => {
-              const r = Math.floor(i / cols);
-              const c = i % cols;
-              reorderedBooks[c * 2 + r] = book;
-            });
-            return (
-              <div className="grid grid-rows-2 grid-flow-col gap-[14px] h-[638px] p-0.5">
-                {reorderedBooks.map((book, idx) => {
-                  if (!book) {
-                    return <div key={`empty-${idx}`} className="w-[213.33px] h-[317px] opacity-0 pointer-events-none" />;
-                  }
+                <p
+                  style={{
+                    fontFamily: '"Poppins", sans-serif',
+                    fontSize: '15px',
+                    color: '#666666',
+                  }}
+                >
+                  No books available right now.
+                </p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full">
+                {books.map((book) => {
+                  const isSelected = selectedBookId === book._id;
                   return (
-                    <button
+                    <div
                       key={book._id}
-                      onClick={() => setDetailBook(book)}
-                      className="flex flex-col items-center w-[213.33px] h-[317px] gap-[16px] rounded-[20px] p-[16px] bg-[rgba(0,0,0,0.36)] backdrop-blur-[44px] hover:scale-[1.02] transition-all cursor-pointer text-left"
+                      onClick={() => {
+                        setSelectedBookId(book._id);
+                        setDetailBook(book);
+                      }}
+                      className="flex items-center w-full transition-all cursor-pointer text-left group"
+                      style={{
+                        width: '100%',
+                        maxWidth: '503px',
+                        height: '262px',
+                        background: isSelected ? 'rgba(36, 50, 77, 1)' : 'rgba(248, 245, 239, 1)',
+                        borderRadius: '16px',
+                        padding: '8px 24px 8px 8px',
+                        gap: '24px',
+                        border: isSelected ? '2px solid rgba(36, 50, 77, 1)' : '2px solid transparent',
+                        boxSizing: 'border-box',
+                        opacity: 1,
+                      }}
                     >
-                      {/* Cover */}
-                      <div className="flex items-center justify-center w-full h-[162px]">
+                      {/* Cover Card Container */}
+                      <div
+                        className="flex items-center justify-center shrink-0 bg-white"
+                        style={{
+                          width: '185px',
+                          height: '246px',
+                          borderRadius: '14px',
+                          boxSizing: 'border-box',
+                          boxShadow: '0 4px 14px rgba(0,0,0,0.06)',
+                        }}
+                      >
                         {book.coverImage ? (
-                          <img src={book.coverImage.startsWith('data:') || book.coverImage.startsWith('http') ? book.coverImage : `${BACKEND}${book.coverImage}`} alt={book.title}
-                            className="w-[106px] h-[162px] object-contain drop-shadow-lg"
-                            onError={(e) => { e.target.style.display = 'none'; }} />
+                          <img
+                            src={book.coverImage.startsWith('data:') || book.coverImage.startsWith('http') ? book.coverImage : `${BACKEND}${book.coverImage}`}
+                            alt={book.title}
+                            className="object-contain"
+                            style={{
+                              width: '138px',
+                              height: '210px',
+                              filter: 'drop-shadow(0 6px 10px rgba(0,0,0,0.18))',
+                            }}
+                            onError={(e) => { e.target.style.display = 'none'; }}
+                          />
                         ) : (
-                          <FiBook className="text-slate-600 text-4xl" />
+                          <FiBook className="text-slate-400 text-4xl" />
                         )}
                       </div>
 
                       {/* Info */}
-                      <div className="flex flex-col w-full h-full justify-between min-h-[80px]">
-                        <p className="m-0 p-0 font-semibold font-['Barlow_Condensed'] text-[20px] leading-[120%] text-white line-clamp-3">
+                      <div className="flex flex-col justify-center gap-3.5 flex-1 min-w-0">
+                        <h3
+                          className="line-clamp-3"
+                          style={{
+                            fontFamily: '"Poppins", sans-serif',
+                            fontWeight: 700,
+                            fontSize: '22px',
+                            lineHeight: '28px',
+                            letterSpacing: '-0.01em',
+                            color: isSelected ? '#FFFFFF' : '#000000',
+                            margin: 0,
+                            padding: 0,
+                          }}
+                        >
                           {book.title}
-                        </p>
-                        <div className="flex items-center w-full h-[26px] gap-[3px] mt-2">
+                        </h3>
+
+                        <div className="flex items-center gap-2 mt-1">
                           <img
-                            src="/coins/Coin.png"
-                            alt="Coin"
-                            className="w-[22px] h-[22px] object-contain rounded-full shadow-[0px_14px_34px_0px_rgba(254,198,53,0.3)] flex-shrink-0"
+                            src="/coins/gfitcoin.png"
+                            alt="Coins"
+                            className="w-6 h-6 object-contain shrink-0"
+                            onError={(e) => {
+                              e.currentTarget.src = '/coins/Coin.png';
+                            }}
                           />
-                          <span className="flex items-center pt-[2px] pb-[4px] m-0 font-bold font-['Barlow_Condensed'] text-[22px] leading-none bg-clip-text text-transparent bg-gradient-to-b from-[#FEDF77] to-[#FCB91E]">
-                            {book.coinCost.toLocaleString()}
+                          <span
+                            style={{
+                              fontFamily: '"Poppins", sans-serif',
+                              fontWeight: 700,
+                              fontSize: '22px',
+                              lineHeight: '1',
+                              color: 'rgba(233, 179, 0, 1)',
+                            }}
+                          >
+                            {book.coinCost.toLocaleString('de-DE')}
                           </span>
                         </div>
                       </div>
-                    </button>
+                    </div>
                   );
                 })}
               </div>
-            );
-          })()}
-        </div>
+            )}
+          </div>
         )}
       </motion.div>
 

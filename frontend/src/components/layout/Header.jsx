@@ -607,7 +607,7 @@ const Header = ({ onChatToggle, chatOpen, fullWidth }) => {
                         display: 'inline-block',
                       }}
                     >
-                      {mongoUser?.walletBalance?.toLocaleString() ?? 0}
+                      {mongoUser?.walletBalance ? Number(mongoUser.walletBalance).toLocaleString('de-DE') : '0'}
                     </span>
                   </div>
                 </div>

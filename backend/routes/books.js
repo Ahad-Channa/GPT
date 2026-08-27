@@ -233,42 +233,33 @@ router.get('/debug', async (req, res) => {
 ───────────────────────────────────────────────────────────────── */
 router.get('/', verifyToken, async (req, res) => {
   try {
-    let settings = await Settings.findOne({ _singleton: 'platform_settings' }).lean();
-    if (!settings) {
-      settings = await Settings.create({ _singleton: 'platform_settings' });
-    }
+    const ip = getClientIp(req);
+
+    // Parallel fetch settings, user, and books
+    const [settingsDoc, userDoc, books] = await Promise.all([
+      Settings.findOne({ _singleton: 'platform_settings' }).lean(),
+      req.user ? User.findOne({ firebaseUid: req.user.uid }).lean() : Promise.resolve(null),
+      Book.find({ available: true }).lean().sort({ createdAt: -1 }),
+    ]);
+
+    const settings = settingsDoc || { booksGermanyOnly: false };
     const booksGermanyOnly = settings.booksGermanyOnly !== false;
 
-    const ip = getClientIp(req);
-    let country = null;
-    let isVPN = false;
-
-    // Check CDN headers first (Cloudflare / Vercel provide real country)
-    const headerCountry = req.headers['cf-ipcountry'] || req.headers['x-vercel-ip-country'] || req.headers['x-country-code'];
-    if (headerCountry) {
-      country = String(headerCountry).toUpperCase().trim();
-      // Even with CDN header country, still check VPN status via ip-api.com
-      const vpnCheck = await queryIpApi(ip);
-      isVPN = vpnCheck.proxy || vpnCheck.hosting;
-    }
-    if (!country) {
-      const result = await getCountryAndVpnFromIp(ip);
-      country = result.country;
-      isVPN = result.isVPN;
+    let isGermanIP = true;
+    if (booksGermanyOnly) {
+      // Check CDN headers first
+      const headerCountry = req.headers['cf-ipcountry'] || req.headers['x-vercel-ip-country'] || req.headers['x-country-code'];
+      if (headerCountry) {
+        const c = String(headerCountry).toUpperCase().trim();
+        isGermanIP = c === 'DE';
+      } else {
+        const geo = await getCountryAndVpnFromIp(ip);
+        isGermanIP = geo.country === 'DE' && !geo.isVPN;
+      }
     }
 
-    // Only allow German IP if: country is DE AND not using VPN/proxy/hosting
-    const isGermanIP = country === 'DE' && !isVPN;
-    console.log(`[Books Geolocation] Client IP: ${ip}, Headers: cf-ipcountry=${req.headers['cf-ipcountry'] || 'none'}, x-vercel-ip-country=${req.headers['x-vercel-ip-country'] || 'none'}, Resolved: ${country}, isVPN: ${isVPN}, isGermanIP: ${isGermanIP}`);
-
-    let user = null;
-    if (req.user) {
-      user = await User.findOne({ firebaseUid: req.user.uid }).lean();
-    }
-    const books = await Book.find({ available: true }).lean().sort({ createdAt: -1 });
-
-    if (user) {
-      const userOrders = await BookOrder.find({ userId: user._id, status: { $ne: 'cancelled' } }).lean();
+    if (userDoc) {
+      const userOrders = await BookOrder.find({ userId: userDoc._id, status: { $ne: 'cancelled' } }).lean();
       const orderMap = {};
       userOrders.forEach(o => {
         orderMap[o.bookId.toString()] = o;
@@ -289,8 +280,8 @@ router.get('/', verifyToken, async (req, res) => {
 
     res.json({ success: true, books, booksGermanyOnly, isGermanIP });
   } catch (e) {
-    console.error('[GET /api/books]', e);
-    res.status(500).json({ success: false, error: 'Failed to fetch books' });
+    console.error('[/api/books] Error:', e);
+    res.status(500).json({ success: false, error: 'Failed to load books' });
   }
 });
 

@@ -130,7 +130,7 @@ const TransactionHistory = ({ refreshKey = 0, onStatsLoaded }) => {
         <div>
           <h2 className="text-base font-bold font-display text-white">Transaction History</h2>
           <p className="text-xs text-slate-500 mt-0.5">
-            {pagination.total > 0 ? `${pagination.total.toLocaleString()} total transactions` : 'All your activity in one place'}
+            {pagination.total > 0 ? `${pagination.total.toLocaleString('de-DE')} total transactions` : 'All your activity in one place'}
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -229,7 +229,7 @@ const TransactionHistory = ({ refreshKey = 0, onStatsLoaded }) => {
                   {/* Amount + time */}
                   <div className="text-right flex-shrink-0">
                     <p className={`text-sm font-bold ${isDebit ? 'text-red-400' : 'text-emerald-400'}`}>
-                      {isDebit ? '-' : '+'}{Math.abs(tx.amount).toLocaleString()}
+                      {isDebit ? '-' : '+'}{Math.abs(tx.amount).toLocaleString('de-DE')}
                     </p>
                     <p className="text-[10px] text-slate-600 mt-0.5">{formatRelativeTime(tx.createdAt)}</p>
                   </div>

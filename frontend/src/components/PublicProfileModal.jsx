@@ -348,7 +348,7 @@ const PublicProfileModal = ({ userId, onClose }) => {
                         <div style={{
                           fontFamily: '"Barlow Condensed", sans-serif', fontWeight: 700, fontSize: '16px', lineHeight: '120%', backgroundImage: 'linear-gradient(180deg, #FEDF77 0%, #FCB91E 100%)', WebkitBackgroundClip: 'text', color: 'transparent', display: 'flex', alignItems: 'center', whiteSpace: 'nowrap', overflow: 'visible',
                         }}>
-                          {(profile.earningsThisMonth || 0).toLocaleString()}
+                          {(profile.earningsThisMonth || 0).toLocaleString('de-DE')}
                         </div>
                       </div>
                     </div>
@@ -376,7 +376,7 @@ const PublicProfileModal = ({ userId, onClose }) => {
                         <div style={{
                           fontFamily: '"Barlow Condensed", sans-serif', fontWeight: 700, fontSize: '16px', lineHeight: '120%', backgroundImage: 'linear-gradient(180deg, #FEDF77 0%, #FCB91E 100%)', WebkitBackgroundClip: 'text', color: 'transparent', display: 'flex', alignItems: 'center', whiteSpace: 'nowrap', overflow: 'visible',
                         }}>
-                          {(profile.totalEarned || 0).toLocaleString()}
+                          {(profile.totalEarned || 0).toLocaleString('de-DE')}
                         </div>
                       </div>
                     </div>
@@ -402,7 +402,7 @@ const PublicProfileModal = ({ userId, onClose }) => {
                       <span style={{
                         fontFamily: '"Barlow Condensed", sans-serif', fontWeight: 700, fontSize: '16px', lineHeight: '120%', color: 'rgba(73, 178, 101, 1)', display: 'flex', alignItems: 'center', marginTop: '8px',
                       }}>
-                        {(profile.referredCount || 0).toLocaleString()}
+                        {(profile.referredCount || 0).toLocaleString('de-DE')}
                       </span>
                     </div>
 
@@ -427,7 +427,7 @@ const PublicProfileModal = ({ userId, onClose }) => {
                       <span style={{
                         fontFamily: '"Barlow Condensed", sans-serif', fontWeight: 700, fontSize: '16px', lineHeight: '120%', color: 'rgba(73, 178, 101, 1)', display: 'flex', alignItems: 'center', marginTop: '8px',
                       }}>
-                        {(profile.tasksCompletedCount || 0).toLocaleString()}
+                        {(profile.tasksCompletedCount || 0).toLocaleString('de-DE')}
                       </span>
                     </div>
                   </div>
@@ -517,7 +517,7 @@ const PublicProfileModal = ({ userId, onClose }) => {
                                       backgroundImage: 'linear-gradient(180deg, #FEDF77 0%, #FCB91E 100%)',
                                       WebkitBackgroundClip: 'text', color: 'transparent'
                                     }}>
-                                      {offer.amount > 0 ? '+' : ''}{(offer.amount || 0).toLocaleString()}
+                                      {offer.amount > 0 ? '+' : ''}{(offer.amount || 0).toLocaleString('de-DE')}
                                     </div>
                                   </div>
                                   <div style={{

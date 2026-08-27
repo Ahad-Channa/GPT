@@ -472,7 +472,7 @@ const Landing = () => {
                     lineHeight: '72px', letterSpacing: '-0.02em', color: 'rgba(14, 15, 12, 1)',
                     display: 'flex', alignItems: 'center'
                   }}>
-                    {stats.totalUsers.toLocaleString()}
+                    {stats.totalUsers.toLocaleString('de-DE')}
                   </span>
                 </div>
               </div>
@@ -506,7 +506,7 @@ const Landing = () => {
                     lineHeight: '72px', letterSpacing: '-0.02em', color: 'rgba(14, 15, 12, 1)',
                     display: 'flex', alignItems: 'center'
                   }}>
-                    ${stats.totalPaidOut.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                    ${stats.totalPaidOut.toLocaleString('de-DE', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
                   </span>
                 </div>
               </div>
@@ -898,7 +898,7 @@ const Landing = () => {
             src={isMobile ? "/coins/whychosemobile.png" : "/coins/why chose us.png"}
             alt="Why Choose Us"
             className="w-full h-auto object-cover rounded-[24px] lg:rounded-[32px]"
-            style={isMobile ? { width: '100%', opacity: 1 } : { width: '100%', height: '100%' }}
+            style={isMobile ? { width: '100%', opacity: 1, position: 'relative', left: '-13px' } : { width: '100%', height: '100%', position: 'relative', left: '-13px' }}
           />
         </div>
       </section>

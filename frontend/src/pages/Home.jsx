@@ -437,10 +437,10 @@ const Home = () => {
               className="flex items-center justify-center w-full mx-auto -mt-[8px] mb-4 lg:mb-8 px-4"
             >
               <div
-                className="flex items-center justify-between sm:justify-around w-full max-w-[520px] lg:max-w-[580px] px-8 sm:px-14 lg:px-16 py-3 sm:py-4 gap-6 sm:gap-12 lg:gap-16 transition-all"
+                className="flex items-center justify-between sm:justify-around w-full max-w-[490px] px-8 sm:px-14 lg:px-16 py-3 sm:py-4 gap-6 sm:gap-12 lg:gap-16 transition-all"
                 style={{
                   width: '100%',
-                  maxWidth: '580px',
+                  maxWidth: '490px',
                   borderRadius: '0px 0px 70px 70px',
                   background: 'rgba(255, 255, 255, 1)',
                   boxShadow: '0px 10px 30px -5px rgba(0, 0, 0, 0.06)',
@@ -481,7 +481,7 @@ const Home = () => {
                         width: 'auto',
                       }}
                     >
-                      {(globalStats.totalUsers ?? 0).toLocaleString()}
+                      {(globalStats.totalUsers ?? 0).toLocaleString('de-DE')}
                     </span>
                   </div>
                 </div>
@@ -521,7 +521,7 @@ const Home = () => {
                         width: 'auto',
                       }}
                     >
-                      ${(globalStats.totalPaidOut ?? 0).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                      ${(globalStats.totalPaidOut ?? 0).toLocaleString('de-DE', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
                     </span>
                   </div>
                 </div>
@@ -741,7 +741,7 @@ const Home = () => {
                 className="flex flex-col shrink-0 w-full max-w-[1328px] gap-[20px]"
               >
                 {filter === 'all' && (
-                  <div className="flex items-center" style={{ gap: '5.25px' }}>
+                  <div className="flex items-center" style={{ gap: '5.25px', position: 'relative', left: '-3px' }}>
                     <img
                       src="/coins/survay section.png"
                       alt="Surveys"

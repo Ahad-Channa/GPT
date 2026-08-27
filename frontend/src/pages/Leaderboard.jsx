@@ -17,9 +17,9 @@ const formatCoins = (val) => {
   if (val === undefined || val === null || isNaN(val) || Number(val) === 0) return '0';
   const num = Number(val);
   if (Number.isInteger(num)) {
-    return num.toLocaleString('en-US');
+    return num.toLocaleString('de-DE');
   }
-  return num.toLocaleString('en-US', {
+  return num.toLocaleString('de-DE', {
     minimumFractionDigits: 0,
     maximumFractionDigits: 2,
   });

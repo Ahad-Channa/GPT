@@ -351,12 +351,12 @@ router.post('/withdraw', verifyToken, fraudCheck('withdrawal', 'full'), async (r
       exchangeRateSnapshot = { ltcUSD: ltcRateUSD, fetchedAt: new Date().toISOString() };
     }
 
-    // Minimum coins = method.minUSD * coinsPerUSD
-    const minimumCoins = methodConfig.minUSD * coinsPerUSD;
+    // Minimum coins = method.minUSD * coinsPerUSD (giftcard starts at 5,000 / $5)
+    const minimumCoins = method === 'giftcard' ? 5000 : (methodConfig.minUSD * coinsPerUSD);
     if (amountNum < minimumCoins) {
       return res.status(400).json({
         success: false,
-        error: `Minimum withdrawal for ${methodConfig.label} is ${minimumCoins.toLocaleString()} Coins ($${methodConfig.minUSD} USD)`,
+        error: `Minimum withdrawal for ${methodConfig.label} is ${minimumCoins.toLocaleString()} Coins ($${method === 'giftcard' ? 5 : methodConfig.minUSD} USD)`,
       });
     }
 

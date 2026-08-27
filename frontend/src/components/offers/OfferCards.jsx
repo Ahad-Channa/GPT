@@ -300,7 +300,7 @@ export const FeaturedOfferCard = ({ offer, onClick }) => {
               alignItems: 'center',
             }}
           >
-            {rewardVal.toLocaleString()}
+            {rewardVal.toLocaleString('de-DE')}
           </span>
         </div>
       </div>
@@ -559,7 +559,7 @@ export const FeaturedOfferModal = ({ offer, token, onClose, onSubmitted }) => {
                         whiteSpace: 'nowrap'
                       }}
                     >
-                      {(offer.rewardAmount || 0).toLocaleString()}
+                      {(offer.rewardAmount || 0).toLocaleString('de-DE')}
                     </span>
                   </div>
                 </div>

@@ -194,7 +194,7 @@ export const DirectOfferCard = ({ offer, onClick }) => {
                 alignItems: 'center',
               }}
             >
-              {rewardVal.toLocaleString()}
+              {rewardVal.toLocaleString('de-DE')}
             </span>
           </div>
         )}
@@ -341,7 +341,7 @@ export const DirectOfferModal = ({ offer, token, onClose, onClicked }) => {
                   WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text',
                 }}
               >
-                {(offer.rewardAmount || 0).toLocaleString()}
+                {(offer.rewardAmount || 0).toLocaleString('de-DE')}
               </span>
             </div>
           </div>
