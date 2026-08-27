@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { toast } from 'react-hot-toast';
 import DashboardLayout from '../components/layout/DashboardLayout';
@@ -9,7 +9,8 @@ import {
   FiActivity, FiArrowDownCircle, FiCheckCircle, FiClock,
   FiInbox, FiLoader, FiTrendingUp, FiChevronDown, FiPlayCircle,
   FiSend, FiExternalLink, FiSettings, FiTrash2, FiAlertTriangle, FiRefreshCw,
-  FiUsers, FiCopy, FiLock, FiList, FiChevronLeft, FiChevronRight
+  FiUsers, FiCopy, FiLock, FiList, FiChevronLeft, FiChevronRight,
+  FiSliders, FiCreditCard, FiRotateCcw, FiPauseCircle
 } from 'react-icons/fi';
 import TransactionHistory from '../components/wallet/TransactionHistory';
 import CoinDisplay from '../components/CoinDisplay';
@@ -608,74 +609,57 @@ const calculateReleaseIn = (releaseDateStr) => {
 const Pagination = ({ page, totalPages, onNext, onPrev, onPageClick }) => {
   if (totalPages <= 1) return null;
 
-  const visiblePages = [];
-  if (totalPages <= 3) {
-    for (let i = 1; i <= totalPages; i++) visiblePages.push(i);
-  } else {
-    let start = Math.min(Math.max(1, page - 1), totalPages - 2);
-    if (page === 1) start = 1;
-    visiblePages.push(start, start + 1, start + 2);
-  }
-
-  const CircleBtn = ({ active, disabled, onClick, children, isArrow }) => {
-    const isGreen = active;
-    return (
-      <button
-        onClick={onClick}
-        disabled={disabled}
-        className="transition-all hover:brightness-110"
-        style={{
-          width: '52px', height: '52px', borderRadius: '52px',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          background: isGreen ? 'rgba(73, 178, 101, 1)' : (isArrow ? 'transparent' : '#2A2A2A'),
-          border: isArrow ? '1px solid rgba(73, 178, 101, 1)' : '1px solid transparent',
-          color: isGreen || !isArrow ? '#fff' : 'rgba(73, 178, 101, 1)',
-          fontFamily: '"Barlow Condensed", sans-serif', fontWeight: 600, fontSize: '26px',
-          cursor: disabled ? 'default' : 'pointer',
-          opacity: disabled ? 0.3 : 1,
-          boxSizing: 'border-box',
-        }}
-      >
-        {children}
-      </button>
-    );
-  };
+  const canPrev = page > 1;
+  const canNext = page < totalPages;
 
   return (
-    <div className="pt-6 pb-2 flex items-center justify-center gap-[10px]">
-      <CircleBtn isArrow disabled={page === 1} onClick={onPrev}>
-        <div style={{
-          width: '16px', height: '16px',
-          backgroundColor: 'rgba(73, 178, 101, 1)',
-          WebkitMaskImage: 'url(/coins/leftarrow.png)',
-          WebkitMaskSize: 'contain',
-          WebkitMaskRepeat: 'no-repeat',
-          WebkitMaskPosition: 'center',
-          transform: 'rotate(180deg)'
-        }} />
-      </CircleBtn>
+    <div
+      style={{ gap: '10px' }}
+      className="pt-6 pb-2 flex items-center justify-center"
+    >
+      {/* Previous Button (Left Arrow) */}
+      <button
+        onClick={onPrev}
+        disabled={!canPrev}
+        style={{
+          width: '40px',
+          height: '40px',
+          borderRadius: '100px',
+          backgroundColor: canPrev ? 'rgba(36, 50, 77, 1)' : 'transparent',
+          border: canPrev ? 'none' : '1px solid rgba(36, 50, 77, 1)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          cursor: !canPrev ? 'not-allowed' : 'pointer',
+          opacity: 1,
+        }}
+        className={`transition-all ${canPrev ? 'text-white' : 'text-[#24324D]'}`}
+        title="Previous"
+      >
+        <FiChevronLeft size={18} />
+      </button>
 
-      {visiblePages.map(p => (
-        <CircleBtn
-          key={p}
-          active={page === p}
-          onClick={() => onPageClick && onPageClick(p)}
-        >
-          {p}
-        </CircleBtn>
-      ))}
-
-      <CircleBtn isArrow disabled={page === totalPages} onClick={onNext}>
-        <div style={{
-          width: '16px', height: '16px',
-          backgroundColor: 'rgba(73, 178, 101, 1)',
-          WebkitMaskImage: 'url(/coins/leftarrow.png)',
-          WebkitMaskSize: 'contain',
-          WebkitMaskRepeat: 'no-repeat',
-          WebkitMaskPosition: 'center',
-          transform: 'rotate(0deg)'
-        }} />
-      </CircleBtn>
+      {/* Next Button (Right Arrow) */}
+      <button
+        onClick={onNext}
+        disabled={!canNext}
+        style={{
+          width: '40px',
+          height: '40px',
+          borderRadius: '100px',
+          backgroundColor: canNext ? 'rgba(36, 50, 77, 1)' : 'transparent',
+          border: canNext ? 'none' : '1px solid rgba(36, 50, 77, 1)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          cursor: !canNext ? 'not-allowed' : 'pointer',
+          opacity: 1,
+        }}
+        className={`transition-all ${canNext ? 'text-white' : 'text-[#24324D]'}`}
+        title="Next"
+      >
+        <FiChevronRight size={18} />
+      </button>
     </div>
   );
 };
@@ -732,23 +716,41 @@ const useHistory = (token, type, endpoint = '/wallet/history') => {
 const TabBtn = ({ active, onClick, icon, label }) => (
   <button
     onClick={onClick}
-    className={`flex items-center gap-[10px] h-[48px] px-[20px] rounded-[10px] text-[20px] font-bold transition-all shrink-0 ${active
-      ? 'bg-[#49b265] text-white shadow-[0px_4px_0px_0px_rgba(39,109,58,1)]'
-      : 'text-white/60 hover:text-white bg-transparent'
+    style={{
+      fontFamily: '"Bricolage Grotesque", sans-serif',
+      fontWeight: 700,
+      fontSize: '14px',
+      lineHeight: '100%',
+      letterSpacing: '0%',
+      borderRadius: '80px',
+      height: '37px',
+      opacity: 1,
+    }}
+    className={`flex items-center justify-center gap-2 px-4 py-2 transition-all cursor-pointer whitespace-nowrap ${active
+      ? 'bg-[#24324D] text-white shadow-sm'
+      : 'text-[#000000] hover:bg-black/5 bg-transparent'
       }`}
-    style={{ fontFamily: "'Barlow Condensed', sans-serif" }}
   >
-    <img
-      src={icon}
-      alt=""
-      className={`w-[24px] h-[24px] shrink-0 object-contain ${active ? 'brightness-0 invert' : ''}`}
-    />
+    {typeof icon === 'string' ? (
+      <img
+        src={icon}
+        alt=""
+        style={{
+          filter: active ? 'brightness(0) invert(1)' : 'brightness(0)',
+        }}
+        className="w-4 h-4 shrink-0 object-contain"
+      />
+    ) : icon ? (
+      React.createElement(icon, {
+        className: `w-4 h-4 shrink-0 ${active ? 'text-white' : 'text-black'}`,
+      })
+    ) : null}
     <span>{label}</span>
   </button>
 );
 
 // ── Clicked Offer Row (inline proof upload per offer)
-const ClickedOfferRow = ({ offer, token: initialToken, onRefresh }) => {
+const ClickedOfferRow = ({ offer, index = 0, token: initialToken, onRefresh }) => {
   const { currentUser } = useAuth();
   const [open, setOpen] = useState(false);
   const [proof, setProof] = useState('');
@@ -757,8 +759,6 @@ const ClickedOfferRow = ({ offer, token: initialToken, onRefresh }) => {
   const [result, setResult] = useState(null);
 
   const isRejected = offer.submissionStatus === 'rejected';
-  const iconEmoji = offer.icon && !offer.icon.startsWith('http') && !offer.icon.includes('/') ? offer.icon : null;
-  const iconUrl = offer.coverImage || (offer.icon && !iconEmoji ? offer.icon : null);
 
   const handleImage = (e) => {
     const file = e.target.files[0];
@@ -794,31 +794,61 @@ const ClickedOfferRow = ({ offer, token: initialToken, onRefresh }) => {
   };
 
   return (
-    <div className="w-[1180px] bg-[#171717] rounded-[20px] pt-[20px] pr-[95px] pb-[20px] pl-[40px] hover:bg-[#1a1a1a]/80 transition-colors flex flex-col gap-[15px]">
+    <div
+      style={{
+        width: '100%',
+        minHeight: '69px',
+        height: 'auto',
+        borderRadius: '10px',
+        backgroundColor: index % 2 === 0 ? 'rgba(249, 247, 241, 1)' : '#ffffff',
+      }}
+      className="px-6 py-3 flex flex-col justify-center gap-4"
+    >
       {/* Table Row Grid */}
-      <div className="grid grid-cols-[300px_repeat(4,1fr)] gap-[20px] items-center">
+      <div className="grid grid-cols-[1fr_130px_110px_140px_150px] gap-4 items-center">
         {/* Offers Title */}
-        <span style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="font-semibold text-[28px] leading-[120%] text-white truncate">
+        <span
+          style={{ fontFamily: 'Poppins, sans-serif', fontWeight: 500, fontSize: '16px', lineHeight: '26px' }}
+          className="text-[#1e293b] leading-tight break-words"
+          title={offer.title}
+        >
           {offer.title}
         </span>
 
         {/* Started On */}
-        <span style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="text-white font-semibold text-[28px] leading-[120%]">
+        <span
+          style={{ fontFamily: 'Poppins, sans-serif', fontWeight: 500, fontSize: '16px', lineHeight: '26px', whiteSpace: 'nowrap' }}
+          className="text-[#1e293b] whitespace-nowrap"
+        >
           {offer.createdAt ? new Date(offer.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'N/A'}
         </span>
 
         {/* Reward */}
-        <div className="flex items-center gap-[6px] font-semibold text-[#fbbf24] text-[28px] leading-[120%]" style={{ fontFamily: "'Barlow Condensed', sans-serif" }}>
-          <img src="/coins/Coin.png" alt="Coin" className="w-[24px] h-[24px] shrink-0 object-contain" />
+        <div
+          style={{ fontFamily: 'Poppins, sans-serif', fontWeight: 600, fontSize: '16px', color: 'rgba(190, 146, 0, 1)', whiteSpace: 'nowrap' }}
+          className="flex items-center gap-1.5 whitespace-nowrap"
+        >
+          <img src="/coins/profilecoin1.png" alt="Coin" className="w-[18px] h-[18px] shrink-0 object-contain" />
           <span>{(offer.rewardAmount || 0).toLocaleString('de-DE')}</span>
         </div>
 
         {/* Status */}
         <div>
-          <span style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className={`inline-flex items-center justify-center px-[20px] py-[4px] rounded-[100px] text-[22px] leading-[120%] font-semibold border ${isRejected
-            ? 'bg-rose-500/10 text-rose-400 border-rose-500/20'
-            : 'bg-[#153423] text-[#4ade80] border-[#4ade80]/20'
-            }`}>
+          <span
+            style={{
+              fontFamily: 'Poppins, sans-serif',
+              fontWeight: 500,
+              fontSize: '16px',
+              lineHeight: '26px',
+              borderRadius: '40px',
+              padding: '3px 18px',
+              whiteSpace: 'nowrap',
+            }}
+            className={`inline-flex items-center justify-center whitespace-nowrap ${isRejected
+              ? 'bg-rose-500/10 text-rose-600 border border-rose-200'
+              : 'bg-emerald-500/10 text-emerald-600 border border-emerald-200'
+            }`}
+          >
             {isRejected ? 'Rejected' : 'In Progress'}
           </span>
         </div>
@@ -827,28 +857,29 @@ const ClickedOfferRow = ({ offer, token: initialToken, onRefresh }) => {
         <div className="flex justify-start">
           <button
             onClick={() => { setOpen(o => !o); setResult(null); }}
-            className="h-[48px] px-5 bg-[rgba(39,112,58,1)] hover:brightness-110 text-white rounded-[10px] flex items-center justify-center gap-[10px] font-bold font-['Barlow_Condensed'] text-[20px] transition-all shadow-[0px_4px_0px_0px_rgba(35,80,47,1)] active:translate-y-[2px] active:shadow-[0px_2px_0px_0px_rgba(35,80,47,1)]"
-            style={{ fontFamily: "'Barlow Condensed', sans-serif" }}
+            style={{
+              fontFamily: 'Poppins, sans-serif',
+              fontWeight: 500,
+              fontSize: '16px',
+              lineHeight: '26px',
+              borderRadius: '40px',
+              padding: '3px 18px',
+              whiteSpace: 'nowrap',
+            }}
+            className="bg-[#1e293b] hover:bg-[#0f172a] text-white transition-all shadow-sm cursor-pointer inline-flex items-center justify-center whitespace-nowrap"
           >
-            <span>{isRejected ? 'Resubmit' : 'Submit Proof'}</span>
+            {isRejected ? 'Resubmit' : 'Submit Proof'}
           </button>
         </div>
       </div>
 
-      {/* Rejection note */}
-      {isRejected && offer.adminNote && (
-        <div className="text-rose-400 text-sm font-semibold italic border-l-2 border-rose-500 pl-4 py-1 bg-rose-500/5 rounded-r-[10px]" style={{ fontFamily: "'Barlow Condensed', sans-serif" }}>
-          Admin rejection note: "{offer.adminNote}"
-        </div>
-      )}
-
       {/* Result banner */}
       {result && (
-        <div style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className={`p-4 rounded-[10px] border text-lg font-semibold ${result.type === 'success'
-          ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400'
-          : 'bg-rose-500/10 border-rose-500/20 text-rose-400'
+        <div className={`p-3 rounded-xl border text-sm font-semibold ${result.type === 'success'
+          ? 'bg-emerald-50 border-emerald-200 text-emerald-700'
+          : 'bg-rose-50 border-rose-200 text-rose-700'
           }`}>
-          {result.type === 'success' && <FiCheckCircle className="inline mr-2 text-xl" />}
+          {result.type === 'success' && <FiCheckCircle className="inline mr-2 text-base" />}
           <span>{result.message}</span>
         </div>
       )}
@@ -861,21 +892,20 @@ const ClickedOfferRow = ({ offer, token: initialToken, onRefresh }) => {
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
             onSubmit={handleSubmit}
-            className="overflow-hidden mt-3"
+            className="overflow-hidden mt-1"
           >
-            <div className="bg-[#101010] border border-white/[0.07] rounded-[15px] p-6 space-y-4">
+            <div className="bg-white border border-slate-200 rounded-2xl p-5 space-y-3 shadow-sm">
               <textarea
                 value={proof}
                 onChange={e => setProof(e.target.value)}
                 placeholder="Describe your completion (transaction ID, username, steps taken…)"
                 rows={3}
-                style={{ fontFamily: "'Barlow Condensed', sans-serif" }}
-                className="w-full bg-[#1b1b1b] border border-white/[0.08] rounded-[10px] px-4 py-3 text-white text-lg placeholder-slate-600 focus:outline-none focus:border-[#49b265]/50 focus:ring-1 focus:ring-[#49b265]/20 resize-none"
+                className="w-full bg-[#f8fafc] border border-slate-200 rounded-xl px-4 py-3 text-slate-800 text-sm placeholder-slate-400 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/20 resize-none"
               />
 
               {/* Image upload */}
-              <label style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="cursor-pointer flex items-center gap-2 py-3 px-4 border border-dashed border-white/[0.12] rounded-[10px] bg-[#1b1b1b] hover:bg-white/[0.03] transition-colors text-lg text-slate-300">
-                <FiSend className="text-[#49b265] text-xl" />
+              <label className="cursor-pointer flex items-center gap-2 py-2.5 px-4 border border-dashed border-slate-300 rounded-xl bg-[#f8fafc] hover:bg-slate-100 transition-colors text-xs font-semibold text-slate-600">
+                <FiSend className="text-emerald-500 text-base" />
                 <span>
                   {proofImage ? '✓ Screenshot selected — click to change' : 'Attach screenshot (optional)'}
                 </span>
@@ -883,24 +913,24 @@ const ClickedOfferRow = ({ offer, token: initialToken, onRefresh }) => {
               </label>
 
               {proofImage && (
-                <div className="rounded-[10px] overflow-hidden border border-white/[0.08] max-w-sm mx-auto bg-black/50 p-2">
+                <div className="rounded-xl overflow-hidden border border-slate-200 max-w-sm mx-auto bg-slate-50 p-2">
                   <img src={proofImage} alt="Proof preview" className="max-h-32 object-contain mx-auto" />
                 </div>
               )}
 
-              <div className="flex gap-3 pt-2" style={{ fontFamily: "'Barlow Condensed', sans-serif" }}>
+              <div className="flex gap-2 pt-1">
                 <button
                   type="submit"
                   disabled={submitting || (!proof.trim() && !proofImage)}
-                  className="flex items-center justify-center gap-2 h-[48px] px-6 bg-[#49b265] hover:bg-[#3bb770] text-white rounded-[10px] font-bold text-lg transition-all shadow-[0px_4px_0px_0px_rgba(39,109,58,1)] active:translate-y-[2px] active:shadow-[0px_2px_0px_0px_rgba(39,109,58,1)]"
+                  className="flex items-center justify-center gap-1.5 h-9 px-5 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white rounded-xl font-bold text-xs transition-all shadow-sm"
                 >
-                  {submitting ? <FiLoader className="animate-spin text-xl" /> : <FiSend className="text-xl" />}
+                  {submitting ? <FiLoader className="animate-spin text-sm" /> : <FiSend className="text-sm" />}
                   <span>{submitting ? 'Submitting…' : 'Send Proof'}</span>
                 </button>
                 <button
                   type="button"
                   onClick={() => setOpen(false)}
-                  className="h-[48px] px-6 rounded-[10px] border border-white/[0.08] text-slate-400 hover:text-white hover:bg-white/[0.04] transition-colors font-bold text-lg"
+                  className="h-9 px-4 rounded-xl border border-slate-200 text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors font-bold text-xs"
                 >
                   Cancel
                 </button>
@@ -916,7 +946,7 @@ const ClickedOfferRow = ({ offer, token: initialToken, onRefresh }) => {
 // ── Settings & Delete Account Modal
 const SettingsModal = ({ isOpen, onClose, mongoUser, token, setMongoUser, logout }) => {
   const { setup2FA, confirm2FA, disable2FA } = useAuth();
-  
+
   const [displayName, setDisplayName] = useState(mongoUser?.displayName || '');
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
@@ -1075,7 +1105,7 @@ const SettingsModal = ({ isOpen, onClose, mongoUser, token, setMongoUser, logout
             <p className="text-slate-400 text-[14px] mb-6 max-w-[280px] font-['Barlow_Condensed'] font-semibold leading-normal">
               Scan this QR code with Google Authenticator or Microsoft Authenticator, then enter the 6-digit code.
             </p>
-            
+
             {qrCodeUrl ? (
               <div className="bg-white p-3 rounded-2xl mb-6 shadow-lg select-none">
                 <img src={qrCodeUrl} alt="2FA QR Code" className="w-[180px] h-[180px] rounded-xl" />
@@ -1101,7 +1131,7 @@ const SettingsModal = ({ isOpen, onClose, mongoUser, token, setMongoUser, logout
                 autoFocus
               />
               {error && <p className="text-rose-400 text-sm font-['Barlow_Condensed'] font-semibold">{error}</p>}
-              
+
               <div className="flex gap-3 font-['Barlow_Condensed'] text-[20px] mt-4">
                 <button
                   type="button"
@@ -1146,7 +1176,7 @@ const SettingsModal = ({ isOpen, onClose, mongoUser, token, setMongoUser, logout
                 autoFocus
               />
               {error && <p className="text-rose-400 text-sm font-['Barlow_Condensed'] font-semibold">{error}</p>}
-              
+
               <div className="flex gap-3 font-['Barlow_Condensed'] text-[20px] mt-4">
                 <button
                   type="button"
@@ -1797,7 +1827,7 @@ const Profile = () => {
     setLoadingCompleted(true);
     try {
       const freshToken = currentUser ? await currentUser.getIdToken() : token;
-      
+
       const [customRes, walletRes] = await Promise.all([
         fetch(`${API}/custom-offers`, { headers: { Authorization: `Bearer ${freshToken}` } }),
         fetch(`${API}/wallet/history?type=offer_reward%2Ccustom_offer_reward&limit=50`, { headers: { Authorization: `Bearer ${freshToken}` } }),
@@ -1806,7 +1836,7 @@ const Profile = () => {
 
       if (customData.success) {
         setCustomOffers(customData.offers);
-        
+
         const approvedCustom = customData.offers
           .filter(o => o.submissionStatus === 'approved')
           .map(o => ({
@@ -1877,10 +1907,13 @@ const Profile = () => {
     if (token) fetchHeldOffers();
   }, [token]);
 
-
+  const startedOffers = customOffers.filter(o => o.submissionStatus === 'started' || o.submissionStatus === 'rejected');
+  const totalStartedPages = Math.ceil(startedOffers.length / itemsPerPage);
+  const totalCompletedPages = Math.ceil(completedOffers.length / itemsPerPage);
+  const totalHeldPages = Math.ceil(heldOffers.length / itemsPerPage);
 
   return (
-    <DashboardLayout>
+    <DashboardLayout showLiveBar={true} fullWidth={true}>
       <SettingsModal
         isOpen={showSettings}
         onClose={() => setShowSettings(false)}
@@ -1896,307 +1929,845 @@ const Profile = () => {
         token={token}
         setMongoUser={setMongoUser}
       />
+
+      {/* ─── Top Banner Strip (width: 100%, height: 108px, background: rgba(249, 247, 241, 1)) ─── */}
+      <div
+        className="w-full transition-colors duration-300 shrink-0"
+        style={{
+          width: '100%',
+          height: '108px',
+          background: 'rgba(249, 247, 241, 1)',
+          opacity: 1,
+          transform: 'rotate(0deg)',
+        }}
+      />
+
       <motion.div
         initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
-        className="w-[1240px] shrink-0 mx-auto flex flex-col gap-[20px]"
+        className="w-full max-w-[1328px] mx-auto px-4 md:px-8 lg:px-0 flex flex-col gap-6 -mt-[82px] pb-12"
       >
         {/* ─── PROFILE HERO ─────────────────────────────── */}
-        <div className="flex flex-col gap-[18px] bg-white/[0.14] rounded-[20px] border border-[#2A2A2E] p-[20px] backdrop-blur-[94px] relative z-20">
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 w-full">
-            {/* Left side: Avatar + User Details */}
-            <div className="flex flex-col sm:flex-row gap-[16px] items-start sm:items-center flex-1 min-w-0">
-              {/* Avatar picture (rounded corners rectangular shape) */}
-              <div className="relative shrink-0">
-                <div className="w-[118px] h-[118px] rounded-[20px] overflow-hidden border border-white/10 bg-[#111827] shadow-[0_0_20px_rgba(0,0,0,0.4)]">
-                  <img
-                    src={mongoUser?.avatarUrl || currentUser?.photoURL || `/avatars/avatar1.png`}
-                    alt="Avatar"
-                    className="w-full h-full object-cover"
-                  />
-                </div>
+        <div className="flex flex-col lg:flex-row items-start lg:items-end gap-6 w-full">
+          {/* Circular Avatar (shifted 40px right) */}
+          <div className="relative shrink-0 ml-[40px]">
+            <div
+              style={{
+                width: '164px',
+                height: '164px',
+                backgroundColor: '#ffffff',
+                border: '2.5px solid rgba(36, 50, 77, 1)',
+                borderRadius: '50%',
+                padding: '4.5px',
+                boxSizing: 'border-box',
+              }}
+              className="shadow-sm flex items-center justify-center"
+            >
+              <div className="w-full h-full rounded-full overflow-hidden bg-slate-800 flex items-center justify-center">
+                <img
+                  src={mongoUser?.avatarUrl || currentUser?.photoURL || `/avatars/avatar1.png`}
+                  alt="Avatar"
+                  className="w-full h-full object-cover"
+                />
               </div>
+            </div>
+          </div>
 
-              {/* Identity details */}
-              <div className="flex flex-col gap-[10px] w-full max-w-[824px] h-[104px]">
-                <div className="flex items-center w-auto h-[50px]">
-                  <h1 className="text-[42px] font-bold text-white font-['Barlow_Condensed'] leading-[120%] whitespace-nowrap">
-                    {mongoUser?.displayName || 'Anonymous'}
-                  </h1>
+          {/* Details & Actions Row (justify-content: space-between) */}
+          <div className="flex-1 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 w-full pb-1">
+            {/* Identity details (width: 337px, height: 49px, gap: 16px) */}
+            <div
+              style={{
+                width: '337px',
+                height: '49px',
+                gap: '16px',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'space-between',
+                opacity: 1,
+                transform: 'rotate(0deg)',
+              }}
+            >
+              <h1
+                style={{
+                  fontFamily: '"Bricolage Grotesque", sans-serif',
+                  fontWeight: 700,
+                  fontSize: '27px',
+                  lineHeight: '18px',
+                  letterSpacing: '-0.02em',
+                  color: '#000000',
+                  margin: 0,
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                {mongoUser?.displayName || 'FuturisticBug1'}
+              </h1>
+
+              {/* Info tags row */}
+              <div className="flex items-center gap-4 sm:gap-6 whitespace-nowrap">
+                <div
+                  style={{
+                    fontFamily: '"Poppins", sans-serif',
+                    fontWeight: 500,
+                    fontSize: '13px',
+                    lineHeight: '9px',
+                    letterSpacing: '0%',
+                    color: '#000000',
+                  }}
+                  className="flex items-center gap-1.5"
+                >
+                  <img
+                    src="/coins/profileemail.png"
+                    alt="Email"
+                    className="w-[14px] h-[14px] object-contain shrink-0"
+                  />
+                  <span>{currentUser?.email || mongoUser?.email || 'futuristicbug1@gmail.com'}</span>
                 </div>
-
-                {/* Info tags list */}
-                <div className="flex items-center gap-[6px] w-[587px] h-[44px]">
-                  <div className="flex items-center gap-[10px] pt-[12px] pr-[22px] pb-[12px] pl-[14px] h-[44px] bg-[#171717] rounded-[10px] text-[14px] font-semibold text-white w-auto shrink-0" style={{ fontFamily: "'Barlow Condensed', sans-serif" }}>
-                    <img src="/coins/sms.png" alt="Email" className="w-[20px] h-[20px] shrink-0" />
-                    <span className="truncate leading-none">{currentUser?.email}</span>
-                  </div>
-                  <div className="flex items-center gap-[10px] pt-[12px] pr-[22px] pb-[12px] pl-[14px] h-[44px] bg-[#171717] rounded-[10px] text-[14px] font-semibold text-white w-auto shrink-0" style={{ fontFamily: "'Barlow Condensed', sans-serif" }}>
-                    <img src="/coins/caledar.png" alt="Joined" className="w-[20px] h-[20px] shrink-0" />
-                    <span className="truncate leading-none">Joined {mongoUser?.createdAt ? new Date(mongoUser.createdAt).toLocaleDateString('en-US', { month: 'short', year: 'numeric' }) : 'N/A'}</span>
-                  </div>
-                  <button
-                    onClick={() => copyToClipboard(`${window.location.origin}/r/${mongoUser?.referralCode}`)}
-                    className="flex items-center gap-[10px] pt-[12px] pr-[22px] pb-[12px] pl-[14px] h-[44px] bg-[#171717] hover:bg-[#202020] rounded-[10px] text-[14px] font-semibold text-white transition-all text-left w-auto shrink-0"
-                    style={{ fontFamily: "'Barlow Condensed', sans-serif" }}
-                  >
-                    <img src="/coins/copg.png" alt="Copy" className="w-[20px] h-[20px] shrink-0" />
-                    <span className="truncate leading-none">Copy Referral Link</span>
-                  </button>
+                <div
+                  style={{
+                    fontFamily: '"Poppins", sans-serif',
+                    fontWeight: 500,
+                    fontSize: '13px',
+                    lineHeight: '9px',
+                    letterSpacing: '0%',
+                    color: '#000000',
+                  }}
+                  className="flex items-center gap-1.5"
+                >
+                  <img
+                    src="/coins/profiledate.png"
+                    alt="Joined"
+                    className="w-[14px] h-[14px] object-contain shrink-0"
+                  />
+                  <span>
+                    Joined {mongoUser?.createdAt ? new Date(mongoUser.createdAt).toLocaleDateString('en-US', { month: 'short', year: 'numeric' }) : 'Aug 2026'}
+                  </span>
                 </div>
               </div>
             </div>
 
             {/* Right side: Action buttons */}
-            <div className="flex items-center gap-3 shrink-0 relative z-10">
-              <button
-                onClick={() => setShowSettings(true)}
-                title="Account Settings"
-                className="w-[48px] h-[48px] shrink-0 bg-[#49b265] hover:bg-[#3bb770] text-white rounded-[10px] flex items-center justify-center transition-all shadow-[0px_4px_0px_0px_rgba(39,109,58,1)] active:translate-y-[2px] active:shadow-[0px_2px_0px_0px_rgba(39,109,58,1)]"
+            <div className="flex items-center gap-3 shrink-0">
+              {/* Settings and Customization group (width: 98px, height: 45px, gap: 8px) */}
+              <div
+                style={{
+                  width: '98px',
+                  height: '45px',
+                  gap: '8px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  opacity: 1,
+                  transform: 'rotate(0deg)',
+                }}
               >
-                <img src="/coins/proset.png" alt="Settings" className="w-[24px] h-[24px]" />
-              </button>
+                <button
+                  onClick={() => setShowSettings(true)}
+                  title="Account Settings"
+                  style={{
+                    width: '45px',
+                    height: '45px',
+                    borderRadius: '80px',
+                    background: 'rgba(249, 247, 241, 1)',
+                    border: 'none',
+                    opacity: 1,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    cursor: 'pointer',
+                  }}
+                  className="hover:opacity-80 transition-opacity"
+                >
+                  <img src="/coins/profilesetting.png" alt="Settings" className="w-[18px] h-[18px] object-contain" />
+                </button>
+                <button
+                  onClick={() => setShowCustomization(true)}
+                  title="Customize Avatars"
+                  style={{
+                    width: '45px',
+                    height: '45px',
+                    borderRadius: '80px',
+                    background: 'rgba(249, 247, 241, 1)',
+                    border: 'none',
+                    opacity: 1,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    cursor: 'pointer',
+                  }}
+                  className="hover:opacity-80 transition-opacity"
+                >
+                  <img src="/coins/profilecustumize.png" alt="Customize" className="w-[18px] h-[18px] object-contain" />
+                </button>
+              </div>
+
+              {/* Copy Referral Link Button (width: 198px, height: 49px, border-radius: 80px) */}
               <button
-                onClick={() => setShowCustomization(true)}
-                className="w-[162px] h-[48px] shrink-0 bg-[#27703a] hover:bg-[#205c2e] text-white rounded-[10px] flex items-center justify-center gap-[10px] font-bold font-['Barlow_Condensed'] text-[20px] transition-all shadow-[0px_4px_0px_0px_rgba(35,80,47,1)] active:translate-y-[2px] active:shadow-[0px_2px_0px_0px_rgba(35,80,47,1)]"
+                onClick={() => copyToClipboard(`${window.location.origin}/r/${mongoUser?.referralCode || ''}`)}
+                style={{
+                  width: '198px',
+                  height: '49px',
+                  borderRadius: '80px',
+                  background: 'rgba(36, 50, 77, 1)',
+                  paddingLeft: '28px',
+                  paddingRight: '28px',
+                  gap: '10px',
+                  opacity: 1,
+                  transform: 'rotate(0deg)',
+                  border: 'none',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  cursor: 'pointer',
+                  boxSizing: 'border-box',
+                }}
+                className="hover:opacity-90 transition-opacity shadow-sm shrink-0"
               >
-                <img src="/coins/procus.png" alt="Customize" className="w-[24px] h-[24px] shrink-0" />
-                <span>Customize</span>
+                <span
+                  style={{
+                    fontFamily: '"Poppins", sans-serif',
+                    fontWeight: 500,
+                    fontSize: '16px',
+                    lineHeight: '28px',
+                    letterSpacing: '0%',
+                    color: '#ffffff',
+                    whiteSpace: 'nowrap',
+                  }}
+                >
+                  Copy Referral Link
+                </span>
               </button>
-            </div>
-          </div>
-
-          {/* Bottom stats cards */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-[20px] w-full">
-            {/* Offers card */}
-            <div className="bg-[#171717] rounded-[20px] p-[20px] flex flex-col gap-[22px] h-[156px]">
-              <div className="flex flex-col gap-[12px] h-[81px]">
-                <h3 className="font-['Barlow_Condensed'] text-[22px] font-bold text-white leading-[130%] h-[29px]">Offers</h3>
-                <div className="flex items-center gap-[6px] h-[40px]">
-                  <span className="font-['Barlow_Condensed'] font-bold text-[50px] leading-[120%] text-[#49b265]">
-                    {profileStats.totalTasksCompleted}
-                  </span>
-                </div>
-              </div>
-              <p className="font-['Barlow_Condensed'] text-[18px] font-semibold text-white/50 leading-[130%] h-[13px]">Completed</p>
-            </div>
-
-            {/* Earned card */}
-            <div className="bg-[#171717] rounded-[20px] p-[20px] flex flex-col gap-[22px] h-[156px]">
-              <div className="flex flex-col gap-[12px] h-[81px]">
-                <h3 className="font-['Barlow_Condensed'] text-[22px] font-bold text-white leading-[130%] h-[29px]">Earned</h3>
-                <div className="flex items-center gap-[6px] h-[40px]">
-                  <img src="/coins/Coin.png" alt="Coin" className="w-[40px] h-[40px] object-contain shrink-0" />
-                  <span
-                    style={{
-                      fontFamily: "'Barlow Condensed', sans-serif",
-                      backgroundImage: 'linear-gradient(180deg, #FEDF77 0%, #FCB91E 100%)',
-                      WebkitBackgroundClip: 'text',
-                      backgroundClip: 'text',
-                      color: 'transparent'
-                    }}
-                    className="font-bold text-[50px] leading-[120%]"
-                  >
-                    {Math.max(mongoUser?.totalEarned || 0, profileStats.totalEarnedLifetime || 0).toLocaleString('de-DE')}
-                  </span>
-                </div>
-              </div>
-              <p className="font-['Barlow_Condensed'] text-[18px] font-semibold text-white/50 leading-[130%] h-[13px]">Lifetime earned</p>
-            </div>
-
-            {/* 30-Day card */}
-            <div className="bg-[#171717] rounded-[20px] p-[20px] flex flex-col gap-[22px] h-[156px]">
-              <div className="flex flex-col gap-[12px] h-[81px]">
-                <h3 className="font-['Barlow_Condensed'] text-[22px] font-bold text-white leading-[130%] h-[29px] whitespace-nowrap">30-Day Earnings</h3>
-                <div className="flex items-center gap-[6px] h-[40px]">
-                  <img src="/coins/Coin.png" alt="Coin" className="w-[40px] h-[40px] object-contain shrink-0" />
-                  <span
-                    style={{
-                      fontFamily: "'Barlow Condensed', sans-serif",
-                      backgroundImage: 'linear-gradient(180deg, #FEDF77 0%, #FCB91E 100%)',
-                      WebkitBackgroundClip: 'text',
-                      backgroundClip: 'text',
-                      color: 'transparent'
-                    }}
-                    className="font-bold text-[50px] leading-[120%]"
-                  >
-                    {(profileStats.earnings30Days || 0).toLocaleString('de-DE')}
-                  </span>
-                </div>
-              </div>
-              <p className="font-['Barlow_Condensed'] text-[18px] font-semibold text-white/50 leading-[130%] h-[13px]">last 30 days</p>
             </div>
           </div>
         </div>
 
-        {/* ─── Tab pill bar navigation ─────────────────── */}
-        <div className="w-[1240px] h-[84px] shrink-0 bg-[#2c2d2c] backdrop-blur-[24px] shadow-[0px_4px_44px_0px_rgba(0,0,0,0.25)] rounded-[10px] p-[18px] flex items-center">
-          <div className="flex justify-between items-center w-full">
-            <TabBtn active={activeTab === 'started_offers'} onClick={() => setActiveTab('started_offers')} icon="/coins/clock.png" label="Started Offers" />
-            <TabBtn active={activeTab === 'completed_offers'} onClick={() => setActiveTab('completed_offers')} icon="/coins/gift.png" label="Completed Offers" />
-            <TabBtn active={activeTab === 'held_offers'} onClick={() => setActiveTab('held_offers')} icon="/coins/puse.png" label="Hold Offers" />
-            <TabBtn active={activeTab === 'transaction_history'} onClick={() => setActiveTab('transaction_history')} icon="/coins/protim.png" label="Transaction History" />
-            <TabBtn active={activeTab === 'chargebacks'} onClick={() => setActiveTab('chargebacks')} icon="/coins/probac.png" label="Chargebacks" />
+        {/* ─── THREE STAT CARDS (width: 1103px, height: 160px, gap: 10px) ─── */}
+        <div className="w-full flex justify-end">
+          <div
+            style={{
+              width: '1103px',
+              maxWidth: '100%',
+              gap: '10px',
+              opacity: 1,
+              transform: 'rotate(0deg)',
+            }}
+            className="grid grid-cols-1 md:grid-cols-3"
+          >
+            {/* Offers card (width: 361px, height: 160px, radius: 25px) */}
+            <div
+              style={{
+                height: '160px',
+                borderRadius: '25px',
+                background: 'rgba(249, 247, 241, 1)',
+                paddingTop: '23px',
+                paddingRight: '23px',
+                paddingBottom: '25px',
+                paddingLeft: '23px',
+                gap: '10px',
+                opacity: 1,
+                transform: 'rotate(0deg)',
+                boxSizing: 'border-box',
+              }}
+              className="flex flex-col justify-between"
+            >
+              <div>
+                <span
+                  style={{
+                    fontFamily: '"Bricolage Grotesque", sans-serif',
+                    fontWeight: 700,
+                    fontSize: '45px',
+                    lineHeight: '30px',
+                    letterSpacing: '-0.02em',
+                    color: '#24324D',
+                    display: 'block',
+                  }}
+                >
+                  {profileStats.totalTasksCompleted || 0}
+                </span>
+              </div>
+              {/* Heading and text as one whole (width: 144px, height: 36px, gap: 15px) */}
+              <div
+                style={{
+                  width: '144px',
+                  height: '36px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'space-between',
+                  opacity: 1,
+                }}
+              >
+                <h3
+                  style={{
+                    fontFamily: '"Bricolage Grotesque", sans-serif',
+                    fontWeight: 700,
+                    fontSize: '20px',
+                    lineHeight: '13px',
+                    letterSpacing: '-0.02em',
+                    color: '#000000',
+                    margin: 0,
+                  }}
+                >
+                  Offers
+                </h3>
+                <p
+                  style={{
+                    fontFamily: '"Poppins", sans-serif',
+                    fontWeight: 500,
+                    fontSize: '13px',
+                    lineHeight: '10px',
+                    letterSpacing: '0%',
+                    color: '#000000',
+                    margin: 0,
+                  }}
+                >
+                  Completed
+                </p>
+              </div>
+            </div>
+
+            {/* Earned card (width: 361px, height: 160px, radius: 25px) */}
+            <div
+              style={{
+                height: '160px',
+                borderRadius: '25px',
+                background: 'rgba(249, 247, 241, 1)',
+                paddingTop: '23px',
+                paddingRight: '23px',
+                paddingBottom: '25px',
+                paddingLeft: '23px',
+                gap: '10px',
+                opacity: 1,
+                transform: 'rotate(0deg)',
+                boxSizing: 'border-box',
+              }}
+              className="flex flex-col justify-between"
+            >
+              <div className="flex items-center gap-2.5">
+                <img
+                  src="/coins/profilecoin.png"
+                  alt="Coin"
+                  className="w-[28px] h-[28px] object-contain shrink-0"
+                />
+                <span
+                  style={{
+                    fontFamily: '"Bricolage Grotesque", sans-serif',
+                    fontWeight: 700,
+                    fontSize: '45px',
+                    lineHeight: '30px',
+                    letterSpacing: '-0.02em',
+                    color: '#ca8a04',
+                  }}
+                >
+                  {Math.max(mongoUser?.totalEarned || 0, profileStats.totalEarnedLifetime || 0).toLocaleString('en-US')}
+                </span>
+              </div>
+              {/* Heading and text as one whole */}
+              <div
+                style={{
+                  width: '144px',
+                  height: '36px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'space-between',
+                  opacity: 1,
+                }}
+              >
+                <h3
+                  style={{
+                    fontFamily: '"Bricolage Grotesque", sans-serif',
+                    fontWeight: 700,
+                    fontSize: '20px',
+                    lineHeight: '13px',
+                    letterSpacing: '-0.02em',
+                    color: '#000000',
+                    margin: 0,
+                  }}
+                >
+                  Earned
+                </h3>
+                <p
+                  style={{
+                    fontFamily: '"Poppins", sans-serif',
+                    fontWeight: 500,
+                    fontSize: '13px',
+                    lineHeight: '10px',
+                    letterSpacing: '0%',
+                    color: '#000000',
+                    margin: 0,
+                  }}
+                >
+                  Lifetime earned
+                </p>
+              </div>
+            </div>
+
+            {/* 30-Day Earnings card (width: 361px, height: 160px, radius: 25px) */}
+            <div
+              style={{
+                height: '160px',
+                borderRadius: '25px',
+                background: 'rgba(249, 247, 241, 1)',
+                paddingTop: '23px',
+                paddingRight: '23px',
+                paddingBottom: '25px',
+                paddingLeft: '23px',
+                gap: '10px',
+                opacity: 1,
+                transform: 'rotate(0deg)',
+                boxSizing: 'border-box',
+              }}
+              className="flex flex-col justify-between"
+            >
+              <div className="flex items-center gap-2.5">
+                <img
+                  src="/coins/profilecoin.png"
+                  alt="Coin"
+                  className="w-[28px] h-[28px] object-contain shrink-0"
+                />
+                <span
+                  style={{
+                    fontFamily: '"Bricolage Grotesque", sans-serif',
+                    fontWeight: 700,
+                    fontSize: '45px',
+                    lineHeight: '30px',
+                    letterSpacing: '-0.02em',
+                    color: '#ca8a04',
+                  }}
+                >
+                  {(profileStats.earnings30Days || 0).toLocaleString('en-US')}
+                </span>
+              </div>
+              {/* Heading and text as one whole */}
+              <div
+                style={{
+                  width: '144px',
+                  height: '36px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'space-between',
+                  opacity: 1,
+                }}
+              >
+                <h3
+                  style={{
+                    fontFamily: '"Bricolage Grotesque", sans-serif',
+                    fontWeight: 700,
+                    fontSize: '20px',
+                    lineHeight: '13px',
+                    letterSpacing: '-0.02em',
+                    color: '#000000',
+                    margin: 0,
+                    whiteSpace: 'nowrap',
+                  }}
+                >
+                  30-Day Earnings
+                </h3>
+                <p
+                  style={{
+                    fontFamily: '"Poppins", sans-serif',
+                    fontWeight: 500,
+                    fontSize: '13px',
+                    lineHeight: '10px',
+                    letterSpacing: '0%',
+                    color: '#000000',
+                    margin: 0,
+                    whiteSpace: 'nowrap',
+                  }}
+                >
+                  Earned in 30 days
+                </p>
+              </div>
+            </div>
           </div>
         </div>
 
-        {/* ─── Tab Content ─────────────────────────────────── */}
-        <div className="w-full bg-[#242424] rounded-[30px] p-[30px] flex flex-col gap-[10px]">
-          <AnimatePresence mode="wait">
-            {/* ══ STARTED OFFERS TAB ══ */}
-            {activeTab === 'started_offers' && (
-              <motion.div
-                key="started_offers"
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -6 }}
-                className="w-full"
-              >
-                {loadingOffers ? (
-                  <div className="flex justify-center py-10"><FiLoader className="animate-spin text-2xl text-[#49b265]" /></div>
-                ) : (() => {
-                  const startedOffers = customOffers.filter(o => o.submissionStatus === 'started' || o.submissionStatus === 'rejected');
-                  if (startedOffers.length === 0) {
+        {/* ─── MAIN TABS & TABLE CONTAINER (width: 1325px, min-height: 593px, background: rgba(249, 247, 241, 1)) ─── */}
+        <div
+          style={{
+            width: '100%',
+            maxWidth: '1325px',
+            minHeight: '593px',
+            background: 'rgba(249, 247, 241, 1)',
+            borderRadius: '30px',
+            opacity: 1,
+            transform: 'rotate(0deg)',
+          }}
+          className="mx-auto px-6 py-6 sm:px-8 sm:py-7 border border-slate-100/60 shadow-sm flex flex-col justify-start gap-4"
+        >
+          {/* Tab pill bar navigation (width: 839px, height: 37px, gap: 5px) */}
+          <div
+            style={{
+              width: '100%',
+              maxWidth: '839px',
+              height: '37px',
+              gap: '5px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              opacity: 1,
+            }}
+            className="mx-auto flex-wrap sm:flex-nowrap"
+          >
+            <TabBtn active={activeTab === 'started_offers'} onClick={() => setActiveTab('started_offers')} icon="/coins/profilestarted.png" label="Started Offers" />
+            <TabBtn active={activeTab === 'completed_offers'} onClick={() => setActiveTab('completed_offers')} icon="/coins/profilecompleted.png" label="Completed Offers" />
+            <TabBtn active={activeTab === 'held_offers'} onClick={() => setActiveTab('held_offers')} icon="/coins/profilehold.png" label="Hold Offers" />
+            <TabBtn active={activeTab === 'transaction_history'} onClick={() => setActiveTab('transaction_history')} icon="/coins/profiletransition.png" label="Transaction History" />
+            <TabBtn active={activeTab === 'chargebacks'} onClick={() => setActiveTab('chargebacks')} icon="/coins/profileback.png" label="Chargebacks" />
+          </div>
+
+          {/* Tab Content Box (width: 1295px, min-height: 462px, border-radius: 20px, background: #FFFFFF) */}
+          <div
+            style={{
+              width: '100%',
+              maxWidth: '1295px',
+              minHeight: '462px',
+              backgroundColor: 'rgba(255, 255, 255, 1)',
+              borderRadius: '20px',
+              opacity: 1,
+              transform: 'rotate(0deg)',
+              padding: '16px 2px',
+              boxSizing: 'border-box',
+            }}
+            className="mx-auto shadow-sm flex flex-col justify-between w-full mt-2"
+          >
+            <AnimatePresence mode="wait">
+              {/* ══ STARTED OFFERS TAB ══ */}
+              {activeTab === 'started_offers' && (
+                <motion.div
+                  key="started_offers"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -6 }}
+                  className="w-full"
+                >
+                  {loadingOffers ? (
+                    <div className="flex justify-center py-12"><FiLoader className="animate-spin text-2xl text-emerald-600" /></div>
+                  ) : (() => {
+                    const startedOffers = customOffers.filter(o => o.submissionStatus === 'started' || o.submissionStatus === 'rejected');
+                    if (startedOffers.length === 0) {
+                      return (
+                        <p className="text-center py-12 text-slate-500 font-bold text-base">No clicked offers yet. Browse the Earn page to start new offers!</p>
+                      );
+                    }
+                    const totalStartedPages = Math.ceil(startedOffers.length / itemsPerPage);
+                    const paginatedStarted = startedOffers.slice((startedPage - 1) * itemsPerPage, startedPage * itemsPerPage);
                     return (
-                      <p className="text-center py-8" style={{ fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 700, fontSize: '20px', lineHeight: '120%', color: 'white' }}>No clicked offers yet. Browse the Earn page to start new offers!</p>
+                      <div>
+                        <div className="overflow-x-auto">
+                          <div className="min-w-[800px]">
+                            <div
+                              style={{
+                                fontFamily: 'Poppins, sans-serif',
+                                fontWeight: 400,
+                                fontSize: '14px',
+                                lineHeight: '26px',
+                                letterSpacing: '0.06em',
+                                color: 'rgba(14, 15, 12, 0.6)',
+                                textTransform: 'uppercase',
+                              }}
+                              className="grid grid-cols-[1fr_130px_110px_140px_150px] gap-4 px-6 py-2"
+                            >
+                              <div>Offers</div>
+                              <div>Started On</div>
+                              <div>Reward</div>
+                              <div>Status</div>
+                              <div>Proof</div>
+                            </div>
+                            <div className="flex flex-col gap-2 mt-2">
+                              {paginatedStarted.map((offer, idx) => (
+                                <ClickedOfferRow
+                                  key={offer._id}
+                                  offer={offer}
+                                  index={idx}
+                                  token={token}
+                                  onRefresh={fetchOffersData}
+                                />
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
                     );
-                  }
-                  const totalStartedPages = Math.ceil(startedOffers.length / itemsPerPage);
-                  const paginatedStarted = startedOffers.slice((startedPage - 1) * itemsPerPage, startedPage * itemsPerPage);
-                  return (
-                    <div>
-                      <div className="overflow-x-auto">
-                        <div className="min-w-[1180px]">
-                          <div className="w-[1180px] h-[58px] rounded-[20px] pt-[10px] pr-[95px] pb-[30px] pl-[40px] grid grid-cols-[300px_repeat(4,1fr)] gap-[20px] border-b border-[#2a2d36] items-center">
-                            <div style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="font-semibold text-[26px] text-white/40">Offers</div>
-                            <div style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="font-semibold text-[26px] text-white/40">Started On</div>
-                            <div style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="font-semibold text-[26px] text-white/40">Reward</div>
-                            <div style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="font-semibold text-[26px] text-white/40">Status</div>
-                            <div style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="font-semibold text-[26px] text-white/40">Proof</div>
-                          </div>
-                          <div className="flex flex-col gap-[10px] mt-[10px]">
-                            {paginatedStarted.map(offer => (
-                              <ClickedOfferRow
-                                key={offer._id}
-                                offer={offer}
-                                token={token}
-                                onRefresh={fetchOffersData}
-                              />
-                            ))}
-                          </div>
-                        </div>
-                      </div>
-                      <Pagination
-                        page={startedPage}
-                        totalPages={totalStartedPages}
-                        onNext={() => setStartedPage(p => Math.min(totalStartedPages, p + 1))}
-                        onPrev={() => setStartedPage(p => Math.max(1, p - 1))}
-                        onPageClick={setStartedPage}
-                      />
-                    </div>
-                  );
-                })()}
-              </motion.div>
-            )}
+                  })()}
+                </motion.div>
+              )}
 
-            {/* ══ COMPLETED OFFERS TAB ══ */}
-            {activeTab === 'completed_offers' && (
-              <motion.div
-                key="completed_offers"
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -6 }}
-                className="w-full"
-              >
-                {loadingCompleted ? (
-                  <div className="flex justify-center py-10"><FiLoader className="animate-spin text-2xl text-[#49b265]" /></div>
-                ) : completedOffers.length === 0 ? (
-                  <p className="text-center py-8" style={{ fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 700, fontSize: '20px', lineHeight: '120%', color: 'white' }}>No completed offers yet. Finish a started offer to earn your reward!</p>
-                ) : (() => {
-                  const totalCompletedPages = Math.ceil(completedOffers.length / itemsPerPage);
-                  const paginatedCompleted = completedOffers.slice((completedPage - 1) * itemsPerPage, completedPage * itemsPerPage);
-                  return (
-                    <div>
-                      <div className="overflow-x-auto">
-                        <div className="min-w-[1180px]">
-                          <div className="w-[1180px] h-[58px] rounded-[20px] pt-[10px] pr-[95px] pb-[30px] pl-[40px] grid grid-cols-[2fr_1fr_1fr] gap-[20px] border-b border-[#2a2d36] items-center">
-                            <div style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="font-semibold text-[26px] text-white/40">Offers</div>
-                            <div style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="font-semibold text-[26px] text-white/40">Completed On</div>
-                            <div style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="font-semibold text-[26px] text-white/40">Reward</div>
-                          </div>
-                          <div className="flex flex-col gap-[10px] mt-[10px]">
-                            {paginatedCompleted.map(offer => (
-                              <div key={offer._id} className="w-[1180px] min-h-[82px] bg-[#171717] rounded-[20px] pt-[20px] pr-[95px] pb-[20px] pl-[40px] grid grid-cols-[2fr_1fr_1fr] gap-[20px] items-center hover:bg-[#1a1a1a] transition-colors">
-                                <span style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="font-semibold text-[28px] leading-[120%] text-white">{offer.title}</span>
-                                <span style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="text-white font-semibold text-[28px] leading-[120%]">{offer.completedAt ? new Date(offer.completedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'N/A'}</span>
-                                <div className="flex items-center gap-[6px] font-semibold text-[#fbbf24] text-[28px] leading-[120%]" style={{ fontFamily: "'Barlow Condensed', sans-serif" }}>
-                                  <img src="/coins/Coin.png" alt="Coin" className="w-[24px] h-[24px] shrink-0 object-contain" />
-                                  <span>{(offer.rewardAmount || 0).toLocaleString('de-DE')}</span>
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      </div>
-                      <Pagination
-                        page={completedPage}
-                        totalPages={totalCompletedPages}
-                        onNext={() => setCompletedPage(p => Math.min(totalCompletedPages, p + 1))}
-                        onPrev={() => setCompletedPage(p => Math.max(1, p - 1))}
-                        onPageClick={setCompletedPage}
-                      />
-                    </div>
-                  );
-                })()}
-              </motion.div>
-            )}
-
-            {/* ══ HOLD OFFERS TAB ══ */}
-            {activeTab === 'held_offers' && (
-              <motion.div
-                key="held_offers"
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -6 }}
-                className="w-full"
-              >
-                {loadingHolds ? (
-                  <div className="flex justify-center py-10"><FiLoader className="animate-spin text-2xl text-[#49b265]" /></div>
-                ) : heldOffers.length === 0 ? (
-                  <p className="text-center py-8" style={{ fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 700, fontSize: '20px', lineHeight: '120%', color: 'white' }}>No held earnings at the moment.</p>
-                ) : (() => {
-                  const totalHeldPages = Math.ceil(heldOffers.length / itemsPerPage);
-                  const paginatedHeld = heldOffers.slice((heldPage - 1) * itemsPerPage, heldPage * itemsPerPage);
-                  return (
-                    <div>
-                      <div className="overflow-x-auto">
-                        <div className="min-w-[1180px]">
-                          <div className="w-[1180px] h-[58px] rounded-[20px] pt-[10px] pr-[95px] pb-[30px] pl-[40px] grid grid-cols-[300px_repeat(4,1fr)] gap-[20px] border-b border-[#2a2d36] items-center">
-                            <div style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="font-semibold text-[26px] text-white/40">Offers</div>
-                            <div style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="font-semibold text-[26px] text-white/40">Completed On</div>
-                            <div style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="font-semibold text-[26px] text-white/40">Reward</div>
-                            <div style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="font-semibold text-[26px] text-white/40">Hold Period</div>
-                            <div style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="font-semibold text-[26px] text-white/40 text-right">Release In</div>
-                          </div>
-                          <div className="flex flex-col gap-[10px] mt-[10px]">
-                            {paginatedHeld.map(offer => {
-                              const holdPeriodDays = offer.holdUntil && offer.createdAt
-                                ? Math.round((new Date(offer.holdUntil) - new Date(offer.createdAt)) / (1000 * 60 * 60 * 24))
-                                : 30;
-                              const releaseIn = offer.daysRemaining > 0
-                                ? `${offer.daysRemaining}d`
-                                : offer.isReadyToRelease ? 'Ready' : 'N/A';
-                              return (
-                                <div key={offer._id} className="w-[1180px] min-h-[82px] bg-[#171717] rounded-[20px] pt-[20px] pr-[95px] pb-[20px] pl-[40px] grid grid-cols-[300px_repeat(4,1fr)] gap-[20px] items-center hover:bg-[#1a1a1a] transition-colors">
-                                  <span style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="font-semibold text-[28px] leading-[120%] text-white">{offer.description}</span>
-                                  <span style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="text-white font-semibold text-[28px] leading-[120%]">{offer.createdAt ? new Date(offer.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'N/A'}</span>
-                                  <div className="flex items-center gap-[6px] font-semibold text-[#fbbf24] text-[28px] leading-[120%]" style={{ fontFamily: "'Barlow Condensed', sans-serif" }}>
-                                    <img src="/coins/Coin.png" alt="Coin" className="w-[24px] h-[24px] shrink-0 object-contain" />
-                                    <span>{(offer.amount || 0).toLocaleString('de-DE')}</span>
+              {/* ══ COMPLETED OFFERS TAB ══ */}
+              {activeTab === 'completed_offers' && (
+                <motion.div
+                  key="completed_offers"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -6 }}
+                  className="w-full"
+                >
+                  {loadingCompleted ? (
+                    <div className="flex justify-center py-12"><FiLoader className="animate-spin text-2xl text-emerald-600" /></div>
+                  ) : completedOffers.length === 0 ? (
+                    <p className="text-center py-12 text-slate-500 font-bold text-base">No completed offers yet. Finish a started offer to earn your reward!</p>
+                  ) : (() => {
+                    const paginatedCompleted = completedOffers.slice((completedPage - 1) * itemsPerPage, completedPage * itemsPerPage);
+                    return (
+                      <div>
+                        <div className="overflow-x-auto">
+                          <div className="min-w-[700px]">
+                            <div
+                              style={{
+                                fontFamily: 'Poppins, sans-serif',
+                                fontWeight: 400,
+                                fontSize: '14px',
+                                lineHeight: '26px',
+                                letterSpacing: '0.06em',
+                                color: 'rgba(14, 15, 12, 0.6)',
+                                textTransform: 'uppercase',
+                              }}
+                              className="grid grid-cols-[1fr_180px_150px] gap-4 px-6 py-2"
+                            >
+                              <div>Offers</div>
+                              <div>Completed On</div>
+                              <div>Reward</div>
+                            </div>
+                            <div className="flex flex-col gap-2 mt-2">
+                              {paginatedCompleted.map((offer, idx) => (
+                                <div
+                                  key={offer._id}
+                                  style={{
+                                    width: '100%',
+                                    minHeight: '69px',
+                                    height: 'auto',
+                                    borderRadius: '10px',
+                                    backgroundColor: idx % 2 === 0 ? 'rgba(249, 247, 241, 1)' : '#ffffff',
+                                  }}
+                                  className="px-6 py-3.5 grid grid-cols-[1fr_180px_150px] gap-4 items-center shadow-[0_1px_3px_rgba(0,0,0,0.02)]"
+                                >
+                                  <span
+                                    style={{ fontFamily: 'Poppins, sans-serif', fontWeight: 500, fontSize: '16px', lineHeight: '26px' }}
+                                    className="text-[#1e293b] leading-tight break-words"
+                                  >
+                                    {offer.title}
+                                  </span>
+                                  <span
+                                    style={{ fontFamily: 'Poppins, sans-serif', fontWeight: 500, fontSize: '16px', lineHeight: '26px' }}
+                                    className="text-[#1e293b]"
+                                  >
+                                    {offer.completedAt ? new Date(offer.completedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'N/A'}
+                                  </span>
+                                  <div
+                                    style={{ fontFamily: 'Poppins, sans-serif', fontWeight: 600, fontSize: '16px', color: 'rgba(190, 146, 0, 1)' }}
+                                    className="flex items-center gap-1.5"
+                                  >
+                                    <img src="/coins/profilecoin1.png" alt="Coin" className="w-[18px] h-[18px] shrink-0 object-contain" />
+                                    <span>{(offer.rewardAmount || 0).toLocaleString('de-DE')}</span>
                                   </div>
-                                  <span style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="text-white font-semibold text-[28px] leading-[120%]">{holdPeriodDays} days</span>
-                                  <div style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className={`text-right font-semibold text-[28px] leading-[120%] ${offer.isReadyToRelease ? 'text-[#49b265]' : 'text-white'}`}>
-                                    {releaseIn}
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })()}
+                </motion.div>
+              )}
+
+              {/* ══ HOLD OFFERS TAB ══ */}
+              {activeTab === 'held_offers' && (
+                <motion.div
+                  key="held_offers"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -6 }}
+                  className="w-full"
+                >
+                  {loadingHolds ? (
+                    <div className="flex justify-center py-12"><FiLoader className="animate-spin text-2xl text-emerald-600" /></div>
+                  ) : heldOffers.length === 0 ? (
+                    <p className="text-center py-12 text-slate-500 font-bold text-base">No held earnings at the moment.</p>
+                  ) : (() => {
+                    const paginatedHeld = heldOffers.slice((heldPage - 1) * itemsPerPage, heldPage * itemsPerPage);
+                    return (
+                      <div>
+                        <div className="overflow-x-auto">
+                          <div className="min-w-[800px]">
+                            <div
+                              style={{
+                                fontFamily: 'Poppins, sans-serif',
+                                fontWeight: 400,
+                                fontSize: '14px',
+                                lineHeight: '26px',
+                                letterSpacing: '0.06em',
+                                color: 'rgba(14, 15, 12, 0.6)',
+                                textTransform: 'uppercase',
+                              }}
+                              className="grid grid-cols-[1fr_140px_130px_130px_130px] gap-4 px-6 py-2"
+                            >
+                              <div>Offers</div>
+                              <div>Completed On</div>
+                              <div>Reward</div>
+                              <div>Hold Period</div>
+                              <div className="text-right">Release In</div>
+                            </div>
+                            <div className="flex flex-col gap-2 mt-2">
+                              {paginatedHeld.map((offer, idx) => {
+                                const holdPeriodDays = offer.holdUntil && offer.createdAt
+                                  ? Math.round((new Date(offer.holdUntil) - new Date(offer.createdAt)) / (1000 * 60 * 60 * 24))
+                                  : 30;
+                                const releaseIn = offer.daysRemaining > 0
+                                  ? `${offer.daysRemaining}d`
+                                  : offer.isReadyToRelease ? 'Ready' : 'N/A';
+                                return (
+                                  <div
+                                    key={offer._id}
+                                    style={{
+                                      width: '100%',
+                                      minHeight: '69px',
+                                      height: 'auto',
+                                      borderRadius: '10px',
+                                      backgroundColor: idx % 2 === 0 ? 'rgba(249, 247, 241, 1)' : '#ffffff',
+                                    }}
+                                    className="px-6 py-3.5 grid grid-cols-[1fr_140px_130px_130px_130px] gap-4 items-center shadow-[0_1px_3px_rgba(0,0,0,0.02)]"
+                                  >
+                                    <span
+                                      style={{ fontFamily: 'Poppins, sans-serif', fontWeight: 500, fontSize: '16px', lineHeight: '26px' }}
+                                      className="text-[#1e293b] leading-tight break-words"
+                                    >
+                                      {offer.description}
+                                    </span>
+                                    <span
+                                      style={{ fontFamily: 'Poppins, sans-serif', fontWeight: 500, fontSize: '16px', lineHeight: '26px' }}
+                                      className="text-[#1e293b]"
+                                    >
+                                      {offer.createdAt ? new Date(offer.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'N/A'}
+                                    </span>
+                                    <div
+                                      style={{ fontFamily: 'Poppins, sans-serif', fontWeight: 600, fontSize: '16px', color: 'rgba(190, 146, 0, 1)' }}
+                                      className="flex items-center gap-1.5"
+                                    >
+                                      <img src="/coins/profilecoin1.png" alt="Coin" className="w-[18px] h-[18px] shrink-0 object-contain" />
+                                      <span>{(offer.amount || 0).toLocaleString('de-DE')}</span>
+                                    </div>
+                                    <span
+                                      style={{ fontFamily: 'Poppins, sans-serif', fontWeight: 500, fontSize: '16px', lineHeight: '26px' }}
+                                      className="text-[#1e293b]"
+                                    >
+                                      {holdPeriodDays} days
+                                    </span>
+                                    <div
+                                      style={{ fontFamily: 'Poppins, sans-serif', fontWeight: 600, fontSize: '16px', lineHeight: '26px' }}
+                                      className={`text-right ${offer.isReadyToRelease ? 'text-emerald-600' : 'text-[#1e293b]'}`}
+                                    >
+                                      {releaseIn}
+                                    </div>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })()}
+                </motion.div>
+              )}
+
+              {/* ══ TRANSACTION HISTORY TAB ══ */}
+              {activeTab === 'transaction_history' && (
+                <motion.div
+                  key="transaction_history"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -6 }}
+                  className="w-full"
+                >
+                  {txHistory.loading ? (
+                    <div className="flex justify-center py-12"><FiLoader className="animate-spin text-2xl text-emerald-600" /></div>
+                  ) : txHistory.error ? (
+                    <p className="text-rose-500 text-center py-12 font-semibold">{txHistory.error}</p>
+                  ) : txHistory.dataList.length === 0 ? (
+                    <p className="text-center py-12 text-slate-500 font-bold text-base">No transaction history found.</p>
+                  ) : (
+                    <div>
+                      <div className="overflow-x-auto">
+                        <div className="min-w-[850px]">
+                          <div
+                            style={{
+                              fontFamily: 'Poppins, sans-serif',
+                              fontWeight: 400,
+                              fontSize: '14px',
+                              lineHeight: '26px',
+                              letterSpacing: '0.06em',
+                              color: 'rgba(14, 15, 12, 0.6)',
+                              textTransform: 'uppercase',
+                            }}
+                            className="grid grid-cols-[130px_140px_1fr_140px_120px] gap-4 px-6 py-2"
+                          >
+                            <div>Date</div>
+                            <div>Type</div>
+                            <div>Description</div>
+                            <div>Amount</div>
+                            <div>Status</div>
+                          </div>
+                          <div className="flex flex-col gap-2 mt-2">
+                            {txHistory.dataList.map((tx, idx) => {
+                              const config = TX_TYPE_LABEL[tx.transactionType] || { label: tx.transactionType, color: 'text-slate-500' };
+                              const isDebit = tx.amount < 0;
+                              const isPending = tx.status === 'pending';
+                              return (
+                                <div
+                                  key={tx._id}
+                                  style={{
+                                    width: '100%',
+                                    minHeight: '69px',
+                                    height: 'auto',
+                                    borderRadius: '10px',
+                                    backgroundColor: idx % 2 === 0 ? 'rgba(249, 247, 241, 1)' : '#ffffff',
+                                  }}
+                                  className="px-6 py-3.5 grid grid-cols-[130px_140px_1fr_140px_120px] gap-4 items-center shadow-[0_1px_3px_rgba(0,0,0,0.02)]"
+                                >
+                                  <span
+                                    style={{ fontFamily: 'Poppins, sans-serif', fontWeight: 500, fontSize: '16px', lineHeight: '26px' }}
+                                    className="text-[#1e293b]"
+                                  >
+                                    {tx.createdAt ? new Date(tx.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'N/A'}
+                                  </span>
+                                  <span
+                                    style={{ fontFamily: 'Poppins, sans-serif', fontWeight: 500, fontSize: '16px', lineHeight: '26px' }}
+                                    className="text-[#1e293b] truncate"
+                                  >
+                                    {config.label}
+                                  </span>
+                                  <span
+                                    style={{ fontFamily: 'Poppins, sans-serif', fontWeight: 500, fontSize: '16px', lineHeight: '26px' }}
+                                    className="text-[#1e293b] leading-tight break-words pr-2"
+                                    title={tx.description}
+                                  >
+                                    {tx.description}
+                                  </span>
+                                  <div
+                                    style={{ fontFamily: 'Poppins, sans-serif', fontWeight: 600, fontSize: '16px', color: 'rgba(190, 146, 0, 1)' }}
+                                    className="flex items-center gap-1.5"
+                                  >
+                                    <img src="/coins/profilecoin1.png" alt="Coin" className="w-[18px] h-[18px] shrink-0 object-contain" />
+                                    <span>{Math.abs(tx.amount || 0).toLocaleString('de-DE')}</span>
+                                  </div>
+                                  <div className="flex justify-start">
+                                    <span
+                                      style={{
+                                        fontFamily: 'Poppins, sans-serif',
+                                        fontWeight: 500,
+                                        fontSize: '16px',
+                                        lineHeight: '26px',
+                                        borderRadius: '40px',
+                                        padding: '3px 18px',
+                                      }}
+                                      className={`inline-flex items-center justify-center ${isPending
+                                        ? 'bg-[#1e293b] text-white'
+                                        : tx.status === 'completed'
+                                          ? 'bg-[#10b981] text-white'
+                                          : 'bg-[#1e293b] text-white'
+                                      }`}
+                                    >
+                                      {tx.status === 'completed' ? 'Completed' : tx.status.charAt(0).toUpperCase() + tx.status.slice(1)}
+                                    </span>
                                   </div>
                                 </div>
                               );
@@ -2204,143 +2775,136 @@ const Profile = () => {
                           </div>
                         </div>
                       </div>
-                      <Pagination
-                        page={heldPage}
-                        totalPages={totalHeldPages}
-                        onNext={() => setHeldPage(p => Math.min(totalHeldPages, p + 1))}
-                        onPrev={() => setHeldPage(p => Math.max(1, p - 1))}
-                        onPageClick={setHeldPage}
-                      />
                     </div>
-                  );
-                })()}
-              </motion.div>
-            )}
+                  )}
+                </motion.div>
+              )}
 
-            {/* ══ TRANSACTION HISTORY TAB ══ */}
-            {activeTab === 'transaction_history' && (
-              <motion.div
-                key="transaction_history"
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -6 }}
-                className="w-full"
-              >
-                {txHistory.loading ? (
-                  <div className="flex justify-center py-10"><FiLoader className="animate-spin text-2xl text-[#49b265]" /></div>
-                ) : txHistory.error ? (
-                  <p className="text-rose-400 text-center py-8">{txHistory.error}</p>
-                ) : txHistory.dataList.length === 0 ? (
-                  <p className="text-center py-8" style={{ fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 700, fontSize: '20px', lineHeight: '120%', color: 'white' }}>No transaction history found.</p>
-                ) : (
-                  <div>
-                    <div className="overflow-x-auto">
-                      <div className="min-w-[1180px]">
-                        <div className="w-[1180px] h-[58px] rounded-[20px] pt-[10px] pr-[95px] pb-[30px] pl-[40px] grid grid-cols-[180px_180px_1fr_180px_150px] gap-[20px] border-b border-[#2a2d36] items-center">
-                          <div style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="font-semibold text-[26px] text-white/40">Date</div>
-                          <div style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="font-semibold text-[26px] text-white/40">Type</div>
-                          <div style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="font-semibold text-[26px] text-white/40">Description</div>
-                          <div style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="font-semibold text-[26px] text-white/40">Amount</div>
-                          <div style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="font-semibold text-[26px] text-white/40">Status</div>
-                        </div>
-                        <div className="flex flex-col gap-[10px] mt-[10px]">
-                          {txHistory.dataList.map(tx => {
-                            const config = TX_TYPE_LABEL[tx.transactionType] || { label: tx.transactionType, color: 'text-slate-400' };
-                            const isDebit = tx.amount < 0;
-                            const isPending = tx.status === 'pending';
-                            return (
-                              <div key={tx._id} className="w-[1180px] min-h-[82px] bg-[#171717] rounded-[20px] pt-[20px] pr-[95px] pb-[20px] pl-[40px] grid grid-cols-[180px_180px_1fr_180px_150px] gap-[20px] items-center hover:bg-[#1a1a1a] transition-colors">
-                                <span style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="text-white font-semibold text-[28px] leading-[120%]">
-                                  {tx.createdAt ? new Date(tx.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'N/A'}
-                                </span>
-                                <span style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="text-white font-semibold text-[28px] leading-[120%] truncate">
-                                  {config.label}
-                                </span>
-                                <span style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="text-white font-semibold text-[28px] leading-[120%]">
+              {/* ══ CHARGEBACKS TAB ══ */}
+              {activeTab === 'chargebacks' && (
+                <motion.div
+                  key="chargebacks"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -6 }}
+                  className="w-full"
+                >
+                  {chargebacks.loading ? (
+                    <div className="flex justify-center py-12"><FiLoader className="animate-spin text-2xl text-emerald-600" /></div>
+                  ) : chargebacks.error ? (
+                    <p className="text-rose-500 text-center py-12 font-semibold">{chargebacks.error}</p>
+                  ) : chargebacks.dataList.length === 0 ? (
+                    <p className="text-center py-12 text-slate-500 font-bold text-base">No chargebacks found on your account.</p>
+                  ) : (
+                    <div>
+                      <div className="overflow-x-auto">
+                        <div className="min-w-[700px]">
+                          <div
+                            style={{
+                              fontFamily: 'Poppins, sans-serif',
+                              fontWeight: 400,
+                              fontSize: '14px',
+                              lineHeight: '26px',
+                              letterSpacing: '0.06em',
+                              color: 'rgba(14, 15, 12, 0.6)',
+                              textTransform: 'uppercase',
+                            }}
+                            className="grid grid-cols-[1fr_180px_150px] gap-4 px-6 py-2"
+                          >
+                            <div>Offers</div>
+                            <div>Started On</div>
+                            <div>Amount</div>
+                          </div>
+                          <div className="flex flex-col gap-2 mt-2">
+                            {chargebacks.dataList.map((tx, idx) => (
+                              <div
+                                key={tx._id}
+                                style={{
+                                  width: '100%',
+                                  minHeight: '69px',
+                                  height: 'auto',
+                                  borderRadius: '10px',
+                                  backgroundColor: idx % 2 === 0 ? 'rgba(249, 247, 241, 1)' : '#ffffff',
+                                }}
+                                className="px-6 py-3.5 grid grid-cols-[1fr_180px_150px] gap-4 items-center shadow-[0_1px_3px_rgba(0,0,0,0.02)]"
+                              >
+                                <span
+                                  style={{ fontFamily: 'Poppins, sans-serif', fontWeight: 500, fontSize: '16px', lineHeight: '26px' }}
+                                  className="text-[#1e293b] leading-tight break-words"
+                                >
                                   {tx.description}
                                 </span>
-                                <div className="flex items-center gap-[6px] font-semibold text-[#fbbf24] text-[28px] leading-[120%]" style={{ fontFamily: "'Barlow Condensed', sans-serif" }}>
-                                  <img src="/coins/Coin.png" alt="Coin" className="w-[24px] h-[24px] shrink-0 object-contain" />
-                                  <span>{isDebit ? '' : '+'}{tx.amount.toLocaleString('de-DE')}</span>
-                                </div>
-                                <div className="flex justify-start">
-                                  <span style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className={`inline-flex items-center justify-center px-[20px] py-[4px] rounded-[100px] text-[22px] leading-[120%] font-semibold border ${isPending
-                                    ? 'bg-amber-500/10 text-amber-400 border-amber-500/20'
-                                    : tx.status === 'failed' || tx.status === 'rejected'
-                                      ? 'bg-rose-500/10 text-rose-400 border-rose-500/20'
-                                      : 'bg-[#153423] text-[#4ade80] border-[#4ade80]/20'
-                                    }`}>
-                                    {tx.status === 'completed' ? 'Completed' : tx.status.charAt(0).toUpperCase() + tx.status.slice(1)}
-                                  </span>
+                                <span
+                                  style={{ fontFamily: 'Poppins, sans-serif', fontWeight: 500, fontSize: '16px', lineHeight: '26px' }}
+                                  className="text-[#1e293b]"
+                                >
+                                  {tx.createdAt ? new Date(tx.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'N/A'}
+                                </span>
+                                <div
+                                  style={{ fontFamily: 'Poppins, sans-serif', fontWeight: 600, fontSize: '16px', color: 'rgba(190, 146, 0, 1)' }}
+                                  className="flex items-center gap-1.5"
+                                >
+                                  <img src="/coins/profilecoin1.png" alt="Coin" className="w-[18px] h-[18px] shrink-0 object-contain" />
+                                  <span>{Math.abs(tx.amount || 0).toLocaleString('de-DE')}</span>
                                 </div>
                               </div>
-                            );
-                          })}
+                            ))}
+                          </div>
                         </div>
                       </div>
                     </div>
-                    <Pagination
-                      page={txHistory.page}
-                      totalPages={txHistory.totalPages}
-                      onNext={txHistory.nextPage}
-                      onPrev={txHistory.prevPage}
-                      onPageClick={txHistory.goToPage}
-                    />
-                  </div>
-                )}
-              </motion.div>
-            )}
+                  )}
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
 
-            {/* ══ CHARGEBACKS TAB ══ */}
-            {activeTab === 'chargebacks' && (
-              <motion.div
-                key="chargebacks"
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -6 }}
-                className="w-full"
-              >
-                {chargebacks.loading ? (
-                  <div className="flex justify-center py-10"><FiLoader className="animate-spin text-2xl text-[#49b265]" /></div>
-                ) : chargebacks.error ? (
-                  <p className="text-rose-400 text-center py-8">{chargebacks.error}</p>
-                ) : chargebacks.dataList.length === 0 ? (
-                  <p className="text-center py-8" style={{ fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 700, fontSize: '20px', lineHeight: '120%', color: 'white' }}>No chargebacks found on your account.</p>
-                ) : (
-                  <div>
-                    <div className="overflow-x-auto">
-                      <div className="min-w-[1180px]">
-                        <div className="w-[1180px] h-[58px] rounded-[20px] pt-[10px] pr-[95px] pb-[30px] pl-[40px] grid grid-cols-[2fr_1fr_1fr] gap-[20px] border-b border-[#2a2d36] items-center">
-                          <div style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="font-semibold text-[26px] text-white/40">Offers</div>
-                          <div style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="font-semibold text-[26px] text-white/40">Started On</div>
-                          <div style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="font-semibold text-[26px] text-white/40">Amount</div>
-                        </div>
-                        <div className="flex flex-col gap-[10px] mt-[10px]">
-                          {chargebacks.dataList.map(tx => (
-                            <div key={tx._id} className="w-[1180px] min-h-[82px] bg-[#171717] rounded-[20px] pt-[20px] pr-[95px] pb-[20px] pl-[40px] grid grid-cols-[2fr_1fr_1fr] gap-[20px] items-center hover:bg-[#1a1a1a] transition-colors">
-                              <span style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="font-semibold text-[28px] leading-[120%] text-white">{tx.description}</span>
-                              <span style={{ fontFamily: "'Barlow Condensed', sans-serif" }} className="text-white font-semibold text-[28px] leading-[120%]">{tx.createdAt ? new Date(tx.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'N/A'}</span>
-                              <div className="flex items-center gap-[6px] font-semibold text-[#fbbf24] text-[28px] leading-[120%]" style={{ fontFamily: "'Barlow Condensed', sans-serif" }}>
-                                <img src="/coins/Coin.png" alt="Coin" className="w-[24px] h-[24px] shrink-0 object-contain" />
-                                <span>{Math.abs(tx.amount || 0).toLocaleString('de-DE')}</span>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-                    <Pagination
-                      page={chargebacks.page}
-                      totalPages={chargebacks.totalPages}
-                      onNext={chargebacks.nextPage}
-                      onPrev={chargebacks.prevPage}
-                      onPageClick={chargebacks.goToPage}
-                    />
-                  </div>
-                )}
-              </motion.div>
-            )}
-          </AnimatePresence>
+          {/* ── Pagination Outside White Box (Below Rows Section) ── */}
+          {activeTab === 'started_offers' && (
+            <Pagination
+              page={startedPage}
+              totalPages={totalStartedPages}
+              onNext={() => setStartedPage(p => Math.min(totalStartedPages, p + 1))}
+              onPrev={() => setStartedPage(p => Math.max(1, p - 1))}
+              onPageClick={setStartedPage}
+            />
+          )}
+          {activeTab === 'completed_offers' && (
+            <Pagination
+              page={completedPage}
+              totalPages={totalCompletedPages}
+              onNext={() => setCompletedPage(p => Math.min(totalCompletedPages, p + 1))}
+              onPrev={() => setCompletedPage(p => Math.max(1, p - 1))}
+              onPageClick={setCompletedPage}
+            />
+          )}
+          {activeTab === 'held_offers' && (
+            <Pagination
+              page={heldPage}
+              totalPages={totalHeldPages}
+              onNext={() => setHeldPage(p => Math.min(totalHeldPages, p + 1))}
+              onPrev={() => setHeldPage(p => Math.max(1, p - 1))}
+              onPageClick={setHeldPage}
+            />
+          )}
+          {activeTab === 'transaction_history' && (
+            <Pagination
+              page={txHistory.page}
+              totalPages={txHistory.totalPages}
+              onNext={txHistory.nextPage}
+              onPrev={txHistory.prevPage}
+              onPageClick={txHistory.goToPage}
+            />
+          )}
+          {activeTab === 'chargebacks' && (
+            <Pagination
+              page={chargebacks.page}
+              totalPages={chargebacks.totalPages}
+              onNext={chargebacks.nextPage}
+              onPrev={chargebacks.prevPage}
+              onPageClick={chargebacks.goToPage}
+            />
+          )}
         </div>
       </motion.div>
     </DashboardLayout>
