@@ -27,8 +27,7 @@ const CustomizationModal = ({ isOpen, onClose, mongoUser, token, setMongoUser })
 
   const [myPage, setMyPage] = useState(1);
   const [shopPage, setShopPage] = useState(1);
-  const ITEMS_PER_PAGE_MY = 5;
-  const ITEMS_PER_PAGE_SHOP = 10;
+  const ITEMS_PER_PAGE = 9; // 3 columns x 3 rows
 
   const [confirmingAvatar, setConfirmingAvatar] = useState(null);
   const [purchaseSuccessAvatar, setPurchaseSuccessAvatar] = useState(null);
@@ -55,7 +54,7 @@ const CustomizationModal = ({ isOpen, onClose, mongoUser, token, setMongoUser })
       setPreviewAvatar(null);
       setMyPage(1);
       setShopPage(1);
-      setActiveTab('my_avatars');
+      setActiveTab('shop');
       setConfirmingAvatar(null);
       setPurchaseSuccessAvatar(null);
       fetchAvatars();
@@ -64,10 +63,19 @@ const CustomizationModal = ({ isOpen, onClose, mongoUser, token, setMongoUser })
 
   useEffect(() => {
     if (avatars.length > 0 && !previewAvatar && isOpen) {
-      const equipped = avatars.find(a => a.url === mongoUser?.avatarUrl) || avatars[0];
-      setPreviewAvatar(equipped);
+      const sourceList = activeTab === 'my_avatars'
+        ? avatars.filter(a => a.isUnlocked)
+        : avatars.filter(a => !a.isUnlocked);
+      if (sourceList.length > 0) {
+        if (activeTab === 'my_avatars') {
+          const equipped = sourceList.find(a => a.url === mongoUser?.avatarUrl);
+          setPreviewAvatar(equipped || sourceList[0]);
+        } else {
+          setPreviewAvatar(sourceList[0]);
+        }
+      }
     }
-  }, [avatars, mongoUser, previewAvatar, isOpen]);
+  }, [avatars, mongoUser, previewAvatar, isOpen, activeTab]);
 
   const handleTabChange = (tab) => {
     setActiveTab(tab);
@@ -115,6 +123,7 @@ const CustomizationModal = ({ isOpen, onClose, mongoUser, token, setMongoUser })
         await fetchAvatars();
         setPurchaseSuccessAvatar(avatar);
         setConfirmingAvatar(null);
+        toast.success('Avatar purchased and equipped!');
       } else {
         toast.error(data.error);
       }
@@ -152,419 +161,896 @@ const CustomizationModal = ({ isOpen, onClose, mongoUser, token, setMongoUser })
   const myAvatars = avatars.filter(a => a.isUnlocked);
   const shopAvatars = avatars.filter(a => !a.isUnlocked);
 
-  const totalMyPages = Math.ceil(myAvatars.length / ITEMS_PER_PAGE_MY) || 1;
-  const paginatedMyAvatars = myAvatars.slice((myPage - 1) * ITEMS_PER_PAGE_MY, myPage * ITEMS_PER_PAGE_MY);
-
-  const totalShopPages = Math.ceil(shopAvatars.length / ITEMS_PER_PAGE_SHOP) || 1;
-  const paginatedShopAvatars = shopAvatars.slice((shopPage - 1) * ITEMS_PER_PAGE_SHOP, shopPage * ITEMS_PER_PAGE_SHOP);
+  const currentList = activeTab === 'my_avatars' ? myAvatars : shopAvatars;
+  const currentPage = activeTab === 'my_avatars' ? myPage : shopPage;
+  const totalPages = Math.ceil(currentList.length / ITEMS_PER_PAGE) || 1;
+  const paginatedAvatars = currentList.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
 
   return createPortal(
-    <div className="fixed inset-0 bg-black/80 backdrop-blur-md z-[999999] flex items-center justify-center p-4 overflow-y-auto">
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[999999] flex items-center justify-center p-4">
+      {/* Outer White Frame (width: 1072, height: 649, outer border color white) */}
       <motion.div
-        initial={{ scale: 0.95, opacity: 0 }}
+        initial={{ scale: 0.96, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
-        className="w-[1200px] h-auto min-h-[586px] my-auto rounded-[20px] p-[30px] bg-[rgba(36,36,36,1)] flex flex-col relative shadow-2xl font-['Barlow_Condensed'] border-2 border-[#1a1a1a]"
+        style={{
+          width: '1072px',
+          maxWidth: '95vw',
+          height: '649px',
+          maxHeight: '95vh',
+          background: '#FFFFFF',
+          borderRadius: '24px',
+          padding: '10px',
+          boxSizing: 'border-box',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          fontFamily: '"Poppins", sans-serif'
+        }}
+        className="shadow-2xl overflow-hidden"
       >
-        <div className="flex gap-[20px] flex-1 min-h-0">
-          <div className="flex-1 flex flex-col min-w-0">
-            <div className="flex justify-between items-center w-full h-[77px] gap-[16px] mb-[20px] shrink-0">
-              <div className="flex flex-col gap-[6px] w-[568px] h-[77px] justify-center">
-                <h2 className="text-[40px] font-bold text-white leading-[1.2] m-0">Avatar Shop</h2>
-                <p className="text-[18px] font-medium text-white/50 leading-[1.3] m-0">Customize your identity with premium avatars</p>
-              </div>
-              <div className="flex items-center gap-[22px]">
-                <div className="flex items-center justify-center bg-[rgba(26,27,26,1)] h-[63px] p-[10px] rounded-[10px] backdrop-blur-[74px]">
-                  <div className="flex items-center justify-center gap-[6px] min-w-[111px] h-[32px]">
-                    <img src="/coins/Coin.png" alt="Coins" className="w-[32px] h-[32px] object-contain shrink-0" />
-                    <span className="font-bold text-[30px] leading-[1.2] text-transparent bg-clip-text bg-gradient-to-b from-[#FEDF77] to-[#FCB91E]">
-                      {(mongoUser?.walletBalance || 0).toLocaleString('de-DE')}
-                    </span>
-                  </div>
+        {/* Inner Main Cream Container (width: 1052, height: 629, border-radius: 16px, background: rgba(248, 245, 239, 1)) */}
+        <div
+          style={{
+            width: '1052px',
+            maxWidth: '100%',
+            height: '629px',
+            maxHeight: '100%',
+            background: 'rgba(248, 245, 239, 1)',
+            borderRadius: '16px',
+            padding: '20px 24px',
+            boxSizing: 'border-box',
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'space-between',
+            position: 'relative'
+          }}
+          className="overflow-hidden"
+        >
+          {/* Top Close Button (Circle with X) */}
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              onClose();
+            }}
+            style={{
+              width: '32px',
+              height: '32px',
+              background: '#000000',
+              borderRadius: '50%',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              border: 'none',
+              cursor: 'pointer',
+              position: 'absolute',
+              top: '20px',
+              right: '24px',
+              zIndex: 50,
+              padding: 0
+            }}
+            className="text-white hover:opacity-80 transition-opacity shrink-0 cursor-pointer"
+          >
+            <FiX size={16} strokeWidth={2.5} className="pointer-events-none" />
+          </button>
+
+          {/* Top Header Row (width: 987, height: 76, justify-content: space-between) */}
+          <div
+            style={{
+              width: '987px',
+              maxWidth: '100%',
+              height: '76px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              opacity: 1,
+              transform: 'rotate(0deg)'
+            }}
+            className="shrink-0"
+          >
+            {/* Left Title & Accent */}
+            <div className="flex flex-col justify-center">
+              <h2
+                style={{
+                  fontFamily: '"Bricolage Grotesque", sans-serif',
+                  fontWeight: 700,
+                  fontSize: '32px',
+                  lineHeight: 1.1,
+                  letterSpacing: '-0.02em',
+                  color: 'rgba(14, 15, 12, 1)',
+                  margin: 0
+                }}
+              >
+                Avatar Shop
+              </h2>
+              <p
+                style={{
+                  width: '375px',
+                  maxWidth: '100%',
+                  height: '23px',
+                  fontFamily: '"Poppins", sans-serif',
+                  fontWeight: 500,
+                  fontSize: '16px',
+                  lineHeight: '26px',
+                  letterSpacing: '0%',
+                  color: 'rgba(14, 15, 12, 1)',
+                  margin: '4px 0 0 0',
+                  opacity: 1,
+                  display: 'flex',
+                  alignItems: 'center'
+                }}
+              >
+                Customize your identity with premium avatars
+              </p>
+              {/* Purple accent bar */}
+              <div
+                style={{
+                  width: '74px',
+                  height: '4px',
+                  borderRadius: '20px',
+                  background: 'rgba(85, 88, 211, 1)',
+                  marginTop: '8px'
+                }}
+              />
+            </div>
+
+            {/* Right Coin Balance Badge (Adjusting white pill, Bricolage Grotesque 41px Bold, rgba(190, 146, 0, 1)) */}
+            <div
+              style={{
+                background: '#FFFFFF',
+                borderRadius: '9999px',
+                padding: '0px 32px',
+                height: '72px',
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '12px',
+                boxShadow: '0 1px 4px rgba(0,0,0,0.06)',
+                boxSizing: 'border-box'
+              }}
+            >
+              <img
+                src="/coins/image copy 2.png"
+                alt="Coins"
+                style={{
+                  width: '34px',
+                  height: '34px',
+                  objectFit: 'contain'
+                }}
+                className="shrink-0"
+              />
+              <span
+                style={{
+                  fontFamily: '"Bricolage Grotesque", sans-serif',
+                  fontWeight: 700,
+                  fontSize: '41px',
+                  lineHeight: '72px',
+                  letterSpacing: '-0.02em',
+                  textAlign: 'center',
+                  color: 'rgba(190, 146, 0, 1)',
+                  display: 'inline-block'
+                }}
+              >
+                {(mongoUser?.walletBalance || 0).toLocaleString('de-DE')}
+              </span>
+            </div>
+          </div>
+
+          {/* Main Content Row (Left White Grid Card + Right White Preview Card) */}
+          <div className="flex gap-3 flex-1 min-h-0 mt-3">
+            {/* Left White Grid Card */}
+            <div
+              style={{
+                background: '#FFFFFF',
+                borderRadius: '16px',
+                padding: '16px 18px',
+                boxSizing: 'border-box'
+              }}
+              className="flex-1 flex flex-col justify-between min-w-0"
+            >
+              {/* Pill Switcher (My Avatars / Shop) */}
+              <div className="flex justify-center mb-3 shrink-0">
+                <div
+                  style={{
+                    background: 'rgba(248, 245, 239, 1)',
+                    borderRadius: '9999px',
+                    padding: '4px',
+                    display: 'inline-flex',
+                    gap: '4px'
+                  }}
+                >
+                  <button
+                    type="button"
+                    onClick={() => handleTabChange('my_avatars')}
+                    style={{
+                      padding: '6px 20px',
+                      borderRadius: '9999px',
+                      background: activeTab === 'my_avatars' ? '#202C44' : 'transparent',
+                      color: activeTab === 'my_avatars' ? '#FFFFFF' : 'rgba(14, 15, 12, 1)',
+                      fontFamily: '"Poppins", sans-serif',
+                      fontWeight: activeTab === 'my_avatars' ? 600 : 500,
+                      fontSize: '14px',
+                      border: 'none',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s'
+                    }}
+                  >
+                    My Avatars
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleTabChange('shop')}
+                    style={{
+                      padding: '6px 24px',
+                      borderRadius: '9999px',
+                      background: activeTab === 'shop' ? '#202C44' : 'transparent',
+                      color: activeTab === 'shop' ? '#FFFFFF' : 'rgba(14, 15, 12, 1)',
+                      fontFamily: '"Poppins", sans-serif',
+                      fontWeight: activeTab === 'shop' ? 600 : 500,
+                      fontSize: '14px',
+                      border: 'none',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s'
+                    }}
+                  >
+                    Shop
+                  </button>
                 </div>
-                <button onClick={onClose} className="w-[40px] h-[40px] bg-[#1a1a1a] hover:bg-white/10 rounded-[10px] flex items-center justify-center text-white/50 hover:text-white transition-colors">
-                  <FiX size={24} />
+              </div>
+
+              {/* Avatars Grid */}
+              {loadingAvatars ? (
+                <div className="flex-1 flex items-center justify-center">
+                  <FiLoader className="animate-spin text-3xl text-[#202C44]" />
+                </div>
+              ) : paginatedAvatars.length === 0 ? (
+                <div className="flex-1 flex items-center justify-center text-[#888888] text-center font-medium">
+                  {activeTab === 'my_avatars' ? 'No avatars owned yet. Visit the Shop to get one!' : 'No avatars available in shop right now.'}
+                </div>
+              ) : (
+                <div className="grid grid-cols-3 gap-3 flex-1 content-start overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none']">
+                  {paginatedAvatars.map((avatar) => {
+                    const isSelected = previewAvatar?._id === avatar._id;
+                    return (
+                      <div
+                        key={avatar._id}
+                        onClick={() => setPreviewAvatar(avatar)}
+                        style={{
+                          width: '100%',
+                          height: '66px',
+                          borderRadius: '9999px',
+                          background: isSelected ? '#202C44' : 'rgba(248, 245, 239, 1)',
+                          padding: '5px 14px 5px 5px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '10px',
+                          cursor: 'pointer',
+                          transition: 'all 0.2s',
+                          boxSizing: 'border-box'
+                        }}
+                        className="hover:opacity-95"
+                      >
+                        {/* Avatar Circle */}
+                        <div
+                          style={{
+                            width: '52px',
+                            height: '52px',
+                            borderRadius: '50%',
+                            background: '#3B82F6',
+                            border: isSelected ? '2px solid #FFFFFF' : '2px solid #202C44',
+                            overflow: 'hidden',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center'
+                          }}
+                          className="shrink-0"
+                        >
+                          <img src={avatar.url} alt={avatar.name} className="w-full h-full object-cover" />
+                        </div>
+
+                        {/* Text Container */}
+                        <div className="flex flex-col justify-center min-w-0 flex-1 overflow-hidden">
+                          <span
+                            style={{
+                              fontFamily: '"Bricolage Grotesque", sans-serif',
+                              fontWeight: 700,
+                              fontSize: '15px',
+                              color: isSelected ? '#FFFFFF' : 'rgba(14, 15, 12, 1)',
+                              lineHeight: 1.2
+                            }}
+                            className="truncate capitalize"
+                          >
+                            {avatar.name}
+                          </span>
+
+                          {activeTab === 'shop' && (
+                            <>
+                              <span
+                                style={{
+                                  fontFamily: '"Poppins", sans-serif',
+                                  fontWeight: 500,
+                                  fontSize: '11px',
+                                  color: isSelected ? 'rgba(255, 255, 255, 0.7)' : 'rgba(14, 15, 12, 0.6)',
+                                  lineHeight: 1.2
+                                }}
+                                className="truncate"
+                              >
+                                {avatar.quantity ? `${avatar.quantity} Available` : 'Unlimited Available'}
+                              </span>
+                              <div className="flex items-center gap-1 mt-0.5">
+                                <img src="/coins/Coin.png" alt="Coin" className="w-[12px] h-[12px] object-contain shrink-0" />
+                                <span
+                                  style={{
+                                    fontFamily: '"Poppins", sans-serif',
+                                    fontWeight: 600,
+                                    fontSize: '12px',
+                                    color: isSelected ? '#FBBF24' : '#D97706',
+                                    lineHeight: 1
+                                  }}
+                                >
+                                  {(avatar.price || 0).toLocaleString('de-DE')}
+                                </span>
+                              </div>
+                            </>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+
+              {/* Pagination Controls */}
+              <div className="flex justify-center items-center gap-2 pt-2 shrink-0">
+                <button
+                  type="button"
+                  disabled={currentPage <= 1}
+                  onClick={() => {
+                    if (activeTab === 'my_avatars') setMyPage(p => Math.max(1, p - 1));
+                    else setShopPage(p => Math.max(1, p - 1));
+                  }}
+                  style={{
+                    width: '36px',
+                    height: '36px',
+                    borderRadius: '50%',
+                    background: currentPage > 1 ? '#202C44' : '#E2E8F0',
+                    color: currentPage > 1 ? '#FFFFFF' : '#94A3B8',
+                    border: 'none',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    cursor: currentPage > 1 ? 'pointer' : 'default',
+                    transition: 'all 0.2s'
+                  }}
+                >
+                  <FiChevronLeft size={18} />
+                </button>
+                <button
+                  type="button"
+                  disabled={currentPage >= totalPages}
+                  onClick={() => {
+                    if (activeTab === 'my_avatars') setMyPage(p => Math.min(totalPages, p + 1));
+                    else setShopPage(p => Math.min(totalPages, p + 1));
+                  }}
+                  style={{
+                    width: '36px',
+                    height: '36px',
+                    borderRadius: '50%',
+                    background: 'transparent',
+                    border: currentPage < totalPages ? '1.5px solid #202C44' : '1.5px solid #CBD5E1',
+                    color: currentPage < totalPages ? '#202C44' : '#94A3B8',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    cursor: currentPage < totalPages ? 'pointer' : 'default',
+                    transition: 'all 0.2s'
+                  }}
+                >
+                  <FiChevronRight size={18} />
                 </button>
               </div>
             </div>
 
-            <div className="h-[50px] bg-[#1a1a1a] rounded-[10px] p-[5px] flex shrink-0 mb-[20px]">
-              <button
-                onClick={() => handleTabChange('my_avatars')}
-                className={`flex-1 rounded-[8px] font-bold text-[20px] transition-colors flex items-center justify-center ${activeTab === 'my_avatars' ? 'bg-[#49b265] text-white shadow-[0px_2px_0px_0px_rgba(35,80,47,1)]' : 'text-white/50 hover:text-white'}`}
-              >
-                My Avatars
-              </button>
-              <button
-                onClick={() => handleTabChange('shop')}
-                className={`flex-1 rounded-[8px] font-bold text-[20px] transition-colors flex items-center justify-center ${activeTab === 'shop' ? 'bg-[#49b265] text-white shadow-[0px_2px_0px_0px_rgba(35,80,47,1)]' : 'text-white/50 hover:text-white'}`}
-              >
-                Shop
-              </button>
-            </div>
-
-            {loadingAvatars ? (
-              <div className="flex-1 flex items-center justify-center">
-                <FiLoader className="animate-spin text-4xl text-[#49b265]" />
-              </div>
-            ) : activeTab === 'my_avatars' ? (
-              <div className="flex flex-col flex-1 min-h-0">
-                <h3 className="text-[24px] font-bold text-white leading-none mb-1">My Avatars</h3>
-                <p className="text-[16px] text-white/50 mb-[15px] leading-none">Avatars your owns and can use</p>
-
-                <div className="grid grid-cols-5 gap-[15px] content-start">
-                  {paginatedMyAvatars.length === 0 ? (
-                    <div className="col-span-5 text-center text-white/50 py-10">No avatars owned. Visit the shop!</div>
-                  ) : (
-                    paginatedMyAvatars.map(avatar => (
-                      <div
-                        key={avatar._id}
-                        onClick={() => setPreviewAvatar(avatar)}
-                        className={`rounded-[12px] bg-[#1a1a1a] p-[10px] flex flex-col gap-[10px] cursor-pointer border-2 transition-all ${previewAvatar?._id === avatar._id ? 'border-[#49b265]' : 'border-transparent hover:border-white/10'
-                          }`}
-                      >
-                        <div className="w-full aspect-square rounded-[8px] overflow-hidden bg-black/20">
-                          <img src={avatar.url} alt={avatar.name} className="w-full h-full object-cover" />
-                        </div>
-                        <span className="text-white text-center font-semibold text-[16px] leading-none truncate pb-[4px]">{avatar.name}</span>
-                      </div>
-                    ))
-                  )}
-                </div>
-
-                <Pagination
-                  page={myPage}
-                  totalPages={totalMyPages}
-                  onNext={() => setMyPage(p => Math.min(totalMyPages, p + 1))}
-                  onPrev={() => setMyPage(p => Math.max(1, p - 1))}
-                  onPageClick={(p) => setMyPage(p)}
-                />
-              </div>
-            ) : (
-              <div className="flex flex-col flex-1 min-h-0">
-                <h3 className="text-[24px] font-bold text-white leading-none mb-1">Collect & Stand Out</h3>
-                <p className="text-[16px] text-white/50 mb-[15px] leading-none">Limited avatars are rare and available in limited quantities.</p>
-
-                <div className="grid grid-cols-5 gap-[15px] content-start">
-                  {paginatedShopAvatars.length === 0 ? (
-                    <div className="col-span-5 text-center text-white/50 py-10">No premium avatars available right now.</div>
-                  ) : (
-                    paginatedShopAvatars.map(avatar => (
-                      <div
-                        key={avatar._id}
-                        onClick={() => setPreviewAvatar(avatar)}
-                        className={`rounded-[12px] bg-[#1a1a1a] p-[10px] flex flex-col gap-[8px] cursor-pointer border-2 transition-all ${previewAvatar?._id === avatar._id ? 'border-[#49b265]' : 'border-transparent hover:border-white/10'
-                          }`}
-                      >
-                        <div className="w-full aspect-square rounded-[8px] overflow-hidden bg-black/20 relative">
-                          <img src={avatar.url} alt={avatar.name} className="w-full h-full object-cover" />
-                          {avatar.quantity === 0 && (
-                            <div
-                              className="absolute top-[8px] right-[8px] bg-[rgba(26,27,26,0.85)] border border-[#fbbf24] px-[10px] py-[4px] rounded-full text-[#fbbf24] font-bold text-[14px] uppercase leading-none tracking-wider shadow-lg"
-                              style={{ fontFamily: '"Barlow Condensed", sans-serif' }}
-                            >
-                              Sold Out
-                            </div>
-                          )}
-                        </div>
-                        <div>
-                          <div className="text-white font-semibold text-[16px] leading-none truncate mb-[6px]">{avatar.name}</div>
-                          <div className="text-[12px] text-[#49b265] font-semibold leading-none mb-[6px]">{avatar.quantity ?? 'Unlimited'} Available</div>
-                          <div className="flex items-center gap-[4px]">
-                            <img src="/coins/Coin.png" alt="Coins" className="w-[14px] h-[14px] object-contain" />
-                            <span className="text-[#fbbf24] font-bold text-[14px] leading-none">{avatar.price}</span>
-                          </div>
-                        </div>
-                      </div>
-                    ))
-                  )}
-                </div>
-
-                <Pagination
-                  page={shopPage}
-                  totalPages={totalShopPages}
-                  onNext={() => setShopPage(p => Math.min(totalShopPages, p + 1))}
-                  onPrev={() => setShopPage(p => Math.max(1, p - 1))}
-                  onPageClick={(p) => setShopPage(p)}
-                />
-              </div>
-            )}
-          </div>
-
-          <div
-            className="w-[325px] h-auto shrink-0 rounded-[20px] p-[16px] flex flex-col relative"
-            style={{
-              background: 'rgba(0, 0, 0, 0.36)',
-              backdropFilter: 'blur(44px)',
-              WebkitBackdropFilter: 'blur(44px)',
-              gap: '26px'
-            }}
-          >
-            <h3
-              className="text-[28px] font-bold text-white leading-[1.2]"
+            {/* Right White Preview Card */}
+            <div
               style={{
-                width: '293px',
-                height: '34px',
-                fontFamily: '"Barlow Condensed", sans-serif',
-                fontWeight: 700
+                width: '280px',
+                background: '#FFFFFF',
+                borderRadius: '16px',
+                padding: '16px 18px',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                boxSizing: 'border-box'
               }}
+              className="shrink-0"
             >
-              Preview
-            </h3>
-
-            {previewAvatar ? (
-              <div
-                className="w-[293px] flex-1 flex flex-col min-h-[420px]"
-                style={{ gap: '26px' }}
-              >
-                <div
-                  className="w-[160px] h-[160px] rounded-full mx-auto overflow-hidden shadow-[0_0_20px_rgba(251,191,36,0.3)] shrink-0 flex items-center justify-center p-[5px]"
-                  style={{
-                    background: 'linear-gradient(180deg, #FEDF77 0%, #FCB91E 100%)'
-                  }}
-                >
-                  <div className="w-full h-full rounded-full overflow-hidden bg-black/20">
-                    <img src={previewAvatar.url} alt={previewAvatar.name} className="w-full h-full object-cover" />
-                  </div>
-                </div>
-
-                <div
-                  className="flex flex-col shrink-0 text-left justify-center"
-                  style={{
-                    width: '293px',
-                    height: '49px',
-                    gap: '14px'
-                  }}
-                >
-                  <h4
-                    className="text-white truncate shrink-0"
+              {previewAvatar ? (
+                <>
+                  {/* Top Preview Section */}
+                  <div
                     style={{
-                      width: '293px',
-                      fontFamily: '"Barlow Condensed", sans-serif',
-                      fontWeight: 600,
-                      fontSize: '32px',
-                      lineHeight: '1.2'
+                      width: '100%',
+                      background: 'rgba(248, 245, 239, 0.6)',
+                      borderRadius: '12px',
+                      padding: '16px 12px 12px 12px',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center'
                     }}
                   >
-                    {previewAvatar.name}
-                  </h4>
-                  <p
-                    className="truncate shrink-0"
-                    style={{
-                      width: '293px',
-                      fontFamily: '"Barlow Condensed", sans-serif',
-                      fontWeight: 600,
-                      fontSize: '18px',
-                      lineHeight: '1.2',
-                      color: 'rgba(255, 255, 255, 0.5)'
-                    }}
-                  >
-                    {previewAvatar.description || 'Premium Avatar Collection'}
-                  </p>
-                </div>
-
-                <div
-                  className="flex flex-col text-[16px] shrink-0"
-                  style={{
-                    width: '293px',
-                    minHeight: '102px',
-                    gap: '16px',
-                    borderRadius: '12px',
-                    padding: '16px',
-                    background: 'rgba(36, 36, 36, 1)',
-                    backdropFilter: 'blur(44px)',
-                    WebkitBackdropFilter: 'blur(44px)'
-                  }}
-                >
-                  {activeTab === 'shop' && (
-                    <div className="flex justify-between items-center pb-[8px] border-b border-white/5 last:border-0 last:pb-0">
-                      <span className="text-white font-semibold">Price</span>
-                      <div className="flex items-center gap-[4px]">
-                        <img src="/coins/Coin.png" alt="Coins" className="w-[16px] h-[16px] object-contain" />
-                        <span className="text-[#fbbf24] font-bold text-[16px] leading-none">{previewAvatar.price}</span>
-                      </div>
+                    <div
+                      style={{
+                        width: '124px',
+                        height: '124px',
+                        borderRadius: '50%',
+                        background: '#3B82F6',
+                        border: '3px solid #202C44',
+                        overflow: 'hidden',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        boxShadow: '0 4px 12px rgba(0,0,0,0.08)'
+                      }}
+                    >
+                      <img src={previewAvatar.url} alt={previewAvatar.name} className="w-full h-full object-cover" />
                     </div>
-                  )}
-                  <div className="flex justify-between items-center pb-[8px] border-b border-white/5 last:border-0 last:pb-0">
-                    <span className="text-white font-semibold">Rarity</span>
-                    <span className="text-white font-bold">{previewAvatar.rarity || 'Limited Edition'}</span>
                   </div>
-                  {activeTab === 'my_avatars' && (
-                    <div className="flex justify-between items-center pb-[8px] border-b border-white/5 last:border-0 last:pb-0">
-                      <span className="text-white font-semibold">Obtained On</span>
-                      <span className="text-white font-bold">
-                        {previewAvatar.obtainedAt ? new Date(previewAvatar.obtainedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'May 21, 2026'}
+
+                  {/* Title & Subtitle */}
+                  <div className="flex flex-col items-center w-full my-1">
+                    <h4
+                      style={{
+                        fontFamily: '"Bricolage Grotesque", sans-serif',
+                        fontWeight: 700,
+                        fontSize: '24px',
+                        color: 'rgba(14, 15, 12, 1)',
+                        margin: '6px 0 2px 0',
+                        textAlign: 'center'
+                      }}
+                      className="capitalize truncate max-w-full"
+                    >
+                      {previewAvatar.name}
+                    </h4>
+                    <p
+                      style={{
+                        fontFamily: '"Poppins", sans-serif',
+                        fontWeight: 500,
+                        fontSize: '13.5px',
+                        color: '#666666',
+                        margin: 0,
+                        textAlign: 'center'
+                      }}
+                      className="truncate max-w-full"
+                    >
+                      {previewAvatar.description || (activeTab === 'shop' ? 'Billo' : 'test di')}
+                    </p>
+                  </div>
+
+                  {/* Specs Rows */}
+                  <div
+                    style={{
+                      width: '100%',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: '6px',
+                      margin: '8px 0'
+                    }}
+                  >
+                    {activeTab === 'shop' && (
+                      <div
+                        style={{
+                          background: 'rgba(248, 245, 239, 1)',
+                          borderRadius: '10px',
+                          padding: '8px 12px',
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          alignItems: 'center',
+                          fontSize: '13.5px',
+                          fontFamily: '"Poppins", sans-serif'
+                        }}
+                      >
+                        <span style={{ color: '#666666', fontWeight: 500 }}>Price</span>
+                        <div className="flex items-center gap-1">
+                          <img src="/coins/Coin.png" alt="Coin" className="w-[14px] h-[14px] object-contain" />
+                          <span style={{ color: '#D97706', fontWeight: 700 }}>
+                            {(previewAvatar.price || 0).toLocaleString('de-DE')}
+                          </span>
+                        </div>
+                      </div>
+                    )}
+
+                    <div
+                      style={{
+                        background: 'rgba(248, 245, 239, 1)',
+                        borderRadius: '10px',
+                        padding: '8px 12px',
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        fontSize: '13.5px',
+                        fontFamily: '"Poppins", sans-serif'
+                      }}
+                    >
+                      <span style={{ color: '#666666', fontWeight: 500 }}>Rarity</span>
+                      <span style={{ color: 'rgba(14, 15, 12, 1)', fontWeight: 600 }}>
+                        {previewAvatar.rarity || 'Limited Edition'}
                       </span>
                     </div>
-                  )}
-                  {activeTab === 'shop' && (
-                    <div className="flex justify-between items-center pb-[8px] border-b border-white/5 last:border-0 last:pb-0">
-                      <span className="text-white font-semibold">Limited Quantity</span>
-                      <span className="text-white font-bold">{previewAvatar.quantity ? `Only ${previewAvatar.quantity} Available` : 'Unlimited'}</span>
-                    </div>
-                  )}
-                </div>
 
-                <div className="mt-auto shrink-0">
-                  {activeTab === 'my_avatars' ? (
-                    <button
-                      onClick={handleEquip}
-                      disabled={saving || mongoUser?.avatarUrl === previewAvatar.url}
-                      className="w-full h-[48px] bg-[#49b265] disabled:bg-[#49b265]/50 hover:bg-[#3bb770] text-white rounded-[10px] font-bold text-[20px] transition-all flex items-center justify-center gap-[10px] shadow-[0px_4px_0px_0px_rgba(35,80,47,1)] active:translate-y-[2px] active:shadow-[0px_2px_0px_0px_rgba(35,80,47,1)] disabled:shadow-none disabled:translate-y-[2px]"
-                    >
-                      {saving ? 'Equipping...' : mongoUser?.avatarUrl === previewAvatar.url ? 'Equipped' : 'Equip'}
-                    </button>
-                  ) : (
-                    <button
-                      onClick={() => setConfirmingAvatar(previewAvatar)}
-                      disabled={saving || previewAvatar.quantity === 0 || (mongoUser?.walletBalance || 0) < previewAvatar.price}
-                      className="w-full h-[48px] bg-[#49b265] disabled:bg-[#49b265]/50 hover:bg-[#3bb770] text-white rounded-[10px] font-bold text-[20px] transition-all flex items-center justify-center gap-[10px] shadow-[0px_4px_0px_0px_rgba(35,80,47,1)] active:translate-y-[2px] active:shadow-[0px_2px_0px_0px_rgba(35,80,47,1)] disabled:shadow-none disabled:translate-y-[2px]"
-                    >
-                      {saving ? 'Processing...' : previewAvatar.quantity === 0 ? 'Sold Out' : (previewAvatar.price === 0 ? 'Claim Free' : 'Buy Now')}
-                    </button>
-                  )}
+                    {activeTab === 'shop' ? (
+                      <div
+                        style={{
+                          background: 'rgba(248, 245, 239, 1)',
+                          borderRadius: '10px',
+                          padding: '8px 12px',
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          alignItems: 'center',
+                          fontSize: '13.5px',
+                          fontFamily: '"Poppins", sans-serif'
+                        }}
+                      >
+                        <span style={{ color: '#666666', fontWeight: 500 }}>Limited Quantity</span>
+                        <span style={{ color: 'rgba(14, 15, 12, 1)', fontWeight: 600 }}>
+                          {previewAvatar.quantity ? `${previewAvatar.quantity} Available` : 'Unlimited'}
+                        </span>
+                      </div>
+                    ) : (
+                      <div
+                        style={{
+                          background: 'rgba(248, 245, 239, 1)',
+                          borderRadius: '10px',
+                          padding: '8px 12px',
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          alignItems: 'center',
+                          fontSize: '13.5px',
+                          fontFamily: '"Poppins", sans-serif'
+                        }}
+                      >
+                        <span style={{ color: '#666666', fontWeight: 500 }}>Obtained On</span>
+                        <span style={{ color: 'rgba(14, 15, 12, 1)', fontWeight: 600 }}>
+                          {previewAvatar.obtainedAt ? new Date(previewAvatar.obtainedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'Aug 21, 2026'}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Bottom Action Button */}
+                  <div className="w-full">
+                    {activeTab === 'my_avatars' ? (
+                      <button
+                        type="button"
+                        onClick={handleEquip}
+                        disabled={saving || mongoUser?.avatarUrl === previewAvatar?.url}
+                        style={{
+                          width: '100%',
+                          height: '48px',
+                          borderRadius: '9999px',
+                          background: '#202C44',
+                          color: '#FFFFFF',
+                          fontFamily: '"Poppins", sans-serif',
+                          fontWeight: 500,
+                          fontSize: '16px',
+                          lineHeight: '28px',
+                          border: 'none',
+                          cursor: mongoUser?.avatarUrl === previewAvatar?.url ? 'default' : 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          opacity: mongoUser?.avatarUrl === previewAvatar?.url ? 0.85 : 1
+                        }}
+                        className="hover:opacity-90 transition-opacity shadow-sm cursor-pointer"
+                      >
+                        {saving ? 'Equipping...' : (mongoUser?.avatarUrl === previewAvatar?.url ? 'Equipped' : 'Equip')}
+                      </button>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => setConfirmingAvatar(previewAvatar)}
+                        disabled={saving || previewAvatar?.quantity === 0 || (mongoUser?.walletBalance || 0) < (previewAvatar?.price || 0)}
+                        style={{
+                          width: '100%',
+                          height: '48px',
+                          borderRadius: '9999px',
+                          background: '#202C44',
+                          color: '#FFFFFF',
+                          fontFamily: '"Poppins", sans-serif',
+                          fontWeight: 500,
+                          fontSize: '16px',
+                          lineHeight: '28px',
+                          border: 'none',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center'
+                        }}
+                        className="hover:opacity-90 transition-opacity shadow-sm cursor-pointer disabled:opacity-50"
+                      >
+                        {saving ? 'Processing...' : previewAvatar?.quantity === 0 ? 'Sold Out' : ((mongoUser?.walletBalance || 0) < (previewAvatar?.price || 0) ? 'Insufficient Coins' : 'Claim')}
+                      </button>
+                    )}
+                  </div>
+                </>
+              ) : (
+                <div className="flex-1 flex items-center justify-center text-[#888888] text-sm">
+                  Select an avatar
                 </div>
-              </div>
-            ) : (
-              <div className="flex-1 flex items-center justify-center text-white/30 text-[18px] font-semibold">
-                Select an avatar
-              </div>
-            )}
+              )}
+            </div>
           </div>
         </div>
       </motion.div>
 
       {/* Confirmation Modal ("Order Summary") */}
       {confirmingAvatar && (
-        <div className="fixed inset-0 bg-black/60 z-[9999999] flex items-center justify-center p-4">
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[9999999] flex items-center justify-center p-4">
           <motion.div
             initial={{ scale: 0.95, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
-            className="w-[500px] h-[313px] rounded-[20px] p-[16px] bg-[rgba(36,36,36,1)] border border-white/[0.08] shadow-2xl flex flex-col justify-between font-['Barlow_Condensed'] text-white"
+            style={{
+              width: '460px',
+              maxWidth: '95vw',
+              background: '#FFFFFF',
+              borderRadius: '28px',
+              padding: '10px',
+              boxSizing: 'border-box'
+            }}
+            className="shadow-2xl"
           >
-            <div className="flex justify-between items-center w-full">
-              <h3
-                className="text-white m-0 flex items-center"
-                style={{
-                  width: '416px',
-                  height: '34px',
-                  fontFamily: '"Barlow Condensed", sans-serif',
-                  fontWeight: 700,
-                  fontSize: '28px',
-                  lineHeight: '120%',
-                  opacity: 1
-                }}
-              >
-                Order Summary
-              </h3>
-              <button
-                onClick={() => setConfirmingAvatar(null)}
-                className="w-[36px] h-[36px] rounded-[10px] bg-white/[0.11] hover:bg-white/[0.18] transition-colors flex items-center justify-center text-white shrink-0"
-              >
-                <FiX size={20} strokeWidth={2} />
-              </button>
-            </div>
-
             <div
-              className="flex flex-col justify-between border border-white/[0.08] shrink-0"
               style={{
-                width: '468px',
-                height: '157px',
-                gap: '12px',
+                width: '100%',
+                background: 'rgba(248, 245, 239, 1)',
                 borderRadius: '20px',
-                padding: '16px',
-                background: 'rgba(0, 0, 0, 0.36)',
-                backdropFilter: 'blur(44px)',
-                WebkitBackdropFilter: 'blur(44px)',
-                opacity: 1
+                padding: '24px 20px',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '16px',
+                boxSizing: 'border-box',
+                position: 'relative'
               }}
             >
-              <div className="flex gap-[16px] items-center">
-                <img
-                  src={confirmingAvatar.url}
-                  alt={confirmingAvatar.name}
-                  className="object-cover shrink-0"
+              <div className="flex justify-between items-center w-full">
+                <h3
                   style={{
-                    width: '72px',
-                    height: '72px',
-                    borderRadius: '10px',
-                    opacity: 1
+                    fontFamily: '"Bricolage Grotesque", sans-serif',
+                    fontWeight: 700,
+                    fontSize: '24px',
+                    color: 'rgba(14, 15, 12, 1)',
+                    margin: 0
                   }}
-                />
-                <div className="flex flex-col justify-center min-w-0">
-                  <span className="text-white font-bold text-[24px] leading-tight truncate">{confirmingAvatar.name}</span>
-                  <span className="text-white/50 text-[16px] font-medium leading-[1.3] truncate">{confirmingAvatar.description || 'Premium Avatar Collection'}</span>
+                >
+                  Order Summary
+                </h3>
+                <button
+                  type="button"
+                  onClick={() => setConfirmingAvatar(null)}
+                  style={{
+                    width: '30px',
+                    height: '30px',
+                    background: '#000000',
+                    borderRadius: '50%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    border: 'none',
+                    cursor: 'pointer'
+                  }}
+                  className="text-white hover:opacity-80 transition-opacity"
+                >
+                  <FiX size={15} strokeWidth={2.5} className="pointer-events-none" />
+                </button>
+              </div>
+
+              <div
+                style={{
+                  background: '#FFFFFF',
+                  borderRadius: '14px',
+                  padding: '14px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '12px'
+                }}
+              >
+                <div className="flex gap-3 items-center">
+                  <div
+                    style={{
+                      width: '56px',
+                      height: '56px',
+                      borderRadius: '50%',
+                      background: '#3B82F6',
+                      border: '2px solid #202C44',
+                      overflow: 'hidden',
+                      flexShrink: 0
+                    }}
+                  >
+                    <img src={confirmingAvatar.url} alt={confirmingAvatar.name} className="w-full h-full object-cover" />
+                  </div>
+                  <div className="flex flex-col justify-center min-w-0">
+                    <span style={{ fontFamily: '"Bricolage Grotesque", sans-serif', fontWeight: 700, fontSize: '18px', color: 'rgba(14, 15, 12, 1)' }} className="truncate capitalize">
+                      {confirmingAvatar.name}
+                    </span>
+                    <span style={{ fontFamily: '"Poppins", sans-serif', fontSize: '13px', color: '#666666' }} className="truncate">
+                      {confirmingAvatar.description || 'Premium Avatar Collection'}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="h-[1px] bg-slate-100 w-full" />
+
+                <div className="flex justify-between items-center w-full">
+                  <span style={{ fontFamily: '"Poppins", sans-serif', fontWeight: 600, fontSize: '15px', color: 'rgba(14, 15, 12, 1)' }}>
+                    Price
+                  </span>
+                  <div className="flex items-center gap-1.5">
+                    <img src="/coins/Coin.png" alt="Coins" className="w-[18px] h-[18px] object-contain shrink-0" />
+                    <span style={{ fontFamily: '"Poppins", sans-serif', fontWeight: 700, fontSize: '18px', color: '#D97706' }}>
+                      {(confirmingAvatar.price || 0).toLocaleString('de-DE')}
+                    </span>
+                  </div>
                 </div>
               </div>
-              <div className="h-[1px] bg-white/10 w-full shrink-0" />
-              <div className="flex justify-between items-center w-full">
-                <span className="text-[#49b265] font-semibold text-[20px] leading-none">Price</span>
-                <div className="flex items-center gap-[4px]">
-                  <img
-                    src="/coins/Coin.png"
-                    alt="Coins"
-                    className="w-[18px] h-[18px] object-contain shrink-0"
-                    style={{ filter: 'drop-shadow(0px 0px 10px rgba(254, 198, 53, 0.6))' }}
-                  />
-                  <span className="text-[#fbbf24] font-bold text-[22px] leading-none pt-[2px]">{confirmingAvatar.price}</span>
-                </div>
+
+              <div className="flex gap-3 w-full mt-1">
+                <button
+                  type="button"
+                  onClick={() => setConfirmingAvatar(null)}
+                  style={{
+                    height: '46px',
+                    flex: 1,
+                    background: 'transparent',
+                    border: '1.5px solid #202C44',
+                    borderRadius: '9999px',
+                    fontFamily: '"Poppins", sans-serif',
+                    fontWeight: 500,
+                    fontSize: '15px',
+                    color: '#202C44',
+                    cursor: 'pointer'
+                  }}
+                  className="hover:bg-slate-100 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handlePurchaseAvatar(confirmingAvatar)}
+                  disabled={saving}
+                  style={{
+                    height: '46px',
+                    flex: 1,
+                    background: '#202C44',
+                    border: 'none',
+                    borderRadius: '9999px',
+                    fontFamily: '"Poppins", sans-serif',
+                    fontWeight: 500,
+                    fontSize: '15px',
+                    color: '#FFFFFF',
+                    cursor: 'pointer'
+                  }}
+                  className="hover:opacity-90 transition-opacity disabled:opacity-50"
+                >
+                  {saving ? 'Processing...' : 'Confirm'}
+                </button>
               </div>
             </div>
-
-            <button
-              onClick={() => handlePurchaseAvatar(confirmingAvatar)}
-              disabled={saving}
-              className="w-full h-[48px] bg-[#49b265] disabled:bg-[#49b265]/50 hover:bg-[#3bb770] text-white rounded-[10px] font-bold text-[20px] transition-all flex items-center justify-center gap-[10px] shadow-[0px_4px_0px_0px_rgba(35,80,47,1)] active:translate-y-[2px] active:shadow-[0px_2px_0px_0px_rgba(35,80,47,1)] disabled:shadow-none"
-            >
-              {saving ? 'Processing...' : 'Confirm Purchase →'}
-            </button>
           </motion.div>
         </div>
       )}
 
       {/* Success Modal ("Purchase Successful!") */}
       {purchaseSuccessAvatar && (
-        <div className="fixed inset-0 bg-black/60 z-[9999999] flex items-center justify-center p-4">
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[9999999] flex items-center justify-center p-4">
           <motion.div
             initial={{ scale: 0.95, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
-            className="w-[500px] h-[317px] rounded-[20px] p-[16px] bg-[rgba(36,36,36,1)] border border-white/[0.08] shadow-2xl flex flex-col justify-between items-center font-['Barlow_Condensed'] text-white text-center"
+            style={{
+              width: '460px',
+              maxWidth: '95vw',
+              background: '#FFFFFF',
+              borderRadius: '28px',
+              padding: '10px',
+              boxSizing: 'border-box'
+            }}
+            className="shadow-2xl"
           >
-            <div className="w-full flex justify-end">
+            <div
+              style={{
+                width: '100%',
+                background: 'rgba(248, 245, 239, 1)',
+                borderRadius: '20px',
+                padding: '28px 20px',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                textAlign: 'center',
+                gap: '16px',
+                boxSizing: 'border-box',
+                position: 'relative'
+              }}
+            >
+              <div className="w-full flex justify-end">
+                <button
+                  type="button"
+                  onClick={() => setPurchaseSuccessAvatar(null)}
+                  style={{
+                    width: '30px',
+                    height: '30px',
+                    background: '#000000',
+                    borderRadius: '50%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    border: 'none',
+                    cursor: 'pointer'
+                  }}
+                  className="text-white hover:opacity-80 transition-opacity"
+                >
+                  <FiX size={15} strokeWidth={2.5} className="pointer-events-none" />
+                </button>
+              </div>
+
+              <div className="flex flex-col items-center justify-center">
+                <img
+                  src="/coins/tik1.png"
+                  alt="Success"
+                  className="shrink-0 object-contain mb-3"
+                  style={{
+                    width: '64px',
+                    height: '64px'
+                  }}
+                />
+                <h3
+                  style={{
+                    fontFamily: '"Bricolage Grotesque", sans-serif',
+                    fontWeight: 700,
+                    fontSize: '26px',
+                    color: 'rgba(14, 15, 12, 1)',
+                    margin: 0
+                  }}
+                >
+                  Purchase Successful!
+                </h3>
+                <p
+                  style={{
+                    fontFamily: '"Poppins", sans-serif',
+                    fontWeight: 500,
+                    fontSize: '14.5px',
+                    color: '#666666',
+                    margin: '8px 0 0 0',
+                    maxWidth: '360px'
+                  }}
+                >
+                  <strong className="text-black capitalize">{purchaseSuccessAvatar.name}</strong> has been added to your collection and equipped.
+                </p>
+              </div>
+
               <button
-                onClick={() => setPurchaseSuccessAvatar(null)}
-                className="w-[36px] h-[36px] rounded-[10px] bg-white/[0.11] hover:bg-white/[0.18] transition-colors flex items-center justify-center text-white shrink-0"
+                type="button"
+                onClick={() => {
+                  setPurchaseSuccessAvatar(null);
+                  setActiveTab('my_avatars');
+                  setPreviewAvatar(purchaseSuccessAvatar);
+                }}
+                style={{
+                  width: '100%',
+                  height: '48px',
+                  background: '#202C44',
+                  borderRadius: '9999px',
+                  border: 'none',
+                  color: '#FFFFFF',
+                  fontFamily: '"Poppins", sans-serif',
+                  fontWeight: 500,
+                  fontSize: '16px',
+                  cursor: 'pointer'
+                }}
+                className="hover:opacity-90 transition-opacity shadow-sm"
               >
-                <FiX size={20} strokeWidth={2} />
+                View My Avatars
               </button>
             </div>
-
-            <div className="flex flex-col items-center flex-1 justify-center my-[10px]">
-              <img
-                src="/coins/tik1.png"
-                alt="Success"
-                className="shrink-0 object-contain mb-[14px]"
-                style={{
-                  width: '74px',
-                  height: '74px',
-                  opacity: 1
-                }}
-              />
-              <h3 className="text-[28px] font-bold text-white leading-none m-0 uppercase">Purchase Successful!</h3>
-              <p className="text-white/50 text-[18px] font-medium leading-[1.3] m-0 mt-[10px] max-w-[400px]">
-                {purchaseSuccessAvatar.name} has been added to your collection.
-              </p>
-            </div>
-
-            <button
-              onClick={() => {
-                setPurchaseSuccessAvatar(null);
-                setActiveTab('my_avatars');
-                setPreviewAvatar(purchaseSuccessAvatar);
-              }}
-              className="w-full h-[48px] bg-[#49b265] hover:bg-[#3bb770] text-white rounded-[10px] font-bold text-[20px] transition-all flex items-center justify-center shadow-[0px_4px_0px_0px_rgba(35,80,47,1)] active:translate-y-[2px] active:shadow-[0px_2px_0px_0px_rgba(35,80,47,1)]"
-            >
-              View My Avatar
-            </button>
           </motion.div>
         </div>
       )}
@@ -1199,11 +1685,43 @@ const SettingsModal = ({ isOpen, onClose, mongoUser, token, setMongoUser, logout
               }}
               className="shrink-0"
             >
+              {/* Close Button (Circle with X) */}
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShow2FASetup(false);
+                  setOtpDigits(['', '', '', '', '', '']);
+                  setOtpCode('');
+                  setError('');
+                }}
+                style={{
+                  width: '36px',
+                  height: '36px',
+                  background: '#000000',
+                  borderRadius: '50%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  border: 'none',
+                  cursor: 'pointer',
+                  position: 'absolute',
+                  top: '18px',
+                  right: '18px',
+                  zIndex: 50,
+                  padding: 0
+                }}
+                className="text-white hover:opacity-80 transition-opacity shrink-0 cursor-pointer"
+              >
+                <FiX size={18} strokeWidth={2.5} className="pointer-events-none" />
+              </button>
+
               <div
                 style={{
                   display: 'flex',
                   flexDirection: 'column',
                   gap: '8px',
+                  paddingRight: '42px',
                   opacity: 1,
                   transform: 'rotate(0deg)'
                 }}
@@ -1422,10 +1940,17 @@ const SettingsModal = ({ isOpen, onClose, mongoUser, token, setMongoUser, logout
             >
               {/* Close Button (Circle with X) */}
               <button
-                onClick={() => { setShow2FADisable(false); setDisableDigits(['', '', '', '', '', '']); setDisableCode(''); setError(''); }}
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShow2FADisable(false);
+                  setDisableDigits(['', '', '', '', '', '']);
+                  setDisableCode('');
+                  setError('');
+                }}
                 style={{
-                  width: '32px',
-                  height: '32px',
+                  width: '36px',
+                  height: '36px',
                   background: '#000000',
                   borderRadius: '50%',
                   display: 'flex',
@@ -1434,13 +1959,14 @@ const SettingsModal = ({ isOpen, onClose, mongoUser, token, setMongoUser, logout
                   border: 'none',
                   cursor: 'pointer',
                   position: 'absolute',
-                  top: '20px',
-                  right: '20px',
+                  top: '18px',
+                  right: '18px',
+                  zIndex: 50,
                   padding: 0
                 }}
-                className="text-white hover:opacity-80 transition-opacity shrink-0"
+                className="text-white hover:opacity-80 transition-opacity shrink-0 cursor-pointer"
               >
-                <FiX size={16} strokeWidth={2.5} />
+                <FiX size={18} strokeWidth={2.5} className="pointer-events-none" />
               </button>
 
               <div
@@ -1578,123 +2104,151 @@ const SettingsModal = ({ isOpen, onClose, mongoUser, token, setMongoUser, logout
       {/* Delete Account Confirmation Modal */}
       {deletePhase === 1 && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[999999] flex items-center justify-center p-4">
+          {/* Outer White Border Frame */}
           <div
             style={{
-              width: '460px',
+              width: '510px',
               maxWidth: '95vw',
               background: '#FFFFFF',
-              borderRadius: '24px',
-              padding: '28px',
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              textAlign: 'center',
-              boxSizing: 'border-box',
-              position: 'relative'
+              borderRadius: '28px',
+              padding: '10px',
+              boxSizing: 'border-box'
             }}
             className="shadow-2xl"
           >
-            {/* Top Close Button */}
-            <button
-              onClick={() => setDeletePhase(0)}
+            {/* Inner Pink Card */}
+            <div
               style={{
-                width: '32px',
-                height: '32px',
-                background: '#F1F3F5',
-                borderRadius: '50%',
+                width: '100%',
+                background: 'rgba(255, 234, 235, 1)',
+                borderRadius: '20px',
+                padding: '36px 24px 32px 24px',
                 display: 'flex',
+                flexDirection: 'column',
                 alignItems: 'center',
-                justifyContent: 'center',
-                border: 'none',
-                cursor: 'pointer',
-                position: 'absolute',
-                top: '18px',
-                right: '18px',
-                padding: 0
-              }}
-              className="text-slate-600 hover:text-black transition-colors"
-            >
-              <FiX size={16} />
-            </button>
-
-            {/* Warning Icon */}
-            <div className="w-14 h-14 rounded-full bg-red-100 text-[#E50020] flex items-center justify-center mb-4 mt-2">
-              <FiAlertTriangle size={28} />
-            </div>
-
-            {/* Title & Description */}
-            <h3
-              style={{
-                fontFamily: '"Poppins", sans-serif',
-                fontWeight: 700,
-                fontSize: '22px',
-                color: '#000000',
-                margin: '0 0 8px 0'
+                textAlign: 'center',
+                boxSizing: 'border-box',
+                position: 'relative'
               }}
             >
-              Delete Account?
-            </h3>
-            <p
-              style={{
-                fontFamily: '"Poppins", sans-serif',
-                fontWeight: 400,
-                fontSize: '14px',
-                lineHeight: '1.4',
-                color: '#555555',
-                margin: '0 0 24px 0'
-              }}
-            >
-              Deleting your account is permanent. All associated data, earnings, and progress will be wiped immediately.
-            </p>
-
-            {/* Action Buttons Row */}
-            <div className="flex gap-3 w-full">
+              {/* Top Close Button */}
               <button
-                onClick={() => setDeletePhase(0)}
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setDeletePhase(0);
+                }}
                 style={{
-                  height: '46px',
-                  flex: 1,
-                  background: '#ECEEF2',
-                  borderRadius: '9999px',
-                  border: 'none',
-                  cursor: 'pointer',
-                  fontFamily: '"Poppins", sans-serif',
-                  fontSize: '16px',
-                  lineHeight: '28px',
-                  letterSpacing: '0%',
-                  fontWeight: 500,
-                  color: '#334155',
+                  width: '32px',
+                  height: '32px',
+                  background: '#000000',
+                  borderRadius: '50%',
                   display: 'flex',
                   alignItems: 'center',
-                  justifyContent: 'center'
-                }}
-                className="hover:bg-slate-200 transition-colors"
-              >
-                <span>Cancel</span>
-              </button>
-              <button
-                onClick={() => handleDelete()}
-                style={{
-                  height: '46px',
-                  flex: 1,
-                  background: '#E50020',
-                  borderRadius: '9999px',
+                  justifyContent: 'center',
                   border: 'none',
                   cursor: 'pointer',
-                  fontFamily: '"Poppins", sans-serif',
-                  fontSize: '16px',
-                  lineHeight: '28px',
-                  letterSpacing: '0%',
-                  fontWeight: 500,
-                  color: '#FFFFFF',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center'
+                  position: 'absolute',
+                  top: '16px',
+                  right: '16px',
+                  zIndex: 50,
+                  padding: 0
                 }}
-                className="hover:bg-[#CC001C] transition-colors shadow-sm"
+                className="text-white hover:opacity-80 transition-opacity shrink-0 cursor-pointer"
               >
-                <span>Delete Account</span>
+                <FiX size={16} strokeWidth={2.5} className="pointer-events-none" />
               </button>
+
+              {/* Red Circle Exclamation Icon */}
+              <img
+                src="/coins/image copy.png"
+                alt="Alert"
+                style={{
+                  width: '60px',
+                  height: '60px',
+                  marginBottom: '18px',
+                  objectFit: 'contain'
+                }}
+                className="select-none"
+              />
+
+              {/* Title & Description */}
+              <h3
+                style={{
+                  fontFamily: '"Bricolage Grotesque", sans-serif',
+                  fontWeight: 700,
+                  fontSize: '30px',
+                  color: 'rgba(14, 15, 12, 1)',
+                  margin: '0 0 10px 0'
+                }}
+              >
+                Delete Account!
+              </h3>
+              <p
+                style={{
+                  fontFamily: '"Poppins", sans-serif',
+                  fontWeight: 500,
+                  fontSize: '15px',
+                  lineHeight: '24px',
+                  color: 'rgba(14, 15, 12, 1)',
+                  maxWidth: '380px',
+                  margin: '0 0 28px 0'
+                }}
+              >
+                Deleting your account is permanent. All associated data will be wiped.
+              </p>
+
+              {/* Action Buttons Row */}
+              <div className="flex gap-3 w-full max-w-[420px]">
+                <button
+                  type="button"
+                  onClick={() => setDeletePhase(0)}
+                  style={{
+                    height: '52px',
+                    flex: 1,
+                    background: '#202C44',
+                    borderRadius: '9999px',
+                    border: 'none',
+                    cursor: 'pointer',
+                    fontFamily: '"Poppins", sans-serif',
+                    fontSize: '16px',
+                    lineHeight: '28px',
+                    letterSpacing: '0%',
+                    fontWeight: 500,
+                    color: '#FFFFFF',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center'
+                  }}
+                  className="hover:bg-[#182338] transition-colors shadow-sm cursor-pointer"
+                >
+                  <span>Cancle</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleDelete()}
+                  style={{
+                    height: '52px',
+                    flex: 1,
+                    background: '#E50020',
+                    borderRadius: '9999px',
+                    border: 'none',
+                    cursor: 'pointer',
+                    fontFamily: '"Poppins", sans-serif',
+                    fontSize: '16px',
+                    lineHeight: '28px',
+                    letterSpacing: '0%',
+                    fontWeight: 500,
+                    color: '#FFFFFF',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center'
+                  }}
+                  className="hover:bg-[#CC001C] transition-colors shadow-sm cursor-pointer"
+                >
+                  <span>Delete Account</span>
+                </button>
+              </div>
             </div>
           </div>
         </div>
