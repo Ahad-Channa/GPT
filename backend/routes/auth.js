@@ -31,7 +31,7 @@ router.post('/sync', verifyToken, fraudCheck('auth_sync', 'light'), async (req, 
   try {
     const { uid, email, name, picture } = req.user;
     const { ref, fingerprint } = req.body || {};
-    
+
     let user = await User.findOne({ firebaseUid: uid });
     let isNewUser = false;
     const isPrimaryAdmin = email === process.env.PRIMARY_ADMIN_EMAIL;
@@ -172,20 +172,20 @@ router.post('/sync', verifyToken, fraudCheck('auth_sync', 'light'), async (req, 
 router.put('/profile', verifyToken, async (req, res) => {
   try {
     const { displayName, avatarUrl, isPrivate } = req.body;
-    
+
     // Basic username validation (3-20 characters, alphanumeric, dashes, underscores)
     const nameRegex = /^[a-zA-Z0-9_-]{3,20}$/;
     if (displayName && !nameRegex.test(displayName)) {
-      return res.status(400).json({ 
-        success: false, 
-        error: 'Username must be 3-20 characters long and can only contain letters, numbers, dashes, and underscores.' 
+      return res.status(400).json({
+        success: false,
+        error: 'Username must be 3-20 characters long and can only contain letters, numbers, dashes, and underscores.'
       });
     }
 
     const updateFields = {};
     if (displayName) {
       // Check for uniqueness (case-insensitive)
-      const nameExists = await User.findOne({ 
+      const nameExists = await User.findOne({
         displayName: new RegExp(`^${displayName}$`, 'i'),
         firebaseUid: { $ne: req.user.uid }
       });

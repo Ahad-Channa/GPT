@@ -964,6 +964,38 @@ const SettingsModal = ({ isOpen, onClose, mongoUser, token, setMongoUser, logout
   const [secretKey, setSecretKey] = useState('');
   const [verifying2FA, setVerifying2FA] = useState(false);
 
+  const [otpDigits, setOtpDigits] = useState(['', '', '', '', '', '']);
+
+  const handleOtpDigitChange = (index, val) => {
+    const clean = val.replace(/\D/g, '');
+    const updated = [...otpDigits];
+    if (clean.length > 1) {
+      const pasted = clean.slice(0, 6).split('');
+      pasted.forEach((d, i) => {
+        if (i < 6) updated[i] = d;
+      });
+      setOtpDigits(updated);
+      setOtpCode(updated.join(''));
+      const nextFocus = Math.min(pasted.length, 5);
+      document.getElementById(`otp-digit-${nextFocus}`)?.focus();
+      return;
+    }
+    updated[index] = clean ? clean[clean.length - 1] : '';
+    setOtpDigits(updated);
+    setOtpCode(updated.join(''));
+    if (clean && index < 5) {
+      document.getElementById(`otp-digit-${index + 1}`)?.focus();
+    }
+  };
+
+  const handleOtpDigitKeyDown = (index, e) => {
+    if (e.key === 'Backspace') {
+      if (!otpDigits[index] && index > 0) {
+        document.getElementById(`otp-digit-${index - 1}`)?.focus();
+      }
+    }
+  };
+
   useEffect(() => {
     if (isOpen) {
       setDisplayName(mongoUser?.displayName || '');
@@ -1014,6 +1046,8 @@ const SettingsModal = ({ isOpen, onClose, mongoUser, token, setMongoUser, logout
       // Setup flow
       setQrCodeUrl('');
       setSecretKey('');
+      setOtpDigits(['', '', '', '', '', '']);
+      setOtpCode('');
       setShow2FASetup(true);
       const data = await setup2FA();
       if (data.success) {
@@ -1041,6 +1075,7 @@ const SettingsModal = ({ isOpen, onClose, mongoUser, token, setMongoUser, logout
     if (res.success) {
       setIs2FAEnabled(true);
       setShow2FASetup(false);
+      setOtpDigits(['', '', '', '', '', '']);
       setOtpCode('');
       toast.success('2FA enabled successfully!');
     } else {
@@ -1094,56 +1129,210 @@ const SettingsModal = ({ isOpen, onClose, mongoUser, token, setMongoUser, logout
 
   return createPortal(
     <>
-      {/* 2FA Setup Inner Modal */}
+      {/* 2FA Setup Inner Modal (width: 626px, height: 593px) */}
       {show2FASetup && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-[44px] z-[999999] flex items-center justify-center p-4 overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none']">
-          <div className="bg-[#242424] border border-white/[0.08] rounded-[2rem] w-full max-w-md p-8 flex flex-col items-center text-center my-auto max-h-[95vh] overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none']">
-            <div className="w-[52px] h-[52px] rounded-full bg-[#11291b] border border-[#1a422a] flex items-center justify-center text-[#49b265] mb-4 shrink-0">
-              <FiShield size={22} />
-            </div>
-            <h3 className="text-2xl font-bold text-white mb-2 font-['Barlow_Condensed'] uppercase tracking-wide">SETUP 2-FACTOR AUTH</h3>
-            <p className="text-slate-400 text-[14px] mb-6 max-w-[280px] font-['Barlow_Condensed'] font-semibold leading-normal">
-              Scan this QR code with Google Authenticator or Microsoft Authenticator, then enter the 6-digit code.
-            </p>
-
-            {qrCodeUrl ? (
-              <div className="bg-white p-3 rounded-2xl mb-6 shadow-lg select-none">
-                <img src={qrCodeUrl} alt="2FA QR Code" className="w-[180px] h-[180px] rounded-xl" />
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[999999] flex items-center justify-center p-4 overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none']">
+          <div
+            style={{
+              width: '626px',
+              maxWidth: '100%',
+              background: '#FFFFFF',
+              borderRadius: '28px',
+              padding: '10px',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '16px',
+              boxSizing: 'border-box',
+              fontFamily: '"Poppins", sans-serif'
+            }}
+            className="relative shadow-2xl overflow-y-auto max-h-[95vh] [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none']"
+          >
+            {/* Top Header Card */}
+            <div
+              style={{
+                width: '606px',
+                maxWidth: '100%',
+                background: 'rgba(248, 245, 239, 1)',
+                borderRadius: '16px',
+                padding: '24px 28px',
+                position: 'relative',
+                boxSizing: 'border-box',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '16px',
+                opacity: 1,
+                transform: 'rotate(0deg)'
+              }}
+              className="shrink-0"
+            >
+              <div
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '8px',
+                  opacity: 1,
+                  transform: 'rotate(0deg)'
+                }}
+              >
+                <h2
+                  style={{
+                    fontFamily: '"Bricolage Grotesque", sans-serif',
+                    fontWeight: 700,
+                    fontSize: '32px',
+                    lineHeight: '1.2',
+                    letterSpacing: '-0.02em',
+                    color: 'rgba(14, 15, 12, 1)',
+                    margin: 0
+                  }}
+                >
+                  Setup 2-factor auth
+                </h2>
+                <p
+                  style={{
+                    fontFamily: '"Poppins", sans-serif',
+                    fontWeight: 500,
+                    fontSize: '15px',
+                    lineHeight: '24px',
+                    color: 'rgba(14, 15, 12, 1)',
+                    margin: 0
+                  }}
+                >
+                  Scan this QR code with Google Authenticator or Microsoft Authenticator, then enter the 6-digit code.
+                </p>
               </div>
-            ) : (
-              <div className="w-[180px] h-[180px] flex items-center justify-center mb-6 bg-[#1a1a1a] rounded-2xl border border-white/[0.05]">
-                <FiLoader className="animate-spin text-emerald-400 text-3xl" />
-              </div>
-            )}
 
-            <div className="w-full bg-black/[0.36] border border-white/[0.08] rounded-xl py-3 px-4 mb-4 font-['Barlow_Condensed'] text-[15px] font-semibold text-center text-[#49b265] select-all tracking-wide">
-              {secretKey || 'Loading secret key...'}
-            </div>
-
-            <form onSubmit={handleConfirm2FA} className="w-full space-y-4">
-              <input
-                type="text"
-                maxLength={6}
-                value={otpCode}
-                onChange={e => setOtpCode(e.target.value.replace(/\D/g, ''))}
-                placeholder="0 0 0 0 0 0"
-                className="w-full bg-black/[0.36] border border-white/[0.08] rounded-xl py-3 text-center text-xl font-bold text-white tracking-[0.6em] pl-[0.6em] focus:outline-none focus:bg-black/[0.36] active:bg-black/[0.36] focus:border-[#49b265]/50 transition-colors font-['Barlow_Condensed'] placeholder:text-slate-600 [&:-webkit-autofill]:[Webkit-text-fill-color:white] [&:-webkit-autofill]:[Webkit-box-shadow:0_0_0_30px_#151515_inset]"
-                autoFocus
+              {/* Accent bar */}
+              <div
+                style={{
+                  width: '74px',
+                  height: '4px',
+                  borderRadius: '20px',
+                  background: 'rgba(85, 88, 211, 1)'
+                }}
               />
-              {error && <p className="text-rose-400 text-sm font-['Barlow_Condensed'] font-semibold">{error}</p>}
+            </div>
 
-              <div className="flex gap-3 font-['Barlow_Condensed'] text-[20px] mt-4">
+            {/* QR Code and Secret Key */}
+            <div className="flex flex-col items-center gap-3 w-full shrink-0">
+              {qrCodeUrl ? (
+                <div
+                  style={{
+                    background: 'rgba(248, 245, 239, 1)',
+                    borderRadius: '24px',
+                    padding: '16px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center'
+                  }}
+                  className="shadow-sm select-none"
+                >
+                  <img src={qrCodeUrl} alt="2FA QR Code" className="w-[170px] h-[170px] rounded-xl" />
+                </div>
+              ) : (
+                <div
+                  style={{
+                    background: 'rgba(248, 245, 239, 1)',
+                    borderRadius: '24px',
+                    width: '202px',
+                    height: '202px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center'
+                  }}
+                >
+                  <FiLoader className="animate-spin text-[#5356FB] text-3xl" />
+                </div>
+              )}
+
+              {/* Secret Key Badge */}
+              <div
+                style={{
+                  background: 'rgba(248, 245, 239, 1)',
+                  borderRadius: '10px',
+                  padding: '6px 18px',
+                  fontFamily: '"Poppins", monospace, sans-serif',
+                  fontWeight: 600,
+                  fontSize: '15px',
+                  letterSpacing: '0.08em',
+                  color: 'rgba(14, 15, 12, 1)'
+                }}
+                className="select-all text-center"
+              >
+                {secretKey || 'Loading secret key...'}
+              </div>
+            </div>
+
+            {/* 6 Digit Inputs Form */}
+            <form onSubmit={handleConfirm2FA} className="w-full flex flex-col items-center gap-3 shrink-0">
+              {/* 6 individual OTP input boxes */}
+              <div className="flex justify-center gap-2.5 sm:gap-3 my-1">
+                {otpDigits.map((digit, idx) => (
+                  <input
+                    key={idx}
+                    id={`otp-digit-${idx}`}
+                    type="text"
+                    inputMode="numeric"
+                    maxLength={1}
+                    value={digit}
+                    onChange={e => handleOtpDigitChange(idx, e.target.value)}
+                    onKeyDown={e => handleOtpDigitKeyDown(idx, e)}
+                    style={{
+                      width: '48px',
+                      height: '48px',
+                      borderRadius: '14px',
+                      background: 'rgba(239, 239, 239, 1)',
+                      border: 'none',
+                      outline: 'none',
+                      textAlign: 'center',
+                      fontSize: '22px',
+                      fontWeight: 700,
+                      color: 'rgba(14, 15, 12, 1)',
+                      fontFamily: '"Poppins", sans-serif'
+                    }}
+                    className="focus:ring-2 focus:ring-[#5356FB]/30 focus:bg-white transition-all"
+                  />
+                ))}
+              </div>
+
+              {error && <p className="text-rose-500 text-sm font-['Poppins',sans-serif] font-medium">{error}</p>}
+
+              {/* Action Buttons Row */}
+              <div className="flex gap-3 w-full px-2 mt-1">
                 <button
                   type="button"
-                  onClick={() => { setShow2FASetup(false); setOtpCode(''); setError(''); }}
-                  className="w-1/2 h-[48px] bg-white/[0.11] text-white rounded-[10px] font-bold shadow-[0_4px_0_0_rgba(255,255,255,0.05)] hover:bg-white/[0.15] hover:translate-y-[1px] hover:shadow-[0_3px_0_0_rgba(255,255,255,0.05)] active:translate-y-[4px] active:shadow-none transition-all flex items-center justify-center"
+                  onClick={() => { setShow2FASetup(false); setOtpDigits(['', '', '', '', '', '']); setOtpCode(''); setError(''); }}
+                  style={{
+                    flex: 1,
+                    height: '52px',
+                    borderRadius: '9999px',
+                    border: '1.5px solid #202C44',
+                    background: 'transparent',
+                    color: '#202C44',
+                    fontFamily: '"Poppins", sans-serif',
+                    fontWeight: 600,
+                    fontSize: '16px',
+                    cursor: 'pointer'
+                  }}
+                  className="hover:bg-slate-50 transition-all flex items-center justify-center"
                 >
-                  Cancel
+                  Cancle
                 </button>
                 <button
                   type="submit"
                   disabled={verifying2FA || otpCode.length !== 6}
-                  className="w-1/2 h-[48px] bg-[#49B265] text-white rounded-[10px] font-bold shadow-[0_4px_0_0_#276D3A] hover:bg-[#49B265]/90 hover:translate-y-[1px] hover:shadow-[0_3px_0_0_#276D3A] active:translate-y-[4px] active:shadow-none transition-all flex items-center justify-center disabled:opacity-50 disabled:active:translate-y-0 disabled:active:shadow-[0_4px_0_0_#276D3A] disabled:hover:translate-y-0 disabled:hover:shadow-[0_4px_0_0_#276D3A]"
+                  style={{
+                    flex: 1,
+                    height: '52px',
+                    borderRadius: '9999px',
+                    border: 'none',
+                    background: '#202C44',
+                    color: '#FFFFFF',
+                    fontFamily: '"Poppins", sans-serif',
+                    fontWeight: 600,
+                    fontSize: '16px',
+                    cursor: 'pointer'
+                  }}
+                  className="hover:bg-[#182338] disabled:opacity-50 transition-all flex items-center justify-center shadow-sm"
                 >
                   {verifying2FA ? 'Enabling...' : 'Verify & Enable'}
                 </button>
@@ -1155,40 +1344,46 @@ const SettingsModal = ({ isOpen, onClose, mongoUser, token, setMongoUser, logout
 
       {/* 2FA Disable Inner Modal */}
       {show2FADisable && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-[44px] z-[999999] flex items-center justify-center p-4 overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none']">
-          <div className="bg-[#242424] border border-white/[0.08] rounded-[2rem] w-full max-w-md p-8 flex flex-col items-center text-center my-auto max-h-[95vh] overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none']">
-            <div className="w-[52px] h-[52px] rounded-full bg-[#2a1114] border border-[#4a1a21] flex items-center justify-center text-rose-500 mb-4 shrink-0">
-              <FiShield size={22} />
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[999999] flex items-center justify-center p-4 overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none']">
+          <div className="bg-white rounded-[24px] w-full max-w-md p-6 flex flex-col items-center text-center shadow-2xl relative">
+            <button
+              onClick={() => { setShow2FADisable(false); setDisableCode(''); setError(''); }}
+              className="absolute top-4 right-4 w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 hover:text-black flex items-center justify-center transition-colors"
+            >
+              <FiX size={16} />
+            </button>
+            <div className="w-12 h-12 rounded-full bg-rose-50 text-rose-500 flex items-center justify-center mb-3">
+              <FiShield size={24} />
             </div>
-            <h3 className="text-2xl font-bold text-white mb-2 font-['Barlow_Condensed'] uppercase tracking-wide">DISABLE 2-FACTOR AUTH</h3>
-            <p className="text-slate-400 text-[14px] mb-6 max-w-[280px] font-['Barlow_Condensed'] font-semibold leading-normal">
+            <h3 className="text-xl font-bold text-black mb-1 font-['Poppins',sans-serif]">Disable 2-Factor Auth</h3>
+            <p className="text-slate-500 text-[13.5px] mb-4 max-w-[280px] font-['Poppins',sans-serif] leading-normal">
               For security, enter the 6-digit code from your authenticator app to disable 2FA.
             </p>
 
-            <form onSubmit={handleDisable2FA} className="w-full space-y-4">
+            <form onSubmit={handleDisable2FA} className="w-full space-y-3">
               <input
                 type="text"
                 maxLength={6}
                 value={disableCode}
                 onChange={e => setDisableCode(e.target.value.replace(/\D/g, ''))}
                 placeholder="0 0 0 0 0 0"
-                className="w-full bg-black/[0.36] border border-white/[0.08] rounded-xl py-3 text-center text-xl font-bold text-white tracking-[0.6em] pl-[0.6em] focus:outline-none focus:bg-black/[0.36] active:bg-black/[0.36] focus:border-rose-500/50 transition-colors font-['Barlow_Condensed'] placeholder:text-slate-600 [&:-webkit-autofill]:[Webkit-text-fill-color:white] [&:-webkit-autofill]:[Webkit-box-shadow:0_0_0_30px_#151515_inset]"
+                className="w-full bg-slate-100 border border-slate-200 rounded-full py-3 text-center text-xl font-bold text-slate-800 tracking-[0.4em] pl-[0.4em] focus:outline-none focus:ring-2 focus:ring-rose-500/30 transition-all font-['Poppins',sans-serif] placeholder:text-slate-400"
                 autoFocus
               />
-              {error && <p className="text-rose-400 text-sm font-['Barlow_Condensed'] font-semibold">{error}</p>}
+              {error && <p className="text-rose-500 text-sm font-['Poppins',sans-serif] font-medium">{error}</p>}
 
-              <div className="flex gap-3 font-['Barlow_Condensed'] text-[20px] mt-4">
+              <div className="flex gap-3 font-['Poppins',sans-serif] mt-4">
                 <button
                   type="button"
                   onClick={() => { setShow2FADisable(false); setDisableCode(''); setError(''); }}
-                  className="w-1/2 h-[48px] bg-white/[0.11] text-white rounded-[10px] font-bold shadow-[0_4px_0_0_rgba(255,255,255,0.05)] hover:bg-white/[0.15] hover:translate-y-[1px] hover:shadow-[0_3px_0_0_rgba(255,255,255,0.05)] active:translate-y-[4px] active:shadow-none transition-all flex items-center justify-center"
+                  className="w-1/2 h-[46px] bg-slate-100 text-slate-700 hover:bg-slate-200 rounded-full font-semibold transition-colors flex items-center justify-center cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={verifying2FA || disableCode.length !== 6}
-                  className="w-1/2 h-[48px] bg-rose-500 text-white rounded-[10px] font-bold shadow-[0_4px_0_0_#9f1239] hover:bg-rose-500/90 hover:translate-y-[1px] hover:shadow-[0_3px_0_0_#9f1239] active:translate-y-[4px] active:shadow-none transition-all flex items-center justify-center disabled:opacity-50 disabled:active:translate-y-0 disabled:active:shadow-[0_4px_0_0_#9f1239] disabled:hover:translate-y-0 disabled:hover:shadow-[0_4px_0_0_#9f1239]"
+                  className="w-1/2 h-[46px] bg-rose-500 hover:bg-rose-600 text-white rounded-full font-semibold transition-colors flex items-center justify-center disabled:opacity-50 shadow-sm cursor-pointer"
                 >
                   {verifying2FA ? 'Disabling...' : 'Verify & Disable'}
                 </button>
@@ -1200,134 +1395,111 @@ const SettingsModal = ({ isOpen, onClose, mongoUser, token, setMongoUser, logout
 
       {/* Delete Account Confirmation Modal */}
       {deletePhase === 1 && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[999999] flex items-center justify-center p-4">
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[999999] flex items-center justify-center p-4">
           <div
             style={{
-              width: '500px',
-              height: '317px',
-              background: 'rgba(36, 36, 36, 1)',
-              borderRadius: '20px',
-              padding: '16px',
+              width: '460px',
+              maxWidth: '95vw',
+              background: '#FFFFFF',
+              borderRadius: '24px',
+              padding: '28px',
               display: 'flex',
               flexDirection: 'column',
               alignItems: 'center',
-              justifyContent: 'space-between',
+              textAlign: 'center',
               boxSizing: 'border-box',
               position: 'relative'
             }}
-            className="border border-white/[0.08] shadow-card"
+            className="shadow-2xl"
           >
             {/* Top Close Button */}
             <button
               onClick={() => setDeletePhase(0)}
               style={{
-                width: '36px',
-                height: '36px',
-                background: 'rgba(255, 255, 255, 0.11)',
-                borderRadius: '10px',
+                width: '32px',
+                height: '32px',
+                background: '#F1F3F5',
+                borderRadius: '50%',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 border: 'none',
                 cursor: 'pointer',
                 position: 'absolute',
-                top: '16px',
-                right: '16px',
+                top: '18px',
+                right: '18px',
                 padding: 0
               }}
-              className="text-slate-400 hover:text-white hover:bg-white/20 transition-all"
+              className="text-slate-600 hover:text-black transition-colors"
             >
-              <FiX size={20} />
+              <FiX size={16} />
             </button>
 
             {/* Warning Icon */}
-            <div style={{ marginTop: '10px' }}>
-              <img
-                src="/coins/war2.png"
-                alt="Warning"
-                style={{
-                  width: '74px',
-                  height: '74px',
-                  objectFit: 'contain'
-                }}
-              />
+            <div className="w-14 h-14 rounded-full bg-red-100 text-[#E50020] flex items-center justify-center mb-4 mt-2">
+              <FiAlertTriangle size={28} />
             </div>
 
             {/* Title & Description */}
-            <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              <h3
-                style={{
-                  fontFamily: "'Barlow Condensed', sans-serif",
-                  fontWeight: 700,
-                  fontSize: '24px',
-                  lineHeight: '120%',
-                  color: '#fff',
-                  margin: 0,
-                  textTransform: 'uppercase'
-                }}
-              >
-                Delete Account!
-              </h3>
-              <p
-                style={{
-                  fontFamily: "'Barlow Condensed', sans-serif",
-                  fontWeight: 500,
-                  fontSize: '16px',
-                  lineHeight: '130%',
-                  color: 'rgba(136, 136, 136, 1)',
-                  margin: 0,
-                  maxWidth: '400px'
-                }}
-              >
-                Deleting your account is permanent. All associated data will be wiped.
-              </p>
-            </div>
+            <h3
+              style={{
+                fontFamily: '"Poppins", sans-serif',
+                fontWeight: 700,
+                fontSize: '22px',
+                color: '#000000',
+                margin: '0 0 8px 0'
+              }}
+            >
+              Delete Account?
+            </h3>
+            <p
+              style={{
+                fontFamily: '"Poppins", sans-serif',
+                fontWeight: 400,
+                fontSize: '14px',
+                lineHeight: '1.4',
+                color: '#555555',
+                margin: '0 0 24px 0'
+              }}
+            >
+              Deleting your account is permanent. All associated data, earnings, and progress will be wiped immediately.
+            </p>
 
             {/* Action Buttons Row */}
-            <div style={{ display: 'flex', width: '100%', gap: '20px' }}>
+            <div className="flex gap-3 w-full">
               <button
                 onClick={() => setDeletePhase(0)}
                 style={{
-                  height: '48px',
+                  height: '46px',
                   flex: 1,
-                  background: 'rgba(73, 178, 101, 1)',
-                  borderRadius: '10px',
-                  boxShadow: '0px 4px 0px 0px rgba(39, 109, 58, 1)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
+                  background: '#ECEEF2',
+                  borderRadius: '9999px',
                   border: 'none',
                   cursor: 'pointer',
-                  boxSizing: 'border-box',
-                  fontFamily: "'Barlow Condensed', sans-serif",
-                  fontSize: '18px',
-                  fontWeight: 'bold',
-                  color: '#fff'
+                  fontFamily: '"Poppins", sans-serif',
+                  fontSize: '15px',
+                  fontWeight: 600,
+                  color: '#334155'
                 }}
-                className="hover:opacity-95 transition-all active:translate-y-[2px] active:shadow-[0px_2px_0px_0px_rgba(39,109,58,1)]"
+                className="hover:bg-slate-200 transition-colors"
               >
                 Cancel
               </button>
               <button
                 onClick={() => handleDelete()}
                 style={{
-                  height: '48px',
+                  height: '46px',
                   flex: 1,
-                  background: 'rgba(229, 62, 62, 1)',
-                  borderRadius: '10px',
-                  boxShadow: '0px 4px 0px 0px rgba(155, 44, 44, 1)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
+                  background: '#E50020',
+                  borderRadius: '9999px',
                   border: 'none',
                   cursor: 'pointer',
-                  boxSizing: 'border-box',
-                  fontFamily: "'Barlow Condensed', sans-serif",
-                  fontSize: '18px',
-                  fontWeight: 'bold',
-                  color: '#fff'
+                  fontFamily: '"Poppins", sans-serif',
+                  fontSize: '15px',
+                  fontWeight: 600,
+                  color: '#FFFFFF'
                 }}
-                className="hover:opacity-95 transition-all active:translate-y-[2px] active:shadow-[0px_2px_0px_0px_rgba(155,44,44,1)]"
+                className="hover:bg-[#CC001C] transition-colors shadow-sm"
               >
                 Delete Account
               </button>
@@ -1337,436 +1509,502 @@ const SettingsModal = ({ isOpen, onClose, mongoUser, token, setMongoUser, logout
       )}
 
       {/* Main Settings Modal */}
-      <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[99999] flex items-center justify-center p-4">
+      <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[99999] flex items-center justify-center p-4">
         <motion.div
           initial={{ scale: 0.95, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
+          exit={{ scale: 0.95, opacity: 0 }}
+          transition={{ duration: 0.2 }}
           style={{
-            width: '700px',
-            height: '720px',
-            background: 'rgba(36, 36, 36, 1)',
-            borderRadius: '20px',
-            padding: '16px',
+            width: '626px',
+            maxWidth: '100%',
+            background: '#FFFFFF',
+            borderRadius: '28px',
+            padding: '10px',
             display: 'flex',
             flexDirection: 'column',
-            gap: '20px',
-            boxSizing: 'border-box'
+            gap: '16px',
+            boxSizing: 'border-box',
+            fontFamily: '"Poppins", sans-serif'
           }}
-          className="relative border border-white/[0.08] shadow-card max-w-full max-h-full overflow-hidden"
+          className="relative shadow-2xl overflow-y-auto max-h-[95vh] [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none']"
         >
-          {/* Top header area */}
+          {/* Top Header Card (width: 606px, height: 143px, border-radius: 16px, background: rgba(248, 245, 239, 1)) */}
           <div
             style={{
-              width: '668px',
-              height: '63px',
+              width: '606px',
+              maxWidth: '100%',
+              height: '143px',
+              background: 'rgba(248, 245, 239, 1)',
+              borderRadius: '16px',
+              padding: '24px 28px',
+              position: 'relative',
+              boxSizing: 'border-box',
               display: 'flex',
-              alignItems: 'flex-start',
+              flexDirection: 'column',
               justifyContent: 'space-between',
-              gap: '16px',
-              boxSizing: 'border-box'
+              opacity: 1,
+              transform: 'rotate(0deg)'
             }}
-            className="flex-shrink-0"
+            className="shrink-0"
           >
-            <div
-              style={{
-                width: '616px',
-                height: '63px',
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '6px'
-              }}
-            >
-              <h2
-                style={{
-                  width: '616px',
-                  height: '34px',
-                  fontFamily: "'Barlow Condensed', sans-serif",
-                  fontWeight: 700,
-                  fontSize: '28px',
-                  lineHeight: '120%',
-                  color: '#fff',
-                  margin: 0,
-                  textTransform: 'uppercase'
-                }}
-              >
-                Account Settings
-              </h2>
-              <p
-                style={{
-                  width: '616px',
-                  height: '23px',
-                  fontFamily: "'Barlow Condensed', sans-serif",
-                  fontWeight: 500,
-                  fontSize: '18px',
-                  lineHeight: '130%',
-                  color: 'rgba(136, 136, 136, 1)',
-                  margin: 0
-                }}
-              >
-                Manage your identity, avatars, and account security
-              </p>
-            </div>
+            {/* Close Button (Circle with X) */}
             <button
               onClick={onClose}
               style={{
-                width: '36px',
-                height: '36px',
-                background: 'rgba(255, 255, 255, 0.11)',
-                borderRadius: '10px',
+                width: '32px',
+                height: '32px',
+                background: '#000000',
+                borderRadius: '50%',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 border: 'none',
                 cursor: 'pointer',
+                position: 'absolute',
+                top: '20px',
+                right: '20px',
                 padding: 0
               }}
-              className="text-slate-400 hover:text-white hover:bg-white/20 transition-all shrink-0"
+              className="text-white hover:opacity-80 transition-opacity shrink-0"
             >
-              <FiX size={20} />
+              <FiX size={16} strokeWidth={2.5} />
             </button>
-          </div>
 
-          {/* Main content body with scrollable fallback */}
-          <div
-            style={{
-              scrollBehavior: 'smooth',
-              WebkitOverflowScrolling: 'touch'
-            }}
-            className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden hide-scrollbar flex flex-col gap-[20px]"
-          >
-            {/* Display Name Input */}
+            {/* Whole unit containing heading, below text, and bar (width: 422px, height: 76px, gap: 16px) */}
             <div
               style={{
-                width: '668px',
-                height: '80px',
+                width: '422px',
+                maxWidth: '100%',
+                height: '76px',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '16px',
+                opacity: 1,
+                transform: 'rotate(0deg)'
+              }}
+            >
+              {/* Heading and text as one whole (width: 422px, height: 56px, gap: 20px) */}
+              <div
+                style={{
+                  width: '422px',
+                  maxWidth: '100%',
+                  height: '56px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '20px',
+                  opacity: 1,
+                  transform: 'rotate(0deg)'
+                }}
+              >
+                <h2
+                  style={{
+                    width: '284px',
+                    maxWidth: '100%',
+                    height: '23px',
+                    fontFamily: '"Bricolage Grotesque", sans-serif',
+                    fontWeight: 700,
+                    fontSize: '35px',
+                    lineHeight: '60px',
+                    letterSpacing: '-0.02em',
+                    color: 'rgba(14, 15, 12, 1)',
+                    margin: 0,
+                    display: 'flex',
+                    alignItems: 'center',
+                    opacity: 1,
+                    transform: 'rotate(0deg)'
+                  }}
+                >
+                  Account Settings
+                </h2>
+                <p
+                  style={{
+                    width: '422px',
+                    maxWidth: '100%',
+                    height: '11px',
+                    fontFamily: '"Poppins", sans-serif',
+                    fontWeight: 500,
+                    fontSize: '16px',
+                    lineHeight: '26px',
+                    letterSpacing: '0%',
+                    color: 'rgba(14, 15, 12, 1)',
+                    margin: 0,
+                    display: 'flex',
+                    alignItems: 'center',
+                    opacity: 1,
+                    transform: 'rotate(0deg)'
+                  }}
+                >
+                  Manage your identity, avatars, and account security
+                </p>
+              </div>
+
+              {/* Below bar (width: 74px, height: 4px, border-radius: 20px, background: rgba(85, 88, 211, 1)) */}
+              <div
+                style={{
+                  width: '74px',
+                  height: '4px',
+                  borderRadius: '20px',
+                  background: 'rgba(85, 88, 211, 1)',
+                  opacity: 1,
+                  transform: 'rotate(0deg)'
+                }}
+              />
+            </div>
+          </div>
+
+          {/* Display Name Input */}
+          <div
+            style={{
+              width: '607px',
+              maxWidth: '100%',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '10px',
+              boxSizing: 'border-box'
+            }}
+            className="shrink-0"
+          >
+            <label
+              style={{
+                width: '112px',
+                maxWidth: '100%',
+                height: '11px',
+                fontFamily: '"Poppins", sans-serif',
+                fontWeight: 500,
+                fontSize: '16px',
+                lineHeight: '26px',
+                letterSpacing: '0%',
+                color: 'rgba(14, 15, 12, 1)',
+                margin: 0,
+                display: 'flex',
+                alignItems: 'center',
+                opacity: 1,
+                transform: 'rotate(0deg)'
+              }}
+            >
+              Display name
+            </label>
+            <input
+              type="text"
+              value={displayName}
+              onChange={e => setDisplayName(e.target.value)}
+              style={{
+                width: '607px',
+                maxWidth: '100%',
+                height: '58px',
+                background: 'rgba(239, 239, 239, 1)',
+                borderRadius: '50px',
+                paddingLeft: '24px',
+                paddingRight: '24px',
+                color: '#1E293B',
+                border: 'none',
+                outline: 'none',
+                boxSizing: 'border-box',
+                fontFamily: '"Poppins", sans-serif',
+                fontSize: '16px',
+                fontWeight: 500,
+                opacity: 1,
+                transform: 'rotate(0deg)'
+              }}
+              className="focus:ring-2 focus:ring-[#5356FB]/20 transition-all placeholder:text-[#94A3B8]"
+              placeholder="FuturisticBug1"
+            />
+          </div>
+
+          {/* Two Toggle Cards (width: 606px, height: 198px, gap: 10px) */}
+          <div
+            style={{
+              width: '606px',
+              maxWidth: '100%',
+              height: '198px',
+              display: 'flex',
+              gap: '10px',
+              opacity: 1,
+              transform: 'rotate(0deg)'
+            }}
+            className="shrink-0"
+          >
+            {/* Private Profile Card */}
+            <div
+              style={{
+                flex: 1,
+                maxWidth: '100%',
+                height: '198px',
+                background: 'rgba(248, 245, 239, 1)',
+                borderRadius: '30px',
+                paddingTop: '26px',
+                paddingRight: '16px',
+                paddingBottom: '26px',
+                paddingLeft: '17px',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'space-between',
+                boxSizing: 'border-box',
+                opacity: 1,
+                transform: 'rotate(0deg)'
+              }}
+            >
+              <div className="flex items-center justify-between gap-2">
+                <h3
+                  style={{
+                    fontFamily: '"Bricolage Grotesque", sans-serif',
+                    fontWeight: 700,
+                    fontSize: '20px',
+                    lineHeight: '24px',
+                    letterSpacing: '-0.02em',
+                    color: 'rgba(14, 15, 12, 1)',
+                    margin: 0,
+                    opacity: 1,
+                    transform: 'rotate(0deg)'
+                  }}
+                >
+                  Private Profile
+                </h3>
+                <button
+                  type="button"
+                  onClick={() => setIsPrivate(!isPrivate)}
+                  style={{
+                    width: '48px',
+                    height: '28px',
+                    borderRadius: '9999px',
+                    backgroundColor: isPrivate ? '#00A843' : '#D1D5DB',
+                    display: 'flex',
+                    alignItems: 'center',
+                    padding: '0 3px',
+                    border: 'none',
+                    cursor: 'pointer',
+                    transition: 'background-color 0.2s',
+                    flexShrink: 0
+                  }}
+                >
+                  <span
+                    style={{
+                      width: '22px',
+                      height: '22px',
+                      borderRadius: '50%',
+                      backgroundColor: '#FFFFFF',
+                      transform: isPrivate ? 'translateX(20px)' : 'translateX(0px)',
+                      transition: 'transform 0.2s'
+                    }}
+                    className="inline-block shadow-sm"
+                  />
+                </button>
+              </div>
+              <p
+                style={{
+                  width: '100%',
+                  fontFamily: '"Poppins", sans-serif',
+                  fontWeight: 500,
+                  fontSize: '14.5px',
+                  lineHeight: '22px',
+                  letterSpacing: '0%',
+                  color: 'rgba(14, 15, 12, 1)',
+                  margin: 0,
+                  opacity: 1,
+                  transform: 'rotate(0deg)'
+                }}
+              >
+                Hide specific offer details (like survey names) from other users on your public profile and the live earning feed.
+              </p>
+            </div>
+
+            {/* 2FA Card */}
+            <div
+              style={{
+                flex: 1,
+                maxWidth: '100%',
+                height: '198px',
+                background: 'rgba(248, 245, 239, 1)',
+                borderRadius: '30px',
+                paddingTop: '26px',
+                paddingRight: '16px',
+                paddingBottom: '26px',
+                paddingLeft: '17px',
                 display: 'flex',
                 flexDirection: 'column',
                 gap: '12px',
-                boxSizing: 'border-box'
+                boxSizing: 'border-box',
+                opacity: 1,
+                transform: 'rotate(0deg)'
               }}
-              className="flex-shrink-0"
             >
-              <label
+              <div className="flex items-start justify-between gap-2">
+                <h3
+                  style={{
+                    fontFamily: '"Bricolage Grotesque", sans-serif',
+                    fontWeight: 700,
+                    fontSize: '20px',
+                    lineHeight: '23px',
+                    letterSpacing: '-0.02em',
+                    color: 'rgba(14, 15, 12, 1)',
+                    margin: 0,
+                    opacity: 1,
+                    transform: 'rotate(0deg)'
+                  }}
+                >
+                  2 Factor<br />Authorization
+                </h3>
+                <button
+                  type="button"
+                  onClick={handle2FAToggle}
+                  style={{
+                    width: '48px',
+                    height: '28px',
+                    borderRadius: '9999px',
+                    backgroundColor: is2FAEnabled ? '#00A843' : '#D1D5DB',
+                    display: 'flex',
+                    alignItems: 'center',
+                    padding: '0 3px',
+                    border: 'none',
+                    cursor: 'pointer',
+                    transition: 'background-color 0.2s',
+                    flexShrink: 0
+                  }}
+                >
+                  <span
+                    style={{
+                      width: '22px',
+                      height: '22px',
+                      borderRadius: '50%',
+                      backgroundColor: '#FFFFFF',
+                      transform: is2FAEnabled ? 'translateX(20px)' : 'translateX(0px)',
+                      transition: 'transform 0.2s'
+                    }}
+                    className="inline-block shadow-sm"
+                  />
+                </button>
+              </div>
+              <p
                 style={{
-                  width: 'auto',
-                  height: '20px',
-                  fontFamily: "'Barlow Condensed', sans-serif",
+                  width: '100%',
+                  fontFamily: '"Poppins", sans-serif',
                   fontWeight: 500,
-                  fontSize: '16px',
-                  lineHeight: '20px',
-                  letterSpacing: '-1%',
-                  color: 'rgba(255, 255, 255, 1)',
+                  fontSize: '14.5px',
+                  lineHeight: '22px',
+                  letterSpacing: '0%',
+                  color: 'rgba(14, 15, 12, 1)',
                   margin: 0,
-                  display: 'inline-flex',
-                  alignItems: 'center'
+                  opacity: 1,
+                  transform: 'rotate(0deg)'
                 }}
               >
-                Display Name
-              </label>
-              <input
-                type="text"
-                value={displayName}
-                onChange={e => setDisplayName(e.target.value)}
+                Make your account more secure by activating 2FA.
+              </p>
+            </div>
+          </div>
+
+          {/* Local Success / Error Messages */}
+          {error && !show2FASetup && !show2FADisable && (
+            <div className="p-3 rounded-2xl text-sm font-medium bg-rose-50 text-rose-600 border border-rose-200 text-center">
+              {error}
+            </div>
+          )}
+          {success && (
+            <div className="p-3 rounded-2xl text-sm font-medium bg-emerald-50 text-emerald-700 border border-emerald-200 text-center">
+              {success}
+            </div>
+          )}
+
+          {/* Save Profile Button */}
+          <button
+            onClick={handleSave}
+            disabled={saving}
+            style={{
+              width: '606px',
+              maxWidth: '100%',
+              height: '52px',
+              background: '#202C44',
+              borderRadius: '9999px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '10px',
+              border: 'none',
+              cursor: 'pointer',
+              boxSizing: 'border-box',
+              fontFamily: '"Poppins", sans-serif',
+              fontWeight: 600,
+              fontSize: '16px',
+              color: '#FFFFFF'
+            }}
+            className="hover:bg-[#182338] disabled:opacity-50 transition-all shrink-0 active:scale-[0.99] shadow-sm cursor-pointer"
+          >
+            {saving ? <FiLoader className="animate-spin text-lg" /> : null}
+            <span>Save Profile</span>
+          </button>
+
+          {/* Danger Zone Card (width: 606px, height: 118px, border-radius: 20px, background: rgba(255, 234, 235, 1)) */}
+          <div
+            style={{
+              width: '606px',
+              maxWidth: '100%',
+              height: '118px',
+              background: 'rgba(255, 234, 235, 1)',
+              borderRadius: '20px',
+              paddingTop: '26px',
+              paddingRight: '14px',
+              paddingBottom: '25px',
+              paddingLeft: '19px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              gap: '10px',
+              boxSizing: 'border-box',
+              opacity: 1,
+              transform: 'rotate(0deg)'
+            }}
+            className="shrink-0"
+          >
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', flex: 1 }}>
+              <h3
                 style={{
-                  width: '668px',
-                  height: '56px',
-                  background: 'rgba(255, 255, 255, 0.08)',
-                  borderRadius: '10px',
-                  padding: '16px 20px',
-                  color: '#fff',
-                  border: '1px solid rgba(255, 255, 255, 0.05)',
-                  boxSizing: 'border-box',
-                  fontFamily: "'Barlow Condensed', sans-serif",
+                  fontFamily: '"Poppins", sans-serif',
+                  fontWeight: 700,
                   fontSize: '18px',
-                  fontWeight: 600
+                  color: '#000000',
+                  margin: 0
                 }}
-                className="focus:outline-none focus:border-[#49b265]/50 focus:ring-1 focus:ring-[#49b265]/20 transition-all placeholder-slate-600"
-                placeholder="Username"
-              />
-            </div>
-
-            {/* Private Profile Toggle Card */}
-            <div
-              style={{
-                width: '668px',
-                height: '112px',
-                background: 'rgba(0, 0, 0, 0.36)',
-                backdropFilter: 'blur(44px)',
-                borderRadius: '20px',
-                padding: '16px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                gap: '16px',
-                boxSizing: 'border-box'
-              }}
-              className="border border-white/[0.05]"
-            >
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', flex: 1 }}>
-                <div
-                  style={{
-                    height: '24px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '5px',
-                    boxSizing: 'border-box'
-                  }}
-                >
-                  <img
-                    src="/coins/proprivte.png"
-                    alt="Private Profile"
-                    style={{
-                      width: '24px',
-                      height: '24px',
-                      objectFit: 'contain'
-                    }}
-                    className="shrink-0"
-                  />
-                  <h3
-                    style={{
-                      height: '24px',
-                      fontFamily: "'Barlow Condensed', sans-serif",
-                      fontWeight: 600,
-                      fontSize: '21px',
-                      lineHeight: '24px',
-                      color: '#fff',
-                      margin: 0
-                    }}
-                  >
-                    Private Profile
-                  </h3>
-                </div>
-                <p
-                  style={{
-                    height: '46px',
-                    fontFamily: "'Barlow Condensed', sans-serif",
-                    fontWeight: 500,
-                    fontSize: '18px',
-                    lineHeight: '130%',
-                    color: 'rgba(136, 136, 136, 1)',
-                    margin: 0
-                  }}
-                >
-                  Hide specific offer details (like survey names) from other users on your public profile and the live earning feed.
-                </p>
-              </div>
-              <button
-                onClick={() => setIsPrivate(!isPrivate)}
-                style={{
-                  width: '46px',
-                  height: '26px',
-                  boxSizing: 'border-box'
-                }}
-                className={`relative inline-flex shrink-0 items-center rounded-full transition-colors ${isPrivate ? 'bg-[#49b265]' : 'bg-slate-700'}`}
               >
-                <span className={`inline-block h-5 w-5 transform rounded-full bg-white transition-transform ${isPrivate ? 'translate-x-[22px]' : 'translate-x-1'}`} />
-              </button>
-            </div>
-
-            {/* 2FA Toggle Card */}
-            <div
-              style={{
-                width: '668px',
-                height: '112px',
-                background: 'rgba(0, 0, 0, 0.36)',
-                backdropFilter: 'blur(44px)',
-                borderRadius: '20px',
-                padding: '16px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                gap: '16px',
-                boxSizing: 'border-box'
-              }}
-              className="border border-white/[0.05]"
-            >
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', flex: 1 }}>
-                <div
-                  style={{
-                    height: '24px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '5px',
-                    boxSizing: 'border-box'
-                  }}
-                >
-                  <img
-                    src="/coins/2fa.png"
-                    alt="2FA"
-                    style={{
-                      width: '24px',
-                      height: '24px',
-                      objectFit: 'contain'
-                    }}
-                    className="shrink-0"
-                  />
-                  <h3
-                    style={{
-                      height: '24px',
-                      fontFamily: "'Barlow Condensed', sans-serif",
-                      fontWeight: 600,
-                      fontSize: '21px',
-                      lineHeight: '24px',
-                      color: '#fff',
-                      margin: 0
-                    }}
-                  >
-                    2 Factor Authorization
-                  </h3>
-                </div>
-                <p
-                  style={{
-                    height: '46px',
-                    fontFamily: "'Barlow Condensed', sans-serif",
-                    fontWeight: 500,
-                    fontSize: '18px',
-                    lineHeight: '130%',
-                    color: 'rgba(136, 136, 136, 1)',
-                    margin: 0
-                  }}
-                >
-                  Make your account more secure by activating 2FA.
-                </p>
-              </div>
-              <button
-                onClick={handle2FAToggle}
+                Danger Zone
+              </h3>
+              <p
                 style={{
-                  width: '46px',
-                  height: '26px',
-                  boxSizing: 'border-box'
+                  fontFamily: '"Poppins", sans-serif',
+                  fontWeight: 400,
+                  fontSize: '13.5px',
+                  lineHeight: '1.4',
+                  color: '#333333',
+                  margin: 0
                 }}
-                className={`relative inline-flex shrink-0 items-center rounded-full transition-colors ${is2FAEnabled ? 'bg-[#49b265]' : 'bg-slate-700'}`}
               >
-                <span className={`inline-block h-5 w-5 transform rounded-full bg-white transition-transform ${is2FAEnabled ? 'translate-x-[22px]' : 'translate-x-1'}`} />
-              </button>
+                Deleting your account is permanent. All associated data will be wiped.
+              </p>
             </div>
 
-            {/* Local Success / Error Messages */}
-            {error && !show2FASetup && !show2FADisable && (
-              <div className="p-4 rounded-xl text-sm font-semibold bg-rose-500/10 text-rose-400 border border-rose-500/20 font-['Barlow_Condensed']">
-                {error}
-              </div>
-            )}
-            {success && (
-              <div className="p-4 rounded-xl text-sm font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-['Barlow_Condensed']">
-                {success}
-              </div>
-            )}
-
-            {/* Save Profile Button */}
             <button
-              onClick={handleSave}
-              disabled={saving}
+              onClick={() => setDeletePhase(1)}
               style={{
-                width: '668px',
-                height: '48px',
-                background: 'rgba(73, 178, 101, 1)',
-                borderRadius: '10px',
-                padding: '10px 30px',
-                boxShadow: '0px 4px 0px 0px rgba(39, 109, 58, 1)',
+                height: '46px',
+                background: '#E50020',
+                borderRadius: '9999px',
+                padding: '0 24px',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                gap: '10px',
                 border: 'none',
                 cursor: 'pointer',
                 boxSizing: 'border-box',
-                fontFamily: "'Barlow Condensed', sans-serif"
+                fontFamily: '"Poppins", sans-serif',
+                fontWeight: 600,
+                fontSize: '15px',
+                color: '#FFFFFF',
+                whiteSpace: 'nowrap'
               }}
-              className="hover:opacity-95 disabled:opacity-50 text-white font-bold text-xl transition-all shrink-0 active:translate-y-[2px] active:shadow-[0px_2px_0px_0px_rgba(39,109,58,1)]"
+              className="hover:bg-[#CC001C] transition-all shrink-0 active:scale-[0.98] shadow-sm cursor-pointer"
             >
-              {saving ? <FiLoader className="animate-spin text-xl" /> : null}
-              <span>Save Profile</span>
+              Delete Account
             </button>
-
-            {/* Danger Zone */}
-            <div className="border-t border-white/[0.08] pt-4">
-              <div
-                style={{
-                  width: '668px',
-                  height: '89px',
-                  background: 'rgba(0, 0, 0, 0.36)',
-                  backdropFilter: 'blur(44px)',
-                  borderRadius: '20px',
-                  padding: '16px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  gap: '16px',
-                  boxSizing: 'border-box'
-                }}
-                className="border border-white/[0.05]"
-              >
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', flex: 1 }}>
-                  <div
-                    style={{
-                      height: '24px',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '5px',
-                      boxSizing: 'border-box'
-                    }}
-                  >
-                    <img
-                      src="/coins/war2.png"
-                      alt="Danger Zone"
-                      style={{
-                        width: '24px',
-                        height: '24px',
-                        objectFit: 'contain'
-                      }}
-                      className="shrink-0"
-                    />
-                    <h3
-                      style={{
-                        height: '24px',
-                        fontFamily: "'Barlow Condensed', sans-serif",
-                        fontWeight: 600,
-                        fontSize: '21px',
-                        lineHeight: '24px',
-                        color: '#fff',
-                        margin: 0
-                      }}
-                    >
-                      Danger Zone
-                    </h3>
-                  </div>
-                  <p
-                    style={{
-                      fontFamily: "'Barlow Condensed', sans-serif",
-                      fontWeight: 500,
-                      fontSize: '15px',
-                      lineHeight: '130%',
-                      color: 'rgba(136, 136, 136, 1)',
-                      margin: 0
-                    }}
-                  >
-                    Deleting your account is permanent. All associated data will be wiped.
-                  </p>
-                </div>
-
-                <button
-                  onClick={() => setDeletePhase(1)}
-                  style={{
-                    height: '40px',
-                    background: 'rgba(229, 62, 62, 1)',
-                    borderRadius: '10px',
-                    padding: '8px 20px',
-                    boxShadow: '0px 4px 0px 0px rgba(155, 44, 44, 1)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    border: 'none',
-                    cursor: 'pointer',
-                    boxSizing: 'border-box',
-                    fontFamily: "'Barlow Condensed', sans-serif"
-                  }}
-                  className="hover:opacity-95 text-white font-bold text-lg transition-all shrink-0 active:translate-y-[2px] active:shadow-[0px_2px_0px_0px_rgba(155,44,44,1)]"
-                >
-                  Delete Account
-                </button>
-              </div>
-            </div>
           </div>
         </motion.div>
       </div>
