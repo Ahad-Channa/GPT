@@ -996,6 +996,38 @@ const SettingsModal = ({ isOpen, onClose, mongoUser, token, setMongoUser, logout
     }
   };
 
+  const [disableDigits, setDisableDigits] = useState(['', '', '', '', '', '']);
+
+  const handleDisableDigitChange = (index, val) => {
+    const clean = val.replace(/\D/g, '');
+    const updated = [...disableDigits];
+    if (clean.length > 1) {
+      const pasted = clean.slice(0, 6).split('');
+      pasted.forEach((d, i) => {
+        if (i < 6) updated[i] = d;
+      });
+      setDisableDigits(updated);
+      setDisableCode(updated.join(''));
+      const nextFocus = Math.min(pasted.length, 5);
+      document.getElementById(`disable-digit-${nextFocus}`)?.focus();
+      return;
+    }
+    updated[index] = clean ? clean[clean.length - 1] : '';
+    setDisableDigits(updated);
+    setDisableCode(updated.join(''));
+    if (clean && index < 5) {
+      document.getElementById(`disable-digit-${index + 1}`)?.focus();
+    }
+  };
+
+  const handleDisableDigitKeyDown = (index, e) => {
+    if (e.key === 'Backspace') {
+      if (!disableDigits[index] && index > 0) {
+        document.getElementById(`disable-digit-${index - 1}`)?.focus();
+      }
+    }
+  };
+
   useEffect(() => {
     if (isOpen) {
       setDisplayName(mongoUser?.displayName || '');
@@ -1060,6 +1092,7 @@ const SettingsModal = ({ isOpen, onClose, mongoUser, token, setMongoUser, logout
       }
     } else {
       // Disable flow
+      setDisableDigits(['', '', '', '', '', '']);
       setDisableCode('');
       setShow2FADisable(true);
     }
@@ -1093,6 +1126,7 @@ const SettingsModal = ({ isOpen, onClose, mongoUser, token, setMongoUser, logout
     if (res.success) {
       setIs2FAEnabled(false);
       setShow2FADisable(false);
+      setDisableDigits(['', '', '', '', '', '']);
       setDisableCode('');
       toast.success('2FA disabled successfully.');
     } else {
@@ -1309,13 +1343,15 @@ const SettingsModal = ({ isOpen, onClose, mongoUser, token, setMongoUser, logout
                     background: 'transparent',
                     color: '#202C44',
                     fontFamily: '"Poppins", sans-serif',
-                    fontWeight: 600,
+                    fontWeight: 500,
                     fontSize: '16px',
+                    lineHeight: '28px',
+                    letterSpacing: '0%',
                     cursor: 'pointer'
                   }}
                   className="hover:bg-slate-50 transition-all flex items-center justify-center"
                 >
-                  Cancle
+                  <span>Cancle</span>
                 </button>
                 <button
                   type="submit"
@@ -1328,13 +1364,15 @@ const SettingsModal = ({ isOpen, onClose, mongoUser, token, setMongoUser, logout
                     background: '#202C44',
                     color: '#FFFFFF',
                     fontFamily: '"Poppins", sans-serif',
-                    fontWeight: 600,
+                    fontWeight: 500,
                     fontSize: '16px',
+                    lineHeight: '28px',
+                    letterSpacing: '0%',
                     cursor: 'pointer'
                   }}
                   className="hover:bg-[#182338] disabled:opacity-50 transition-all flex items-center justify-center shadow-sm"
                 >
-                  {verifying2FA ? 'Enabling...' : 'Verify & Enable'}
+                  <span>{verifying2FA ? 'Enabling...' : 'Verify & Enable'}</span>
                 </button>
               </div>
             </form>
@@ -1342,50 +1380,194 @@ const SettingsModal = ({ isOpen, onClose, mongoUser, token, setMongoUser, logout
         </div>
       )}
 
-      {/* 2FA Disable Inner Modal */}
+      {/* 2FA Disable Inner Modal (width: 626px, height: 388px) */}
       {show2FADisable && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[999999] flex items-center justify-center p-4 overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none']">
-          <div className="bg-white rounded-[24px] w-full max-w-md p-6 flex flex-col items-center text-center shadow-2xl relative">
-            <button
-              onClick={() => { setShow2FADisable(false); setDisableCode(''); setError(''); }}
-              className="absolute top-4 right-4 w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 hover:text-black flex items-center justify-center transition-colors"
+          <div
+            style={{
+              width: '626px',
+              maxWidth: '100%',
+              minHeight: '388px',
+              background: '#FFFFFF',
+              borderRadius: '28px',
+              padding: '10px',
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'space-between',
+              gap: '16px',
+              boxSizing: 'border-box',
+              fontFamily: '"Poppins", sans-serif',
+              opacity: 1,
+              transform: 'rotate(0deg)'
+            }}
+            className="relative shadow-2xl overflow-y-auto max-h-[95vh] [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none']"
+          >
+            {/* Top Header Card (width: 606px) */}
+            <div
+              style={{
+                width: '606px',
+                maxWidth: '100%',
+                background: 'rgba(248, 245, 239, 1)',
+                borderRadius: '16px',
+                padding: '24px 28px',
+                position: 'relative',
+                boxSizing: 'border-box',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '16px',
+                opacity: 1,
+                transform: 'rotate(0deg)'
+              }}
+              className="shrink-0"
             >
-              <FiX size={16} />
-            </button>
-            <div className="w-12 h-12 rounded-full bg-rose-50 text-rose-500 flex items-center justify-center mb-3">
-              <FiShield size={24} />
-            </div>
-            <h3 className="text-xl font-bold text-black mb-1 font-['Poppins',sans-serif]">Disable 2-Factor Auth</h3>
-            <p className="text-slate-500 text-[13.5px] mb-4 max-w-[280px] font-['Poppins',sans-serif] leading-normal">
-              For security, enter the 6-digit code from your authenticator app to disable 2FA.
-            </p>
+              {/* Close Button (Circle with X) */}
+              <button
+                onClick={() => { setShow2FADisable(false); setDisableDigits(['', '', '', '', '', '']); setDisableCode(''); setError(''); }}
+                style={{
+                  width: '32px',
+                  height: '32px',
+                  background: '#000000',
+                  borderRadius: '50%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  border: 'none',
+                  cursor: 'pointer',
+                  position: 'absolute',
+                  top: '20px',
+                  right: '20px',
+                  padding: 0
+                }}
+                className="text-white hover:opacity-80 transition-opacity shrink-0"
+              >
+                <FiX size={16} strokeWidth={2.5} />
+              </button>
 
-            <form onSubmit={handleDisable2FA} className="w-full space-y-3">
-              <input
-                type="text"
-                maxLength={6}
-                value={disableCode}
-                onChange={e => setDisableCode(e.target.value.replace(/\D/g, ''))}
-                placeholder="0 0 0 0 0 0"
-                className="w-full bg-slate-100 border border-slate-200 rounded-full py-3 text-center text-xl font-bold text-slate-800 tracking-[0.4em] pl-[0.4em] focus:outline-none focus:ring-2 focus:ring-rose-500/30 transition-all font-['Poppins',sans-serif] placeholder:text-slate-400"
-                autoFocus
+              <div
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '8px',
+                  paddingRight: '36px',
+                  opacity: 1,
+                  transform: 'rotate(0deg)'
+                }}
+              >
+                <h2
+                  style={{
+                    fontFamily: '"Bricolage Grotesque", sans-serif',
+                    fontWeight: 700,
+                    fontSize: '32px',
+                    lineHeight: '1.2',
+                    letterSpacing: '-0.02em',
+                    color: 'rgba(14, 15, 12, 1)',
+                    margin: 0
+                  }}
+                >
+                  Disable 2-factor auth
+                </h2>
+                <p
+                  style={{
+                    fontFamily: '"Poppins", sans-serif',
+                    fontWeight: 500,
+                    fontSize: '15px',
+                    lineHeight: '24px',
+                    color: 'rgba(14, 15, 12, 1)',
+                    margin: 0
+                  }}
+                >
+                  For security, enter the 6-digit code from your authenticator app to disable 2FA.
+                </p>
+              </div>
+
+              {/* Accent bar */}
+              <div
+                style={{
+                  width: '74px',
+                  height: '4px',
+                  borderRadius: '20px',
+                  background: 'rgba(85, 88, 211, 1)'
+                }}
               />
+            </div>
+
+            {/* 6 Digit Inputs Form */}
+            <form onSubmit={handleDisable2FA} className="w-full flex flex-col items-center gap-4 shrink-0 pb-2">
+              {/* 6 individual OTP input boxes */}
+              <div className="flex justify-center gap-2.5 sm:gap-3 my-2">
+                {disableDigits.map((digit, idx) => (
+                  <input
+                    key={idx}
+                    id={`disable-digit-${idx}`}
+                    type="text"
+                    inputMode="numeric"
+                    maxLength={1}
+                    value={digit}
+                    onChange={e => handleDisableDigitChange(idx, e.target.value)}
+                    onKeyDown={e => handleDisableDigitKeyDown(idx, e)}
+                    style={{
+                      width: '48px',
+                      height: '48px',
+                      borderRadius: '14px',
+                      background: 'rgba(239, 239, 239, 1)',
+                      border: 'none',
+                      outline: 'none',
+                      textAlign: 'center',
+                      fontSize: '22px',
+                      fontWeight: 700,
+                      color: 'rgba(14, 15, 12, 1)',
+                      fontFamily: '"Poppins", sans-serif'
+                    }}
+                    className="focus:ring-2 focus:ring-[#5356FB]/30 focus:bg-white transition-all"
+                  />
+                ))}
+              </div>
+
               {error && <p className="text-rose-500 text-sm font-['Poppins',sans-serif] font-medium">{error}</p>}
 
-              <div className="flex gap-3 font-['Poppins',sans-serif] mt-4">
+              {/* Action Buttons Row */}
+              <div className="flex gap-3 w-full px-2 mt-2">
                 <button
                   type="button"
-                  onClick={() => { setShow2FADisable(false); setDisableCode(''); setError(''); }}
-                  className="w-1/2 h-[46px] bg-slate-100 text-slate-700 hover:bg-slate-200 rounded-full font-semibold transition-colors flex items-center justify-center cursor-pointer"
+                  onClick={() => { setShow2FADisable(false); setDisableDigits(['', '', '', '', '', '']); setDisableCode(''); setError(''); }}
+                  style={{
+                    flex: 1,
+                    height: '52px',
+                    borderRadius: '9999px',
+                    border: '1.5px solid #202C44',
+                    background: 'transparent',
+                    color: '#202C44',
+                    fontFamily: '"Poppins", sans-serif',
+                    fontWeight: 500,
+                    fontSize: '16px',
+                    lineHeight: '28px',
+                    letterSpacing: '0%',
+                    cursor: 'pointer'
+                  }}
+                  className="hover:bg-slate-50 transition-all flex items-center justify-center"
                 >
-                  Cancel
+                  <span>Cancle</span>
                 </button>
                 <button
                   type="submit"
                   disabled={verifying2FA || disableCode.length !== 6}
-                  className="w-1/2 h-[46px] bg-rose-500 hover:bg-rose-600 text-white rounded-full font-semibold transition-colors flex items-center justify-center disabled:opacity-50 shadow-sm cursor-pointer"
+                  style={{
+                    flex: 1,
+                    height: '52px',
+                    borderRadius: '9999px',
+                    border: 'none',
+                    background: '#202C44',
+                    color: '#FFFFFF',
+                    fontFamily: '"Poppins", sans-serif',
+                    fontWeight: 500,
+                    fontSize: '16px',
+                    lineHeight: '28px',
+                    letterSpacing: '0%',
+                    cursor: 'pointer'
+                  }}
+                  className="hover:bg-[#182338] disabled:opacity-50 transition-all flex items-center justify-center shadow-sm"
                 >
-                  {verifying2FA ? 'Disabling...' : 'Verify & Disable'}
+                  <span>{verifying2FA ? 'Disabling...' : 'Verify & Disable'}</span>
                 </button>
               </div>
             </form>
@@ -1477,13 +1659,18 @@ const SettingsModal = ({ isOpen, onClose, mongoUser, token, setMongoUser, logout
                   border: 'none',
                   cursor: 'pointer',
                   fontFamily: '"Poppins", sans-serif',
-                  fontSize: '15px',
-                  fontWeight: 600,
-                  color: '#334155'
+                  fontSize: '16px',
+                  lineHeight: '28px',
+                  letterSpacing: '0%',
+                  fontWeight: 500,
+                  color: '#334155',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
                 }}
                 className="hover:bg-slate-200 transition-colors"
               >
-                Cancel
+                <span>Cancel</span>
               </button>
               <button
                 onClick={() => handleDelete()}
@@ -1495,13 +1682,18 @@ const SettingsModal = ({ isOpen, onClose, mongoUser, token, setMongoUser, logout
                   border: 'none',
                   cursor: 'pointer',
                   fontFamily: '"Poppins", sans-serif',
-                  fontSize: '15px',
-                  fontWeight: 600,
-                  color: '#FFFFFF'
+                  fontSize: '16px',
+                  lineHeight: '28px',
+                  letterSpacing: '0%',
+                  fontWeight: 500,
+                  color: '#FFFFFF',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
                 }}
                 className="hover:bg-[#CC001C] transition-colors shadow-sm"
               >
-                Delete Account
+                <span>Delete Account</span>
               </button>
             </div>
           </div>
@@ -1924,8 +2116,10 @@ const SettingsModal = ({ isOpen, onClose, mongoUser, token, setMongoUser, logout
               cursor: 'pointer',
               boxSizing: 'border-box',
               fontFamily: '"Poppins", sans-serif',
-              fontWeight: 600,
+              fontWeight: 500,
               fontSize: '16px',
+              lineHeight: '28px',
+              letterSpacing: '0%',
               color: '#FFFFFF'
             }}
             className="hover:bg-[#182338] disabled:opacity-50 transition-all shrink-0 active:scale-[0.99] shadow-sm cursor-pointer"
@@ -1996,8 +2190,10 @@ const SettingsModal = ({ isOpen, onClose, mongoUser, token, setMongoUser, logout
                 cursor: 'pointer',
                 boxSizing: 'border-box',
                 fontFamily: '"Poppins", sans-serif',
-                fontWeight: 600,
-                fontSize: '15px',
+                fontWeight: 500,
+                fontSize: '16px',
+                lineHeight: '28px',
+                letterSpacing: '0%',
                 color: '#FFFFFF',
                 whiteSpace: 'nowrap'
               }}
