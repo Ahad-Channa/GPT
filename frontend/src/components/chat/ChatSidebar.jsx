@@ -106,17 +106,20 @@ const RoleBadges = ({ user }) => {
       {role === 'admin' && (
         <span
           style={{
-            background: '#CC001C',
+            background: 'linear-gradient(180deg, #FF1E38 0%, #B80016 100%)',
             color: '#FFFFFF',
             fontSize: '11px',
             fontWeight: 700,
-            lineHeight: '1',
+            lineHeight: '100%',
+            letterSpacing: '0%',
             borderRadius: '100px',
             padding: '4px 10px',
-            fontFamily: '"Poppins", sans-serif',
+            fontFamily: '"Bricolage Grotesque", sans-serif',
             display: 'inline-flex',
             alignItems: 'center',
             justifyContent: 'center',
+            opacity: 1,
+            transform: 'rotate(0deg)',
           }}
         >
           Admin
@@ -127,37 +130,43 @@ const RoleBadges = ({ user }) => {
       {role === 'moderator' && (
         <span
           style={{
-            background: '#0284C7',
+            background: 'linear-gradient(180deg, #0284C7 0%, #0369A1 100%)',
             color: '#FFFFFF',
             fontSize: '11px',
             fontWeight: 700,
-            lineHeight: '1',
+            lineHeight: '100%',
+            letterSpacing: '0%',
             borderRadius: '100px',
             padding: '4px 10px',
-            fontFamily: '"Poppins", sans-serif',
+            fontFamily: '"Bricolage Grotesque", sans-serif',
             display: 'inline-flex',
             alignItems: 'center',
             justifyContent: 'center',
+            opacity: 1,
+            transform: 'rotate(0deg)',
           }}
         >
           Mod
         </span>
       )}
 
-      {/* Tier Badge */}
+      {/* VIP Tier Badge (using exact VIP page pill gradients) */}
       <span
         style={{
           background: tierMeta.pillBg,
           color: '#FFFFFF',
           fontSize: '11px',
-          fontWeight: 600,
-          lineHeight: '1',
+          fontWeight: 700,
+          lineHeight: '100%',
+          letterSpacing: '0%',
           borderRadius: '100px',
           padding: '4px 10px',
-          fontFamily: '"Poppins", sans-serif',
+          fontFamily: '"Bricolage Grotesque", sans-serif',
           display: 'inline-flex',
           alignItems: 'center',
           justifyContent: 'center',
+          opacity: 1,
+          transform: 'rotate(0deg)',
         }}
       >
         {rankLabel}
@@ -177,25 +186,26 @@ const MessageRow = ({ msg, canModerate, onDelete, deletingId, onUserClick }) => 
     <div
       onMouseEnter={() => setHov(true)}
       onMouseLeave={() => setHov(false)}
-      className="relative flex items-start gap-3 w-full pb-3.5 mb-3.5 border-b border-[#EFEFEF] transition-opacity"
+      className="relative flex flex-col w-full pb-3.5 mb-3.5 border-b border-[#EFEFEF] transition-opacity"
       style={{ opacity: isDeleting ? 0.4 : 1 }}
     >
-      {/* Left Column: Avatar with mini tier badge (33x33) */}
-      <button
-        onClick={() => msg.user?._id && onUserClick(msg.user._id)}
-        className="cursor-pointer bg-transparent border-none p-0 outline-none mt-0.5"
-      >
-        <AvatarWithBadge user={msg.user} size={33} />
-      </button>
+      {/* Top Row: Avatar + Name/Date on left, Badges on right */}
+      <div className="flex items-center justify-between gap-2 w-full">
+        <div className="flex items-center gap-2.5 min-w-0">
+          {/* Avatar with mini tier badge (33x33) */}
+          <button
+            onClick={() => msg.user?._id && onUserClick(msg.user._id)}
+            className="cursor-pointer bg-transparent border-none p-0 outline-none shrink-0"
+          >
+            <AvatarWithBadge user={msg.user} size={33} />
+          </button>
 
-      {/* Right Column: Name, Timestamp, Badges & Message */}
-      <div className="flex-1 min-w-0 flex flex-col">
-        <div className="flex items-center justify-between gap-2 w-full">
+          {/* Name and Date Column */}
           <div
             style={{
               display: 'flex',
               flexDirection: 'column',
-              gap: '3px',
+              gap: '2px',
               minWidth: 0,
               opacity: 1,
               transform: 'rotate(0deg)',
@@ -240,34 +250,37 @@ const MessageRow = ({ msg, canModerate, onDelete, deletingId, onUserClick }) => 
               {formattedDate}
             </span>
           </div>
-
-          {/* Badges on right */}
-          <RoleBadges user={msg.user} />
         </div>
 
-        {/* Message Text */}
-        <p
-          style={{
-            fontFamily: '"Poppins", sans-serif',
-            fontWeight: 400,
-            fontSize: '13.5px',
-            lineHeight: '1.45',
-            color: '#18181B',
-            margin: 0,
-            marginTop: '6px',
-            wordBreak: 'break-word',
-          }}
-        >
-          {msg.message}
-        </p>
+        {/* Badges on right */}
+        <RoleBadges user={msg.user} />
       </div>
+
+      {/* Bottom Message Text (Starts directly below image/avatar, full width) */}
+      <p
+        style={{
+          fontFamily: '"Poppins", sans-serif',
+          fontWeight: 400,
+          fontSize: '13px',
+          lineHeight: '20px',
+          letterSpacing: '0%',
+          color: '#18181B',
+          margin: 0,
+          marginTop: '8px',
+          wordBreak: 'break-word',
+          width: '100%',
+          opacity: 1,
+          transform: 'rotate(0deg)',
+        }}
+      >
+        {msg.message}
+      </p>
 
       {canModerate && hov && (
         <button
           onClick={() => onDelete(msg._id)}
-          disabled={isDeleting}
-          title="Delete"
-          className="absolute right-1 bottom-2 p-1.5 rounded-lg bg-red-50 hover:bg-red-100 text-red-500 transition-colors border-none cursor-pointer"
+          className="absolute right-0 top-1 p-1 text-gray-400 hover:text-red-600 rounded transition-colors bg-white/80 backdrop-blur-sm"
+          title="Delete message"
         >
           <FiTrash2 size={13} />
         </button>
@@ -697,15 +710,19 @@ const ChatSidebar = ({ isOpen, onClose }) => {
                       <div
                         style={{
                           width: '100%',
-                          height: '48px',
-                          borderRadius: '100px',
+                          maxWidth: '338px',
+                          height: '49px',
+                          borderRadius: '50px',
                           background: 'rgba(239, 239, 239, 1)',
-                          padding: '4px 6px 4px 18px',
+                          padding: '4px 6px 4px 20px',
                           display: 'flex',
                           alignItems: 'center',
                           justifyContent: 'space-between',
                           boxSizing: 'border-box',
                           gap: '8px',
+                          margin: '0 auto',
+                          opacity: 1,
+                          transform: 'rotate(0deg)',
                         }}
                       >
                         <input
@@ -723,44 +740,48 @@ const ChatSidebar = ({ isOpen, onClose }) => {
                             outline: 'none',
                             fontFamily: '"Poppins", sans-serif',
                             fontWeight: 400,
-                            fontSize: '14px',
-                            color: '#000000',
+                            fontSize: '13px',
+                            lineHeight: '26px',
+                            letterSpacing: '0%',
+                            color: 'rgba(0, 0, 0, 1)',
                           }}
+                          className="placeholder:text-black/70"
                         />
 
                         <button
                           type="submit"
                           disabled={!newMsg.trim()}
                           style={{
-                            width: '36px',
-                            height: '36px',
+                            width: '40px',
+                            height: '40px',
                             borderRadius: '50%',
-                            background: '#24324D',
+                            background: 'rgba(36, 50, 77, 1)',
                             border: 'none',
-                            color: '#FFFFFF',
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
                             cursor: newMsg.trim() ? 'pointer' : 'default',
-                            opacity: newMsg.trim() ? 1 : 0.85,
+                            opacity: newMsg.trim() ? 1 : 0.8,
                             transition: 'transform 0.15s, opacity 0.15s',
                             flexShrink: 0,
+                            transform: 'rotate(0deg)',
                           }}
                           className="hover:opacity-90 active:scale-95"
                         >
-                          <svg
-                            width="16"
-                            height="16"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            xmlns="http://www.w3.org/2000/svg"
-                            style={{ transform: 'rotate(45deg) translate(-1px, 1px)' }}
-                          >
-                            <path
-                              d="M2.01 21L23 12L2.01 3L2 10L17 12L2 14L2.01 21Z"
-                              fill="currentColor"
-                            />
-                          </svg>
+                          <img
+                            src="/coins/ChatSend.png"
+                            alt="Send"
+                            style={{
+                              width: '18px',
+                              height: '18px',
+                              objectFit: 'contain',
+                              display: 'block',
+                            }}
+                            onError={(e) => {
+                              // Fallback SVG if image not found
+                              e.currentTarget.style.display = 'none';
+                            }}
+                          />
                         </button>
                       </div>
                     </form>

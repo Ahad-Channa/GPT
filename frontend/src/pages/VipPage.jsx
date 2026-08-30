@@ -733,7 +733,7 @@ const VipPage = () => {
                             style={{
                               width: '100%',
                               height: '156px',
-                              borderRadius: '0px 0px 30px 30px',
+                              borderRadius: '30px',
                               background: innerBoxBg,
                               padding: '23px 26px',
                               display: 'flex',
