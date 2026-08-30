@@ -726,18 +726,14 @@ const VipPage = () => {
                             opacity: 1,
                             transform: 'rotate(0deg)',
                             overflow: 'hidden',
-                            boxShadow: '0px 4px 20px 0px rgba(0, 0, 0, 0.05)',
                           }}
                         >
                           {/* Top Inner Box */}
                           <div
                             style={{
-                              width: 'calc(100% + 2px)',
-                              marginTop: '-1px',
-                              marginLeft: '-1px',
-                              marginRight: '-1px',
+                              width: '100%',
                               height: '156px',
-                              borderRadius: '30px',
+                              borderRadius: '0px 0px 30px 30px',
                               background: innerBoxBg,
                               padding: '23px 26px',
                               display: 'flex',
@@ -785,11 +781,11 @@ const VipPage = () => {
 
                                 {/* Reached Checkmark */}
                                 {isReached && (
-                                  <div className="w-5 h-5 rounded-full bg-[#3B82F6] flex items-center justify-center text-white shadow-sm shrink-0">
-                                    <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
-                                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                                    </svg>
-                                  </div>
+                                  <img
+                                    src="/coins/VIPtik.png"
+                                    alt="Completed"
+                                    className="w-5 h-5 object-contain shrink-0"
+                                  />
                                 )}
                               </div>
 
