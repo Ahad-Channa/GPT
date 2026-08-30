@@ -27,10 +27,10 @@ const CustomizationModal = ({ isOpen, onClose, mongoUser, token, setMongoUser })
 
   const [myPage, setMyPage] = useState(1);
   const [shopPage, setShopPage] = useState(1);
-  const ITEMS_PER_PAGE = 9; // 3 columns x 3 rows
-
+  const ITEMS_PER_PAGE = 9;
   const [confirmingAvatar, setConfirmingAvatar] = useState(null);
   const [purchaseSuccessAvatar, setPurchaseSuccessAvatar] = useState(null);
+  const [orderSummaryAvatar, setOrderSummaryAvatar] = useState(null);
 
   const fetchAvatars = async () => {
     setLoadingAvatars(true);
@@ -57,6 +57,7 @@ const CustomizationModal = ({ isOpen, onClose, mongoUser, token, setMongoUser })
       setActiveTab('shop');
       setConfirmingAvatar(null);
       setPurchaseSuccessAvatar(null);
+      setOrderSummaryAvatar(null);
       fetchAvatars();
     }
   }, [isOpen]);
@@ -449,10 +450,10 @@ const CustomizationModal = ({ isOpen, onClose, mongoUser, token, setMongoUser })
                           height: '86px',
                           borderRadius: '100px',
                           background: isSelected ? 'rgba(36, 50, 77, 1)' : 'rgba(248, 245, 239, 1)',
-                          padding: '13px 14px 13px 12px',
+                          padding: '7px 12px 7px 5px',
                           display: 'flex',
                           alignItems: 'center',
-                          gap: '12px',
+                          gap: '10px',
                           cursor: 'pointer',
                           opacity: 1,
                           transform: 'rotate(0deg)',
@@ -464,34 +465,45 @@ const CustomizationModal = ({ isOpen, onClose, mongoUser, token, setMongoUser })
                         {/* Avatar Circle with Gap between Image and Border */}
                         <div
                           style={{
-                            width: '60px',
-                            height: '60px',
+                            width: '72px',
+                            height: '72px',
                             borderRadius: '50%',
                             background: '#FFFFFF',
                             border: isSelected ? '2.5px solid #FFFFFF' : '2.5px solid rgba(36, 50, 77, 1)',
-                            padding: '3px',
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
                             opacity: 1,
                             transform: 'rotate(0deg)',
-                            boxSizing: 'border-box'
+                            boxSizing: 'border-box',
+                            flexShrink: 0
                           }}
                           className="shrink-0"
                         >
                           <div
                             style={{
-                              width: '100%',
-                              height: '100%',
+                              width: '60px',
+                              height: '60px',
                               borderRadius: '50%',
                               overflow: 'hidden',
                               display: 'flex',
                               alignItems: 'center',
                               justifyContent: 'center',
-                              background: '#3B82F6'
+                              background: '#3B82F6',
+                              flexShrink: 0
                             }}
                           >
-                            <img src={avatar.url} alt={avatar.name} className="w-full h-full object-cover" />
+                            <img
+                              src={avatar.url}
+                              alt={avatar.name}
+                              style={{
+                                width: '100%',
+                                height: '100%',
+                                objectFit: 'cover',
+                                display: 'block',
+                                borderRadius: '50%'
+                              }}
+                            />
                           </div>
                         </div>
                         {/* Text Container */}
@@ -500,6 +512,8 @@ const CustomizationModal = ({ isOpen, onClose, mongoUser, token, setMongoUser })
                             display: 'flex',
                             flexDirection: 'column',
                             justifyContent: 'center',
+                            alignItems: 'flex-start',
+                            paddingLeft: activeTab === 'my_avatars' ? '6px' : '0px',
                             gap: '2px',
                             opacity: 1,
                             transform: 'rotate(0deg)',
@@ -513,33 +527,36 @@ const CustomizationModal = ({ isOpen, onClose, mongoUser, token, setMongoUser })
                               fontFamily: '"Bricolage Grotesque", sans-serif',
                               fontWeight: 700,
                               fontSize: '19px',
-                              lineHeight: '1.1',
+                              lineHeight: '1',
                               letterSpacing: '0%',
-                              color: isSelected ? '#FFFFFF' : 'rgba(14, 15, 12, 1)',
+                              color: isSelected ? '#FFFFFF' : '#000000',
                               opacity: 1,
-                              transform: 'rotate(0deg)'
+                              transform: 'rotate(0deg)',
+                              textAlign: 'left'
                             }}
-                            className="truncate capitalize"
+                            className="truncate capitalize w-full"
                           >
                             {avatar.name}
                           </span>
 
-                          {/* Below Text */}
-                          <span
-                            style={{
-                              fontFamily: '"Poppins", sans-serif',
-                              fontWeight: 500,
-                              fontSize: '10px',
-                              lineHeight: '14px',
-                              letterSpacing: '0%',
-                              color: isSelected ? 'rgba(255, 255, 255, 0.7)' : 'rgba(14, 15, 12, 0.6)',
-                              opacity: 1,
-                              transform: 'rotate(0deg)'
-                            }}
-                            className="truncate"
-                          >
-                            {avatar.quantity ? `${avatar.quantity} Available` : 'Unlimited Available'}
-                          </span>
+                          {/* Below Text (in shop tab only) */}
+                          {activeTab === 'shop' && (
+                            <span
+                              style={{
+                                fontFamily: '"Poppins", sans-serif',
+                                fontWeight: 500,
+                                fontSize: '10px',
+                                lineHeight: '14px',
+                                letterSpacing: '0%',
+                                color: isSelected ? '#FFFFFF' : '#000000',
+                                opacity: 1,
+                                transform: 'rotate(0deg)'
+                              }}
+                              className="truncate"
+                            >
+                              {avatar.quantity ? `${avatar.quantity} Available` : 'Unlimited Available'}
+                            </span>
+                          )}
 
                           {/* Coin Price (in shop tab) */}
                           {activeTab === 'shop' && (
@@ -638,7 +655,6 @@ const CustomizationModal = ({ isOpen, onClose, mongoUser, token, setMongoUser })
                 display: 'flex',
                 flexDirection: 'column',
                 alignItems: 'center',
-                justifyContent: 'space-between',
                 boxSizing: 'border-box',
                 minHeight: '490px'
               }}
@@ -669,8 +685,7 @@ const CustomizationModal = ({ isOpen, onClose, mongoUser, token, setMongoUser })
                         height: '128px',
                         borderRadius: '50%',
                         background: '#FFFFFF',
-                        border: '2.5px solid rgba(36, 50, 77, 1)',
-                        padding: '3.5px',
+                        border: '3px solid rgba(36, 50, 77, 1)',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
@@ -679,22 +694,34 @@ const CustomizationModal = ({ isOpen, onClose, mongoUser, token, setMongoUser })
                         bottom: '-64px',
                         left: '50%',
                         transform: 'translateX(-50%)',
-                        zIndex: 10
+                        zIndex: 10,
+                        flexShrink: 0
                       }}
                     >
                       <div
                         style={{
-                          width: '100%',
-                          height: '100%',
+                          width: '114px',
+                          height: '114px',
                           borderRadius: '50%',
                           overflow: 'hidden',
                           display: 'flex',
                           alignItems: 'center',
                           justifyContent: 'center',
-                          background: '#3B82F6'
+                          background: '#3B82F6',
+                          flexShrink: 0
                         }}
                       >
-                        <img src={previewAvatar.url} alt={previewAvatar.name} className="w-full h-full object-cover" />
+                        <img
+                          src={previewAvatar.url}
+                          alt={previewAvatar.name}
+                          style={{
+                            width: '100%',
+                            height: '100%',
+                            objectFit: 'cover',
+                            display: 'block',
+                            borderRadius: '50%'
+                          }}
+                        />
                       </div>
                     </div>
                   </div>
@@ -930,7 +957,7 @@ const CustomizationModal = ({ isOpen, onClose, mongoUser, token, setMongoUser })
                   </div>
 
                   {/* Bottom Action Button (width: 265, height: 55, border-radius: 30px, font: Poppins 16px 500) */}
-                  <div className="w-full flex justify-center">
+                  <div className="w-full flex justify-center mt-auto">
                     {activeTab === 'my_avatars' ? (
                       <button
                         type="button"
@@ -1027,115 +1054,188 @@ const CustomizationModal = ({ isOpen, onClose, mongoUser, token, setMongoUser })
             initial={{ scale: 0.95, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             style={{
-              width: '460px',
+              width: '626px',
               maxWidth: '95vw',
               background: '#FFFFFF',
-              borderRadius: '28px',
-              padding: '10px',
-              boxSizing: 'border-box'
+              borderRadius: '26px',
+              padding: '10px 10px 18px 10px',
+              boxSizing: 'border-box',
+              overflow: 'hidden'
             }}
             className="shadow-2xl"
           >
+            {/* Top Header Row (width: 606, height: 95, background: rgba(248, 245, 239, 1)) */}
             <div
               style={{
                 width: '100%',
+                height: '95px',
                 background: 'rgba(248, 245, 239, 1)',
-                borderRadius: '20px',
-                padding: '24px 20px',
+                borderRadius: '18px',
+                padding: '0 24px',
                 display: 'flex',
-                flexDirection: 'column',
-                gap: '16px',
+                justifyContent: 'space-between',
+                alignItems: 'center',
                 boxSizing: 'border-box',
                 position: 'relative'
               }}
             >
-              <div className="flex justify-between items-center w-full">
-                <h3
+              <div>
+                <h2
                   style={{
                     fontFamily: '"Bricolage Grotesque", sans-serif',
                     fontWeight: 700,
-                    fontSize: '24px',
-                    color: 'rgba(14, 15, 12, 1)',
+                    fontSize: '28px',
+                    lineHeight: '1.2',
+                    letterSpacing: '-0.02em',
+                    color: '#000000',
                     margin: 0
                   }}
                 >
                   Order Summary
-                </h3>
-                <button
-                  type="button"
-                  onClick={() => setConfirmingAvatar(null)}
+                </h2>
+                <div
                   style={{
-                    width: '30px',
-                    height: '30px',
-                    background: '#000000',
+                    width: '52px',
+                    height: '4px',
+                    background: '#5B68DF',
+                    borderRadius: '2px',
+                    marginTop: '6px'
+                  }}
+                />
+              </div>
+
+              {/* Close Button */}
+              <button
+                type="button"
+                onClick={() => setConfirmingAvatar(null)}
+                style={{
+                  width: '22px',
+                  height: '22px',
+                  background: '#000000',
+                  borderRadius: '50%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  border: 'none',
+                  cursor: 'pointer'
+                }}
+                className="text-white hover:opacity-80 transition-opacity shrink-0"
+              >
+                <FiX size={12} strokeWidth={2.5} className="pointer-events-none" />
+              </button>
+            </div>
+
+            {/* Modal Body (White Background) */}
+            <div
+              style={{
+                width: '100%',
+                background: '#FFFFFF',
+                padding: '20px 0 0 0',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '18px',
+                boxSizing: 'border-box'
+              }}
+            >
+              {/* Avatar Row */}
+              <div className="flex items-center gap-4 my-1 px-2">
+                <div
+                  style={{
+                    width: '93px',
+                    height: '93px',
                     borderRadius: '50%',
+                    background: '#FFFFFF',
+                    border: '4px solid rgba(36, 50, 77, 1)',
+                    padding: '3px',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    border: 'none',
-                    cursor: 'pointer'
+                    boxSizing: 'border-box',
+                    flexShrink: 0
                   }}
-                  className="text-white hover:opacity-80 transition-opacity"
                 >
-                  <FiX size={15} strokeWidth={2.5} className="pointer-events-none" />
-                </button>
-              </div>
-
-              <div
-                style={{
-                  background: '#FFFFFF',
-                  borderRadius: '14px',
-                  padding: '14px',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: '12px'
-                }}
-              >
-                <div className="flex gap-3 items-center">
-                  <div
-                    style={{
-                      width: '56px',
-                      height: '56px',
-                      borderRadius: '50%',
-                      background: '#3B82F6',
-                      border: '2px solid #202C44',
-                      overflow: 'hidden',
-                      flexShrink: 0
-                    }}
-                  >
+                  <div className="w-full h-full rounded-full overflow-hidden flex items-center justify-center bg-[#3B82F6]">
                     <img src={confirmingAvatar.url} alt={confirmingAvatar.name} className="w-full h-full object-cover" />
                   </div>
-                  <div className="flex flex-col justify-center min-w-0">
-                    <span style={{ fontFamily: '"Bricolage Grotesque", sans-serif', fontWeight: 700, fontSize: '18px', color: 'rgba(14, 15, 12, 1)' }} className="truncate capitalize">
-                      {confirmingAvatar.name}
-                    </span>
-                    <span style={{ fontFamily: '"Poppins", sans-serif', fontSize: '13px', color: '#666666' }} className="truncate">
-                      {confirmingAvatar.description || 'Premium Avatar Collection'}
-                    </span>
-                  </div>
                 </div>
-
-                <div className="h-[1px] bg-slate-100 w-full" />
-
-                <div className="flex justify-between items-center w-full">
-                  <span style={{ fontFamily: '"Poppins", sans-serif', fontWeight: 600, fontSize: '15px', color: 'rgba(14, 15, 12, 1)' }}>
-                    Price
-                  </span>
-                  <div className="flex items-center gap-1.5">
-                    <img src="/coins/Coin.png" alt="Coins" className="w-[18px] h-[18px] object-contain shrink-0" />
-                    <span style={{ fontFamily: '"Poppins", sans-serif', fontWeight: 700, fontSize: '18px', color: '#D97706' }}>
-                      {(confirmingAvatar.price || 0).toLocaleString('de-DE')}
-                    </span>
-                  </div>
+                <div className="flex flex-col justify-center min-w-0">
+                  <h4
+                    style={{
+                      fontFamily: '"Bricolage Grotesque", sans-serif',
+                      fontWeight: 700,
+                      fontSize: '27px',
+                      lineHeight: '1.2',
+                      letterSpacing: '-0.02em',
+                      color: '#000000',
+                      margin: 0
+                    }}
+                    className="capitalize truncate"
+                  >
+                    {confirmingAvatar.name}
+                  </h4>
+                  <p
+                    style={{
+                      fontFamily: '"Poppins", sans-serif',
+                      fontWeight: 500,
+                      fontSize: '16px',
+                      lineHeight: '26px',
+                      letterSpacing: '0%',
+                      color: '#000000',
+                      margin: '4px 0 0 0'
+                    }}
+                    className="truncate"
+                  >
+                    {confirmingAvatar.description || 'Premium Avatar Collection'}
+                  </p>
                 </div>
               </div>
 
-              <div className="flex gap-3 w-full mt-1">
+              {/* Price Row (Cream Pill) */}
+              <div
+                style={{
+                  width: '100%',
+                  height: '48px',
+                  background: 'rgba(248, 245, 239, 1)',
+                  borderRadius: '12px',
+                  padding: '0 18px',
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  boxSizing: 'border-box'
+                }}
+              >
+                <span
+                  style={{
+                    fontFamily: '"Poppins", sans-serif',
+                    fontWeight: 500,
+                    fontSize: '16px',
+                    color: '#000000'
+                  }}
+                >
+                  Price
+                </span>
+                <div className="flex items-center gap-1.5">
+                  <img src="/coins/Coin.png" alt="Coin" className="w-[16px] h-[16px] object-contain" />
+                  <span
+                    style={{
+                      fontFamily: '"Poppins", sans-serif',
+                      fontWeight: 700,
+                      fontSize: '16px',
+                      color: 'rgba(190, 146, 0, 1)'
+                    }}
+                  >
+                    {(confirmingAvatar.price || 0).toLocaleString('de-DE')}
+                  </span>
+                </div>
+              </div>
+
+              {/* Actions */}
+              <div className="flex gap-3 w-full mt-2">
                 <button
                   type="button"
                   onClick={() => setConfirmingAvatar(null)}
                   style={{
-                    height: '46px',
+                    height: '48px',
                     flex: 1,
                     background: 'transparent',
                     border: '1.5px solid #202C44',
@@ -1155,7 +1255,7 @@ const CustomizationModal = ({ isOpen, onClose, mongoUser, token, setMongoUser })
                   onClick={() => handlePurchaseAvatar(confirmingAvatar)}
                   disabled={saving}
                   style={{
-                    height: '46px',
+                    height: '48px',
                     flex: 1,
                     background: '#202C44',
                     border: 'none',
@@ -1286,6 +1386,7 @@ const CustomizationModal = ({ isOpen, onClose, mongoUser, token, setMongoUser })
                 <button
                   type="button"
                   onClick={() => {
+                    setOrderSummaryAvatar(purchaseSuccessAvatar);
                     setPurchaseSuccessAvatar(null);
                     setActiveTab('my_avatars');
                     setPreviewAvatar(purchaseSuccessAvatar);
@@ -1315,6 +1416,193 @@ const CustomizationModal = ({ isOpen, onClose, mongoUser, token, setMongoUser })
           </motion.div>
         </div>
       )}
+
+      {/* Order Summary Post-Purchase Modal */}
+      {orderSummaryAvatar && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[9999999] flex items-center justify-center p-4">
+          <motion.div
+            initial={{ scale: 0.95, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            style={{
+              width: '626px',
+              maxWidth: '95vw',
+              background: '#FFFFFF',
+              borderRadius: '26px',
+              padding: '10px 10px 18px 10px',
+              boxSizing: 'border-box',
+              overflow: 'hidden'
+            }}
+            className="shadow-2xl"
+          >
+            {/* Top Header Row (width: 606, height: 95, background: rgba(248, 245, 239, 1)) */}
+            <div
+              style={{
+                width: '100%',
+                height: '95px',
+                background: 'rgba(248, 245, 239, 1)',
+                borderRadius: '18px',
+                padding: '0 24px',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                boxSizing: 'border-box',
+                position: 'relative'
+              }}
+            >
+              <div>
+                <h2
+                  style={{
+                    fontFamily: '"Bricolage Grotesque", sans-serif',
+                    fontWeight: 700,
+                    fontSize: '28px',
+                    lineHeight: '1.2',
+                    letterSpacing: '-0.02em',
+                    color: '#000000',
+                    margin: 0
+                  }}
+                >
+                  Order Summary
+                </h2>
+                <div
+                  style={{
+                    width: '52px',
+                    height: '4px',
+                    background: '#5B68DF',
+                    borderRadius: '2px',
+                    marginTop: '6px'
+                  }}
+                />
+              </div>
+
+              {/* Close Button */}
+              <button
+                type="button"
+                onClick={() => setOrderSummaryAvatar(null)}
+                style={{
+                  width: '22px',
+                  height: '22px',
+                  background: '#000000',
+                  borderRadius: '50%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  border: 'none',
+                  cursor: 'pointer'
+                }}
+                className="text-white hover:opacity-80 transition-opacity shrink-0"
+              >
+                <FiX size={12} strokeWidth={2.5} className="pointer-events-none" />
+              </button>
+            </div>
+
+            {/* Modal Body (White Background) */}
+            <div
+              style={{
+                width: '100%',
+                background: '#FFFFFF',
+                padding: '20px 0 0 0',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '18px',
+                boxSizing: 'border-box'
+              }}
+            >
+              {/* Avatar Row */}
+              <div className="flex items-center gap-4 my-1 px-2">
+                <div
+                  style={{
+                    width: '93px',
+                    height: '93px',
+                    borderRadius: '50%',
+                    background: '#FFFFFF',
+                    border: '4px solid rgba(36, 50, 77, 1)',
+                    padding: '3px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    boxSizing: 'border-box',
+                    flexShrink: 0
+                  }}
+                >
+                  <div className="w-full h-full rounded-full overflow-hidden flex items-center justify-center bg-[#3B82F6]">
+                    <img src={orderSummaryAvatar.url} alt={orderSummaryAvatar.name} className="w-full h-full object-cover" />
+                  </div>
+                </div>
+                <div className="flex flex-col justify-center min-w-0">
+                  <h4
+                    style={{
+                      fontFamily: '"Bricolage Grotesque", sans-serif',
+                      fontWeight: 700,
+                      fontSize: '27px',
+                      lineHeight: '1.2',
+                      letterSpacing: '-0.02em',
+                      color: '#000000',
+                      margin: 0
+                    }}
+                    className="capitalize truncate"
+                  >
+                    {orderSummaryAvatar.name}
+                  </h4>
+                  <p
+                    style={{
+                      fontFamily: '"Poppins", sans-serif',
+                      fontWeight: 500,
+                      fontSize: '16px',
+                      lineHeight: '26px',
+                      letterSpacing: '0%',
+                      color: '#000000',
+                      margin: '4px 0 0 0'
+                    }}
+                    className="truncate"
+                  >
+                    {orderSummaryAvatar.description || 'Premium Avatar Collection'}
+                  </p>
+                </div>
+              </div>
+
+              {/* Price Row (Cream Pill) */}
+              <div
+                style={{
+                  width: '100%',
+                  height: '48px',
+                  background: 'rgba(248, 245, 239, 1)',
+                  borderRadius: '12px',
+                  padding: '0 18px',
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  boxSizing: 'border-box'
+                }}
+              >
+                <span
+                  style={{
+                    fontFamily: '"Poppins", sans-serif',
+                    fontWeight: 500,
+                    fontSize: '16px',
+                    color: '#000000'
+                  }}
+                >
+                  Price
+                </span>
+                <div className="flex items-center gap-1.5">
+                  <img src="/coins/Coin.png" alt="Coin" className="w-[16px] h-[16px] object-contain" />
+                  <span
+                    style={{
+                      fontFamily: '"Poppins", sans-serif',
+                      fontWeight: 700,
+                      fontSize: '16px',
+                      color: 'rgba(190, 146, 0, 1)'
+                    }}
+                  >
+                    {(orderSummaryAvatar.price || 0).toLocaleString('de-DE')}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        </div>
+      )}
+
     </div>,
     document.body
   );
