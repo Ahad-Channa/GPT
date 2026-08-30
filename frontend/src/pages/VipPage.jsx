@@ -1,118 +1,61 @@
 import { useState, useEffect, useCallback } from 'react';
-import { motion } from 'framer-motion';
 import { useAuth } from '../contexts/AuthContext';
 import { TIER_STYLES, getLevelLabel } from '../utils/vipLevels';
-import VipBadge from '../components/VipBadge';
-import CoinDisplay from '../components/CoinDisplay';
-import { FiLock, FiCheckCircle, FiGift, FiTrendingUp, FiStar } from 'react-icons/fi';
+import { FiLock } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 import DashboardLayout from '../components/layout/DashboardLayout';
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
 const TIER_METADATA = {
-  Bronze: { subtext: 'Starter Level', label: 'BRONZE', badgeClass: 'text-[#d97706] border-[#d97706]/30 bg-[#d97706]/10' },
-  Silver: { subtext: 'Keep Growing', label: 'SILVER', badgeClass: 'text-[#94a3b8] border-[#94a3b8]/30 bg-[#94a3b8]/10' },
-  Gold: { subtext: 'Getting Serious', label: 'GOLD', badgeClass: 'text-[#fbbf24] border-[#fbbf24]/30 bg-[#fbbf24]/10' },
-  Platinum: { subtext: 'Almost There', label: 'PLATINUM', badgeClass: 'text-[#22d3ee] border-[#22d3ee]/30 bg-[#22d3ee]/10' },
-  Diamond: { subtext: 'Elite Level', label: 'DIAMOND', badgeClass: 'text-[#818cf8] border-[#818cf8]/30 bg-[#818cf8]/10' },
-  Opal: { subtext: 'The Highest', label: 'OPAL', badgeClass: 'text-[#a78bfa] border-[#a78bfa]/30 bg-[#a78bfa]/10' }
-};
-
-const TIER_COLORS = {
   Bronze: {
-    text: '#FF8C00',
-    gradient: 'linear-gradient(180deg, #FF8C00 0%, #90540B 100%)',
-    shadow: '0px 3px 0px 0px rgba(87, 54, 13, 1)'
+    subtext: 'Starter Level',
+    badge: '/coins/VIPbronze.png',
+    pillGradient: 'linear-gradient(180deg, #F3B60A -26.79%, #BE6708 158.93%)',
+    cardGradient: 'linear-gradient(278.68deg, #F3B60A 0%, #BE6708 104.71%)',
+    pillText: 'Bronze',
+    btnBg: 'bg-[#F59E0B] hover:bg-[#D97706]',
   },
   Silver: {
-    text: '#DEDEDE',
-    gradient: 'linear-gradient(180deg, #DEDEDE 0%, #8B8B8B 100%)',
-    shadow: '0px 3px 0px 0px rgba(94, 94, 94, 1)'
+    subtext: 'Starter level',
+    badge: '/coins/VIPsilver.png',
+    pillGradient: 'linear-gradient(180deg, #D6D6D6 -26.79%, #929292 158.93%)',
+    cardGradient: 'linear-gradient(180deg, #D6D6D6 75.1%, #929292 118.1%)',
+    pillText: 'Silver',
+    btnBg: 'bg-[#F59E0B] hover:bg-[#D97706]',
   },
   Gold: {
-    text: '#FCB91E',
-    gradient: 'linear-gradient(180deg, #FEDF77 0%, #FCB91E 100%), linear-gradient(0deg, rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 0.1))',
-    shadow: '0px 3px 0px 0px rgba(163, 115, 10, 1)'
+    subtext: 'Getting Serious',
+    badge: '/coins/VIPgold.png',
+    pillGradient: 'linear-gradient(180deg, #FEDD72 -23.08%, #FCBA21 74.64%)',
+    cardGradient: 'linear-gradient(180deg, #FEDD72 57.98%, #FCBA21 99.95%)',
+    pillText: 'Gold',
+    btnBg: 'bg-[#F59E0B] hover:bg-[#D97706]',
   },
   Platinum: {
-    text: '#1FCBE6',
-    gradient: 'linear-gradient(180deg, #1FCBE6 0%, #217681 100%)',
-    shadow: '0px 3px 0px 0px rgba(18, 75, 83, 1)'
+    subtext: 'Almost There',
+    badge: '/coins/VIPplatinum.png',
+    pillGradient: 'linear-gradient(180deg, #1FC4DE 0%, #207985 100%)',
+    cardGradient: 'linear-gradient(180deg, #1FC4DE 71.44%, #207985 111.33%)',
+    pillText: 'Platinum',
+    btnBg: 'bg-[#06B6D4] hover:bg-[#0891B2]',
   },
   Diamond: {
-    text: '#7F8AF7',
-    gradient: 'linear-gradient(180deg, #7F8AF7 0%, #793EB9 100%)',
-    shadow: '0px 3px 0px 0px rgba(77, 33, 130, 1)'
+    subtext: 'Elite level',
+    badge: '/coins/VIPdimond.png',
+    pillGradient: 'linear-gradient(180deg, #7E83F1 0%, #7941BB 100%)',
+    cardGradient: 'linear-gradient(180deg, #7E83F1 67.28%, #7941BB 106.65%)',
+    pillText: 'Diamond',
+    btnBg: 'bg-[#7C3AED] hover:bg-[#6D28D9]',
   },
   Opal: {
-    text: '#FFA5FC',
-    textGradient: 'linear-gradient(180deg, #FFA5FC 0%, #26BEFF 100%)',
-    gradient: 'linear-gradient(180deg, #FFA5FC 0%, #26BEFF 100%)',
-    shadow: '0px 3px 0px 0px rgba(38, 190, 255, 0.4)'
-  }
-};
-
-const VipShieldIcon = ({ tier, size = 32 }) => {
-  const colors = {
-    Bronze: { primary: '#FCB91E', secondary: '#b45309', fill: 'url(#bronzeGrad)' },
-    Silver: { primary: '#cbd5e1', secondary: '#475569', fill: 'url(#silverGrad)' },
-    Gold: { primary: '#FCB91E', secondary: '#d97706', fill: 'url(#goldGrad)' },
-    Platinum: { primary: '#22d3ee', secondary: '#0e7490', fill: 'url(#platGrad)' },
-    Diamond: { primary: '#818cf8', secondary: '#4f46e5', fill: 'url(#diamGrad)' },
-    Opal: { primary: '#a78bfa', secondary: '#7c3aed', fill: 'url(#opalGrad)' },
-  };
-
-  const c = colors[tier] || colors.Bronze;
-
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <defs>
-        <linearGradient id="bronzeGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="#d97706" />
-          <stop offset="100%" stopColor="#78350f" />
-        </linearGradient>
-        <linearGradient id="silverGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="#94a3b8" />
-          <stop offset="100%" stopColor="#334155" />
-        </linearGradient>
-        <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="#fbbf24" />
-          <stop offset="100%" stopColor="#92400e" />
-        </linearGradient>
-        <linearGradient id="platGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="#22d3ee" />
-          <stop offset="100%" stopColor="#0891b2" />
-        </linearGradient>
-        <linearGradient id="diamGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="#818cf8" />
-          <stop offset="100%" stopColor="#4f46e5" />
-        </linearGradient>
-        <linearGradient id="opalGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="#ec4899" />
-          <stop offset="50%" stopColor="#7c3aed" />
-          <stop offset="100%" stopColor="#06b6d4" />
-        </linearGradient>
-      </defs>
-
-      {/* Outer Shield Outline */}
-      <path
-        d="M12 2L4 5v6c0 5.25 3.8 10.12 8 12 4.2-1.88 8-6.75 8-12V5l-8-3z"
-        fill={c.fill}
-        stroke={c.primary}
-        strokeWidth="1.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-
-      {/* Inner Star */}
-      <path
-        d="M12 7.5l1.15 2.33 2.57.37-1.86 1.81.44 2.56-2.3-1.21-2.3 1.21.44-2.56-1.86-1.81 2.57-.37L12 7.5z"
-        fill={c.primary}
-        opacity="0.9"
-      />
-    </svg>
-  );
+    subtext: 'The Highest',
+    badge: '/coins/VIPopel.png',
+    pillGradient: 'linear-gradient(180deg, #E92BFF 0%, #31BDFF 100%)',
+    cardGradient: 'linear-gradient(180deg, #E92BFF 0%, #31BDFF 100%)',
+    pillText: 'Opal',
+    btnBg: 'bg-[#A855F7] hover:bg-[#9333EA]',
+  },
 };
 
 const VipPage = () => {
@@ -171,8 +114,7 @@ const VipPage = () => {
     );
   }
 
-  const { currentLevel, nextLevel, progressPct, coinsToNext, levels = [], totalEarned } = status || {};
-  const tierStyle = TIER_STYLES[currentLevel?.tier] || TIER_STYLES.Bronze;
+  const { currentLevel, nextLevel, progressPct = 0, coinsToNext = 0, levels = [], totalEarned = 0 } = status || {};
 
   const tiers = ['Bronze', 'Silver', 'Gold', 'Platinum', 'Diamond', 'Opal'];
   const currentLevelIdx = currentLevel ? levels.findIndex(l => l.key === currentLevel.key) : -1;
@@ -180,442 +122,726 @@ const VipPage = () => {
   const totalRanks = levels.length || 16;
 
   return (
-    <DashboardLayout hideStartEarning={true}>
-      <div className="w-full max-w-[1240px] mx-auto space-y-8 pb-20 pt-4">
+    <DashboardLayout hideStartEarning={true} fullWidth={true}>
+      <div className="w-full flex flex-col items-center">
 
-        {/* Heading Section */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 relative w-full md:w-[1240px] shrink-0 px-4 md:px-0">
-          <div className="flex flex-col gap-[6px]">
-            <h1 className="m-0 p-0 font-bold text-4xl md:text-[68px] leading-[120%] text-white font-['Barlow_Condensed'] whitespace-normal md:whitespace-nowrap">VIP Status</h1>
-            <p className="m-0 p-0 font-medium text-lg md:text-[26px] leading-[130%] text-[#888888] font-['Barlow_Condensed']">Higher rewards. Bigger perks. More earning power.</p>
-          </div>
-          <div className="hidden md:block absolute right-[-3px] -top-[36px] opacity-100 pointer-events-none w-[391px] h-[249px] z-0">
-            <img
-              src="/coins/vip.png"
-              alt="VIP Status"
-              className="absolute inset-0 w-full h-full object-contain object-right z-10"
-            />
+        {/* ─── Top Banner Area (Warm Background: rgba(249, 247, 241, 1)) ─── */}
+        <div
+          className="w-full flex justify-center items-center transition-colors duration-300 py-8 sm:py-10 border-b border-[#EFECE6]/50"
+          style={{
+            background: 'rgba(249, 247, 241, 1)',
+          }}
+        >
+          <div
+            className="w-full max-w-[1328px] mx-auto px-4 md:px-8 lg:px-0 flex flex-col"
+            style={{ gap: '31px' }}
+          >
+            {/* Heading Section */}
             <div
-              className="absolute inset-0 z-20 mix-blend-color"
               style={{
-                backgroundColor: 'rgba(73, 178, 101, 1)',
-                WebkitMaskImage: 'url(/coins/vip.png)',
-                WebkitMaskSize: 'contain',
-                WebkitMaskRepeat: 'no-repeat',
-                WebkitMaskPosition: 'right',
-                maskImage: 'url(/coins/vip.png)',
-                maskSize: 'contain',
-                maskRepeat: 'no-repeat',
-                maskPosition: 'right'
+                maxWidth: '354px',
+                minHeight: '44px',
+                gap: '16px',
+                opacity: 1,
+                transform: 'rotate(0deg)',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'center',
               }}
-            />
-          </div>
-        </div>
-
-        {/* Top Status Card */}
-        <div className="bg-[#242424] mx-4 md:mx-0 rounded-[20px] px-6 md:px-[40px] py-[30px] border border-[#2A2A2E] flex flex-col md:flex-row items-start md:items-center justify-between gap-6 md:gap-[40px] w-auto md:w-[1240px] h-auto md:h-[177px] shrink-0 md:shrink-0 backdrop-blur-[94px]">
-
-          {/* Left Section: Current Rank */}
-          <div className="flex flex-col items-start justify-between min-w-[176px] h-auto md:h-[118px] shrink-0 pr-2 gap-4 md:gap-0 w-full md:w-auto">
-            <div className="flex flex-col gap-0 w-full">
-              <h2 className="text-white text-lg md:text-[22px] font-bold font-['Barlow_Condensed'] leading-[130%] m-0 p-0 w-auto md:w-[105px] h-auto md:h-[29px] whitespace-normal md:whitespace-nowrap">Current rank</h2>
-              <div className="flex items-center gap-[10px] mt-1 md:mt-[8px] w-full h-auto md:h-[55px] overflow-visible">
-                {currentLevel && (
-                  <img
-                    src={`/coins/${currentLevel.tier === 'Diamond' ? 'dimond' : currentLevel.tier === 'Opal' ? 'opelbadge' : currentLevel.tier.toLowerCase()}.png`}
-                    alt={`${currentLevel.tier} Badge`}
-                    className="object-contain shrink-0 w-[40px] md:w-[49.22px] h-[45px] md:h-[55px]"
-                  />
-                )}
-                <span
-                  className="font-bold text-4xl md:text-[60px] font-['Barlow_Condensed'] leading-[120%] whitespace-nowrap"
-                  style={{
-                    backgroundImage: currentLevel ? TIER_STYLES[currentLevel.tier]?.gradient : 'linear-gradient(180deg, #FEDF77 0%, #FCB91E 100%)',
-                    WebkitBackgroundClip: 'text',
-                    backgroundClip: 'text',
-                    color: 'transparent'
-                  }}
-                >
-                  {currentLevel ? getLevelLabel(currentLevel) : 'Non-VIP'}
-                </span>
-              </div>
-            </div>
-            <div className="flex items-center justify-between md:justify-start gap-[6px] w-full md:w-[116px] h-auto md:h-[15px] shrink-0 mt-2 md:mt-auto">
-              <span className="text-white text-sm md:text-[16px] font-medium font-['Barlow_Condensed'] leading-[130%] w-auto md:w-[70px] h-auto md:h-[11px] flex items-center whitespace-nowrap">Total Earned</span>
-              <div className="flex items-center gap-[4px] h-[15px]">
-                <img src="/coins/Coin.png" alt="Coin" className="w-[15px] h-[15px] shrink-0 object-contain" />
-                <span
-                  className="font-bold text-[18px] font-['Barlow_Condensed'] leading-none whitespace-nowrap pt-[2px]"
-                  style={{
-                    backgroundImage: 'linear-gradient(180deg, #FEDF77 0%, #FCB91E 100%)',
-                    WebkitBackgroundClip: 'text',
-                    backgroundClip: 'text',
-                    color: 'transparent'
-                  }}
-                >
-                  {(totalEarned || 0).toLocaleString('de-DE')}
-                </span>
-              </div>
-            </div>
-          </div>
-
-          {/* Vertical Divider */}
-          <div className="hidden md:block w-[1px] h-[117px] bg-white/10 shrink-0" />
-          <div className="md:hidden w-full h-[1px] bg-white/10 shrink-0" />
-
-          {/* Middle Section: Progress */}
-          {nextLevel ? (
-            <div className="flex flex-col flex-1 max-w-full md:max-w-[704px] h-auto md:h-[84px] gap-3 md:gap-[20px] justify-center w-full">
-              <div className="flex justify-between items-center w-full">
-                <span className="text-white text-lg md:text-[22px] font-medium font-['Barlow_Condensed'] leading-[130%] tracking-normal whitespace-normal md:whitespace-nowrap">
-                  Progress to {getLevelLabel(nextLevel)}
-                </span>
-                <span
-                  className="font-bold text-xl md:text-[24px] font-['Barlow_Condensed'] leading-[130%] tracking-normal whitespace-nowrap"
-                  style={{
-                    backgroundImage: 'linear-gradient(180deg, #FEDF77 0%, #FCB91E 100%)',
-                    WebkitBackgroundClip: 'text',
-                    backgroundClip: 'text',
-                    color: 'transparent'
-                  }}
-                >
-                  {progressPct}%
-                </span>
-              </div>
-
-              {/* Progress Bar Container */}
-              <div className="w-full h-[10px] md:h-[12px] bg-[#3A3A3A] rounded-[30px] overflow-hidden shrink-0">
-                <div
-                  className="h-full rounded-[30px] transition-all duration-500 ease-out"
-                  style={{
-                    width: `${progressPct}%`,
-                    background: currentLevel ? TIER_STYLES[currentLevel.tier]?.gradient : 'linear-gradient(90deg, #4ade80, #22c55e)'
-                  }}
-                />
-              </div>
-
-              <div className="flex flex-wrap md:flex-nowrap items-center w-full gap-[6px]">
-                <span className="text-[#888888] text-sm md:text-[16px] font-medium font-['Barlow_Condensed'] leading-[130%] tracking-normal whitespace-nowrap">Earn</span>
-                <div className="flex items-center gap-[3px]">
-                  <img src="/coins/Coin.png" alt="Coin" className="w-[13px] h-[13px] md:w-[15px] md:h-[15px] shrink-0" />
-                  <span
-                    className="text-sm md:text-[16px] font-medium font-['Barlow_Condensed'] leading-[130%] tracking-normal whitespace-nowrap flex items-center"
-                    style={{
-                      backgroundImage: 'linear-gradient(180deg, #FEDF77 0%, #FCB91E 100%)',
-                      WebkitBackgroundClip: 'text',
-                      backgroundClip: 'text',
-                      color: 'transparent'
-                    }}
-                  >
-                    {coinsToNext.toLocaleString('de-DE')}
-                  </span>
-                </div>
-                <span className="text-[#888888] text-sm md:text-[16px] font-medium font-['Barlow_Condensed'] leading-[130%] tracking-normal whitespace-nowrap">
-                  more coins needed - Unlock
-                </span>
-                <div className="flex items-center gap-[3px]">
-                  <img src="/coins/Coin.png" alt="Coin" className="w-[13px] h-[13px] md:w-[15px] md:h-[15px] shrink-0" />
-                  <span
-                    className="text-sm md:text-[16px] font-medium font-['Barlow_Condensed'] leading-[130%] tracking-normal whitespace-nowrap flex items-center"
-                    style={{
-                      backgroundImage: 'linear-gradient(180deg, #FEDF77 0%, #FCB91E 100%)',
-                      WebkitBackgroundClip: 'text',
-                      backgroundClip: 'text',
-                      color: 'transparent'
-                    }}
-                  >
-                    {nextLevel.rewardAmount.toLocaleString('de-DE')}
-                  </span>
-                </div>
-                <span className="text-[#888888] text-sm md:text-[16px] font-medium font-['Barlow_Condensed'] leading-[130%] tracking-normal whitespace-nowrap">
-                  bonus
-                </span>
-              </div>
-            </div>
-          ) : (
-            <div className="flex flex-col flex-1 max-w-full md:max-w-[704px] h-auto md:h-[84px] gap-3 md:gap-[20px] justify-center w-full">
-              <div className="flex justify-between items-center w-full">
-                <span className="text-white text-lg md:text-[22px] font-medium font-['Barlow_Condensed'] leading-[130%] tracking-normal whitespace-normal md:whitespace-nowrap">
-                  Max Rank Achieved
-                </span>
-                <span
-                  className="font-bold text-xl md:text-[24px] font-['Barlow_Condensed'] leading-[130%] tracking-normal whitespace-nowrap"
-                  style={{
-                    backgroundImage: currentLevel ? TIER_STYLES[currentLevel.tier]?.gradient : 'linear-gradient(180deg, #FEDF77 0%, #FCB91E 100%)',
-                    WebkitBackgroundClip: 'text',
-                    backgroundClip: 'text',
-                    color: 'transparent'
-                  }}
-                >
-                  100%
-                </span>
-              </div>
-
-              {/* Progress Bar Container */}
-              <div className="w-full h-[10px] md:h-[12px] bg-[#3A3A3A] rounded-[30px] overflow-hidden shrink-0">
-                <div
-                  className="h-full rounded-[30px] transition-all duration-500 ease-out"
-                  style={{
-                    width: '100%',
-                    background: 'linear-gradient(90deg, #4ade80, #22c55e)'
-                  }}
-                />
-              </div>
-
-              <div className="flex flex-col md:flex-row items-start md:items-center justify-between w-full gap-2 md:gap-0">
-                <div className="flex items-center gap-[6px]">
-                  <img src="/coins/Coin.png" alt="Coin" className="w-[13px] h-[13px] md:w-[15px] md:h-[15px] shrink-0" />
-                  <span
-                    className="text-sm md:text-[16px] font-medium font-['Barlow_Condensed'] leading-[130%] tracking-normal whitespace-nowrap flex items-center"
-                    style={{
-                      backgroundImage: 'linear-gradient(180deg, #FEDF77 0%, #FCB91E 100%)',
-                      WebkitBackgroundClip: 'text',
-                      backgroundClip: 'text',
-                      color: 'transparent'
-                    }}
-                  >
-                    {totalEarned ? totalEarned.toLocaleString('de-DE') : (currentLevel?.threshold ? currentLevel.threshold.toLocaleString('de-DE') : 0)} / {currentLevel?.threshold ? currentLevel.threshold.toLocaleString('de-DE') : 0}
-                  </span>
-                  <span
-                    className="text-[#888888] text-sm md:text-[16px] font-medium font-['Barlow_Condensed'] leading-[130%] tracking-normal whitespace-nowrap flex items-center"
-                  >
-                    coins
-                  </span>
-                </div>
-                <span
-                  className="text-white text-sm md:text-[16px] font-medium font-['Barlow_Condensed'] leading-[130%] tracking-normal whitespace-normal md:whitespace-nowrap flex items-center md:justify-end"
-                >
-                  Congratulations! You've reached the highest rank.
-                </span>
-              </div>
-            </div>
-          )}
-
-          {/* Vertical Divider */}
-          <div className="hidden md:block w-[1px] h-[117px] bg-white/10 shrink-0" />
-          <div className="md:hidden w-full h-[1px] bg-white/10 shrink-0" />
-
-          {/* Right Section: Rank Level */}
-          <div className="flex flex-row md:flex-col items-center md:items-center justify-between w-full md:w-[120px] h-auto md:h-[89px] shrink-0">
-            <span className="text-[#888888] text-lg md:text-[22px] font-bold font-['Barlow_Condensed'] uppercase leading-[130%] w-auto md:w-[87px] h-auto md:h-[29px] text-left md:text-center whitespace-nowrap">Rank Level</span>
-            <div className="flex items-center justify-end md:justify-center w-auto md:w-[120px] h-auto md:h-[42px] md:mt-[18px] overflow-visible">
-              <span
-                className="font-bold text-4xl md:text-[60px] font-['Barlow_Condensed'] leading-[120%] whitespace-nowrap"
+            >
+              <h1
                 style={{
-                  backgroundImage: 'linear-gradient(180deg, #FEDF77 0%, #FCB91E 100%)',
-                  WebkitBackgroundClip: 'text',
-                  backgroundClip: 'text',
-                  color: 'transparent'
+                  fontFamily: '"Bricolage Grotesque", sans-serif',
+                  fontWeight: 700,
+                  fontSize: '27px',
+                  lineHeight: '18px',
+                  letterSpacing: '-0.02em',
+                  color: '#000000',
+                  margin: 0,
+                  whiteSpace: 'nowrap',
                 }}
               >
-                {rankLevelDisplay} / {totalRanks}
-              </span>
-            </div>
-          </div>
-
-        </div>
-
-        {/* Level Grid by Tier */}
-        <div className="flex flex-col gap-[20px] w-full md:w-[1240px] px-4 md:px-0">
-          {tiers.map(tierName => {
-            const tierLevels = levels.filter(l => l.tier === tierName);
-            if (tierLevels.length === 0) return null;
-            const meta = TIER_METADATA[tierName];
-            const ts = TIER_STYLES[tierName];
-            const isCurrentTier = currentLevel?.tier === tierName;
-
-            return (
-              <div
-                key={tierName}
-                className={`relative bg-[#242424] rounded-[20px] p-6 md:pt-[20px] md:pr-[20px] md:pb-[20px] md:pl-[40px] border flex flex-col md:flex-row gap-6 md:gap-[30px] items-start md:items-center w-full md:w-[1240px] h-auto md:h-[181px] shrink-0 backdrop-blur-[94px] ${isCurrentTier ? 'border-transparent' : 'border-[#2A2A2E]'
-                  }`}
+                VIP Status
+              </h1>
+              <p
+                style={{
+                  fontFamily: '"Poppins", sans-serif',
+                  fontWeight: 500,
+                  fontSize: '14px',
+                  lineHeight: '10px',
+                  color: '#000000',
+                  margin: 0,
+                  whiteSpace: 'nowrap',
+                }}
               >
-                {isCurrentTier && (
-                  <div
-                    className="absolute rounded-[20px] pointer-events-none"
+                Higher rewards. Bigger perks. More earning power.
+              </p>
+            </div>
+
+            {/* Top Status Cards Container */}
+            <div
+              className="w-full max-w-[1328px] flex flex-col lg:flex-row justify-between items-stretch gap-3.5"
+              style={{
+                minHeight: '244px',
+              }}
+            >
+              {/* Left Card: Current Rank */}
+              <div
+                className="w-full lg:w-[354px] shadow-sm flex flex-col items-center justify-between"
+                style={{
+                  width: '354px',
+                  minHeight: '244px',
+                  height: '244px',
+                  gap: '10px',
+                  borderRadius: '30px',
+                  paddingTop: '19px',
+                  paddingRight: '13px',
+                  paddingBottom: '14px',
+                  paddingLeft: '14px',
+                  background: 'rgba(255, 255, 255, 1)',
+                  boxSizing: 'border-box',
+                }}
+              >
+                <div
+                  style={{
+                    width: '136px',
+                    height: '136px',
+                    gap: '20px',
+                    opacity: 1,
+                    transform: 'rotate(0deg)',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                >
+                  <img
+                    src={currentLevel ? (TIER_METADATA[currentLevel.tier]?.badge || '/coins/VIPbronze.png') : '/coins/VIPbronze.png'}
+                    alt="Current Tier Badge"
+                    className="object-contain drop-shadow-sm shrink-0"
                     style={{
-                      top: '-1px', left: '-1px', right: '-1px', bottom: '-1px',
-                      padding: '2px',
-                      background: TIER_COLORS[tierName]?.gradient || 'linear-gradient(180deg, #FFA5FC 0%, #26BEFF 100%)',
-                      WebkitMask: 'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)',
-                      WebkitMaskComposite: 'xor',
-                      maskComposite: 'exclude'
+                      width: '75px',
+                      height: '75px',
+                      opacity: 1,
+                      transform: 'rotate(0deg)',
                     }}
                   />
-                )}
-                {/* Left Tier Sidebar */}
-                <div className="flex flex-row md:flex-col items-center justify-start md:justify-between text-left md:text-center w-full md:w-[110px] shrink-0 h-auto md:h-[141px] gap-4 md:gap-0">
-                  <img
-                    src={`/coins/${tierName === 'Diamond' ? 'dimond' : tierName === 'Opal' ? 'opelbadge' : tierName.toLowerCase()}.png`}
-                    alt={`${tierName} Shield`}
-                    className="w-[40px] md:w-[43.32px] h-[45px] md:h-[48.41px] object-contain shrink-0"
-                  />
-
-                  {/* Heading & Below Text Wrapper */}
-                  <div className="flex flex-col justify-center md:justify-between items-start md:items-center w-auto md:w-[91px] h-auto md:h-[36px] overflow-visible">
-                    {/* Heading */}
-                    <h3 className="text-white text-[20px] md:text-[22px] font-bold font-['Barlow_Condensed'] leading-[130%] text-left md:text-center m-0 p-0 w-auto md:w-[91px] h-auto md:h-[15px] flex items-center justify-start md:justify-center overflow-visible whitespace-nowrap">
-                      {tierName} Tier
-                    </h3>
-                    {/* Below Text */}
-                    <p className="text-white/50 text-[14px] md:text-[16px] font-medium font-['Barlow_Condensed'] leading-[130%] text-left md:text-center m-0 p-0 w-auto md:w-[72px] h-auto md:h-[11px] flex items-center justify-start md:justify-center overflow-visible whitespace-nowrap mt-1 md:mt-0">
-                      {meta.subtext}
-                    </p>
+                  <div className="flex flex-col items-center text-center">
+                    <span
+                      style={{
+                        fontFamily: '"Poppins", sans-serif',
+                        fontWeight: 500,
+                        fontSize: '14px',
+                        lineHeight: '18px',
+                        letterSpacing: '0%',
+                        color: '#000000',
+                        textAlign: 'center',
+                        margin: 0,
+                        whiteSpace: 'nowrap',
+                      }}
+                    >
+                      Current rank
+                    </span>
+                    <h2
+                      style={{
+                        fontFamily: '"Bricolage Grotesque", sans-serif',
+                        fontWeight: 700,
+                        fontSize: '27px',
+                        lineHeight: '32px',
+                        letterSpacing: '-0.02em',
+                        color: '#000000',
+                        textAlign: 'center',
+                        margin: 0,
+                        whiteSpace: 'nowrap',
+                      }}
+                    >
+                      {currentLevel ? getLevelLabel(currentLevel) : 'Unranked'}
+                    </h2>
                   </div>
+                </div>
 
-                  {/* Badge */}
+                <div className="flex items-center justify-between w-full">
+                  {/* Total Earned Box */}
                   <div
-                    className="ml-auto md:ml-0 flex items-center justify-center overflow-visible"
                     style={{
-                      width: '49px',
-                      height: '18px',
+                      width: '169px',
+                      height: '52px',
+                      borderRadius: '17px',
+                      paddingTop: '6px',
+                      paddingRight: '16px',
+                      paddingBottom: '6px',
+                      paddingLeft: '16px',
+                      background: 'rgba(249, 247, 241, 1)',
+                      gap: '2px',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      justifyContent: 'center',
                       boxSizing: 'border-box',
-                      borderRadius: '30px',
-                      background: tierName === 'Bronze'
-                        ? 'linear-gradient(180deg, #FF8C00 0%, #90540B 100%)'
-                        : tierName === 'Silver'
-                          ? 'linear-gradient(180deg, #DEDEDE 0%, #8B8B8B 100%)'
-                          : tierName === 'Gold'
-                            ? 'linear-gradient(180deg, #FEDF77 0%, #FCB91E 100%), linear-gradient(0deg, rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 0.1))'
-                            : tierName === 'Platinum'
-                              ? 'linear-gradient(180deg, #1FCBE6 0%, #217681 100%)'
-                              : tierName === 'Diamond'
-                                ? 'linear-gradient(180deg, #7F8AF7 0%, #793EB9 100%)'
-                                : 'linear-gradient(180deg, #FFA5FC 0%, #26BEFF 100%)'
                     }}
                   >
                     <span
-                      className="text-white font-['Barlow_Condensed'] font-semibold text-[10px] leading-[120%] text-center flex items-center justify-center overflow-visible whitespace-nowrap"
                       style={{
-                        width: '25px',
-                        height: '7px'
+                        fontFamily: '"Poppins", sans-serif',
+                        fontWeight: 500,
+                        fontSize: '14px',
+                        lineHeight: '16px',
+                        letterSpacing: '0%',
+                        color: '#000000',
+                        textAlign: 'center',
+                        margin: 0,
+                        whiteSpace: 'nowrap',
+                        display: 'inline-block',
                       }}
                     >
-                      {tierName}
+                      Total Earned
+                    </span>
+                    <div className="flex items-center gap-1">
+                      <img src="/coins/VIPcoin1.png" alt="Coin" className="w-3.5 h-3.5 object-contain shrink-0" />
+                      <span
+                        style={{
+                          fontFamily: '"Poppins", sans-serif',
+                          fontWeight: 500,
+                          fontSize: '14px',
+                          lineHeight: '16px',
+                          letterSpacing: '0%',
+                          color: 'rgba(231, 171, 24, 1)',
+                          margin: 0,
+                          whiteSpace: 'nowrap',
+                          display: 'inline-block',
+                        }}
+                      >
+                        {(totalEarned ?? 0).toLocaleString('de-DE')}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Rank Level Box */}
+                  <div
+                    style={{
+                      width: '153px',
+                      height: '52px',
+                      borderRadius: '17px',
+                      paddingTop: '6px',
+                      paddingRight: '16px',
+                      paddingBottom: '6px',
+                      paddingLeft: '16px',
+                      background: 'rgba(249, 247, 241, 1)',
+                      gap: '2px',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      boxSizing: 'border-box',
+                    }}
+                  >
+                    <span
+                      style={{
+                        fontFamily: '"Poppins", sans-serif',
+                        fontWeight: 500,
+                        fontSize: '14px',
+                        lineHeight: '16px',
+                        letterSpacing: '0%',
+                        color: '#000000',
+                        textAlign: 'center',
+                        margin: 0,
+                        whiteSpace: 'nowrap',
+                        display: 'inline-block',
+                      }}
+                    >
+                      Rank Level
+                    </span>
+                    <span
+                      style={{
+                        fontFamily: '"Bricolage Grotesque", sans-serif',
+                        fontWeight: 700,
+                        fontSize: '14px',
+                        lineHeight: '16px',
+                        letterSpacing: '-0.02em',
+                        color: 'rgba(36, 50, 77, 1)',
+                        textAlign: 'center',
+                        margin: 0,
+                        whiteSpace: 'nowrap',
+                        display: 'inline-block',
+                      }}
+                    >
+                      {rankLevelDisplay} / {totalRanks}
                     </span>
                   </div>
                 </div>
+              </div>
 
+              {/* Right Card: Progress to Next Rank */}
+              <div className="w-full lg:w-[948px] flex-1 bg-white rounded-[24px] p-8 shadow-sm flex flex-col justify-center min-h-[244px]">
+                {nextLevel ? (
+                  <div className="flex flex-col gap-6">
+                    <h3
+                      style={{
+                        fontFamily: '"Bricolage Grotesque", sans-serif',
+                        fontWeight: 700,
+                        fontSize: '27px',
+                        lineHeight: '28px',
+                        letterSpacing: '-0.02em',
+                        color: '#000000',
+                        margin: 0,
+                        whiteSpace: 'nowrap',
+                        transform: 'translateY(-35px)',
+                      }}
+                    >
+                      Progress to {getLevelLabel(nextLevel)}
+                    </h3>
 
-                {/* Vertical Divider */}
-                <div className="hidden md:block w-[1px] h-[120px] bg-white/10 shrink-0" />
-                <div className="md:hidden w-full h-[1px] bg-white/10 shrink-0" />
-
-                {/* Right Level Cards Grid */}
-                <div className="flex flex-col md:flex-row gap-[10px] items-center w-full md:w-[1010px] h-auto md:h-[141px] shrink-0 overflow-visible pb-2 md:pb-0">
-                  {tierLevels.map((lvl) => {
-                    return (
+                    {/* Progress Bar and Text Layout (width: 914, gap: 17px) */}
+                    <div
+                      className="w-full max-w-[914px] flex flex-col"
+                      style={{
+                        width: '914px',
+                        maxWidth: '100%',
+                        gap: '17px',
+                        opacity: 1,
+                        transform: 'translateY(40px)',
+                      }}
+                    >
+                      {/* Progress Bar Container with floating pill badge */}
                       <div
-                        key={lvl.key}
-                        className={`relative rounded-[20px] p-[16px] border flex flex-col justify-between h-[135px] w-full md:w-[330px] shrink-0 transition-all duration-300 backdrop-blur-[44px]
-                          ${lvl.reached ? 'border-[#2A2A2E]' : 'border-[#2A2A2E]/40 opacity-70'}`}
+                        className="relative w-full"
                         style={{
-                          background: 'rgba(0, 0, 0, 0.36)'
+                          width: '100%',
+                          opacity: 1,
+                          transform: 'rotate(0deg)',
                         }}
                       >
-                        {/* Top Half of Card (Header & Reached checkmark layout) */}
-                        <div className="flex items-center justify-between w-full h-auto md:h-[45px] gap-[10px] md:gap-[16px] shrink-0 overflow-visible">
-                          {/* Text block */}
-                          <div className="flex flex-col justify-between items-start w-auto md:w-[254px] h-auto md:h-[45px] shrink-0 overflow-visible flex-1">
-                            {/* Heading */}
-                            <h4 className="text-white text-xl md:text-[26px] font-semibold font-['Barlow_Condensed'] leading-[120%] m-0 p-0 w-auto md:w-[75px] h-auto md:h-[18px] flex items-center overflow-visible whitespace-nowrap">
-                              {getLevelLabel(lvl)}
-                            </h4>
-                            {/* Requires text */}
-                            <p className="text-[#888888] text-sm md:text-[16px] font-medium font-['Barlow_Condensed'] leading-[130%] m-0 p-0 flex items-center overflow-visible whitespace-nowrap mt-1 md:mt-0">
-                              Requires {lvl.threshold.toLocaleString('de-DE')} coins
-                            </p>
-                          </div>
-
-                          {/* Reached Checkmark */}
-                          {lvl.reached ? (
-                            <img
-                              src="/coins/tik1.png"
-                              alt="Reached"
-                              className="w-[24px] md:w-[28px] h-[24px] md:h-[28px] shrink-0 object-contain"
-                            />
-                          ) : (
-                            <div className="w-[24px] md:w-[28px] h-[24px] md:h-[28px] shrink-0" />
-                          )}
+                        <div
+                          className="w-full rounded-full overflow-hidden"
+                          style={{
+                            height: '14px',
+                            background: 'rgba(222, 218, 208, 1)',
+                          }}
+                        >
+                          <div
+                            className="h-full rounded-full transition-all duration-500 ease-out"
+                            style={{
+                              width: `${Math.min(Math.max(progressPct, 0), 100)}%`,
+                              background: 'rgba(36, 50, 77, 1)',
+                            }}
+                          />
                         </div>
+                        {/* Floating percentage tag */}
+                        <div
+                          className="absolute flex items-center justify-center pointer-events-none transition-all duration-500 ease-out"
+                          style={{
+                            top: '-36px',
+                            left: `clamp(0px, calc(${Math.min(Math.max(progressPct, 0), 100)}% - 7px), calc(100% - 58px))`,
+                            width: '58px',
+                            height: '31px',
+                            borderTopLeftRadius: '30px',
+                            borderTopRightRadius: '30px',
+                            borderBottomRightRadius: '30px',
+                            borderBottomLeftRadius: '0px',
+                            padding: '10px',
+                            gap: '10px',
+                            background: 'rgba(255, 255, 255, 1)',
+                            boxShadow: '0px 0px 25px 0px rgba(0, 0, 0, 0.14)',
+                            boxSizing: 'border-box',
+                            opacity: 1,
+                          }}
+                        >
+                          <span
+                            style={{
+                              fontFamily: '"Poppins", sans-serif',
+                              fontWeight: 700,
+                              fontSize: '13px',
+                              color: '#000000',
+                              lineHeight: '1',
+                              margin: 0,
+                            }}
+                          >
+                            {progressPct}%
+                          </span>
+                        </div>
+                      </div>
 
-                        {/* Divider */}
-                        <div className="w-full h-[1px] bg-white/10 my-2" />
+                      <div
+                        className="flex flex-wrap items-center"
+                        style={{
+                          gap: '5px',
+                          fontFamily: '"Poppins", sans-serif',
+                          fontWeight: 500,
+                          fontSize: '14px',
+                          lineHeight: '18px',
+                          letterSpacing: '0%',
+                          color: '#000000',
+                        }}
+                      >
+                        <span>Earn</span>
+                        <img src="/coins/VIPcoin1.png" alt="Coin" className="w-3.5 h-3.5 object-contain inline-block shrink-0" />
+                        <span
+                          style={{
+                            color: 'rgba(231, 171, 24, 1)',
+                            fontWeight: 500,
+                          }}
+                        >
+                          {coinsToNext.toLocaleString('de-DE')}
+                        </span>
+                        <span>more coins to unlock your</span>
+                        <img src="/coins/VIPcoin1.png" alt="Coin" className="w-3.5 h-3.5 object-contain inline-block shrink-0" />
+                        <span
+                          style={{
+                            color: 'rgba(231, 171, 24, 1)',
+                            fontWeight: 500,
+                          }}
+                        >
+                          {nextLevel.rewardAmount.toLocaleString('de-DE')}
+                        </span>
+                        <span>coin bonus.</span>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex flex-col gap-6">
+                    <h3
+                      style={{
+                        fontFamily: '"Bricolage Grotesque", sans-serif',
+                        fontWeight: 700,
+                        fontSize: '27px',
+                        lineHeight: '28px',
+                        letterSpacing: '-0.02em',
+                        color: '#000000',
+                        margin: 0,
+                        whiteSpace: 'nowrap',
+                        transform: 'translateY(-35px)',
+                      }}
+                    >
+                      Max Rank Achieved
+                    </h3>
+                    <div
+                      className="relative w-full max-w-[914px] pt-3 pb-1"
+                      style={{
+                        width: '914px',
+                        maxWidth: '100%',
+                        opacity: 1,
+                        transform: 'rotate(0deg)',
+                      }}
+                    >
+                      <div
+                        className="w-full rounded-full overflow-hidden"
+                        style={{
+                          height: '14px',
+                          background: 'rgba(222, 218, 208, 1)',
+                        }}
+                      >
+                        <div
+                          className="h-full rounded-full w-full"
+                          style={{
+                            background: 'rgba(36, 50, 77, 1)',
+                          }}
+                        />
+                      </div>
+                      <div
+                        className="absolute flex items-center justify-center pointer-events-none"
+                        style={{
+                          top: '-36px',
+                          left: '100%',
+                          transform: 'translateX(-100%)',
+                          width: '58px',
+                          height: '31px',
+                          borderTopLeftRadius: '30px',
+                          borderTopRightRadius: '30px',
+                          borderBottomRightRadius: '30px',
+                          borderBottomLeftRadius: '0px',
+                          padding: '10px',
+                          gap: '10px',
+                          background: 'rgba(255, 255, 255, 1)',
+                          boxShadow: '0px 0px 25px 0px rgba(0, 0, 0, 0.14)',
+                          boxSizing: 'border-box',
+                          opacity: 1,
+                        }}
+                      >
+                        <span
+                          style={{
+                            fontFamily: '"Poppins", sans-serif',
+                            fontWeight: 700,
+                            fontSize: '13px',
+                            color: '#000000',
+                            lineHeight: '1',
+                            margin: 0,
+                          }}
+                        >
+                          100%
+                        </span>
+                      </div>
+                    </div>
+                    <p className="text-xs md:text-sm font-medium text-[#71717A]">
+                      Congratulations! You've reached the highest rank.
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
 
-                        {/* Bottom Half of Card */}
-                        <div className="flex justify-between items-center w-full">
-                          {/* Reward Coins */}
-                          <div className="flex items-center gap-[4px] overflow-visible">
-                            <img
-                              src="/coins/Coin.png"
-                              alt="Coin"
-                              className="w-[22px] md:w-[26px] h-[22px] md:h-[26px] shrink-0 object-contain overflow-visible"
-                              style={{ filter: 'drop-shadow(0px 0px 14px rgba(254, 198, 53, 0.6))' }}
-                            />
-                            <span
-                              className="text-[24px] md:text-[28px] font-bold font-['Barlow_Condensed'] leading-none tracking-normal whitespace-nowrap flex items-center shrink-0 pb-[2px]"
-                              style={{
-                                backgroundImage: 'linear-gradient(180deg, #FEDF77 0%, #FCB91E 100%)',
-                                WebkitBackgroundClip: 'text',
-                                backgroundClip: 'text',
-                                color: 'transparent',
-                                filter: 'drop-shadow(0px 2px 4px rgba(0, 0, 0, 0.8))'
-                              }}
-                            >
-                              {lvl.rewardAmount.toLocaleString('de-DE')}
-                            </span>
+        {/* ─── Bottom Section (White Background: bg-white / #FFFFFF) ─── */}
+        <div className="w-full bg-white flex justify-center py-10 pb-24">
+          <div className="w-full max-w-[1328px] mx-auto px-4 md:px-8 lg:px-0 flex flex-col gap-10">
+            {tiers.map(tierName => {
+              const tierLevels = levels.filter(l => l.tier === tierName);
+              if (tierLevels.length === 0) return null;
+              const meta = TIER_METADATA[tierName];
+
+              return (
+                <div key={tierName} className="flex flex-col gap-4">
+                  {/* Tier Header */}
+                  <div className="flex items-center gap-2.5">
+                    <img
+                      src={meta.badge}
+                      alt={`${tierName} Badge`}
+                      className="object-contain shrink-0"
+                      style={{
+                        width: '84.03px',
+                        height: '84.03px',
+                        opacity: 1,
+                        transform: 'rotate(0deg)',
+                      }}
+                    />
+                    <div className="flex flex-col">
+                      <div className="flex items-center gap-2">
+                        <span
+                          style={{
+                            minWidth: '58px',
+                            height: '22px',
+                            borderRadius: '100px',
+                            background: meta.pillGradient,
+                            paddingTop: '7px',
+                            paddingBottom: '7px',
+                            paddingLeft: '8px',
+                            paddingRight: '8px',
+                            gap: '10px',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            color: '#FFFFFF',
+                            fontFamily: '"Poppins", sans-serif',
+                            fontWeight: 600,
+                            fontSize: '12px',
+                            lineHeight: '18px',
+                            letterSpacing: '0%',
+                            textAlign: 'center',
+                            boxSizing: 'border-box',
+                            opacity: 1,
+                          }}
+                        >
+                          {meta.pillText}
+                        </span>
+                      </div>
+                      <h3
+                        style={{
+                          fontFamily: '"Bricolage Grotesque", sans-serif',
+                          fontWeight: 700,
+                          fontSize: '27px',
+                          lineHeight: '28px',
+                          letterSpacing: '-0.02em',
+                          color: '#000000',
+                          margin: 0,
+                          marginTop: '4px',
+                        }}
+                      >
+                        {tierName} Tier
+                      </h3>
+                      <p
+                        style={{
+                          fontFamily: '"Poppins", sans-serif',
+                          fontWeight: 500,
+                          fontSize: '14px',
+                          lineHeight: '18px',
+                          letterSpacing: '0%',
+                          color: '#000000',
+                          margin: 0,
+                          marginTop: '2px',
+                        }}
+                      >
+                        {meta.subtext}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Divider line below tier header */}
+                  <div
+                    style={{
+                      width: '100%',
+                      maxWidth: '1329px',
+                      height: '0px',
+                      borderTop: '1px solid rgba(0, 0, 0, 1)',
+                      opacity: 0.1,
+                      boxSizing: 'border-box',
+                      margin: '4px 0 12px 0',
+                    }}
+                  />
+
+                  {/* Cards Grid */}
+                  <div className={`grid gap-6 ${tierLevels.length === 1 ? 'grid-cols-1 md:max-w-[427px]' : 'grid-cols-1 md:grid-cols-3'}`}>
+                    {tierLevels.map(lvl => {
+                      const isClaimed = lvl.claimed;
+                      const isClaimable = lvl.claimable;
+                      const isReached = lvl.reached;
+                      const isUnlocked = isReached || isClaimable || isClaimed;
+
+                      return (
+                        <div
+                          key={lvl.key}
+                          style={{
+                            width: '100%',
+                            maxWidth: '427px',
+                            height: '188px',
+                            borderRadius: '30px',
+                            background: isUnlocked ? meta.cardGradient : 'rgba(239, 239, 239, 1)',
+                            paddingBottom: '9px',
+                            gap: '8px',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            justifyContent: 'space-between',
+                            boxSizing: 'border-box',
+                            opacity: 1,
+                            transform: 'rotate(0deg)',
+                            overflow: 'hidden',
+                            boxShadow: '0px 4px 20px 0px rgba(0, 0, 0, 0.05)',
+                          }}
+                        >
+                          {/* Top Inner White Box */}
+                          <div
+                            style={{
+                              width: '100%',
+                              height: '156px',
+                              borderRadius: '30px',
+                              background: 'rgba(255, 255, 255, 1)',
+                              padding: '16px 20px',
+                              display: 'flex',
+                              flexDirection: 'column',
+                              justifyContent: 'space-between',
+                              boxSizing: 'border-box',
+                              opacity: 1,
+                              transform: 'rotate(0deg)',
+                            }}
+                          >
+                            <div className="flex items-center justify-between">
+                              {/* Coin + Reward Amount */}
+                              <div className="flex items-center gap-2">
+                                <img
+                                  src="/coins/VIPcoin1.png"
+                                  alt="Coin"
+                                  className="w-5 h-5 object-contain shrink-0"
+                                />
+                                <span
+                                  style={{
+                                    fontFamily: '"Poppins", sans-serif',
+                                    fontWeight: 700,
+                                    fontSize: '20px',
+                                    color: 'rgba(231, 171, 24, 1)',
+                                    lineHeight: '1',
+                                  }}
+                                >
+                                  {lvl.rewardAmount.toLocaleString('de-DE')}
+                                </span>
+                              </div>
+
+                              {/* Reached Checkmark */}
+                              {isReached && (
+                                <div className="w-5 h-5 rounded-full bg-[#3B82F6] flex items-center justify-center text-white shadow-sm shrink-0">
+                                  <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                                  </svg>
+                                </div>
+                              )}
+                            </div>
+
+                            <div>
+                              <h4
+                                style={{
+                                  fontFamily: '"Bricolage Grotesque", sans-serif',
+                                  fontWeight: 700,
+                                  fontSize: '18px',
+                                  color: '#000000',
+                                  margin: 0,
+                                  lineHeight: '1.2',
+                                }}
+                              >
+                                {getLevelLabel(lvl)}
+                              </h4>
+                              <p
+                                style={{
+                                  fontFamily: '"Poppins", sans-serif',
+                                  fontWeight: 500,
+                                  fontSize: '13px',
+                                  color: '#71717A',
+                                  margin: 0,
+                                  marginTop: '3px',
+                                }}
+                              >
+                                Requires {lvl.threshold.toLocaleString('de-DE')} coins
+                              </p>
+                            </div>
                           </div>
 
-                          <div className="flex items-center justify-end">
-                            {lvl.claimable ? (
+                          {/* Bottom Action Area (Claim / Locked / Claimed) */}
+                          <div className="w-full flex items-center justify-center px-4">
+                            {isClaimed ? (
+                              <span
+                                style={{
+                                  fontFamily: '"Poppins", sans-serif',
+                                  fontWeight: 600,
+                                  fontSize: '14px',
+                                  color: '#FFFFFF',
+                                  textAlign: 'center',
+                                  display: 'block',
+                                }}
+                              >
+                                Claimed
+                              </span>
+                            ) : isClaimable || isReached ? (
                               <button
                                 onClick={() => handleClaim(lvl.key)}
                                 disabled={claiming === lvl.key}
-                                className="flex items-center justify-center font-bold font-['Barlow_Condensed'] text-[14px] leading-none text-white transition-all duration-150 cursor-pointer hover:brightness-110 hover:translate-y-[1px] active:translate-y-[3px] active:shadow-none"
                                 style={{
-                                  width: '80px',
-                                  height: '32px',
-                                  boxSizing: 'border-box',
-                                  borderRadius: '8px',
-                                  padding: '10px 30px',
-                                  background: TIER_COLORS[tierName]?.gradient,
-                                  boxShadow: TIER_COLORS[tierName]?.shadow
+                                  fontFamily: '"Poppins", sans-serif',
+                                  fontWeight: 600,
+                                  fontSize: '14px',
+                                  color: '#FFFFFF',
+                                  textAlign: 'center',
+                                  width: '100%',
+                                  cursor: 'pointer',
+                                  background: 'transparent',
+                                  border: 'none',
+                                  outline: 'none',
                                 }}
                               >
                                 {claiming === lvl.key ? '...' : 'Claim'}
                               </button>
-                            ) : lvl.claimed ? (
-                              <span
-                                className="font-bold font-['Barlow_Condensed'] text-[18px] md:text-[20px] leading-[100%] text-right flex items-center justify-end overflow-visible whitespace-nowrap"
-                                style={
-                                  TIER_COLORS[tierName]?.textGradient
-                                    ? {
-                                      width: '58px',
-                                      backgroundImage: TIER_COLORS[tierName].textGradient,
-                                      WebkitBackgroundClip: 'text',
-                                      backgroundClip: 'text',
-                                      color: 'transparent'
-                                    }
-                                    : {
-                                      width: '58px',
-                                      color: TIER_COLORS[tierName]?.text || '#FF8C00'
-                                    }
-                                }
-                              >
-                                Claimed
-                              </span>
                             ) : (
-                              <div className="flex items-center gap-[6px]">
+                              <div
+                                style={{
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  gap: '6px',
+                                }}
+                              >
                                 <img
-                                  src="/coins/lockpe.png"
+                                  src="/coins/VIPlock.png"
                                   alt="Locked"
-                                  className="w-[20px] md:w-[24px] h-[20px] md:h-[24px] shrink-0 object-contain"
+                                  className="w-3.5 h-3.5 object-contain shrink-0"
                                 />
                                 <span
-                                  className="text-white font-semibold font-['Barlow_Condensed'] text-[18px] md:text-[20px] leading-[32px] text-center flex items-center justify-center overflow-visible whitespace-nowrap"
                                   style={{
-                                    width: '51px',
-                                    height: '32px'
+                                    width: '57px',
+                                    fontFamily: '"Poppins", sans-serif',
+                                    fontWeight: 500,
+                                    fontSize: '16px',
+                                    lineHeight: '28px',
+                                    letterSpacing: '0%',
+                                    color: 'rgba(157, 156, 155, 1)',
+                                    textAlign: 'center',
+                                    display: 'inline-block',
+                                    whiteSpace: 'nowrap',
                                   }}
                                 >
                                   Locked
@@ -624,39 +850,13 @@ const VipPage = () => {
                             )}
                           </div>
                         </div>
-                      </div>
-                    )
-                  })}
-                  {tierName === 'Opal' && (
-                    <div
-                      className="mx-auto md:ml-auto md:mr-0 shrink-0 relative flex items-center justify-center rounded-[40px] gap-[10px] mt-2 md:mt-0"
-                      style={{
-                        width: '112px',
-                        height: '47px',
-                        background: '#1A1A1E'
-                      }}
-                    >
-                      <div
-                        className="absolute inset-0 rounded-[40px] pointer-events-none"
-                        style={{
-                          padding: '1px',
-                          background: 'linear-gradient(180deg, #FFA5FC 0%, #26BEFF 100%)',
-                          WebkitMask: 'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)',
-                          WebkitMaskComposite: 'xor',
-                          maskComposite: 'exclude'
-                        }}
-                      />
-                      <span
-                        className="font-bold text-white text-[22px] font-['Barlow_Condensed'] leading-[130%] tracking-normal whitespace-nowrap"
-                      >
-                        Max Rank
-                      </span>
-                    </div>
-                  )}
+                      );
+                    })}
+                  </div>
                 </div>
-              </div>
-            );
-          })}
+              );
+            })}
+          </div>
         </div>
 
       </div>
@@ -665,3 +865,4 @@ const VipPage = () => {
 };
 
 export default VipPage;
+
