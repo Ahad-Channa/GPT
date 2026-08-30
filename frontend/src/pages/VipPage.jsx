@@ -13,6 +13,8 @@ const TIER_METADATA = {
     badge: '/coins/VIPbronze.png',
     pillGradient: 'linear-gradient(180deg, #F3B60A -26.79%, #BE6708 158.93%)',
     cardGradient: 'linear-gradient(278.68deg, #F3B60A 0%, #BE6708 104.71%)',
+    normalBoxBg: 'rgba(249, 247, 241, 1)',
+    claimedBoxBg: 'linear-gradient(98.68deg, #FFF0C7 -4.71%, #FFDFBD 100%)',
     pillText: 'Bronze',
     btnBg: 'bg-[#F59E0B] hover:bg-[#D97706]',
   },
@@ -21,6 +23,8 @@ const TIER_METADATA = {
     badge: '/coins/VIPsilver.png',
     pillGradient: 'linear-gradient(180deg, #D6D6D6 -26.79%, #929292 158.93%)',
     cardGradient: 'linear-gradient(180deg, #D6D6D6 75.1%, #929292 118.1%)',
+    normalBoxBg: 'rgba(249, 247, 241, 1)',
+    claimedBoxBg: 'linear-gradient(278.8deg, #F5F5F5 3.45%, #E2E2E2 109.81%)',
     pillText: 'Silver',
     btnBg: 'bg-[#F59E0B] hover:bg-[#D97706]',
   },
@@ -29,6 +33,8 @@ const TIER_METADATA = {
     badge: '/coins/VIPgold.png',
     pillGradient: 'linear-gradient(180deg, #FEDD72 -23.08%, #FCBA21 74.64%)',
     cardGradient: 'linear-gradient(180deg, #FEDD72 57.98%, #FCBA21 99.95%)',
+    normalBoxBg: 'rgba(249, 247, 241, 1)',
+    claimedBoxBg: 'linear-gradient(104.31deg, #FFF7DF 5.4%, #FFDE92 120.91%)',
     pillText: 'Gold',
     btnBg: 'bg-[#F59E0B] hover:bg-[#D97706]',
   },
@@ -37,6 +43,8 @@ const TIER_METADATA = {
     badge: '/coins/VIPplatinum.png',
     pillGradient: 'linear-gradient(180deg, #1FC4DE 0%, #207985 100%)',
     cardGradient: 'linear-gradient(180deg, #1FC4DE 71.44%, #207985 111.33%)',
+    normalBoxBg: 'rgba(249, 247, 241, 1)',
+    claimedBoxBg: 'linear-gradient(105.59deg, #F8FEFF -10.99%, #BCE1E6 116.1%)',
     pillText: 'Platinum',
     btnBg: 'bg-[#06B6D4] hover:bg-[#0891B2]',
   },
@@ -45,6 +53,8 @@ const TIER_METADATA = {
     badge: '/coins/VIPdimond.png',
     pillGradient: 'linear-gradient(180deg, #7E83F1 0%, #7941BB 100%)',
     cardGradient: 'linear-gradient(180deg, #7E83F1 67.28%, #7941BB 106.65%)',
+    normalBoxBg: 'rgba(249, 247, 241, 1)',
+    claimedBoxBg: 'linear-gradient(103.08deg, #F0F1FF -14.97%, #E8D5FF 100.01%)',
     pillText: 'Diamond',
     btnBg: 'bg-[#7C3AED] hover:bg-[#6D28D9]',
   },
@@ -53,6 +63,8 @@ const TIER_METADATA = {
     badge: '/coins/VIPopel.png',
     pillGradient: 'linear-gradient(180deg, #E92BFF 0%, #31BDFF 100%)',
     cardGradient: 'linear-gradient(180deg, #E92BFF 0%, #31BDFF 100%)',
+    normalBoxBg: 'rgba(249, 247, 241, 1)',
+    claimedBoxBg: 'linear-gradient(180deg, #7E83F1 0%, #7941BB 100%), linear-gradient(180deg, #E92BFF 0%, #31BDFF 100%)',
     pillText: 'Opal',
     btnBg: 'bg-[#A855F7] hover:bg-[#9333EA]',
   },
@@ -123,13 +135,13 @@ const VipPage = () => {
 
   return (
     <DashboardLayout hideStartEarning={true} fullWidth={true}>
-      <div className="w-full flex flex-col items-center">
+      <div className="w-full min-h-screen bg-[#FAFAFA] flex flex-col items-center">
 
-        {/* ─── Top Banner Area (Warm Background: rgba(249, 247, 241, 1)) ─── */}
+        {/* ─── Top Banner Area (#FAFAFA) ─── */}
         <div
-          className="w-full flex justify-center items-center transition-colors duration-300 py-8 sm:py-10 border-b border-[#EFECE6]/50"
+          className="w-full flex justify-center items-center transition-colors duration-300 py-8 sm:py-10"
           style={{
-            background: 'rgba(249, 247, 241, 1)',
+            background: '#FAFAFA',
           }}
         >
           <div
@@ -581,8 +593,8 @@ const VipPage = () => {
           </div>
         </div>
 
-        {/* ─── Bottom Section (White Background: bg-white / #FFFFFF) ─── */}
-        <div className="w-full bg-white flex justify-center py-10 pb-24">
+        {/* ─── Bottom Section (Background: #FAFAFA) ─── */}
+        <div className="w-full bg-[#FAFAFA] flex justify-center py-10 pb-24">
           <div className="w-full max-w-[1328px] mx-auto px-4 md:px-8 lg:px-0 flex flex-col gap-10">
             {tiers.map(tierName => {
               const tierLevels = levels.filter(l => l.tier === tierName);
@@ -684,7 +696,17 @@ const VipPage = () => {
                       const isClaimed = lvl.claimed;
                       const isClaimable = lvl.claimable;
                       const isReached = lvl.reached;
-                      const isUnlocked = isReached || isClaimable || isClaimed;
+
+                      let cardBg = 'rgba(239, 239, 239, 1)'; // locked default
+                      if (isClaimed) {
+                        cardBg = 'rgba(36, 50, 77, 1)'; // claimed
+                      } else if (isClaimable || isReached) {
+                        cardBg = meta.cardGradient; // unlocked & ready to claim
+                      }
+
+                      const innerBoxBg = isClaimed
+                        ? (meta.claimedBoxBg || 'rgba(249, 247, 241, 1)')
+                        : (meta.normalBoxBg || 'rgba(249, 247, 241, 1)');
 
                       return (
                         <div
@@ -694,7 +716,7 @@ const VipPage = () => {
                             maxWidth: '427px',
                             height: '188px',
                             borderRadius: '30px',
-                            background: isUnlocked ? meta.cardGradient : 'rgba(239, 239, 239, 1)',
+                            background: cardBg,
                             paddingBottom: '9px',
                             gap: '8px',
                             display: 'flex',
@@ -707,78 +729,99 @@ const VipPage = () => {
                             boxShadow: '0px 4px 20px 0px rgba(0, 0, 0, 0.05)',
                           }}
                         >
-                          {/* Top Inner White Box */}
+                          {/* Top Inner Box */}
                           <div
                             style={{
-                              width: '100%',
+                              width: 'calc(100% + 2px)',
+                              marginTop: '-1px',
+                              marginLeft: '-1px',
+                              marginRight: '-1px',
                               height: '156px',
                               borderRadius: '30px',
-                              background: 'rgba(255, 255, 255, 1)',
-                              padding: '16px 20px',
+                              background: innerBoxBg,
+                              padding: '23px 26px',
                               display: 'flex',
                               flexDirection: 'column',
-                              justifyContent: 'space-between',
+                              justifyContent: 'center',
                               boxSizing: 'border-box',
                               opacity: 1,
                               transform: 'rotate(0deg)',
                             }}
                           >
-                            <div className="flex items-center justify-between">
-                              {/* Coin + Reward Amount */}
-                              <div className="flex items-center gap-2">
-                                <img
-                                  src="/coins/VIPcoin1.png"
-                                  alt="Coin"
-                                  className="w-5 h-5 object-contain shrink-0"
-                                />
-                                <span
-                                  style={{
-                                    fontFamily: '"Poppins", sans-serif',
-                                    fontWeight: 700,
-                                    fontSize: '20px',
-                                    color: 'rgba(231, 171, 24, 1)',
-                                    lineHeight: '1',
-                                  }}
-                                >
-                                  {lvl.rewardAmount.toLocaleString('de-DE')}
-                                </span>
+                            <div
+                              style={{
+                                width: '100%',
+                                maxWidth: '374px',
+                                height: '109px',
+                                display: 'flex',
+                                flexDirection: 'column',
+                                justifyContent: 'space-between',
+                                gap: '41px',
+                                opacity: 1,
+                              }}
+                            >
+                              <div className="flex items-center justify-between">
+                                {/* Coin + Reward Amount */}
+                                <div className="flex items-center gap-2">
+                                  <img
+                                    src="/coins/VIPcoin1.png"
+                                    alt="Coin"
+                                    className="w-6 h-6 object-contain shrink-0"
+                                  />
+                                  <span
+                                    style={{
+                                      fontFamily: '"Bricolage Grotesque", sans-serif',
+                                      fontWeight: 700,
+                                      fontSize: '30px',
+                                      letterSpacing: '-0.02em',
+                                      color: 'rgba(231, 171, 24, 1)',
+                                      lineHeight: '1',
+                                      display: 'inline-block',
+                                    }}
+                                  >
+                                    {lvl.rewardAmount.toLocaleString('de-DE')}
+                                  </span>
+                                </div>
+
+                                {/* Reached Checkmark */}
+                                {isReached && (
+                                  <div className="w-5 h-5 rounded-full bg-[#3B82F6] flex items-center justify-center text-white shadow-sm shrink-0">
+                                    <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                                    </svg>
+                                  </div>
+                                )}
                               </div>
 
-                              {/* Reached Checkmark */}
-                              {isReached && (
-                                <div className="w-5 h-5 rounded-full bg-[#3B82F6] flex items-center justify-center text-white shadow-sm shrink-0">
-                                  <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                                  </svg>
-                                </div>
-                              )}
-                            </div>
-
-                            <div>
-                              <h4
-                                style={{
-                                  fontFamily: '"Bricolage Grotesque", sans-serif',
-                                  fontWeight: 700,
-                                  fontSize: '18px',
-                                  color: '#000000',
-                                  margin: 0,
-                                  lineHeight: '1.2',
-                                }}
-                              >
-                                {getLevelLabel(lvl)}
-                              </h4>
-                              <p
-                                style={{
-                                  fontFamily: '"Poppins", sans-serif',
-                                  fontWeight: 500,
-                                  fontSize: '13px',
-                                  color: '#71717A',
-                                  margin: 0,
-                                  marginTop: '3px',
-                                }}
-                              >
-                                Requires {lvl.threshold.toLocaleString('de-DE')} coins
-                              </p>
+                              <div>
+                                <h4
+                                  style={{
+                                    fontFamily: '"Bricolage Grotesque", sans-serif',
+                                    fontWeight: 700,
+                                    fontSize: '20px',
+                                    letterSpacing: '-0.02em',
+                                    color: '#000000',
+                                    margin: 0,
+                                    lineHeight: '1.2',
+                                  }}
+                                >
+                                  {getLevelLabel(lvl)}
+                                </h4>
+                                <p
+                                  style={{
+                                    fontFamily: '"Poppins", sans-serif',
+                                    fontWeight: 400,
+                                    fontSize: '14px',
+                                    lineHeight: '26px',
+                                    letterSpacing: '0%',
+                                    color: '#000000',
+                                    margin: 0,
+                                    marginTop: '2px',
+                                  }}
+                                >
+                                  Requires {lvl.threshold.toLocaleString('de-DE')} coins
+                                </p>
+                              </div>
                             </div>
                           </div>
 
