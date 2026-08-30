@@ -77,7 +77,7 @@ router.get('/history', async (req, res) => {
     const messages = await ChatMessage.find(query)
       .sort({ createdAt: -1 })
       .limit(50)
-      .populate('userId', 'displayName avatarUrl role totalEarned');
+      .populate('userId', 'displayName avatarUrl role totalEarned email');
 
     // Reverse so the oldest of the 50 is first, and newest is last (for UI rendering)
     const formattedMessages = messages.reverse().map(msg => ({
@@ -100,7 +100,7 @@ router.get('/all', requireChatMod, async (req, res) => {
     const messages = await ChatMessage.find()
       .sort({ createdAt: -1 })
       .limit(200)
-      .populate('userId', 'displayName avatarUrl role totalEarned');
+      .populate('userId', 'displayName avatarUrl role totalEarned email');
 
     const formattedMessages = messages.reverse().map(msg => ({
       _id: msg._id,

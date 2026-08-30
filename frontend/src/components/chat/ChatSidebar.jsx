@@ -3,267 +3,263 @@ import io from 'socket.io-client';
 import { useAuth } from '../../contexts/AuthContext';
 import { useNotifications } from '../../contexts/NotificationContext';
 import SupportChat from '../SupportChat';
-import {
-  FiX, FiSend, FiTrash2, FiUsers,
-  FiMessageSquare, FiHeadphones, FiZap,
-  FiShield
-} from 'react-icons/fi';
+import { FiX, FiSend, FiTrash2, FiMessageSquare } from 'react-icons/fi';
 import { motion, AnimatePresence } from 'framer-motion';
 import toast from 'react-hot-toast';
+import PublicProfileModal from '../PublicProfileModal';
+import { getLevelFromEarned, getLevelLabel } from '../../utils/vipLevels';
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 const SOCKET_URL = API.replace(/\/api\/?$/, '');
 
-import { useNavigate } from 'react-router-dom';
-import { FaCrown } from 'react-icons/fa';
-import PublicProfileModal from '../PublicProfileModal';
-import VipBadge from '../VipBadge';
-import { getLevelFromEarned, getLevelLabel, TIER_STYLES } from '../../utils/vipLevels';
-
-const getInitials = (name) => (name || '?').slice(0, 2).toUpperCase();
-const getHue = (name) => name ? [...name].reduce((a, c) => a + c.charCodeAt(0), 0) % 360 : 210;
-
-const AvatarCircle = ({ user, size = 20 }) => {
-  const dName = user?.displayName || 'Unknown';
-  const photo = user?.avatarUrl || user?.photoURL || `/avatars/avatar1.png`;
-  return (
-    <div style={{
-      width: size, height: size, borderRadius: '50%', flexShrink: 0,
-      overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center',
-      background: 'transparent',
-      color: 'white', fontSize: size * 0.45, fontWeight: 'bold'
-    }}>
-      <img src={photo} alt="avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-    </div>
-  );
+const TIER_BADGES = {
+  Bronze: {
+    icon: '/coins/VIPbronze.png',
+    pillBg: 'linear-gradient(180deg, #F3B60A -26.79%, #BE6708 158.93%)',
+    borderColor: '#BE6708',
+  },
+  Silver: {
+    icon: '/coins/VIPsilver.png',
+    pillBg: 'linear-gradient(180deg, #D6D6D6 -26.79%, #929292 158.93%)',
+    borderColor: '#929292',
+  },
+  Gold: {
+    icon: '/coins/VIPgold.png',
+    pillBg: 'linear-gradient(180deg, #FEDD72 -23.08%, #FCBA21 74.64%)',
+    borderColor: '#FCBA21',
+  },
+  Platinum: {
+    icon: '/coins/VIPplatinum.png',
+    pillBg: 'linear-gradient(180deg, #1FC4DE 0%, #207985 100%)',
+    borderColor: '#207985',
+  },
+  Diamond: {
+    icon: '/coins/VIPdimond.png',
+    pillBg: 'linear-gradient(180deg, #7E83F1 0%, #7941BB 100%)',
+    borderColor: '#7941BB',
+  },
+  Opal: {
+    icon: '/coins/VIPopel.png',
+    pillBg: 'linear-gradient(180deg, #7E83F1 0%, #7941BB 100%), linear-gradient(180deg, #E92BFF 0%, #31BDFF 100%)',
+    borderColor: '#E92BFF',
+  },
 };
 
-const RoleSymbol = ({ user }) => {
-  const role = user?.role || 'user';
-  const [hover, setHover] = useState(false);
-
-  /* ── owner ── */
-  if (role === 'owner') {
-    const color = '#fbbf24';
-    return (
-      <div
-        onMouseEnter={() => { }}
-        onMouseLeave={() => { }}
-        style={{ position: 'relative', display: 'inline-flex', alignItems: 'center', cursor: 'default' }}
-      >
-        <SymbolWithHover
-          icon={<FaCrown size={13} />}
-          label="Owner"
-          color={color}
-          shift={0}
-        />
-      </div>
-    );
-  }
-
-  /* ── admin: Admin badge AND VIP badge separately ── */
-  if (role === 'admin') {
-    const vipLevel = getLevelFromEarned(user?.totalEarned || 0);
-    return (
-      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-        <HoverBadge
-          badge={
-            <div style={{
-              minWidth: '44px', height: '18px',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              background: 'linear-gradient(180deg, #FE7777 0%, #FC1E1E 100%)', color: '#ffffff',
-              fontSize: '10px', fontWeight: 600,
-              borderRadius: '59.47px', border: 'none',
-              padding: '0 7.94px',
-              gap: '2.63px',
-              boxSizing: 'border-box',
-              fontFamily: '"Barlow Condensed", sans-serif', letterSpacing: '0px'
-            }}>Admin</div>
-          }
-          label="Admin"
-          color="#ef4444"
-          shift={0}
-        />
-        {vipLevel && (
-          <HoverBadge
-            badge={<VipBadge tier={vipLevel.tier} rank={vipLevel.rank} size="xs" />}
-            label={`VIP: ${getLevelLabel(vipLevel)}`}
-            color={TIER_STYLES[vipLevel.tier]?.border || '#94a3b8'}
-            shift={0}
-          />
-        )}
-      </div>
-    );
-  }
-
-  /* ── moderator ── */
-  if (role === 'moderator') {
-    const color = '#38bdf8';
-    return (
-      <HoverBadge
-        badge={
-          <div style={{
-            width: '49px', height: '18px',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            background: 'rgba(56,189,248,0.05)', color: '#38bdf8',
-            fontSize: '11px', fontWeight: 600,
-            borderRadius: '59.47px', border: '1px solid #38bdf8',
-            fontFamily: '"Barlow Condensed", sans-serif', letterSpacing: '0px'
-          }}>Mod</div>
-        }
-        label="Moderator"
-        color={color}
-        shift={0}
-      />
-    );
-  }
-
-  /* ── regular user: VIP badge with styled hover popup ── */
+const AvatarWithBadge = ({ user, size = 33 }) => {
+  const photo = user?.avatarUrl || user?.photoURL || '/avatars/avatar1.png';
   const vipLevel = getLevelFromEarned(user?.totalEarned || 0);
-  if (!vipLevel) return null;
+  const tierName = vipLevel?.tier || 'Bronze';
+  const tierMeta = TIER_BADGES[tierName] || TIER_BADGES.Bronze;
 
-  const tierStyle = TIER_STYLES[vipLevel.tier];
-  const color = tierStyle?.border || '#94a3b8';
-  return (
-    <HoverBadge
-      badge={<VipBadge tier={vipLevel.tier} rank={vipLevel.rank} size="xs" />}
-      label={`VIP: ${getLevelLabel(vipLevel)}`}
-      color={color}
-      shift={0}
-    />
-  );
-};
-
-/* ── reusable hover-popup wrapper ── */
-const HoverBadge = ({ badge, label, color, shift = 0 }) => {
   return (
     <div
-      style={{ position: 'relative', display: 'inline-flex', alignItems: 'center', cursor: 'default' }}
+      className="relative shrink-0 flex items-center justify-center"
+      style={{
+        width: `${size}px`,
+        height: `${size}px`,
+        borderRadius: '50%',
+        background: tierMeta.pillBg,
+        padding: '2px',
+        boxSizing: 'border-box',
+        opacity: 1,
+        transform: 'rotate(0deg)',
+      }}
     >
-      {badge}
+      {/* Inner White Space Gap + Avatar Image */}
+      <div
+        className="w-full h-full rounded-full overflow-hidden flex items-center justify-center bg-white"
+        style={{
+          padding: '1.5px',
+          boxSizing: 'border-box',
+        }}
+      >
+        <img
+          src={photo}
+          alt={user?.displayName || 'User'}
+          className="w-full h-full rounded-full object-cover"
+          onError={(e) => { e.currentTarget.src = '/avatars/avatar1.png'; }}
+        />
+      </div>
+
+      {tierMeta?.icon && (
+        <img
+          src={tierMeta.icon}
+          alt="VIP Tier"
+          className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 object-contain drop-shadow-sm pointer-events-none"
+          style={{ width: '16px', height: '16px' }}
+        />
+      )}
     </div>
   );
 };
 
-/* ── owner icon with hover (kept for owner role) ── */
-const SymbolWithHover = ({ icon, label, color, shift = 0 }) => {
+const RoleBadges = ({ user }) => {
+  const role = user?.role || 'user';
+  const vipLevel = getLevelFromEarned(user?.totalEarned || 0);
+  const tierName = vipLevel?.tier || 'Bronze';
+  const tierMeta = TIER_BADGES[tierName] || TIER_BADGES.Bronze;
+  const rankLabel = vipLevel ? (vipLevel.rank ? `${vipLevel.tier} ${vipLevel.rank}` : vipLevel.tier) : 'Bronze';
+
   return (
-    <div
-      style={{ position: 'relative', display: 'inline-flex', alignItems: 'center', cursor: 'default' }}
-    >
-      <span style={{ color, display: 'inline-flex', alignItems: 'center' }}>{icon}</span>
+    <div className="flex items-center gap-1.5 shrink-0">
+      {/* Admin badge */}
+      {role === 'admin' && (
+        <span
+          style={{
+            background: '#CC001C',
+            color: '#FFFFFF',
+            fontSize: '11px',
+            fontWeight: 700,
+            lineHeight: '1',
+            borderRadius: '100px',
+            padding: '4px 10px',
+            fontFamily: '"Poppins", sans-serif',
+            display: 'inline-flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          Admin
+        </span>
+      )}
+
+      {/* Moderator badge */}
+      {role === 'moderator' && (
+        <span
+          style={{
+            background: '#0284C7',
+            color: '#FFFFFF',
+            fontSize: '11px',
+            fontWeight: 700,
+            lineHeight: '1',
+            borderRadius: '100px',
+            padding: '4px 10px',
+            fontFamily: '"Poppins", sans-serif',
+            display: 'inline-flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          Mod
+        </span>
+      )}
+
+      {/* Tier Badge */}
+      <span
+        style={{
+          background: tierMeta.pillBg,
+          color: '#FFFFFF',
+          fontSize: '11px',
+          fontWeight: 600,
+          lineHeight: '1',
+          borderRadius: '100px',
+          padding: '4px 10px',
+          fontFamily: '"Poppins", sans-serif',
+          display: 'inline-flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+      >
+        {rankLabel}
+      </span>
     </div>
   );
 };
 
-/* ─── message row (boxed style) ─────────────────────────── */
 const MessageRow = ({ msg, canModerate, onDelete, deletingId, onUserClick }) => {
   const [hov, setHov] = useState(false);
   const isDeleting = deletingId === msg._id;
 
-  const nameColor = msg.user?.role === 'admin' ? '#fbbf24'
-    : msg.user?.role === 'moderator' ? '#38bdf8'
-      : msg.user?.role === 'owner' ? '#fbbf24'
-        : '#e2e8f0';
+  const date = new Date(msg.createdAt || Date.now());
+  const formattedDate = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 
   return (
     <div
       onMouseEnter={() => setHov(true)}
       onMouseLeave={() => setHov(false)}
-      style={{
-        display: 'flex',
-        marginBottom: 12,
-        opacity: isDeleting ? 0.4 : 1,
-        transition: 'background 0.15s, opacity 0.2s',
-        padding: '14px 12px',
-        borderRadius: '12px',
-        background: 'rgba(0, 0, 0, 0.36)',
-        backdropFilter: 'blur(44px)',
-        position: 'relative',
-        zIndex: hov ? 50 : 1,
-        gap: '8px',
-        minHeight: '71px',
-        boxSizing: 'border-box',
-        flexShrink: 0
-      }}
+      className="relative flex items-start gap-3 w-full pb-3.5 mb-3.5 border-b border-[#EFEFEF] transition-opacity"
+      style={{ opacity: isDeleting ? 0.4 : 1 }}
     >
-      {/* ── Left Column: Avatar & Timestamp ── */}
-      <div style={{ 
-        width: '24px', height: '43px', 
-        display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'space-between', 
-        flexShrink: 0 
-      }}>
-        <button
-          onClick={() => msg.user?._id && onUserClick(msg.user._id)}
-          style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', display: 'flex', alignItems: 'center' }}
-        >
-          <AvatarCircle user={msg.user} size={24} />
-        </button>
-        <span style={{ 
-          fontFamily: '"Barlow Condensed", sans-serif',
-          fontWeight: 600,
-          fontSize: '10px',
-          lineHeight: '130%',
-          color: 'rgba(73, 178, 101, 1)',
-          letterSpacing: '0px',
-          whiteSpace: 'nowrap'
-        }}>
-          {(() => {
-            const date = new Date(msg.createdAt);
-            const today = new Date();
-            const isToday = date.getDate() === today.getDate() &&
-              date.getMonth() === today.getMonth() &&
-              date.getFullYear() === today.getFullYear();
-            return isToday
-              ? date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-              : date.toLocaleDateString([], { month: 'short', day: 'numeric' });
-          })()}
-        </span>
-      </div>
+      {/* Left Column: Avatar with mini tier badge (33x33) */}
+      <button
+        onClick={() => msg.user?._id && onUserClick(msg.user._id)}
+        className="cursor-pointer bg-transparent border-none p-0 outline-none mt-0.5"
+      >
+        <AvatarWithBadge user={msg.user} size={33} />
+      </button>
 
-      {/* ── Right Column: Username, Role & Message ── */}
-      <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minWidth: 0, minHeight: '43px', gap: '6px' }}>
-        <div style={{ 
-          width: '100%', height: '18px', 
-          display: 'flex', alignItems: 'center', gap: '6px' 
-        }}>
-          <button
-            onClick={() => msg.user?._id && onUserClick(msg.user._id)}
+      {/* Right Column: Name, Timestamp, Badges & Message */}
+      <div className="flex-1 min-w-0 flex flex-col">
+        <div className="flex items-center justify-between gap-2 w-full">
+          <div
             style={{
-              flex: 1, minWidth: 0, height: '13px',
-              display: 'flex', alignItems: 'center',
-              fontWeight: 600, color: 'rgba(255, 255, 255, 1)', cursor: 'pointer',
-              background: 'none', border: 'none', padding: 0,
-              fontFamily: '"Barlow Condensed", sans-serif', fontSize: '18px',
-              lineHeight: '120%', letterSpacing: '0px',
-              textAlign: 'left',
-              whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis'
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '3px',
+              minWidth: 0,
+              opacity: 1,
+              transform: 'rotate(0deg)',
             }}
-            onMouseEnter={(e) => e.target.style.textDecoration = 'underline'}
-            onMouseLeave={(e) => e.target.style.textDecoration = 'none'}
           >
-            {msg.user?.displayName || 'Unknown'}
-          </button>
-
-          {/* Role / VIP badge on Top Right */}
-          <div style={{ display: 'flex', alignItems: 'center', minWidth: 'auto', flexShrink: 0, justifyContent: 'flex-end' }}>
-            <RoleSymbol user={msg.user} />
+            <button
+              onClick={() => msg.user?._id && onUserClick(msg.user._id)}
+              style={{
+                fontFamily: '"Bricolage Grotesque", sans-serif',
+                fontWeight: 700,
+                fontSize: '18px',
+                lineHeight: '100%',
+                letterSpacing: '0%',
+                color: '#000000',
+                textAlign: 'left',
+                background: 'transparent',
+                border: 'none',
+                padding: 0,
+                cursor: 'pointer',
+                opacity: 1,
+                transform: 'rotate(0deg)',
+                whiteSpace: 'nowrap',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+              }}
+              className="hover:underline"
+            >
+              {msg.user?.displayName || msg.user?.username || (msg.user?.email ? msg.user.email.split('@')[0] : '') || msg.senderName || 'Ahad'}
+            </button>
+            <span
+              style={{
+                fontFamily: '"Poppins", sans-serif',
+                fontWeight: 500,
+                fontSize: '12px',
+                lineHeight: '18px',
+                letterSpacing: '0%',
+                color: 'rgba(14, 15, 12, 0.7)',
+                opacity: 1,
+                transform: 'rotate(0deg)',
+              }}
+            >
+              {formattedDate}
+            </span>
           </div>
+
+          {/* Badges on right */}
+          <RoleBadges user={msg.user} />
         </div>
 
-        {/* Message text */}
-        <div style={{ 
-          width: '100%',
-          color: 'rgba(136, 136, 136, 1)', 
-          fontSize: '16px', 
-          fontWeight: 500,
-          lineHeight: '130%', 
-          letterSpacing: '0px',
-          wordBreak: 'break-word',
-          fontFamily: '"Barlow Condensed", sans-serif'
-        }}>
+        {/* Message Text */}
+        <p
+          style={{
+            fontFamily: '"Poppins", sans-serif',
+            fontWeight: 400,
+            fontSize: '13.5px',
+            lineHeight: '1.45',
+            color: '#18181B',
+            margin: 0,
+            marginTop: '6px',
+            wordBreak: 'break-word',
+          }}
+        >
           {msg.message}
-        </div>
+        </p>
       </div>
 
       {canModerate && hov && (
@@ -271,32 +267,26 @@ const MessageRow = ({ msg, canModerate, onDelete, deletingId, onUserClick }) => 
           onClick={() => onDelete(msg._id)}
           disabled={isDeleting}
           title="Delete"
-          style={{
-            position: 'absolute', right: 8, top: 8,
-            padding: '2px 4px', borderRadius: 5,
-            background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.2)',
-            color: '#f87171', cursor: 'pointer', display: 'flex', alignItems: 'center'
-          }}
+          className="absolute right-1 bottom-2 p-1.5 rounded-lg bg-red-50 hover:bg-red-100 text-red-500 transition-colors border-none cursor-pointer"
         >
-          <FiTrash2 style={{ fontSize: 10 }} />
+          <FiTrash2 size={13} />
         </button>
       )}
     </div>
   );
 };
 
-/* ─── main sidebar component ────────────────────────────── */
 const ChatSidebar = ({ isOpen, onClose }) => {
   const { mongoUser, currentUser, isAdmin } = useAuth();
   const { setHasUnreadChat } = useNotifications();
   const isMod = mongoUser?.role === 'moderator';
   const canModerate = isAdmin || isMod;
 
-  const [activeTab, setActiveTab] = useState('chat');   // 'chat' | 'support'
+  const [activeTab, setActiveTab] = useState('chat'); // 'chat' | 'support'
   const [messages, setMessages] = useState([]);
   const [newMsg, setNewMsg] = useState('');
   const [socket, setSocket] = useState(null);
-  const [liveCount, setLiveCount] = useState(0);
+  const [liveCount, setLiveCount] = useState(9);
   const [deletingId, setDeletingId] = useState(null);
   const [loading, setLoading] = useState(true);
   const [selectedUserId, setSelectedUserId] = useState(null);
@@ -344,7 +334,6 @@ const ChatSidebar = ({ isOpen, onClose }) => {
     }
   }, [loading, messages, activeTab]);
 
-  // Mark chat as read when chat is open, without disabling page scrolling
   useEffect(() => {
     if (isOpen) {
       setHasUnreadChat(false);
@@ -387,9 +376,9 @@ const ChatSidebar = ({ isOpen, onClose }) => {
       }
     });
     sock.on('messageDeleted', ({ _id }) => setMessages(p => p.filter(m => m._id !== _id)));
-    sock.on('liveCount', ({ count }) => setLiveCount(count));
+    sock.on('liveCount', ({ count }) => setLiveCount(count || 1));
     return () => sock.disconnect();
-  }, [isOpen]);
+  }, [isOpen, scrollToBottom]);
 
   useEffect(() => {
     if (isOpen && activeTab === 'chat') setTimeout(() => inputRef.current?.focus(), 350);
@@ -448,208 +437,243 @@ const ChatSidebar = ({ isOpen, onClose }) => {
     <AnimatePresence>
       {isOpen && (
         <>
-          {/* Backdrop (closes chat on click outside) */}
+          {/* Backdrop (closes chat on click outside on mobile) */}
           <motion.div
-            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
             onClick={onClose}
-            style={{
-              position: 'fixed', inset: 0,
-              background: 'transparent',
-              zIndex: 40,
-            }}
-            className="lg:bg-transparent bg-black/50 backdrop-blur-sm lg:backdrop-blur-none lg:pointer-events-none"
+            style={{ position: 'fixed', inset: 0, zIndex: 45 }}
+            className="lg:bg-transparent bg-black/40 backdrop-blur-sm lg:backdrop-blur-none lg:pointer-events-none"
           />
 
-          {/* ── Sidebar panel ───────────────────────── */}
+          {/* ── Main Chat Container (width: 370, height: 100vh, top: 0, right: 0, bottom: 0) ── */}
           <motion.div
-            initial={{ x: '100%' }} animate={{ x: 0 }} exit={{ x: '100%' }}
-            transition={{ type: 'spring', damping: 30, stiffness: 240 }}
-            className="w-full max-w-[400px] lg:w-[290px]"
+            initial={{ x: '110%', opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            exit={{ x: '110%', opacity: 0 }}
+            transition={{ type: 'spring', damping: 28, stiffness: 220 }}
             style={{
-              position: 'fixed', right: 0, top: 0, bottom: 0,
-              background: 'rgba(26, 27, 26, 1)',
-              borderLeft: '1px solid rgba(255,255,255,0.07)',
-              boxShadow: '-20px 4px 34px 0px rgba(0, 0, 0, 0.6)',
+              position: 'fixed',
+              top: '0px',
+              right: '0px',
+              bottom: '0px',
+              width: '100%',
+              maxWidth: '370px',
+              height: '100vh',
+              borderRadius: '30px 0 0 30px',
+              background: '#FFFFFF',
+              boxShadow: '-8px 0px 36px 0px rgba(0, 0, 0, 0.12)',
+              borderLeft: '1px solid rgba(0, 0, 0, 0.05)',
               opacity: 1,
-              zIndex: 50, display: 'flex', flexDirection: 'column',
-              fontFamily: "'Barlow', system-ui, sans-serif"
+              transform: 'rotate(0deg)',
+              zIndex: 50,
+              display: 'flex',
+              flexDirection: 'column',
+              overflow: 'hidden',
+              boxSizing: 'border-box',
             }}
           >
-            {/* Absolute Close Button */}
-            <button
-              onClick={onClose}
-              style={{
-                position: 'absolute',
-                top: '12px',
-                right: '12px',
-                background: 'transparent',
-                border: 'none',
-                color: '#888888',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                zIndex: 60,
-                width: '28px',
-                height: '28px',
-                borderRadius: '50%',
-                transition: 'color 0.2s, background 0.2s',
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.color = '#ffffff';
-                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.08)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.color = '#888888';
-                e.currentTarget.style.background = 'transparent';
-              }}
-            >
-              <FiX size={18} />
-            </button>
+            {/* ── Header Area ── */}
+            <div className="p-4 pb-3 flex flex-col gap-3 shrink-0">
+              {/* Row 1: Tab Pills (Live Chat / Support) & Close Button */}
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => setActiveTab('chat')}
+                    style={{
+                      width: '99px',
+                      height: '39px',
+                      borderRadius: '100px',
+                      background: activeTab === 'chat' ? 'rgba(36, 50, 77, 1)' : 'rgba(249, 247, 241, 1)',
+                      color: activeTab === 'chat' ? '#FFFFFF' : '#000000',
+                      padding: '15px 18px',
+                      gap: '8px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      boxSizing: 'border-box',
+                      border: 'none',
+                      cursor: 'pointer',
+                      fontFamily: '"Bricolage Grotesque", sans-serif',
+                      fontWeight: 700,
+                      fontSize: '14px',
+                      lineHeight: '100%',
+                      letterSpacing: '0%',
+                      textAlign: 'center',
+                      opacity: 1,
+                      transform: 'rotate(0deg)',
+                      transition: 'all 0.2s',
+                      whiteSpace: 'nowrap',
+                    }}
+                  >
+                    Live Chat
+                  </button>
+                  <button
+                    onClick={() => setActiveTab('support')}
+                    style={{
+                      width: '99px',
+                      height: '39px',
+                      borderRadius: '100px',
+                      background: activeTab === 'support' ? 'rgba(36, 50, 77, 1)' : 'rgba(249, 247, 241, 1)',
+                      color: activeTab === 'support' ? '#FFFFFF' : '#000000',
+                      padding: '15px 18px',
+                      gap: '8px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      boxSizing: 'border-box',
+                      border: 'none',
+                      cursor: 'pointer',
+                      fontFamily: '"Bricolage Grotesque", sans-serif',
+                      fontWeight: 700,
+                      fontSize: '14px',
+                      lineHeight: '100%',
+                      letterSpacing: '0%',
+                      textAlign: 'center',
+                      opacity: 1,
+                      transform: 'rotate(0deg)',
+                      transition: 'all 0.2s',
+                      whiteSpace: 'nowrap',
+                    }}
+                  >
+                    Support
+                  </button>
+                </div>
 
-            {/* ── Header ─────────────────────────────── */}
-            <div style={{
-              padding: '32px 20px 12px',
-              display: 'flex', flexDirection: 'column', gap: '12px',
-              background: 'transparent',
-              flexShrink: 0
-            }}>
-              {/* Top Row: Tabs Container */}
-              <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%' }}>
-                <div 
-                  className="w-full max-w-[360px] lg:w-[250px] h-[72px] lg:h-[60px] p-[14px] lg:p-[8px]"
+                {/* Close Button (Black Circle with White X - 22x22) */}
+                <button
+                  onClick={onClose}
                   style={{
-                    background: 'rgba(44, 45, 44, 1)',
-                    borderRadius: '10px',
-                    boxSizing: 'border-box',
+                    width: '22px',
+                    height: '22px',
+                    borderRadius: '50%',
+                    background: '#000000',
+                    color: '#FFFFFF',
+                    border: 'none',
                     display: 'flex',
                     alignItems: 'center',
-                    justifyContent: 'center'
+                    justifyContent: 'center',
+                    cursor: 'pointer',
+                    transition: 'transform 0.15s, opacity 0.15s',
+                    flexShrink: 0,
+                    opacity: 1,
+                    transform: 'rotate(0deg)',
                   }}
+                  className="hover:opacity-85 active:scale-95"
                 >
-                  <div 
-                    className="w-[324px] lg:w-[234px] h-[44px] lg:h-[40px]"
-                    style={{
-                      display: 'flex',
-                      borderRadius: '10px'
-                    }}
-                  >
-                    {[
-                      { key: 'chat', title: 'Live Chat' },
-                      { key: 'support', title: 'Support' }
-                    ].map(({ key, title }) => {
-                      const active = activeTab === key;
-                      return (
-                        <button
-                          key={key}
-                          onClick={() => setActiveTab(key)}
-                          className="w-[162px] lg:w-[117px] h-[44px] lg:h-[40px] text-[18px] lg:text-[16px]"
-                          style={{
-                            padding: '6px 12px', gap: '8px',
-                            border: 'none', cursor: 'pointer',
-                            fontWeight: 700, lineHeight: '24px',
-                            borderRadius: '10px',
-                            background: active ? 'rgba(73, 178, 101, 1)' : 'transparent',
-                            color: active ? '#ffffff' : '#94a3b8',
-                            boxShadow: active ? '0px 3px 0px 0px rgba(39, 109, 58, 1)' : 'none',
-                            transition: 'all 0.2s',
-                            fontFamily: '"Barlow Condensed", sans-serif',
-                            letterSpacing: '0px',
-                            display: 'flex', alignItems: 'center', justifyContent: 'center',
-                            flexShrink: 0
-                          }}
-                        >
-                          {title}
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
+                  <FiX size={12} />
+                </button>
               </div>
 
-              {/* Bottom Row: Online Count */}
+              {/* Row 2: Online Status Banner (Green pill - 341x29) */}
               {activeTab === 'chat' && (
-                <div style={{ display: 'flex', justifyContent: 'flex-end', marginRight: '-20px' }}>
-                  <div 
-                    className="w-[108px] lg:w-[88px] h-[30px] lg:h-[24px] px-[8px] pr-[28px] lg:pr-[20px] py-[8px] lg:py-[4px]"
-                    style={{
-                      boxSizing: 'border-box',
-                      display: 'flex', alignItems: 'center', gap: '5px',
-                      background: 'rgba(73, 178, 101, 0.23)', 
-                      borderTopLeftRadius: '100px',
-                      borderBottomLeftRadius: '100px',
-                      borderTopRightRadius: 0,
-                      borderBottomRightRadius: 0
-                    }}
-                  >
-                    <div className="w-2.5 h-2.5 lg:w-2 lg:h-2 rounded-full bg-[#49B265] shrink-0" />
-                    <span 
-                      className="text-[20px] lg:text-[15px]"
-                      style={{ 
-                        fontFamily: '"Barlow Condensed", sans-serif',
-                        fontWeight: 600,
-                        lineHeight: '20px',
-                        letterSpacing: '0px',
-                        color: 'rgba(255, 255, 255, 1)',
-                        whiteSpace: 'nowrap',
-                        display: 'flex', alignItems: 'center', height: '14px'
+                <div
+                  style={{
+                    width: '100%',
+                    maxWidth: '341px',
+                    height: '29px',
+                    borderRadius: '40px',
+                    background: 'rgba(198, 248, 211, 1)',
+                    padding: '10px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    boxSizing: 'border-box',
+                    opacity: 1,
+                    transform: 'rotate(0deg)',
+                    margin: '0 auto',
+                  }}
+                >
+                  <div className="flex items-center gap-2">
+                    <span
+                      style={{
+                        width: '7px',
+                        height: '7px',
+                        borderRadius: '50%',
+                        background: '#10B981',
+                        display: 'inline-block',
+                        flexShrink: 0,
+                        opacity: 1,
+                        transform: 'rotate(0deg)',
+                      }}
+                    />
+                    <span
+                      style={{
+                        fontFamily: '"Bricolage Grotesque", sans-serif',
+                        fontWeight: 700,
+                        fontSize: '14px',
+                        lineHeight: '100%',
+                        letterSpacing: '0%',
+                        color: '#000000',
                       }}
                     >
-                      {liveCount} online
+                      Online
                     </span>
                   </div>
+                  <span
+                    style={{
+                      fontFamily: '"Bricolage Grotesque", sans-serif',
+                      fontWeight: 700,
+                      fontSize: '14px',
+                      lineHeight: '100%',
+                      letterSpacing: '0%',
+                      color: '#000000',
+                    }}
+                  >
+                    {String(liveCount).padStart(2, '0')}
+                  </span>
                 </div>
               )}
             </div>
 
-            {/* ── Body ────────────────────────────────── */}
+            {/* ── Body Area ── */}
             {activeTab === 'support' ? (
               <SupportChat socket={socket} />
             ) : loading ? (
-              <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <div style={{
-                  width: 22, height: 22, borderRadius: '50%',
-                  border: '2px solid rgba(99,102,241,0.35)',
-                  borderTopColor: '#6366f1',
-                  animation: 'sidebarSpin 0.8s linear infinite'
-                }} />
+              <div className="flex-1 flex items-center justify-center">
+                <div
+                  style={{
+                    width: 26,
+                    height: 26,
+                    borderRadius: '50%',
+                    border: '2.5px solid #24324D',
+                    borderTopColor: 'transparent',
+                    animation: 'sidebarSpin 0.8s linear infinite',
+                  }}
+                />
               </div>
             ) : (
               <>
-                {/* Messages */}
+                {/* Message List */}
                 <div
                   ref={scrollContainerRef}
                   onScroll={handleScroll}
-                  style={{ flex: 1, overflowY: 'auto', padding: '12px 14px 6px', display: 'flex', flexDirection: 'column', gap: 0 }}
-                  className="custom-scrollbar"
+                  className="flex-1 overflow-y-auto px-4 py-2 flex flex-col no-scrollbar"
+                  style={{
+                    scrollbarWidth: 'none',
+                    msOverflowStyle: 'none',
+                  }}
                 >
                   {loadingMore && (
-                    <div style={{ display: 'flex', justifyContent: 'center', padding: '10px 0' }}>
-                      <div style={{
-                        width: 18, height: 18, borderRadius: '50%',
-                        border: '2px solid rgba(99,102,241,0.35)',
-                        borderTopColor: '#6366f1',
-                        animation: 'sidebarSpin 0.8s linear infinite'
-                      }} />
+                    <div className="flex justify-center py-2">
+                      <div
+                        style={{
+                          width: 20,
+                          height: 20,
+                          borderRadius: '50%',
+                          border: '2px solid #24324D',
+                          borderTopColor: 'transparent',
+                          animation: 'sidebarSpin 0.8s linear infinite',
+                        }}
+                      />
                     </div>
                   )}
+
                   {messages.length === 0 ? (
-                    <div style={{
-                      flex: 1, display: 'flex', flexDirection: 'column',
-                      alignItems: 'center', justifyContent: 'center',
-                      gap: 10, color: '#334155', paddingTop: '3rem'
-                    }}>
-                      <div style={{
-                        width: 48, height: 48, borderRadius: 13,
-                        background: 'rgba(255,255,255,0.03)',
-                        border: '1px solid rgba(255,255,255,0.06)',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center'
-                      }}>
-                        <FiMessageSquare style={{ fontSize: 20, color: '#334155' }} />
-                      </div>
-                      <p style={{ margin: 0, fontSize: '0.8rem', color: '#475569' }}>
-                        No messages yet — say hi! 👋
-                      </p>
+                    <div className="flex-1 flex flex-col items-center justify-center text-center text-gray-400 gap-2 py-12">
+                      <FiMessageSquare size={28} className="text-gray-300" />
+                      <p className="text-sm font-medium text-gray-500 m-0">No messages yet — say hi! 👋</p>
                     </div>
                   ) : (
                     messages.map((msg, idx) => (
@@ -666,88 +690,99 @@ const ChatSidebar = ({ isOpen, onClose }) => {
                   <div ref={endRef} />
                 </div>
 
-                {/* char counter */}
-                {newMsg.length > 400 && (
-                  <div style={{ padding: '3px 16px 0', display: 'flex', justifyContent: 'flex-end' }}>
-                    <span style={{ fontSize: '0.62rem', color: newMsg.length >= 500 ? '#ef4444' : '#64748b' }}>
-                      {500 - newMsg.length} left
-                    </span>
-                  </div>
-                )}
-
-                {/* Input */}
-                <div style={{
-                  padding: '12px 20px 20px',
-                  background: 'transparent',
-                  flexShrink: 0
-                }}>
+                {/* ── Bottom Input Area ── */}
+                <div className="p-4 pt-2 shrink-0">
                   {mongoUser ? (
-                    <form onSubmit={sendMessage} style={{ display: 'flex', gap: 7, alignItems: 'flex-end' }}>
-                      <div style={{ flex: 1, position: 'relative' }}>
+                    <form onSubmit={sendMessage} className="w-full">
+                      <div
+                        style={{
+                          width: '100%',
+                          height: '48px',
+                          borderRadius: '100px',
+                          background: 'rgba(239, 239, 239, 1)',
+                          padding: '4px 6px 4px 18px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          boxSizing: 'border-box',
+                          gap: '8px',
+                        }}
+                      >
                         <input
                           ref={inputRef}
                           type="text"
                           value={newMsg}
                           onChange={e => setNewMsg(e.target.value)}
-                          placeholder="Message everyone…"
+                          placeholder="Massage everyone..."
                           maxLength={500}
                           style={{
-                            width: '100%', height: '48px', boxSizing: 'border-box',
+                            flex: 1,
+                            minWidth: 0,
                             background: 'transparent',
-                            border: '1px solid rgba(73, 178, 101, 1)',
-                            borderRadius: '10px', padding: '10px 40px 10px 20px',
-                            color: 'rgba(255, 255, 255, 1)', fontSize: '16px',
-                            fontWeight: 500, lineHeight: '100%',
-                            outline: 'none', transition: 'border 0.15s',
-                            caretColor: '#49B265',
-                            fontFamily: '"Barlow Condensed", sans-serif',
-                            letterSpacing: '0px'
+                            border: 'none',
+                            outline: 'none',
+                            fontFamily: '"Poppins", sans-serif',
+                            fontWeight: 400,
+                            fontSize: '14px',
+                            color: '#000000',
                           }}
-                          onFocus={e => { e.target.style.boxShadow = '0 0 0 1px rgba(73, 178, 101, 0.5)'; }}
-                          onBlur={e => { e.target.style.boxShadow = 'none'; }}
                         />
+
                         <button
                           type="submit"
                           disabled={!newMsg.trim()}
                           style={{
-                            position: 'absolute', right: 12, top: '50%',
-                            transform: 'translateY(-50%)',
-                            background: 'transparent',
+                            width: '36px',
+                            height: '36px',
+                            borderRadius: '50%',
+                            background: '#24324D',
                             border: 'none',
+                            color: '#FFFFFF',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
                             cursor: newMsg.trim() ? 'pointer' : 'default',
-                            display: 'flex', alignItems: 'center', justifyContent: 'center',
-                            color: newMsg.trim() ? '#49B265' : 'rgba(73, 178, 101, 0.5)',
-                            transition: 'all 0.18s'
+                            opacity: newMsg.trim() ? 1 : 0.85,
+                            transition: 'transform 0.15s, opacity 0.15s',
+                            flexShrink: 0,
                           }}
+                          className="hover:opacity-90 active:scale-95"
                         >
-                          <img 
-                            src="/coins/send.png" 
-                            alt="Send" 
-                            style={{ 
-                              width: '24px', height: '24px',
-                              opacity: newMsg.trim() ? 1 : 0.5,
-                              transition: 'opacity 0.18s'
-                            }} 
-                          />
+                          <svg
+                            width="16"
+                            height="16"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            xmlns="http://www.w3.org/2000/svg"
+                            style={{ transform: 'rotate(45deg) translate(-1px, 1px)' }}
+                          >
+                            <path
+                              d="M2.01 21L23 12L2.01 3L2 10L17 12L2 14L2.01 21Z"
+                              fill="currentColor"
+                            />
+                          </svg>
                         </button>
                       </div>
                     </form>
                   ) : (
-                    <p style={{ textAlign: 'center', fontSize: '0.78rem', color: '#475569', margin: 0, padding: '6px 0' }}>
-                      <FiZap style={{ display: 'inline', marginRight: 5, color: '#6366f1' }} />
+                    <div className="text-center py-2 text-xs font-semibold text-gray-500">
                       Log in to join the conversation
-                    </p>
+                    </div>
                   )}
-
                 </div>
               </>
             )}
           </motion.div>
 
           <style>{`
-            @keyframes sidebarPulse {
-              0%, 100% { opacity: 1; box-shadow: 0 0 5px #10b981; }
-              50%       { opacity: 0.5; box-shadow: 0 0 2px #10b981; }
+            .no-scrollbar::-webkit-scrollbar {
+              display: none !important;
+              width: 0 !important;
+              height: 0 !important;
+            }
+            .no-scrollbar {
+              -ms-overflow-style: none !important;
+              scrollbar-width: none !important;
             }
             @keyframes sidebarSpin {
               from { transform: rotate(0deg); }
