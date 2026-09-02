@@ -40,7 +40,7 @@ const TIER_BADGES = {
   },
   Opal: {
     icon: '/coins/VIPopel.png',
-    pillBg: 'linear-gradient(180deg, #7E83F1 0%, #7941BB 100%), linear-gradient(180deg, #E92BFF 0%, #31BDFF 100%)',
+    pillBg: 'linear-gradient(180deg, #E92BFF 0%, #31BDFF 100%)',
     borderColor: '#E92BFF',
   },
 };
@@ -580,50 +580,36 @@ const ChatSidebar = ({ isOpen, onClose }) => {
               </div>
 
               {/* Row 2: Online Status Banner (Green pill - 341x29) */}
-              {activeTab === 'chat' && (
-                <div
-                  style={{
-                    width: '100%',
-                    maxWidth: '341px',
-                    height: '29px',
-                    borderRadius: '40px',
-                    background: 'rgba(198, 248, 211, 1)',
-                    padding: '10px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    boxSizing: 'border-box',
-                    opacity: 1,
-                    transform: 'rotate(0deg)',
-                    margin: '0 auto',
-                  }}
-                >
-                  <div className="flex items-center gap-2">
-                    <span
-                      style={{
-                        width: '7px',
-                        height: '7px',
-                        borderRadius: '50%',
-                        background: '#10B981',
-                        display: 'inline-block',
-                        flexShrink: 0,
-                        opacity: 1,
-                        transform: 'rotate(0deg)',
-                      }}
-                    />
-                    <span
-                      style={{
-                        fontFamily: '"Bricolage Grotesque", sans-serif',
-                        fontWeight: 700,
-                        fontSize: '14px',
-                        lineHeight: '100%',
-                        letterSpacing: '0%',
-                        color: '#000000',
-                      }}
-                    >
-                      Online
-                    </span>
-                  </div>
+              <div
+                style={{
+                  width: '100%',
+                  maxWidth: '341px',
+                  height: '29px',
+                  borderRadius: '40px',
+                  background: 'rgba(198, 248, 211, 1)',
+                  padding: '10px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  boxSizing: 'border-box',
+                  opacity: 1,
+                  transform: 'rotate(0deg)',
+                  margin: '0 auto',
+                }}
+              >
+                <div className="flex items-center gap-2">
+                  <span
+                    style={{
+                      width: '7px',
+                      height: '7px',
+                      borderRadius: '50%',
+                      background: '#10B981',
+                      display: 'inline-block',
+                      flexShrink: 0,
+                      opacity: 1,
+                      transform: 'rotate(0deg)',
+                    }}
+                  />
                   <span
                     style={{
                       fontFamily: '"Bricolage Grotesque", sans-serif',
@@ -634,10 +620,22 @@ const ChatSidebar = ({ isOpen, onClose }) => {
                       color: '#000000',
                     }}
                   >
-                    {String(liveCount).padStart(2, '0')}
+                    Online
                   </span>
                 </div>
-              )}
+                <span
+                  style={{
+                    fontFamily: '"Bricolage Grotesque", sans-serif',
+                    fontWeight: 700,
+                    fontSize: '14px',
+                    lineHeight: '100%',
+                    letterSpacing: '0%',
+                    color: '#000000',
+                  }}
+                >
+                  {String(liveCount).padStart(2, '0')}
+                </span>
+              </div>
             </div>
 
             {/* ── Body Area ── */}

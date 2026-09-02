@@ -634,174 +634,159 @@ const Header = ({ onChatToggle, chatOpen, fullWidth }) => {
                 <motion.div
                   initial={{ opacity: 0, y: 6, scale: 0.97 }}
                   animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: 6, scale: 0.97 }}
                   transition={{ duration: 0.15 }}
-                  className="absolute right-0 z-50 flex flex-col backdrop-blur-[44px] w-[160px] lg:w-[171px] p-[10px] lg:p-[12px] gap-[8px] lg:gap-[12px] top-[46px] lg:top-[58px]"
+                  className="absolute right-0 z-50 flex flex-col"
                   style={{
-                    background: 'rgba(36, 36, 36, 1)',
-                    borderRadius: '10px',
-                    boxShadow: '0px 4px 20px rgba(0, 0, 0, 0.4)',
-                    border: '1px solid rgba(255, 255, 255, 0.08)'
+                    width: '214px',
+                    borderRadius: '12px',
+                    padding: '14px 15px 18px 13px',
+                    gap: '12px',
+                    background: 'rgba(255, 255, 255, 1)',
+                    boxShadow: '0px 10px 30px rgba(0, 0, 0, 0.12)',
+                    border: '1px solid rgba(223, 225, 209, 0.8)',
+                    top: '54px',
+                    boxSizing: 'border-box',
                   }}
                 >
-                  {/* Balance (mobile) - hidden since we show it inline now */}
-
                   {/* My Profile */}
                   <button
                     id="header-profile-link-nav"
                     onClick={() => { setIsDropdownOpen(false); navigate('/dashboard/profile'); }}
-                    className="text-left text-white/95 hover:text-white transition-colors flex items-center shrink-0 cursor-pointer w-full h-[20px] lg:h-[22px] gap-[6px] lg:gap-[8px]"
+                    className="text-left hover:opacity-75 transition-opacity flex items-center shrink-0 cursor-pointer w-full"
                     style={{
                       background: 'transparent',
                       border: 'none',
                       padding: 0,
-                      opacity: 1
+                      opacity: 1,
                     }}
                   >
-                    <img
-                      src="/coins/profile.png"
-                      alt="Profile"
-                      className="shrink-0 object-contain w-[18px] h-[18px] lg:w-[22px] lg:h-[22px]"
-                      style={{ opacity: 1 }}
-                    />
                     <span
-                      className="font-['Barlow_Condensed'] flex items-center overflow-visible whitespace-nowrap text-[13px] lg:text-[16px] text-white"
                       style={{
-                        fontFamily: "'Barlow Condensed', sans-serif",
-                        fontWeight: 600,
-                        lineHeight: '120%',
+                        fontFamily: '"Bricolage Grotesque", sans-serif',
+                        fontWeight: 700,
+                        fontStyle: 'normal',
+                        fontSize: '15px',
+                        lineHeight: '16px',
                         letterSpacing: '0%',
-                        verticalAlign: 'middle',
-                        opacity: 1
+                        color: '#000000',
                       }}
                     >
                       My Profile
                     </span>
                   </button>
 
-                  <div className="w-full h-[1px] bg-white/5 shrink-0" />
+                  <div style={{ width: '100%', height: '1px', background: 'rgba(0, 0, 0, 0.06)', flexShrink: 0 }} />
 
                   {/* Daily Bonus (Mobile only) */}
                   <button
                     onClick={() => { setIsDropdownOpen(false); navigate('/dashboard/daily-bonus'); }}
-                    className="lg:hidden text-left text-white/95 hover:text-white transition-colors flex items-center shrink-0 cursor-pointer w-full h-[20px] lg:h-[22px] gap-[6px] lg:gap-[8px]"
+                    className="lg:hidden text-left hover:opacity-75 transition-opacity flex items-center shrink-0 cursor-pointer w-full"
                     style={{
                       background: 'transparent',
                       border: 'none',
                       padding: 0,
-                      opacity: 1
+                      opacity: 1,
                     }}
                   >
-                    <img
-                      src="/coins/gift1.png"
-                      alt="Daily Bonus"
-                      className="shrink-0 object-contain w-[18px] h-[18px] lg:w-[22px] lg:h-[22px]"
-                    />
                     <span
-                      className="font-['Barlow_Condensed'] flex items-center overflow-visible whitespace-nowrap text-[13px] lg:text-[16px] text-white"
                       style={{
-                        fontFamily: "'Barlow Condensed', sans-serif",
-                        fontWeight: 600,
-                        lineHeight: '120%'
+                        fontFamily: '"Bricolage Grotesque", sans-serif',
+                        fontWeight: 700,
+                        fontStyle: 'normal',
+                        fontSize: '15px',
+                        lineHeight: '16px',
+                        letterSpacing: '0%',
+                        color: '#000000',
                       }}
                     >
                       Daily Bonus
                     </span>
                   </button>
-                  <div className="lg:hidden w-full h-[1px] bg-white/5 shrink-0" />
+                  <div className="lg:hidden" style={{ width: '100%', height: '1px', background: 'rgba(0, 0, 0, 0.06)', flexShrink: 0 }} />
 
                   {/* Leaderboard (Mobile only) */}
                   <button
                     onClick={() => { setIsDropdownOpen(false); navigate('/dashboard/leaderboard'); }}
-                    className="lg:hidden text-left text-white/95 hover:text-white transition-colors flex items-center shrink-0 cursor-pointer w-full h-[20px] lg:h-[22px] gap-[6px] lg:gap-[8px]"
+                    className="lg:hidden text-left hover:opacity-75 transition-opacity flex items-center shrink-0 cursor-pointer w-full"
                     style={{
                       background: 'transparent',
                       border: 'none',
                       padding: 0,
-                      opacity: 1
+                      opacity: 1,
                     }}
                   >
-                    <img
-                      src="/coins/cup.png"
-                      alt="Leaderboard"
-                      className="shrink-0 object-contain w-[18px] h-[18px] lg:w-[22px] lg:h-[22px]"
-                    />
                     <span
-                      className="font-['Barlow_Condensed'] flex items-center overflow-visible whitespace-nowrap text-[13px] lg:text-[16px] text-white"
                       style={{
-                        fontFamily: "'Barlow Condensed', sans-serif",
-                        fontWeight: 600,
-                        lineHeight: '120%'
+                        fontFamily: '"Bricolage Grotesque", sans-serif',
+                        fontWeight: 700,
+                        fontStyle: 'normal',
+                        fontSize: '15px',
+                        lineHeight: '16px',
+                        letterSpacing: '0%',
+                        color: '#000000',
                       }}
                     >
                       Leaderboard
                     </span>
                   </button>
-                  <div className="lg:hidden w-full h-[1px] bg-white/5 shrink-0" />
+                  <div className="lg:hidden" style={{ width: '100%', height: '1px', background: 'rgba(0, 0, 0, 0.06)', flexShrink: 0 }} />
 
                   {/* Affiliates (Mobile only) */}
                   <button
                     onClick={() => { setIsDropdownOpen(false); navigate('/dashboard/affiliates'); }}
-                    className="lg:hidden text-left text-white/95 hover:text-white transition-colors flex items-center shrink-0 cursor-pointer w-full h-[20px] lg:h-[22px] gap-[6px] lg:gap-[8px]"
+                    className="lg:hidden text-left hover:opacity-75 transition-opacity flex items-center shrink-0 cursor-pointer w-full"
                     style={{
                       background: 'transparent',
                       border: 'none',
                       padding: 0,
-                      opacity: 1
+                      opacity: 1,
                     }}
                   >
-                    <img
-                      src="/coins/person1.png"
-                      alt="Affiliates"
-                      className="shrink-0 object-contain w-[18px] h-[18px] lg:w-[22px] lg:h-[22px]"
-                    />
                     <span
-                      className="font-['Barlow_Condensed'] flex items-center overflow-visible whitespace-nowrap text-[13px] lg:text-[16px] text-white"
                       style={{
-                        fontFamily: "'Barlow Condensed', sans-serif",
-                        fontWeight: 600,
-                        lineHeight: '120%'
+                        fontFamily: '"Bricolage Grotesque", sans-serif',
+                        fontWeight: 700,
+                        fontStyle: 'normal',
+                        fontSize: '15px',
+                        lineHeight: '16px',
+                        letterSpacing: '0%',
+                        color: '#000000',
                       }}
                     >
                       Affiliates
                     </span>
                   </button>
-                  <div className="lg:hidden w-full h-[1px] bg-white/5 shrink-0" />
+                  <div className="lg:hidden" style={{ width: '100%', height: '1px', background: 'rgba(0, 0, 0, 0.06)', flexShrink: 0 }} />
 
                   {/* VIP Status */}
                   <button
                     id="header-vip-link-nav"
                     onClick={() => { setIsDropdownOpen(false); navigate('/dashboard/vip'); }}
-                    className="text-left text-white/95 hover:text-white transition-colors flex items-center shrink-0 cursor-pointer w-full h-[20px] lg:h-[22px] gap-[6px] lg:gap-[8px]"
+                    className="text-left hover:opacity-75 transition-opacity flex items-center shrink-0 cursor-pointer w-full"
                     style={{
                       background: 'transparent',
                       border: 'none',
                       padding: 0,
-                      opacity: 1
+                      opacity: 1,
                     }}
                   >
-                    <img
-                      src="/coins/vipstar.png"
-                      alt="VIP Status"
-                      className="shrink-0 object-contain w-[18px] h-[18px] lg:w-[22px] lg:h-[22px]"
-                      style={{ opacity: 1 }}
-                    />
                     <span
-                      className="font-['Barlow_Condensed'] flex items-center overflow-visible whitespace-nowrap text-[13px] lg:text-[16px] text-white"
                       style={{
-                        fontFamily: "'Barlow Condensed', sans-serif",
-                        fontWeight: 600,
-                        lineHeight: '120%',
+                        fontFamily: '"Bricolage Grotesque", sans-serif',
+                        fontWeight: 700,
+                        fontStyle: 'normal',
+                        fontSize: '15px',
+                        lineHeight: '16px',
                         letterSpacing: '0%',
-                        verticalAlign: 'middle',
-                        opacity: 1
+                        color: '#000000',
                       }}
                     >
                       VIP Status
                     </span>
                   </button>
 
-                  <div className="w-full h-[1px] bg-white/5 shrink-0" />
-
+                  <div style={{ width: '100%', height: '1px', background: 'rgba(0, 0, 0, 0.06)', flexShrink: 0 }} />
 
                   {/* Admin Panel */}
                   {isAdmin && (
@@ -809,35 +794,29 @@ const Header = ({ onChatToggle, chatOpen, fullWidth }) => {
                       <button
                         id="header-admin-link"
                         onClick={() => { setIsDropdownOpen(false); navigate('/admin'); }}
-                        className="text-left text-amber-400 hover:text-amber-300 transition-colors flex items-center shrink-0 cursor-pointer w-full h-[20px] lg:h-[22px] gap-[6px] lg:gap-[8px]"
+                        className="text-left hover:opacity-75 transition-opacity flex items-center shrink-0 cursor-pointer w-full"
                         style={{
                           background: 'transparent',
                           border: 'none',
                           padding: 0,
-                          opacity: 1
+                          opacity: 1,
                         }}
                       >
-                        <div
-                          className="flex items-center justify-center shrink-0 w-[18px] h-[18px] lg:w-[22px] lg:h-[22px]"
-                          style={{ opacity: 1 }}
-                        >
-                          <FiSettings className="text-amber-400 text-[13px] lg:text-sm" />
-                        </div>
                         <span
-                          className="font-['Barlow_Condensed'] flex items-center overflow-visible whitespace-nowrap text-[13px] lg:text-[16px] text-amber-400"
                           style={{
-                            fontFamily: "'Barlow Condensed', sans-serif",
-                            fontWeight: 600,
-                            lineHeight: '120%',
+                            fontFamily: '"Bricolage Grotesque", sans-serif',
+                            fontWeight: 700,
+                            fontStyle: 'normal',
+                            fontSize: '15px',
+                            lineHeight: '16px',
                             letterSpacing: '0%',
-                            verticalAlign: 'middle',
-                            opacity: 1
+                            color: '#F59E0B',
                           }}
                         >
                           Admin Panel
                         </span>
                       </button>
-                      <div className="w-full h-[1px] bg-white/5 shrink-0" />
+                      <div style={{ width: '100%', height: '1px', background: 'rgba(0, 0, 0, 0.06)', flexShrink: 0 }} />
                     </>
                   )}
 
@@ -845,29 +824,23 @@ const Header = ({ onChatToggle, chatOpen, fullWidth }) => {
                   <button
                     id="header-logout-btn"
                     onClick={() => { setIsDropdownOpen(false); logout(); }}
-                    className="text-left text-red-400 hover:text-red-300 transition-colors flex items-center shrink-0 cursor-pointer w-full h-[20px] lg:h-[22px] gap-[6px] lg:gap-[8px]"
+                    className="text-left hover:opacity-75 transition-opacity flex items-center shrink-0 cursor-pointer w-full"
                     style={{
                       background: 'transparent',
                       border: 'none',
                       padding: 0,
-                      opacity: 1
+                      opacity: 1,
                     }}
                   >
-                    <img
-                      src="/coins/logout.png"
-                      alt="Sign Out"
-                      className="shrink-0 object-contain w-[18px] h-[18px] lg:w-[22px] lg:h-[22px]"
-                      style={{ opacity: 1 }}
-                    />
                     <span
-                      className="font-['Barlow_Condensed'] flex items-center overflow-visible whitespace-nowrap text-[13px] lg:text-[16px] text-red-400"
                       style={{
-                        fontFamily: "'Barlow Condensed', sans-serif",
-                        fontWeight: 600,
-                        lineHeight: '120%',
+                        fontFamily: '"Bricolage Grotesque", sans-serif',
+                        fontWeight: 700,
+                        fontStyle: 'normal',
+                        fontSize: '15px',
+                        lineHeight: '16px',
                         letterSpacing: '0%',
-                        verticalAlign: 'middle',
-                        opacity: 1
+                        color: '#000000',
                       }}
                     >
                       Sign Out

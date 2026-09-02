@@ -1,237 +1,335 @@
 import { useState, useEffect, useLayoutEffect, useRef, useCallback } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { FiSend, FiHeadphones, FiClock, FiCheckCircle, FiAlertCircle, FiLoader } from 'react-icons/fi';
-import { FaCrown } from 'react-icons/fa';
-import VipBadge from './VipBadge';
-import { getLevelFromEarned, getLevelLabel, TIER_STYLES } from '../utils/vipLevels';
+import { FiHeadphones } from 'react-icons/fi';
+import { getLevelFromEarned } from '../utils/vipLevels';
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
-const AvatarCircle = ({ user, size = 20 }) => {
-  const photo = user?.avatarUrl || user?.photoURL || `/avatars/avatar1.png`;
-  return (
-    <div style={{
-      width: size, height: size, borderRadius: '50%', flexShrink: 0,
-      overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center',
-      background: 'transparent',
-      color: 'white', fontSize: size * 0.45, fontWeight: 'bold'
-    }}>
-      <img src={photo} alt="avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-    </div>
-  );
+const TIER_BADGES = {
+  Bronze: {
+    icon: '/coins/VIPbronze.png',
+    pillBg: 'linear-gradient(180deg, #F3B60A -26.79%, #BE6708 158.93%)',
+    borderColor: '#BE6708',
+  },
+  Silver: {
+    icon: '/coins/VIPsilver.png',
+    pillBg: 'linear-gradient(180deg, #D6D6D6 -26.79%, #929292 158.93%)',
+    borderColor: '#929292',
+  },
+  Gold: {
+    icon: '/coins/VIPgold.png',
+    pillBg: 'linear-gradient(180deg, #FEDD72 -23.08%, #FCBA21 74.64%)',
+    borderColor: '#FCBA21',
+  },
+  Platinum: {
+    icon: '/coins/VIPplatinum.png',
+    pillBg: 'linear-gradient(180deg, #1FC4DE 0%, #207985 100%)',
+    borderColor: '#207985',
+  },
+  Diamond: {
+    icon: '/coins/VIPdimond.png',
+    pillBg: 'linear-gradient(180deg, #7E83F1 0%, #7941BB 100%)',
+    borderColor: '#7941BB',
+  },
+  Opal: {
+    icon: '/coins/VIPopel.png',
+    pillBg: 'linear-gradient(180deg, #E92BFF 0%, #31BDFF 100%)',
+    borderColor: '#E92BFF',
+  },
 };
 
-const RoleSymbol = ({ user }) => {
-  const role = user?.role || 'user';
+const AvatarWithBadge = ({ user, isSupport = false, size = 33 }) => {
+  const photo = isSupport ? '/coins/headp.png' : (user?.avatarUrl || user?.photoURL || '/avatars/avatar1.png');
+  const vipLevel = getLevelFromEarned(user?.totalEarned || 0);
+  const tierName = vipLevel?.tier || 'Bronze';
+  const tierMeta = TIER_BADGES[tierName] || TIER_BADGES.Bronze;
 
-  /* ── owner ── */
-  if (role === 'owner') {
-    const color = '#fbbf24';
+  if (isSupport) {
     return (
-      <SymbolWithHover
-        icon={<FaCrown size={13} />}
-        label="Owner"
-        color={color}
-      />
-    );
-  }
-
-  if (role === 'admin') {
-    const vipLevel = getLevelFromEarned(user?.totalEarned || 0);
-    return (
-      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-        <HoverBadge
-          badge={
-            <div style={{
-              minWidth: '44px', height: '18px',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              background: 'linear-gradient(180deg, #FE7777 0%, #FC1E1E 100%)', color: '#ffffff',
-              fontSize: '10px', fontWeight: 600,
-              borderRadius: '59.47px', border: 'none',
-              padding: '0 7.94px',
-              gap: '2.63px',
-              boxSizing: 'border-box',
-              fontFamily: '"Barlow Condensed", sans-serif', letterSpacing: '0px'
-            }}>Admin</div>
-          }
-          label="Admin"
-          color="#ef4444"
-        />
-        {vipLevel && (
-          <HoverBadge
-            badge={<VipBadge tier={vipLevel.tier} rank={vipLevel.rank} size="xs" />}
-            label={`VIP: ${getLevelLabel(vipLevel)}`}
-            color={TIER_STYLES[vipLevel.tier]?.border || '#94a3b8'}
+      <div
+        className="relative shrink-0 flex items-center justify-center"
+        style={{
+          width: `${size}px`,
+          height: `${size}px`,
+          borderRadius: '50%',
+          background: 'linear-gradient(180deg, #0284C7 0%, #0369A1 100%)',
+          padding: '2px',
+          boxSizing: 'border-box',
+        }}
+      >
+        <div
+          className="w-full h-full rounded-full overflow-hidden flex items-center justify-center bg-white p-1"
+          style={{ boxSizing: 'border-box' }}
+        >
+          <img
+            src={photo}
+            alt="Support"
+            className="w-full h-full object-contain"
+            onError={(e) => { e.currentTarget.src = '/avatars/avatar1.png'; }}
           />
-        )}
+        </div>
       </div>
     );
   }
 
-  /* ── moderator ── */
-  if (role === 'moderator') {
-    const color = '#38bdf8';
-    return (
-      <HoverBadge
-        badge={
-          <div style={{
-            width: '49px', height: '18px',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            background: 'rgba(56,189,248,0.05)', color: '#38bdf8',
-            fontSize: '11px', fontWeight: 600,
-            borderRadius: '59.47px', border: '1px solid #38bdf8',
-            fontFamily: '"Barlow Condensed", sans-serif', letterSpacing: '0px'
-          }}>Mod</div>
-        }
-        label="Moderator"
-        color={color}
-      />
-    );
-  }
-
-  /* ── regular user ── */
-  const vipLevel = getLevelFromEarned(user?.totalEarned || 0);
-  if (!vipLevel) return null;
-
-  const tierStyle = TIER_STYLES[vipLevel.tier];
-  const color = tierStyle?.border || '#94a3b8';
-  return (
-    <HoverBadge
-      badge={<VipBadge tier={vipLevel.tier} rank={vipLevel.rank} size="xs" />}
-      label={`VIP: ${getLevelLabel(vipLevel)}`}
-      color={color}
-    />
-  );
-};
-
-const HoverBadge = ({ badge, label, color }) => {
   return (
     <div
-      style={{ position: 'relative', display: 'inline-flex', alignItems: 'center', cursor: 'default' }}
+      className="relative shrink-0 flex items-center justify-center"
+      style={{
+        width: `${size}px`,
+        height: `${size}px`,
+        borderRadius: '50%',
+        background: tierMeta.pillBg,
+        padding: '2px',
+        boxSizing: 'border-box',
+        opacity: 1,
+        transform: 'rotate(0deg)',
+      }}
     >
-      {badge}
+      {/* Inner White Space Gap + Avatar Image */}
+      <div
+        className="w-full h-full rounded-full overflow-hidden flex items-center justify-center bg-white"
+        style={{
+          padding: '1.5px',
+          boxSizing: 'border-box',
+        }}
+      >
+        <img
+          src={photo}
+          alt={user?.displayName || 'User'}
+          className="w-full h-full rounded-full object-cover"
+          onError={(e) => { e.currentTarget.src = '/avatars/avatar1.png'; }}
+        />
+      </div>
+
+      {tierMeta?.icon && (
+        <img
+          src={tierMeta.icon}
+          alt="VIP Tier"
+          className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 object-contain drop-shadow-sm pointer-events-none"
+          style={{ width: '16px', height: '16px' }}
+        />
+      )}
     </div>
   );
 };
 
-const SymbolWithHover = ({ icon, label, color }) => {
+const RoleBadges = ({ user, isSupport = false }) => {
+  if (isSupport) {
+    return (
+      <div className="flex items-center gap-1.5 shrink-0">
+        <span
+          style={{
+            background: 'linear-gradient(180deg, #0284C7 0%, #0369A1 100%)',
+            color: '#FFFFFF',
+            fontSize: '11px',
+            fontWeight: 700,
+            lineHeight: '100%',
+            letterSpacing: '0%',
+            borderRadius: '100px',
+            padding: '4px 10px',
+            fontFamily: '"Bricolage Grotesque", sans-serif',
+            display: 'inline-flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            opacity: 1,
+            transform: 'rotate(0deg)',
+          }}
+        >
+          Support
+        </span>
+      </div>
+    );
+  }
+
+  const role = user?.role || 'user';
+  const vipLevel = getLevelFromEarned(user?.totalEarned || 0);
+  const tierName = vipLevel?.tier || 'Bronze';
+  const tierMeta = TIER_BADGES[tierName] || TIER_BADGES.Bronze;
+  const rankLabel = vipLevel ? (vipLevel.rank ? `${vipLevel.tier} ${vipLevel.rank}` : vipLevel.tier) : 'Bronze';
+
   return (
-    <div
-      style={{ position: 'relative', display: 'inline-flex', alignItems: 'center', cursor: 'default' }}
-    >
-      <span style={{ color, display: 'inline-flex', alignItems: 'center' }}>{icon}</span>
+    <div className="flex items-center gap-1.5 shrink-0">
+      {/* Admin badge */}
+      {role === 'admin' && (
+        <span
+          style={{
+            background: 'linear-gradient(180deg, #FF1E38 0%, #B80016 100%)',
+            color: '#FFFFFF',
+            fontSize: '11px',
+            fontWeight: 700,
+            lineHeight: '100%',
+            letterSpacing: '0%',
+            borderRadius: '100px',
+            padding: '4px 10px',
+            fontFamily: '"Bricolage Grotesque", sans-serif',
+            display: 'inline-flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            opacity: 1,
+            transform: 'rotate(0deg)',
+          }}
+        >
+          Admin
+        </span>
+      )}
+
+      {/* Moderator badge */}
+      {role === 'moderator' && (
+        <span
+          style={{
+            background: 'linear-gradient(180deg, #0284C7 0%, #0369A1 100%)',
+            color: '#FFFFFF',
+            fontSize: '11px',
+            fontWeight: 700,
+            lineHeight: '100%',
+            letterSpacing: '0%',
+            borderRadius: '100px',
+            padding: '4px 10px',
+            fontFamily: '"Bricolage Grotesque", sans-serif',
+            display: 'inline-flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            opacity: 1,
+            transform: 'rotate(0deg)',
+          }}
+        >
+          Mod
+        </span>
+      )}
+
+      {/* VIP Tier Badge */}
+      <span
+        style={{
+          background: tierMeta.pillBg,
+          color: '#FFFFFF',
+          fontSize: '11px',
+          fontWeight: 700,
+          lineHeight: '100%',
+          letterSpacing: '0%',
+          borderRadius: '100px',
+          padding: '4px 10px',
+          fontFamily: '"Bricolage Grotesque", sans-serif',
+          display: 'inline-flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          opacity: 1,
+          transform: 'rotate(0deg)',
+        }}
+      >
+        {rankLabel}
+      </span>
     </div>
   );
 };
 
 /* ─── MessageRow (matching Live Chat exactly) ─── */
 const MessageRow = ({ msg, isOwn, mongoUser }) => {
+  const isSupport = !isOwn;
   const senderUser = isOwn ? mongoUser : { displayName: 'Support Team', role: 'moderator' };
 
+  const date = new Date(msg.createdAt || Date.now());
+  const formattedDate = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+
+  const displayName = isSupport
+    ? 'Support Team'
+    : (senderUser?.displayName || senderUser?.username || (senderUser?.email ? senderUser.email.split('@')[0] : '') || 'Ahad');
+
   return (
-    <div
-      style={{
-        display: 'flex',
-        marginBottom: 12,
-        padding: '14px 12px',
-        borderRadius: '12px',
-        background: 'rgba(0, 0, 0, 0.36)',
-        backdropFilter: 'blur(44px)',
-        position: 'relative',
-        gap: '8px',
-        minHeight: '71px',
-        boxSizing: 'border-box',
-        flexShrink: 0,
-        width: '100%'
-      }}
-    >
-      {/* ── Left Column: Avatar & Timestamp ── */}
-      <div style={{ 
-        width: '24px', height: '43px', 
-        display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'space-between', 
-        flexShrink: 0 
-      }}>
-        <AvatarCircle user={senderUser} size={24} />
-        <span style={{ 
-          fontFamily: '"Barlow Condensed", sans-serif',
-          fontWeight: 600,
-          fontSize: '10px',
-          lineHeight: '130%',
-          color: 'rgba(73, 178, 101, 1)',
-          letterSpacing: '0px',
-          whiteSpace: 'nowrap'
-        }}>
-          {(() => {
-            const date = new Date(msg.createdAt);
-            const today = new Date();
-            const isToday = date.getDate() === today.getDate() &&
-              date.getMonth() === today.getMonth() &&
-              date.getFullYear() === today.getFullYear();
-            return isToday
-              ? date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-              : date.toLocaleDateString([], { month: 'short', day: 'numeric' });
-          })()}
-        </span>
-      </div>
-
-      {/* ── Right Column: Username, Role & Message ── */}
-      <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minWidth: 0, minHeight: '43px', gap: '6px' }}>
-        <div style={{ 
-          width: '100%', height: '18px', 
-          display: 'flex', alignItems: 'center', gap: '6px' 
-        }}>
-          <div style={{
-            flex: 1, minWidth: 0, height: '13px',
-            display: 'flex', alignItems: 'center',
-            fontWeight: 600, color: 'rgba(255, 255, 255, 1)',
-            fontFamily: '"Barlow Condensed", sans-serif', fontSize: '18px',
-            lineHeight: '120%', letterSpacing: '0px',
-            textAlign: 'left',
-            whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis'
-          }}>
-            {senderUser?.displayName || 'Unknown'}
+    <div className="relative flex flex-col w-full pb-3.5 mb-3.5 border-b border-[#EFEFEF] transition-opacity">
+      {/* Top Row: Avatar + Name/Date on left, Badges on right */}
+      <div className="flex items-center justify-between gap-2 w-full">
+        <div className="flex items-center gap-2.5 min-w-0">
+          {/* Avatar with mini tier badge (33x33) */}
+          <div className="shrink-0">
+            <AvatarWithBadge user={senderUser} isSupport={isSupport} size={33} />
           </div>
 
-          {/* Role / VIP badge on Top Right */}
-          <div style={{ display: 'flex', alignItems: 'center', minWidth: 'auto', flexShrink: 0, justifyContent: 'flex-end' }}>
-            <RoleSymbol user={senderUser} />
+          {/* Name and Date Column */}
+          <div
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '2px',
+              minWidth: 0,
+              opacity: 1,
+              transform: 'rotate(0deg)',
+            }}
+          >
+            <span
+              style={{
+                fontFamily: '"Bricolage Grotesque", sans-serif',
+                fontWeight: 700,
+                fontSize: '18px',
+                lineHeight: '100%',
+                letterSpacing: '0%',
+                color: '#000000',
+                textAlign: 'left',
+                opacity: 1,
+                transform: 'rotate(0deg)',
+                whiteSpace: 'nowrap',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+              }}
+            >
+              {displayName}
+            </span>
+            <span
+              style={{
+                fontFamily: '"Poppins", sans-serif',
+                fontWeight: 500,
+                fontSize: '12px',
+                lineHeight: '18px',
+                letterSpacing: '0%',
+                color: 'rgba(14, 15, 12, 0.7)',
+                opacity: 1,
+                transform: 'rotate(0deg)',
+              }}
+            >
+              {formattedDate}
+            </span>
           </div>
         </div>
 
-        {/* Message text */}
-        <div style={{ 
-          width: '100%',
-          color: 'rgba(136, 136, 136, 1)', 
-          fontSize: '16px', 
-          fontWeight: 500,
-          lineHeight: '130%', 
-          letterSpacing: '0px',
+        {/* Badges on right */}
+        <RoleBadges user={senderUser} isSupport={isSupport} />
+      </div>
+
+      {/* Bottom Message Text (Starts directly below image/avatar, full width) */}
+      <p
+        style={{
+          fontFamily: '"Poppins", sans-serif',
+          fontWeight: 400,
+          fontSize: '13px',
+          lineHeight: '20px',
+          letterSpacing: '0%',
+          color: '#18181B',
+          margin: 0,
+          marginTop: '8px',
           wordBreak: 'break-word',
-          fontFamily: '"Barlow Condensed", sans-serif'
-        }}>
-          {msg.text}
-        </div>
-      </div>
+          width: '100%',
+          opacity: 1,
+          transform: 'rotate(0deg)',
+        }}
+      >
+        {msg.text || msg.message}
+      </p>
     </div>
   );
 };
 
 const SupportChat = ({ socket }) => {
   const { mongoUser, currentUser } = useAuth();
-  const [ticket, setTicket]       = useState(null);   // null = no active ticket
+  const [ticket, setTicket]       = useState(null);
   const [messages, setMessages]   = useState([]);
   const [text, setText]           = useState('');
   const [loading, setLoading]     = useState(true);
   const [sending, setSending]     = useState(false);
-  const [resetKey, setResetKey]   = useState(0);      // force re-fetch on reset
+  const [resetKey, setResetKey]   = useState(0);
   const endRef  = useRef(null);
   const inputRef = useRef(null);
 
   const isInitialScroll = useRef(true);
-
-  const scrollToBottom = useCallback((behavior = 'smooth') => {
-    endRef.current?.scrollIntoView({ behavior });
-  }, []);
 
   // Fetch active ticket
   useEffect(() => {
@@ -274,7 +372,6 @@ const SupportChat = ({ socket }) => {
 
     const onClosed = ({ ticketId }) => {
       if (ticketId !== ticket._id) return;
-      // Reset user side → next message will create new ticket
       setTicket(null);
       setMessages([]);
       setResetKey(k => k + 1);
@@ -313,6 +410,7 @@ const SupportChat = ({ socket }) => {
       endRef.current?.scrollIntoView({ behavior: 'smooth' });
     }
   }, [messages]);
+
   useEffect(() => { setTimeout(() => inputRef.current?.focus(), 150); }, [ticket]);
 
   const sendMessage = async (e) => {
@@ -329,92 +427,113 @@ const SupportChat = ({ socket }) => {
       const data = await res.json();
       if (data.status === 'success') {
         if (!ticket) {
-          // First message created the ticket — set it + join room
           setTicket(data.data.ticket);
           setMessages(data.data.ticket.messages || []);
         }
-        // The socket event will add the message, but if it's the first ticket
-        // we need to set messages manually (socket room join happens after ticket is known)
         setText('');
       }
     } catch (e) { console.error(e); }
     finally { setSending(false); }
   };
 
-  // ── Closed state ──────────────────────────────────────────────────────────
-  // (not shown here — handled by resetting ticket to null)
-
-  // ── Loading ───────────────────────────────────────────────────────────────
+  // ── Loading ──
   if (loading) return (
-    <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-      <div style={{
-        width: 22, height: 22, borderRadius: '50%',
-        border: '2px solid rgba(99,102,241,0.35)',
-        borderTopColor: '#6366f1',
-        animation: 'sidebarSpin 0.8s linear infinite'
-      }} />
+    <div className="flex-1 flex items-center justify-center">
+      <div
+        style={{
+          width: 26,
+          height: 26,
+          borderRadius: '50%',
+          border: '2.5px solid #24324D',
+          borderTopColor: 'transparent',
+          animation: 'supportSpin 0.8s linear infinite',
+        }}
+      />
     </div>
   );
 
-  // ── Not logged in ─────────────────────────────────────────────────────────
+  // ── Not logged in ──
   if (!mongoUser) return (
-    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 10, padding: 32 }}>
-      <FiHeadphones style={{ fontSize: 36, color: '#334155' }} />
-      <p style={{ color: '#475569', fontSize: '0.88rem', margin: 0 }}>Log in to contact support</p>
+    <div className="flex-1 flex flex-col items-center justify-center gap-3 p-8 text-center">
+      <FiHeadphones size={36} className="text-gray-400" />
+      <p
+        style={{
+          fontFamily: '"Poppins", sans-serif',
+          fontSize: '14px',
+          fontWeight: 500,
+          color: '#71717A',
+          margin: 0,
+        }}
+      >
+        Log in to contact support
+      </p>
     </div>
   );
 
   return (
-    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', minHeight: 0 }}>
-
-      {/* ── Messages Area ───────────────────────────────── */}
+    <div className="flex-1 flex flex-col overflow-hidden min-h-0">
+      {/* ── Messages Area ── */}
       <div
-        style={{ flex: 1, overflowY: 'auto', padding: '12px 14px 6px', display: 'flex', flexDirection: 'column', gap: 0 }}
-        className="custom-scrollbar"
+        style={{
+          flex: 1,
+          overflowY: 'auto',
+          padding: '12px 16px 6px',
+          display: 'flex',
+          flexDirection: 'column',
+          scrollbarWidth: 'none',
+          msOverflowStyle: 'none',
+        }}
+        className="no-scrollbar"
       >
         {/* Empty state — no ticket yet */}
         {!ticket && messages.length === 0 && (
-          <div style={{
-            height: '100%', width: '100%',
-            display: 'flex', alignItems: 'center', justifyContent: 'center'
-          }}>
-            <div style={{
-              width: '360px', height: '206px',
-              display: 'flex', flexDirection: 'column',
-              alignItems: 'center', justifyContent: 'center',
-              gap: '16px'
-            }}>
-              <div style={{
-                width: '88px', height: '88px', borderRadius: '10px',
-                padding: '10px 12px 10px 12px',
-                background: 'rgba(41, 253, 152, 0.1)',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                boxSizing: 'border-box'
-              }}>
-                <img src="/coins/headp.png" alt="Support" style={{ width: '44px', height: '44px' }} />
+          <div className="flex-1 flex items-center justify-center py-8">
+            <div className="flex flex-col items-center justify-center text-center gap-4 max-w-[300px]">
+              {/* Headset Icon Container */}
+              <div
+                style={{
+                  width: '80px',
+                  height: '80px',
+                  borderRadius: '20px',
+                  background: 'rgba(213, 248, 216, 0.6)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                <img
+                  src="/coins/headp.png"
+                  alt="Support"
+                  style={{ width: '42px', height: '42px', objectFit: 'contain' }}
+                  onError={(e) => {
+                    e.currentTarget.style.display = 'none';
+                  }}
+                />
               </div>
-              <div style={{ 
-                width: '360px', height: '102px', 
-                display: 'flex', flexDirection: 'column', 
-                gap: '6px', textAlign: 'center'
-              }}>
-                <p style={{ 
-                  margin: 0, width: '100%', height: '38px',
-                  fontFamily: '"Barlow Condensed", sans-serif',
-                  fontWeight: 700, fontSize: '32px',
-                  lineHeight: '120%', color: '#f8fafc',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center'
-                }}>
+
+              <div className="flex flex-col gap-1.5 text-center">
+                <h3
+                  style={{
+                    margin: 0,
+                    fontFamily: '"Bricolage Grotesque", sans-serif',
+                    fontWeight: 700,
+                    fontSize: '24px',
+                    lineHeight: '120%',
+                    color: '#000000',
+                  }}
+                >
                   Contact Support
-                </p>
-                <p style={{ 
-                  margin: 0, width: '100%', height: 'auto',
-                  fontFamily: '"Barlow Condensed", sans-serif',
-                  fontWeight: 500, fontSize: '20px',
-                  lineHeight: '130%', color: '#64748b',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  textAlign: 'center'
-                }}>
+                </h3>
+                <p
+                  style={{
+                    margin: 0,
+                    fontFamily: '"Poppins", sans-serif',
+                    fontWeight: 400,
+                    fontSize: '13px',
+                    lineHeight: '20px',
+                    color: 'rgba(14, 15, 12, 0.7)',
+                  }}
+                >
                   Send us a message below and our team will respond as soon as possible.
                 </p>
               </div>
@@ -437,60 +556,83 @@ const SupportChat = ({ socket }) => {
         <div ref={endRef} />
       </div>
 
-      {/* ── Input Bar ───────────────────────────────────── */}
-      <div style={{
-        padding: '12px 20px 20px',
-        background: 'transparent',
-        flexShrink: 0
-      }}>
-        <form onSubmit={sendMessage} style={{ display: 'flex', gap: 7, alignItems: 'flex-end' }}>
-          <div style={{ flex: 1, position: 'relative' }}>
+      {/* ── Input Bar (matches Live Chat exactly) ── */}
+      <div className="p-4 pt-2 shrink-0">
+        <form onSubmit={sendMessage}>
+          <div
+            style={{
+              width: '100%',
+              maxWidth: '338px',
+              height: '49px',
+              borderRadius: '50px',
+              background: 'rgba(239, 239, 239, 1)',
+              padding: '4px 6px 4px 20px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              boxSizing: 'border-box',
+              gap: '8px',
+              margin: '0 auto',
+              opacity: 1,
+              transform: 'rotate(0deg)',
+            }}
+          >
             <input
               ref={inputRef}
               type="text"
               value={text}
               onChange={e => setText(e.target.value)}
-              placeholder={ticket ? 'Reply to support…' : 'Describe your issue…'}
+              placeholder={ticket ? 'Reply to support...' : 'Describe your issue...'}
               maxLength={2000}
               disabled={sending}
               style={{
-                width: '100%', height: '48px', boxSizing: 'border-box',
+                flex: 1,
+                minWidth: 0,
                 background: 'transparent',
-                border: '1px solid rgba(73, 178, 101, 1)',
-                borderRadius: '10px', padding: '10px 40px 10px 20px',
-                color: 'rgba(255, 255, 255, 1)', fontSize: '16px',
-                fontWeight: 500, lineHeight: '100%',
-                outline: 'none', transition: 'border 0.15s',
-                caretColor: '#49B265',
-                fontFamily: '"Barlow Condensed", sans-serif',
-                letterSpacing: '0px',
-                opacity: sending ? 0.6 : 1
+                border: 'none',
+                outline: 'none',
+                fontFamily: '"Poppins", sans-serif',
+                fontWeight: 400,
+                fontSize: '13px',
+                lineHeight: '26px',
+                letterSpacing: '0%',
+                color: 'rgba(0, 0, 0, 1)',
               }}
-              onFocus={e => { e.target.style.boxShadow = '0 0 0 1px rgba(73, 178, 101, 0.5)'; }}
-              onBlur={e => { e.target.style.boxShadow = 'none'; }}
+              className="placeholder:text-black/70"
             />
+
             <button
               type="submit"
               disabled={!text.trim() || sending}
               style={{
-                position: 'absolute', right: 12, top: '50%',
-                transform: 'translateY(-50%)',
-                background: 'transparent',
+                width: '40px',
+                height: '40px',
+                borderRadius: '50%',
+                background: 'rgba(36, 50, 77, 1)',
                 border: 'none',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
                 cursor: text.trim() && !sending ? 'pointer' : 'default',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                color: text.trim() && !sending ? '#49B265' : 'rgba(73, 178, 101, 0.5)',
-                transition: 'all 0.18s'
+                opacity: text.trim() && !sending ? 1 : 0.8,
+                transition: 'transform 0.15s, opacity 0.15s',
+                flexShrink: 0,
+                transform: 'rotate(0deg)',
               }}
+              className="hover:opacity-90 active:scale-95"
             >
-              <img 
-                src="/coins/send.png" 
-                alt="Send" 
-                style={{ 
-                  width: '24px', height: '24px',
-                  opacity: text.trim() && !sending ? 1 : 0.5,
-                  transition: 'opacity 0.18s'
-                }} 
+              <img
+                src="/coins/ChatSend.png"
+                alt="Send"
+                style={{
+                  width: '18px',
+                  height: '18px',
+                  objectFit: 'contain',
+                  display: 'block',
+                }}
+                onError={(e) => {
+                  e.currentTarget.style.display = 'none';
+                }}
               />
             </button>
           </div>
@@ -498,7 +640,19 @@ const SupportChat = ({ socket }) => {
       </div>
 
       <style>{`
-        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        .no-scrollbar::-webkit-scrollbar {
+          display: none !important;
+          width: 0 !important;
+          height: 0 !important;
+        }
+        .no-scrollbar {
+          -ms-overflow-style: none !important;
+          scrollbar-width: none !important;
+        }
+        @keyframes supportSpin {
+          from { transform: rotate(0deg); }
+          to   { transform: rotate(360deg); }
+        }
       `}</style>
     </div>
   );

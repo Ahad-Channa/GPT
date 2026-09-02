@@ -322,8 +322,8 @@ export default function DailyBonus() {
 
                   {isUnlocked ? (
                     <span
-                      className="mt-2"
                       style={{
+                        marginTop: '16px',
                         fontFamily: '"Poppins", sans-serif',
                         fontWeight: 500,
                         fontSize: '16px',
@@ -331,14 +331,17 @@ export default function DailyBonus() {
                         letterSpacing: '0%',
                         color: '#0E0F0C',
                         opacity: 1,
+                        textAlign: 'left',
+                        display: 'block',
                       }}
                     >
                       You have unlocked your bonus
                     </span>
                   ) : (
                     <div
-                      className="flex items-center mt-2"
+                      className="flex items-center"
                       style={{
+                        marginTop: '16px',
                         maxWidth: '400px',
                         gap: '5px',
                         opacity: 1,
@@ -349,6 +352,7 @@ export default function DailyBonus() {
                         lineHeight: '22px',
                         letterSpacing: '0%',
                         whiteSpace: 'nowrap',
+                        justifyContent: 'flex-start',
                       }}
                     >
                       <span style={{ color: '#0E0F0C' }}>Earn</span>

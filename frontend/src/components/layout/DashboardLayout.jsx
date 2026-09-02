@@ -23,7 +23,7 @@ const DashboardLayout = ({ children, showLiveBar = true, fullWidth = false }) =>
   }, []);
 
   return (
-    <div className="relative min-h-[100dvh] bg-[#FAFAFA] text-gray-900 overflow-x-hidden flex flex-col selection:bg-[#29FD98] selection:text-black">
+    <div className="relative min-h-[100dvh] bg-[#FAFAFA] text-gray-900 overflow-x-hidden flex flex-col selection:bg-[#24324D] selection:text-white">
       {/* Ambient Background Glows */}
       {/* <div className="ambient-bg" aria-hidden="true" /> */}
 

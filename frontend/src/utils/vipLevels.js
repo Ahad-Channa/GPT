@@ -56,7 +56,7 @@ export const TIER_STYLES = {
     bg: 'rgba(99,102,241,0.12)',
   },
   Opal:     {
-    gradient: 'linear-gradient(180deg, #FFA5FC 0%, #26BEFF 100%)',
+    gradient: 'linear-gradient(180deg, #E92BFF 0%, #31BDFF 100%)',
     border: '#a78bfa',
     glow: 'rgba(167,139,250,0.55)',
     text: '#f0abfc',

@@ -22,7 +22,7 @@ const getBackground = (tier) => {
     case 'Gold': return 'linear-gradient(180deg, #FEDF77 0%, #FCB91E 100%), linear-gradient(0deg, rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 0.1))';
     case 'Platinum': return 'linear-gradient(180deg, #1FCBE6 0%, #217681 100%)';
     case 'Diamond': return 'linear-gradient(180deg, #7F8AF7 0%, #793EB9 100%)';
-    case 'Opal': return 'linear-gradient(180deg, #FFA5FC 0%, #26BEFF 100%)';
+    case 'Opal': return 'linear-gradient(180deg, #E92BFF 0%, #31BDFF 100%)';
     default: return 'linear-gradient(180deg, #FF8C00 0%, #90540B 100%)';
   }
 };

@@ -71,7 +71,7 @@ const Landing = () => {
   }, []);
 
   return (
-    <div className="w-full min-h-screen bg-[#FAFAFA] text-gray-900 font-sans overflow-x-hidden selection:bg-[#29FD98] selection:text-black flex flex-col items-center">
+    <div className="w-full min-h-screen bg-[#FAFAFA] text-gray-900 font-sans overflow-x-hidden selection:bg-[#24324D] selection:text-white flex flex-col items-center">
       <div
         className="min-h-screen relative text-gray-900 font-sans flex flex-col mx-auto w-full"
         style={{

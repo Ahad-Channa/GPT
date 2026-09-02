@@ -227,17 +227,26 @@ const VipPage = () => {
                     justifyContent: 'center',
                   }}
                 >
-                  <img
-                    src={currentLevel ? (TIER_METADATA[currentLevel.tier]?.badge || '/coins/VIPbronze.png') : '/coins/VIPbronze.png'}
-                    alt="Current Tier Badge"
-                    className="object-contain drop-shadow-sm shrink-0"
-                    style={{
-                      width: '75px',
-                      height: '75px',
-                      opacity: 1,
-                      transform: 'rotate(0deg)',
-                    }}
-                  />
+                  {currentLevel ? (
+                    <img
+                      src={TIER_METADATA[currentLevel.tier]?.badge || '/coins/VIPbronze.png'}
+                      alt="Current Tier Badge"
+                      className="object-contain drop-shadow-sm shrink-0"
+                      style={{
+                        width: '75px',
+                        height: '75px',
+                        opacity: 1,
+                        transform: 'rotate(0deg)',
+                      }}
+                    />
+                  ) : (
+                    <div
+                      style={{
+                        width: '75px',
+                        height: '75px',
+                      }}
+                    />
+                  )}
                   <div className="flex flex-col items-center text-center">
                     <span
                       style={{
@@ -476,6 +485,7 @@ const VipPage = () => {
                       <div
                         className="flex flex-wrap items-center"
                         style={{
+                          marginTop: '6px',
                           gap: '5px',
                           fontFamily: '"Poppins", sans-serif',
                           fontWeight: 500,

@@ -21,7 +21,7 @@ export const buildProviderUrl = (provider, userId) => {
   }
 };
 
-const getProviderLogo = (id) => {
+export const getProviderLogo = (id) => {
   const lowerId = id?.toLowerCase()?.trim();
 
   const localLogos = {
@@ -81,7 +81,7 @@ export const ProviderCard = ({ provider, onClick }) => {
         maxWidth: '100%',
         height: '76px',
         borderRadius: '24px',
-        background: 'rgba(249, 247, 241, 1)',
+        background: 'rgba(255, 255, 255, 1)',
         border: '1px solid rgba(223, 225, 209, 1)',
         gap: '10px',
         opacity: 1,
@@ -146,9 +146,8 @@ export const FeaturedOfferCard = ({ offer, onClick }) => {
     <motion.div
       variants={item}
       onClick={onClick}
-      className={`cursor-pointer flex flex-col shrink-0 bg-white shadow-[0_4px_20px_rgba(0,0,0,0.03)] border border-gray-100/80 ${
-        isExpired ? 'opacity-50' : ''
-      }`}
+      className={`cursor-pointer flex flex-col shrink-0 bg-white shadow-[0_4px_20px_rgba(0,0,0,0.03)] border border-gray-100/80 ${isExpired ? 'opacity-50' : ''
+        }`}
       style={{
         width: '181.14px',
         height: '246.53px',
@@ -653,8 +652,8 @@ export const FeaturedOfferModal = ({ offer, token, onClose, onSubmitted }) => {
           {(result || alreadySubmitted) && (
             <div
               className={`w-full text-center p-3 rounded-xl text-[18px] lg:text-[16px] font-medium border ${(result?.type === 'success' || alreadySubmitted)
-                  ? 'bg-white/5 border-white/10 text-white'
-                  : 'bg-[#f43f5e1a] border-[#f43f5e33] text-[#fb7185]'
+                ? 'bg-white/5 border-white/10 text-white'
+                : 'bg-[#f43f5e1a] border-[#f43f5e33] text-[#fb7185]'
                 }`}
               style={{
                 fontFamily: '"Barlow Condensed", sans-serif'

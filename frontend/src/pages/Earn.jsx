@@ -8,6 +8,7 @@ import {
 } from 'react-icons/fi';
 import { ProviderCard, OfferwallCard, FeaturedOfferCard, FeaturedOfferModal } from '../components/offers/OfferCards';
 import { DirectOfferCard, DirectOfferModal } from '../components/offers/DirectOfferCard';
+import OfferwallModal from '../components/offers/OfferwallModal';
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
@@ -19,18 +20,16 @@ const item = { hidden: { opacity: 0, y: 16 }, show: { opacity: 1, y: 0, transiti
 const TabButton = ({ active, onClick, icon: Icon, label, count }) => (
   <button
     onClick={onClick}
-    className={`relative flex items-center gap-2 px-5 py-2.5 rounded-xl font-semibold text-sm transition-all duration-200 ${
-      active
+    className={`relative flex items-center gap-2 px-5 py-2.5 rounded-xl font-semibold text-sm transition-all duration-200 ${active
         ? 'bg-indigo-500/20 text-indigo-300 border border-indigo-500/40'
         : 'text-slate-400 hover:text-slate-200 border border-transparent hover:border-white/10 hover:bg-white/[0.03]'
-    }`}
+      }`}
   >
     <Icon className="text-base" />
     {label}
     {count !== undefined && count > 0 && (
-      <span className={`ml-1 px-1.5 py-0.5 rounded-full text-[10px] font-bold ${
-        active ? 'bg-indigo-500/30 text-indigo-200' : 'bg-white/10 text-slate-400'
-      }`}>
+      <span className={`ml-1 px-1.5 py-0.5 rounded-full text-[10px] font-bold ${active ? 'bg-indigo-500/30 text-indigo-200' : 'bg-white/10 text-slate-400'
+        }`}>
         {count}
       </span>
     )}
@@ -173,9 +172,9 @@ const Earn = () => {
   const gamingProviders = [...combinedBase.slice(0, 8), goodpicksItem];
 
   const tabs = [
-    { id: 'surveys',  label: 'Surveys',        icon: FiCheckCircle, count: surveyProviders.length },
-    { id: 'gaming',   label: 'Gaming & Apps',   icon: FiMonitor,     count: gamingProviders.length },
-    { id: 'featured', label: 'Featured Offers', icon: FiStar,        count: customOffers.length + directOffers.length },
+    { id: 'surveys', label: 'Surveys', icon: FiCheckCircle, count: surveyProviders.length },
+    { id: 'gaming', label: 'Gaming & Apps', icon: FiMonitor, count: gamingProviders.length },
+    { id: 'featured', label: 'Featured Offers', icon: FiStar, count: customOffers.length + directOffers.length },
   ];
 
   const renderEmptyState = (label) => (
@@ -242,106 +241,106 @@ const Earn = () => {
               </div>
             ) : (
               <>
-            {/* ─── SURVEYS TAB ─── */}
-            {activeTab === 'surveys' && (
-              <>
-                {loadingSettings ? (
-                  <div className="glass-card p-12 text-center flex flex-col items-center gap-3">
-                    <div className="w-10 h-10 rounded-full border-2 border-indigo-500 border-t-transparent animate-spin" />
-                    <p className="text-slate-400 text-sm">Loading survey providers...</p>
-                  </div>
-                ) : surveyProviders.length === 0 ? (
-                  renderEmptyState('Surveys')
-                ) : (
-                  <motion.div variants={container} initial="hidden" animate="show" className="grid grid-cols-2 sm:grid-cols-[repeat(auto-fill,minmax(240px,1fr))] gap-4">
-                    {surveyProviders.map(provider => (
-                      <ProviderCard key={provider.id} provider={provider} onClick={() => setActiveProvider(provider)} />
-                    ))}
-                  </motion.div>
-                  )}
-              </>
-            )}
-
-            {/* ─── GAMING & APPS TAB ─── */}
-            {activeTab === 'gaming' && (
-              <>
-                {loadingSettings ? (
-                  <div className="glass-card p-12 text-center flex flex-col items-center gap-3">
-                    <div className="w-10 h-10 rounded-full border-2 border-cyan-500 border-t-transparent animate-spin" />
-                    <p className="text-slate-400 text-sm">Loading gaming providers...</p>
-                  </div>
-                ) : gamingProviders.length === 0 ? (
-                  renderEmptyState('Gaming & App Offers')
-                ) : (
-                  <motion.div variants={container} initial="hidden" animate="show" className="grid grid-cols-2 sm:grid-cols-[repeat(auto-fill,minmax(240px,1fr))] gap-4">
-                    {gamingProviders.map(provider => (
-                      <ProviderCard key={provider.id} provider={provider} onClick={() => setActiveProvider(provider)} />
-                    ))}
-                  </motion.div>
-                  )}
-              </>
-            )}
-
-            {/* ─── FEATURED OFFERS TAB ─── */}
-            {activeTab === 'featured' && (
-              <>
-                {loadingOffers ? (
-                  <div className="glass-card p-12 text-center flex flex-col items-center gap-3">
-                    <div className="w-10 h-10 rounded-full border-2 border-amber-500 border-t-transparent animate-spin" />
-                    <p className="text-slate-400 text-sm">Loading featured offers...</p>
-                  </div>
-                ) : (customOffers.length === 0 && directOffers.length === 0) ? (
-                  <div className="glass-card p-16 text-center flex flex-col items-center gap-4">
-                    <div className="w-16 h-16 rounded-2xl bg-amber-500/[0.06] border border-amber-500/[0.15] flex items-center justify-center">
-                      <FiStar className="text-amber-500/50 text-2xl" />
-                    </div>
-                    <div>
-                      <p className="text-slate-300 font-semibold mb-1">No Featured Offers Right Now</p>
-                      <p className="text-slate-500 text-sm">
-                        Our team is working on exclusive partnership offers. Check back soon!
-                      </p>
-                    </div>
-                  </div>
-                ) : (
-                  <motion.div variants={container} initial="hidden" animate="show" className="space-y-4">
-                    {/* Direct Offers (S2S Auto-tracked) */}
-                    {directOffers.length > 0 && (
-                      <>
-                        <p className="text-xs text-indigo-400/70 font-semibold tracking-wide uppercase mb-2">
-                          ⚡ {directOffers.length} Auto-Tracked {directOffers.length === 1 ? 'Offer' : 'Offers'} — Reward credited instantly on completion
-                        </p>
-                        <div className="grid grid-cols-2 lg:grid-cols-[repeat(auto-fill,minmax(156px,1fr))] gap-3 lg:gap-4">
-                          {directOffers.map(offer => (
-                            <DirectOfferCard
-                              key={offer._id}
-                              offer={offer}
-                              onClick={() => setSelectedDirectOffer(offer)}
-                            />
-                          ))}
-                        </div>
-                      </>
+                {/* ─── SURVEYS TAB ─── */}
+                {activeTab === 'surveys' && (
+                  <>
+                    {loadingSettings ? (
+                      <div className="glass-card p-12 text-center flex flex-col items-center gap-3">
+                        <div className="w-10 h-10 rounded-full border-2 border-indigo-500 border-t-transparent animate-spin" />
+                        <p className="text-slate-400 text-sm">Loading survey providers...</p>
+                      </div>
+                    ) : surveyProviders.length === 0 ? (
+                      renderEmptyState('Surveys')
+                    ) : (
+                      <motion.div variants={container} initial="hidden" animate="show" className="grid grid-cols-2 sm:grid-cols-[repeat(auto-fill,minmax(240px,1fr))] gap-4">
+                        {surveyProviders.map(provider => (
+                          <ProviderCard key={provider.id} provider={provider} onClick={() => setActiveProvider(provider)} />
+                        ))}
+                      </motion.div>
                     )}
-                    {/* Manual Proof Offers */}
-                    {customOffers.length > 0 && (
-                      <>
-                        <p className="text-xs text-slate-500 font-semibold tracking-wide uppercase mb-2 mt-4">
-                          📋 {customOffers.length} Manual {customOffers.length === 1 ? 'Offer' : 'Offers'} — Requires proof submission
-                        </p>
-                        <div className="grid grid-cols-2 lg:grid-cols-[repeat(auto-fill,minmax(156px,1fr))] gap-3 lg:gap-4">
-                          {customOffers.map(offer => (
-                            <FeaturedOfferCard
-                              key={offer._id}
-                              offer={offer}
-                              onClick={() => setSelectedOffer(offer)}
-                            />
-                          ))}
-                        </div>
-                      </>
-                    )}
-                  </motion.div>
+                  </>
                 )}
-              </>
-            )}
+
+                {/* ─── GAMING & APPS TAB ─── */}
+                {activeTab === 'gaming' && (
+                  <>
+                    {loadingSettings ? (
+                      <div className="glass-card p-12 text-center flex flex-col items-center gap-3">
+                        <div className="w-10 h-10 rounded-full border-2 border-cyan-500 border-t-transparent animate-spin" />
+                        <p className="text-slate-400 text-sm">Loading gaming providers...</p>
+                      </div>
+                    ) : gamingProviders.length === 0 ? (
+                      renderEmptyState('Gaming & App Offers')
+                    ) : (
+                      <motion.div variants={container} initial="hidden" animate="show" className="grid grid-cols-2 sm:grid-cols-[repeat(auto-fill,minmax(240px,1fr))] gap-4">
+                        {gamingProviders.map(provider => (
+                          <ProviderCard key={provider.id} provider={provider} onClick={() => setActiveProvider(provider)} />
+                        ))}
+                      </motion.div>
+                    )}
+                  </>
+                )}
+
+                {/* ─── FEATURED OFFERS TAB ─── */}
+                {activeTab === 'featured' && (
+                  <>
+                    {loadingOffers ? (
+                      <div className="glass-card p-12 text-center flex flex-col items-center gap-3">
+                        <div className="w-10 h-10 rounded-full border-2 border-amber-500 border-t-transparent animate-spin" />
+                        <p className="text-slate-400 text-sm">Loading featured offers...</p>
+                      </div>
+                    ) : (customOffers.length === 0 && directOffers.length === 0) ? (
+                      <div className="glass-card p-16 text-center flex flex-col items-center gap-4">
+                        <div className="w-16 h-16 rounded-2xl bg-amber-500/[0.06] border border-amber-500/[0.15] flex items-center justify-center">
+                          <FiStar className="text-amber-500/50 text-2xl" />
+                        </div>
+                        <div>
+                          <p className="text-slate-300 font-semibold mb-1">No Featured Offers Right Now</p>
+                          <p className="text-slate-500 text-sm">
+                            Our team is working on exclusive partnership offers. Check back soon!
+                          </p>
+                        </div>
+                      </div>
+                    ) : (
+                      <motion.div variants={container} initial="hidden" animate="show" className="space-y-4">
+                        {/* Direct Offers (S2S Auto-tracked) */}
+                        {directOffers.length > 0 && (
+                          <>
+                            <p className="text-xs text-indigo-400/70 font-semibold tracking-wide uppercase mb-2">
+                              ⚡ {directOffers.length} Auto-Tracked {directOffers.length === 1 ? 'Offer' : 'Offers'} — Reward credited instantly on completion
+                            </p>
+                            <div className="grid grid-cols-2 lg:grid-cols-[repeat(auto-fill,minmax(156px,1fr))] gap-3 lg:gap-4">
+                              {directOffers.map(offer => (
+                                <DirectOfferCard
+                                  key={offer._id}
+                                  offer={offer}
+                                  onClick={() => setSelectedDirectOffer(offer)}
+                                />
+                              ))}
+                            </div>
+                          </>
+                        )}
+                        {/* Manual Proof Offers */}
+                        {customOffers.length > 0 && (
+                          <>
+                            <p className="text-xs text-slate-500 font-semibold tracking-wide uppercase mb-2 mt-4">
+                              📋 {customOffers.length} Manual {customOffers.length === 1 ? 'Offer' : 'Offers'} — Requires proof submission
+                            </p>
+                            <div className="grid grid-cols-2 lg:grid-cols-[repeat(auto-fill,minmax(156px,1fr))] gap-3 lg:gap-4">
+                              {customOffers.map(offer => (
+                                <FeaturedOfferCard
+                                  key={offer._id}
+                                  offer={offer}
+                                  onClick={() => setSelectedOffer(offer)}
+                                />
+                              ))}
+                            </div>
+                          </>
+                        )}
+                      </motion.div>
+                    )}
+                  </>
+                )}
               </>
             )}
           </motion.div>
@@ -353,7 +352,7 @@ const Earn = () => {
               offer={selectedOffer}
               token={token}
               onClose={() => setSelectedOffer(null)}
-              onSubmitted={() => {}}
+              onSubmitted={() => { }}
             />
           )}
         </AnimatePresence>

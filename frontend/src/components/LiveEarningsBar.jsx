@@ -503,144 +503,122 @@ const LiveEarningsBar = () => {
           }}
         >
           <div
-            className="flex flex-col min-w-[150px] lg:min-w-[170px] rounded-[12px] p-[10px] lg:p-[12px] gap-[8px] shadow-2xl border border-white/10"
+            className="flex flex-col"
             style={{
-              background: 'rgba(36, 36, 36, 0.96)',
-              backdropFilter: 'blur(44px)',
-              WebkitBackdropFilter: 'blur(44px)',
+              width: '214px',
+              minHeight: '116px',
+              borderRadius: '0px 12px 12px 12px',
+              borderTopRightRadius: '12px',
+              borderBottomRightRadius: '12px',
+              borderBottomLeftRadius: '12px',
+              padding: '14px 15px 18px 13px',
+              gap: '10px',
+              background: 'rgba(255, 255, 255, 1)',
+              boxShadow: '0px 10px 23px 0px rgba(0, 0, 0, 0.09)',
+              border: '1px solid rgba(223, 225, 209, 0.8)',
               boxSizing: 'border-box',
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'space-between',
             }}
           >
-            {hoveredData.details.isWithdrawal ? (
-              <div className="flex flex-col relative z-10 h-full justify-between gap-[8px]">
-                <div className="flex flex-col gap-[2px] w-full">
-                  <span
-                    className="text-[13px] lg:text-[14px]"
+            {/* ── Top Row: Cream Pill Banner ── */}
+            <div
+              style={{
+                width: '100%',
+                height: '34px',
+                borderRadius: '100px',
+                background: 'rgba(249, 247, 241, 1)',
+                padding: '0 12px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                boxSizing: 'border-box',
+                flexShrink: 0,
+              }}
+            >
+              <span
+                style={{
+                  fontFamily: '"Poppins", sans-serif',
+                  fontWeight: 500,
+                  fontSize: '13px',
+                  color: '#000000',
+                  lineHeight: '100%',
+                }}
+              >
+                {hoveredData.details.isWithdrawal ? 'Amount' : 'Earnd'}
+              </span>
+
+              <div className="flex items-center gap-1">
+                {hoveredData.details.isCoin && (
+                  <img
+                    src="/coins/procoinicon.png"
+                    alt="Coin"
                     style={{
-                      fontFamily: '"Barlow Condensed", sans-serif',
-                      fontWeight: 700,
-                      lineHeight: '120%',
-                      color: 'rgba(255, 255, 255, 1)',
-                      whiteSpace: 'nowrap',
+                      width: '12px',
+                      height: '12px',
+                      objectFit: 'contain',
+                      display: 'block',
                     }}
-                  >
-                    Withdrawal Completed
-                  </span>
-                  <span
-                    className="text-[11px]"
-                    style={{
-                      fontFamily: '"Barlow Condensed", sans-serif',
-                      fontWeight: 500,
-                      lineHeight: '130%',
-                      color: 'rgba(170, 170, 170, 1)',
+                    onError={(e) => {
+                      e.currentTarget.src = '/coins/Coin.png';
                     }}
-                  >
-                    Method: {hoveredData.details.method}
-                  </span>
-                </div>
-                <div className="w-full h-0 border-t border-white/10 shrink-0" />
-                <div className="flex items-center justify-between w-full min-w-max gap-4 h-[18px]">
-                  <span
-                    className="text-[12px]"
-                    style={{
-                      fontFamily: '"Barlow Condensed", sans-serif',
-                      fontWeight: 500,
-                      color: 'rgba(255, 255, 255, 1)',
-                      whiteSpace: 'nowrap',
-                    }}
-                  >
-                    Amount
-                  </span>
-                  <div className="flex items-center gap-1">
-                    <img
-                      src="/coins/paisa.png"
-                      alt="Paisa"
-                      className="w-[14px] h-[14px] object-contain"
-                    />
-                    <span
-                      className="text-[13px] lg:text-[15px]"
-                      style={{
-                        fontFamily: '"Barlow Condensed", sans-serif',
-                        fontWeight: 700,
-                        color: '#49B265',
-                        whiteSpace: 'nowrap',
-                      }}
-                    >
-                      {hoveredData.details.amountStr}
-                    </span>
-                  </div>
-                </div>
+                  />
+                )}
+                <span
+                  style={{
+                    fontFamily: '"Poppins", sans-serif',
+                    fontWeight: 600,
+                    fontSize: '13px',
+                    lineHeight: '100%',
+                    color: hoveredData.details.isWithdrawal
+                      ? '#027940'
+                      : 'rgba(231, 171, 24, 1)',
+                    whiteSpace: 'nowrap',
+                  }}
+                >
+                  {hoveredData.details.amountStr}
+                </span>
               </div>
-            ) : (
-              <div className="flex flex-col relative z-10 h-full justify-between gap-[8px]">
-                <div className="flex flex-col gap-[3px] w-full">
-                  <span
-                    className="text-[13px] lg:text-[14px]"
-                    style={{
-                      width: '100%',
-                      fontFamily: '"Barlow Condensed", sans-serif',
-                      fontWeight: 700,
-                      lineHeight: '120%',
-                      color: 'rgba(255, 255, 255, 1)',
-                      whiteSpace: 'normal',
-                      wordBreak: 'break-word',
-                    }}
-                  >
-                    {hoveredData.details.task}
-                  </span>
-                  <span
-                    className="text-[10px] lg:text-[11px]"
-                    style={{
-                      width: '100%',
-                      fontFamily: '"Barlow Condensed", sans-serif',
-                      fontWeight: 500,
-                      lineHeight: '130%',
-                      color: 'rgba(170, 170, 170, 1)',
-                      whiteSpace: 'nowrap',
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                    }}
-                  >
-                    {hoveredData.details.taskCategory}
-                  </span>
-                </div>
-                <div className="w-full h-0 border-t border-white/10 shrink-0" />
-                <div className="flex items-center justify-between w-full min-w-max gap-4 h-[18px]">
-                  <span
-                    className="text-[12px]"
-                    style={{
-                      fontFamily: '"Barlow Condensed", sans-serif',
-                      fontWeight: 500,
-                      color: 'rgba(255, 255, 255, 1)',
-                      whiteSpace: 'nowrap',
-                    }}
-                  >
-                    Earned
-                  </span>
-                  <div className="flex items-center gap-1">
-                    <img
-                      src="/coins/Coin.png"
-                      alt="Coin"
-                      className="w-[14px] h-[14px] object-contain"
-                    />
-                    <span
-                      className="text-[13px] lg:text-[15px]"
-                      style={{
-                        fontFamily: '"Barlow Condensed", sans-serif',
-                        fontWeight: 700,
-                        backgroundImage: 'linear-gradient(180deg, #FEDF77 0%, #FCB91E 100%)',
-                        WebkitBackgroundClip: 'text',
-                        backgroundClip: 'text',
-                        color: 'transparent',
-                        whiteSpace: 'nowrap',
-                      }}
-                    >
-                      {hoveredData.details.amountStr}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            )}
+            </div>
+
+            {/* ── Bottom Section: Title & Subtitle ── */}
+            <div className="flex flex-col w-full min-w-0">
+              <span
+                style={{
+                  fontFamily: '"Bricolage Grotesque", sans-serif',
+                  fontWeight: 700,
+                  fontSize: '16px',
+                  lineHeight: '16px',
+                  letterSpacing: '0%',
+                  color: '#000000',
+                  whiteSpace: 'normal',
+                  wordBreak: 'break-word',
+                  display: 'block',
+                }}
+              >
+                {hoveredData.details.isWithdrawal
+                  ? 'Withdrawal Completed'
+                  : hoveredData.details.task}
+              </span>
+              <span
+                style={{
+                  fontFamily: '"Poppins", sans-serif',
+                  fontWeight: 500,
+                  fontSize: '13px',
+                  lineHeight: '28px',
+                  letterSpacing: '0%',
+                  color: '#000000',
+                  whiteSpace: 'normal',
+                  wordBreak: 'break-word',
+                  display: 'block',
+                }}
+              >
+                {hoveredData.details.isWithdrawal
+                  ? `Method: ${hoveredData.details.method}`
+                  : (hoveredData.details.taskCategory || 'Task completed')}
+              </span>
+            </div>
           </div>
         </div>
       )}
