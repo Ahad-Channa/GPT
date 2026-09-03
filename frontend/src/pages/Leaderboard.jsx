@@ -81,13 +81,12 @@ const PodiumCard = ({ rank, user, prize, onClick, isCenter = false }) => {
   return (
     <div
       className={`flex flex-col items-center select-none ${
-        isCenter ? 'order-1 sm:order-2 z-10' : rank === 2 ? 'order-2 sm:order-1' : 'order-3 sm:order-3'
+        isCenter ? 'order-1 sm:order-2 z-10 sm:-translate-y-[32px]' : rank === 2 ? 'order-2 sm:order-1' : 'order-3 sm:order-3'
       }`}
       style={{
         width: '247px',
         height: '161px',
         opacity: 1,
-        transform: isCenter ? 'translateY(-32px)' : 'none',
         gap: '16px',
         boxSizing: 'border-box',
         display: 'flex',
@@ -1020,12 +1019,10 @@ const Leaderboard = () => {
                     transition={{ duration: 0.2 }}
                     className="w-full flex flex-col items-center"
                   >
-                    {/* Top 3 Podium Row (Whole Layout 801x190) */}
+                    {/* Top 3 Podium Row (Whole Layout 247 on mobile / 801x190 on desktop, gap 40px on mobile) */}
                     <div
-                      className="flex flex-col sm:flex-row items-center sm:items-end justify-between gap-4 sm:gap-6 w-full relative select-none"
+                      className="flex flex-col sm:flex-row items-center sm:items-end justify-between gap-[40px] sm:gap-6 w-full max-w-[247px] sm:max-w-[801px] relative select-none"
                       style={{
-                        width: '100%',
-                        maxWidth: '801px',
                         minHeight: '190px',
                         opacity: 1,
                         transform: 'rotate(0deg)',
