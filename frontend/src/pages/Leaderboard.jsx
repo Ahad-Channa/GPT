@@ -1057,7 +1057,7 @@ const Leaderboard = () => {
 
                     {/* Countdown Timer Below Podium */}
                     {currentData?.cycleEnd && (
-                      <div className="mt-2 sm:mt-3">
+                      <div className="mt-9 sm:mt-3">
                         <LeaderboardCountdown targetDate={currentData.cycleEnd} />
                       </div>
                     )}
