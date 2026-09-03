@@ -75,13 +75,11 @@ export const ProviderCard = ({ provider, onClick }) => {
     <motion.div
       variants={item}
       onClick={onClick}
-      className="cursor-pointer flex flex-col items-center justify-center shrink-0"
+      className="cursor-pointer flex flex-col items-center justify-center shrink-0 w-full md:w-[323px]"
       style={{
-        width: '323px',
-        maxWidth: '100%',
         height: '76px',
         borderRadius: '24px',
-        background: 'rgba(255, 255, 255, 1)',
+        background: 'rgba(249, 247, 241, 1)',
         border: '1px solid rgba(223, 225, 209, 1)',
         gap: '10px',
         opacity: 1,

@@ -949,49 +949,51 @@ const Leaderboard = () => {
               {/* Period Switcher Tabs */}
               {enabledPeriods.length > 0 && (
                 <div
-                  className="inline-flex items-center p-1 bg-white rounded-full border border-black/[0.06] shadow-sm"
+                  className="flex items-center justify-center select-none"
                   style={{
-                    borderRadius: '50px',
                     boxSizing: 'border-box',
+                    opacity: 1,
+                    transform: 'rotate(0deg)',
                   }}
                 >
-                  {enabledPeriods.map((period) => {
-                    const isActive = activeTab === period;
-                    return (
-                      <button
-                        key={period}
-                        type="button"
-                        onClick={() => setActiveTab(period)}
-                        className="transition-all duration-200 cursor-pointer flex items-center justify-center select-none"
-                        style={{
-                          minWidth: '71px',
-                          height: '31px',
-                          borderRadius: '40px',
-                          paddingTop: '11px',
-                          paddingRight: '18px',
-                          paddingBottom: '11px',
-                          paddingLeft: '18px',
-                          gap: '8px',
-                          background: isActive ? 'rgba(36, 50, 77, 1)' : 'transparent',
-                          boxSizing: 'border-box',
-                        }}
-                      >
-                        <span
+                  <div
+                    className="flex items-center bg-white border border-black/[0.06] shadow-sm w-[246px] h-[41px] p-[5px_6px] gap-[5px] rounded-[1000px] md:w-auto md:h-auto md:p-1 md:gap-0 md:rounded-[50px]"
+                    style={{
+                      boxSizing: 'border-box',
+                      opacity: 1,
+                      transform: 'rotate(0deg)',
+                    }}
+                  >
+                    {enabledPeriods.map((period) => {
+                      const isActive = activeTab === period;
+                      return (
+                        <button
+                          key={period}
+                          type="button"
+                          onClick={() => setActiveTab(period)}
+                          className="transition-all duration-200 cursor-pointer flex-1 md:flex-initial flex items-center justify-center select-none h-full md:h-[31px] md:min-w-[71px] rounded-[40px] px-2 md:px-[18px] py-0 md:py-[11px]"
                           style={{
-                            fontFamily: '"Bricolage Grotesque", sans-serif',
-                            fontWeight: 700,
-                            fontSize: '14px',
-                            lineHeight: '100%',
-                            letterSpacing: '0%',
-                            color: isActive ? 'rgba(255, 255, 255, 1)' : '#000000',
-                            whiteSpace: 'nowrap',
+                            background: isActive ? 'rgba(36, 50, 77, 1)' : 'transparent',
+                            boxSizing: 'border-box',
                           }}
                         >
-                          {PERIOD_META[period]?.label || period}
-                        </span>
-                      </button>
-                    );
-                  })}
+                          <span
+                            style={{
+                              fontFamily: '"Bricolage Grotesque", sans-serif',
+                              fontWeight: 700,
+                              fontSize: '14px',
+                              lineHeight: '100%',
+                              letterSpacing: '0%',
+                              color: isActive ? 'rgba(255, 255, 255, 1)' : '#000000',
+                              whiteSpace: 'nowrap',
+                            }}
+                          >
+                            {PERIOD_META[period]?.label || period}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
                 </div>
               )}
             </div>

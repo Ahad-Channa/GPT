@@ -17,10 +17,8 @@ const FeaturedOfferBadge = () => (
   <img
     src="/coins/FETUOFF.png"
     alt="Featured Offers"
-    className="flex-shrink-0 object-contain select-none"
+    className="w-[53px] h-[53px] md:w-[67.2px] md:h-[67.2px] flex-shrink-0 object-contain select-none"
     style={{
-      width: '67.19999694824219px',
-      height: '67.19999694824219px',
       opacity: 1,
       transform: 'rotate(0deg)',
     }}
@@ -387,10 +385,8 @@ const Home = () => {
         <img
           src="/coins/gameseciton.png"
           alt="Gaming Offers"
-          className="flex-shrink-0 object-contain select-none"
+          className="w-[53px] h-[53px] md:w-[67.2px] md:h-[67.2px] flex-shrink-0 object-contain select-none"
           style={{
-            width: '67.19999694824219px',
-            height: '67.19999694824219px',
             opacity: 1,
             transform: 'rotate(0deg)',
           }}
@@ -404,10 +400,8 @@ const Home = () => {
         <img
           src="/coins/survay section.png"
           alt="Surveys"
-          className="flex-shrink-0 object-contain select-none"
+          className="w-[53px] h-[53px] md:w-[67.2px] md:h-[67.2px] flex-shrink-0 object-contain select-none"
           style={{
-            width: '67.19999694824219px',
-            height: '67.19999694824219px',
             opacity: 1,
             transform: 'rotate(0deg)',
           }}
@@ -435,7 +429,7 @@ const Home = () => {
             {/* ─── Platform Stats (Top Count Pill) ───────────────────────────── */}
             <motion.div
               variants={item}
-              className="flex items-center justify-center w-full mx-auto -mt-[8px] mb-4 lg:mb-8 px-4"
+              className="flex items-center justify-center w-full mx-auto -mt-[8px] mb-8 md:mb-4 lg:mb-8 px-4"
             >
               <div
                 className="flex items-center justify-between sm:justify-around w-full max-w-[490px] px-8 sm:px-14 lg:px-16 py-3 sm:py-4 gap-6 sm:gap-12 lg:gap-16 transition-all"
@@ -542,43 +536,30 @@ const Home = () => {
               >
                 {currentHeader.icon}
                 <div
-                  className="flex flex-col justify-center"
+                  className="flex flex-col justify-center max-w-[371px] md:min-h-[44px]"
                   style={{
-                    maxWidth: '371px',
-                    minHeight: '44px',
                     gap: '4px',
                     opacity: 1,
                     transform: 'rotate(0deg)',
                   }}
                 >
                   <h2
+                    className="w-auto text-[24px] md:text-[27px] leading-tight md:leading-[1.1] text-black md:text-[#0E0F0C] tracking-[-0.02em] font-bold m-0 md:whitespace-nowrap"
                     style={{
                       fontFamily: '"Bricolage Grotesque", sans-serif',
-                      fontWeight: 700,
-                      fontSize: '27px',
-                      lineHeight: '1.1',
-                      letterSpacing: '-0.02em',
-                      color: '#0E0F0C',
                       opacity: 1,
                       transform: 'rotate(0deg)',
-                      margin: 0,
-                      whiteSpace: 'nowrap',
                     }}
                   >
                     {currentHeader.title}
                   </h2>
                   <p
+                    className="w-[311px] max-w-full text-[14px] leading-[20px] md:leading-[14px] text-black md:text-[rgba(14,15,12,0.7)] font-medium m-0 md:whitespace-nowrap"
                     style={{
                       fontFamily: '"Poppins", sans-serif',
-                      fontWeight: 500,
-                      fontSize: '14px',
-                      lineHeight: '14px',
                       letterSpacing: '0%',
-                      color: 'rgba(14, 15, 12, 0.7)',
                       opacity: 1,
                       transform: 'rotate(0deg)',
-                      margin: 0,
-                      whiteSpace: 'nowrap',
                     }}
                   >
                     {currentHeader.subtitle}
@@ -668,46 +649,41 @@ const Home = () => {
               >
                 {/* Header with icon and typography (only when filter === 'all') */}
                 {filter === 'all' && (
-                  <div className="flex items-center" style={{ gap: '5.25px' }}>
+                  <div className="flex items-center" style={{ gap: '5.25px', opacity: 1, transform: 'rotate(0deg)' }}>
                     <img
                       src="/coins/gameseciton.png"
                       alt="Gaming Offers"
-                      className="flex-shrink-0 object-contain select-none"
+                      className="w-[53px] h-[53px] md:w-[67.2px] md:h-[67.2px] flex-shrink-0 object-contain select-none"
                       style={{
-                        width: '67.19999694824219px',
-                        height: '67.19999694824219px',
                         opacity: 1,
                         transform: 'rotate(0deg)',
                       }}
                     />
                     <div
-                      className="flex flex-col justify-center"
+                      className="flex flex-col justify-center max-w-[371px] md:min-h-[44px]"
                       style={{
-                        maxWidth: '371px',
-                        minHeight: '46px',
+                        gap: '4px',
                         opacity: 1,
+                        transform: 'rotate(0deg)',
                       }}
                     >
                       <h2
-                        className="text-[#0E0F0C] m-0"
+                        className="w-auto text-[24px] md:text-[30px] leading-tight md:leading-[1] text-black md:text-[#0E0F0C] tracking-[-0.02em] font-bold m-0 md:whitespace-nowrap"
                         style={{
                           fontFamily: '"Bricolage Grotesque", sans-serif',
-                          fontWeight: 700,
-                          fontSize: '30px',
-                          lineHeight: '1',
-                          letterSpacing: '-0.02em',
+                          opacity: 1,
+                          transform: 'rotate(0deg)',
                         }}
                       >
                         Gaming & App Offers
                       </h2>
                       <p
-                        className="text-[#0E0F0C] m-0 mt-[4px]"
+                        className="w-[311px] max-w-full text-[14px] leading-[20px] md:leading-[1.2] text-black md:text-[#0E0F0C] font-medium m-0 md:whitespace-nowrap"
                         style={{
                           fontFamily: '"Poppins", sans-serif',
-                          fontWeight: 500,
-                          fontSize: '14px',
-                          lineHeight: '1.2',
                           letterSpacing: '0%',
+                          opacity: 1,
+                          transform: 'rotate(0deg)',
                         }}
                       >
                         Play games to earn large amounts of points.
@@ -742,46 +718,41 @@ const Home = () => {
                 className="flex flex-col shrink-0 w-full max-w-[1328px] gap-[20px]"
               >
                 {filter === 'all' && (
-                  <div className="flex items-center" style={{ gap: '5.25px', position: 'relative', left: '-3px' }}>
+                  <div className="flex items-center" style={{ gap: '5.25px', opacity: 1, transform: 'rotate(0deg)', position: 'relative', left: '-3px' }}>
                     <img
                       src="/coins/survay section.png"
                       alt="Surveys"
-                      className="flex-shrink-0 object-contain select-none"
+                      className="w-[53px] h-[53px] md:w-[67.2px] md:h-[67.2px] flex-shrink-0 object-contain select-none"
                       style={{
-                        width: '67.19999694824219px',
-                        height: '67.19999694824219px',
                         opacity: 1,
                         transform: 'rotate(0deg)',
                       }}
                     />
                     <div
-                      className="flex flex-col justify-center"
+                      className="flex flex-col justify-center max-w-[371px] md:min-h-[44px]"
                       style={{
-                        maxWidth: '371px',
-                        minHeight: '46px',
+                        gap: '4px',
                         opacity: 1,
+                        transform: 'rotate(0deg)',
                       }}
                     >
                       <h2
-                        className="text-[#0E0F0C] m-0"
+                        className="w-auto text-[24px] md:text-[30px] leading-tight md:leading-[1] text-black md:text-[#0E0F0C] tracking-[-0.02em] font-bold m-0 md:whitespace-nowrap"
                         style={{
                           fontFamily: '"Bricolage Grotesque", sans-serif',
-                          fontWeight: 700,
-                          fontSize: '30px',
-                          lineHeight: '1',
-                          letterSpacing: '-0.02em',
+                          opacity: 1,
+                          transform: 'rotate(0deg)',
                         }}
                       >
                         Surveys
                       </h2>
                       <p
-                        className="text-[#0E0F0C] m-0 mt-[4px]"
+                        className="w-[311px] max-w-full text-[14px] leading-[20px] md:leading-[1.2] text-black md:text-[#0E0F0C] font-medium m-0 md:whitespace-nowrap"
                         style={{
                           fontFamily: '"Poppins", sans-serif',
-                          fontWeight: 500,
-                          fontSize: '14px',
-                          lineHeight: '1.2',
                           letterSpacing: '0%',
+                          opacity: 1,
+                          transform: 'rotate(0deg)',
                         }}
                       >
                         Share your opinion for quick and easy rewards.
