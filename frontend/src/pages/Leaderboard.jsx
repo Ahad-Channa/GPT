@@ -711,14 +711,20 @@ const Leaderboard = () => {
           </div>
         </div>
 
-        {/* Right: Earning + Prize */}
-        <div className="flex items-center gap-4 sm:gap-14 shrink-0">
+        {/* Right: Earning + Prize (width: 216, height: 32.83, gap: 26px on mobile) */}
+        <div
+          className="flex items-center gap-[26px] sm:gap-14 shrink-0 w-[216px] sm:w-auto h-[32.83px] sm:h-auto"
+          style={{
+            opacity: 1,
+            transform: 'rotate(0deg)',
+            boxSizing: 'border-box',
+          }}
+        >
           {/* Earning */}
-          <div className="flex flex-col items-start min-w-[76px] sm:w-[107.35px]">
+          <div className="flex flex-col items-start w-[81px] sm:w-[107.35px]">
             <span
-              className="text-[12px] sm:text-[14px] text-black"
+              className="text-[10px] sm:text-[14px] text-black w-[81px] sm:w-[107.35px] h-[7px] sm:h-[10px]"
               style={{
-                height: '10px',
                 opacity: 1,
                 transform: 'rotate(0deg)',
                 fontFamily: '"Poppins", sans-serif',
@@ -732,7 +738,7 @@ const Leaderboard = () => {
             >
               Earning
             </span>
-            <div className="flex items-center gap-1 sm:gap-1.5 mt-1">
+            <div className="flex items-center gap-[3.7px] sm:gap-1.5 mt-1 h-[14.83px] sm:h-auto">
               <img
                 src="/coins/ledcoin.png"
                 alt="Coin"
@@ -760,11 +766,10 @@ const Leaderboard = () => {
           </div>
 
           {/* Prize */}
-          <div className="flex flex-col items-start min-w-[76px] sm:w-[107.35px]">
+          <div className="flex flex-col items-start w-[81px] sm:w-[107.35px]">
             <span
-              className="text-[12px] sm:text-[14px] text-black"
+              className="text-[10px] sm:text-[14px] text-black w-[81px] sm:w-[107.35px] h-[7px] sm:h-[10px]"
               style={{
-                height: '10px',
                 opacity: 1,
                 transform: 'rotate(0deg)',
                 fontFamily: '"Poppins", sans-serif',
@@ -778,7 +783,7 @@ const Leaderboard = () => {
             >
               Prize
             </span>
-            <div className="flex items-center gap-1 sm:gap-1.5 mt-1 min-h-[22px] sm:min-h-[24px]">
+            <div className="flex items-center gap-[3.7px] sm:gap-1.5 mt-1 h-[14.83px] sm:h-auto min-h-[14.83px] sm:min-h-[24px]">
               {prize > 0 ? (
                 <>
                   <img
