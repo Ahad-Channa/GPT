@@ -641,11 +641,8 @@ const Leaderboard = () => {
       <div
         key={user.userId || rankNumber}
         onClick={() => setActiveProfileId(user.userId)}
-        className="w-full max-w-[1102px] rounded-[20px] flex items-center justify-between hover:bg-[#F3EFE6] transition-colors cursor-pointer select-none px-3.5 sm:px-5 py-2.5 sm:py-[10px]"
+        className="w-full max-w-[428px] sm:max-w-[1102px] h-[62px] sm:h-[72px] rounded-[20px] flex items-center justify-between hover:bg-[#F3EFE6] transition-colors cursor-pointer select-none px-[20px] py-[10px] gap-[10px] sm:gap-0"
         style={{
-          width: '100%',
-          maxWidth: '1102px',
-          minHeight: '72px',
           opacity: 1,
           transform: 'rotate(0deg)',
           borderRadius: '20px',
@@ -674,7 +671,7 @@ const Leaderboard = () => {
           )}
 
           <div
-            className="w-[44px] h-[44px] sm:w-[52px] sm:h-[52px] rounded-full overflow-hidden bg-white shadow-sm shrink-0"
+            className="w-[42px] h-[42px] sm:w-[52px] sm:h-[52px] rounded-full overflow-hidden bg-white shadow-sm shrink-0"
             style={{
               opacity: 1,
               transform: 'rotate(0deg)',
@@ -690,11 +687,10 @@ const Leaderboard = () => {
 
           <div className="flex items-center gap-1.5 min-w-0">
             <span
-              className="text-[16px] sm:text-[19.6px] text-[#0E0F0C] block truncate"
+              className="text-[14px] sm:text-[19.6px] text-[#0E0F0C] block truncate leading-none"
               style={{
                 fontFamily: '"Baloo 2", cursive, sans-serif',
                 fontWeight: 600,
-                lineHeight: '1.2',
                 letterSpacing: '-0.04em',
                 opacity: 1,
                 transform: 'rotate(0deg)',
