@@ -651,10 +651,10 @@ const Leaderboard = () => {
         }}
       >
         {/* Left: Rank + Avatar + Name */}
-        <div className="flex items-center gap-2.5 sm:gap-4 min-w-0">
+        <div className="flex items-center gap-3.5 sm:gap-4 min-w-0">
           {rankNumber ? (
             <span
-              className="w-[18px] sm:w-[25px] h-[8px] sm:h-[12px] flex items-center justify-center shrink-0 text-center text-[14px] sm:text-[19.6px] leading-none"
+              className="w-[22px] sm:w-[25px] h-[10px] sm:h-[12px] flex items-center justify-center shrink-0 text-center text-[16px] sm:text-[19.6px] leading-none"
               style={{
                 opacity: 1,
                 transform: 'rotate(0deg)',
@@ -667,7 +667,7 @@ const Leaderboard = () => {
               #{rankNumber}
             </span>
           ) : (
-            <div className="w-[18px] sm:w-[25px] h-[8px] sm:h-[12px] shrink-0" />
+            <div className="w-[22px] sm:w-[25px] h-[10px] sm:h-[12px] shrink-0" />
           )}
 
           <div
@@ -687,7 +687,7 @@ const Leaderboard = () => {
 
           <div className="flex items-center gap-1.5 min-w-0">
             <span
-              className="text-[14px] sm:text-[19.6px] text-[#0E0F0C] block truncate leading-none"
+              className="text-[16px] sm:text-[19.6px] text-[#0E0F0C] block truncate leading-none"
               style={{
                 fontFamily: '"Baloo 2", cursive, sans-serif',
                 fontWeight: 600,
