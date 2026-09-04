@@ -641,62 +641,45 @@ const Leaderboard = () => {
       <div
         key={user.userId || rankNumber}
         onClick={() => setActiveProfileId(user.userId)}
-        className="w-full max-w-[1102px] rounded-[20px] flex items-center justify-between hover:bg-[#F3EFE6] transition-colors cursor-pointer select-none"
+        className="w-full max-w-[1102px] rounded-[20px] flex items-center justify-between hover:bg-[#F3EFE6] transition-colors cursor-pointer select-none px-3.5 sm:px-5 py-2.5 sm:py-[10px]"
         style={{
           width: '100%',
           maxWidth: '1102px',
-          height: '72px',
+          minHeight: '72px',
           opacity: 1,
           transform: 'rotate(0deg)',
           borderRadius: '20px',
-          paddingTop: '10px',
-          paddingRight: '20px',
-          paddingBottom: '10px',
-          paddingLeft: '20px',
           background: 'rgba(249, 247, 241, 1)',
           boxSizing: 'border-box',
         }}
       >
         {/* Left: Rank + Avatar + Name */}
-        <div className="flex items-center gap-3 sm:gap-4 min-w-0">
+        <div className="flex items-center gap-2.5 sm:gap-4 min-w-0">
           {rankNumber ? (
             <span
+              className="w-[18px] sm:w-[25px] h-[8px] sm:h-[12px] flex items-center justify-center shrink-0 text-center text-[14px] sm:text-[19.6px] leading-none"
               style={{
-                width: '25px',
-                height: '12px',
                 opacity: 1,
                 transform: 'rotate(0deg)',
                 fontFamily: '"Baloo 2", cursive, sans-serif',
                 fontWeight: 600,
-                fontSize: '19.6px',
-                lineHeight: '100%',
                 letterSpacing: '-0.04em',
-                textAlign: 'center',
                 color: '#000000',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                flexShrink: 0,
               }}
             >
               #{rankNumber}
             </span>
           ) : (
-            <div style={{ width: '25px', height: '12px', flexShrink: 0 }} />
+            <div className="w-[18px] sm:w-[25px] h-[8px] sm:h-[12px] shrink-0" />
           )}
 
           <div
+            className="w-[44px] h-[44px] sm:w-[52px] sm:h-[52px] rounded-full overflow-hidden bg-white shadow-sm shrink-0"
             style={{
-              width: '52px',
-              height: '52px',
               opacity: 1,
               transform: 'rotate(0deg)',
-              borderRadius: '50%',
-              overflow: 'hidden',
               boxSizing: 'border-box',
-              flexShrink: 0,
             }}
-            className="bg-white shadow-sm"
           >
             <img
               src={user.avatarUrl || user.avatar || '/avatars/avatar1.png'}
@@ -707,20 +690,15 @@ const Leaderboard = () => {
 
           <div className="flex items-center gap-1.5 min-w-0">
             <span
+              className="text-[16px] sm:text-[19.6px] text-[#0E0F0C] block truncate"
               style={{
                 fontFamily: '"Baloo 2", cursive, sans-serif',
                 fontWeight: 600,
-                fontSize: '19.6px',
                 lineHeight: '1.2',
                 letterSpacing: '-0.04em',
-                color: '#0E0F0C',
                 opacity: 1,
                 transform: 'rotate(0deg)',
                 margin: 0,
-                display: 'block',
-                whiteSpace: 'nowrap',
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
               }}
               title={user.displayName}
             >
@@ -728,7 +706,7 @@ const Leaderboard = () => {
             </span>
             {isCurrent && (
               <span
-                className="text-gray-500 font-medium text-[12px] sm:text-[13px] shrink-0"
+                className="text-gray-500 font-medium text-[11px] sm:text-[13px] shrink-0"
                 style={{ fontFamily: '"Poppins", sans-serif' }}
               >
                 (you)
@@ -738,21 +716,19 @@ const Leaderboard = () => {
         </div>
 
         {/* Right: Earning + Prize */}
-        <div className="flex items-center gap-8 sm:gap-14 shrink-0">
+        <div className="flex items-center gap-4 sm:gap-14 shrink-0">
           {/* Earning */}
-          <div className="flex flex-col items-start" style={{ width: '107.35px' }}>
+          <div className="flex flex-col items-start min-w-[76px] sm:w-[107.35px]">
             <span
+              className="text-[12px] sm:text-[14px] text-black"
               style={{
-                width: '107.35px',
                 height: '10px',
                 opacity: 1,
                 transform: 'rotate(0deg)',
                 fontFamily: '"Poppins", sans-serif',
                 fontWeight: 500,
-                fontSize: '14px',
                 lineHeight: '18px',
                 letterSpacing: '0%',
-                color: '#000000',
                 margin: 0,
                 display: 'flex',
                 alignItems: 'center',
@@ -760,18 +736,17 @@ const Leaderboard = () => {
             >
               Earning
             </span>
-            <div className="flex items-center gap-1.5 mt-1">
+            <div className="flex items-center gap-1 sm:gap-1.5 mt-1">
               <img
                 src="/coins/ledcoin.png"
                 alt="Coin"
-                className="w-[14px] h-[14px] object-contain shrink-0"
+                className="w-[12px] h-[12px] sm:w-[14px] sm:h-[14px] object-contain shrink-0"
               />
               <span
+                className="text-[15px] sm:text-[20px]"
                 style={{
-                  width: 'auto',
                   fontFamily: '"Poppins", sans-serif',
                   fontWeight: 600,
-                  fontSize: '20px',
                   lineHeight: '1.2',
                   letterSpacing: '0%',
                   color: 'rgba(190, 146, 0, 1)',
@@ -789,19 +764,17 @@ const Leaderboard = () => {
           </div>
 
           {/* Prize */}
-          <div className="flex flex-col items-start" style={{ width: '107.35px' }}>
+          <div className="flex flex-col items-start min-w-[76px] sm:w-[107.35px]">
             <span
+              className="text-[12px] sm:text-[14px] text-black"
               style={{
-                width: '107.35px',
                 height: '10px',
                 opacity: 1,
                 transform: 'rotate(0deg)',
                 fontFamily: '"Poppins", sans-serif',
                 fontWeight: 500,
-                fontSize: '14px',
                 lineHeight: '18px',
                 letterSpacing: '0%',
-                color: '#000000',
                 margin: 0,
                 display: 'flex',
                 alignItems: 'center',
@@ -809,20 +782,19 @@ const Leaderboard = () => {
             >
               Prize
             </span>
-            <div className="flex items-center gap-1.5 mt-1 min-h-[24px]">
+            <div className="flex items-center gap-1 sm:gap-1.5 mt-1 min-h-[22px] sm:min-h-[24px]">
               {prize > 0 ? (
                 <>
                   <img
                     src="/coins/ledcoin.png"
                     alt="Coin"
-                    className="w-[14px] h-[14px] object-contain shrink-0"
+                    className="w-[12px] h-[12px] sm:w-[14px] sm:h-[14px] object-contain shrink-0"
                   />
                   <span
+                    className="text-[15px] sm:text-[20px]"
                     style={{
-                      width: 'auto',
                       fontFamily: '"Poppins", sans-serif',
                       fontWeight: 600,
-                      fontSize: '20px',
                       lineHeight: '1.2',
                       letterSpacing: '0%',
                       color: 'rgba(190, 146, 0, 1)',
@@ -838,7 +810,7 @@ const Leaderboard = () => {
                   </span>
                 </>
               ) : (
-                <span className="text-gray-300 text-[14px] font-medium">-</span>
+                <span className="text-gray-300 text-[12px] sm:text-[14px] font-medium">-</span>
               )}
             </div>
           </div>
@@ -1070,7 +1042,7 @@ const Leaderboard = () => {
 
         {/* Lower Section: Ranks #4 and below list */}
         {!loading && enabledPeriods.length > 0 && currentData?.enabled && (
-          <div className="w-full max-w-[1102px] mx-auto mt-8 sm:mt-12 mb-12 sm:mb-16 flex flex-col gap-2.5 sm:gap-3 px-4 md:px-0 items-center">
+          <div className="w-full max-w-[1102px] mx-auto mt-8 sm:mt-12 mb-12 sm:mb-16 flex flex-col gap-2.5 sm:gap-3 px-2 sm:px-4 md:px-0 items-center">
             {!others.length && rankings.length <= 3 && (
               <div className="text-center py-10 text-gray-400 text-sm font-medium bg-white rounded-[20px] border border-gray-100">
                 No other users on the leaderboard yet.
