@@ -916,7 +916,7 @@ const Affiliates = () => {
             </div>
 
             {/* Inner White Card for Table Content */}
-            <div className="bg-white rounded-[24px] p-6 sm:p-8 w-full shadow-xs border border-[#E5E7EB]/60">
+            <div className="bg-white rounded-[20px] sm:rounded-[24px] p-3 sm:p-6 md:p-8 w-full shadow-xs border border-[#E5E7EB]/60">
               {/* Tab 1: Recent Affiliate Earnings */}
               {activeTab === 'recent' && (
                 <div>
@@ -935,20 +935,14 @@ const Affiliates = () => {
                   ) : (
                     <div className="overflow-x-auto">
                       <div
-                        className="min-w-[680px] w-full flex flex-col gap-[21px]"
-                        style={{ maxWidth: '1248px', minHeight: '399px', opacity: 1 }}
+                        className="w-full min-w-0 sm:min-w-[680px] flex flex-col gap-2.5 sm:gap-[21px]"
+                        style={{ maxWidth: '1248px', opacity: 1 }}
                       >
-                        {/* Table Header (No bottom line, Poppins 14px 400 uppercase, rgba(14, 15, 12, 0.6)) */}
+                        {/* Table Header */}
                         <div
-                          className="grid grid-cols-[1.6fr_1.2fr_1.2fr_1.2fr_1fr] items-center"
+                          className="grid grid-cols-[1.4fr_1fr_1.1fr_1.1fr_0.9fr] sm:grid-cols-[1.6fr_1.2fr_1.2fr_1.2fr_1fr] items-center text-[9px] sm:text-[14px] leading-tight sm:leading-[26px] tracking-[0.04em] sm:tracking-[0.06em] text-[rgba(14,15,12,0.6)] uppercase font-[400]"
                           style={{
                             fontFamily: '"Poppins", sans-serif',
-                            fontWeight: 400,
-                            fontSize: '14px',
-                            lineHeight: '26px',
-                            letterSpacing: '0.06em',
-                            textTransform: 'uppercase',
-                            color: 'rgba(14, 15, 12, 0.6)',
                           }}
                         >
                           <div>USER</div>
@@ -958,7 +952,7 @@ const Affiliates = () => {
                           <div className="text-right sm:text-left sm:pl-4">STATUS</div>
                         </div>
 
-                        {/* Table Rows (Divider: 1px solid rgba(0, 0, 0, 0.1), Row height: 60px) */}
+                        {/* Table Rows */}
                         <div className="divide-y divide-[rgba(0,0,0,0.1)] flex flex-col">
                           {referrals.dataList.map((tx) => {
                             const avatar = tx.linkedTransactionId?.userId?.avatarUrl ||
@@ -971,33 +965,23 @@ const Affiliates = () => {
                             return (
                               <div
                                 key={tx._id}
-                                className="grid grid-cols-[1.6fr_1.2fr_1.2fr_1.2fr_1fr] items-center py-5 transition-colors"
-                                style={{ minHeight: '60px' }}
+                                className="grid grid-cols-[1.4fr_1fr_1.1fr_1.1fr_0.9fr] sm:grid-cols-[1.6fr_1.2fr_1.2fr_1.2fr_1fr] items-center py-2.5 sm:py-5 min-h-[44px] sm:min-h-[60px] transition-colors"
                               >
                                 {/* User */}
-                                <div className="flex items-center gap-3 min-w-0 pr-2">
+                                <div className="flex items-center gap-1.5 sm:gap-3 min-w-0 pr-1 sm:pr-2">
                                   <img
                                     src={avatar}
                                     alt={username}
-                                    style={{
-                                      width: '40px',
-                                      height: '40px',
-                                      borderRadius: '100px',
-                                      objectFit: 'cover',
-                                      opacity: 1,
-                                    }}
-                                    className="bg-gray-200 border border-gray-100 shrink-0"
+                                    className="w-6 h-6 sm:w-10 sm:h-10 rounded-full object-cover bg-gray-200 border border-gray-100 shrink-0"
                                   />
                                   <span
                                     style={{
                                       fontFamily: '"Bricolage Grotesque", sans-serif',
                                       fontWeight: 700,
-                                      fontSize: '16px',
-                                      lineHeight: '100%',
                                       letterSpacing: '0%',
                                       color: '#000000',
                                     }}
-                                    className="truncate max-w-[180px] sm:max-w-none"
+                                    className="truncate text-[10px] sm:text-[16px] leading-tight"
                                   >
                                     {username}
                                   </span>
@@ -1008,55 +992,49 @@ const Affiliates = () => {
                                   style={{
                                     fontFamily: '"Poppins", sans-serif',
                                     fontWeight: 500,
-                                    fontSize: '16px',
-                                    lineHeight: '26px',
                                     letterSpacing: '0%',
                                     color: '#000000',
                                   }}
-                                  className="truncate"
+                                  className="truncate text-[9px] sm:text-[16px] leading-tight sm:leading-[26px]"
                                 >
                                   {formatDate(tx.createdAt)}
                                 </div>
 
                                 {/* Earning */}
-                                <div className="flex items-center gap-1.5 min-w-0">
+                                <div className="flex items-center gap-1 sm:gap-1.5 min-w-0">
                                   <img
                                     src="/coins/coinofaffliation.png"
                                     alt="Coin"
-                                    className="w-[18px] h-[18px] object-contain shrink-0"
+                                    className="w-3 h-3 sm:w-[18px] sm:h-[18px] object-contain shrink-0"
                                   />
                                   <span
                                     style={{
                                       fontFamily: '"Poppins", sans-serif',
                                       fontWeight: 600,
-                                      fontSize: '16px',
-                                      lineHeight: '26px',
                                       letterSpacing: '0%',
                                       color: 'rgba(190, 146, 0, 1)',
                                     }}
-                                    className="truncate"
+                                    className="truncate text-[9px] sm:text-[16px] leading-tight sm:leading-[26px]"
                                   >
                                     {formatCoinAmount(earningVal)}
                                   </span>
                                 </div>
 
                                 {/* Comms */}
-                                <div className="flex items-center gap-1.5 min-w-0">
+                                <div className="flex items-center gap-1 sm:gap-1.5 min-w-0">
                                   <img
                                     src="/coins/coinofaffliation.png"
                                     alt="Coin"
-                                    className="w-[18px] h-[18px] object-contain shrink-0"
+                                    className="w-3 h-3 sm:w-[18px] sm:h-[18px] object-contain shrink-0"
                                   />
                                   <span
                                     style={{
                                       fontFamily: '"Poppins", sans-serif',
                                       fontWeight: 600,
-                                      fontSize: '16px',
-                                      lineHeight: '26px',
                                       letterSpacing: '0%',
                                       color: 'rgba(190, 146, 0, 1)',
                                     }}
-                                    className="truncate"
+                                    className="truncate text-[9px] sm:text-[16px] leading-tight sm:leading-[26px]"
                                   >
                                     {formatCoinAmount(commVal)}
                                   </span>
@@ -1065,24 +1043,11 @@ const Affiliates = () => {
                                 {/* Status */}
                                 <div className="text-right sm:text-left sm:pl-4">
                                   <span
-                                    className="inline-flex items-center justify-center shrink-0"
+                                    className="inline-flex items-center justify-center shrink-0 h-[22px] sm:h-[33px] px-2 py-0.5 sm:px-[18px] sm:py-[11px] rounded-[40px] text-[9px] sm:text-[16px] font-medium text-white"
                                     style={{
-                                      height: '33px',
-                                      borderRadius: '40px',
-                                      paddingTop: '11px',
-                                      paddingRight: '18px',
-                                      paddingBottom: '11px',
-                                      paddingLeft: '18px',
-                                      gap: '8px',
                                       background: 'rgba(36, 50, 77, 1)',
-                                      color: '#FFFFFF',
                                       fontFamily: '"Poppins", sans-serif',
-                                      fontWeight: 500,
-                                      fontSize: '16px',
                                       lineHeight: '100%',
-                                      letterSpacing: '0%',
-                                      boxSizing: 'border-box',
-                                      opacity: 1,
                                       whiteSpace: 'nowrap',
                                     }}
                                   >
@@ -1117,20 +1082,14 @@ const Affiliates = () => {
                   ) : (
                     <div className="overflow-x-auto">
                       <div
-                        className="min-w-[680px] w-full flex flex-col gap-[21px]"
-                        style={{ maxWidth: '1248px', minHeight: '399px', opacity: 1 }}
+                        className="w-full min-w-0 sm:min-w-[680px] flex flex-col gap-2.5 sm:gap-[21px]"
+                        style={{ maxWidth: '1248px', opacity: 1 }}
                       >
                         {/* Table Header */}
                         <div
-                          className="grid grid-cols-[1.6fr_1.2fr_1.2fr_1.2fr_1fr] items-center"
+                          className="grid grid-cols-[1.4fr_1fr_1.1fr_1.1fr_0.9fr] sm:grid-cols-[1.6fr_1.2fr_1.2fr_1.2fr_1fr] items-center text-[9px] sm:text-[14px] leading-tight sm:leading-[26px] tracking-[0.04em] sm:tracking-[0.06em] text-[rgba(14,15,12,0.6)] uppercase font-[400]"
                           style={{
                             fontFamily: '"Poppins", sans-serif',
-                            fontWeight: 400,
-                            fontSize: '14px',
-                            lineHeight: '26px',
-                            letterSpacing: '0.06em',
-                            textTransform: 'uppercase',
-                            color: 'rgba(14, 15, 12, 0.6)',
                           }}
                         >
                           <div>USER</div>
@@ -1140,7 +1099,7 @@ const Affiliates = () => {
                           <div className="text-right sm:text-left sm:pl-4">STATUS</div>
                         </div>
 
-                        {/* Table Rows (Divider: 1px solid rgba(0, 0, 0, 0.1), Row height: 60px) */}
+                        {/* Table Rows */}
                         <div className="divide-y divide-[rgba(0,0,0,0.1)] flex flex-col">
                           {referredUsersData.users.map((u) => {
                             const avatar = u.avatarUrl || u.photoURL || `https://api.dicebear.com/7.x/adventurer/svg?seed=${u.displayName}`;
@@ -1151,33 +1110,23 @@ const Affiliates = () => {
                             return (
                               <div
                                 key={u._id}
-                                className="grid grid-cols-[1.6fr_1.2fr_1.2fr_1.2fr_1fr] items-center py-5 transition-colors"
-                                style={{ minHeight: '60px' }}
+                                className="grid grid-cols-[1.4fr_1fr_1.1fr_1.1fr_0.9fr] sm:grid-cols-[1.6fr_1.2fr_1.2fr_1.2fr_1fr] items-center py-2.5 sm:py-5 min-h-[44px] sm:min-h-[60px] transition-colors"
                               >
                                 {/* User */}
-                                <div className="flex items-center gap-3 min-w-0 pr-2">
+                                <div className="flex items-center gap-1.5 sm:gap-3 min-w-0 pr-1 sm:pr-2">
                                   <img
                                     src={avatar}
                                     alt={u.displayName}
-                                    style={{
-                                      width: '40px',
-                                      height: '40px',
-                                      borderRadius: '100px',
-                                      objectFit: 'cover',
-                                      opacity: 1,
-                                    }}
-                                    className="bg-gray-200 border border-gray-100 shrink-0"
+                                    className="w-6 h-6 sm:w-10 sm:h-10 rounded-full object-cover bg-gray-200 border border-gray-100 shrink-0"
                                   />
                                   <span
                                     style={{
                                       fontFamily: '"Bricolage Grotesque", sans-serif',
                                       fontWeight: 700,
-                                      fontSize: '16px',
-                                      lineHeight: '100%',
                                       letterSpacing: '0%',
                                       color: '#000000',
                                     }}
-                                    className="truncate max-w-[180px] sm:max-w-none"
+                                    className="truncate text-[10px] sm:text-[16px] leading-tight"
                                   >
                                     {u.displayName}
                                   </span>
@@ -1188,55 +1137,49 @@ const Affiliates = () => {
                                   style={{
                                     fontFamily: '"Poppins", sans-serif',
                                     fontWeight: 500,
-                                    fontSize: '16px',
-                                    lineHeight: '26px',
                                     letterSpacing: '0%',
                                     color: '#000000',
                                   }}
-                                  className="truncate"
+                                  className="truncate text-[9px] sm:text-[16px] leading-tight sm:leading-[26px]"
                                 >
                                   {formatDate(u.createdAt)}
                                 </div>
 
                                 {/* Total Earning */}
-                                <div className="flex items-center gap-1.5 min-w-0">
+                                <div className="flex items-center gap-1 sm:gap-1.5 min-w-0">
                                   <img
                                     src="/coins/coinofaffliation.png"
                                     alt="Coin"
-                                    className="w-[18px] h-[18px] object-contain shrink-0"
+                                    className="w-3 h-3 sm:w-[18px] sm:h-[18px] object-contain shrink-0"
                                   />
                                   <span
                                     style={{
                                       fontFamily: '"Poppins", sans-serif',
                                       fontWeight: 600,
-                                      fontSize: '16px',
-                                      lineHeight: '26px',
                                       letterSpacing: '0%',
                                       color: 'rgba(190, 146, 0, 1)',
                                     }}
-                                    className="truncate"
+                                    className="truncate text-[9px] sm:text-[16px] leading-tight sm:leading-[26px]"
                                   >
                                     {formatCoinAmount(u.totalEarned || 0)}
                                   </span>
                                 </div>
 
                                 {/* Your Comms */}
-                                <div className="flex items-center gap-1.5 min-w-0">
+                                <div className="flex items-center gap-1 sm:gap-1.5 min-w-0">
                                   <img
                                     src="/coins/coinofaffliation.png"
                                     alt="Coin"
-                                    className="w-[18px] h-[18px] object-contain shrink-0"
+                                    className="w-3 h-3 sm:w-[18px] sm:h-[18px] object-contain shrink-0"
                                   />
                                   <span
                                     style={{
                                       fontFamily: '"Poppins", sans-serif',
                                       fontWeight: 600,
-                                      fontSize: '16px',
-                                      lineHeight: '26px',
                                       letterSpacing: '0%',
                                       color: 'rgba(190, 146, 0, 1)',
                                     }}
-                                    className="truncate"
+                                    className="truncate text-[9px] sm:text-[16px] leading-tight sm:leading-[26px]"
                                   >
                                     {formatCoinAmount(commsEarned)}
                                   </span>
@@ -1245,24 +1188,11 @@ const Affiliates = () => {
                                 {/* Status */}
                                 <div className="text-right sm:text-left sm:pl-4">
                                   <span
-                                    className="inline-flex items-center justify-center shrink-0"
+                                    className="inline-flex items-center justify-center shrink-0 h-[22px] sm:h-[33px] px-2 py-0.5 sm:px-[18px] sm:py-[11px] rounded-[40px] text-[9px] sm:text-[16px] font-medium text-white"
                                     style={{
-                                      height: '33px',
-                                      borderRadius: '40px',
-                                      paddingTop: '11px',
-                                      paddingRight: '18px',
-                                      paddingBottom: '11px',
-                                      paddingLeft: '18px',
-                                      gap: '8px',
                                       background: 'rgba(36, 50, 77, 1)',
-                                      color: '#FFFFFF',
                                       fontFamily: '"Poppins", sans-serif',
-                                      fontWeight: 500,
-                                      fontSize: '16px',
                                       lineHeight: '100%',
-                                      letterSpacing: '0%',
-                                      boxSizing: 'border-box',
-                                      opacity: 1,
                                       whiteSpace: 'nowrap',
                                     }}
                                   >
@@ -1295,20 +1225,14 @@ const Affiliates = () => {
                   ) : (
                     <div className="overflow-x-auto">
                       <div
-                        className="min-w-[680px] w-full flex flex-col gap-[21px]"
-                        style={{ maxWidth: '1248px', minHeight: '399px', opacity: 1 }}
+                        className="w-full min-w-0 sm:min-w-[680px] flex flex-col gap-2.5 sm:gap-[21px]"
+                        style={{ maxWidth: '1248px', opacity: 1 }}
                       >
                         {/* Table Header */}
                         <div
-                          className="grid grid-cols-[1.6fr_1.2fr_1.2fr_1.2fr_1fr] items-center"
+                          className="grid grid-cols-[1.4fr_1fr_1.1fr_1.1fr_0.9fr] sm:grid-cols-[1.6fr_1.2fr_1.2fr_1.2fr_1fr] items-center text-[9px] sm:text-[14px] leading-tight sm:leading-[26px] tracking-[0.04em] sm:tracking-[0.06em] text-[rgba(14,15,12,0.6)] uppercase font-[400]"
                           style={{
                             fontFamily: '"Poppins", sans-serif',
-                            fontWeight: 400,
-                            fontSize: '14px',
-                            lineHeight: '26px',
-                            letterSpacing: '0.06em',
-                            textTransform: 'uppercase',
-                            color: 'rgba(14, 15, 12, 0.6)',
                           }}
                         >
                           <div>USER</div>
@@ -1318,7 +1242,7 @@ const Affiliates = () => {
                           <div className="text-right sm:text-left sm:pl-4">RELEASE IN</div>
                         </div>
 
-                        {/* Table Rows (Divider: 1px solid rgba(0, 0, 0, 0.1), Row height: 60px) */}
+                        {/* Table Rows */}
                         <div className="divide-y divide-[rgba(0,0,0,0.1)] flex flex-col">
                           {currentPendingHolds.map((tx) => {
                             const avatar = tx.linkedTransactionId?.userId?.avatarUrl ||
@@ -1331,33 +1255,23 @@ const Affiliates = () => {
                             return (
                               <div
                                 key={tx._id}
-                                className="grid grid-cols-[1.6fr_1.2fr_1.2fr_1.2fr_1fr] items-center py-5 transition-colors"
-                                style={{ minHeight: '60px' }}
+                                className="grid grid-cols-[1.4fr_1fr_1.1fr_1.1fr_0.9fr] sm:grid-cols-[1.6fr_1.2fr_1.2fr_1.2fr_1fr] items-center py-2.5 sm:py-5 min-h-[44px] sm:min-h-[60px] transition-colors"
                               >
                                 {/* User */}
-                                <div className="flex items-center gap-3 min-w-0 pr-2">
+                                <div className="flex items-center gap-1.5 sm:gap-3 min-w-0 pr-1 sm:pr-2">
                                   <img
                                     src={avatar}
                                     alt={username}
-                                    style={{
-                                      width: '40px',
-                                      height: '40px',
-                                      borderRadius: '100px',
-                                      objectFit: 'cover',
-                                      opacity: 1,
-                                    }}
-                                    className="bg-gray-200 border border-gray-100 shrink-0"
+                                    className="w-6 h-6 sm:w-10 sm:h-10 rounded-full object-cover bg-gray-200 border border-gray-100 shrink-0"
                                   />
                                   <span
                                     style={{
                                       fontFamily: '"Bricolage Grotesque", sans-serif',
                                       fontWeight: 700,
-                                      fontSize: '16px',
-                                      lineHeight: '100%',
                                       letterSpacing: '0%',
                                       color: '#000000',
                                     }}
-                                    className="truncate max-w-[180px] sm:max-w-none"
+                                    className="truncate text-[10px] sm:text-[16px] leading-tight"
                                   >
                                     {username}
                                   </span>
@@ -1368,55 +1282,49 @@ const Affiliates = () => {
                                   style={{
                                     fontFamily: '"Poppins", sans-serif',
                                     fontWeight: 500,
-                                    fontSize: '16px',
-                                    lineHeight: '26px',
                                     letterSpacing: '0%',
                                     color: '#000000',
                                   }}
-                                  className="truncate"
+                                  className="truncate text-[9px] sm:text-[16px] leading-tight sm:leading-[26px]"
                                 >
                                   {formatDate(tx.createdAt)}
                                 </div>
 
                                 {/* Earning */}
-                                <div className="flex items-center gap-1.5 min-w-0">
+                                <div className="flex items-center gap-1 sm:gap-1.5 min-w-0">
                                   <img
                                     src="/coins/coinofaffliation.png"
                                     alt="Coin"
-                                    className="w-[18px] h-[18px] object-contain shrink-0"
+                                    className="w-3 h-3 sm:w-[18px] sm:h-[18px] object-contain shrink-0"
                                   />
                                   <span
                                     style={{
                                       fontFamily: '"Poppins", sans-serif',
                                       fontWeight: 600,
-                                      fontSize: '16px',
-                                      lineHeight: '26px',
                                       letterSpacing: '0%',
                                       color: 'rgba(190, 146, 0, 1)',
                                     }}
-                                    className="truncate"
+                                    className="truncate text-[9px] sm:text-[16px] leading-tight sm:leading-[26px]"
                                   >
                                     {formatCoinAmount(earningVal)}
                                   </span>
                                 </div>
 
                                 {/* Comms */}
-                                <div className="flex items-center gap-1.5 min-w-0">
+                                <div className="flex items-center gap-1 sm:gap-1.5 min-w-0">
                                   <img
                                     src="/coins/coinofaffliation.png"
                                     alt="Coin"
-                                    className="w-[18px] h-[18px] object-contain shrink-0"
+                                    className="w-3 h-3 sm:w-[18px] sm:h-[18px] object-contain shrink-0"
                                   />
                                   <span
                                     style={{
                                       fontFamily: '"Poppins", sans-serif',
                                       fontWeight: 600,
-                                      fontSize: '16px',
-                                      lineHeight: '26px',
                                       letterSpacing: '0%',
                                       color: 'rgba(190, 146, 0, 1)',
                                     }}
-                                    className="truncate"
+                                    className="truncate text-[9px] sm:text-[16px] leading-tight sm:leading-[26px]"
                                   >
                                     {formatCoinAmount(commVal)}
                                   </span>
@@ -1425,24 +1333,11 @@ const Affiliates = () => {
                                 {/* Release In */}
                                 <div className="text-right sm:text-left sm:pl-4">
                                   <span
-                                    className="inline-flex items-center justify-center shrink-0"
+                                    className="inline-flex items-center justify-center shrink-0 h-[22px] sm:h-[33px] px-2 py-0.5 sm:px-[18px] sm:py-[11px] rounded-[40px] text-[9px] sm:text-[16px] font-medium text-white"
                                     style={{
-                                      height: '33px',
-                                      borderRadius: '40px',
-                                      paddingTop: '11px',
-                                      paddingRight: '18px',
-                                      paddingBottom: '11px',
-                                      paddingLeft: '18px',
-                                      gap: '8px',
                                       background: 'rgba(36, 50, 77, 1)',
-                                      color: '#FFFFFF',
                                       fontFamily: '"Poppins", sans-serif',
-                                      fontWeight: 500,
-                                      fontSize: '16px',
                                       lineHeight: '100%',
-                                      letterSpacing: '0%',
-                                      boxSizing: 'border-box',
-                                      opacity: 1,
                                       whiteSpace: 'nowrap',
                                     }}
                                   >
