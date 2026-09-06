@@ -345,9 +345,8 @@ const Affiliates = () => {
             >
               {/* Card 1: Total Affiliates */}
               <div
-                className="w-full flex flex-col justify-between"
+                className="w-full lg:max-w-[324px] flex flex-col justify-between"
                 style={{
-                  maxWidth: '324px',
                   height: '160px',
                   borderRadius: '25px',
                   paddingTop: '23px',
@@ -377,7 +376,6 @@ const Affiliates = () => {
                 </div>
                 <div
                   style={{
-                    maxWidth: '164px',
                     display: 'flex',
                     flexDirection: 'column',
                     justifyContent: 'center',
@@ -417,9 +415,8 @@ const Affiliates = () => {
 
               {/* Card 2: Lifetime Earnings */}
               <div
-                className="w-full flex flex-col justify-between"
+                className="w-full lg:max-w-[324px] flex flex-col justify-between"
                 style={{
-                  maxWidth: '324px',
                   height: '160px',
                   borderRadius: '25px',
                   paddingTop: '23px',
@@ -456,7 +453,6 @@ const Affiliates = () => {
                 </div>
                 <div
                   style={{
-                    maxWidth: '164px',
                     display: 'flex',
                     flexDirection: 'column',
                     justifyContent: 'center',
@@ -496,9 +492,8 @@ const Affiliates = () => {
 
               {/* Card 3: 30-Day Earnings */}
               <div
-                className="w-full flex flex-col justify-between"
+                className="w-full lg:max-w-[324px] flex flex-col justify-between"
                 style={{
-                  maxWidth: '324px',
                   height: '160px',
                   borderRadius: '25px',
                   paddingTop: '23px',
@@ -535,7 +530,6 @@ const Affiliates = () => {
                 </div>
                 <div
                   style={{
-                    maxWidth: '164px',
                     display: 'flex',
                     flexDirection: 'column',
                     justifyContent: 'center',
@@ -575,9 +569,8 @@ const Affiliates = () => {
 
               {/* Card 4: Pending Coins */}
               <div
-                className="w-full flex flex-col justify-between"
+                className="w-full lg:max-w-[324px] flex flex-col justify-between"
                 style={{
-                  maxWidth: '324px',
                   height: '160px',
                   borderRadius: '25px',
                   paddingTop: '23px',
@@ -614,7 +607,6 @@ const Affiliates = () => {
                 </div>
                 <div
                   style={{
-                    maxWidth: '164px',
                     display: 'flex',
                     flexDirection: 'column',
                     justifyContent: 'center',
@@ -783,122 +775,110 @@ const Affiliates = () => {
 
           {/* Lower Section: Tabs & Table Card (1328x625, background: rgba(249, 247, 241, 1), radius: 30px) */}
           <div
-            className="w-full flex flex-col justify-between transition-colors"
+            className="w-full flex flex-col justify-between transition-colors p-4 sm:py-8 sm:px-[28px]"
             style={{
               maxWidth: '1328px',
               minHeight: '625px',
               borderRadius: '30px',
-              paddingTop: '32px',
-              paddingRight: '28px',
-              paddingBottom: '32px',
-              paddingLeft: '28px',
               background: 'rgba(249, 247, 241, 1)',
               boxSizing: 'border-box',
               opacity: 1,
             }}
           >
-            {/* Centered Segmented Control Tabs (Single line: gap: 5px) */}
-            <div className="flex items-center justify-center flex-nowrap gap-[5px] mx-auto mb-6 overflow-x-auto hide-scroll">
-              <button
-                onClick={() => setActiveTab('recent')}
-                className="transition-all cursor-pointer flex items-center justify-center shrink-0"
-                style={{
-                  height: '37px',
-                  borderRadius: '40px',
-                  paddingTop: '11px',
-                  paddingRight: '18px',
-                  paddingBottom: '11px',
-                  paddingLeft: '18px',
-                  gap: '8px',
-                  background: activeTab === 'recent' ? 'rgba(36, 50, 77, 1)' : 'transparent',
-                  color: activeTab === 'recent' ? '#FFFFFF' : '#000000',
-                  border: 'none',
-                  outline: 'none',
-                  boxSizing: 'border-box',
-                  opacity: 1,
-                }}
-              >
-                <img
-                  src="/coins/recentaffilation.png"
-                  alt="Recent"
+            {/* Segmented Control Tabs */}
+            <div className="flex flex-col sm:flex-row items-start sm:items-center sm:justify-center gap-2 sm:gap-[5px] mb-6">
+              {/* Row 1 on mobile: Recent Affiliate Earnings + Referred Users */}
+              <div className="flex items-center flex-nowrap gap-1.5 sm:gap-[5px] max-w-full overflow-x-auto hide-scroll">
+                <button
+                  onClick={() => setActiveTab('recent')}
+                  className="transition-all cursor-pointer flex items-center justify-center shrink-0 px-3 sm:px-[18px] py-[9px] sm:py-[11px]"
                   style={{
-                    width: '16px',
-                    height: '16px',
-                    objectFit: 'contain',
-                    filter: activeTab === 'recent' ? 'brightness(0) invert(1)' : 'brightness(0)',
-                  }}
-                  className="shrink-0 transition-all"
-                />
-                <span
-                  style={{
-                    fontFamily: '"Bricolage Grotesque", sans-serif',
-                    fontWeight: 700,
-                    fontSize: '14px',
-                    lineHeight: '100%',
-                    letterSpacing: '0%',
+                    height: '37px',
+                    borderRadius: '40px',
+                    gap: '8px',
+                    background: activeTab === 'recent' ? 'rgba(36, 50, 77, 1)' : 'transparent',
                     color: activeTab === 'recent' ? '#FFFFFF' : '#000000',
-                    whiteSpace: 'nowrap',
+                    border: 'none',
+                    outline: 'none',
+                    boxSizing: 'border-box',
+                    opacity: 1,
                   }}
                 >
-                  Recent Affiliate Earnings
-                </span>
-              </button>
+                  <img
+                    src="/coins/recentaffilation.png"
+                    alt="Recent"
+                    style={{
+                      width: '16px',
+                      height: '16px',
+                      objectFit: 'contain',
+                      filter: activeTab === 'recent' ? 'brightness(0) invert(1)' : 'brightness(0)',
+                    }}
+                    className="shrink-0 transition-all"
+                  />
+                  <span
+                    className="text-[13px] sm:text-[14px]"
+                    style={{
+                      fontFamily: '"Bricolage Grotesque", sans-serif',
+                      fontWeight: 700,
+                      lineHeight: '100%',
+                      letterSpacing: '0%',
+                      color: activeTab === 'recent' ? '#FFFFFF' : '#000000',
+                      whiteSpace: 'nowrap',
+                    }}
+                  >
+                    Recent Affiliate Earnings
+                  </span>
+                </button>
 
-              <button
-                onClick={() => setActiveTab('users')}
-                className="transition-all cursor-pointer flex items-center justify-center shrink-0"
-                style={{
-                  height: '37px',
-                  borderRadius: '40px',
-                  paddingTop: '11px',
-                  paddingRight: '18px',
-                  paddingBottom: '11px',
-                  paddingLeft: '18px',
-                  gap: '8px',
-                  background: activeTab === 'users' ? 'rgba(36, 50, 77, 1)' : 'transparent',
-                  color: activeTab === 'users' ? '#FFFFFF' : '#000000',
-                  border: 'none',
-                  outline: 'none',
-                  boxSizing: 'border-box',
-                  opacity: 1,
-                }}
-              >
-                <img
-                  src="/coins/refereduser.png"
-                  alt="Users"
+                <button
+                  onClick={() => setActiveTab('users')}
+                  className="transition-all cursor-pointer flex items-center justify-center shrink-0 px-3 sm:px-[18px] py-[9px] sm:py-[11px]"
                   style={{
-                    width: '16px',
-                    height: '16px',
-                    objectFit: 'contain',
-                    filter: activeTab === 'users' ? 'brightness(0) invert(1)' : 'brightness(0)',
-                  }}
-                  className="shrink-0 transition-all"
-                />
-                <span
-                  style={{
-                    fontFamily: '"Bricolage Grotesque", sans-serif',
-                    fontWeight: 700,
-                    fontSize: '14px',
-                    lineHeight: '100%',
-                    letterSpacing: '0%',
+                    height: '37px',
+                    borderRadius: '40px',
+                    gap: '8px',
+                    background: activeTab === 'users' ? 'rgba(36, 50, 77, 1)' : 'transparent',
                     color: activeTab === 'users' ? '#FFFFFF' : '#000000',
-                    whiteSpace: 'nowrap',
+                    border: 'none',
+                    outline: 'none',
+                    boxSizing: 'border-box',
+                    opacity: 1,
                   }}
                 >
-                  Referred Users
-                </span>
-              </button>
+                  <img
+                    src="/coins/refereduser.png"
+                    alt="Users"
+                    style={{
+                      width: '16px',
+                      height: '16px',
+                      objectFit: 'contain',
+                      filter: activeTab === 'users' ? 'brightness(0) invert(1)' : 'brightness(0)',
+                    }}
+                    className="shrink-0 transition-all"
+                  />
+                  <span
+                    className="text-[13px] sm:text-[14px]"
+                    style={{
+                      fontFamily: '"Bricolage Grotesque", sans-serif',
+                      fontWeight: 700,
+                      lineHeight: '100%',
+                      letterSpacing: '0%',
+                      color: activeTab === 'users' ? '#FFFFFF' : '#000000',
+                      whiteSpace: 'nowrap',
+                    }}
+                  >
+                    Referred Users
+                  </span>
+                </button>
+              </div>
 
+              {/* Row 2 on mobile: Pending Affiliate Earnings */}
               <button
                 onClick={() => setActiveTab('pending')}
-                className="transition-all cursor-pointer flex items-center justify-center shrink-0"
+                className="transition-all cursor-pointer flex items-center justify-center shrink-0 px-3 sm:px-[18px] py-[9px] sm:py-[11px]"
                 style={{
                   height: '37px',
                   borderRadius: '40px',
-                  paddingTop: '11px',
-                  paddingRight: '18px',
-                  paddingBottom: '11px',
-                  paddingLeft: '18px',
                   gap: '8px',
                   background: activeTab === 'pending' ? 'rgba(36, 50, 77, 1)' : 'transparent',
                   color: activeTab === 'pending' ? '#FFFFFF' : '#000000',
@@ -920,10 +900,10 @@ const Affiliates = () => {
                   className="shrink-0 transition-all"
                 />
                 <span
+                  className="text-[13px] sm:text-[14px]"
                   style={{
                     fontFamily: '"Bricolage Grotesque", sans-serif',
                     fontWeight: 700,
-                    fontSize: '14px',
                     lineHeight: '100%',
                     letterSpacing: '0%',
                     color: activeTab === 'pending' ? '#FFFFFF' : '#000000',
