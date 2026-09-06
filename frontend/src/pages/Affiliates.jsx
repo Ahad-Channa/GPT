@@ -648,7 +648,7 @@ const Affiliates = () => {
         </div>
 
         {/* ─── Lower Main Content Area (Max Width 1328px like Daily Bonus and Earn) ─── */}
-        <div className="w-full max-w-[1328px] mx-auto px-4 md:px-8 lg:px-0 pt-8 sm:pt-10 pb-12 sm:pb-16 flex flex-col gap-6 sm:gap-8">
+        <div className="w-full max-w-[1328px] mx-auto px-2 sm:px-4 md:px-8 lg:px-0 pt-6 sm:pt-10 pb-8 sm:pb-16 flex flex-col gap-4 sm:gap-8">
           {/* Unique Referral Link Card */}
           <div
             className="w-full flex flex-col justify-between transition-colors"
@@ -775,10 +775,9 @@ const Affiliates = () => {
 
           {/* Lower Section: Tabs & Table Card (1328x625, background: rgba(249, 247, 241, 1), radius: 30px) */}
           <div
-            className="w-full flex flex-col justify-between transition-colors p-4 sm:py-8 sm:px-[28px]"
+            className="w-full flex flex-col justify-between transition-colors px-2 py-3 sm:py-8 sm:px-[28px] min-h-0 sm:min-h-[625px] gap-2.5 sm:gap-6"
             style={{
               maxWidth: '1328px',
-              minHeight: '625px',
               borderRadius: '30px',
               background: 'rgba(249, 247, 241, 1)',
               boxSizing: 'border-box',
@@ -786,7 +785,7 @@ const Affiliates = () => {
             }}
           >
             {/* Segmented Control Tabs */}
-            <div className="flex flex-col sm:flex-row items-start sm:items-center sm:justify-center gap-2 sm:gap-[5px] mb-6">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center sm:justify-center gap-1.5 sm:gap-[5px] mb-2 sm:mb-6">
               {/* Row 1 on mobile: Recent Affiliate Earnings + Referred Users */}
               <div className="flex items-center flex-nowrap gap-1.5 sm:gap-[5px] max-w-full overflow-x-auto hide-scroll">
                 <button
@@ -916,7 +915,7 @@ const Affiliates = () => {
             </div>
 
             {/* Inner White Card for Table Content */}
-            <div className="bg-white rounded-[20px] sm:rounded-[24px] p-3 sm:p-6 md:p-8 w-full shadow-xs border border-[#E5E7EB]/60">
+            <div className="bg-white rounded-[16px] sm:rounded-[24px] p-2 xs:p-2.5 sm:p-6 md:p-8 w-full shadow-xs border border-[#E5E7EB]/60">
               {/* Tab 1: Recent Affiliate Earnings */}
               {activeTab === 'recent' && (
                 <div>
@@ -940,7 +939,7 @@ const Affiliates = () => {
                       >
                         {/* Table Header */}
                         <div
-                          className="grid grid-cols-[1.4fr_1fr_1.1fr_1.1fr_0.9fr] sm:grid-cols-[1.6fr_1.2fr_1.2fr_1.2fr_1fr] items-center text-[9px] sm:text-[14px] leading-tight sm:leading-[26px] tracking-[0.04em] sm:tracking-[0.06em] text-[rgba(14,15,12,0.6)] uppercase font-[400]"
+                          className="grid grid-cols-[1.3fr_1.1fr_1.1fr_1.1fr_0.8fr] sm:grid-cols-[1.6fr_1.2fr_1.2fr_1.2fr_1fr] items-center text-[7.5px] xs:text-[9px] sm:text-[14px] leading-tight sm:leading-[26px] tracking-[0.02em] sm:tracking-[0.06em] text-[rgba(14,15,12,0.6)] uppercase font-[500] whitespace-nowrap"
                           style={{
                             fontFamily: '"Poppins", sans-serif',
                           }}
@@ -965,14 +964,14 @@ const Affiliates = () => {
                             return (
                               <div
                                 key={tx._id}
-                                className="grid grid-cols-[1.4fr_1fr_1.1fr_1.1fr_0.9fr] sm:grid-cols-[1.6fr_1.2fr_1.2fr_1.2fr_1fr] items-center py-2.5 sm:py-5 min-h-[44px] sm:min-h-[60px] transition-colors"
+                                className="grid grid-cols-[1.3fr_1.1fr_1.1fr_1.1fr_0.8fr] sm:grid-cols-[1.6fr_1.2fr_1.2fr_1.2fr_1fr] items-center py-2 sm:py-5 min-h-[38px] sm:min-h-[60px] transition-colors"
                               >
                                 {/* User */}
-                                <div className="flex items-center gap-1.5 sm:gap-3 min-w-0 pr-1 sm:pr-2">
+                                <div className="flex items-center gap-1 sm:gap-3 min-w-0 pr-0.5 sm:pr-2">
                                   <img
                                     src={avatar}
                                     alt={username}
-                                    className="w-6 h-6 sm:w-10 sm:h-10 rounded-full object-cover bg-gray-200 border border-gray-100 shrink-0"
+                                    className="w-5 h-5 sm:w-10 sm:h-10 rounded-full object-cover bg-gray-200 border border-gray-100 shrink-0"
                                   />
                                   <span
                                     style={{
@@ -981,7 +980,7 @@ const Affiliates = () => {
                                       letterSpacing: '0%',
                                       color: '#000000',
                                     }}
-                                    className="truncate text-[10px] sm:text-[16px] leading-tight"
+                                    className="whitespace-nowrap text-[8.5px] xs:text-[10px] sm:text-[16px] leading-tight"
                                   >
                                     {username}
                                   </span>
@@ -995,17 +994,17 @@ const Affiliates = () => {
                                     letterSpacing: '0%',
                                     color: '#000000',
                                   }}
-                                  className="truncate text-[9px] sm:text-[16px] leading-tight sm:leading-[26px]"
+                                  className="whitespace-nowrap text-[8px] xs:text-[9px] sm:text-[16px] leading-tight sm:leading-[26px]"
                                 >
                                   {formatDate(tx.createdAt)}
                                 </div>
 
                                 {/* Earning */}
-                                <div className="flex items-center gap-1 sm:gap-1.5 min-w-0">
+                                <div className="flex items-center gap-0.5 sm:gap-1.5 min-w-0">
                                   <img
                                     src="/coins/coinofaffliation.png"
                                     alt="Coin"
-                                    className="w-3 h-3 sm:w-[18px] sm:h-[18px] object-contain shrink-0"
+                                    className="w-2.5 h-2.5 sm:w-[18px] sm:h-[18px] object-contain shrink-0"
                                   />
                                   <span
                                     style={{
@@ -1014,18 +1013,18 @@ const Affiliates = () => {
                                       letterSpacing: '0%',
                                       color: 'rgba(190, 146, 0, 1)',
                                     }}
-                                    className="truncate text-[9px] sm:text-[16px] leading-tight sm:leading-[26px]"
+                                    className="whitespace-nowrap text-[8px] xs:text-[9.5px] sm:text-[16px] leading-tight sm:leading-[26px]"
                                   >
                                     {formatCoinAmount(earningVal)}
                                   </span>
                                 </div>
 
                                 {/* Comms */}
-                                <div className="flex items-center gap-1 sm:gap-1.5 min-w-0">
+                                <div className="flex items-center gap-0.5 sm:gap-1.5 min-w-0">
                                   <img
                                     src="/coins/coinofaffliation.png"
                                     alt="Coin"
-                                    className="w-3 h-3 sm:w-[18px] sm:h-[18px] object-contain shrink-0"
+                                    className="w-2.5 h-2.5 sm:w-[18px] sm:h-[18px] object-contain shrink-0"
                                   />
                                   <span
                                     style={{
@@ -1034,7 +1033,7 @@ const Affiliates = () => {
                                       letterSpacing: '0%',
                                       color: 'rgba(190, 146, 0, 1)',
                                     }}
-                                    className="truncate text-[9px] sm:text-[16px] leading-tight sm:leading-[26px]"
+                                    className="whitespace-nowrap text-[8px] xs:text-[9.5px] sm:text-[16px] leading-tight sm:leading-[26px]"
                                   >
                                     {formatCoinAmount(commVal)}
                                   </span>
@@ -1043,12 +1042,11 @@ const Affiliates = () => {
                                 {/* Status */}
                                 <div className="text-right sm:text-left sm:pl-4">
                                   <span
-                                    className="inline-flex items-center justify-center shrink-0 h-[22px] sm:h-[33px] px-2 py-0.5 sm:px-[18px] sm:py-[11px] rounded-[40px] text-[9px] sm:text-[16px] font-medium text-white"
+                                    className="inline-flex items-center justify-center shrink-0 h-[19px] xs:h-[22px] sm:h-[33px] px-1.5 xs:px-2 sm:px-[18px] py-0.5 sm:py-[11px] rounded-[40px] text-[8px] xs:text-[9px] sm:text-[16px] font-medium text-white whitespace-nowrap"
                                     style={{
                                       background: 'rgba(36, 50, 77, 1)',
                                       fontFamily: '"Poppins", sans-serif',
                                       lineHeight: '100%',
-                                      whiteSpace: 'nowrap',
                                     }}
                                   >
                                     {tx.status === 'hold' ? 'Pending' : 'Paid'}
@@ -1087,7 +1085,7 @@ const Affiliates = () => {
                       >
                         {/* Table Header */}
                         <div
-                          className="grid grid-cols-[1.4fr_1fr_1.1fr_1.1fr_0.9fr] sm:grid-cols-[1.6fr_1.2fr_1.2fr_1.2fr_1fr] items-center text-[9px] sm:text-[14px] leading-tight sm:leading-[26px] tracking-[0.04em] sm:tracking-[0.06em] text-[rgba(14,15,12,0.6)] uppercase font-[400]"
+                          className="grid grid-cols-[1.3fr_1.1fr_1.1fr_1.1fr_0.8fr] sm:grid-cols-[1.6fr_1.2fr_1.2fr_1.2fr_1fr] items-center text-[7.5px] xs:text-[9px] sm:text-[14px] leading-tight sm:leading-[26px] tracking-[0.02em] sm:tracking-[0.06em] text-[rgba(14,15,12,0.6)] uppercase font-[500] whitespace-nowrap"
                           style={{
                             fontFamily: '"Poppins", sans-serif',
                           }}
@@ -1110,14 +1108,14 @@ const Affiliates = () => {
                             return (
                               <div
                                 key={u._id}
-                                className="grid grid-cols-[1.4fr_1fr_1.1fr_1.1fr_0.9fr] sm:grid-cols-[1.6fr_1.2fr_1.2fr_1.2fr_1fr] items-center py-2.5 sm:py-5 min-h-[44px] sm:min-h-[60px] transition-colors"
+                                className="grid grid-cols-[1.3fr_1.1fr_1.1fr_1.1fr_0.8fr] sm:grid-cols-[1.6fr_1.2fr_1.2fr_1.2fr_1fr] items-center py-2 sm:py-5 min-h-[38px] sm:min-h-[60px] transition-colors"
                               >
                                 {/* User */}
-                                <div className="flex items-center gap-1.5 sm:gap-3 min-w-0 pr-1 sm:pr-2">
+                                <div className="flex items-center gap-1 sm:gap-3 min-w-0 pr-0.5 sm:pr-2">
                                   <img
                                     src={avatar}
                                     alt={u.displayName}
-                                    className="w-6 h-6 sm:w-10 sm:h-10 rounded-full object-cover bg-gray-200 border border-gray-100 shrink-0"
+                                    className="w-5 h-5 sm:w-10 sm:h-10 rounded-full object-cover bg-gray-200 border border-gray-100 shrink-0"
                                   />
                                   <span
                                     style={{
@@ -1126,7 +1124,7 @@ const Affiliates = () => {
                                       letterSpacing: '0%',
                                       color: '#000000',
                                     }}
-                                    className="truncate text-[10px] sm:text-[16px] leading-tight"
+                                    className="whitespace-nowrap text-[8.5px] xs:text-[10px] sm:text-[16px] leading-tight"
                                   >
                                     {u.displayName}
                                   </span>
@@ -1140,17 +1138,17 @@ const Affiliates = () => {
                                     letterSpacing: '0%',
                                     color: '#000000',
                                   }}
-                                  className="truncate text-[9px] sm:text-[16px] leading-tight sm:leading-[26px]"
+                                  className="whitespace-nowrap text-[8px] xs:text-[9px] sm:text-[16px] leading-tight sm:leading-[26px]"
                                 >
                                   {formatDate(u.createdAt)}
                                 </div>
 
                                 {/* Total Earning */}
-                                <div className="flex items-center gap-1 sm:gap-1.5 min-w-0">
+                                <div className="flex items-center gap-0.5 sm:gap-1.5 min-w-0">
                                   <img
                                     src="/coins/coinofaffliation.png"
                                     alt="Coin"
-                                    className="w-3 h-3 sm:w-[18px] sm:h-[18px] object-contain shrink-0"
+                                    className="w-2.5 h-2.5 sm:w-[18px] sm:h-[18px] object-contain shrink-0"
                                   />
                                   <span
                                     style={{
@@ -1159,18 +1157,18 @@ const Affiliates = () => {
                                       letterSpacing: '0%',
                                       color: 'rgba(190, 146, 0, 1)',
                                     }}
-                                    className="truncate text-[9px] sm:text-[16px] leading-tight sm:leading-[26px]"
+                                    className="whitespace-nowrap text-[8px] xs:text-[9.5px] sm:text-[16px] leading-tight sm:leading-[26px]"
                                   >
                                     {formatCoinAmount(u.totalEarned || 0)}
                                   </span>
                                 </div>
 
                                 {/* Your Comms */}
-                                <div className="flex items-center gap-1 sm:gap-1.5 min-w-0">
+                                <div className="flex items-center gap-0.5 sm:gap-1.5 min-w-0">
                                   <img
                                     src="/coins/coinofaffliation.png"
                                     alt="Coin"
-                                    className="w-3 h-3 sm:w-[18px] sm:h-[18px] object-contain shrink-0"
+                                    className="w-2.5 h-2.5 sm:w-[18px] sm:h-[18px] object-contain shrink-0"
                                   />
                                   <span
                                     style={{
@@ -1179,7 +1177,7 @@ const Affiliates = () => {
                                       letterSpacing: '0%',
                                       color: 'rgba(190, 146, 0, 1)',
                                     }}
-                                    className="truncate text-[9px] sm:text-[16px] leading-tight sm:leading-[26px]"
+                                    className="whitespace-nowrap text-[8px] xs:text-[9.5px] sm:text-[16px] leading-tight sm:leading-[26px]"
                                   >
                                     {formatCoinAmount(commsEarned)}
                                   </span>
@@ -1188,12 +1186,11 @@ const Affiliates = () => {
                                 {/* Status */}
                                 <div className="text-right sm:text-left sm:pl-4">
                                   <span
-                                    className="inline-flex items-center justify-center shrink-0 h-[22px] sm:h-[33px] px-2 py-0.5 sm:px-[18px] sm:py-[11px] rounded-[40px] text-[9px] sm:text-[16px] font-medium text-white"
+                                    className="inline-flex items-center justify-center shrink-0 h-[19px] xs:h-[22px] sm:h-[33px] px-1.5 xs:px-2 sm:px-[18px] py-0.5 sm:py-[11px] rounded-[40px] text-[8px] xs:text-[9px] sm:text-[16px] font-medium text-white whitespace-nowrap"
                                     style={{
                                       background: 'rgba(36, 50, 77, 1)',
                                       fontFamily: '"Poppins", sans-serif',
                                       lineHeight: '100%',
-                                      whiteSpace: 'nowrap',
                                     }}
                                   >
                                     Active
@@ -1230,7 +1227,7 @@ const Affiliates = () => {
                       >
                         {/* Table Header */}
                         <div
-                          className="grid grid-cols-[1.4fr_1fr_1.1fr_1.1fr_0.9fr] sm:grid-cols-[1.6fr_1.2fr_1.2fr_1.2fr_1fr] items-center text-[9px] sm:text-[14px] leading-tight sm:leading-[26px] tracking-[0.04em] sm:tracking-[0.06em] text-[rgba(14,15,12,0.6)] uppercase font-[400]"
+                          className="grid grid-cols-[1.3fr_1.1fr_1.1fr_1.1fr_0.8fr] sm:grid-cols-[1.6fr_1.2fr_1.2fr_1.2fr_1fr] items-center text-[7.5px] xs:text-[9px] sm:text-[14px] leading-tight sm:leading-[26px] tracking-[0.02em] sm:tracking-[0.06em] text-[rgba(14,15,12,0.6)] uppercase font-[500] whitespace-nowrap"
                           style={{
                             fontFamily: '"Poppins", sans-serif',
                           }}
@@ -1255,14 +1252,14 @@ const Affiliates = () => {
                             return (
                               <div
                                 key={tx._id}
-                                className="grid grid-cols-[1.4fr_1fr_1.1fr_1.1fr_0.9fr] sm:grid-cols-[1.6fr_1.2fr_1.2fr_1.2fr_1fr] items-center py-2.5 sm:py-5 min-h-[44px] sm:min-h-[60px] transition-colors"
+                                className="grid grid-cols-[1.3fr_1.1fr_1.1fr_1.1fr_0.8fr] sm:grid-cols-[1.6fr_1.2fr_1.2fr_1.2fr_1fr] items-center py-2 sm:py-5 min-h-[38px] sm:min-h-[60px] transition-colors"
                               >
                                 {/* User */}
-                                <div className="flex items-center gap-1.5 sm:gap-3 min-w-0 pr-1 sm:pr-2">
+                                <div className="flex items-center gap-1 sm:gap-3 min-w-0 pr-0.5 sm:pr-2">
                                   <img
                                     src={avatar}
                                     alt={username}
-                                    className="w-6 h-6 sm:w-10 sm:h-10 rounded-full object-cover bg-gray-200 border border-gray-100 shrink-0"
+                                    className="w-5 h-5 sm:w-10 sm:h-10 rounded-full object-cover bg-gray-200 border border-gray-100 shrink-0"
                                   />
                                   <span
                                     style={{
@@ -1271,7 +1268,7 @@ const Affiliates = () => {
                                       letterSpacing: '0%',
                                       color: '#000000',
                                     }}
-                                    className="truncate text-[10px] sm:text-[16px] leading-tight"
+                                    className="whitespace-nowrap text-[8.5px] xs:text-[10px] sm:text-[16px] leading-tight"
                                   >
                                     {username}
                                   </span>
@@ -1285,17 +1282,17 @@ const Affiliates = () => {
                                     letterSpacing: '0%',
                                     color: '#000000',
                                   }}
-                                  className="truncate text-[9px] sm:text-[16px] leading-tight sm:leading-[26px]"
+                                  className="whitespace-nowrap text-[8px] xs:text-[9px] sm:text-[16px] leading-tight sm:leading-[26px]"
                                 >
                                   {formatDate(tx.createdAt)}
                                 </div>
 
                                 {/* Earning */}
-                                <div className="flex items-center gap-1 sm:gap-1.5 min-w-0">
+                                <div className="flex items-center gap-0.5 sm:gap-1.5 min-w-0">
                                   <img
                                     src="/coins/coinofaffliation.png"
                                     alt="Coin"
-                                    className="w-3 h-3 sm:w-[18px] sm:h-[18px] object-contain shrink-0"
+                                    className="w-2.5 h-2.5 sm:w-[18px] sm:h-[18px] object-contain shrink-0"
                                   />
                                   <span
                                     style={{
@@ -1304,18 +1301,18 @@ const Affiliates = () => {
                                       letterSpacing: '0%',
                                       color: 'rgba(190, 146, 0, 1)',
                                     }}
-                                    className="truncate text-[9px] sm:text-[16px] leading-tight sm:leading-[26px]"
+                                    className="whitespace-nowrap text-[8px] xs:text-[9.5px] sm:text-[16px] leading-tight sm:leading-[26px]"
                                   >
                                     {formatCoinAmount(earningVal)}
                                   </span>
                                 </div>
 
                                 {/* Comms */}
-                                <div className="flex items-center gap-1 sm:gap-1.5 min-w-0">
+                                <div className="flex items-center gap-0.5 sm:gap-1.5 min-w-0">
                                   <img
                                     src="/coins/coinofaffliation.png"
                                     alt="Coin"
-                                    className="w-3 h-3 sm:w-[18px] sm:h-[18px] object-contain shrink-0"
+                                    className="w-2.5 h-2.5 sm:w-[18px] sm:h-[18px] object-contain shrink-0"
                                   />
                                   <span
                                     style={{
@@ -1324,7 +1321,7 @@ const Affiliates = () => {
                                       letterSpacing: '0%',
                                       color: 'rgba(190, 146, 0, 1)',
                                     }}
-                                    className="truncate text-[9px] sm:text-[16px] leading-tight sm:leading-[26px]"
+                                    className="whitespace-nowrap text-[8px] xs:text-[9.5px] sm:text-[16px] leading-tight sm:leading-[26px]"
                                   >
                                     {formatCoinAmount(commVal)}
                                   </span>
@@ -1333,12 +1330,11 @@ const Affiliates = () => {
                                 {/* Release In */}
                                 <div className="text-right sm:text-left sm:pl-4">
                                   <span
-                                    className="inline-flex items-center justify-center shrink-0 h-[22px] sm:h-[33px] px-2 py-0.5 sm:px-[18px] sm:py-[11px] rounded-[40px] text-[9px] sm:text-[16px] font-medium text-white"
+                                    className="inline-flex items-center justify-center shrink-0 h-[19px] xs:h-[22px] sm:h-[33px] px-1.5 xs:px-2 sm:px-[18px] py-0.5 sm:py-[11px] rounded-[40px] text-[8px] xs:text-[9px] sm:text-[16px] font-medium text-white whitespace-nowrap"
                                     style={{
                                       background: 'rgba(36, 50, 77, 1)',
                                       fontFamily: '"Poppins", sans-serif',
                                       lineHeight: '100%',
-                                      whiteSpace: 'nowrap',
                                     }}
                                   >
                                     {calculateReleaseIn(tx.releaseDate)}
