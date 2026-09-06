@@ -115,19 +115,16 @@ export default function DailyBonus() {
           className="w-full transition-colors duration-300"
           style={{ background: 'rgba(249, 247, 241, 1)' }}
         >
-          <div className="w-full max-w-[1328px] mx-auto px-4 md:px-8 lg:px-0 py-6 sm:py-8">
+          <div className="w-full max-w-[1328px] mx-auto px-2 sm:px-4 md:px-8 lg:px-0 py-6 sm:py-8">
             {/* Top 2 Cards: Daily Bonus + Streak Action */}
             <div className="flex flex-col lg:flex-row items-stretch gap-4 w-full">
               {/* Left Card: Daily Bonus */}
               <div
-                className="bg-white border border-gray-100/90 shadow-sm flex flex-col justify-between shrink-0"
+                className="bg-white border border-gray-100/90 shadow-sm flex flex-col justify-between shrink-0 w-full lg:max-w-[915px]"
                 style={{
-                  width: '100%',
-                  maxWidth: '915px',
-                  height: '222px',
+                  height: '220px',
                   opacity: 1,
                   transform: 'rotate(0deg)',
-                  gap: '50px',
                   borderRadius: '30px',
                   paddingTop: '19px',
                   paddingRight: '23px',
@@ -137,22 +134,20 @@ export default function DailyBonus() {
                 }}
               >
                 {/* Top Row inside Left Card */}
-                <div className="flex items-start justify-between gap-4 w-full">
+                <div className="flex items-start justify-between gap-3 sm:gap-4 w-full">
                   <div
                     className="flex flex-col justify-center"
                     style={{
                       maxWidth: '371px',
-                      minHeight: '44px',
-                      gap: '16px',
                       opacity: 1,
                     }}
                   >
                     <h1
+                      className="text-[22px] sm:text-[27px]"
                       style={{
                         fontFamily: '"Bricolage Grotesque", sans-serif',
                         fontWeight: 700,
-                        fontSize: '27px',
-                        lineHeight: '18px',
+                        lineHeight: '1.2',
                         letterSpacing: '-0.02em',
                         color: '#0E0F0C',
                         margin: 0,
@@ -162,18 +157,19 @@ export default function DailyBonus() {
                       Daily Bonus
                     </h1>
                     <p
+                      className="text-[12px] sm:text-[14px] mt-1 sm:mt-2"
                       style={{
                         fontFamily: '"Poppins", sans-serif',
                         fontWeight: 500,
-                        fontSize: '14px',
-                        lineHeight: '14px',
+                        lineHeight: '18px',
                         letterSpacing: '0%',
                         color: '#0E0F0C',
                         margin: 0,
-                        whiteSpace: 'nowrap',
                       }}
                     >
-                      Claim your daily reward and keep your streak going!
+                      <span>Claim your daily reward and</span>
+                      <br className="block sm:hidden" />
+                      <span className="sm:ml-1">keep your streak going!</span>
                     </p>
                   </div>
 
@@ -185,7 +181,7 @@ export default function DailyBonus() {
                       height: '57px',
                       opacity: 1,
                       transform: 'rotate(0deg)',
-                      gap: '4px',
+                      gap: '11px',
                       borderRadius: '1000px',
                       paddingTop: '10px',
                       paddingRight: '22px',
@@ -196,16 +192,19 @@ export default function DailyBonus() {
                     }}
                   >
                     <span
+                      className="flex items-center justify-center"
                       style={{
                         width: '111px',
+                        height: '10px',
                         fontFamily: '"Poppins", sans-serif',
                         fontWeight: 500,
                         fontSize: '14px',
-                        lineHeight: '14px',
+                        lineHeight: '28px',
                         letterSpacing: '0%',
                         color: '#0E0F0C',
                         textAlign: 'center',
                         whiteSpace: 'nowrap',
+                        opacity: 1,
                       }}
                     >
                       Today's Reward
@@ -222,18 +221,19 @@ export default function DailyBonus() {
                         src="/coins/coinbonushero.png"
                         alt="Coin"
                         style={{
-                          width: '14.4px',
+                          width: '16px',
                           height: '16px',
                           objectFit: 'contain',
                         }}
                         className="shrink-0"
                       />
                       <span
+                        className="flex items-center"
                         style={{
                           fontFamily: '"Poppins", sans-serif',
                           fontWeight: 600,
                           fontSize: '18px',
-                          lineHeight: '18px',
+                          lineHeight: '28px',
                           letterSpacing: '0%',
                           color: '#E5A00D',
                           whiteSpace: 'nowrap',
@@ -249,24 +249,30 @@ export default function DailyBonus() {
                 <div className="flex flex-col w-full">
                   <div className="flex items-center justify-between mb-2 w-full">
                     <span
+                      className="flex items-center"
                       style={{
                         width: '130px',
+                        height: '10px',
                         fontFamily: '"Poppins", sans-serif',
                         fontWeight: 500,
                         fontSize: '14px',
-                        lineHeight: '14px',
+                        lineHeight: '28px',
                         letterSpacing: '0%',
                         color: '#0E0F0C',
                         opacity: 1,
                         whiteSpace: 'nowrap',
+                        transform: 'rotate(0deg)',
                       }}
                     >
                       Progress to unlock
                     </span>
                     <div
-                      className="flex items-center gap-1.5"
+                      className="flex items-center justify-end gap-1.5"
                       style={{
+                        minWidth: '102px',
+                        height: '11px',
                         opacity: 1,
+                        transform: 'rotate(0deg)',
                       }}
                     >
                       <img
@@ -281,14 +287,16 @@ export default function DailyBonus() {
                         className="shrink-0"
                       />
                       <span
+                        className="flex items-center"
                         style={{
                           fontFamily: '"Poppins", sans-serif',
                           fontWeight: 500,
                           fontSize: '16px',
-                          lineHeight: '16px',
+                          lineHeight: '28px',
                           letterSpacing: '0%',
                           color: '#E5A00D',
                           whiteSpace: 'nowrap',
+                          opacity: 1,
                         }}
                       >
                         {formatCoins(earned)} / {formatCoins(required)}
@@ -298,11 +306,9 @@ export default function DailyBonus() {
 
                   {/* Progress Bar */}
                   <div
-                    className="w-full overflow-hidden"
+                    className="w-full max-w-[391px] lg:max-w-[872px] overflow-hidden"
                     style={{
-                      width: '100%',
-                      maxWidth: '872px',
-                      height: '14.78px',
+                      height: '15px',
                       opacity: 1,
                       transform: 'rotate(0deg)',
                       borderRadius: '30px',
@@ -322,12 +328,12 @@ export default function DailyBonus() {
 
                   {isUnlocked ? (
                     <span
+                      className="text-[14px] sm:text-[16px] leading-[18px] sm:leading-[22px]"
                       style={{
                         marginTop: '16px',
+                        maxWidth: '337px',
                         fontFamily: '"Poppins", sans-serif',
                         fontWeight: 500,
-                        fontSize: '16px',
-                        lineHeight: '22px',
                         letterSpacing: '0%',
                         color: '#0E0F0C',
                         opacity: 1,
@@ -339,17 +345,15 @@ export default function DailyBonus() {
                     </span>
                   ) : (
                     <div
-                      className="flex items-center"
+                      className="flex items-center text-[14px] sm:text-[16px] leading-[18px] sm:leading-[22px]"
                       style={{
                         marginTop: '16px',
-                        maxWidth: '400px',
-                        gap: '5px',
+                        maxWidth: '337px',
+                        gap: '4px',
                         opacity: 1,
                         transform: 'rotate(0deg)',
                         fontFamily: '"Poppins", sans-serif',
                         fontWeight: 500,
-                        fontSize: '16px',
-                        lineHeight: '22px',
                         letterSpacing: '0%',
                         whiteSpace: 'nowrap',
                         justifyContent: 'flex-start',
@@ -377,9 +381,8 @@ export default function DailyBonus() {
 
               {/* Right Card: Streak Stats & Claim Action */}
               <div
-                className="w-full lg:flex-1 bg-white border border-gray-100/90 shadow-sm flex flex-col justify-between"
+                className="w-full lg:flex-1 bg-white border border-gray-100/90 shadow-sm flex flex-col justify-between h-auto min-h-[222px] lg:h-[222px]"
                 style={{
-                  height: '222px',
                   opacity: 1,
                   transform: 'rotate(0deg)',
                   gap: '16px',
@@ -394,11 +397,11 @@ export default function DailyBonus() {
               >
                 {/* Stats Row */}
                 <div
-                  className="flex items-center justify-between mx-auto"
+                  className="flex items-center justify-between mx-auto h-auto sm:h-[48px]"
                   style={{
                     width: '322px',
                     maxWidth: '100%',
-                    height: '48px',
+                    minHeight: '48px',
                     gap: '59px',
                     opacity: 1,
                     transform: 'rotate(0deg)',
@@ -424,6 +427,7 @@ export default function DailyBonus() {
                       Current streak
                     </span>
                     <span
+                      className="mt-2 sm:mt-1"
                       style={{
                         width: '102px',
                         fontFamily: '"Bricolage Grotesque", sans-serif',
@@ -432,7 +436,6 @@ export default function DailyBonus() {
                         lineHeight: '27px',
                         letterSpacing: '-0.02em',
                         color: '#0E0F0C',
-                        marginTop: '4px',
                         whiteSpace: 'nowrap',
                       }}
                     >
@@ -469,6 +472,7 @@ export default function DailyBonus() {
                       Longest streak
                     </span>
                     <span
+                      className="mt-2 sm:mt-1"
                       style={{
                         width: '102px',
                         fontFamily: '"Bricolage Grotesque", sans-serif',
@@ -477,7 +481,6 @@ export default function DailyBonus() {
                         lineHeight: '27px',
                         letterSpacing: '-0.02em',
                         color: '#0E0F0C',
-                        marginTop: '4px',
                         textAlign: 'left',
                         whiteSpace: 'nowrap',
                       }}
@@ -619,7 +622,7 @@ export default function DailyBonus() {
                     </span>
                   </button>
 
-                  <div className="flex items-center justify-center gap-1.5 -mt-0.5">
+                  <div className="flex items-center justify-center gap-1.5 pt-2 pb-1 sm:pt-0 sm:pb-0">
                     <span
                       style={{
                         width: 'auto',
@@ -658,7 +661,7 @@ export default function DailyBonus() {
         </div>
 
         {/* ─── Lower Main Content Area (With Spacing) ─────────────────────── */}
-        <div className="w-full pt-8 sm:pt-10 lg:pt-12 pb-12 sm:pb-16">
+        <div className="w-full pt-8 sm:pt-10 lg:pt-12 pb-4 sm:pb-12 lg:pb-16">
           <div className="w-full max-w-[1328px] mx-auto px-4 md:px-8 lg:px-0 flex flex-col gap-6 sm:gap-8">
             {/* ─── Middle Section: Current Streak (10-Day Timeline Card) ──── */}
             <div
@@ -670,7 +673,7 @@ export default function DailyBonus() {
                 transform: 'rotate(0deg)',
                 borderRadius: '30px',
                 background: 'rgba(249, 247, 241, 1)',
-                padding: '24px 32px',
+                padding: '24px 20px',
                 boxSizing: 'border-box',
                 gap: '24px',
               }}
@@ -678,12 +681,11 @@ export default function DailyBonus() {
               {/* Header */}
               <div className="flex items-center justify-between w-full">
                 <h2
+                  className="text-[20px] sm:text-[27px]"
                   style={{
-                    width: '189px',
                     fontFamily: '"Bricolage Grotesque", sans-serif',
                     fontWeight: 700,
-                    fontSize: '27px',
-                    lineHeight: '27px',
+                    lineHeight: '1.2',
                     letterSpacing: '-0.02em',
                     color: '#000000',
                     margin: 0,
@@ -693,12 +695,12 @@ export default function DailyBonus() {
                   Current Streak
                 </h2>
                 <span
+                  className="text-[16px] sm:text-[20px]"
                   style={{
                     minWidth: '86px',
                     fontFamily: '"Bricolage Grotesque", sans-serif',
                     fontWeight: 700,
-                    fontSize: '20px',
-                    lineHeight: '20px',
+                    lineHeight: '1.2',
                     letterSpacing: '-0.02em',
                     color: 'rgba(36, 50, 77, 1)',
                     textAlign: 'right',
@@ -710,11 +712,14 @@ export default function DailyBonus() {
               </div>
 
               {/* Timeline Bar & Nodes */}
-              <div className="w-full overflow-x-auto scrollbar-none py-3">
-                <div className="relative min-w-[720px] w-full max-w-[1259px] mx-auto flex items-center justify-between px-6">
+              <div
+                className="w-full overflow-x-auto scrollbar-none py-3 -mx-1 px-1 sm:mx-0 sm:px-0 select-none"
+                style={{ WebkitOverflowScrolling: 'touch' }}
+              >
+                <div className="relative min-w-[1050px] sm:min-w-0 w-full max-w-[1259px] mx-auto flex items-center justify-between px-6">
                   {/* Background Connecting Line */}
                   <div
-                    className="absolute left-0 right-0 top-[19px] -translate-y-1/2 z-0 overflow-hidden flex items-center"
+                    className="absolute left-6 right-6 top-[19px] -translate-y-1/2 z-0 overflow-hidden flex items-center"
                     style={{
                       height: '19px',
                       borderRadius: '30px',
@@ -749,10 +754,8 @@ export default function DailyBonus() {
                     return (
                       <div
                         key={day}
-                        className="relative z-10 flex flex-col items-center justify-start"
+                        className="relative z-10 flex flex-col items-center justify-start shrink-0 sm:shrink w-[100px] sm:w-[126.9px] max-w-[127px]"
                         style={{
-                          width: '126.9px',
-                          maxWidth: '127px',
                           gap: '8px',
                           opacity: 1,
                           transform: 'rotate(0deg)',
@@ -992,15 +995,11 @@ export default function DailyBonus() {
                         {/* Top: Title & Sub + Reward Pill */}
                         <div className="flex items-start justify-between gap-2">
                           <div
+                            className="flex flex-col justify-start sm:justify-between h-auto sm:h-[37px] gap-0.5 sm:gap-0"
                             style={{
                               width: '140px',
-                              height: '37px',
                               opacity: 1,
                               transform: 'rotate(0deg)',
-                              gap: '12px',
-                              display: 'flex',
-                              flexDirection: 'column',
-                              justifyContent: 'space-between',
                             }}
                           >
                             <h3

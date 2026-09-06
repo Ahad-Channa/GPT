@@ -39,7 +39,7 @@ const DashboardLayout = ({ children, showLiveBar = true, fullWidth = false }) =>
       >
         <main
           className={`w-full mx-auto flex flex-col ${
-            fullWidth ? 'pb-28 lg:pb-0' : 'px-4 md:px-8 lg:px-0 pt-0 pb-28 lg:pb-4 max-w-[1328px]'
+            fullWidth ? 'pb-4 lg:pb-0' : 'px-4 md:px-8 lg:px-0 pt-0 pb-6 lg:pb-4 max-w-[1328px]'
           }`}
         >
           {children}
