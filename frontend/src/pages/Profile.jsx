@@ -1834,8 +1834,8 @@ const ClickedOfferRow = ({ offer, index = 0, token: initialToken, onRefresh }) =
         width: '100%',
         minHeight: '69px',
         height: 'auto',
-        borderRadius: '10px',
-        backgroundColor: index % 2 === 0 ? 'rgba(249, 247, 241, 1)' : '#ffffff',
+        borderRadius: index % 2 === 0 ? '10px' : '0px',
+        backgroundColor: index % 2 === 0 ? 'rgba(249, 247, 241, 1)' : 'transparent',
       }}
       className="px-6 py-3 flex flex-col justify-center gap-4"
     >
@@ -1868,7 +1868,7 @@ const ClickedOfferRow = ({ offer, index = 0, token: initialToken, onRefresh }) =
         </div>
 
         {/* Status */}
-        <div>
+        <div className="flex justify-center">
           <span
             style={{
               fontFamily: 'Poppins, sans-serif',
@@ -1878,11 +1878,10 @@ const ClickedOfferRow = ({ offer, index = 0, token: initialToken, onRefresh }) =
               borderRadius: '40px',
               padding: '3px 18px',
               whiteSpace: 'nowrap',
+              backgroundColor: isRejected ? 'rgba(224, 30, 33, 1)' : 'rgba(36, 50, 77, 0.1)',
+              color: isRejected ? '#ffffff' : 'rgba(36, 50, 77, 1)',
             }}
-            className={`inline-flex items-center justify-center whitespace-nowrap ${isRejected
-              ? 'bg-rose-500/10 text-rose-600 border border-rose-200'
-              : 'bg-emerald-500/10 text-emerald-600 border border-emerald-200'
-              }`}
+            className="inline-flex items-center justify-center whitespace-nowrap"
           >
             {isRejected ? 'Rejected' : 'In Progress'}
           </span>
@@ -3945,7 +3944,7 @@ const Profile = () => {
             className="mx-auto flex-wrap sm:flex-nowrap"
           >
             <TabBtn active={activeTab === 'started_offers'} onClick={() => setActiveTab('started_offers')} icon="/coins/profilestarted.png" label="Started Offers" />
-            <TabBtn active={activeTab === 'completed_offers'} onClick={() => setActiveTab('completed_offers')} icon="/coins/profilecompleted.png" label="Completed Offers" />
+            <TabBtn active={activeTab === 'completed_offers'} onClick={() => setActiveTab('completed_offers')} icon="/coins/image copy 3.png" label="Completed Offers" />
             <TabBtn active={activeTab === 'held_offers'} onClick={() => setActiveTab('held_offers')} icon="/coins/profilehold.png" label="Hold Offers" />
             <TabBtn active={activeTab === 'transaction_history'} onClick={() => setActiveTab('transaction_history')} icon="/coins/profiletransition.png" label="Transaction History" />
             <TabBtn active={activeTab === 'chargebacks'} onClick={() => setActiveTab('chargebacks')} icon="/coins/profileback.png" label="Chargebacks" />
@@ -4006,10 +4005,10 @@ const Profile = () => {
                               <div>Offers</div>
                               <div>Started On</div>
                               <div>Reward</div>
-                              <div>Status</div>
+                              <div className="text-center">Status</div>
                               <div>Proof</div>
                             </div>
-                            <div className="flex flex-col gap-2 mt-2">
+                            <div className="flex flex-col">
                               {paginatedStarted.map((offer, idx) => (
                                 <ClickedOfferRow
                                   key={offer._id}
@@ -4063,7 +4062,7 @@ const Profile = () => {
                               <div>Completed On</div>
                               <div>Reward</div>
                             </div>
-                            <div className="flex flex-col gap-2 mt-2">
+                            <div className="flex flex-col">
                               {paginatedCompleted.map((offer, idx) => (
                                 <div
                                   key={offer._id}
@@ -4071,10 +4070,10 @@ const Profile = () => {
                                     width: '100%',
                                     minHeight: '69px',
                                     height: 'auto',
-                                    borderRadius: '10px',
-                                    backgroundColor: idx % 2 === 0 ? 'rgba(249, 247, 241, 1)' : '#ffffff',
+                                    borderRadius: idx % 2 === 0 ? '10px' : '0px',
+                                    backgroundColor: idx % 2 === 0 ? 'rgba(249, 247, 241, 1)' : 'transparent',
                                   }}
-                                  className="px-6 py-3.5 grid grid-cols-[1fr_180px_150px] gap-4 items-center shadow-[0_1px_3px_rgba(0,0,0,0.02)]"
+                                  className="px-6 py-3.5 grid grid-cols-[1fr_180px_150px] gap-4 items-center"
                                 >
                                   <span
                                     style={{ fontFamily: 'Poppins, sans-serif', fontWeight: 500, fontSize: '16px', lineHeight: '26px' }}
@@ -4143,7 +4142,7 @@ const Profile = () => {
                               <div>Hold Period</div>
                               <div className="text-right">Release In</div>
                             </div>
-                            <div className="flex flex-col gap-2 mt-2">
+                            <div className="flex flex-col">
                               {paginatedHeld.map((offer, idx) => {
                                 const holdPeriodDays = offer.holdUntil && offer.createdAt
                                   ? Math.round((new Date(offer.holdUntil) - new Date(offer.createdAt)) / (1000 * 60 * 60 * 24))
@@ -4158,10 +4157,10 @@ const Profile = () => {
                                       width: '100%',
                                       minHeight: '69px',
                                       height: 'auto',
-                                      borderRadius: '10px',
-                                      backgroundColor: idx % 2 === 0 ? 'rgba(249, 247, 241, 1)' : '#ffffff',
+                                      borderRadius: idx % 2 === 0 ? '10px' : '0px',
+                                      backgroundColor: idx % 2 === 0 ? 'rgba(249, 247, 241, 1)' : 'transparent',
                                     }}
-                                    className="px-6 py-3.5 grid grid-cols-[1fr_140px_130px_130px_130px] gap-4 items-center shadow-[0_1px_3px_rgba(0,0,0,0.02)]"
+                                    className="px-6 py-3.5 grid grid-cols-[1fr_140px_130px_130px_130px] gap-4 items-center"
                                   >
                                     <span
                                       style={{ fontFamily: 'Poppins, sans-serif', fontWeight: 500, fontSize: '16px', lineHeight: '26px' }}
@@ -4243,7 +4242,7 @@ const Profile = () => {
                             <div>Amount</div>
                             <div>Status</div>
                           </div>
-                          <div className="flex flex-col gap-2 mt-2">
+                          <div className="flex flex-col">
                             {txHistory.dataList.map((tx, idx) => {
                               const config = TX_TYPE_LABEL[tx.transactionType] || { label: tx.transactionType, color: 'text-slate-500' };
                               const isDebit = tx.amount < 0;
@@ -4255,10 +4254,10 @@ const Profile = () => {
                                     width: '100%',
                                     minHeight: '69px',
                                     height: 'auto',
-                                    borderRadius: '10px',
-                                    backgroundColor: idx % 2 === 0 ? 'rgba(249, 247, 241, 1)' : '#ffffff',
+                                    borderRadius: idx % 2 === 0 ? '10px' : '0px',
+                                    backgroundColor: idx % 2 === 0 ? 'rgba(249, 247, 241, 1)' : 'transparent',
                                   }}
-                                  className="px-6 py-3.5 grid grid-cols-[130px_140px_1fr_140px_120px] gap-4 items-center shadow-[0_1px_3px_rgba(0,0,0,0.02)]"
+                                  className="px-6 py-3.5 grid grid-cols-[130px_140px_1fr_140px_120px] gap-4 items-center"
                                 >
                                   <span
                                     style={{ fontFamily: 'Poppins, sans-serif', fontWeight: 500, fontSize: '16px', lineHeight: '26px' }}
@@ -4352,7 +4351,7 @@ const Profile = () => {
                             <div>Started On</div>
                             <div>Amount</div>
                           </div>
-                          <div className="flex flex-col gap-2 mt-2">
+                          <div className="flex flex-col">
                             {chargebacks.dataList.map((tx, idx) => (
                               <div
                                 key={tx._id}
@@ -4360,10 +4359,10 @@ const Profile = () => {
                                   width: '100%',
                                   minHeight: '69px',
                                   height: 'auto',
-                                  borderRadius: '10px',
-                                  backgroundColor: idx % 2 === 0 ? 'rgba(249, 247, 241, 1)' : '#ffffff',
+                                  borderRadius: idx % 2 === 0 ? '10px' : '0px',
+                                  backgroundColor: idx % 2 === 0 ? 'rgba(249, 247, 241, 1)' : 'transparent',
                                 }}
-                                className="px-6 py-3.5 grid grid-cols-[1fr_180px_150px] gap-4 items-center shadow-[0_1px_3px_rgba(0,0,0,0.02)]"
+                                className="px-6 py-3.5 grid grid-cols-[1fr_180px_150px] gap-4 items-center"
                               >
                                 <span
                                   style={{ fontFamily: 'Poppins, sans-serif', fontWeight: 500, fontSize: '16px', lineHeight: '26px' }}

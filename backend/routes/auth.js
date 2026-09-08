@@ -27,7 +27,7 @@ async function generateUniqueReferralCode() {
 
 // POST /api/auth/sync
 // Validates Firebase token. If user doesn't exist in MongoDB, inserts them securely.
-router.post('/sync', verifyToken, fraudCheck('auth_sync', 'light'), async (req, res) => {
+router.post('/sync', verifyToken, fraudCheck('auth_sync', 'full'), async (req, res) => {
   try {
     const { uid, email, name, picture } = req.user;
     const { ref, fingerprint } = req.body || {};
@@ -151,15 +151,11 @@ router.post('/sync', verifyToken, fraudCheck('auth_sync', 'light'), async (req, 
       }
     }
 
-    // Attach fraud warning to response if proxy/VPN was detected
-    const fraudWarning = req.fraud?.flagged || false;
-
     res.status(200).json({
       success: true,
       user,
       isNewUser,
       twoFactorRequired,
-      fraudWarning,
     });
   } catch (error) {
     console.error('[/api/auth/sync] Database Error:', error);

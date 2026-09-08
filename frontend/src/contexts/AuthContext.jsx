@@ -70,6 +70,15 @@ export const AuthProvider = ({ children }) => {
                 body: JSON.stringify({ ...(ref ? { ref } : {}), fingerprint })
             });
             const data = await res.json();
+
+            // VPN/Proxy blocked — sign out immediately
+            if (!data.success && data.code === 'FRAUD_BLOCKED') {
+                await signOut(auth);
+                setMongoUser(null);
+                setCurrentUser(null);
+                throw new Error(data.error || 'VPN, proxy, or TOR connections are not allowed on this platform.');
+            }
+
             if (data.isBanned || (data.success && data.user?.isBanned)) {
                 alert("Your account has been banned due to violations of our terms. Please contact support.");
                 await signOut(auth);
@@ -84,23 +93,13 @@ export const AuthProvider = ({ children }) => {
                 } else {
                     setTwoFactorRequired(false);
                 }
-                // Show VPN/proxy warning if detected
-                if (data.fraudWarning) {
-                    import('react-hot-toast').then(({ default: toast }) => {
-                        toast.error('⚠️ VPN or proxy detected. Some features may be restricted.', {
-                            duration: 8000,
-                            style: {
-                                background: '#1a0a0a',
-                                border: '1px solid rgba(239,68,68,0.4)',
-                                color: '#fca5a5',
-                                fontWeight: 600,
-                            },
-                        });
-                    });
-                }
             }
         } catch (error) {
             console.error("MongoDB Sync Failed:", error);
+            // Re-throw VPN block errors so the caller (login/register) can show the message
+            if (error.message && error.message.includes('VPN')) {
+                throw error;
+            }
         }
     };
 
@@ -259,7 +258,14 @@ export const AuthProvider = ({ children }) => {
         const unsubscribe = onAuthStateChanged(auth, async (user) => {
             setCurrentUser(user);
             if (user) {
-                await syncWithMongo(user);
+                try {
+                    await syncWithMongo(user);
+                } catch (err) {
+                    // VPN/proxy block — user was signed out inside syncWithMongo
+                    // Don't proceed with socket setup
+                    setLoading(false);
+                    return;
+                }
 
                 // ── Socket: identify this browser tab so the server can push balance updates ──
                 const socketUrl = import.meta.env.VITE_API_URL
