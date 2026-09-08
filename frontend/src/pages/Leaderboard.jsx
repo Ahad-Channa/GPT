@@ -713,7 +713,7 @@ const Leaderboard = () => {
 
         {/* Right: Earning + Prize */}
         <div
-          className="flex items-center justify-end gap-3 sm:gap-12 shrink-0 ml-auto"
+          className="flex items-center justify-end gap-5 sm:gap-12 shrink-0 ml-auto"
           style={{
             opacity: 1,
             transform: 'rotate(0deg)',
@@ -721,7 +721,7 @@ const Leaderboard = () => {
           }}
         >
           {/* Earning */}
-          <div className="flex flex-col items-start min-w-[50px] sm:min-w-[90px] w-auto sm:w-[107.35px]">
+          <div className="flex flex-col items-start min-w-[56px] sm:min-w-[90px] w-auto sm:w-[107.35px]">
             <span
               className="text-[10px] sm:text-[14px] text-black h-[12px] sm:h-[14px] flex items-center"
               style={{
@@ -763,7 +763,7 @@ const Leaderboard = () => {
           </div>
 
           {/* Prize */}
-          <div className="flex flex-col items-start min-w-[42px] sm:min-w-[80px] w-auto sm:w-[107.35px]">
+          <div className="flex flex-col items-start min-w-[46px] sm:min-w-[80px] w-auto sm:w-[107.35px]">
             <span
               className="text-[10px] sm:text-[14px] text-black h-[12px] sm:h-[14px] flex items-center"
               style={{
