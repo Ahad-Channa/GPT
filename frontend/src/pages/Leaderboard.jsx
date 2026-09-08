@@ -885,31 +885,6 @@ const Leaderboard = () => {
                 >
                   Leaderboard
                 </h1>
-
-                {/* Subtitle (387x10, 14px Poppins 500) */}
-                <p
-                  style={{
-                    width: '100%',
-                    maxWidth: '387px',
-                    height: '10px',
-                    opacity: 1,
-                    transform: 'rotate(0deg)',
-                    fontFamily: '"Poppins", sans-serif',
-                    fontWeight: 500,
-                    fontSize: '14px',
-                    lineHeight: '10px',
-                    letterSpacing: '0%',
-                    textAlign: 'center',
-                    color: '#000000',
-                    margin: 0,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    whiteSpace: 'nowrap',
-                  }}
-                >
-                  Top users ranked by earnings — win prizes every cycle!
-                </p>
               </div>
 
               {/* Period Switcher Tabs */}

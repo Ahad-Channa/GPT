@@ -156,21 +156,6 @@ export default function DailyBonus() {
                     >
                       Daily Bonus
                     </h1>
-                    <p
-                      className="text-[12px] sm:text-[14px] mt-1 sm:mt-2"
-                      style={{
-                        fontFamily: '"Poppins", sans-serif',
-                        fontWeight: 500,
-                        lineHeight: '18px',
-                        letterSpacing: '0%',
-                        color: '#0E0F0C',
-                        margin: 0,
-                      }}
-                    >
-                      <span>Claim your daily reward and</span>
-                      <br className="block sm:hidden" />
-                      <span className="sm:ml-1">keep your streak going!</span>
-                    </p>
                   </div>
 
                   {/* Today's Reward Pill */}

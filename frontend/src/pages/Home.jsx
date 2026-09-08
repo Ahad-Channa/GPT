@@ -336,7 +336,7 @@ const Home = () => {
       id: 'featured',
       label: 'Featured Offers',
       ref: featuredRef,
-      iconSrc: '/coins/foff.png',
+      iconSrc: '/coins/image copy 4.png',
     },
     {
       id: 'gaming',
@@ -373,12 +373,12 @@ const Home = () => {
     all: {
       icon: <FeaturedOfferBadge />,
       title: 'Featured Offers',
-      subtitle: 'High-reward direct tasks. Manual approval required.',
+      subtitle: 'High-reward direct tasks.',
     },
     featured: {
       icon: <FeaturedOfferBadge />,
       title: 'Featured Offers',
-      subtitle: 'High-reward direct tasks. Manual approval required.',
+      subtitle: 'High-reward direct tasks.',
     },
     gaming: {
       icon: (
