@@ -898,7 +898,7 @@ const Landing = () => {
             src={isMobile ? "/coins/whychosemobile.png" : "/coins/why chose us.png"}
             alt="Why Choose Us"
             className="w-full h-auto object-cover rounded-[24px] lg:rounded-[32px]"
-            style={isMobile ? { width: '100%', opacity: 1, position: 'relative', left: '-13px' } : { width: '100%', height: '100%', position: 'relative', left: '-13px' }}
+            style={isMobile ? { width: '100%', opacity: 1, position: 'relative', left: '-16px' } : { width: '100%', height: '100%', position: 'relative', left: '-16px' }}
           />
         </div>
       </section>

@@ -278,7 +278,7 @@ const Footer = () => {
                 width: isMobile ? 424 : 420,
                 maxWidth: '100%',
                 height: isMobile ? 199.28 : 'auto',
-                transform: 'translateY(-11px)',
+                transform: 'translateY(-14px)',
               }}
             >
               <img

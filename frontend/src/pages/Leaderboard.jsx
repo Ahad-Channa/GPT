@@ -641,7 +641,7 @@ const Leaderboard = () => {
       <div
         key={user.userId || rankNumber}
         onClick={() => setActiveProfileId(user.userId)}
-        className="w-full max-w-[428px] sm:max-w-[1102px] h-[62px] sm:h-[72px] rounded-[20px] flex items-center justify-between hover:bg-[#F3EFE6] transition-colors cursor-pointer select-none px-[20px] py-[10px] gap-[10px] sm:gap-0"
+        className="w-full max-w-[428px] sm:max-w-[1102px] h-[62px] sm:h-[72px] rounded-[20px] flex items-center justify-between hover:bg-[#F3EFE6] transition-colors cursor-pointer select-none px-3.5 sm:px-[20px] py-[10px] gap-2 sm:gap-4"
         style={{
           opacity: 1,
           transform: 'rotate(0deg)',
@@ -651,10 +651,10 @@ const Leaderboard = () => {
         }}
       >
         {/* Left: Rank + Avatar + Name */}
-        <div className="flex items-center gap-3.5 sm:gap-4 min-w-0">
+        <div className="flex items-center gap-2 sm:gap-3.5 min-w-0 flex-1">
           {rankNumber ? (
             <span
-              className="w-[22px] sm:w-[25px] h-[10px] sm:h-[12px] flex items-center justify-center shrink-0 text-center text-[16px] sm:text-[19.6px] leading-none"
+              className="w-[20px] sm:w-[25px] h-[12px] flex items-center justify-center shrink-0 text-center text-[15px] sm:text-[19.6px] leading-none"
               style={{
                 opacity: 1,
                 transform: 'rotate(0deg)',
@@ -667,11 +667,11 @@ const Leaderboard = () => {
               #{rankNumber}
             </span>
           ) : (
-            <div className="w-[22px] sm:w-[25px] h-[10px] sm:h-[12px] shrink-0" />
+            <div className="w-[20px] sm:w-[25px] h-[12px] shrink-0" />
           )}
 
           <div
-            className="w-[42px] h-[42px] sm:w-[52px] sm:h-[52px] rounded-full overflow-hidden bg-white shadow-sm shrink-0"
+            className="w-[38px] h-[38px] sm:w-[52px] sm:h-[52px] rounded-full overflow-hidden bg-white shadow-sm shrink-0"
             style={{
               opacity: 1,
               transform: 'rotate(0deg)',
@@ -685,9 +685,9 @@ const Leaderboard = () => {
             />
           </div>
 
-          <div className="flex items-center gap-1.5 min-w-0">
+          <div className="flex items-center gap-1.5 min-w-0 flex-1">
             <span
-              className="text-[16px] sm:text-[19.6px] text-[#0E0F0C] block truncate leading-none"
+              className="text-[14px] sm:text-[19.6px] text-[#0E0F0C] truncate leading-tight font-semibold"
               style={{
                 fontFamily: '"Baloo 2", cursive, sans-serif',
                 fontWeight: 600,
@@ -702,7 +702,7 @@ const Leaderboard = () => {
             </span>
             {isCurrent && (
               <span
-                className="text-gray-500 font-medium text-[11px] sm:text-[13px] shrink-0"
+                className="text-gray-500 font-medium text-[10px] sm:text-[13px] shrink-0"
                 style={{ fontFamily: '"Poppins", sans-serif' }}
               >
                 (you)
@@ -711,9 +711,9 @@ const Leaderboard = () => {
           </div>
         </div>
 
-        {/* Right: Earning + Prize (width: 216, height: 32.83, gap: 26px on mobile) */}
+        {/* Right: Earning + Prize */}
         <div
-          className="flex items-center gap-[26px] sm:gap-14 shrink-0 w-[216px] sm:w-auto h-[32.83px] sm:h-auto"
+          className="flex items-center justify-end gap-3 sm:gap-12 shrink-0 ml-auto"
           style={{
             opacity: 1,
             transform: 'rotate(0deg)',
@@ -721,31 +721,28 @@ const Leaderboard = () => {
           }}
         >
           {/* Earning */}
-          <div className="flex flex-col items-start w-[81px] sm:w-[107.35px]">
+          <div className="flex flex-col items-start min-w-[50px] sm:min-w-[90px] w-auto sm:w-[107.35px]">
             <span
-              className="text-[10px] sm:text-[14px] text-black w-[81px] sm:w-[107.35px] h-[7px] sm:h-[10px]"
+              className="text-[10px] sm:text-[14px] text-black h-[12px] sm:h-[14px] flex items-center"
               style={{
                 opacity: 1,
                 transform: 'rotate(0deg)',
                 fontFamily: '"Poppins", sans-serif',
                 fontWeight: 500,
-                lineHeight: '18px',
                 letterSpacing: '0%',
                 margin: 0,
-                display: 'flex',
-                alignItems: 'center',
               }}
             >
               Earning
             </span>
-            <div className="flex items-center gap-[3.7px] sm:gap-1.5 mt-1 h-[14.83px] sm:h-auto">
+            <div className="flex items-center gap-1 sm:gap-1.5 mt-0.5 sm:mt-1 h-[15px] sm:h-auto">
               <img
                 src="/coins/ledcoin.png"
                 alt="Coin"
-                className="w-[12px] h-[12px] sm:w-[14px] sm:h-[14px] object-contain shrink-0"
+                className="w-[11px] h-[11px] sm:w-[14px] sm:h-[14px] object-contain shrink-0"
               />
               <span
-                className="text-[15px] sm:text-[20px]"
+                className="text-[13px] sm:text-[20px]"
                 style={{
                   fontFamily: '"Poppins", sans-serif',
                   fontWeight: 600,
@@ -766,33 +763,30 @@ const Leaderboard = () => {
           </div>
 
           {/* Prize */}
-          <div className="flex flex-col items-start w-[81px] sm:w-[107.35px]">
+          <div className="flex flex-col items-start min-w-[42px] sm:min-w-[80px] w-auto sm:w-[107.35px]">
             <span
-              className="text-[10px] sm:text-[14px] text-black w-[81px] sm:w-[107.35px] h-[7px] sm:h-[10px]"
+              className="text-[10px] sm:text-[14px] text-black h-[12px] sm:h-[14px] flex items-center"
               style={{
                 opacity: 1,
                 transform: 'rotate(0deg)',
                 fontFamily: '"Poppins", sans-serif',
                 fontWeight: 500,
-                lineHeight: '18px',
                 letterSpacing: '0%',
                 margin: 0,
-                display: 'flex',
-                alignItems: 'center',
               }}
             >
               Prize
             </span>
-            <div className="flex items-center gap-[3.7px] sm:gap-1.5 mt-1 h-[14.83px] sm:h-auto min-h-[14.83px] sm:min-h-[24px]">
+            <div className="flex items-center gap-1 sm:gap-1.5 mt-0.5 sm:mt-1 h-[15px] sm:h-auto min-h-[15px] sm:min-h-[24px]">
               {prize > 0 ? (
                 <>
                   <img
                     src="/coins/ledcoin.png"
                     alt="Coin"
-                    className="w-[12px] h-[12px] sm:w-[14px] sm:h-[14px] object-contain shrink-0"
+                    className="w-[11px] h-[11px] sm:w-[14px] sm:h-[14px] object-contain shrink-0"
                   />
                   <span
-                    className="text-[15px] sm:text-[20px]"
+                    className="text-[13px] sm:text-[20px]"
                     style={{
                       fontFamily: '"Poppins", sans-serif',
                       fontWeight: 600,
@@ -811,7 +805,7 @@ const Leaderboard = () => {
                   </span>
                 </>
               ) : (
-                <span className="text-gray-300 text-[12px] sm:text-[14px] font-medium">-</span>
+                <span className="text-gray-400 text-[12px] sm:text-[14px] font-medium leading-none">-</span>
               )}
             </div>
           </div>

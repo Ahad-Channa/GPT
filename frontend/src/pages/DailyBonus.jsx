@@ -622,7 +622,10 @@ export default function DailyBonus() {
                     </span>
                   </button>
 
-                  <div className="flex items-center justify-center gap-1.5 pt-2 pb-1 sm:pt-0 sm:pb-0">
+                  <div
+                    style={{ transform: 'translateY(3px)' }}
+                    className="flex items-center justify-center gap-1.5 pt-2 pb-1 sm:pt-0 sm:pb-0"
+                  >
                     <span
                       style={{
                         width: 'auto',
@@ -707,7 +710,7 @@ export default function DailyBonus() {
                     whiteSpace: 'nowrap',
                   }}
                 >
-                  {cycleStreak}/10Days
+                  {streak}/30Days
                 </span>
               </div>
 
