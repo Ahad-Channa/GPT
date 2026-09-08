@@ -4240,13 +4240,14 @@ const Profile = () => {
                             <div>Type</div>
                             <div>Description</div>
                             <div>Amount</div>
-                            <div>Status</div>
+                            <div className="text-center">Status</div>
                           </div>
                           <div className="flex flex-col">
                             {txHistory.dataList.map((tx, idx) => {
                               const config = TX_TYPE_LABEL[tx.transactionType] || { label: tx.transactionType, color: 'text-slate-500' };
                               const isDebit = tx.amount < 0;
                               const isPending = tx.status === 'pending';
+                              const isRejected = tx.status === 'rejected' || tx.status === 'failed';
                               return (
                                 <div
                                   key={tx._id}
@@ -4285,7 +4286,7 @@ const Profile = () => {
                                     <img src="/coins/profilecoin1.png" alt="Coin" className="w-[18px] h-[18px] shrink-0 object-contain" />
                                     <span>{Math.abs(tx.amount || 0).toLocaleString('de-DE')}</span>
                                   </div>
-                                  <div className="flex justify-start">
+                                  <div className="flex justify-center">
                                     <span
                                       style={{
                                         fontFamily: 'Poppins, sans-serif',
@@ -4294,15 +4295,22 @@ const Profile = () => {
                                         lineHeight: '26px',
                                         borderRadius: '40px',
                                         padding: '3px 18px',
+                                        whiteSpace: 'nowrap',
+                                        backgroundColor:
+                                          tx.status === 'completed'
+                                            ? 'rgba(16, 185, 129, 1)'
+                                            : isRejected
+                                            ? 'rgba(224, 30, 33, 1)'
+                                            : 'rgba(30, 41, 59, 1)',
+                                        color: '#ffffff',
                                       }}
-                                      className={`inline-flex items-center justify-center ${isPending
-                                        ? 'bg-[#1e293b] text-white'
-                                        : tx.status === 'completed'
-                                          ? 'bg-[#10b981] text-white'
-                                          : 'bg-[#1e293b] text-white'
-                                        }`}
+                                      className="inline-flex items-center justify-center whitespace-nowrap"
                                     >
-                                      {tx.status === 'completed' ? 'Completed' : tx.status.charAt(0).toUpperCase() + tx.status.slice(1)}
+                                      {tx.status === 'completed'
+                                        ? 'Completed'
+                                        : isRejected
+                                        ? 'Rejected'
+                                        : tx.status.charAt(0).toUpperCase() + tx.status.slice(1)}
                                     </span>
                                   </div>
                                 </div>
