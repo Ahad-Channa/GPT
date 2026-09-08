@@ -33,7 +33,7 @@ const Footer = () => {
   ];
 
   return (
-    <footer className="w-full flex justify-center pt-0 pb-12 px-4 md:px-8 lg:px-0 bg-transparent shrink-0">
+    <footer className="w-full flex justify-center pt-0 pb-12 px-2 sm:px-4 md:px-8 lg:px-0 bg-transparent shrink-0">
       <div
         className="flex flex-col lg:flex-row justify-between w-full max-w-[440px] lg:max-w-[1328px] mx-auto items-center lg:items-start"
         style={{
@@ -140,8 +140,12 @@ const Footer = () => {
 
           {/* Socials */}
           <div
-            className="flex justify-end items-center z-10 relative"
-            style={{ width: 363, height: 36, gap: 4, transform: 'translateX(18px)' }}
+            className="flex justify-end items-center z-10 relative w-full max-w-[363px]"
+            style={{
+              height: 36,
+              gap: 4,
+              transform: isMobile ? 'translateX(4px)' : 'translateX(18px)'
+            }}
           >
             {[
               { src: '/coins/fbo.png', alt: 'Facebook' },

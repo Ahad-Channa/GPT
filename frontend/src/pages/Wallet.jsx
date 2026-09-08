@@ -507,7 +507,7 @@ const Wallet = () => {
           variants={container}
           initial="hidden"
           animate="show"
-          className="w-full max-w-[1328px] mx-auto px-4 md:px-8 lg:px-0 py-8 sm:py-10 flex flex-col gap-8"
+          className="w-full max-w-[1328px] mx-auto px-2 sm:px-4 md:px-8 lg:px-0 py-8 sm:py-10 flex flex-col gap-8"
         >
 
           {/* ── Withdrawal Options Cards (3 Columns) ────────────────────── */}

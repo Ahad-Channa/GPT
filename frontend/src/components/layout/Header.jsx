@@ -1286,7 +1286,7 @@ const Header = ({ onChatToggle, chatOpen, fullWidth }) => {
       <div
         className="fixed left-0 right-0 z-40 lg:hidden pointer-events-auto flex justify-center px-[14px]"
         style={{
-          bottom: 'calc(14px + env(safe-area-inset-bottom, 0px))',
+          bottom: 'calc(6px + env(safe-area-inset-bottom, 0px))',
         }}
       >
         <div
@@ -1575,7 +1575,7 @@ const Header = ({ onChatToggle, chatOpen, fullWidth }) => {
             <div
               className="fixed left-0 right-0 z-50 lg:hidden flex justify-center pointer-events-none px-4"
               style={{
-                bottom: 'calc(86px + env(safe-area-inset-bottom, 0px))',
+                bottom: 'calc(78px + env(safe-area-inset-bottom, 0px))',
               }}
             >
               <motion.div

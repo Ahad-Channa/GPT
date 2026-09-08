@@ -665,7 +665,7 @@ export default function DailyBonus() {
 
         {/* ─── Lower Main Content Area (With Spacing) ─────────────────────── */}
         <div className="w-full pt-8 sm:pt-10 lg:pt-12 pb-4 sm:pb-12 lg:pb-16">
-          <div className="w-full max-w-[1328px] mx-auto px-4 md:px-8 lg:px-0 flex flex-col gap-6 sm:gap-8">
+          <div className="w-full max-w-[1328px] mx-auto px-2 sm:px-4 md:px-8 lg:px-0 flex flex-col gap-6 sm:gap-8">
             {/* ─── Middle Section: Current Streak (10-Day Timeline Card) ──── */}
             <div
               className="w-full shadow-sm flex flex-col justify-between"
