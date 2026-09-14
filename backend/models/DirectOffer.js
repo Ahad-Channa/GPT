@@ -18,6 +18,11 @@ const directOfferSchema = new mongoose.Schema(
       ios: { type: Boolean, default: true },
     },
     requirements: [{ type: String }], // Step-by-step description of what user must do
+    requirementType: { 
+      type: String, 
+      enum: ['bullets', 'paragraph'], 
+      default: 'bullets' 
+    },
     // S2S postback security
     postbackSecretKey: {
       type: String,

@@ -45,6 +45,7 @@ const OfferFormModal = ({ offer, onClose, onSaved, token }) => {
     icon: offer?.icon || '',
     coverImage: offer?.coverImage || '',
     requirements: (offer?.requirements || []).join('\n'),
+    requirementType: offer?.requirementType || 'bullets',
     platforms: offer?.platforms || { desktop: true, android: true, ios: true },
     isActive: offer?.isActive !== undefined ? offer.isActive : true,
     postbackMapping: {
@@ -78,7 +79,10 @@ const OfferFormModal = ({ offer, onClose, onSaved, token }) => {
           rewardAmount: Number(form.rewardAmount),
           advertiserPayoutAmount: Number(form.advertiserPayoutAmount) || 0,
           expirationDate: form.expirationDate || null,
-          requirements: form.requirements.split('\n').map(r => r.trim()).filter(Boolean),
+          requirements: form.requirementType === 'paragraph'
+            ? [form.requirements.trim()].filter(Boolean)
+            : form.requirements.split('\n').map(r => r.trim()).filter(Boolean),
+          requirementType: form.requirementType,
           platforms: form.platforms,
           postbackMapping: form.postbackMapping,
         }),
@@ -101,20 +105,28 @@ const OfferFormModal = ({ offer, onClose, onSaved, token }) => {
   const labelCls = 'block text-xs font-semibold text-slate-400 mb-1';
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm" onClick={onClose}>
-      <motion.div
-        initial={{ scale: 0.95, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        exit={{ scale: 0.95, opacity: 0 }}
-        onClick={(e) => e.stopPropagation()}
-        className="bg-[#1a1f2e] border border-white/10 rounded-2xl p-6 w-full max-w-lg max-h-[90vh] overflow-y-auto"
-      >
-        <h3 className="text-lg font-bold text-white mb-4">{isEdit ? 'Edit Direct Offer' : 'Create Direct Offer'}</h3>
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
+      <div className="bg-[#0e1726] border border-white/10 rounded-2xl w-full max-w-2xl max-h-[90vh] flex flex-col shadow-2xl overflow-hidden">
+        {/* Modal Header */}
+        <div className="flex items-center justify-between px-6 py-4 border-b border-white/10 shrink-0">
+          <h2 className="text-base font-bold text-white flex items-center gap-2">
+            <FiLink className="text-indigo-400" />
+            {isEdit ? 'Edit Direct Offer' : 'New Direct Offer'}
+          </h2>
+          <button onClick={onClose} className="text-slate-400 hover:text-white transition-colors text-lg">✕</button>
+        </div>
 
-        <form onSubmit={handleSubmit} className="space-y-3">
+        {/* Modal Body */}
+        <form onSubmit={handleSubmit} className="p-6 space-y-4 overflow-y-auto flex-1 custom-scrollbar">
+          {error && (
+            <div className="p-3 bg-rose-500/10 border border-rose-500/20 rounded-lg text-rose-400 text-sm">
+              {error}
+            </div>
+          )}
+
           <div>
-            <label className={labelCls}>Title *</label>
-            <input className={inputCls} value={form.title} onChange={set('title')} required placeholder="e.g. Casino Sign Up Bonus" />
+            <label className={labelCls}>Offer Title *</label>
+            <input className={inputCls} value={form.title} onChange={set('title')} required placeholder="e.g. Stake Casino — Deposit & Play" />
           </div>
           <div>
             <label className={labelCls}>Description *</label>
@@ -135,8 +147,44 @@ const OfferFormModal = ({ offer, onClose, onSaved, token }) => {
             <input className={inputCls} value={form.advertiserUrl} onChange={set('advertiserUrl')} required placeholder="https://advertiser.com/landing?ref=taskmint" />
           </div>
           <div>
-            <label className={labelCls}>Requirements <span className="text-slate-600 font-normal">(one per line)</span></label>
-            <textarea className={inputCls} rows={3} value={form.requirements} onChange={set('requirements')} placeholder="Register on the platform&#10;Make a deposit of at least $10&#10;Play 5 rounds" />
+            <div className="flex items-center justify-between mb-1.5">
+              <label className={labelCls}>Requirements Format</label>
+              <div className="flex items-center gap-1 bg-white/5 p-0.5 rounded-lg border border-white/10">
+                <button
+                  type="button"
+                  onClick={() => setForm(f => ({ ...f, requirementType: 'bullets' }))}
+                  className={`px-2.5 py-1 rounded-md text-xs font-semibold transition-all ${
+                    form.requirementType === 'bullets'
+                      ? 'bg-indigo-500/30 text-indigo-300 border border-indigo-500/40'
+                      : 'text-slate-400 hover:text-white'
+                  }`}
+                >
+                  Bullet Points
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setForm(f => ({ ...f, requirementType: 'paragraph' }))}
+                  className={`px-2.5 py-1 rounded-md text-xs font-semibold transition-all ${
+                    form.requirementType === 'paragraph'
+                      ? 'bg-indigo-500/30 text-indigo-300 border border-indigo-500/40'
+                      : 'text-slate-400 hover:text-white'
+                  }`}
+                >
+                  Paragraph
+                </button>
+              </div>
+            </div>
+            <textarea
+              className={inputCls}
+              rows={form.requirementType === 'paragraph' ? 2 : 3}
+              value={form.requirements}
+              onChange={set('requirements')}
+              placeholder={
+                form.requirementType === 'paragraph'
+                  ? "Register and deposit €50, then wager €100."
+                  : "Register on the platform\nMake a deposit of at least $10\nPlay 5 rounds"
+              }
+            />
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>

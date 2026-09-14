@@ -7,29 +7,45 @@ import {
   FiClock, FiLoader, FiInbox, FiSend
 } from 'react-icons/fi';
 import { ProviderCard, OfferwallCard, FeaturedOfferCard, FeaturedOfferModal } from '../components/offers/OfferCards';
-import { DirectOfferCard, DirectOfferModal } from '../components/offers/DirectOfferCard';
-import OfferwallModal from '../components/offers/OfferwallModal';
+import { GoodpicksOfferwallModal } from '../components/offers/GoodpicksModal';
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
-const container = { hidden: {}, show: { transition: { staggerChildren: 0.08 } } };
-const item = { hidden: { opacity: 0, y: 16 }, show: { opacity: 1, y: 0, transition: { duration: 0.4 } } };
+// Animation variants
+const container = {
+  hidden: { opacity: 0 },
+  show: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.05,
+    },
+  },
+};
+
+const item = {
+  hidden: { opacity: 0, y: 15 },
+  show: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 300, damping: 24 } },
+};
 
 
 // --- Tab Button Component
 const TabButton = ({ active, onClick, icon: Icon, label, count }) => (
   <button
     onClick={onClick}
-    className={`relative flex items-center gap-2 px-5 py-2.5 rounded-xl font-semibold text-sm transition-all duration-200 ${active
-        ? 'bg-indigo-500/20 text-indigo-300 border border-indigo-500/40'
-        : 'text-slate-400 hover:text-slate-200 border border-transparent hover:border-white/10 hover:bg-white/[0.03]'
-      }`}
+    className={`flex items-center gap-2.5 px-5 py-2.5 rounded-xl font-medium text-sm transition-all duration-200 cursor-pointer ${
+      active
+        ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/25'
+        : 'text-slate-400 hover:text-white hover:bg-white/[0.04]'
+    }`}
   >
-    <Icon className="text-base" />
-    {label}
+    <Icon className={`text-base ${active ? 'text-white' : 'text-slate-400'}`} />
+    <span>{label}</span>
     {count !== undefined && count > 0 && (
-      <span className={`ml-1 px-1.5 py-0.5 rounded-full text-[10px] font-bold ${active ? 'bg-indigo-500/30 text-indigo-200' : 'bg-white/10 text-slate-400'
-        }`}>
+      <span
+        className={`text-xs px-2 py-0.5 rounded-full font-bold ${
+          active ? 'bg-white/20 text-white' : 'bg-white/[0.06] text-slate-400'
+        }`}
+      >
         {count}
       </span>
     )}
@@ -44,16 +60,12 @@ const Earn = () => {
   const [activeProvider, setActiveProvider] = useState(null);
   const [settings, setSettings] = useState(null);
   const [customOffers, setCustomOffers] = useState([]);
-  const [directOffers, setDirectOffers] = useState([]);
   const [loadingSettings, setLoadingSettings] = useState(true);
   const [loadingCustomOffers, setLoadingCustomOffers] = useState(true);
-  const [loadingDirectOffers, setLoadingDirectOffers] = useState(true);
   const [token, setToken] = useState(null);
   const [selectedOffer, setSelectedOffer] = useState(null);
-  const [selectedDirectOffer, setSelectedDirectOffer] = useState(null);
 
-  // Combined loading state for featured tab
-  const loadingOffers = loadingCustomOffers || loadingDirectOffers;
+  const loadingOffers = loadingCustomOffers;
 
   // Clear active provider when changing tabs
   useEffect(() => {
@@ -113,25 +125,6 @@ const Earn = () => {
     fetchOffers();
   }, [token]);
 
-  // Fetch active direct offers (S2S auto-tracked)
-  useEffect(() => {
-    if (!token) return;
-    const fetchDirectOffers = async () => {
-      try {
-        const res = await fetch(`${API}/direct-offers`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        const data = await res.json();
-        if (data.success) setDirectOffers(data.offers);
-      } catch (err) {
-        console.error('Failed to load direct offers:', err);
-      } finally {
-        setLoadingDirectOffers(false);
-      }
-    };
-    fetchDirectOffers();
-  }, [token]);
-
   const enabledProviders = settings?.offerwalls || [];
 
   const defaultSurveyList = [
@@ -140,7 +133,7 @@ const Earn = () => {
     { id: 'adscend', label: 'AdscendMedia', category: 'surveys', enabled: true },
   ];
 
-  const surveyProviders = defaultSurveyList;
+  const surveyProviders = [...defaultSurveyList, goodpicksItem];
 
   const defaultBase8 = [
     { id: 'adgem', label: 'AdGem', category: 'gaming', enabled: true },
@@ -174,7 +167,7 @@ const Earn = () => {
   const tabs = [
     { id: 'surveys', label: 'Surveys', icon: FiCheckCircle, count: surveyProviders.length },
     { id: 'gaming', label: 'Gaming & Apps', icon: FiMonitor, count: gamingProviders.length },
-    { id: 'featured', label: 'Featured Offers', icon: FiStar, count: customOffers.length + directOffers.length },
+    { id: 'featured', label: 'Featured Offers', icon: FiStar, count: customOffers.length },
   ];
 
   const renderEmptyState = (label) => (
@@ -230,15 +223,19 @@ const Earn = () => {
             className="space-y-6"
           >
             {activeProvider ? (
-              <div className="space-y-4">
-                <button
-                  onClick={() => setActiveProvider(null)}
-                  className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white/[0.05] hover:bg-white/[0.1] text-slate-300 transition-all font-semibold text-sm w-fit"
-                >
-                  <span className="text-lg">←</span> Back to Providers
-                </button>
-                <OfferwallCard provider={activeProvider} userId={mongoUser?._id} />
-              </div>
+              activeProvider.id === 'goodpicks' ? (
+                <GoodpicksOfferwallModal onClose={() => setActiveProvider(null)} />
+              ) : (
+                <div className="space-y-4">
+                  <button
+                    onClick={() => setActiveProvider(null)}
+                    className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white/[0.05] hover:bg-white/[0.1] text-slate-300 transition-all font-semibold text-sm w-fit"
+                  >
+                    <span className="text-lg">←</span> Back to Providers
+                  </button>
+                  <OfferwallCard provider={activeProvider} userId={mongoUser?._id} />
+                </div>
+              )
             ) : (
               <>
                 {/* ─── SURVEYS TAB ─── */}
@@ -289,7 +286,7 @@ const Earn = () => {
                         <div className="w-10 h-10 rounded-full border-2 border-amber-500 border-t-transparent animate-spin" />
                         <p className="text-slate-400 text-sm">Loading featured offers...</p>
                       </div>
-                    ) : (customOffers.length === 0 && directOffers.length === 0) ? (
+                    ) : customOffers.length === 0 ? (
                       <div className="glass-card p-16 text-center flex flex-col items-center gap-4">
                         <div className="w-16 h-16 rounded-2xl bg-amber-500/[0.06] border border-amber-500/[0.15] flex items-center justify-center">
                           <FiStar className="text-amber-500/50 text-2xl" />
@@ -302,41 +299,14 @@ const Earn = () => {
                         </div>
                       </div>
                     ) : (
-                      <motion.div variants={container} initial="hidden" animate="show" className="space-y-4">
-                        {/* Direct Offers (S2S Auto-tracked) */}
-                        {directOffers.length > 0 && (
-                          <>
-                            <p className="text-xs text-indigo-400/70 font-semibold tracking-wide uppercase mb-2">
-                              ⚡ {directOffers.length} Auto-Tracked {directOffers.length === 1 ? 'Offer' : 'Offers'} — Reward credited instantly on completion
-                            </p>
-                            <div className="grid grid-cols-2 lg:grid-cols-[repeat(auto-fill,minmax(156px,1fr))] gap-3 lg:gap-4">
-                              {directOffers.map(offer => (
-                                <DirectOfferCard
-                                  key={offer._id}
-                                  offer={offer}
-                                  onClick={() => setSelectedDirectOffer(offer)}
-                                />
-                              ))}
-                            </div>
-                          </>
-                        )}
-                        {/* Manual Proof Offers */}
-                        {customOffers.length > 0 && (
-                          <>
-                            <p className="text-xs text-slate-500 font-semibold tracking-wide uppercase mb-2 mt-4">
-                              📋 {customOffers.length} Manual {customOffers.length === 1 ? 'Offer' : 'Offers'} — Requires proof submission
-                            </p>
-                            <div className="grid grid-cols-2 lg:grid-cols-[repeat(auto-fill,minmax(156px,1fr))] gap-3 lg:gap-4">
-                              {customOffers.map(offer => (
-                                <FeaturedOfferCard
-                                  key={offer._id}
-                                  offer={offer}
-                                  onClick={() => setSelectedOffer(offer)}
-                                />
-                              ))}
-                            </div>
-                          </>
-                        )}
+                      <motion.div variants={container} initial="hidden" animate="show" className="grid grid-cols-2 lg:grid-cols-[repeat(auto-fill,minmax(156px,1fr))] gap-3 lg:gap-4">
+                        {customOffers.map(offer => (
+                          <FeaturedOfferCard
+                            key={offer._id}
+                            offer={offer}
+                            onClick={() => setSelectedOffer(offer)}
+                          />
+                        ))}
                       </motion.div>
                     )}
                   </>
@@ -352,23 +322,6 @@ const Earn = () => {
               offer={selectedOffer}
               token={token}
               onClose={() => setSelectedOffer(null)}
-              onSubmitted={() => { }}
-            />
-          )}
-        </AnimatePresence>
-
-        <AnimatePresence>
-          {selectedDirectOffer && (
-            <DirectOfferModal
-              offer={selectedDirectOffer}
-              token={token}
-              onClose={() => setSelectedDirectOffer(null)}
-              onClicked={(offerId) => {
-                // Update the local click status so the card reflects 'In Progress'
-                setDirectOffers(prev =>
-                  prev.map(o => o._id === offerId ? { ...o, clickStatus: 'clicked' } : o)
-                );
-              }}
             />
           )}
         </AnimatePresence>

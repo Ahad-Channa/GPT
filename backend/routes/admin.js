@@ -7,6 +7,7 @@ const PromoCode = require('../models/PromoCode');
 const AdminLog = require('../models/AdminLog');
 const CustomOffer = require('../models/CustomOffer');
 const CustomOfferSubmission = require('../models/CustomOfferSubmission');
+const GoodpickOffer = require('../models/GoodpickOffer');
 const DirectOffer = require('../models/DirectOffer');
 const ClickLog = require('../models/ClickLog');
 const FraudLog = require('../models/FraudLog');
@@ -564,13 +565,14 @@ router.get('/custom-offers', requirePermission('manage_offerwalls'), async (req,
 
 router.post('/custom-offers', requirePermission('manage_offerwalls'), async (req, res) => {
   try {
-    const { title, description, rewardAmount, externalLink, trackingType, expirationDate, icon, coverImage, requirements, platforms } = req.body;
+    const { title, description, rewardAmount, externalLink, trackingType, expirationDate, icon, coverImage, requirements, requirementType, platforms } = req.body;
     const newOffer = new CustomOffer({
       title, description, rewardAmount, externalLink, trackingType,
       expirationDate: expirationDate || null,
       icon: icon || null,
       coverImage: coverImage || null,
       requirements: Array.isArray(requirements) ? requirements : [],
+      requirementType: requirementType === 'paragraph' ? 'paragraph' : 'bullets',
       platforms: platforms || { desktop: true, android: true, ios: true },
     });
     await newOffer.save();
@@ -601,6 +603,65 @@ router.delete('/custom-offers/:id', requirePermission('manage_offerwalls'), asyn
     res.json({ success: true });
   } catch (error) {
     res.status(500).json({ success: false, error: 'Failed to delete custom offer' });
+  }
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// GOODPICKS OFFERS (Custom In-House Goodpicks Offerwall Offers)
+// ─────────────────────────────────────────────────────────────────────────────
+
+router.get('/goodpicks-offers', requirePermission('manage_offerwalls'), async (req, res) => {
+  try {
+    const offers = await GoodpickOffer.find().sort({ createdAt: -1 }).lean();
+    res.json({ success: true, offers });
+  } catch (error) {
+    res.status(500).json({ success: false, error: 'Failed to fetch Goodpicks offers' });
+  }
+});
+
+router.post('/goodpicks-offers', requirePermission('manage_offerwalls'), async (req, res) => {
+  try {
+    const { title, description, rewardAmount, externalLink, expirationDate, icon, coverImage, requirements, requirementType, platforms } = req.body;
+    const newOffer = new GoodpickOffer({
+      title,
+      description,
+      rewardAmount,
+      externalLink,
+      expirationDate: expirationDate || null,
+      icon: icon || null,
+      coverImage: coverImage || null,
+      requirements: Array.isArray(requirements) ? requirements : [],
+      requirementType: requirementType === 'paragraph' ? 'paragraph' : 'bullets',
+      platforms: platforms || { desktop: true, android: true, ios: true },
+    });
+    await newOffer.save();
+    await createLog(req.dbUser._id, 'CREATE_GOODPICK_OFFER', null, `Created Goodpicks offer: ${title}`);
+    res.status(201).json({ success: true, offer: newOffer });
+  } catch (error) {
+    res.status(500).json({ success: false, error: 'Failed to create Goodpicks offer' });
+  }
+});
+
+router.put('/goodpicks-offers/:id', requirePermission('manage_offerwalls'), async (req, res) => {
+  try {
+    const upd = { ...req.body };
+    const offer = await GoodpickOffer.findByIdAndUpdate(req.params.id, upd, { new: true });
+    if (!offer) return res.status(404).json({ success: false, error: 'Offer not found' });
+    await createLog(req.dbUser._id, 'UPDATE_GOODPICK_OFFER', null, `Updated Goodpicks offer: ${offer.title} (Active: ${offer.isActive})`);
+    res.json({ success: true, offer });
+  } catch (error) {
+    res.status(500).json({ success: false, error: 'Failed to update Goodpicks offer' });
+  }
+});
+
+router.delete('/goodpicks-offers/:id', requirePermission('manage_offerwalls'), async (req, res) => {
+  try {
+    const offer = await GoodpickOffer.findByIdAndDelete(req.params.id);
+    if (!offer) return res.status(404).json({ success: false, error: 'Offer not found' });
+    await createLog(req.dbUser._id, 'DELETE_GOODPICK_OFFER', null, `Deleted Goodpicks offer: ${offer.title}`);
+    res.json({ success: true });
+  } catch (error) {
+    res.status(500).json({ success: false, error: 'Failed to delete Goodpicks offer' });
   }
 });
 
@@ -2147,7 +2208,7 @@ router.post('/direct-offers', requirePermission('manage_offerwalls'), async (req
     const {
       title, description, rewardAmount, advertiserPayoutAmount,
       advertiserUrl, isActive, expirationDate, icon, coverImage,
-      platforms, requirements, postbackMapping,
+      platforms, requirements, requirementType, postbackMapping,
     } = req.body;
 
     if (!title || !description || !rewardAmount || !advertiserUrl) {
@@ -2166,6 +2227,7 @@ router.post('/direct-offers', requirePermission('manage_offerwalls'), async (req
       coverImage: coverImage || null,
       platforms: platforms || { desktop: true, android: true, ios: true },
       requirements: requirements || [],
+      requirementType: requirementType === 'paragraph' ? 'paragraph' : 'bullets',
       postbackMapping: postbackMapping || {},
       // postbackSecretKey is auto-generated by the model default
     });
@@ -2184,7 +2246,7 @@ router.put('/direct-offers/:id', requirePermission('manage_offerwalls'), async (
     const {
       title, description, rewardAmount, advertiserPayoutAmount,
       advertiserUrl, isActive, expirationDate, icon, coverImage,
-      platforms, requirements, postbackMapping,
+      platforms, requirements, requirementType, postbackMapping,
     } = req.body;
 
     const offer = await DirectOffer.findByIdAndUpdate(
@@ -2201,6 +2263,7 @@ router.put('/direct-offers/:id', requirePermission('manage_offerwalls'), async (
         ...(coverImage !== undefined && { coverImage }),
         ...(platforms !== undefined && { platforms }),
         ...(requirements !== undefined && { requirements }),
+        ...(requirementType !== undefined && { requirementType: requirementType === 'paragraph' ? 'paragraph' : 'bullets' }),
         ...(postbackMapping !== undefined && { postbackMapping }),
       },
       { new: true }

@@ -44,6 +44,7 @@ const CreateOfferModal = ({ onClose, onCreated, token }) => {
     icon: '',
     coverImage: '',
     requirements: '',
+    requirementType: 'bullets',
     platforms: { desktop: false, android: false, ios: false },
   });
   const [loading, setLoading] = useState(false);
@@ -63,7 +64,10 @@ const CreateOfferModal = ({ onClose, onCreated, token }) => {
           ...form,
           rewardAmount: Number(form.rewardAmount),
           expirationDate: form.expirationDate || null,
-          requirements: form.requirements.split('\n').map(r => r.trim()).filter(Boolean),
+          requirements: form.requirementType === 'paragraph'
+            ? [form.requirements.trim()].filter(Boolean)
+            : form.requirements.split('\n').map(r => r.trim()).filter(Boolean),
+          requirementType: form.requirementType,
           platforms: form.platforms,
         }),
       });
@@ -133,16 +137,54 @@ const CreateOfferModal = ({ onClose, onCreated, token }) => {
             />
           </div>
 
-          {/* Requirements */}
+          {/* Requirement Style Toggle & Input */}
           <div>
-            <label className="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Requirements (one per line)</label>
+            <div className="flex items-center justify-between mb-1.5">
+              <label className="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
+                Requirements Format
+              </label>
+              <div className="flex items-center gap-1 bg-slate-900 p-0.5 rounded-lg border border-white/[0.08]">
+                <button
+                  type="button"
+                  onClick={() => setForm(f => ({ ...f, requirementType: 'bullets' }))}
+                  className={`px-2.5 py-1 rounded-md text-xs font-semibold transition-all ${
+                    form.requirementType === 'bullets'
+                      ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
+                      : 'text-slate-400 hover:text-white'
+                  }`}
+                >
+                  Bullet Points
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setForm(f => ({ ...f, requirementType: 'paragraph' }))}
+                  className={`px-2.5 py-1 rounded-md text-xs font-semibold transition-all ${
+                    form.requirementType === 'paragraph'
+                      ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
+                      : 'text-slate-400 hover:text-white'
+                  }`}
+                >
+                  Paragraph
+                </button>
+              </div>
+            </div>
+
             <textarea
               value={form.requirements}
               onChange={set('requirements')}
-              placeholder="e.g. Sign up with a valid email and phone number&#10;Verify your identity&#10;New users only"
-              rows={3}
+              placeholder={
+                form.requirementType === 'paragraph'
+                  ? "e.g. Register and deposit €50, then wager €100."
+                  : "e.g. Register → receive 10 coins\nDeposit €50 → receive 50,000 coins\nGenerate €200 in revenue → receive 10,000 coins"
+              }
+              rows={form.requirementType === 'paragraph' ? 2 : 3}
               className="w-full bg-slate-900 border border-white/[0.08] rounded-xl px-3 py-2 text-white text-sm placeholder-slate-600 focus:outline-none focus:border-amber-500/40 focus:ring-1 focus:ring-amber-500/20 resize-none"
             />
+            <span className="text-[11px] text-slate-500 block mt-1">
+              {form.requirementType === 'paragraph'
+                ? "Displays as a single clean paragraph box."
+                : "Enter each step on a new line to display as a step-by-step checklist."}
+            </span>
           </div>
 
           {/* Icon Picker */}

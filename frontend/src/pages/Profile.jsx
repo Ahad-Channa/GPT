@@ -1784,50 +1784,8 @@ const TabBtn = ({ active, onClick, icon, label }) => (
   </button>
 );
 
-// ── Clicked Offer Row (inline proof upload per offer)
-const ClickedOfferRow = ({ offer, index = 0, token: initialToken, onRefresh }) => {
-  const { currentUser } = useAuth();
-  const [open, setOpen] = useState(false);
-  const [proof, setProof] = useState('');
-  const [proofImage, setProofImage] = useState(null);
-  const [submitting, setSubmitting] = useState(false);
-  const [result, setResult] = useState(null);
-
-  const isRejected = offer.submissionStatus === 'rejected';
-
-  const handleImage = (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onloadend = () => setProofImage(reader.result);
-    reader.readAsDataURL(file);
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setSubmitting(true);
-    try {
-      const freshToken = currentUser ? await currentUser.getIdToken() : initialToken;
-      const res = await fetch(`${API}/custom-offers/${offer._id}/submit`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${freshToken}` },
-        body: JSON.stringify({ proofText: proof, proofImage }),
-      });
-      const data = await res.json();
-      if (data.success) {
-        setResult({ type: 'success', message: 'Proof submitted! Awaiting admin review.' });
-        setOpen(false);
-        onRefresh();
-      } else {
-        setResult({ type: 'error', message: data.error || 'Submission failed.' });
-      }
-    } catch {
-      setResult({ type: 'error', message: 'Network error. Please try again.' });
-    } finally {
-      setSubmitting(false);
-    }
-  };
-
+// ── Clicked Offer Row (Clean table row with no proof buttons)
+const ClickedOfferRow = ({ offer, index = 0 }) => {
   return (
     <div
       style={{
@@ -1837,142 +1795,53 @@ const ClickedOfferRow = ({ offer, index = 0, token: initialToken, onRefresh }) =
         borderRadius: index % 2 === 0 ? '10px' : '0px',
         backgroundColor: index % 2 === 0 ? 'rgba(249, 247, 241, 1)' : 'transparent',
       }}
-      className="px-6 py-3 flex flex-col justify-center gap-4"
+      className="px-6 py-3.5 grid grid-cols-[1fr_180px_160px_140px] gap-4 items-center"
     >
-      {/* Table Row Grid */}
-      <div className="grid grid-cols-[1fr_130px_110px_140px_150px] gap-4 items-center">
-        {/* Offers Title */}
-        <span
-          style={{ fontFamily: 'Poppins, sans-serif', fontWeight: 500, fontSize: '16px', lineHeight: '26px' }}
-          className="text-[#1e293b] leading-tight break-words"
-          title={offer.title}
-        >
-          {offer.title}
-        </span>
+      {/* Offers Title */}
+      <span
+        style={{ fontFamily: 'Poppins, sans-serif', fontWeight: 500, fontSize: '16px', lineHeight: '26px' }}
+        className="text-[#1e293b] leading-tight break-words"
+        title={offer.title}
+      >
+        {offer.title}
+      </span>
 
-        {/* Started On */}
-        <span
-          style={{ fontFamily: 'Poppins, sans-serif', fontWeight: 500, fontSize: '16px', lineHeight: '26px', whiteSpace: 'nowrap' }}
-          className="text-[#1e293b] whitespace-nowrap"
-        >
-          {offer.createdAt ? new Date(offer.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'N/A'}
-        </span>
+      {/* Started On */}
+      <span
+        style={{ fontFamily: 'Poppins, sans-serif', fontWeight: 500, fontSize: '16px', lineHeight: '26px', whiteSpace: 'nowrap' }}
+        className="text-[#1e293b] whitespace-nowrap"
+      >
+        {offer.createdAt ? new Date(offer.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'N/A'}
+      </span>
 
-        {/* Reward */}
-        <div
-          style={{ fontFamily: 'Poppins, sans-serif', fontWeight: 600, fontSize: '16px', color: 'rgba(190, 146, 0, 1)', whiteSpace: 'nowrap' }}
-          className="flex items-center gap-1.5 whitespace-nowrap"
-        >
-          <img src="/coins/profilecoin1.png" alt="Coin" className="w-[18px] h-[18px] shrink-0 object-contain" />
-          <span>{(offer.rewardAmount || 0).toLocaleString('de-DE')}</span>
-        </div>
-
-        {/* Status */}
-        <div className="flex justify-center">
-          <span
-            style={{
-              fontFamily: 'Poppins, sans-serif',
-              fontWeight: 500,
-              fontSize: '16px',
-              lineHeight: '26px',
-              borderRadius: '40px',
-              padding: '3px 18px',
-              whiteSpace: 'nowrap',
-              backgroundColor: isRejected ? 'rgba(224, 30, 33, 1)' : 'rgba(36, 50, 77, 0.1)',
-              color: isRejected ? '#ffffff' : 'rgba(36, 50, 77, 1)',
-            }}
-            className="inline-flex items-center justify-center whitespace-nowrap"
-          >
-            {isRejected ? 'Rejected' : 'In Progress'}
-          </span>
-        </div>
-
-        {/* Proof Action */}
-        <div className="flex justify-start">
-          <button
-            onClick={() => { setOpen(o => !o); setResult(null); }}
-            style={{
-              fontFamily: 'Poppins, sans-serif',
-              fontWeight: 500,
-              fontSize: '16px',
-              lineHeight: '26px',
-              borderRadius: '40px',
-              padding: '3px 18px',
-              whiteSpace: 'nowrap',
-            }}
-            className="bg-[#1e293b] hover:bg-[#0f172a] text-white transition-all shadow-sm cursor-pointer inline-flex items-center justify-center whitespace-nowrap"
-          >
-            {isRejected ? 'Resubmit' : 'Submit Proof'}
-          </button>
-        </div>
+      {/* Reward */}
+      <div
+        style={{ fontFamily: 'Poppins, sans-serif', fontWeight: 600, fontSize: '16px', color: 'rgba(190, 146, 0, 1)', whiteSpace: 'nowrap' }}
+        className="flex items-center gap-1.5 whitespace-nowrap"
+      >
+        <img src="/coins/profilecoin1.png" alt="Coin" className="w-[18px] h-[18px] shrink-0 object-contain" />
+        <span>{(offer.rewardAmount || 0).toLocaleString('de-DE')}</span>
       </div>
 
-      {/* Result banner */}
-      {result && (
-        <div className={`p-3 rounded-xl border text-sm font-semibold ${result.type === 'success'
-          ? 'bg-emerald-50 border-emerald-200 text-emerald-700'
-          : 'bg-rose-50 border-rose-200 text-rose-700'
-          }`}>
-          {result.type === 'success' && <FiCheckCircle className="inline mr-2 text-base" />}
-          <span>{result.message}</span>
-        </div>
-      )}
-
-      {/* Inline proof form (expandable) */}
-      <AnimatePresence>
-        {open && (
-          <motion.form
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
-            onSubmit={handleSubmit}
-            className="overflow-hidden mt-1"
-          >
-            <div className="bg-white border border-slate-200 rounded-2xl p-5 space-y-3 shadow-sm">
-              <textarea
-                value={proof}
-                onChange={e => setProof(e.target.value)}
-                placeholder="Describe your completion (transaction ID, username, steps taken…)"
-                rows={3}
-                className="w-full bg-[#f8fafc] border border-slate-200 rounded-xl px-4 py-3 text-slate-800 text-sm placeholder-slate-400 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/20 resize-none"
-              />
-
-              {/* Image upload */}
-              <label className="cursor-pointer flex items-center gap-2 py-2.5 px-4 border border-dashed border-slate-300 rounded-xl bg-[#f8fafc] hover:bg-slate-100 transition-colors text-xs font-semibold text-slate-600">
-                <FiSend className="text-emerald-500 text-base" />
-                <span>
-                  {proofImage ? '✓ Screenshot selected — click to change' : 'Attach screenshot (optional)'}
-                </span>
-                <input type="file" accept="image/*" onChange={handleImage} className="hidden" />
-              </label>
-
-              {proofImage && (
-                <div className="rounded-xl overflow-hidden border border-slate-200 max-w-sm mx-auto bg-slate-50 p-2">
-                  <img src={proofImage} alt="Proof preview" className="max-h-32 object-contain mx-auto" />
-                </div>
-              )}
-
-              <div className="flex gap-2 pt-1">
-                <button
-                  type="submit"
-                  disabled={submitting || (!proof.trim() && !proofImage)}
-                  className="flex items-center justify-center gap-1.5 h-9 px-5 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white rounded-xl font-bold text-xs transition-all shadow-sm"
-                >
-                  {submitting ? <FiLoader className="animate-spin text-sm" /> : <FiSend className="text-sm" />}
-                  <span>{submitting ? 'Submitting…' : 'Send Proof'}</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setOpen(false)}
-                  className="h-9 px-4 rounded-xl border border-slate-200 text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors font-bold text-xs"
-                >
-                  Cancel
-                </button>
-              </div>
-            </div>
-          </motion.form>
-        )}
-      </AnimatePresence>
+      {/* Status */}
+      <div className="flex justify-center">
+        <span
+          style={{
+            fontFamily: 'Poppins, sans-serif',
+            fontWeight: 500,
+            fontSize: '16px',
+            lineHeight: '26px',
+            borderRadius: '40px',
+            padding: '3px 18px',
+            whiteSpace: 'nowrap',
+            backgroundColor: 'rgba(36, 50, 77, 0.1)',
+            color: 'rgba(36, 50, 77, 1)',
+          }}
+          className="inline-flex items-center justify-center whitespace-nowrap"
+        >
+          In Progress
+        </span>
+      </div>
     </div>
   );
 };
@@ -4000,13 +3869,12 @@ const Profile = () => {
                                 color: 'rgba(14, 15, 12, 0.6)',
                                 textTransform: 'uppercase',
                               }}
-                              className="grid grid-cols-[1fr_130px_110px_140px_150px] gap-4 px-6 py-2"
+                              className="grid grid-cols-[1fr_180px_160px_140px] gap-4 px-6 py-2"
                             >
                               <div>Offers</div>
                               <div>Started On</div>
                               <div>Reward</div>
                               <div className="text-center">Status</div>
-                              <div>Proof</div>
                             </div>
                             <div className="flex flex-col">
                               {paginatedStarted.map((offer, idx) => (
@@ -4014,8 +3882,6 @@ const Profile = () => {
                                   key={offer._id}
                                   offer={offer}
                                   index={idx}
-                                  token={token}
-                                  onRefresh={fetchOffersData}
                                 />
                               ))}
                             </div>

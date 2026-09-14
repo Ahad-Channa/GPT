@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 
-const customOfferSchema = new mongoose.Schema(
+const goodpickOfferSchema = new mongoose.Schema(
   {
     title: { type: String, required: true },
     description: { type: String, required: true },
@@ -9,12 +9,7 @@ const customOfferSchema = new mongoose.Schema(
     isActive: { type: Boolean, default: true },
     expirationDate: { type: Date, default: null },
     icon: { type: String, default: null },
-    coverImage: { type: String, default: null }, // URL displayed as card cover image
-    trackingType: { 
-      type: String, 
-      enum: ['click', 'manual_approval'], 
-      default: 'manual_approval' 
-    },
+    coverImage: { type: String, default: null },
     requirements: [{ type: String }],
     requirementType: { 
       type: String, 
@@ -30,4 +25,4 @@ const customOfferSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-module.exports = mongoose.model('CustomOffer', customOfferSchema);
+module.exports = mongoose.model('GoodpickOffer', goodpickOfferSchema);

@@ -25,11 +25,11 @@ export const getProviderLogo = (id) => {
   const lowerId = id?.toLowerCase()?.trim();
 
   const localLogos = {
-    goodpicks: '/coins/GP.png',
-    goodpick: '/coins/GP.png',
-    'good-picks': '/coins/GP.png',
-    'good picks': '/coins/GP.png',
-    gp: '/coins/GP.png',
+    goodpicks: '/coins/image copy 6.png',
+    goodpick: '/coins/image copy 6.png',
+    'good-picks': '/coins/image copy 6.png',
+    'good picks': '/coins/image copy 6.png',
+    gp: '/coins/image copy 6.png',
     lootably: '/coins/LP.png',
     lp: '/coins/LP.png',
     primeearn: '/coins/PS.png',
@@ -306,73 +306,30 @@ export const FeaturedOfferCard = ({ offer, onClick }) => {
 };
 
 export const FeaturedOfferModal = ({ offer, token, onClose, onSubmitted }) => {
-  const [submitting, setSubmitting] = useState(false);
-  const [submissionStatus, setSubmissionStatus] = useState(offer.submissionStatus);
-  const [result, setResult] = useState(null);
-  const [showProofForm, setShowProofForm] = useState(false);
-  const [proof, setProof] = useState('');
-  const [proofImage, setProofImage] = useState(null);
-
+  const [loading, setLoading] = useState(false);
   const isExpired = offer.expirationDate && new Date(offer.expirationDate) < new Date();
-  const alreadySubmitted = submissionStatus === 'pending' || submissionStatus === 'approved';
-  const isRejected = submissionStatus === 'rejected';
-  const isStarted = submissionStatus === 'started' || alreadySubmitted || isRejected;
-
-  const handleImageUpload = (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onloadend = () => setProofImage(reader.result);
-    reader.readAsDataURL(file);
-  };
+  const rewardVal = offer.rewardAmount ?? offer.points ?? offer.reward ?? 0;
+  const coverImgSrc = offer.coverImage || (isIconUrl(offer.icon) ? offer.icon : null);
+  const emojiIcon = !coverImgSrc && offer.icon ? offer.icon : '🎮';
 
   const handleStartOffer = async () => {
-    if (isStarted) {
-      window.open(offer.externalLink, '_blank', 'noopener,noreferrer');
-      return;
-    }
+    if (isExpired) return;
+    setLoading(true);
     try {
-      const res = await fetch(`${API}/custom-offers/${offer._id}/start`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }
-      });
-      const data = await res.json();
-      if (data.success) {
-        setSubmissionStatus('started');
-        if (offer.externalLink) {
-          window.open(offer.externalLink, '_blank', 'noopener,noreferrer');
-        }
-      } else {
-        setResult({ type: 'error', message: data.error || 'Failed to start offer.' });
+      if (token) {
+        await fetch(`${API}/custom-offers/${offer._id}/start`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }
+        }).catch(() => {});
       }
+      if (offer.externalLink) {
+        window.open(offer.externalLink, '_blank', 'noopener,noreferrer');
+      }
+      if (onSubmitted) onSubmitted();
     } catch (err) {
       console.error('Failed to start offer', err);
-      setResult({ type: 'error', message: 'Network error. Please try again.' });
-    }
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setSubmitting(true);
-    try {
-      const res = await fetch(`${API}/custom-offers/${offer._id}/submit`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ proofText: proof, proofImage }),
-      });
-      const data = await res.json();
-      if (data.success) {
-        setSubmissionStatus('pending');
-        setResult({ type: 'success', message: 'Proof submitted! Awaiting admin review.' });
-        setShowProofForm(false);
-        if (onSubmitted) onSubmitted();
-      } else {
-        setResult({ type: 'error', message: data.error || 'Submission failed.' });
-      }
-    } catch {
-      setResult({ type: 'error', message: 'Network error. Please try again.' });
     } finally {
-      setSubmitting(false);
+      setLoading(false);
     }
   };
 
@@ -381,328 +338,575 @@ export const FeaturedOfferModal = ({ offer, token, onClose, onSubmitted }) => {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 z-[99999] flex items-center justify-center p-4 bg-black/75 backdrop-blur-md"
+      className="fixed inset-0 z-[99999] flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-sm"
       onClick={onClose}
     >
       <motion.div
-        initial={{ scale: 0.95, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        exit={{ scale: 0.95, opacity: 0 }}
+        initial={{ scale: 0.95, opacity: 0, y: 10 }}
+        animate={{ scale: 1, opacity: 1, y: 0 }}
+        exit={{ scale: 0.95, opacity: 0, y: 10 }}
         onClick={(e) => e.stopPropagation()}
-        className="relative flex flex-col gap-3 lg:gap-4 p-3 lg:p-4 rounded-[20px] bg-[#242424] w-[95%] lg:w-[500px] h-auto lg:h-auto max-h-[85vh] lg:max-h-[90vh] box-border overflow-hidden"
+        style={{
+          width: '626px',
+          maxWidth: '96vw',
+          height: '687px',
+          maxHeight: '94vh',
+          background: '#FFFFFF',
+          borderRadius: '25px',
+          padding: '8px',
+          boxSizing: 'border-box',
+          fontFamily: '"Poppins", sans-serif',
+          color: '#0E0F0C',
+          opacity: 1,
+          transform: 'rotate(0deg)',
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'space-between',
+          gap: '10px',
+        }}
+        className="relative shadow-2xl overflow-y-auto hide-scrollbar"
       >
-        {/* Close Button - Moved out of the image container to sit at top right of modal */}
-        {!showProofForm && (
+        {/* Top Header Card */}
+        <div
+          style={{
+            width: '100%',
+            maxWidth: '610px',
+            height: '197px',
+            background: 'rgba(248, 245, 239, 1)',
+            borderRadius: '16px',
+            padding: '16px 20px',
+            boxSizing: 'border-box',
+            position: 'relative',
+            opacity: 1,
+            transform: 'rotate(0deg)',
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'space-between',
+          }}
+          className="shrink-0"
+        >
+          {/* Top Close Button */}
           <button
             onClick={onClose}
-            className="absolute top-[12px] right-[12px] lg:top-[16px] lg:right-[16px] w-[26px] h-[26px] lg:w-[36px] lg:h-[36px] rounded-[8px] lg:rounded-[10px] bg-white/10 text-white flex items-center justify-center cursor-pointer z-10 border-none"
+            style={{
+              width: '24px',
+              height: '24px',
+              background: '#000000',
+              borderRadius: '50%',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              border: 'none',
+              cursor: 'pointer',
+              position: 'absolute',
+              top: '14px',
+              right: '14px',
+              zIndex: 20,
+            }}
+            className="text-white hover:opacity-80 transition-opacity"
           >
-            <FiX className="w-[14px] h-[14px] lg:w-[16px] lg:h-[16px]" />
+            <FiX size={13} strokeWidth={2.5} />
           </button>
-        )}
 
-        {/* Header Section */}
-        {/* Header Section */}
-        {!showProofForm ? (
-          <div className="flex flex-row gap-3 lg:gap-4 shrink-0">
-            {/* Modal Header / Image */}
-            <div className="w-[80px] h-[80px] lg:w-[159px] lg:h-[159px] rounded-[8px] lg:rounded-[10px] bg-white/5 flex items-center justify-center relative shrink-0 overflow-hidden">
-              {(() => {
-                const coverImgSrc = offer.coverImage || (isIconUrl(offer.icon) ? offer.icon : null);
-                const emojiIcon = !coverImgSrc && offer.icon ? offer.icon : '🏆';
-                if (coverImgSrc) {
-                  return <img src={coverImgSrc} alt={offer.title} className="w-full h-full object-cover rounded-[10px]" />;
-                }
-                return <span className="text-[36px] lg:text-[48px] select-none" style={{ filter: 'drop-shadow(0px 4px 10px rgba(0,0,0,0.5))' }}>{emojiIcon}</span>;
-              })()}
+          {/* Top Section: Icon + Title + Description */}
+          <div className="flex items-center gap-4 pr-8">
+            <div
+              style={{
+                width: '100px',
+                height: '100px',
+                borderRadius: '11px',
+                opacity: 1,
+                transform: 'rotate(0deg)',
+              }}
+              className="bg-[#EDE8DE] overflow-hidden flex-shrink-0 flex items-center justify-center shadow-sm"
+            >
+              {coverImgSrc ? (
+                <img src={coverImgSrc} alt={offer.title} className="w-full h-full object-cover" />
+              ) : (
+                <span className="text-4xl">{emojiIcon}</span>
+              )}
             </div>
-
-            {/* Title, Description, and Coin Pill */}
-            <div className="flex-1 min-h-0 lg:min-h-[108px] h-auto flex flex-col gap-1 lg:gap-4 shrink opacity-100 min-w-0 pr-4 lg:pr-0">
-              {/* Heading and Description Wrapper */}
-              <div className="w-full h-auto flex flex-col gap-1 lg:gap-[6px] opacity-100">
-                <h2
-                  className="w-full h-auto text-[18px] lg:text-[26px] break-words"
-                  style={{
-                    fontFamily: '"Barlow Condensed", sans-serif',
-                    fontWeight: 600,
-                    color: 'rgba(255, 255, 255, 1)',
-                    margin: 0,
-                    lineHeight: '1.1'
-                  }}
-                >
-                  {offer.title}
-                </h2>
-                <div
-                  className="w-full h-auto text-[12px] lg:text-[16px] break-words text-justify"
-                  style={{
-                    fontFamily: '"Barlow Condensed", sans-serif',
-                    fontWeight: 500,
-                    color: 'rgba(136, 136, 136, 1)',
-                    lineHeight: '1.2'
-                  }}
-                >
-                  {offer.description.split('\n').map((line, i) => <p key={i} style={{ margin: 0, padding: 0 }}>{line}</p>)}
-                </div>
-              </div>
-            </div>
-          </div>
-        ) : (
-          <div className="w-full flex flex-row items-center gap-3 shrink-0 opacity-100">
-            {/* Small Image */}
-            <div className="w-[70px] h-[70px] lg:w-[99px] lg:h-[66px] rounded-[8px] overflow-hidden shrink-0 bg-white/5 flex items-center justify-center">
-              {(() => {
-                const coverImgSrc = offer.coverImage || (isIconUrl(offer.icon) ? offer.icon : null);
-                const emojiIcon = !coverImgSrc && offer.icon ? offer.icon : '🏆';
-                if (coverImgSrc) {
-                  return <img src={coverImgSrc} alt={offer.title} className="w-full h-full object-cover" />;
-                }
-                return <div className="w-full h-full flex items-center justify-center text-2xl select-none">{emojiIcon}</div>;
-              })()}
-            </div>
-            {/* Title and Description */}
-            <div className="flex-1 flex flex-col gap-1 lg:gap-2 opacity-100 min-w-0 pr-2 lg:pr-0">
+            <div
+              style={{
+                width: '345px',
+                maxWidth: '100%',
+                opacity: 1,
+                transform: 'rotate(0deg)',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'center',
+                gap: '8px',
+              }}
+              className="min-w-0"
+            >
               <h2
-                className="w-full text-[18px] lg:text-[28px] text-white font-semibold leading-none truncate"
-                style={{ fontFamily: '"Barlow Condensed", sans-serif', margin: 0 }}
+                style={{
+                  width: '345px',
+                  maxWidth: '100%',
+                  fontFamily: '"Bricolage Grotesque", sans-serif',
+                  fontWeight: 700,
+                  fontSize: '20px',
+                  lineHeight: '27px',
+                  letterSpacing: '0%',
+                  color: '#000000',
+                  opacity: 1,
+                  transform: 'rotate(0deg)',
+                  margin: 0,
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap',
+                }}
               >
                 {offer.title}
               </h2>
-              <div
-                className="w-full text-[12px] lg:text-[14px] text-[#888888] leading-tight break-words"
-                style={{ fontFamily: '"Barlow Condensed", sans-serif' }}
+              <p
+                style={{
+                  width: '345px',
+                  maxWidth: '100%',
+                  fontFamily: '"Poppins", sans-serif',
+                  fontWeight: 500,
+                  fontSize: '14px',
+                  lineHeight: '20px',
+                  letterSpacing: '0%',
+                  color: '#000000',
+                  opacity: 1,
+                  transform: 'rotate(0deg)',
+                  margin: 0,
+                  display: '-webkit-box',
+                  WebkitLineClamp: 2,
+                  WebkitBoxOrient: 'vertical',
+                  overflow: 'hidden',
+                }}
               >
-                <p style={{ margin: 0, padding: 0 }}>Follow the steps below to submit your proof of completion for review.</p>
-              </div>
+                {offer.description || 'Complete this offer by sending it to your Android device from here'}
+              </p>
             </div>
-            {/* Inline Close Button for Proof Form */}
-            <button
-              onClick={onClose}
-              className="w-6 h-auto self-start mt-1 lg:mt-0 lg:h-[66px] lg:self-center bg-transparent opacity-100 border-none text-white flex items-center justify-center cursor-pointer shrink-0 p-0"
-            >
-              <FiX className="w-[16px] h-[16px] lg:w-[20px] lg:h-[20px]" />
-            </button>
           </div>
-        )}
 
-        {/* Modal Body (Scrollable) */}
-        <div className="hide-scrollbar" style={{ flex: 1, overflowX: 'hidden', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '16px', paddingRight: '4px' }}>
+          {/* Divider */}
+          <div
+            style={{
+              width: '100%',
+              maxWidth: '575px',
+              height: '0px',
+              opacity: 0.1,
+              borderTop: '1px solid rgba(0, 0, 0, 1)',
+              transform: 'rotate(0deg)',
+            }}
+          />
 
-          {showProofForm ? (
-            <ProofUploadView
-              offer={offer}
-              token={token}
-              API={API}
-              onSubmitted={() => {
-                setSubmissionStatus('pending');
-                setShowProofForm(false);
-                if (onSubmitted) onSubmitted();
-              }}
-              onCancel={() => setShowProofForm(false)}
-              setResult={setResult}
-            />
-          ) : (
-            <>
-              {/* Status Markers */}
-              {(isExpired || alreadySubmitted || isRejected) && (
-                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                  {isExpired && (
-                    <span style={{ padding: '4px 10px', borderRadius: '16px', fontSize: '12px', fontWeight: 'bold', background: 'rgba(244, 63, 94, 0.15)', color: '#fb7185', border: '1px solid rgba(244, 63, 94, 0.2)' }}>
-                      Expired
-                    </span>
-                  )}
-                  {alreadySubmitted && (
-                    <span
-                      className="px-[10px] py-[4px] rounded-[16px] text-[12px] font-bold border bg-white/10 text-white border-white/10"
-                      style={{ fontFamily: '"Barlow Condensed", sans-serif' }}
-                    >
-                      {submissionStatus === 'approved' ? '✓ Approved' : 'Submitted'}
-                    </span>
-                  )}
-                  {isRejected && !alreadySubmitted && (
-                    <div style={{ width: '100%', background: 'rgba(244, 63, 94, 0.1)', border: 'none', padding: '12px', borderRadius: '12px', color: '#fb7185', fontSize: '13px' }}>
-                      <div style={{ fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' }}><FiInbox /> Submission Rejected</div>
-                      {offer.adminNote && <div style={{ fontStyle: 'italic', opacity: 0.8 }}>Admin Note: "{offer.adminNote}"</div>}
-                    </div>
-                  )}
-                </div>
+          {/* Platform & Reward Bar */}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              {offer.platforms?.ios && (
+                <FaApple
+                  style={{
+                    width: '21px',
+                    height: '21px',
+                    opacity: 1,
+                    transform: 'rotate(0deg)',
+                    color: '#000000',
+                  }}
+                />
               )}
-
-              {/* Requirements Section ALWAYS VISIBLE AND STICKY */}
-              <div className="w-full flex flex-col gap-2 shrink-0 opacity-100">
-                <div className="flex justify-between items-center w-full lg:sticky lg:top-[-1px] lg:z-20 lg:bg-[#242424] lg:pb-2 lg:pt-1">
-                  {offer.requirements && offer.requirements.length > 0 ? (
-                    <h4
-                      className="text-[14px] lg:text-[16px] text-white font-bold leading-normal"
-                      style={{ fontFamily: '"Barlow Condensed", sans-serif', margin: 0 }}
-                    >
-                      Requirements
-                    </h4>
-                  ) : (
-                    <div></div>
-                  )}
-                  <div className="flex items-center gap-[3px] h-[20px] lg:h-[26px]">
-                    <img src="/coins/Coin.png" alt="coin" className="w-[20px] h-[20px] lg:w-[26px] lg:h-[26px] object-contain" />
-                    <span
-                      className="text-[18px] lg:text-[22px] inline-flex items-center"
-                      style={{
-                        fontFamily: '"Barlow Condensed", sans-serif',
-                        fontWeight: 700,
-                        background: 'linear-gradient(180deg, #FEDF77 0%, #FCB91E 100%)',
-                        WebkitBackgroundClip: 'text',
-                        WebkitTextFillColor: 'transparent',
-                        backgroundClip: 'text',
-                        color: 'transparent',
-                        whiteSpace: 'nowrap'
-                      }}
-                    >
-                      {(offer.rewardAmount || 0).toLocaleString('de-DE')}
-                    </span>
-                  </div>
-                </div>
-                {offer.requirements && offer.requirements.length > 0 && (
-
-                  <div
-                    className="w-full box-border h-auto shrink-0"
-                    style={{
-                      borderRadius: '12px', padding: '12px', display: 'flex', flexDirection: 'column', gap: '8px',
-                      background: 'rgba(0, 0, 0, 0.36)', backdropFilter: 'blur(44px)', WebkitBackdropFilter: 'blur(44px)',
-                      opacity: 1
-                    }}
-                  >
-                    {offer.requirements.map((req, i) => (
-                      <div key={i} className="flex items-start gap-1.5">
-                        <img
-                          src="/coins/retik.png"
-                          alt="bullet"
-                          style={{ width: '14px', height: '14px', flexShrink: 0, marginTop: '2px' }}
-                        />
-                        <p
-                          className="text-[13px] lg:text-[16px] text-white font-medium leading-tight"
-                          style={{ fontFamily: '"Barlow Condensed", sans-serif', margin: 0 }}
-                        >
-                          {req}
-                        </p>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              {/* Boxes when started */}
-              {isStarted && !alreadySubmitted && (
-                <div className="w-full flex flex-col gap-4 shrink-0">
-                  <div
-                    className="w-full h-auto"
-                    style={{
-                      borderRadius: '12px', padding: '12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '16px',
-                      background: 'rgba(0, 0, 0, 0.36)', backdropFilter: 'blur(44px)', WebkitBackdropFilter: 'blur(44px)',
-                      boxSizing: 'border-box'
-                    }}
-                  >
-                    <div className="flex flex-col gap-1 min-w-0 flex-1">
-                      <span
-                        className="text-[14px] lg:text-[14px] text-white font-bold leading-tight block truncate"
-                        style={{ fontFamily: '"Barlow Condensed", sans-serif' }}
-                      >
-                        Offer link clicked
-                      </span>
-                      <span
-                        className="text-[11px] lg:text-[11px] text-[#888888] font-medium leading-tight block truncate"
-                        style={{ fontFamily: '"Barlow Condensed", sans-serif' }}
-                      >
-                        Complete the offer requirements
-                      </span>
-                    </div>
-                    <button
-                      onClick={handleStartOffer}
-                      className="h-[36px] lg:h-[38px] rounded-[8px] lg:rounded-[10px] px-4 lg:px-6 py-2 bg-[#27703a] border-none cursor-pointer flex items-center justify-center gap-2 shadow-[0_4px_0_#23502f] shrink-0"
-                    >
-                      <span
-                        className="text-[14px] lg:text-[16px] text-white font-bold leading-none flex items-center justify-center"
-                        style={{ fontFamily: '"Barlow Condensed", sans-serif' }}
-                      >
-                        Resume Offer
-                      </span>
-                    </button>
-                  </div>
-
-                  {/* Submit Proof Details */}
-                  <div className="w-full flex flex-col gap-1 lg:gap-2 shrink-0">
-                    <span
-                      className="text-[14px] lg:text-base font-bold text-white leading-normal"
-                      style={{ fontFamily: '"Barlow Condensed", sans-serif' }}
-                    >
-                      Submit Proof
-                    </span>
-                    <span
-                      className="text-xs font-medium text-[#888888] leading-tight"
-                      style={{ fontFamily: '"Barlow Condensed", sans-serif' }}
-                    >
-                      Follow the requirements above, then submit proof of completion for review.
-                    </span>
-                  </div>
-                </div>
+              {offer.platforms?.android && (
+                <FaAndroid
+                  style={{
+                    width: '21px',
+                    height: '21px',
+                    opacity: 1,
+                    transform: 'rotate(0deg)',
+                    color: '#22C55E',
+                  }}
+                />
               )}
-            </>
-          )}
+              {(!offer.platforms || offer.platforms?.desktop) && (
+                <FaDesktop
+                  style={{
+                    width: '21px',
+                    height: '21px',
+                    opacity: 1,
+                    transform: 'rotate(0deg)',
+                    color: '#334155',
+                  }}
+                />
+              )}
+            </div>
 
-          {(result || alreadySubmitted) && (
+            {/* Reward Amount */}
             <div
-              className={`w-full text-center p-3 rounded-xl text-[18px] lg:text-[16px] font-medium border ${(result?.type === 'success' || alreadySubmitted)
-                ? 'bg-white/5 border-white/10 text-white'
-                : 'bg-[#f43f5e1a] border-[#f43f5e33] text-[#fb7185]'
-                }`}
               style={{
-                fontFamily: '"Barlow Condensed", sans-serif'
+                minWidth: 'fit-content',
+                height: '22.22px',
+                borderRadius: '100px',
+                gap: '5px',
+                paddingTop: '5px',
+                paddingRight: '10px',
+                paddingBottom: '5px',
+                paddingLeft: '10px',
+                background: '#FFFFFF',
+                opacity: 1,
+                transform: 'rotate(0deg)',
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                boxSizing: 'border-box',
               }}
             >
-              {result?.message || (submissionStatus === 'approved' ? 'Offer Approved! Reward granted.' : 'Proof submitted! Awaiting admin review.')}
+              <img
+                src="/coins/procoinicon.png"
+                alt="Coin"
+                style={{
+                  width: '13px',
+                  height: '13px',
+                  objectFit: 'contain',
+                  flexShrink: 0,
+                }}
+              />
+              <span
+                style={{
+                  fontFamily: '"Poppins", sans-serif',
+                  fontWeight: 500,
+                  fontSize: '14px',
+                  lineHeight: '1',
+                  letterSpacing: '0%',
+                  color: 'rgba(231, 171, 24, 1)',
+                  opacity: 1,
+                  transform: 'rotate(0deg)',
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                {rewardVal.toLocaleString('de-DE')}
+              </span>
             </div>
-          )}
+          </div>
         </div>
 
-        {/* Footer Actions */}
-        <div style={{ marginTop: 'auto', flexShrink: 0 }}>
-          {!alreadySubmitted && !isExpired && (
-            <>
-              {!isStarted ? (
-                <button
-                  onClick={handleStartOffer}
-                  className="w-full h-[48px] rounded-[8px] lg:rounded-[10px] bg-[#49b265] text-white border-none font-bold text-[18px] leading-none flex items-center justify-center gap-2.5 cursor-pointer shadow-[0_4px_0_#276d3a]"
+        {/* Requirements Section */}
+        <div className="w-full flex flex-col gap-2 shrink-0">
+          <h3
+            style={{
+              width: '100%',
+              maxWidth: '610px',
+              fontFamily: '"Bricolage Grotesque", sans-serif',
+              fontWeight: 700,
+              fontSize: '20px',
+              lineHeight: '27px',
+              letterSpacing: '0%',
+              color: '#000000',
+              opacity: 1,
+              transform: 'rotate(0deg)',
+              margin: 0,
+            }}
+          >
+            Requirements
+          </h3>
+
+          {/* Requirements Content */}
+          <div className="w-full flex flex-col gap-[5px]">
+            {offer.requirementType === 'paragraph' ? (
+              <div
+                style={{
+                  width: '100%',
+                  maxWidth: '610px',
+                  minHeight: '43px',
+                  background: 'rgba(248, 245, 239, 1)',
+                  borderRadius: '16px',
+                  paddingTop: '8px',
+                  paddingRight: '12px',
+                  paddingBottom: '8px',
+                  paddingLeft: '12px',
+                  opacity: 1,
+                  transform: 'rotate(0deg)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  boxSizing: 'border-box',
+                }}
+              >
+                <p
                   style={{
-                    fontFamily: '"Barlow Condensed", sans-serif',
-                    padding: '10px 30px'
+                    fontFamily: '"Poppins", sans-serif',
+                    fontWeight: 500,
+                    fontSize: '14px',
+                    lineHeight: '20px',
+                    letterSpacing: '0%',
+                    color: '#000000',
+                    margin: 0,
                   }}
                 >
-                  Start Offer
-                  <img
-                    src="/coins/image.png"
-                    alt="arrow"
-                    className="w-[24px] h-[24px] object-contain"
-                  />
-                </button>
-              ) : (
-                !showProofForm && (
-                  <button
-                    onClick={() => { setShowProofForm(true); setResult(null); }}
-                    className="w-full h-[48px] rounded-[8px] lg:rounded-[10px] bg-[#49b265] text-white border-none font-bold text-[18px] leading-none flex items-center justify-center gap-2.5 cursor-pointer shadow-[0_4px_0_#276d3a]"
+                  {Array.isArray(offer.requirements) && offer.requirements.length > 0
+                    ? offer.requirements.join(' ')
+                    : typeof offer.requirements === 'string'
+                    ? offer.requirements
+                    : 'Complete the requirements to earn rewards.'}
+                </p>
+              </div>
+            ) : offer.requirements && offer.requirements.length > 0 ? (
+              offer.requirements.map((req, i) => {
+                const isCompleted = i === 0;
+                return (
+                  <div
+                    key={i}
                     style={{
-                      fontFamily: '"Barlow Condensed", sans-serif',
-                      padding: '10px 30px'
+                      width: '100%',
+                      maxWidth: '610px',
+                      minHeight: '43px',
+                      background: 'rgba(248, 245, 239, 1)',
+                      borderRadius: '16px',
+                      paddingTop: '8px',
+                      paddingRight: '12px',
+                      paddingBottom: '8px',
+                      paddingLeft: '12px',
+                      opacity: 1,
+                      transform: 'rotate(0deg)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '12px',
+                      boxSizing: 'border-box',
                     }}
                   >
-                    <img
-                      src="/coins/upload.png"
-                      alt="upload"
-                      className="w-[24px] h-[24px] object-contain"
-                    />
-                    Submit Proof
-                  </button>
-                )
-              )}
-            </>
+                    {isCompleted ? (
+                      <div
+                        style={{
+                          width: '27px',
+                          height: '27px',
+                          borderRadius: '100px',
+                          background: 'rgba(36, 50, 77, 1)',
+                          opacity: 1,
+                          transform: 'rotate(0deg)',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          flexShrink: 0,
+                          boxSizing: 'border-box',
+                        }}
+                      >
+                        <img
+                          src="/coins/image copy 5.png"
+                          alt="Checked"
+                          style={{
+                            width: '12px',
+                            height: '10px',
+                            objectFit: 'contain',
+                            display: 'block',
+                          }}
+                        />
+                      </div>
+                    ) : (
+                      <div
+                        style={{
+                          width: '27px',
+                          height: '27px',
+                          borderRadius: '100px',
+                          background: '#FFFFFF',
+                          border: '1px solid rgba(0, 0, 0, 0.2)',
+                          opacity: 1,
+                          transform: 'rotate(0deg)',
+                          flexShrink: 0,
+                          boxSizing: 'border-box',
+                        }}
+                      />
+                    )}
+                    <span
+                      style={{
+                        fontFamily: '"Poppins", sans-serif',
+                        fontWeight: 500,
+                        fontSize: '14px',
+                        lineHeight: '20px',
+                        letterSpacing: '0%',
+                        color: '#000000',
+                      }}
+                    >
+                      {req}
+                    </span>
+                  </div>
+                );
+              })
+            ) : (
+              <div
+                style={{
+                  width: '100%',
+                  maxWidth: '610px',
+                  minHeight: '43px',
+                  background: 'rgba(248, 245, 239, 1)',
+                  borderRadius: '16px',
+                  paddingTop: '8px',
+                  paddingRight: '12px',
+                  paddingBottom: '8px',
+                  paddingLeft: '12px',
+                  opacity: 1,
+                  transform: 'rotate(0deg)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '12px',
+                  boxSizing: 'border-box',
+                }}
+              >
+                <div
+                  style={{
+                    width: '27px',
+                    height: '27px',
+                    borderRadius: '100px',
+                    background: 'rgba(36, 50, 77, 1)',
+                    opacity: 1,
+                    transform: 'rotate(0deg)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    flexShrink: 0,
+                    boxSizing: 'border-box',
+                  }}
+                >
+                  <img
+                    src="/coins/image copy 5.png"
+                    alt="Checked"
+                    style={{
+                      width: '12px',
+                      height: '10px',
+                      objectFit: 'contain',
+                      display: 'block',
+                    }}
+                  />
+                </div>
+                <span
+                  style={{
+                    fontFamily: '"Poppins", sans-serif',
+                    fontWeight: 500,
+                    fontSize: '14px',
+                    lineHeight: '20px',
+                    letterSpacing: '0%',
+                    color: '#000000',
+                  }}
+                >
+                  Complete the required tasks → receive rewards
+                </span>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Start Offer Button */}
+        <button
+          onClick={handleStartOffer}
+          disabled={loading || isExpired}
+          style={{
+            width: '100%',
+            maxWidth: '610px',
+            height: '46px',
+            background: 'rgba(36, 50, 77, 1)',
+            borderRadius: '40px',
+            gap: '10px',
+            paddingTop: '18px',
+            paddingRight: '12px',
+            paddingBottom: '18px',
+            paddingLeft: '12px',
+            opacity: 1,
+            transform: 'rotate(0deg)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            border: 'none',
+            cursor: 'pointer',
+            boxSizing: 'border-box',
+          }}
+          className="shadow-md hover:opacity-95 transition-all disabled:opacity-50 shrink-0"
+        >
+          {loading ? (
+            <FiLoader className="animate-spin text-lg text-white" />
+          ) : (
+            <span
+              style={{
+                fontFamily: '"Poppins", sans-serif',
+                fontWeight: 400,
+                fontSize: '14px',
+                lineHeight: '1',
+                letterSpacing: '-0.02em',
+                textTransform: 'capitalize',
+                color: '#FFFFFF',
+                opacity: 1,
+                transform: 'rotate(0deg)',
+              }}
+            >
+              {isExpired ? 'Offer Expired' : 'Start Offer'}
+            </span>
           )}
+        </button>
+
+        {/* General Offer Rules Box */}
+        <div
+          style={{
+            width: '100%',
+            maxWidth: '610px',
+            minHeight: '208px',
+            background: 'rgba(248, 245, 239, 1)',
+            borderRadius: '16px',
+            gap: '10px',
+            paddingTop: '25px',
+            paddingRight: '10px',
+            paddingBottom: '25px',
+            paddingLeft: '15px',
+            opacity: 1,
+            transform: 'rotate(0deg)',
+            boxSizing: 'border-box',
+            display: 'flex',
+            flexDirection: 'column',
+          }}
+          className="shrink-0"
+        >
+          <h4
+            style={{
+              width: '100%',
+              maxWidth: '585px',
+              fontFamily: '"Bricolage Grotesque", sans-serif',
+              fontWeight: 700,
+              fontSize: '16px',
+              lineHeight: '27px',
+              letterSpacing: '0%',
+              color: '#000000',
+              opacity: 1,
+              transform: 'rotate(0deg)',
+              margin: 0,
+            }}
+          >
+            General Offer Rules
+          </h4>
+          <div className="flex flex-col gap-0.5">
+            {[
+              'Use a genuine device. Emulators are not allowed.',
+              'VPNs and proxies are not allowed. Your real location must be used.',
+              'Complete the offer yourself and follow the stated requirements.',
+              'Offers may be limited to new users/customers where specified. Existing users may not be eligible.',
+              'Follow the individual offer requirements and any stated completion deadline.',
+              'Rewards are only granted when the offer requirements are successfully verified.',
+            ].map((rule, idx) => (
+              <div key={idx} className="flex items-start gap-[6px]">
+                <div
+                  style={{
+                    width: '5px',
+                    height: '5px',
+                    borderRadius: '50%',
+                    background: 'rgba(63, 76, 99, 1)',
+                    opacity: 1,
+                    transform: 'rotate(0deg)',
+                    flexShrink: 0,
+                    marginTop: '8px',
+                  }}
+                />
+                <span
+                  style={{
+                    fontFamily: '"Poppins", sans-serif',
+                    fontWeight: 500,
+                    fontSize: '12px',
+                    lineHeight: '21px',
+                    letterSpacing: '0.01em',
+                    color: '#000000',
+                  }}
+                >
+                  {rule}
+                </span>
+              </div>
+            ))}
+          </div>
         </div>
       </motion.div>
     </motion.div>

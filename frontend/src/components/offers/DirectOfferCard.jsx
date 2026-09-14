@@ -206,40 +206,35 @@ export const DirectOfferCard = ({ offer, onClick }) => {
 // ─── Modal shown when user clicks a card ─────────────────────────────────────
 export const DirectOfferModal = ({ offer, token, onClose, onClicked }) => {
   const [loading, setLoading] = useState(false);
-  const [clickStatus, setClickStatus] = useState(offer.clickStatus);
-  const [result, setResult] = useState(null);
-
   const isExpired = offer.expirationDate && new Date(offer.expirationDate) < new Date();
-  const isApproved = clickStatus === 'approved';
-  const statusCfg = clickStatus ? STATUS_CONFIG[clickStatus] : null;
-
+  const rewardVal = offer.rewardAmount ?? offer.points ?? offer.reward ?? 0;
   const coverImgSrc = offer.coverImage || (isIconUrl(offer.icon) ? offer.icon : null);
   const emojiIcon = !coverImgSrc && offer.icon ? offer.icon : '⚡';
 
   const handleGoToOffer = async () => {
-    if (isApproved || isExpired) return;
-
+    if (isExpired) return;
     setLoading(true);
     try {
-      const res = await fetch(`${API}/direct-offers/click/${offer._id}`, {
-        method: 'POST',
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      const data = await res.json();
-
-      if (data.success && data.url) {
-        // Open the tracked URL in a new tab
-        window.open(data.url, '_blank', 'noopener,noreferrer');
-        if (!data.alreadyApproved) {
-          setClickStatus('clicked');
+      if (token) {
+        const res = await fetch(`${API}/direct-offers/click/${offer._id}`, {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const data = await res.json();
+        if (data.success && data.url) {
+          window.open(data.url, '_blank', 'noopener,noreferrer');
           if (onClicked) onClicked(offer._id);
+        } else if (offer.trackingUrl || offer.url) {
+          window.open(offer.trackingUrl || offer.url, '_blank', 'noopener,noreferrer');
         }
-      } else {
-        setResult({ type: 'error', message: data.error || 'Failed to start offer.' });
+      } else if (offer.trackingUrl || offer.url) {
+        window.open(offer.trackingUrl || offer.url, '_blank', 'noopener,noreferrer');
       }
     } catch (err) {
       console.error('Failed to process click:', err);
-      setResult({ type: 'error', message: 'Network error. Please try again.' });
+      if (offer.trackingUrl || offer.url) {
+        window.open(offer.trackingUrl || offer.url, '_blank', 'noopener,noreferrer');
+      }
     } finally {
       setLoading(false);
     }
@@ -250,170 +245,216 @@ export const DirectOfferModal = ({ offer, token, onClose, onClicked }) => {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 z-[99999] flex items-center justify-center p-4 bg-black/75 backdrop-blur-md"
+      className="fixed inset-0 z-[99999] flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-sm"
       onClick={onClose}
     >
       <motion.div
-        initial={{ scale: 0.95, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        exit={{ scale: 0.95, opacity: 0 }}
+        initial={{ scale: 0.95, opacity: 0, y: 10 }}
+        animate={{ scale: 1, opacity: 1, y: 0 }}
+        exit={{ scale: 0.95, opacity: 0, y: 10 }}
         onClick={(e) => e.stopPropagation()}
-        className="relative flex flex-col gap-3 lg:gap-4 p-3 lg:p-4 rounded-[20px] bg-[#242424] w-[95%] lg:w-[500px] max-h-[85vh] lg:max-h-[90vh] box-border overflow-hidden"
+        style={{
+          width: '626px',
+          maxWidth: '96vw',
+          height: '687px',
+          maxHeight: '94vh',
+          background: '#FFFFFF',
+          borderRadius: '25px',
+          padding: '14px',
+          boxSizing: 'border-box',
+          fontFamily: '"Poppins", sans-serif',
+          color: '#0E0F0C',
+          opacity: 1,
+          transform: 'rotate(0deg)',
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'space-between',
+          gap: '10px',
+        }}
+        className="relative shadow-2xl overflow-y-auto hide-scrollbar"
       >
-        {/* Close Button */}
-        <button
-          onClick={onClose}
-          className="absolute top-[12px] right-[12px] lg:top-[16px] lg:right-[16px] w-[26px] h-[26px] lg:w-[36px] lg:h-[36px] rounded-[8px] lg:rounded-[10px] bg-white/10 text-white flex items-center justify-center cursor-pointer z-10 border-none"
+        {/* Top Header Card */}
+        <div
+          style={{
+            background: 'rgba(249, 247, 241, 1)',
+            borderRadius: '18px',
+            padding: '16px',
+            boxSizing: 'border-box',
+            position: 'relative',
+          }}
+          className="flex flex-col gap-3 shrink-0"
         >
-          <FiX className="w-[14px] h-[14px] lg:w-[16px] lg:h-[16px]" />
-        </button>
+          {/* Top Close Button */}
+          <button
+            onClick={onClose}
+            style={{
+              width: '24px',
+              height: '24px',
+              background: '#000000',
+              borderRadius: '50%',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              border: 'none',
+              cursor: 'pointer',
+              position: 'absolute',
+              top: '12px',
+              right: '12px',
+              zIndex: 20,
+            }}
+            className="text-white hover:opacity-80 transition-opacity"
+          >
+            <FiX size={13} strokeWidth={2.5} />
+          </button>
 
-        {/* Header */}
-        <div className="flex flex-row gap-3 lg:gap-4 shrink-0">
-          <div className="w-[80px] h-[80px] lg:w-[120px] lg:h-[120px] rounded-[8px] lg:rounded-[10px] bg-white/5 flex items-center justify-center relative shrink-0 overflow-hidden">
-            {coverImgSrc ? (
-              <img src={coverImgSrc} alt={offer.title} className="w-full h-full object-cover rounded-[10px]" />
-            ) : (
-              <span className="text-[36px] lg:text-[48px] select-none" style={{ filter: 'drop-shadow(0px 4px 10px rgba(0,0,0,0.5))' }}>
-                {emojiIcon}
+          {/* Top Section: Icon + Title + Description */}
+          <div className="flex items-start gap-4 pr-8">
+            <div className="w-[76px] h-[76px] sm:w-[82px] sm:h-[82px] rounded-[16px] bg-[#EDE8DE] overflow-hidden flex-shrink-0 flex items-center justify-center shadow-sm">
+              {coverImgSrc ? (
+                <img src={coverImgSrc} alt={offer.title} className="w-full h-full object-cover" />
+              ) : (
+                <span className="text-4xl">{emojiIcon}</span>
+              )}
+            </div>
+            <div className="flex flex-col min-w-0 justify-center">
+              <h2
+                className="text-[18px] sm:text-[21px] font-bold text-[#0E0F0C] leading-snug tracking-tight m-0"
+                style={{ fontFamily: '"Bricolage Grotesque", sans-serif' }}
+              >
+                {offer.title}
+              </h2>
+              <p className="text-[12px] sm:text-[13px] text-[#4A4C46] mt-1 leading-relaxed m-0 font-normal">
+                {offer.description || 'Complete this offer by sending it to your Android device from here'}
+              </p>
+            </div>
+          </div>
+
+          {/* Divider */}
+          <div className="w-full h-[1px] bg-[#E8E3D8]" />
+
+          {/* Platform & Reward Bar */}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2 text-gray-800">
+              {offer.platforms?.ios && <FaApple className="text-lg text-gray-900" />}
+              {offer.platforms?.android && <FaAndroid className="text-lg text-[#22C55E]" />}
+              {(!offer.platforms || offer.platforms?.desktop) && <FaDesktop className="text-base text-gray-700" />}
+            </div>
+
+            {/* Reward Amount */}
+            <div
+              className="flex items-center gap-1.5 px-3 py-1 rounded-full"
+              style={{ background: 'rgba(254, 243, 199, 0.7)' }}
+            >
+              <img src="/coins/procoinicon.png" alt="Coin" className="w-3.5 h-3.5 object-contain" />
+              <span
+                className="font-bold text-[14px] sm:text-[15px]"
+                style={{ color: 'rgba(231, 171, 24, 1)' }}
+              >
+                {rewardVal.toLocaleString('de-DE')}
               </span>
+            </div>
+          </div>
+        </div>
+
+        {/* Requirements Section */}
+        <div className="flex flex-col gap-2 shrink-0">
+          <h3
+            className="text-[15px] font-bold text-[#0E0F0C] m-0"
+            style={{ fontFamily: '"Bricolage Grotesque", sans-serif' }}
+          >
+            Requirements
+          </h3>
+
+          {/* Requirements Content */}
+          <div className="flex flex-col gap-2">
+            {offer.requirementType === 'paragraph' ? (
+              <div
+                style={{ background: 'rgba(249, 247, 241, 1)' }}
+                className="flex items-center px-4 py-2.5 rounded-full border border-[#EAE4D7]/70"
+              >
+                <p className="text-[13px] font-medium text-[#1E293B] m-0 leading-relaxed">
+                  {Array.isArray(offer.requirements) && offer.requirements.length > 0
+                    ? offer.requirements.join(' ')
+                    : typeof offer.requirements === 'string'
+                    ? offer.requirements
+                    : 'Complete the requirements to earn rewards.'}
+                </p>
+              </div>
+            ) : offer.requirements && offer.requirements.length > 0 ? (
+              offer.requirements.map((req, i) => (
+                <div
+                  key={i}
+                  style={{ background: 'rgba(249, 247, 241, 1)' }}
+                  className="flex items-center gap-3 px-4 py-2.5 rounded-full border border-[#EAE4D7]/70"
+                >
+                  {i === 0 ? (
+                    <div className="w-5 h-5 rounded-full bg-[#202C44] text-white flex items-center justify-center shrink-0">
+                      <FiCheckCircle className="w-3.5 h-3.5 text-white" />
+                    </div>
+                  ) : (
+                    <div className="w-5 h-5 rounded-full border-2 border-[#D1CCC2] bg-white shrink-0" />
+                  )}
+                  <span className="text-[13px] font-medium text-[#1E293B]">
+                    {req}
+                  </span>
+                </div>
+              ))
+            ) : (
+              <div
+                style={{ background: 'rgba(249, 247, 241, 1)' }}
+                className="flex items-center gap-3 px-4 py-2.5 rounded-full border border-[#EAE4D7]/70"
+              >
+                <div className="w-5 h-5 rounded-full bg-[#202C44] text-white flex items-center justify-center shrink-0">
+                  <FiCheckCircle className="w-3.5 h-3.5 text-white" />
+                </div>
+                <span className="text-[13px] font-medium text-[#1E293B]">
+                  Complete the required tasks → receive rewards
+                </span>
+              </div>
             )}
           </div>
-
-          <div className="flex-1 min-h-0 flex flex-col gap-1 lg:gap-3 shrink opacity-100 min-w-0 pr-4 lg:pr-0">
-            <h2
-              className="w-full text-[18px] lg:text-[26px] break-words"
-              style={{ fontFamily: '"Barlow Condensed", sans-serif', fontWeight: 600, color: 'rgba(255,255,255,1)', margin: 0, lineHeight: '1.1' }}
-            >
-              {offer.title}
-            </h2>
-            <div
-              className="w-full text-[12px] lg:text-[16px] break-words text-justify"
-              style={{ fontFamily: '"Barlow Condensed", sans-serif', fontWeight: 500, color: 'rgba(136,136,136,1)', lineHeight: '1.2' }}
-            >
-              {(offer.description || '').split('\n').map((line, i) => <p key={i} style={{ margin: 0, padding: 0 }}>{line}</p>)}
-            </div>
-
-            {/* AUTO tracking badge */}
-            <div className="flex items-center gap-1.5">
-              <span className="flex items-center gap-1 bg-indigo-500/15 border border-indigo-500/30 text-indigo-300 text-[11px] font-semibold px-2 py-0.5 rounded-md"
-                style={{ fontFamily: '"Barlow Condensed", sans-serif' }}>
-                <FiZap className="text-[10px]" /> Auto-Tracked
-              </span>
-              <span className="text-slate-500 text-[11px]" style={{ fontFamily: '"Barlow Condensed", sans-serif' }}>
-                No proof needed
-              </span>
-            </div>
-          </div>
         </div>
 
-        {/* Scrollable Body */}
-        <div className="hide-scrollbar" style={{ flex: 1, overflowX: 'hidden', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '16px', paddingRight: '4px' }}>
-
-          {/* Status Badge */}
-          {statusCfg && (
-            <div className={`w-full p-3 rounded-xl border flex items-center gap-2 text-sm font-semibold ${statusCfg.bg} ${statusCfg.color}`}
-              style={{ fontFamily: '"Barlow Condensed", sans-serif' }}>
-              {clickStatus === 'approved' && <FiCheckCircle />}
-              {clickStatus === 'clicked' && <FiClock />}
-              {clickStatus === 'pending' && <FiClock />}
-              {clickStatus === 'rejected' && <FiXCircle />}
-              {clickStatus === 'approved' ? 'Reward credited automatically!' :
-                clickStatus === 'clicked' ? 'Offer started — complete the requirements below.' :
-                  clickStatus === 'pending' ? 'Awaiting advertiser confirmation...' :
-                    'Conversion not confirmed by advertiser.'}
-            </div>
-          )}
-
-          {/* Reward Display */}
-          <div
-            className="w-full flex items-center justify-between"
-            style={{ borderRadius: '12px', padding: '12px', background: 'rgba(0,0,0,0.36)', backdropFilter: 'blur(44px)' }}
-          >
-            <span className="text-white text-[14px] font-bold" style={{ fontFamily: '"Barlow Condensed", sans-serif' }}>Your Reward</span>
-            <div className="flex items-center gap-[4px]">
-              <img src="/coins/Coin.png" alt="coin" className="w-[20px] h-[20px] object-contain" />
-              <span
-                className="text-[20px] inline-flex items-center"
-                style={{
-                  fontFamily: '"Barlow Condensed", sans-serif', fontWeight: 700,
-                  background: 'linear-gradient(180deg, #FEDF77 0%, #FCB91E 100%)',
-                  WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text',
-                }}
-              >
-                {(offer.rewardAmount || 0).toLocaleString('de-DE')}
-              </span>
-            </div>
-          </div>
-
-          {/* Requirements */}
-          {offer.requirements && offer.requirements.length > 0 && (
-            <div className="w-full flex flex-col gap-2 shrink-0">
-              <h4 className="text-[14px] lg:text-[16px] text-white font-bold leading-normal" style={{ fontFamily: '"Barlow Condensed", sans-serif', margin: 0 }}>
-                Requirements
-              </h4>
-              <div
-                style={{ borderRadius: '12px', padding: '12px', display: 'flex', flexDirection: 'column', gap: '8px', background: 'rgba(0,0,0,0.36)', backdropFilter: 'blur(44px)' }}
-              >
-                {offer.requirements.map((req, i) => (
-                  <div key={i} className="flex items-start gap-1.5">
-                    <img src="/coins/retik.png" alt="bullet" style={{ width: '14px', height: '14px', flexShrink: 0, marginTop: '2px' }} />
-                    <p className="text-[13px] lg:text-[16px] text-white font-medium leading-tight" style={{ fontFamily: '"Barlow Condensed", sans-serif', margin: 0 }}>
-                      {req}
-                    </p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* How tracking works info */}
-          <div
-            style={{ borderRadius: '12px', padding: '12px', background: 'rgba(99,102,241,0.05)', border: '1px solid rgba(99,102,241,0.15)' }}
-          >
-            <p className="text-[12px] text-indigo-300/70 leading-relaxed" style={{ fontFamily: '"Barlow Condensed", sans-serif', margin: 0 }}>
-              💡 Your reward is credited <strong>automatically</strong> once the advertiser confirms your completion. No manual proof needed.
-            </p>
-          </div>
-
-          {/* Error message */}
-          {result && (
-            <div className={`w-full text-center p-3 rounded-xl text-[14px] font-medium border ${result.type === 'error' ? 'bg-[#f43f5e1a] border-[#f43f5e33] text-[#fb7185]' : 'bg-white/5 border-white/10 text-white'
-              }`} style={{ fontFamily: '"Barlow Condensed", sans-serif' }}>
-              {result.message}
-            </div>
-          )}
-        </div>
-
-        {/* Footer Action */}
-        <div style={{ marginTop: 'auto', flexShrink: 0 }}>
-          {isExpired ? (
-            <div className="w-full h-[48px] rounded-[10px] bg-white/5 border border-white/10 flex items-center justify-center text-slate-500 font-bold text-[16px]"
-              style={{ fontFamily: '"Barlow Condensed", sans-serif' }}>
-              Offer Expired
-            </div>
-          ) : isApproved ? (
-            <div className="w-full h-[48px] rounded-[10px] bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 font-bold text-[18px] gap-2"
-              style={{ fontFamily: '"Barlow Condensed", sans-serif' }}>
-              <FiCheckCircle /> Reward Credited!
-            </div>
+        {/* Start Offer Button */}
+        <button
+          onClick={handleGoToOffer}
+          disabled={loading || isExpired}
+          style={{
+            fontFamily: '"Bricolage Grotesque", sans-serif',
+            background: '#24324D',
+            color: '#FFFFFF',
+            borderRadius: '12px',
+          }}
+          className="w-full h-[46px] font-bold text-[15px] flex items-center justify-center gap-2 cursor-pointer border-none shadow-md hover:bg-[#1A253A] transition-all disabled:opacity-50 shrink-0"
+        >
+          {loading ? (
+            <FiLoader className="animate-spin text-lg" />
+          ) : isExpired ? (
+            'Offer Expired'
           ) : (
-            <button
-              onClick={handleGoToOffer}
-              disabled={loading}
-              className="w-full h-[48px] rounded-[8px] lg:rounded-[10px] bg-[#49b265] text-white border-none font-bold text-[18px] leading-none flex items-center justify-center gap-2.5 cursor-pointer shadow-[0_4px_0_#276d3a] disabled:opacity-60 disabled:cursor-not-allowed"
-              style={{ fontFamily: '"Barlow Condensed", sans-serif', padding: '10px 30px' }}
-            >
-              {loading ? (
-                <FiLoader className="animate-spin text-xl" />
-              ) : (
-                <>
-                  {clickStatus === 'clicked' ? 'Resume Offer' : 'Go to Offer'}
-                  <FiExternalLink />
-                </>
-              )}
-            </button>
+            'Start Offer'
           )}
+        </button>
+
+        {/* General Offer Rules Box */}
+        <div
+          style={{ background: 'rgba(249, 247, 241, 1)' }}
+          className="rounded-[18px] p-3.5 border border-[#EAE4D7] flex flex-col gap-1.5 shrink-0"
+        >
+          <h4
+            className="text-[13px] font-bold text-[#0E0F0C] m-0"
+            style={{ fontFamily: '"Bricolage Grotesque", sans-serif' }}
+          >
+            General Offer Rules
+          </h4>
+          <ul className="text-[11px] sm:text-[12px] text-[#4A4C46] space-y-0.5 pl-4 list-disc font-normal leading-relaxed m-0">
+            <li>Use a genuine device. Emulators are not allowed.</li>
+            <li>VPNs and proxies are not allowed. Your real location must be used.</li>
+            <li>Complete the offer yourself and follow the stated requirements.</li>
+            <li>Offers may be limited to new users/customers where specified. Existing users may not be eligible.</li>
+            <li>Follow the individual offer requirements and any stated completion deadline.</li>
+            <li>Rewards are only granted when the offer requirements are successfully verified.</li>
+          </ul>
         </div>
       </motion.div>
     </motion.div>
