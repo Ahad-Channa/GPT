@@ -46,6 +46,11 @@ const OfferFormModal = ({ offer, onClose, onSaved, token }) => {
     coverImage: offer?.coverImage || '',
     requirements: (offer?.requirements || []).join('\n'),
     requirementType: offer?.requirementType || 'bullets',
+    allowedCountries: (offer?.allowedCountries || []).join(', '),
+    displayPlacements: {
+      featured: offer?.displayPlacements?.featured !== undefined ? offer.displayPlacements.featured : true,
+      brandedOfferwall: offer?.displayPlacements?.brandedOfferwall || false,
+    },
     platforms: offer?.platforms || { desktop: true, android: true, ios: true },
     isActive: offer?.isActive !== undefined ? offer.isActive : true,
     postbackMapping: {
@@ -83,6 +88,8 @@ const OfferFormModal = ({ offer, onClose, onSaved, token }) => {
             ? [form.requirements.trim()].filter(Boolean)
             : form.requirements.split('\n').map(r => r.trim()).filter(Boolean),
           requirementType: form.requirementType,
+          allowedCountries: form.allowedCountries.split(',').map(c => c.trim()).filter(Boolean),
+          displayPlacements: form.displayPlacements,
           platforms: form.platforms,
           postbackMapping: form.postbackMapping,
         }),
@@ -208,6 +215,29 @@ const OfferFormModal = ({ offer, onClose, onSaved, token }) => {
           <div>
             <label className={labelCls}>Expiration Date</label>
             <input type="date" className={inputCls} value={form.expirationDate} onChange={set('expirationDate')} />
+          </div>
+          <div>
+            <label className={labelCls}>Allowed Countries <span className="text-slate-600 font-normal">(ISO-2, comma separated; blank = global)</span></label>
+            <input className={inputCls} value={form.allowedCountries} onChange={set('allowedCountries')} placeholder="US, GB, DE" />
+          </div>
+          <div>
+            <label className={labelCls}>Placements</label>
+            <div className="flex flex-wrap gap-3">
+              {[
+                ['featured', 'Featured Offers'],
+                ['brandedOfferwall', 'Branded Offerwall'],
+              ].map(([key, label]) => (
+                <label key={key} className="flex items-center gap-1.5 text-xs text-slate-300 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={form.displayPlacements[key]}
+                    onChange={e => setForm(f => ({ ...f, displayPlacements: { ...f.displayPlacements, [key]: e.target.checked } }))}
+                    className="accent-indigo-500"
+                  />
+                  {label}
+                </label>
+              ))}
+            </div>
           </div>
           <div>
             <label className={labelCls}>Platforms</label>
@@ -503,7 +533,7 @@ const AdminDirectOffers = () => {
     const statusParam  = m.statusParam  || 'status';
     const approvedVal  = m.approvedValue || 'approved';
     const payoutParam  = m.payoutParam  || 'payout';
-    return `${backendBaseUrl}/api/direct-offers/postback?${clickIdParam}={CLICK_ID}&${statusParam}=${approvedVal}&${payoutParam}={PAYOUT}&secret=${offer.postbackSecretKey}`;
+    return `${backendBaseUrl}/api/direct-offers/postback?${clickIdParam}={CLICK_ID}&${statusParam}=${approvedVal}&${payoutParam}={PAYOUT}&secret={SECRET}`;
   };
 
   return (
@@ -570,6 +600,11 @@ const AdminDirectOffers = () => {
                   <div className="flex flex-wrap gap-4 mt-3 text-xs text-slate-400">
                     <span>💰 <strong className="text-amber-400">{offer.rewardAmount?.toLocaleString()}</strong> coins reward</span>
                     <span>💵 ${offer.advertiserPayoutAmount || 0} payout</span>
+                    <span>Placement: <strong className="text-slate-300">{[
+                      offer.displayPlacements?.featured !== false ? 'Featured' : null,
+                      offer.displayPlacements?.brandedOfferwall ? 'Branded Offerwall' : null,
+                    ].filter(Boolean).join(' + ') || 'Hidden'}</strong></span>
+                    <span>Countries: <strong className="text-slate-300">{offer.allowedCountries?.length ? offer.allowedCountries.join(', ') : 'Global'}</strong></span>
                     <span>👆 <strong className="text-white">{offer.totalClicks || 0}</strong> clicks</span>
                     <span>✓ <strong className="text-emerald-400">{offer.totalApproved || 0}</strong> approved</span>
                     <span>✗ <strong className="text-rose-400">{offer.totalRejected || 0}</strong> rejected</span>
@@ -580,15 +615,12 @@ const AdminDirectOffers = () => {
                     <p className="text-xs text-slate-500 font-semibold uppercase tracking-wide">Postback Setup</p>
 
                     <div>
-                      <p className="text-[11px] text-slate-500 mb-1">Secret Key:</p>
+                      <p className="text-[11px] text-slate-500 mb-1">Security:</p>
                       <div className="flex items-center gap-2">
-                        <code className="text-xs text-indigo-300 font-mono bg-indigo-500/10 px-2 py-0.5 rounded truncate max-w-xs">
-                          {offer.postbackSecretKey}
-                        </code>
-                        <button onClick={() => copySecret(offer.postbackSecretKey, offer._id + 'secret')}
-                          className="text-slate-500 hover:text-white flex-shrink-0" title="Copy secret">
-                          {copiedId === offer._id + 'secret' ? <FiCheckCircle className="text-emerald-400" /> : <FiCopy />}
-                        </button>
+                        <span className={`text-xs font-semibold px-2 py-0.5 rounded border ${offer.postbackSecretConfigured ? 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20' : 'text-amber-400 bg-amber-500/10 border-amber-500/20'}`}>
+                          {offer.postbackSecretConfigured ? 'Secret configured' : 'Secret not configured'}
+                        </span>
+                        <span className="text-[11px] text-slate-500">Stored server-side only.</span>
                       </div>
                     </div>
 
@@ -615,7 +647,7 @@ const AdminDirectOffers = () => {
                         </button>
                       </div>
                       <p className="text-[10px] text-slate-600 mt-1">
-                        Replace <code className="text-slate-500">{'{CLICK_ID}'}</code> with the actual click ID and <code className="text-slate-500">{'{PAYOUT}'}</code> with the payout amount.
+                        Replace <code className="text-slate-500">{'{CLICK_ID}'}</code>, <code className="text-slate-500">{'{PAYOUT}'}</code>, and <code className="text-slate-500">{'{SECRET}'}</code> in the advertiser system.
                       </p>
                     </div>
                   </div>

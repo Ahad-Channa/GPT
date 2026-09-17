@@ -72,6 +72,12 @@ const ProviderCard = ({ provider, onUpdate, loadingProvider }) => {
   };
 
   const isLoading = loadingProvider === provider.id;
+  const readiness = provider.providerConfig?.readiness || 'legacy_provider';
+  const readinessLabel = readiness === 'generic_tracking_ready'
+    ? 'Generic tracking ready'
+    : readiness === 'configured_paused'
+    ? 'Configured, paused'
+    : 'Legacy route';
 
   return (
     <motion.div
@@ -103,6 +109,9 @@ const ProviderCard = ({ provider, onUpdate, loadingProvider }) => {
                 <FiAlertTriangle /> Missing Secret in .env
               </p>
             )}
+            <p style={{ color: readiness === 'generic_tracking_ready' ? '#34d399' : '#94a3b8', fontSize: '0.68rem', margin: '2px 0 0' }}>
+              {readinessLabel}{provider.providerConfig?.securityMethod ? ` · ${provider.providerConfig.securityMethod}` : ''}
+            </p>
           </div>
         </div>
 
@@ -175,12 +184,12 @@ const AdminOfferwalls = () => {
       setLoading(true);
       setError('');
       const token = await currentUser.getIdToken();
-      const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/admin/settings`, {
+      const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/admin/offerwall-providers`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       const data = await res.json();
       if (!data.success) throw new Error(data.error);
-      setProviders(data.settings.offerwallProviders || []);
+      setProviders(data.providers || []);
     } catch (err) {
       setError(err.message || 'Failed to loaded offerwalls');
     } finally {

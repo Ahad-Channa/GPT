@@ -20,8 +20,25 @@ const PROVIDER_SECRET_MAP = {
   revu:      'REVU_SECRET',
 };
 
-// Generic Postback Handler
-const handlePostback = async (providerId, req, res, params) => {
+const isSafePostbackScalar = (value, maxLength = 128) =>
+  typeof value === 'string' && value.trim().length > 0 && value.trim().length <= maxLength;
+
+const parseLegacyProviderUnits = (value) => {
+  if (!isSafePostbackScalar(value, 64) || !/^-?\d+(\.\d+)?$/.test(value.trim())) return null;
+  const parsed = Number(value.trim());
+  return Number.isFinite(parsed) ? parsed : null;
+};
+
+// Legacy offerwall compatibility handler.
+//
+// These existing provider routes do not currently resolve a stored ClickLog, so
+// Phase 4 intentionally keeps them isolated instead of treating provider-supplied
+// user IDs as the new generic standard. Later phases should migrate offerwall
+// traffic only after outbound offerwall clicks are tracked through clickService.
+// Phase 6 reward/reversal services require exact Conversion linkage, which these
+// legacy routes do not have yet; Phase 10 should migrate them once tracked clicks
+// exist for each provider.
+const handleLegacyOfferwallPostback = async (providerId, req, res, params) => {
   try {
     const { userId, providerUnits, transactionId, secretParam } = params;
 
@@ -33,45 +50,63 @@ const handlePostback = async (providerId, req, res, params) => {
       return res.status(200).send('1');
     }
 
+    if (
+      !isSafePostbackScalar(userId) ||
+      !isSafePostbackScalar(transactionId) ||
+      !isSafePostbackScalar(secretParam, 256)
+    ) {
+      console.warn(`[Reward Engine] ${providerId} postback rejected because required values are malformed.`);
+      return res.status(401).send('0');
+    }
+    const normalizedUserId = userId.trim();
+    const normalizedTransactionId = transactionId.trim();
+    const normalizedSecretParam = secretParam.trim();
+
     // 3. Validate hash/secret
     const envSecretKey = PROVIDER_SECRET_MAP[providerId];
     const envSecret = process.env[envSecretKey];
 
     if (!envSecret) {
-      console.warn(`[Reward Engine] ${providerId} postback received but ${envSecretKey} is not set. Skipping validation (dev mode).`);
+      console.warn(`[Reward Engine] ${providerId} postback rejected because ${envSecretKey} is not configured.`);
+      return res.status(401).send('0');
     } else {
       // Provider specific validation
       if (providerId === 'cpx') {
         // CPX MD5 validation: MD5(trans_id + "-" + secure_hash)
         const expectedHash = crypto.createHash('md5')
-          .update(`${transactionId}-${envSecret}`)
+          .update(`${normalizedTransactionId}-${envSecret}`)
           .digest('hex');
           
-        if (secretParam !== expectedHash) {
-          console.error(`[Reward Engine] CPX MD5 signature mismatch! Expected: ${expectedHash}, Got: ${secretParam}`);
+        if (normalizedSecretParam !== expectedHash) {
+          console.error(`[Reward Engine] CPX MD5 signature mismatch! Expected: ${expectedHash}, Got: ${normalizedSecretParam}`);
           return res.status(401).send('0');
         }
       } else {
         // Fallback for others that use a direct secret match until implemented individually
-        if (secretParam !== envSecret) {
-          // Temporarily bypassing direct match rejections in dev if others use complex signatures
-          // console.warn(`[Reward Engine] ${providerId} invalid secret attempt.`);
-          // return res.status(401).send('0');
+        if (normalizedSecretParam !== envSecret) {
+          console.warn(`[Reward Engine] ${providerId} invalid secret attempt.`);
+          return res.status(401).send('0');
         }
       }
     }
 
     // 6. Convert: platformCoins = Math.floor(providerUnits * provider.conversionRatio)
-    const platformCoins = Math.floor(parseFloat(providerUnits) * provider.conversionRatio);
+    const parsedProviderUnits = parseLegacyProviderUnits(providerUnits);
+    if (parsedProviderUnits === null) {
+      console.warn(`[Reward Engine] ${providerId} postback rejected because provider units are malformed.`);
+      return res.status(401).send('0');
+    }
+
+    const platformCoins = Math.floor(parsedProviderUnits * provider.conversionRatio);
     if (isNaN(platformCoins) || platformCoins === 0) {
       return res.status(200).send('1'); // bad amount, silently ignore
     }
 
     // 7. Build externalId = `${providerId}:${transactionId}`
-    const externalId = `${providerId}:${transactionId}`;
+    const externalId = `${providerId}:${normalizedTransactionId}`;
 
     // Find User early to support chargebacks
-    const user = await User.findById(userId);
+    const user = await User.findById(normalizedUserId);
     if (!user) {
       return res.status(200).send('1');
     }
@@ -79,17 +114,7 @@ const handlePostback = async (providerId, req, res, params) => {
     // CHARGEBACK HANDLING: If the offerwall returns negative, it's reversing an offer.
     if (platformCoins < 0) {
       const originalTxId = req.query.original_transaction_id || externalId;
-      // Try to find original by the provided ID, or match exact amount logically
-      let originalTx = await Transaction.findOne({ externalId: originalTxId });
-      if (!originalTx) {
-        originalTx = await Transaction.findOne({
-          userId: user._id,
-          transactionType: 'offer_reward',
-          'metadata.providerId': providerId,
-          amount: Math.abs(platformCoins),
-          status: 'completed'
-        }).sort({ createdAt: -1 });
-      }
+      const originalTx = await Transaction.findOne({ externalId: originalTxId });
 
       if (originalTx && originalTx.status !== 'reversed') {
         const { notifyAdmins } = require('../utils/adminNotify'); // require locally to prevent circular dep initially or rely on file top require
@@ -313,7 +338,7 @@ const handlePostback = async (providerId, req, res, params) => {
 
 router.get('/postback/cpx', (req, res) => {
   // CPX: user_id, reward, trans_id, hash
-  handlePostback('cpx', req, res, {
+  handleLegacyOfferwallPostback('cpx', req, res, {
     userId: req.query.user_id,
     providerUnits: req.query.reward,
     transactionId: req.query.trans_id,
@@ -322,7 +347,7 @@ router.get('/postback/cpx', (req, res) => {
 });
 
 router.get('/postback/adgem', (req, res) => {
-  handlePostback('adgem', req, res, {
+  handleLegacyOfferwallPostback('adgem', req, res, {
     userId: req.query.user_id,
     providerUnits: req.query.amount,
     transactionId: req.query.oid,
@@ -331,7 +356,7 @@ router.get('/postback/adgem', (req, res) => {
 });
 
 router.get('/postback/lootably', (req, res) => {
-  handlePostback('lootably', req, res, {
+  handleLegacyOfferwallPostback('lootably', req, res, {
     userId: req.query.user_id,
     providerUnits: req.query.revenue,
     transactionId: req.query.transaction_id,
@@ -340,7 +365,7 @@ router.get('/postback/lootably', (req, res) => {
 });
 
 router.get('/postback/torox', (req, res) => {
-  handlePostback('torox', req, res, {
+  handleLegacyOfferwallPostback('torox', req, res, {
     userId: req.query.user_id,
     providerUnits: req.query.reward,
     transactionId: req.query.txid,
@@ -349,7 +374,7 @@ router.get('/postback/torox', (req, res) => {
 });
 
 router.get('/postback/primeearn', (req, res) => {
-  handlePostback('primeearn', req, res, {
+  handleLegacyOfferwallPostback('primeearn', req, res, {
     userId: req.query.user_id,
     providerUnits: req.query.amount,
     transactionId: req.query.offer_id,
@@ -358,7 +383,7 @@ router.get('/postback/primeearn', (req, res) => {
 });
 
 router.get('/postback/ayet', (req, res) => {
-  handlePostback('ayet', req, res, {
+  handleLegacyOfferwallPostback('ayet', req, res, {
     userId: req.query.uid,
     providerUnits: req.query.payout,
     transactionId: req.query.sid,
@@ -367,7 +392,7 @@ router.get('/postback/ayet', (req, res) => {
 });
 
 router.get('/postback/adtowall', (req, res) => {
-  handlePostback('adtowall', req, res, {
+  handleLegacyOfferwallPostback('adtowall', req, res, {
     userId: req.query.user_id,
     providerUnits: req.query.points,
     transactionId: req.query.transaction_id,
@@ -376,7 +401,7 @@ router.get('/postback/adtowall', (req, res) => {
 });
 
 router.get('/postback/revu', (req, res) => {
-  handlePostback('revu', req, res, {
+  handleLegacyOfferwallPostback('revu', req, res, {
     userId: req.query.pub_user_id,
     providerUnits: req.query.amount,
     transactionId: req.query.ref,
