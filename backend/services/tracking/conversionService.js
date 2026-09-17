@@ -7,6 +7,7 @@ const { mapPostbackParameters, parsePayout } = require('./parameterMapper');
 const { sanitizePostbackPayload } = require('./postbackSanitizer');
 const { normalizeProviderStatus } = require('./statusMapper');
 const { validateProviderSecurity } = require('./providerSecurity');
+const { resolveGoal } = require('../../utils/offerGoals');
 
 const createResult = (overrides = {}) => ({
   ok: false,
@@ -132,6 +133,15 @@ const normalizeProviderConfig = (providerConfig) => {
   };
 };
 
+// Identity used for duplicate detection. goalKey is part of the identity so each
+// multi-step goal has its own conversion while single-step offers (goalKey null)
+// keep the original { providerId, providerTransactionId } uniqueness.
+const conversionIdentityFilter = (providerId, providerTransactionId, goalKey) => ({
+  providerId,
+  providerTransactionId,
+  goalKey: goalKey || null,
+});
+
 const createOrResolveConversion = async ({
   providerConfig,
   mapped,
@@ -139,6 +149,8 @@ const createOrResolveConversion = async ({
   clickLog,
   payoutAmount,
   security,
+  goalKey = null,
+  rewardAmount = null,
   conversionModel = Conversion,
 }) => {
   const payload = {
@@ -153,11 +165,12 @@ const createOrResolveConversion = async ({
     incomingStatus: mapped.status,
     internalStatus,
     eventType: mapped.eventType || 'conversion',
+    goalKey: goalKey || null,
     payout: {
       amount: payoutAmount,
       currency: providerConfig.providerSettings?.payoutCurrency || 'USD',
     },
-    rewardAmount: clickLog.rewardAmount || 0,
+    rewardAmount: rewardAmount != null ? rewardAmount : (clickLog.rewardAmount || 0),
     processingState: 'claimed',
     security: {
       method: security.method || '',
@@ -181,10 +194,9 @@ const createOrResolveConversion = async ({
     };
   } catch (error) {
     if (error?.code === 11000 && mapped.transactionId) {
-      const existing = await conversionModel.findOne({
-        providerId: providerConfig.providerId,
-        providerTransactionId: mapped.transactionId,
-      });
+      const existing = await conversionModel.findOne(
+        conversionIdentityFilter(providerConfig.providerId, mapped.transactionId, goalKey)
+      );
       if (existing) {
         if (isSameStatusDuplicate(existing.internalStatus, internalStatus)) {
           if (internalStatus === 'approved' && ['claimed', 'failed'].includes(existing.processingState)) {
@@ -207,8 +219,7 @@ const createOrResolveConversion = async ({
         if (typeof conversionModel.findOneAndUpdate === 'function') {
           const transitioned = await conversionModel.findOneAndUpdate(
             {
-              providerId: providerConfig.providerId,
-              providerTransactionId: mapped.transactionId,
+              ...conversionIdentityFilter(providerConfig.providerId, mapped.transactionId, goalKey),
               internalStatus: existing.internalStatus,
             },
             transitionUpdate,
@@ -217,10 +228,9 @@ const createOrResolveConversion = async ({
           if (transitioned) {
             return { conversion: transitioned, isDuplicate: false, shouldProcess: true, transition: 'updated' };
           }
-          const current = await conversionModel.findOne({
-            providerId: providerConfig.providerId,
-            providerTransactionId: mapped.transactionId,
-          });
+          const current = await conversionModel.findOne(
+            conversionIdentityFilter(providerConfig.providerId, mapped.transactionId, goalKey)
+          );
           if (current && isSameStatusDuplicate(current.internalStatus, internalStatus)) {
             return { conversion: current, isDuplicate: true, shouldProcess: false, transition: 'duplicate' };
           }
@@ -402,6 +412,35 @@ const processPostback = async ({
       return result;
     }
 
+    // Multi-step / goal resolution. Single-step clicks have a null goalsSnapshot
+    // and therefore skip this entirely (unchanged behavior).
+    const goalResolution = resolveGoal({
+      goalsSnapshot: clickLog.goalsSnapshot,
+      eventType: mappedResult.mapped.eventType,
+    });
+    if (goalResolution.hasGoals && !goalResolution.matched) {
+      const result = createResult({
+        ...baseResult,
+        mapped: mappedResult.mapped,
+        sanitizedMapped: mappedResult.sanitizedMapped,
+        security,
+        clickLog,
+        rejectionReason: goalResolution.reason || 'Unknown or disabled goal.',
+      });
+      result.response = providerResponse(config, result);
+      await writePostbackLog({
+        req,
+        providerConfig: config,
+        route,
+        result,
+        mappedFields: mappedResult.sanitizedMapped,
+        security,
+        clickLog,
+        postbackLogModel,
+      });
+      return result;
+    }
+
     let internalStatus;
     let payoutAmount;
     try {
@@ -441,6 +480,10 @@ const processPostback = async ({
         clickLog,
         payoutAmount,
         security,
+        goalKey: goalResolution.goalKey,
+        rewardAmount: goalResolution.matched && goalResolution.amount != null
+          ? goalResolution.amount
+          : null,
         conversionModel,
       });
     } catch (error) {

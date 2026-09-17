@@ -14,17 +14,53 @@ const { processReversal } = require('../services/rewards/reversalService');
 
 // ─────────────────────────────────────────────────────────────────────────────
 // GET /api/direct-offers
-// Public (with token): list active direct offers with user's click status
+// Public (with token): list active direct offers with user's click status.
+// ?placement=featured (default) | brandedOfferwall | all
+// Both placements share the same offer records and tracking flow.
 // ─────────────────────────────────────────────────────────────────────────────
+const PLACEMENTS = ['featured', 'brandedOfferwall', 'all'];
+
+const buildPlacementClause = (placement) => {
+  if (placement === 'brandedOfferwall') {
+    return { 'displayPlacements.brandedOfferwall': true };
+  }
+  if (placement === 'all') {
+    return {
+      $or: [
+        { 'displayPlacements.featured': { $ne: false } },
+        { 'displayPlacements.brandedOfferwall': true },
+      ],
+    };
+  }
+  return { 'displayPlacements.featured': { $ne: false } };
+};
+
+// Resolves the placement requested by the frontend and confirms the offer is
+// actually placed there. Featured is the default for backward compatibility.
+const resolveClickPlacement = (offer, requested) => {
+  const placement = String(requested || '').trim() === 'brandedOfferwall' ? 'brandedOfferwall' : 'featured';
+  const placements = (offer && offer.displayPlacements) || {};
+  if (placement === 'brandedOfferwall' && placements.brandedOfferwall !== true) {
+    return { placement, allowed: false };
+  }
+  if (placement === 'featured' && placements.featured === false) {
+    return { placement, allowed: false };
+  }
+  return { placement, allowed: true };
+};
+
 router.get('/', verifyToken, async (req, res) => {
   try {
     const now = new Date();
+    const placement = PLACEMENTS.includes(req.query.placement) ? req.query.placement : 'featured';
     const user = await User.findOne({ firebaseUid: req.user.uid }).select('_id').lean();
 
     const offers = await DirectOffer.find({
       isActive: true,
-      'displayPlacements.featured': { $ne: false },
-      $or: [{ expirationDate: null }, { expirationDate: { $gt: now } }],
+      $and: [
+        { $or: [{ expirationDate: null }, { expirationDate: { $gt: now } }] },
+        buildPlacementClause(placement),
+      ],
     }).select('-postbackSecretKey').lean();
 
     if (!user) {
@@ -81,6 +117,16 @@ router.post('/click/:offerId', verifyToken, fraudCheck('offer_click', 'full'), a
       return res.status(400).json({ success: false, error: 'Offer has expired' });
     }
 
+    // Placement selected by the frontend (Featured vs Branded Offerwall). Both
+    // placements use this same click/tracking endpoint and offer record.
+    const { placement, allowed } = resolveClickPlacement(
+      offer,
+      req.body?.placement || req.query?.placement
+    );
+    if (!allowed) {
+      return res.status(400).json({ success: false, error: 'Offer is not available in this placement' });
+    }
+
     // Check if user already has an approved click (prevent double-earn attempt)
     const existingApproved = await ClickLog.findOne({
       offerId: offer._id, userId: user._id, status: 'approved',
@@ -95,8 +141,8 @@ router.post('/click/:offerId', verifyToken, fraudCheck('offer_click', 'full'), a
       offer,
       req,
       trackingParams: {
-        source: 'featured_offers',
-        placement: 'featured',
+        source: placement === 'brandedOfferwall' ? 'branded_offerwall' : 'featured_offers',
+        placement,
       },
     });
 
@@ -221,7 +267,10 @@ router.get('/postback', async (req, res) => {
 });
 
 router.__testInternals = {
+  PLACEMENTS,
   buildDirectOfferProviderConfig,
+  buildPlacementClause,
+  resolveClickPlacement,
 };
 
 module.exports = router;

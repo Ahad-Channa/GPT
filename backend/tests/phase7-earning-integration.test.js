@@ -192,12 +192,14 @@ test('transaction history and public recent earnings support reward and reversal
   assert.doesNotMatch(publicSource, /postbackSecret|secretValue|authorization/i);
 });
 
-test('featured placement remains presentation-only and click tracking is shared', () => {
+test('featured and branded placements share tracking and stay presentation-only', () => {
   const directOffersSource = read('backend/routes/directOffers.js');
   assert.match(directOffersSource, /'displayPlacements\.featured': \{ \$ne: false \}/);
+  assert.match(directOffersSource, /displayPlacements\.brandedOfferwall/);
   assert.match(directOffersSource, /createDirectOfferClick/);
-  assert.match(directOffersSource, /placement: 'featured'/);
-  assert.doesNotMatch(directOffersSource, /brandedOfferwall.*processReward/s);
+  assert.match(directOffersSource, /placement/);
+  // Placement must never gate the financial reward path.
+  assert.doesNotMatch(directOffersSource, /if \(placement[^\n]*processReward/);
 });
 
 test('leaderboard contribution is zero after reward reversal marks original reward reversed', () => {

@@ -1,6 +1,20 @@
 const mongoose = require('mongoose');
 const crypto = require('crypto');
 
+// Optional multi-step / goal configuration. When empty, the offer keeps the
+// original single-reward behavior using rewardAmount.
+const directOfferGoalSchema = new mongoose.Schema(
+  {
+    goalKey: { type: String, required: true, trim: true },
+    label: { type: String, trim: true, default: '' },
+    description: { type: String, trim: true, default: '' },
+    rewardAmount: { type: Number, required: true, min: 0 },
+    payoutAmount: { type: Number, default: 0, min: 0 },
+    enabled: { type: Boolean, default: true },
+  },
+  { _id: false }
+);
+
 const directOfferSchema = new mongoose.Schema(
   {
     title: { type: String, required: true },
@@ -37,6 +51,8 @@ const directOfferSchema = new mongoose.Schema(
       enum: ['bullets', 'paragraph'], 
       default: 'bullets' 
     },
+    // Optional multi-step goals. Empty array = single-reward offer (unchanged).
+    goals: { type: [directOfferGoalSchema], default: [] },
     // S2S postback security
     postbackSecretKey: {
       type: String,
