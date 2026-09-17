@@ -218,7 +218,8 @@ export const DirectOfferModal = ({ offer, token, onClose, onClicked }) => {
       if (token) {
         const res = await fetch(`${API}/direct-offers/click/${offer._id}`, {
           method: 'POST',
-          headers: { Authorization: `Bearer ${token}` },
+          headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ placement: 'featured' }),
         });
         const data = await res.json();
         if (data.success && data.url) {

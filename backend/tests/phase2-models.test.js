@@ -75,9 +75,11 @@ test('ClickLog rejects records without a legacy offer or generic campaign refere
 });
 
 test('Conversion defines provider transaction and fallback idempotency indexes', () => {
+  // goalKey is part of the identity so multi-step providers can reuse one
+  // transaction id across different goals; null keeps single-step uniqueness.
   assert.ok(hasIndex(
     Conversion,
-    { providerId: 1, providerTransactionId: 1 },
+    { providerId: 1, providerTransactionId: 1, goalKey: 1 },
     (options) => options.unique === true && Boolean(options.partialFilterExpression)
   ));
   assert.ok(hasIndex(

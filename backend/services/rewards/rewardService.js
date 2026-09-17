@@ -192,13 +192,24 @@ const processReward = async ({
       if (!user) throw new Error('User not found for reward.');
       if (user.isBanned) throw new Error('Banned user cannot receive reward.');
 
-      const rewardAmount = Number(clickLog.rewardAmount);
-      if (!Number.isSafeInteger(rewardAmount) || rewardAmount <= 0) throw new Error('Invalid trusted click reward amount.');
-      if (
-        clickLog.rewardSnapshot?.amount !== undefined &&
-        Number(clickLog.rewardSnapshot.amount) !== rewardAmount
-      ) {
-        throw new Error('Click reward snapshot is inconsistent.');
+      // Reward amount always comes from the trusted click-time snapshot.
+      // Goal conversions use the goal's snapshotted amount; single-step offers
+      // keep using the offer reward amount exactly as before.
+      let rewardAmount;
+      if (claimed.goalKey) {
+        const goalSnapshot = clickLog.goalsSnapshot?.[claimed.goalKey];
+        if (!goalSnapshot) throw new Error('Trusted goal snapshot not found for reward.');
+        rewardAmount = Number(goalSnapshot.amount);
+        if (!Number.isSafeInteger(rewardAmount) || rewardAmount <= 0) throw new Error('Invalid trusted goal reward amount.');
+      } else {
+        rewardAmount = Number(clickLog.rewardAmount);
+        if (!Number.isSafeInteger(rewardAmount) || rewardAmount <= 0) throw new Error('Invalid trusted click reward amount.');
+        if (
+          clickLog.rewardSnapshot?.amount !== undefined &&
+          Number(clickLog.rewardSnapshot.amount) !== rewardAmount
+        ) {
+          throw new Error('Click reward snapshot is inconsistent.');
+        }
       }
       const externalId = rewardExternalId(claimed._id);
       const balanceBefore = user.walletBalance || 0;
@@ -224,6 +235,7 @@ const processReward = async ({
             providerId: claimed.providerId,
             advertiserTransactionId: claimed.providerTransactionId,
             advertiserPayout: claimed.payout?.amount || 0,
+            goalKey: claimed.goalKey || null,
             walletApplied: false,
             holdApplied: holdDecision.status === 'hold',
             holdDays: holdDecision.holdDays,

@@ -65,6 +65,13 @@ const conversionSchema = new mongoose.Schema(
       default: '',
       index: true,
     },
+    // Set only for multi-step/goal conversions. null for single-reward offers.
+    goalKey: {
+      type: String,
+      trim: true,
+      default: null,
+      index: true,
+    },
     payout: {
       amount: { type: Number, default: 0 },
       currency: { type: String, default: 'USD' },
@@ -122,9 +129,11 @@ const conversionSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-// Normal provider idempotency. Partial index keeps legacy/incomplete records from colliding.
+// Normal provider idempotency. The goalKey is part of the key so a multi-step
+// provider can reuse one transaction id across different goals. For single-reward
+// offers goalKey is null, so uniqueness is unchanged from before.
 conversionSchema.index(
-  { providerId: 1, providerTransactionId: 1 },
+  { providerId: 1, providerTransactionId: 1, goalKey: 1 },
   {
     unique: true,
     partialFilterExpression: {

@@ -32,6 +32,68 @@ const PRESET_ICONS = [
   '🏨', '✈️', '🛍️', '🎰', '🏦', '🎬',
 ];
 
+const MAX_GOALS = 25;
+
+const normalizeClientGoals = (goals) => (Array.isArray(goals) ? goals : [])
+  .filter(g => g && g.goalKey)
+  .map(g => ({
+    goalKey: g.goalKey,
+    label: g.label || '',
+    description: g.description || '',
+    rewardAmount: g.rewardAmount ?? '',
+    payoutAmount: g.payoutAmount ?? '',
+    enabled: g.enabled !== false,
+  }));
+
+// Unlimited ISO-2 country tag input (no 3-country cap).
+const CountryTagInput = ({ value, onChange, inputCls }) => {
+  const [draft, setDraft] = useState('');
+  const countries = value ? value.split(',').map(c => c.trim().toUpperCase()).filter(Boolean) : [];
+
+  const commit = (raw) => {
+    const code = String(raw || '').trim().toUpperCase();
+    if (!/^[A-Z]{2}$/.test(code)) return;
+    if (countries.includes(code)) { setDraft(''); return; }
+    onChange([...countries, code].join(', '));
+    setDraft('');
+  };
+
+  const remove = (code) => onChange(countries.filter(c => c !== code).join(', '));
+
+  return (
+    <div>
+      <div className="flex gap-2">
+        <input
+          className={inputCls}
+          value={draft}
+          onChange={(e) => setDraft(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ',') { e.preventDefault(); commit(draft); }
+          }}
+          placeholder="Type ISO-2 code (e.g. US) and press Enter"
+        />
+        <button
+          type="button"
+          onClick={() => commit(draft)}
+          className="shrink-0 px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-xs font-semibold text-slate-300 hover:bg-white/10"
+        >
+          Add
+        </button>
+      </div>
+      <div className="flex flex-wrap gap-1.5 mt-2">
+        {countries.length === 0 ? (
+          <span className="text-[11px] text-slate-500">No countries selected — offer is global.</span>
+        ) : countries.map((code) => (
+          <span key={code} className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold bg-indigo-500/15 text-indigo-300 border border-indigo-500/30">
+            {code}
+            <button type="button" onClick={() => remove(code)} className="text-indigo-300/70 hover:text-white">✕</button>
+          </span>
+        ))}
+      </div>
+    </div>
+  );
+};
+
 // ─── Create / Edit Offer Modal ────────────────────────────────────────────────
 const OfferFormModal = ({ offer, onClose, onSaved, token }) => {
   const isEdit = Boolean(offer);
@@ -53,11 +115,13 @@ const OfferFormModal = ({ offer, onClose, onSaved, token }) => {
     },
     platforms: offer?.platforms || { desktop: true, android: true, ios: true },
     isActive: offer?.isActive !== undefined ? offer.isActive : true,
+    goals: normalizeClientGoals(offer?.goals),
     postbackMapping: {
       clickIdParam:       offer?.postbackMapping?.clickIdParam       || 'click_id',
       transactionIdParam: offer?.postbackMapping?.transactionIdParam || 'txn_id',
       payoutParam:        offer?.postbackMapping?.payoutParam        || 'payout',
       statusParam:        offer?.postbackMapping?.statusParam        || 'status',
+      eventTypeParam:     offer?.postbackMapping?.eventTypeParam     || 'event_type',
       approvedValue:      offer?.postbackMapping?.approvedValue      || 'approved',
       rejectedValue:      offer?.postbackMapping?.rejectedValue      || 'rejected',
     },
@@ -90,6 +154,14 @@ const OfferFormModal = ({ offer, onClose, onSaved, token }) => {
           requirementType: form.requirementType,
           allowedCountries: form.allowedCountries.split(',').map(c => c.trim()).filter(Boolean),
           displayPlacements: form.displayPlacements,
+          goals: form.goals.map(g => ({
+            goalKey: g.goalKey,
+            label: g.label,
+            description: g.description,
+            rewardAmount: Number(g.rewardAmount) || 0,
+            payoutAmount: Number(g.payoutAmount) || 0,
+            enabled: g.enabled !== false,
+          })),
           platforms: form.platforms,
           postbackMapping: form.postbackMapping,
         }),
@@ -217,8 +289,12 @@ const OfferFormModal = ({ offer, onClose, onSaved, token }) => {
             <input type="date" className={inputCls} value={form.expirationDate} onChange={set('expirationDate')} />
           </div>
           <div>
-            <label className={labelCls}>Allowed Countries <span className="text-slate-600 font-normal">(ISO-2, comma separated; blank = global)</span></label>
-            <input className={inputCls} value={form.allowedCountries} onChange={set('allowedCountries')} placeholder="US, GB, DE" />
+            <label className={labelCls}>Allowed Countries <span className="text-slate-600 font-normal">(ISO-2; add as many as needed; none = global)</span></label>
+            <CountryTagInput
+              value={form.allowedCountries}
+              onChange={(next) => setForm(f => ({ ...f, allowedCountries: next }))}
+              inputCls={inputCls}
+            />
           </div>
           <div>
             <label className={labelCls}>Placements</label>
@@ -249,6 +325,75 @@ const OfferFormModal = ({ offer, onClose, onSaved, token }) => {
                 </label>
               ))}
             </div>
+          </div>
+
+          {/* Optional multi-step goals — empty keeps single-reward behavior */}
+          <div className="border border-white/10 rounded-lg p-3 space-y-3">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-xs font-semibold text-slate-300">Multi-step Goals <span className="text-slate-600 font-normal">(optional)</span></p>
+                <p className="text-[11px] text-slate-500 mt-0.5">Leave empty for a single reward. When set, the postback <code>event_type</code> selects the goal and its reward.</p>
+              </div>
+              <button
+                type="button"
+                disabled={form.goals.length >= MAX_GOALS}
+                onClick={() => setForm(f => ({ ...f, goals: [...f.goals, { goalKey: '', label: '', description: '', rewardAmount: '', payoutAmount: '', enabled: true }] }))}
+                className="shrink-0 flex items-center gap-1 px-2.5 py-1 rounded-lg bg-indigo-500/20 border border-indigo-500/40 text-[11px] font-semibold text-indigo-300 hover:bg-indigo-500/30 disabled:opacity-40"
+              >
+                <FiPlus /> Add Goal
+              </button>
+            </div>
+            {form.goals.length > 0 && (
+              <div className="space-y-3">
+                {form.goals.map((goal, idx) => (
+                  <div key={idx} className="border border-white/10 rounded-lg p-2.5 space-y-2 bg-white/[0.02]">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[11px] font-semibold text-slate-400">Goal #{idx + 1}</span>
+                      <div className="flex items-center gap-2">
+                        <label className="flex items-center gap-1 text-[11px] text-slate-400 cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={goal.enabled}
+                            onChange={e => setForm(f => ({ ...f, goals: f.goals.map((g, i) => i === idx ? { ...g, enabled: e.target.checked } : g) }))}
+                            className="accent-indigo-500"
+                          />
+                          Enabled
+                        </label>
+                        <button
+                          type="button"
+                          onClick={() => setForm(f => ({ ...f, goals: f.goals.filter((_, i) => i !== idx) }))}
+                          className="text-rose-400 hover:text-rose-300 text-sm"
+                        >
+                          <FiTrash2 />
+                        </button>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2">
+                      <div>
+                        <label className={labelCls}>Goal Key * <span className="text-slate-600 font-normal">(event_type value)</span></label>
+                        <input className={inputCls} value={goal.goalKey} onChange={e => setForm(f => ({ ...f, goals: f.goals.map((g, i) => i === idx ? { ...g, goalKey: e.target.value } : g) }))} placeholder="e.g. registration, deposit, level_5" />
+                      </div>
+                      <div>
+                        <label className={labelCls}>Label</label>
+                        <input className={inputCls} value={goal.label} onChange={e => setForm(f => ({ ...f, goals: f.goals.map((g, i) => i === idx ? { ...g, label: e.target.value } : g) }))} placeholder="e.g. Complete registration" />
+                      </div>
+                      <div>
+                        <label className={labelCls}>Reward (Coins) *</label>
+                        <input type="number" min="0" className={inputCls} value={goal.rewardAmount} onChange={e => setForm(f => ({ ...f, goals: f.goals.map((g, i) => i === idx ? { ...g, rewardAmount: e.target.value } : g) }))} placeholder="e.g. 250" />
+                      </div>
+                      <div>
+                        <label className={labelCls}>Payout Metadata (USD)</label>
+                        <input type="number" step="0.01" className={inputCls} value={goal.payoutAmount} onChange={e => setForm(f => ({ ...f, goals: f.goals.map((g, i) => i === idx ? { ...g, payoutAmount: e.target.value } : g) }))} placeholder="e.g. 1.20" />
+                      </div>
+                    </div>
+                    <div>
+                      <label className={labelCls}>Description</label>
+                      <input className={inputCls} value={goal.description} onChange={e => setForm(f => ({ ...f, goals: f.goals.map((g, i) => i === idx ? { ...g, description: e.target.value } : g) }))} placeholder="Optional description shown to admins" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
           {isEdit && (
@@ -293,6 +438,10 @@ const OfferFormModal = ({ offer, onClose, onSaved, token }) => {
                     <input className={inputCls} value={form.postbackMapping.statusParam} onChange={setMapping('statusParam')} placeholder="e.g. status, event, action" />
                   </div>
                   <div>
+                    <label className={labelCls}>Event Type Parameter <span className="text-slate-600 font-normal">(multi-step)</span></label>
+                    <input className={inputCls} value={form.postbackMapping.eventTypeParam} onChange={setMapping('eventTypeParam')} placeholder="e.g. event_type, goal" />
+                  </div>
+                  <div>
                     <label className={labelCls}>Approved Value</label>
                     <input className={inputCls} value={form.postbackMapping.approvedValue} onChange={setMapping('approvedValue')} placeholder="e.g. approved, conversion, 1" />
                   </div>
@@ -316,7 +465,7 @@ const OfferFormModal = ({ offer, onClose, onSaved, token }) => {
             </button>
           </div>
         </form>
-      </motion.div>
+      </div>
     </div>
   );
 };

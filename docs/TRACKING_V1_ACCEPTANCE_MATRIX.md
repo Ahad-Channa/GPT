@@ -4,6 +4,18 @@ Date: 2026-08-24
 
 This matrix maps the agreed Taskmint Tracking/Postback V1 scope to the implementation and verification status. Results are marked PASS only where covered by automated tests or direct source/build verification. Real third-party provider behavior is intentionally deferred to Phase 10.
 
+> **Known limitation — legacy offerwall postbacks are NOT migrated to `rewardService`.**
+> The direct-offer S2S path (`/api/direct-offers/postback`) is fully migrated and uses
+> `processPostback → processReward`/`processReversal` (no wallet mutation in the route).
+> The legacy per-provider offerwall callbacks in `backend/routes/offerwalls.js`
+> (`/postback/cpx`, `/adgem`, `/lootably`, `/torox`, `/primeearn`, `/ayet`, `/adtowall`, `/revu`)
+> still credit the wallet inline, because there are no server-side tracked outbound
+> offerwall clicks to link a `ClickLog`/`Conversion` to yet. They have only received
+> security hardening (fail-closed secrets, strict scalar validation, removed fuzzy
+> chargeback matching). Migrating them to `rewardService`/`reversalService` is
+> **Phase 10** work and depends on outbound offerwall click tracking. Do not describe
+> these legacy routes as fully migrated.
+
 | Area | Requirement | Implementation file(s) | Automated test(s) | Manual verification if needed | Current result |
 |---|---|---|---|---|---|
 | Baseline | Preserve existing Taskmint frontend/backend/runtime routes while adding tracking V1 | `backend/server.js`, `backend/routes/*.js`, `frontend/src/App.jsx` | `backend/tests/phase2-models.test.js` through `backend/tests/phase9-v1-acceptance.test.js` | Frontend production build | PASS |
@@ -46,5 +58,6 @@ This matrix maps the agreed Taskmint Tracking/Postback V1 scope to the implement
 | Admin click logs | Safe fields with provider/campaign/country and no sensitive URLs/params | `backend/routes/admin.js` | `phase8-admin-visibility.test.js` | None | PASS |
 | Admin authorization | New admin endpoints reject unauthenticated, non-admin, wrong permission and allow correct permission | `backend/routes/admin.js`, `backend/middlewares/*.js` | `phase8-admin-visibility.test.js` | None | PASS |
 | Legacy routes | Tested legacy route compatibility for direct offers, wallet earnings, leaderboard, daily bonus, referrals, VIP, and admin visibility | `backend/routes/*.js`, `frontend/src/*` | Full backend suite and frontend build | None | PASS |
+| Legacy offerwalls | Legacy per-provider offerwall postbacks are hardened but **not** migrated to `rewardService`/`reversalService`; they still credit the wallet inline | `backend/routes/offerwalls.js` | `phase9-v1-acceptance.test.js` (legacy compatibility only) | Must migrate after outbound offerwall click tracking exists | LIMITED / PHASE 10 |
 | Legacy routes | Full production smoke of all existing live workflows including withdrawals and provider callbacks | `backend/routes/*.js`, deployed frontend/backend | Not fully automatable in local test environment | Requires deployed environment, database, Firebase, and payment/provider credentials | BLOCKED BY ENVIRONMENT |
 | Real provider boundary | Exact signature formula, field names, response expectations, reversal mechanism, sandbox/live conversion | Future Phase 10 provider adapter/config work | Not applicable yet | Requires official provider documentation and sandbox/live provider access | REQUIRES REAL PROVIDER IN PHASE 10 |

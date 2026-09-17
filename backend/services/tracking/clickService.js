@@ -5,6 +5,7 @@ const {
   normalizeCountryCode,
   resolveRequestGeo,
 } = require('../../utils/geo');
+const { buildGoalsSnapshot } = require('../../utils/offerGoals');
 
 const SENSITIVE_KEY_PATTERN = /(api[_-]?key|secret|token|password|authorization|bearer|credential|private)/i;
 const ALLOWED_TRACKING_KEYS = new Set([
@@ -127,6 +128,7 @@ const createClick = async ({
   trackingParams = {},
   rewardAmount,
   rewardSnapshot = {},
+  goalsSnapshot = null,
   destinationUrl,
   clickIdParam = 'click_id',
   clickLogModel = ClickLog,
@@ -158,6 +160,7 @@ const createClick = async ({
         status: 'clicked',
         rewardAmount,
         rewardSnapshot,
+        goalsSnapshot,
       });
 
       return { clickLog, clickId, redirectUrl };
@@ -212,6 +215,8 @@ const createDirectOfferClick = async ({
       currency: 'coins',
       source: 'direct_offer.rewardAmount',
     },
+    // null when the offer has no enabled goals (single-step offers unchanged).
+    goalsSnapshot: buildGoalsSnapshot(offer.goals),
     destinationUrl: offer.advertiserUrl,
     clickIdParam: offer.postbackMapping?.clickIdParam || 'click_id',
     clickLogModel,

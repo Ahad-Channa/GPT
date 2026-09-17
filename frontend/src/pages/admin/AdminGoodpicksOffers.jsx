@@ -475,7 +475,7 @@ const AdminGoodpicksOffers = () => {
             Goodpicks Offers Management
           </h1>
           <p className="text-slate-400 text-xs mt-1">
-            Manage in-house offers displayed in the Goodpicks offerwall modal.
+            Legacy content CMS for the Goodpicks offerwall modal.
           </p>
         </div>
 
@@ -496,6 +496,16 @@ const AdminGoodpicksOffers = () => {
             <span>Create Goodpicks Offer</span>
           </button>
         </div>
+      </div>
+
+      {/* Consolidation notice: branded placement is now part of Direct Offers */}
+      <div className="flex items-start gap-2 p-3 rounded-xl bg-indigo-500/[0.06] border border-indigo-500/20 text-indigo-200 text-xs">
+        <FiCheckSquare className="mt-0.5 shrink-0" />
+        <span>
+          Branded Offerwall offers are now managed as part of the unified offer system. Use
+          <strong> Direct Offers</strong>, enable the <strong>Branded Offerwall</strong> placement, and the
+          same offer record and click tracking will be used. This page remains for legacy Goodpicks content only.
+        </span>
       </div>
 
       {/* Offers Table / List */}

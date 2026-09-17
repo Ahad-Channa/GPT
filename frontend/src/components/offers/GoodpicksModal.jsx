@@ -180,7 +180,30 @@ export const GoodpicksDetailModal = ({ offer, onClose, token }) => {
 
   const rewardFormatted = (offer.rewardAmount || 0).toLocaleString('de-DE');
 
-  const handleStartOffer = () => {
+  const handleStartOffer = async () => {
+    // Tracked direct-offer click (Branded Offerwall placement) — no frontend reward logic.
+    if (offer.__direct && offer._id) {
+      try {
+        setLoading(true);
+        const res = await fetch(`${API}/direct-offers/click/${offer._id}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+          body: JSON.stringify({ placement: 'brandedOfferwall' }),
+        });
+        const data = await res.json();
+        if (data.success && data.url) {
+          window.open(data.url, '_blank', 'noopener,noreferrer');
+          return;
+        }
+      } catch (err) {
+        console.error('Failed to start tracked offer:', err);
+      } finally {
+        setLoading(false);
+      }
+      if (offer.externalLink) window.open(offer.externalLink, '_blank', 'noopener,noreferrer');
+      return;
+    }
+
     if (offer.externalLink) {
       window.open(offer.externalLink, '_blank', 'noopener,noreferrer');
     }
@@ -523,6 +546,7 @@ export const GoodpicksDetailModal = ({ offer, onClose, token }) => {
         {/* Start Offer Button */}
         <button
           onClick={handleStartOffer}
+          disabled={loading}
           style={{
             width: '100%',
             height: '48px',
@@ -533,7 +557,8 @@ export const GoodpicksDetailModal = ({ offer, onClose, token }) => {
             fontWeight: 600,
             fontSize: '15px',
             border: 'none',
-            cursor: 'pointer',
+            cursor: loading ? 'wait' : 'pointer',
+            opacity: loading ? 0.7 : 1,
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
@@ -541,7 +566,7 @@ export const GoodpicksDetailModal = ({ offer, onClose, token }) => {
           }}
           className="hover:bg-[#151B24] transition-all shadow-md shrink-0"
         >
-          Start Offer
+          {loading ? 'Starting…' : 'Start Offer'}
         </button>
 
         {/* General Offer Rules Section */}
@@ -617,10 +642,26 @@ export const GoodpicksOfferwallModal = ({ onClose, token }) => {
   const [sortBy, setSortBy] = useState('highest'); // 'highest' | 'lowest' | 'newest'
   const [selectedOffer, setSelectedOffer] = useState(null);
 
-  // Fetch Goodpicks offers from API (fall back to mock items)
+  // Branded Offerwall offers come from the same DirectOffer source as Featured
+  // Offers (displayPlacements.brandedOfferwall) and use the same click tracking
+  // endpoint. The legacy Goodpicks CMS is only a fallback for offline content.
   useEffect(() => {
     const fetchOffers = async () => {
       try {
+        if (token) {
+          const res = await fetch(`${API}/direct-offers?placement=brandedOfferwall`, {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          const data = await res.json();
+          if (data.success && data.offers && data.offers.length > 0) {
+            setOffers(data.offers.map((o) => ({
+              ...o,
+              __direct: true,
+              externalLink: o.advertiserUrl,
+            })));
+            return;
+          }
+        }
         const res = await fetch(`${API}/goodpicks-offers`);
         const data = await res.json();
         if (data.success && data.offers && data.offers.length > 0) {
@@ -636,7 +677,7 @@ export const GoodpicksOfferwallModal = ({ onClose, token }) => {
       }
     };
     fetchOffers();
-  }, []);
+  }, [token]);
 
   // Filter offers by platform
   const filteredOffers = offers.filter((offer) => {

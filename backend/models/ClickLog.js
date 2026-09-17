@@ -114,6 +114,12 @@ const clickLogSchema = new mongoose.Schema(
       currency: { type: String, default: 'coins' },
       source: { type: String, default: 'offer_reward_amount' },
     },
+    // Trusted click-time snapshot of enabled multi-step goals (goalKey -> { amount, ... }).
+    // null for single-reward offers.
+    goalsSnapshot: {
+      type: mongoose.Schema.Types.Mixed,
+      default: null,
+    },
     advertiserPayout: { type: Number, default: 0 }, // Optional: advertiser can send payout amount in postback
     convertedAt: { type: Date, default: null }, // Timestamp when postback confirmed
     // Link back to Transaction once approved
