@@ -239,6 +239,7 @@ router.get('/history', verifyToken, async (req, res) => {
     if (type !== 'all') {
       if (type === 'chargeback') {
         query.status = 'reversed';
+        query.method = { $ne: 'book' }; // Exclude book orders from chargebacks – they show in Transaction History instead
       } else if (type.includes(',')) {
         query.transactionType = { $in: type.split(',') };
       } else {

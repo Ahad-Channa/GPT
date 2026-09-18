@@ -72,7 +72,7 @@ const parseOfferDescription = (offer) => {
   return { heading, subText };
 };
 
-const ITEMS_PER_PAGE = 2;
+const ITEMS_PER_PAGE = 5;
 
 /**
  * PublicProfileModal

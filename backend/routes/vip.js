@@ -16,7 +16,7 @@ const DEFAULT_REWARDS = {
   gold_1: 2000,   gold_2: 3500,   gold_3: 5000,
   platinum_1: 10000, platinum_2: 15000, platinum_3: 25000,
   diamond_1: 50000,  diamond_2: 75000,  diamond_3: 100000,
-  opal: 250000,
+  opal_1: 250000,    opal_2: 500000,    opal_3: 1000000,
 };
 
 /* ── Seed missing VipConfig documents on demand ── */
@@ -91,13 +91,15 @@ router.get('/status', requireAuth, async (req, res) => {
     // Build levels array with status
     const levels = dynamicLevels.map((lvl, idx) => {
       const reached   = totalEarned >= lvl.threshold;
+      const rewardAmt = configMap[lvl.key] ?? 0;
       // Only treat as "claimed" if user has also reached the current threshold.
       // If admin raised the threshold after the user claimed, the old claim is stale.
-      const claimed   = claimedKeys.has(lvl.key) && reached;
-      const claimable = reached && !claimed && configMap[lvl.key] > 0;
+      // Levels with 0 reward (like bronze_1 starter level) are automatically claimed when reached.
+      const claimed   = (claimedKeys.has(lvl.key) || (rewardAmt === 0 && reached)) && reached;
+      const claimable = reached && !claimed && rewardAmt > 0;
       return {
         ...lvl,
-        rewardAmount: configMap[lvl.key] ?? 0,
+        rewardAmount: rewardAmt,
         reached,
         claimed,
         claimable,

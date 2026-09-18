@@ -14,7 +14,7 @@ const item = { hidden: { opacity: 0, y: 16 }, show: { opacity: 1, y: 0, transiti
 
 const FeaturedOfferBadge = () => (
   <img
-    src="/coins/FETUOFF.png"
+    src="/coins/featureOffernew.png"
     alt="Featured Offers"
     className="w-[53px] h-[53px] md:w-[67.2px] md:h-[67.2px] flex-shrink-0 object-contain select-none"
     style={{

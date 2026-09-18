@@ -16,7 +16,9 @@ export const VIP_LEVELS = [
   { key: 'diamond_1',  tier: 'Diamond',  rank: 'I',   threshold: 4000000,   tierOrder: 5 },
   { key: 'diamond_2',  tier: 'Diamond',  rank: 'II',  threshold: 6000000,   tierOrder: 5 },
   { key: 'diamond_3',  tier: 'Diamond',  rank: 'III', threshold: 8000000,   tierOrder: 5 },
-  { key: 'opal',       tier: 'Opal',     rank: '',    threshold: 10000000,  tierOrder: 6 },
+  { key: 'opal_1',     tier: 'Opal',     rank: 'I',   threshold: 10000000,  tierOrder: 6 },
+  { key: 'opal_2',     tier: 'Opal',     rank: 'II',  threshold: 15000000,  tierOrder: 6 },
+  { key: 'opal_3',     tier: 'Opal',     rank: 'III', threshold: 25000000,  tierOrder: 6 },
 ];
 
 export const TIER_STYLES = {
@@ -64,6 +66,31 @@ export const TIER_STYLES = {
   },
 };
 
+export const LEVEL_BADGES = {
+  bronze_1: '/coins/Bronz1.png',
+  bronze_2: '/coins/Bronz2.png',
+  bronze_3: '/coins/Bronz3.png',
+  silver_1: '/coins/silver1.png',
+  silver_2: '/coins/silver2.png',
+  silver_3: '/coins/silver3.png',
+  gold_1: '/coins/gold1.png',
+  gold_2: '/coins/gold2.png',
+  gold_3: '/coins/gold3.png',
+  platinum_1: '/coins/platn1.png',
+  platinum_2: '/coins/platn2.png',
+  platinum_3: '/coins/platn3.png',
+  diamond_1: '/coins/dimond1.png',
+  diamond_2: '/coins/dimond2.png',
+  diamond_3: '/coins/dimond3.png',
+  opal_1: '/coins/opal1.png',
+  opal_2: '/coins/opal2.png',
+  opal_3: '/coins/opal3.png',
+};
+
+export function getLevelBadge(levelKey) {
+  return LEVEL_BADGES[levelKey] || null;
+}
+
 export function getLevelFromEarned(totalEarned = 0) {
   let current = null;
   for (const lvl of VIP_LEVELS) {
@@ -77,3 +104,4 @@ export function getLevelLabel(level) {
   if (!level) return 'Non-VIP';
   return level.rank ? `${level.tier} ${level.rank}` : level.tier;
 }
+

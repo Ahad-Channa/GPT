@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FiMonitor, FiInbox, FiStar, FiZap, FiExternalLink, FiCheckCircle, FiSend, FiLoader, FiX } from 'react-icons/fi';
 import { FaApple, FaAndroid, FaDesktop } from 'react-icons/fa';
+import { BsQrCode } from 'react-icons/bs';
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 import CoinDisplay from '../CoinDisplay';
@@ -349,11 +350,10 @@ export const FeaturedOfferModal = ({ offer, token, onClose, onSubmitted }) => {
         style={{
           width: '626px',
           maxWidth: '96vw',
-          height: '687px',
-          maxHeight: '94vh',
+          maxHeight: '92vh',
           background: '#FFFFFF',
           borderRadius: '25px',
-          padding: '8px',
+          padding: '8px 8px 14px 8px',
           boxSizing: 'border-box',
           fontFamily: '"Poppins", sans-serif',
           color: '#0E0F0C',
@@ -361,7 +361,6 @@ export const FeaturedOfferModal = ({ offer, token, onClose, onSubmitted }) => {
           transform: 'rotate(0deg)',
           display: 'flex',
           flexDirection: 'column',
-          justifyContent: 'space-between',
           gap: '10px',
         }}
         className="relative shadow-2xl overflow-y-auto hide-scrollbar"
@@ -906,6 +905,74 @@ export const FeaturedOfferModal = ({ offer, token, onClose, onSubmitted }) => {
                 </span>
               </div>
             ))}
+          </div>
+        </div>
+
+        {/* Smartphone QR Code Section (Whole layout: 336px x 76px, gap: 30px) */}
+        <div
+          style={{
+            width: '336px',
+            maxWidth: '100%',
+            height: '76px',
+            transform: 'rotate(0deg)',
+            opacity: 1,
+            gap: '30px',
+            display: 'flex',
+            alignItems: 'center',
+            margin: '0 auto',
+            paddingTop: '6px',
+            paddingBottom: '4px',
+            boxSizing: 'border-box',
+          }}
+          className="shrink-0"
+        >
+          {/* QR Box: 76px x 76px, angle: 0deg, opacity: 1, borderRadius: 10px */}
+          <div
+            style={{
+              width: '76px',
+              height: '76px',
+              transform: 'rotate(0deg)',
+              opacity: 1,
+              borderRadius: '10px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              flexShrink: 0,
+              boxSizing: 'border-box',
+            }}
+          >
+            <BsQrCode size={76} className="text-[#000000]" />
+          </div>
+
+          {/* Text Layout: 230px x 38px, angle: 0deg, opacity: 1 */}
+          <div
+            style={{
+              width: '230px',
+              minHeight: '38px',
+              transform: 'rotate(0deg)',
+              opacity: 1,
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'center',
+              boxSizing: 'border-box',
+            }}
+          >
+            <p
+              style={{
+                fontFamily: '"IBM Plex Sans", "Poppins", sans-serif',
+                fontWeight: 500,
+                fontSize: '16px',
+                lineHeight: '20px',
+                letterSpacing: '0%',
+                color: '#000000',
+                margin: 0,
+                padding: 0,
+              }}
+            >
+              Scan the QR code to start
+              <br />
+              directly on your smartphone.
+            </p>
           </div>
         </div>
       </motion.div>

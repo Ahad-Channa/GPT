@@ -506,27 +506,25 @@ const LiveEarningsBar = () => {
             className="flex flex-col"
             style={{
               width: '214px',
-              minHeight: '116px',
               borderRadius: '0px 12px 12px 12px',
               borderTopRightRadius: '12px',
               borderBottomRightRadius: '12px',
               borderBottomLeftRadius: '12px',
-              padding: '14px 15px 18px 13px',
-              gap: '10px',
+              padding: '12px 13px 12px 13px',
+              gap: '8px',
               background: 'rgba(255, 255, 255, 1)',
               boxShadow: '0px 10px 23px 0px rgba(0, 0, 0, 0.09)',
               border: '1px solid rgba(223, 225, 209, 0.8)',
               boxSizing: 'border-box',
               display: 'flex',
               flexDirection: 'column',
-              justifyContent: 'space-between',
             }}
           >
             {/* ── Top Row: Cream Pill Banner ── */}
             <div
               style={{
                 width: '100%',
-                height: '34px',
+                height: '32px',
                 borderRadius: '100px',
                 background: 'rgba(249, 247, 241, 1)',
                 padding: '0 12px',
@@ -583,13 +581,13 @@ const LiveEarningsBar = () => {
             </div>
 
             {/* ── Bottom Section: Title & Subtitle ── */}
-            <div className="flex flex-col w-full min-w-0">
+            <div className="flex flex-col w-full min-w-0 gap-[3px]">
               <span
                 style={{
                   fontFamily: '"Bricolage Grotesque", sans-serif',
                   fontWeight: 700,
                   fontSize: '16px',
-                  lineHeight: '16px',
+                  lineHeight: '20px',
                   letterSpacing: '0%',
                   color: '#000000',
                   whiteSpace: 'normal',
@@ -606,7 +604,7 @@ const LiveEarningsBar = () => {
                   fontFamily: '"Poppins", sans-serif',
                   fontWeight: 500,
                   fontSize: '13px',
-                  lineHeight: '28px',
+                  lineHeight: '18px',
                   letterSpacing: '0%',
                   color: '#000000',
                   whiteSpace: 'normal',

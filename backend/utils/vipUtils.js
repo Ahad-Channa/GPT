@@ -19,7 +19,9 @@ const VIP_LEVELS = [
   { key: 'diamond_1',  tier: 'Diamond',  rank: 'I',   threshold: 4000000,   tierOrder: 5 },
   { key: 'diamond_2',  tier: 'Diamond',  rank: 'II',  threshold: 6000000,   tierOrder: 5 },
   { key: 'diamond_3',  tier: 'Diamond',  rank: 'III', threshold: 8000000,   tierOrder: 5 },
-  { key: 'opal',       tier: 'Opal',     rank: '',    threshold: 10000000,  tierOrder: 6 },
+  { key: 'opal_1',     tier: 'Opal',     rank: 'I',   threshold: 10000000,  tierOrder: 6 },
+  { key: 'opal_2',     tier: 'Opal',     rank: 'II',  threshold: 15000000,  tierOrder: 6 },
+  { key: 'opal_3',     tier: 'Opal',     rank: 'III', threshold: 25000000,  tierOrder: 6 },
 ];
 
 function getLevelFromEarned(totalEarned = 0, levels = VIP_LEVELS) {
