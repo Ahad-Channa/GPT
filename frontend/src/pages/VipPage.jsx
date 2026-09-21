@@ -164,96 +164,58 @@ const VipPage = () => {
 
         {/* ─── Top Banner Area (rgba(249, 247, 241, 1)) ─── */}
         <div
-          className="w-full flex justify-center items-center transition-colors duration-300 py-8 sm:py-10"
+          className="w-full flex justify-center items-center transition-colors duration-300 py-6 sm:py-10"
           style={{
             background: 'rgba(249, 247, 241, 1)',
-            minHeight: '275px',
-            opacity: 1,
-            transform: 'rotate(0deg)',
+            minHeight: '220px',
           }}
         >
-          {/* Grouped Container for VIP Status & Status Card (width: 782px, height: 162px, gap: 30px, centered) */}
+          {/* Grouped Container for VIP Status & Status Card */}
           <div
-            className="w-full max-w-[782px] mx-auto px-4 sm:px-0 flex flex-col items-start justify-center"
-            style={{
-              width: '782px',
-              minHeight: '162px',
-              gap: '30px',
-              opacity: 1,
-              transform: 'rotate(0deg)',
-            }}
+            className="w-full max-w-[782px] mx-auto px-3 sm:px-4 md:px-0 flex flex-col items-start justify-center gap-4 sm:gap-[30px]"
           >
             {/* VIP Status Text */}
             <h1
+              className="text-[22px] sm:text-[27px] font-bold text-black"
               style={{
                 fontFamily: '"Bricolage Grotesque", sans-serif',
-                fontWeight: 700,
-                fontSize: '27px',
-                lineHeight: '18px',
+                lineHeight: '1.2',
                 letterSpacing: '-0.02em',
-                color: '#000000',
                 margin: 0,
-                opacity: 1,
-                transform: 'rotate(0deg)',
                 textAlign: 'left',
               }}
             >
               VIP Status
             </h1>
 
-            {/* Top Status Card (width: 782px, height: 114px) */}
+            {/* Top Status Card */}
             <div
-              className="w-full shadow-sm flex items-center justify-between"
-              style={{
-                width: '782px',
-                minHeight: '114px',
-                height: isMaxLevel ? 'auto' : '114px',
-                opacity: 1,
-                transform: 'rotate(0deg)',
-                borderRadius: '30px',
-                paddingTop: '10px',
-                paddingRight: '10px',
-                paddingBottom: '10px',
-                paddingLeft: '15px',
-                background: 'rgba(255, 255, 255, 1)',
-                boxSizing: 'border-box',
-              }}
+              className="w-full shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between rounded-[24px] sm:rounded-[30px] p-3.5 sm:pt-[10px] sm:pr-[10px] sm:pb-[10px] sm:pl-[15px] gap-3.5 sm:gap-0 box-border bg-white min-h-[105px] sm:min-h-[114px]"
             >
               {/* Left Side: Badge & Rank info */}
-              <div className="flex items-center gap-4">
+              <div className="flex items-center gap-3 sm:gap-4 w-full sm:w-auto">
                 <img
                   src={currentLevel ? (LEVEL_BADGES[currentLevel.key] || TIER_METADATA[currentLevel.tier]?.badge || '/coins/VIPbronze.png') : '/coins/image copy 8.png'}
                   alt="Rank Badge"
-                  className="object-contain drop-shadow-sm shrink-0"
-                  style={{
-                    width: '94px',
-                    height: '94px',
-                    opacity: 1,
-                    transform: 'rotate(0deg)',
-                  }}
+                  className="w-[72px] h-[72px] sm:w-[94px] sm:h-[94px] object-contain drop-shadow-sm shrink-0"
                 />
-                <div className="flex flex-col gap-0.5">
+                <div className="flex flex-col gap-0.5 min-w-0 flex-1 sm:flex-initial">
                   <span
+                    className="text-[12px] sm:text-[13px] text-black font-medium"
                     style={{
                       fontFamily: '"Poppins", sans-serif',
-                      fontWeight: 500,
-                      fontSize: '13px',
                       lineHeight: '16px',
-                      letterSpacing: '0%',
-                      color: '#000000',
                       margin: 0,
                     }}
                   >
                     Current rank
                   </span>
                   <h2
+                    className="text-[19px] sm:text-[22px] font-bold text-black"
                     style={{
                       fontFamily: '"Bricolage Grotesque", sans-serif',
-                      fontWeight: 700,
-                      fontSize: '22px',
-                      lineHeight: '26px',
+                      lineHeight: '1.2',
                       letterSpacing: '-0.02em',
-                      color: '#000000',
                       margin: 0,
                     }}
                   >
@@ -265,24 +227,7 @@ const VipPage = () => {
                   </h2>
                   {isMaxLevel && (
                     <div
-                      style={{
-                        width: '219px',
-                        maxWidth: '100%',
-                        height: '24px',
-                        minHeight: '24px',
-                        gap: '5px',
-                        borderRadius: '60px',
-                        paddingTop: '5px',
-                        paddingRight: '14px',
-                        paddingBottom: '5px',
-                        paddingLeft: '14px',
-                        background: 'rgba(234, 241, 255, 1)',
-                        opacity: 1,
-                        display: 'flex',
-                        alignItems: 'center',
-                        boxSizing: 'border-box',
-                        marginTop: '2px',
-                      }}
+                      className="flex items-center gap-1.5 rounded-full py-1 px-3 bg-[#EAF1FF] mt-1 w-fit"
                     >
                       <img
                         src="/coins/image copy 11.png"
@@ -290,16 +235,9 @@ const VipPage = () => {
                         className="w-4 h-4 object-contain shrink-0"
                       />
                       <span
+                        className="text-[11px] sm:text-[12px] font-medium text-black whitespace-nowrap"
                         style={{
-                          width: '172px',
-                          maxWidth: '100%',
                           fontFamily: '"Poppins", sans-serif',
-                          fontWeight: 500,
-                          fontSize: '12px',
-                          lineHeight: '18px',
-                          letterSpacing: '0%',
-                          color: '#000000',
-                          whiteSpace: 'nowrap',
                         }}
                       >
                         You have reached max level
@@ -310,37 +248,20 @@ const VipPage = () => {
               </div>
 
               {/* Right Side: Total Earned & Rank Level Boxes */}
-              <div className="flex items-center gap-2.5">
+              <div className="flex items-center justify-between sm:justify-end gap-2.5 w-full sm:w-auto">
                 {/* Total Earned Box */}
                 <div
+                  className="flex-1 sm:flex-initial sm:w-[136px] h-[52px] rounded-[17px] py-1.5 px-3 flex flex-col items-center justify-center gap-0.5 box-border"
                   style={{
-                    width: '136px',
-                    height: '52px',
-                    borderRadius: '17px',
-                    paddingTop: '6px',
-                    paddingRight: '12px',
-                    paddingBottom: '6px',
-                    paddingLeft: '12px',
                     background: 'rgba(249, 247, 241, 1)',
-                    gap: '2px',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    boxSizing: 'border-box',
                   }}
                 >
                   <span
+                    className="text-[11px] sm:text-[12px] font-medium text-black text-center whitespace-nowrap"
                     style={{
                       fontFamily: '"Poppins", sans-serif',
-                      fontWeight: 500,
-                      fontSize: '12px',
                       lineHeight: '14px',
-                      letterSpacing: '0%',
-                      color: '#000000',
-                      textAlign: 'center',
                       margin: 0,
-                      whiteSpace: 'nowrap',
                     }}
                   >
                     Total Earned
@@ -348,15 +269,12 @@ const VipPage = () => {
                   <div className="flex items-center gap-1">
                     <img src="/coins/VIPcoin1.png" alt="Coin" className="w-3.5 h-3.5 object-contain shrink-0" />
                     <span
+                      className="text-[12px] sm:text-[13px] font-semibold whitespace-nowrap"
                       style={{
                         fontFamily: '"Poppins", sans-serif',
-                        fontWeight: 600,
-                        fontSize: '13px',
-                        lineHeight: '16px',
-                        letterSpacing: '0%',
                         color: 'rgba(231, 171, 24, 1)',
+                        lineHeight: '16px',
                         margin: 0,
-                        whiteSpace: 'nowrap',
                       }}
                     >
                       {(totalEarned ?? 0).toLocaleString('de-DE')}
@@ -366,49 +284,29 @@ const VipPage = () => {
 
                 {/* Rank Level Box */}
                 <div
+                  className="flex-1 sm:flex-initial sm:w-[109px] h-[52px] rounded-[17px] py-1.5 px-3 flex flex-col items-center justify-center gap-0.5 box-border"
                   style={{
-                    width: '109px',
-                    height: '52px',
-                    borderRadius: '17px',
-                    paddingTop: '6px',
-                    paddingRight: '12px',
-                    paddingBottom: '6px',
-                    paddingLeft: '12px',
                     background: 'rgba(249, 247, 241, 1)',
-                    gap: '2px',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    boxSizing: 'border-box',
                   }}
                 >
                   <span
+                    className="text-[11px] sm:text-[12px] font-medium text-black text-center whitespace-nowrap"
                     style={{
                       fontFamily: '"Poppins", sans-serif',
-                      fontWeight: 500,
-                      fontSize: '12px',
                       lineHeight: '14px',
-                      letterSpacing: '0%',
-                      color: '#000000',
-                      textAlign: 'center',
                       margin: 0,
-                      whiteSpace: 'nowrap',
                     }}
                   >
                     Rank Level
                   </span>
                   <span
+                    className="text-[13px] sm:text-[14px] font-bold text-center whitespace-nowrap"
                     style={{
                       fontFamily: '"Bricolage Grotesque", sans-serif',
-                      fontWeight: 700,
-                      fontSize: '14px',
-                      lineHeight: '16px',
                       letterSpacing: '-0.02em',
                       color: 'rgba(36, 50, 77, 1)',
-                      textAlign: 'center',
+                      lineHeight: '16px',
                       margin: 0,
-                      whiteSpace: 'nowrap',
                     }}
                   >
                     {rankLevelDisplay} / {totalRanks}
@@ -420,8 +318,8 @@ const VipPage = () => {
         </div>
 
         {/* ─── Bottom Section (Background: #FAFAFA) ─── */}
-        <div className="w-full bg-[#FAFAFA] flex justify-center py-10 pb-24">
-          <div className="w-full max-w-[1329px] mx-auto px-4 md:px-8 lg:px-0 flex flex-col gap-8">
+        <div className="w-full bg-[#FAFAFA] flex justify-center py-6 sm:py-10 pb-20 sm:pb-24">
+          <div className="w-full max-w-[1329px] mx-auto px-3 sm:px-4 md:px-8 lg:px-0 flex flex-col gap-6 sm:gap-8">
             {tiers.map(tierName => {
               const tierLevels = levels.filter(l => l.tier === tierName);
               if (tierLevels.length === 0) return null;
@@ -431,64 +329,35 @@ const VipPage = () => {
               return (
                 <div
                   key={tierName}
-                  className="w-full max-w-[1329px] shadow-sm flex flex-col justify-between"
+                  className="w-full max-w-[1329px] shadow-sm flex flex-col justify-between rounded-[25px] p-4 sm:pt-[24px] sm:pr-[28px] sm:pb-[18px] sm:pl-[28px] box-border gap-4 sm:gap-4"
                   style={{
-                    width: '1329px',
                     minHeight: '315px',
-                    borderRadius: '25px',
                     background: meta.sectionBg || 'rgba(255, 255, 255, 1)',
-                    padding: '24px 28px 18px 28px',
-                    opacity: 1,
-                    transform: 'rotate(0deg)',
-                    boxSizing: 'border-box',
-                    gap: '16px',
                   }}
                 >
                   {/* Upper Row: Left Tier Info & Right 3 Cards */}
-                  <div className="flex flex-col lg:flex-row items-center lg:items-stretch gap-6 w-full">
+                  <div className="flex flex-col lg:flex-row items-center lg:items-stretch gap-5 sm:gap-6 w-full">
                     {/* Left Tier Header */}
-                    <div className="flex flex-col items-center justify-center min-w-[130px] gap-2 shrink-0">
+                    <div className="flex flex-col items-center justify-center min-w-[130px] gap-2 shrink-0 w-full lg:w-auto">
                       <img
                         src={meta.sectionBadge || meta.badge}
                         alt={`${tierName} Badge`}
-                        className="object-contain shrink-0"
-                        style={{
-                          width: '84px',
-                          height: '84px',
-                          opacity: 1,
-                          transform: 'rotate(0deg)',
-                        }}
+                        className="w-[72px] h-[72px] sm:w-[84px] sm:h-[84px] object-contain shrink-0"
                       />
                       <span
+                        className="min-w-[58px] h-[20px] rounded-full px-2.5 py-0.5 inline-flex items-center justify-center text-white text-[11px] font-semibold text-center box-border"
                         style={{
-                          minWidth: '58px',
-                          height: '20px',
-                          borderRadius: '100px',
                           background: meta.pillGradient,
-                          padding: '2px 10px',
-                          display: 'inline-flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          color: '#FFFFFF',
                           fontFamily: '"Poppins", sans-serif',
-                          fontWeight: 600,
-                          fontSize: '11px',
-                          textAlign: 'center',
-                          boxSizing: 'border-box',
                         }}
                       >
                         {meta.pillText}
                       </span>
                       <h3
+                        className="font-bold text-[18px] sm:text-[18px] leading-[22px] text-black text-center m-0"
                         style={{
                           fontFamily: '"Bricolage Grotesque", sans-serif',
-                          fontWeight: 700,
-                          fontSize: '18px',
-                          lineHeight: '22px',
                           letterSpacing: '-0.02em',
-                          color: '#000000',
-                          margin: 0,
-                          textAlign: 'center',
                         }}
                       >
                         {tierName} Tier
@@ -496,9 +365,9 @@ const VipPage = () => {
                     </div>
 
                     {/* Right Content: 3 Level Cards + Progress Row */}
-                    <div className="flex-1 flex flex-col justify-between gap-3 w-full">
+                    <div className="flex-1 flex flex-col justify-between gap-3 w-full min-w-0">
                       {/* 3 Level Cards */}
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 w-full">
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4 w-full">
                         {tierLevels.map(lvl => {
                           const earned = totalEarned ?? 0;
                           const isReached = lvl.reached || (lvl.threshold > 0 && earned >= lvl.threshold);
@@ -515,36 +384,14 @@ const VipPage = () => {
                           return (
                             <div
                               key={lvl.key}
-                              className="bg-white flex flex-col justify-between shadow-sm"
-                              style={{
-                                width: '359px',
-                                maxWidth: '100%',
-                                height: '242.88px',
-                                minHeight: '242.88px',
-                                borderRadius: '16px',
-                                paddingTop: '20px',
-                                paddingRight: '15px',
-                                paddingBottom: '20px',
-                                paddingLeft: '16px',
-                                gap: '10px',
-                                background: 'rgba(255, 255, 255, 1)',
-                                opacity: 1,
-                                transform: 'rotate(0deg)',
-                                boxSizing: 'border-box',
-                              }}
+                              className="bg-white flex flex-col justify-between shadow-sm w-full rounded-[16px] p-4 sm:pt-[20px] sm:pr-[15px] sm:pb-[20px] sm:pl-[16px] gap-2.5 min-h-[235px] sm:min-h-[242px] box-border"
                             >
                               {/* Card Top: Title and Mini Badge */}
                               <div className="flex items-start justify-between">
                                 <h4
+                                  className="font-bold text-[21px] sm:text-[23px] leading-[28px] text-black m-0 tracking-[-0.02em]"
                                   style={{
                                     fontFamily: '"Bricolage Grotesque", sans-serif',
-                                    fontWeight: 700,
-                                    fontSize: '23px',
-                                    lineHeight: '28px',
-                                    letterSpacing: '-0.02em',
-                                    color: '#000000',
-                                    margin: 0,
-                                    opacity: 1,
                                   }}
                                 >
                                   {getLevelLabel(lvl)}
@@ -553,40 +400,20 @@ const VipPage = () => {
                                   <img
                                     src={LEVEL_BADGES[lvl.key] || meta.miniBadge}
                                     alt={`${getLevelLabel(lvl)} mini badge`}
-                                    className={`${(lvl.tier === 'Opal' || lvl.key.startsWith('opal')) ? 'w-14 h-14 -my-2.5 -mr-1.5' : 'w-9 h-9'} object-contain shrink-0`}
+                                    className={`${(lvl.tier === 'Opal' || lvl.key.startsWith('opal')) ? 'w-12 h-12 sm:w-14 sm:h-14 -my-2.5 -mr-1.5' : 'w-8 h-8 sm:w-9 sm:h-9'} object-contain shrink-0`}
                                   />
                                 ) : (
-                                  <div className="w-9 h-9" />
+                                  <div className="w-8 h-8 sm:w-9 sm:h-9" />
                                 )}
                               </div>
 
-                              {/* Require Coins & Reward Amount Container (width: 328px, height: 38.88px, gap: 11px) */}
-                              <div
-                                style={{
-                                  width: '328px',
-                                  maxWidth: '100%',
-                                  minHeight: '38.88px',
-                                  display: 'flex',
-                                  flexDirection: 'column',
-                                  gap: '11px',
-                                  opacity: 1,
-                                  transform: 'rotate(0deg)',
-                                }}
-                              >
+                              {/* Require Coins & Reward Amount Container */}
+                              <div className="flex flex-col gap-2 w-full">
                                 {/* Requires Coin Text */}
                                 <p
+                                  className="text-[12px] sm:text-[13px] font-normal text-black/60 m-0 leading-[16px]"
                                   style={{
-                                    width: '328px',
-                                    maxWidth: '100%',
                                     fontFamily: '"Poppins", sans-serif',
-                                    fontWeight: 400,
-                                    fontSize: '13px',
-                                    lineHeight: '16px',
-                                    letterSpacing: '0%',
-                                    color: 'rgba(14, 15, 12, 1)',
-                                    opacity: 0.6,
-                                    margin: 0,
-                                    transform: 'rotate(0deg)',
                                   }}
                                 >
                                   Requires {lvl.threshold.toLocaleString('de-DE')} coins
@@ -594,22 +421,17 @@ const VipPage = () => {
 
                                 {/* Coin and Amount Row */}
                                 <div className="flex items-center justify-between">
-                                  <div className="flex items-center gap-2">
+                                  <div className="flex items-center gap-1.5 sm:gap-2">
                                     <img
                                       src="/coins/image copy 9.png"
                                       alt="Coin"
-                                      className="w-5 h-5 object-contain shrink-0"
+                                      className="w-4 h-4 sm:w-5 sm:h-5 object-contain shrink-0"
                                     />
                                     <span
+                                      className="font-bold text-[22px] sm:text-[25px] leading-none tracking-[-0.02em]"
                                       style={{
                                         fontFamily: '"Bricolage Grotesque", sans-serif',
-                                        fontWeight: 700,
-                                        fontSize: '25px',
-                                        lineHeight: '1',
-                                        letterSpacing: '-0.02em',
                                         color: 'rgba(190, 146, 0, 1)',
-                                        opacity: 1,
-                                        transform: 'rotate(0deg)',
                                       }}
                                     >
                                       {lvl.rewardAmount.toLocaleString('de-DE')}
@@ -617,11 +439,9 @@ const VipPage = () => {
                                   </div>
                                   {levelProgressPct > 0 && (
                                     <span
+                                      className="font-semibold text-[12px] sm:text-[13px] text-[#71717A]"
                                       style={{
                                         fontFamily: '"Poppins", sans-serif',
-                                        fontWeight: 600,
-                                        fontSize: '13px',
-                                        color: '#71717A',
                                       }}
                                     >
                                       {levelProgressPct}%
@@ -630,30 +450,16 @@ const VipPage = () => {
                                 </div>
                               </div>
 
-                              {/* Progress Bar (width: 325px, height: 40px, border-radius: 10px 5px 5px 10px, unfilled: rgba(222, 218, 208, 1)) */}
+                              {/* Progress Bar */}
                               <div
-                                className="overflow-hidden"
-                                style={{
-                                  width: '325px',
-                                  maxWidth: '100%',
-                                  height: '40px',
-                                  borderTopLeftRadius: '10px',
-                                  borderTopRightRadius: '5px',
-                                  borderBottomRightRadius: '5px',
-                                  borderBottomLeftRadius: '10px',
-                                  background: 'rgba(222, 218, 208, 1)',
-                                  opacity: 1,
-                                  transform: 'rotate(0deg)',
-                                }}
+                                className="overflow-hidden w-full h-[36px] sm:h-[40px] rounded-l-[10px] rounded-r-[5px] bg-[#DEDAD0]"
                               >
                                 <div
-                                  className="h-full transition-all duration-500"
+                                  className="h-full transition-all duration-500 rounded-l-[10px]"
                                   style={{
                                     width: `${levelProgressPct}%`,
                                     background: meta.barColor || 'rgba(36, 50, 77, 1)',
                                     backgroundSize: meta.barSize || 'auto',
-                                    borderTopLeftRadius: '10px',
-                                    borderBottomLeftRadius: '10px',
                                     borderTopRightRadius: levelProgressPct >= 99 ? '5px' : '0px',
                                     borderBottomRightRadius: levelProgressPct >= 99 ? '5px' : '0px',
                                   }}
@@ -663,31 +469,17 @@ const VipPage = () => {
                               {/* Card Bottom: Action Button / Status */}
                               <div>
                                 {isClaimed ? (
-                                  <div className="flex items-center justify-center min-h-[40px] w-full">
-                                    <div
-                                      className="flex items-center justify-center gap-2"
-                                      style={{
-                                        width: '223px',
-                                        maxWidth: '100%',
-                                        minHeight: '10px',
-                                        opacity: 1,
-                                        transform: 'rotate(0deg)',
-                                      }}
-                                    >
+                                  <div className="flex items-center justify-center min-h-[38px] sm:min-h-[40px] w-full">
+                                    <div className="flex items-center justify-center gap-1.5 sm:gap-2">
                                       <img
                                         src="/coins/image copy 10.png"
                                         alt="Congrats"
-                                        className="w-5 h-5 object-contain shrink-0"
+                                        className="w-4 h-4 sm:w-5 sm:h-5 object-contain shrink-0"
                                       />
                                       <span
+                                        className="font-medium text-[13px] sm:text-[14px] text-[#24324D] whitespace-nowrap"
                                         style={{
                                           fontFamily: '"Poppins", sans-serif',
-                                          fontWeight: 500,
-                                          fontSize: '14px',
-                                          lineHeight: '28px',
-                                          letterSpacing: '0%',
-                                          color: 'rgba(36, 50, 77, 1)',
-                                          whiteSpace: 'nowrap',
                                         }}
                                       >
                                         Congrats, Claimed successfully
@@ -698,7 +490,7 @@ const VipPage = () => {
                                   <button
                                     onClick={() => handleClaim(lvl.key)}
                                     disabled={claiming === lvl.key}
-                                    className="w-full py-2.5 bg-[#24324D] hover:bg-[#1E293B] text-white rounded-full font-semibold text-sm transition-all"
+                                    className="w-full py-2 sm:py-2.5 bg-[#24324D] hover:bg-[#1E293B] text-white rounded-full font-semibold text-sm transition-all cursor-pointer"
                                     style={{
                                       fontFamily: '"Poppins", sans-serif',
                                     }}
@@ -707,7 +499,7 @@ const VipPage = () => {
                                   </button>
                                 ) : (
                                   <div
-                                    className="w-full py-2.5 bg-[#EFEFEF] text-[#9CA3AF] rounded-full flex items-center justify-center gap-2 text-sm font-medium"
+                                    className="w-full py-2 sm:py-2.5 bg-[#EFEFEF] text-[#9CA3AF] rounded-full flex items-center justify-center gap-2 text-sm font-medium"
                                     style={{
                                       fontFamily: '"Poppins", sans-serif',
                                     }}
@@ -726,28 +518,22 @@ const VipPage = () => {
                         })}
                       </div>
 
-                      {/* Bottom Row: Progress & Coin Bonus info (aligned under 3 cards, shifted 5px down) */}
+                      {/* Bottom Row: Progress & Coin Bonus info */}
                       <div
-                        className="flex flex-col sm:flex-row items-center justify-between gap-2 w-full"
-                        style={{ marginTop: '5px' }}
+                        className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-1 sm:gap-2 w-full text-left pt-1.5 sm:pt-1"
                       >
                         <span
+                          className="font-bold text-[14px] sm:text-[14px] text-[#1E2538] text-left"
                           style={{
                             fontFamily: '"Bricolage Grotesque", sans-serif',
-                            fontWeight: 700,
-                            fontSize: '14px',
-                            color: '#000000',
                           }}
                         >
                           Progress to {lastTierLevel ? getLevelLabel(lastTierLevel) : `${tierName} III`}
                         </span>
                         <div
-                          className="flex flex-wrap items-center gap-1"
+                          className="flex flex-wrap items-center justify-start sm:justify-end gap-1 text-[12px] sm:text-[13px] font-medium text-black text-left"
                           style={{
                             fontFamily: '"Poppins", sans-serif',
-                            fontWeight: 500,
-                            fontSize: '13px',
-                            color: '#000000',
                           }}
                         >
                           <span>Earn</span>
@@ -756,6 +542,7 @@ const VipPage = () => {
                             {coinsToNext.toLocaleString('de-DE')}
                           </span>
                           <span>more coins to unlock your</span>
+                          <span className="basis-full h-0 sm:hidden" />
                           <img src="/coins/VIPcoin1.png" alt="Coin" className="w-3.5 h-3.5 object-contain inline-block shrink-0" />
                           <span style={{ color: 'rgba(231, 171, 24, 1)', fontWeight: 600 }}>
                             {(lastTierLevel?.rewardAmount || 250000).toLocaleString('de-DE')}

@@ -62,7 +62,7 @@ const Footer = () => {
           <img
             src="/coins/side.png"
             alt="Background graphics"
-            className="absolute bottom-0 left-[-13px] w-full h-auto z-0 pointer-events-none"
+            className="absolute bottom-[-32px] lg:bottom-0 left-[-32px] lg:left-[-13px] w-[112%] lg:w-full max-w-none h-auto z-0 pointer-events-none"
           />
 
           {/* Logo area */}
@@ -140,11 +140,10 @@ const Footer = () => {
 
           {/* Socials */}
           <div
-            className="flex justify-end items-center z-10 relative w-full max-w-[363px]"
+            className="flex justify-end items-center z-10 relative w-full max-w-[363px] translate-x-4 lg:translate-x-[18px]"
             style={{
               height: 36,
               gap: 4,
-              transform: isMobile ? 'translateX(4px)' : 'translateX(18px)'
             }}
           >
             {[

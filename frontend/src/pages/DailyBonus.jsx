@@ -937,85 +937,37 @@ export default function DailyBonus() {
                   return (
                     <div
                       key={milestone.target}
-                      className="shadow-sm flex flex-row items-center justify-between"
+                      className="shadow-sm flex flex-row items-center justify-between w-full rounded-[20px] box-border p-3 sm:pt-[30px] sm:pr-[20px] sm:pb-[30px] sm:pl-[15px] gap-2.5 sm:gap-[19px] min-h-[118px] sm:min-h-[135px]"
                       style={{
-                        width: '100%',
-                        minHeight: '135px',
-                        opacity: 1,
-                        transform: 'rotate(0deg)',
-                        borderRadius: '20px',
-                        gap: '19px',
-                        paddingTop: '30px',
-                        paddingRight: '20px',
-                        paddingBottom: '30px',
-                        paddingLeft: '15px',
                         background: 'rgba(249, 247, 241, 1)',
-                        boxSizing: 'border-box',
                       }}
                     >
                       {/* Left Badge Image */}
                       <img
                         src={milestone.badgeSrc}
                         alt={milestone.title}
-                        style={{
-                          width: '75px',
-                          height: '75px',
-                          opacity: 1,
-                          transform: 'rotate(0deg)',
-                          objectFit: 'contain',
-                        }}
-                        className="shrink-0"
+                        className="w-[72px] h-[72px] sm:w-[75px] sm:h-[75px] shrink-0 object-contain"
                       />
 
                       {/* Right Content */}
                       <div
-                        className="flex-1 flex flex-col justify-between min-w-0"
-                        style={{
-                          width: '100%',
-                          maxWidth: '304px',
-                          height: '75px',
-                          opacity: 1,
-                          transform: 'rotate(0deg)',
-                          gap: '18px',
-                          boxSizing: 'border-box',
-                        }}
+                        className="flex-1 flex flex-col justify-between min-w-0 w-full h-[72px] sm:h-[75px] sm:max-w-[304px] gap-2 sm:gap-[18px] box-border"
                       >
                         {/* Top: Title & Sub + Reward Pill */}
-                        <div className="flex items-start justify-between gap-2">
-                          <div
-                            className="flex flex-col justify-start sm:justify-between h-auto sm:h-[37px] gap-0.5 sm:gap-0"
-                            style={{
-                              width: '140px',
-                              opacity: 1,
-                              transform: 'rotate(0deg)',
-                            }}
-                          >
+                        <div className="flex items-start justify-between gap-1 sm:gap-2 w-full min-w-0">
+                          <div className="flex flex-col justify-start sm:justify-between h-auto sm:h-[37px] gap-0.5 sm:gap-0 min-w-0 flex-1 pr-1">
                             <h3
+                              className="font-bold text-[18px] xs:text-[20px] sm:text-[22px] leading-tight sm:leading-[22px] text-black tracking-[-0.02em] whitespace-nowrap truncate m-0"
                               style={{
-                                width: '140px',
                                 fontFamily: '"Bricolage Grotesque", sans-serif',
-                                fontWeight: 700,
-                                fontSize: '22px',
-                                lineHeight: '22px',
-                                letterSpacing: '-0.02em',
-                                color: '#000000',
-                                margin: 0,
-                                whiteSpace: 'nowrap',
                               }}
                             >
                               {milestone.title}
                             </h3>
                             <p
+                              className="font-medium text-[12px] sm:text-[14px] leading-tight sm:leading-[18px] text-black whitespace-nowrap truncate m-0"
                               style={{
-                                width: '140px',
                                 fontFamily: '"Poppins", sans-serif',
-                                fontWeight: 500,
-                                fontSize: '14px',
-                                lineHeight: '18px',
-                                letterSpacing: '0%',
-                                color: '#000000',
-                                margin: 0,
-                                whiteSpace: 'nowrap',
                               }}
                             >
                               {milestone.sub}
@@ -1024,21 +976,7 @@ export default function DailyBonus() {
 
                           {/* Reward Pill */}
                           <div
-                            className="flex items-center justify-center shrink-0"
-                            style={{
-                              width: 'auto',
-                              height: '20px',
-                              opacity: 1,
-                              transform: 'rotate(0deg)',
-                              borderRadius: '50px',
-                              gap: '4px',
-                              paddingTop: '5px',
-                              paddingRight: '8px',
-                              paddingBottom: '5px',
-                              paddingLeft: '7px',
-                              background: 'rgba(255, 255, 255, 1)',
-                              boxSizing: 'border-box',
-                            }}
+                            className="flex items-center justify-center shrink-0 h-[20px] rounded-[50px] gap-1 px-2 py-[5px] bg-white box-border"
                           >
                             <img
                               src="/coins/coinbonushero.png"
@@ -1046,22 +984,15 @@ export default function DailyBonus() {
                               style={{
                                 width: '9px',
                                 height: '10px',
-                                opacity: 1,
-                                transform: 'rotate(0deg)',
                                 objectFit: 'contain',
                               }}
                               className="shrink-0"
                             />
                             <span
+                              className="font-medium text-[12px] sm:text-[14px] leading-none whitespace-nowrap"
                               style={{
-                                width: 'auto',
                                 fontFamily: '"Poppins", sans-serif',
-                                fontWeight: 500,
-                                fontSize: '14px',
-                                lineHeight: '14px',
-                                letterSpacing: '0%',
                                 color: 'rgba(231, 171, 24, 1)',
-                                whiteSpace: 'nowrap',
                               }}
                             >
                               {formatCoins(milestone.reward)} coins
@@ -1071,37 +1002,19 @@ export default function DailyBonus() {
 
                         {/* Bottom: Progress Bar with Inside Text */}
                         <div
-                          className="relative flex items-center justify-end overflow-hidden"
-                          style={{
-                            width: '100%',
-                            height: '20px',
-                            opacity: 1,
-                            transform: 'rotate(0deg)',
-                            borderRadius: '30px',
-                            background: 'rgba(255, 255, 255, 1)',
-                            paddingRight: '14px',
-                            boxSizing: 'border-box',
-                          }}
+                          className="relative flex items-center justify-end overflow-hidden w-full h-[18px] sm:h-[20px] rounded-[30px] bg-white pr-2.5 sm:pr-[14px] box-border"
                         >
                           <div
-                            className="absolute left-0 top-0 bottom-0 transition-all duration-500"
+                            className="absolute left-0 top-0 bottom-0 transition-all duration-500 rounded-[30px]"
                             style={{
                               width: `${milestonePercent}%`,
-                              borderRadius: '30px',
                               background: milestone.barColor,
                             }}
                           />
                           <span
-                            className="relative z-10 select-none whitespace-nowrap"
+                            className="relative z-10 select-none whitespace-nowrap font-medium text-[11px] sm:text-[12px] leading-[18px] sm:leading-[20px] text-black text-right"
                             style={{
-                              width: '68px',
                               fontFamily: '"Poppins", sans-serif',
-                              fontWeight: 500,
-                              fontSize: '12px',
-                              lineHeight: '20px',
-                              letterSpacing: '0%',
-                              color: '#000000',
-                              textAlign: 'right',
                             }}
                           >
                             {currentProgress} / {milestone.target} Days
