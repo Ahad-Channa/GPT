@@ -18,10 +18,10 @@ const AvatarCircle = ({ user, size = 34 }) => {
   return (
     <div style={{
       width: size, height: size, borderRadius: '50%', overflow: 'hidden', flexShrink: 0,
-      background: src ? 'transparent' : `hsl(${hue},50%,26%)`,
-      border: '2px solid rgba(255,255,255,0.09)',
+      background: src ? 'transparent' : `hsl(${hue}, 45%, 90%)`,
+      border: '1px solid #E5E7EB',
       display: 'flex', alignItems: 'center', justifyContent: 'center',
-      fontSize: size * 0.36, fontWeight: 700, color: 'rgba(255,255,255,0.75)', userSelect: 'none'
+      fontSize: size * 0.36, fontWeight: 700, color: src ? 'inherit' : `hsl(${hue}, 60%, 30%)`, userSelect: 'none'
     }}>
       {src ? <img src={src} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : getInitials(user?.displayName)}
     </div>
@@ -29,9 +29,9 @@ const AvatarCircle = ({ user, size = 34 }) => {
 };
 
 const STATUS_META = {
-  open:         { label: 'Open',        color: '#6366f1', bg: 'rgba(99,102,241,0.12)',   icon: FiAlertCircle },
-  'in-progress':{ label: 'In Progress', color: '#f59e0b', bg: 'rgba(245,158,11,0.12)',  icon: FiClock },
-  closed:       { label: 'Closed',      color: '#64748b', bg: 'rgba(100,116,139,0.12)', icon: FiCheckCircle }
+  open:         { label: 'Open',        color: '#2563EB', bg: '#EFF6FF', border: '#DBEAFE', icon: FiAlertCircle },
+  'in-progress':{ label: 'In Progress', color: '#D97706', bg: '#FFFBEB', border: '#FEF3C7', icon: FiClock },
+  closed:       { label: 'Closed',      color: '#4B5563', bg: '#F3F4F6', border: '#E5E7EB', icon: FiCheckCircle }
 };
 
 const StatusBadge = ({ status }) => {
@@ -40,8 +40,8 @@ const StatusBadge = ({ status }) => {
   return (
     <span style={{
       display: 'inline-flex', alignItems: 'center', gap: 4,
-      fontSize: '0.62rem', fontWeight: 700, padding: '2px 8px',
-      borderRadius: 100, background: s.bg, color: s.color, border: `1px solid ${s.color}30`
+      fontSize: '0.68rem', fontWeight: 700, padding: '2px 8px',
+      borderRadius: 100, background: s.bg, color: s.color, border: `1px solid ${s.border}`
     }}>
       <Icon style={{ fontSize: 10 }} /> {s.label}
     </span>
@@ -210,261 +210,273 @@ const AdminSupport = () => {
   };
 
   return (
-    <div style={{
-      display: 'flex', height: '100%', overflow: 'hidden',
-      fontFamily: "'Barlow', system-ui, sans-serif",
-      gap: 0
-    }}>
+    <div style={{ display: 'flex', flexDirection: 'column', height: 'calc(100vh - 120px)', minHeight: '600px' }}>
+      {/* Header */}
+      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '1.25rem', gap: '1rem', flexWrap: 'wrap' }}>
+        <div>
+          <h1 className="admin-page-title" style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+            <FiHeadphones style={{ color: '#1E2538', fontSize: '1.25rem' }} />
+            Support Center
+          </h1>
+          <p className="admin-page-sub">Live chat with users and manage support inquiries.</p>
+        </div>
+      </div>
 
-      {/* ── LEFT: Ticket List ─────────────────────────────────── */}
-      <div style={{
-        width: 320, flexShrink: 0, display: 'flex', flexDirection: 'column',
-        borderRight: '1px solid rgba(255,255,255,0.06)',
-        background: 'rgba(255,255,255,0.015)'
+      {/* Main Split-Pane Card */}
+      <div className="admin-card" style={{
+        flex: 1, display: 'flex', padding: 0, overflow: 'hidden',
+        border: '1px solid #E5E7EB', background: '#FFFFFF'
       }}>
-        {/* Header */}
-        <div style={{ padding: '18px 16px 14px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <FiHeadphones style={{ color: '#6366f1', fontSize: 16 }} />
-              <span style={{ fontWeight: 700, fontSize: '0.92rem', color: '#f1f5f9' }}>Support</span>
-              {counts.unread > 0 && (
-                <span style={{
-                  fontSize: '0.62rem', fontWeight: 700, padding: '1px 6px', borderRadius: 100,
-                  background: 'rgba(239,68,68,0.15)', color: '#f87171', border: '1px solid rgba(239,68,68,0.25)'
-                }}>{counts.unread}</span>
-              )}
+
+        {/* ── LEFT: Ticket List ─────────────────────────────────── */}
+        <div style={{
+          width: 320, flexShrink: 0, display: 'flex', flexDirection: 'column',
+          borderRight: '1px solid #E5E7EB',
+          background: '#FAFAFA'
+        }}>
+          {/* Header */}
+          <div style={{ padding: '16px', borderBottom: '1px solid #E5E7EB', background: '#FFFFFF' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <span style={{ fontWeight: 700, fontSize: '0.95rem', color: '#111827', fontFamily: "'Bricolage Grotesque', sans-serif" }}>Inboxes</span>
+                {counts.unread > 0 && (
+                  <span style={{
+                    fontSize: '0.68rem', fontWeight: 700, padding: '2px 7px', borderRadius: 100,
+                    background: '#FEF2F2', color: '#DC2626', border: '1px solid #FEE2E2'
+                  }}>{counts.unread} new</span>
+                )}
+              </div>
+              <button onClick={fetchTickets} style={{
+                background: 'none', border: 'none', cursor: 'pointer', color: '#6B7280', padding: 4, display: 'flex', alignItems: 'center'
+              }}>
+                <FiRefreshCw style={{ fontSize: 13 }} />
+              </button>
             </div>
-            <button onClick={fetchTickets} style={{
-              background: 'none', border: 'none', cursor: 'pointer', color: '#475569', padding: 4
-            }}>
-              <FiRefreshCw style={{ fontSize: 13 }} />
-            </button>
+
+            {/* Filter tabs */}
+            <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
+              {FILTER_TABS.map(tab => {
+                const cnt = tab.key === 'all' ? null
+                  : tab.key === 'unread' ? counts.unread
+                  : tab.key === 'open' ? counts.open
+                  : tab.key === 'in-progress' ? counts.inProgress
+                  : counts.closed;
+                const active = filter === tab.key;
+                return (
+                  <button
+                    key={tab.key}
+                    onClick={() => setFilter(tab.key)}
+                    className={`filter-pill ${active ? 'active' : ''}`}
+                    style={{ fontSize: '0.72rem', padding: '3px 9px' }}
+                  >
+                    {tab.label}{cnt > 0 ? ` · ${cnt}` : ''}
+                  </button>
+                );
+              })}
+            </div>
           </div>
 
-          {/* Filter tabs */}
-          <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
-            {FILTER_TABS.map(tab => {
-              const cnt = tab.key === 'all' ? null
-                : tab.key === 'unread' ? counts.unread
-                : tab.key === 'open' ? counts.open
-                : tab.key === 'in-progress' ? counts.inProgress
-                : counts.closed;
-              const active = filter === tab.key;
+          {/* Ticket list */}
+          <div style={{ flex: 1, overflowY: 'auto' }} className="custom-scrollbar">
+            {loadingList ? (
+              <div style={{ display: 'flex', justifyContent: 'center', padding: '2.5rem 0' }}>
+                <div style={{ width: 22, height: 22, borderRadius: '50%', border: '2px solid #E5E7EB', borderTopColor: '#1E2538', animation: 'spin 0.8s linear infinite' }} />
+              </div>
+            ) : tickets.length === 0 ? (
+              <div style={{ padding: '2.5rem 16px', textAlign: 'center', color: '#9CA3AF', fontSize: '0.85rem' }}>
+                No tickets found
+              </div>
+            ) : tickets.map(t => {
+              const isSel = selected?._id === t._id;
               return (
-                <button key={tab.key} onClick={() => setFilter(tab.key)} style={{
-                  fontSize: '0.68rem', fontWeight: active ? 700 : 500,
-                  padding: '3px 9px', borderRadius: 99, cursor: 'pointer',
-                  background: active ? 'rgba(99,102,241,0.2)' : 'rgba(255,255,255,0.04)',
-                  color: active ? '#a5b4fc' : '#64748b',
-                  border: active ? '1px solid rgba(99,102,241,0.35)' : '1px solid rgba(255,255,255,0.06)',
-                  transition: 'all 0.15s'
-                }}>
-                  {tab.label}{cnt > 0 ? ` · ${cnt}` : ''}
-                </button>
+                <div
+                  key={t._id}
+                  onClick={() => openTicket(t)}
+                  style={{
+                    padding: '12px 16px', cursor: 'pointer', borderBottom: '1px solid #F3F4F6',
+                    background: isSel ? '#FFFFFF' : t.unreadByAdmin ? '#F0F9FF' : 'transparent',
+                    borderLeft: isSel ? '3px solid #1E2538' : '3px solid transparent',
+                    boxShadow: isSel ? '0 1px 3px rgba(0,0,0,0.03)' : 'none',
+                    transition: 'all 0.15s',
+                    position: 'relative'
+                  }}
+                >
+                  {t.unreadByAdmin && (
+                    <span style={{
+                      position: 'absolute', top: 14, right: 14,
+                      width: 8, height: 8, borderRadius: '50%',
+                      background: '#DC2626'
+                    }} />
+                  )}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
+                    <AvatarCircle user={t.userId} size={32} />
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <p style={{ margin: 0, fontSize: '0.82rem', fontWeight: 600, color: '#111827', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        {t.userId?.displayName || 'Unknown'}
+                      </p>
+                      <p style={{ margin: 0, fontSize: '0.7rem', color: '#6B7280' }}>
+                        #{String(t._id).slice(-6).toUpperCase()} · {timeAgo(t.updatedAt)}
+                      </p>
+                    </div>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <StatusBadge status={t.status} />
+                  </div>
+                </div>
               );
             })}
           </div>
         </div>
 
-        {/* Ticket list */}
-        <div style={{ flex: 1, overflowY: 'auto' }} className="custom-scrollbar">
-          {loadingList ? (
-            <div style={{ display: 'flex', justifyContent: 'center', padding: '2rem 0' }}>
-              <div style={{ width: 22, height: 22, borderRadius: '50%', border: '2px solid rgba(99,102,241,0.3)', borderTopColor: '#6366f1', animation: 'spin 0.8s linear infinite' }} />
+        {/* ── RIGHT: Conversation ───────────────────────────────── */}
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', minHeight: 0, background: '#FFFFFF' }}>
+          {!selected && !loadingTicket && (
+            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 12 }}>
+              <div style={{ width: 64, height: 64, borderRadius: 20, background: '#F3F4F6', border: '1px solid #E5E7EB', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <FiHeadphones style={{ fontSize: 26, color: '#6B7280' }} />
+              </div>
+              <p style={{ margin: 0, color: '#6B7280', fontSize: '0.9rem', fontWeight: 500 }}>Select a ticket to view the conversation</p>
             </div>
-          ) : tickets.length === 0 ? (
-            <div style={{ padding: '2rem 16px', textAlign: 'center', color: '#374151', fontSize: '0.82rem' }}>
-              No tickets found
+          )}
+
+          {loadingTicket && (
+            <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <div style={{ width: 26, height: 26, borderRadius: '50%', border: '2px solid #E5E7EB', borderTopColor: '#1E2538', animation: 'spin 0.8s linear infinite' }} />
             </div>
-          ) : tickets.map(t => (
-            <div
-              key={t._id}
-              onClick={() => openTicket(t)}
-              style={{
-                padding: '12px 16px', cursor: 'pointer', borderBottom: '1px solid rgba(255,255,255,0.04)',
-                background: selected?._id === t._id
-                  ? 'rgba(99,102,241,0.08)'
-                  : t.unreadByAdmin ? 'rgba(99,102,241,0.04)' : 'transparent',
-                transition: 'background 0.15s',
-                position: 'relative'
-              }}
-            >
-              {t.unreadByAdmin && (
-                <span style={{
-                  position: 'absolute', top: 14, right: 14,
-                  width: 7, height: 7, borderRadius: '50%',
-                  background: '#6366f1', boxShadow: '0 0 8px rgba(99,102,241,0.6)'
-                }} />
-              )}
-              <div style={{ display: 'flex', alignItems: 'center', gap: 9, marginBottom: 6 }}>
-                <AvatarCircle user={t.userId} size={30} />
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <p style={{ margin: 0, fontSize: '0.8rem', fontWeight: 600, color: '#e2e8f0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                    {t.userId?.displayName || 'Unknown'}
+          )}
+
+          {selected && !loadingTicket && (
+            <>
+              {/* Ticket top bar */}
+              <div style={{
+                padding: '14px 20px', borderBottom: '1px solid #E5E7EB',
+                background: '#FAFAFA',
+                display: 'flex', alignItems: 'center', gap: 12, flexShrink: 0
+              }}>
+                <AvatarCircle user={selected.userId} size={36} />
+                <div style={{ flex: 1 }}>
+                  <p style={{ margin: 0, fontSize: '0.92rem', fontWeight: 700, color: '#111827', fontFamily: "'Bricolage Grotesque', sans-serif" }}>
+                    {selected.userId?.displayName || 'Unknown'}
                   </p>
-                  <p style={{ margin: 0, fontSize: '0.65rem', color: '#374151' }}>
-                    #{String(t._id).slice(-6).toUpperCase()} · {timeAgo(t.updatedAt)}
+                  <p style={{ margin: 0, fontSize: '0.72rem', color: '#6B7280' }}>
+                    {selected.userId?.email} · Ticket #{String(selected._id).slice(-6).toUpperCase()}
                   </p>
                 </div>
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                <StatusBadge status={t.status} />
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
+                <StatusBadge status={selected.status} />
 
-      {/* ── RIGHT: Conversation ───────────────────────────────── */}
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', minHeight: 0 }}>
-        {!selected && !loadingTicket && (
-          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 12 }}>
-            <div style={{ width: 60, height: 60, borderRadius: 16, background: 'rgba(99,102,241,0.08)', border: '1px solid rgba(99,102,241,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <FiHeadphones style={{ fontSize: 24, color: '#6366f1' }} />
-            </div>
-            <p style={{ margin: 0, color: '#374151', fontSize: '0.88rem' }}>Select a ticket to view the conversation</p>
-          </div>
-        )}
-
-        {loadingTicket && (
-          <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <div style={{ width: 24, height: 24, borderRadius: '50%', border: '2px solid rgba(99,102,241,0.3)', borderTopColor: '#6366f1', animation: 'spin 0.8s linear infinite' }} />
-          </div>
-        )}
-
-        {selected && !loadingTicket && (
-          <>
-            {/* Ticket top bar */}
-            <div style={{
-              padding: '12px 20px', borderBottom: '1px solid rgba(255,255,255,0.06)',
-              background: 'rgba(255,255,255,0.02)',
-              display: 'flex', alignItems: 'center', gap: 12, flexShrink: 0
-            }}>
-              <AvatarCircle user={selected.userId} size={32} />
-              <div style={{ flex: 1 }}>
-                <p style={{ margin: 0, fontSize: '0.88rem', fontWeight: 700, color: '#f1f5f9' }}>
-                  {selected.userId?.displayName || 'Unknown'}
-                </p>
-                <p style={{ margin: 0, fontSize: '0.68rem', color: '#475569' }}>
-                  {selected.userId?.email} · Ticket #{String(selected._id).slice(-6).toUpperCase()}
-                </p>
-              </div>
-              <StatusBadge status={selected.status} />
-
-              {/* Status change buttons */}
-              <div style={{ display: 'flex', gap: 6 }}>
-                {selected.status !== 'open' && (
-                  <button onClick={() => changeStatus('open')} style={statusBtnStyle('#6366f1')}>
-                    Reopen
-                  </button>
-                )}
-                {selected.status === 'open' && (
-                  <button onClick={() => changeStatus('in-progress')} style={statusBtnStyle('#f59e0b')}>
-                    Mark In Progress
-                  </button>
-                )}
-                {selected.status !== 'closed' && (
-                  <button onClick={() => changeStatus('closed')} style={statusBtnStyle('#10b981')}>
-                    Close Ticket
-                  </button>
-                )}
-              </div>
-            </div>
-
-            {/* Messages */}
-            <div style={{ flex: 1, overflowY: 'auto', padding: '16px 20px 8px' }} className="custom-scrollbar">
-              {(selected.messages || []).map((msg, idx) => {
-                const isAdmin = msg.sender === 'admin';
-                const showHead = idx === 0 || (selected.messages)[idx - 1]?.sender !== msg.sender;
-                return (
-                  <div key={msg._id || idx} style={{
-                    display: 'flex',
-                    flexDirection: isAdmin ? 'row-reverse' : 'row',
-                    gap: 10, marginTop: showHead ? 16 : 4, alignItems: 'flex-end'
-                  }}>
-                    <div style={{ width: 32, flexShrink: 0 }}>
-                      {showHead && (
-                        isAdmin
-                          ? <AvatarCircle user={mongoUser} size={32} />
-                          : <AvatarCircle user={selected.userId} size={32} />
-                      )}
-                    </div>
-                    <div style={{
-                      display: 'flex', flexDirection: 'column',
-                      alignItems: isAdmin ? 'flex-end' : 'flex-start',
-                      maxWidth: '72%', gap: 2
-                    }}>
-                      {showHead && (
-                        <span style={{ fontSize: '0.7rem', fontWeight: 600,
-                          color: isAdmin ? '#a5b4fc' : '#94a3b8', marginBottom: 2 }}>
-                          {isAdmin ? `${mongoUser?.displayName} (Support)` : selected.userId?.displayName}
-                        </span>
-                      )}
-                      <div style={{
-                        background: isAdmin
-                          ? 'linear-gradient(135deg,rgba(99,102,241,0.3),rgba(139,92,246,0.2))'
-                          : 'rgba(255,255,255,0.05)',
-                        border: isAdmin ? '1px solid rgba(99,102,241,0.28)' : '1px solid rgba(255,255,255,0.07)',
-                        borderRadius: isAdmin ? '14px 4px 14px 14px' : '4px 14px 14px 14px',
-                        padding: '9px 13px', color: '#e2e8f0', fontSize: '0.88rem',
-                        lineHeight: 1.5, wordBreak: 'break-word'
-                      }}>
-                        {msg.text}
-                      </div>
-                      <span style={{ fontSize: '0.62rem', color: '#1e293b', marginTop: 1 }}>
-                        {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                      </span>
-                    </div>
-                  </div>
-                );
-              })}
-              <div ref={endRef} />
-            </div>
-
-            {/* Reply bar */}
-            {selected.status !== 'closed' ? (
-              <div style={{ padding: '10px 18px 14px', borderTop: '1px solid rgba(255,255,255,0.06)', background: 'rgba(255,255,255,0.015)', flexShrink: 0 }}>
-                <form onSubmit={sendReply} style={{ display: 'flex', gap: 9, alignItems: 'center' }}>
-                  <AvatarCircle user={mongoUser} size={32} />
-                  <div style={{ flex: 1, position: 'relative' }}>
-                    <input
-                      ref={inputRef}
-                      type="text"
-                      value={reply}
-                      onChange={e => setReply(e.target.value)}
-                      placeholder="Reply to user…"
-                      disabled={sending}
-                      style={{
-                        width: '100%', boxSizing: 'border-box',
-                        background: 'rgba(255,255,255,0.05)',
-                        border: '1px solid rgba(255,255,255,0.09)',
-                        borderRadius: 11, padding: '10px 48px 10px 14px',
-                        color: '#f1f5f9', fontSize: '0.9rem', outline: 'none',
-                        caretColor: '#a5b4fc', opacity: sending ? 0.6 : 1
-                      }}
-                      onFocus={e => { e.target.style.borderColor = 'rgba(99,102,241,0.5)'; }}
-                      onBlur={e  => { e.target.style.borderColor = 'rgba(255,255,255,0.09)'; }}
-                    />
-                    <button type="submit" disabled={!reply.trim() || sending} style={{
-                      position: 'absolute', right: 7, top: '50%', transform: 'translateY(-50%)',
-                      width: 32, height: 32, borderRadius: 8,
-                      background: reply.trim() && !sending ? 'linear-gradient(135deg,#6366f1,#8b5cf6)' : 'rgba(255,255,255,0.06)',
-                      border: 'none', cursor: reply.trim() && !sending ? 'pointer' : 'default',
-                      display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white'
-                    }}>
-                      <FiSend style={{ fontSize: 13 }} />
+                {/* Status change buttons */}
+                <div style={{ display: 'flex', gap: 6 }}>
+                  {selected.status !== 'open' && (
+                    <button onClick={() => changeStatus('open')} style={statusBtnStyle('#2563EB', '#EFF6FF', '#DBEAFE')}>
+                      Reopen
                     </button>
-                  </div>
-                </form>
+                  )}
+                  {selected.status === 'open' && (
+                    <button onClick={() => changeStatus('in-progress')} style={statusBtnStyle('#D97706', '#FFFBEB', '#FEF3C7')}>
+                      Mark In Progress
+                    </button>
+                  )}
+                  {selected.status !== 'closed' && (
+                    <button onClick={() => changeStatus('closed')} style={statusBtnStyle('#059669', '#ECFDF5', '#D1FAE5')}>
+                      Close Ticket
+                    </button>
+                  )}
+                </div>
               </div>
-            ) : (
-              <div style={{ padding: '14px 20px', borderTop: '1px solid rgba(255,255,255,0.06)', textAlign: 'center', color: '#374151', fontSize: '0.82rem' }}>
-                This ticket is closed. The user can open a new ticket by sending another message.
+
+              {/* Messages */}
+              <div style={{ flex: 1, overflowY: 'auto', padding: '20px 24px 12px', background: '#FFFFFF' }} className="custom-scrollbar">
+                {(selected.messages || []).map((msg, idx) => {
+                  const isAdmin = msg.sender === 'admin';
+                  const showHead = idx === 0 || (selected.messages)[idx - 1]?.sender !== msg.sender;
+                  return (
+                    <div key={msg._id || idx} style={{
+                      display: 'flex',
+                      flexDirection: isAdmin ? 'row-reverse' : 'row',
+                      gap: 10, marginTop: showHead ? 16 : 6, alignItems: 'flex-end'
+                    }}>
+                      <div style={{ width: 32, flexShrink: 0 }}>
+                        {showHead && (
+                          isAdmin
+                            ? <AvatarCircle user={mongoUser} size={32} />
+                            : <AvatarCircle user={selected.userId} size={32} />
+                        )}
+                      </div>
+                      <div style={{
+                        display: 'flex', flexDirection: 'column',
+                        alignItems: isAdmin ? 'flex-end' : 'flex-start',
+                        maxWidth: '72%', gap: 2
+                      }}>
+                        {showHead && (
+                          <span style={{ fontSize: '0.72rem', fontWeight: 600,
+                            color: '#6B7280', marginBottom: 2 }}>
+                            {isAdmin ? `${mongoUser?.displayName || 'Admin'} (Support)` : selected.userId?.displayName}
+                          </span>
+                        )}
+                        <div style={{
+                          background: isAdmin ? '#1E2538' : '#F3F4F6',
+                          color: isAdmin ? '#FFFFFF' : '#111827',
+                          border: isAdmin ? '1px solid #1E2538' : '1px solid #E5E7EB',
+                          borderRadius: isAdmin ? '16px 4px 16px 16px' : '4px 16px 16px 16px',
+                          padding: '10px 14px', fontSize: '0.88rem',
+                          lineHeight: 1.5, wordBreak: 'break-word',
+                          boxShadow: '0 1px 2px rgba(0,0,0,0.04)'
+                        }}>
+                          {msg.text}
+                        </div>
+                        <span style={{ fontSize: '0.65rem', color: '#9CA3AF', marginTop: 1 }}>
+                          {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        </span>
+                      </div>
+                    </div>
+                  );
+                })}
+                <div ref={endRef} />
               </div>
-            )}
-          </>
-        )}
+
+              {/* Reply bar */}
+              {selected.status !== 'closed' ? (
+                <div style={{ padding: '12px 20px 16px', borderTop: '1px solid #E5E7EB', background: '#FAFAFA', flexShrink: 0 }}>
+                  <form onSubmit={sendReply} style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+                    <AvatarCircle user={mongoUser} size={34} />
+                    <div style={{ flex: 1, position: 'relative' }}>
+                      <input
+                        ref={inputRef}
+                        type="text"
+                        value={reply}
+                        onChange={e => setReply(e.target.value)}
+                        placeholder="Reply to user…"
+                        disabled={sending}
+                        className="admin-input"
+                        style={{
+                          width: '100%', boxSizing: 'border-box',
+                          paddingRight: '48px', marginBottom: 0,
+                          opacity: sending ? 0.6 : 1
+                        }}
+                      />
+                      <button type="submit" disabled={!reply.trim() || sending} style={{
+                        position: 'absolute', right: 6, top: '50%', transform: 'translateY(-50%)',
+                        width: 34, height: 34, borderRadius: 8,
+                        background: reply.trim() && !sending ? '#1E2538' : '#E5E7EB',
+                        border: 'none', cursor: reply.trim() && !sending ? 'pointer' : 'default',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        color: reply.trim() && !sending ? '#FFFFFF' : '#9CA3AF',
+                        transition: 'all 0.15s'
+                      }}>
+                        <FiSend style={{ fontSize: 14 }} />
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              ) : (
+                <div style={{ padding: '14px 20px', borderTop: '1px solid #E5E7EB', textAlign: 'center', color: '#6B7280', fontSize: '0.82rem', background: '#F9FAFB' }}>
+                  This ticket is closed. The user can open a new ticket by sending another message.
+                </div>
+              )}
+            </>
+          )}
+        </div>
+
       </div>
 
       <style>{`
@@ -474,10 +486,11 @@ const AdminSupport = () => {
   );
 };
 
-const statusBtnStyle = (color) => ({
-  fontSize: '0.68rem', fontWeight: 600, padding: '4px 10px', borderRadius: 8,
-  background: `${color}15`, color, border: `1px solid ${color}30`,
+const statusBtnStyle = (color, bg, border) => ({
+  fontSize: '0.72rem', fontWeight: 600, padding: '4px 11px', borderRadius: 8,
+  background: bg, color: color, border: `1px solid ${border}`,
   cursor: 'pointer', transition: 'all 0.15s'
 });
 
 export default AdminSupport;
+

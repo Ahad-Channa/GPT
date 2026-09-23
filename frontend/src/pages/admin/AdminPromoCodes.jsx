@@ -1,8 +1,8 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import toast from 'react-hot-toast';
-import { FiTag, FiPlus, FiTrash2, FiEdit2, FiCheck, FiX, FiLoader, FiAlertCircle } from 'react-icons/fi';
+import { FiTag, FiPlus, FiTrash2, FiX, FiLoader, FiAlertCircle } from 'react-icons/fi';
 import CoinDisplay from '../../components/CoinDisplay';
 
 const AdminPromoCodes = () => {
@@ -112,9 +112,9 @@ const AdminPromoCodes = () => {
     return (
       <div>
         <h1 className="admin-page-title">Promo Codes</h1>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '1.5rem', background: 'rgba(239,68,68,0.07)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: '14px', marginTop: '1rem' }}>
-          <FiAlertCircle style={{ color: '#f87171', fontSize: '1.25rem' }} />
-          <p style={{ color: '#f87171', fontWeight: 600 }}>Access Restricted. You need 'manage_offerwalls' permission.</p>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '1.5rem', background: '#FEF2F2', border: '1px solid #FECACA', borderRadius: '16px', marginTop: '1rem' }}>
+          <FiAlertCircle style={{ color: '#DC2626', fontSize: '1.25rem' }} />
+          <p style={{ color: '#B91C1C', fontWeight: 600 }}>Access Restricted. You need 'manage_offerwalls' permission.</p>
         </div>
       </div>
     );
@@ -125,21 +125,21 @@ const AdminPromoCodes = () => {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.75rem' }}>
         <div>
           <h1 className="admin-page-title" style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-            <FiTag style={{ color: '#3b82f6' }} />
+            <FiTag style={{ color: '#2563EB' }} />
             Promo Codes
           </h1>
           <p className="admin-page-sub">Manage promotional codes, rewards, and redemption limits.</p>
         </div>
         <button 
-          className="action-btn" 
+          className="admin-btn-primary" 
           onClick={() => setShowCreateModal(true)}
-          style={{ background: '#3b82f6', color: '#fff', border: 'none', display: 'flex', alignItems: 'center', gap: '0.4rem' }}
+          style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}
         >
-          <FiPlus /> New Code
+          <FiPlus size={16} /> New Code
         </button>
       </div>
 
-      <div className="admin-card" style={{ padding: 0, overflow: 'hidden' }}>
+      <div className="admin-table-container">
         <table className="admin-table">
           <thead>
             <tr>
@@ -154,9 +154,9 @@ const AdminPromoCodes = () => {
           </thead>
           <tbody>
             {loading ? (
-              <tr><td colSpan="7" style={{ textAlign: 'center', padding: '2rem' }}><FiLoader className="spin" /></td></tr>
+              <tr><td colSpan="7" style={{ textAlign: 'center', padding: '3rem', color: '#6B7280' }}><FiLoader className="spin" style={{ display: 'inline-block', verticalAlign: 'middle', marginRight: '6px' }} /> Loading...</td></tr>
             ) : codes.length === 0 ? (
-              <tr><td colSpan="7" style={{ textAlign: 'center', color: '#64748b', padding: '2rem' }}>No promo codes found</td></tr>
+              <tr><td colSpan="7" style={{ textAlign: 'center', color: '#6B7280', padding: '3rem' }}>No promo codes found</td></tr>
             ) : (
                codes.map(c => {
                  const isExpired = c.expiresAt && new Date(c.expiresAt) < new Date();
@@ -165,19 +165,19 @@ const AdminPromoCodes = () => {
 
                  return (
                   <tr key={c._id}>
-                    <td><strong style={{ color: '#e2e8f0', letterSpacing: '1px' }}>{c.code}</strong></td>
-                    <td style={{ display: 'flex', alignItems: 'center' }}><CoinDisplay amount={c.rewardCoins} size={12} /></td>
-                    <td style={{ color: c.minEarningsLast7Days > 0 ? '#facc15' : '#64748b' }}>{c.minEarningsLast7Days > 0 ? <CoinDisplay amount={c.minEarningsLast7Days} size={12} /> : '—'}</td>
-                    <td>{c.usedCount} {c.maxUses > 0 ? `/ ${c.maxUses}` : ''}</td>
-                    <td>{c.expiresAt ? new Date(c.expiresAt).toLocaleDateString() : 'Never'}</td>
+                    <td><strong style={{ color: '#0E0F0C', letterSpacing: '0.5px', fontFamily: "'Barlow', monospace" }}>{c.code}</strong></td>
+                    <td><CoinDisplay amount={c.rewardCoins} size={13} /></td>
+                    <td style={{ color: c.minEarningsLast7Days > 0 ? '#D97706' : '#9CA3AF' }}>{c.minEarningsLast7Days > 0 ? <CoinDisplay amount={c.minEarningsLast7Days} size={12} /> : '—'}</td>
+                    <td style={{ color: '#4B5563', fontWeight: 500 }}>{c.usedCount} {c.maxUses > 0 ? `/ ${c.maxUses}` : ''}</td>
+                    <td style={{ color: '#4B5563' }}>{c.expiresAt ? new Date(c.expiresAt).toLocaleDateString() : 'Never'}</td>
                     <td>
                       <span className={`status-pill ${active ? 'completed' : 'rejected'}`} style={{ cursor: 'pointer' }} onClick={() => handleToggleActive(c._id, c.isActive)}>
                         {active ? 'Active' : 'Inactive'}
                       </span>
                     </td>
                     <td style={{ textAlign: 'right' }}>
-                      <button onClick={() => handleDelete(c._id)} style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', padding: '0.4rem' }}>
-                        <FiTrash2 />
+                      <button onClick={() => handleDelete(c._id)} style={{ background: 'none', border: 'none', color: '#DC2626', cursor: 'pointer', padding: '0.4rem', borderRadius: '6px' }}>
+                        <FiTrash2 size={15} />
                       </button>
                     </td>
                   </tr>
@@ -197,19 +197,27 @@ const AdminPromoCodes = () => {
       </div>
 
       {showCreateModal && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.8)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
+        <div className="admin-modal-overlay">
           <motion.div 
             initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}
-            style={{ background: '#1e293b', padding: '1.5rem', borderRadius: '14px', width: '90%', maxWidth: '400px', border: '1px solid rgba(255,255,255,0.1)' }}
+            className="admin-modal"
+            style={{ maxWidth: '440px' }}
           >
-            <h3 style={{ color: 'white', marginTop: 0, display: 'flex', justifyContent: 'space-between' }}>
-              Create Promo Code
-              <FiX style={{ cursor: 'pointer', color: '#94a3b8' }} onClick={() => setShowCreateModal(false)} />
-            </h3>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
+              <h3 style={{ color: '#0E0F0C', margin: 0, fontFamily: "'Bricolage Grotesque', sans-serif", fontWeight: 700, fontSize: '1.2rem' }}>
+                Create Promo Code
+              </h3>
+              <button 
+                onClick={() => setShowCreateModal(false)}
+                style={{ background: '#F3F4F6', border: 'none', borderRadius: '8px', width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#6B7280' }}
+              >
+                <FiX size={16} />
+              </button>
+            </div>
             
-            <form onSubmit={handleCreate} style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginTop: '1rem' }}>
+            <form onSubmit={handleCreate} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
               <div>
-                <label className="admin-label">Code (Text)</label>
+                <label className="admin-label">Code (Text) *</label>
                 <input 
                   type="text" 
                   className="admin-input" 
@@ -221,7 +229,7 @@ const AdminPromoCodes = () => {
               </div>
               
               <div>
-                <label className="admin-label">Reward Amount (Coins)</label>
+                <label className="admin-label">Reward Amount (Coins) *</label>
                 <input 
                   type="number" 
                   className="admin-input" 
@@ -265,10 +273,10 @@ const AdminPromoCodes = () => {
                 />
               </div>
 
-              <div style={{ display: 'flex', gap: '0.75rem', marginTop: '0.5rem' }}>
-                <button type="button" className="action-btn" style={{ flex: 1 }} onClick={() => setShowCreateModal(false)}>Cancel</button>
-                <button type="submit" className="action-btn" style={{ flex: 1, background: '#3b82f6', color: 'white', border: 'none' }} disabled={creating}>
-                  {creating ? <FiLoader className="spin" /> : 'Create'}
+              <div style={{ display: 'flex', gap: '0.75rem', marginTop: '0.75rem' }}>
+                <button type="button" className="admin-btn-secondary" style={{ flex: 1 }} onClick={() => setShowCreateModal(false)}>Cancel</button>
+                <button type="submit" className="admin-btn-primary" style={{ flex: 1 }} disabled={creating}>
+                  {creating ? <FiLoader className="spin" /> : 'Create Code'}
                 </button>
               </div>
             </form>
@@ -284,3 +292,4 @@ const AdminPromoCodes = () => {
 };
 
 export default AdminPromoCodes;
+

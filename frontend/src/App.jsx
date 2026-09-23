@@ -28,7 +28,6 @@ import AdminPromoCodes from './pages/admin/AdminPromoCodes';
 import AdminCustomOffers from './pages/admin/AdminCustomOffers';
 import AdminGoodpicksOffers from './pages/admin/AdminGoodpicksOffers';
 import AdminLeaderboard from './pages/admin/AdminLeaderboard';
-import AdminProofs from './pages/admin/AdminProofs';
 import AdminAvatars from './pages/admin/AdminAvatars';
 import AdminChat from './pages/admin/AdminChat';
 import AdminSupport from './pages/admin/AdminSupport';
@@ -230,7 +229,6 @@ function App() {
           <Route path="users" element={<AdminUsers />} />
           <Route path="featured-offers" element={<AdminCustomOffers />} />
           <Route path="goodpicks-offers" element={<AdminGoodpicksOffers />} />
-          <Route path="proofs" element={<AdminProofs />} />
           <Route path="leaderboard" element={<AdminLeaderboard />} />
           <Route path="chat" element={<AdminChat />} />
           <Route path="support" element={<AdminSupport />} />

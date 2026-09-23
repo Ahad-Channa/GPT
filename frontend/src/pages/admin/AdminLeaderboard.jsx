@@ -8,9 +8,9 @@ const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
 const PERIOD_LABELS = { daily: 'Daily', weekly: 'Weekly', monthly: 'Monthly' };
 const PERIOD_COLORS = {
-  daily:   { bg: 'rgba(99,102,241,0.08)',  border: 'rgba(99,102,241,0.2)',  accent: '#818cf8' },
-  weekly:  { bg: 'rgba(16,185,129,0.08)',  border: 'rgba(16,185,129,0.2)', accent: '#34d399' },
-  monthly: { bg: 'rgba(245,158,11,0.08)', border: 'rgba(245,158,11,0.2)', accent: '#fbbf24' },
+  daily:   { bg: '#F8FAFC', border: '#E2E8F0', accent: '#4F46E5', lightAccent: '#EEF2FF' },
+  weekly:  { bg: '#F8FAFC', border: '#E2E8F0', accent: '#059669', lightAccent: '#ECFDF5' },
+  monthly: { bg: '#F8FAFC', border: '#E2E8F0', accent: '#D97706', lightAccent: '#FFFBEB' },
 };
 
 const PERIOD_DESCRIPTIONS = {
@@ -92,18 +92,20 @@ function PeriodCard({ period, config, onSave, onReset, saving, resetting }) {
 
   return (
     <div style={{
-      background: colors.bg,
-      border: `1px solid ${colors.border}`,
+      background: '#FFFFFF',
+      border: '1px solid #E5E7EB',
       borderRadius: '16px',
       padding: '24px',
+      boxShadow: '0 1px 3px rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.02)',
     }}>
       {/* Header row */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
         <div>
-          <h3 style={{ fontSize: '18px', fontWeight: 700, color: colors.accent, margin: 0 }}>
+          <h3 style={{ fontSize: '18px', fontWeight: 700, color: '#0E0F0C', fontFamily: "'Bricolage Grotesque', sans-serif", margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: colors.accent }} />
             {PERIOD_LABELS[period]} Leaderboard
           </h3>
-          <p style={{ fontSize: '12px', color: '#64748b', margin: '4px 0 0', maxWidth: '360px', lineHeight: 1.5 }}>
+          <p style={{ fontSize: '12px', color: '#6B7280', margin: '4px 0 0', maxWidth: '360px', lineHeight: 1.5 }}>
             {PERIOD_DESCRIPTIONS[period]}
           </p>
         </div>
@@ -116,7 +118,7 @@ function PeriodCard({ period, config, onSave, onReset, saving, resetting }) {
           }}
           style={{
             background: 'none', border: 'none', cursor: 'pointer',
-            color: liveLocal.enabled ? colors.accent : '#374151',
+            color: liveLocal.enabled ? colors.accent : '#9CA3AF',
             fontSize: '36px', transition: 'color 0.2s', padding: 0,
             display: 'flex', alignItems: 'center',
           }}
@@ -126,13 +128,13 @@ function PeriodCard({ period, config, onSave, onReset, saving, resetting }) {
         </button>
       </div>
 
-      <div style={{ display: 'flex', gap: '16px', borderBottom: '1px solid rgba(255,255,255,0.08)', marginBottom: '24px' }}>
+      <div style={{ display: 'flex', gap: '16px', borderBottom: '1px solid #F3F4F6', marginBottom: '20px' }}>
         <button
           onClick={() => setActiveTab('live')}
           style={{
-            background: 'none', border: 'none', color: activeTab === 'live' ? colors.accent : '#94a3b8',
-            fontSize: '13px', fontWeight: 600, padding: '8px 4px', cursor: 'pointer',
-            borderBottom: activeTab === 'live' ? `2px solid ${colors.accent}` : '2px solid transparent',
+            background: 'none', border: 'none', color: activeTab === 'live' ? '#1E2538' : '#6B7280',
+            fontSize: '13px', fontWeight: 700, padding: '8px 4px', cursor: 'pointer',
+            borderBottom: activeTab === 'live' ? '2px solid #1E2538' : '2px solid transparent',
           }}
         >
           Live Setup
@@ -140,15 +142,15 @@ function PeriodCard({ period, config, onSave, onReset, saving, resetting }) {
         <button
           onClick={() => setActiveTab('next')}
           style={{
-            background: 'none', border: 'none', color: activeTab === 'next' ? colors.accent : '#94a3b8',
-            fontSize: '13px', fontWeight: 600, padding: '8px 4px', cursor: 'pointer',
-            borderBottom: activeTab === 'next' ? `2px solid ${colors.accent}` : '2px solid transparent',
+            background: 'none', border: 'none', color: activeTab === 'next' ? '#1E2538' : '#6B7280',
+            fontSize: '13px', fontWeight: 700, padding: '8px 4px', cursor: 'pointer',
+            borderBottom: activeTab === 'next' ? '2px solid #1E2538' : '2px solid transparent',
             display: 'flex', alignItems: 'center', gap: '6px'
           }}
         >
           Next Cycle Setup
           {config.nextConfig?.isScheduled && (
-            <span style={{ background: colors.accent, color: '#000', padding: '2px 6px', borderRadius: '10px', fontSize: '9px', fontWeight: 800 }}>SCHEDULED</span>
+            <span style={{ background: '#1E2538', color: '#FFFFFF', padding: '2px 6px', borderRadius: '10px', fontSize: '9px', fontWeight: 800 }}>SCHEDULED</span>
           )}
         </button>
       </div>
@@ -158,9 +160,9 @@ function PeriodCard({ period, config, onSave, onReset, saving, resetting }) {
           <span style={{
             display: 'inline-flex', alignItems: 'center', gap: '6px',
             padding: '4px 12px', borderRadius: '20px', fontSize: '11px', fontWeight: 700,
-            background: liveLocal.enabled ? `${colors.accent}20` : 'rgba(100,116,139,0.15)',
-            color: liveLocal.enabled ? colors.accent : '#64748b',
-            border: `1px solid ${liveLocal.enabled ? `${colors.accent}40` : 'rgba(100,116,139,0.2)'}`,
+            background: liveLocal.enabled ? '#ECFDF5' : '#F3F4F6',
+            color: liveLocal.enabled ? '#059669' : '#6B7280',
+            border: `1px solid ${liveLocal.enabled ? '#A7F3D0' : '#E5E7EB'}`,
             textTransform: 'uppercase', letterSpacing: '0.08em',
           }}>
             {liveLocal.enabled ? '● ACTIVE' : '○ DISABLED'}
@@ -170,7 +172,7 @@ function PeriodCard({ period, config, onSave, onReset, saving, resetting }) {
 
       {activeTab === 'next' && (
         <div style={{ marginBottom: '20px' }}>
-          <p style={{ fontSize: '13px', color: '#94a3b8', background: 'rgba(255,255,255,0.02)', padding: '12px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.05)' }}>
+          <p style={{ fontSize: '13px', color: '#4B5563', background: '#F9FAFB', padding: '12px', borderRadius: '10px', border: '1px solid #E5E7EB', margin: 0 }}>
             These settings will automatically become active on the next <strong>{PERIOD_LABELS[period]}</strong> reset.
           </p>
         </div>
@@ -178,29 +180,29 @@ function PeriodCard({ period, config, onSave, onReset, saving, resetting }) {
 
       {/* Visible Slots control */}
       <div style={{ marginBottom: '20px', maxWidth: '280px' }}>
-        <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', color: '#94a3b8', fontWeight: 600, marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+        <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', color: '#6B7280', fontWeight: 600, marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
           <FiEye style={{ fontSize: '13px' }} /> Visible Ranks
         </label>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '10px', padding: '8px 12px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', background: '#FFFFFF', border: '1px solid #D1D5DB', borderRadius: '10px', padding: '8px 12px' }}>
           <input
             type="number"
             min="5"
             max="100"
             value={local.visibleSlots || 25}
             onChange={e => set('visibleSlots', Number(e.target.value))}
-            style={{ background: 'none', border: 'none', outline: 'none', color: '#fff', fontSize: '14px', fontWeight: 600, width: '100%', fontFamily: "'Barlow', system-ui, sans-serif", fontFeatureSettings: "'zero' 0", fontVariantNumeric: 'normal' }}
+            style={{ background: 'none', border: 'none', outline: 'none', color: '#0E0F0C', fontSize: '14px', fontWeight: 600, width: '100%', fontFamily: "'Barlow', system-ui, sans-serif", fontFeatureSettings: "'zero' 0", fontVariantNumeric: 'normal' }}
           />
-          <span style={{ fontSize: '10px', color: '#64748b', fontWeight: 600, whiteSpace: 'nowrap' }}>RANKS</span>
+          <span style={{ fontSize: '10px', color: '#6B7280', fontWeight: 700, whiteSpace: 'nowrap' }}>RANKS</span>
         </div>
-        <p style={{ fontSize: '10px', color: '#475569', margin: '4px 0 0' }}>How many ranks users will see on the leaderboard</p>
+        <p style={{ fontSize: '11px', color: '#9CA3AF', margin: '4px 0 0' }}>How many ranks users will see on the leaderboard</p>
       </div>
 
       {/* Rewarded Ranks control */}
       <div style={{ marginBottom: '20px' }}>
-        <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', color: '#94a3b8', fontWeight: 600, marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+        <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', color: '#6B7280', fontWeight: 600, marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
           🏆 Rewarded Ranks
         </label>
-        <div style={{ maxWidth: '280px', display: 'flex', alignItems: 'center', gap: '8px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '10px', padding: '8px 12px', marginBottom: '12px' }}>
+        <div style={{ maxWidth: '280px', display: 'flex', alignItems: 'center', gap: '8px', background: '#FFFFFF', border: '1px solid #D1D5DB', borderRadius: '10px', padding: '8px 12px', marginBottom: '12px' }}>
           <input
             type="number"
             min="0"
@@ -217,18 +219,18 @@ function PeriodCard({ period, config, onSave, onReset, saving, resetting }) {
               }
               set('rewardTiers', newTiers);
             }}
-            style={{ background: 'none', border: 'none', outline: 'none', color: '#fff', fontSize: '14px', fontWeight: 600, width: '100%', fontFamily: "'Barlow', system-ui, sans-serif", fontFeatureSettings: "'zero' 0", fontVariantNumeric: 'normal' }}
+            style={{ background: 'none', border: 'none', outline: 'none', color: '#0E0F0C', fontSize: '14px', fontWeight: 600, width: '100%', fontFamily: "'Barlow', system-ui, sans-serif", fontFeatureSettings: "'zero' 0", fontVariantNumeric: 'normal' }}
           />
-          <span style={{ fontSize: '10px', color: '#64748b', fontWeight: 600, whiteSpace: 'nowrap' }}>RANKS</span>
+          <span style={{ fontSize: '10px', color: '#6B7280', fontWeight: 700, whiteSpace: 'nowrap' }}>RANKS</span>
         </div>
         
         {/* Dynamic Reward Tiers */}
         {(local.rewardedRanks || 0) > 0 && (
-          <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px', padding: '16px', display: 'grid', gap: '12px', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))' }}>
+          <div style={{ background: '#F9FAFB', border: '1px solid #E5E7EB', borderRadius: '12px', padding: '16px', display: 'grid', gap: '12px', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))' }}>
             {Array.from({ length: local.rewardedRanks || 0 }).map((_, idx) => (
               <div key={idx}>
-                <label style={{ display: 'block', fontSize: '10px', color: '#94a3b8', fontWeight: 600, marginBottom: '4px' }}>Rank #{idx + 1} Reward</label>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', padding: '6px 10px' }}>
+                <label style={{ display: 'block', fontSize: '11px', color: '#4B5563', fontWeight: 600, marginBottom: '4px' }}>Rank #{idx + 1} Reward</label>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', background: '#FFFFFF', border: '1px solid #D1D5DB', borderRadius: '8px', padding: '6px 10px' }}>
                   <input
                     type="number"
                     min="0"
@@ -238,9 +240,9 @@ function PeriodCard({ period, config, onSave, onReset, saving, resetting }) {
                       newTiers[idx] = Number(e.target.value);
                       set('rewardTiers', newTiers);
                     }}
-                    style={{ background: 'none', border: 'none', outline: 'none', color: '#fbbf24', fontSize: '13px', fontWeight: 600, width: '100%', fontFamily: "'Barlow', system-ui, sans-serif", fontFeatureSettings: "'zero' 0", fontVariantNumeric: 'normal' }}
+                    style={{ background: 'none', border: 'none', outline: 'none', color: '#0E0F0C', fontSize: '13px', fontWeight: 700, width: '100%', fontFamily: "'Barlow', system-ui, sans-serif", fontFeatureSettings: "'zero' 0", fontVariantNumeric: 'normal' }}
                   />
-                  <CoinDisplay amount={local.rewardTiers?.[idx] || 0} size={9} />
+                  <CoinDisplay amount={local.rewardTiers?.[idx] || 0} size={10} />
                 </div>
               </div>
             ))}
@@ -255,11 +257,12 @@ function PeriodCard({ period, config, onSave, onReset, saving, resetting }) {
           disabled={!isDirty || saving}
           style={{
             display: 'flex', alignItems: 'center', gap: '6px',
-            padding: '8px 16px', borderRadius: '10px', fontSize: '13px', fontWeight: 600,
-            background: isDirty && !saving ? colors.accent : 'rgba(255,255,255,0.05)',
-            color: isDirty && !saving ? '#fff' : '#475569',
+            padding: '9px 18px', borderRadius: '10px', fontSize: '13px', fontWeight: 700,
+            background: isDirty && !saving ? '#1E2538' : '#F3F4F6',
+            color: isDirty && !saving ? '#FFFFFF' : '#9CA3AF',
             border: 'none', cursor: isDirty && !saving ? 'pointer' : 'not-allowed',
             transition: 'all 0.2s',
+            boxShadow: isDirty && !saving ? '0 1px 2px rgba(0,0,0,0.05)' : 'none',
           }}
         >
           <FiSave style={{ fontSize: '14px' }} />
@@ -272,9 +275,9 @@ function PeriodCard({ period, config, onSave, onReset, saving, resetting }) {
             disabled={saving}
             style={{
               display: 'flex', alignItems: 'center', gap: '6px',
-              padding: '8px 16px', borderRadius: '10px', fontSize: '13px', fontWeight: 600,
-              background: 'rgba(239,68,68,0.08)', color: '#f87171',
-              border: '1px solid rgba(239,68,68,0.2)', cursor: 'pointer',
+              padding: '9px 18px', borderRadius: '10px', fontSize: '13px', fontWeight: 600,
+              background: '#FEF2F2', color: '#DC2626',
+              border: '1px solid #FECACA', cursor: 'pointer',
               transition: 'all 0.2s',
             }}
           >
@@ -288,9 +291,9 @@ function PeriodCard({ period, config, onSave, onReset, saving, resetting }) {
             disabled={resetting}
             style={{
               display: 'flex', alignItems: 'center', gap: '6px',
-              padding: '8px 16px', borderRadius: '10px', fontSize: '13px', fontWeight: 600,
-              background: 'rgba(239,68,68,0.08)', color: resetting ? '#475569' : '#f87171',
-              border: '1px solid rgba(239,68,68,0.2)', cursor: resetting ? 'not-allowed' : 'pointer',
+              padding: '9px 18px', borderRadius: '10px', fontSize: '13px', fontWeight: 600,
+              background: '#FEF2F2', color: resetting ? '#9CA3AF' : '#DC2626',
+              border: '1px solid #FECACA', cursor: resetting ? 'not-allowed' : 'pointer',
               transition: 'all 0.2s',
             }}
           >
@@ -308,23 +311,23 @@ function HistoryTable({ history, loading }) {
   const toggle = (id) => setExpanded(prev => ({ ...prev, [id]: !prev[id] }));
 
   if (loading) return (
-    <div style={{ textAlign: 'center', padding: '40px', color: '#64748b' }}>Loading history…</div>
+    <div style={{ textAlign: 'center', padding: '40px', color: '#6B7280' }}>Loading history…</div>
   );
   if (!history.length) return (
-    <div style={{ textAlign: 'center', padding: '40px', color: '#64748b', fontSize: '14px' }}>
+    <div style={{ textAlign: 'center', padding: '40px', color: '#6B7280', fontSize: '14px' }}>
       No completed cycles yet. Enable a period and wait for the reset.
     </div>
   );
 
-  const periodColor = { daily: '#818cf8', weekly: '#34d399', monthly: '#fbbf24' };
+  const periodColor = { daily: '#4F46E5', weekly: '#059669', monthly: '#D97706' };
 
   return (
     <div style={{ overflowX: 'auto' }}>
-      <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}>
+      <table className="admin-table" style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}>
         <thead>
-          <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+          <tr>
             {['Period', 'Cycle End', 'Top Earner', 'Participants', 'Details'].map(h => (
-              <th key={h} style={{ padding: '10px 12px', textAlign: 'left', color: '#64748b', fontWeight: 600, fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{h}</th>
+              <th key={h}>{h}</th>
             ))}
           </tr>
         </thead>
@@ -334,27 +337,27 @@ function HistoryTable({ history, loading }) {
             const isExpanded = expanded[cycle._id];
 
             return (
-              <tr key={cycle._id} style={{ borderBottom: '1px solid rgba(255,255,255,0.04)', verticalAlign: 'top' }}>
-                <td style={{ padding: '12px', color: periodColor[cycle.period], fontWeight: 700, textTransform: 'capitalize' }}>{cycle.period}</td>
-                <td style={{ padding: '12px', color: '#94a3b8', fontFamily: "'Barlow', system-ui, sans-serif", fontFeatureSettings: "'zero' 0", fontSize: '12px' }}>
+              <tr key={cycle._id} style={{ verticalAlign: 'top' }}>
+                <td style={{ color: periodColor[cycle.period], fontWeight: 700, textTransform: 'capitalize' }}>{cycle.period}</td>
+                <td style={{ color: '#6B7280', fontFamily: "'Barlow', system-ui, sans-serif", fontFeatureSettings: "'zero' 0", fontSize: '12px' }}>
                   {new Date(cycle.cycleEnd).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit', timeZone: 'UTC' })} UTC
                 </td>
-                <td style={{ padding: '12px', color: '#e2e8f0' }}>
+                <td style={{ color: '#0E0F0C' }}>
                   {topWinner ? (
                     <div>
                       <div style={{ fontWeight: 600 }}>🥇 {topWinner.displayName}</div>
-                      <div style={{ fontSize: '11px', color: '#64748b', display: 'inline-flex', alignItems: 'center', gap: '3px' }}><CoinDisplay amount={topWinner.coinsEarned || 0} size={11} /></div>
+                      <div style={{ fontSize: '11px', color: '#6B7280', display: 'inline-flex', alignItems: 'center', gap: '3px' }}><CoinDisplay amount={topWinner.coinsEarned || 0} size={11} /></div>
                     </div>
-                  ) : <span style={{ color: '#374151' }}>—</span>}
+                  ) : <span style={{ color: '#9CA3AF' }}>—</span>}
                 </td>
-                <td style={{ padding: '12px', color: '#94a3b8' }}>{cycle.winners?.length || 0}</td>
-                <td style={{ padding: '12px' }}>
+                <td style={{ color: '#6B7280' }}>{cycle.winners?.length || 0}</td>
+                <td>
                   <button
                     onClick={() => toggle(cycle._id)}
                     style={{
-                      background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)',
+                      background: '#F3F4F6', border: '1px solid #E5E7EB',
                       borderRadius: '6px', padding: '4px 10px', cursor: 'pointer',
-                      color: '#94a3b8', fontSize: '11px', fontWeight: 600,
+                      color: '#374151', fontSize: '11px', fontWeight: 600,
                       display: 'flex', alignItems: 'center', gap: '4px',
                     }}
                   >
@@ -363,10 +366,10 @@ function HistoryTable({ history, loading }) {
                   {isExpanded && cycle.winners?.length > 0 && (
                     <div style={{ marginTop: '8px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
                       {cycle.winners.map(w => (
-                        <div key={w.rank} style={{ display: 'flex', gap: '8px', alignItems: 'center', fontSize: '11px', padding: '4px 8px', background: 'rgba(255,255,255,0.02)', borderRadius: '6px' }}>
+                        <div key={w.rank} style={{ display: 'flex', gap: '8px', alignItems: 'center', fontSize: '11px', padding: '4px 8px', background: '#F9FAFB', border: '1px solid #F3F4F6', borderRadius: '6px' }}>
                           <span style={{ fontWeight: 700, color: periodColor[cycle.period], minWidth: '24px' }}>#{w.rank}</span>
-                          <span style={{ color: '#e2e8f0', flex: 1 }}>{w.displayName}</span>
-                          <span style={{ color: '#64748b', display: 'inline-flex', alignItems: 'center', gap: '3px' }}><CoinDisplay amount={w.coinsEarned || 0} size={11} /></span>
+                          <span style={{ color: '#0E0F0C', flex: 1, fontWeight: 500 }}>{w.displayName}</span>
+                          <span style={{ color: '#6B7280', display: 'inline-flex', alignItems: 'center', gap: '3px' }}><CoinDisplay amount={w.coinsEarned || 0} size={11} /></span>
                         </div>
                       ))}
                     </div>
@@ -472,26 +475,26 @@ const AdminLeaderboard = () => {
     <div style={{ padding: '0 0 60px' }}>
       {/* Page header */}
       <div style={{ marginBottom: '32px' }}>
-        <h1 style={{ fontSize: '26px', fontWeight: 800, color: '#fff', margin: '0 0 6px', display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <FiTrendingUp style={{ color: '#818cf8' }} />
+        <h1 className="admin-page-title" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <FiTrendingUp style={{ color: '#4F46E5' }} />
           Leaderboard Management
         </h1>
-        <p style={{ color: '#64748b', margin: 0, fontSize: '14px' }}>
+        <p className="admin-page-sub">
           Enable/disable leaderboard periods and control how many ranks users see.
         </p>
       </div>
 
       {/* Info banner */}
-      <div style={{ display: 'flex', gap: '10px', alignItems: 'flex-start', background: 'rgba(99,102,241,0.06)', border: '1px solid rgba(99,102,241,0.15)', borderRadius: '12px', padding: '14px 18px', marginBottom: '28px' }}>
-        <FiAlertCircle style={{ color: '#818cf8', marginTop: '2px', flexShrink: 0 }} />
-        <p style={{ color: '#94a3b8', fontSize: '13px', margin: 0, lineHeight: 1.6 }}>
-          Rankings are based on total coins earned during each period. <strong style={{ color: '#c7d2fe' }}>Daily</strong> resets every midnight UTC, <strong style={{ color: '#c7d2fe' }}>Weekly</strong> every Monday, <strong style={{ color: '#c7d2fe' }}>Monthly</strong> on the 1st. Use <strong style={{ color: '#c7d2fe' }}>Visible Ranks</strong> to control how many positions users see.
+      <div style={{ display: 'flex', gap: '10px', alignItems: 'flex-start', background: '#EEF2FF', border: '1px solid #C7D2FE', borderRadius: '14px', padding: '14px 18px', marginBottom: '28px' }}>
+        <FiAlertCircle style={{ color: '#4F46E5', marginTop: '2px', flexShrink: 0 }} />
+        <p style={{ color: '#3730A3', fontSize: '13px', margin: 0, lineHeight: 1.6 }}>
+          Rankings are based on total coins earned during each period. <strong style={{ color: '#1E1B4B' }}>Daily</strong> resets every midnight UTC, <strong style={{ color: '#1E1B4B' }}>Weekly</strong> every Monday, <strong style={{ color: '#1E1B4B' }}>Monthly</strong> on the 1st. Use <strong style={{ color: '#1E1B4B' }}>Visible Ranks</strong> to control how many positions users see.
         </p>
       </div>
 
       {/* Period cards */}
       {loading ? (
-        <div style={{ textAlign: 'center', padding: '60px', color: '#64748b' }}>Loading configuration…</div>
+        <div style={{ textAlign: 'center', padding: '60px', color: '#6B7280' }}>Loading configuration…</div>
       ) : (
         <div style={{ display: 'grid', gap: '20px', marginBottom: '40px' }}>
           {['daily', 'weekly', 'monthly'].map(period => (
@@ -513,21 +516,22 @@ const AdminLeaderboard = () => {
         onClick={() => setShowHistory(v => !v)}
         style={{
           display: 'flex', alignItems: 'center', gap: '8px',
-          padding: '10px 20px', borderRadius: '12px',
-          background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)',
-          color: '#94a3b8', fontSize: '14px', fontWeight: 600, cursor: 'pointer', marginBottom: '20px', width: '100%',
+          padding: '12px 20px', borderRadius: '14px',
+          background: '#FFFFFF', border: '1px solid #E5E7EB',
+          color: '#374151', fontSize: '14px', fontWeight: 600, cursor: 'pointer', marginBottom: '20px', width: '100%',
           justifyContent: 'space-between',
+          boxShadow: '0 1px 3px rgba(0,0,0,0.04)'
         }}
       >
         <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <FiClock style={{ color: '#fbbf24' }} />
+          <FiClock style={{ color: '#D97706' }} />
           Past Cycle History
         </span>
         {showHistory ? <FiChevronUp /> : <FiChevronDown />}
       </button>
 
       {showHistory && (
-        <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '16px', overflow: 'hidden' }}>
+        <div className="admin-table-container">
           <HistoryTable history={history} loading={historyLoading} />
         </div>
       )}
@@ -536,3 +540,4 @@ const AdminLeaderboard = () => {
 };
 
 export default AdminLeaderboard;
+

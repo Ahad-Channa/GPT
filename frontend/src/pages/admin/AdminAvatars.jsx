@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
-import { FiTrash2, FiEdit2, FiPlus, FiImage, FiLoader } from 'react-icons/fi';
+import { FiTrash2, FiEdit2, FiPlus, FiImage, FiLoader, FiUser, FiX } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
@@ -130,109 +130,120 @@ export default function AdminAvatars() {
     }
   };
 
-  if (loading) return <div className="p-8 text-center text-slate-400">Loading avatars...</div>;
+  if (loading) return <div className="p-8 text-center text-gray-500 font-medium">Loading avatars...</div>;
 
   return (
-    <div className="p-6">
-      <div className="flex justify-between items-center mb-8">
+    <div>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
         <div>
-          <h1 className="text-2xl font-bold text-white">Avatar Shop Management</h1>
-          <p className="text-slate-400 text-sm mt-1">Add, edit, or remove user avatars.</p>
-          <div className="mt-3 inline-flex items-center gap-2 px-3 py-1.5 bg-amber-500/10 border border-amber-500/20 rounded-lg">
-             <span className="text-amber-400 font-bold text-sm">Total Earned:</span>
-             <span className="text-amber-300 font-bold">{totalCoinsEarned.toLocaleString()} 🪙</span>
+          <h1 className="admin-page-title" style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+            <FiUser style={{ color: '#2563EB' }} />
+            Avatar Shop Management
+          </h1>
+          <p className="admin-page-sub">Add, edit, or remove user avatars.</p>
+          <div className="mt-3 inline-flex items-center gap-2 px-3 py-1.5 bg-amber-50 border border-amber-200 rounded-xl shadow-sm">
+             <span className="text-amber-800 font-bold text-xs uppercase tracking-wider">Total Earned:</span>
+             <span className="text-amber-900 font-bold font-display">{totalCoinsEarned.toLocaleString()} 🪙</span>
           </div>
         </div>
         <button
           onClick={() => openModal()}
-          className="flex items-center gap-2 px-4 py-2 bg-indigo-500 hover:bg-indigo-600 text-white rounded-lg transition-colors font-medium"
+          className="admin-btn-primary"
+          style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}
         >
-          <FiPlus /> Add Avatar
+          <FiPlus size={16} /> Add Avatar
         </button>
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-6">
+      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-4">
         {avatars.map(avatar => (
-          <div key={avatar._id} className="bg-slate-800 border border-slate-700 rounded-xl overflow-hidden flex flex-col items-center p-4 relative group">
-            <div className="w-20 h-20 rounded-full overflow-hidden mb-3 ring-2 ring-slate-700 bg-slate-900 flex-shrink-0">
+          <div key={avatar._id} className="bg-white border border-gray-200 rounded-2xl overflow-hidden flex flex-col items-center p-4 relative group shadow-sm hover:shadow-md transition-all">
+            <div className="w-20 h-20 rounded-full overflow-hidden mb-3 ring-2 ring-gray-100 bg-gray-50 flex-shrink-0">
               <img src={avatar.url} alt={avatar.name} className="w-full h-full object-cover" />
             </div>
-            <h3 className="text-white font-medium text-sm text-center truncate w-full">{avatar.name}</h3>
+            <h3 className="text-gray-900 font-bold text-xs text-center truncate w-full">{avatar.name}</h3>
             
             {avatar.isPremium ? (
-              <div className="flex items-center gap-1 text-yellow-400 text-xs font-bold mt-1">
+              <div className="flex items-center gap-1 text-amber-700 text-xs font-bold font-display mt-1">
                 🪙 {avatar.price}
               </div>
             ) : (
-              <div className="text-emerald-400 text-xs font-bold mt-1">FREE</div>
+              <div className="text-emerald-700 text-xs font-bold uppercase tracking-wider mt-1">FREE</div>
             )}
-            <div className="text-xs text-slate-400 mt-1">
-              {avatar.quantity === null || avatar.quantity === undefined ? 'Unlimited' : (avatar.quantity <= 0 ? <span className="text-rose-400 font-bold">Sold Out</span> : `${avatar.quantity} left`)}
+            <div className="text-[11px] text-gray-500 mt-1 font-medium">
+              {avatar.quantity === null || avatar.quantity === undefined ? 'Unlimited' : (avatar.quantity <= 0 ? <span className="text-rose-600 font-bold">Sold Out</span> : `${avatar.quantity} left`)}
             </div>
 
             {/* Actions overlay */}
-            <div className="absolute inset-0 bg-slate-900/80 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3 backdrop-blur-sm">
-              <button onClick={() => openModal(avatar)} className="p-2 bg-indigo-500/20 text-indigo-400 hover:bg-indigo-500 hover:text-white rounded-lg transition-colors">
-                <FiEdit2 />
+            <div className="absolute inset-0 bg-slate-900/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2 backdrop-blur-xs rounded-2xl">
+              <button onClick={() => openModal(avatar)} className="p-2 bg-white text-gray-800 hover:bg-gray-100 rounded-xl transition-all shadow-sm">
+                <FiEdit2 size={14} />
               </button>
-              <button onClick={() => handleDelete(avatar._id)} className="p-2 bg-red-500/20 text-red-400 hover:bg-red-500 hover:text-white rounded-lg transition-colors">
-                <FiTrash2 />
+              <button onClick={() => handleDelete(avatar._id)} className="p-2 bg-rose-50 text-rose-600 hover:bg-rose-100 rounded-xl transition-all shadow-sm">
+                <FiTrash2 size={14} />
               </button>
             </div>
           </div>
         ))}
         {avatars.length === 0 && (
-          <div className="col-span-full py-12 text-center text-slate-500 bg-slate-800/50 rounded-xl border border-slate-700/50">
+          <div className="col-span-full py-12 text-center text-gray-500 bg-white rounded-2xl border border-gray-200 shadow-sm">
             No avatars found. Click "Add Avatar" to create one.
           </div>
         )}
       </div>
 
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-          <div className="bg-slate-800 rounded-xl shadow-xl w-full max-w-md border border-slate-700 overflow-hidden flex flex-col max-h-[90vh]">
-            <div className="p-6 border-b border-slate-700 flex justify-between items-center bg-slate-800/50 shrink-0">
-              <h2 className="text-lg font-bold text-white">
+        <div className="admin-modal-overlay">
+          <div className="admin-modal" style={{ maxWidth: '440px' }}>
+            <div className="flex justify-between items-center pb-4 mb-4 border-b border-gray-100">
+              <h2 className="text-base font-bold text-gray-900 font-display">
                 {editingAvatar ? 'Edit Avatar' : 'Add New Avatar'}
               </h2>
+              <button
+                onClick={closeModal}
+                className="w-8 h-8 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-500 hover:text-gray-800 flex items-center justify-center transition-all"
+              >
+                <FiX size={16} />
+              </button>
             </div>
             
-            <form onSubmit={handleSubmit} className="p-6 space-y-4 overflow-y-auto hide-scrollbar">
+            <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label className="block text-xs font-medium text-slate-400 uppercase tracking-wider mb-2">Avatar Name</label>
+                <label className="admin-label">Avatar Name *</label>
                 <input
                   type="text"
                   required
                   value={formData.name}
                   onChange={(e) => setFormData({...formData, name: e.target.value})}
-                  className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none"
+                  className="admin-input"
                   placeholder="e.g. Cyber Punk Girl"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-slate-400 uppercase tracking-wider mb-2">Description</label>
+                <label className="admin-label">Description</label>
                 <textarea
                   value={formData.description}
                   onChange={(e) => setFormData({...formData, description: e.target.value})}
-                  className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none h-20 resize-none"
+                  className="admin-input resize-none"
+                  rows={2}
                   placeholder="e.g. Rare Mythic Edition"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-slate-400 uppercase tracking-wider mb-2">Rarity</label>
+                <label className="admin-label">Rarity</label>
                 <input
                   type="text"
                   value={formData.rarity}
                   onChange={(e) => setFormData({...formData, rarity: e.target.value})}
-                  className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none"
+                  className="admin-input"
                   placeholder="e.g. Limited Edition"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-slate-400 uppercase tracking-wider mb-2">Avatar Image</label>
+                <label className="admin-label">Avatar Image</label>
                 <div className="relative">
                   <input
                     type="file"
@@ -243,67 +254,67 @@ export default function AdminAvatars() {
                   />
                   <label 
                     htmlFor="avatar-upload" 
-                    className="flex items-center justify-center gap-2 w-full bg-slate-900 border border-slate-700 border-dashed rounded-lg px-4 py-6 text-slate-400 hover:text-white hover:border-indigo-500 cursor-pointer transition-colors"
+                    className="flex items-center justify-center gap-2 w-full bg-gray-50 border border-gray-300 border-dashed rounded-xl px-4 py-5 text-gray-600 hover:border-[#1E2538] hover:text-[#1E2538] cursor-pointer transition-colors text-xs font-medium"
                   >
-                    <FiImage className="w-5 h-5" />
+                    <FiImage className="w-5 h-5 text-gray-400" />
                     <span>{file ? file.name : (editingAvatar ? 'Upload new to replace' : 'Click to select image')}</span>
                   </label>
                 </div>
               </div>
 
-              <div className="flex items-center gap-3 bg-slate-900/50 p-3 rounded-lg border border-slate-700/50">
+              <div className="flex items-center gap-3 bg-gray-50 p-3 rounded-xl border border-gray-200">
                 <input
                   type="checkbox"
                   id="isPremium"
                   checked={formData.isPremium}
                   onChange={(e) => setFormData({...formData, isPremium: e.target.checked})}
-                  className="w-5 h-5 rounded border-slate-600 bg-slate-800 text-indigo-500 focus:ring-indigo-500"
+                  className="w-4 h-4 rounded border-gray-300 text-[#1E2538] focus:ring-[#1E2538]"
                 />
-                <label htmlFor="isPremium" className="text-sm font-medium text-white cursor-pointer select-none">
+                <label htmlFor="isPremium" className="text-xs font-bold text-gray-800 cursor-pointer select-none">
                   Is Premium Avatar?
                 </label>
               </div>
 
               {formData.isPremium && (
-                <div className="animate-fade-in">
-                  <label className="block text-xs font-medium text-slate-400 uppercase tracking-wider mb-2">Coin Price 🪙</label>
+                <div>
+                  <label className="admin-label">Coin Price 🪙 *</label>
                   <input
                     type="number"
                     min="0"
                     required={formData.isPremium}
                     value={formData.price}
                     onChange={(e) => setFormData({...formData, price: Number(e.target.value)})}
-                    className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none"
+                    className="admin-input"
                   />
                 </div>
               )}
 
               <div>
-                <label className="block text-xs font-medium text-slate-400 uppercase tracking-wider mb-2">Quantity / Stock Limit</label>
+                <label className="admin-label">Quantity / Stock Limit</label>
                 <input
                   type="number"
                   min="0"
                   value={formData.quantity}
                   onChange={(e) => setFormData({...formData, quantity: e.target.value})}
-                  className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none"
+                  className="admin-input"
                   placeholder="Leave empty for unlimited"
                 />
               </div>
 
-              <div className="pt-4 flex justify-end gap-3">
+              <div className="pt-3 flex justify-end gap-2.5 border-t border-gray-100">
                 <button
                   type="button"
                   onClick={closeModal}
-                  className="px-4 py-2 text-sm font-medium text-slate-300 hover:text-white transition-colors"
+                  className="admin-btn-secondary"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={saving}
-                  className="px-6 py-2 bg-indigo-500 hover:bg-indigo-600 text-white rounded-lg font-medium flex items-center gap-2 transition-colors disabled:opacity-50"
+                  className="admin-btn-primary"
                 >
-                  {saving && <FiLoader className="animate-spin" />}
+                  {saving && <FiLoader className="animate-spin text-xs" />}
                   {saving ? 'Saving...' : 'Save Avatar'}
                 </button>
               </div>
@@ -314,3 +325,4 @@ export default function AdminAvatars() {
     </div>
   );
 }
+

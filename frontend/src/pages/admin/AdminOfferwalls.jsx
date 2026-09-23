@@ -1,16 +1,16 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import toast from 'react-hot-toast';
 import {
-  FiBox, FiToggleLeft, FiToggleRight, FiSave,
-  FiAlertCircle, FiCheckCircle, FiLoader, FiAlertTriangle
+  FiBox, FiToggleLeft, FiToggleRight,
+  FiAlertCircle, FiLoader, FiAlertTriangle
 } from 'react-icons/fi';
 
 const NumberInput = ({ value, onChange, min, max, step = 1, prefix, suffix, disabled }) => (
   <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
     {prefix && (
-      <span style={{ position: 'absolute', left: '0.75rem', color: '#64748b', fontSize: '0.85rem', pointerEvents: 'none' }}>
+      <span style={{ position: 'absolute', left: '0.75rem', color: '#6B7280', fontSize: '0.85rem', pointerEvents: 'none' }}>
         {prefix}
       </span>
     )}
@@ -24,19 +24,22 @@ const NumberInput = ({ value, onChange, min, max, step = 1, prefix, suffix, disa
       disabled={disabled}
       className="admin-input"
       style={{
-        paddingLeft: prefix ? '2rem' : '1rem',
-        paddingRight: suffix ? '3rem' : '1rem',
+        paddingLeft: prefix ? '2rem' : '0.875rem',
+        paddingRight: suffix ? '3rem' : '0.875rem',
         width: '100%',
         fontFamily: "'Barlow', system-ui, sans-serif",
         fontFeatureSettings: "'zero' 0",
         fontVariantNumeric: 'normal',
-        fontSize: '1rem',
+        fontSize: '0.95rem',
         fontWeight: 600,
-        color: '#e2e8f0',
+        color: '#0E0F0C',
+        background: '#FFFFFF',
+        border: '1px solid #D1D5DB',
+        borderRadius: '10px',
       }}
     />
     {suffix && (
-      <span style={{ position: 'absolute', right: '0.75rem', color: '#64748b', fontSize: '0.82rem', pointerEvents: 'none', fontFamily: "'Barlow', system-ui, sans-serif" }}>
+      <span style={{ position: 'absolute', right: '0.75rem', color: '#6B7280', fontSize: '0.82rem', pointerEvents: 'none', fontFamily: "'Barlow', system-ui, sans-serif" }}>
         {suffix}
       </span>
     )}
@@ -77,29 +80,30 @@ const ProviderCard = ({ provider, onUpdate, loadingProvider }) => {
     <motion.div
       layout
       style={{
-        padding: '1rem 1.1rem',
-        background: enabled ? 'rgba(255,255,255,0.03)' : 'rgba(255,255,255,0.01)',
-        border: `1px solid ${enabled ? 'rgba(139,92,246,0.25)' : 'rgba(255,255,255,0.05)'}`,
-        borderRadius: '14px',
+        padding: '1.25rem',
+        background: '#FFFFFF',
+        border: `1px solid ${enabled ? '#CBD5E1' : '#E5E7EB'}`,
+        borderRadius: '16px',
+        boxShadow: '0 1px 3px rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.02)',
         transition: 'all 0.2s',
-        opacity: enabled || isLoading ? 1 : 0.6,
+        opacity: enabled || isLoading ? 1 : 0.65,
       }}
     >
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.75rem' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.875rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
           <span style={{
-            width: 30, height: 30, borderRadius: 8, background: 'rgba(139,92,246,0.12)',
-            border: '1px solid rgba(139,92,246,0.25)', display: 'inline-flex',
-            alignItems: 'center', justifyContent: 'center', fontSize: '1rem', color: '#8b5cf6'
+            width: 36, height: 36, borderRadius: 10, background: '#F5F3FF',
+            border: '1px solid #DDD6FE', display: 'inline-flex',
+            alignItems: 'center', justifyContent: 'center', fontSize: '1.1rem', color: '#7C3AED'
           }}>
             <FiBox />
           </span>
           <div>
-            <p style={{ color: 'white', fontWeight: 600, fontSize: '0.9rem', margin: 0, textTransform: 'capitalize' }}>
+            <p style={{ color: '#0E0F0C', fontWeight: 700, fontSize: '0.95rem', margin: 0, textTransform: 'capitalize', fontFamily: "'Bricolage Grotesque', sans-serif" }}>
               {provider.name || provider.id}
             </p>
             {!provider.secretConfigured && (
-              <p style={{ color: '#ef4444', fontSize: '0.7rem', margin: 0, display: 'flex', alignItems: 'center', gap: '4px' }}>
+              <p style={{ color: '#DC2626', fontSize: '0.75rem', margin: '2px 0 0 0', display: 'flex', alignItems: 'center', gap: '4px', fontWeight: 500 }}>
                 <FiAlertTriangle /> Missing Secret in .env
               </p>
             )}
@@ -112,10 +116,10 @@ const ProviderCard = ({ provider, onUpdate, loadingProvider }) => {
           style={{ background: 'none', border: 'none', cursor: isLoading ? 'not-allowed' : 'pointer', padding: 0, display: 'flex', alignItems: 'center', gap: '0.35rem' }}
         >
           {enabled
-            ? <FiToggleRight style={{ fontSize: '1.5rem', color: '#34d399' }} />
-            : <FiToggleLeft style={{ fontSize: '1.5rem', color: '#475569' }} />
+            ? <FiToggleRight style={{ fontSize: '1.75rem', color: '#10B981' }} />
+            : <FiToggleLeft style={{ fontSize: '1.75rem', color: '#9CA3AF' }} />
           }
-          <span style={{ fontSize: '0.7rem', color: enabled ? '#34d399' : '#475569', fontWeight: 600 }}>
+          <span style={{ fontSize: '0.75rem', color: enabled ? '#059669' : '#6B7280', fontWeight: 700 }}>
             {enabled ? 'ON' : 'OFF'}
           </span>
         </button>
@@ -123,7 +127,7 @@ const ProviderCard = ({ provider, onUpdate, loadingProvider }) => {
 
       <div style={{ display: 'flex', alignItems: 'flex-end', gap: '0.75rem', marginTop: '1rem' }}>
         <div style={{ flex: 1 }}>
-          <label style={{ display: 'block', fontSize: '0.68rem', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: '0.35rem' }}>
+          <label style={{ display: 'block', fontSize: '0.7rem', color: '#6B7280', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.35rem' }}>
             User Split Ratio
           </label>
           <NumberInput
@@ -139,15 +143,16 @@ const ProviderCard = ({ provider, onUpdate, loadingProvider }) => {
             onClick={handleSaveRatio}
             disabled={isLoading}
             style={{
-              height: '42px',
-              padding: '0 1rem',
-              borderRadius: '8px',
-              background: 'linear-gradient(135deg,#1d4ed8,#2563eb)',
+              height: '40px',
+              padding: '0 1.25rem',
+              borderRadius: '10px',
+              background: '#1E2538',
               border: 'none',
               color: 'white',
-              fontSize: '0.8rem',
-              fontWeight: 600,
-              cursor: isLoading ? 'not-allowed' : 'pointer'
+              fontSize: '0.82rem',
+              fontWeight: 700,
+              cursor: isLoading ? 'not-allowed' : 'pointer',
+              boxShadow: '0 1px 2px rgba(0,0,0,0.05)'
             }}
           >
             {isLoading ? <FiLoader className="spin" /> : 'Save'}
@@ -155,8 +160,8 @@ const ProviderCard = ({ provider, onUpdate, loadingProvider }) => {
         )}
       </div>
       {Number(ratio) > 0 && enabled && (
-        <div style={{ fontSize: '0.75rem', color: '#94a3b8', marginTop: '0.5rem', fontFamily: "'Barlow', system-ui, sans-serif", fontFeatureSettings: "'zero' 0" }}>
-          <strong>Formula:</strong> 1.00 Network Unit &times; {Number(ratio) || 1} = <span style={{ color: '#60a5fa' }}>{Math.round(1 * (Number(ratio) || 1))} Coins given to user</span>.
+        <div style={{ fontSize: '0.75rem', color: '#6B7280', marginTop: '0.75rem', padding: '0.5rem 0.75rem', background: '#F9FAFB', border: '1px solid #F3F4F6', borderRadius: '8px', fontFamily: "'Barlow', system-ui, sans-serif", fontFeatureSettings: "'zero' 0" }}>
+          <strong style={{ color: '#374151' }}>Formula:</strong> 1.00 Network Unit &times; {Number(ratio) || 1} = <span style={{ color: '#2563EB', fontWeight: 600 }}>{Math.round(1 * (Number(ratio) || 1))} Coins to user</span>.
         </div>
       )}
     </motion.div>
@@ -217,9 +222,9 @@ const AdminOfferwalls = () => {
     return (
       <div>
         <h1 className="admin-page-title">Offerwalls</h1>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '1.5rem', background: 'rgba(239,68,68,0.07)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: '14px', marginTop: '1rem' }}>
-          <FiAlertCircle style={{ color: '#f87171', fontSize: '1.25rem' }} />
-          <p style={{ color: '#f87171', fontWeight: 600 }}>Access Restricted. You need 'manage_offerwalls' permission.</p>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '1.5rem', background: '#FEF2F2', border: '1px solid #FECACA', borderRadius: '16px', marginTop: '1rem' }}>
+          <FiAlertCircle style={{ color: '#DC2626', fontSize: '1.25rem' }} />
+          <p style={{ color: '#B91C1C', fontWeight: 600 }}>Access Restricted. You need 'manage_offerwalls' permission.</p>
         </div>
       </div>
     );
@@ -229,7 +234,7 @@ const AdminOfferwalls = () => {
     return (
       <div>
         <h1 className="admin-page-title">Offerwalls Management</h1>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', color: '#475569', padding: '3rem', justifyContent: 'center' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', color: '#6B7280', padding: '3rem', justifyContent: 'center' }}>
           <FiLoader style={{ animation: 'spin 1s linear infinite', fontSize: '1.1rem' }} /> Loading...
         </div>
       </div>
@@ -240,7 +245,7 @@ const AdminOfferwalls = () => {
     <div>
       <div style={{ marginBottom: '1.75rem' }}>
         <h1 className="admin-page-title" style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-          <FiBox style={{ color: '#8b5cf6' }} />
+          <FiBox style={{ color: '#7C3AED' }} />
           Offerwalls Management
         </h1>
         <p className="admin-page-sub">
@@ -249,7 +254,7 @@ const AdminOfferwalls = () => {
       </div>
 
       {error && (
-        <div style={{ marginBottom: '1rem', padding: '1rem', background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.25)', borderRadius: '12px', color: '#f87171' }}>
+        <div style={{ marginBottom: '1rem', padding: '1rem', background: '#FEF2F2', border: '1px solid #FECACA', borderRadius: '12px', color: '#DC2626', display: 'flex', alignItems: 'center' }}>
           <FiAlertCircle style={{ flexShrink: 0, marginRight: '0.5rem' }} /> {error}
         </div>
       )}
@@ -272,3 +277,4 @@ const AdminOfferwalls = () => {
 };
 
 export default AdminOfferwalls;
+

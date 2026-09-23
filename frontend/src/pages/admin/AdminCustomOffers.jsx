@@ -3,27 +3,10 @@ import { useAuth } from '../../contexts/AuthContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   FiStar, FiPlus, FiTrash2, FiToggleLeft, FiToggleRight,
-  FiExternalLink, FiClock, FiCheckCircle, FiXCircle,
-  FiLoader, FiAlertTriangle, FiRefreshCw, FiEye
+  FiExternalLink, FiClock, FiLoader, FiAlertTriangle, FiRefreshCw, FiX
 } from 'react-icons/fi';
-import ImageModal from '../../components/ImageModal';
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
-
-const STATUS_COLORS = {
-  pending:  { text: 'text-amber-400',  bg: 'bg-amber-500/10',  border: 'border-amber-500/20'  },
-  approved: { text: 'text-emerald-400', bg: 'bg-emerald-500/10', border: 'border-emerald-500/20' },
-  rejected: { text: 'text-rose-400',   bg: 'bg-rose-500/10',   border: 'border-rose-500/20'   },
-};
-
-const Badge = ({ status }) => {
-  const c = STATUS_COLORS[status] || STATUS_COLORS.pending;
-  return (
-    <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${c.text} ${c.bg} border ${c.border}`}>
-      {status}
-    </span>
-  );
-};
 
 const PRESET_ICONS = [
   '🎮', '🏆', '💰', '🎯', '🎁', '💎', '🔥', '⚡',
@@ -90,67 +73,81 @@ const CreateOfferModal = ({ onClose, onCreated, token }) => {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm"
       onClick={onClose}
     >
       <motion.div
         initial={{ scale: 0.95, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         exit={{ scale: 0.95, opacity: 0 }}
-        className="w-full max-w-xl bg-[#0f1728] border border-white/[0.1] rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]"
+        className="w-full max-w-xl bg-white border border-gray-200 rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-center gap-3 px-5 py-4 border-b border-white/[0.07] bg-gradient-to-r from-amber-500/[0.06] to-transparent shrink-0">
-          <div className="w-8 h-8 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center">
-            <FiStar className="text-amber-400 text-sm" />
+        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 bg-gray-50/50 shrink-0">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-xl bg-amber-50 border border-amber-200 flex items-center justify-center">
+              <FiStar className="text-amber-600 text-base" />
+            </div>
+            <div>
+              <h3 className="text-gray-900 font-bold font-display text-base">Create Featured Offer</h3>
+              <p className="text-gray-500 text-xs mt-0.5">Add a new offer for users to complete</p>
+            </div>
           </div>
-          <div>
-            <h3 className="text-white font-bold font-display text-sm">Create Featured Offer</h3>
-            <p className="text-slate-500 text-[11px] mt-0.5">Add a new offer for users to complete</p>
-          </div>
+          <button
+            onClick={onClose}
+            className="w-8 h-8 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-500 hover:text-gray-800 flex items-center justify-center transition-all"
+          >
+            <FiX size={16} />
+          </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="px-5 py-4 space-y-3 overflow-y-auto custom-scrollbar relative">
+        <form onSubmit={handleSubmit} className="px-6 py-5 space-y-4 overflow-y-auto custom-scrollbar relative">
+          {error && (
+            <div className="flex items-center gap-2 p-3.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs shrink-0">
+              <FiAlertTriangle className="flex-shrink-0 text-rose-600" /> {error}
+            </div>
+          )}
+
           {/* Title */}
           <div>
-            <label className="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Title *</label>
+            <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1.5">Title *</label>
             <input
               value={form.title}
               onChange={set('title')}
               placeholder="e.g. Sign up for CryptoGame and reach Level 5"
               required
-              className="w-full bg-slate-900 border border-white/[0.08] rounded-xl px-3 py-2 text-white text-sm placeholder-slate-600 focus:outline-none focus:border-amber-500/40 focus:ring-1 focus:ring-amber-500/20"
+              className="w-full bg-white border border-gray-300 rounded-xl px-3.5 py-2 text-gray-900 text-sm placeholder-gray-400 focus:outline-none focus:border-[#1E2538] focus:ring-1 focus:ring-[#1E2538]/20 transition-all"
             />
           </div>
 
           {/* Description */}
           <div>
-            <label className="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Description *</label>
+            <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1.5">Description *</label>
             <textarea
               value={form.description}
               onChange={set('description')}
               placeholder="Describe the steps needed to complete and earn the reward..."
               rows={2}
               required
-              className="w-full bg-slate-900 border border-white/[0.08] rounded-xl px-3 py-2 text-white text-sm placeholder-slate-600 focus:outline-none focus:border-amber-500/40 focus:ring-1 focus:ring-amber-500/20 resize-none"
+              className="w-full bg-white border border-gray-300 rounded-xl px-3.5 py-2 text-gray-900 text-sm placeholder-gray-400 focus:outline-none focus:border-[#1E2538] focus:ring-1 focus:ring-[#1E2538]/20 resize-none transition-all"
             />
           </div>
 
           {/* Requirement Style Toggle & Input */}
           <div>
             <div className="flex items-center justify-between mb-1.5">
-              <label className="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
+              <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider">
                 Requirements Format
               </label>
-              <div className="flex items-center gap-1 bg-slate-900 p-0.5 rounded-lg border border-white/[0.08]">
+              <div className="flex items-center gap-1 bg-gray-100 p-1 rounded-lg border border-gray-200">
                 <button
                   type="button"
                   onClick={() => setForm(f => ({ ...f, requirementType: 'bullets' }))}
-                  className={`px-2.5 py-1 rounded-md text-xs font-semibold transition-all ${
+                  className={`px-3 py-1 rounded-md text-xs font-semibold transition-all ${
                     form.requirementType === 'bullets'
-                      ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
-                      : 'text-slate-400 hover:text-white'
+                      ? 'bg-[#1E2538] text-white shadow-sm'
+                      : 'text-gray-600 hover:text-gray-900'
                   }`}
                 >
                   Bullet Points
@@ -158,10 +155,10 @@ const CreateOfferModal = ({ onClose, onCreated, token }) => {
                 <button
                   type="button"
                   onClick={() => setForm(f => ({ ...f, requirementType: 'paragraph' }))}
-                  className={`px-2.5 py-1 rounded-md text-xs font-semibold transition-all ${
+                  className={`px-3 py-1 rounded-md text-xs font-semibold transition-all ${
                     form.requirementType === 'paragraph'
-                      ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
-                      : 'text-slate-400 hover:text-white'
+                      ? 'bg-[#1E2538] text-white shadow-sm'
+                      : 'text-gray-600 hover:text-gray-900'
                   }`}
                 >
                   Paragraph
@@ -178,9 +175,9 @@ const CreateOfferModal = ({ onClose, onCreated, token }) => {
                   : "e.g. Register → receive 10 coins\nDeposit €50 → receive 50,000 coins\nGenerate €200 in revenue → receive 10,000 coins"
               }
               rows={form.requirementType === 'paragraph' ? 2 : 3}
-              className="w-full bg-slate-900 border border-white/[0.08] rounded-xl px-3 py-2 text-white text-sm placeholder-slate-600 focus:outline-none focus:border-amber-500/40 focus:ring-1 focus:ring-amber-500/20 resize-none"
+              className="w-full bg-white border border-gray-300 rounded-xl px-3.5 py-2 text-gray-900 text-sm placeholder-gray-400 focus:outline-none focus:border-[#1E2538] focus:ring-1 focus:ring-[#1E2538]/20 resize-none transition-all"
             />
-            <span className="text-[11px] text-slate-500 block mt-1">
+            <span className="text-[11px] text-gray-500 block mt-1">
               {form.requirementType === 'paragraph'
                 ? "Displays as a single clean paragraph box."
                 : "Enter each step on a new line to display as a step-by-step checklist."}
@@ -189,9 +186,8 @@ const CreateOfferModal = ({ onClose, onCreated, token }) => {
 
           {/* Icon Picker */}
           <div>
-            <label className="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-2">Icon</label>
-            {/* Preset grid */}
-            <div className="grid grid-cols-8 gap-1.5 p-2 bg-slate-900 border border-white/[0.08] rounded-xl mb-2">
+            <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-2">Icon</label>
+            <div className="grid grid-cols-8 gap-1.5 p-2.5 bg-gray-50 border border-gray-200 rounded-xl mb-2">
               {PRESET_ICONS.map((emoji) => (
                 <button
                   key={emoji}
@@ -199,8 +195,8 @@ const CreateOfferModal = ({ onClose, onCreated, token }) => {
                   onClick={() => setForm(f => ({ ...f, icon: f.icon === emoji ? '' : emoji }))}
                   className={`h-9 rounded-lg text-xl flex items-center justify-center transition-all ${
                     form.icon === emoji
-                      ? 'bg-amber-500/30 border border-amber-500/50 scale-110 shadow-[0_0_8px_rgba(245,158,11,0.3)]'
-                      : 'hover:bg-white/[0.06] border border-transparent'
+                      ? 'bg-white border-2 border-[#1E2538] shadow-sm scale-110'
+                      : 'hover:bg-gray-200/70 border border-transparent'
                   }`}
                   title={emoji}
                 >
@@ -208,32 +204,31 @@ const CreateOfferModal = ({ onClose, onCreated, token }) => {
                 </button>
               ))}
             </div>
-            {/* Custom URL override */}
             <div className="relative">
               <input
                 type="text"
                 value={isIconUrl(form.icon) ? form.icon : ''}
                 onChange={(e) => setForm(f => ({ ...f, icon: e.target.value }))}
                 placeholder="Or paste an image URL to override..."
-                className="w-full bg-slate-900 border border-white/[0.08] rounded-xl px-3 py-2 text-white text-sm placeholder-slate-600 focus:outline-none focus:border-amber-500/40 focus:ring-1 focus:ring-amber-500/20"
+                className="w-full bg-white border border-gray-300 rounded-xl px-3.5 py-2 text-gray-900 text-sm placeholder-gray-400 focus:outline-none focus:border-[#1E2538] focus:ring-1 focus:ring-[#1E2538]/20 transition-all"
               />
             </div>
           </div>
 
           {/* Cover Image URL */}
           <div>
-            <label className="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">
-              Cover Image URL <span className="normal-case text-slate-600 font-normal">(shown on card — recommended)</span>
+            <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1.5">
+              Cover Image URL <span className="normal-case text-gray-500 font-normal">(shown on card — recommended)</span>
             </label>
             <input
               type="text"
               value={form.coverImage}
               onChange={set('coverImage')}
               placeholder="https://.../banner.jpg"
-              className="w-full bg-slate-900 border border-white/[0.08] rounded-xl px-3 py-2 text-white text-sm placeholder-slate-600 focus:outline-none focus:border-amber-500/40 focus:ring-1 focus:ring-amber-500/20"
+              className="w-full bg-white border border-gray-300 rounded-xl px-3.5 py-2 text-gray-900 text-sm placeholder-gray-400 focus:outline-none focus:border-[#1E2538] focus:ring-1 focus:ring-[#1E2538]/20 transition-all"
             />
             {form.coverImage && (
-              <div className="mt-2 rounded-xl overflow-hidden border border-white/[0.08] h-20">
+              <div className="mt-2 rounded-xl overflow-hidden border border-gray-200 h-20 bg-gray-100">
                 <img src={form.coverImage} alt="Preview" className="w-full h-full object-cover" onError={(e) => e.target.style.display='none'} />
               </div>
             )}
@@ -242,7 +237,7 @@ const CreateOfferModal = ({ onClose, onCreated, token }) => {
           {/* Reward + External Link (2 cols) */}
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Reward (Coins) *</label>
+              <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1.5">Reward (Coins) *</label>
               <input
                 type="number"
                 min="1"
@@ -250,97 +245,91 @@ const CreateOfferModal = ({ onClose, onCreated, token }) => {
                 onChange={set('rewardAmount')}
                 placeholder="e.g. 500"
                 required
-                className="w-full bg-slate-900 border border-white/[0.08] rounded-xl px-3 py-2 text-white text-sm placeholder-slate-600 focus:outline-none focus:border-amber-500/40 focus:ring-1 focus:ring-amber-500/20"
+                className="w-full bg-white border border-gray-300 rounded-xl px-3.5 py-2 text-gray-900 text-sm placeholder-gray-400 focus:outline-none focus:border-[#1E2538] focus:ring-1 focus:ring-[#1E2538]/20 transition-all"
               />
             </div>
             <div>
-              <label className="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Expiry Date</label>
+              <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1.5">Expiry Date</label>
               <input
                 type="datetime-local"
                 value={form.expirationDate}
                 onChange={set('expirationDate')}
-                className="w-full bg-slate-900 border border-white/[0.08] rounded-xl px-3 py-2 text-white text-sm focus:outline-none focus:border-amber-500/40 focus:ring-1 focus:ring-amber-500/20"
+                className="w-full bg-white border border-gray-300 rounded-xl px-3.5 py-2 text-gray-900 text-sm focus:outline-none focus:border-[#1E2538] focus:ring-1 focus:ring-[#1E2538]/20 transition-all"
               />
             </div>
           </div>
 
           {/* External Link */}
           <div>
-            <label className="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">External Link *</label>
+            <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1.5">External Link *</label>
             <input
               type="url"
               value={form.externalLink}
               onChange={set('externalLink')}
               placeholder="https://..."
               required
-              className="w-full bg-slate-900 border border-white/[0.08] rounded-xl px-3 py-2 text-white text-sm placeholder-slate-600 focus:outline-none focus:border-amber-500/40 focus:ring-1 focus:ring-amber-500/20"
+              className="w-full bg-white border border-gray-300 rounded-xl px-3.5 py-2 text-gray-900 text-sm placeholder-gray-400 focus:outline-none focus:border-[#1E2538] focus:ring-1 focus:ring-[#1E2538]/20 transition-all"
             />
           </div>
 
           {/* Tracking Type */}
           <div>
-            <label className="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Tracking Type</label>
+            <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1.5">Tracking Type</label>
             <select
               value={form.trackingType}
               onChange={set('trackingType')}
-              className="w-full bg-slate-900 border border-white/[0.08] rounded-xl px-3 py-2 text-white text-sm focus:outline-none focus:border-amber-500/40 focus:ring-1 focus:ring-amber-500/20"
+              className="w-full bg-white border border-gray-300 rounded-xl px-3.5 py-2 text-gray-900 text-sm focus:outline-none focus:border-[#1E2538] focus:ring-1 focus:ring-[#1E2538]/20 transition-all"
             >
-              <option className="bg-slate-900" value="manual_approval">Manual Approval (user submits proof)</option>
-              <option className="bg-slate-900" value="click">Click Tracking (auto-credit on click)</option>
+              <option value="manual_approval">Manual Approval (user submits proof)</option>
+              <option value="click">Click Tracking (auto-credit on click)</option>
             </select>
           </div>
 
           {/* Platforms */}
           <div>
-            <label className="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-2">Available Platforms</label>
-            <div className="flex items-center gap-4">
-              <label className="flex items-center gap-2 text-sm text-white cursor-pointer">
+            <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-2">Available Platforms</label>
+            <div className="flex items-center gap-6">
+              <label className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer select-none">
                 <input
                   type="checkbox"
                   checked={form.platforms.desktop}
                   onChange={(e) => setForm(f => ({ ...f, platforms: { ...f.platforms, desktop: e.target.checked } }))}
-                  className="accent-amber-500 w-4 h-4"
+                  className="rounded border-gray-300 text-[#1E2538] focus:ring-[#1E2538]"
                 />
                 Desktop
               </label>
-              <label className="flex items-center gap-2 text-sm text-white cursor-pointer">
+              <label className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer select-none">
                 <input
                   type="checkbox"
                   checked={form.platforms.android}
                   onChange={(e) => setForm(f => ({ ...f, platforms: { ...f.platforms, android: e.target.checked } }))}
-                  className="accent-amber-500 w-4 h-4"
+                  className="rounded border-gray-300 text-[#1E2538] focus:ring-[#1E2538]"
                 />
                 Android
               </label>
-              <label className="flex items-center gap-2 text-sm text-white cursor-pointer">
+              <label className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer select-none">
                 <input
                   type="checkbox"
                   checked={form.platforms.ios}
                   onChange={(e) => setForm(f => ({ ...f, platforms: { ...f.platforms, ios: e.target.checked } }))}
-                  className="accent-amber-500 w-4 h-4"
+                  className="rounded border-gray-300 text-[#1E2538] focus:ring-[#1E2538]"
                 />
                 iOS
               </label>
             </div>
           </div>
 
-          {error && (
-            <div className="flex items-center gap-2 p-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 text-sm shrink-0">
-              <FiAlertTriangle className="flex-shrink-0" /> {error}
-            </div>
-          )}
-
-          <div className="flex items-center justify-end gap-3 pt-1 shrink-0 pb-2">
-            <button type="button" onClick={onClose} className="px-4 py-1.5 text-slate-400 hover:text-white text-sm font-semibold transition-colors">
+          <div className="flex items-center justify-end gap-2.5 pt-4 border-t border-gray-100 shrink-0">
+            <button type="button" onClick={onClose} className="px-4 py-2 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-semibold transition-all">
               Cancel
             </button>
             <button
               type="submit"
               disabled={loading}
-              className="flex items-center gap-2 px-5 py-1.5 rounded-xl bg-amber-500/20 border border-amber-500/30 text-amber-300 font-semibold text-sm hover:bg-amber-500/30 disabled:opacity-50 transition-all"
+              className="flex items-center gap-2 px-5 py-2 rounded-xl bg-[#1E2538] hover:bg-[#2B334B] text-white text-xs font-bold transition-all shadow-sm disabled:opacity-50"
             >
-              {loading ? <FiLoader className="animate-spin" /> : <FiPlus />}
-              {loading ? 'Creating...' : 'Create Offer'}
+              {loading ? <FiLoader className="animate-spin text-xs" /> : <FiPlus size={14} />}
+              <span>{loading ? 'Creating...' : 'Create Offer'}</span>
             </button>
           </div>
         </form>
@@ -348,8 +337,6 @@ const CreateOfferModal = ({ onClose, onCreated, token }) => {
     </motion.div>
   );
 };
-
-
 
 // ── Main Admin Component ──────────────────────────────────────────────────────
 const AdminCustomOffers = () => {
@@ -413,12 +400,10 @@ const AdminCustomOffers = () => {
     }
   };
 
-
-
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="w-8 h-8 border-2 border-amber-500 border-t-transparent rounded-full animate-spin" />
+        <div className="w-8 h-8 border-2 border-[#1E2538] border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
@@ -428,44 +413,45 @@ const AdminCustomOffers = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold font-display text-white flex items-center gap-2">
-            <FiStar className="text-amber-400" />
+          <h1 className="text-2xl font-bold font-display text-gray-900 flex items-center gap-2.5">
+            <span className="w-9 h-9 rounded-xl bg-amber-50 border border-amber-200 flex items-center justify-center text-amber-600 text-lg">
+              <FiStar />
+            </span>
             Featured Offers
           </h1>
-          <p className="text-slate-500 text-sm mt-1">
-            Create and manage direct partnership offers. Review completions in the unified Proofs Hub.
+          <p className="text-gray-500 text-xs mt-1">
+            Create and manage featured partnership offers and bonus rewards for users.
           </p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2.5">
           <button
             onClick={() => setRefreshSub((n) => n + 1)}
-            className="p-2.5 rounded-xl border border-white/[0.08] text-slate-400 hover:text-white hover:border-white/20 transition-all"
+            className="p-2.5 rounded-xl bg-white hover:bg-gray-50 text-gray-600 hover:text-gray-900 transition-all border border-gray-200 shadow-sm"
             title="Refresh"
           >
             <FiRefreshCw className="text-sm" />
           </button>
           <button
             onClick={() => setShowCreate(true)}
-            className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-amber-500/15 border border-amber-500/25 text-amber-300 font-semibold text-sm hover:bg-amber-500/25 transition-all"
+            className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#1E2538] hover:bg-[#2B334B] text-white font-bold text-xs transition-all shadow-sm"
           >
-            <FiPlus /> Create Offer
+            <FiPlus size={15} />
+            <span>Create Offer</span>
           </button>
         </div>
       </div>
 
-
-
       {/* ─── OFFERS VIEW ─── */}
       <AnimatePresence mode="wait">
-        <div className="space-y-4">
+        <div className="space-y-3.5">
           {offers.length === 0 ? (
-            <div className="border border-dashed border-white/[0.08] rounded-2xl p-16 text-center flex flex-col items-center gap-4">
-              <div className="w-14 h-14 rounded-2xl bg-amber-500/[0.06] border border-amber-500/[0.12] flex items-center justify-center">
-                <FiStar className="text-amber-500/40 text-xl" />
+            <div className="border border-dashed border-gray-300 rounded-2xl p-16 text-center flex flex-col items-center gap-3 bg-white shadow-sm">
+              <div className="w-14 h-14 rounded-2xl bg-amber-50 border border-amber-200 flex items-center justify-center">
+                <FiStar className="text-amber-500 text-2xl" />
               </div>
               <div>
-                <p className="text-slate-300 font-semibold mb-1">No Featured Offers Yet</p>
-                <p className="text-slate-500 text-sm">Click "Create Offer" to add your first partnership offer.</p>
+                <p className="text-gray-900 font-bold mb-1 text-sm">No Featured Offers Yet</p>
+                <p className="text-gray-500 text-xs">Click "Create Offer" to add your first partnership offer.</p>
               </div>
             </div>
           ) : (
@@ -475,41 +461,41 @@ const AdminCustomOffers = () => {
                 layout
                 initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
-                className={`bg-white/[0.02] border rounded-2xl p-5 transition-all ${
-                  offer.isActive ? 'border-amber-500/15 hover:border-amber-500/30' : 'border-white/[0.05] opacity-60'
+                className={`bg-white border rounded-2xl p-5 transition-all shadow-sm ${
+                  offer.isActive ? 'border-gray-200 hover:border-gray-300' : 'border-gray-200 opacity-60'
                 }`}
               >
                 <div className="flex flex-col sm:flex-row sm:items-start gap-4">
                   <div className="flex-1 min-w-0">
-                    <div className="flex flex-wrap items-center gap-2 mb-1">
-                      <h3 className="text-white font-bold font-display text-base">{offer.title}</h3>
-                      <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border ${
+                    <div className="flex flex-wrap items-center gap-2 mb-1.5">
+                      <h3 className="text-gray-900 font-bold font-display text-base">{offer.title}</h3>
+                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border ${
                         offer.isActive
-                          ? 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20'
-                          : 'text-slate-500 bg-white/5 border-white/10'
+                          ? 'text-emerald-700 bg-emerald-50 border-emerald-200'
+                          : 'text-gray-500 bg-gray-100 border-gray-200'
                       }`}>
                         {offer.isActive ? 'Active' : 'Inactive'}
                       </span>
-                      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-amber-500/10 border border-amber-500/20 text-amber-400">
-                        {offer.trackingType === 'manual_approval' ? 'Manual' : 'Click'}
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-amber-50 border border-amber-200 text-amber-700">
+                        {offer.trackingType === 'manual_approval' ? 'Manual Proof' : 'Click Auto'}
                       </span>
                     </div>
-                    <p className="text-sm text-slate-400 mb-2 leading-relaxed">{offer.description}</p>
-                    <div className="flex flex-wrap items-center gap-3 text-xs text-slate-500">
-                      <span className="text-emerald-400 font-bold font-mono">+{offer.rewardAmount?.toLocaleString()} Coins</span>
-                      <span className="px-2 py-0.5 rounded-md bg-white/[0.04] border border-white/[0.08] text-slate-300">
+                    <p className="text-sm text-gray-600 mb-3 leading-relaxed">{offer.description}</p>
+                    <div className="flex flex-wrap items-center gap-3 text-xs text-gray-500">
+                      <span className="text-emerald-600 font-bold font-display text-sm">+{offer.rewardAmount?.toLocaleString()} Coins</span>
+                      <span className="px-2.5 py-1 rounded-md bg-gray-100 border border-gray-200 text-gray-700 font-medium">
                         {offer.clicks || 0} Click{(offer.clicks !== 1) ? 's' : ''}
                       </span>
-                      <a href={offer.externalLink} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-indigo-400 hover:text-indigo-300 transition-colors">
-                        <FiExternalLink className="text-[10px]" /> View Link
+                      <a href={offer.externalLink} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-blue-600 hover:text-blue-700 font-medium transition-colors">
+                        <FiExternalLink className="text-xs" /> View Link
                       </a>
                       {offer.expirationDate && (
-                        <span className="flex items-center gap-1">
-                          <FiClock className="text-[10px]" />
+                        <span className="flex items-center gap-1 text-gray-500">
+                          <FiClock className="text-xs" />
                           Expires {new Date(offer.expirationDate).toLocaleDateString()}
                         </span>
                       )}
-                      <span>Created {new Date(offer.createdAt).toLocaleDateString()}</span>
+                      <span className="text-gray-400">Created {new Date(offer.createdAt).toLocaleDateString()}</span>
                     </div>
                   </div>
 
@@ -520,8 +506,8 @@ const AdminCustomOffers = () => {
                       title={offer.isActive ? 'Deactivate offer' : 'Activate offer'}
                       className={`p-2 rounded-lg border transition-all ${
                         offer.isActive
-                          ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400 hover:bg-emerald-500/20'
-                          : 'bg-white/[0.04] border-white/[0.08] text-slate-500 hover:text-slate-300'
+                          ? 'bg-emerald-50 border-emerald-200 text-emerald-600 hover:bg-emerald-100'
+                          : 'bg-gray-100 border-gray-200 text-gray-400 hover:text-gray-700'
                       }`}
                     >
                       {offer.isActive ? <FiToggleRight className="text-base" /> : <FiToggleLeft className="text-base" />}
@@ -529,7 +515,7 @@ const AdminCustomOffers = () => {
                     <button
                       onClick={() => deleteOffer(offer._id)}
                       title="Delete offer"
-                      className="p-2 rounded-lg bg-rose-500/[0.08] border border-rose-500/20 text-rose-500 hover:bg-rose-500/15 hover:text-rose-400 transition-all"
+                      className="p-2 rounded-lg bg-rose-50 border border-rose-200 text-rose-600 hover:bg-rose-100 transition-all"
                     >
                       <FiTrash2 className="text-base" />
                     </button>
@@ -556,3 +542,4 @@ const AdminCustomOffers = () => {
 };
 
 export default AdminCustomOffers;
+

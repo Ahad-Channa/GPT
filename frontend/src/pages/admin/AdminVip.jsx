@@ -2,8 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { TIER_STYLES, getLevelLabel } from '../../utils/vipLevels';
 import VipBadge from '../../components/VipBadge';
-import CoinDisplay from '../../components/CoinDisplay';
-import { FiSave, FiRefreshCw } from 'react-icons/fi';
+import { FiSave, FiRefreshCw, FiAward } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
@@ -80,8 +79,11 @@ const AdminVip = () => {
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 28 }}>
         <div>
-          <h2 style={{ margin: 0, fontSize: '1.4rem', fontWeight: 800, color: '#f1f5f9' }}>VIP Rank Configuration</h2>
-          <p style={{ margin: '6px 0 0', color: '#64748b', fontSize: '0.85rem' }}>
+          <h1 className="admin-page-title" style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+            <FiAward style={{ color: '#EAB308' }} />
+            VIP Rank Configuration
+          </h1>
+          <p className="admin-page-sub">
             Configure the required threshold and coin reward for each VIP level.
           </p>
         </div>
@@ -89,36 +91,33 @@ const AdminVip = () => {
           <button
             onClick={fetchConfig}
             disabled={loading}
+            className="p-2.5 rounded-xl bg-white hover:bg-gray-50 text-gray-600 hover:text-gray-900 transition-all border border-gray-200 shadow-sm"
             style={{
               display: 'flex', alignItems: 'center', gap: 6,
-              padding: '8px 14px', borderRadius: 10,
-              background: 'rgba(255,255,255,0.04)',
-              border: '1px solid rgba(255,255,255,0.08)',
-              color: '#94a3b8', cursor: 'pointer', fontSize: '0.82rem', fontWeight: 600,
+              padding: '9px 16px', borderRadius: 12,
+              cursor: 'pointer', fontSize: '0.82rem', fontWeight: 600,
             }}
           >
-            <FiRefreshCw size={13} style={{ animation: loading ? 'spin 0.8s linear infinite' : 'none' }} /> Refresh
+            <FiRefreshCw size={14} style={{ animation: loading ? 'spin 0.8s linear infinite' : 'none' }} /> Refresh
           </button>
           <button
             onClick={handleSave}
             disabled={saving}
+            className="admin-btn-primary"
             style={{
               display: 'flex', alignItems: 'center', gap: 6,
-              padding: '8px 18px', borderRadius: 10,
-              background: 'linear-gradient(135deg, #4f46e5, #6366f1)',
-              border: '1px solid rgba(99,102,241,0.4)',
-              color: 'white', cursor: saving ? 'wait' : 'pointer',
+              padding: '9px 20px', borderRadius: 12,
+              cursor: saving ? 'wait' : 'pointer',
               fontSize: '0.82rem', fontWeight: 700,
-              boxShadow: '0 0 16px rgba(99,102,241,0.35)',
             }}
           >
-            <FiSave size={13} /> {saving ? 'Saving…' : 'Save Changes'}
+            <FiSave size={14} /> {saving ? 'Saving…' : 'Save Changes'}
           </button>
         </div>
       </div>
 
       {loading ? (
-        <div style={{ textAlign: 'center', padding: 60, color: '#64748b' }}>Loading…</div>
+        <div style={{ textAlign: 'center', padding: 60, color: '#6B7280' }}>Loading…</div>
       ) : (
         tiers.map(tierName => {
           const ts = TIER_STYLES[tierName];
@@ -126,20 +125,21 @@ const AdminVip = () => {
           return (
             <div key={tierName} style={{
               marginBottom: 24,
-              background: 'rgba(255,255,255,0.02)',
-              border: `1px solid ${ts.border}30`,
+              background: '#FFFFFF',
+              border: '1px solid #E5E7EB',
               borderRadius: 16,
               overflow: 'hidden',
+              boxShadow: '0 1px 3px rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.02)',
             }}>
               {/* Tier header */}
               <div style={{
                 display: 'flex', alignItems: 'center', gap: 10,
                 padding: '12px 20px',
-                borderBottom: `1px solid ${ts.border}20`,
-                background: `${ts.bg}`,
+                borderBottom: '1px solid #F3F4F6',
+                background: '#F9FAFB',
               }}>
                 <VipBadge tier={tierName} rank={tierLevels[0]?.rank || ''} size="xs" />
-                <span style={{ fontWeight: 700, fontSize: '0.82rem', color: ts.text, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+                <span style={{ fontWeight: 700, fontSize: '0.82rem', color: '#0E0F0C', textTransform: 'uppercase', letterSpacing: '0.08em', fontFamily: "'Bricolage Grotesque', sans-serif" }}>
                   {tierName} Tier
                 </span>
               </div>
@@ -150,17 +150,18 @@ const AdminVip = () => {
                   <div key={lvl.key} style={{
                     display: 'flex', alignItems: 'center', gap: 16,
                     padding: '14px 20px',
-                    borderBottom: i < tierLevels.length - 1 ? '1px solid rgba(255,255,255,0.04)' : 'none',
+                    borderBottom: i < tierLevels.length - 1 ? '1px solid #F3F4F6' : 'none',
+                    background: '#FFFFFF',
                   }}>
-                    <div style={{ width: 140, display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <div style={{ width: 150, display: 'flex', alignItems: 'center', gap: 8 }}>
                       <VipBadge tier={lvl.tier} rank={lvl.rank} size="xs" />
-                      <span style={{ fontSize: '0.82rem', fontWeight: 600, color: '#e2e8f0' }}>
+                      <span style={{ fontSize: '0.85rem', fontWeight: 700, color: '#0E0F0C' }}>
                         {getLevelLabel(lvl)}
                       </span>
                     </div>
 
                     <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 10 }}>
-                      <label style={{ fontSize: '0.75rem', color: '#64748b', whiteSpace: 'nowrap' }}>Threshold:</label>
+                      <label style={{ fontSize: '0.75rem', color: '#6B7280', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', whiteSpace: 'nowrap' }}>Threshold:</label>
                       <input
                         id={`vip-threshold-${lvl.key}`}
                         type="number"
@@ -169,22 +170,25 @@ const AdminVip = () => {
                         value={inputs[lvl.key]?.threshold ?? 0}
                         onChange={e => handleInputChange(lvl.key, 'threshold', e.target.value)}
                         style={{
-                          width: 120,
+                          width: 140,
                           padding: '7px 12px',
-                          borderRadius: 9,
-                          border: `1px solid ${ts.border}40`,
-                          background: `${ts.bg}`,
-                          color: ts.text,
+                          borderRadius: 10,
+                          border: '1px solid #D1D5DB',
+                          background: '#FFFFFF',
+                          color: '#0E0F0C',
                           fontWeight: 700,
-                          fontSize: '0.85rem',
+                          fontSize: '0.88rem',
                           outline: 'none',
                           appearance: 'textfield',
+                          fontFamily: "'Barlow', system-ui, sans-serif",
+                          fontFeatureSettings: "'zero' 0",
+                          fontVariantNumeric: 'normal',
                         }}
                       />
                     </div>
 
                     <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                      <label style={{ fontSize: '0.75rem', color: '#64748b', whiteSpace: 'nowrap' }}>Reward coins:</label>
+                      <label style={{ fontSize: '0.75rem', color: '#6B7280', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', whiteSpace: 'nowrap' }}>Reward coins:</label>
                       <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
                         <input
                           id={`vip-reward-${lvl.key}`}
@@ -194,20 +198,23 @@ const AdminVip = () => {
                           value={inputs[lvl.key]?.rewardAmount ?? 0}
                           onChange={e => handleInputChange(lvl.key, 'rewardAmount', e.target.value)}
                           style={{
-                            width: 120,
+                            width: 140,
                             padding: '7px 12px',
-                            borderRadius: 9,
-                            border: `1px solid ${ts.border}40`,
-                            background: `${ts.bg}`,
-                            color: ts.text,
+                            borderRadius: 10,
+                            border: '1px solid #D1D5DB',
+                            background: '#FFFFFF',
+                            color: '#0E0F0C',
                             fontWeight: 700,
-                            fontSize: '0.85rem',
+                            fontSize: '0.88rem',
                             outline: 'none',
                             appearance: 'textfield',
+                            fontFamily: "'Barlow', system-ui, sans-serif",
+                            fontFeatureSettings: "'zero' 0",
+                            fontVariantNumeric: 'normal',
                           }}
                         />
                       </div>
-                      <span style={{ fontSize: '0.72rem', color: '#475569', minWidth: 60 }}>
+                      <span style={{ fontSize: '0.75rem', color: '#6B7280', fontWeight: 500, minWidth: 65 }}>
                         {(inputs[lvl.key]?.rewardAmount > 0) ? `= $${((inputs[lvl.key]?.rewardAmount || 0) / 1000).toFixed(2)}` : '(none)'}
                       </span>
                     </div>
@@ -225,3 +232,4 @@ const AdminVip = () => {
 };
 
 export default AdminVip;
+

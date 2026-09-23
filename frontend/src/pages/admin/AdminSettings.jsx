@@ -16,19 +16,19 @@ import CoinDisplay from '../../components/CoinDisplay';
 ────────────────────────────────────────────────────────────────── */
 
 const METHOD_ICONS = {
-  litecoin: { icon: 'Ł', color: '#f59e0b', bg: 'rgba(245,158,11,0.12)', border: 'rgba(245,158,11,0.25)' },
-  paypal:   { icon: '💳', color: '#3b82f6', bg: 'rgba(59,130,246,0.12)', border: 'rgba(59,130,246,0.25)' },
-  giftcard: { icon: '🎁', color: '#8b5cf6', bg: 'rgba(139,92,246,0.12)', border: 'rgba(139,92,246,0.25)' },
+  litecoin: { icon: 'Ł', color: '#D97706', bg: '#FFFBEB', border: '#FDE68A' },
+  paypal:   { icon: '💳', color: '#2563EB', bg: '#EFF6FF', border: '#BFDBFE' },
+  giftcard: { icon: '🎁', color: '#7C3AED', bg: '#F5F3FF', border: '#DDD6FE' },
 };
 
 const Field = ({ label, hint, children }) => (
   <div style={{ marginBottom: '1.25rem' }}>
-    <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '0.5rem' }}>
+    <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, color: '#4B5563', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '0.5rem', fontFamily: "'Poppins', sans-serif" }}>
       {label}
     </label>
     {children}
     {hint && (
-      <p style={{ fontSize: '0.72rem', color: '#475569', marginTop: '0.4rem', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+      <p style={{ fontSize: '0.75rem', color: '#6B7280', marginTop: '0.4rem', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
         <FiInfo style={{ flexShrink: 0 }} /> {hint}
       </p>
     )}
@@ -38,7 +38,7 @@ const Field = ({ label, hint, children }) => (
 const NumberInput = ({ value, onChange, min, max, step = 1, prefix, suffix, disabled }) => (
   <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
     {prefix && (
-      <span style={{ position: 'absolute', left: '0.75rem', color: '#64748b', fontSize: '0.85rem', pointerEvents: 'none' }}>
+      <span style={{ position: 'absolute', left: '0.85rem', color: '#6B7280', fontSize: '0.875rem', pointerEvents: 'none', fontWeight: 600 }}>
         {prefix}
       </span>
     )}
@@ -52,19 +52,18 @@ const NumberInput = ({ value, onChange, min, max, step = 1, prefix, suffix, disa
       disabled={disabled}
       className="admin-input"
       style={{
-        paddingLeft: prefix ? '2rem' : '1rem',
-        paddingRight: suffix ? '3rem' : '1rem',
+        paddingLeft: prefix ? '2.25rem' : '1rem',
+        paddingRight: suffix ? '3.5rem' : '1rem',
         width: '100%',
-        fontFamily: "'Barlow', system-ui, sans-serif",
-        fontFeatureSettings: "'zero' 0",
-        fontVariantNumeric: 'normal',
+        fontFamily: "'Bricolage Grotesque', sans-serif",
         fontSize: '1rem',
-        fontWeight: 600,
-        color: '#e2e8f0',
+        fontWeight: 700,
+        color: '#0E0F0C',
+        background: disabled ? '#F9FAFB' : '#FFFFFF',
       }}
     />
     {suffix && (
-      <span style={{ position: 'absolute', right: '0.75rem', color: '#64748b', fontSize: '0.82rem', pointerEvents: 'none', fontFamily: "'Barlow', system-ui, sans-serif" }}>
+      <span style={{ position: 'absolute', right: '0.85rem', color: '#6B7280', fontSize: '0.82rem', pointerEvents: 'none', fontWeight: 500, fontFamily: "'Poppins', sans-serif" }}>
         {suffix}
       </span>
     )}
@@ -279,11 +278,11 @@ const AdminSettings = () => {
     return (
       <div>
         <h1 className="admin-page-title">Platform Settings</h1>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '1.5rem', background: 'rgba(239,68,68,0.07)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: '14px', marginTop: '1rem' }}>
-          <FiLock style={{ color: '#f87171', fontSize: '1.25rem', flexShrink: 0 }} />
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '1.5rem', background: '#FEF2F2', border: '1px solid #FECACA', borderRadius: '16px', marginTop: '1rem' }}>
+          <FiLock style={{ color: '#DC2626', fontSize: '1.25rem', flexShrink: 0 }} />
           <div>
-            <p style={{ color: '#f87171', fontWeight: 600, fontSize: '0.9rem' }}>Access Restricted</p>
-            <p style={{ color: '#64748b', fontSize: '0.8rem', marginTop: '0.2rem' }}>
+            <p style={{ color: '#DC2626', fontWeight: 700, fontSize: '0.95rem' }}>Access Restricted</p>
+            <p style={{ color: '#6B7280', fontSize: '0.85rem', marginTop: '0.2rem' }}>
               Platform settings are only accessible to the Primary Admin account.
             </p>
           </div>
@@ -298,8 +297,8 @@ const AdminSettings = () => {
       <div>
         <h1 className="admin-page-title">Platform Settings</h1>
         <p className="admin-page-sub">Fee rates, payout methods, and economy configuration.</p>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', color: '#475569', padding: '3rem', textAlign: 'center', justifyContent: 'center' }}>
-          <FiLoader style={{ animation: 'spin 1s linear infinite', fontSize: '1.1rem' }} />
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', color: '#6B7280', padding: '3rem', textAlign: 'center', justifyContent: 'center' }}>
+          <FiLoader style={{ animation: 'spin 1s linear infinite', fontSize: '1.25rem', color: '#1E2538' }} />
           Loading settings...
         </div>
       </div>
@@ -311,7 +310,7 @@ const AdminSettings = () => {
       {/* ── Page Header ──────────────────────────── */}
       <div style={{ marginBottom: '1.75rem' }}>
         <h1 className="admin-page-title" style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-          <FiSettings style={{ color: '#fbbf24' }} />
+          <FiSettings style={{ color: '#1E2538' }} />
           Platform Settings
         </h1>
         <p className="admin-page-sub" style={{ marginBottom: 0 }}>
@@ -320,10 +319,10 @@ const AdminSettings = () => {
       </div>
 
       {/* ── Primary Admin Notice ─────────────────── */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', padding: '0.75rem 1rem', background: 'rgba(234,179,8,0.06)', border: '1px solid rgba(234,179,8,0.18)', borderRadius: '12px', marginBottom: '1.5rem' }}>
-        <FiInfo style={{ color: '#fbbf24', flexShrink: 0 }} />
-        <p style={{ fontSize: '0.78rem', color: '#94a3b8' }}>
-          You are editing as <span style={{ color: '#fbbf24', fontWeight: 600 }}>Primary Admin</span>. All changes are logged in the Audit Log.
+      <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', padding: '0.75rem 1rem', background: '#FFFBEB', border: '1px solid #FDE68A', borderRadius: '12px', marginBottom: '1.5rem' }}>
+        <FiInfo style={{ color: '#D97706', flexShrink: 0 }} />
+        <p style={{ fontSize: '0.82rem', color: '#92400E', margin: 0, fontWeight: 500 }}>
+          You are editing as <span style={{ fontWeight: 700 }}>Primary Admin</span>. All changes are recorded in the Audit Log.
         </p>
       </div>
 
@@ -331,18 +330,15 @@ const AdminSettings = () => {
 
         {/* ── Section 1: Fee & Economy ────────────── */}
         <div className="admin-card" style={{ marginBottom: 0 }}>
-          {/* Card header */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '1.5rem', paddingBottom: '1rem', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-            <div style={{ width: 32, height: 32, borderRadius: 10, background: 'linear-gradient(135deg,#d97706,#b45309)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <FiPercent style={{ color: 'white', fontSize: 14 }} />
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '1.5rem', paddingBottom: '1rem', borderBottom: '1px solid #E5E7EB' }}>
+            <div style={{ width: 32, height: 32, borderRadius: 10, background: '#EFF6FF', color: '#2563EB', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <FiPercent style={{ fontSize: 16 }} />
             </div>
             <div>
-              <h3 style={{ color: 'white', fontSize: '0.9rem', fontWeight: 700, margin: 0 }}>Fee & Economy</h3>
-              <p style={{ color: '#64748b', fontSize: '0.72rem', margin: 0 }}>Controls how Coins map to real-world value</p>
+              <h3 style={{ color: '#0E0F0C', fontSize: '0.95rem', fontWeight: 700, margin: 0, fontFamily: "'Bricolage Grotesque', sans-serif" }}>Fee & Economy</h3>
+              <p style={{ color: '#6B7280', fontSize: '0.75rem', margin: 0 }}>Controls how Coins map to real-world value</p>
             </div>
           </div>
-
-          {/* (Global fee removed, now per-method) */}
 
           {/* Coins per USD */}
           <Field
@@ -356,268 +352,261 @@ const AdminSettings = () => {
               suffix="per $1"
             />
             {cpusd && !isNaN(Number(cpusd)) && (
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginTop: '0.6rem', padding: '0.6rem 0.9rem', background: 'rgba(59,130,246,0.07)', border: '1px solid rgba(59,130,246,0.18)', borderRadius: '10px', fontSize: '0.75rem', color: '#94a3b8', fontFamily: "'Barlow', system-ui, sans-serif", fontFeatureSettings: "'zero' 0" }}>
-                <CoinDisplay amount={1000} size={13} compact={false} /> = <span style={{ color: '#60a5fa', fontWeight: 600 }}>${(1000 / Number(cpusd)).toFixed(2)} USD</span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginTop: '0.6rem', padding: '0.6rem 0.9rem', background: '#EFF6FF', border: '1px solid #BFDBFE', borderRadius: '10px', fontSize: '0.8rem', color: '#1E40AF', fontFamily: "'Barlow', system-ui, sans-serif" }}>
+                <CoinDisplay amount={1000} size={14} compact={false} /> = <span style={{ fontWeight: 700 }}>${(1000 / Number(cpusd)).toFixed(2)} USD</span>
               </div>
             )}
           </Field>
 
           {/* Show Global Stats Toggle */}
           <div style={{ marginTop: '1.25rem' }}>
-            <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '0.5rem' }}>
+            <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, color: '#4B5563', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '0.5rem', fontFamily: "'Poppins', sans-serif" }}>
               Show Global Stats
             </label>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0.75rem 1rem', background: 'rgba(255,255,255,0.03)', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.08)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0.75rem 1rem', background: '#F9FAFB', borderRadius: '12px', border: '1px solid #E5E7EB' }}>
               <div>
-                <p style={{ color: 'white', fontWeight: 600, fontSize: '0.85rem', margin: 0 }}>Homepage Statistics</p>
-                <p style={{ color: '#64748b', fontSize: '0.7rem', margin: 0 }}>Show "Total Users" and "Total Cashout" on the homepage</p>
+                <p style={{ color: '#0E0F0C', fontWeight: 600, fontSize: '0.85rem', margin: 0 }}>Homepage Statistics</p>
+                <p style={{ color: '#6B7280', fontSize: '0.75rem', margin: 0 }}>Show "Total Users" and "Total Cashout" on the homepage</p>
               </div>
               <button
                 onClick={() => { setShowGlobalStats(!showGlobalStats); markDirty(); }}
                 style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, display: 'flex', alignItems: 'center', gap: '0.35rem' }}
               >
                 {showGlobalStats
-                  ? <FiToggleRight style={{ fontSize: '1.75rem', color: '#34d399' }} />
-                  : <FiToggleLeft  style={{ fontSize: '1.75rem', color: '#475569' }} />
+                  ? <FiToggleRight style={{ fontSize: '1.85rem', color: '#059669' }} />
+                  : <FiToggleLeft  style={{ fontSize: '1.85rem', color: '#9CA3AF' }} />
                 }
               </button>
             </div>
           </div>
-
         </div>
 
-      {/* ── Section 3: Referrals ────────────── */}
-      <div className="admin-card" style={{ marginBottom: 0 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '1.5rem', paddingBottom: '1rem', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-          <div style={{ width: 32, height: 32, borderRadius: 10, background: 'linear-gradient(135deg,#c026d3,#86198f)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <FiPercent style={{ color: 'white', fontSize: 14 }} />
-          </div>
-          <div>
-            <h3 style={{ color: 'white', fontSize: '0.9rem', fontWeight: 700, margin: 0 }}>Referral System</h3>
-            <p style={{ color: '#64748b', fontSize: '0.72rem', margin: 0 }}>Settings for global referral tracking</p>
-          </div>
-        </div>
-
-        <Field
-          label="Global Referral Percentage"
-          hint="The default percentage of earnings users make from their active referrals."
-        >
-          <NumberInput
-            value={refGlobalPct}
-            onChange={(v) => { setRefGlobalPct(v); markDirty(); }}
-            min={0}
-            max={100}
-            suffix="%"
-          />
-        </Field>
-
-        <Field
-          label="Holds Duration (Days)"
-          hint="Number of days before referral earnings are officially credited to wallet."
-        >
-          <NumberInput
-            value={refHoldDays}
-            onChange={(v) => { setRefHoldDays(v); markDirty(); }}
-            min={0}
-            suffix="Days"
-          />
-        </Field>
-
-        {/* Release Holds Now Button */}
-        <div style={{ marginTop: '0.5rem' }}>
-          <button
-            onClick={handleReleaseHolds}
-            disabled={releaseLoading}
-            style={{
-              width: '100%',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '0.5rem',
-              padding: '0.65rem 1rem',
-              borderRadius: '10px',
-              background: releaseLoading
-                ? 'rgba(16,185,129,0.05)'
-                : 'linear-gradient(135deg, rgba(16,185,129,0.15), rgba(5,150,105,0.2))',
-              border: '1px solid rgba(16,185,129,0.3)',
-              color: releaseLoading ? '#475569' : '#34d399',
-              cursor: releaseLoading ? 'not-allowed' : 'pointer',
-              fontSize: '0.82rem',
-              fontWeight: 700,
-              fontFamily: 'Barlow, system-ui, sans-serif',
-              transition: 'all 0.2s',
-              letterSpacing: '0.02em',
-            }}
-          >
-            {releaseLoading
-              ? <><FiLoader style={{ animation: 'spin 1s linear infinite' }} /> Releasing...</>
-              : <><FiZap style={{ fontSize: '0.9rem' }} /> Force Release All Referral Holds Now</>
-            }
-          </button>
-          <p style={{ fontSize: '0.7rem', color: '#475569', marginTop: '0.4rem', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
-            <FiInfo style={{ flexShrink: 0 }} />
-            Instantly credits all referral commissions to user wallets.
-          </p>
-        </div>
-      </div>
-
-      {/* ── Section: Real Earnings Hold ────────────── */}
-      <div className="admin-card" style={{ marginBottom: 0 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '1.5rem', paddingBottom: '1rem', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-          <div style={{ width: 32, height: 32, borderRadius: 10, background: 'linear-gradient(135deg,#3b82f6,#2563eb)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <FiShield style={{ color: 'white', fontSize: 14 }} />
-          </div>
-          <div>
-            <h3 style={{ color: 'white', fontSize: '0.9rem', fontWeight: 700, margin: 0 }}>Earnings Hold System</h3>
-            <p style={{ color: '#64748b', fontSize: '0.72rem', margin: 0 }}>Lock large earnings to protect the economy</p>
-          </div>
-        </div>
-
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0.75rem 1rem', background: 'rgba(255,255,255,0.03)', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.08)', marginBottom: '1.25rem' }}>
-          <div>
-            <p style={{ color: 'white', fontWeight: 600, fontSize: '0.85rem', margin: 0 }}>Enable Earnings Hold</p>
-            <p style={{ color: '#64748b', fontSize: '0.7rem', margin: 0 }}>Place large offerwall/custom earnings on hold automatically</p>
-          </div>
-          <button
-            onClick={() => { setEarnHoldEnabled(!earnHoldEnabled); markDirty(); }}
-            style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, display: 'flex', alignItems: 'center', gap: '0.35rem' }}
-          >
-            {earnHoldEnabled
-              ? <FiToggleRight style={{ fontSize: '1.75rem', color: '#34d399' }} />
-              : <FiToggleLeft  style={{ fontSize: '1.75rem', color: '#475569' }} />
-            }
-          </button>
-        </div>
-
-        <Field
-          label="Hold Threshold (Coins)"
-          hint="Any single earning equal to or above this amount will be placed on hold."
-        >
-          <NumberInput
-            value={earnHoldThreshold}
-            onChange={(v) => { setEarnHoldThreshold(v); markDirty(); }}
-            min={0}
-            disabled={!earnHoldEnabled}
-            suffix="Coins"
-          />
-        </Field>
-
-        <Field
-          label="Holds Duration (Days)"
-          hint="Number of days the earning will remain locked before being credited to the wallet."
-        >
-          <NumberInput
-            value={earnHoldDays}
-            onChange={(v) => { setEarnHoldDays(v); markDirty(); }}
-            min={0}
-            disabled={!earnHoldEnabled}
-            suffix="Days"
-          />
-        </Field>
-
-        {/* Release Earnings Holds Now Button */}
-        <div style={{ marginTop: '0.5rem' }}>
-          <button
-            onClick={handleReleaseEarningsHolds}
-            disabled={releaseEarningsLoading}
-            style={{
-              width: '100%',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '0.5rem',
-              padding: '0.65rem 1rem',
-              borderRadius: '10px',
-              background: releaseEarningsLoading
-                ? 'rgba(16,185,129,0.05)'
-                : 'linear-gradient(135deg, rgba(16,185,129,0.15), rgba(5,150,105,0.2))',
-              border: '1px solid rgba(16,185,129,0.3)',
-              color: releaseEarningsLoading ? '#475569' : '#34d399',
-              cursor: releaseEarningsLoading ? 'not-allowed' : 'pointer',
-              fontSize: '0.82rem',
-              fontWeight: 700,
-              fontFamily: 'Barlow, system-ui, sans-serif',
-              transition: 'all 0.2s',
-              letterSpacing: '0.02em',
-            }}
-          >
-            {releaseEarningsLoading
-              ? <><FiLoader style={{ animation: 'spin 1s linear infinite' }} /> Releasing...</>
-              : <><FiZap style={{ fontSize: '0.9rem' }} /> Force Release All Earnings Holds Now</>
-            }
-          </button>
-          <p style={{ fontSize: '0.7rem', color: '#475569', marginTop: '0.4rem', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
-            <FiInfo style={{ flexShrink: 0 }} />
-            Instantly credits all offerwall/custom earnings currently on hold to user wallets.
-          </p>
-        </div>
-      </div>
-
-      {/* ── Section 4: Daily Bonus ────────────── */}
-      <div className="admin-card" style={{ marginBottom: 0 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '1.5rem', paddingBottom: '1rem', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-          <div style={{ width: 32, height: 32, borderRadius: 10, background: 'linear-gradient(135deg,#10b981,#047857)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <FiRefreshCw style={{ color: 'white', fontSize: 14 }} />
-          </div>
-          <div>
-            <h3 style={{ color: 'white', fontSize: '0.9rem', fontWeight: 700, margin: 0 }}>Daily Bonus System</h3>
-            <p style={{ color: '#64748b', fontSize: '0.72rem', margin: 0 }}>Configure requirements & rewards for Day 1–30</p>
-          </div>
-        </div>
-
-        <div style={{ maxHeight: '350px', overflowY: 'auto', paddingRight: '0.5rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-          <div style={{ display: 'grid', gridTemplateColumns: '50px 1fr 1fr', gap: '0.5rem', marginBottom: '0.5rem', padding: '0 0.5rem' }}>
-            <div style={{ fontSize: '0.75rem', fontWeight: 600, color: '#94a3b8', textTransform: 'uppercase' }}>Day</div>
-            <div style={{ fontSize: '0.75rem', fontWeight: 600, color: '#94a3b8', textTransform: 'uppercase' }}>Earn Gate</div>
-            <div style={{ fontSize: '0.75rem', fontWeight: 600, color: '#94a3b8', textTransform: 'uppercase' }}>Reward</div>
-          </div>
-          {Array.from({ length: 30 }).map((_, i) => (
-            <div key={`day-${i}`} style={{ display: 'grid', gridTemplateColumns: '50px 1fr 1fr', gap: '0.5rem', alignItems: 'center', background: 'rgba(255,255,255,0.02)', padding: '0.5rem', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.05)' }}>
-              <div style={{ fontSize: '0.85rem', color: '#e2e8f0', fontWeight: 600, textAlign: 'center' }}>{i + 1}</div>
-              <input
-                type="number"
-                value={earnGate[i] ?? 1000}
-                onChange={(e) => {
-                  const newGate = [...earnGate];
-                  newGate[i] = Number(e.target.value);
-                  setEarnGate(newGate);
-                  markDirty();
-                }}
-                className="admin-input"
-                style={{ width: '100%', fontSize: '0.85rem', padding: '0.4rem 0.6rem' }}
-              />
-              <input
-                type="number"
-                value={earnReward[i] ?? 100}
-                onChange={(e) => {
-                  const newReward = [...earnReward];
-                  newReward[i] = Number(e.target.value);
-                  setEarnReward(newReward);
-                  markDirty();
-                }}
-                className="admin-input"
-                style={{ width: '100%', fontSize: '0.85rem', padding: '0.4rem 0.6rem' }}
-              />
-            </div>
-          ))}
-        </div>
-      </div>
-      
-      {/* ── Section 2: Withdrawal Methods ──────── */}
+        {/* ── Section 2: Referrals ────────────── */}
         <div className="admin-card" style={{ marginBottom: 0 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '1.5rem', paddingBottom: '1rem', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-            <div style={{ width: 32, height: 32, borderRadius: 10, background: 'linear-gradient(135deg,#059669,#0d9488)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <FiDollarSign style={{ color: 'white', fontSize: 14 }} />
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '1.5rem', paddingBottom: '1rem', borderBottom: '1px solid #E5E7EB' }}>
+            <div style={{ width: 32, height: 32, borderRadius: 10, background: '#F5F3FF', color: '#7C3AED', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <FiPercent style={{ fontSize: 16 }} />
             </div>
             <div>
-              <h3 style={{ color: 'white', fontSize: '0.9rem', fontWeight: 700, margin: 0 }}>Payout Methods</h3>
-              <p style={{ color: '#64748b', fontSize: '0.72rem', margin: 0 }}>Per-method minimums & on/off switches</p>
+              <h3 style={{ color: '#0E0F0C', fontSize: '0.95rem', fontWeight: 700, margin: 0, fontFamily: "'Bricolage Grotesque', sans-serif" }}>Referral System</h3>
+              <p style={{ color: '#6B7280', fontSize: '0.75rem', margin: 0 }}>Settings for global referral tracking</p>
             </div>
           </div>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+          <Field
+            label="Global Referral Percentage"
+            hint="The default percentage of earnings users make from their active referrals."
+          >
+            <NumberInput
+              value={refGlobalPct}
+              onChange={(v) => { setRefGlobalPct(v); markDirty(); }}
+              min={0}
+              max={100}
+              suffix="%"
+            />
+          </Field>
+
+          <Field
+            label="Holds Duration (Days)"
+            hint="Number of days before referral earnings are officially credited to wallet."
+          >
+            <NumberInput
+              value={refHoldDays}
+              onChange={(v) => { setRefHoldDays(v); markDirty(); }}
+              min={0}
+              suffix="Days"
+            />
+          </Field>
+
+          {/* Release Holds Now Button */}
+          <div style={{ marginTop: '0.5rem' }}>
+            <button
+              onClick={handleReleaseHolds}
+              disabled={releaseLoading}
+              style={{
+                width: '100%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '0.5rem',
+                padding: '0.7rem 1rem',
+                borderRadius: '12px',
+                background: releaseLoading ? '#F3F4F6' : '#ECFDF5',
+                border: '1px solid #A7F3D0',
+                color: releaseLoading ? '#9CA3AF' : '#059669',
+                cursor: releaseLoading ? 'not-allowed' : 'pointer',
+                fontSize: '0.85rem',
+                fontWeight: 700,
+                fontFamily: "'Poppins', sans-serif",
+                transition: 'all 0.2s',
+              }}
+            >
+              {releaseLoading
+                ? <><FiLoader style={{ animation: 'spin 1s linear infinite' }} /> Releasing...</>
+                : <><FiZap style={{ fontSize: '0.95rem' }} /> Force Release All Referral Holds Now</>
+              }
+            </button>
+            <p style={{ fontSize: '0.72rem', color: '#6B7280', marginTop: '0.4rem', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+              <FiInfo style={{ flexShrink: 0 }} />
+              Instantly credits all referral commissions to user wallets.
+            </p>
+          </div>
+        </div>
+
+        {/* ── Section 3: Real Earnings Hold ────────────── */}
+        <div className="admin-card" style={{ marginBottom: 0 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '1.5rem', paddingBottom: '1rem', borderBottom: '1px solid #E5E7EB' }}>
+            <div style={{ width: 32, height: 32, borderRadius: 10, background: '#EFF6FF', color: '#2563EB', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <FiShield style={{ fontSize: 16 }} />
+            </div>
+            <div>
+              <h3 style={{ color: '#0E0F0C', fontSize: '0.95rem', fontWeight: 700, margin: 0, fontFamily: "'Bricolage Grotesque', sans-serif" }}>Earnings Hold System</h3>
+              <p style={{ color: '#6B7280', fontSize: '0.75rem', margin: 0 }}>Lock large earnings to protect the economy</p>
+            </div>
+          </div>
+
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0.75rem 1rem', background: '#F9FAFB', borderRadius: '12px', border: '1px solid #E5E7EB', marginBottom: '1.25rem' }}>
+            <div>
+              <p style={{ color: '#0E0F0C', fontWeight: 600, fontSize: '0.85rem', margin: 0 }}>Enable Earnings Hold</p>
+              <p style={{ color: '#6B7280', fontSize: '0.75rem', margin: 0 }}>Place large offerwall/custom earnings on hold automatically</p>
+            </div>
+            <button
+              onClick={() => { setEarnHoldEnabled(!earnHoldEnabled); markDirty(); }}
+              style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, display: 'flex', alignItems: 'center', gap: '0.35rem' }}
+            >
+              {earnHoldEnabled
+                ? <FiToggleRight style={{ fontSize: '1.85rem', color: '#059669' }} />
+                : <FiToggleLeft  style={{ fontSize: '1.85rem', color: '#9CA3AF' }} />
+              }
+            </button>
+          </div>
+
+          <Field
+            label="Hold Threshold (Coins)"
+            hint="Any single earning equal to or above this amount will be placed on hold."
+          >
+            <NumberInput
+              value={earnHoldThreshold}
+              onChange={(v) => { setEarnHoldThreshold(v); markDirty(); }}
+              min={0}
+              disabled={!earnHoldEnabled}
+              suffix="Coins"
+            />
+          </Field>
+
+          <Field
+            label="Holds Duration (Days)"
+            hint="Number of days the earning will remain locked before being credited to the wallet."
+          >
+            <NumberInput
+              value={earnHoldDays}
+              onChange={(v) => { setEarnHoldDays(v); markDirty(); }}
+              min={0}
+              disabled={!earnHoldEnabled}
+              suffix="Days"
+            />
+          </Field>
+
+          {/* Release Earnings Holds Now Button */}
+          <div style={{ marginTop: '0.5rem' }}>
+            <button
+              onClick={handleReleaseEarningsHolds}
+              disabled={releaseEarningsLoading}
+              style={{
+                width: '100%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '0.5rem',
+                padding: '0.7rem 1rem',
+                borderRadius: '12px',
+                background: releaseEarningsLoading ? '#F3F4F6' : '#ECFDF5',
+                border: '1px solid #A7F3D0',
+                color: releaseEarningsLoading ? '#9CA3AF' : '#059669',
+                cursor: releaseEarningsLoading ? 'not-allowed' : 'pointer',
+                fontSize: '0.85rem',
+                fontWeight: 700,
+                fontFamily: "'Poppins', sans-serif",
+                transition: 'all 0.2s',
+              }}
+            >
+              {releaseEarningsLoading
+                ? <><FiLoader style={{ animation: 'spin 1s linear infinite' }} /> Releasing...</>
+                : <><FiZap style={{ fontSize: '0.95rem' }} /> Force Release All Earnings Holds Now</>
+              }
+            </button>
+            <p style={{ fontSize: '0.72rem', color: '#6B7280', marginTop: '0.4rem', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+              <FiInfo style={{ flexShrink: 0 }} />
+              Instantly credits all offerwall/custom earnings on hold to user wallets.
+            </p>
+          </div>
+        </div>
+
+        {/* ── Section 4: Daily Bonus ────────────── */}
+        <div className="admin-card" style={{ marginBottom: 0 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '1.5rem', paddingBottom: '1rem', borderBottom: '1px solid #E5E7EB' }}>
+            <div style={{ width: 32, height: 32, borderRadius: 10, background: '#ECFDF5', color: '#059669', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <FiRefreshCw style={{ fontSize: 16 }} />
+            </div>
+            <div>
+              <h3 style={{ color: '#0E0F0C', fontSize: '0.95rem', fontWeight: 700, margin: 0, fontFamily: "'Bricolage Grotesque', sans-serif" }}>Daily Bonus System</h3>
+              <p style={{ color: '#6B7280', fontSize: '0.75rem', margin: 0 }}>Configure requirements & rewards for Day 1–30</p>
+            </div>
+          </div>
+
+          <div style={{ maxHeight: '350px', overflowY: 'auto', paddingRight: '0.5rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '50px 1fr 1fr', gap: '0.5rem', marginBottom: '0.25rem', padding: '0 0.5rem' }}>
+              <div style={{ fontSize: '0.72rem', fontWeight: 700, color: '#6B7280', textTransform: 'uppercase' }}>Day</div>
+              <div style={{ fontSize: '0.72rem', fontWeight: 700, color: '#6B7280', textTransform: 'uppercase' }}>Earn Gate</div>
+              <div style={{ fontSize: '0.72rem', fontWeight: 700, color: '#6B7280', textTransform: 'uppercase' }}>Reward</div>
+            </div>
+            {Array.from({ length: 30 }).map((_, i) => (
+              <div key={`day-${i}`} style={{ display: 'grid', gridTemplateColumns: '50px 1fr 1fr', gap: '0.5rem', alignItems: 'center', background: '#F9FAFB', padding: '0.5rem', borderRadius: '10px', border: '1px solid #E5E7EB' }}>
+                <div style={{ fontSize: '0.875rem', color: '#0E0F0C', fontWeight: 700, textAlign: 'center', fontFamily: "'Bricolage Grotesque', sans-serif" }}>{i + 1}</div>
+                <input
+                  type="number"
+                  value={earnGate[i] ?? 1000}
+                  onChange={(e) => {
+                    const newGate = [...earnGate];
+                    newGate[i] = Number(e.target.value);
+                    setEarnGate(newGate);
+                    markDirty();
+                  }}
+                  className="admin-input"
+                  style={{ width: '100%', fontSize: '0.85rem', padding: '0.4rem 0.6rem' }}
+                />
+                <input
+                  type="number"
+                  value={earnReward[i] ?? 100}
+                  onChange={(e) => {
+                    const newReward = [...earnReward];
+                    newReward[i] = Number(e.target.value);
+                    setEarnReward(newReward);
+                    markDirty();
+                  }}
+                  className="admin-input"
+                  style={{ width: '100%', fontSize: '0.85rem', padding: '0.4rem 0.6rem' }}
+                />
+              </div>
+            ))}
+          </div>
+        </div>
+        
+        {/* ── Section 5: Withdrawal Methods ──────── */}
+        <div className="admin-card" style={{ marginBottom: 0, gridColumn: '1 / -1' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '1.5rem', paddingBottom: '1rem', borderBottom: '1px solid #E5E7EB' }}>
+            <div style={{ width: 32, height: 32, borderRadius: 10, background: '#ECFDF5', color: '#059669', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <FiDollarSign style={{ fontSize: 16 }} />
+            </div>
+            <div>
+              <h3 style={{ color: '#0E0F0C', fontSize: '0.95rem', fontWeight: 700, margin: 0, fontFamily: "'Bricolage Grotesque', sans-serif" }}>Payout Methods</h3>
+              <p style={{ color: '#6B7280', fontSize: '0.75rem', margin: 0 }}>Per-method minimums & on/off switches</p>
+            </div>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1rem' }}>
             {methods.map((m) => {
-              const cfg = METHOD_ICONS[m.id] || { icon: '💰', color: '#94a3b8', bg: 'rgba(148,163,184,0.1)', border: 'rgba(148,163,184,0.2)' };
+              const cfg = METHOD_ICONS[m.id] || { icon: '💰', color: '#6B7280', bg: '#F3F4F6', border: '#E5E7EB' };
               const minCoins = Number(m.minUSD) * Number(cpusd);
 
               return (
@@ -625,29 +614,30 @@ const AdminSettings = () => {
                   key={m.id}
                   layout
                   style={{
-                    padding: '1rem 1.1rem',
-                    background: m.enabled ? 'rgba(255,255,255,0.03)' : 'rgba(255,255,255,0.01)',
-                    border: `1px solid ${m.enabled ? cfg.border : 'rgba(255,255,255,0.05)'}`,
+                    padding: '1.1rem',
+                    background: m.enabled ? '#FFFFFF' : '#F9FAFB',
+                    border: `1px solid ${m.enabled ? cfg.border : '#E5E7EB'}`,
                     borderRadius: '14px',
                     transition: 'all 0.2s',
-                    opacity: m.enabled ? 1 : 0.55,
+                    opacity: m.enabled ? 1 : 0.6,
+                    boxShadow: m.enabled ? '0 1px 3px rgba(0,0,0,0.04)' : 'none',
                   }}
                 >
                   {/* Method header row */}
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.75rem' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
                       <span style={{
-                        width: 30, height: 30, borderRadius: 8, background: cfg.bg,
+                        width: 32, height: 32, borderRadius: 8, background: cfg.bg,
                         border: `1px solid ${cfg.border}`, display: 'inline-flex',
-                        alignItems: 'center', justifyContent: 'center', fontSize: '0.9rem',
+                        alignItems: 'center', justifyContent: 'center', fontSize: '1rem',
                       }}>
                         {cfg.icon}
                       </span>
                       <div>
-                        <p style={{ color: 'white', fontWeight: 600, fontSize: '0.85rem', margin: 0 }}>{m.label}</p>
+                        <p style={{ color: '#0E0F0C', fontWeight: 700, fontSize: '0.9rem', margin: 0, fontFamily: "'Bricolage Grotesque', sans-serif" }}>{m.label}</p>
                         {!isNaN(minCoins) && Number(cpusd) > 0 && (
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', color: '#475569', fontSize: '0.68rem', margin: 0, fontFamily: "'Barlow', system-ui, sans-serif", fontFeatureSettings: "'zero' 0" }}>
-                            <span>Min:</span> <CoinDisplay amount={Math.round(minCoins)} size={11} compact={false} />
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', color: '#6B7280', fontSize: '0.75rem', margin: 0, fontFamily: "'Barlow', system-ui, sans-serif" }}>
+                            <span>Min:</span> <CoinDisplay amount={Math.round(minCoins)} size={12} compact={false} />
                           </div>
                         )}
                       </div>
@@ -661,10 +651,10 @@ const AdminSettings = () => {
                       title={m.enabled ? 'Click to disable' : 'Click to enable'}
                     >
                       {m.enabled
-                        ? <FiToggleRight style={{ fontSize: '1.5rem', color: '#34d399' }} />
-                        : <FiToggleLeft  style={{ fontSize: '1.5rem', color: '#475569' }} />
+                        ? <FiToggleRight style={{ fontSize: '1.75rem', color: '#059669' }} />
+                        : <FiToggleLeft  style={{ fontSize: '1.75rem', color: '#9CA3AF' }} />
                       }
-                      <span style={{ fontSize: '0.7rem', color: m.enabled ? '#34d399' : '#475569', fontWeight: 600 }}>
+                      <span style={{ fontSize: '0.72rem', color: m.enabled ? '#059669' : '#6B7280', fontWeight: 700 }}>
                         {m.enabled ? 'ON' : 'OFF'}
                       </span>
                     </button>
@@ -673,7 +663,7 @@ const AdminSettings = () => {
                   <div style={{ display: 'flex', gap: '1rem' }}>
                     {/* Minimum USD input */}
                     <div style={{ flex: 1 }}>
-                      <label style={{ display: 'block', fontSize: '0.68rem', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: '0.35rem' }}>
+                      <label style={{ display: 'block', fontSize: '0.7rem', color: '#6B7280', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '0.35rem', fontWeight: 600 }}>
                         Minimum USD
                       </label>
                       <NumberInput
@@ -687,7 +677,7 @@ const AdminSettings = () => {
                     </div>
                     {/* Fee % input */}
                     <div style={{ flex: 1 }}>
-                      <label style={{ display: 'block', fontSize: '0.68rem', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: '0.35rem' }}>
+                      <label style={{ display: 'block', fontSize: '0.7rem', color: '#6B7280', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '0.35rem', fontWeight: 600 }}>
                         Processing Fee %
                       </label>
                       <NumberInput
@@ -713,7 +703,7 @@ const AdminSettings = () => {
         {error && (
           <motion.div
             initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
-            style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginTop: '1.25rem', padding: '0.85rem 1.1rem', background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.25)', borderRadius: '12px', color: '#f87171', fontSize: '0.82rem' }}
+            style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginTop: '1.25rem', padding: '0.85rem 1.1rem', background: '#FEF2F2', border: '1px solid #FECACA', borderRadius: '12px', color: '#DC2626', fontSize: '0.85rem', fontWeight: 500 }}
           >
             <FiAlertCircle style={{ flexShrink: 0 }} /> {error}
           </motion.div>
@@ -721,7 +711,7 @@ const AdminSettings = () => {
         {success && (
           <motion.div
             initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
-            style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginTop: '1.25rem', padding: '0.85rem 1.1rem', background: 'rgba(16,185,129,0.08)', border: '1px solid rgba(16,185,129,0.25)', borderRadius: '12px', color: '#34d399', fontSize: '0.82rem' }}
+            style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginTop: '1.25rem', padding: '0.85rem 1.1rem', background: '#ECFDF5', border: '1px solid #A7F3D0', borderRadius: '12px', color: '#059669', fontSize: '0.85rem', fontWeight: 500 }}
           >
             <FiCheckCircle style={{ flexShrink: 0 }} /> {success}
           </motion.div>
@@ -729,18 +719,18 @@ const AdminSettings = () => {
       </AnimatePresence>
 
       {/* ── Action Bar ──────────────────────────── */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.75rem', marginTop: '1.5rem', padding: '1rem 1.25rem', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '14px' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.75rem', marginTop: '1.5rem', padding: '1rem 1.25rem', background: '#FFFFFF', border: '1px solid #E5E7EB', borderRadius: '16px', boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
           {dirty && (
             <motion.span
               initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }}
-              style={{ fontSize: '0.75rem', color: '#fbbf24', display: 'flex', alignItems: 'center', gap: '0.35rem' }}
+              style={{ fontSize: '0.8rem', color: '#D97706', display: 'flex', alignItems: 'center', gap: '0.35rem', fontWeight: 600 }}
             >
-              <FiEdit2 style={{ fontSize: '0.7rem' }} /> Unsaved changes
+              <FiEdit2 style={{ fontSize: '0.75rem' }} /> Unsaved changes
             </motion.span>
           )}
           {!dirty && settings && (
-            <span style={{ fontSize: '0.75rem', color: '#475569' }}>
+            <span style={{ fontSize: '0.8rem', color: '#6B7280', fontWeight: 500 }}>
               Last saved: {new Date(settings.updatedAt).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
             </span>
           )}
@@ -752,7 +742,7 @@ const AdminSettings = () => {
             className="action-btn"
             onClick={fetchSettings}
             disabled={loading || saving}
-            style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}
+            style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', height: '40px', padding: '0 1rem' }}
           >
             <FiRefreshCw className={loading ? 'spin' : ''} /> Discard & Refresh
           </button>
@@ -763,6 +753,7 @@ const AdminSettings = () => {
               className="action-btn"
               onClick={handleDiscard}
               disabled={saving}
+              style={{ height: '40px', padding: '0 1rem' }}
             >
               Cancel
             </button>
@@ -774,14 +765,14 @@ const AdminSettings = () => {
             disabled={!dirty || saving}
             style={{
               display: 'flex', alignItems: 'center', gap: '0.4rem',
-              padding: '0.45rem 1.1rem', borderRadius: '10px',
-              background: dirty ? 'linear-gradient(135deg,#1d4ed8,#2563eb)' : 'rgba(255,255,255,0.05)',
-              border: `1px solid ${dirty ? 'rgba(37,99,235,0.5)' : 'rgba(255,255,255,0.08)'}`,
-              color: dirty ? 'white' : '#475569',
+              padding: '0 1.25rem', borderRadius: '10px', height: '40px',
+              background: dirty ? '#1E2538' : '#F3F4F6',
+              border: `1px solid ${dirty ? '#1E2538' : '#E5E7EB'}`,
+              color: dirty ? '#FFFFFF' : '#9CA3AF',
               cursor: dirty && !saving ? 'pointer' : 'not-allowed',
-              fontSize: '0.82rem', fontWeight: 600, fontFamily: 'Barlow, system-ui, sans-serif',
+              fontSize: '0.85rem', fontWeight: 600, fontFamily: "'Poppins', sans-serif",
               transition: 'all 0.2s',
-              boxShadow: dirty ? '0 4px 14px rgba(37,99,235,0.25)' : 'none',
+              boxShadow: dirty ? '0 4px 12px rgba(30,37,56,0.2)' : 'none',
             }}
           >
             {saving
@@ -791,10 +782,6 @@ const AdminSettings = () => {
           </button>
         </div>
       </div>
-
-      <style>{`
-        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-      `}</style>
     </div>
   );
 };

@@ -47,46 +47,46 @@ const LogRow = ({ log }) => {
   return (
     <>
       <tr className={`log-row ${open ? 'log-row--open' : ''}`} onClick={() => setOpen(o => !o)} style={{ cursor: 'pointer' }}>
-        <td style={{ color: '#64748b', fontFamily: "'Barlow', system-ui, sans-serif", fontSize: '0.75rem', fontFeatureSettings: "'zero' 0", fontVariantNumeric: 'normal' }}>
+        <td style={{ color: '#6B7280', fontFamily: "'Barlow', system-ui, sans-serif", fontSize: '0.8rem', fontFeatureSettings: "'zero' 0", fontVariantNumeric: 'normal' }}>
           {fmt(log.createdAt)}
         </td>
         <td>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
             <span className={`log-badge ${meta.color}`}>{meta.label}</span>
             {hasNote && (
-              <span title="Has context / note" style={{ display: 'inline-flex', alignItems: 'center', color: '#818cf8', flexShrink: 0 }}>
-                <FiMessageSquare size={11} />
+              <span title="Has context / note" style={{ display: 'inline-flex', alignItems: 'center', color: '#1E2538', flexShrink: 0 }}>
+                <FiMessageSquare size={12} />
               </span>
             )}
           </div>
         </td>
         <td>
-          <span style={{ color: '#e2e8f0', fontWeight: 500 }}>
+          <span style={{ color: '#111827', fontWeight: 600 }}>
             {log.adminId?.displayName || '—'}
           </span>
-          <span style={{ color: '#475569', fontSize: '0.75rem', display: 'block' }}>
+          <span style={{ color: '#6B7280', fontSize: '0.75rem', display: 'block' }}>
             {log.adminId?.email || ''}
           </span>
         </td>
         <td>
           {log.targetUserId ? (
             <>
-              <span style={{ color: '#c8d6ef' }}>{log.targetUserId.displayName || '—'}</span>
-              <span style={{ color: '#475569', fontSize: '0.75rem', display: 'block' }}>
+              <span style={{ color: '#111827', fontWeight: 500 }}>{log.targetUserId.displayName || '—'}</span>
+              <span style={{ color: '#6B7280', fontSize: '0.75rem', display: 'block' }}>
                 {log.targetUserId.email || ''}
               </span>
             </>
-          ) : <span style={{ color: '#475569' }}>—</span>}
+          ) : <span style={{ color: '#9CA3AF' }}>—</span>}
         </td>
         <td style={{ textAlign: 'right', paddingRight: '1rem', maxWidth: '220px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
           {hasNote ? (
-            <span style={{ marginRight: '0.8rem', fontStyle: 'italic', fontSize: '0.8rem', color: '#cbd5e1' }} title={noteText}>
+            <span style={{ marginRight: '0.8rem', fontStyle: 'italic', fontSize: '0.8rem', color: '#374151' }} title={noteText}>
               {noteText}
             </span>
           ) : (
-            <span style={{ marginRight: '0.8rem', fontSize: '0.8rem', color: '#475569' }}>—</span>
+            <span style={{ marginRight: '0.8rem', fontSize: '0.8rem', color: '#9CA3AF' }}>—</span>
           )}
-          {open ? <FiChevronUp style={{ color: '#475569', display: 'inline-block', verticalAlign: 'middle' }} /> : <FiChevronDown style={{ color: '#475569', display: 'inline-block', verticalAlign: 'middle' }} />}
+          {open ? <FiChevronUp style={{ color: '#6B7280', display: 'inline-block', verticalAlign: 'middle' }} /> : <FiChevronDown style={{ color: '#6B7280', display: 'inline-block', verticalAlign: 'middle' }} />}
         </td>
       </tr>
       {open && (
@@ -95,11 +95,11 @@ const LogRow = ({ log }) => {
             <div className="log-detail-box">
               <p className="log-detail-desc">{meta.desc}</p>
               {hasNote && (
-                <div style={{ marginBottom: '1rem', padding: '0.6rem 0.8rem', background: 'rgba(30,41,59,0.5)', borderRadius: '6px', borderLeft: '3px solid #818cf8', border: '1px solid rgba(255,255,255,0.05)' }}>
-                  <span style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', fontSize: '0.65rem', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '0.35rem' }}>
-                    <FiMessageSquare size={10} /> Context / Reason
+                <div style={{ marginBottom: '1rem', padding: '0.75rem 1rem', background: '#FFFFFF', borderRadius: '10px', borderLeft: '4px solid #1E2538', border: '1px solid #E5E7EB', borderLeftWidth: '4px' }}>
+                  <span style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', fontSize: '0.7rem', color: '#6B7280', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '0.35rem', fontWeight: 600 }}>
+                    <FiMessageSquare size={11} /> Context / Reason
                   </span>
-                  <p style={{ margin: 0, color: '#e2e8f0', fontSize: '0.85rem', lineHeight: '1.4' }}>
+                  <p style={{ margin: 0, color: '#111827', fontSize: '0.875rem', lineHeight: '1.5' }}>
                     {noteText}
                   </p>
                 </div>
@@ -173,7 +173,7 @@ const AdminLogs = () => {
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '1.75rem', gap: '1rem', flexWrap: 'wrap' }}>
         <div>
           <h1 className="admin-page-title" style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-            <FiActivity style={{ color: '#818cf8', fontSize: '1.25rem' }} />
+            <FiActivity style={{ color: '#1E2538', fontSize: '1.25rem' }} />
             Audit Log
           </h1>
           <p className="admin-page-sub">Every important admin action is recorded here.</p>
@@ -190,15 +190,15 @@ const AdminLogs = () => {
       </div>
 
       {/* Controls */}
-      <div className="admin-card" style={{ padding: '1.25rem' }}>
+      <div className="admin-card" style={{ padding: '1.25rem', marginBottom: '1.5rem' }}>
         {/* Search */}
-        <div className="admin-search-bar" style={{ marginBottom: '0.85rem' }}>
+        <div className="admin-search-bar" style={{ marginBottom: '1rem' }}>
           <div style={{ position: 'relative', flex: 1 }}>
-            <FiSearch style={{ position: 'absolute', left: '0.85rem', top: '50%', transform: 'translateY(-50%)', color: '#475569' }} />
+            <FiSearch style={{ position: 'absolute', left: '0.85rem', top: '50%', transform: 'translateY(-50%)', color: '#9CA3AF' }} />
             <input
               className="admin-input"
               style={{ paddingLeft: '2.4rem' }}
-              placeholder="Search by admin or target user…"
+              placeholder="Search by admin, user, or reason..."
               value={search}
               onChange={e => setSearch(e.target.value)}
             />
@@ -218,7 +218,7 @@ const AdminLogs = () => {
             onClick={() => setActiveFilter('HAS_NOTE')}
             style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}
           >
-            <FiMessageSquare size={11} /> Has Notes
+            <FiMessageSquare size={12} /> Has Notes
           </button>
           {ALL_ACTIONS.map(action => (
             <button
@@ -264,7 +264,7 @@ const AdminLogs = () => {
         </div>
 
         {!loading && visible.length > 0 && (
-          <div style={{ padding: '0.75rem 1rem', borderTop: '1px solid rgba(255,255,255,0.04)', fontSize: '0.75rem', color: '#475569' }}>
+          <div style={{ padding: '0.75rem 1.25rem', borderTop: '1px solid #E5E7EB', fontSize: '0.8rem', color: '#6B7280', background: '#FAFAFA' }}>
             Showing {visible.length} of {logs.length} entries
           </div>
         )}
@@ -274,46 +274,48 @@ const AdminLogs = () => {
       <style>{`
         .log-badge {
           display: inline-block;
-          padding: 2px 9px;
+          padding: 3px 10px;
           border-radius: 6px;
-          font-size: 0.7rem;
+          font-size: 0.72rem;
           font-weight: 600;
           text-transform: uppercase;
-          letter-spacing: 0.05em;
+          letter-spacing: 0.04em;
           white-space: nowrap;
         }
-        .log-badge--danger  { background: rgba(239,68,68,0.12);  color: #f87171; border: 1px solid rgba(239,68,68,0.2);  }
-        .log-badge--success { background: rgba(16,185,129,0.12); color: #34d399; border: 1px solid rgba(16,185,129,0.2); }
-        .log-badge--warning { background: rgba(234,179,8,0.12);  color: #fbbf24; border: 1px solid rgba(234,179,8,0.2);  }
-        .log-badge--info    { background: rgba(99,102,241,0.12); color: #818cf8; border: 1px solid rgba(99,102,241,0.2); }
+        .log-badge--danger  { background: #FEF2F2; color: #DC2626; border: 1px solid #FEE2E2; }
+        .log-badge--success { background: #ECFDF5; color: #059669; border: 1px solid #D1FAE5; }
+        .log-badge--warning { background: #FFFBEB; color: #D97706; border: 1px solid #FEF3C7; }
+        .log-badge--info    { background: #EFF6FF; color: #2563EB; border: 1px solid #DBEAFE; }
 
-        .log-row--open td { background: rgba(99,102,241,0.04); }
-        .log-row:hover td { background: rgba(255,255,255,0.02); }
+        .log-row--open td { background: #F9FAFB !important; }
+        .log-row:hover td { background: #F9FAFB; }
 
-        .log-detail-row td { padding: 0; border-bottom: 1px solid rgba(255,255,255,0.06); }
+        .log-detail-row td { padding: 0 !important; border-bottom: 1px solid #E5E7EB; }
         .log-detail-box {
-          padding: 1rem 1.25rem;
-          background: rgba(0,0,0,0.2);
-          border-top: 1px solid rgba(99,102,241,0.1);
+          padding: 1.25rem 1.5rem;
+          background: #FAFAFA;
+          border-top: 1px solid #E5E7EB;
         }
         .log-detail-desc {
-          font-size: 0.8rem;
-          color: #64748b;
+          font-size: 0.85rem;
+          color: #4B5563;
           margin-bottom: 0.75rem;
+          font-weight: 500;
         }
         .log-detail-json {
-          background: rgba(255,255,255,0.03);
-          border: 1px solid rgba(255,255,255,0.06);
-          border-radius: 8px;
-          padding: 0.75rem 1rem;
+          background: #FFFFFF;
+          border: 1px solid #E5E7EB;
+          border-radius: 10px;
+          padding: 0.85rem 1.15rem;
           font-family: 'Barlow', system-ui, sans-serif;
           font-feature-settings: 'zero' 0;
           font-variant-numeric: normal;
-          font-size: 0.78rem;
-          color: #94a3b8;
+          font-size: 0.8rem;
+          color: #374151;
           overflow-x: auto;
           margin: 0;
           white-space: pre;
+          line-height: 1.5;
         }
 
         @keyframes spin { to { transform: rotate(360deg); } }
@@ -323,3 +325,4 @@ const AdminLogs = () => {
 };
 
 export default AdminLogs;
+

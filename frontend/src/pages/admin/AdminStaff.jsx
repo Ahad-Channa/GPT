@@ -9,25 +9,25 @@ const AVAILABLE_PERMISSIONS = [
   { value: 'manage_withdrawals', label: 'Manage Withdrawals' },
   { value: 'manage_support',     label: 'Support Tickets' },
   { value: 'manage_chat',        label: 'Chat Moderation (Admin Panel)' },
-  { value: 'manage_offerwalls',  label: 'Offerwall Config + Promos + Proofs' },
+  { value: 'manage_offerwalls',  label: 'Offerwall Config + Promos + Featured Offers' },
   { value: 'manage_admins',      label: 'Manage Admins (Rare / Dangerous)' },
 ];
 
 const ROLE_META = {
-  admin:         { label: 'Admin',         color: '#ef4444', bg: 'rgba(239,68,68,0.12)',    border: 'rgba(239,68,68,0.25)' },
-  chat_mod:      { label: 'Chat Mod',      color: '#38bdf8', bg: 'rgba(56,189,248,0.12)',   border: 'rgba(56,189,248,0.25)' },
-  support_agent: { label: 'Support Agent', color: '#a78bfa', bg: 'rgba(167,139,250,0.12)',  border: 'rgba(167,139,250,0.25)' },
-  moderator:     { label: 'Moderator',     color: '#34d399', bg: 'rgba(52,211,153,0.12)',   border: 'rgba(52,211,153,0.25)' },
-  owner:         { label: 'Owner',         color: '#fbbf24', bg: 'rgba(251,191,36,0.12)',   border: 'rgba(251,191,36,0.25)' },
+  admin:         { label: 'Admin',         color: '#DC2626', bg: '#FEF2F2', border: '#FEE2E2' },
+  chat_mod:      { label: 'Chat Mod',      color: '#0284C7', bg: '#F0F9FF', border: '#E0F2FE' },
+  support_agent: { label: 'Support Agent', color: '#7C3AED', bg: '#F5F3FF', border: '#EDE9FE' },
+  moderator:     { label: 'Moderator',     color: '#059669', bg: '#ECFDF5', border: '#D1FAE5' },
+  owner:         { label: 'Owner',         color: '#D97706', bg: '#FFFBEB', border: '#FEF3C7' },
 };
 
 const RoleBadge = ({ role }) => {
-  const meta = ROLE_META[role] || { label: role, color: '#94a3b8', bg: 'rgba(148,163,184,0.1)', border: 'rgba(148,163,184,0.2)' };
+  const meta = ROLE_META[role] || { label: role, color: '#4B5563', bg: '#F3F4F6', border: '#E5E7EB' };
   return (
     <span style={{
-      fontSize: '0.7rem', fontWeight: 700, padding: '2px 8px', borderRadius: 100,
+      fontSize: '0.72rem', fontWeight: 700, padding: '3px 9px', borderRadius: 100,
       background: meta.bg, color: meta.color, border: `1px solid ${meta.border}`,
-      textTransform: 'uppercase', letterSpacing: '0.05em'
+      textTransform: 'uppercase', letterSpacing: '0.04em'
     }}>
       {meta.label}
     </span>
@@ -194,19 +194,10 @@ const AdminStaff = () => {
     return (
       <div>
         <h1 className="admin-page-title">Access Denied</h1>
-        <p className="admin-page-sub" style={{ color: '#f87171' }}>Only the Primary Admin can manage staff.</p>
+        <p className="admin-page-sub" style={{ color: '#DC2626' }}>Only the Primary Admin can manage staff.</p>
       </div>
     );
   }
-
-  const tabStyle = (tab) => ({
-    display: 'flex', alignItems: 'center', gap: '0.5rem',
-    padding: '0.5rem 1.25rem', borderRadius: '8px', border: 'none', cursor: 'pointer',
-    fontSize: '0.82rem', fontWeight: activeTab === tab ? 700 : 500,
-    background: activeTab === tab ? 'rgba(99,102,241,0.2)' : 'transparent',
-    color: activeTab === tab ? '#a5b4fc' : '#475569',
-    transition: 'all 0.15s'
-  });
 
   return (
     <div>
@@ -214,14 +205,26 @@ const AdminStaff = () => {
       <p className="admin-page-sub">Manage admins, chat moderators, and support agents.</p>
 
       {/* Tabs */}
-      <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1.5rem', background: 'rgba(255,255,255,0.03)', borderRadius: '10px', padding: '4px', border: '1px solid rgba(255,255,255,0.06)', width: 'fit-content' }}>
-        <button style={tabStyle('admins')} onClick={() => { setActiveTab('admins'); setNewUserId(''); }}>
+      <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1.5rem', flexWrap: 'wrap' }}>
+        <button
+          className={`filter-pill ${activeTab === 'admins' ? 'active' : ''}`}
+          onClick={() => { setActiveTab('admins'); setNewUserId(''); }}
+          style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}
+        >
           <FiShield size={14} /> Admins ({admins.length})
         </button>
-        <button style={tabStyle('chat_mods')} onClick={() => { setActiveTab('chat_mods'); setNewUserId(''); }}>
+        <button
+          className={`filter-pill ${activeTab === 'chat_mods' ? 'active' : ''}`}
+          onClick={() => { setActiveTab('chat_mods'); setNewUserId(''); }}
+          style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}
+        >
           <FiMessageCircle size={14} /> Chat Mods ({chatMods.length})
         </button>
-        <button style={tabStyle('support_agents')} onClick={() => { setActiveTab('support_agents'); setNewUserId(''); }}>
+        <button
+          className={`filter-pill ${activeTab === 'support_agents' ? 'active' : ''}`}
+          onClick={() => { setActiveTab('support_agents'); setNewUserId(''); }}
+          style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}
+        >
           <FiHeadphones size={14} /> Support Agents ({supportAgents.length})
         </button>
       </div>
@@ -229,15 +232,21 @@ const AdminStaff = () => {
       {/* ─── ADMINS TAB ──────────────────────────────────── */}
       {activeTab === 'admins' && (
         <>
-          <div className="admin-card">
-            <h3 style={{ color: '#e2e8f0', fontWeight: 700, marginBottom: '1rem' }}>Promote or Mint Admin</h3>
+          <div className="admin-card" style={{ marginBottom: '1.5rem' }}>
+            <h3 style={{ color: '#111827', fontWeight: 700, marginBottom: '1rem', fontFamily: "'Bricolage Grotesque', sans-serif" }}>Promote or Mint Admin</h3>
 
             {/* Promote / Mint sub-tabs */}
-            <div style={{ display: 'flex', gap: '0.75rem', marginBottom: '1.25rem', borderBottom: '1px solid rgba(255,255,255,0.08)', paddingBottom: '1rem' }}>
-              <button className={`action-btn ${promoteMode === 'promote' ? 'primary' : ''}`} onClick={() => setPromoteMode('promote')}>
+            <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1.25rem', borderBottom: '1px solid #E5E7EB', paddingBottom: '0.75rem' }}>
+              <button
+                className={`filter-pill ${promoteMode === 'promote' ? 'active' : ''}`}
+                onClick={() => setPromoteMode('promote')}
+              >
                 Promote Existing User
               </button>
-              <button className={`action-btn ${promoteMode === 'mint' ? 'primary' : ''}`} onClick={() => setPromoteMode('mint')}>
+              <button
+                className={`filter-pill ${promoteMode === 'mint' ? 'active' : ''}`}
+                onClick={() => setPromoteMode('mint')}
+              >
                 Direct Credentials Minting
               </button>
             </div>
@@ -246,7 +255,7 @@ const AdminStaff = () => {
               <div style={{ flex: 1, minWidth: '260px' }}>
                 {promoteMode === 'promote' ? (
                   <>
-                    <p style={{ color: '#a3a3a3', marginBottom: '0.75rem', fontSize: '0.85rem' }}>Enter the exact MongoDB Object ID of the user to promote to Admin.</p>
+                    <p style={{ color: '#6B7280', marginBottom: '0.75rem', fontSize: '0.85rem' }}>Enter the exact MongoDB Object ID of the user to promote to Admin.</p>
                     <input
                       type="text"
                       className="admin-input"
@@ -256,31 +265,31 @@ const AdminStaff = () => {
                     />
                   </>
                 ) : (
-                  <>
-                    <p style={{ color: '#a3a3a3', marginBottom: '0.75rem', fontSize: '0.85rem' }}>Create a secure admin account bypassing normal signup. Password: 8+ chars, 1 special, 1 number.</p>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                    <p style={{ color: '#6B7280', marginBottom: '0.25rem', fontSize: '0.85rem' }}>Create a secure admin account bypassing normal signup. Password: 8+ chars, 1 special, 1 number.</p>
                     <input type="text" className="admin-input" placeholder="Admin Display Name" value={mintName} onChange={e => setMintName(e.target.value)} />
                     <input type="email" className="admin-input" placeholder="Secret Email Address" value={mintEmail} onChange={e => setMintEmail(e.target.value)} />
                     <input type="password" className="admin-input" placeholder="Complex Password" value={mintPassword} onChange={e => setMintPassword(e.target.value)} />
-                  </>
+                  </div>
                 )}
               </div>
 
               {/* Permission checkboxes */}
-              <div style={{ minWidth: '260px' }}>
-                <p style={{ marginBottom: '0.5rem', color: '#64748b', fontSize: '0.78rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+              <div style={{ minWidth: '280px' }}>
+                <p style={{ marginBottom: '0.5rem', color: '#6B7280', fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
                   Permissions
                 </p>
-                <div style={{ padding: '1rem', background: 'rgba(0,0,0,0.2)', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                <div style={{ padding: '1rem', background: '#F9FAFB', borderRadius: '12px', border: '1px solid #E5E7EB' }}>
                   {AVAILABLE_PERMISSIONS.map(p => {
                     const perms = promoteMode === 'promote' ? newAdminPerms : mintPerms;
                     const setPerms = promoteMode === 'promote' ? setNewAdminPerms : setMintPerms;
                     return (
-                      <label key={p.value} style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '0.75rem', cursor: 'pointer', fontSize: '0.85rem', color: '#cbd5e1' }}>
+                      <label key={p.value} style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '0.65rem', cursor: 'pointer', fontSize: '0.85rem', color: '#374151', fontWeight: 500 }}>
                         <input
                           type="checkbox"
                           checked={perms.includes(p.value)}
                           onChange={() => setPerms(togglePerm(perms, p.value))}
-                          style={{ transform: 'scale(1.1)', accentColor: '#6366f1' }}
+                          style={{ accentColor: '#1E2538' }}
                         />
                         {p.label}
                       </label>
@@ -295,20 +304,20 @@ const AdminStaff = () => {
                 className="action-btn primary"
                 onClick={promoteMode === 'promote' ? promoteAdmin : mintAdmin}
                 disabled={working}
-                style={{ padding: '0.7rem 2rem', fontWeight: 700, opacity: working ? 0.6 : 1 }}
+                style={{ padding: '0.7rem 1.75rem', fontWeight: 700, opacity: working ? 0.6 : 1, display: 'inline-flex', alignItems: 'center', gap: '0.5rem' }}
               >
-                <FiUserPlus style={{ marginRight: '0.5rem' }} />
+                <FiUserPlus />
                 {promoteMode === 'promote' ? 'Promote User → Admin' : 'Mint Admin Credentials'}
               </button>
             </div>
           </div>
 
           {/* Admins table */}
-          <div className="admin-card">
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-              <h3 style={{ color: '#e2e8f0', fontWeight: 700 }}>Current Admins</h3>
-              <button onClick={fetchStaff} style={{ background: 'none', border: 'none', color: '#475569', cursor: 'pointer' }}>
-                <FiRefreshCw size={14} />
+          <div className="admin-card" style={{ padding: 0, overflow: 'hidden' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1.25rem 1.5rem', borderBottom: '1px solid #E5E7EB', background: '#FAFAFA' }}>
+              <h3 style={{ color: '#111827', fontWeight: 700, margin: 0, fontFamily: "'Bricolage Grotesque', sans-serif" }}>Current Admins</h3>
+              <button onClick={fetchStaff} style={{ background: 'none', border: 'none', color: '#6B7280', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.35rem', fontSize: '0.8rem', fontWeight: 500 }}>
+                <FiRefreshCw size={13} /> Refresh
               </button>
             </div>
             <div className="admin-table-container">
@@ -324,42 +333,42 @@ const AdminStaff = () => {
                 </thead>
                 <tbody>
                   {loading ? (
-                    <tr><td colSpan="5" style={{ textAlign: 'center', color: '#475569' }}>Loading...</td></tr>
+                    <tr className="loading-row"><td colSpan="5">Loading staff members...</td></tr>
                   ) : admins.length === 0 ? (
-                    <tr><td colSpan="5" style={{ textAlign: 'center', color: '#475569' }}>No admins found.</td></tr>
+                    <tr className="loading-row"><td colSpan="5">No admins found.</td></tr>
                   ) : admins.map(a => (
                     <tr key={a._id}>
-                      <td>{a.displayName}</td>
+                      <td style={{ fontWeight: 600, color: '#111827' }}>{a.displayName}</td>
                       <td>
-                        {a.email}
+                        <span style={{ color: '#4B5563' }}>{a.email}</span>
                         {a.email === import.meta.env.VITE_PRIMARY_ADMIN_EMAIL && (
-                          <span className="super-badge" style={{ marginLeft: '8px' }}>You</span>
+                          <span style={{ marginLeft: '8px', padding: '2px 7px', background: '#1E2538', color: '#FFFFFF', borderRadius: '4px', fontSize: '0.68rem', fontWeight: 700, textTransform: 'uppercase' }}>You</span>
                         )}
                       </td>
                       <td><RoleBadge role={a.role} /></td>
                       <td>
                         {a.email !== import.meta.env.VITE_PRIMARY_ADMIN_EMAIL ? (
-                          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.2rem' }}>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
                             {AVAILABLE_PERMISSIONS.map(p => (
-                              <label key={p.value} style={{ fontSize: '0.8rem', display: 'flex', alignItems: 'center', gap: '0.4rem', color: '#94a3b8' }}>
+                              <label key={p.value} style={{ fontSize: '0.8rem', display: 'flex', alignItems: 'center', gap: '0.4rem', color: '#4B5563', cursor: 'pointer' }}>
                                 <input
                                   type="checkbox"
                                   checked={a.adminPermissions?.includes(p.value)}
                                   onChange={() => updatePermissions(a._id, togglePerm(a.adminPermissions || [], p.value))}
-                                  style={{ accentColor: '#6366f1' }}
+                                  style={{ accentColor: '#1E2538' }}
                                 />
                                 {p.label}
                               </label>
                             ))}
                           </div>
                         ) : (
-                          <span style={{ color: '#4dff88', fontSize: '0.82rem' }}>Full Access (Unrestricted)</span>
+                          <span style={{ color: '#059669', fontSize: '0.82rem', fontWeight: 600 }}>Full Access (Unrestricted)</span>
                         )}
                       </td>
                       <td>
                         {a.email !== import.meta.env.VITE_PRIMARY_ADMIN_EMAIL && (
-                          <button className="action-btn danger" onClick={() => revokeAdmin(a._id)}>
-                            <FiTrash2 size={12} style={{ marginRight: '4px' }} /> Revoke
+                          <button className="action-btn danger" onClick={() => revokeAdmin(a._id)} style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}>
+                            <FiTrash2 size={12} /> Revoke
                           </button>
                         )}
                       </td>
@@ -375,12 +384,12 @@ const AdminStaff = () => {
       {/* ─── CHAT MODS TAB ──────────────────────────────── */}
       {activeTab === 'chat_mods' && (
         <>
-          <div className="admin-card">
-            <h3 style={{ color: '#e2e8f0', fontWeight: 700, marginBottom: '0.5rem' }}>Promote Chat Moderator</h3>
-            <p style={{ color: '#64748b', fontSize: '0.84rem', marginBottom: '1rem' }}>
-              Chat Mods get a <strong style={{ color: '#38bdf8' }}>MOD badge</strong> next to their VIP rank in live chat and can delete messages directly — without any admin panel access.
+          <div className="admin-card" style={{ marginBottom: '1.5rem' }}>
+            <h3 style={{ color: '#111827', fontWeight: 700, marginBottom: '0.5rem', fontFamily: "'Bricolage Grotesque', sans-serif" }}>Promote Chat Moderator</h3>
+            <p style={{ color: '#6B7280', fontSize: '0.85rem', marginBottom: '1rem' }}>
+              Chat Mods get a <strong style={{ color: '#0284C7' }}>MOD badge</strong> next to their VIP rank in live chat and can delete messages directly — without any admin panel access.
             </p>
-            <div style={{ display: 'flex', gap: '1rem', alignItems: 'flex-end', flexWrap: 'wrap' }}>
+            <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', flexWrap: 'wrap' }}>
               <input
                 type="text"
                 className="admin-input"
@@ -393,24 +402,24 @@ const AdminStaff = () => {
                 className="action-btn primary"
                 onClick={promoteChatMod}
                 disabled={working || !newUserId}
-                style={{ padding: '0.65rem 1.5rem', fontWeight: 700 }}
+                style={{ padding: '0.65rem 1.5rem', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}
               >
-                <FiMessageCircle style={{ marginRight: '0.4rem' }} /> Promote to Chat Mod
+                <FiMessageCircle /> Promote to Chat Mod
               </button>
             </div>
           </div>
 
-          <div className="admin-card">
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-              <h3 style={{ color: '#e2e8f0', fontWeight: 700 }}>Current Chat Mods</h3>
-              <button onClick={fetchStaff} style={{ background: 'none', border: 'none', color: '#475569', cursor: 'pointer' }}>
-                <FiRefreshCw size={14} />
+          <div className="admin-card" style={{ padding: 0, overflow: 'hidden' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1.25rem 1.5rem', borderBottom: '1px solid #E5E7EB', background: '#FAFAFA' }}>
+              <h3 style={{ color: '#111827', fontWeight: 700, margin: 0, fontFamily: "'Bricolage Grotesque', sans-serif" }}>Current Chat Mods</h3>
+              <button onClick={fetchStaff} style={{ background: 'none', border: 'none', color: '#6B7280', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.35rem', fontSize: '0.8rem', fontWeight: 500 }}>
+                <FiRefreshCw size={13} /> Refresh
               </button>
             </div>
             {loading ? (
-              <p style={{ color: '#475569', textAlign: 'center' }}>Loading...</p>
+              <p style={{ color: '#6B7280', textAlign: 'center', padding: '2rem' }}>Loading...</p>
             ) : chatMods.length === 0 ? (
-              <p style={{ color: '#475569', textAlign: 'center' }}>No chat moderators assigned yet.</p>
+              <p style={{ color: '#6B7280', textAlign: 'center', padding: '2rem' }}>No chat moderators assigned yet.</p>
             ) : (
               <div className="admin-table-container">
                 <table className="admin-table">
@@ -418,12 +427,12 @@ const AdminStaff = () => {
                   <tbody>
                     {chatMods.map(m => (
                       <tr key={m._id}>
-                        <td>{m.displayName}</td>
-                        <td>{m.email}</td>
+                        <td style={{ fontWeight: 600, color: '#111827' }}>{m.displayName}</td>
+                        <td style={{ color: '#4B5563' }}>{m.email}</td>
                         <td><RoleBadge role={m.role} /></td>
                         <td>
-                          <button className="action-btn danger" onClick={() => revokeChatMod(m._id)}>
-                            <FiTrash2 size={12} style={{ marginRight: '4px' }} /> Revoke
+                          <button className="action-btn danger" onClick={() => revokeChatMod(m._id)} style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}>
+                            <FiTrash2 size={12} /> Revoke
                           </button>
                         </td>
                       </tr>
@@ -439,12 +448,12 @@ const AdminStaff = () => {
       {/* ─── SUPPORT AGENTS TAB ─────────────────────────── */}
       {activeTab === 'support_agents' && (
         <>
-          <div className="admin-card">
-            <h3 style={{ color: '#e2e8f0', fontWeight: 700, marginBottom: '0.5rem' }}>Promote Support Agent</h3>
-            <p style={{ color: '#64748b', fontSize: '0.84rem', marginBottom: '1rem' }}>
-              Support Agents can access the admin panel but <strong style={{ color: '#a78bfa' }}>only the Support tab</strong>. They cannot see Overview, Users, Withdrawals, or any other section.
+          <div className="admin-card" style={{ marginBottom: '1.5rem' }}>
+            <h3 style={{ color: '#111827', fontWeight: 700, marginBottom: '0.5rem', fontFamily: "'Bricolage Grotesque', sans-serif" }}>Promote Support Agent</h3>
+            <p style={{ color: '#6B7280', fontSize: '0.85rem', marginBottom: '1rem' }}>
+              Support Agents can access the admin panel but <strong style={{ color: '#7C3AED' }}>only the Support tab</strong>. They cannot see Overview, Users, Withdrawals, or any other section.
             </p>
-            <div style={{ display: 'flex', gap: '1rem', alignItems: 'flex-end', flexWrap: 'wrap' }}>
+            <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', flexWrap: 'wrap' }}>
               <input
                 type="text"
                 className="admin-input"
@@ -457,24 +466,24 @@ const AdminStaff = () => {
                 className="action-btn primary"
                 onClick={promoteSupportAgent}
                 disabled={working || !newUserId}
-                style={{ padding: '0.65rem 1.5rem', fontWeight: 700 }}
+                style={{ padding: '0.65rem 1.5rem', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}
               >
-                <FiHeadphones style={{ marginRight: '0.4rem' }} /> Promote to Support Agent
+                <FiHeadphones /> Promote to Support Agent
               </button>
             </div>
           </div>
 
-          <div className="admin-card">
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-              <h3 style={{ color: '#e2e8f0', fontWeight: 700 }}>Current Support Agents</h3>
-              <button onClick={fetchStaff} style={{ background: 'none', border: 'none', color: '#475569', cursor: 'pointer' }}>
-                <FiRefreshCw size={14} />
+          <div className="admin-card" style={{ padding: 0, overflow: 'hidden' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1.25rem 1.5rem', borderBottom: '1px solid #E5E7EB', background: '#FAFAFA' }}>
+              <h3 style={{ color: '#111827', fontWeight: 700, margin: 0, fontFamily: "'Bricolage Grotesque', sans-serif" }}>Current Support Agents</h3>
+              <button onClick={fetchStaff} style={{ background: 'none', border: 'none', color: '#6B7280', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.35rem', fontSize: '0.8rem', fontWeight: 500 }}>
+                <FiRefreshCw size={13} /> Refresh
               </button>
             </div>
             {loading ? (
-              <p style={{ color: '#475569', textAlign: 'center' }}>Loading...</p>
+              <p style={{ color: '#6B7280', textAlign: 'center', padding: '2rem' }}>Loading...</p>
             ) : supportAgents.length === 0 ? (
-              <p style={{ color: '#475569', textAlign: 'center' }}>No support agents assigned yet.</p>
+              <p style={{ color: '#6B7280', textAlign: 'center', padding: '2rem' }}>No support agents assigned yet.</p>
             ) : (
               <div className="admin-table-container">
                 <table className="admin-table">
@@ -482,12 +491,12 @@ const AdminStaff = () => {
                   <tbody>
                     {supportAgents.map(a => (
                       <tr key={a._id}>
-                        <td>{a.displayName}</td>
-                        <td>{a.email}</td>
+                        <td style={{ fontWeight: 600, color: '#111827' }}>{a.displayName}</td>
+                        <td style={{ color: '#4B5563' }}>{a.email}</td>
                         <td><RoleBadge role={a.role} /></td>
                         <td>
-                          <button className="action-btn danger" onClick={() => revokeSupportAgent(a._id)}>
-                            <FiTrash2 size={12} style={{ marginRight: '4px' }} /> Revoke
+                          <button className="action-btn danger" onClick={() => revokeSupportAgent(a._id)} style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}>
+                            <FiTrash2 size={12} /> Revoke
                           </button>
                         </td>
                       </tr>
@@ -504,3 +513,4 @@ const AdminStaff = () => {
 };
 
 export default AdminStaff;
+

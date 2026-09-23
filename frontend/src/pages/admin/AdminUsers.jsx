@@ -2,10 +2,8 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import {
   FiCopy, FiSearch, FiX, FiCheck, FiLoader, FiMessageSquare,
-  FiEye, FiUser, FiDollarSign, FiActivity, FiGift, FiChevronDown,
-  FiCheckCircle, FiInfo, FiShield, FiAlertTriangle
+  FiEye, FiUser, FiDollarSign, FiActivity, FiShield, FiAlertTriangle
 } from 'react-icons/fi';
-
 import toast from 'react-hot-toast';
 import CoinDisplay from '../../components/CoinDisplay';
 
@@ -82,17 +80,17 @@ const UserDetailModal = ({ user, onClose, currentUser }) => {
 
   const txTypeColor = (type) => {
     const map = {
-      offer_reward: '#818cf8',
-      daily_bonus: '#fbbf24',
-      promo_code: '#34d399',
-      referral_reward: '#22d3ee',
-      withdrawal: '#f87171',
-      admin_adjustment: '#fb923c',
-      leaderboard_reward: '#c084fc',
-      custom_offer_reward: '#6ee7b7',
-      chargeback: '#f43f5e',
+      offer_reward: '#4F46E5',
+      daily_bonus: '#D97706',
+      promo_code: '#059669',
+      referral_reward: '#0284C7',
+      withdrawal: '#DC2626',
+      admin_adjustment: '#EA580C',
+      leaderboard_reward: '#7C3AED',
+      custom_offer_reward: '#059669',
+      chargeback: '#E11D48',
     };
-    return map[type] || '#94a3b8';
+    return map[type] || '#6B7280';
   };
 
   return (
@@ -101,8 +99,8 @@ const UserDetailModal = ({ user, onClose, currentUser }) => {
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
     >
       <div style={{
-        background: '#0f1422',
-        border: '1px solid rgba(255,255,255,0.08)',
+        background: '#FFFFFF',
+        border: '1px solid #E5E7EB',
         borderRadius: '1.5rem',
         width: '100%',
         maxWidth: '700px',
@@ -110,11 +108,12 @@ const UserDetailModal = ({ user, onClose, currentUser }) => {
         overflowY: 'auto',
         position: 'relative',
         padding: '2rem',
+        boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.15)'
       }}>
         {/* Close */}
         <button
           onClick={onClose}
-          style={{ position: 'absolute', top: '1.25rem', right: '1.25rem', background: 'none', border: 'none', color: '#64748b', cursor: 'pointer', fontSize: '20px' }}
+          style={{ position: 'absolute', top: '1.25rem', right: '1.25rem', background: 'none', border: 'none', color: '#9CA3AF', cursor: 'pointer', fontSize: '20px' }}
         >
           <FiX />
         </button>
@@ -124,39 +123,39 @@ const UserDetailModal = ({ user, onClose, currentUser }) => {
           <img
             src={user.avatarUrl || `/avatars/avatar1.png`}
             alt="avatar"
-            style={{ width: 52, height: 52, borderRadius: '50%', border: '2px solid rgba(99,102,241,0.4)', background: '#1e2a44' }}
+            style={{ width: 52, height: 52, borderRadius: '50%', border: '2px solid #E5E7EB', background: '#F3F4F6' }}
           />
           <div>
-            <h3 style={{ color: '#fff', fontWeight: 800, fontSize: '1.15rem', margin: 0 }}>
+            <h3 style={{ color: '#0E0F0C', fontWeight: 700, fontSize: '1.2rem', margin: 0, fontFamily: "'Bricolage Grotesque', sans-serif" }}>
               {user.displayName || '—'}
               {user.isBanned && (
-                <span style={{ marginLeft: '0.5rem', fontSize: '0.65rem', color: '#f87171', background: 'rgba(239,68,68,0.1)', padding: '2px 8px', borderRadius: '1rem', border: '1px solid rgba(239,68,68,0.2)' }}>
+                <span style={{ marginLeft: '0.5rem', fontSize: '0.68rem', color: '#DC2626', background: '#FEF2F2', padding: '2px 8px', borderRadius: '1rem', border: '1px solid #FECACA', fontWeight: 700 }}>
                   BANNED
                 </span>
               )}
               {user.role === 'admin' && (
-                <span style={{ marginLeft: '0.5rem', fontSize: '0.65rem', color: '#a78bfa', background: 'rgba(139,92,246,0.1)', padding: '2px 8px', borderRadius: '1rem', border: '1px solid rgba(139,92,246,0.2)' }}>
+                <span style={{ marginLeft: '0.5rem', fontSize: '0.68rem', color: '#7C3AED', background: '#F5F3FF', padding: '2px 8px', borderRadius: '1rem', border: '1px solid #DDD6FE', fontWeight: 700 }}>
                   ADMIN
                 </span>
               )}
               {(user.fraudStatus && user.fraudStatus !== 'clean') && (
                 <span style={{
-                  marginLeft: '0.5rem', fontSize: '0.65rem',
-                  color: user.fraudStatus === 'blocked' ? '#f87171' : user.fraudStatus === 'flagged' ? '#fb923c' : '#fbbf24',
-                  background: user.fraudStatus === 'blocked' ? 'rgba(239,68,68,0.1)' : user.fraudStatus === 'flagged' ? 'rgba(251,146,60,0.1)' : 'rgba(251,191,36,0.1)',
+                  marginLeft: '0.5rem', fontSize: '0.68rem', fontWeight: 700,
+                  color: user.fraudStatus === 'blocked' ? '#DC2626' : user.fraudStatus === 'flagged' ? '#EA580C' : '#D97706',
+                  background: user.fraudStatus === 'blocked' ? '#FEF2F2' : user.fraudStatus === 'flagged' ? '#FFF7ED' : '#FFFBEB',
                   padding: '2px 8px', borderRadius: '1rem',
-                  border: `1px solid ${user.fraudStatus === 'blocked' ? 'rgba(239,68,68,0.2)' : user.fraudStatus === 'flagged' ? 'rgba(251,146,60,0.2)' : 'rgba(251,191,36,0.2)'}`,
+                  border: `1px solid ${user.fraudStatus === 'blocked' ? '#FECACA' : user.fraudStatus === 'flagged' ? '#FFEDD5' : '#FDE68A'}`,
                 }}>
                   {user.fraudStatus === 'blocked' ? '🚫 BLOCKED' : user.fraudStatus === 'flagged' ? '⚠️ FLAGGED' : '👀 SUSPICIOUS'}
                 </span>
               )}
             </h3>
-            <p style={{ color: '#64748b', fontSize: '0.82rem', margin: '2px 0 0' }}>{user.email}</p>
+            <p style={{ color: '#6B7280', fontSize: '0.85rem', margin: '2px 0 0' }}>{user.email}</p>
           </div>
         </div>
 
         {/* Tabs */}
-        <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1.5rem', background: '#080b14', padding: '4px', borderRadius: '0.75rem', border: '1px solid rgba(255,255,255,0.05)' }}>
+        <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1.5rem', background: '#F3F4F6', padding: '4px', borderRadius: '0.75rem', border: '1px solid #E5E7EB' }}>
           {[
             { key: 'overview', label: 'Overview', icon: FiUser },
             { key: 'activity', label: 'Activity', icon: FiActivity },
@@ -167,13 +166,13 @@ const UserDetailModal = ({ user, onClose, currentUser }) => {
               onClick={() => setTab(key)}
               style={{
                 flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem',
-                padding: '0.5rem 1rem', borderRadius: '0.5rem', fontSize: '0.82rem', fontWeight: 600,
+                padding: '0.5rem 1rem', borderRadius: '0.5rem', fontSize: '0.85rem', fontWeight: 600,
                 cursor: 'pointer', border: 'none', transition: 'all 0.15s',
-                background: tab === key ? 'rgba(99,102,241,0.15)' : 'none',
-                color: tab === key ? '#818cf8' : '#64748b',
+                background: tab === key ? '#1E2538' : 'none',
+                color: tab === key ? '#FFFFFF' : '#6B7280',
               }}
             >
-              <Icon size={13} /> {label}
+              <Icon size={14} /> {label}
             </button>
           ))}
         </div>
@@ -182,47 +181,47 @@ const UserDetailModal = ({ user, onClose, currentUser }) => {
         {tab === 'overview' && (
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
             {[
-              { label: 'Wallet Balance', value: <CoinDisplay amount={user.walletBalance || 0} size={14} compact={false} />, color: '#818cf8' },
-              { label: 'Total Earned', value: <CoinDisplay amount={user.totalEarned || 0} size={14} compact={false} />, color: '#34d399' },
-              { label: 'Referral Earnings', value: <CoinDisplay amount={user.commissionGenerated || 0} size={14} compact={false} />, color: '#22d3ee' },
-              { label: 'Daily Streak', value: `${user.dailyBonusStreak || 0} days`, color: '#fb923c' },
-              { label: 'Fraud Flag', value: user.fraudFlag || 0, color: user.fraudFlag > 0 ? '#f87171' : '#475569' },
-              { label: 'Fraud Status', value: (user.fraudStatus || 'clean').toUpperCase(), color: user.fraudStatus === 'blocked' ? '#f87171' : user.fraudStatus === 'flagged' ? '#fb923c' : user.fraudStatus === 'suspicious' ? '#fbbf24' : '#34d399' },
-              { label: 'Last IP', value: user.lastIp || '—', color: '#94a3b8' },
-              { label: 'Last Country', value: user.lastCountry || '—', color: '#94a3b8' },
-              { label: 'Referral %', value: user.referralPercentage !== null && user.referralPercentage !== undefined ? `${user.referralPercentage}% (override)` : 'Global default', color: '#94a3b8' },
-              { label: 'Referred By', value: user.referredBy ? `Yes (tracked)` : 'Organic', color: '#94a3b8' },
-              { label: 'Joined', value: user.createdAt ? new Date(user.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '—', color: '#94a3b8' },
-              { label: 'Private Profile', value: user.isPrivate ? 'Yes' : 'No', color: '#94a3b8' },
+              { label: 'Wallet Balance', value: <CoinDisplay amount={user.walletBalance || 0} size={15} compact={false} />, color: '#1E2538' },
+              { label: 'Total Earned', value: <CoinDisplay amount={user.totalEarned || 0} size={15} compact={false} />, color: '#059669' },
+              { label: 'Referral Earnings', value: <CoinDisplay amount={user.commissionGenerated || 0} size={15} compact={false} />, color: '#0284C7' },
+              { label: 'Daily Streak', value: `${user.dailyBonusStreak || 0} days`, color: '#D97706' },
+              { label: 'Fraud Flag', value: user.fraudFlag || 0, color: user.fraudFlag > 0 ? '#DC2626' : '#6B7280' },
+              { label: 'Fraud Status', value: (user.fraudStatus || 'clean').toUpperCase(), color: user.fraudStatus === 'blocked' ? '#DC2626' : user.fraudStatus === 'flagged' ? '#EA580C' : user.fraudStatus === 'suspicious' ? '#D97706' : '#059669' },
+              { label: 'Last IP', value: user.lastIp || '—', color: '#374151' },
+              { label: 'Last Country', value: user.lastCountry || '—', color: '#374151' },
+              { label: 'Referral %', value: user.referralPercentage !== null && user.referralPercentage !== undefined ? `${user.referralPercentage}% (override)` : 'Global default', color: '#374151' },
+              { label: 'Referred By', value: user.referredBy ? `Yes (tracked)` : 'Organic', color: '#374151' },
+              { label: 'Joined', value: user.createdAt ? new Date(user.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '—', color: '#374151' },
+              { label: 'Private Profile', value: user.isPrivate ? 'Yes' : 'No', color: '#374151' },
             ].map(({ label, value, color }) => (
               <div
                 key={label}
                 style={{
-                  background: '#151d2e',
-                  border: '1px solid rgba(255,255,255,0.06)',
+                  background: '#F9FAFB',
+                  border: '1px solid #E5E7EB',
                   borderRadius: '0.875rem',
                   padding: '0.875rem 1rem',
                 }}
               >
-                <p style={{ fontSize: '0.67rem', fontWeight: 700, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.05em', margin: '0 0 4px' }}>{label}</p>
-                <p style={{ fontSize: '0.95rem', fontWeight: 700, color, margin: 0, fontFamily: "'Barlow', system-ui, sans-serif", fontFeatureSettings: "'zero' 0", fontVariantNumeric: 'normal' }}>{value}</p>
+                <p style={{ fontSize: '0.7rem', fontWeight: 600, color: '#6B7280', textTransform: 'uppercase', letterSpacing: '0.05em', margin: '0 0 4px' }}>{label}</p>
+                <div style={{ fontSize: '0.95rem', fontWeight: 700, color, margin: 0, fontFamily: "'Bricolage Grotesque', sans-serif" }}>{value}</div>
               </div>
             ))}
 
             {/* User ID row — full width */}
-            <div style={{ gridColumn: '1 / -1', background: '#151d2e', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '0.875rem', padding: '0.875rem 1rem' }}>
-              <p style={{ fontSize: '0.67rem', fontWeight: 700, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.05em', margin: '0 0 4px' }}>User ID (MongoDB)</p>
-              <p style={{ fontSize: '0.78rem', fontFamily: "'Barlow', system-ui, sans-serif", fontFeatureSettings: "'zero' 0", color: '#64748b', margin: 0 }}>{user._id}</p>
+            <div style={{ gridColumn: '1 / -1', background: '#F9FAFB', border: '1px solid #E5E7EB', borderRadius: '0.875rem', padding: '0.875rem 1rem' }}>
+              <p style={{ fontSize: '0.7rem', fontWeight: 600, color: '#6B7280', textTransform: 'uppercase', letterSpacing: '0.05em', margin: '0 0 4px' }}>User ID (MongoDB)</p>
+              <p style={{ fontSize: '0.82rem', fontFamily: "'Barlow', system-ui, sans-serif", color: '#374151', margin: 0 }}>{user._id}</p>
             </div>
-            <div style={{ gridColumn: '1 / -1', background: '#151d2e', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '0.875rem', padding: '0.875rem 1rem' }}>
-              <p style={{ fontSize: '0.67rem', fontWeight: 700, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.05em', margin: '0 0 4px' }}>Firebase UID</p>
-              <p style={{ fontSize: '0.78rem', fontFamily: "'Barlow', system-ui, sans-serif", fontFeatureSettings: "'zero' 0", color: '#64748b', margin: 0 }}>{user.firebaseUid}</p>
+            <div style={{ gridColumn: '1 / -1', background: '#F9FAFB', border: '1px solid #E5E7EB', borderRadius: '0.875rem', padding: '0.875rem 1rem' }}>
+              <p style={{ fontSize: '0.7rem', fontWeight: 600, color: '#6B7280', textTransform: 'uppercase', letterSpacing: '0.05em', margin: '0 0 4px' }}>Firebase UID</p>
+              <p style={{ fontSize: '0.82rem', fontFamily: "'Barlow', system-ui, sans-serif", color: '#374151', margin: 0 }}>{user.firebaseUid}</p>
             </div>
 
             {/* Referral link */}
-            <div style={{ gridColumn: '1 / -1', background: 'rgba(34,211,238,0.05)', border: '1px solid rgba(34,211,238,0.15)', borderRadius: '0.875rem', padding: '0.875rem 1rem' }}>
-              <p style={{ fontSize: '0.67rem', fontWeight: 700, color: '#22d3ee', textTransform: 'uppercase', letterSpacing: '0.05em', margin: '0 0 4px' }}>User's Referral Link</p>
-              <p style={{ fontSize: '0.78rem', fontFamily: "'Barlow', system-ui, sans-serif", fontFeatureSettings: "'zero' 0", color: '#94a3b8', margin: 0, wordBreak: 'break-all' }}>
+            <div style={{ gridColumn: '1 / -1', background: '#F0FDF4', border: '1px solid #BBF7D0', borderRadius: '0.875rem', padding: '0.875rem 1rem' }}>
+              <p style={{ fontSize: '0.7rem', fontWeight: 700, color: '#059669', textTransform: 'uppercase', letterSpacing: '0.05em', margin: '0 0 4px' }}>User's Referral Link</p>
+              <p style={{ fontSize: '0.82rem', fontFamily: "'Barlow', system-ui, sans-serif", color: '#047857', margin: 0, wordBreak: 'break-all' }}>
                 {window.location.origin}/?ref={user._id}
               </p>
             </div>
@@ -234,16 +233,16 @@ const UserDetailModal = ({ user, onClose, currentUser }) => {
           <div>
             {loadingTx ? (
               <div style={{ display: 'flex', justifyContent: 'center', padding: '3rem' }}>
-                <FiLoader style={{ animation: 'spin 1s linear infinite', fontSize: 24, color: '#6366f1' }} />
+                <FiLoader style={{ animation: 'spin 1s linear infinite', fontSize: 24, color: '#1E2538' }} />
               </div>
             ) : transactions.length === 0 ? (
-              <div style={{ textAlign: 'center', padding: '3rem', color: '#475569' }}>
-                <FiActivity size={32} style={{ marginBottom: '0.75rem', opacity: 0.4 }} />
-                <p>No transaction history found.</p>
+              <div style={{ textAlign: 'center', padding: '3rem', color: '#9CA3AF' }}>
+                <FiActivity size={32} style={{ marginBottom: '0.75rem', opacity: 0.4, margin: '0 auto' }} />
+                <p className="text-sm font-medium">No transaction history found.</p>
               </div>
             ) : (
               <div>
-                <p style={{ fontSize: '0.75rem', color: '#475569', marginBottom: '0.75rem' }}>
+                <p style={{ fontSize: '0.78rem', color: '#6B7280', marginBottom: '0.75rem', fontWeight: 500 }}>
                   Showing latest {transactions.length} transactions
                 </p>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
@@ -252,32 +251,32 @@ const UserDetailModal = ({ user, onClose, currentUser }) => {
                       key={tx._id}
                       style={{
                         display: 'flex', alignItems: 'center', gap: '0.75rem',
-                        background: '#151d2e', border: '1px solid rgba(255,255,255,0.05)',
-                        borderRadius: '0.75rem', padding: '0.6rem 0.875rem',
+                        background: '#F9FAFB', border: '1px solid #E5E7EB',
+                        borderRadius: '0.75rem', padding: '0.65rem 0.95rem',
                       }}
                     >
                       <div style={{ width: 8, height: 8, borderRadius: '50%', background: txTypeColor(tx.transactionType), flexShrink: 0 }} />
                       <div style={{ flex: 1, minWidth: 0 }}>
-                        <p style={{ fontSize: '0.8rem', color: '#cbd5e1', fontWeight: 500, margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        <p style={{ fontSize: '0.85rem', color: '#0E0F0C', fontWeight: 600, margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                           {tx.description || tx.transactionType}
                         </p>
                         <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', marginTop: 2 }}>
-                          <span style={{ fontSize: '0.65rem', fontWeight: 700, color: txTypeColor(tx.transactionType), textTransform: 'uppercase' }}>
+                          <span style={{ fontSize: '0.68rem', fontWeight: 700, color: txTypeColor(tx.transactionType), textTransform: 'uppercase' }}>
                             {tx.transactionType?.replace(/_/g, ' ')}
                           </span>
-                          <span style={{ fontSize: '0.65rem', color: '#475569' }}>
+                          <span style={{ fontSize: '0.68rem', color: '#6B7280' }}>
                             {tx.createdAt ? new Date(tx.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : ''}
                           </span>
                           {tx.status !== 'completed' && (
-                            <span style={{ fontSize: '0.65rem', color: tx.status === 'pending' ? '#fbbf24' : '#f87171', fontWeight: 600 }}>
+                            <span style={{ fontSize: '0.68rem', color: tx.status === 'pending' ? '#D97706' : '#DC2626', fontWeight: 700 }}>
                               · {tx.status}
                             </span>
                           )}
                         </div>
                       </div>
                       <span style={{
-                        fontSize: '0.85rem', fontWeight: 700, fontFamily: "'Barlow', system-ui, sans-serif", fontFeatureSettings: "'zero' 0", fontVariantNumeric: 'normal', flexShrink: 0,
-                        color: tx.amount < 0 ? '#f87171' : '#34d399',
+                        fontSize: '0.9rem', fontWeight: 700, fontFamily: "'Bricolage Grotesque', sans-serif", flexShrink: 0,
+                        color: tx.amount < 0 ? '#DC2626' : '#059669',
                       }}>
                         {tx.amount > 0 ? '+' : ''}{tx.amount?.toLocaleString()}
                       </span>
@@ -293,18 +292,18 @@ const UserDetailModal = ({ user, onClose, currentUser }) => {
         {tab === 'fraud' && (
           <div>
             {/* Fraud Status Manager */}
-            <div style={{ background: '#151d2e', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '0.875rem', padding: '1rem', marginBottom: '1rem' }}>
-              <p style={{ fontSize: '0.67rem', fontWeight: 700, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.05em', margin: '0 0 8px' }}>
-                <FiShield size={11} style={{ marginRight: 4, verticalAlign: 'middle' }} /> Fraud Status
+            <div style={{ background: '#F9FAFB', border: '1px solid #E5E7EB', borderRadius: '0.875rem', padding: '1rem', marginBottom: '1rem' }}>
+              <p style={{ fontSize: '0.7rem', fontWeight: 700, color: '#6B7280', textTransform: 'uppercase', letterSpacing: '0.05em', margin: '0 0 8px' }}>
+                <FiShield size={12} style={{ marginRight: 4, verticalAlign: 'middle' }} /> Fraud Status
               </p>
               <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
                 <select
                   value={fraudStatusSelect}
                   onChange={(e) => setFraudStatusSelect(e.target.value)}
                   style={{
-                    flex: 1, background: '#0b101e', border: '1px solid rgba(255,255,255,0.1)',
-                    borderRadius: '0.5rem', color: '#cbd5e1', padding: '0.5rem 0.75rem',
-                    fontSize: '0.85rem', outline: 'none',
+                    flex: 1, background: '#FFFFFF', border: '1px solid #D1D5DB',
+                    borderRadius: '0.5rem', color: '#0E0F0C', padding: '0.55rem 0.75rem',
+                    fontSize: '0.875rem', outline: 'none',
                   }}
                 >
                   <option value="clean">✅ Clean</option>
@@ -318,25 +317,26 @@ const UserDetailModal = ({ user, onClose, currentUser }) => {
                   disabled={savingFraud || fraudStatusSelect === (user.fraudStatus || 'clean')}
                   style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', whiteSpace: 'nowrap' }}
                 >
-                  {savingFraud ? <FiLoader style={{ animation: 'spin 1s linear infinite' }} /> : <FiCheck size={12} />}
+                  {savingFraud ? <FiLoader style={{ animation: 'spin 1s linear infinite' }} /> : <FiCheck size={14} />}
                   Save
                 </button>
               </div>
             </div>
 
             {/* IP History */}
-            <div style={{ background: '#151d2e', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '0.875rem', padding: '1rem', marginBottom: '1rem' }}>
-              <p style={{ fontSize: '0.67rem', fontWeight: 700, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.05em', margin: '0 0 8px' }}>
+            <div style={{ background: '#F9FAFB', border: '1px solid #E5E7EB', borderRadius: '0.875rem', padding: '1rem', marginBottom: '1rem' }}>
+              <p style={{ fontSize: '0.7rem', fontWeight: 700, color: '#6B7280', textTransform: 'uppercase', letterSpacing: '0.05em', margin: '0 0 8px' }}>
                 IP History ({(user.ipHistory || []).length})
               </p>
               {(user.ipHistory && user.ipHistory.length > 0) ? (
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem' }}>
                   {user.ipHistory.map((ip, i) => (
                     <span key={i} style={{
-                      fontSize: '0.72rem', color: ip === user.lastIp ? '#818cf8' : '#64748b',
-                      background: ip === user.lastIp ? 'rgba(99,102,241,0.1)' : '#0b101e',
-                      padding: '3px 8px', borderRadius: '0.5rem',
-                      border: `1px solid ${ip === user.lastIp ? 'rgba(99,102,241,0.3)' : 'rgba(255,255,255,0.05)'}`,
+                      fontSize: '0.75rem', color: ip === user.lastIp ? '#1E2538' : '#6B7280',
+                      background: ip === user.lastIp ? '#EFF6FF' : '#FFFFFF',
+                      padding: '4px 10px', borderRadius: '0.5rem',
+                      border: `1px solid ${ip === user.lastIp ? '#BFDBFE' : '#E5E7EB'}`,
+                      fontWeight: ip === user.lastIp ? 700 : 500,
                       fontFamily: "'Barlow', system-ui, sans-serif",
                     }}>
                       {ip} {ip === user.lastIp && '(current)'}
@@ -344,39 +344,39 @@ const UserDetailModal = ({ user, onClose, currentUser }) => {
                   ))}
                 </div>
               ) : (
-                <p style={{ fontSize: '0.8rem', color: '#475569', margin: 0 }}>No IP history recorded yet.</p>
+                <p style={{ fontSize: '0.85rem', color: '#9CA3AF', margin: 0 }}>No IP history recorded yet.</p>
               )}
             </div>
 
             {/* Linked Accounts */}
-            <div style={{ background: '#151d2e', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '0.875rem', padding: '1rem' }}>
-              <p style={{ fontSize: '0.67rem', fontWeight: 700, color: '#fb923c', textTransform: 'uppercase', letterSpacing: '0.05em', margin: '0 0 8px' }}>
-                <FiAlertTriangle size={11} style={{ marginRight: 4, verticalAlign: 'middle' }} /> Linked Accounts
+            <div style={{ background: '#F9FAFB', border: '1px solid #E5E7EB', borderRadius: '0.875rem', padding: '1rem' }}>
+              <p style={{ fontSize: '0.7rem', fontWeight: 700, color: '#D97706', textTransform: 'uppercase', letterSpacing: '0.05em', margin: '0 0 8px' }}>
+                <FiAlertTriangle size={12} style={{ marginRight: 4, verticalAlign: 'middle' }} /> Linked Accounts
               </p>
               {loadingLinked ? (
                 <div style={{ display: 'flex', justifyContent: 'center', padding: '1.5rem' }}>
-                  <FiLoader style={{ animation: 'spin 1s linear infinite', fontSize: 20, color: '#6366f1' }} />
+                  <FiLoader style={{ animation: 'spin 1s linear infinite', fontSize: 20, color: '#1E2538' }} />
                 </div>
               ) : linkedAccounts.length === 0 ? (
-                <p style={{ fontSize: '0.8rem', color: '#34d399', margin: 0 }}>✅ No linked accounts detected.</p>
+                <p style={{ fontSize: '0.85rem', color: '#059669', margin: 0, fontWeight: 500 }}>✅ No linked accounts detected.</p>
               ) : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
                   {linkedAccounts.map(acc => (
                     <div key={acc._id} style={{
-                      background: '#0b101e', border: '1px solid rgba(251,146,60,0.15)',
+                      background: '#FFFFFF', border: '1px solid #FED7AA',
                       borderRadius: '0.75rem', padding: '0.75rem',
                     }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.4rem' }}>
                         <div>
-                          <span style={{ color: '#cbd5e1', fontWeight: 600, fontSize: '0.85rem' }}>{acc.displayName || '—'}</span>
-                          <span style={{ color: '#475569', fontSize: '0.75rem', marginLeft: '0.5rem' }}>{acc.email}</span>
+                          <span style={{ color: '#0E0F0C', fontWeight: 600, fontSize: '0.875rem' }}>{acc.displayName || '—'}</span>
+                          <span style={{ color: '#6B7280', fontSize: '0.75rem', marginLeft: '0.5rem' }}>{acc.email}</span>
                         </div>
                         {acc.fraudStatus && acc.fraudStatus !== 'clean' && (
                           <span style={{
-                            fontSize: '0.6rem', fontWeight: 600,
-                            color: acc.fraudStatus === 'blocked' ? '#f87171' : '#fb923c',
-                            background: acc.fraudStatus === 'blocked' ? 'rgba(239,68,68,0.1)' : 'rgba(251,146,60,0.1)',
-                            padding: '2px 6px', borderRadius: '0.5rem',
+                            fontSize: '0.65rem', fontWeight: 700,
+                            color: acc.fraudStatus === 'blocked' ? '#DC2626' : '#EA580C',
+                            background: acc.fraudStatus === 'blocked' ? '#FEF2F2' : '#FFF7ED',
+                            padding: '2px 7px', borderRadius: '0.5rem',
                           }}>
                             {acc.fraudStatus.toUpperCase()}
                           </span>
@@ -385,8 +385,9 @@ const UserDetailModal = ({ user, onClose, currentUser }) => {
                       <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.3rem' }}>
                         {(acc.matchReasons || []).map((reason, i) => (
                           <span key={i} style={{
-                            fontSize: '0.65rem', color: '#fb923c', background: 'rgba(251,146,60,0.08)',
-                            padding: '2px 6px', borderRadius: '0.4rem', border: '1px solid rgba(251,146,60,0.15)',
+                            fontSize: '0.68rem', color: '#D97706', background: '#FFFBEB',
+                            padding: '2px 7px', borderRadius: '0.4rem', border: '1px solid #FDE68A',
+                            fontWeight: 600
                           }}>
                             {reason}
                           </span>
@@ -491,7 +492,7 @@ const AdminUsers = () => {
         const sign = amount > 0 ? '+' : '';
         toast.success(
           <span style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
-            Balance adjusted: {sign}<CoinDisplay amount={amount} size={12} compact={false} />
+            Balance adjusted: {sign}<CoinDisplay amount={amount} size={14} compact={false} />
           </span>
         );
         fetchUsers();
@@ -549,12 +550,12 @@ const AdminUsers = () => {
   return (
     <div>
       <h1 className="admin-page-title">User Management</h1>
-      <p className="admin-page-sub">View, search and moderate platform users.</p>
+      <p className="admin-page-sub">View, search, inspect and moderate platform users.</p>
 
       {/* Search */}
       <div className="admin-search-bar">
         <div style={{ position: 'relative', flex: 1 }}>
-          <FiSearch style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', color: '#475569', fontSize: '14px' }} />
+          <FiSearch style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', color: '#9CA3AF', fontSize: '15px' }} />
           <input
             type="text"
             className="admin-input"
@@ -564,91 +565,104 @@ const AdminUsers = () => {
             onChange={(e) => setSearch(e.target.value)}
           />
         </div>
-        <button className="action-btn primary" onClick={fetchUsers}>
+        <button className="action-btn primary" onClick={fetchUsers} style={{ height: '42px', padding: '0 1.25rem' }}>
           Search
         </button>
       </div>
 
       {/* Table */}
-      <div className="admin-card">
-        <div className="admin-table-container">
-          <table className="admin-table">
-            <thead>
-              <tr>
-                <th>User ID</th>
-                <th>Name</th>
-                <th>Email</th>
-                <th>Role</th>
-                <th>Balance</th>
-                <th>Status</th>
-                <th>Actions</th>
+      <div className="admin-table-container">
+        <table className="admin-table">
+          <thead>
+            <tr>
+              <th style={{ whiteSpace: 'nowrap' }}>User ID</th>
+              <th>Name</th>
+              <th>Email</th>
+              <th>Role</th>
+              <th>Balance</th>
+              <th>Status</th>
+              <th style={{ textAlign: 'right', paddingRight: '1.25rem', whiteSpace: 'nowrap' }}>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {loading ? (
+              <tr className="loading-row">
+                <td colSpan="7">Loading users...</td>
               </tr>
-            </thead>
-            <tbody>
-              {loading ? (
-                <tr className="loading-row">
-                  <td colSpan="7">Loading users...</td>
-                </tr>
-              ) : users.length === 0 ? (
-                <tr className="loading-row">
-                  <td colSpan="7">No users found.</td>
-                </tr>
-              ) : users.map(u => (
-                <tr key={u._id}>
-                  <td>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                      <span style={{ fontSize: '0.75rem', color: '#475569', fontFamily: "'Barlow', system-ui, sans-serif", fontFeatureSettings: "'zero' 0" }}>
-                        {u._id.substring(0, 10)}...
-                      </span>
-                      <button
-                        onClick={() => copyToClipboard(u._id)}
-                        title="Copy ID"
-                        style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#6366f1', padding: 0 }}
-                      >
-                        <FiCopy size={12} />
-                      </button>
-                    </div>
-                  </td>
-                  <td style={{ color: '#cbd5e1', fontWeight: 500 }}>{u.displayName || '—'}</td>
-                  <td>{u.email}</td>
-                  <td>
-                    {u.role === 'admin'
-                      ? <span className="super-badge">{u.role}</span>
-                      : <span style={{ color: '#475569' }}>{u.role}</span>
-                    }
-                  </td>
-                  <td style={{ fontFamily: "'Barlow', system-ui, sans-serif", fontFeatureSettings: "'zero' 0", fontVariantNumeric: 'normal', color: '#818cf8' }}>{(u.walletBalance || 0).toLocaleString()}</td>
-                  <td>
-                    {u.isBanned
-                      ? <span style={{ color: '#f87171', fontSize: '0.75rem', fontWeight: 600 }}>● Banned</span>
-                      : <span style={{ color: '#34d399', fontSize: '0.75rem', fontWeight: 600 }}>● Active</span>
-                    }
-                  </td>
-                  <td>
-                    <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap' }}>
-                      {/* View Details */}
-                      <button
-                        className="action-btn"
-                        style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', color: '#818cf8', borderColor: 'rgba(99,102,241,0.3)' }}
-                        onClick={() => setDetailUser(u)}
-                      >
-                        <FiEye size={12} /> Details
-                      </button>
-                      <button className="action-btn" onClick={() => { setBalanceTarget(u); setBalanceAmount(''); setBalanceReason(''); setBalanceError(''); }}>Adjust Bal</button>
-                      <button className="action-btn" onClick={() => { setRefTarget(u); setRefAmount(u.referralPercentage !== null && u.referralPercentage !== undefined ? String(u.referralPercentage) : ''); setRefError(''); setReferredByCode(''); }}>Ref %</button>
-                      <button
-                        className={`action-btn ${u.isBanned ? 'success' : 'danger'}`}
-                        onClick={() => { setBanTarget(u); setBanReason(''); setBanError(''); }}
-                      >
-                        {u.isBanned ? 'Unban' : 'Ban'}
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+            ) : users.length === 0 ? (
+              <tr className="loading-row">
+                <td colSpan="7">No users found.</td>
+              </tr>
+            ) : users.map(u => (
+              <tr key={u._id}>
+                <td style={{ whiteSpace: 'nowrap' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <span style={{ fontSize: '0.78rem', color: '#6B7280', fontFamily: "'Barlow', system-ui, sans-serif" }}>
+                      {u._id.substring(0, 10)}...
+                    </span>
+                    <button
+                      onClick={() => copyToClipboard(u._id)}
+                      title="Copy ID"
+                      style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#1E2538', padding: 0 }}
+                    >
+                      <FiCopy size={13} />
+                    </button>
+                  </div>
+                </td>
+                <td style={{ color: '#0E0F0C', fontWeight: 600, whiteSpace: 'nowrap' }}>{u.displayName || '—'}</td>
+                <td style={{ color: '#4B5563', whiteSpace: 'nowrap' }}>{u.email}</td>
+                <td>
+                  {u.role === 'admin'
+                    ? <span className="super-badge">{u.role}</span>
+                    : <span style={{ color: '#6B7280', textTransform: 'capitalize' }}>{u.role}</span>
+                  }
+                </td>
+                <td style={{ fontFamily: "'Bricolage Grotesque', sans-serif", fontWeight: 700, color: '#1E2538', fontSize: '0.95rem', whiteSpace: 'nowrap' }}>
+                  {(u.walletBalance || 0).toLocaleString()}
+                </td>
+                <td style={{ whiteSpace: 'nowrap' }}>
+                  {u.isBanned
+                    ? <span style={{ color: '#DC2626', fontSize: '0.75rem', fontWeight: 700 }}>● Banned</span>
+                    : <span style={{ color: '#059669', fontSize: '0.75rem', fontWeight: 700 }}>● Active</span>
+                  }
+                </td>
+                <td style={{ textAlign: 'right', paddingRight: '1.25rem', whiteSpace: 'nowrap' }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '0.35rem', width: '185px', marginLeft: 'auto' }}>
+                    {/* View Details */}
+                    <button
+                      className="action-btn"
+                      style={{ padding: '0.35rem 0.5rem', fontSize: '0.74rem', fontWeight: 600, color: '#1E2538', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '0.3rem', width: '100%' }}
+                      onClick={() => setDetailUser(u)}
+                    >
+                      <FiEye size={12} /> Details
+                    </button>
+                    <button
+                      className="action-btn"
+                      style={{ padding: '0.35rem 0.5rem', fontSize: '0.74rem', width: '100%', justifyContent: 'center' }}
+                      onClick={() => { setBalanceTarget(u); setBalanceAmount(''); setBalanceReason(''); setBalanceError(''); }}
+                    >
+                      Adjust Bal
+                    </button>
+                    <button
+                      className="action-btn"
+                      style={{ padding: '0.35rem 0.5rem', fontSize: '0.74rem', width: '100%', justifyContent: 'center' }}
+                      onClick={() => { setRefTarget(u); setRefAmount(u.referralPercentage !== null && u.referralPercentage !== undefined ? String(u.referralPercentage) : ''); setRefError(''); setReferredByCode(''); }}
+                    >
+                      Ref %
+                    </button>
+                    <button
+                      className={`action-btn ${u.isBanned ? 'success' : 'danger'}`}
+                      style={{ padding: '0.35rem 0.5rem', fontSize: '0.74rem', width: '100%', justifyContent: 'center' }}
+                      onClick={() => { setBanTarget(u); setBanReason(''); setBanError(''); }}
+                    >
+                      {u.isBanned ? 'Unban' : 'Ban'}
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
 
       {/* ── User Detail Modal ───────────────── */}
@@ -666,17 +680,17 @@ const AdminUsers = () => {
           <div className="admin-modal">
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.25rem' }}>
               <h3>{banTarget.isBanned ? 'Unban User' : 'Ban User'}</h3>
-              <button onClick={() => setBanTarget(null)} style={{ background: 'none', border: 'none', color: '#64748b', cursor: 'pointer', padding: 0, fontSize: '18px' }}>
+              <button onClick={() => setBanTarget(null)} style={{ background: 'none', border: 'none', color: '#9CA3AF', cursor: 'pointer', padding: 0, fontSize: '18px' }}>
                 <FiX />
               </button>
             </div>
-            <p style={{ marginBottom: '1rem', color: '#94a3b8', fontSize: '0.9rem' }}>
-              User: <strong style={{ color: '#fff' }}>{banTarget.email}</strong>
+            <p style={{ marginBottom: '1rem', color: '#6B7280', fontSize: '0.9rem' }}>
+              User: <strong style={{ color: '#0E0F0C' }}>{banTarget.email}</strong>
             </p>
-            <label style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', fontSize: '0.75rem', color: '#94a3b8', marginBottom: '0.4rem' }}>
-              <FiMessageSquare size={12} />
+            <label style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', fontSize: '0.75rem', color: '#6B7280', marginBottom: '0.4rem', fontWeight: 600 }}>
+              <FiMessageSquare size={13} />
               {banTarget.isBanned ? 'Reason for unbanning' : 'Reason for ban'}
-              {!banTarget.isBanned && <span style={{ color: '#f87171' }}>*</span>}
+              {!banTarget.isBanned && <span style={{ color: '#DC2626' }}>*</span>}
             </label>
             <textarea
               value={banReason}
@@ -684,10 +698,10 @@ const AdminUsers = () => {
               placeholder={banTarget.isBanned
                 ? 'Reason for reinstating this user (optional)…'
                 : 'Why is this user being banned? (required)'}
-              style={{ borderColor: banError ? 'rgba(248,113,113,0.4)' : undefined }}
+              style={{ borderColor: banError ? '#DC2626' : undefined }}
             />
             {banError && (
-              <p style={{ color: '#f87171', fontSize: '0.8rem', marginTop: '-0.75rem', marginBottom: '1rem' }}>
+              <p style={{ color: '#DC2626', fontSize: '0.8rem', marginTop: '-0.75rem', marginBottom: '1rem', fontWeight: 500 }}>
                 {banError}
               </p>
             )}
@@ -699,57 +713,60 @@ const AdminUsers = () => {
                 disabled={actionLoading}
                 style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}
               >
-                {actionLoading ? <FiLoader style={{ animation: 'spin 1s linear infinite' }} /> : <FiCheck />}
-                Confirm {banTarget.isBanned ? 'Unban' : 'Ban'}
+                {actionLoading && <FiLoader style={{ animation: 'spin 1s linear infinite' }} />}
+                {banTarget.isBanned ? 'Confirm Unban' : 'Confirm Ban'}
               </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* ── Adjust Balance Modal ─────────────────────── */}
+      {/* ── Balance Adjustment Modal ────────────── */}
       {balanceTarget && (
         <div className="admin-modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) setBalanceTarget(null); }}>
           <div className="admin-modal">
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.25rem' }}>
               <h3>Adjust Balance</h3>
-              <button onClick={() => setBalanceTarget(null)} style={{ background: 'none', border: 'none', color: '#64748b', cursor: 'pointer', padding: 0, fontSize: '18px' }}>
+              <button onClick={() => setBalanceTarget(null)} style={{ background: 'none', border: 'none', color: '#9CA3AF', cursor: 'pointer', padding: 0, fontSize: '18px' }}>
                 <FiX />
               </button>
             </div>
-            <p style={{ marginBottom: '1rem', color: '#94a3b8', fontSize: '0.9rem' }}>
-              User: <strong style={{ color: '#fff' }}>{balanceTarget.email}</strong>
-              <span style={{ marginLeft: '0.5rem', fontFamily: "'Barlow', system-ui, sans-serif", fontFeatureSettings: "'zero' 0", color: '#818cf8', display: 'inline-flex', alignItems: 'center', gap: '0.2rem' }}>
-                (<CoinDisplay amount={balanceTarget.walletBalance || 0} size={13} compact={false} />)
-              </span>
+            <p style={{ marginBottom: '0.5rem', color: '#6B7280', fontSize: '0.9rem' }}>
+              User: <strong style={{ color: '#0E0F0C' }}>{balanceTarget.email}</strong>
             </p>
-            <label style={{ display: 'block', fontSize: '0.75rem', color: '#94a3b8', marginBottom: '0.35rem' }}>
-              Amount <span style={{ color: '#f87171' }}>*</span>
-              <span style={{ color: '#475569', marginLeft: '0.4rem' }}>(use negative to deduct, e.g. -500)</span>
+            <p style={{ marginBottom: '1.25rem', color: '#6B7280', fontSize: '0.85rem' }}>
+              Current balance: <strong style={{ color: '#1E2538' }}>{(balanceTarget.walletBalance || 0).toLocaleString()} Coins</strong>
+            </p>
+
+            <label style={{ display: 'block', fontSize: '0.75rem', color: '#6B7280', marginBottom: '0.35rem', fontWeight: 600 }}>
+              Adjustment Amount (+ to add, - to deduct) <span style={{ color: '#DC2626' }}>*</span>
             </label>
             <input
               type="number"
               className="admin-input"
-              style={{ marginBottom: '0.85rem', width: '100%', boxSizing: 'border-box', borderColor: balanceError && !balanceAmount ? 'rgba(248,113,113,0.4)' : undefined }}
               value={balanceAmount}
               onChange={(e) => { setBalanceAmount(e.target.value); setBalanceError(''); }}
               placeholder="e.g. 500 or -200"
+              style={{ marginBottom: '1rem', width: '100%', borderColor: balanceError ? '#DC2626' : undefined }}
             />
-            <label style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', fontSize: '0.75rem', color: '#94a3b8', marginBottom: '0.4rem' }}>
-              <FiMessageSquare size={12} />
-              Reason / Context <span style={{ color: '#f87171' }}>*</span>
+
+            <label style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', fontSize: '0.75rem', color: '#6B7280', marginBottom: '0.35rem', fontWeight: 600 }}>
+              <FiMessageSquare size={13} />
+              Reason for Adjustment <span style={{ color: '#DC2626' }}>*</span>
             </label>
             <textarea
               value={balanceReason}
               onChange={(e) => { setBalanceReason(e.target.value); setBalanceError(''); }}
-              placeholder="Why is this balance being adjusted? (e.g. Bonus reward, correction, refund…)"
-              style={{ borderColor: balanceError && !balanceReason.trim() ? 'rgba(248,113,113,0.4)' : undefined }}
+              placeholder="e.g. Compensation for failed offerwall survey..."
+              style={{ borderColor: balanceError ? '#DC2626' : undefined }}
             />
+
             {balanceError && (
-              <p style={{ color: '#f87171', fontSize: '0.8rem', marginTop: '-0.75rem', marginBottom: '1rem' }}>
+              <p style={{ color: '#DC2626', fontSize: '0.8rem', marginTop: '-0.75rem', marginBottom: '1rem', fontWeight: 500 }}>
                 {balanceError}
               </p>
             )}
+
             <div className="admin-modal-actions">
               <button className="action-btn" onClick={() => setBalanceTarget(null)}>Cancel</button>
               <button
@@ -758,7 +775,7 @@ const AdminUsers = () => {
                 disabled={actionLoading}
                 style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}
               >
-                {actionLoading ? <FiLoader style={{ animation: 'spin 1s linear infinite' }} /> : <FiCheck />}
+                {actionLoading && <FiLoader style={{ animation: 'spin 1s linear infinite' }} />}
                 Apply Adjustment
               </button>
             </div>
@@ -766,62 +783,53 @@ const AdminUsers = () => {
         </div>
       )}
 
-      {/* ── Adjust Referral Percentage Modal ─────────────────────── */}
+      {/* ── Referral Settings Modal ─────────────── */}
       {refTarget && (
         <div className="admin-modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) setRefTarget(null); }}>
           <div className="admin-modal">
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.25rem' }}>
-              <h3>Referral Settings</h3>
-              <button onClick={() => setRefTarget(null)} style={{ background: 'none', border: 'none', color: '#64748b', cursor: 'pointer', padding: 0, fontSize: '18px' }}>
+              <h3>Referral Configuration</h3>
+              <button onClick={() => setRefTarget(null)} style={{ background: 'none', border: 'none', color: '#9CA3AF', cursor: 'pointer', padding: 0, fontSize: '18px' }}>
                 <FiX />
               </button>
             </div>
-            <p style={{ marginBottom: '1rem', color: '#94a3b8', fontSize: '0.9rem' }}>
-              User: <strong style={{ color: '#fff' }}>{refTarget.email}</strong>
+            <p style={{ marginBottom: '1.25rem', color: '#6B7280', fontSize: '0.9rem' }}>
+              User: <strong style={{ color: '#0E0F0C' }}>{refTarget.email}</strong>
             </p>
 
-            {/* Current referredBy info */}
-            <div style={{ marginBottom: '1rem', padding: '0.6rem 0.8rem', background: 'rgba(99,102,241,0.08)', border: '1px solid rgba(99,102,241,0.2)', borderRadius: '8px', fontSize: '0.78rem', color: '#94a3b8' }}>
-              <strong style={{ color: '#c7d2fe' }}>Current referredBy:</strong>{' '}
-              {refTarget.referredBy
-                ? <span style={{ color: '#6ee7b7', fontFamily: 'monospace' }}>{String(refTarget.referredBy)}</span>
-                : <span style={{ color: '#f87171' }}>None (not linked to any referrer)</span>
-              }
-            </div>
+            <label style={{ display: 'block', fontSize: '0.75rem', color: '#6B7280', marginBottom: '0.35rem', fontWeight: 600 }}>
+              Custom Referral Rate % (leave empty for global default)
+            </label>
+            <input
+              type="number"
+              min="0"
+              max="100"
+              step="0.5"
+              className="admin-input"
+              value={refAmount}
+              onChange={(e) => { setRefAmount(e.target.value); setRefError(''); }}
+              placeholder="e.g. 15 for 15%"
+              style={{ marginBottom: '1rem', width: '100%', borderColor: refError ? '#DC2626' : undefined }}
+            />
 
-            {/* Set referrer by code */}
-            <label style={{ display: 'block', fontSize: '0.75rem', color: '#94a3b8', marginBottom: '0.35rem' }}>
-              Link to Referrer (enter their Referral Code)
-              <span style={{ color: '#475569', marginLeft: '0.4rem' }}>(leave empty to skip)</span>
+            <label style={{ display: 'block', fontSize: '0.75rem', color: '#6B7280', marginBottom: '0.35rem', fontWeight: 600 }}>
+              Link Referrer (Enter referrer's Referral Code / ID)
             </label>
             <input
               type="text"
               className="admin-input"
-              style={{ marginBottom: '0.85rem', width: '100%', boxSizing: 'border-box', textTransform: 'uppercase', letterSpacing: '0.05em' }}
               value={referredByCode}
-              onChange={(e) => { setReferredByCode(e.target.value.toUpperCase()); setRefError(''); }}
-              placeholder="e.g. AB12CD34"
+              onChange={(e) => { setReferredByCode(e.target.value); setRefError(''); }}
+              placeholder="Referral Code"
+              style={{ marginBottom: '1.25rem', width: '100%' }}
             />
 
-            <label style={{ display: 'block', fontSize: '0.75rem', color: '#94a3b8', marginBottom: '0.35rem' }}>
-              Override Referral %
-              <span style={{ color: '#475569', marginLeft: '0.4rem' }}>(leave empty to use global setting)</span>
-            </label>
-            <input
-              type="number"
-              className="admin-input"
-              style={{ marginBottom: '0.85rem', width: '100%', boxSizing: 'border-box', borderColor: refError ? 'rgba(248,113,113,0.4)' : undefined }}
-              value={refAmount}
-              onChange={(e) => { setRefAmount(e.target.value); setRefError(''); }}
-              placeholder="e.g. 10"
-              min={0}
-              max={100}
-            />
             {refError && (
-              <p style={{ color: '#f87171', fontSize: '0.8rem', marginTop: '-0.75rem', marginBottom: '1rem' }}>
+              <p style={{ color: '#DC2626', fontSize: '0.8rem', marginTop: '-0.75rem', marginBottom: '1rem', fontWeight: 500 }}>
                 {refError}
               </p>
             )}
+
             <div className="admin-modal-actions">
               <button className="action-btn" onClick={() => setRefTarget(null)}>Cancel</button>
               <button
@@ -830,8 +838,8 @@ const AdminUsers = () => {
                 disabled={actionLoading}
                 style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}
               >
-                {actionLoading ? <FiLoader style={{ animation: 'spin 1s linear infinite' }} /> : <FiCheck />}
-                Apply
+                {actionLoading && <FiLoader style={{ animation: 'spin 1s linear infinite' }} />}
+                Save Settings
               </button>
             </div>
           </div>

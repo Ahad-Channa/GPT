@@ -3,7 +3,7 @@ import io from 'socket.io-client';
 import { useAuth } from '../../contexts/AuthContext';
 import {
   FiMessageSquare, FiTrash2, FiRefreshCw, FiSearch,
-  FiUser, FiClock, FiAlertCircle, FiCheck
+  FiClock, FiAlertCircle, FiCheck
 } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 
@@ -131,13 +131,14 @@ const AdminChat = () => {
   const deletedCount = messages.filter((m) => m.isDeleted).length;
 
   return (
-    <div style={{ fontFamily: "'Barlow', sans-serif" }}>
+    <div>
       {/* Page Header */}
-      <div style={{ marginBottom: '2rem' }}>
-        <h1 style={{ fontSize: '1.5rem', fontWeight: 700, color: '#f1f5f9', margin: 0, letterSpacing: '-0.01em' }}>
+      <div style={{ marginBottom: '1.75rem' }}>
+        <h1 className="admin-page-title" style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+          <FiMessageSquare style={{ color: '#2563EB' }} />
           Chat Moderation
         </h1>
-        <p style={{ color: '#64748b', fontSize: '0.85rem', marginTop: '0.35rem' }}>
+        <p className="admin-page-sub">
           Monitor and moderate the live global chat room in real-time.
         </p>
       </div>
@@ -145,31 +146,32 @@ const AdminChat = () => {
       {/* Stats Row */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '1rem', marginBottom: '1.5rem' }}>
         {[
-          { label: 'Total Messages', value: messages.length, icon: FiMessageSquare, color: '#6366f1' },
-          { label: 'Active', value: activeCount, icon: FiCheck, color: '#10b981' },
-          { label: 'Deleted', value: deletedCount, icon: FiTrash2, color: '#ef4444' },
-          { label: 'New This Session', value: liveCount, icon: FiClock, color: '#f59e0b' },
-        ].map(({ label, value, icon: Icon, color }) => (
+          { label: 'Total Messages', value: messages.length, icon: FiMessageSquare, color: '#2563EB', bg: '#EFF6FF' },
+          { label: 'Active', value: activeCount, icon: FiCheck, color: '#059669', bg: '#ECFDF5' },
+          { label: 'Deleted', value: deletedCount, icon: FiTrash2, color: '#DC2626', bg: '#FEF2F2' },
+          { label: 'New This Session', value: liveCount, icon: FiClock, color: '#D97706', bg: '#FFFBEB' },
+        ].map(({ label, value, icon: Icon, color, bg }) => (
           <div key={label} style={{
-            background: 'rgba(255,255,255,0.03)',
-            border: '1px solid rgba(255,255,255,0.08)',
-            borderRadius: '10px',
-            padding: '1rem 1.25rem',
+            background: '#FFFFFF',
+            border: '1px solid #E5E7EB',
+            borderRadius: '16px',
+            padding: '1.1rem 1.25rem',
             display: 'flex',
             alignItems: 'center',
-            gap: '0.85rem'
+            gap: '0.85rem',
+            boxShadow: '0 1px 3px rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.02)'
           }}>
             <div style={{
-              width: 36, height: 36, borderRadius: 8,
-              background: `${color}20`,
-              border: `1px solid ${color}40`,
+              width: 40, height: 40, borderRadius: 12,
+              background: bg,
+              border: `1px solid ${color}30`,
               display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0
             }}>
-              <Icon style={{ color, fontSize: '1rem' }} />
+              <Icon style={{ color, fontSize: '1.1rem' }} />
             </div>
             <div>
-              <p style={{ fontSize: '1.35rem', fontWeight: 700, color: '#f1f5f9', margin: 0 }}>{value}</p>
-              <p style={{ fontSize: '0.72rem', color: '#64748b', margin: 0, textTransform: 'uppercase', letterSpacing: '0.05em' }}>{label}</p>
+              <p style={{ fontSize: '1.4rem', fontWeight: 700, color: '#0E0F0C', margin: 0, fontFamily: "'Bricolage Grotesque', sans-serif" }}>{value}</p>
+              <p style={{ fontSize: '0.72rem', color: '#6B7280', margin: 0, textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 600 }}>{label}</p>
             </div>
           </div>
         ))}
@@ -177,39 +179,34 @@ const AdminChat = () => {
 
       {/* Toolbar */}
       <div style={{
-        display: 'flex', gap: '0.75rem', flexWrap: 'wrap', marginBottom: '1rem',
+        display: 'flex', gap: '0.75rem', flexWrap: 'wrap', marginBottom: '1.25rem',
         alignItems: 'center'
       }}>
         {/* Search */}
-        <div style={{ position: 'relative', flex: '1 1 220px' }}>
-          <FiSearch style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: '#475569', fontSize: '0.85rem' }} />
+        <div style={{ position: 'relative', flex: '1 1 240px' }}>
+          <FiSearch style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: '#9CA3AF', fontSize: '0.9rem' }} />
           <input
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search messages or users..."
-            style={{
-              width: '100%', background: 'rgba(255,255,255,0.04)',
-              border: '1px solid rgba(255,255,255,0.08)', borderRadius: 8,
-              padding: '0.55rem 0.75rem 0.55rem 2.2rem',
-              color: '#e2e8f0', fontSize: '0.85rem', outline: 'none',
-              boxSizing: 'border-box'
-            }}
+            className="admin-input"
+            style={{ paddingLeft: '2.3rem' }}
           />
         </div>
 
         {/* Filter Tabs */}
-        <div style={{ display: 'flex', gap: '0.4rem', background: 'rgba(255,255,255,0.04)', borderRadius: 8, padding: '0.25rem' }}>
+        <div style={{ display: 'flex', gap: '0.35rem', background: '#F3F4F6', borderRadius: 12, padding: '0.25rem', border: '1px solid #E5E7EB' }}>
           {['all', 'active', 'deleted'].map((f) => (
             <button
               key={f}
               onClick={() => setFilter(f)}
               style={{
-                background: filter === f ? 'rgba(99,102,241,0.25)' : 'transparent',
-                border: filter === f ? '1px solid rgba(99,102,241,0.4)' : '1px solid transparent',
-                color: filter === f ? '#a5b4fc' : '#64748b',
-                borderRadius: 6, padding: '0.35rem 0.85rem',
-                fontSize: '0.78rem', fontWeight: filter === f ? 600 : 400,
+                background: filter === f ? '#1E2538' : 'transparent',
+                border: 'none',
+                color: filter === f ? '#FFFFFF' : '#4B5563',
+                borderRadius: 8, padding: '0.4rem 0.9rem',
+                fontSize: '0.78rem', fontWeight: filter === f ? 700 : 500,
                 cursor: 'pointer', textTransform: 'capitalize', transition: 'all 0.15s'
               }}
             >
@@ -222,19 +219,14 @@ const AdminChat = () => {
         <button
           onClick={fetchMessages}
           disabled={loading}
-          style={{
-            background: 'rgba(255,255,255,0.04)',
-            border: '1px solid rgba(255,255,255,0.08)',
-            borderRadius: 8, padding: '0.55rem 1rem',
-            color: '#94a3b8', cursor: loading ? 'wait' : 'pointer',
-            fontSize: '0.82rem', display: 'flex', alignItems: 'center', gap: '0.4rem', transition: 'all 0.15s'
-          }}
+          className="admin-btn-secondary"
+          style={{ padding: '0.55rem 1rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}
         >
           <FiRefreshCw style={{ fontSize: '0.85rem', animation: loading ? 'spin 1s linear infinite' : 'none' }} />
           Refresh
         </button>
 
-        {/* Clear Recent 30 Chat — moderators and admins */}
+        {/* Clear Recent 30 Chat */}
         <button
           onClick={async () => {
             if (!window.confirm('Delete the last 30 messages?')) return;
@@ -257,15 +249,13 @@ const AdminChat = () => {
             }
           }}
           style={{
-            background: 'rgba(245,158,11,0.1)',
-            border: '1px solid rgba(245,158,11,0.3)',
-            borderRadius: 8, padding: '0.55rem 1rem',
-            color: '#f59e0b', cursor: 'pointer',
+            background: '#FFFBEB',
+            border: '1px solid #FDE68A',
+            borderRadius: 10, padding: '0.55rem 1rem',
+            color: '#D97706', cursor: 'pointer',
             fontSize: '0.82rem', display: 'flex', alignItems: 'center', gap: '0.4rem',
             transition: 'all 0.15s', fontWeight: 600
           }}
-          onMouseEnter={e => e.currentTarget.style.background = 'rgba(245,158,11,0.2)'}
-          onMouseLeave={e => e.currentTarget.style.background = 'rgba(245,158,11,0.1)'}
           title="Delete the last 30 messages (useful for spam)"
         >
           <FiTrash2 style={{ fontSize: '0.85rem' }} />
@@ -277,15 +267,13 @@ const AdminChat = () => {
           <button
             onClick={handleClearAll}
             style={{
-              background: 'rgba(239,68,68,0.1)',
-              border: '1px solid rgba(239,68,68,0.3)',
-              borderRadius: 8, padding: '0.55rem 1rem',
-              color: '#f87171', cursor: 'pointer',
+              background: '#FEF2F2',
+              border: '1px solid #FECACA',
+              borderRadius: 10, padding: '0.55rem 1rem',
+              color: '#DC2626', cursor: 'pointer',
               fontSize: '0.82rem', display: 'flex', alignItems: 'center', gap: '0.4rem',
               transition: 'all 0.15s', fontWeight: 600
             }}
-            onMouseEnter={e => e.currentTarget.style.background = 'rgba(239,68,68,0.2)'}
-            onMouseLeave={e => e.currentTarget.style.background = 'rgba(239,68,68,0.1)'}
             title="Delete all active messages (emergency spam clear)"
           >
             <FiTrash2 style={{ fontSize: '0.85rem' }} />
@@ -295,26 +283,22 @@ const AdminChat = () => {
 
         {/* Live indicator */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginLeft: 'auto' }}>
-          <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#10b981', display: 'inline-block', animation: 'pulse 2s ease-in-out infinite' }} />
-          <span style={{ fontSize: '0.75rem', color: '#10b981', fontWeight: 600 }}>LIVE</span>
+          <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#10B981', display: 'inline-block', animation: 'pulse 2s ease-in-out infinite' }} />
+          <span style={{ fontSize: '0.75rem', color: '#059669', fontWeight: 700 }}>LIVE</span>
         </div>
       </div>
 
       {/* Messages Table */}
-      <div style={{
-        background: 'rgba(255,255,255,0.025)',
-        border: '1px solid rgba(255,255,255,0.08)',
-        borderRadius: 12, overflow: 'hidden'
-      }}>
+      <div className="admin-table-container">
         {/* Table Header */}
         <div style={{
           display: 'grid',
           gridTemplateColumns: '44px 1fr 160px 130px 90px 64px',
-          padding: '0.65rem 1.25rem',
-          background: 'rgba(255,255,255,0.03)',
-          borderBottom: '1px solid rgba(255,255,255,0.06)',
+          padding: '0.75rem 1.25rem',
+          background: '#F9FAFB',
+          borderBottom: '1px solid #E5E7EB',
           fontSize: '0.7rem', fontWeight: 700,
-          color: '#475569', textTransform: 'uppercase', letterSpacing: '0.07em',
+          color: '#6B7280', textTransform: 'uppercase', letterSpacing: '0.07em',
           gap: '0.75rem', alignItems: 'center'
         }}>
           <div>#</div>
@@ -327,12 +311,12 @@ const AdminChat = () => {
 
         {/* Rows */}
         {loading ? (
-          <div style={{ padding: '3rem', textAlign: 'center', color: '#475569' }}>
+          <div style={{ padding: '3rem', textAlign: 'center', color: '#6B7280' }}>
             <FiRefreshCw style={{ fontSize: '1.5rem', animation: 'spin 1s linear infinite', marginBottom: '0.75rem' }} />
             <p style={{ margin: 0, fontSize: '0.85rem' }}>Loading messages...</p>
           </div>
         ) : filtered.length === 0 ? (
-          <div style={{ padding: '3rem', textAlign: 'center', color: '#475569' }}>
+          <div style={{ padding: '3rem', textAlign: 'center', color: '#6B7280' }}>
             <FiAlertCircle style={{ fontSize: '1.5rem', marginBottom: '0.75rem', display: 'block', margin: '0 auto 0.75rem' }} />
             <p style={{ margin: 0, fontSize: '0.85rem' }}>No messages found</p>
           </div>
@@ -343,22 +327,22 @@ const AdminChat = () => {
               style={{
                 display: 'grid',
                 gridTemplateColumns: '44px 1fr 160px 130px 90px 64px',
-                padding: '0.75rem 1.25rem',
-                borderBottom: '1px solid rgba(255,255,255,0.04)',
+                padding: '0.85rem 1.25rem',
+                borderBottom: '1px solid #F3F4F6',
                 gap: '0.75rem', alignItems: 'center',
-                opacity: msg.isDeleted ? 0.5 : 1,
-                background: msg.isDeleted ? 'rgba(239,68,68,0.04)' : 'transparent',
+                opacity: msg.isDeleted ? 0.6 : 1,
+                background: msg.isDeleted ? '#FEF2F2' : '#FFFFFF',
                 transition: 'background 0.15s'
               }}
             >
               {/* Index */}
-              <div style={{ fontSize: '0.72rem', color: '#334155', fontVariantNumeric: 'tabular-nums' }}>
+              <div style={{ fontSize: '0.75rem', color: '#9CA3AF', fontVariantNumeric: 'tabular-nums', fontWeight: 500 }}>
                 {idx + 1}
               </div>
 
               {/* Message */}
               <div style={{
-                fontSize: '0.85rem', color: msg.isDeleted ? '#475569' : '#cbd5e1',
+                fontSize: '0.85rem', color: msg.isDeleted ? '#DC2626' : '#1F2937',
                 fontStyle: msg.isDeleted ? 'italic' : 'normal',
                 overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap'
               }}>
@@ -368,8 +352,8 @@ const AdminChat = () => {
               {/* User */}
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', overflow: 'hidden' }}>
                 <div style={{
-                  width: 26, height: 26, borderRadius: '50%', overflow: 'hidden',
-                  background: '#1e293b', border: '1px solid rgba(255,255,255,0.08)', flexShrink: 0
+                  width: 28, height: 28, borderRadius: '50%', overflow: 'hidden',
+                  background: '#F3F4F6', border: '1px solid #E5E7EB', flexShrink: 0
                 }}>
                   <img
                     src={msg.user?.avatarUrl || '/avatars/avatar1.png'}
@@ -378,13 +362,13 @@ const AdminChat = () => {
                   />
                 </div>
                 <div style={{ overflow: 'hidden' }}>
-                  <p style={{ margin: 0, fontSize: '0.8rem', color: '#e2e8f0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  <p style={{ margin: 0, fontSize: '0.82rem', color: '#0E0F0C', fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                     {msg.user?.displayName || 'Unknown'}
                   </p>
                   {msg.user?.role && msg.user.role !== 'user' && (
                     <span style={{
                       fontSize: '0.65rem',
-                      color: msg.user.role === 'admin' ? '#fbbf24' : '#38bdf8',
+                      color: msg.user.role === 'admin' ? '#D97706' : '#2563EB',
                       textTransform: 'uppercase', fontWeight: 700
                     }}>
                       {msg.user.role}
@@ -394,7 +378,7 @@ const AdminChat = () => {
               </div>
 
               {/* Sent At */}
-              <div style={{ fontSize: '0.75rem', color: '#475569', fontVariantNumeric: 'tabular-nums' }}>
+              <div style={{ fontSize: '0.75rem', color: '#6B7280', fontVariantNumeric: 'tabular-nums' }}>
                 {new Date(msg.createdAt).toLocaleString([], {
                   month: 'short', day: 'numeric',
                   hour: '2-digit', minute: '2-digit'
@@ -405,11 +389,11 @@ const AdminChat = () => {
               <div>
                 <span style={{
                   display: 'inline-flex', alignItems: 'center', gap: '0.3rem',
-                  fontSize: '0.7rem', fontWeight: 600, textTransform: 'uppercase',
+                  fontSize: '0.7rem', fontWeight: 700, textTransform: 'uppercase',
                   padding: '0.2rem 0.6rem', borderRadius: 100,
-                  background: msg.isDeleted ? 'rgba(239,68,68,0.15)' : 'rgba(16,185,129,0.15)',
-                  color: msg.isDeleted ? '#f87171' : '#34d399',
-                  border: `1px solid ${msg.isDeleted ? 'rgba(239,68,68,0.3)' : 'rgba(16,185,129,0.3)'}`
+                  background: msg.isDeleted ? '#FEE2E2' : '#D1FAE5',
+                  color: msg.isDeleted ? '#DC2626' : '#059669',
+                  border: `1px solid ${msg.isDeleted ? '#FECACA' : '#A7F3D0'}`
                 }}>
                   {msg.isDeleted ? 'Deleted' : 'Active'}
                 </span>
@@ -423,21 +407,19 @@ const AdminChat = () => {
                     disabled={deletingId === msg._id}
                     title="Delete message"
                     style={{
-                      width: 32, height: 32,
+                      width: 30, height: 30,
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      background: 'rgba(239,68,68,0.1)',
-                      border: '1px solid rgba(239,68,68,0.25)',
-                      borderRadius: 7, cursor: deletingId === msg._id ? 'wait' : 'pointer',
-                      color: '#f87171', transition: 'all 0.15s',
+                      background: '#FEF2F2',
+                      border: '1px solid #FECACA',
+                      borderRadius: 8, cursor: deletingId === msg._id ? 'wait' : 'pointer',
+                      color: '#DC2626', transition: 'all 0.15s',
                       opacity: deletingId === msg._id ? 0.5 : 1
                     }}
-                    onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(239,68,68,0.22)'; }}
-                    onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(239,68,68,0.1)'; }}
                   >
                     <FiTrash2 style={{ fontSize: '0.85rem' }} />
                   </button>
                 ) : (
-                  <span style={{ color: '#334155', fontSize: '0.75rem' }}>—</span>
+                  <span style={{ color: '#9CA3AF', fontSize: '0.75rem' }}>—</span>
                 )}
               </div>
             </div>
@@ -447,7 +429,7 @@ const AdminChat = () => {
 
       {/* Footer count */}
       {!loading && (
-        <p style={{ textAlign: 'right', fontSize: '0.75rem', color: '#334155', marginTop: '0.6rem' }}>
+        <p style={{ textAlign: 'right', fontSize: '0.75rem', color: '#6B7280', marginTop: '0.6rem' }}>
           Showing {filtered.length} of {messages.length} messages
         </p>
       )}
@@ -461,3 +443,4 @@ const AdminChat = () => {
 };
 
 export default AdminChat;
+

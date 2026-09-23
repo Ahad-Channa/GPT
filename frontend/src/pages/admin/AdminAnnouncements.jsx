@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
-import { FiMessageSquare, FiSend } from 'react-icons/fi';
+import { FiMessageSquare, FiSend, FiBell } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 
 const AdminAnnouncements = () => {
@@ -53,22 +53,25 @@ const AdminAnnouncements = () => {
 
   return (
     <div>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.5rem' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.75rem' }}>
         <div>
-          <h1 className="admin-page-title">Global Announcements</h1>
+          <h1 className="admin-page-title" style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+            <FiBell style={{ color: '#2563EB' }} />
+            Global Announcements
+          </h1>
           <p className="admin-page-sub">Send a broadcast notification to every user on the platform.</p>
         </div>
       </div>
 
-      <div className="admin-card" style={{ maxWidth: '600px' }}>
-        <h3 style={{ marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#fff' }}>
-          <FiMessageSquare />
+      <div className="admin-card" style={{ maxWidth: '640px' }}>
+        <h3 style={{ marginBottom: '1.25rem', display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#0E0F0C', fontFamily: "'Bricolage Grotesque', sans-serif", fontWeight: 700, fontSize: '1.15rem' }}>
+          <FiMessageSquare style={{ color: '#2563EB' }} />
           Compose Message
         </h3>
-        <form onSubmit={handleSend} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+        <form onSubmit={handleSend} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
           <div>
-            <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.85rem', color: '#cbd5e1' }}>
-              Notification Title
+            <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.78rem', color: '#4B5563', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+              Notification Title *
             </label>
             <input
               type="text"
@@ -81,8 +84,8 @@ const AdminAnnouncements = () => {
           </div>
           
           <div>
-            <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.85rem', color: '#cbd5e1' }}>
-              Message
+            <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.78rem', color: '#4B5563', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+              Message *
             </label>
             <textarea
               value={message}
@@ -97,22 +100,18 @@ const AdminAnnouncements = () => {
 
           <button 
             type="submit" 
-            className="action-btn primary" 
+            className="admin-btn-primary" 
             disabled={loading}
-            style={{ alignSelf: 'flex-start', marginTop: '0.5rem' }}
+            style={{ alignSelf: 'flex-start', marginTop: '0.25rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}
           >
-            {loading ? 'Sending...' : (
-              <>
-                <FiSend style={{ marginRight: '0.5rem' }} />
-                Broadcast to All Users
-              </>
-            )}
+            <FiSend />
+            {loading ? 'Sending...' : 'Broadcast to All Users'}
           </button>
         </form>
 
-        <div style={{ marginTop: '1.5rem', padding: '1rem', background: 'rgba(59, 130, 246, 0.1)', borderRadius: '8px', border: '1px solid rgba(59, 130, 246, 0.2)' }}>
-          <p style={{ margin: 0, fontSize: '0.85rem', color: '#93c5fd', lineHeight: '1.4' }}>
-            <strong>Note:</strong> This will create a push notification in the bell icon for <em>every</em> user. Use this feature sparingly to prevent notification fatigue.
+        <div style={{ marginTop: '1.5rem', padding: '1rem', background: '#EFF6FF', borderRadius: '12px', border: '1px solid #BFDBFE' }}>
+          <p style={{ margin: 0, fontSize: '0.82rem', color: '#1E40AF', lineHeight: '1.5' }}>
+            <strong>Note:</strong> This will create a push notification in the notification feed for <em>every</em> user. Use this feature sparingly to prevent notification fatigue.
           </p>
         </div>
       </div>
@@ -121,3 +120,4 @@ const AdminAnnouncements = () => {
 };
 
 export default AdminAnnouncements;
+

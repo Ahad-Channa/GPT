@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { Navigate } from 'react-router-dom';
-import { FiUsers, FiDollarSign, FiActivity, FiBriefcase, FiAlertCircle } from 'react-icons/fi';
+import { FiUsers, FiDollarSign, FiActivity, FiBriefcase } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 import CoinDisplay from '../../components/CoinDisplay';
 
@@ -28,11 +28,11 @@ const AdminOverview = () => {
     if (perms.includes('manage_offerwalls')) {
       return <Navigate to="/admin/offerwalls" replace />;
     }
-    // Fallback — no permissions configured yet, show a friendly message
+    // Fallback — no permissions configured yet
     return (
-      <div style={{ padding: '3rem', textAlign: 'center' }}>
-        <h2 style={{ color: '#e2e8f0', marginBottom: '0.75rem' }}>No Access</h2>
-        <p style={{ color: '#64748b', fontSize: '0.9rem' }}>
+      <div className="admin-card text-center py-12">
+        <h2 className="text-xl font-bold text-[#0E0F0C] mb-2 font-['Bricolage_Grotesque']">No Access</h2>
+        <p className="text-gray-500 text-sm">
           You don't have any permissions assigned yet. Contact the Primary Admin.
         </p>
       </div>
@@ -74,67 +74,60 @@ const AdminOverview = () => {
   const statCards = [
     {
       label: 'Total Users',
-      value: stats.totalUsers,
+      value: stats.totalUsers?.toLocaleString() || '0',
       unit: `+${stats.bannedUsers} Banned`,
       icon: FiUsers,
-      color: '#818cf8',
-      glow: 'rgba(99,102,241,0.2)',
-      gradient: 'linear-gradient(135deg, #4f46e5, #7c3aed)',
+      color: '#1E2538',
+      iconBg: 'bg-indigo-50 text-indigo-600',
     },
     {
       label: 'Pending Withdrawals',
-      value: <CoinDisplay amount={stats.totalPendingWithdrawal} size={20} compact={false} />,
+      value: <CoinDisplay amount={stats.totalPendingWithdrawal} size={22} compact={false} />,
       unit: 'Awaiting Review',
       icon: FiActivity,
-      color: '#fbbf24',
-      glow: 'rgba(234,179,8,0.2)',
-      gradient: 'linear-gradient(135deg, #d97706, #b45309)',
+      color: '#D97706',
+      iconBg: 'bg-amber-50 text-amber-600',
     },
     {
       label: 'Pending Offers',
-      value: stats.pendingOffers,
+      value: stats.pendingOffers?.toLocaleString() || '0',
       unit: 'User Submissions',
       icon: FiBriefcase,
-      color: '#f87171',
-      glow: 'rgba(239,68,68,0.2)',
-      gradient: 'linear-gradient(135deg, #dc2626, #991b1b)',
+      color: '#DC2626',
+      iconBg: 'bg-red-50 text-red-600',
     },
     {
       label: 'Economy Balance',
-      value: <CoinDisplay amount={stats.economyTotal} size={20} compact={false} />,
+      value: <CoinDisplay amount={stats.economyTotal} size={22} compact={false} />,
       unit: 'Total in Circulation',
       icon: FiDollarSign,
-      color: '#34d399',
-      glow: 'rgba(16,185,129,0.2)',
-      gradient: 'linear-gradient(135deg, #059669, #0d9488)',
+      color: '#059669',
+      iconBg: 'bg-emerald-50 text-emerald-600',
     },
   ];
 
   return (
     <div>
       <h1 className="admin-page-title">Platform Overview</h1>
-      <p className="admin-page-sub">Real-time statistics for the GPT Platform.</p>
+      <p className="admin-page-sub">Real-time platform metrics and activity overview.</p>
 
       {loading ? (
-        <div style={{ padding: '3rem', textAlign: 'center', color: '#475569' }}>
-          Loading statistics...
+        <div className="admin-card text-center py-16 text-gray-400">
+          <div className="w-8 h-8 rounded-full border-2 border-[#1E2538] border-t-transparent animate-spin mx-auto mb-3" />
+          <p className="text-sm font-medium">Loading statistics...</p>
         </div>
       ) : (
         <div className="admin-stat-grid">
           {statCards.map((card, i) => (
             <div key={i} className="admin-stat-card">
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.25rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
                 <span className="admin-stat-label">{card.label}</span>
-                <div style={{
-                  width: '36px', height: '36px', borderRadius: '10px',
-                  background: card.gradient, display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  boxShadow: `0 4px 12px ${card.glow}`
-                }}>
-                  <card.icon style={{ color: 'white', fontSize: '16px' }} />
+                <div className={`w-9 h-9 rounded-xl flex items-center justify-center ${card.iconBg}`}>
+                  <card.icon style={{ fontSize: '17px' }} />
                 </div>
               </div>
               <div className="admin-stat-value" style={{ color: card.color }}>{card.value}</div>
-              <div style={{ fontSize: '0.7rem', color: '#475569', marginTop: '0.25rem', letterSpacing: '0.05em', textTransform: 'uppercase' }}>
+              <div style={{ fontSize: '0.72rem', color: '#6B7280', marginTop: '0.35rem', letterSpacing: '0.04em', textTransform: 'uppercase', fontWeight: 500 }}>
                 {card.unit}
               </div>
             </div>
