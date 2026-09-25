@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../contexts/AuthContext';
 import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
 import AuthModal from '../components/AuthModal';
+import LanguageToggle from '../components/LanguageToggle';
 import {
   FiGlobe, FiLogIn, FiArrowRight, FiUsers, FiDollarSign,
   FiUserPlus, FiCheckSquare, FiGift, FiLayers, FiZap,
@@ -20,6 +22,7 @@ const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 const Landing = () => {
   const navigate = useNavigate();
   const { currentUser } = useAuth();
+  const { t } = useTranslation();
   const [stats, setStats] = useState({ totalUsers: 0, totalPaidOut: 0 });
   const [openFaq, setOpenFaq] = useState(null);
   const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' ? window.innerWidth < 1024 : false);
@@ -127,20 +130,20 @@ const Landing = () => {
 
           {/* Links (Desktop) */}
           <div className="hidden lg:flex items-center gap-[40px]">
-            <a href="#hero" className="hover:text-black transition-colors" style={{ fontFamily: 'Poppins, sans-serif', fontWeight: 500, fontSize: '16px', lineHeight: '28px', color: 'rgba(30, 30, 30, 1)' }}>Home</a>
-            <a href="#earn" className="hover:text-black transition-colors" style={{ fontFamily: 'Poppins, sans-serif', fontWeight: 500, fontSize: '16px', lineHeight: '28px', color: 'rgba(30, 30, 30, 1)' }}>Earn</a>
-            <a href="#how-it-works" className="hover:text-black transition-colors whitespace-nowrap" style={{ fontFamily: 'Poppins, sans-serif', fontWeight: 500, fontSize: '16px', lineHeight: '28px', color: 'rgba(30, 30, 30, 1)' }}>How it works</a>
-            <a href="#features" className="hover:text-black transition-colors" style={{ fontFamily: 'Poppins, sans-serif', fontWeight: 500, fontSize: '16px', lineHeight: '28px', color: 'rgba(30, 30, 30, 1)' }}>Features</a>
-            <a href="#faq" className="hover:text-black transition-colors" style={{ fontFamily: 'Poppins, sans-serif', fontWeight: 500, fontSize: '16px', lineHeight: '28px', color: 'rgba(30, 30, 30, 1)' }}>FAQ</a>
+            <a href="#hero" className="hover:text-black transition-colors" style={{ fontFamily: 'Poppins, sans-serif', fontWeight: 500, fontSize: '16px', lineHeight: '28px', color: 'rgba(30, 30, 30, 1)' }}>{t('nav.home')}</a>
+            <a href="#earn" className="hover:text-black transition-colors" style={{ fontFamily: 'Poppins, sans-serif', fontWeight: 500, fontSize: '16px', lineHeight: '28px', color: 'rgba(30, 30, 30, 1)' }}>{t('nav.earn')}</a>
+            <a href="#how-it-works" className="hover:text-black transition-colors whitespace-nowrap" style={{ fontFamily: 'Poppins, sans-serif', fontWeight: 500, fontSize: '16px', lineHeight: '28px', color: 'rgba(30, 30, 30, 1)' }}>{t('nav.howItWorks')}</a>
+            <a href="#features" className="hover:text-black transition-colors" style={{ fontFamily: 'Poppins, sans-serif', fontWeight: 500, fontSize: '16px', lineHeight: '28px', color: 'rgba(30, 30, 30, 1)' }}>{t('nav.features')}</a>
+            <a href="#faq" className="hover:text-black transition-colors" style={{ fontFamily: 'Poppins, sans-serif', fontWeight: 500, fontSize: '16px', lineHeight: '28px', color: 'rgba(30, 30, 30, 1)' }}>{t('nav.faq')}</a>
           </div>
 
           {/* Right Actions (Desktop) */}
-          <div className="hidden lg:flex items-center gap-[5px] w-[287px] h-[49px]">
+          <div className="hidden lg:flex items-center gap-[5px]">
+            <LanguageToggle />
             <button
               onClick={() => currentUser ? navigate('/dashboard') : setAuthModal({ isOpen: true, tab: 'login' })}
               className="flex items-center justify-center hover:bg-gray-50 transition-colors shadow-sm whitespace-nowrap cursor-pointer"
               style={{
-                width: '99px',
                 height: '49px',
                 padding: '19px 28px',
                 gap: '10px',
@@ -154,13 +157,12 @@ const Landing = () => {
                 color: 'rgba(0, 0, 0, 1)'
               }}
             >
-              Login
+              {t('nav.login')}
             </button>
             <button
               onClick={() => currentUser ? navigate('/dashboard') : setAuthModal({ isOpen: true, tab: 'register' })}
               className="flex items-center justify-center hover:bg-[#1E2631] transition-colors shadow-sm whitespace-nowrap cursor-pointer"
               style={{
-                width: '183px',
                 height: '49px',
                 padding: '19px 28px',
                 gap: '10px',
@@ -173,7 +175,7 @@ const Landing = () => {
                 color: 'rgba(255, 255, 255, 1)'
               }}
             >
-              Create Account
+              {t('nav.createAccount')}
             </button>
           </div>
 
@@ -206,7 +208,7 @@ const Landing = () => {
                 className="py-2 px-3 text-[#1E1E1E] font-medium text-[16px] hover:bg-gray-50 rounded-xl"
                 style={{ fontFamily: 'Poppins, sans-serif' }}
               >
-                Home
+                {t('nav.home')}
               </a>
               <a
                 href="#earn"
@@ -214,7 +216,7 @@ const Landing = () => {
                 className="py-2 px-3 text-[#1E1E1E] font-medium text-[16px] hover:bg-gray-50 rounded-xl"
                 style={{ fontFamily: 'Poppins, sans-serif' }}
               >
-                Earn
+                {t('nav.earn')}
               </a>
               <a
                 href="#how-it-works"
@@ -222,7 +224,7 @@ const Landing = () => {
                 className="py-2 px-3 text-[#1E1E1E] font-medium text-[16px] hover:bg-gray-50 rounded-xl"
                 style={{ fontFamily: 'Poppins, sans-serif' }}
               >
-                How it works
+                {t('nav.howItWorks')}
               </a>
               <a
                 href="#features"
@@ -230,7 +232,7 @@ const Landing = () => {
                 className="py-2 px-3 text-[#1E1E1E] font-medium text-[16px] hover:bg-gray-50 rounded-xl"
                 style={{ fontFamily: 'Poppins, sans-serif' }}
               >
-                Features
+                {t('nav.features')}
               </a>
               <a
                 href="#faq"
@@ -238,11 +240,12 @@ const Landing = () => {
                 className="py-2 px-3 text-[#1E1E1E] font-medium text-[16px] hover:bg-gray-50 rounded-xl"
                 style={{ fontFamily: 'Poppins, sans-serif' }}
               >
-                FAQ
+                {t('nav.faq')}
               </a>
             </div>
 
             <div className="flex items-center justify-center gap-[14px] pt-3 pb-1 border-t border-gray-100 w-full">
+              <LanguageToggle />
               <button
                 onClick={() => {
                   setMobileMenuOpen(false);
@@ -261,7 +264,7 @@ const Landing = () => {
                   color: 'rgba(0, 0, 0, 1)',
                 }}
               >
-                Login
+                {t('nav.login')}
               </button>
               <button
                 onClick={() => {
@@ -280,7 +283,7 @@ const Landing = () => {
                   color: 'rgba(255, 255, 255, 1)',
                 }}
               >
-                Create Account
+                {t('nav.createAccount')}
               </button>
             </div>
           </div>
@@ -308,10 +311,10 @@ const Landing = () => {
         >
           {/* Left Content */}
           <div
-            className="z-10 flex flex-col gap-6 lg:gap-10"
+            className="z-10 flex flex-col gap-6 lg:gap-8"
             style={!isMobile ? {
               width: 664,
-              height: 469,
+              minHeight: 469,
               paddingTop: 40,
               paddingBottom: 16,
               opacity: 1
@@ -322,13 +325,13 @@ const Landing = () => {
           >
             <div
               className={isMobile ? "flex flex-col items-center text-center mx-auto w-full gap-6" : "flex flex-col text-left"}
-              style={!isMobile ? { width: 608, gap: 40 } : { maxWidth: 424 }}
+              style={!isMobile ? { width: 608, gap: 24 } : { maxWidth: 424 }}
             >
               <h1
                 className="m-0"
                 style={!isMobile ? {
-                  width: 608,
-                  height: 96,
+                  width: '100%',
+                  maxWidth: 608,
                   fontFamily: '"Bricolage Grotesque", sans-serif',
                   fontWeight: 700,
                   fontSize: 55,
@@ -349,23 +352,23 @@ const Landing = () => {
               >
                 {isMobile ? (
                   <>
-                    Your Time<br />
-                    Has Value Get<br />
-                    Rewarded<br />
-                    For It
+                    {t('hero.titleMobileLine1')}<br />
+                    {t('hero.titleMobileLine2')}<br />
+                    {t('hero.titleMobileLine3')}<br />
+                    {t('hero.titleMobileLine4')}
                   </>
                 ) : (
                   <>
-                    Your Time Has Value<br />
-                    Get Rewarded For It
+                    {t('hero.titleLine1')}<br />
+                    {t('hero.titleLine2')}
                   </>
                 )}
               </h1>
               <p
                 className="m-0"
                 style={!isMobile ? {
-                  width: 539,
-                  height: 37,
+                  width: '100%',
+                  maxWidth: 608,
                   fontFamily: '"Poppins", sans-serif',
                   fontWeight: 500,
                   fontSize: 16,
@@ -385,56 +388,52 @@ const Landing = () => {
               >
                 {isMobile ? (
                   <>
-                    <span className="block whitespace-nowrap">Complete offers, surveys, and tasks to earn real</span>
-                    <span className="block whitespace-nowrap">rewards. Join thousands of users already earning</span>
-                    <span className="block whitespace-nowrap">every day.</span>
+                    <span className="block">{t('hero.subtitleMobileLine1')}</span>
+                    <span className="block">{t('hero.subtitleMobileLine2')}</span>
+                    <span className="block">{t('hero.subtitleMobileLine3')}</span>
                   </>
                 ) : (
-                  'Complete offers, surveys, and tasks to earn real rewards. Join thousands of users already earning every day.'
+                  t('hero.subtitle')
                 )}
               </p>
 
               <div
-                className={isMobile ? "flex items-center justify-center mx-auto" : "flex items-center"}
-                style={{ width: 264, height: 49, gap: 5 }}
+                className={isMobile ? "flex items-center justify-center mx-auto gap-3" : "flex items-center gap-3"}
+                style={{ width: 'auto', minHeight: 49 }}
               >
                 <button
                   onClick={() => currentUser ? navigate('/dashboard') : setAuthModal({ isOpen: true, tab: 'register' })}
-                  className="flex items-center justify-center transition-all hover:bg-[#2A3544] cursor-pointer"
+                  className="flex items-center justify-center transition-all hover:bg-[#2A3544] cursor-pointer whitespace-nowrap"
                   style={{
-                    width: 160,
+                    minWidth: 150,
                     height: 49,
-                    padding: '19px 28px',
-                    gap: 10,
+                    padding: '0 28px',
                     borderRadius: 80,
                     backgroundColor: 'rgba(36, 50, 77, 1)',
                     fontFamily: '"Poppins", sans-serif',
                     fontWeight: 500,
                     fontSize: 16,
-                    lineHeight: '28px',
                     color: 'rgba(255, 255, 255, 1)'
                   }}
                 >
-                  Start Earning
+                  {t('hero.startEarning')}
                 </button>
                 <button
                   onClick={() => currentUser ? navigate('/dashboard') : setAuthModal({ isOpen: true, tab: 'login' })}
-                  className="flex items-center justify-center transition-all hover:bg-gray-200 cursor-pointer"
+                  className="flex items-center justify-center transition-all hover:bg-gray-200 cursor-pointer whitespace-nowrap"
                   style={{
-                    width: 99,
+                    minWidth: 99,
                     height: 49,
-                    padding: '19px 28px',
-                    gap: 10,
+                    padding: '0 28px',
                     borderRadius: 80,
                     backgroundColor: 'rgba(239, 239, 239, 1)',
                     fontFamily: '"Poppins", sans-serif',
                     fontWeight: 500,
                     fontSize: 16,
-                    lineHeight: '28px',
                     color: 'rgba(0, 0, 0, 1)'
                   }}
                 >
-                  Login
+                  {t('nav.login')}
                 </button>
               </div>
             </div>
@@ -442,7 +441,7 @@ const Landing = () => {
             {/* Stats below buttons */}
             <div
               className={isMobile ? "flex items-center justify-between w-full mx-auto" : "flex items-center"}
-              style={!isMobile ? { width: 520, height: 45, gap: 60 } : { maxWidth: 360, marginTop: 39, gap: 20 }}
+              style={!isMobile ? { minWidth: 460, gap: 48, marginTop: 8 } : { maxWidth: 360, marginTop: 32, gap: 20 }}
             >
               {/* Total Users */}
               <div className="flex items-center gap-3 sm:gap-4">
@@ -453,24 +452,19 @@ const Landing = () => {
                   style={{
                     width: isMobile ? 54 : 44,
                     height: isMobile ? 54 : 44,
-                    paddingTop: isMobile ? 0 : 3.3,
-                    paddingBottom: isMobile ? 0 : 3.3
                   }}
                 />
-                <div className="flex flex-col" style={{ width: 109, height: 43, gap: 15 }}>
-                  <span className="uppercase" style={{
-                    width: 109, height: 8,
+                <div className="flex flex-col justify-center">
+                  <span className="uppercase whitespace-nowrap" style={{
                     fontFamily: '"Poppins", sans-serif', fontWeight: 500, fontSize: 12,
-                    lineHeight: '28px', letterSpacing: '0.08em', color: 'rgba(14, 15, 12, 1)',
-                    display: 'flex', alignItems: 'center'
+                    lineHeight: '16px', letterSpacing: '0.08em', color: 'rgba(14, 15, 12, 1)',
+                    marginBottom: 4
                   }}>
-                    Total Users:
+                    {t('hero.totalUsers')}
                   </span>
                   <span style={{
-                    width: 109, height: 20,
                     fontFamily: '"Bricolage Grotesque", sans-serif', fontWeight: 700, fontSize: 30,
-                    lineHeight: '72px', letterSpacing: '-0.02em', color: 'rgba(14, 15, 12, 1)',
-                    display: 'flex', alignItems: 'center'
+                    lineHeight: '32px', letterSpacing: '-0.02em', color: 'rgba(14, 15, 12, 1)',
                   }}>
                     {stats.totalUsers.toLocaleString('de-DE')}
                   </span>
@@ -486,25 +480,20 @@ const Landing = () => {
                   style={{
                     width: isMobile ? 54 : 44,
                     height: isMobile ? 54 : 44,
-                    paddingTop: isMobile ? 0 : 3.3,
-                    paddingBottom: isMobile ? 0 : 3.3,
-                    transform: 'translateY(4px)',
+                    transform: 'translateY(2px)',
                   }}
                 />
-                <div className="flex flex-col" style={{ height: 43, gap: 15 }}>
-                  <span className="uppercase" style={{
-                    height: 8,
+                <div className="flex flex-col justify-center">
+                  <span className="uppercase whitespace-nowrap" style={{
                     fontFamily: '"Poppins", sans-serif', fontWeight: 500, fontSize: 12,
-                    lineHeight: '28px', letterSpacing: '0.08em', color: 'rgba(14, 15, 12, 1)',
-                    display: 'flex', alignItems: 'center'
+                    lineHeight: '16px', letterSpacing: '0.08em', color: 'rgba(14, 15, 12, 1)',
+                    marginBottom: 4
                   }}>
-                    Total Paid:
+                    {t('hero.totalPaid')}
                   </span>
                   <span style={{
-                    height: 20,
                     fontFamily: '"Bricolage Grotesque", sans-serif', fontWeight: 700, fontSize: 30,
-                    lineHeight: '72px', letterSpacing: '-0.02em', color: 'rgba(14, 15, 12, 1)',
-                    display: 'flex', alignItems: 'center'
+                    lineHeight: '32px', letterSpacing: '-0.02em', color: 'rgba(14, 15, 12, 1)',
                   }}>
                     ${stats.totalPaidOut.toLocaleString('de-DE', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
                   </span>
@@ -541,18 +530,16 @@ const Landing = () => {
         >
           {/* Header */}
           <div
-            className="flex flex-col items-center justify-center mx-auto"
-            style={!isMobile ? { width: 500, height: 69, gap: 25 } : { width: '100%', maxWidth: 400, gap: 16 }}
+            className="flex flex-col items-center justify-center mx-auto text-center"
+            style={!isMobile ? { maxWidth: 650, gap: 16 } : { width: '100%', maxWidth: 400, gap: 16 }}
           >
             <h2
-              className="m-0 text-center flex items-center justify-center"
+              className="m-0 text-center"
               style={!isMobile ? {
-                width: 314,
-                height: 33,
                 fontFamily: '"Bricolage Grotesque", sans-serif',
                 fontWeight: 700,
                 fontSize: 50,
-                lineHeight: '72px',
+                lineHeight: '58px',
                 color: 'rgba(14, 15, 12, 1)',
                 letterSpacing: '-0.02em'
               } : {
@@ -561,23 +548,21 @@ const Landing = () => {
                 fontFamily: '"Bricolage Grotesque", sans-serif',
                 fontWeight: 700,
                 fontSize: 'clamp(36px, 10vw, 48px)',
-                lineHeight: '56px',
+                lineHeight: '52px',
                 letterSpacing: '-0.02em',
                 textAlign: 'center',
                 color: 'rgba(14, 15, 12, 1)'
               }}
             >
-              How It Works
+              {t('howItWorks.title')}
             </h2>
             <p
-              className="m-0 text-center flex items-center justify-center"
+              className="m-0 text-center"
               style={!isMobile ? {
-                width: 500,
-                height: 11,
                 fontFamily: '"Poppins", sans-serif',
                 fontWeight: 500,
                 fontSize: 16,
-                lineHeight: '28px',
+                lineHeight: '26px',
                 color: 'rgba(14, 15, 12, 1)'
               } : {
                 width: '100%',
@@ -593,10 +578,10 @@ const Landing = () => {
             >
               {isMobile ? (
                 <>
-                  Get started in seconds. No complicated<br />setup required.
+                  {t('howItWorks.subtitleMobileLine1')}<br />{t('howItWorks.subtitleMobileLine2')}
                 </>
               ) : (
-                'Get started in seconds. No complicated setup required.'
+                t('howItWorks.subtitle')
               )}
             </p>
           </div>
@@ -607,21 +592,21 @@ const Landing = () => {
             {[
               {
                 icon: '/coins/s1.png',
-                step: 'STEP 01',
-                title: 'Sign Up',
-                desc: 'Create your free account in seconds and get instant access to the platform.'
+                step: t('howItWorks.step1Label'),
+                title: t('howItWorks.step1Title'),
+                desc: t('howItWorks.step1Desc')
               },
               {
                 icon: '/coins/s2.png',
-                step: 'STEP 02',
-                title: 'Complete Tasks',
-                desc: 'Choose from hundreds of offers, surveys, and apps to complete at your own pace.'
+                step: t('howItWorks.step2Label'),
+                title: t('howItWorks.step2Title'),
+                desc: t('howItWorks.step2Desc')
               },
               {
                 icon: '/coins/s3.png',
-                step: 'STEP 03',
-                title: 'Earn Rewards',
-                desc: 'Get coins and convert them into real money, crypto, or gift cards instantly.'
+                step: t('howItWorks.step3Label'),
+                title: t('howItWorks.step3Title'),
+                desc: t('howItWorks.step3Desc')
               },
             ].map((item, idx) => (
               <div
@@ -716,17 +701,15 @@ const Landing = () => {
           {/* Heading & Sub */}
           <div
             className="flex flex-col items-start w-full"
-            style={!isMobile ? { width: 472, height: 74, gap: 30, marginBottom: 50, marginTop: -15 } : { gap: 12, marginBottom: 24 }}
+            style={!isMobile ? { gap: 12, marginBottom: 28 } : { gap: 12, marginBottom: 24 }}
           >
             <h2
-              className="m-0 text-left flex items-center"
+              className="m-0 text-left"
               style={!isMobile ? {
-                width: 472,
-                height: 33,
                 fontFamily: '"Bricolage Grotesque", sans-serif',
                 fontWeight: 700,
                 fontSize: 50,
-                lineHeight: '72px',
+                lineHeight: '56px',
                 letterSpacing: '-0.02em',
                 color: 'rgba(14, 15, 12, 1)'
               } : {
@@ -738,17 +721,15 @@ const Landing = () => {
                 color: 'rgba(14, 15, 12, 1)'
               }}
             >
-              Why Choose Us
+              {t('whyChooseUs.title')}
             </h2>
             <p
-              className="m-0 text-left flex items-center"
+              className="m-0 text-left"
               style={!isMobile ? {
-                width: 472,
-                height: 11,
                 fontFamily: '"Poppins", sans-serif',
                 fontWeight: 500,
                 fontSize: 16,
-                lineHeight: '28px',
+                lineHeight: '26px',
                 color: 'rgba(14, 15, 12, 1)'
               } : {
                 fontFamily: '"Poppins", sans-serif',
@@ -758,29 +739,29 @@ const Landing = () => {
                 color: 'rgba(14, 15, 12, 1)'
               }}
             >
-              Powerful features designed specifically for you.
+              {t('whyChooseUs.subtitle')}
             </p>
           </div>
 
           {/* Features Grid */}
           <div
-            className="grid grid-cols-1 lg:grid-cols-2 w-full"
-            style={!isMobile ? { width: 608, height: 306, gap: 24 } : { gap: 0 }}
+            className="grid grid-cols-1 lg:grid-cols-2 w-full gap-x-6 gap-y-1"
+            style={!isMobile ? { maxWidth: 608 } : { gap: 0 }}
           >
             {(isMobile ? [
-              { icon: '/coins/multi.png', title: 'Multiple Offer walls', desc: 'Discover various earning options in one place.' },
-              { icon: '/coins/fast copy.png', title: 'Fast Payouts', desc: 'Withdraw your earnings quickly and securely' },
-              { icon: '/coins/daily.png', title: 'Daily Bonus', desc: 'Earn extra rewards every day you stay active' },
-              { icon: '/coins/vip copy.png', title: 'VIP Progress', desc: 'Level up and unlock better rewards' },
-              { icon: '/coins/referl.png', title: 'Referral System', desc: 'Refer friends and earn a share of their income.' },
-              { icon: '/coins/live copy.png', title: 'Live Activity', desc: 'See real-time earnings across the platform' },
+              { icon: '/coins/multi.png', title: t('whyChooseUs.multipleOfferwalls'), desc: t('whyChooseUs.multipleOfferwallsDesc') },
+              { icon: '/coins/fast copy.png', title: t('whyChooseUs.fastPayouts'), desc: t('whyChooseUs.fastPayoutsDesc') },
+              { icon: '/coins/daily.png', title: t('whyChooseUs.dailyBonus'), desc: t('whyChooseUs.dailyBonusDesc') },
+              { icon: '/coins/vip copy.png', title: t('whyChooseUs.vipProgress'), desc: t('whyChooseUs.vipProgressDesc') },
+              { icon: '/coins/referl.png', title: t('whyChooseUs.referralSystem'), desc: t('whyChooseUs.referralSystemDesc') },
+              { icon: '/coins/live copy.png', title: t('whyChooseUs.liveActivity'), desc: t('whyChooseUs.liveActivityDesc') },
             ] : [
-              { icon: '/coins/multi.png', title: 'Multiple Offer walls', desc: 'Discover various earning options in one place.' },
-              { icon: '/coins/vip copy.png', title: 'VIP Progress', desc: 'Level up and unlock better rewards' },
-              { icon: '/coins/fast copy.png', title: 'Fast Payouts', desc: 'Withdraw your earnings quickly and securely' },
-              { icon: '/coins/referl.png', title: 'Referral System', desc: 'Refer friends and earn a share of their income.' },
-              { icon: '/coins/daily.png', title: 'Daily Bonus', desc: 'Earn extra rewards every day you stay active' },
-              { icon: '/coins/live copy.png', title: 'Live Activity', desc: 'See real-time earnings across the platform' },
+              { icon: '/coins/multi.png', title: t('whyChooseUs.multipleOfferwalls'), desc: t('whyChooseUs.multipleOfferwallsDesc') },
+              { icon: '/coins/vip copy.png', title: t('whyChooseUs.vipProgress'), desc: t('whyChooseUs.vipProgressDesc') },
+              { icon: '/coins/fast copy.png', title: t('whyChooseUs.fastPayouts'), desc: t('whyChooseUs.fastPayoutsDesc') },
+              { icon: '/coins/referl.png', title: t('whyChooseUs.referralSystem'), desc: t('whyChooseUs.referralSystemDesc') },
+              { icon: '/coins/daily.png', title: t('whyChooseUs.dailyBonus'), desc: t('whyChooseUs.dailyBonusDesc') },
+              { icon: '/coins/live copy.png', title: t('whyChooseUs.liveActivity'), desc: t('whyChooseUs.liveActivityDesc') },
             ]).map((item, idx) => (
               <div
                 key={idx}
@@ -827,21 +808,17 @@ const Landing = () => {
 
           {/* Buttons */}
           <div
-            className="flex flex-row items-center mt-[32px] lg:mt-[50px]"
-            style={{ width: 264, height: 49, gap: 5 }}
+            className="flex flex-row items-center mt-6 lg:mt-8 gap-3"
+            style={{ width: 'auto', height: 49 }}
           >
             <button
               onClick={() => currentUser ? navigate('/dashboard') : setAuthModal({ isOpen: true, tab: 'register' })}
-              className="flex items-center justify-center text-white cursor-pointer hover:bg-[#1E2631] transition-colors"
+              className="flex items-center justify-center text-white cursor-pointer hover:bg-[#1E2631] transition-colors whitespace-nowrap"
               style={{
-                width: 160,
+                minWidth: 150,
                 height: 49,
-                gap: 10,
                 borderRadius: 80,
-                paddingTop: 19,
-                paddingRight: 28,
-                paddingBottom: 19,
-                paddingLeft: 28,
+                padding: '0 28px',
                 background: 'rgba(36, 50, 77, 1)'
               }}
             >
@@ -849,27 +826,19 @@ const Landing = () => {
                 fontFamily: '"Poppins", sans-serif',
                 fontWeight: 500,
                 fontSize: 16,
-                lineHeight: '28px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
                 color: 'rgba(255, 255, 255, 1)'
               }}>
-                Start Earning
+                {t('hero.startEarning')}
               </span>
             </button>
             <button
               onClick={() => currentUser ? navigate('/dashboard') : setAuthModal({ isOpen: true, tab: 'login' })}
-              className="flex items-center justify-center text-black cursor-pointer hover:bg-gray-200 transition-colors"
+              className="flex items-center justify-center text-black cursor-pointer hover:bg-gray-200 transition-colors whitespace-nowrap"
               style={{
-                width: 99,
+                minWidth: 99,
                 height: 49,
-                gap: 10,
                 borderRadius: 80,
-                paddingTop: 19,
-                paddingRight: 28,
-                paddingBottom: 19,
-                paddingLeft: 28,
+                padding: '0 28px',
                 background: 'rgba(239, 239, 239, 1)'
               }}
             >
@@ -877,13 +846,9 @@ const Landing = () => {
                 fontFamily: '"Poppins", sans-serif',
                 fontWeight: 500,
                 fontSize: 16,
-                lineHeight: '28px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
                 color: 'rgba(0, 0, 0, 1)'
               }}>
-                Login
+                {t('nav.login')}
               </span>
             </button>
           </div>
@@ -910,20 +875,17 @@ const Landing = () => {
           style={!isMobile ? { maxWidth: 1328, gap: 50 } : { maxWidth: 440, gap: 48 }}
         >
           <div
-            className="flex flex-col items-center justify-center mx-auto px-4"
-            style={!isMobile ? { width: 652, height: 69, gap: 25 } : { width: '100%', maxWidth: 400, gap: 16 }}
+            className="flex flex-col items-center justify-center mx-auto px-4 text-center"
+            style={!isMobile ? { maxWidth: 652, gap: 16 } : { width: '100%', maxWidth: 400, gap: 16 }}
           >
             <h2
-              className="m-0 flex items-center justify-center"
+              className="m-0 text-center"
               style={!isMobile ? {
-                width: 434,
-                height: 33,
                 fontFamily: '"Bricolage Grotesque", sans-serif',
                 fontWeight: 700,
                 fontSize: 50,
-                lineHeight: '72px',
+                lineHeight: '56px',
                 letterSpacing: '-0.02em',
-                textAlign: 'center',
                 color: 'rgba(14, 15, 12, 1)'
               } : {
                 width: '100%',
@@ -937,18 +899,16 @@ const Landing = () => {
                 color: 'rgba(14, 15, 12, 1)'
               }}
             >
-              Start Earning With
+              {t('startEarningWith.title')}
             </h2>
             <p
-              className="m-0 flex flex-col items-center justify-center text-center"
+              className="m-0 text-center"
               style={!isMobile ? {
-                width: 534,
-                height: 11,
+                maxWidth: 534,
                 fontFamily: '"Poppins", sans-serif',
                 fontWeight: 500,
                 fontSize: 16,
-                lineHeight: '28px',
-                textAlign: 'center',
+                lineHeight: '26px',
                 color: 'rgba(14, 15, 12, 1)'
               } : {
                 width: '100%',
@@ -964,11 +924,11 @@ const Landing = () => {
             >
               {isMobile ? (
                 <>
-                  <span className="block whitespace-nowrap">Multiple ways to stack your coins. Choose</span>
-                  <span className="block whitespace-nowrap">what works best for you.</span>
+                  <span className="block">{t('startEarningWith.subtitleMobileLine1')}</span>
+                  <span className="block">{t('startEarningWith.subtitleMobileLine2')}</span>
                 </>
               ) : (
-                'Multiple ways to stack your coins. Choose what works best for you.'
+                t('startEarningWith.subtitle')
               )}
             </p>
           </div>
@@ -1009,7 +969,7 @@ const Landing = () => {
               }}
             >
               <span className="block text-[40px] sm:text-[48px] lg:text-[50px] leading-[44px] sm:leading-[48px] lg:leading-[54px]">
-                Frequently<br />Asked Questions
+                {t('faqSection.title')}<br />{t('faqSection.titleLine2')}
               </span>
             </h2>
             <p
@@ -1021,7 +981,7 @@ const Landing = () => {
               }}
             >
               <span className="block text-[18px] lg:text-[16px] leading-[28px]">
-                Got questions? We've got answers.
+                {t('faqSection.subtitle')}
               </span>
             </p>
           </div>
@@ -1031,12 +991,12 @@ const Landing = () => {
             className="flex flex-col items-center lg:items-start w-full max-w-[424px] lg:max-w-[652px] lg:w-[55%] lg:-translate-y-[20px]"
           >
             {[
-              { q: "How do I earn money?", a: "By completing offers, surveys, and tasks on the platform." },
-              { q: "When do I get paid?", a: "You can withdraw your earnings instantly at any time." },
-              { q: "How do i can contact you?", a: "You can reach us through our 24/7 support ticket system." },
-              { q: "Is it free to use?", a: "Yes, it is 100% free to join and start earning." },
-              { q: "Why was my reward not credited?", a: "Sometimes tracking takes a bit longer. Contact support if you need help." },
-              { q: "What is the minimum payout?", a: "The minimum payout is only $5 for most withdrawal methods." }
+              { q: t('faqSection.q1'), a: t('faqSection.a1') },
+              { q: t('faqSection.q2'), a: t('faqSection.a2') },
+              { q: t('faqSection.q3'), a: t('faqSection.a3') },
+              { q: t('faqSection.q4'), a: t('faqSection.a4') },
+              { q: t('faqSection.q5'), a: t('faqSection.a5') },
+              { q: t('faqSection.q6'), a: t('faqSection.a6') }
             ].map((faq, i) => {
               const isOpen = openFaq === i;
               return (
@@ -1045,27 +1005,19 @@ const Landing = () => {
                   onClick={() => setOpenFaq(isOpen ? null : i)}
                   className="flex flex-col justify-start cursor-pointer transition-all duration-300 overflow-hidden w-full max-w-[424px] lg:max-w-[652px]"
                   style={{
-                    minHeight: isOpen ? 139 : 69,
-                    gap: 25,
                     borderRadius: 20,
-                    padding: '28px 20px 28px 20px',
+                    padding: '24px 20px',
+                    gap: isOpen ? 16 : 0,
                     background: isOpen ? 'rgba(246, 245, 237, 1)' : 'transparent',
                   }}
                 >
                   <div
                     className="flex justify-between items-center w-full"
-                    style={{ minHeight: 22 }}
                   >
                     <span
-                      className="m-0"
+                      className="m-0 font-medium text-[18px] sm:text-[20px] leading-[26px] text-[#0E0F0C]"
                       style={{
                         fontFamily: '"Bricolage Grotesque", sans-serif',
-                        fontWeight: 500,
-                        fontSize: 20,
-                        lineHeight: '22px',
-                        color: 'rgba(14, 15, 12, 1)',
-                        display: 'flex',
-                        alignItems: 'center'
                       }}
                     >
                       {faq.q}
@@ -1081,7 +1033,7 @@ const Landing = () => {
                   </div>
                   {isOpen && (
                     <div
-                      className="transition-all duration-300 flex items-start overflow-hidden"
+                      className="transition-all duration-300 flex items-start overflow-hidden pt-2"
                     >
                       <p
                         className="m-0"
@@ -1138,7 +1090,7 @@ const Landing = () => {
                 color: 'rgba(14, 15, 12, 1)'
               }}
             >
-              Start Earning<br />Today
+              {t('cta.startEarningToday')}
             </h2>
           </div>
 
@@ -1167,7 +1119,7 @@ const Landing = () => {
                   color: 'rgba(14, 15, 12, 1)'
                 }}
               >
-                Start Earning
+                {t('cta.startEarning')}
               </span>
             </button>
           </div>
@@ -1241,48 +1193,32 @@ const Landing = () => {
                 color: 'rgba(14, 15, 12, 1)'
               }}
             >
-              Join now and start making real money right now!
+              {t('cta.joinNow')}
             </p>
           </div>
         </div>
 
-        {/* DESKTOP VERSION (>= 1024px) - 100% UNTOUCHED */}
+        {/* DESKTOP VERSION (>= 1024px) */}
         <div
           className="hidden lg:flex flex-col mx-auto w-full relative"
           style={{
             maxWidth: 1328,
-            minHeight: 245,
-            gap: 55,
             borderRadius: 24,
-            padding: '40px 0px 6px 0px',
+            padding: '36px 40px 16px 40px',
             background: 'rgba(239, 239, 239, 1)',
-            overflow: 'hidden'
+            overflow: 'hidden',
+            gap: 28
           }}
         >
           <div
-            className="flex flex-col w-full z-10 mx-auto px-4 lg:px-0"
-            style={{
-              width: 1248,
-              maxWidth: '100%',
-              height: 80,
-              gap: 20
-            }}
+            className="flex flex-col w-full z-10 gap-3"
           >
             <div
-              className="flex items-center"
-              style={{
-                width: 1248,
-                maxWidth: '100%',
-                height: 49,
-                gap: 623
-              }}
+              className="flex items-center justify-between w-full"
             >
               <h2
                 className="m-0"
                 style={{
-                  width: 465,
-                  maxWidth: '100%',
-                  height: 33,
                   fontFamily: '"Bricolage Grotesque", sans-serif',
                   fontWeight: 700,
                   fontSize: 50,
@@ -1291,22 +1227,22 @@ const Landing = () => {
                   color: 'rgba(14, 15, 12, 1)'
                 }}
               >
-                Start Earning Today
+                {t('cta.startEarningToday')}
               </h2>
               <button
                 onClick={() => currentUser ? navigate('/dashboard') : setAuthModal({ isOpen: true, tab: 'register' })}
-                className="flex items-center justify-center transition-all hover:brightness-110 active:translate-y-[2px] h-[48px] rounded-[24px] px-8 cursor-pointer"
+                className="flex items-center justify-center transition-all hover:brightness-110 active:translate-y-[2px] h-[48px] rounded-[24px] px-8 cursor-pointer whitespace-nowrap shrink-0"
                 style={{
                   background: '#2D3346',
                   color: 'white',
-                  width: 160
+                  minWidth: 160
                 }}
               >
                 <span
                   className="whitespace-nowrap m-0 p-0 text-[16px] font-medium"
                   style={{ fontFamily: '"Poppins", sans-serif' }}
                 >
-                  Start Earning
+                  {t('cta.startEarning')}
                 </span>
               </button>
             </div>
@@ -1314,29 +1250,23 @@ const Landing = () => {
             <p
               className="m-0"
               style={{
-                width: 1248,
-                maxWidth: '100%',
-                height: 11,
                 fontFamily: '"Poppins", sans-serif',
                 fontWeight: 500,
                 fontSize: 16,
-                lineHeight: '28px',
+                lineHeight: '26px',
                 color: 'rgba(14, 15, 12, 1)'
               }}
             >
-              Join now and start making real money right now!
+              {t('cta.joinNow')}
             </p>
           </div>
 
           <div
-            className="flex w-full overflow-hidden mx-auto px-4 lg:px-0"
+            className="flex w-full overflow-hidden mx-auto"
             style={{
-              width: 1322,
-              maxWidth: '100%',
-              height: 64,
+              width: '100%',
               borderRadius: 20,
-              paddingTop: 16,
-              paddingBottom: 16,
+              padding: '16px 20px',
               background: 'rgba(222, 223, 247, 1)',
               position: 'relative'
             }}
@@ -1365,11 +1295,10 @@ const Landing = () => {
                       <span
                         className="m-0 whitespace-nowrap"
                         style={{
-                          height: 13,
                           fontFamily: '"Bricolage Grotesque", sans-serif',
                           fontWeight: 700,
                           fontSize: 20,
-                          lineHeight: '72px',
+                          lineHeight: '28px',
                           letterSpacing: '-0.02em',
                           color: 'rgba(99, 101, 168, 1)',
                           display: 'flex',

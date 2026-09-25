@@ -10,6 +10,7 @@ import CoinDisplay from '../CoinDisplay';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import FitText from '../FitText';
+import LanguageToggle from '../LanguageToggle';
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
@@ -400,13 +401,15 @@ const Header = ({ onChatToggle, chatOpen, fullWidth }) => {
           <div
             className="flex items-center justify-end shrink-0"
             style={{
-              maxWidth: '243px',
+              maxWidth: '280px',
               height: '48px',
-              gap: '12px',
+              gap: '10px',
               opacity: 1,
               transform: 'rotate(0deg)',
             }}
           >
+            {/* Language Toggle */}
+            <LanguageToggle style={{ height: '32px', padding: '4px 10px', fontSize: '11px' }} />
             {/* Group of 2 icons: Chat & Notifications */}
             <div
               className="flex items-center"
@@ -854,8 +857,10 @@ const Header = ({ onChatToggle, chatOpen, fullWidth }) => {
             transform: 'rotate(0deg)',
           }}
         >
+          {/* Language Toggle (Desktop) */}
+            <LanguageToggle style={{ height: '36px', padding: '6px 12px', fontSize: '12px' }} />
 
-          {/* Notification & Chat container (width: 64, height: 20, gap: 24px) */}
+            {/* Notification & Chat container (width: 64, height: 20, gap: 24px) */}
           <div
             className="flex items-center"
             style={{

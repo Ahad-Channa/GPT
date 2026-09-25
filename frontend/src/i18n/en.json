@@ -1,0 +1,89 @@
+{
+  "nav": {
+    "home": "Home",
+    "earn": "Earn",
+    "howItWorks": "How it works",
+    "features": "Features",
+    "faq": "FAQ",
+    "login": "Login",
+    "createAccount": "Create Account"
+  },
+  "hero": {
+    "titleLine1": "Your Time Has Value",
+    "titleLine2": "Get Rewarded For It",
+    "titleMobileLine1": "Your Time",
+    "titleMobileLine2": "Has Value Get",
+    "titleMobileLine3": "Rewarded",
+    "titleMobileLine4": "For It",
+    "subtitle": "Complete offers, surveys, and tasks to earn real rewards. Join thousands of users already earning every day.",
+    "subtitleMobileLine1": "Complete offers, surveys, and tasks to earn real",
+    "subtitleMobileLine2": "rewards. Join thousands of users already earning",
+    "subtitleMobileLine3": "every day.",
+    "startEarning": "Start Earning",
+    "totalUsers": "Total Users:",
+    "totalPaid": "Total Paid:"
+  },
+  "howItWorks": {
+    "title": "How It Works",
+    "subtitle": "Get started in seconds. No complicated setup required.",
+    "subtitleMobileLine1": "Get started in seconds. No complicated",
+    "subtitleMobileLine2": "setup required.",
+    "step1Label": "STEP 01",
+    "step1Title": "Sign Up",
+    "step1Desc": "Create your free account in seconds and get instant access to the platform.",
+    "step2Label": "STEP 02",
+    "step2Title": "Complete Tasks",
+    "step2Desc": "Choose from hundreds of offers, surveys, and apps to complete at your own pace.",
+    "step3Label": "STEP 03",
+    "step3Title": "Earn Rewards",
+    "step3Desc": "Get coins and convert them into real money, crypto, or gift cards instantly."
+  },
+  "whyChooseUs": {
+    "title": "Why Choose Us",
+    "subtitle": "Powerful features designed specifically for you.",
+    "multipleOfferwalls": "Multiple Offer walls",
+    "multipleOfferwallsDesc": "Discover various earning options in one place.",
+    "fastPayouts": "Fast Payouts",
+    "fastPayoutsDesc": "Withdraw your earnings quickly and securely",
+    "dailyBonus": "Daily Bonus",
+    "dailyBonusDesc": "Earn extra rewards every day you stay active",
+    "vipProgress": "VIP Progress",
+    "vipProgressDesc": "Level up and unlock better rewards",
+    "referralSystem": "Referral System",
+    "referralSystemDesc": "Refer friends and earn a share of their income.",
+    "liveActivity": "Live Activity",
+    "liveActivityDesc": "See real-time earnings across the platform"
+  },
+  "startEarningWith": {
+    "title": "Start Earning With",
+    "subtitle": "Multiple ways to stack your coins. Choose what works best for you.",
+    "subtitleMobileLine1": "Multiple ways to stack your coins. Choose",
+    "subtitleMobileLine2": "what works best for you."
+  },
+  "faqSection": {
+    "title": "Frequently",
+    "titleLine2": "Asked Questions",
+    "subtitle": "Got questions? We've got answers.",
+    "q1": "How do I earn money?",
+    "a1": "By completing offers, surveys, and tasks on the platform.",
+    "q2": "When do I get paid?",
+    "a2": "You can withdraw your earnings instantly at any time.",
+    "q3": "How do i can contact you?",
+    "a3": "You can reach us through our 24/7 support ticket system.",
+    "q4": "Is it free to use?",
+    "a4": "Yes, it is 100% free to join and start earning.",
+    "q5": "Why was my reward not credited?",
+    "a5": "Sometimes tracking takes a bit longer. Contact support if you need help.",
+    "q6": "What is the minimum payout?",
+    "a6": "The minimum payout is only $5 for most withdrawal methods."
+  },
+  "cta": {
+    "startEarningToday": "Start Earning Today",
+    "startEarning": "Start Earning",
+    "joinNow": "Join now and start making real money right now!"
+  },
+  "languageToggle": {
+    "en": "EN",
+    "de": "DE"
+  }
+}

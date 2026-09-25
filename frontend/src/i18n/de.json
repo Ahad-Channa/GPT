@@ -1,0 +1,89 @@
+{
+  "nav": {
+    "home": "Startseite",
+    "earn": "Verdienen",
+    "howItWorks": "So geht's",
+    "features": "Funktionen",
+    "faq": "FAQ",
+    "login": "Anmelden",
+    "createAccount": "Registrieren"
+  },
+  "hero": {
+    "titleLine1": "Deine Zeit hat Wert",
+    "titleLine2": "Werde dafür belohnt",
+    "titleMobileLine1": "Deine Zeit",
+    "titleMobileLine2": "hat Wert –",
+    "titleMobileLine3": "Werde dafür",
+    "titleMobileLine4": "belohnt",
+    "subtitle": "Erledige Angebote, Umfragen und Aufgaben für echte Prämien. Tausende verdienen hier bereits täglich.",
+    "subtitleMobileLine1": "Erledige Angebote, Umfragen und",
+    "subtitleMobileLine2": "Aufgaben für echte Prämien. Tausende",
+    "subtitleMobileLine3": "verdienen hier bereits täglich.",
+    "startEarning": "Jetzt starten",
+    "totalUsers": "Nutzer gesamt:",
+    "totalPaid": "Ausgezahlt:"
+  },
+  "howItWorks": {
+    "title": "So geht's",
+    "subtitle": "Starte in Sekunden. Keine Einrichtung nötig.",
+    "subtitleMobileLine1": "Starte in Sekunden.",
+    "subtitleMobileLine2": "Keine Einrichtung nötig.",
+    "step1Label": "SCHRITT 01",
+    "step1Title": "Registrieren",
+    "step1Desc": "Erstelle dein Konto in Sekunden und erhalte sofort Zugang.",
+    "step2Label": "SCHRITT 02",
+    "step2Title": "Aufgaben erledigen",
+    "step2Desc": "Wähle aus hunderten Angeboten, Umfragen und Apps.",
+    "step3Label": "SCHRITT 03",
+    "step3Title": "Prämien erhalten",
+    "step3Desc": "Sammle Coins und tausche sie in Geld, Krypto oder Gutscheine."
+  },
+  "whyChooseUs": {
+    "title": "Warum wir?",
+    "subtitle": "Starke Funktionen, für dich gemacht.",
+    "multipleOfferwalls": "Viele Angebotswände",
+    "multipleOfferwallsDesc": "Verschiedene Verdienstoptionen an einem Ort.",
+    "fastPayouts": "Schnelle Auszahlung",
+    "fastPayoutsDesc": "Verdienste schnell und sicher auszahlen.",
+    "dailyBonus": "Täglicher Bonus",
+    "dailyBonusDesc": "Jeden Tag Extra-Prämien für aktive Nutzer.",
+    "vipProgress": "VIP-Fortschritt",
+    "vipProgressDesc": "Aufsteigen und bessere Prämien freischalten.",
+    "referralSystem": "Freunde werben",
+    "referralSystemDesc": "Empfiehl Freunde und verdiene mit.",
+    "liveActivity": "Live-Aktivität",
+    "liveActivityDesc": "Echtzeit-Verdienste der Plattform sehen."
+  },
+  "startEarningWith": {
+    "title": "Verdiene mit",
+    "subtitle": "Viele Wege, Coins zu sammeln. Wähle, was zu dir passt.",
+    "subtitleMobileLine1": "Viele Wege, Coins zu sammeln.",
+    "subtitleMobileLine2": "Wähle, was zu dir passt."
+  },
+  "faqSection": {
+    "title": "Häufig gestellte",
+    "titleLine2": "Fragen",
+    "subtitle": "Du hast Fragen? Wir haben Antworten.",
+    "q1": "Wie verdiene ich Geld?",
+    "a1": "Mit Angeboten, Umfragen und Aufgaben auf der Plattform.",
+    "q2": "Wann werde ich bezahlt?",
+    "a2": "Du kannst jederzeit sofort auszahlen.",
+    "q3": "Wie erreiche ich euch?",
+    "a3": "Über unser 24/7 Support-Ticket-System.",
+    "q4": "Ist es kostenlos?",
+    "a4": "Ja, 100 % kostenlos – Anmeldung und Verdienen.",
+    "q5": "Warum fehlt meine Prämie?",
+    "a5": "Die Erfassung kann etwas dauern. Kontaktiere den Support.",
+    "q6": "Wie hoch ist die Mindestauszahlung?",
+    "a6": "Nur 5 $ bei den meisten Auszahlungsmethoden."
+  },
+  "cta": {
+    "startEarningToday": "Jetzt verdienen",
+    "startEarning": "Jetzt starten",
+    "joinNow": "Melde dich jetzt an und verdiene echtes Geld!"
+  },
+  "languageToggle": {
+    "en": "EN",
+    "de": "DE"
+  }
+}
