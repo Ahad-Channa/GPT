@@ -3,7 +3,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   FiStar, FiPlus, FiTrash2, FiToggleLeft, FiToggleRight,
-  FiExternalLink, FiClock, FiLoader, FiAlertTriangle, FiRefreshCw, FiX
+  FiExternalLink, FiClock, FiLoader, FiAlertTriangle, FiRefreshCw, FiX, FiEdit2
 } from 'react-icons/fi';
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
@@ -16,19 +16,27 @@ const PRESET_ICONS = [
 // Returns true if the icon value is a URL/image path, false if emoji/text
 const isIconUrl = (icon) => icon && (icon.startsWith('http') || icon.startsWith('data:') || icon.includes('/') || icon.startsWith('fa-'));
 
-const CreateOfferModal = ({ onClose, onCreated, token }) => {
+const OfferModal = ({ offer, onClose, onSaved, token }) => {
+  const isEditing = Boolean(offer);
   const [form, setForm] = useState({
-    title: '',
-    description: '',
-    rewardAmount: '',
-    externalLink: '',
-    trackingType: 'manual_approval',
-    expirationDate: '',
-    icon: '',
-    coverImage: '',
-    requirements: '',
-    requirementType: 'bullets',
-    platforms: { desktop: false, android: false, ios: false },
+    title: offer?.title || '',
+    titleDe: offer?.titleDe || '',
+    description: offer?.description || '',
+    descriptionDe: offer?.descriptionDe || '',
+    rewardAmount: offer?.rewardAmount || '',
+    externalLink: offer?.externalLink || '',
+    trackingType: offer?.trackingType || 'manual_approval',
+    expirationDate: offer?.expirationDate ? new Date(offer.expirationDate).toISOString().slice(0, 16) : '',
+    icon: offer?.icon || '',
+    coverImage: offer?.coverImage || '',
+    requirements: Array.isArray(offer?.requirements)
+      ? offer.requirements.join('\n')
+      : (offer?.requirements || ''),
+    requirementsDe: Array.isArray(offer?.requirementsDe)
+      ? offer.requirementsDe.join('\n')
+      : (offer?.requirementsDe || ''),
+    requirementType: offer?.requirementType || 'bullets',
+    platforms: offer?.platforms || { desktop: true, android: true, ios: true },
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -40,8 +48,13 @@ const CreateOfferModal = ({ onClose, onCreated, token }) => {
     setError('');
     setLoading(true);
     try {
-      const res = await fetch(`${API}/admin/custom-offers`, {
-        method: 'POST',
+      const url = isEditing
+        ? `${API}/admin/custom-offers/${offer._id}`
+        : `${API}/admin/custom-offers`;
+      const method = isEditing ? 'PUT' : 'POST';
+
+      const res = await fetch(url, {
+        method,
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({
           ...form,
@@ -50,16 +63,19 @@ const CreateOfferModal = ({ onClose, onCreated, token }) => {
           requirements: form.requirementType === 'paragraph'
             ? [form.requirements.trim()].filter(Boolean)
             : form.requirements.split('\n').map(r => r.trim()).filter(Boolean),
+          requirementsDe: form.requirementType === 'paragraph'
+            ? [(form.requirementsDe || '').trim()].filter(Boolean)
+            : (form.requirementsDe || '').split('\n').map(r => r.trim()).filter(Boolean),
           requirementType: form.requirementType,
           platforms: form.platforms,
         }),
       });
       const data = await res.json();
       if (data.success) {
-        onCreated(data.offer);
+        onSaved(data.offer);
         onClose();
       } else {
-        setError(data.error || 'Failed to create offer');
+        setError(data.error || `Failed to ${isEditing ? 'update' : 'create'} offer`);
       }
     } catch {
       setError('Network error. Please try again.');
@@ -90,8 +106,12 @@ const CreateOfferModal = ({ onClose, onCreated, token }) => {
               <FiStar className="text-amber-600 text-base" />
             </div>
             <div>
-              <h3 className="text-gray-900 font-bold font-display text-base">Create Featured Offer</h3>
-              <p className="text-gray-500 text-xs mt-0.5">Add a new offer for users to complete</p>
+              <h3 className="text-gray-900 font-bold font-display text-base">
+                {isEditing ? 'Edit Featured Offer' : 'Create Featured Offer'}
+              </h3>
+              <p className="text-gray-500 text-xs mt-0.5">
+                {isEditing ? 'Update offer details & German translations' : 'Add a new offer for users to complete'}
+              </p>
             </div>
           </div>
           <button
@@ -111,7 +131,7 @@ const CreateOfferModal = ({ onClose, onCreated, token }) => {
 
           {/* Title */}
           <div>
-            <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1.5">Title *</label>
+            <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1.5">Title (English) *</label>
             <input
               value={form.title}
               onChange={set('title')}
@@ -121,15 +141,38 @@ const CreateOfferModal = ({ onClose, onCreated, token }) => {
             />
           </div>
 
+          {/* Title DE */}
+          <div>
+            <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1.5">🇩🇪 Title (German)</label>
+            <input
+              value={form.titleDe}
+              onChange={set('titleDe')}
+              placeholder="z.B. Melde dich bei CryptoGame an und erreiche Level 5"
+              className="w-full bg-white border border-gray-300 rounded-xl px-3.5 py-2 text-gray-900 text-sm placeholder-gray-400 focus:outline-none focus:border-[#1E2538] focus:ring-1 focus:ring-[#1E2538]/20 transition-all"
+            />
+          </div>
+
           {/* Description */}
           <div>
-            <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1.5">Description *</label>
+            <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1.5">Description (English) *</label>
             <textarea
               value={form.description}
               onChange={set('description')}
               placeholder="Describe the steps needed to complete and earn the reward..."
               rows={2}
               required
+              className="w-full bg-white border border-gray-300 rounded-xl px-3.5 py-2 text-gray-900 text-sm placeholder-gray-400 focus:outline-none focus:border-[#1E2538] focus:ring-1 focus:ring-[#1E2538]/20 resize-none transition-all"
+            />
+          </div>
+
+          {/* Description DE */}
+          <div>
+            <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1.5">🇩🇪 Description (German)</label>
+            <textarea
+              value={form.descriptionDe}
+              onChange={set('descriptionDe')}
+              placeholder="Beschreibe die Schritte zum Abschließen und Erhalten der Belohnung..."
+              rows={2}
               className="w-full bg-white border border-gray-300 rounded-xl px-3.5 py-2 text-gray-900 text-sm placeholder-gray-400 focus:outline-none focus:border-[#1E2538] focus:ring-1 focus:ring-[#1E2538]/20 resize-none transition-all"
             />
           </div>
@@ -182,6 +225,22 @@ const CreateOfferModal = ({ onClose, onCreated, token }) => {
                 ? "Displays as a single clean paragraph box."
                 : "Enter each step on a new line to display as a step-by-step checklist."}
             </span>
+          </div>
+
+          {/* Requirements DE */}
+          <div>
+            <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1.5">🇩🇪 Requirements (German)</label>
+            <textarea
+              value={form.requirementsDe}
+              onChange={set('requirementsDe')}
+              placeholder={
+                form.requirementType === 'paragraph'
+                  ? "z.B. Registrieren und 50 € einzahlen, dann 100 € umsetzen."
+                  : "z.B. Registrieren → 10 Coins erhalten\n50 € einzahlen → 50.000 Coins erhalten\n200 € Umsatz erzielen → 10.000 Coins erhalten"
+              }
+              rows={form.requirementType === 'paragraph' ? 2 : 3}
+              className="w-full bg-white border border-gray-300 rounded-xl px-3.5 py-2 text-gray-900 text-sm placeholder-gray-400 focus:outline-none focus:border-[#1E2538] focus:ring-1 focus:ring-[#1E2538]/20 resize-none transition-all"
+            />
           </div>
 
           {/* Icon Picker */}
@@ -328,8 +387,8 @@ const CreateOfferModal = ({ onClose, onCreated, token }) => {
               disabled={loading}
               className="flex items-center gap-2 px-5 py-2 rounded-xl bg-[#1E2538] hover:bg-[#2B334B] text-white text-xs font-bold transition-all shadow-sm disabled:opacity-50"
             >
-              {loading ? <FiLoader className="animate-spin text-xs" /> : <FiPlus size={14} />}
-              <span>{loading ? 'Creating...' : 'Create Offer'}</span>
+              {loading ? <FiLoader className="animate-spin text-xs" /> : isEditing ? <FiEdit2 size={14} /> : <FiPlus size={14} />}
+              <span>{loading ? (isEditing ? 'Saving...' : 'Creating...') : (isEditing ? 'Save Changes' : 'Create Offer')}</span>
             </button>
           </div>
         </form>
@@ -345,6 +404,7 @@ const AdminCustomOffers = () => {
   const [offers, setOffers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showCreate, setShowCreate] = useState(false);
+  const [editingOffer, setEditingOffer] = useState(null);
   const [refreshSub, setRefreshSub] = useState(0);
 
   useEffect(() => {
@@ -469,6 +529,11 @@ const AdminCustomOffers = () => {
                   <div className="flex-1 min-w-0">
                     <div className="flex flex-wrap items-center gap-2 mb-1.5">
                       <h3 className="text-gray-900 font-bold font-display text-base">{offer.title}</h3>
+                      {offer.titleDe && (
+                        <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold bg-gray-100 text-gray-600 border border-gray-200" title={`DE: ${offer.titleDe}`}>
+                          🇩🇪 DE
+                        </span>
+                      )}
                       <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border ${
                         offer.isActive
                           ? 'text-emerald-700 bg-emerald-50 border-emerald-200'
@@ -502,6 +567,13 @@ const AdminCustomOffers = () => {
                   {/* Actions */}
                   <div className="flex items-center gap-2 flex-shrink-0">
                     <button
+                      onClick={() => setEditingOffer(offer)}
+                      title="Edit offer"
+                      className="p-2 rounded-lg bg-gray-100 border border-gray-200 text-gray-600 hover:bg-gray-200 hover:text-gray-900 transition-all"
+                    >
+                      <FiEdit2 className="text-base" />
+                    </button>
+                    <button
                       onClick={() => toggleOffer(offer)}
                       title={offer.isActive ? 'Deactivate offer' : 'Activate offer'}
                       className={`p-2 rounded-lg border transition-all ${
@@ -527,13 +599,25 @@ const AdminCustomOffers = () => {
         </div>
       </AnimatePresence>
 
-      {/* Create Modal */}
+      {/* Create / Edit Modal */}
       <AnimatePresence>
-        {showCreate && (
-          <CreateOfferModal
+        {(showCreate || editingOffer) && (
+          <OfferModal
+            offer={editingOffer}
             token={token}
-            onClose={() => setShowCreate(false)}
-            onCreated={(offer) => setOffers((prev) => [offer, ...prev])}
+            onClose={() => {
+              setShowCreate(false);
+              setEditingOffer(null);
+            }}
+            onSaved={(savedOffer) => {
+              setOffers((prev) => {
+                const exists = prev.some((o) => o._id === savedOffer._id);
+                if (exists) {
+                  return prev.map((o) => (o._id === savedOffer._id ? savedOffer : o));
+                }
+                return [savedOffer, ...prev];
+              });
+            }}
           />
         )}
       </AnimatePresence>

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../contexts/AuthContext';
 import DashboardLayout from '../components/layout/DashboardLayout';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -66,6 +67,7 @@ const MedalBadge = ({ rank }) => {
 
 /* ── Podium Card ─────────────────────────────────────────────── */
 const PodiumCard = ({ rank, user, prize, onClick, isCenter = false }) => {
+  const { t } = useTranslation();
   if (!user) {
     return (
       <div className={`w-full max-w-[247px] opacity-0 pointer-events-none hidden sm:block ${isCenter ? 'order-1 sm:order-2' : ''}`} />
@@ -258,7 +260,7 @@ const PodiumCard = ({ rank, user, prize, onClick, isCenter = false }) => {
               whiteSpace: 'nowrap',
             }}
           >
-            Prize
+            {t('leaderboard.prize', 'Prize')}
           </span>
           <div className="flex items-center gap-1">
             <img
@@ -292,6 +294,7 @@ const PodiumCard = ({ rank, user, prize, onClick, isCenter = false }) => {
 
 /* ── Split Box Countdown ─────────────────────────────────────── */
 const LeaderboardCountdown = ({ targetDate }) => {
+  const { t } = useTranslation();
   const [time, setTime] = useState({ d: '00', h: '00', m: '00', s: '00' });
 
   useEffect(() => {
@@ -350,7 +353,7 @@ const LeaderboardCountdown = ({ targetDate }) => {
           justifyContent: 'center',
         }}
       >
-        Resets in
+        {t('leaderboard.resetsIn', 'Resets in')}
       </span>
 
       <div className="flex items-center justify-between w-full">
@@ -405,7 +408,7 @@ const LeaderboardCountdown = ({ targetDate }) => {
               display: 'block',
             }}
           >
-            Days
+            {t('leaderboard.days', 'Days')}
           </span>
         </div>
 
@@ -462,7 +465,7 @@ const LeaderboardCountdown = ({ targetDate }) => {
               display: 'block',
             }}
           >
-            Hours
+            {t('leaderboard.hours', 'Hours')}
           </span>
         </div>
 
@@ -519,7 +522,7 @@ const LeaderboardCountdown = ({ targetDate }) => {
               display: 'block',
             }}
           >
-            Minutes
+            {t('leaderboard.minutes', 'Minutes')}
           </span>
         </div>
 
@@ -576,7 +579,7 @@ const LeaderboardCountdown = ({ targetDate }) => {
               display: 'block',
             }}
           >
-            Second
+            {t('leaderboard.seconds', 'Seconds')}
           </span>
         </div>
       </div>
@@ -586,6 +589,7 @@ const LeaderboardCountdown = ({ targetDate }) => {
 
 /* ── Main Leaderboard Page ───────────────────────────────────── */
 const Leaderboard = () => {
+  const { t } = useTranslation();
   const { currentUser } = useAuth();
   const [activeProfileId, setActiveProfileId] = useState(null);
   const [leaderboard, setLeaderboard] = useState(null);
@@ -705,7 +709,7 @@ const Leaderboard = () => {
                 className="text-gray-500 font-medium text-[10px] sm:text-[13px] shrink-0"
                 style={{ fontFamily: '"Poppins", sans-serif' }}
               >
-                (you)
+                {t('leaderboard.you', '(you)')}
               </span>
             )}
           </div>
@@ -733,7 +737,7 @@ const Leaderboard = () => {
                 margin: 0,
               }}
             >
-              Earning
+              {t('leaderboard.earning', 'Earning')}
             </span>
             <div className="flex items-center gap-1 sm:gap-1.5 mt-0.5 sm:mt-1 h-[15px] sm:h-auto">
               <img
@@ -775,7 +779,7 @@ const Leaderboard = () => {
                 margin: 0,
               }}
             >
-              Prize
+              {t('leaderboard.prize', 'Prize')}
             </span>
             <div className="flex items-center gap-1 sm:gap-1.5 mt-0.5 sm:mt-1 h-[15px] sm:h-auto min-h-[15px] sm:min-h-[24px]">
               {prize > 0 ? (
@@ -862,17 +866,15 @@ const Leaderboard = () => {
                   boxSizing: 'border-box',
                 }}
               >
-                {/* Heading (163x18, 27px Bricolage Grotesque 700) */}
+                {/* Heading */}
                 <h1
                   style={{
-                    width: '163px',
-                    height: '18px',
                     opacity: 1,
                     transform: 'rotate(0deg)',
                     fontFamily: '"Bricolage Grotesque", sans-serif',
                     fontWeight: 700,
                     fontSize: '27px',
-                    lineHeight: '18px',
+                    lineHeight: '28px',
                     letterSpacing: '-0.02em',
                     textAlign: 'center',
                     color: '#000000',
@@ -883,7 +885,7 @@ const Leaderboard = () => {
                     whiteSpace: 'nowrap',
                   }}
                 >
-                  Leaderboard
+                  {t('leaderboard.pageTitle', 'Leaderboard')}
                 </h1>
               </div>
 
@@ -929,7 +931,7 @@ const Leaderboard = () => {
                               whiteSpace: 'nowrap',
                             }}
                           >
-                            {PERIOD_META[period]?.label || period}
+                            {t(`leaderboard.tab${period.charAt(0).toUpperCase() + period.slice(1)}`, PERIOD_META[period]?.label || period)}
                           </span>
                         </button>
                       );
@@ -947,8 +949,8 @@ const Leaderboard = () => {
             ) : enabledPeriods.length === 0 ? (
               <div className="text-center py-12 bg-white rounded-[20px] max-w-md w-full border border-gray-100 shadow-sm">
                 <FiLock className="text-4xl text-gray-400 mx-auto mb-3" />
-                <h2 className="text-lg font-bold text-gray-800 mb-1">Leaderboard Inactive</h2>
-                <p className="text-gray-500 text-xs">Check back later for active cycles!</p>
+                <h2 className="text-lg font-bold text-gray-800 mb-1">{t('leaderboard.inactiveTitle', 'Leaderboard Inactive')}</h2>
+                <p className="text-gray-500 text-xs">{t('leaderboard.inactiveDesc', 'Check back later for active cycles!')}</p>
               </div>
             ) : (
               <AnimatePresence mode="wait">
@@ -1015,7 +1017,7 @@ const Leaderboard = () => {
           <div className="w-full max-w-[1102px] mx-auto mt-8 sm:mt-12 mb-12 sm:mb-16 flex flex-col gap-2.5 sm:gap-3 px-2 sm:px-4 md:px-0 items-center">
             {!others.length && rankings.length <= 3 && (
               <div className="text-center py-10 text-gray-400 text-sm font-medium bg-white rounded-[20px] border border-gray-100">
-                No other users on the leaderboard yet.
+                {t('leaderboard.noOtherUsers', 'No other users on the leaderboard yet.')}
               </div>
             )}
 

@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../contexts/AuthContext';
 import { TIER_STYLES, getLevelLabel, LEVEL_BADGES } from '../utils/vipLevels';
 import { FiLock } from 'react-icons/fi';
@@ -95,6 +96,7 @@ const TIER_METADATA = {
 };
 
 const VipPage = () => {
+  const { t } = useTranslation();
   const { currentUser } = useAuth();
   const [status, setStatus] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -109,11 +111,11 @@ const VipPage = () => {
       const data = await res.json();
       if (data.success) setStatus(data);
     } catch {
-      toast.error('Failed to load VIP status');
+      toast.error(t('vipPage.failedToLoad', 'Failed to load VIP status'));
     } finally {
       setLoading(false);
     }
-  }, [currentUser]);
+  }, [currentUser, t]);
 
   useEffect(() => { fetchStatus(); }, [fetchStatus]);
 
@@ -128,13 +130,13 @@ const VipPage = () => {
       });
       const data = await res.json();
       if (data.success) {
-        toast.success(`🎉 Claimed ${data.rewardAmount.toLocaleString('de-DE')} coins!`);
+        toast.success(t('vipPage.claimedReward', { amount: data.rewardAmount.toLocaleString('de-DE'), defaultValue: `🎉 Claimed ${data.rewardAmount.toLocaleString('de-DE')} coins!` }));
         fetchStatus();
       } else {
-        toast.error(data.error || 'Failed to claim');
+        toast.error(data.error || t('vipPage.failedToClaim', 'Failed to claim'));
       }
     } catch {
-      toast.error('Network error');
+      toast.error(t('vipPage.networkError', 'Network error'));
     } finally {
       setClaiming(null);
     }
@@ -185,7 +187,7 @@ const VipPage = () => {
                 textAlign: 'left',
               }}
             >
-              VIP Status
+              {t('vipPage.pageTitle', 'VIP Status')}
             </h1>
 
             {/* Top Status Card */}
@@ -208,7 +210,7 @@ const VipPage = () => {
                       margin: 0,
                     }}
                   >
-                    Current rank
+                    {t('vipPage.currentRank', 'Current rank')}
                   </span>
                   <h2
                     className="text-[19px] sm:text-[22px] font-bold text-black"
@@ -221,7 +223,7 @@ const VipPage = () => {
                   >
                     {currentLevel ? getLevelLabel(currentLevel) : (
                       <>
-                        Earn coins<br />for Bronze Tier
+                        {t('vipPage.earnCoinsFor', 'Earn coins')}<br />{t('vipPage.forBronzeTier', 'for Bronze Tier')}
                       </>
                     )}
                   </h2>
@@ -240,7 +242,7 @@ const VipPage = () => {
                           fontFamily: '"Poppins", sans-serif',
                         }}
                       >
-                        You have reached max level
+                        {t('vipPage.maxLevelReached', 'You have reached max level')}
                       </span>
                     </div>
                   )}
@@ -264,7 +266,7 @@ const VipPage = () => {
                       margin: 0,
                     }}
                   >
-                    Total Earned
+                    {t('vipPage.totalEarned', 'Total Earned')}
                   </span>
                   <div className="flex items-center gap-1">
                     <img src="/coins/VIPcoin1.png" alt="Coin" className="w-3.5 h-3.5 object-contain shrink-0" />
@@ -297,7 +299,7 @@ const VipPage = () => {
                       margin: 0,
                     }}
                   >
-                    Rank Level
+                    {t('vipPage.rankLevel', 'Rank Level')}
                   </span>
                   <span
                     className="text-[13px] sm:text-[14px] font-bold text-center whitespace-nowrap"
@@ -360,7 +362,7 @@ const VipPage = () => {
                           letterSpacing: '-0.02em',
                         }}
                       >
-                        {tierName} Tier
+                        {t('vipPage.tierTitle', { tier: tierName, defaultValue: `${tierName} Tier` })}
                       </h3>
                     </div>
 
@@ -416,7 +418,7 @@ const VipPage = () => {
                                     fontFamily: '"Poppins", sans-serif',
                                   }}
                                 >
-                                  Requires {lvl.threshold.toLocaleString('de-DE')} coins
+                                  {t('vipPage.requiresCoins', { count: lvl.threshold.toLocaleString('de-DE'), defaultValue: `Requires ${lvl.threshold.toLocaleString('de-DE')} coins` })}
                                 </p>
 
                                 {/* Coin and Amount Row */}
@@ -482,7 +484,7 @@ const VipPage = () => {
                                           fontFamily: '"Poppins", sans-serif',
                                         }}
                                       >
-                                        Congrats, Claimed successfully
+                                        {t('vipPage.claimedSuccess', 'Congrats, Claimed successfully')}
                                       </span>
                                     </div>
                                   </div>
@@ -495,7 +497,7 @@ const VipPage = () => {
                                       fontFamily: '"Poppins", sans-serif',
                                     }}
                                   >
-                                    {claiming === lvl.key ? '...' : 'Claim'}
+                                    {claiming === lvl.key ? t('vipPage.claiming', '...') : t('vipPage.claim', 'Claim')}
                                   </button>
                                 ) : (
                                   <div
@@ -509,7 +511,7 @@ const VipPage = () => {
                                       alt="Locked"
                                       className="w-3.5 h-3.5 object-contain opacity-50"
                                     />
-                                    <span>Locked</span>
+                                    <span>{t('vipPage.locked', 'Locked')}</span>
                                   </div>
                                 )}
                               </div>
@@ -528,7 +530,7 @@ const VipPage = () => {
                             fontFamily: '"Bricolage Grotesque", sans-serif',
                           }}
                         >
-                          Progress to {lastTierLevel ? getLevelLabel(lastTierLevel) : `${tierName} III`}
+                          {t('vipPage.progressTo', { rank: lastTierLevel ? getLevelLabel(lastTierLevel) : `${tierName} III`, defaultValue: `Progress to ${lastTierLevel ? getLevelLabel(lastTierLevel) : `${tierName} III`}` })}
                         </span>
                         <div
                           className="flex flex-wrap items-center justify-start sm:justify-end gap-1 text-[12px] sm:text-[13px] font-medium text-black text-left"
@@ -536,18 +538,18 @@ const VipPage = () => {
                             fontFamily: '"Poppins", sans-serif',
                           }}
                         >
-                          <span>Earn</span>
+                          <span>{t('vipPage.earn', 'Earn')}</span>
                           <img src="/coins/VIPcoin1.png" alt="Coin" className="w-3.5 h-3.5 object-contain inline-block shrink-0" />
                           <span style={{ color: 'rgba(231, 171, 24, 1)', fontWeight: 600 }}>
                             {coinsToNext.toLocaleString('de-DE')}
                           </span>
-                          <span>more coins to unlock your</span>
+                          <span>{t('vipPage.moreCoinsToUnlock', 'more coins to unlock your')}</span>
                           <span className="basis-full h-0 sm:hidden" />
                           <img src="/coins/VIPcoin1.png" alt="Coin" className="w-3.5 h-3.5 object-contain inline-block shrink-0" />
                           <span style={{ color: 'rgba(231, 171, 24, 1)', fontWeight: 600 }}>
                             {(lastTierLevel?.rewardAmount || 250000).toLocaleString('de-DE')}
                           </span>
-                          <span>coin bonus.</span>
+                          <span>{t('vipPage.coinBonus', 'coin bonus.')}</span>
                         </div>
                       </div>
                     </div>

@@ -1,5 +1,6 @@
 import { useState, useEffect, useLayoutEffect, useRef, useCallback } from 'react';
 import io from 'socket.io-client';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../contexts/AuthContext';
 import { useNotifications } from '../../contexts/NotificationContext';
 import SupportChat from '../SupportChat';
@@ -94,6 +95,7 @@ const AvatarWithBadge = ({ user, size = 33 }) => {
 };
 
 const RoleBadges = ({ user }) => {
+  const { t } = useTranslation();
   const role = user?.role || 'user';
   const vipLevel = getLevelFromEarned(user?.totalEarned || 0);
   const tierName = vipLevel?.tier || 'Bronze';
@@ -122,7 +124,7 @@ const RoleBadges = ({ user }) => {
             transform: 'rotate(0deg)',
           }}
         >
-          Admin
+          {t('chat.roleAdmin', 'Admin')}
         </span>
       )}
 
@@ -146,7 +148,7 @@ const RoleBadges = ({ user }) => {
             transform: 'rotate(0deg)',
           }}
         >
-          Mod
+          {t('chat.roleMod', 'Mod')}
         </span>
       )}
 
@@ -176,11 +178,12 @@ const RoleBadges = ({ user }) => {
 };
 
 const MessageRow = ({ msg, canModerate, onDelete, deletingId, onUserClick }) => {
+  const { t, i18n } = useTranslation();
   const [hov, setHov] = useState(false);
   const isDeleting = deletingId === msg._id;
 
   const date = new Date(msg.createdAt || Date.now());
-  const formattedDate = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  const formattedDate = date.toLocaleDateString(i18n.language === 'de' ? 'de-DE' : 'en-US', { month: 'short', day: 'numeric' });
 
   return (
     <div
@@ -233,7 +236,7 @@ const MessageRow = ({ msg, canModerate, onDelete, deletingId, onUserClick }) => 
               }}
               className="hover:underline"
             >
-              {msg.user?.displayName || msg.user?.username || (msg.user?.email ? msg.user.email.split('@')[0] : '') || msg.senderName || 'Ahad'}
+              {msg.user?.displayName || msg.user?.username || (msg.user?.email ? msg.user.email.split('@')[0] : '') || msg.senderName || 'User'}
             </button>
             <span
               style={{
@@ -280,7 +283,7 @@ const MessageRow = ({ msg, canModerate, onDelete, deletingId, onUserClick }) => 
         <button
           onClick={() => onDelete(msg._id)}
           className="absolute right-0 top-1 p-1 text-gray-400 hover:text-red-600 rounded transition-colors bg-white/80 backdrop-blur-sm"
-          title="Delete message"
+          title={t('chat.deleteMessage', 'Delete message')}
         >
           <FiTrash2 size={13} />
         </button>
@@ -290,6 +293,7 @@ const MessageRow = ({ msg, canModerate, onDelete, deletingId, onUserClick }) => 
 };
 
 const ChatSidebar = ({ isOpen, onClose }) => {
+  const { t } = useTranslation();
   const { mongoUser, currentUser, isAdmin } = useAuth();
   const { setHasUnreadChat } = useNotifications();
   const isMod = mongoUser?.role === 'moderator';
@@ -441,8 +445,8 @@ const ChatSidebar = ({ isOpen, onClose }) => {
         method: 'DELETE', headers: { Authorization: `Bearer ${token}` }
       });
       const data = await res.json();
-      if (data.status !== 'success') toast.error(data.message || 'Delete failed');
-    } catch { toast.error('Failed to delete message'); }
+      if (data.status !== 'success') toast.error(data.message || t('chat.deleteFailed', 'Failed to delete message'));
+    } catch { toast.error(t('chat.deleteFailed', 'Failed to delete message')); }
     finally { setDeletingId(null); }
   };
 
@@ -495,12 +499,13 @@ const ChatSidebar = ({ isOpen, onClose }) => {
                   <button
                     onClick={() => setActiveTab('chat')}
                     style={{
-                      width: '99px',
+                      minWidth: '99px',
+                      width: 'auto',
                       height: '39px',
                       borderRadius: '100px',
                       background: activeTab === 'chat' ? 'rgba(36, 50, 77, 1)' : 'rgba(249, 247, 241, 1)',
                       color: activeTab === 'chat' ? '#FFFFFF' : '#000000',
-                      padding: '15px 18px',
+                      padding: '10px 18px',
                       gap: '8px',
                       display: 'flex',
                       alignItems: 'center',
@@ -520,17 +525,18 @@ const ChatSidebar = ({ isOpen, onClose }) => {
                       whiteSpace: 'nowrap',
                     }}
                   >
-                    Live Chat
+                    {t('chat.liveChat', 'Live Chat')}
                   </button>
                   <button
                     onClick={() => setActiveTab('support')}
                     style={{
-                      width: '99px',
+                      minWidth: '99px',
+                      width: 'auto',
                       height: '39px',
                       borderRadius: '100px',
                       background: activeTab === 'support' ? 'rgba(36, 50, 77, 1)' : 'rgba(249, 247, 241, 1)',
                       color: activeTab === 'support' ? '#FFFFFF' : '#000000',
-                      padding: '15px 18px',
+                      padding: '10px 18px',
                       gap: '8px',
                       display: 'flex',
                       alignItems: 'center',
@@ -550,7 +556,7 @@ const ChatSidebar = ({ isOpen, onClose }) => {
                       whiteSpace: 'nowrap',
                     }}
                   >
-                    Support
+                    {t('chat.support', 'Support')}
                   </button>
                 </div>
 
@@ -620,7 +626,7 @@ const ChatSidebar = ({ isOpen, onClose }) => {
                       color: '#000000',
                     }}
                   >
-                    Online
+                    {t('chat.online', 'Online')}
                   </span>
                 </div>
                 <span
@@ -684,7 +690,7 @@ const ChatSidebar = ({ isOpen, onClose }) => {
                   {messages.length === 0 ? (
                     <div className="flex-1 flex flex-col items-center justify-center text-center text-gray-400 gap-2 py-12">
                       <FiMessageSquare size={28} className="text-gray-300" />
-                      <p className="text-sm font-medium text-gray-500 m-0">No messages yet — say hi! 👋</p>
+                      <p className="text-sm font-medium text-gray-500 m-0">{t('chat.noMessages', 'No messages yet — say hi! 👋')}</p>
                     </div>
                   ) : (
                     messages.map((msg, idx) => (
@@ -728,7 +734,7 @@ const ChatSidebar = ({ isOpen, onClose }) => {
                           type="text"
                           value={newMsg}
                           onChange={e => setNewMsg(e.target.value)}
-                          placeholder="Massage everyone..."
+                          placeholder={t('chat.inputPlaceholder', 'Message everyone...')}
                           maxLength={500}
                           style={{
                             flex: 1,
@@ -768,7 +774,7 @@ const ChatSidebar = ({ isOpen, onClose }) => {
                         >
                           <img
                             src="/coins/ChatSend.png"
-                            alt="Send"
+                            alt={t('chat.send', 'Send')}
                             style={{
                               width: '18px',
                               height: '18px',
@@ -785,7 +791,7 @@ const ChatSidebar = ({ isOpen, onClose }) => {
                     </form>
                   ) : (
                     <div className="text-center py-2 text-xs font-semibold text-gray-500">
-                      Log in to join the conversation
+                      {t('chat.loginToChat', 'Log in to join the conversation')}
                     </div>
                   )}
                 </div>

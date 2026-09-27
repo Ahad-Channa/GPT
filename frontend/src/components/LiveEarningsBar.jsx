@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 import PublicProfileModal from './PublicProfileModal';
 import { io } from 'socket.io-client';
 
@@ -33,6 +34,7 @@ const getAvatarColor = (name = '') => {
 };
 
 const LiveEarningsBar = () => {
+  const { t } = useTranslation();
   const [earnings, setEarnings] = useState(() => cachedEarningsGlobal);
   const [selectedUserId, setSelectedUserId] = useState(null);
   const [hasMore, setHasMore] = useState(true);
@@ -268,7 +270,7 @@ const LiveEarningsBar = () => {
                 whiteSpace: 'nowrap',
               }}
             >
-              Live Feed
+              {t('nav.liveFeed')}
             </span>
           </div>
 

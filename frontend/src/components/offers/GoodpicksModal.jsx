@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FiX, FiCheck, FiChevronDown, FiExternalLink, FiLoader } from 'react-icons/fi';
 import { FaAndroid, FaApple, FaDesktop } from 'react-icons/fa';
@@ -175,6 +176,14 @@ const renderOfferCover = (offer) => {
 
 // ─── Goodpicks Offer Details Modal (Screenshot 2) ───────────────────────────
 export const GoodpicksDetailModal = ({ offer, onClose, token }) => {
+  const { t, i18n } = useTranslation();
+  const isDe = i18n.language?.startsWith('de');
+  const title = (isDe && offer.titleDe) ? offer.titleDe : offer.title;
+  const description = (isDe && offer.descriptionDe) ? offer.descriptionDe : (offer.description || t('goodpicks.defaultDescription'));
+  const requirementsList = (isDe && offer.requirementsDe && offer.requirementsDe.length > 0)
+    ? offer.requirementsDe
+    : offer.requirements;
+
   const [loading, setLoading] = useState(false);
 
   if (!offer) return null;
@@ -186,6 +195,15 @@ export const GoodpicksDetailModal = ({ offer, onClose, token }) => {
       window.open(offer.externalLink, '_blank', 'noopener,noreferrer');
     }
   };
+
+  const generalRules = [
+    t('goodpicks.rule1'),
+    t('goodpicks.rule2'),
+    t('goodpicks.rule3'),
+    t('goodpicks.rule4'),
+    t('goodpicks.rule5'),
+    t('goodpicks.rule6'),
+  ];
 
   return (
     <motion.div
@@ -254,7 +272,7 @@ export const GoodpicksDetailModal = ({ offer, onClose, token }) => {
             <FiX size={10} strokeWidth={2.5} />
           </button>
 
-          {/* 84x84 Image layout (width: 84, height: 84, borderRadius: 12px, opacity: 1) */}
+          {/* 84x84 Image layout */}
           <div
             style={{
               width: '84px',
@@ -288,7 +306,7 @@ export const GoodpicksDetailModal = ({ offer, onClose, token }) => {
                 opacity: 1,
               }}
             >
-              {offer.title}
+              {title}
             </h3>
             <p
               style={{
@@ -304,7 +322,7 @@ export const GoodpicksDetailModal = ({ offer, onClose, token }) => {
               }}
               className="line-clamp-2"
             >
-              {offer.description || 'Complete this offer by sending it to your Android device from here'}
+              {description}
             </p>
           </div>
 
@@ -332,7 +350,7 @@ export const GoodpicksDetailModal = ({ offer, onClose, token }) => {
               </span>
             </div>
 
-            {/* Platform Icon Badges — show all selected platforms */}
+            {/* Platform Icon Badges */}
             <div className="flex items-center" style={{ gap: '6px' }}>
               {offer.platforms?.desktop && (
                 <div
@@ -411,7 +429,7 @@ export const GoodpicksDetailModal = ({ offer, onClose, token }) => {
           }}
           className="shrink-0"
         >
-          Requirements
+          {t('goodpicks.requirements')}
         </h2>
 
         {/* White Requirements Card */}
@@ -438,14 +456,14 @@ export const GoodpicksDetailModal = ({ offer, onClose, token }) => {
                 lineHeight: '22px',
               }}
             >
-              {Array.isArray(offer.requirements) && offer.requirements.length > 0
-                ? offer.requirements.join(' ')
-                : typeof offer.requirements === 'string'
-                ? offer.requirements
-                : 'Complete all in-app milestones to earn rewards.'}
+              {Array.isArray(requirementsList) && requirementsList.length > 0
+                ? requirementsList.join(' ')
+                : typeof requirementsList === 'string'
+                ? requirementsList
+                : t('goodpicks.defaultRequirement')}
             </p>
-          ) : offer.requirements && offer.requirements.length > 0 ? (
-            offer.requirements.map((req, i) => (
+          ) : requirementsList && requirementsList.length > 0 ? (
+            requirementsList.map((req, i) => (
               <div
                 key={i}
                 className={`flex items-center gap-3.5 ${i > 0 ? 'pt-3' : ''}`}
@@ -515,7 +533,7 @@ export const GoodpicksDetailModal = ({ offer, onClose, token }) => {
                   color: '#0F172A',
                 }}
               >
-                Complete all requirements to earn rewards
+                {t('goodpicks.defaultRequirement')}
               </span>
             </div>
           )}
@@ -542,7 +560,7 @@ export const GoodpicksDetailModal = ({ offer, onClose, token }) => {
           }}
           className="hover:bg-[#151B24] transition-all shadow-md shrink-0"
         >
-          Start Offer
+          {t('goodpicks.startOffer')}
         </button>
 
         {/* General Offer Rules Section */}
@@ -567,17 +585,10 @@ export const GoodpicksDetailModal = ({ offer, onClose, token }) => {
               margin: 0,
             }}
           >
-            GENERAL OFFER RULES
+            {t('goodpicks.generalRules')}
           </h4>
           <div className="flex flex-col gap-1.5">
-            {[
-              'Use a genuine device. Emulators are not allowed.',
-              'VPNs and proxies are not allowed. Your real location must be used.',
-              'Complete the offer yourself and follow the stated requirements.',
-              'Offers may be limited to new users/customers where specified. Existing users may not be eligible.',
-              'Follow the individual offer requirements and any stated completion deadline.',
-              'Rewards are only granted when the offer requirements are successfully verified.',
-            ].map((rule, idx) => (
+            {generalRules.map((rule, idx) => (
               <div key={idx} className="flex items-start gap-2">
                 <div
                   style={{
@@ -665,11 +676,10 @@ export const GoodpicksDetailModal = ({ offer, onClose, token }) => {
                 color: '#000000',
                 margin: 0,
                 padding: 0,
+                whiteSpace: 'pre-line',
               }}
             >
-              Scan the QR code to start
-              <br />
-              directly on your smartphone.
+              {t('goodpicks.scanQrCode')}
             </p>
           </div>
         </div>
@@ -680,6 +690,8 @@ export const GoodpicksDetailModal = ({ offer, onClose, token }) => {
 
 // ─── Main Goodpicks Offerwall Modal (Screenshot 1) ──────────────────────────
 export const GoodpicksOfferwallModal = ({ onClose, token }) => {
+  const { t, i18n } = useTranslation();
+  const isDe = i18n.language?.startsWith('de');
   const [offers, setOffers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('All'); // 'All' | 'Android' | 'IOS' | 'PC'
@@ -723,6 +735,13 @@ export const GoodpicksOfferwallModal = ({ onClose, token }) => {
     if (sortBy === 'newest') return new Date(b.createdAt || 0) - new Date(a.createdAt || 0);
     return 0;
   });
+
+  const filterTabs = [
+    { id: 'All', label: t('goodpicks.tabAll') },
+    { id: 'Android', label: t('goodpicks.tabAndroid') },
+    { id: 'IOS', label: t('goodpicks.tabIos') },
+    { id: 'PC', label: t('goodpicks.tabPc') },
+  ];
 
   return (
     <AnimatePresence>
@@ -830,7 +849,7 @@ export const GoodpicksOfferwallModal = ({ onClose, token }) => {
             }}
             className="hide-scrollbar"
           >
-            {/* Subheader: Goodpicks Big Logo (larger size matching screenshot) + Support & History Buttons */}
+            {/* Subheader: Goodpicks Big Logo + Support & History Buttons */}
             <div className="flex items-center justify-between shrink-0">
               <div className="flex items-center">
                 <img
@@ -852,7 +871,7 @@ export const GoodpicksOfferwallModal = ({ onClose, token }) => {
                   }}
                   className="px-4 py-1.5 rounded-full bg-white text-slate-700 hover:bg-slate-50 transition-all border border-slate-200/80 shadow-sm uppercase cursor-pointer"
                 >
-                  SUPPORT
+                  {t('goodpicks.support')}
                 </button>
                 <button
                   type="button"
@@ -864,7 +883,7 @@ export const GoodpicksOfferwallModal = ({ onClose, token }) => {
                   }}
                   className="px-4 py-1.5 rounded-full bg-white text-slate-700 hover:bg-slate-50 transition-all border border-slate-200/80 shadow-sm uppercase cursor-pointer"
                 >
-                  HISTORY
+                  {t('goodpicks.history')}
                 </button>
               </div>
             </div>
@@ -873,13 +892,13 @@ export const GoodpicksOfferwallModal = ({ onClose, token }) => {
             <div className="flex flex-wrap items-center justify-between gap-3 shrink-0">
               {/* Platform Filter Tabs */}
               <div className="flex items-center gap-6">
-                {['All', 'Android', 'IOS', 'PC'].map((tab) => {
-                  const isActive = filter === tab;
+                {filterTabs.map((tab) => {
+                  const isActive = filter === tab.id;
                   return (
                     <button
-                      key={tab}
+                      key={tab.id}
                       type="button"
-                      onClick={() => setFilter(tab)}
+                      onClick={() => setFilter(tab.id)}
                       style={{
                         fontFamily: '"Poppins", sans-serif',
                         fontWeight: isActive ? 700 : 500,
@@ -890,7 +909,7 @@ export const GoodpicksOfferwallModal = ({ onClose, token }) => {
                         isActive ? 'text-slate-900' : 'hover:text-slate-900'
                       }`}
                     >
-                      {tab}
+                      {tab.label}
                       {isActive && (
                         <motion.div
                           layoutId="gpFilterUnderline"
@@ -912,7 +931,7 @@ export const GoodpicksOfferwallModal = ({ onClose, token }) => {
                     color: '#334155',
                   }}
                 >
-                  Sort:
+                  {t('goodpicks.sort')}
                 </span>
                 <div className="relative">
                   <select
@@ -932,9 +951,9 @@ export const GoodpicksOfferwallModal = ({ onClose, token }) => {
                     }}
                     className="shadow-sm outline-none"
                   >
-                    <option value="highest">Highest Reward</option>
-                    <option value="lowest">Lowest Reward</option>
-                    <option value="newest">Newest</option>
+                    <option value="highest">{t('goodpicks.highestReward')}</option>
+                    <option value="lowest">{t('goodpicks.lowestReward')}</option>
+                    <option value="newest">{t('goodpicks.newest')}</option>
                   </select>
                   <FiChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-slate-700" />
                 </div>
@@ -945,17 +964,19 @@ export const GoodpicksOfferwallModal = ({ onClose, token }) => {
             {loading ? (
               <div className="flex-1 flex flex-col items-center justify-center py-20 gap-3">
                 <FiLoader className="w-8 h-8 text-[#00A3FF] animate-spin" />
-                <p className="text-slate-600 text-sm font-medium">Loading Goodpicks offers...</p>
+                <p className="text-slate-600 text-sm font-medium">{t('goodpicks.loading')}</p>
               </div>
             ) : sortedOffers.length === 0 ? (
               <div className="flex-1 flex flex-col items-center justify-center py-20 text-center">
-                <p className="text-slate-700 font-bold text-base">No offers available for this filter</p>
-                <p className="text-slate-500 text-xs mt-1">Try selecting another platform or check back soon!</p>
+                <p className="text-slate-700 font-bold text-base">{t('goodpicks.noOffers')}</p>
+                <p className="text-slate-500 text-xs mt-1">{t('goodpicks.tryAnotherPlatform')}</p>
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 pb-4 justify-items-start">
                 {sortedOffers.map((offer) => {
                   const rewardStr = (offer.rewardAmount || 0).toLocaleString('de-DE');
+                  const cardTitle = (isDe && offer.titleDe) ? offer.titleDe : offer.title;
+                  const cardDesc = (isDe && offer.descriptionDe) ? offer.descriptionDe : (offer.description || t('goodpicks.defaultDescription'));
 
                   return (
                     <div
@@ -980,7 +1001,7 @@ export const GoodpicksOfferwallModal = ({ onClose, token }) => {
                     >
                       {/* Top Row: 84x84 Image + Right Info Column */}
                       <div className="flex items-start gap-3">
-                        {/* 84x84 Image (width: 84, height: 84, borderRadius: 12px, opacity: 1) */}
+                        {/* 84x84 Image */}
                         <div
                           style={{
                             width: '84px',
@@ -1001,7 +1022,7 @@ export const GoodpicksOfferwallModal = ({ onClose, token }) => {
 
                         {/* Right Info Column: Platforms & Coins on Line 1, Title on Line 2 */}
                         <div className="flex-1 min-w-0 flex flex-col justify-start gap-1.5" style={{ minHeight: '84px' }}>
-                          {/* Line 1: Platforms + Coin Reward (moved little down with paddingTop) */}
+                          {/* Line 1: Platforms + Coin Reward */}
                           <div className="flex items-center justify-between gap-2 pt-1.5">
                             {/* Platform Icon Badges */}
                             <div className="flex items-center shrink-0" style={{ gap: '6px' }}>
@@ -1087,95 +1108,96 @@ export const GoodpicksOfferwallModal = ({ onClose, token }) => {
                                   opacity: 1,
                                 }}
                               >
-                                {rewardStr}
-                              </span>
+                                  {rewardStr}
+                                </span>
+                              </div>
                             </div>
+
+                            {/* Line 2: Title */}
+                            <h3
+                              style={{
+                                width: '100%',
+                                maxWidth: '300px',
+                                fontFamily: '"Albra", "Bricolage Grotesque", Georgia, serif',
+                                fontWeight: 500,
+                                fontSize: '16px',
+                                lineHeight: '27px',
+                                letterSpacing: '0%',
+                                color: '#0F172A',
+                                marginTop: '14px',
+                                marginBottom: 0,
+                                opacity: 1,
+                              }}
+                              className="truncate"
+                            >
+                              {cardTitle}
+                            </h3>
                           </div>
-
-                          {/* Line 2: Title (Albra 16px/27px 500) */}
-                          <h3
-                            style={{
-                              width: '100%',
-                              maxWidth: '300px',
-                              fontFamily: '"Albra", "Bricolage Grotesque", Georgia, serif',
-                              fontWeight: 500,
-                              fontSize: '16px',
-                              lineHeight: '27px',
-                              letterSpacing: '0%',
-                              color: '#0F172A',
-                              marginTop: '14px',
-                              marginBottom: 0,
-                              opacity: 1,
-                            }}
-                            className="truncate"
-                          >
-                            {offer.title}
-                          </h3>
                         </div>
+
+                        {/* Middle: Description Text */}
+                        <p
+                          style={{
+                            width: '100%',
+                            maxWidth: '398px',
+                            minHeight: '24px',
+                            fontFamily: '"Poppins", sans-serif',
+                            fontWeight: 400,
+                            fontSize: '11px',
+                            lineHeight: '16px',
+                            letterSpacing: '0%',
+                            color: '#000000',
+                            opacity: 0.7,
+                            margin: '4px 0 0 0',
+                          }}
+                          className="line-clamp-2"
+                        >
+                          {cardDesc}
+                        </p>
+
+                        {/* Bottom: See Details Button */}
+                        <button
+                          type="button"
+                          onClick={() => setSelectedOffer(offer)}
+                          style={{
+                            width: '100%',
+                            height: '38px',
+                            borderRadius: '12px',
+                            background: '#00A3FF',
+                            color: '#FFFFFF',
+                            fontFamily: '"Poppins", sans-serif',
+                            fontWeight: 600,
+                            fontSize: '14px',
+                            border: 'none',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                          }}
+                          className="hover:bg-[#0094EA] active:scale-[0.99] transition-all shadow-sm shrink-0"
+                        >
+                          {t('goodpicks.seeDetails')}
+                        </button>
                       </div>
-
-                      {/* Middle: Description Text */}
-                      <p
-                        style={{
-                          width: '100%',
-                          maxWidth: '398px',
-                          minHeight: '24px',
-                          fontFamily: '"Poppins", sans-serif',
-                          fontWeight: 400,
-                          fontSize: '11px',
-                          lineHeight: '16px',
-                          letterSpacing: '0%',
-                          color: '#000000',
-                          opacity: 0.7,
-                          margin: '4px 0 0 0',
-                        }}
-                        className="line-clamp-2"
-                      >
-                        {offer.description}
-                      </p>
-
-                      {/* Bottom: See Details Button */}
-                      <button
-                        type="button"
-                        onClick={() => setSelectedOffer(offer)}
-                        style={{
-                          width: '100%',
-                          height: '38px',
-                          borderRadius: '12px',
-                          background: '#00A3FF',
-                          color: '#FFFFFF',
-                          fontFamily: '"Poppins", sans-serif',
-                          fontWeight: 600,
-                          fontSize: '14px',
-                          border: 'none',
-                          cursor: 'pointer',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                        }}
-                        className="hover:bg-[#0094EA] active:scale-[0.99] transition-all shadow-sm shrink-0"
-                      >
-                        See Details
-                      </button>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          </motion.div>
         </motion.div>
-      </motion.div>
 
-      {/* Offer Detail Popup Modal */}
-      {selectedOffer && (
-        <GoodpicksDetailModal
-          offer={selectedOffer}
-          onClose={() => setSelectedOffer(null)}
-          token={token}
-        />
-      )}
-    </AnimatePresence>
-  );
-};
+        {/* Offer Detail Popup Modal */}
+        {selectedOffer && (
+          <GoodpicksDetailModal
+            offer={selectedOffer}
+            onClose={() => setSelectedOffer(null)}
+            token={token}
+          />
+        )}
+      </AnimatePresence>
+    );
+  };
 
-export default GoodpicksOfferwallModal;
+  export default GoodpicksOfferwallModal;
+

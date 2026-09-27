@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import DashboardLayout from '../components/layout/DashboardLayout';
 import { useAuth } from '../contexts/AuthContext';
 import { motion } from 'framer-motion';
@@ -7,10 +8,10 @@ import { toast } from 'react-hot-toast';
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
-const calculateReleaseIn = (releaseDateStr) => {
+const calculateReleaseIn = (releaseDateStr, t) => {
   if (!releaseDateStr) return 'N/A';
   const diff = new Date(releaseDateStr).getTime() - new Date().getTime();
-  if (diff <= 0) return 'Ready';
+  if (diff <= 0) return t ? t('affiliates.ready', 'Ready') : 'Ready';
   const d = Math.floor(diff / 86400000);
   const h = Math.floor((diff % 86400000) / 3600000);
   return `${d}d ${h}h`;
@@ -222,6 +223,7 @@ const useReferredUsers = (token) => {
 };
 
 const Affiliates = () => {
+  const { t } = useTranslation();
   const { currentUser, mongoUser } = useAuth();
   const [token, setToken] = useState(null);
 
@@ -267,7 +269,7 @@ const Affiliates = () => {
   const copyToClipboard = (text) => {
     if (!text) return;
     navigator.clipboard.writeText(text);
-    toast.success('Copied to clipboard!');
+    toast.success(t('affiliates.copied', 'Copied to clipboard!'));
   };
 
   const currentPercentage = stats.referralPercentage ?? 15;
@@ -294,7 +296,7 @@ const Affiliates = () => {
             {/* Page Title & Subtitle */}
             <div
               style={{
-                maxWidth: '665px',
+                maxWidth: '100%',
                 minHeight: '44px',
                 gap: '16px',
                 opacity: 1,
@@ -316,9 +318,10 @@ const Affiliates = () => {
                   whiteSpace: 'nowrap',
                 }}
               >
-                Affiliate Program
+                {t('affiliates.pageTitle', 'Affiliate Program')}
               </h1>
               <p
+                className="whitespace-normal sm:whitespace-nowrap"
                 style={{
                   fontFamily: '"Poppins", sans-serif',
                   fontWeight: 500,
@@ -329,7 +332,7 @@ const Affiliates = () => {
                   margin: 0,
                 }}
               >
-                Invite friends and earn {currentPercentage}% of their earnings — forever! The more you invite, the more you earn.
+                {t('affiliates.pageSubtitle', { percent: currentPercentage, defaultValue: `Invite friends and earn ${currentPercentage}% of their earnings — forever! The more you invite, the more you earn.` })}
               </p>
             </div>
 
@@ -394,7 +397,7 @@ const Affiliates = () => {
                       whiteSpace: 'nowrap',
                     }}
                   >
-                    Total Affiliates
+                    {t('affiliates.totalAffiliates', 'Total Affiliates')}
                   </h3>
                   <p
                     style={{
@@ -408,7 +411,7 @@ const Affiliates = () => {
                       whiteSpace: 'nowrap',
                     }}
                   >
-                    Active referred users
+                    {t('affiliates.activeReferredUsers', 'Active referred users')}
                   </p>
                 </div>
               </div>
@@ -471,7 +474,7 @@ const Affiliates = () => {
                       whiteSpace: 'nowrap',
                     }}
                   >
-                    Lifetime Earnings
+                    {t('affiliates.lifetimeEarnings', 'Lifetime Earnings')}
                   </h3>
                   <p
                     style={{
@@ -485,7 +488,7 @@ const Affiliates = () => {
                       whiteSpace: 'nowrap',
                     }}
                   >
-                    Total coins earned
+                    {t('affiliates.totalCoinsEarned', 'Total coins earned')}
                   </p>
                 </div>
               </div>
@@ -548,7 +551,7 @@ const Affiliates = () => {
                       whiteSpace: 'nowrap',
                     }}
                   >
-                    30-Day Earnings
+                    {t('affiliates.thirtyDayEarnings', '30-Day Earnings')}
                   </h3>
                   <p
                     style={{
@@ -562,7 +565,7 @@ const Affiliates = () => {
                       whiteSpace: 'nowrap',
                     }}
                   >
-                    Earned in 30 days
+                    {t('affiliates.earnedIn30Days', 'Earned in 30 days')}
                   </p>
                 </div>
               </div>
@@ -625,7 +628,7 @@ const Affiliates = () => {
                       whiteSpace: 'nowrap',
                     }}
                   >
-                    Pending Coins
+                    {t('affiliates.pendingCoins', 'Pending Coins')}
                   </h3>
                   <p
                     style={{
@@ -639,7 +642,7 @@ const Affiliates = () => {
                       whiteSpace: 'nowrap',
                     }}
                   >
-                    {statsLoading ? '0' : (stats.pendingCount || 0)} hold(s)
+                    {t('affiliates.holdsCount', { count: statsLoading ? 0 : (stats.pendingCount || 0), defaultValue: `${statsLoading ? '0' : (stats.pendingCount || 0)} hold(s)` })}
                   </p>
                 </div>
               </div>
@@ -668,7 +671,7 @@ const Affiliates = () => {
           >
             <div
               style={{
-                maxWidth: '403px',
+                maxWidth: '100%',
                 minHeight: '44px',
                 gap: '16px',
                 display: 'flex',
@@ -689,9 +692,10 @@ const Affiliates = () => {
                   whiteSpace: 'nowrap',
                 }}
               >
-                Your Unique Referral Link
+                {t('affiliates.referralLinkTitle', 'Your Unique Referral Link')}
               </h2>
               <p
+                className="whitespace-normal sm:whitespace-nowrap"
                 style={{
                   fontFamily: '"Poppins", sans-serif',
                   fontWeight: 500,
@@ -702,7 +706,7 @@ const Affiliates = () => {
                   margin: 0,
                 }}
               >
-                Share this link anywhere to start earning passive income.
+                {t('affiliates.referralLinkSubtitle', 'Share this link anywhere to start earning passive income.')}
               </p>
             </div>
 
@@ -767,7 +771,7 @@ const Affiliates = () => {
                     whiteSpace: 'nowrap',
                   }}
                 >
-                  Copy
+                  {t('affiliates.copy', 'Copy')}
                 </span>
               </button>
             </div>
@@ -825,7 +829,7 @@ const Affiliates = () => {
                       whiteSpace: 'nowrap',
                     }}
                   >
-                    Recent Affiliate Earnings
+                    {t('affiliates.tabRecentEarnings', 'Recent Affiliate Earnings')}
                   </span>
                 </button>
 
@@ -866,7 +870,7 @@ const Affiliates = () => {
                       whiteSpace: 'nowrap',
                     }}
                   >
-                    Referred Users
+                    {t('affiliates.tabReferredUsers', 'Referred Users')}
                   </span>
                 </button>
               </div>
@@ -909,7 +913,7 @@ const Affiliates = () => {
                     whiteSpace: 'nowrap',
                   }}
                 >
-                  Pending Affiliate Earnings
+                  {t('affiliates.tabPendingEarnings', 'Pending Affiliate Earnings')}
                 </span>
               </button>
             </div>
@@ -929,7 +933,7 @@ const Affiliates = () => {
                     <p className="text-rose-500 text-center py-8 font-medium">{referrals.error}</p>
                   ) : referrals.dataList.length === 0 ? (
                     <div className="text-center py-12 text-[#6B7280] font-medium text-sm sm:text-base">
-                      No referral earnings yet.
+                      {t('affiliates.noRecentEarnings', 'No referral earnings yet.')}
                     </div>
                   ) : (
                     <div className="overflow-x-auto">
@@ -944,11 +948,11 @@ const Affiliates = () => {
                             fontFamily: '"Poppins", sans-serif',
                           }}
                         >
-                          <div>USER</div>
-                          <div>DATE</div>
-                          <div>EARNING</div>
-                          <div>COMMS({currentPercentage}%)</div>
-                          <div className="text-right sm:text-left sm:pl-4">STATUS</div>
+                          <div>{t('affiliates.colUser', 'USER')}</div>
+                          <div>{t('affiliates.colDate', 'DATE')}</div>
+                          <div>{t('affiliates.colEarning', 'EARNING')}</div>
+                          <div>{t('affiliates.colComms', { percent: currentPercentage, defaultValue: `COMMS(${currentPercentage}%)` })}</div>
+                          <div className="text-right sm:text-left sm:pl-4">{t('affiliates.colStatus', 'STATUS')}</div>
                         </div>
 
                         {/* Table Rows */}
@@ -1049,7 +1053,7 @@ const Affiliates = () => {
                                       lineHeight: '100%',
                                     }}
                                   >
-                                    {tx.status === 'hold' ? 'Pending' : 'Paid'}
+                                    {tx.status === 'hold' ? t('affiliates.statusPending', 'Pending') : t('affiliates.statusPaid', 'Paid')}
                                   </span>
                                 </div>
                               </div>
@@ -1075,7 +1079,7 @@ const Affiliates = () => {
                     <p className="text-rose-500 text-center py-8 font-medium">{referredUsersData.error}</p>
                   ) : referredUsersData.users.length === 0 ? (
                     <div className="text-center py-12 text-[#6B7280] font-medium text-sm sm:text-base">
-                      No referred users yet.
+                      {t('affiliates.noReferredUsers', 'No referred users yet.')}
                     </div>
                   ) : (
                     <div className="overflow-x-auto">
@@ -1090,11 +1094,11 @@ const Affiliates = () => {
                             fontFamily: '"Poppins", sans-serif',
                           }}
                         >
-                          <div>USER</div>
-                          <div>JOINED DATE</div>
-                          <div>TOTAL EARNING</div>
-                          <div>YOUR COMMS</div>
-                          <div className="text-right sm:text-left sm:pl-4">STATUS</div>
+                          <div>{t('affiliates.colUser', 'USER')}</div>
+                          <div>{t('affiliates.colJoinedDate', 'JOINED DATE')}</div>
+                          <div>{t('affiliates.colTotalEarning', 'TOTAL EARNING')}</div>
+                          <div>{t('affiliates.colYourComms', 'YOUR COMMS')}</div>
+                          <div className="text-right sm:text-left sm:pl-4">{t('affiliates.colStatus', 'STATUS')}</div>
                         </div>
 
                         {/* Table Rows */}
@@ -1193,7 +1197,7 @@ const Affiliates = () => {
                                       lineHeight: '100%',
                                     }}
                                   >
-                                    Active
+                                    {t('affiliates.statusActive', 'Active')}
                                   </span>
                                 </div>
                               </div>
@@ -1217,7 +1221,7 @@ const Affiliates = () => {
                     </div>
                   ) : currentPendingHolds.length === 0 ? (
                     <div className="text-center py-12 text-[#6B7280] font-medium text-sm sm:text-base">
-                      No affiliate earnings on hold right now.
+                      {t('affiliates.noPendingHolds', 'No affiliate earnings on hold right now.')}
                     </div>
                   ) : (
                     <div className="overflow-x-auto">
@@ -1232,11 +1236,11 @@ const Affiliates = () => {
                             fontFamily: '"Poppins", sans-serif',
                           }}
                         >
-                          <div>USER</div>
-                          <div>DATE</div>
-                          <div>EARNING</div>
-                          <div>COMMS({currentPercentage}%)</div>
-                          <div className="text-right sm:text-left sm:pl-4">RELEASE IN</div>
+                          <div>{t('affiliates.colUser', 'USER')}</div>
+                          <div>{t('affiliates.colDate', 'DATE')}</div>
+                          <div>{t('affiliates.colEarning', 'EARNING')}</div>
+                          <div>{t('affiliates.colComms', { percent: currentPercentage, defaultValue: `COMMS(${currentPercentage}%)` })}</div>
+                          <div className="text-right sm:text-left sm:pl-4">{t('affiliates.colReleaseIn', 'RELEASE IN')}</div>
                         </div>
 
                         {/* Table Rows */}
@@ -1337,7 +1341,7 @@ const Affiliates = () => {
                                       lineHeight: '100%',
                                     }}
                                   >
-                                    {calculateReleaseIn(tx.releaseDate)}
+                                    {calculateReleaseIn(tx.releaseDate, t)}
                                   </span>
                                 </div>
                               </div>

@@ -9,6 +9,7 @@ import { FaTrophy } from 'react-icons/fa6';
 import CoinDisplay from '../CoinDisplay';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 import FitText from '../FitText';
 import LanguageToggle from '../LanguageToggle';
 
@@ -234,6 +235,7 @@ const MobileDailyBonusChip = ({ onClose }) => {
 };
 
 const DailyBonusChip = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { status, loading } = useDailyBonus();
 
@@ -265,7 +267,7 @@ const DailyBonusChip = () => {
         transform: 'rotate(0deg)',
       }}
     >
-      <span>Daily Bonus</span>
+      <span>{t('nav.dailyBonus')}</span>
       <div
         className="flex flex-col items-center justify-center"
         style={{
@@ -309,6 +311,7 @@ const DailyBonusChip = () => {
 };
 
 const Header = ({ onChatToggle, chatOpen, fullWidth }) => {
+  const { t } = useTranslation();
   const { currentUser, mongoUser, logout, isAdmin } = useAuth();
   const { unreadCount, togglePanel, hasUnreadChat, setHasUnreadChat } = useNotifications();
 
@@ -425,6 +428,7 @@ const Header = ({ onChatToggle, chatOpen, fullWidth }) => {
                 id="header-mobile-livechat-btn"
                 onClick={onChatToggle}
                 className="relative flex items-center justify-center transition-colors group cursor-pointer hover:opacity-75 shrink-0"
+                title={t('chat.liveChat', 'Live Chat')}
                 style={{
                   width: '28px',
                   height: '29px',
@@ -437,7 +441,7 @@ const Header = ({ onChatToggle, chatOpen, fullWidth }) => {
               >
                 <img
                   src="/coins/chatonew.png"
-                  alt="Chat"
+                  alt={t('chat.liveChat', 'Live Chat')}
                   style={{
                     width: '25px',
                     height: '25px',
@@ -456,6 +460,7 @@ const Header = ({ onChatToggle, chatOpen, fullWidth }) => {
                 id="header-mobile-notifications-btn"
                 onClick={togglePanel}
                 className="relative flex items-center justify-center transition-colors group cursor-pointer hover:opacity-75 shrink-0"
+                title={t('notifications.title', 'Notifications')}
                 style={{
                   width: '28px',
                   height: '29px',
@@ -468,7 +473,7 @@ const Header = ({ onChatToggle, chatOpen, fullWidth }) => {
               >
                 <img
                   src="/coins/notinew.png"
-                  alt="Notifications"
+                  alt={t('notifications.title', 'Notifications')}
                   style={{
                     width: '25px',
                     height: '25px',
@@ -647,7 +652,7 @@ const Header = ({ onChatToggle, chatOpen, fullWidth }) => {
                           color: '#000000',
                         }}
                       >
-                        My Profile
+                        {t('nav.myProfile')}
                       </span>
                     </button>
 
@@ -667,7 +672,7 @@ const Header = ({ onChatToggle, chatOpen, fullWidth }) => {
                           color: '#000000',
                         }}
                       >
-                        Daily Bonus
+                        {t('nav.dailyBonus')}
                       </span>
                     </button>
 
@@ -687,7 +692,7 @@ const Header = ({ onChatToggle, chatOpen, fullWidth }) => {
                           color: '#000000',
                         }}
                       >
-                        Leaderboard
+                        {t('nav.leaderboard')}
                       </span>
                     </button>
 
@@ -707,7 +712,7 @@ const Header = ({ onChatToggle, chatOpen, fullWidth }) => {
                           color: '#000000',
                         }}
                       >
-                        Affiliates
+                        {t('nav.affiliates')}
                       </span>
                     </button>
 
@@ -728,7 +733,7 @@ const Header = ({ onChatToggle, chatOpen, fullWidth }) => {
                           color: '#000000',
                         }}
                       >
-                        VIP Status
+                        {t('nav.vip')}
                       </span>
                     </button>
 
@@ -839,10 +844,10 @@ const Header = ({ onChatToggle, chatOpen, fullWidth }) => {
             transform: 'rotate(0deg)',
           }}
         >
-          <NavItem path="/dashboard" label="Earn" />
-          <NavItem path="/dashboard/leaderboard" label="Leaderboard" />
-          <NavItem path="/dashboard/affiliates" label="Affiliates" />
-          <NavItem path="/dashboard/wallet" label="Withdraw" />
+          <NavItem path="/dashboard" label={t('nav.earn')} />
+          <NavItem path="/dashboard/leaderboard" label={t('nav.leaderboard')} />
+          <NavItem path="/dashboard/affiliates" label={t('nav.affiliates')} />
+          <NavItem path="/dashboard/wallet" label={t('nav.withdraw')} />
           <DailyBonusChip />
         </div>
 
@@ -876,6 +881,7 @@ const Header = ({ onChatToggle, chatOpen, fullWidth }) => {
               id="header-livechat-btn"
               onClick={onChatToggle}
               className="relative flex-shrink-0 flex items-center justify-center transition-colors group cursor-pointer hover:opacity-75"
+              title={t('chat.liveChat', 'Live Chat')}
               style={{
                 width: '20px',
                 height: '20px',
@@ -888,7 +894,7 @@ const Header = ({ onChatToggle, chatOpen, fullWidth }) => {
             >
               <img
                 src="/coins/chatonew.png"
-                alt="Chat"
+                alt={t('chat.liveChat', 'Live Chat')}
                 style={{
                   width: '20px',
                   height: '20px',
@@ -907,6 +913,7 @@ const Header = ({ onChatToggle, chatOpen, fullWidth }) => {
               id="header-notifications-btn"
               onClick={togglePanel}
               className="relative flex-shrink-0 flex items-center justify-center transition-colors group cursor-pointer hover:opacity-75"
+              title={t('notifications.title', 'Notifications')}
               style={{
                 width: '20px',
                 height: '20px',
@@ -919,7 +926,7 @@ const Header = ({ onChatToggle, chatOpen, fullWidth }) => {
             >
               <img
                 src="/coins/notinew.png"
-                alt="Notifications"
+                alt={t('notifications.title', 'Notifications')}
                 style={{
                   width: '20px',
                   height: '20px',
@@ -1106,7 +1113,7 @@ const Header = ({ onChatToggle, chatOpen, fullWidth }) => {
                         color: '#000000',
                       }}
                     >
-                      My Profile
+                      {t('nav.myProfile')}
                     </span>
                   </button>
 
@@ -1134,7 +1141,7 @@ const Header = ({ onChatToggle, chatOpen, fullWidth }) => {
                         color: '#000000',
                       }}
                     >
-                      Daily Bonus
+                      {t('nav.dailyBonus')}
                     </span>
                   </button>
                   <div className="lg:hidden" style={{ width: '100%', height: '1px', background: 'rgba(0, 0, 0, 0.06)', flexShrink: 0 }} />
@@ -1161,7 +1168,7 @@ const Header = ({ onChatToggle, chatOpen, fullWidth }) => {
                         color: '#000000',
                       }}
                     >
-                      Leaderboard
+                      {t('nav.leaderboard')}
                     </span>
                   </button>
                   <div className="lg:hidden" style={{ width: '100%', height: '1px', background: 'rgba(0, 0, 0, 0.06)', flexShrink: 0 }} />
@@ -1188,7 +1195,7 @@ const Header = ({ onChatToggle, chatOpen, fullWidth }) => {
                         color: '#000000',
                       }}
                     >
-                      Affiliates
+                      {t('nav.affiliates')}
                     </span>
                   </button>
                   <div className="lg:hidden" style={{ width: '100%', height: '1px', background: 'rgba(0, 0, 0, 0.06)', flexShrink: 0 }} />
@@ -1216,7 +1223,7 @@ const Header = ({ onChatToggle, chatOpen, fullWidth }) => {
                         color: '#000000',
                       }}
                     >
-                      VIP Status
+                      {t('nav.vip')}
                     </span>
                   </button>
 
@@ -1277,7 +1284,7 @@ const Header = ({ onChatToggle, chatOpen, fullWidth }) => {
                         color: '#000000',
                       }}
                     >
-                      Sign Out
+                      {t('nav.logout')}
                     </span>
                   </button>
                 </motion.div>

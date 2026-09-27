@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { FiUsers, FiGift, FiDollarSign, FiClipboard, FiMonitor, FiInbox } from 'react-icons/fi';
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { ProviderCard, OfferwallCard, FeaturedOfferCard, FeaturedOfferModal } from '../components/offers/OfferCards';
 import OfferwallModal from '../components/offers/OfferwallModal';
 
@@ -36,13 +37,14 @@ const TabButton = ({ active, onClick, iconSrc, label }) => {
         : 'text-[#0E0F0C] hover:bg-black/5'
         }`}
       style={{
-        width: '154px',
+        width: 'auto',
+        minWidth: '136px',
         height: '37px',
         borderRadius: '40px',
         opacity: 1,
         transform: 'rotate(0deg)',
         gap: '8px',
-        padding: '11px',
+        padding: '0 18px',
         boxSizing: 'border-box',
       }}
     >
@@ -87,6 +89,7 @@ const homeCache = {
 };
 
 const Home = () => {
+  const { t } = useTranslation();
   const { mongoUser, currentUser } = useAuth();
   const navigate = useNavigate();
   const displayName = mongoUser?.displayName || 'User';
@@ -314,24 +317,24 @@ const Home = () => {
   const tabs = [
     {
       id: 'all',
-      label: 'All Operations',
+      label: t('earn.tabAllOperations'),
       iconSrc: '/coins/alloffer.png',
     },
     {
       id: 'featured',
-      label: 'Featured Offers',
+      label: t('earn.tabFeaturedOffers'),
       ref: featuredRef,
       iconSrc: '/coins/image copy 4.png',
     },
     {
       id: 'gaming',
-      label: 'Gaming & App',
+      label: t('earn.tabGamingApp'),
       ref: gamingRef,
       iconSrc: '/coins/gameingoff.png',
     },
     {
       id: 'surveys',
-      label: 'Surveys',
+      label: t('earn.tabSurveys'),
       ref: surveysRef,
       iconSrc: '/coins/survyfoo.png',
     },
@@ -357,13 +360,13 @@ const Home = () => {
   const headerContent = {
     all: {
       icon: <FeaturedOfferBadge />,
-      title: 'Featured Offers',
-      subtitle: 'High-reward direct tasks.',
+      title: t('earn.featuredOffers'),
+      subtitle: t('earn.featuredOffersSubtitle'),
     },
     featured: {
       icon: <FeaturedOfferBadge />,
-      title: 'Featured Offers',
-      subtitle: 'High-reward direct tasks.',
+      title: t('earn.featuredOffers'),
+      subtitle: t('earn.featuredOffersSubtitle'),
     },
     gaming: {
       icon: (
@@ -377,8 +380,8 @@ const Home = () => {
           }}
         />
       ),
-      title: 'Gaming & App Offers',
-      subtitle: 'Play games to earn large amounts of points.',
+      title: t('earn.gamingOffers'),
+      subtitle: t('earn.gamingOffersSubtitle'),
     },
     surveys: {
       icon: (
@@ -392,8 +395,8 @@ const Home = () => {
           }}
         />
       ),
-      title: 'Surveys',
-      subtitle: 'Share your opinion for quick and easy rewards.',
+      title: t('earn.surveys'),
+      subtitle: t('earn.surveysSubtitle'),
     },
   };
 
@@ -449,7 +452,7 @@ const Home = () => {
                         whiteSpace: 'nowrap',
                       }}
                     >
-                      TOTAL USERS:
+                      {t('earn.totalUsers')}
                     </span>
                     <span
                       className="text-[18px] sm:text-[22px] lg:text-[28px] font-bold text-[#0E0F0C] leading-tight whitespace-nowrap"
@@ -489,7 +492,7 @@ const Home = () => {
                         whiteSpace: 'nowrap',
                       }}
                     >
-                      TOTAL PAID:
+                      {t('earn.totalPaid')}
                     </span>
                     <span
                       className="text-[18px] sm:text-[22px] lg:text-[28px] font-bold text-[#0E0F0C] leading-tight whitespace-nowrap"
@@ -575,7 +578,7 @@ const Home = () => {
               >
                 {displayFeaturedOffers.length === 0 ? (
                   <div className="w-full py-8 text-center bg-white rounded-[20px] border border-gray-100/80 shadow-sm text-gray-400 text-sm font-medium">
-                    No featured offers available right now.
+                    {t('earn.noFeaturedOffers')}
                   </div>
                 ) : (
                   <div className="w-full">
@@ -651,7 +654,7 @@ const Home = () => {
                           transform: 'rotate(0deg)',
                         }}
                       >
-                        Gaming & App Offers
+                        {t('earn.gamingOffers')}
                       </h2>
                       <p
                         className="w-[311px] max-w-full text-[14px] leading-[20px] md:leading-[1.2] text-black md:text-[#0E0F0C] font-medium m-0 md:whitespace-nowrap"
@@ -662,7 +665,7 @@ const Home = () => {
                           transform: 'rotate(0deg)',
                         }}
                       >
-                        Play games to earn large amounts of points.
+                        {t('earn.gamingOffersSubtitle')}
                       </p>
                     </div>
                   </div>
@@ -671,7 +674,7 @@ const Home = () => {
                 {loadingSettings ? (
                   <div className="p-8 flex justify-center"><div className="w-8 h-8 rounded-full border-2 border-emerald-500 border-t-transparent animate-spin" /></div>
                 ) : gamingProviders.length === 0 ? (
-                  <div className="p-8 border border-gray-100 flex justify-center rounded-[20px] bg-white text-gray-400 text-sm">No gaming offerwalls active.</div>
+                  <div className="p-8 border border-gray-100 flex justify-center rounded-[20px] bg-white text-gray-400 text-sm">{t('earn.noGamingActive')}</div>
                 ) : (
                   <div
                     className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 w-full gap-[12px]"
@@ -720,7 +723,7 @@ const Home = () => {
                           transform: 'rotate(0deg)',
                         }}
                       >
-                        Surveys
+                        {t('earn.surveys')}
                       </h2>
                       <p
                         className="w-[311px] max-w-full text-[14px] leading-[20px] md:leading-[1.2] text-black md:text-[#0E0F0C] font-medium m-0 md:whitespace-nowrap"
@@ -731,7 +734,7 @@ const Home = () => {
                           transform: 'rotate(0deg)',
                         }}
                       >
-                        Share your opinion for quick and easy rewards.
+                        {t('earn.surveysSubtitle')}
                       </p>
                     </div>
                   </div>
@@ -739,7 +742,7 @@ const Home = () => {
                 {loadingSettings ? (
                   <div className="p-8 flex justify-center"><div className="w-8 h-8 rounded-full border-2 border-indigo-500 border-t-transparent animate-spin" /></div>
                 ) : surveyProviders.length === 0 ? (
-                  <div className="p-8 border border-gray-100 flex justify-center rounded-[20px] bg-white text-gray-400 text-sm">No survey offerwalls active.</div>
+                  <div className="p-8 border border-gray-100 flex justify-center rounded-[20px] bg-white text-gray-400 text-sm">{t('earn.noSurveysActive')}</div>
                 ) : (
                   <div
                     className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 w-full gap-[12px]"

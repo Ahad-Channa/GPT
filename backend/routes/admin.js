@@ -565,13 +565,14 @@ router.get('/custom-offers', requirePermission('manage_offerwalls'), async (req,
 
 router.post('/custom-offers', requirePermission('manage_offerwalls'), async (req, res) => {
   try {
-    const { title, description, rewardAmount, externalLink, trackingType, expirationDate, icon, coverImage, requirements, requirementType, platforms } = req.body;
+    const { title, titleDe, description, descriptionDe, rewardAmount, externalLink, trackingType, expirationDate, icon, coverImage, requirements, requirementsDe, requirementType, platforms } = req.body;
     const newOffer = new CustomOffer({
-      title, description, rewardAmount, externalLink, trackingType,
+      title, titleDe: titleDe || '', description, descriptionDe: descriptionDe || '', rewardAmount, externalLink, trackingType,
       expirationDate: expirationDate || null,
       icon: icon || null,
       coverImage: coverImage || null,
       requirements: Array.isArray(requirements) ? requirements : [],
+      requirementsDe: Array.isArray(requirementsDe) ? requirementsDe : [],
       requirementType: requirementType === 'paragraph' ? 'paragraph' : 'bullets',
       platforms: platforms || { desktop: true, android: true, ios: true },
     });
@@ -621,16 +622,19 @@ router.get('/goodpicks-offers', requirePermission('manage_offerwalls'), async (r
 
 router.post('/goodpicks-offers', requirePermission('manage_offerwalls'), async (req, res) => {
   try {
-    const { title, description, rewardAmount, externalLink, expirationDate, icon, coverImage, requirements, requirementType, platforms } = req.body;
+    const { title, titleDe, description, descriptionDe, rewardAmount, externalLink, expirationDate, icon, coverImage, requirements, requirementsDe, requirementType, platforms } = req.body;
     const newOffer = new GoodpickOffer({
       title,
+      titleDe: titleDe || '',
       description,
+      descriptionDe: descriptionDe || '',
       rewardAmount,
       externalLink,
       expirationDate: expirationDate || null,
       icon: icon || null,
       coverImage: coverImage || null,
       requirements: Array.isArray(requirements) ? requirements : [],
+      requirementsDe: Array.isArray(requirementsDe) ? requirementsDe : [],
       requirementType: requirementType === 'paragraph' ? 'paragraph' : 'bullets',
       platforms: platforms || { desktop: true, android: true, ios: true },
     });

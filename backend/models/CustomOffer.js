@@ -3,7 +3,9 @@ const mongoose = require('mongoose');
 const customOfferSchema = new mongoose.Schema(
   {
     title: { type: String, required: true },
+    titleDe: { type: String, default: '' },
     description: { type: String, required: true },
+    descriptionDe: { type: String, default: '' },
     rewardAmount: { type: Number, required: true },
     externalLink: { type: String, required: true },
     isActive: { type: Boolean, default: true },
@@ -16,6 +18,7 @@ const customOfferSchema = new mongoose.Schema(
       default: 'manual_approval' 
     },
     requirements: [{ type: String }],
+    requirementsDe: [{ type: String }],
     requirementType: { 
       type: String, 
       enum: ['bullets', 'paragraph'], 

@@ -23,7 +23,9 @@ const GoodpickModal = ({ offer, onClose, onSaved, token, currentUser }) => {
 
   const [form, setForm] = useState({
     title: offer?.title || '',
+    titleDe: offer?.titleDe || '',
     description: offer?.description || '',
+    descriptionDe: offer?.descriptionDe || '',
     rewardAmount: offer?.rewardAmount || '',
     externalLink: offer?.externalLink || '',
     expirationDate: offer?.expirationDate ? new Date(offer.expirationDate).toISOString().slice(0, 16) : '',
@@ -32,6 +34,9 @@ const GoodpickModal = ({ offer, onClose, onSaved, token, currentUser }) => {
     requirements: Array.isArray(offer?.requirements)
       ? offer.requirements.join('\n')
       : (offer?.requirements || ''),
+    requirementsDe: Array.isArray(offer?.requirementsDe)
+      ? offer.requirementsDe.join('\n')
+      : (offer?.requirementsDe || ''),
     requirementType: offer?.requirementType || 'bullets',
     platforms: offer?.platforms || { desktop: true, android: true, ios: true },
   });
@@ -63,6 +68,9 @@ const GoodpickModal = ({ offer, onClose, onSaved, token, currentUser }) => {
           requirements: form.requirementType === 'paragraph'
             ? [form.requirements.trim()].filter(Boolean)
             : form.requirements.split('\n').map((r) => r.trim()).filter(Boolean),
+          requirementsDe: form.requirementType === 'paragraph'
+            ? [(form.requirementsDe || '').trim()].filter(Boolean)
+            : (form.requirementsDe || '').split('\n').map((r) => r.trim()).filter(Boolean),
           requirementType: form.requirementType,
           platforms: form.platforms,
         }),
@@ -132,7 +140,7 @@ const GoodpickModal = ({ offer, onClose, onSaved, token, currentUser }) => {
           {/* Title */}
           <div>
             <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1.5">
-              Title *
+              Title (English) *
             </label>
             <input
               value={form.title}
@@ -143,10 +151,23 @@ const GoodpickModal = ({ offer, onClose, onSaved, token, currentUser }) => {
             />
           </div>
 
+          {/* Title DE */}
+          <div>
+            <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1.5">
+              🇩🇪 Title (German)
+            </label>
+            <input
+              value={form.titleDe}
+              onChange={set('titleDe')}
+              placeholder="z.B. Baumhaus-Angeln"
+              className="w-full bg-white border border-gray-300 rounded-xl px-3.5 py-2 text-gray-900 text-sm placeholder-gray-400 focus:outline-none focus:border-[#1E2538] focus:ring-1 focus:ring-[#1E2538]/20 transition-all"
+            />
+          </div>
+
           {/* Description */}
           <div>
             <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1.5">
-              Description *
+              Description (English) *
             </label>
             <textarea
               value={form.description}
@@ -154,6 +175,20 @@ const GoodpickModal = ({ offer, onClose, onSaved, token, currentUser }) => {
               placeholder="Short description for the offer card and modal..."
               rows={2}
               required
+              className="w-full bg-white border border-gray-300 rounded-xl px-3.5 py-2 text-gray-900 text-sm placeholder-gray-400 focus:outline-none focus:border-[#1E2538] focus:ring-1 focus:ring-[#1E2538]/20 resize-none transition-all"
+            />
+          </div>
+
+          {/* Description DE */}
+          <div>
+            <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1.5">
+              🇩🇪 Description (German)
+            </label>
+            <textarea
+              value={form.descriptionDe}
+              onChange={set('descriptionDe')}
+              placeholder="Kurzbeschreibung für die Angebotskarte und das Detailfenster..."
+              rows={2}
               className="w-full bg-white border border-gray-300 rounded-xl px-3.5 py-2 text-gray-900 text-sm placeholder-gray-400 focus:outline-none focus:border-[#1E2538] focus:ring-1 focus:ring-[#1E2538]/20 resize-none transition-all"
             />
           </div>
@@ -206,6 +241,24 @@ const GoodpickModal = ({ offer, onClose, onSaved, token, currentUser }) => {
                 ? 'Displays as text inside the detail modal.'
                 : 'Enter each requirement on a separate line for the checklist.'}
             </span>
+          </div>
+
+          {/* Requirements DE */}
+          <div>
+            <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1.5">
+              🇩🇪 Requirements (German)
+            </label>
+            <textarea
+              value={form.requirementsDe}
+              onChange={set('requirementsDe')}
+              placeholder={
+                form.requirementType === 'paragraph'
+                  ? 'z.B. Registrieren und die App auf dem Gerät herunterladen.'
+                  : 'z.B. Registrieren → 10 Coins erhalten\n50 € einzahlen → 50.000 Coins erhalten'
+              }
+              rows={form.requirementType === 'paragraph' ? 2 : 3}
+              className="w-full bg-white border border-gray-300 rounded-xl px-3.5 py-2 text-gray-900 text-sm placeholder-gray-400 focus:outline-none focus:border-[#1E2538] focus:ring-1 focus:ring-[#1E2538]/20 resize-none transition-all"
+            />
           </div>
 
           {/* Icon Picker */}

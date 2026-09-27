@@ -3,7 +3,9 @@ const mongoose = require('mongoose');
 const goodpickOfferSchema = new mongoose.Schema(
   {
     title: { type: String, required: true },
+    titleDe: { type: String, default: '' },
     description: { type: String, required: true },
+    descriptionDe: { type: String, default: '' },
     rewardAmount: { type: Number, required: true },
     externalLink: { type: String, required: true },
     isActive: { type: Boolean, default: true },
@@ -11,6 +13,7 @@ const goodpickOfferSchema = new mongoose.Schema(
     icon: { type: String, default: null },
     coverImage: { type: String, default: null },
     requirements: [{ type: String }],
+    requirementsDe: [{ type: String }],
     requirementType: { 
       type: String, 
       enum: ['bullets', 'paragraph'], 

@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../contexts/AuthContext';
 import {
   FiBook, FiX, FiArrowRight, FiChevronLeft, FiChevronRight,
@@ -70,6 +71,7 @@ const PreviewCarousel = ({ images }) => {
 
 /* ── Book Detail Modal ───────────────────────── */
 const BookDetailModal = ({ book, onClose, onOrder, balance }) => {
+  const { t } = useTranslation();
   const canAfford = balance >= book.coinCost;
   const hasOrder = !!book.userOrder;
   const validImages = (book.previewImages?.filter(Boolean) || []).map(url =>
@@ -149,7 +151,7 @@ const BookDetailModal = ({ book, onClose, onOrder, balance }) => {
               padding: 0,
             }}
           >
-            Book Details
+            {t('withdraw.bookDetails', 'Book Details')}
           </h2>
           <button
             onClick={onClose}
@@ -289,7 +291,7 @@ const BookDetailModal = ({ book, onClose, onOrder, balance }) => {
                       padding: '0 24px',
                     }}
                   >
-                    {canAfford ? 'Order Now' : 'Insufficient Coins'}
+                    {canAfford ? t('withdraw.orderNow', 'Order Now') : t('withdraw.insufficientCoins', 'Insufficient Coins')}
                   </button>
                 </div>
 
@@ -307,7 +309,7 @@ const BookDetailModal = ({ book, onClose, onOrder, balance }) => {
                       margin: 0,
                     }}
                   >
-                    Description
+                    {t('withdraw.description', 'Description')}
                   </h4>
                   <p
                     className="overflow-y-auto select-text pr-1 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
@@ -347,7 +349,7 @@ const BookDetailModal = ({ book, onClose, onOrder, balance }) => {
                 margin: '0 0 16px 0',
               }}
             >
-              Book Preview
+              {t('withdraw.bookPreview', 'Book Preview')}
             </h3>
 
             {validImages.length > 0 ? (
@@ -413,7 +415,7 @@ const BookDetailModal = ({ book, onClose, onOrder, balance }) => {
                     margin: 0,
                   }}
                 >
-                  No preview pages available for this book.
+                  {t('withdraw.noPreviewPages', 'No preview pages available for this book.')}
                 </p>
               </div>
             )}
@@ -486,6 +488,7 @@ const BookDetailModal = ({ book, onClose, onOrder, balance }) => {
 
 /* ── Order Book Modal ─────────────────────────── */
 const OrderModal = ({ book, onClose, onSuccess, balance }) => {
+  const { t } = useTranslation();
   const { currentUser, mongoUser } = useAuth();
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
@@ -617,7 +620,7 @@ const OrderModal = ({ book, onClose, onSuccess, balance }) => {
                   letterSpacing: '-0.02em',
                 }}
               >
-                Order Submitted!
+                {t('withdraw.orderSubmitted', 'Order Submitted!')}
               </h2>
 
               {/* Book Title */}
@@ -633,7 +636,7 @@ const OrderModal = ({ book, onClose, onSuccess, balance }) => {
                 className="text-[#000000] text-[15px] font-normal leading-[23px] m-0 mb-6"
                 style={{ fontFamily: '"Poppins", sans-serif' }}
               >
-                Our team will process your order within 1-3 business days. Check transaction for info
+                {t('withdraw.orderProcessing', 'Our team will process your order within 1-3 business days. Check transaction for info')}
               </p>
 
               {/* Done Button */}
@@ -655,7 +658,7 @@ const OrderModal = ({ book, onClose, onSuccess, balance }) => {
                   boxSizing: 'border-box',
                 }}
               >
-                Done
+                {t('withdraw.done', 'Done')}
               </button>
             </div>
           </div>
@@ -705,7 +708,7 @@ const OrderModal = ({ book, onClose, onSuccess, balance }) => {
               padding: 0,
             }}
           >
-            Book Details
+            {t('withdraw.bookDetails', 'Book Details')}
           </h2>
           <button
             onClick={onClose}
@@ -827,7 +830,7 @@ const OrderModal = ({ book, onClose, onSuccess, balance }) => {
                   opacity: 1,
                 }}
               >
-                Shipping Address
+                {t('withdraw.shippingAddress', 'Shipping Address')}
               </h3>
 
               <div className="flex flex-col gap-4 w-full">
@@ -846,14 +849,14 @@ const OrderModal = ({ book, onClose, onSuccess, balance }) => {
                         display: 'block',
                       }}
                     >
-                      Full Name
+                      {t('withdraw.fullName', 'Full Name')}
                     </label>
                     <input
                       type="text"
                       required
                       value={form.fullName}
                       onChange={e => set('fullName', e.target.value)}
-                      placeholder="Enter your full name"
+                      placeholder={t('withdraw.enterFullName', 'Enter your full name')}
                       className="w-full text-[#000000] placeholder:text-[#9CA3AF] px-6 text-[15px] focus:outline-none focus:ring-2 focus:ring-slate-400/50 border-none transition-all"
                       style={{
                         maxWidth: '499.5px',
@@ -880,14 +883,14 @@ const OrderModal = ({ book, onClose, onSuccess, balance }) => {
                         display: 'block',
                       }}
                     >
-                      Email Address
+                      {t('withdraw.emailAddress', 'Email Address')}
                     </label>
                     <input
                       type="email"
                       required
                       value={form.email}
                       onChange={e => set('email', e.target.value)}
-                      placeholder="Enter your email address"
+                      placeholder={t('withdraw.enterEmailPlaceholder', 'Enter your email address')}
                       className="w-full text-[#000000] placeholder:text-[#9CA3AF] px-6 text-[15px] focus:outline-none focus:ring-2 focus:ring-slate-400/50 border-none transition-all"
                       style={{
                         maxWidth: '499.5px',
@@ -916,14 +919,14 @@ const OrderModal = ({ book, onClose, onSuccess, balance }) => {
                       display: 'block',
                     }}
                   >
-                    Address
+                    {t('withdraw.address', 'Address')}
                   </label>
                   <input
                     type="text"
                     required
                     value={form.address}
                     onChange={e => set('address', e.target.value)}
-                    placeholder="Enter your complete address"
+                    placeholder={t('withdraw.enterCompleteAddress', 'Enter your complete address')}
                     className="w-full text-[#000000] placeholder:text-[#9CA3AF] px-6 text-[15px] focus:outline-none focus:ring-2 focus:ring-slate-400/50 border-none transition-all"
                     style={{
                       maxWidth: '1018px',
@@ -952,14 +955,14 @@ const OrderModal = ({ book, onClose, onSuccess, balance }) => {
                         display: 'block',
                       }}
                     >
-                      City
+                      {t('withdraw.city', 'City')}
                     </label>
                     <input
                       type="text"
                       required
                       value={form.city}
                       onChange={e => set('city', e.target.value)}
-                      placeholder="Enter your city"
+                      placeholder={t('withdraw.enterCity', 'Enter your city')}
                       className="w-full text-[#000000] placeholder:text-[#9CA3AF] px-6 text-[15px] focus:outline-none focus:ring-2 focus:ring-slate-400/50 border-none transition-all"
                       style={{
                         maxWidth: '499.5px',
@@ -986,14 +989,14 @@ const OrderModal = ({ book, onClose, onSuccess, balance }) => {
                         display: 'block',
                       }}
                     >
-                      Zipcode
+                      {t('withdraw.zipcode', 'Zipcode')}
                     </label>
                     <input
                       type="text"
                       required
                       value={form.zipcode}
                       onChange={e => set('zipcode', e.target.value)}
-                      placeholder="Enter zip code"
+                      placeholder={t('withdraw.enterZipcode', 'Enter zip code')}
                       className="w-full text-[#000000] placeholder:text-[#9CA3AF] px-6 text-[15px] focus:outline-none focus:ring-2 focus:ring-slate-400/50 border-none transition-all"
                       style={{
                         maxWidth: '499.5px',
@@ -1027,7 +1030,7 @@ const OrderModal = ({ book, onClose, onSuccess, balance }) => {
                   opacity: 1,
                 }}
               >
-                Personal Signature
+                {t('withdraw.personalSignature', 'Personal Signature')}
               </h3>
 
               <div
@@ -1057,7 +1060,7 @@ const OrderModal = ({ book, onClose, onSuccess, balance }) => {
                     opacity: 1,
                   }}
                 >
-                  I would like a personal signature
+                  {t('withdraw.wantsSignature', 'I would like a personal signature')}
                 </span>
               </div>
 
@@ -1083,13 +1086,13 @@ const OrderModal = ({ book, onClose, onSuccess, balance }) => {
                           display: 'block',
                         }}
                       >
-                        Name for Signature
+                        {t('withdraw.nameForSignature', 'Name for Signature')}
                       </label>
                       <input
                         type="text"
                         value={form.signatureName}
                         onChange={e => set('signatureName', e.target.value)}
-                        placeholder="Enter name for signature"
+                        placeholder={t('withdraw.enterNameForSignature', 'Enter name for signature')}
                         className="w-full text-[#000000] placeholder:text-[#9CA3AF] px-6 text-[15px] focus:outline-none focus:ring-2 focus:ring-slate-400/50 border-none transition-all"
                         style={{
                           maxWidth: '1018px',
@@ -1118,7 +1121,7 @@ const OrderModal = ({ book, onClose, onSuccess, balance }) => {
                   fontFamily: '"Poppins", sans-serif',
                 }}
               >
-                {submitting ? 'Placing Order...' : 'Order Book Now'}
+                {submitting ? t('withdraw.placingOrder', 'Placing Order...') : t('withdraw.orderBookNow', 'Order Book Now')}
               </button>
               <p
                 style={{
@@ -1130,7 +1133,7 @@ const OrderModal = ({ book, onClose, onSuccess, balance }) => {
                   padding: 0,
                 }}
               >
-                After ordering, the book will be shipped within 3-5 business days
+                {t('withdraw.shippingTimeframe', 'After ordering, the book will be shipped within 3-5 business days')}
               </p>
             </div>
           </form>
@@ -1146,6 +1149,7 @@ const OrderModal = ({ book, onClose, onSuccess, balance }) => {
 
 /* ── Main Section component ──────────────────────────────────── */
 const MyBooksSection = ({ balance, onBalanceUpdate, onClose, preFetchedBooks, preFetchedLoading, preFetchedVisible, onBooksUpdate }) => {
+  const { t } = useTranslation();
   const { currentUser, getSocket } = useAuth();
   const [books, setBooks] = useState(preFetchedBooks || []);
   const [loading, setLoading] = useState(preFetchedBooks !== undefined ? preFetchedLoading : true);
@@ -1262,7 +1266,7 @@ const MyBooksSection = ({ balance, onBalanceUpdate, onClose, preFetchedBooks, pr
               color: '#000000',
             }}
           >
-            Germany Only Reward
+            {t('withdraw.germanyOnlyTitle', 'Germany Only Reward')}
           </h2>
           <p
             style={{
@@ -1272,7 +1276,7 @@ const MyBooksSection = ({ balance, onBalanceUpdate, onClose, preFetchedBooks, pr
               color: '#666666',
             }}
           >
-            Ordering physical books is currently only available for shipping addresses within Germany.
+            {t('withdraw.germanyOnlyDesc', 'Ordering physical books is currently only available for shipping addresses within Germany.')}
           </p>
         </motion.div>
       </motion.div>,
@@ -1318,7 +1322,7 @@ const MyBooksSection = ({ balance, onBalanceUpdate, onClose, preFetchedBooks, pr
               opacity: 1,
             }}
           >
-            Select Book to Order
+            {t('withdraw.selectBookTitle', 'Select Book to Order')}
           </h2>
           <button
             onClick={onClose}
@@ -1343,7 +1347,7 @@ const MyBooksSection = ({ balance, onBalanceUpdate, onClose, preFetchedBooks, pr
                 color: '#666666',
               }}
             >
-              Loading books...
+              {t('withdraw.loadingBooks', 'Loading books...')}
             </p>
           </div>
         ) : (
@@ -1361,7 +1365,7 @@ const MyBooksSection = ({ balance, onBalanceUpdate, onClose, preFetchedBooks, pr
                     color: '#666666',
                   }}
                 >
-                  No books available right now.
+                  {t('withdraw.noBooksAvailable', 'No books available right now.')}
                 </p>
               </div>
             ) : (
@@ -1502,3 +1506,4 @@ const MyBooksSection = ({ balance, onBalanceUpdate, onClose, preFetchedBooks, pr
 };
 
 export default MyBooksSection;
+

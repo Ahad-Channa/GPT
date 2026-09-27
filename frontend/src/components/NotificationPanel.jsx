@@ -2,7 +2,9 @@ import React, { useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { FiX, FiBell, FiTrash2 } from 'react-icons/fi';
+import { useTranslation } from 'react-i18next';
 import { useNotifications } from '../contexts/NotificationContext';
+import { localizeNotification } from '../utils/notificationLocalizer';
 
 /**
  * Renders notification message text, replacing the linkText (e.g. "VIP page")
@@ -77,6 +79,7 @@ function NotificationMessage({ message, metadata, onLinkClick }) {
 }
 
 export default function NotificationPanel() {
+  const { t, i18n } = useTranslation();
   const {
     notifications,
     isPanelOpen,
@@ -180,14 +183,14 @@ export default function NotificationPanel() {
                   alignItems: 'center',
                 }}
               >
-                Notifications
+                {t('notifications.title', 'Notifications')}
               </h2>
 
               <div className="flex items-center gap-2">
                 {notifications.length > 0 && (
                   <button
                     onClick={() => {
-                      if (window.confirm('Clear all notifications?')) {
+                      if (window.confirm(t('notifications.confirmClearAll', 'Clear all notifications?'))) {
                         dismissAllNotifications();
                       }
                     }}
@@ -209,7 +212,7 @@ export default function NotificationPanel() {
                     }}
                     className="hover:opacity-85 active:scale-95"
                   >
-                    Clear All
+                    {t('notifications.clearAll', 'Clear All')}
                   </button>
                 )}
 
@@ -232,7 +235,7 @@ export default function NotificationPanel() {
                     padding: 0,
                   }}
                   className="hover:opacity-85 active:scale-95"
-                  title="Close"
+                  title={t('notifications.close', 'Close')}
                 >
                   <FiX size={12} />
                 </button>
@@ -264,7 +267,7 @@ export default function NotificationPanel() {
                       margin: 0,
                     }}
                   >
-                    No notifications yet
+                    {t('notifications.noNotifications', 'No notifications yet')}
                   </h4>
                   <p
                     style={{
@@ -275,89 +278,91 @@ export default function NotificationPanel() {
                       maxWidth: '220px',
                     }}
                   >
-                    You're all caught up! New alerts and reward updates will show up here.
+                    {t('notifications.allCaughtUp', "You're all caught up! New alerts and reward updates will show up here.")}
                   </p>
                 </div>
               ) : (
-                notifications.map((notif, idx) => (
-                  <motion.div
-                    key={notif._id}
-                    layout
-                    initial={{ opacity: 0, y: 8 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, scale: 0.95 }}
-                    onClick={() => {
-                      if (notif.metadata?.link) {
-                        handleLinkClick(notif.metadata.link);
-                      }
-                    }}
-                    style={{
-                      width: '100%',
-                      padding: '16px 0',
-                      borderBottom:
-                        idx !== notifications.length - 1
-                          ? '1px solid rgba(0, 0, 0, 0.07)'
-                          : 'none',
-                      display: 'flex',
-                      flexDirection: 'column',
-                      gap: '4px',
-                      boxSizing: 'border-box',
-                      cursor: notif.metadata?.link ? 'pointer' : 'default',
-                      position: 'relative',
-                    }}
-                  >
-                    {/* Title and Dismiss Button Row */}
-                    <div className="flex items-start justify-between gap-2 w-full">
-                      <h3
-                        style={{
-                          fontFamily: '"Bricolage Grotesque", sans-serif',
-                          fontWeight: 700,
-                          fontSize: '16px',
-                          lineHeight: '120%',
-                          color: '#000000',
-                          margin: 0,
-                          padding: 0,
-                          display: 'flex',
-                          alignItems: 'center',
-                          flex: 1,
-                        }}
-                      >
-                        {notif.title}
-                      </h3>
+                notifications.map((notif, idx) => {
+                  const localized = localizeNotification(notif, i18n.language);
+                  return (
+                    <motion.div
+                      key={notif._id}
+                      layout
+                      initial={{ opacity: 0, y: 8 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, scale: 0.95 }}
+                      onClick={() => {
+                        if (localized.metadata?.link) {
+                          handleLinkClick(localized.metadata.link);
+                        }
+                      }}
+                      style={{
+                        width: '100%',
+                        padding: '16px 0',
+                        borderBottom:
+                          idx !== notifications.length - 1
+                            ? '1px solid rgba(0, 0, 0, 0.07)'
+                            : 'none',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: '4px',
+                        boxSizing: 'border-box',
+                        cursor: localized.metadata?.link ? 'pointer' : 'default',
+                        position: 'relative',
+                      }}
+                    >
+                      {/* Title and Dismiss Button Row */}
+                      <div className="flex items-start justify-between gap-2 w-full">
+                        <h3
+                          style={{
+                            fontFamily: '"Bricolage Grotesque", sans-serif',
+                            fontWeight: 700,
+                            fontSize: '16px',
+                            lineHeight: '120%',
+                            color: '#000000',
+                            margin: 0,
+                            padding: 0,
+                            display: 'flex',
+                            alignItems: 'center',
+                            flex: 1,
+                          }}
+                        >
+                          {localized.title}
+                        </h3>
 
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          dismissNotification(notif._id);
-                        }}
-                        style={{
-                          width: '18px',
-                          height: '18px',
-                          borderRadius: '50%',
-                          background: '#000000',
-                          color: '#FFFFFF',
-                          border: 'none',
-                          cursor: 'pointer',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          flexShrink: 0,
-                          padding: 0,
-                          transition: 'transform 0.15s, opacity 0.15s',
-                        }}
-                        className="hover:opacity-85 active:scale-90"
-                        title="Dismiss"
-                      >
-                        <FiX size={10} />
-                      </button>
-                    </div>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            dismissNotification(notif._id);
+                          }}
+                          style={{
+                            width: '18px',
+                            height: '18px',
+                            borderRadius: '50%',
+                            background: '#000000',
+                            color: '#FFFFFF',
+                            border: 'none',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            flexShrink: 0,
+                            padding: 0,
+                            transition: 'transform 0.15s, opacity 0.15s',
+                          }}
+                          className="hover:opacity-85 active:scale-90"
+                          title={t('notifications.dismiss', 'Dismiss')}
+                        >
+                          <FiX size={10} />
+                        </button>
+                      </div>
 
-                    {/* Message Body */}
-                    <NotificationMessage
-                      message={notif.message}
-                      metadata={notif.metadata}
-                      onLinkClick={handleLinkClick}
-                    />
+                      {/* Message Body */}
+                      <NotificationMessage
+                        message={localized.message}
+                        metadata={localized.metadata}
+                        onLinkClick={handleLinkClick}
+                      />
 
                     {/* Date / Timestamp */}
                     <span
@@ -372,13 +377,14 @@ export default function NotificationPanel() {
                     >
                       {(() => {
                         const date = new Date(notif.createdAt);
+                        const locale = i18n.language === 'de' ? 'de-DE' : 'en-US';
                         return (
-                          date.toLocaleDateString(undefined, {
+                          date.toLocaleDateString(locale, {
                             day: 'numeric',
                             month: 'short',
                           }) +
                           ', ' +
-                          date.toLocaleTimeString(undefined, {
+                          date.toLocaleTimeString(locale, {
                             hour: '2-digit',
                             minute: '2-digit',
                             hour12: false,
@@ -387,8 +393,9 @@ export default function NotificationPanel() {
                       })()}
                     </span>
                   </motion.div>
-                ))
-              )}
+                );
+              })
+            )}
             </div>
           </motion.div>
         </>

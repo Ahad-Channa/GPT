@@ -1,4 +1,5 @@
 import { useState, useEffect, useLayoutEffect, useRef, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../contexts/AuthContext';
 import { FiHeadphones } from 'react-icons/fi';
 import { getLevelFromEarned } from '../utils/vipLevels';
@@ -115,6 +116,7 @@ const AvatarWithBadge = ({ user, isSupport = false, size = 33 }) => {
 };
 
 const RoleBadges = ({ user, isSupport = false }) => {
+  const { t } = useTranslation();
   if (isSupport) {
     return (
       <div className="flex items-center gap-1.5 shrink-0">
@@ -136,7 +138,7 @@ const RoleBadges = ({ user, isSupport = false }) => {
             transform: 'rotate(0deg)',
           }}
         >
-          Support
+          {t('chat.roleSupport', 'Support')}
         </span>
       </div>
     );
@@ -170,7 +172,7 @@ const RoleBadges = ({ user, isSupport = false }) => {
             transform: 'rotate(0deg)',
           }}
         >
-          Admin
+          {t('chat.roleAdmin', 'Admin')}
         </span>
       )}
 
@@ -194,7 +196,7 @@ const RoleBadges = ({ user, isSupport = false }) => {
             transform: 'rotate(0deg)',
           }}
         >
-          Mod
+          {t('chat.roleMod', 'Mod')}
         </span>
       )}
 
@@ -225,15 +227,16 @@ const RoleBadges = ({ user, isSupport = false }) => {
 
 /* ─── MessageRow (matching Live Chat exactly) ─── */
 const MessageRow = ({ msg, isOwn, mongoUser }) => {
+  const { t, i18n } = useTranslation();
   const isSupport = !isOwn;
-  const senderUser = isOwn ? mongoUser : { displayName: 'Support Team', role: 'moderator' };
+  const senderUser = isOwn ? mongoUser : { displayName: t('chat.supportTeam', 'Support Team'), role: 'moderator' };
 
   const date = new Date(msg.createdAt || Date.now());
-  const formattedDate = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  const formattedDate = date.toLocaleDateString(i18n.language === 'de' ? 'de-DE' : 'en-US', { month: 'short', day: 'numeric' });
 
   const displayName = isSupport
-    ? 'Support Team'
-    : (senderUser?.displayName || senderUser?.username || (senderUser?.email ? senderUser.email.split('@')[0] : '') || 'Ahad');
+    ? t('chat.supportTeam', 'Support Team')
+    : (senderUser?.displayName || senderUser?.username || (senderUser?.email ? senderUser.email.split('@')[0] : '') || 'User');
 
   return (
     <div className="relative flex flex-col w-full pb-3.5 mb-3.5 border-b border-[#EFEFEF] transition-opacity">
@@ -319,6 +322,7 @@ const MessageRow = ({ msg, isOwn, mongoUser }) => {
 };
 
 const SupportChat = ({ socket }) => {
+  const { t } = useTranslation();
   const { mongoUser, currentUser } = useAuth();
   const [ticket, setTicket]       = useState(null);
   const [messages, setMessages]   = useState([]);
@@ -465,7 +469,7 @@ const SupportChat = ({ socket }) => {
           margin: 0,
         }}
       >
-        Log in to contact support
+        {t('chat.loginToContactSupport', 'Log in to contact support')}
       </p>
     </div>
   );
@@ -522,7 +526,7 @@ const SupportChat = ({ socket }) => {
                     color: '#000000',
                   }}
                 >
-                  Contact Support
+                  {t('chat.contactSupport', 'Contact Support')}
                 </h3>
                 <p
                   style={{
@@ -534,7 +538,7 @@ const SupportChat = ({ socket }) => {
                     color: 'rgba(14, 15, 12, 0.7)',
                   }}
                 >
-                  Send us a message below and our team will respond as soon as possible.
+                  {t('chat.contactSupportDesc', 'Send us a message below and our team will respond as soon as possible.')}
                 </p>
               </div>
             </div>
@@ -582,7 +586,7 @@ const SupportChat = ({ socket }) => {
               type="text"
               value={text}
               onChange={e => setText(e.target.value)}
-              placeholder={ticket ? 'Reply to support...' : 'Describe your issue...'}
+              placeholder={ticket ? t('chat.replyToSupport', 'Reply to support...') : t('chat.describeIssue', 'Describe your issue...')}
               maxLength={2000}
               disabled={sending}
               style={{
@@ -623,7 +627,7 @@ const SupportChat = ({ socket }) => {
             >
               <img
                 src="/coins/ChatSend.png"
-                alt="Send"
+                alt={t('chat.send', 'Send')}
                 style={{
                   width: '18px',
                   height: '18px',

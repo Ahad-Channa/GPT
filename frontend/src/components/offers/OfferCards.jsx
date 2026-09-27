@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FiMonitor, FiInbox, FiStar, FiZap, FiExternalLink, FiCheckCircle, FiSend, FiLoader, FiX } from 'react-icons/fi';
 import { FaApple, FaAndroid, FaDesktop } from 'react-icons/fa';
@@ -136,6 +137,9 @@ export const OfferwallCard = ({ provider, userId }) => {
 const isIconUrl = (icon) => icon && (icon.startsWith('http') || icon.startsWith('data:') || icon.includes('/') || icon.startsWith('fa-'));
 
 export const FeaturedOfferCard = ({ offer, onClick }) => {
+  const { i18n } = useTranslation();
+  const isDe = i18n.language?.startsWith('de');
+  const title = (isDe && offer.titleDe) ? offer.titleDe : offer.title;
   const isExpired = offer.expirationDate && new Date(offer.expirationDate) < new Date();
   const coverImgSrc = offer.coverImage || (isIconUrl(offer.icon) ? offer.icon : null);
   const emojiIcon = !coverImgSrc && offer.icon ? offer.icon : null;
@@ -171,7 +175,7 @@ export const FeaturedOfferCard = ({ offer, onClick }) => {
         {coverImgSrc ? (
           <img
             src={coverImgSrc}
-            alt={offer.title}
+            alt={title}
             draggable="false"
             className="w-full h-full object-cover pointer-events-none select-none"
           />
@@ -249,7 +253,7 @@ export const FeaturedOfferCard = ({ offer, onClick }) => {
       <div className="flex flex-col w-full text-left justify-between min-h-0">
         <p
           className="truncate text-[#0E0F0C]"
-          title={offer.title}
+          title={title}
           style={{
             fontFamily: '"Bricolage Grotesque", sans-serif',
             fontWeight: 700,
@@ -258,7 +262,7 @@ export const FeaturedOfferCard = ({ offer, onClick }) => {
             letterSpacing: '-0.02em',
           }}
         >
-          {offer.title}
+          {title}
         </p>
         <div
           className="flex items-center"
@@ -307,6 +311,14 @@ export const FeaturedOfferCard = ({ offer, onClick }) => {
 };
 
 export const FeaturedOfferModal = ({ offer, token, onClose, onSubmitted }) => {
+  const { t, i18n } = useTranslation();
+  const isDe = i18n.language?.startsWith('de');
+  const title = (isDe && offer.titleDe) ? offer.titleDe : offer.title;
+  const description = (isDe && offer.descriptionDe) ? offer.descriptionDe : (offer.description || t('offers.defaultDescription'));
+  const requirementsList = (isDe && offer.requirementsDe && offer.requirementsDe.length > 0)
+    ? offer.requirementsDe
+    : offer.requirements;
+
   const [loading, setLoading] = useState(false);
   const isExpired = offer.expirationDate && new Date(offer.expirationDate) < new Date();
   const rewardVal = offer.rewardAmount ?? offer.points ?? offer.reward ?? 0;
@@ -333,6 +345,15 @@ export const FeaturedOfferModal = ({ offer, token, onClose, onSubmitted }) => {
       setLoading(false);
     }
   };
+
+  const generalRules = [
+    t('offers.rule1'),
+    t('offers.rule2'),
+    t('offers.rule3'),
+    t('offers.rule4'),
+    t('offers.rule5'),
+    t('offers.rule6'),
+  ];
 
   return (
     <motion.div
@@ -420,7 +441,7 @@ export const FeaturedOfferModal = ({ offer, token, onClose, onSubmitted }) => {
               className="bg-[#EDE8DE] overflow-hidden flex-shrink-0 flex items-center justify-center shadow-sm"
             >
               {coverImgSrc ? (
-                <img src={coverImgSrc} alt={offer.title} className="w-full h-full object-cover" />
+                <img src={coverImgSrc} alt={title} className="w-full h-full object-cover" />
               ) : (
                 <span className="text-4xl">{emojiIcon}</span>
               )}
@@ -456,7 +477,7 @@ export const FeaturedOfferModal = ({ offer, token, onClose, onSubmitted }) => {
                   whiteSpace: 'nowrap',
                 }}
               >
-                {offer.title}
+                {title}
               </h2>
               <p
                 style={{
@@ -477,7 +498,7 @@ export const FeaturedOfferModal = ({ offer, token, onClose, onSubmitted }) => {
                   overflow: 'hidden',
                 }}
               >
-                {offer.description || 'Complete this offer by sending it to your Android device from here'}
+                {description}
               </p>
             </div>
           </div>
@@ -598,7 +619,7 @@ export const FeaturedOfferModal = ({ offer, token, onClose, onSubmitted }) => {
               margin: 0,
             }}
           >
-            Requirements
+            {t('offers.requirements')}
           </h3>
 
           {/* Requirements Content */}
@@ -633,15 +654,15 @@ export const FeaturedOfferModal = ({ offer, token, onClose, onSubmitted }) => {
                     margin: 0,
                   }}
                 >
-                  {Array.isArray(offer.requirements) && offer.requirements.length > 0
-                    ? offer.requirements.join(' ')
-                    : typeof offer.requirements === 'string'
-                    ? offer.requirements
-                    : 'Complete the requirements to earn rewards.'}
+                  {Array.isArray(requirementsList) && requirementsList.length > 0
+                    ? requirementsList.join(' ')
+                    : typeof requirementsList === 'string'
+                    ? requirementsList
+                    : t('offers.defaultRequirement')}
                 </p>
               </div>
-            ) : offer.requirements && offer.requirements.length > 0 ? (
-              offer.requirements.map((req, i) => {
+            ) : requirementsList && requirementsList.length > 0 ? (
+              requirementsList.map((req, i) => {
                 const isCompleted = i === 0;
                 return (
                   <div
@@ -777,7 +798,7 @@ export const FeaturedOfferModal = ({ offer, token, onClose, onSubmitted }) => {
                     color: '#000000',
                   }}
                 >
-                  Complete the required tasks → receive rewards
+                  {t('offers.defaultRequirementTask')}
                 </span>
               </div>
             )}
@@ -826,7 +847,7 @@ export const FeaturedOfferModal = ({ offer, token, onClose, onSubmitted }) => {
                 transform: 'rotate(0deg)',
               }}
             >
-              {isExpired ? 'Offer Expired' : 'Start Offer'}
+              {isExpired ? t('offers.offerExpired') : t('offers.startOffer')}
             </span>
           )}
         </button>
@@ -867,17 +888,10 @@ export const FeaturedOfferModal = ({ offer, token, onClose, onSubmitted }) => {
               margin: 0,
             }}
           >
-            General Offer Rules
+            {t('offers.generalRules')}
           </h4>
           <div className="flex flex-col gap-0.5">
-            {[
-              'Use a genuine device. Emulators are not allowed.',
-              'VPNs and proxies are not allowed. Your real location must be used.',
-              'Complete the offer yourself and follow the stated requirements.',
-              'Offers may be limited to new users/customers where specified. Existing users may not be eligible.',
-              'Follow the individual offer requirements and any stated completion deadline.',
-              'Rewards are only granted when the offer requirements are successfully verified.',
-            ].map((rule, idx) => (
+            {generalRules.map((rule, idx) => (
               <div key={idx} className="flex items-start gap-[6px]">
                 <div
                   style={{
@@ -967,11 +981,10 @@ export const FeaturedOfferModal = ({ offer, token, onClose, onSubmitted }) => {
                 color: '#000000',
                 margin: 0,
                 padding: 0,
+                whiteSpace: 'pre-line',
               }}
             >
-              Scan the QR code to start
-              <br />
-              directly on your smartphone.
+              {t('offers.scanQrCode')}
             </p>
           </div>
         </div>

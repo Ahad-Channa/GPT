@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../contexts/AuthContext';
 import toast from 'react-hot-toast';
 import { formatCoins } from '../../config/platform';
@@ -125,6 +126,7 @@ const BRANDS = [
 ];
 
 const WithdrawalModal = ({ settings, balance, onClose, onSuccess, filterType }) => {
+  const { t } = useTranslation();
   const { currentUser } = useAuth();
 
   // Steps: 1 = select method/country, 2 = enter details/brand, 3 = confirm, 4 = done
@@ -345,7 +347,13 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess, filterType }) 
                     opacity: 1,
                   }}
                 >
-                  {step === 1 ? 'Select Withdrawal Method' : step === 2 ? 'Enter Details' : method === 'giftcard' ? 'Confirm Redemption' : 'Confirm Withdrawal'}
+                  {step === 1
+                    ? t('withdraw.modalTitleStep1', 'Select Withdrawal Method')
+                    : step === 2
+                    ? t('withdraw.modalTitleStep2', 'Enter Details')
+                    : method === 'giftcard'
+                    ? t('withdraw.modalTitleStep3GiftCard', 'Confirm Redemption')
+                    : t('withdraw.modalTitleStep3Confirm', 'Confirm Withdrawal')}
                 </h2>
                 <p
                   style={{
@@ -366,7 +374,7 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess, filterType }) 
                     opacity: 1,
                   }}
                 >
-                  {`Step ${step} of 3`}
+                  {t('withdraw.stepOf', { step, defaultValue: `Step ${step} of 3` })}
                 </p>
               </div>
 
@@ -440,7 +448,7 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess, filterType }) 
                           padding: 0,
                         }}
                       >
-                        Redeem Gift Card
+                        {t('withdraw.giftCardModalTitle', 'Redeem Gift Card')}
                       </h2>
                       <p
                         style={{
@@ -454,7 +462,7 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess, filterType }) 
                           marginTop: '4px',
                         }}
                       >
-                        Step 1 of 3
+                        {t('withdraw.stepOf', { step: 1, defaultValue: 'Step 1 of 3' })}
                       </p>
                     </div>
 
@@ -509,11 +517,10 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess, filterType }) 
                     style={{
                       width: '100%',
                       maxWidth: '1018px',
-                      height: '15px',
                       fontFamily: '"Bricolage Grotesque", sans-serif',
                       fontWeight: 700,
                       fontSize: '23px',
-                      lineHeight: '60px',
+                      lineHeight: '28px',
                       letterSpacing: '-0.02em',
                       color: '#000000',
                       display: 'flex',
@@ -523,7 +530,7 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess, filterType }) 
                       opacity: 1,
                     }}
                   >
-                    Select your country
+                    {t('withdraw.selectYourCountry', 'Select your country')}
                   </label>
 
                   {/* Country Trigger */}
@@ -593,7 +600,7 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess, filterType }) 
                             opacity: 1,
                           }}
                         >
-                          Select a country
+                          {t('withdraw.selectACountry', 'Select a country')}
                         </span>
                       </div>
                     )}
@@ -745,7 +752,7 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess, filterType }) 
                               opacity: 1,
                             }}
                           >
-                            Minimum withdrawal<br />{formatCoins(minCoins)} coin
+                            {t('withdraw.minWithdrawal', 'Minimum withdrawal')}<br />{t('withdraw.coinsCount', { count: formatCoins(minCoins), defaultValue: `${formatCoins(minCoins)} coin` })}
                           </span>
                         </div>
                       </button>
@@ -784,7 +791,7 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess, filterType }) 
                       lineHeight: '28px',
                       letterSpacing: '0%',
                       color: '#FFFFFF',
-                      width: '74px',
+                      minWidth: '74px',
                       height: '11px',
                       display: 'flex',
                       alignItems: 'center',
@@ -792,7 +799,7 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess, filterType }) 
                       opacity: 1,
                     }}
                   >
-                    Continue
+                    {t('withdraw.continue', 'Continue')}
                   </span>
                 </button>
               </>
@@ -832,7 +839,7 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess, filterType }) 
                           padding: 0,
                         }}
                       >
-                        Redeem Gift Card
+                        {t('withdraw.giftCardModalTitle', 'Redeem Gift Card')}
                       </h2>
                       <p
                         style={{
@@ -846,7 +853,7 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess, filterType }) 
                           marginTop: '4px',
                         }}
                       >
-                        Step 2 of 3
+                        {t('withdraw.stepOf', { step: 2, defaultValue: 'Step 2 of 3' })}
                       </p>
                     </div>
 
@@ -901,11 +908,10 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess, filterType }) 
                     style={{
                       width: '100%',
                       maxWidth: '1018px',
-                      height: '15px',
                       fontFamily: '"Bricolage Grotesque", sans-serif',
                       fontWeight: 700,
                       fontSize: '23px',
-                      lineHeight: '60px',
+                      lineHeight: '28px',
                       letterSpacing: '-0.02em',
                       color: '#000000',
                       display: 'flex',
@@ -915,7 +921,7 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess, filterType }) 
                       opacity: 1,
                     }}
                   >
-                    Select your country
+                    {t('withdraw.selectYourCountry', 'Select your country')}
                   </label>
 
                   {/* Country Trigger */}
@@ -985,7 +991,7 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess, filterType }) 
                             opacity: 1,
                           }}
                         >
-                          Select a country
+                          {t('withdraw.selectACountry', 'Select a country')}
                         </span>
                       </div>
                     )}
@@ -1052,12 +1058,10 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess, filterType }) 
                 >
                   <label
                     style={{
-                      width: '170px',
-                      height: '15px',
                       fontFamily: '"Bricolage Grotesque", sans-serif',
                       fontWeight: 700,
                       fontSize: '23px',
-                      lineHeight: '60px',
+                      lineHeight: '28px',
                       letterSpacing: '-0.02em',
                       color: '#000000',
                       display: 'flex',
@@ -1067,7 +1071,7 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess, filterType }) 
                       opacity: 1,
                     }}
                   >
-                    Select Gift Card
+                    {t('withdraw.selectGiftCard', 'Select Gift Card')}
                   </label>
 
                   <div className="grid grid-cols-4 sm:grid-cols-8 gap-3 items-center mt-3 w-full">
@@ -1097,12 +1101,10 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess, filterType }) 
                 <div className="flex flex-col w-full mt-4">
                   <label
                     style={{
-                      width: '256px',
-                      height: '15px',
                       fontFamily: '"Bricolage Grotesque", sans-serif',
                       fontWeight: 700,
                       fontSize: '23px',
-                      lineHeight: '60px',
+                      lineHeight: '28px',
                       letterSpacing: '-0.02em',
                       color: '#000000',
                       display: 'flex',
@@ -1112,7 +1114,7 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess, filterType }) 
                       opacity: 1,
                     }}
                   >
-                    Select Voucher Amount
+                    {t('withdraw.selectVoucherAmount', 'Select Voucher Amount')}
                   </label>
 
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-3 w-full">
@@ -1178,7 +1180,7 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess, filterType }) 
                               marginTop: '6px',
                             }}
                           >
-                            Coins
+                            {t('withdraw.coins', 'Coins')}
                           </span>
                         </div>
                         <span
@@ -1201,8 +1203,6 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess, filterType }) 
                 <div className="flex flex-col w-full mt-4">
                   <label
                     style={{
-                      width: '115px',
-                      height: '11px',
                       fontFamily: '"Poppins", sans-serif',
                       fontWeight: 500,
                       fontSize: '16px',
@@ -1216,7 +1216,7 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess, filterType }) 
                       opacity: 1,
                     }}
                   >
-                    Email Address
+                    {t('withdraw.emailAddress', 'Email Address')}
                   </label>
 
                   <div
@@ -1239,7 +1239,7 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess, filterType }) 
                       type="email"
                       value={destination}
                       onChange={(e) => { setDestination(e.target.value); setError(''); }}
-                      placeholder="Enter your email address"
+                      placeholder={t('withdraw.enterEmailPlaceholder', 'Enter your email address')}
                       className="bg-transparent border-none outline-none p-0 flex-1 h-full placeholder:text-black/50"
                       style={{
                         fontFamily: '"Poppins", sans-serif',
@@ -1265,7 +1265,7 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess, filterType }) 
                       marginTop: '8px',
                     }}
                   >
-                    ***Please make sure you enter the correct email address. Once the payout is processed, this action cannot be reversed. We are not responsible for lost rewards due to incorrect information.
+                    {t('withdraw.giftcardDisclaimer', '***Please make sure you enter the correct email address. Once the payout is processed, this action cannot be reversed. We are not responsible for lost rewards due to incorrect information.')}
                   </p>
                 </div>
 
@@ -1290,7 +1290,7 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess, filterType }) 
                       marginBottom: '14px',
                     }}
                   >
-                    Payout Breakdown
+                    {t('withdraw.payoutBreakdown', 'Payout Breakdown')}
                   </h4>
 
                   {/* Amount You Receive */}
@@ -1311,7 +1311,7 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess, filterType }) 
                         color: '#000000',
                       }}
                     >
-                      Amount You Receive
+                      {t('withdraw.amountYouReceive', 'Amount You Receive')}
                     </span>
                     <span
                       style={{
@@ -1341,7 +1341,7 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess, filterType }) 
                         color: '#000000',
                       }}
                     >
-                      Total Deducted From Balance
+                      {t('withdraw.totalDeducted', 'Total Deducted From Balance')}
                     </span>
                     <span
                       style={{
@@ -1404,7 +1404,7 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess, filterType }) 
                     >
                       <span
                         style={{
-                          width: '154px',
+                          minWidth: '154px',
                           height: '11px',
                           fontFamily: '"Poppins", sans-serif',
                           fontWeight: 500,
@@ -1418,7 +1418,7 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess, filterType }) 
                           opacity: 1,
                         }}
                       >
-                        Review Withdrawal
+                        {t('withdraw.reviewWithdrawal', 'Review Withdrawal')}
                       </span>
                     </button>
                   );
@@ -1514,7 +1514,7 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess, filterType }) 
                         opacity: 1,
                       }}
                     >
-                      {selectedConfig.hint}
+                      {method === 'paypal' ? t('withdraw.paypalHint', selectedConfig.hint) : method === 'litecoin' ? t('withdraw.ltcHint', selectedConfig.hint) : selectedConfig.hint}
                     </span>
                   </div>
                 </div>
@@ -1526,11 +1526,9 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess, filterType }) 
                       fontFamily: '"Poppins", sans-serif',
                       fontWeight: 500,
                       fontSize: '16px',
-                      lineHeight: '11px',
+                      lineHeight: '22px',
                       letterSpacing: '0%',
                       color: '#000000',
-                      width: '110px',
-                      height: '11px',
                       display: 'flex',
                       alignItems: 'center',
                       margin: 0,
@@ -1538,7 +1536,7 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess, filterType }) 
                       opacity: 1,
                     }}
                   >
-                    Enter amount
+                    {t('withdraw.enterAmount', 'Enter amount')}
                   </label>
                   <div
                     className="relative flex items-center w-full transition-all border-none outline-none shadow-none"
@@ -1563,7 +1561,7 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess, filterType }) 
                       step="1"
                       value={amount}
                       onChange={(e) => { setAmount(e.target.value); setError(''); }}
-                      placeholder={`Minimum: ${formatCoins(minimumCoins)} Coins`}
+                      placeholder={t('withdraw.minCoinsPlaceholder', { min: formatCoins(minimumCoins), defaultValue: `Minimum: ${formatCoins(minimumCoins)} Coins` })}
                       className="bg-transparent border-none outline-none p-0 flex-1 h-full placeholder:text-black/50"
                       style={{
                         fontFamily: '"Poppins", sans-serif',
@@ -1577,12 +1575,12 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess, filterType }) 
                   </div>
                   {amount && !meetsMinimum && (
                     <p className="text-red-500 text-xs mt-0.5" style={{ fontFamily: '"Poppins", sans-serif' }}>
-                      Minimum is {formatCoins(minimumCoins)} Coins
+                      {t('withdraw.minIsCoins', { min: formatCoins(minimumCoins), defaultValue: `Minimum is ${formatCoins(minimumCoins)} Coins` })}
                     </p>
                   )}
                   {amount && !hasEnoughBalance && meetsMinimum && (
                     <p className="text-red-500 text-xs mt-0.5" style={{ fontFamily: '"Poppins", sans-serif' }}>
-                      Insufficient balance (need {formatCoins(totalDeducted)} including fee)
+                      {t('withdraw.insufficientBalance', { needed: formatCoins(totalDeducted), defaultValue: `Insufficient balance (need ${formatCoins(totalDeducted)} including fee)` })}
                     </p>
                   )}
                 </div>
@@ -1594,11 +1592,9 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess, filterType }) 
                       fontFamily: '"Poppins", sans-serif',
                       fontWeight: 500,
                       fontSize: '16px',
-                      lineHeight: '11px',
+                      lineHeight: '22px',
                       letterSpacing: '0%',
                       color: '#000000',
-                      width: '110px',
-                      height: '11px',
                       display: 'flex',
                       alignItems: 'center',
                       margin: 0,
@@ -1606,7 +1602,7 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess, filterType }) 
                       opacity: 1,
                     }}
                   >
-                    {method === 'litecoin' ? 'LTC Address' : 'PayPal Email'}
+                    {method === 'litecoin' ? t('withdraw.ltcAddress', 'LTC Address') : t('withdraw.paypalEmail', 'PayPal Email')}
                   </label>
                   <div
                     className="relative flex items-center w-full transition-all border-none outline-none shadow-none"
@@ -1628,7 +1624,7 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess, filterType }) 
                       type={method === 'litecoin' ? 'text' : 'email'}
                       value={destination}
                       onChange={(e) => { setDestination(e.target.value); setError(''); }}
-                      placeholder={selectedConfig.placeholder}
+                      placeholder={method === 'litecoin' ? t('withdraw.ltcPlaceholder', selectedConfig.placeholder) : t('withdraw.paypalPlaceholder', selectedConfig.placeholder)}
                       className="bg-transparent border-none outline-none p-0 flex-1 h-full placeholder:text-black/50"
                       style={{
                         fontFamily: '"Poppins", sans-serif',
@@ -1660,8 +1656,8 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess, filterType }) 
                     }}
                   >
                     {method === 'litecoin'
-                      ? '***Please double-check your LTC wallet address. Once the payout is processed, this action cannot be reversed. We are not responsible for lost rewards due to an incorrect address'
-                      : '***Please double-check your paypal email address. Once the payout is processed, this action cannot be reversed. We are not responsible for lost rewards due to an incorrect address'}
+                      ? t('withdraw.ltcDisclaimer', '***Please double-check your LTC wallet address. Once the payout is processed, this action cannot be reversed. We are not responsible for lost rewards due to an incorrect address')
+                      : t('withdraw.paypalDisclaimer', '***Please double-check your paypal email address. Once the payout is processed, this action cannot be reversed. We are not responsible for lost rewards due to an incorrect address')}
                   </p>
                 </div>
 
@@ -1709,7 +1705,7 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess, filterType }) 
                         opacity: 1,
                       }}
                     >
-                      Payout Breakdown
+                      {t('withdraw.payoutBreakdown', 'Payout Breakdown')}
                     </h4>
 
                     <div className="flex flex-col gap-2 w-full">
@@ -1734,7 +1730,7 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess, filterType }) 
                             lineHeight: '13px',
                             letterSpacing: '0%',
                             color: '#000000',
-                            width: '187px',
+                            minWidth: '187px',
                             height: '13px',
                             display: 'flex',
                             alignItems: 'center',
@@ -1743,7 +1739,7 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess, filterType }) 
                             opacity: 1,
                           }}
                         >
-                          Amount You Receive
+                          {t('withdraw.amountYouReceive', 'Amount You Receive')}
                         </span>
                         <span
                           style={{
@@ -1789,7 +1785,7 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess, filterType }) 
                             opacity: 1,
                           }}
                         >
-                          Processing Fees ({methodFeePercent}%)
+                          {t('withdraw.processingFees', { percent: methodFeePercent, defaultValue: `Processing Fees (${methodFeePercent}%)` })}
                         </span>
                         <span
                           style={{
@@ -1823,7 +1819,7 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess, filterType }) 
                           lineHeight: '13px',
                           letterSpacing: '-0.02em',
                           color: '#000000',
-                          width: '275px',
+                          minWidth: '275px',
                           height: '13px',
                           display: 'flex',
                           alignItems: 'center',
@@ -1832,7 +1828,7 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess, filterType }) 
                           opacity: 1,
                         }}
                       >
-                        Total Deducted From Balance
+                        {t('withdraw.totalDeducted', 'Total Deducted From Balance')}
                       </span>
                       <span
                         style={{
@@ -1895,7 +1891,7 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess, filterType }) 
                       lineHeight: '28px',
                       letterSpacing: '0%',
                       color: '#FFFFFF',
-                      width: '154px',
+                      minWidth: '154px',
                       height: '11px',
                       display: 'flex',
                       alignItems: 'center',
@@ -1903,7 +1899,7 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess, filterType }) 
                       opacity: 1,
                     }}
                   >
-                    Review Withdrawal
+                    {t('withdraw.reviewWithdrawal', 'Review Withdrawal')}
                   </span>
                 </button>
               </>
@@ -1945,7 +1941,7 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess, filterType }) 
                   opacity: 1,
                 }}
               >
-                Payout Breakdown
+                {t('withdraw.payoutBreakdown', 'Payout Breakdown')}
               </h4>
 
               <div className="flex flex-col gap-2 w-full">
@@ -1968,7 +1964,7 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess, filterType }) 
                       color: '#000000',
                     }}
                   >
-                    Method
+                    {t('withdraw.method', 'Method')}
                   </span>
                   <span
                     style={{
@@ -2001,7 +1997,7 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess, filterType }) 
                       color: '#000000',
                     }}
                   >
-                    Destination
+                    {t('withdraw.destination', 'Destination')}
                   </span>
                   <span
                     style={{
@@ -2038,7 +2034,7 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess, filterType }) 
                       color: '#000000',
                     }}
                   >
-                    Amount you recevie
+                    {t('withdraw.amountYouReceiveStep3', 'Amount you receive')}
                   </span>
                   <span
                     style={{
@@ -2071,7 +2067,7 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess, filterType }) 
                       color: '#000000',
                     }}
                   >
-                    Processing Fees ({isGiftCard ? '0%' : `${methodFeePercent}%`})
+                    {t('withdraw.processingFees', { percent: isGiftCard ? '0' : methodFeePercent, defaultValue: `Processing Fees (${isGiftCard ? '0%' : `${methodFeePercent}%`})` })}
                   </span>
                   <span
                     style={{
@@ -2107,7 +2103,7 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess, filterType }) 
                     alignItems: 'center',
                   }}
                 >
-                  Total Deducted From Balance
+                  {t('withdraw.totalDeducted', 'Total Deducted From Balance')}
                 </span>
                 <span
                   style={{
@@ -2140,7 +2136,7 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess, filterType }) 
                 opacity: 1,
               }}
             >
-              This action is irreversible. Your balance will be deducted immediately and the request will be reviewed by our team.
+              {t('withdraw.confirmDisclaimer', 'This action is irreversible. Your balance will be deducted immediately and the request will be reviewed by our team.')}
             </p>
 
             {error && (
@@ -2188,9 +2184,9 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess, filterType }) 
                 }}
               >
                 {submitting ? (
-                  <><FiLoader className="animate-spin mr-2" /> Processing...</>
+                  <><FiLoader className="animate-spin mr-2" /> {t('withdraw.processing', 'Processing...')}</>
                 ) : (
-                  'Confirm Withdrawal'
+                  t('withdraw.confirmWithdrawal', 'Confirm Withdrawal')
                 )}
               </span>
             </button>
@@ -2239,7 +2235,7 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess, filterType }) 
                   letterSpacing: '-0.02em',
                 }}
               >
-                Request Submitted!
+                {t('withdraw.requestSubmitted', 'Request Submitted!')}
               </h2>
 
               {/* Subtitle / Details */}
@@ -2247,9 +2243,13 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess, filterType }) 
                 className="text-[#000000] text-[15px] font-normal leading-[23px] m-0 mb-6"
                 style={{ fontFamily: '"Poppins", sans-serif' }}
               >
-                Your withdrawal of <span className="font-bold">{amountNum ? formatCoins(amountNum) : formatCoins(youReceive)} Coins</span> via {selectedMethod?.label || (method === 'paypal' ? 'PayPal' : 'Litecoin')} has been submitted.
+                {t('withdraw.successDetails', {
+                  amount: amountNum ? formatCoins(amountNum) : formatCoins(youReceive),
+                  method: selectedMethod?.label || (method === 'paypal' ? 'PayPal' : 'Litecoin'),
+                  defaultValue: `Your withdrawal of ${amountNum ? formatCoins(amountNum) : formatCoins(youReceive)} Coins via ${selectedMethod?.label || (method === 'paypal' ? 'PayPal' : 'Litecoin')} has been submitted.`
+                })}
                 <br />
-                Our team will process your request within 1–3 business days. Check your transaction history for updates.
+                {t('withdraw.successProcessing', 'Our team will process your request within 1–3 business days. Check your transaction history for updates.')}
               </p>
 
               {/* Done Button */}
@@ -2271,7 +2271,7 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess, filterType }) 
                   boxSizing: 'border-box',
                 }}
               >
-                Done
+                {t('withdraw.done', 'Done')}
               </button>
             </div>
           </div>

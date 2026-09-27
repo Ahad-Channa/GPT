@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 import DashboardLayout from '../components/layout/DashboardLayout';
 import { useAuth } from '../contexts/AuthContext';
 import WithdrawalModal from '../components/wallet/WithdrawalModal';
@@ -14,6 +15,7 @@ const container = { hidden: {}, show: { transition: { staggerChildren: 0.07 } } 
 const item = { hidden: { opacity: 0, y: 18 }, show: { opacity: 1, y: 0, transition: { duration: 0.38 } } };
 
 const PromoCodeRedeem = ({ onSuccess }) => {
+  const { t } = useTranslation();
   const { currentUser } = useAuth();
   const [code, setCode] = useState('');
   const [loading, setLoading] = useState(false);
@@ -56,10 +58,10 @@ const PromoCodeRedeem = ({ onSuccess }) => {
         setCode('');
         if (onSuccess) onSuccess(data.newBalance);
       } else {
-        setPopup({ type: 'error', text: data.error || 'Failed to redeem code' });
+        setPopup({ type: 'error', text: data.error || t('withdraw.redemptionFailed', 'Failed to redeem code') });
       }
     } catch (err) {
-      setPopup({ type: 'error', text: 'Network error. Try again later.' });
+      setPopup({ type: 'error', text: t('withdraw.networkError', 'Network error. Try again later.') });
     } finally {
       setLoading(false);
     }
@@ -89,7 +91,7 @@ const PromoCodeRedeem = ({ onSuccess }) => {
           className="flex flex-col justify-center"
           style={{
             width: '100%',
-            maxWidth: '331px',
+            maxWidth: '100%',
             height: '46px',
             gap: '16px',
             boxSizing: 'border-box',
@@ -105,7 +107,6 @@ const PromoCodeRedeem = ({ onSuccess }) => {
               letterSpacing: '-0.02em',
               color: '#000000',
               width: '100%',
-              maxWidth: '298px',
               height: '20px',
               display: 'flex',
               alignItems: 'center',
@@ -114,9 +115,10 @@ const PromoCodeRedeem = ({ onSuccess }) => {
               opacity: 1,
             }}
           >
-            Redeem Promo Code
+            {t('withdraw.promoTitle', 'Redeem Promo Code')}
           </h2>
           <p
+            className="whitespace-normal sm:whitespace-nowrap"
             style={{
               fontFamily: '"Poppins", sans-serif',
               fontWeight: 500,
@@ -125,7 +127,6 @@ const PromoCodeRedeem = ({ onSuccess }) => {
               letterSpacing: '0%',
               color: '#000000',
               width: '100%',
-              maxWidth: '331px',
               height: '10px',
               display: 'flex',
               alignItems: 'center',
@@ -134,7 +135,7 @@ const PromoCodeRedeem = ({ onSuccess }) => {
               opacity: 1,
             }}
           >
-            Have a code? Enter it below to claim free coins.
+            {t('withdraw.promoSubtitle', 'Have a code? Enter it below to claim free coins.')}
           </p>
         </div>
 
@@ -160,7 +161,7 @@ const PromoCodeRedeem = ({ onSuccess }) => {
             type="text"
             value={code}
             onChange={(e) => setCode(e.target.value.toUpperCase())}
-            placeholder="Enter code here"
+            placeholder={t('withdraw.promoPlaceholder', 'Enter code here')}
             className="w-full bg-transparent border-none outline-none p-0 uppercase placeholder:text-black/56"
             style={{
               fontFamily: '"Poppins", sans-serif',
@@ -178,7 +179,7 @@ const PromoCodeRedeem = ({ onSuccess }) => {
             className="h-[44px] sm:h-[48px] px-8 sm:px-10 rounded-full bg-[#1E2538] hover:bg-[#151b29] text-white font-semibold text-[15px] flex items-center justify-center shrink-0 transition-all disabled:opacity-40 cursor-pointer disabled:cursor-not-allowed shadow-sm"
             style={{ fontFamily: '"Poppins", sans-serif' }}
           >
-            {loading ? '...' : 'Redeem'}
+            {loading ? '...' : t('withdraw.promoRedeem', 'Redeem')}
           </button>
         </form>
       </motion.div>
@@ -221,14 +222,14 @@ const PromoCodeRedeem = ({ onSuccess }) => {
                     className="m-0 p-0 font-bold text-[26px] text-[#0E0F0C]"
                     style={{ fontFamily: '"Bricolage Grotesque", sans-serif' }}
                   >
-                    {popup.type === 'success' ? 'Code Redeemed!' : 'Redemption Failed'}
+                    {popup.type === 'success' ? t('withdraw.codeRedeemed', 'Code Redeemed!') : t('withdraw.redemptionFailed', 'Redemption Failed')}
                   </h2>
                   <p
                     className="m-0 p-0 font-medium text-[15px] text-[#71717A]"
                     style={{ fontFamily: '"Poppins", sans-serif' }}
                   >
                     {popup.type === 'success'
-                      ? <span className="flex items-center justify-center gap-2">+<CoinDisplay amount={popup.coins} size={18} /> added to your wallet!</span>
+                      ? <span className="flex items-center justify-center gap-2">+{popup.coins?.toLocaleString('de-DE')} {t('withdraw.coinsAdded', { coins: '', defaultValue: 'added to your wallet!' })}</span>
                       : popup.text}
                   </p>
                 </div>
@@ -239,7 +240,7 @@ const PromoCodeRedeem = ({ onSuccess }) => {
                   className="flex items-center justify-center w-full h-[48px] rounded-full bg-[#1E2538] hover:bg-[#151b29] text-white font-semibold text-[15px] transition-all mt-2 cursor-pointer"
                   style={{ fontFamily: '"Poppins", sans-serif' }}
                 >
-                  {popup.type === 'success' ? 'Awesome!' : 'Try Again'}
+                  {popup.type === 'success' ? t('withdraw.awesome', 'Awesome!') : t('withdraw.tryAgain', 'Try Again')}
                 </button>
               </motion.div>
             </motion.div>
@@ -251,13 +252,24 @@ const PromoCodeRedeem = ({ onSuccess }) => {
   );
 };
 
+const DEFAULT_WALLET_SETTINGS = {
+  coinsPerUSD: 1000,
+  withdrawalFeePercent: 0,
+  withdrawalMethods: [
+    { id: 'paypal', enabled: true, minUSD: 5, feePercent: 0 },
+    { id: 'litecoin', enabled: true, minUSD: 5, feePercent: 0 },
+    { id: 'giftcard', enabled: true, minUSD: 5, feePercent: 0 },
+  ],
+};
+
 const Wallet = () => {
+  const { t } = useTranslation();
   const { currentUser, mongoUser, setMongoUser } = useAuth();
   const [showWithdraw, setShowWithdraw] = useState(false);
   const [filterType, setFilterType] = useState(null);
-  const [settings, setSettings] = useState(null);
+  const [settings, setSettings] = useState(DEFAULT_WALLET_SETTINGS);
   const [txRefresh, setTxRefresh] = useState(0);
-  const [settingsLoad, setSettingsLoad] = useState(true);
+  const [settingsLoad, setSettingsLoad] = useState(false);
   const [showBookSelector, setShowBookSelector] = useState(false);
   const [books, setBooks] = useState([]);
   const [booksVisible, setBooksVisible] = useState(false);
@@ -273,7 +285,9 @@ const Wallet = () => {
           headers: { Authorization: `Bearer ${token}` },
         });
         const data = await res.json();
-        if (data.success) setSettings(data);
+        if (data.success) {
+          setSettings(data.settings || data);
+        }
       } catch (err) {
         console.error('Failed to load wallet settings:', err);
       } finally {
@@ -369,7 +383,7 @@ const Wallet = () => {
                   padding: 0,
                 }}
               >
-                Withdraw
+                {t('withdraw.pageTitle', 'Withdraw')}
               </h1>
               <p
                 style={{
@@ -384,7 +398,7 @@ const Wallet = () => {
                   maxWidth: '354px',
                 }}
               >
-                Choose your preferred withdrawal method and convert your coins into real rewards.
+                {t('withdraw.pageSubtitle', 'Choose your preferred withdrawal method and convert your coins into real rewards.')}
               </p>
             </div>
 
@@ -432,7 +446,7 @@ const Wallet = () => {
                     opacity: 1,
                   }}
                 >
-                  Your Balance
+                  {t('withdraw.yourBalance', 'Your Balance')}
                 </span>
               </div>
 
@@ -494,7 +508,7 @@ const Wallet = () => {
                     }}
                   >
                     {settings?.coinsPerUSD ? settings.coinsPerUSD.toLocaleString('de-DE') : '1.000'}
-                    <span style={{ color: '#000000' }}>= 1 USD</span>
+                    <span style={{ color: '#000000' }}>{t('withdraw.equalOneUsd', '= 1 USD')}</span>
                   </span>
                 </div>
               </div>
@@ -575,7 +589,7 @@ const Wallet = () => {
                       opacity: 1,
                     }}
                   >
-                    PayPal & Litecoin
+                    {t('withdraw.cardPaypalTitle', 'PayPal & Litecoin')}
                   </h3>
                   <p
                     style={{
@@ -594,7 +608,7 @@ const Wallet = () => {
                       opacity: 1,
                     }}
                   >
-                    Withdraw your earnings to your PayPal account or Litecoin wallet.
+                    {t('withdraw.cardPaypalDesc', 'Withdraw your earnings to your PayPal account or Litecoin wallet.')}
                   </p>
                 </div>
               </div>
@@ -618,7 +632,7 @@ const Wallet = () => {
                     opacity: 1,
                   }}
                 >
-                  Withdraw Now
+                  {t('withdraw.withdrawNow', 'Withdraw Now')}
                 </button>
               </div>
             </div>
@@ -676,7 +690,7 @@ const Wallet = () => {
                       opacity: 1,
                     }}
                   >
-                    Gift Cards
+                    {t('withdraw.cardGiftcardsTitle', 'Gift Cards')}
                   </h3>
                   <p
                     style={{
@@ -695,7 +709,7 @@ const Wallet = () => {
                       opacity: 1,
                     }}
                   >
-                    Choose from a variety of popular gift cards and treat yourself.
+                    {t('withdraw.cardGiftcardsDesc', 'Choose from a variety of popular gift cards and treat yourself.')}
                   </p>
                 </div>
               </div>
@@ -719,7 +733,7 @@ const Wallet = () => {
                     opacity: 1,
                   }}
                 >
-                  Withdraw Now
+                  {t('withdraw.withdrawNow', 'Withdraw Now')}
                 </button>
               </div>
             </div>
@@ -777,7 +791,7 @@ const Wallet = () => {
                       opacity: 1,
                     }}
                   >
-                    Your Books
+                    {t('withdraw.cardBooksTitle', 'Your Books')}
                   </h3>
                   <p
                     style={{
@@ -796,7 +810,7 @@ const Wallet = () => {
                       opacity: 1,
                     }}
                   >
-                    Redeem your coins for my books. Personally signed - only in Germany.
+                    {t('withdraw.cardBooksDesc', 'Redeem your coins for my books. Personally signed - only in Germany.')}
                   </p>
                 </div>
               </div>
@@ -819,7 +833,7 @@ const Wallet = () => {
                     opacity: 1,
                   }}
                 >
-                  Withdraw Now
+                  {t('withdraw.withdrawNow', 'Withdraw Now')}
                 </button>
               </div>
             </div>

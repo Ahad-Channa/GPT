@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import DashboardLayout from '../components/layout/DashboardLayout';
 import { useAuth } from '../contexts/AuthContext';
+import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   FiCheckCircle, FiZap, FiMonitor, FiStar, FiExternalLink,
@@ -55,6 +56,7 @@ const TabButton = ({ active, onClick, icon: Icon, label, count }) => (
 
 // === MAIN EARN PAGE ===
 const Earn = () => {
+  const { t } = useTranslation();
   const { mongoUser, currentUser } = useAuth();
   const [activeTab, setActiveTab] = useState('surveys');
   const [activeProvider, setActiveProvider] = useState(null);
@@ -165,16 +167,16 @@ const Earn = () => {
   const gamingProviders = [...combinedBase.slice(0, 8), goodpicksItem];
 
   const tabs = [
-    { id: 'surveys', label: 'Surveys', icon: FiCheckCircle, count: surveyProviders.length },
-    { id: 'gaming', label: 'Gaming & Apps', icon: FiMonitor, count: gamingProviders.length },
-    { id: 'featured', label: 'Featured Offers', icon: FiStar, count: customOffers.length },
+    { id: 'surveys', label: t('earn.tabSurveys'), icon: FiCheckCircle, count: surveyProviders.length },
+    { id: 'gaming', label: t('earn.tabGaming'), icon: FiMonitor, count: gamingProviders.length },
+    { id: 'featured', label: t('earn.tabFeatured'), icon: FiStar, count: customOffers.length },
   ];
 
-  const renderEmptyState = (label) => (
+  const renderEmptyState = (labelKey) => (
     <div className="glass-card p-16 text-center flex flex-col items-center gap-4">
       <div>
-        <p className="text-slate-300 font-semibold mb-1">No {label} Available</p>
-        <p className="text-slate-500 text-sm">Check back soon — new earning opportunities are added regularly.</p>
+        <p className="text-slate-300 font-semibold mb-1">{t(labelKey)}</p>
+        <p className="text-slate-500 text-sm">{t('earn.checkBackSoon')}</p>
       </div>
     </div>
   );
@@ -187,10 +189,10 @@ const Earn = () => {
         <motion.div variants={item} className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
           <div>
             <h1 className="text-3xl font-bold font-display text-white tracking-tight flex items-center gap-3">
-              <FiZap className="text-indigo-400" /> Earn Points
+              <FiZap className="text-indigo-400" /> {t('earn.pageTitle')}
             </h1>
             <p className="text-slate-400 mt-2">
-              Complete surveys, play games, and discover featured offers to earn coins.
+              {t('earn.pageSubtitle')}
             </p>
           </div>
         </motion.div>
@@ -231,7 +233,7 @@ const Earn = () => {
                     onClick={() => setActiveProvider(null)}
                     className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white/[0.05] hover:bg-white/[0.1] text-slate-300 transition-all font-semibold text-sm w-fit"
                   >
-                    <span className="text-lg">←</span> Back to Providers
+                    <span className="text-lg">←</span> {t('earn.backToProviders')}
                   </button>
                   <OfferwallCard provider={activeProvider} userId={mongoUser?._id} />
                 </div>
@@ -244,10 +246,10 @@ const Earn = () => {
                     {loadingSettings ? (
                       <div className="glass-card p-12 text-center flex flex-col items-center gap-3">
                         <div className="w-10 h-10 rounded-full border-2 border-indigo-500 border-t-transparent animate-spin" />
-                        <p className="text-slate-400 text-sm">Loading survey providers...</p>
+                        <p className="text-slate-400 text-sm">{t('earn.loadingSurveys')}</p>
                       </div>
                     ) : surveyProviders.length === 0 ? (
-                      renderEmptyState('Surveys')
+                      renderEmptyState('earn.noSurveys')
                     ) : (
                       <motion.div variants={container} initial="hidden" animate="show" className="grid grid-cols-2 sm:grid-cols-[repeat(auto-fill,minmax(240px,1fr))] gap-4">
                         {surveyProviders.map(provider => (
@@ -264,10 +266,10 @@ const Earn = () => {
                     {loadingSettings ? (
                       <div className="glass-card p-12 text-center flex flex-col items-center gap-3">
                         <div className="w-10 h-10 rounded-full border-2 border-cyan-500 border-t-transparent animate-spin" />
-                        <p className="text-slate-400 text-sm">Loading gaming providers...</p>
+                        <p className="text-slate-400 text-sm">{t('earn.loadingGaming')}</p>
                       </div>
                     ) : gamingProviders.length === 0 ? (
-                      renderEmptyState('Gaming & App Offers')
+                      renderEmptyState('earn.noGaming')
                     ) : (
                       <motion.div variants={container} initial="hidden" animate="show" className="grid grid-cols-2 sm:grid-cols-[repeat(auto-fill,minmax(240px,1fr))] gap-4">
                         {gamingProviders.map(provider => (
@@ -284,7 +286,7 @@ const Earn = () => {
                     {loadingOffers ? (
                       <div className="glass-card p-12 text-center flex flex-col items-center gap-3">
                         <div className="w-10 h-10 rounded-full border-2 border-amber-500 border-t-transparent animate-spin" />
-                        <p className="text-slate-400 text-sm">Loading featured offers...</p>
+                        <p className="text-slate-400 text-sm">{t('earn.loadingFeatured')}</p>
                       </div>
                     ) : customOffers.length === 0 ? (
                       <div className="glass-card p-16 text-center flex flex-col items-center gap-4">
@@ -292,9 +294,9 @@ const Earn = () => {
                           <FiStar className="text-amber-500/50 text-2xl" />
                         </div>
                         <div>
-                          <p className="text-slate-300 font-semibold mb-1">No Featured Offers Right Now</p>
+                          <p className="text-slate-300 font-semibold mb-1">{t('earn.noFeatured')}</p>
                           <p className="text-slate-500 text-sm">
-                            Our team is working on exclusive partnership offers. Check back soon!
+                            {t('earn.checkBackFeatured')}
                           </p>
                         </div>
                       </div>

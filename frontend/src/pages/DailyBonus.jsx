@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 import DashboardLayout from '../components/layout/DashboardLayout';
 import { useAuth } from '../contexts/AuthContext';
 import { useDailyBonus } from '../contexts/DailyBonusContext';
@@ -47,6 +48,7 @@ function useCountdown(target) {
 }
 
 export default function DailyBonus() {
+  const { t } = useTranslation();
   const { currentUser } = useAuth();
   const { status, loading, fetchStatus } = useDailyBonus();
   const [claiming, setClaiming] = useState(false);
@@ -70,7 +72,7 @@ export default function DailyBonus() {
       if (data.success) {
         fetchStatus();
       } else {
-        alert(data.error || 'Failed to claim bonus');
+        alert(data.error || t('dailyBonus.failedToClaim', 'Failed to claim bonus'));
       }
     } catch (err) {
       console.error(err);
@@ -154,7 +156,7 @@ export default function DailyBonus() {
                         whiteSpace: 'nowrap',
                       }}
                     >
-                      Daily Bonus
+                      {t('dailyBonus.pageTitle', 'Daily Bonus')}
                     </h1>
                   </div>
 
@@ -162,7 +164,8 @@ export default function DailyBonus() {
                   <div
                     className="flex flex-col items-center justify-center shrink-0"
                     style={{
-                      width: '155px',
+                      minWidth: '155px',
+                      width: 'auto',
                       height: '57px',
                       opacity: 1,
                       transform: 'rotate(0deg)',
@@ -179,7 +182,7 @@ export default function DailyBonus() {
                     <span
                       className="flex items-center justify-center"
                       style={{
-                        width: '111px',
+                        width: 'auto',
                         height: '10px',
                         fontFamily: '"Poppins", sans-serif',
                         fontWeight: 500,
@@ -192,7 +195,7 @@ export default function DailyBonus() {
                         opacity: 1,
                       }}
                     >
-                      Today's Reward
+                      {t('dailyBonus.todaysReward', "Today's Reward")}
                     </span>
                     <div
                       className="flex items-center justify-center gap-1.5"
@@ -224,7 +227,7 @@ export default function DailyBonus() {
                           whiteSpace: 'nowrap',
                         }}
                       >
-                        {formatCoins(status.rewardToday || 800)} Coins
+                        {formatCoins(status.rewardToday || 800)} {t('dailyBonus.coins', 'Coins')}
                       </span>
                     </div>
                   </div>
@@ -236,7 +239,7 @@ export default function DailyBonus() {
                     <span
                       className="flex items-center"
                       style={{
-                        width: '130px',
+                        width: 'auto',
                         height: '10px',
                         fontFamily: '"Poppins", sans-serif',
                         fontWeight: 500,
@@ -249,7 +252,7 @@ export default function DailyBonus() {
                         transform: 'rotate(0deg)',
                       }}
                     >
-                      Progress to unlock
+                      {t('dailyBonus.progressToUnlock', 'Progress to unlock')}
                     </span>
                     <div
                       className="flex items-center justify-end gap-1.5"
@@ -316,7 +319,7 @@ export default function DailyBonus() {
                       className="text-[14px] sm:text-[16px] leading-[18px] sm:leading-[22px]"
                       style={{
                         marginTop: '16px',
-                        maxWidth: '337px',
+                        maxWidth: '100%',
                         fontFamily: '"Poppins", sans-serif',
                         fontWeight: 500,
                         letterSpacing: '0%',
@@ -326,14 +329,14 @@ export default function DailyBonus() {
                         display: 'block',
                       }}
                     >
-                      You have unlocked your bonus
+                      {t('dailyBonus.bonusUnlocked', 'You have unlocked your bonus')}
                     </span>
                   ) : (
                     <div
-                      className="flex items-center text-[14px] sm:text-[16px] leading-[18px] sm:leading-[22px]"
+                      className="flex items-center text-[14px] sm:text-[16px] leading-[18px] sm:leading-[22px] flex-wrap"
                       style={{
                         marginTop: '16px',
-                        maxWidth: '337px',
+                        maxWidth: '100%',
                         gap: '4px',
                         opacity: 1,
                         transform: 'rotate(0deg)',
@@ -344,7 +347,7 @@ export default function DailyBonus() {
                         justifyContent: 'flex-start',
                       }}
                     >
-                      <span style={{ color: '#0E0F0C' }}>Earn</span>
+                      <span style={{ color: '#0E0F0C' }}>{t('dailyBonus.earn', 'Earn')}</span>
                       <img
                         src="/coins/coinbonushero.png"
                         alt="Coin"
@@ -356,9 +359,9 @@ export default function DailyBonus() {
                         className="shrink-0"
                       />
                       <span style={{ color: 'rgba(231, 171, 24, 1)' }}>
-                        {formatCoins(remainingToUnlock)} Coins
+                        {formatCoins(remainingToUnlock)} {t('dailyBonus.coins', 'Coins')}
                       </span>
-                      <span style={{ color: '#0E0F0C' }}>more to unlock your bonus</span>
+                      <span style={{ color: '#0E0F0C' }}>{t('dailyBonus.moreToUnlock', 'more to unlock your bonus')}</span>
                     </div>
                   )}
                 </div>
@@ -395,11 +398,11 @@ export default function DailyBonus() {
                 >
                   <div
                     className="flex flex-col"
-                    style={{ width: '102px', opacity: 1 }}
+                    style={{ minWidth: '102px', width: 'auto', opacity: 1 }}
                   >
                     <span
                       style={{
-                        width: '102px',
+                        width: 'auto',
                         fontFamily: '"Poppins", sans-serif',
                         fontWeight: 500,
                         fontSize: '14px',
@@ -409,12 +412,12 @@ export default function DailyBonus() {
                         whiteSpace: 'nowrap',
                       }}
                     >
-                      Current streak
+                      {t('dailyBonus.currentStreak', 'Current streak')}
                     </span>
                     <span
                       className="mt-2 sm:mt-1"
                       style={{
-                        width: '102px',
+                        width: 'auto',
                         fontFamily: '"Bricolage Grotesque", sans-serif',
                         fontWeight: 700,
                         fontSize: '27px',
@@ -424,7 +427,7 @@ export default function DailyBonus() {
                         whiteSpace: 'nowrap',
                       }}
                     >
-                      Day {streak}
+                      {t('dailyBonus.dayCount', { count: streak, defaultValue: `Day ${streak}` })}
                     </span>
                   </div>
 
@@ -439,11 +442,11 @@ export default function DailyBonus() {
 
                   <div
                     className="flex flex-col text-left items-start"
-                    style={{ width: '102px', opacity: 1 }}
+                    style={{ minWidth: '102px', width: 'auto', opacity: 1 }}
                   >
                     <span
                       style={{
-                        width: '102px',
+                        width: 'auto',
                         fontFamily: '"Poppins", sans-serif',
                         fontWeight: 500,
                         fontSize: '14px',
@@ -454,12 +457,12 @@ export default function DailyBonus() {
                         whiteSpace: 'nowrap',
                       }}
                     >
-                      Longest streak
+                      {t('dailyBonus.longestStreak', 'Longest streak')}
                     </span>
                     <span
                       className="mt-2 sm:mt-1"
                       style={{
-                        width: '102px',
+                        width: 'auto',
                         fontFamily: '"Bricolage Grotesque", sans-serif',
                         fontWeight: 700,
                         fontSize: '27px',
@@ -470,7 +473,7 @@ export default function DailyBonus() {
                         whiteSpace: 'nowrap',
                       }}
                     >
-                      {longestStreak} days
+                      {t('dailyBonus.daysCount', { count: longestStreak, defaultValue: `${longestStreak} days` })}
                     </span>
                   </div>
                 </div>
@@ -491,7 +494,7 @@ export default function DailyBonus() {
                 <div className="flex items-center justify-between w-full">
                   <span
                     style={{
-                      width: '164px',
+                      width: 'auto',
                       fontFamily: '"Poppins", sans-serif',
                       fontWeight: 500,
                       fontSize: '14px',
@@ -502,7 +505,7 @@ export default function DailyBonus() {
                       whiteSpace: 'nowrap',
                     }}
                   >
-                    Next Reward Tomorrow
+                    {t('dailyBonus.nextRewardTomorrow', 'Next Reward Tomorrow')}
                   </span>
                   <div
                     className="flex items-center gap-1.5"
@@ -534,7 +537,7 @@ export default function DailyBonus() {
                         whiteSpace: 'nowrap',
                       }}
                     >
-                      {formatCoins(status.rewardTomorrow || 1000)} Coins
+                      {formatCoins(status.rewardTomorrow || 1000)} {t('dailyBonus.coins', 'Coins')}
                     </span>
                   </div>
                 </div>
@@ -584,7 +587,7 @@ export default function DailyBonus() {
                     )}
                     <span
                       style={{
-                        width: '114px',
+                        width: 'auto',
                         fontFamily: '"Poppins", sans-serif',
                         fontWeight: 500,
                         fontSize: '16px',
@@ -600,10 +603,10 @@ export default function DailyBonus() {
                       }}
                     >
                       {claiming
-                        ? 'Claiming...'
+                        ? t('dailyBonus.claiming', 'Claiming...')
                         : status.alreadyClaimed
-                          ? 'Claimed'
-                          : 'Claim Reward'}
+                          ? t('dailyBonus.claimed', 'Claimed')
+                          : t('dailyBonus.claimReward', 'Claim Reward')}
                     </span>
                   </button>
 
@@ -625,7 +628,7 @@ export default function DailyBonus() {
                         textAlign: 'right',
                       }}
                     >
-                      Resets in
+                      {t('dailyBonus.resetsIn', 'Resets in')}
                     </span>
                     <span
                       style={{
@@ -680,7 +683,7 @@ export default function DailyBonus() {
                     whiteSpace: 'nowrap',
                   }}
                 >
-                  Current Streak
+                  {t('dailyBonus.currentStreakTitle', 'Current Streak')}
                 </h2>
                 <span
                   className="text-[16px] sm:text-[20px]"
@@ -695,7 +698,7 @@ export default function DailyBonus() {
                     whiteSpace: 'nowrap',
                   }}
                 >
-                  {streak}/30Days
+                  {t('dailyBonus.streakProgress', { current: streak, max: 30, defaultValue: `${streak}/30 Days` })}
                 </span>
               </div>
 
@@ -854,7 +857,7 @@ export default function DailyBonus() {
                             whiteSpace: 'nowrap',
                           }}
                         >
-                          Day {day}
+                          {t('dailyBonus.dayNode', { day: day, defaultValue: `Day ${day}` })}
                         </span>
                       </div>
                     );
@@ -886,7 +889,7 @@ export default function DailyBonus() {
                     margin: 0,
                   }}
                 >
-                  Streak Milestones
+                  {t('dailyBonus.streakMilestones', 'Streak Milestones')}
                 </h2>
                 <p
                   style={{
@@ -899,7 +902,7 @@ export default function DailyBonus() {
                     margin: 0,
                   }}
                 >
-                  Bonus coins for hitting these streaks
+                  {t('dailyBonus.milestonesSubtitle', 'Bonus coins for hitting these streaks')}
                 </p>
               </div>
 
@@ -908,24 +911,24 @@ export default function DailyBonus() {
                 {[
                   {
                     badgeSrc: '/coins/streak (2).png',
-                    title: '10 Day Streak',
-                    sub: 'Keep going!',
+                    title: t('dailyBonus.tenDayStreak', '10 Day Streak'),
+                    sub: t('dailyBonus.keepGoing', 'Keep going!'),
                     target: 10,
                     reward: status.rewardDay10 ?? 500,
                     barColor: 'rgba(248, 158, 83, 1)', // Orange #F89E53
                   },
                   {
                     badgeSrc: '/coins/streak (3).png',
-                    title: '20 Day Streak',
-                    sub: 'Almost there!',
+                    title: t('dailyBonus.twentyDayStreak', '20 Day Streak'),
+                    sub: t('dailyBonus.almostThere', 'Almost there!'),
                     target: 20,
                     reward: status.rewardDay20 ?? 2498,
                     barColor: 'rgba(84, 188, 161, 1)', // Emerald/Teal #54BCA1
                   },
                   {
                     badgeSrc: '/coins/streak (1).png',
-                    title: '30 Day Streak',
-                    sub: 'Ultimate champion!',
+                    title: t('dailyBonus.thirtyDayStreak', '30 Day Streak'),
+                    sub: t('dailyBonus.ultimateChampion', 'Ultimate champion!'),
                     target: 30,
                     reward: status.rewardDay30 ?? 5000,
                     barColor: 'rgba(79, 157, 247, 1)', // Blue #4F9DF7
@@ -995,7 +998,7 @@ export default function DailyBonus() {
                                 color: 'rgba(231, 171, 24, 1)',
                               }}
                             >
-                              {formatCoins(milestone.reward)} coins
+                              {formatCoins(milestone.reward)} {t('dailyBonus.coinsLower', 'coins')}
                             </span>
                           </div>
                         </div>
@@ -1017,7 +1020,7 @@ export default function DailyBonus() {
                               fontFamily: '"Poppins", sans-serif',
                             }}
                           >
-                            {currentProgress} / {milestone.target} Days
+                            {t('dailyBonus.daysTarget', { current: currentProgress, target: milestone.target, defaultValue: `${currentProgress} / ${milestone.target} Days` })}
                           </span>
                         </div>
                       </div>

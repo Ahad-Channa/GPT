@@ -77,15 +77,18 @@ async function getLitecoinRate() {
 router.get('/settings', verifyToken, async (req, res) => {
   try {
     const settings = await Settings.getSingleton();
-    const ltcRateUSD = await getLitecoinRate();
-
-    res.status(200).json({
-      success: true,
+    const settingsPayload = {
       withdrawalFeePercent: settings.withdrawalFeePercent,
       withdrawalMethods: settings.withdrawalMethods.filter((m) => m.enabled),
       offerwalls: settings.offerwallProviders.filter((p) => p.enabled),
       coinsPerUSD: settings.coinsPerUSD,
       exchangeRates: { ltcUSD: ltcRateUSD },
+    };
+
+    res.status(200).json({
+      success: true,
+      ...settingsPayload,
+      settings: settingsPayload,
     });
   } catch (error) {
     console.error('[/api/wallet/settings] Error:', error);

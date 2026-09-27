@@ -15,6 +15,8 @@ import {
 import { auth, googleProvider } from '../config/firebase';
 import { io } from 'socket.io-client';
 import { generateFingerprint } from '../utils/fingerprint';
+import i18n from '../i18n/i18n';
+import { localizeNotification } from '../utils/notificationLocalizer';
 
 // Global fetch interceptor to inject 2FA token
 const originalFetch = window.fetch;
@@ -287,9 +289,15 @@ export const AuthProvider = ({ children }) => {
                 socketRef.current.off('vipLevelUp');
                 socketRef.current.on('vipLevelUp', ({ label, rewardAmount, tier, rank }) => {
                     import('react-hot-toast').then(({ default: toast }) => {
+                        const isDe = i18n.language === 'de';
                         const msg = rewardAmount > 0
-                            ? `🎉 You reached ${label}! Claim your ${rewardAmount.toLocaleString()} coin bonus on the VIP page.`
-                            : `🎉 You reached ${label} VIP status! Check your progress on the VIP page.`;
+                            ? (isDe
+                                ? `🎉 Du hast ${label} erreicht! Hole dir deinen Bonus von ${rewardAmount.toLocaleString()} Coins auf der VIP Seite ab.`
+                                : `🎉 You reached ${label}! Claim your ${rewardAmount.toLocaleString()} coin bonus on the VIP page.`)
+                            : (isDe
+                                ? `🎉 Du hast den VIP-Status ${label} erreicht! Sieh dir deinen Fortschritt auf der VIP Seite an.`
+                                : `🎉 You reached ${label} VIP status! Check your progress on the VIP page.`);
+                        const openText = isDe ? '→ Zur VIP Seite' : '→ Open VIP page';
                         toast(
                             (t) => (
                                 <span
@@ -301,7 +309,7 @@ export const AuthProvider = ({ children }) => {
                                 >
                                     {msg}
                                     <span style={{ display: 'block', fontSize: '0.75rem', marginTop: '4px', color: '#a5b4fc', fontWeight: 700 }}>
-                                        → Open VIP page
+                                        {openText}
                                     </span>
                                 </span>
                             ),
@@ -327,7 +335,8 @@ export const AuthProvider = ({ children }) => {
                 socketRef.current.on('newNotification', ({ type, title, message }) => {
                     // Trigger a toast for important earning notifications
                     import('react-hot-toast').then(({ default: toast }) => {
-                        toast.success(`${title}: ${message}`, {
+                        const localized = localizeNotification({ type, title, message }, i18n.language);
+                        toast.success(`${localized.title}: ${localized.message}`, {
                             duration: 8000,
                             style: {
                                 background: '#0b101e',
