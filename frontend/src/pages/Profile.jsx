@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { toast } from 'react-hot-toast';
+import { useTranslation } from 'react-i18next';
 import DashboardLayout from '../components/layout/DashboardLayout';
 import { useAuth } from '../contexts/AuthContext';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -20,6 +21,7 @@ const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
 // ── Customization / Avatar Shop Modal ─────────────────────────────
 const CustomizationModal = ({ isOpen, onClose, mongoUser, token, setMongoUser }) => {
+  const { t, i18n } = useTranslation();
   const [activeTab, setActiveTab] = useState('my_avatars');
   const [previewAvatar, setPreviewAvatar] = useState(null);
 
@@ -136,12 +138,12 @@ const CustomizationModal = ({ isOpen, onClose, mongoUser, token, setMongoUser })
         await fetchAvatars();
         setPurchaseSuccessAvatar(avatar);
         setConfirmingAvatar(null);
-        toast.success('Avatar purchased and equipped!');
+        toast.success(t('profile.avatarPurchasedAndEquipped', 'Avatar purchased and equipped!'));
       } else {
         toast.error(data.error);
       }
     } catch (e) {
-      toast.error('Network error');
+      toast.error(t('profile.networkError', 'Network error'));
     } finally {
       setSaving(false);
     }
@@ -159,12 +161,12 @@ const CustomizationModal = ({ isOpen, onClose, mongoUser, token, setMongoUser })
       const data = await res.json();
       if (res.ok) {
         setMongoUser(data.user);
-        toast.success('Avatar equipped successfully!');
+        toast.success(t('profile.avatarEquippedSuccess', 'Avatar equipped successfully!'));
       } else {
-        toast.error(data.error || 'Failed to equip avatar');
+        toast.error(data.error || t('profile.failedToEquip', 'Failed to equip avatar'));
       }
     } catch {
-      toast.error('Network error.');
+      toast.error(t('profile.networkError', 'Network error.'));
     }
     setSaving(false);
   };
@@ -228,16 +230,16 @@ const CustomizationModal = ({ isOpen, onClose, mongoUser, token, setMongoUser })
                 }}
                 className="font-bold text-[24px] sm:text-[28px] md:text-[32px] leading-tight md:leading-[1.1]"
               >
-                Avatar Shop
+                {t('profile.avatarShop', 'Avatar Shop')}
               </h2>
               <p
                 style={{
                   fontFamily: '"Poppins", sans-serif',
                   color: 'rgba(14, 15, 12, 1)'
                 }}
-                className="text-[12.5px] sm:text-[14px] md:text-[16px] font-medium leading-tight md:leading-[26px] max-w-[210px] sm:max-w-[280px] md:max-w-[375px] mt-1 md:mt-1 opacity-90"
+                className="text-[12.5px] sm:text-[14px] md:text-[16px] font-medium leading-tight md:leading-[26px] max-w-full md:max-w-none whitespace-normal md:whitespace-nowrap mt-1 md:mt-1 opacity-90"
               >
-                Customize your identity with premium avatars
+                {t('profile.avatarShopSubtitle', 'Customize your identity with premium avatars')}
               </p>
               {/* Purple accent bar */}
               <div
@@ -290,7 +292,7 @@ const CustomizationModal = ({ isOpen, onClose, mongoUser, token, setMongoUser })
                       : 'bg-[rgba(249,247,241,1)] text-[rgba(14,15,12,1)] hover:opacity-90'
                   }`}
                 >
-                  My Avatars
+                  {t('profile.myAvatars', 'My Avatars')}
                 </button>
                 <button
                   type="button"
@@ -307,7 +309,7 @@ const CustomizationModal = ({ isOpen, onClose, mongoUser, token, setMongoUser })
                       : 'bg-[rgba(249,247,241,1)] text-[rgba(14,15,12,1)] hover:opacity-90'
                   }`}
                 >
-                  Shop
+                  {t('profile.shop', 'Shop')}
                 </button>
               </div>
 
@@ -318,7 +320,7 @@ const CustomizationModal = ({ isOpen, onClose, mongoUser, token, setMongoUser })
                 </div>
               ) : paginatedAvatars.length === 0 ? (
                 <div className="flex-1 flex items-center justify-center text-[#888888] text-center font-medium min-h-[180px] md:min-h-0 text-sm">
-                  {activeTab === 'my_avatars' ? 'No avatars owned yet. Visit the Shop to get one!' : 'No avatars available in shop right now.'}
+                  {activeTab === 'my_avatars' ? t('profile.noAvatarsOwned', 'No avatars owned yet. Visit the Shop to get one!') : t('profile.noAvatarsInShop', 'No avatars available in shop right now.')}
                 </div>
               ) : (
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-2 sm:gap-2.5 flex-1 content-start justify-items-center mt-1 md:mt-[5px] w-full">
@@ -387,7 +389,7 @@ const CustomizationModal = ({ isOpen, onClose, mongoUser, token, setMongoUser })
                                 isSelected ? 'text-white/80' : 'text-black/70'
                               }`}
                             >
-                              {avatar.quantity ? `${avatar.quantity} Available` : 'Unlimited Available'}
+                              {avatar.quantity ? t('profile.quantityAvailable', { count: avatar.quantity, defaultValue: `${avatar.quantity} Available` }) : t('profile.unlimitedAvailable', 'Unlimited Available')}
                             </span>
                           )}
 
@@ -572,7 +574,7 @@ const CustomizationModal = ({ isOpen, onClose, mongoUser, token, setMongoUser })
                           }}
                           className="font-medium text-[12.5px] sm:text-[13.5px] md:text-[14px] leading-none"
                         >
-                          Price
+                          {t('profile.price', 'Price')}
                         </span>
                         <div className="flex items-center gap-1">
                           <img src="/coins/Coin.png" alt="Coin" className="w-[13px] h-[13px] md:w-[14px] md:h-[14px] object-contain" />
@@ -601,7 +603,7 @@ const CustomizationModal = ({ isOpen, onClose, mongoUser, token, setMongoUser })
                         }}
                         className="font-medium text-[12.5px] sm:text-[13.5px] md:text-[14px] leading-none"
                       >
-                        Rarity
+                        {t('profile.rarity', 'Rarity')}
                       </span>
                       <span
                         style={{
@@ -627,7 +629,7 @@ const CustomizationModal = ({ isOpen, onClose, mongoUser, token, setMongoUser })
                           }}
                           className="font-medium text-[12.5px] sm:text-[13.5px] md:text-[14px] leading-none"
                         >
-                          Limited Quantity
+                          {t('profile.limitedQuantity', 'Limited Quantity')}
                         </span>
                         <span
                           style={{
@@ -637,7 +639,7 @@ const CustomizationModal = ({ isOpen, onClose, mongoUser, token, setMongoUser })
                           }}
                           className="font-semibold text-[12.5px] sm:text-[13.5px] md:text-[14px] leading-none"
                         >
-                          {previewAvatar.quantity ? `${previewAvatar.quantity} Available` : 'Unlimited'}
+                          {previewAvatar.quantity ? t('profile.quantityAvailable', { count: previewAvatar.quantity, defaultValue: `${previewAvatar.quantity} Available` }) : t('profile.unlimited', 'Unlimited')}
                         </span>
                       </div>
                     ) : (
@@ -652,7 +654,7 @@ const CustomizationModal = ({ isOpen, onClose, mongoUser, token, setMongoUser })
                           }}
                           className="font-medium text-[12.5px] sm:text-[13.5px] md:text-[14px] leading-none"
                         >
-                          Obtained On
+                          {t('profile.obtainedOn', 'Obtained On')}
                         </span>
                         <span
                           style={{
@@ -662,7 +664,7 @@ const CustomizationModal = ({ isOpen, onClose, mongoUser, token, setMongoUser })
                           }}
                           className="font-semibold text-[12.5px] sm:text-[13.5px] md:text-[14px] leading-none"
                         >
-                          {previewAvatar.obtainedAt ? new Date(previewAvatar.obtainedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'Aug 21, 2026'}
+                          {previewAvatar.obtainedAt ? new Date(previewAvatar.obtainedAt).toLocaleDateString(i18n.language === 'de' ? 'de-DE' : 'en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'Aug 21, 2026'}
                         </span>
                       </div>
                     )}
@@ -684,7 +686,7 @@ const CustomizationModal = ({ isOpen, onClose, mongoUser, token, setMongoUser })
                           mongoUser?.avatarUrl === previewAvatar?.url ? 'opacity-80 cursor-default' : ''
                         }`}
                       >
-                        {saving ? 'Equipping...' : (mongoUser?.avatarUrl === previewAvatar?.url ? 'Equipped' : 'Equip')}
+                        {saving ? t('profile.equipping', 'Equipping...') : (mongoUser?.avatarUrl === previewAvatar?.url ? t('profile.equipped', 'Equipped') : t('profile.equip', 'Equip'))}
                       </button>
                     ) : (
                       <button
@@ -705,21 +707,21 @@ const CustomizationModal = ({ isOpen, onClose, mongoUser, token, setMongoUser })
                         }`}
                       >
                         {saving
-                          ? 'Processing...'
+                          ? t('profile.processing', 'Processing...')
                           : (previewAvatar?.isUnlocked || mongoUser?.unlockedAvatars?.includes(previewAvatar?._id))
-                            ? 'Claimed'
+                            ? t('profile.claimed', 'Claimed')
                             : previewAvatar?.quantity === 0
-                              ? 'Sold Out'
+                              ? t('profile.soldOut', 'Sold Out')
                               : (mongoUser?.walletBalance || 0) < (previewAvatar?.price || 0)
-                                ? 'Insufficient Coins'
-                                : 'Claim'}
+                                ? t('profile.insufficientCoins', 'Insufficient Coins')
+                                : t('profile.claim', 'Claim')}
                       </button>
                     )}
                   </div>
                 </>
               ) : (
                 <div className="flex-1 flex items-center justify-center text-[#888888] text-sm py-8 md:py-0">
-                  Select an avatar
+                  {t('profile.selectAvatar', 'Select an avatar')}
                 </div>
               )}
             </div>
@@ -771,7 +773,7 @@ const CustomizationModal = ({ isOpen, onClose, mongoUser, token, setMongoUser })
                     margin: 0
                   }}
                 >
-                  Order Summary
+                  {t('profile.orderSummary', 'Order Summary')}
                 </h2>
                 <div
                   style={{
@@ -892,7 +894,7 @@ const CustomizationModal = ({ isOpen, onClose, mongoUser, token, setMongoUser })
                     color: '#000000'
                   }}
                 >
-                  Price
+                  {t('profile.price', 'Price')}
                 </span>
                 <div className="flex items-center gap-1.5">
                   <img src="/coins/Coin.png" alt="Coin" className="w-[16px] h-[16px] object-contain" />
@@ -928,7 +930,7 @@ const CustomizationModal = ({ isOpen, onClose, mongoUser, token, setMongoUser })
                   }}
                   className="hover:bg-slate-100 transition-colors"
                 >
-                  Cancel
+                  {t('profile.cancel', 'Cancel')}
                 </button>
                 <button
                   type="button"
@@ -948,7 +950,7 @@ const CustomizationModal = ({ isOpen, onClose, mongoUser, token, setMongoUser })
                   }}
                   className="hover:opacity-90 transition-opacity disabled:opacity-50"
                 >
-                  {saving ? 'Processing...' : 'Confirm'}
+                  {saving ? t('profile.processing', 'Processing...') : t('profile.confirm', 'Confirm')}
                 </button>
               </div>
             </div>
@@ -1045,7 +1047,7 @@ const CustomizationModal = ({ isOpen, onClose, mongoUser, token, setMongoUser })
                     margin: '0 0 8px 0'
                   }}
                 >
-                  Purchase Successful!
+                  {t('profile.purchaseSuccessful', 'Purchase Successful!')}
                 </h2>
 
                 {/* Subtitle */}
@@ -1059,7 +1061,7 @@ const CustomizationModal = ({ isOpen, onClose, mongoUser, token, setMongoUser })
                     margin: '0 0 28px 0'
                   }}
                 >
-                  <span className="capitalize">{purchaseSuccessAvatar.name}</span> has been added to your collection.
+                  {t('profile.avatarAddedToCollection', { name: purchaseSuccessAvatar.name, defaultValue: `${purchaseSuccessAvatar.name} has been added to your collection.` })}
                 </p>
 
                 {/* Action Button */}
@@ -1089,7 +1091,7 @@ const CustomizationModal = ({ isOpen, onClose, mongoUser, token, setMongoUser })
                   }}
                   className="hover:opacity-90 transition-opacity shadow-sm"
                 >
-                  View My Avatar
+                  {t('profile.viewMyAvatar', 'View My Avatar')}
                 </button>
               </div>
             </div>
@@ -1141,7 +1143,7 @@ const CustomizationModal = ({ isOpen, onClose, mongoUser, token, setMongoUser })
                     margin: 0
                   }}
                 >
-                  Order Summary
+                  {t('profile.orderSummary', 'Order Summary')}
                 </h2>
                 <div
                   style={{
@@ -1262,7 +1264,7 @@ const CustomizationModal = ({ isOpen, onClose, mongoUser, token, setMongoUser })
                     color: '#000000'
                   }}
                 >
-                  Price
+                  {t('profile.price', 'Price')}
                 </span>
                 <div className="flex items-center gap-1.5">
                   <img src="/coins/Coin.png" alt="Coin" className="w-[16px] h-[16px] object-contain" />
@@ -1288,18 +1290,32 @@ const CustomizationModal = ({ isOpen, onClose, mongoUser, token, setMongoUser })
   );
 };
 
-const TX_TYPE_LABEL = {
-  offer_reward: { label: 'Offer Reward', color: 'text-indigo-400' },
-  custom_offer_reward: { label: 'Custom Offer', color: 'text-indigo-400' },
-  daily_bonus: { label: 'Daily Bonus', color: 'text-amber-400' },
-  promo_code: { label: 'Promo Code', color: 'text-emerald-400' },
-  referral_reward: { label: 'Referral', color: 'text-cyan-400' },
-  withdrawal: { label: 'Withdrawal', color: 'text-rose-400' },
-  admin_adjustment: { label: 'Adjustment', color: 'text-orange-400' },
-  leaderboard_reward: { label: 'Leaderboard', color: 'text-violet-400' },
-  vip_reward: { label: 'VIP Reward', color: 'text-yellow-400' },
-  mission_reward: { label: 'Mission', color: 'text-sky-400' },
-  chargeback: { label: 'Chargeback', color: 'text-rose-400' },
+const TX_TYPE_KEY = {
+  offer_reward: 'profile.txOfferReward',
+  custom_offer_reward: 'profile.txCustomOffer',
+  daily_bonus: 'profile.txDailyBonus',
+  promo_code: 'profile.txPromoCode',
+  referral_reward: 'profile.txReferral',
+  withdrawal: 'profile.txWithdrawal',
+  admin_adjustment: 'profile.txAdjustment',
+  leaderboard_reward: 'profile.txLeaderboard',
+  vip_reward: 'profile.txVipReward',
+  mission_reward: 'profile.txMission',
+  chargeback: 'profile.txChargeback',
+};
+
+const getTxTypeLabel = (type, t) => {
+  if (TX_TYPE_KEY[type]) {
+    return t(TX_TYPE_KEY[type]);
+  }
+  return type?.replace(/_/g, ' ') || 'Transaction';
+};
+
+const getStatusBadge = (status, isRejected, t) => {
+  if (status === 'completed') return t('profile.statusCompleted', 'Completed');
+  if (isRejected) return t('profile.statusRejected', 'Rejected');
+  if (status === 'pending') return t('profile.statusPending', 'Pending');
+  return status ? (status.charAt(0).toUpperCase() + status.slice(1)) : '';
 };
 
 const STATUS_DOT = {
@@ -1462,6 +1478,7 @@ const TabBtn = ({ active, onClick, icon, label, className = '' }) => (
 
 // ── Clicked Offer Row (Clean table row with no proof buttons)
 const ClickedOfferRow = ({ offer, index = 0 }) => {
+  const { t, i18n } = useTranslation();
   return (
     <div
       style={{
@@ -1485,7 +1502,7 @@ const ClickedOfferRow = ({ offer, index = 0 }) => {
         style={{ fontFamily: 'Poppins, sans-serif', fontWeight: 500 }}
         className="text-[#1e293b] text-[10px] md:text-[16px] leading-tight md:leading-[26px]"
       >
-        {offer.createdAt ? new Date(offer.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'N/A'}
+        {offer.createdAt ? new Date(offer.createdAt).toLocaleDateString(i18n.language === 'de' ? 'de-DE' : 'en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'N/A'}
       </span>
 
       {/* Reward */}
@@ -1509,7 +1526,7 @@ const ClickedOfferRow = ({ offer, index = 0 }) => {
           }}
           className="inline-flex items-center justify-center whitespace-nowrap text-[8.5px] md:text-[16px] px-1.5 md:px-[18px] py-0.5 md:py-[3px] leading-tight"
         >
-          In Progress
+          {t('profile.statusInProgress', 'In Progress')}
         </span>
       </div>
     </div>
@@ -1518,6 +1535,7 @@ const ClickedOfferRow = ({ offer, index = 0 }) => {
 
 // ── Settings & Delete Account Modal
 const SettingsModal = ({ isOpen, onClose, mongoUser, token, setMongoUser, logout }) => {
+  const { t } = useTranslation();
   const { setup2FA, confirm2FA, disable2FA } = useAuth();
 
   const [displayName, setDisplayName] = useState(mongoUser?.displayName || '');
@@ -1617,7 +1635,7 @@ const SettingsModal = ({ isOpen, onClose, mongoUser, token, setMongoUser, logout
   const handleSave = async () => {
     const nameRegex = /^[a-zA-Z0-9_-]{3,20}$/;
     if (!nameRegex.test(displayName)) {
-      setError('Username must be 3-20 characters long and can only contain letters, numbers, dashes, and underscores.');
+      setError(t('profile.usernameValidation', 'Username must be 3-20 characters long and can only contain letters, numbers, dashes, and underscores.'));
       return;
     }
     setSaving(true);
@@ -1632,15 +1650,15 @@ const SettingsModal = ({ isOpen, onClose, mongoUser, token, setMongoUser, logout
       const data = await res.json();
       if (res.ok) {
         setMongoUser(data.user);
-        setSuccess('Profile updated successfully!');
-        toast.success('Profile updated successfully!');
+        setSuccess(t('profile.profileUpdated', 'Profile updated successfully!'));
+        toast.success(t('profile.profileUpdated', 'Profile updated successfully!'));
       } else {
-        setError(data.error || 'Failed to update profile');
-        toast.error(data.error || 'Failed to update profile');
+        setError(data.error || t('profile.failedToUpdateProfile', 'Failed to update profile'));
+        toast.error(data.error || t('profile.failedToUpdateProfile', 'Failed to update profile'));
       }
     } catch {
-      setError('Network error.');
-      toast.error('Network error.');
+      setError(t('profile.networkError', 'Network error.'));
+      toast.error(t('profile.networkError', 'Network error.'));
     }
     setSaving(false);
   };
@@ -1683,9 +1701,9 @@ const SettingsModal = ({ isOpen, onClose, mongoUser, token, setMongoUser, logout
       setShow2FASetup(false);
       setOtpDigits(['', '', '', '', '', '']);
       setOtpCode('');
-      toast.success('2FA enabled successfully!');
+      toast.success(t('profile.twoFAEnabledSuccess', '2FA enabled successfully!'));
     } else {
-      setError(res.error || 'Invalid code.');
+      setError(res.error || t('profile.invalidCode', 'Invalid code.'));
     }
   };
 
@@ -1701,9 +1719,9 @@ const SettingsModal = ({ isOpen, onClose, mongoUser, token, setMongoUser, logout
       setShow2FADisable(false);
       setDisableDigits(['', '', '', '', '', '']);
       setDisableCode('');
-      toast.success('2FA disabled successfully.');
+      toast.success(t('profile.twoFADisabledSuccess', '2FA disabled successfully.'));
     } else {
-      setError(res.error || 'Invalid code.');
+      setError(res.error || t('profile.invalidCode', 'Invalid code.'));
     }
   };
 
@@ -1724,11 +1742,11 @@ const SettingsModal = ({ isOpen, onClose, mongoUser, token, setMongoUser, logout
           window.location.href = '/';
         } else {
           const d = await res.json();
-          setError(d.error || 'Failed to delete account');
+          setError(d.error || t('profile.failedToDeleteAccount', 'Failed to delete account'));
           setDeletePhase(0);
         }
       } catch {
-        setError('Network error');
+        setError(t('profile.networkError', 'Network error'));
         setDeletePhase(0);
       }
     }
@@ -1769,7 +1787,7 @@ const SettingsModal = ({ isOpen, onClose, mongoUser, token, setMongoUser, logout
                   }}
                   className="w-full max-w-[275px] md:max-w-none text-[26px] sm:text-[30px] md:text-[32px] leading-tight md:leading-[1.2]"
                 >
-                  Setup 2-factor auth
+                  {t('profile.setup2FA', 'Setup 2-factor auth')}
                 </h2>
                 <p
                   style={{
@@ -1781,8 +1799,7 @@ const SettingsModal = ({ isOpen, onClose, mongoUser, token, setMongoUser, logout
                   }}
                   className="w-full text-[11px] min-[370px]:text-[11.5px] min-[400px]:text-[12.5px] md:text-[15px] leading-[18px] md:leading-[24px] tracking-tight md:tracking-normal"
                 >
-                  <span className="block md:inline whitespace-nowrap md:whitespace-normal">Scan this QR code with Google Authenticator or </span>
-                  <span className="block md:inline whitespace-nowrap md:whitespace-normal">Microsoft Authenticator, then enter the 6-digit code.</span>
+                  {t('profile.setup2FADesc', 'Scan this QR code with Google Authenticator or Microsoft Authenticator, then enter the 6-digit code.')}
                 </p>
               </div>
 
@@ -1842,7 +1859,7 @@ const SettingsModal = ({ isOpen, onClose, mongoUser, token, setMongoUser, logout
                 }}
                 className="select-all text-center"
               >
-                {secretKey || 'Loading secret key...'}
+                {secretKey || t('profile.loadingSecretKey', 'Loading secret key...')}
               </div>
             </div>
 
@@ -1901,7 +1918,7 @@ const SettingsModal = ({ isOpen, onClose, mongoUser, token, setMongoUser, logout
                   }}
                   className="hover:bg-slate-50 transition-all flex items-center justify-center"
                 >
-                  <span>Cancle</span>
+                  <span>{t('profile.cancel', 'Cancel')}</span>
                 </button>
                 <button
                   type="submit"
@@ -1922,7 +1939,7 @@ const SettingsModal = ({ isOpen, onClose, mongoUser, token, setMongoUser, logout
                   }}
                   className="hover:bg-[#182338] disabled:opacity-50 transition-all flex items-center justify-center shadow-sm"
                 >
-                  <span>{verifying2FA ? 'Enabling...' : 'Verify & Enable'}</span>
+                  <span>{verifying2FA ? t('profile.enabling', 'Enabling...') : t('profile.verifyAndEnable', 'Verify & Enable')}</span>
                 </button>
               </div>
             </form>
@@ -1963,7 +1980,7 @@ const SettingsModal = ({ isOpen, onClose, mongoUser, token, setMongoUser, logout
                   }}
                   className="w-full max-w-[285px] md:max-w-none text-[26px] sm:text-[30px] md:text-[32px] leading-tight md:leading-[1.2]"
                 >
-                  Disable 2-factor auth
+                  {t('profile.disable2FA', 'Disable 2-factor auth')}
                 </h2>
                 <p
                   style={{
@@ -1975,8 +1992,7 @@ const SettingsModal = ({ isOpen, onClose, mongoUser, token, setMongoUser, logout
                   }}
                   className="w-full text-[11px] min-[370px]:text-[11.5px] min-[400px]:text-[12.5px] md:text-[15px] leading-[18px] md:leading-[24px] tracking-tight md:tracking-normal"
                 >
-                  <span className="block md:inline whitespace-nowrap md:whitespace-normal">For security, enter the 6-digit code from your </span>
-                  <span className="block md:inline whitespace-nowrap md:whitespace-normal">authenticator app to disable 2FA.</span>
+                  {t('profile.disable2FADesc', 'For security, enter the 6-digit code from your authenticator app to disable 2FA.')}
                 </p>
               </div>
 
@@ -2045,7 +2061,7 @@ const SettingsModal = ({ isOpen, onClose, mongoUser, token, setMongoUser, logout
                   }}
                   className="hover:bg-slate-50 transition-all flex items-center justify-center"
                 >
-                  <span>Cancle</span>
+                  <span>{t('profile.cancel', 'Cancel')}</span>
                 </button>
                 <button
                   type="submit"
@@ -2066,7 +2082,7 @@ const SettingsModal = ({ isOpen, onClose, mongoUser, token, setMongoUser, logout
                   }}
                   className="hover:bg-[#182338] disabled:opacity-50 transition-all flex items-center justify-center shadow-sm"
                 >
-                  <span>{verifying2FA ? 'Disabling...' : 'Verify & Disable'}</span>
+                  <span>{verifying2FA ? t('profile.disabling', 'Disabling...') : t('profile.verifyAndDisable', 'Verify & Disable')}</span>
                 </button>
               </div>
             </form>
@@ -2155,7 +2171,7 @@ const SettingsModal = ({ isOpen, onClose, mongoUser, token, setMongoUser, logout
                   margin: '0 0 10px 0'
                 }}
               >
-                Delete Account!
+                {t('profile.deleteAccountConfirmTitle', 'Delete Account!')}
               </h3>
               <p
                 style={{
@@ -2168,7 +2184,7 @@ const SettingsModal = ({ isOpen, onClose, mongoUser, token, setMongoUser, logout
                   margin: '0 0 28px 0'
                 }}
               >
-                Deleting your account is permanent. All associated data will be wiped.
+                {t('profile.dangerZoneDesc', 'Deleting your account is permanent. All associated data will be wiped.')}
               </p>
 
               {/* Action Buttons Column (Vertical Alignment) */}
@@ -2195,7 +2211,7 @@ const SettingsModal = ({ isOpen, onClose, mongoUser, token, setMongoUser, logout
                   }}
                   className="hover:bg-[#182338] transition-colors shadow-sm cursor-pointer active:scale-[0.99]"
                 >
-                  <span>Cancle</span>
+                  <span>{t('profile.cancel', 'Cancel')}</span>
                 </button>
                 <button
                   type="button"
@@ -2219,7 +2235,7 @@ const SettingsModal = ({ isOpen, onClose, mongoUser, token, setMongoUser, logout
                   }}
                   className="hover:bg-[#CC001C] transition-colors shadow-sm cursor-pointer active:scale-[0.99]"
                 >
-                  <span>Delete Account</span>
+                  <span>{t('profile.deleteAccount', 'Delete Account')}</span>
                 </button>
               </div>
             </div>
@@ -2239,7 +2255,7 @@ const SettingsModal = ({ isOpen, onClose, mongoUser, token, setMongoUser, logout
           }}
           className="relative shadow-2xl overflow-y-auto max-h-[95vh] w-full max-w-[430px] md:max-w-none md:w-[626px] bg-[#FFFFFF] rounded-[22px] md:rounded-[28px] p-2 sm:p-2.5 md:p-[10px] flex flex-col gap-2.5 md:gap-[16px] box-border [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none']"
         >
-          {/* Top Header Card (Mobile: width: 406px, height: 137px, border-radius: 16px, background: rgba(248, 245, 239, 1); Desktop: width: 606px, height: 143px) */}
+          {/* Top Header Card (Responsive auto-height with min-height to fit all languages) */}
           <div
             style={{
               background: 'rgba(248, 245, 239, 1)',
@@ -2248,7 +2264,7 @@ const SettingsModal = ({ isOpen, onClose, mongoUser, token, setMongoUser, logout
               transform: 'rotate(0deg)',
               boxSizing: 'border-box',
             }}
-            className="w-full md:w-[606px] max-w-full h-auto md:h-[143px] p-[16px_16px_14px_16px] md:p-[24px_28px] relative flex flex-col gap-2.5 md:justify-between shrink-0"
+            className="w-full md:w-[606px] max-w-full min-h-[143px] h-auto p-[16px_16px_16px_16px] md:p-[20px_28px] relative flex flex-col gap-2.5 justify-between shrink-0"
           >
             {/* Close Button (Circle with X) */}
             <button
@@ -2265,18 +2281,18 @@ const SettingsModal = ({ isOpen, onClose, mongoUser, token, setMongoUser, logout
                 cursor: 'pointer',
                 padding: 0
               }}
-              className="text-white hover:opacity-80 transition-opacity shrink-0 absolute top-3.5 right-3.5 md:top-[20px] md:right-[20px] md:w-[32px] md:h-[32px]"
+              className="text-white hover:opacity-80 transition-opacity shrink-0 absolute top-3.5 right-3.5 md:top-[18px] md:right-[20px] md:w-[32px] md:h-[32px]"
             >
               <FiX size={15} strokeWidth={2.5} />
             </button>
 
             {/* Whole unit containing heading, below text, and bar */}
             <div
-              className="w-full md:w-[422px] max-w-full flex flex-col gap-2 md:gap-[16px]"
+              className="w-full max-w-full flex flex-col gap-2 md:gap-[10px]"
             >
               {/* Heading and text */}
               <div
-                className="flex flex-col gap-1 md:gap-[20px] pr-7 md:pr-0"
+                className="flex flex-col gap-1 md:gap-[8px] pr-8 md:pr-10"
               >
                 <h2
                   style={{
@@ -2287,9 +2303,9 @@ const SettingsModal = ({ isOpen, onClose, mongoUser, token, setMongoUser, logout
                     margin: 0,
                     opacity: 1,
                   }}
-                  className="w-full md:w-[284px] max-w-full text-[22px] md:text-[35px] leading-tight md:leading-[60px] flex items-center"
+                  className="w-full max-w-full text-[22px] md:text-[32px] leading-tight flex items-center"
                 >
-                  Account Settings
+                  {t('profile.accountSettings', 'Account Settings')}
                 </h2>
                 <p
                   style={{
@@ -2300,9 +2316,9 @@ const SettingsModal = ({ isOpen, onClose, mongoUser, token, setMongoUser, logout
                     margin: 0,
                     opacity: 1,
                   }}
-                  className="w-full md:w-[422px] max-w-[367px] md:max-w-full text-[12px] md:text-[16px] leading-[16px] md:leading-[26px] flex items-center"
+                  className="w-full max-w-full text-[12px] md:text-[15px] leading-[18px] md:leading-[22px] flex items-center"
                 >
-                  Manage your identity, avatars, and account security
+                  {t('profile.accountSettingsSubtitle', 'Manage your identity, avatars, and account security')}
                 </p>
               </div>
 
@@ -2313,7 +2329,7 @@ const SettingsModal = ({ isOpen, onClose, mongoUser, token, setMongoUser, logout
                   borderRadius: '20px',
                   opacity: 1,
                 }}
-                className="w-[55px] md:w-[74px] h-[3.5px] md:h-[4px]"
+                className="w-[55px] md:w-[74px] h-[3.5px] md:h-[4px] mt-0.5"
               />
             </div>
           </div>
@@ -2330,7 +2346,7 @@ const SettingsModal = ({ isOpen, onClose, mongoUser, token, setMongoUser, logout
               }}
               className="font-medium text-[12.5px] md:text-[16px] leading-tight md:leading-[26px]"
             >
-              Display name
+              {t('profile.displayName', 'Display name')}
             </label>
             <input
               type="text"
@@ -2373,7 +2389,7 @@ const SettingsModal = ({ isOpen, onClose, mongoUser, token, setMongoUser, logout
                   }}
                   className="text-[20px] md:text-[20px] leading-tight md:leading-[24px]"
                 >
-                  Private Profile
+                  {t('profile.privateProfile', 'Private Profile')}
                 </h3>
                 <button
                   type="button"
@@ -2411,7 +2427,7 @@ const SettingsModal = ({ isOpen, onClose, mongoUser, token, setMongoUser, logout
                 }}
                 className="w-full max-w-[363px] md:max-w-full text-[16px] md:text-[14.5px] leading-[26px] md:leading-[22px]"
               >
-                Hide specific offer details (like survey names) from other users on your public profile and the live earning feed.
+                {t('profile.privateProfileDesc', 'Hide specific offer details (like survey names) from other users on your public profile and the live earning feed.')}
               </p>
             </div>
 
@@ -2435,7 +2451,12 @@ const SettingsModal = ({ isOpen, onClose, mongoUser, token, setMongoUser, logout
                   }}
                   className="text-[20px] md:text-[20px] leading-tight md:leading-[23px]"
                 >
-                  2 Factor<br />Authorization
+                  {t('profile.twoFactorAuth', '2 Factor\nAuthorization').split('\n').map((line, idx) => (
+                    <React.Fragment key={idx}>
+                      {line}
+                      {idx === 0 && <br />}
+                    </React.Fragment>
+                  ))}
                 </h3>
                 <button
                   type="button"
@@ -2473,7 +2494,7 @@ const SettingsModal = ({ isOpen, onClose, mongoUser, token, setMongoUser, logout
                 }}
                 className="w-full max-w-[363px] md:max-w-full text-[16px] md:text-[14.5px] leading-[26px] md:leading-[22px]"
               >
-                Make your account more secure by activating 2FA.
+                {t('profile.twoFactorDesc', 'Make your account more secure by activating 2FA.')}
               </p>
             </div>
           </div>
@@ -2510,7 +2531,7 @@ const SettingsModal = ({ isOpen, onClose, mongoUser, token, setMongoUser, logout
             className="w-full md:w-[606px] md:max-w-full h-[44px] md:h-[52px] rounded-[12px] md:rounded-[9999px] text-[13.5px] md:text-[16px] md:leading-[28px] gap-2 md:gap-[10px] hover:bg-[#182338] disabled:opacity-50 transition-all shrink-0 active:scale-[0.99] shadow-sm cursor-pointer"
           >
             {saving ? <FiLoader className="animate-spin text-base md:text-lg" /> : null}
-            <span>Save Profile</span>
+            <span>{t('profile.saveProfile', 'Save Profile')}</span>
           </button>
 
           {/* Danger Zone Card */}
@@ -2532,7 +2553,7 @@ const SettingsModal = ({ isOpen, onClose, mongoUser, token, setMongoUser, logout
                 }}
                 className="text-[20px] md:text-[18px] leading-tight md:leading-normal"
               >
-                Danger Zone
+                {t('profile.dangerZone', 'Danger Zone')}
               </h3>
               <p
                 style={{
@@ -2544,7 +2565,7 @@ const SettingsModal = ({ isOpen, onClose, mongoUser, token, setMongoUser, logout
                 }}
                 className="w-full max-w-[363px] md:max-w-full text-[16px] md:text-[13.5px] leading-[26px] md:leading-[1.4]"
               >
-                Deleting your account is permanent. All associated data will be wiped.
+                {t('profile.dangerZoneDesc', 'Deleting your account is permanent. All associated data will be wiped.')}
               </p>
             </div>
 
@@ -2566,7 +2587,7 @@ const SettingsModal = ({ isOpen, onClose, mongoUser, token, setMongoUser, logout
               }}
               className="w-full max-w-[366px] md:max-w-none md:w-auto h-[55px] md:h-[46px] rounded-[30px] md:rounded-[9999px] px-[28px] py-[22px] md:py-0 md:px-6 text-[15px] md:text-[16px] md:leading-[28px] gap-[10px] hover:bg-[#CC001C] transition-all shrink-0 active:scale-[0.98] shadow-sm cursor-pointer"
             >
-              Delete Account
+              {t('profile.deleteAccount', 'Delete Account')}
             </button>
           </div>
         </motion.div>
@@ -2578,7 +2599,7 @@ const SettingsModal = ({ isOpen, onClose, mongoUser, token, setMongoUser, logout
 
 // ══════════════════════════════════════════════════════════════════
 const Profile = () => {
-
+  const { t, i18n } = useTranslation();
   const { currentUser, mongoUser, setMongoUser, logout } = useAuth();
   const [showSettings, setShowSettings] = useState(false);
   const [showCustomization, setShowCustomization] = useState(false);
@@ -2594,7 +2615,7 @@ const Profile = () => {
 
   const copyToClipboard = (text) => {
     navigator.clipboard.writeText(text);
-    toast.success('Copied to clipboard!');
+    toast.success(t('profile.copiedToClipboard', 'Copied to clipboard!'));
   };
 
   useEffect(() => {
@@ -2770,31 +2791,26 @@ const Profile = () => {
             </div>
           </div>
 
-          {/* Details & Actions Row (Mobile: 337px x 128px, gap: 30px, Desktop: flex-1 flex-row justify-between) */}
-          <div className="w-full max-w-[337px] lg:max-w-none lg:flex-1 flex flex-col lg:flex-row justify-between items-center gap-[30px] lg:gap-4 mx-auto lg:mx-0 pb-1">
-            {/* Identity details (width: 337px, height: 49px, gap: 16px) */}
+          {/* Details & Actions Row (Flexible row supporting localized button widths) */}
+          <div className="w-full max-w-[420px] lg:max-w-none lg:flex-1 flex flex-col lg:flex-row justify-between items-center gap-6 lg:gap-4 mx-auto lg:mx-0 pb-1">
+            {/* Identity details */}
             <div
               style={{
-                width: '337px',
                 maxWidth: '100%',
-                height: '49px',
                 display: 'flex',
                 flexDirection: 'column',
                 justifyContent: 'space-between',
                 opacity: 1,
                 transform: 'rotate(0deg)',
               }}
-              className="gap-[16px] items-center lg:items-start"
+              className="gap-3 lg:gap-[16px] items-center lg:items-start"
             >
               <h1
                 style={{
-                  width: '337px',
-                  maxWidth: '100%',
-                  height: '18px',
                   fontFamily: '"Bricolage Grotesque", sans-serif',
                   fontWeight: 700,
                   fontSize: '27px',
-                  lineHeight: '18px',
+                  lineHeight: '1.2',
                   letterSpacing: '-0.02em',
                   color: '#000000',
                   margin: 0,
@@ -2806,16 +2822,14 @@ const Profile = () => {
                 {mongoUser?.displayName || 'FuturisticBug1'}
               </h1>
 
-              {/* Info tags row (width: 337px, height: 15px, justify-content: space-between on mobile) */}
+              {/* Info tags row */}
               <div
                 style={{
-                  width: '337px',
                   maxWidth: '100%',
-                  height: '15px',
                   opacity: 1,
                   transform: 'rotate(0deg)',
                 }}
-                className="flex items-center justify-between lg:justify-start lg:gap-6 whitespace-nowrap"
+                className="flex items-center justify-center lg:justify-start gap-4 sm:gap-6 whitespace-nowrap"
               >
                 <div
                   style={{
@@ -2852,19 +2866,24 @@ const Profile = () => {
                     className="w-[14px] h-[14px] object-contain shrink-0"
                   />
                   <span>
-                    Joined {mongoUser?.createdAt ? new Date(mongoUser.createdAt).toLocaleDateString('en-US', { month: 'short', year: 'numeric' }) : 'Aug 2026'}
+                    {t('profile.joinedDate', {
+                      date: mongoUser?.createdAt
+                        ? new Date(mongoUser.createdAt).toLocaleDateString(i18n.language === 'de' ? 'de-DE' : 'en-US', { month: 'short', year: 'numeric' })
+                        : 'Aug 2026',
+                      defaultValue: `Joined ${mongoUser?.createdAt ? new Date(mongoUser.createdAt).toLocaleDateString('en-US', { month: 'short', year: 'numeric' }) : 'Aug 2026'}`
+                    })}
                   </span>
                 </div>
               </div>
             </div>
 
-            {/* Right side: Action buttons (Mobile: width: 304px, height: 49px, justify-content: space-between, Desktop: gap-3) */}
+            {/* Right side: Action buttons */}
             <div
-              className="w-[304px] lg:w-auto h-[49px] flex items-center justify-between lg:justify-start lg:gap-3 shrink-0"
+              className="w-full sm:w-auto min-h-[49px] flex flex-wrap sm:flex-nowrap items-center justify-center lg:justify-start gap-2.5 sm:gap-3 shrink-0"
             >
               <button
                 onClick={() => setShowSettings(true)}
-                title="Account Settings"
+                title={t('profile.accountSettings', 'Account Settings')}
                 style={{
                   width: '45px',
                   height: '45px',
@@ -2884,7 +2903,7 @@ const Profile = () => {
 
               <button
                 onClick={() => setShowCustomization(true)}
-                title="Customize Avatars"
+                title={t('profile.customizeAvatars', 'Customize Avatars')}
                 style={{
                   width: '45px',
                   height: '45px',
@@ -2902,19 +2921,17 @@ const Profile = () => {
                 <img src="/coins/profilecustumize.png" alt="Customize" className="w-[18px] h-[18px] object-contain" />
               </button>
 
-              {/* Copy Referral Link Button (width: 198px, height: 49px, border-radius: 80px, padding: 19px 28px) */}
+              {/* Copy Referral Link Button */}
               <button
                 onClick={() => copyToClipboard(`${window.location.origin}/r/${mongoUser?.referralCode || ''}`)}
                 style={{
-                  width: '198px',
+                  minWidth: '198px',
+                  width: 'auto',
                   height: '49px',
-                  borderRadius: '80px',
+                  borderRadius: '9999px',
                   background: 'rgba(36, 50, 77, 1)',
-                  paddingTop: '19px',
-                  paddingRight: '28px',
-                  paddingBottom: '19px',
-                  paddingLeft: '28px',
-                  gap: '10px',
+                  paddingLeft: '22px',
+                  paddingRight: '22px',
                   opacity: 1,
                   transform: 'rotate(0deg)',
                   border: 'none',
@@ -2930,14 +2947,14 @@ const Profile = () => {
                   style={{
                     fontFamily: '"Poppins", sans-serif',
                     fontWeight: 500,
-                    fontSize: '16px',
-                    lineHeight: '28px',
+                    fontSize: '15px',
+                    lineHeight: '1',
                     letterSpacing: '0%',
                     color: '#ffffff',
                     whiteSpace: 'nowrap',
                   }}
                 >
-                  Copy Referral Link
+                  {t('profile.copyReferralLink', 'Copy Referral Link')}
                 </span>
               </button>
             </div>
@@ -3006,7 +3023,7 @@ const Profile = () => {
                     margin: 0,
                   }}
                 >
-                  Offers
+                  {t('profile.offers', 'Offers')}
                 </h3>
                 <p
                   style={{
@@ -3019,7 +3036,7 @@ const Profile = () => {
                     margin: 0,
                   }}
                 >
-                  Completed
+                  {t('profile.completed', 'Completed')}
                 </p>
               </div>
             </div>
@@ -3078,7 +3095,7 @@ const Profile = () => {
                     margin: 0,
                   }}
                 >
-                  Earned
+                  {t('profile.earned', 'Earned')}
                 </h3>
                 <p
                   style={{
@@ -3091,7 +3108,7 @@ const Profile = () => {
                     margin: 0,
                   }}
                 >
-                  Lifetime earned
+                  {t('profile.lifetimeEarned', 'Lifetime earned')}
                 </p>
               </div>
             </div>
@@ -3151,7 +3168,7 @@ const Profile = () => {
                     whiteSpace: 'nowrap',
                   }}
                 >
-                  30-Day Earnings
+                  {t('profile.thirtyDayEarnings', '30-Day Earnings')}
                 </h3>
                 <p
                   style={{
@@ -3165,7 +3182,7 @@ const Profile = () => {
                     whiteSpace: 'nowrap',
                   }}
                 >
-                  Earned in 30 days
+                  {t('profile.earnedIn30Days', 'Earned in 30 days')}
                 </p>
               </div>
             </div>
@@ -3187,11 +3204,11 @@ const Profile = () => {
           <div
             className="w-full max-w-[839px] mx-auto grid grid-cols-2 md:flex md:flex-nowrap items-center justify-start md:justify-center gap-x-2 gap-y-2 md:gap-[5px] h-auto md:h-[37px]"
           >
-            <TabBtn active={activeTab === 'started_offers'} onClick={() => setActiveTab('started_offers')} icon="/coins/profilestarted.png" label="Started Offers" />
-            <TabBtn active={activeTab === 'completed_offers'} onClick={() => setActiveTab('completed_offers')} icon="/coins/image copy 3.png" label="Completed Offers" />
-            <TabBtn active={activeTab === 'held_offers'} onClick={() => setActiveTab('held_offers')} icon="/coins/profilehold.png" label="Hold Offers" />
-            <TabBtn active={activeTab === 'transaction_history'} onClick={() => setActiveTab('transaction_history')} icon="/coins/profiletransition.png" label="Transaction History" />
-            <TabBtn active={activeTab === 'chargebacks'} onClick={() => setActiveTab('chargebacks')} icon="/coins/profileback.png" label="Chargebacks" />
+            <TabBtn active={activeTab === 'started_offers'} onClick={() => setActiveTab('started_offers')} icon="/coins/profilestarted.png" label={t('profile.startedOffers', 'Started Offers')} />
+            <TabBtn active={activeTab === 'completed_offers'} onClick={() => setActiveTab('completed_offers')} icon="/coins/image copy 3.png" label={t('profile.completedOffers', 'Completed Offers')} />
+            <TabBtn active={activeTab === 'held_offers'} onClick={() => setActiveTab('held_offers')} icon="/coins/profilehold.png" label={t('profile.holdOffers', 'Hold Offers')} />
+            <TabBtn active={activeTab === 'transaction_history'} onClick={() => setActiveTab('transaction_history')} icon="/coins/profiletransition.png" label={t('profile.transactionHistory', 'Transaction History')} />
+            <TabBtn active={activeTab === 'chargebacks'} onClick={() => setActiveTab('chargebacks')} icon="/coins/profileback.png" label={t('profile.chargebacks', 'Chargebacks')} />
           </div>
 
           {/* Tab Content Box (width: 1295px, min-height: 462px, border-radius: 20px, background: #FFFFFF) */}
@@ -3222,7 +3239,7 @@ const Profile = () => {
                     const startedOffers = customOffers.filter(o => o.submissionStatus === 'started' || o.submissionStatus === 'rejected');
                     if (startedOffers.length === 0) {
                       return (
-                        <p className="text-center py-12 text-slate-500 font-bold text-base">No clicked offers yet. Browse the Earn page to start new offers!</p>
+                        <p className="text-center py-12 text-slate-500 font-bold text-base">{t('profile.emptyStartedOffers', 'No clicked offers yet. Browse the Earn page to start new offers!')}</p>
                       );
                     }
                     const totalStartedPages = Math.ceil(startedOffers.length / itemsPerPage);
@@ -3241,10 +3258,10 @@ const Profile = () => {
                               }}
                               className="grid grid-cols-[1fr_60px_60px_56px] md:grid-cols-[1fr_180px_160px_140px] gap-1.5 md:gap-4 px-1.5 sm:px-6 py-2 text-[9.5px] md:text-[14px] md:leading-[26px]"
                             >
-                              <div>Offers</div>
-                              <div>Started</div>
-                              <div>Reward</div>
-                              <div className="text-center">Status</div>
+                              <div>{t('profile.tableOffers', 'Offers')}</div>
+                              <div>{t('profile.tableStarted', 'Started')}</div>
+                              <div>{t('profile.tableReward', 'Reward')}</div>
+                              <div className="text-center">{t('profile.tableStatus', 'Status')}</div>
                             </div>
                             <div className="flex flex-col">
                               {paginatedStarted.map((offer, idx) => (
@@ -3275,7 +3292,7 @@ const Profile = () => {
                   {loadingCompleted ? (
                     <div className="flex justify-center py-12"><FiLoader className="animate-spin text-2xl text-emerald-600" /></div>
                   ) : completedOffers.length === 0 ? (
-                    <p className="text-center py-12 text-slate-500 font-bold text-base">No completed offers yet. Finish a started offer to earn your reward!</p>
+                    <p className="text-center py-12 text-slate-500 font-bold text-base">{t('profile.emptyCompletedOffers', 'No completed offers yet. Finish a started offer to earn your reward!')}</p>
                   ) : (() => {
                     const paginatedCompleted = completedOffers.slice((completedPage - 1) * itemsPerPage, completedPage * itemsPerPage);
                     return (
@@ -3292,9 +3309,9 @@ const Profile = () => {
                               }}
                               className="grid grid-cols-[1fr_75px_65px] md:grid-cols-[1fr_180px_150px] gap-1.5 md:gap-4 px-1.5 sm:px-6 py-2 text-[9.5px] md:text-[14px] md:leading-[26px]"
                             >
-                              <div>Offers</div>
-                              <div>Completed</div>
-                              <div>Reward</div>
+                              <div>{t('profile.tableOffers', 'Offers')}</div>
+                              <div>{t('profile.tableCompleted', 'Completed')}</div>
+                              <div>{t('profile.tableReward', 'Reward')}</div>
                             </div>
                             <div className="flex flex-col">
                               {paginatedCompleted.map((offer, idx) => (
@@ -3317,7 +3334,7 @@ const Profile = () => {
                                     style={{ fontFamily: 'Poppins, sans-serif', fontWeight: 500 }}
                                     className="text-[#1e293b] text-[10px] md:text-[16px] leading-tight md:leading-[26px]"
                                   >
-                                    {offer.completedAt ? new Date(offer.completedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'N/A'}
+                                    {offer.completedAt ? new Date(offer.completedAt).toLocaleDateString(i18n.language === 'de' ? 'de-DE' : 'en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'N/A'}
                                   </span>
                                   <div
                                     style={{ fontFamily: 'Poppins, sans-serif', fontWeight: 600, color: 'rgba(190, 146, 0, 1)' }}
@@ -3349,7 +3366,7 @@ const Profile = () => {
                   {loadingHolds ? (
                     <div className="flex justify-center py-12"><FiLoader className="animate-spin text-2xl text-emerald-600" /></div>
                   ) : heldOffers.length === 0 ? (
-                    <p className="text-center py-12 text-slate-500 font-bold text-base">No held earnings at the moment.</p>
+                    <p className="text-center py-12 text-slate-500 font-bold text-base">{t('profile.emptyHeldOffers', 'No held earnings at the moment.')}</p>
                   ) : (() => {
                     const paginatedHeld = heldOffers.slice((heldPage - 1) * itemsPerPage, heldPage * itemsPerPage);
                     return (
@@ -3366,11 +3383,11 @@ const Profile = () => {
                               }}
                               className="grid grid-cols-[1fr_58px_56px_42px_45px] md:grid-cols-[1fr_140px_130px_130px_130px] gap-1 md:gap-4 px-1.5 sm:px-6 py-2 text-[9px] md:text-[14px] md:leading-[26px]"
                             >
-                              <div>Offers</div>
-                              <div>Completed</div>
-                              <div>Reward</div>
-                              <div>Hold</div>
-                              <div className="text-right">Release</div>
+                              <div>{t('profile.tableOffers', 'Offers')}</div>
+                              <div>{t('profile.tableCompleted', 'Completed')}</div>
+                              <div>{t('profile.tableReward', 'Reward')}</div>
+                              <div>{t('profile.tableHold', 'Hold')}</div>
+                              <div className="text-right">{t('profile.tableRelease', 'Release')}</div>
                             </div>
                             <div className="flex flex-col">
                               {paginatedHeld.map((offer, idx) => {
@@ -3379,7 +3396,7 @@ const Profile = () => {
                                   : 30;
                                 const releaseIn = offer.daysRemaining > 0
                                   ? `${offer.daysRemaining}d`
-                                  : offer.isReadyToRelease ? 'Ready' : 'N/A';
+                                  : offer.isReadyToRelease ? t('profile.statusReady', 'Ready') : 'N/A';
                                 return (
                                   <div
                                     key={offer._id}
@@ -3400,7 +3417,7 @@ const Profile = () => {
                                       style={{ fontFamily: 'Poppins, sans-serif', fontWeight: 500 }}
                                       className="text-[#1e293b] text-[10px] md:text-[16px] leading-tight md:leading-[26px]"
                                     >
-                                      {offer.createdAt ? new Date(offer.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'N/A'}
+                                      {offer.createdAt ? new Date(offer.createdAt).toLocaleDateString(i18n.language === 'de' ? 'de-DE' : 'en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'N/A'}
                                     </span>
                                     <div
                                       style={{ fontFamily: 'Poppins, sans-serif', fontWeight: 600, color: 'rgba(190, 146, 0, 1)' }}
@@ -3447,7 +3464,7 @@ const Profile = () => {
                   ) : txHistory.error ? (
                     <p className="text-rose-500 text-center py-12 font-semibold">{txHistory.error}</p>
                   ) : txHistory.dataList.length === 0 ? (
-                    <p className="text-center py-12 text-slate-500 font-bold text-base">No transaction history found.</p>
+                    <p className="text-center py-12 text-slate-500 font-bold text-base">{t('profile.emptyTransactionHistory', 'No transaction history found.')}</p>
                   ) : (
                     <div>
                       <div className="w-full">
@@ -3462,15 +3479,15 @@ const Profile = () => {
                             }}
                             className="grid grid-cols-[48px_54px_1fr_60px_48px] md:grid-cols-[130px_140px_1fr_140px_120px] gap-1 md:gap-4 px-1.5 sm:px-6 py-2 text-[9px] md:text-[14px] md:leading-[26px]"
                           >
-                            <div>Date</div>
-                            <div>Type</div>
-                            <div>Description</div>
-                            <div>Amount</div>
-                            <div className="text-center">Status</div>
+                            <div>{t('profile.tableDate', 'Date')}</div>
+                            <div>{t('profile.tableType', 'Type')}</div>
+                            <div>{t('profile.tableDescription', 'Description')}</div>
+                            <div>{t('profile.tableAmount', 'Amount')}</div>
+                            <div className="text-center">{t('profile.tableStatus', 'Status')}</div>
                           </div>
                           <div className="flex flex-col">
                             {txHistory.dataList.map((tx, idx) => {
-                              const config = TX_TYPE_LABEL[tx.transactionType] || { label: tx.transactionType, color: 'text-slate-500' };
+                              const typeLabel = getTxTypeLabel(tx.transactionType, t);
                               const isDebit = tx.amount < 0;
                               const isPending = tx.status === 'pending';
                               const isRejected = tx.status === 'rejected' || tx.status === 'failed';
@@ -3488,13 +3505,13 @@ const Profile = () => {
                                     style={{ fontFamily: 'Poppins, sans-serif', fontWeight: 500 }}
                                     className="text-[#1e293b] text-[9.5px] md:text-[16px] leading-[13px] md:leading-[26px]"
                                   >
-                                    {tx.createdAt ? new Date(tx.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'N/A'}
+                                    {tx.createdAt ? new Date(tx.createdAt).toLocaleDateString(i18n.language === 'de' ? 'de-DE' : 'en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'N/A'}
                                   </span>
                                   <span
                                     style={{ fontFamily: 'Poppins, sans-serif', fontWeight: 500 }}
                                     className="text-[#1e293b] text-[9.5px] md:text-[16px] leading-[13px] md:leading-[26px] truncate"
                                   >
-                                    {config.label}
+                                    {typeLabel}
                                   </span>
                                   <span
                                     style={{ fontFamily: 'Poppins, sans-serif', fontWeight: 500 }}
@@ -3525,11 +3542,7 @@ const Profile = () => {
                                       }}
                                       className="inline-flex items-center justify-center whitespace-nowrap text-[8.5px] md:text-[16px] px-1.5 md:px-[18px] py-0.5 md:py-[3px] rounded-[40px] leading-tight"
                                     >
-                                      {tx.status === 'completed'
-                                        ? 'Completed'
-                                        : isRejected
-                                          ? 'Rejected'
-                                          : tx.status.charAt(0).toUpperCase() + tx.status.slice(1)}
+                                      {getStatusBadge(tx.status, isRejected, t)}
                                     </span>
                                   </div>
                                 </div>
@@ -3557,7 +3570,7 @@ const Profile = () => {
                   ) : chargebacks.error ? (
                     <p className="text-rose-500 text-center py-12 font-semibold">{chargebacks.error}</p>
                   ) : chargebacks.dataList.length === 0 ? (
-                    <p className="text-center py-12 text-slate-500 font-bold text-base">No chargebacks found on your account.</p>
+                    <p className="text-center py-12 text-slate-500 font-bold text-base">{t('profile.emptyChargebacks', 'No chargebacks found on your account.')}</p>
                   ) : (
                     <div>
                       <div className="w-full">
@@ -3572,9 +3585,9 @@ const Profile = () => {
                             }}
                             className="grid grid-cols-[1fr_75px_65px] md:grid-cols-[1fr_180px_150px] gap-1.5 md:gap-4 px-1.5 sm:px-6 py-2 text-[9.5px] md:text-[14px] md:leading-[26px]"
                           >
-                            <div>Offers</div>
-                            <div>Started</div>
-                            <div>Amount</div>
+                            <div>{t('profile.tableOffers', 'Offers')}</div>
+                            <div>{t('profile.tableStarted', 'Started')}</div>
+                            <div>{t('profile.tableAmount', 'Amount')}</div>
                           </div>
                           <div className="flex flex-col">
                             {chargebacks.dataList.map((tx, idx) => (
@@ -3597,7 +3610,7 @@ const Profile = () => {
                                   style={{ fontFamily: 'Poppins, sans-serif', fontWeight: 500 }}
                                   className="text-[#1e293b] text-[10px] md:text-[16px] leading-tight md:leading-[26px]"
                                 >
-                                  {tx.createdAt ? new Date(tx.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'N/A'}
+                                  {tx.createdAt ? new Date(tx.createdAt).toLocaleDateString(i18n.language === 'de' ? 'de-DE' : 'en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'N/A'}
                                 </span>
                                 <div
                                   style={{ fontFamily: 'Poppins, sans-serif', fontWeight: 600, color: 'rgba(190, 146, 0, 1)' }}
