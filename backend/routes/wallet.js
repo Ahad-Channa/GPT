@@ -77,6 +77,7 @@ async function getLitecoinRate() {
 router.get('/settings', verifyToken, async (req, res) => {
   try {
     const settings = await Settings.getSingleton();
+    const ltcRateUSD = await getLitecoinRate();
     const settingsPayload = {
       withdrawalFeePercent: settings.withdrawalFeePercent,
       withdrawalMethods: settings.withdrawalMethods.filter((m) => m.enabled),

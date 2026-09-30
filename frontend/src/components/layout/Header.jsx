@@ -1296,15 +1296,15 @@ const Header = ({ onChatToggle, chatOpen, fullWidth }) => {
 
       {/* MOBILE STICKY BOTTOM NAVIGATION */}
       <div
-        className="fixed left-0 right-0 z-40 lg:hidden pointer-events-auto flex justify-center px-[14px]"
+        className="fixed left-0 right-0 z-40 lg:hidden pointer-events-auto flex justify-center px-2"
         style={{
-          bottom: 'calc(6px + env(safe-area-inset-bottom, 0px))',
+          bottom: 'env(safe-area-inset-bottom, 0px)',
         }}
       >
         <div
           className="flex items-center justify-center w-full"
           style={{
-            maxWidth: '412px',
+            width: '100%',
             height: '68px',
             borderRadius: '100px',
             background: 'rgba(255, 255, 255, 0.96)',
@@ -1315,11 +1315,11 @@ const Header = ({ onChatToggle, chatOpen, fullWidth }) => {
             transform: 'rotate(0deg)',
           }}
         >
-          {/* Inner Tabs Container (width: 360, height: 42, justify-content: space-between) */}
+          {/* Inner Tabs Container */}
           <div
-            className="flex items-center justify-between w-full"
+            className="flex items-center justify-between w-full px-2"
             style={{
-              maxWidth: '360px',
+              width: '100%',
               height: '62px',
               justifyContent: 'space-between',
               alignItems: 'center',
@@ -1587,7 +1587,7 @@ const Header = ({ onChatToggle, chatOpen, fullWidth }) => {
             <div
               className="fixed left-0 right-0 z-50 lg:hidden flex justify-center pointer-events-none px-4"
               style={{
-                bottom: 'calc(78px + env(safe-area-inset-bottom, 0px))',
+                bottom: 'calc(72px + env(safe-area-inset-bottom, 0px))',
               }}
             >
               <motion.div

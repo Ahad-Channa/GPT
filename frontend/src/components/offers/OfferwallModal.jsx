@@ -34,7 +34,7 @@ export const OfferwallModal = ({ provider, userId, onClose }) => {
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
         transition={{ duration: 0.2 }}
-        className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/60 backdrop-blur-sm"
+        className="fixed inset-0 z-50 flex items-center justify-center p-1 sm:p-4 md:p-6 bg-black/60 backdrop-blur-sm"
         onClick={onClose}
       >
         <motion.div
@@ -43,50 +43,18 @@ export const OfferwallModal = ({ provider, userId, onClose }) => {
           exit={{ scale: 0.95, opacity: 0, y: 15 }}
           transition={{ type: 'spring', damping: 26, stiffness: 260 }}
           onClick={(e) => e.stopPropagation()}
-          style={{
-            width: '100%',
-            maxWidth: '1000px',
-            height: '92vh',
-            maxHeight: '900px',
-            borderRadius: '24px',
-            background: 'rgba(255, 255, 255, 1)',
-            boxShadow: '0px 25px 60px 0px rgba(0, 0, 0, 0.28)',
-            border: '1px solid rgba(223, 225, 209, 0.7)',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '8px',
-            padding: '8px 10px 10px',
-            overflow: 'hidden',
-            boxSizing: 'border-box',
-            position: 'relative',
-          }}
+          className="w-full max-w-[1000px] h-[95vh] sm:h-[92vh] max-h-[900px] rounded-[18px] sm:rounded-[24px] bg-white shadow-[0px_25px_60px_0px_rgba(0,0,0,0.28)] border border-[rgba(223,225,209,0.7)] flex flex-col gap-1 sm:gap-2 p-1.5 sm:p-2.5 overflow-hidden box-border relative"
         >
-          {/* ── Top Header Bar (width: 968, height: 86, border-radius: 16px, bg: rgba(248, 245, 239, 1)) ── */}
+          {/* ── Top Header Bar ── */}
           <div
             style={{
-              width: '100%',
-              height: '86px',
               background: 'rgba(248, 245, 239, 1)',
-              padding: '0 24px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              boxSizing: 'border-box',
-              flexShrink: 0,
-              position: 'relative',
-              borderRadius: '16px',
             }}
+            className="w-full h-[54px] sm:h-[72px] md:h-[86px] px-2.5 sm:px-6 flex items-center justify-between box-border shrink-0 relative rounded-[14px] sm:rounded-[16px]"
           >
-            {/* Left: Provider Logo / Name (width: 166, height: 43) */}
+            {/* Left: Provider Logo / Name */}
             <div
-              style={{
-                width: '166px',
-                height: '43px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'flex-start',
-                opacity: 1,
-              }}
+              className="max-w-[105px] sm:max-w-[166px] h-[30px] sm:h-[43px] flex items-center justify-start shrink-0"
             >
               {logoUrl ? (
                 <img
@@ -109,39 +77,33 @@ export const OfferwallModal = ({ provider, userId, onClose }) => {
                   style={{
                     fontFamily: '"Bricolage Grotesque", sans-serif',
                     fontWeight: 700,
-                    fontSize: '18px',
                     color: '#000000',
-                    whiteSpace: 'nowrap',
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
                   }}
+                  className="text-[14px] sm:text-[18px] whitespace-nowrap overflow-hidden text-ellipsis"
                 >
                   {provider.label || 'Offerwall'}
                 </span>
               )}
             </div>
 
-            {/* Center: TaskMint Platform Brand Logo */}
-            <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center justify-center pointer-events-none">
+            {/* Center: TaskMint Platform Brand Logo (evenly spaced between provider logo & close button) */}
+            <div className="flex-1 flex items-center justify-center pointer-events-none px-2 -translate-x-1 sm:translate-x-0">
               <img
                 src="/coins/logo final.svg"
                 alt="TaskMint Logo"
-                className="h-8 sm:h-9 max-w-[150px] object-contain select-none"
+                className="h-[22px] sm:h-8 max-w-[110px] sm:max-w-[150px] object-contain select-none"
                 onError={(e) => {
                   e.currentTarget.src = '/coins/logo copy.png';
                 }}
               />
             </div>
 
-            {/* Right: Black Circular Close Button (22x22) positioned at top right */}
+            {/* Right: Black Circular Close Button */}
             <button
               onClick={onClose}
               style={{
-                position: 'absolute',
-                top: '10px',
-                right: '12px',
-                width: '22px',
-                height: '22px',
+                width: '24px',
+                height: '24px',
                 borderRadius: '50%',
                 background: '#000000',
                 color: '#FFFFFF',
@@ -150,12 +112,9 @@ export const OfferwallModal = ({ provider, userId, onClose }) => {
                 alignItems: 'center',
                 justifyContent: 'center',
                 cursor: 'pointer',
-                transition: 'transform 0.15s, opacity 0.15s',
                 padding: 0,
-                opacity: 1,
-                transform: 'rotate(0deg)',
               }}
-              className="hover:opacity-85 active:scale-95 z-10"
+              className="hover:opacity-85 active:scale-95 shrink-0 z-10"
               title="Close"
             >
               <FiX size={12} />

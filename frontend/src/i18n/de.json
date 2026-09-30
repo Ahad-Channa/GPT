@@ -49,8 +49,8 @@
   "whyChooseUs": {
     "title": "Warum wir?",
     "subtitle": "Starke Funktionen, für dich gemacht.",
-    "multipleOfferwalls": "Viele Angebotswände",
-    "multipleOfferwallsDesc": "Verschiedene Verdienstoptionen an einem Ort.",
+    "multipleOfferwalls": "Viele Angebotspartner",
+    "multipleOfferwallsDesc": "Verschiedene Verdienstmöglichkeiten an einem Ort.",
     "fastPayouts": "Schnelle Auszahlung",
     "fastPayoutsDesc": "Verdienste schnell und sicher auszahlen.",
     "dailyBonus": "Täglicher Bonus",
@@ -79,7 +79,7 @@
     "q3": "Wie erreiche ich euch?",
     "a3": "Über unser 24/7 Support-Ticket-System.",
     "q4": "Ist es kostenlos?",
-    "a4": "Ja, 100 % kostenlos – Anmeldung und Verdienen.",
+    "a4": "Ja, 100 % kostenlos – Anmelden und Verdienen.",
     "q5": "Warum fehlt meine Prämie?",
     "a5": "Die Erfassung kann etwas dauern. Kontaktiere den Support.",
     "q6": "Wie hoch ist die Mindestauszahlung?",
@@ -518,5 +518,17 @@
     "emptyHeldOffers": "Derzeit keine einbehaltenen Einnahmen.",
     "emptyTransactionHistory": "Kein Transaktionsverlauf gefunden.",
     "emptyChargebacks": "Keine Rückbuchungen auf deinem Konto vorhanden."
+  },
+  "footer": {
+    "tagline": "Aufgaben erledigen. Prämien verdienen.",
+    "changeToDarkMode": "Dark Mode aktivieren",
+    "quickLinks": "Quick Links",
+    "resources": "Ressourcen",
+    "blog": "Blog",
+    "termsOfUse": "Nutzungsbedingungen",
+    "privacyPolicy": "Datenschutzrichtlinie",
+    "support": "Support",
+    "leaveReview": "Bewertung schreiben",
+    "copyright": "© {{year}} TaskMint. Alle Rechte vorbehalten."
   }
 }

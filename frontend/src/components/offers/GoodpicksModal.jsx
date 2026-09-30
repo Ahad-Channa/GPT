@@ -302,29 +302,53 @@ export const GoodpicksDetailModal = ({ offer, onClose, token }) => {
           }}
           className="shrink-0"
         >
-          {/* Top Close Button inside the white card */}
-          <button
-            onClick={onClose}
-            style={{
-              width: '20px',
-              height: '20px',
-              borderRadius: '50%',
-              background: '#000000',
-              color: '#FFFFFF',
-              border: 'none',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              cursor: 'pointer',
-              position: 'absolute',
-              top: '10px',
-              right: '10px',
-              zIndex: 20,
-            }}
-            className="hover:opacity-80 transition-opacity"
-          >
-            <FiX size={10} strokeWidth={2.5} />
-          </button>
+          {/* Top Actions: Support Button & Close Button */}
+          <div className="absolute top-[10px] right-[10px] z-20 flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => {
+                setShowSupportModal(true);
+              }}
+              style={{
+                width: '24px',
+                height: '24px',
+                background: 'transparent',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                border: 'none',
+                cursor: 'pointer',
+                padding: 0,
+              }}
+              className="hover:opacity-80 transition-opacity"
+              title="Support"
+            >
+              <img
+                src="/coins/image copy 13.png"
+                alt="Support"
+                className="w-[24px] h-[24px] object-contain"
+              />
+            </button>
+
+            <button
+              onClick={onClose}
+              style={{
+                width: '24px',
+                height: '24px',
+                borderRadius: '50%',
+                background: '#000000',
+                color: '#FFFFFF',
+                border: 'none',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                cursor: 'pointer',
+              }}
+              className="hover:opacity-80 transition-opacity"
+            >
+              <FiX size={11} strokeWidth={2.5} />
+            </button>
+          </div>
 
           {/* 84x84 Image layout */}
           <div
@@ -762,28 +786,35 @@ export const GoodpicksSupportModal = ({ onClose }) => {
         onClick={(e) => e.stopPropagation()}
         style={{
           width: '100%',
-          maxWidth: '626px',
-          minHeight: '345px',
-          background: 'rgba(188, 231, 240, 1)',
-          borderRadius: '25px',
-          opacity: 1,
-          transform: 'rotate(0deg)',
+          maxWidth: '560px',
+          minHeight: '300px',
+          background: 'rgba(249, 247, 241, 1)',
+          borderRadius: '26px',
+          border: '4px solid #FFFFFF',
+          overflow: 'hidden',
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
           justifyContent: 'center',
-          padding: '40px 32px',
+          padding: '44px 28px 40px 28px',
           boxSizing: 'border-box',
           position: 'relative',
-          boxShadow: '0 20px 50px rgba(0, 0, 0, 0.25)',
+          boxShadow: '0 24px 60px rgba(0, 0, 0, 0.28)',
         }}
       >
+        {/* Decorative rainbow arches graphic in bottom-right corner */}
+        <img
+          src="/coins/image copy 15.png"
+          alt="Decoration"
+          className="absolute bottom-0 right-0 w-[170px] sm:w-[210px] max-w-none pointer-events-none select-none z-0 object-contain object-bottom-right"
+        />
+
         {/* Close Button at top right */}
         <button
           onClick={onClose}
           style={{
-            width: '26px',
-            height: '26px',
+            width: '24px',
+            height: '24px',
             borderRadius: '50%',
             background: '#000000',
             color: '#FFFFFF',
@@ -793,23 +824,24 @@ export const GoodpicksSupportModal = ({ onClose }) => {
             justifyContent: 'center',
             cursor: 'pointer',
             position: 'absolute',
-            top: '18px',
-            right: '18px',
-            zIndex: 10,
+            top: '16px',
+            right: '16px',
+            zIndex: 20,
           }}
           className="hover:opacity-80 transition-opacity"
+          aria-label="Close"
         >
-          <FiX size={14} strokeWidth={2.5} />
+          <FiX size={13} strokeWidth={2.5} />
         </button>
 
-        {/* Headset / Support Icon */}
-        <div className="flex items-center justify-center mb-6">
+        {/* Headset / Live Support Icon */}
+        <div className="relative z-10 flex items-center justify-center mb-5">
           <img
-            src="/coins/image copy 12.png"
-            alt="Support"
+            src="/coins/image copy 14.png"
+            alt="Taskmint Support"
             style={{
-              width: '56px',
-              height: '56px',
+              width: '60px',
+              height: '60px',
               objectFit: 'contain',
             }}
           />
@@ -817,20 +849,21 @@ export const GoodpicksSupportModal = ({ onClose }) => {
 
         {/* Centered Message */}
         <p
+          className="relative z-10"
           style={{
-            fontFamily: '"IBM Plex Sans", "Poppins", sans-serif',
+            fontFamily: '"Poppins", "Bricolage Grotesque", -apple-system, BlinkMacSystemFont, sans-serif',
             fontSize: '18px',
             lineHeight: '28px',
-            color: '#000000',
+            color: '#1E293B',
             fontWeight: 400,
             textAlign: 'center',
-            maxWidth: '500px',
+            maxWidth: '480px',
             margin: 0,
             padding: 0,
           }}
         >
           {t('goodpicks.supportPopupPart1') || 'For any queries or assistance, please contact '}
-          <strong style={{ fontWeight: 700 }}>
+          <strong style={{ fontWeight: 700, color: '#0F172A' }}>
             {t('goodpicks.supportPopupHighlight') || 'Taskmint Live Support'}
           </strong>
           {t('goodpicks.supportPopupPart2') || '. Our support team will be happy to assist you with your concerns.'}
@@ -904,7 +937,7 @@ export const GoodpicksOfferwallModal = ({ onClose, token }) => {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 md:p-6 bg-black/60 backdrop-blur-sm"
+        className="fixed inset-0 z-50 flex items-center justify-center p-1 sm:p-4 md:p-6 bg-black/60 backdrop-blur-sm"
         onClick={onClose}
       >
         <motion.div
@@ -913,58 +946,44 @@ export const GoodpicksOfferwallModal = ({ onClose, token }) => {
           exit={{ scale: 0.96, opacity: 0, y: 15 }}
           transition={{ type: 'spring', damping: 26, stiffness: 260 }}
           onClick={(e) => e.stopPropagation()}
-          style={{
-            width: '100%',
-            maxWidth: '1300px',
-            height: '92vh',
-            maxHeight: '880px',
-            borderRadius: '24px',
-            background: '#FFFFFF',
-            boxShadow: '0px 25px 60px 0px rgba(0, 0, 0, 0.28)',
-            border: '1px solid rgba(223, 225, 209, 0.7)',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '8px',
-            padding: '8px 10px 10px',
-            overflow: 'hidden',
-            boxSizing: 'border-box',
-            position: 'relative',
-          }}
+          className="w-full max-w-[1300px] h-[95vh] sm:h-[92vh] max-h-[880px] rounded-[18px] sm:rounded-[24px] bg-white shadow-[0px_25px_60px_0px_rgba(0,0,0,0.28)] border border-[rgba(223,225,209,0.7)] flex flex-col gap-1 sm:gap-2 p-1 sm:p-2.5 overflow-hidden box-border relative"
         >
           {/* Top Brand Header Bar */}
           <div
-            style={{
-              width: '100%',
-              height: '64px',
-              background: '#FFFFFF',
-              padding: '0 16px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              boxSizing: 'border-box',
-              flexShrink: 0,
-              position: 'relative',
-            }}
+            className="w-full h-[52px] sm:h-[64px] bg-white px-2 sm:px-4 flex items-center justify-between box-border shrink-0 relative"
           >
-            {/* Left: Goodpicks Logo (compact header size) */}
+            {/* Left: Goodpicks Logo */}
             <div
-              className="flex items-center cursor-pointer select-none"
+              className="flex items-center cursor-pointer select-none shrink-0"
               onClick={() => setCurrentView('offers')}
               title="Goodpicks"
+              style={{
+                width: '95px',
+                height: '22.8px',
+                opacity: 1,
+                transform: 'rotate(0deg)',
+              }}
             >
               <img
                 src="/coins/image copy 6.png"
                 alt="Goodpicks"
-                className="h-[24px] w-auto object-contain select-none"
+                style={{
+                  width: '95px',
+                  height: '22.8px',
+                  objectFit: 'contain',
+                  opacity: 1,
+                  transform: 'rotate(0deg)',
+                }}
+                className="select-none"
               />
             </div>
 
-            {/* Center: Taskmint logo */}
-            <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center gap-1.5 pointer-events-none">
+            {/* Center / Middle: Taskmint logo */}
+            <div className="flex-1 flex items-center justify-center pointer-events-none px-2 -translate-x-3 sm:-translate-x-2">
               <img
                 src="/coins/logo final.svg"
                 alt="taskmint"
-                className="h-7 max-w-[130px] object-contain"
+                className="h-[22.8px] max-w-[120px] object-contain"
                 onError={(e) => {
                   e.currentTarget.src = '/coins/logo copy.png';
                 }}
@@ -994,19 +1013,7 @@ export const GoodpicksOfferwallModal = ({ onClose, token }) => {
 
           {/* Main Sky Blue Body Container */}
           <div
-            style={{
-              flex: 1,
-              width: '100%',
-              background: '#BEE3F2',
-              borderRadius: '16px',
-              padding: '20px 24px',
-              boxSizing: 'border-box',
-              overflowY: 'auto',
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '18px',
-            }}
-            className="hide-scrollbar"
+            className="flex-1 w-full bg-[#BEE3F2] rounded-[14px] sm:rounded-[16px] p-2.5 sm:p-5 lg:p-6 box-border overflow-y-auto flex flex-col gap-3 sm:gap-4.5 hide-scrollbar"
           >
             {/* Subheader: Goodpicks Big Logo + Support & History Buttons */}
             <div className="flex items-center justify-between shrink-0">
@@ -1086,33 +1093,23 @@ export const GoodpicksOfferwallModal = ({ onClose, token }) => {
                         style={{
                           width: '100%',
                           maxWidth: '1248px',
-                          minHeight: '88px',
-                          height: '88px',
                           background: '#FFFFFF',
-                          borderRadius: '15px',
-                          border: 'none',
-                          padding: '15px',
+                          borderRadius: '16px',
+                          padding: '12px 14px',
                           boxSizing: 'border-box',
-                          transform: 'rotate(0deg)',
-                          opacity: 1,
-                          display: 'grid',
-                          gridTemplateColumns: 'minmax(280px, 380px) 1fr 1fr auto',
-                          alignItems: 'center',
-                          gap: '12px',
                           boxShadow: '0 2px 8px rgba(0, 0, 0, 0.04)',
                         }}
-                        className="hover:shadow-md transition-shadow"
+                        className="hover:shadow-md transition-shadow flex flex-col md:grid md:grid-cols-[minmax(280px,380px)_1fr_1fr_auto] md:h-[88px] md:items-center gap-3 md:gap-3"
                       >
-                        {/* 1. Left: Goodpicks image inside it + Title & below description */}
-                        <div className="flex items-center gap-3.5 min-w-0">
-                          {/* Goodpick image inside it layout (width: 58; height: 58; angle: 0 deg; opacity: 1; border-radius: 7px;) */}
+                        {/* 1. Top (Mobile) / Left (Desktop): Image + Title & description */}
+                        <div className="flex items-start md:items-center gap-3 min-w-0 flex-1">
                           <div
                             style={{
                               width: '58px',
                               height: '58px',
                               transform: 'rotate(0deg)',
                               opacity: 1,
-                              borderRadius: '7px',
+                              borderRadius: '10px',
                               overflow: 'hidden',
                               background: '#F1F5F9',
                               flexShrink: 0,
@@ -1120,24 +1117,19 @@ export const GoodpicksOfferwallModal = ({ onClose, token }) => {
                               alignItems: 'center',
                               justifyContent: 'center',
                             }}
+                            className="shadow-sm"
                           >
                             {renderOfferCover(item)}
                           </div>
 
-                          {/* Good pick title & below description typography layout */}
-                          <div className="flex flex-col justify-center min-w-0">
-                            {/* Good pick title (width: 134; height: 11; font-family: IBM Plex Sans; font-weight: 500; font-size: 16px; line-height: 27px; color black;) */}
+                          <div className="flex flex-col justify-center min-w-0 flex-1">
                             <h4
                               style={{
                                 maxWidth: '280px',
-                                transform: 'rotate(0deg)',
-                                opacity: 1,
                                 fontFamily: '"IBM Plex Sans", "Poppins", sans-serif',
-                                fontWeight: 500,
-                                fontStyle: 'normal',
-                                fontSize: '16px',
-                                lineHeight: '27px',
-                                letterSpacing: '0%',
+                                fontWeight: 600,
+                                fontSize: '15px',
+                                lineHeight: '20px',
                                 color: '#000000',
                                 margin: 0,
                               }}
@@ -1145,22 +1137,15 @@ export const GoodpicksOfferwallModal = ({ onClose, token }) => {
                             >
                               {itemTitle}
                             </h4>
-
-                            {/* Below description (width: 226; height: 24; opacity: 0.7; font-family: IBM Plex Sans; font-weight: 400; font-size: 11px; line-height: 16px; color: rgba(0, 0, 0, 1);) */}
                             <p
                               style={{
                                 maxWidth: '300px',
-                                minHeight: '24px',
-                                transform: 'rotate(0deg)',
-                                opacity: 0.7,
                                 fontFamily: '"IBM Plex Sans", "Poppins", sans-serif',
                                 fontWeight: 400,
-                                fontStyle: 'normal',
                                 fontSize: '11px',
                                 lineHeight: '16px',
-                                letterSpacing: '0%',
-                                color: 'rgba(0, 0, 0, 1)',
-                                margin: 0,
+                                color: 'rgba(0, 0, 0, 0.7)',
+                                margin: '2px 0 0',
                               }}
                               className="line-clamp-2"
                             >
@@ -1169,86 +1154,88 @@ export const GoodpicksOfferwallModal = ({ onClose, token }) => {
                           </div>
                         </div>
 
-                        {/* 2. Middle: Blue Coin Stack Reward Amount (placed in middle column) */}
-                        <div className="flex items-center justify-center gap-1.5 shrink-0">
-                          <img
-                            src="/coins/image copy 7.png"
-                            alt="Coins"
-                            style={{ width: '18px', height: '18px', objectFit: 'contain' }}
-                          />
-                          <span
-                            style={{
-                              fontFamily: '"Poppins", sans-serif',
-                              fontWeight: 600,
-                              fontSize: '20px',
-                              letterSpacing: '-0.02em',
-                              color: 'rgba(77, 116, 191, 1)',
-                              lineHeight: '1',
-                              opacity: 1,
-                            }}
-                          >
-                            {rewardStr}
-                          </span>
-                        </div>
-
-                        {/* 3. Platform Icon Badge (placed between coins and button) */}
-                        <div className="shrink-0 flex items-center justify-center">
-                          <div
-                            style={{
-                              width: '32px',
-                              height: '32px',
-                              borderRadius: '8px',
-                              background: '#000000',
-                              color: '#FFFFFF',
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                            }}
-                            title={item.platforms?.desktop ? 'Desktop' : item.platforms?.ios ? 'iOS' : 'Android'}
-                          >
-                            {item.platforms?.desktop ? (
-                              <img
-                                src="/coins/desko.png"
-                                alt="Desktop"
-                                style={{ width: '16px', height: '16px', objectFit: 'contain', filter: 'brightness(0) invert(1)' }}
-                              />
-                            ) : item.platforms?.ios ? (
-                              <svg style={{ width: '16px', height: '16px' }} className="text-white" viewBox="0 0 24 24" fill="currentColor">
-                                <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 6.37c.62-.75 1.04-1.8 0.92-2.85-.9.04-1.99.6-2.63 1.35-.57.65-1.07 1.72-.94 2.74 1.01.08 2.03-.49 2.65-1.24z" />
-                              </svg>
-                            ) : (
-                              <svg style={{ width: '16px', height: '16px' }} className="text-white" viewBox="0 0 24 24" fill="currentColor">
-                                <path d="M17.523 15.3414c-.5511 0-.9993-.4486-.9993-.9997s.4482-.9993.9993-.9993c.551 0 .9993.4482.9993.9993.0001.5511-.4482.9997-.9993.9997m-11.046 0c-.5511 0-.9993-.4486-.9993-.9997s.4482-.9993.9993-.9993c.5511 0 .9993.4482.9993.9993 0 .5511-.4482.9997-.9993.9997m11.4045-6.02l1.9973-3.4592a.416.416 0 00-.1521-.5676.416.416 0 00-.5676.1521l-2.0223 3.503C15.5902 8.411 13.8533 8.081 12 8.081s-3.5902.33-5.1367.8697L4.841 5.4477a.4161.4161 0 00-.5677-.1521.4157.4157 0 00-.1521.5676l1.9973 3.4592C2.6889 11.1867.3432 14.6589 0 18.761h24c-.3432-4.1021-2.6889-7.5743-6.1185-9.4396" />
-                              </svg>
-                            )}
+                        {/* Bottom Row on Mobile (Coins + Platform + Button) / direct grid items on Desktop */}
+                        <div className="flex items-center justify-between w-full pt-1.5 md:pt-0 md:contents">
+                          {/* 2. Coins */}
+                          <div className="flex items-center md:justify-center gap-1.5 shrink-0">
+                            <img
+                              src="/coins/image copy 7.png"
+                              alt="Coins"
+                              style={{ width: '18px', height: '18px', objectFit: 'contain' }}
+                            />
+                            <span
+                              style={{
+                                fontFamily: '"Poppins", sans-serif',
+                                fontWeight: 600,
+                                fontSize: '18px',
+                                letterSpacing: '-0.02em',
+                                color: 'rgba(77, 116, 191, 1)',
+                                lineHeight: '1',
+                              }}
+                            >
+                              {rewardStr}
+                            </span>
                           </div>
-                        </div>
 
-                        {/* 4. Right: See Details Button */}
-                        <div className="flex justify-end">
-                          <button
-                            type="button"
-                            onClick={() => setSelectedOffer(item)}
-                            style={{
-                              width: '110px',
-                              height: '38px',
-                              borderRadius: '10px',
-                              background: '#00A3FF',
-                              color: '#FFFFFF',
-                              fontFamily: '"Poppins", sans-serif',
-                              fontWeight: 600,
-                              fontSize: '13px',
-                              border: 'none',
-                              cursor: 'pointer',
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              flexShrink: 0,
-                            }}
-                            className="hover:bg-[#0094EA] active:scale-[0.98] transition-all shadow-sm"
-                          >
-                            {t('goodpicks.seeDetails')}
-                          </button>
+                          {/* 3. Platform Icon Badge */}
+                          <div className="shrink-0 flex items-center md:justify-center">
+                            <div
+                              style={{
+                                width: '32px',
+                                height: '32px',
+                                borderRadius: '8px',
+                                background: '#000000',
+                                color: '#FFFFFF',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                              }}
+                              title={item.platforms?.desktop ? 'Desktop' : item.platforms?.ios ? 'iOS' : 'Android'}
+                            >
+                              {item.platforms?.desktop ? (
+                                <img
+                                  src="/coins/desko.png"
+                                  alt="Desktop"
+                                  style={{ width: '16px', height: '16px', objectFit: 'contain', filter: 'brightness(0) invert(1)' }}
+                                />
+                              ) : item.platforms?.ios ? (
+                                <svg style={{ width: '16px', height: '16px' }} className="text-white" viewBox="0 0 24 24" fill="currentColor">
+                                  <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 6.37c.62-.75 1.04-1.8 0.92-2.85-.9.04-1.99.6-2.63 1.35-.57.65-1.07 1.72-.94 2.74 1.01.08 2.03-.49 2.65-1.24z" />
+                                </svg>
+                              ) : (
+                                <svg style={{ width: '16px', height: '16px' }} className="text-white" viewBox="0 0 24 24" fill="currentColor">
+                                  <path d="M17.523 15.3414c-.5511 0-.9993-.4486-.9993-.9997s.4482-.9993.9993-.9993c.551 0 .9993.4482.9993.9993.0001.5511-.4482.9997-.9993.9997m-11.046 0c-.5511 0-.9993-.4486-.9993-.9997s.4482-.9993.9993-.9993c.5511 0 .9993.4482.9993.9993 0 .5511-.4482.9997-.9993.9997m11.4045-6.02l1.9973-3.4592a.416.416 0 00-.1521-.5676.416.416 0 00-.5676.1521l-2.0223 3.503C15.5902 8.411 13.8533 8.081 12 8.081s-3.5902.33-5.1367.8697L4.841 5.4477a.4161.4161 0 00-.5677-.1521.4157.4157 0 00-.1521.5676l1.9973 3.4592C2.6889 11.1867.3432 14.6589 0 18.761h24c-.3432-4.1021-2.6889-7.5743-6.1185-9.4396" />
+                                </svg>
+                              )}
+                            </div>
+                          </div>
+
+                          {/* 4. Button */}
+                          <div className="flex justify-end">
+                            <button
+                              type="button"
+                              onClick={() => setSelectedOffer(item)}
+                              style={{
+                                width: '105px',
+                                height: '36px',
+                                borderRadius: '10px',
+                                background: '#00A3FF',
+                                color: '#FFFFFF',
+                                fontFamily: '"Poppins", sans-serif',
+                                fontWeight: 600,
+                                fontSize: '13px',
+                                border: 'none',
+                                cursor: 'pointer',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                flexShrink: 0,
+                              }}
+                              className="hover:bg-[#0094EA] active:scale-[0.98] transition-all shadow-sm"
+                            >
+                              {t('goodpicks.seeDetails')}
+                            </button>
+                          </div>
                         </div>
                       </div>
                     );
@@ -1264,9 +1251,9 @@ export const GoodpicksOfferwallModal = ({ onClose, token }) => {
               /* ─── OFFERS BROWSE VIEW ─── */
               <>
                 {/* Filter Tabs + Sort Bar */}
-                <div className="flex flex-wrap items-center justify-between gap-3 shrink-0">
+                <div className="flex flex-nowrap items-center justify-between gap-2 sm:gap-3 shrink-0 w-full overflow-x-auto hide-scrollbar pb-0.5">
                   {/* Platform Filter Tabs */}
-                  <div className="flex items-center gap-6">
+                  <div className="flex items-center gap-3 sm:gap-6 shrink-0">
                     {filterTabs.map((tab) => {
                       const isActive = filter === tab.id;
                       return (
@@ -1277,10 +1264,9 @@ export const GoodpicksOfferwallModal = ({ onClose, token }) => {
                           style={{
                             fontFamily: '"Poppins", sans-serif',
                             fontWeight: isActive ? 700 : 500,
-                            fontSize: '14px',
                             color: isActive ? '#0F172A' : '#475569',
                           }}
-                          className={`relative py-1 cursor-pointer transition-colors bg-transparent border-none ${
+                          className={`relative py-1 text-[13px] sm:text-[14px] whitespace-nowrap cursor-pointer transition-colors bg-transparent border-none ${
                             isActive ? 'text-slate-900' : 'hover:text-slate-900'
                           }`}
                         >
@@ -1297,40 +1283,38 @@ export const GoodpicksOfferwallModal = ({ onClose, token }) => {
                   </div>
 
                   {/* Sort By Dropdown */}
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
                     <span
                       style={{
                         fontFamily: '"Poppins", sans-serif',
                         fontWeight: 500,
-                        fontSize: '13px',
                         color: '#334155',
                       }}
+                      className="text-[12px] sm:text-[13px] whitespace-nowrap"
                     >
                       {t('goodpicks.sort')}
                     </span>
-                    <div className="relative">
+                    <div className="relative shrink-0">
                       <select
                         value={sortBy}
                         onChange={(e) => setSortBy(e.target.value)}
                         style={{
                           fontFamily: '"Poppins", sans-serif',
                           fontWeight: 600,
-                          fontSize: '13px',
                           background: '#FFFFFF',
                           borderRadius: '100px',
-                          padding: '6px 32px 6px 16px',
                           border: '1px solid rgba(203, 213, 225, 0.8)',
                           color: '#0F172A',
                           cursor: 'pointer',
                           appearance: 'none',
                         }}
-                        className="shadow-sm outline-none"
+                        className="shadow-sm outline-none text-[12px] sm:text-[13px] py-1.5 pl-3 pr-7 sm:py-1.5 sm:pl-4 sm:pr-8 whitespace-nowrap"
                       >
                         <option value="highest">{t('goodpicks.highestReward')}</option>
                         <option value="lowest">{t('goodpicks.lowestReward')}</option>
                         <option value="newest">{t('goodpicks.newest')}</option>
                       </select>
-                      <FiChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-slate-700" />
+                      <FiChevronDown className="absolute right-2 sm:right-3 top-1/2 -translate-y-1/2 pointer-events-none text-slate-700 text-xs sm:text-sm" />
                     </div>
                   </div>
                 </div>
@@ -1347,7 +1331,7 @@ export const GoodpicksOfferwallModal = ({ onClose, token }) => {
                     <p className="text-slate-500 text-xs mt-1">{t('goodpicks.tryAnotherPlatform')}</p>
                   </div>
                 ) : (
-                  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 pb-4 justify-items-start">
+                  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-4 pb-4 w-full">
                     {sortedOffers.map((offer) => {
                       const rewardStr = (offer.rewardAmount || 0).toLocaleString('de-DE');
                       const cardTitle = (isDe && offer.titleDe) ? offer.titleDe : offer.title;
@@ -1358,7 +1342,6 @@ export const GoodpicksOfferwallModal = ({ onClose, token }) => {
                           key={offer._id}
                           style={{
                             width: '100%',
-                            maxWidth: '416px',
                             minHeight: '191px',
                             background: '#FFFFFF',
                             borderRadius: '16px',

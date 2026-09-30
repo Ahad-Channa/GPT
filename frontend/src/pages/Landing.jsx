@@ -365,7 +365,7 @@ const Landing = () => {
                 )}
               </h1>
               <p
-                className="m-0"
+                className="m-0 whitespace-pre-line"
                 style={!isMobile ? {
                   width: '100%',
                   maxWidth: 608,

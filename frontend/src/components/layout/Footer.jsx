@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 
 const Footer = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [isMobile, setIsMobile] = useState(
     typeof window !== 'undefined' ? window.innerWidth < 1024 : false
   );
@@ -15,21 +17,21 @@ const Footer = () => {
   }, []);
 
   const quickLinks = [
-    { name: 'Home', path: '/dashboard' },
-    { name: 'Earn', path: '/dashboard' },
-    { name: 'Leaderboard', path: '/dashboard/leaderboard' },
-    { name: 'Affiliates', path: '/dashboard/affiliates' },
-    { name: 'Withdraw', path: '/dashboard/wallet' },
-    { name: 'Daily Bonus', path: '/dashboard/daily-bonus' }
+    { nameKey: 'nav.home', defaultName: 'Home', path: '/dashboard' },
+    { nameKey: 'nav.earn', defaultName: 'Earn', path: '/dashboard' },
+    { nameKey: 'nav.leaderboard', defaultName: 'Leaderboard', path: '/dashboard/leaderboard' },
+    { nameKey: 'nav.affiliates', defaultName: 'Affiliates', path: '/dashboard/affiliates' },
+    { nameKey: 'nav.withdraw', defaultName: 'Withdraw', path: '/dashboard/wallet' },
+    { nameKey: 'nav.dailyBonus', defaultName: 'Daily Bonus', path: '/dashboard/daily-bonus' }
   ];
 
   const resourceLinks = [
-    { name: 'Features', href: '#features' },
-    { name: 'FAQ', href: '#faq' },
-    { name: 'Blog', href: '#' },
-    { name: 'Terms of Use', href: '#' },
-    { name: 'Privacy Policy', href: '#' },
-    { name: 'Support', href: '#' }
+    { nameKey: 'nav.features', defaultName: 'Features', href: '#features' },
+    { nameKey: 'nav.faq', defaultName: 'FAQ', href: '#faq' },
+    { nameKey: 'footer.blog', defaultName: 'Blog', href: '#' },
+    { nameKey: 'footer.termsOfUse', defaultName: 'Terms of Use', href: '#' },
+    { nameKey: 'footer.privacyPolicy', defaultName: 'Privacy Policy', href: '#' },
+    { nameKey: 'footer.support', defaultName: 'Support', href: '#' }
   ];
 
   return (
@@ -37,21 +39,20 @@ const Footer = () => {
       <div
         className="flex flex-col lg:flex-row justify-between w-full max-w-[440px] lg:max-w-[1328px] mx-auto items-center lg:items-start"
         style={{
-          minHeight: isMobile ? 571 : 715,
           gap: 40
         }}
       >
         {/* Left Panel */}
         <div
-          className="relative flex flex-col items-center shrink-0 overflow-hidden w-full max-w-[427px] h-[571px] lg:h-[715px] mx-auto lg:mx-0"
+          className="relative flex flex-col items-center shrink-0 overflow-hidden w-full max-w-[427px] mx-auto lg:mx-0"
           style={{
             width: 427,
             maxWidth: '100%',
-            height: isMobile ? 571 : 715,
+            height: isMobile ? 480 : 380,
             justifyContent: 'space-between',
             opacity: 1,
             borderRadius: 24,
-            paddingTop: 50,
+            paddingTop: 40,
             paddingRight: 32,
             paddingBottom: 24,
             paddingLeft: 32,
@@ -67,11 +68,9 @@ const Footer = () => {
 
           {/* Logo area */}
           <div
-            className="flex flex-col items-center z-10"
+            className="flex flex-col items-center z-10 w-full"
             style={{
-              width: 363,
-              height: 140.586,
-              gap: 22
+              gap: 20
             }}
           >
             <img
@@ -83,37 +82,40 @@ const Footer = () => {
                 objectFit: 'contain'
               }}
             />
-            <p className="m-0 text-[18px] font-bold text-gray-900" style={{ fontFamily: '"Bricolage Grotesque", sans-serif', lineHeight: '1' }}>
-              Complete tasks. Earn rewards.
+            <p
+              className="m-0 text-[17px] sm:text-[18px] font-bold text-gray-900 text-center"
+              style={{ fontFamily: '"Bricolage Grotesque", sans-serif', lineHeight: '1.2' }}
+            >
+              {t('footer.tagline', 'Complete tasks. Earn rewards.')}
             </p>
 
             <div
-              className="flex items-center"
+              className="flex items-center justify-between"
               style={{
-                width: 263,
+                width: 'auto',
+                minWidth: 260,
+                maxWidth: '100%',
                 height: 44,
-                gap: 27,
+                gap: 16,
                 borderRadius: 50,
                 paddingTop: 8,
                 paddingRight: 11,
                 paddingBottom: 8,
-                paddingLeft: 11,
+                paddingLeft: 16,
                 background: 'rgba(255, 255, 255, 1)'
               }}
             >
               <span
                 className="flex items-center text-gray-800 m-0 whitespace-nowrap"
                 style={{
-                  width: 156,
-                  height: 10,
                   fontFamily: '"Poppins", sans-serif',
                   fontWeight: 500,
                   fontSize: 14,
-                  lineHeight: '28px',
+                  lineHeight: '1',
                   letterSpacing: 0
                 }}
               >
-                Change to dark mode
+                {t('footer.changeToDarkMode', 'Change to dark mode')}
               </span>
               <div
                 className={`rounded-full flex items-center shrink-0 cursor-pointer transition-colors duration-300 ${isDarkMode ? 'justify-end' : 'justify-start'}`}
@@ -172,42 +174,41 @@ const Footer = () => {
         </div>
 
         {/* Right Area */}
-        <div className="flex flex-col flex-1 min-w-0 h-full pt-4 w-full max-w-[440px] lg:max-w-[861px] mx-auto lg:mx-0">
+        <div className="flex flex-col justify-between flex-1 min-w-0 pt-2 lg:pt-4 w-full max-w-[440px] lg:max-w-[861px] mx-auto lg:mx-0">
 
           {/* Top Section */}
           <div className="flex flex-col lg:flex-row justify-between items-center lg:items-start w-full gap-8 lg:gap-0">
             <div
               className="flex justify-start w-full"
               style={{
-                width: isMobile ? 424 : 289,
+                width: isMobile ? 424 : 'auto',
                 maxWidth: '100%',
                 height: 273,
                 paddingRight: 0,
                 paddingLeft: isMobile ? 24 : 0,
-                gap: isMobile ? 104 : 80,
-                transform: isMobile ? 'none' : 'translateY(-23.5px)'
+                gap: isMobile ? 64 : 64,
+                transform: isMobile ? 'none' : 'translateY(-10px)'
               }}
             >
-              <div className="flex flex-col" style={{ width: 108, height: 273, gap: 40 }}>
+              <div className="flex flex-col min-w-[135px]" style={{ height: 273, gap: 32 }}>
                 <h4
-                  className="m-0 text-left"
+                  className="m-0 text-left whitespace-nowrap"
                   style={{
-                    width: 108,
-                    height: 13,
                     fontFamily: '"Bricolage Grotesque", sans-serif',
                     fontWeight: 700,
                     fontSize: 20,
                     lineHeight: '32px',
                     letterSpacing: '-0.02em',
                     textAlign: 'left',
-                    color: '#0E0F0C'
+                    color: '#0E0F0C',
+                    whiteSpace: 'nowrap'
                   }}
                 >
-                  Quick Links
+                  {t('footer.quickLinks', 'Quick Links')}
                 </h4>
-                <ul className="flex flex-col list-none p-0 m-0" style={{ width: 91, height: 220, gap: 32 }}>
+                <ul className="flex flex-col list-none p-0 m-0" style={{ gap: 24 }}>
                   {quickLinks.map((link) => (
-                    <li key={link.name} className="flex items-center" style={{ height: 10 }}>
+                    <li key={link.nameKey} className="flex items-center">
                       <button
                         onClick={() => {
                           if (link.path.startsWith('/')) {
@@ -221,37 +222,36 @@ const Footer = () => {
                           fontSize: 14,
                           lineHeight: '20px',
                           letterSpacing: '0%',
-                          opacity: 0.56,
+                          opacity: 0.7,
                           color: '#0E0F0C',
                           whiteSpace: 'nowrap'
                         }}
                       >
-                        {link.name}
+                        {t(link.nameKey, link.defaultName)}
                       </button>
                     </li>
                   ))}
                 </ul>
               </div>
-              <div className="flex flex-col" style={{ width: 108, height: 273, gap: 40 }}>
+              <div className="flex flex-col min-w-[135px]" style={{ height: 273, gap: 32 }}>
                 <h4
-                  className="m-0 text-left"
+                  className="m-0 text-left whitespace-nowrap"
                   style={{
-                    width: 108,
-                    height: 13,
                     fontFamily: '"Bricolage Grotesque", sans-serif',
                     fontWeight: 700,
                     fontSize: 20,
                     lineHeight: '32px',
                     letterSpacing: '-0.02em',
                     textAlign: 'left',
-                    color: '#0E0F0C'
+                    color: '#0E0F0C',
+                    whiteSpace: 'nowrap'
                   }}
                 >
-                  Resources
+                  {t('footer.resources', 'Resources')}
                 </h4>
-                <ul className="flex flex-col list-none p-0 m-0" style={{ width: 91, height: 220, gap: 32 }}>
+                <ul className="flex flex-col list-none p-0 m-0" style={{ gap: 24 }}>
                   {resourceLinks.map((link) => (
-                    <li key={link.name} className="flex items-center" style={{ height: 10 }}>
+                    <li key={link.nameKey} className="flex items-center">
                       <a
                         href={link.href}
                         className="no-underline hover:opacity-100 transition-opacity text-left"
@@ -261,12 +261,12 @@ const Footer = () => {
                           fontSize: 14,
                           lineHeight: '20px',
                           letterSpacing: '0%',
-                          opacity: 0.56,
+                          opacity: 0.7,
                           color: '#0E0F0C',
                           whiteSpace: 'nowrap'
                         }}
                       >
-                        {link.name}
+                        {t(link.nameKey, link.defaultName)}
                       </a>
                     </li>
                   ))}
@@ -281,7 +281,7 @@ const Footer = () => {
                 width: isMobile ? 424 : 420,
                 maxWidth: '100%',
                 height: isMobile ? 199.28 : 'auto',
-                transform: 'translateY(-14px)',
+                transform: isMobile ? 'none' : 'translateY(-14px)',
               }}
             >
               <img
@@ -297,78 +297,27 @@ const Footer = () => {
             </div>
           </div>
 
-          {/* Middle Section (Trustpilot) */}
-          <div className="flex items-center justify-between w-full mt-auto mb-6 pt-6">
-            <div className="flex flex-col gap-2 items-start">
-              <img
-                src="/coins/trust plot.png"
-                alt="Trustpilot rating"
-                style={{
-                  width: 169,
-                  height: 81,
-                  objectFit: 'contain'
-                }}
-              />
-              <span className="text-[13px] text-gray-900 font-bold" style={{ fontFamily: '"Poppins", sans-serif' }}>
-                Trust score 5 | 145 reviews
-              </span>
-            </div>
-            <button
-              className="bg-[#2a3044] hover:bg-[#1a1e2e] transition-colors text-white font-medium text-[15px] px-8 py-4 rounded-[24px] cursor-pointer"
-              style={{ fontFamily: '"Poppins", sans-serif' }}
-            >
-              Leave a review
-            </button>
-          </div>
-
-          {/* Bottom Section (Testimonials) */}
-          <div
-            className="flex items-center w-full overflow-x-auto hide-scrollbar lg:overflow-visible pb-2"
-            style={{ gap: isMobile ? 16 : 14 }}
-          >
-            {[
-              '/coins/mar.png',
-              '/coins/ash.png',
-              '/coins/john.png'
-            ].map((src, i) => (
-              <img
-                key={i}
-                src={src}
-                alt={`Feedback ${i + 1}`}
-                className="shrink-0 lg:shrink lg:flex-1 min-w-0"
-                style={isMobile ? {
-                  width: 295,
-                  height: 215,
-                  borderRadius: 20,
-                  objectFit: 'contain'
-                } : {
-                  width: 'calc((100% - 28px) / 3)',
-                  maxWidth: 278,
-                  height: 'auto',
-                  borderRadius: 20,
-                  objectFit: 'contain'
-                }}
-              />
-            ))}
-          </div>
-
-          {/* Copyright */}
-          <div className="mt-6 flex w-full justify-center lg:justify-start">
+          {/* Bottom Action & Copyright Bar */}
+          <div className="flex flex-col-reverse sm:flex-row items-center justify-between w-full mt-6 pt-4 gap-4">
             <p
-              className="m-0 text-center lg:text-left"
+              className="m-0 text-center sm:text-left text-gray-800"
               style={{
-                width: 853,
-                maxWidth: '100%',
                 fontFamily: '"Poppins", sans-serif',
                 fontWeight: 400,
                 fontSize: 14,
                 lineHeight: '20px',
-                color: 'rgba(0, 0, 0, 1)',
-                transform: 'translateY(1px)'
               }}
             >
-              © 2026 TaskMint. All rights reserved.
+              {t('footer.copyright', { year: new Date().getFullYear(), defaultValue: '© 2026 TaskMint. All rights reserved.' })}
             </p>
+
+            <button
+              onClick={() => window.open('https://trustpilot.com', '_blank')}
+              className="bg-[#2a3044] hover:bg-[#1a1e2e] transition-colors text-white font-medium text-[15px] px-8 py-3.5 rounded-[24px] cursor-pointer shrink-0 shadow-sm"
+              style={{ fontFamily: '"Poppins", sans-serif' }}
+            >
+              {t('footer.leaveReview', 'Leave a review')}
+            </button>
           </div>
 
         </div>

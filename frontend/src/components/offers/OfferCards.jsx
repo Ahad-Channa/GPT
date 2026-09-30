@@ -405,28 +405,53 @@ export const FeaturedOfferModal = ({ offer, token, onClose, onSubmitted }) => {
           }}
           className="shrink-0"
         >
-          {/* Top Close Button */}
-          <button
-            onClick={onClose}
-            style={{
-              width: '24px',
-              height: '24px',
-              background: '#000000',
-              borderRadius: '50%',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              border: 'none',
-              cursor: 'pointer',
-              position: 'absolute',
-              top: '14px',
-              right: '14px',
-              zIndex: 20,
-            }}
-            className="text-white hover:opacity-80 transition-opacity"
-          >
-            <FiX size={13} strokeWidth={2.5} />
-          </button>
+          {/* Top Actions: Support Button & Close Button */}
+          <div className="absolute top-[14px] right-[14px] z-20 flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => {
+                window.dispatchEvent(new CustomEvent('chatToggle', { detail: true }));
+              }}
+              style={{
+                width: '24px',
+                height: '24px',
+                background: 'transparent',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                border: 'none',
+                cursor: 'pointer',
+                padding: 0,
+              }}
+              className="hover:opacity-80 transition-opacity"
+              title="Support"
+            >
+              <img
+                src="/coins/image copy 13.png"
+                alt="Support"
+                className="w-[24px] h-[24px] object-contain"
+              />
+            </button>
+
+            <button
+              type="button"
+              onClick={onClose}
+              style={{
+                width: '24px',
+                height: '24px',
+                background: '#000000',
+                borderRadius: '50%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                border: 'none',
+                cursor: 'pointer',
+              }}
+              className="text-white hover:opacity-80 transition-opacity"
+            >
+              <FiX size={13} strokeWidth={2.5} />
+            </button>
+          </div>
 
           {/* Top Section: Icon + Title + Description */}
           <div className="flex items-center gap-4 pr-8">
