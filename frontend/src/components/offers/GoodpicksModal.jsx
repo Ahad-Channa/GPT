@@ -239,6 +239,7 @@ export const GoodpicksDetailModal = ({ offer, onClose, token }) => {
     : offer.requirements;
 
   const [loading, setLoading] = useState(false);
+  const [showSupportModal, setShowSupportModal] = useState(false);
 
   if (!offer) return null;
 
@@ -264,7 +265,7 @@ export const GoodpicksDetailModal = ({ offer, onClose, token }) => {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 z-[100000] flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-sm"
+      className="fixed inset-0 z-[100000] flex items-center justify-center p-1.5 sm:p-4 bg-black/60 backdrop-blur-sm"
       onClick={onClose}
     >
       <motion.div
@@ -278,12 +279,11 @@ export const GoodpicksDetailModal = ({ offer, onClose, token }) => {
           maxHeight: '94vh',
           background: '#BEE3F2',
           borderRadius: '24px',
-          padding: '10px 10px 18px 10px',
           boxSizing: 'border-box',
           color: '#000000',
           position: 'relative',
         }}
-        className="shadow-2xl flex flex-col gap-3 overflow-y-auto hide-scrollbar"
+        className="shadow-2xl flex flex-col gap-2.5 sm:gap-3 p-1.5 sm:p-3.5 pb-2 sm:pb-4.5 overflow-y-auto hide-scrollbar"
       >
         {/* Top White Card: Icon + Title/Description + Reward + Platform */}
         <div
@@ -291,16 +291,11 @@ export const GoodpicksDetailModal = ({ offer, onClose, token }) => {
             width: '100%',
             background: '#FFFFFF',
             borderRadius: '16px',
-            padding: '12px 14px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            gap: '14px',
             boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
             boxSizing: 'border-box',
             position: 'relative',
           }}
-          className="shrink-0"
+          className="p-3 sm:p-3.5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2.5 sm:gap-3.5 shrink-0"
         >
           {/* Top Actions: Support Button & Close Button */}
           <div className="absolute top-[10px] right-[10px] z-20 flex items-center gap-2">
@@ -343,69 +338,70 @@ export const GoodpicksDetailModal = ({ offer, onClose, token }) => {
                 alignItems: 'center',
                 justifyContent: 'center',
                 cursor: 'pointer',
+                padding: 0,
+                flexShrink: 0,
               }}
               className="hover:opacity-80 transition-opacity"
+              aria-label="Close"
             >
-              <FiX size={11} strokeWidth={2.5} />
+              <FiX size={13} strokeWidth={2.5} />
             </button>
           </div>
 
-          {/* 84x84 Image layout */}
-          <div
-            style={{
-              width: '84px',
-              height: '84px',
-              borderRadius: '12px',
-              overflow: 'hidden',
-              flexShrink: 0,
-              background: '#F1F5F9',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              opacity: 1,
-            }}
-          >
-            {renderOfferCover(offer)}
-          </div>
-
-          {/* Title & Short Description */}
-          <div className="flex-1 min-w-0">
-            <h3
+          {/* Top part on mobile / Left part on desktop: Image + Title & Description */}
+          <div className="flex items-start gap-[16px] sm:gap-3.5 flex-1 min-w-0 pr-14 sm:pr-0">
+            {/* 58x58 Image on mobile (border-radius: 7px), 84x84 on desktop */}
+            <div
               style={{
-                width: '100%',
-                maxWidth: '300px',
-                fontFamily: '"Albra", "Bricolage Grotesque", Georgia, serif',
-                fontWeight: 500,
-                fontSize: '16px',
-                lineHeight: '27px',
-                letterSpacing: '0%',
-                color: '#0F172A',
-                margin: 0,
+                transform: 'rotate(0deg)',
                 opacity: 1,
               }}
+              className="w-[58px] h-[58px] sm:w-[84px] sm:h-[84px] rounded-[7px] sm:rounded-[12px] overflow-hidden flex-shrink-0 bg-[#F1F5F9] flex items-center justify-center"
             >
-              {title}
-            </h3>
-            <p
+              {renderOfferCover(offer)}
+            </div>
+
+            {/* Title & Short Description as one unified layout (226px x 51px) */}
+            <div
               style={{
-                fontFamily: '"Poppins", sans-serif',
-                fontWeight: 400,
-                fontSize: '11px',
-                color: '#000000',
-                opacity: 0.7,
-                marginTop: '4px',
-                marginBottom: 0,
-                lineHeight: '16px',
-                letterSpacing: '0%',
+                transform: 'rotate(0deg)',
+                opacity: 1,
               }}
-              className="line-clamp-2"
+              className="w-full max-w-[226px] sm:max-w-none min-h-[51px] sm:min-h-0 flex-1 min-w-0 flex flex-col justify-start"
             >
-              {description}
-            </p>
+              <h3
+                style={{
+                  fontFamily: '"Bricolage Grotesque", "Poppins", Georgia, serif',
+                  letterSpacing: '0%',
+                  color: '#0F172A',
+                  margin: 0,
+                  transform: 'rotate(0deg)',
+                  opacity: 1,
+                }}
+                className="w-full max-w-[226px] sm:max-w-[300px] text-[14px] sm:text-[16px] leading-[18px] sm:leading-[27px] font-bold sm:font-medium truncate sm:whitespace-normal"
+              >
+                {title}
+              </h3>
+              <p
+                style={{
+                  fontFamily: '"Poppins", sans-serif',
+                  fontWeight: 400,
+                  color: '#000000',
+                  letterSpacing: '0%',
+                  transform: 'rotate(0deg)',
+                  opacity: 0.7,
+                  margin: 0,
+                  height: 'auto',
+                }}
+                className="w-full max-w-[226px] sm:max-w-none text-[11px] leading-[15px] sm:leading-[16px] mt-[3px] line-clamp-2 break-words"
+              >
+                {description}
+              </p>
+            </div>
           </div>
 
-          {/* Right: Coin Reward + Platform Icon */}
-          <div className="flex items-center gap-3 shrink-0">
+          {/* Bottom part on mobile / Right part on desktop: Coin Reward + Platform Icon */}
+          <div className="flex items-center justify-between sm:justify-end gap-3 shrink-0 w-full sm:w-auto pt-1 sm:pt-0">
             {/* Coins */}
             <div className="flex items-center gap-1.5">
               <img
@@ -429,45 +425,43 @@ export const GoodpicksDetailModal = ({ offer, onClose, token }) => {
             </div>
 
             {/* Platform Icon Badges */}
-            <div className="flex items-center" style={{ gap: '6px' }}>
+            <div className="flex items-center gap-1.5">
               {offer.platforms?.desktop && (
                 <div
                   style={{
-                    width: '22px',
-                    height: '22px',
-                    borderRadius: '50%',
                     background: '#000000',
                     color: '#FFFFFF',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
                     opacity: 1,
+                    transform: 'rotate(0deg)',
                   }}
+                  className="w-[35px] h-[35px] sm:w-[22px] sm:h-[22px] rounded-[10px] sm:rounded-full flex-shrink-0"
                   title="Desktop / PC"
                 >
                   <img
                     src="/coins/desko.png"
                     alt="Desktop"
-                    style={{ width: '11px', height: '11px', objectFit: 'contain', filter: 'brightness(0) invert(1)' }}
+                    className="w-[18px] h-[18px] sm:w-[11px] sm:h-[11px] object-contain brightness-0 invert"
                   />
                 </div>
               )}
               {offer.platforms?.android && (
                 <div
                   style={{
-                    width: '22px',
-                    height: '22px',
-                    borderRadius: '50%',
                     background: '#000000',
                     color: '#FFFFFF',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
                     opacity: 1,
+                    transform: 'rotate(0deg)',
                   }}
+                  className="w-[35px] h-[35px] sm:w-[22px] sm:h-[22px] rounded-[10px] sm:rounded-full flex-shrink-0"
                   title="Android"
                 >
-                  <svg style={{ width: '11px', height: '11px', flexShrink: 0 }} className="text-white" viewBox="0 0 24 24" fill="currentColor">
+                  <svg className="w-[18px] h-[18px] sm:w-[11px] sm:h-[11px] text-white flex-shrink-0" viewBox="0 0 24 24" fill="currentColor">
                     <path d="M17.523 15.3414c-.5511 0-.9993-.4486-.9993-.9997s.4482-.9993.9993-.9993c.551 0 .9993.4482.9993.9993.0001.5511-.4482.9997-.9993.9997m-11.046 0c-.5511 0-.9993-.4486-.9993-.9997s.4482-.9993.9993-.9993c.5511 0 .9993.4482.9993.9993 0 .5511-.4482.9997-.9993.9997m11.4045-6.02l1.9973-3.4592a.416.416 0 00-.1521-.5676.416.416 0 00-.5676.1521l-2.0223 3.503C15.5902 8.411 13.8533 8.081 12 8.081s-3.5902.33-5.1367.8697L4.841 5.4477a.4161.4161 0 00-.5677-.1521.4157.4157 0 00-.1521.5676l1.9973 3.4592C2.6889 11.1867.3432 14.6589 0 18.761h24c-.3432-4.1021-2.6889-7.5743-6.1185-9.4396" />
                   </svg>
                 </div>
@@ -475,19 +469,18 @@ export const GoodpicksDetailModal = ({ offer, onClose, token }) => {
               {offer.platforms?.ios && (
                 <div
                   style={{
-                    width: '22px',
-                    height: '22px',
-                    borderRadius: '50%',
                     background: '#000000',
                     color: '#FFFFFF',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
                     opacity: 1,
+                    transform: 'rotate(0deg)',
                   }}
+                  className="w-[35px] h-[35px] sm:w-[22px] sm:h-[22px] rounded-[10px] sm:rounded-full flex-shrink-0"
                   title="iOS"
                 >
-                  <svg style={{ width: '11px', height: '11px', flexShrink: 0 }} className="text-white" viewBox="0 0 24 24" fill="currentColor">
+                  <svg className="w-[18px] h-[18px] sm:w-[11px] sm:h-[11px] text-white flex-shrink-0" viewBox="0 0 24 24" fill="currentColor">
                     <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 6.37c.62-.75 1.04-1.8 0.92-2.85-.9.04-1.99.6-2.63 1.35-.57.65-1.07 1.72-.94 2.74 1.01.08 2.03-.49 2.65-1.24z" />
                   </svg>
                 </div>
@@ -537,8 +530,8 @@ export const GoodpicksDetailModal = ({ offer, onClose, token }) => {
               {Array.isArray(requirementsList) && requirementsList.length > 0
                 ? requirementsList.join(' ')
                 : typeof requirementsList === 'string'
-                ? requirementsList
-                : t('goodpicks.defaultRequirement')}
+                  ? requirementsList
+                  : t('goodpicks.defaultRequirement')}
             </p>
           ) : requirementsList && requirementsList.length > 0 ? (
             requirementsList.map((req, i) => (
@@ -644,49 +637,63 @@ export const GoodpicksDetailModal = ({ offer, onClose, token }) => {
         {/* General Offer Rules Section */}
         <div
           style={{
-            width: '100%',
             display: 'flex',
             flexDirection: 'column',
-            gap: '8px',
-            padding: '4px 2px 0',
+            padding: '4px 0 0',
           }}
-          className="shrink-0"
+          className="w-full max-w-[381px] sm:max-w-none gap-2 sm:gap-2.5 shrink-0"
         >
           <h4
             style={{
-              fontFamily: '"Bricolage Grotesque", Georgia, serif',
+              fontFamily: '"Bricolage Grotesque", "Poppins", sans-serif',
               fontWeight: 700,
-              fontSize: '16px',
-              lineHeight: '27px',
               letterSpacing: '0%',
               color: '#000000',
               margin: 0,
+              opacity: 1,
+              transform: 'rotate(0deg)',
             }}
+            className="w-full max-w-[381px] sm:max-w-none min-h-[12px] text-[15px] sm:text-[17px] leading-[20px] sm:leading-[27px]"
           >
             {t('goodpicks.generalRules')}
           </h4>
-          <div className="flex flex-col gap-1.5">
+          <div
+            className="flex flex-col w-full max-w-[381px] sm:max-w-none gap-[5px] sm:gap-1.5"
+            style={{
+              transform: 'rotate(0deg)',
+              opacity: 1,
+            }}
+          >
             {generalRules.map((rule, idx) => (
-              <div key={idx} className="flex items-start gap-2">
+              <div
+                key={idx}
+                className="w-full max-w-[381px] sm:max-w-none min-h-[8px] flex items-start gap-[5px] sm:gap-2"
+                style={{
+                  transform: 'rotate(0deg)',
+                  opacity: 1,
+                }}
+              >
                 <div
                   style={{
-                    width: '6px',
-                    height: '6px',
+                    width: '7px',
+                    height: '7px',
                     borderRadius: '50%',
                     background: 'rgba(63, 76, 99, 1)',
                     flexShrink: 0,
-                    marginTop: '7px',
+                    opacity: 1,
+                    transform: 'rotate(0deg)',
                   }}
+                  className="mt-[4px] sm:mt-[6px]"
                 />
                 <span
                   style={{
                     fontFamily: '"Poppins", sans-serif',
                     fontWeight: 500,
-                    fontSize: '12px',
-                    lineHeight: '21px',
-                    letterSpacing: '0.01em',
+                    letterSpacing: '0%',
                     color: '#000000',
+                    opacity: 1,
                   }}
+                  className="text-[11px] sm:text-[12px] leading-[15px] sm:leading-[21px]"
                 >
                   {rule}
                 </span>
@@ -695,25 +702,26 @@ export const GoodpicksDetailModal = ({ offer, onClose, token }) => {
           </div>
         </div>
 
-        {/* Smartphone QR Code Section (Whole layout: 336px x 76px, gap: 30px) */}
+        {/* Smartphone QR Code Section (Whole layout: width: 100%, minHeight: 116px, padding: 16px 20px, borderRadius: 20px, gap: 30px) */}
         <div
           style={{
-            width: '336px',
+            width: '100%',
             maxWidth: '100%',
-            height: '76px',
+            minHeight: '116px',
+            background: '#FFFFFF',
+            borderRadius: '20px',
+            padding: '16px 20px',
             transform: 'rotate(0deg)',
             opacity: 1,
-            gap: '30px',
+            gap: '24px',
             display: 'flex',
             alignItems: 'center',
-            margin: '0 auto',
-            paddingTop: '6px',
-            paddingBottom: '4px',
             boxSizing: 'border-box',
+            boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
           }}
-          className="shrink-0"
+          className="w-full shrink-0"
         >
-          {/* QR Box: 76px x 76px, angle: 0deg, opacity: 1, borderRadius: 10px */}
+          {/* QR Box: width: 76px, height: 76px, angle: 0deg, opacity: 1, borderRadius: 10px */}
           <div
             style={{
               width: '76px',
@@ -726,15 +734,17 @@ export const GoodpicksDetailModal = ({ offer, onClose, token }) => {
               justifyContent: 'center',
               flexShrink: 0,
               boxSizing: 'border-box',
+              overflow: 'hidden',
             }}
           >
             <BsQrCode size={76} className="text-[#000000]" />
           </div>
 
-          {/* Text Layout: 230px x 38px, angle: 0deg, opacity: 1 */}
+          {/* Text Layout: width: 230px, height: 38px, angle: 0deg, opacity: 1 */}
           <div
             style={{
               width: '230px',
+              maxWidth: '100%',
               minHeight: '38px',
               transform: 'rotate(0deg)',
               opacity: 1,
@@ -748,8 +758,8 @@ export const GoodpicksDetailModal = ({ offer, onClose, token }) => {
               style={{
                 fontFamily: '"IBM Plex Sans", "Poppins", sans-serif',
                 fontWeight: 500,
-                fontSize: '16px',
-                lineHeight: '20px',
+                fontSize: '13px',
+                lineHeight: '18px',
                 letterSpacing: '0%',
                 color: '#000000',
                 margin: 0,
@@ -761,6 +771,13 @@ export const GoodpicksDetailModal = ({ offer, onClose, token }) => {
             </p>
           </div>
         </div>
+
+        {/* Support Popup Modal */}
+        {showSupportModal && (
+          <GoodpicksSupportModal
+            onClose={() => setShowSupportModal(false)}
+          />
+        )}
       </motion.div>
     </motion.div>
   );
@@ -1251,9 +1268,9 @@ export const GoodpicksOfferwallModal = ({ onClose, token }) => {
               /* ─── OFFERS BROWSE VIEW ─── */
               <>
                 {/* Filter Tabs + Sort Bar */}
-                <div className="flex flex-nowrap items-center justify-between gap-2 sm:gap-3 shrink-0 w-full overflow-x-auto hide-scrollbar pb-0.5">
+                <div className="flex flex-nowrap items-center justify-between gap-1.5 sm:gap-3 shrink-0 w-full overflow-x-auto hide-scrollbar pb-0.5 pr-1.5 sm:pr-0">
                   {/* Platform Filter Tabs */}
-                  <div className="flex items-center gap-3 sm:gap-6 shrink-0">
+                  <div className="flex items-center gap-2 sm:gap-6 shrink-0">
                     {filterTabs.map((tab) => {
                       const isActive = filter === tab.id;
                       return (
@@ -1266,9 +1283,8 @@ export const GoodpicksOfferwallModal = ({ onClose, token }) => {
                             fontWeight: isActive ? 700 : 500,
                             color: isActive ? '#0F172A' : '#475569',
                           }}
-                          className={`relative py-1 text-[13px] sm:text-[14px] whitespace-nowrap cursor-pointer transition-colors bg-transparent border-none ${
-                            isActive ? 'text-slate-900' : 'hover:text-slate-900'
-                          }`}
+                          className={`relative py-1 text-[11.5px] sm:text-[14px] whitespace-nowrap cursor-pointer transition-colors bg-transparent border-none ${isActive ? 'text-slate-900' : 'hover:text-slate-900'
+                            }`}
                         >
                           {tab.label}
                           {isActive && (
@@ -1283,14 +1299,14 @@ export const GoodpicksOfferwallModal = ({ onClose, token }) => {
                   </div>
 
                   {/* Sort By Dropdown */}
-                  <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+                  <div className="flex items-center gap-1 sm:gap-2 shrink-0 mr-1 sm:mr-0">
                     <span
                       style={{
                         fontFamily: '"Poppins", sans-serif',
                         fontWeight: 500,
                         color: '#334155',
                       }}
-                      className="text-[12px] sm:text-[13px] whitespace-nowrap"
+                      className="text-[11px] sm:text-[13px] whitespace-nowrap"
                     >
                       {t('goodpicks.sort')}
                     </span>
@@ -1308,13 +1324,13 @@ export const GoodpicksOfferwallModal = ({ onClose, token }) => {
                           cursor: 'pointer',
                           appearance: 'none',
                         }}
-                        className="shadow-sm outline-none text-[12px] sm:text-[13px] py-1.5 pl-3 pr-7 sm:py-1.5 sm:pl-4 sm:pr-8 whitespace-nowrap"
+                        className="shadow-sm outline-none text-[10px] sm:text-[13px] py-1 pl-2.5 pr-6 sm:py-1.5 sm:pl-4 sm:pr-8 whitespace-nowrap"
                       >
                         <option value="highest">{t('goodpicks.highestReward')}</option>
                         <option value="lowest">{t('goodpicks.lowestReward')}</option>
                         <option value="newest">{t('goodpicks.newest')}</option>
                       </select>
-                      <FiChevronDown className="absolute right-2 sm:right-3 top-1/2 -translate-y-1/2 pointer-events-none text-slate-700 text-xs sm:text-sm" />
+                      <FiChevronDown className="absolute right-2 sm:right-3 top-1/2 -translate-y-1/2 pointer-events-none text-slate-700 text-[10px] sm:text-xs" />
                     </div>
                   </div>
                 </div>

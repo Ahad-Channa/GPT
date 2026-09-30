@@ -5,10 +5,12 @@ import { FiMonitor, FiInbox, FiStar, FiZap, FiExternalLink, FiCheckCircle, FiSen
 import { FaApple, FaAndroid, FaDesktop } from 'react-icons/fa';
 import { BsQrCode } from 'react-icons/bs';
 
-const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 import CoinDisplay from '../CoinDisplay';
 import CoinIcon from '../CoinIcon';
 import { ProofUploadView } from './ProofUploadView';
+import { GoodpicksSupportModal } from './GoodpicksModal';
+
+const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 const item = { hidden: { opacity: 0, y: 16 }, show: { opacity: 1, y: 0, transition: { duration: 0.4 } } };
 
 export const buildProviderUrl = (provider, userId) => {
@@ -320,6 +322,7 @@ export const FeaturedOfferModal = ({ offer, token, onClose, onSubmitted }) => {
     : offer.requirements;
 
   const [loading, setLoading] = useState(false);
+  const [showSupportModal, setShowSupportModal] = useState(false);
   const isExpired = offer.expirationDate && new Date(offer.expirationDate) < new Date();
   const rewardVal = offer.rewardAmount ?? offer.points ?? offer.reward ?? 0;
   const coverImgSrc = offer.coverImage || (isIconUrl(offer.icon) ? offer.icon : null);
@@ -410,7 +413,7 @@ export const FeaturedOfferModal = ({ offer, token, onClose, onSubmitted }) => {
             <button
               type="button"
               onClick={() => {
-                window.dispatchEvent(new CustomEvent('chatToggle', { detail: true }));
+                setShowSupportModal(true);
               }}
               style={{
                 width: '24px',
@@ -877,68 +880,66 @@ export const FeaturedOfferModal = ({ offer, token, onClose, onSubmitted }) => {
           )}
         </button>
 
-        {/* General Offer Rules Box */}
+        {/* General Offer Rules Section */}
         <div
           style={{
-            width: '100%',
-            maxWidth: '610px',
-            minHeight: '208px',
-            background: 'rgba(248, 245, 239, 1)',
-            borderRadius: '16px',
-            gap: '10px',
-            paddingTop: '25px',
-            paddingRight: '10px',
-            paddingBottom: '25px',
-            paddingLeft: '15px',
-            opacity: 1,
-            transform: 'rotate(0deg)',
-            boxSizing: 'border-box',
             display: 'flex',
             flexDirection: 'column',
+            padding: '4px 0 0',
           }}
-          className="shrink-0"
+          className="w-full max-w-[381px] sm:max-w-none gap-2 sm:gap-2.5 shrink-0"
         >
           <h4
             style={{
-              width: '100%',
-              maxWidth: '585px',
-              fontFamily: '"Bricolage Grotesque", sans-serif',
+              fontFamily: '"Bricolage Grotesque", "Poppins", sans-serif',
               fontWeight: 700,
-              fontSize: '16px',
-              lineHeight: '27px',
               letterSpacing: '0%',
               color: '#000000',
+              margin: 0,
               opacity: 1,
               transform: 'rotate(0deg)',
-              margin: 0,
             }}
+            className="w-full max-w-[381px] sm:max-w-none min-h-[12px] text-[15px] sm:text-[17px] leading-[20px] sm:leading-[27px]"
           >
             {t('offers.generalRules')}
           </h4>
-          <div className="flex flex-col gap-0.5">
+          <div
+            className="flex flex-col w-full max-w-[381px] sm:max-w-none gap-[5px] sm:gap-1.5"
+            style={{
+              transform: 'rotate(0deg)',
+              opacity: 1,
+            }}
+          >
             {generalRules.map((rule, idx) => (
-              <div key={idx} className="flex items-start gap-[6px]">
+              <div
+                key={idx}
+                className="w-full max-w-[381px] sm:max-w-none min-h-[8px] flex items-start gap-[5px] sm:gap-2"
+                style={{
+                  transform: 'rotate(0deg)',
+                  opacity: 1,
+                }}
+              >
                 <div
                   style={{
-                    width: '5px',
-                    height: '5px',
+                    width: '7px',
+                    height: '7px',
                     borderRadius: '50%',
                     background: 'rgba(63, 76, 99, 1)',
+                    flexShrink: 0,
                     opacity: 1,
                     transform: 'rotate(0deg)',
-                    flexShrink: 0,
-                    marginTop: '8px',
                   }}
+                  className="mt-[4px] sm:mt-[6px]"
                 />
                 <span
                   style={{
                     fontFamily: '"Poppins", sans-serif',
                     fontWeight: 500,
-                    fontSize: '12px',
-                    lineHeight: '21px',
-                    letterSpacing: '0.01em',
+                    letterSpacing: '0%',
                     color: '#000000',
+                    opacity: 1,
                   }}
+                  className="text-[11px] sm:text-[12px] leading-[15px] sm:leading-[21px]"
                 >
                   {rule}
                 </span>
@@ -1013,6 +1014,13 @@ export const FeaturedOfferModal = ({ offer, token, onClose, onSubmitted }) => {
             </p>
           </div>
         </div>
+
+        {/* Support Popup Modal */}
+        {showSupportModal && (
+          <GoodpicksSupportModal
+            onClose={() => setShowSupportModal(false)}
+          />
+        )}
       </motion.div>
     </motion.div>
   );

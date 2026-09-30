@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { FiX, FiExternalLink, FiCheckCircle, FiClock, FiLoader, FiXCircle, FiZap } from 'react-icons/fi';
 import { FaApple, FaAndroid, FaDesktop } from 'react-icons/fa';
 import CoinDisplay from '../CoinDisplay';
+import { GoodpicksSupportModal } from './GoodpicksModal';
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
@@ -206,6 +207,7 @@ export const DirectOfferCard = ({ offer, onClick }) => {
 // ─── Modal shown when user clicks a card ─────────────────────────────────────
 export const DirectOfferModal = ({ offer, token, onClose, onClicked }) => {
   const [loading, setLoading] = useState(false);
+  const [showSupportModal, setShowSupportModal] = useState(false);
   const isExpired = offer.expirationDate && new Date(offer.expirationDate) < new Date();
   const rewardVal = offer.rewardAmount ?? offer.points ?? offer.reward ?? 0;
   const coverImgSrc = offer.coverImage || (isIconUrl(offer.icon) ? offer.icon : null);
@@ -289,7 +291,7 @@ export const DirectOfferModal = ({ offer, token, onClose, onClicked }) => {
             <button
               type="button"
               onClick={() => {
-                window.dispatchEvent(new CustomEvent('chatToggle', { detail: true }));
+                setShowSupportModal(true);
               }}
               style={{
                 width: '24px',
@@ -481,6 +483,13 @@ export const DirectOfferModal = ({ offer, token, onClose, onClicked }) => {
             <li>Rewards are only granted when the offer requirements are successfully verified.</li>
           </ul>
         </div>
+
+        {/* Support Popup Modal */}
+        {showSupportModal && (
+          <GoodpicksSupportModal
+            onClose={() => setShowSupportModal(false)}
+          />
+        )}
       </motion.div>
     </motion.div>
   );

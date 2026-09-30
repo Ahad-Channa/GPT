@@ -169,7 +169,7 @@
     "rule4": "Offers may be limited to new users/customers where specified. Existing users may not be eligible.",
     "rule5": "Follow the individual offer requirements and any stated completion deadline.",
     "rule6": "Rewards are only granted when the offer requirements are successfully verified.",
-    "scanQrCode": "Scan the QR code to start directly on your smartphone.",
+    "scanQrCode": "Scan the QR code to start\ndirectly on your smartphone.",
     "loading": "Loading Goodpicks offers...",
     "noOffers": "No offers available for this filter",
     "tryAnotherPlatform": "Try selecting another platform or check back soon!",
