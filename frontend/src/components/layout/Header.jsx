@@ -380,8 +380,8 @@ const Header = ({ onChatToggle, chatOpen, fullWidth }) => {
             onClick={() => navigate('/')}
             className="flex items-center cursor-pointer border-0 bg-transparent p-0 shrink"
             style={{
-              maxWidth: '148.0008544921875px',
-              height: '26.230356216430664px',
+              maxWidth: '160px',
+              height: '28.5px',
               opacity: 1,
               transform: 'rotate(0deg)',
             }}
@@ -391,8 +391,8 @@ const Header = ({ onChatToggle, chatOpen, fullWidth }) => {
               alt="TaskMint Logo"
               style={{
                 width: '100%',
-                maxWidth: '148.0008544921875px',
-                height: '26.230356216430664px',
+                maxWidth: '160px',
+                height: '28.5px',
                 objectFit: 'contain',
                 opacity: 1,
                 transform: 'rotate(0deg)',
@@ -406,55 +406,24 @@ const Header = ({ onChatToggle, chatOpen, fullWidth }) => {
             style={{
               maxWidth: '280px',
               height: '48px',
-              gap: '10px',
+              gap: '8px',
               opacity: 1,
               transform: 'rotate(0deg)',
             }}
           >
-            {/* Language Toggle */}
-            <LanguageToggle style={{ height: '32px', padding: '4px 10px', fontSize: '11px' }} />
-            {/* Group of 2 icons: Chat & Notifications */}
+            {/* Language Toggle (Mobile - clean flag & text, no bg/arrow) */}
+            <LanguageToggle />
+
+            {/* Group of 2 icons: Notifications (Bell) & Chat */}
             <div
               className="flex items-center"
               style={{
                 height: '29px',
-                gap: '12px',
+                gap: '8px',
                 opacity: 1,
                 transform: 'rotate(0deg)',
               }}
             >
-              {/* Live Chat (width: 28, height: 29) */}
-              <button
-                id="header-mobile-livechat-btn"
-                onClick={onChatToggle}
-                className="relative flex items-center justify-center transition-colors group cursor-pointer hover:opacity-75 shrink-0"
-                title={t('chat.liveChat', 'Live Chat')}
-                style={{
-                  width: '28px',
-                  height: '29px',
-                  border: 'none',
-                  background: 'transparent',
-                  padding: 0,
-                  opacity: 1,
-                  transform: 'rotate(0deg)',
-                }}
-              >
-                <img
-                  src="/coins/chatonew.png"
-                  alt={t('chat.liveChat', 'Live Chat')}
-                  style={{
-                    width: '25px',
-                    height: '25px',
-                    opacity: 1,
-                    transform: 'rotate(0deg)',
-                    objectFit: 'contain',
-                  }}
-                />
-                {hasUnreadChat && (
-                  <span className="absolute top-0 right-0 w-2 h-2 bg-[#49B265] rounded-full shadow-[0_0_8px_rgba(73,178,101,0.8)]" />
-                )}
-              </button>
-
               {/* Notifications (width: 28, height: 29) */}
               <button
                 id="header-mobile-notifications-btn"
@@ -483,6 +452,38 @@ const Header = ({ onChatToggle, chatOpen, fullWidth }) => {
                   }}
                 />
                 {unreadCount > 0 && (
+                  <span className="absolute top-0 right-0 w-2 h-2 bg-[#49B265] rounded-full shadow-[0_0_8px_rgba(73,178,101,0.8)]" />
+                )}
+              </button>
+
+              {/* Live Chat (width: 28, height: 29) */}
+              <button
+                id="header-mobile-livechat-btn"
+                onClick={onChatToggle}
+                className="relative flex items-center justify-center transition-colors group cursor-pointer hover:opacity-75 shrink-0"
+                title={t('chat.liveChat', 'Live Chat')}
+                style={{
+                  width: '28px',
+                  height: '29px',
+                  border: 'none',
+                  background: 'transparent',
+                  padding: 0,
+                  opacity: 1,
+                  transform: 'rotate(0deg)',
+                }}
+              >
+                <img
+                  src="/coins/chatonew.png"
+                  alt={t('chat.liveChat', 'Live Chat')}
+                  style={{
+                    width: '25px',
+                    height: '25px',
+                    opacity: 1,
+                    transform: 'rotate(0deg)',
+                    objectFit: 'contain',
+                  }}
+                />
+                {hasUnreadChat && (
                   <span className="absolute top-0 right-0 w-2 h-2 bg-[#49B265] rounded-full shadow-[0_0_8px_rgba(73,178,101,0.8)]" />
                 )}
               </button>
@@ -855,27 +856,58 @@ const Header = ({ onChatToggle, chatOpen, fullWidth }) => {
         <div
           className="flex items-center justify-end shrink-0"
           style={{
-            width: '282px',
-            height: '48px',
-            gap: '24px',
+            minWidth: '340px',
+            width: 'auto',
+            height: '49px',
+            gap: '6px',
             opacity: 1,
             transform: 'rotate(0deg)',
           }}
         >
-          {/* Language Toggle (Desktop) */}
-            <LanguageToggle style={{ height: '36px', padding: '6px 12px', fontSize: '12px' }} />
-
-            {/* Notification & Chat container (width: 64, height: 20, gap: 24px) */}
+          {/* Notification & Chat container (Bell first, Chat second) */}
           <div
             className="flex items-center"
             style={{
               width: '64px',
               height: '20px',
               gap: '24px',
+              marginRight: '12px',
               opacity: 1,
               transform: 'rotate(0deg)',
             }}
           >
+            {/* Notifications (Bell) */}
+            <button
+              id="header-notifications-btn"
+              onClick={togglePanel}
+              className="relative flex-shrink-0 flex items-center justify-center transition-colors group cursor-pointer hover:opacity-75"
+              title={t('notifications.title', 'Notifications')}
+              style={{
+                width: '20px',
+                height: '20px',
+                border: 'none',
+                background: 'transparent',
+                padding: 0,
+                opacity: 1,
+                transform: 'rotate(0deg)',
+              }}
+            >
+              <img
+                src="/coins/notinew.png"
+                alt={t('notifications.title', 'Notifications')}
+                style={{
+                  width: '20px',
+                  height: '20px',
+                  opacity: 1,
+                  transform: 'rotate(0deg)',
+                  objectFit: 'contain',
+                }}
+              />
+              {unreadCount > 0 && (
+                <span className="absolute top-0 right-0 w-2 h-2 bg-[#49B265] rounded-full shadow-[0_0_8px_rgba(73,178,101,0.8)]" />
+              )}
+            </button>
+
             {/* Live Chat Button → sidebar */}
             <button
               id="header-livechat-btn"
@@ -907,39 +939,10 @@ const Header = ({ onChatToggle, chatOpen, fullWidth }) => {
                 <span className="absolute top-0 right-0 w-2 h-2 bg-[#49B265] rounded-full shadow-[0_0_8px_rgba(73,178,101,0.8)]" />
               )}
             </button>
-
-            {/* Notifications */}
-            <button
-              id="header-notifications-btn"
-              onClick={togglePanel}
-              className="relative flex-shrink-0 flex items-center justify-center transition-colors group cursor-pointer hover:opacity-75"
-              title={t('notifications.title', 'Notifications')}
-              style={{
-                width: '20px',
-                height: '20px',
-                border: 'none',
-                background: 'transparent',
-                padding: 0,
-                opacity: 1,
-                transform: 'rotate(0deg)',
-              }}
-            >
-              <img
-                src="/coins/notinew.png"
-                alt={t('notifications.title', 'Notifications')}
-                style={{
-                  width: '20px',
-                  height: '20px',
-                  opacity: 1,
-                  transform: 'rotate(0deg)',
-                  objectFit: 'contain',
-                }}
-              />
-              {unreadCount > 0 && (
-                <span className="absolute top-0 right-0 w-2 h-2 bg-[#49B265] rounded-full shadow-[0_0_8px_rgba(73,178,101,0.8)]" />
-              )}
-            </button>
           </div>
+
+          {/* Language Toggle (Desktop - positioned directly beside Profile) */}
+          <LanguageToggle />
 
           {/* Avatar + Dropdown */}
           <div className="relative" ref={dropdownRef}>
@@ -1331,7 +1334,7 @@ const Header = ({ onChatToggle, chatOpen, fullWidth }) => {
             <div className="flex-1 flex items-center justify-center">
               <button
                 onClick={() => { setMobileMoreOpen(false); navigate('/dashboard'); }}
-                className="flex flex-col items-center justify-center transition-all cursor-pointer border-0 w-full max-w-[78px] h-[62px] p-0"
+                className="flex flex-col items-center justify-center transition-all cursor-pointer border-0 w-full max-w-[86px] h-[62px] p-0"
                 style={{
                   borderRadius: '60px',
                   background: location.pathname === '/dashboard' && !mobileMoreOpen ? 'rgba(247, 245, 238, 1)' : 'transparent',
@@ -1392,7 +1395,7 @@ const Header = ({ onChatToggle, chatOpen, fullWidth }) => {
             <div className="flex-1 flex items-center justify-center">
               <button
                 onClick={() => { setMobileMoreOpen(false); navigate('/dashboard/leaderboard'); }}
-                className="flex flex-col items-center justify-center transition-all cursor-pointer border-0 w-full max-w-[78px] h-[62px] p-0"
+                className="flex flex-col items-center justify-center transition-all cursor-pointer border-0 w-[96px] max-w-[96px] h-[62px] p-0"
                 style={{
                   borderRadius: '60px',
                   background: location.pathname === '/dashboard/leaderboard' && !mobileMoreOpen ? 'rgba(247, 245, 238, 1)' : 'transparent',
@@ -1453,7 +1456,7 @@ const Header = ({ onChatToggle, chatOpen, fullWidth }) => {
             <div className="flex-1 flex items-center justify-center">
               <button
                 onClick={() => { setMobileMoreOpen(false); navigate('/dashboard/wallet'); }}
-                className="flex flex-col items-center justify-center transition-all cursor-pointer border-0 w-full max-w-[78px] h-[62px] p-0"
+                className="flex flex-col items-center justify-center transition-all cursor-pointer border-0 w-full max-w-[86px] h-[62px] p-0"
                 style={{
                   borderRadius: '60px',
                   background: location.pathname === '/dashboard/wallet' && !mobileMoreOpen ? 'rgba(247, 245, 238, 1)' : 'transparent',
@@ -1514,7 +1517,7 @@ const Header = ({ onChatToggle, chatOpen, fullWidth }) => {
             <div className="flex-1 flex items-center justify-center">
               <button
                 onClick={() => setMobileMoreOpen(prev => !prev)}
-                className="flex flex-col items-center justify-center transition-all cursor-pointer border-0 w-full max-w-[78px] h-[62px] p-0"
+                className="flex flex-col items-center justify-center transition-all cursor-pointer border-0 w-full max-w-[86px] h-[62px] p-0"
                 style={{
                   borderRadius: '60px',
                   background: mobileMoreOpen ? 'rgba(247, 245, 238, 1)' : 'transparent',

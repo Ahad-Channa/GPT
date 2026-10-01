@@ -121,8 +121,8 @@ const Landing = () => {
               alt="TaskMint Logo"
               className="object-contain"
               style={{
-                width: isMobile ? '148px' : '161px',
-                height: isMobile ? '26.23px' : '28.53px',
+                width: isMobile ? '160px' : '161px',
+                height: isMobile ? '28.5px' : '28.53px',
                 opacity: 1,
               }}
             />
@@ -138,7 +138,7 @@ const Landing = () => {
           </div>
 
           {/* Right Actions (Desktop) */}
-          <div className="hidden lg:flex items-center gap-[5px]">
+          <div className="hidden lg:flex items-center gap-[10px]">
             <LanguageToggle />
             <button
               onClick={() => currentUser ? navigate('/dashboard') : setAuthModal({ isOpen: true, tab: 'login' })}
