@@ -450,15 +450,31 @@ export const FeaturedOfferModal = ({ offer, token, onClose, onSubmitted }) => {
                 justifyContent: 'center',
                 border: 'none',
                 cursor: 'pointer',
+                padding: 0,
+                margin: 0,
+                lineHeight: 0,
+                flexShrink: 0,
               }}
               className="text-white hover:opacity-80 transition-opacity"
+              aria-label="Close"
             >
-              <FiX size={13} strokeWidth={2.5} />
+              <svg
+                style={{ width: '12px', height: '12px', display: 'block' }}
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <line x1="18" y1="6" x2="6" y2="18" />
+                <line x1="6" y1="6" x2="18" y2="18" />
+              </svg>
             </button>
           </div>
 
           {/* Top Section: Icon + Title */}
-          <div className="flex items-start gap-3 sm:gap-4 pr-0 sm:pr-16 w-full">
+          <div className="flex items-end gap-3 sm:gap-4 pr-0 sm:pr-16 w-full">
             <div
               className="w-[76px] h-[76px] sm:w-[100px] sm:h-[100px] rounded-[10px] sm:rounded-[11px] bg-[#EDE8DE] overflow-hidden flex-shrink-0 flex items-center justify-center shadow-sm"
             >
@@ -468,7 +484,7 @@ export const FeaturedOfferModal = ({ offer, token, onClose, onSubmitted }) => {
                 <span className="text-3xl sm:text-4xl">{emojiIcon}</span>
               )}
             </div>
-            <div className="flex-1 min-w-0 pt-5 sm:pt-1">
+            <div className="flex-1 min-w-0 translate-y-[6px] sm:translate-y-[8px]">
               <h2
                 style={{
                   fontFamily: '"Bricolage Grotesque", sans-serif',
