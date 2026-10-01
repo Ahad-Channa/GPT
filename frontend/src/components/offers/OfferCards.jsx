@@ -394,10 +394,10 @@ export const FeaturedOfferModal = ({ offer, token, onClose, onSubmitted }) => {
           style={{
             width: '100%',
             maxWidth: '610px',
-            height: '197px',
+            minHeight: '197px',
+            height: 'auto',
             background: 'rgba(248, 245, 239, 1)',
             borderRadius: '16px',
-            padding: '16px 20px',
             boxSizing: 'border-box',
             position: 'relative',
             opacity: 1,
@@ -405,11 +405,12 @@ export const FeaturedOfferModal = ({ offer, token, onClose, onSubmitted }) => {
             display: 'flex',
             flexDirection: 'column',
             justifyContent: 'space-between',
+            gap: '12px',
           }}
-          className="shrink-0"
+          className="p-3 sm:p-5 shrink-0"
         >
           {/* Top Actions: Support Button & Close Button */}
-          <div className="absolute top-[14px] right-[14px] z-20 flex items-center gap-2">
+          <div className="absolute top-[12px] right-[12px] sm:top-[14px] sm:right-[14px] z-20 flex items-center gap-2">
             <button
               type="button"
               onClick={() => {
@@ -456,79 +457,55 @@ export const FeaturedOfferModal = ({ offer, token, onClose, onSubmitted }) => {
             </button>
           </div>
 
-          {/* Top Section: Icon + Title + Description */}
-          <div className="flex items-center gap-4 pr-8">
+          {/* Top Section: Icon + Title */}
+          <div className="flex items-start gap-3 sm:gap-4 pr-0 sm:pr-16 w-full">
             <div
-              style={{
-                width: '100px',
-                height: '100px',
-                borderRadius: '11px',
-                opacity: 1,
-                transform: 'rotate(0deg)',
-              }}
-              className="bg-[#EDE8DE] overflow-hidden flex-shrink-0 flex items-center justify-center shadow-sm"
+              className="w-[76px] h-[76px] sm:w-[100px] sm:h-[100px] rounded-[10px] sm:rounded-[11px] bg-[#EDE8DE] overflow-hidden flex-shrink-0 flex items-center justify-center shadow-sm"
             >
               {coverImgSrc ? (
                 <img src={coverImgSrc} alt={title} className="w-full h-full object-cover" />
               ) : (
-                <span className="text-4xl">{emojiIcon}</span>
+                <span className="text-3xl sm:text-4xl">{emojiIcon}</span>
               )}
             </div>
-            <div
-              style={{
-                width: '345px',
-                maxWidth: '100%',
-                opacity: 1,
-                transform: 'rotate(0deg)',
-                display: 'flex',
-                flexDirection: 'column',
-                justifyContent: 'center',
-                gap: '8px',
-              }}
-              className="min-w-0"
-            >
+            <div className="flex-1 min-w-0 pt-5 sm:pt-1">
               <h2
                 style={{
-                  width: '345px',
-                  maxWidth: '100%',
                   fontFamily: '"Bricolage Grotesque", sans-serif',
-                  fontWeight: 700,
-                  fontSize: '20px',
-                  lineHeight: '27px',
                   letterSpacing: '0%',
                   color: '#000000',
                   opacity: 1,
                   transform: 'rotate(0deg)',
                   margin: 0,
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
-                  whiteSpace: 'nowrap',
+                  wordBreak: 'break-word',
+                  overflowWrap: 'break-word',
                 }}
+                className="w-full text-[15px] sm:text-[20px] leading-[20px] sm:leading-[26px] font-bold"
               >
                 {title}
               </h2>
-              <p
-                style={{
-                  width: '345px',
-                  maxWidth: '100%',
-                  fontFamily: '"Poppins", sans-serif',
-                  fontWeight: 500,
-                  fontSize: '14px',
-                  lineHeight: '20px',
-                  letterSpacing: '0%',
-                  color: '#000000',
-                  opacity: 1,
-                  transform: 'rotate(0deg)',
-                  margin: 0,
-                  display: '-webkit-box',
-                  WebkitLineClamp: 2,
-                  WebkitBoxOrient: 'vertical',
-                  overflow: 'hidden',
-                }}
-              >
-                {description}
-              </p>
             </div>
+          </div>
+
+          {/* Description Section (Starts below the image row, full width) */}
+          <div className="w-full">
+            <p
+              style={{
+                fontFamily: '"Poppins", sans-serif',
+                letterSpacing: '0%',
+                color: '#000000',
+                opacity: 0.85,
+                transform: 'rotate(0deg)',
+                margin: 0,
+                wordBreak: 'break-word',
+                overflowWrap: 'break-word',
+                whiteSpace: 'normal',
+                textAlign: 'justify',
+              }}
+              className="w-full text-[12px] sm:text-[13px] leading-[18px] sm:leading-[20px] font-normal"
+            >
+              {description}
+            </p>
           </div>
 
           {/* Divider */}

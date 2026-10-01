@@ -295,10 +295,10 @@ export const GoodpicksDetailModal = ({ offer, onClose, token }) => {
             boxSizing: 'border-box',
             position: 'relative',
           }}
-          className="p-3 sm:p-3.5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2.5 sm:gap-3.5 shrink-0"
+          className="p-3 sm:p-4 flex flex-col gap-3 shrink-0"
         >
           {/* Top Actions: Support Button & Close Button */}
-          <div className="absolute top-[10px] right-[10px] z-20 flex items-center gap-2">
+          <div className="absolute top-[12px] right-[12px] z-20 flex items-center gap-2">
             <button
               type="button"
               onClick={() => {
@@ -348,60 +348,140 @@ export const GoodpicksDetailModal = ({ offer, onClose, token }) => {
             </button>
           </div>
 
-          {/* Top part on mobile / Left part on desktop: Image + Title & Description */}
-          <div className="flex items-start gap-[16px] sm:gap-3.5 flex-1 min-w-0 pr-14 sm:pr-0">
-            {/* 58x58 Image on mobile (border-radius: 7px), 84x84 on desktop */}
-            <div
-              style={{
-                transform: 'rotate(0deg)',
-                opacity: 1,
-              }}
-              className="w-[58px] h-[58px] sm:w-[84px] sm:h-[84px] rounded-[7px] sm:rounded-[12px] overflow-hidden flex-shrink-0 bg-[#F1F5F9] flex items-center justify-center"
-            >
-              {renderOfferCover(offer)}
+          {/* Row 1: Image + Title + (Desktop only: Coins & Platforms) */}
+          <div className="flex items-start sm:items-center justify-between gap-3 sm:gap-4 w-full pr-14 sm:pr-0">
+            {/* Left: Image + Title */}
+            <div className="flex items-center gap-3 sm:gap-3.5 min-w-0 flex-1">
+              {/* 58x58 Image on mobile, 84x84 on desktop */}
+              <div
+                className="w-[58px] h-[58px] sm:w-[84px] sm:h-[84px] rounded-[10px] sm:rounded-[12px] overflow-hidden flex-shrink-0 bg-[#F1F5F9] flex items-center justify-center shadow-sm"
+              >
+                {renderOfferCover(offer)}
+              </div>
+
+              {/* Title */}
+              <div className="flex-1 min-w-0">
+                <h3
+                  style={{
+                    fontFamily: '"Bricolage Grotesque", "Poppins", Georgia, serif',
+                    letterSpacing: '0%',
+                    color: '#0F172A',
+                    margin: 0,
+                    wordBreak: 'break-word',
+                    overflowWrap: 'break-word',
+                  }}
+                  className="w-full text-[15px] sm:text-[18px] leading-[20px] sm:leading-[24px] font-bold sm:font-semibold"
+                >
+                  {title}
+                </h3>
+              </div>
             </div>
 
-            {/* Title & Short Description as one unified layout (226px x 51px) */}
-            <div
-              style={{
-                transform: 'rotate(0deg)',
-                opacity: 1,
-              }}
-              className="w-full max-w-[226px] sm:max-w-none min-h-[51px] sm:min-h-0 flex-1 min-w-0 flex flex-col justify-start"
-            >
-              <h3
-                style={{
-                  fontFamily: '"Bricolage Grotesque", "Poppins", Georgia, serif',
-                  letterSpacing: '0%',
-                  color: '#0F172A',
-                  margin: 0,
-                  transform: 'rotate(0deg)',
-                  opacity: 1,
-                }}
-                className="w-full max-w-[226px] sm:max-w-[300px] text-[14px] sm:text-[16px] leading-[18px] sm:leading-[27px] font-bold sm:font-medium truncate sm:whitespace-normal"
-              >
-                {title}
-              </h3>
-              <p
-                style={{
-                  fontFamily: '"Poppins", sans-serif',
-                  fontWeight: 400,
-                  color: '#000000',
-                  letterSpacing: '0%',
-                  transform: 'rotate(0deg)',
-                  opacity: 0.7,
-                  margin: 0,
-                  height: 'auto',
-                }}
-                className="w-full max-w-[226px] sm:max-w-none text-[11px] leading-[15px] sm:leading-[16px] mt-[3px] line-clamp-2 break-words"
-              >
-                {description}
-              </p>
+            {/* Desktop only: Coin Reward + Platform Icons (pinned to top row) */}
+            <div className="hidden sm:flex items-center gap-3.5 shrink-0">
+              {/* Coins */}
+              <div className="flex items-center gap-1.5">
+                <img
+                  src="/coins/image copy 7.png"
+                  alt="Coins"
+                  style={{ width: '20px', height: '20px', objectFit: 'contain' }}
+                />
+                <span
+                  style={{
+                    fontFamily: '"Poppins", sans-serif',
+                    fontWeight: 600,
+                    fontSize: '20px',
+                    letterSpacing: '-0.02em',
+                    color: 'rgba(77, 116, 191, 1)',
+                    lineHeight: '1',
+                  }}
+                >
+                  {rewardFormatted}
+                </span>
+              </div>
+
+              {/* Platform Icon Badges */}
+              <div className="flex items-center gap-1.5">
+                {offer.platforms?.desktop && (
+                  <div
+                    style={{
+                      background: '#000000',
+                      color: '#FFFFFF',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                    }}
+                    className="w-[24px] h-[24px] rounded-full flex-shrink-0"
+                    title="Desktop / PC"
+                  >
+                    <img
+                      src="/coins/desko.png"
+                      alt="Desktop"
+                      className="w-[12px] h-[12px] object-contain brightness-0 invert"
+                    />
+                  </div>
+                )}
+                {offer.platforms?.android && (
+                  <div
+                    style={{
+                      background: '#000000',
+                      color: '#FFFFFF',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                    }}
+                    className="w-[24px] h-[24px] rounded-full flex-shrink-0"
+                    title="Android"
+                  >
+                    <svg className="w-[12px] h-[12px] text-white flex-shrink-0" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M17.523 15.3414c-.5511 0-.9993-.4486-.9993-.9997s.4482-.9993.9993-.9993c.551 0 .9993.4482.9993.9993.0001.5511-.4482.9997-.9993.9997m-11.046 0c-.5511 0-.9993-.4486-.9993-.9997s.4482-.9993.9993-.9993c.5511 0 .9993.4482.9993.9993 0 .5511-.4482.9997-.9993.9997m11.4045-6.02l1.9973-3.4592a.416.416 0 00-.1521-.5676.416.416 0 00-.5676.1521l-2.0223 3.503C15.5902 8.411 13.8533 8.081 12 8.081s-3.5902.33-5.1367.8697L4.841 5.4477a.4161.4161 0 00-.5677-.1521.4157.4157 0 00-.1521.5676l1.9973 3.4592C2.6889 11.1867.3432 14.6589 0 18.761h24c-.3432-4.1021-2.6889-7.5743-6.1185-9.4396" />
+                    </svg>
+                  </div>
+                )}
+                {offer.platforms?.ios && (
+                  <div
+                    style={{
+                      background: '#000000',
+                      color: '#FFFFFF',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                    }}
+                    className="w-[24px] h-[24px] rounded-full flex-shrink-0"
+                    title="iOS"
+                  >
+                    <svg className="w-[12px] h-[12px] text-white flex-shrink-0" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 6.37c.62-.75 1.04-1.8 0.92-2.85-.9.04-1.99.6-2.63 1.35-.57.65-1.07 1.72-.94 2.74 1.01.08 2.03-.49 2.65-1.24z" />
+                    </svg>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
 
-          {/* Bottom part on mobile / Right part on desktop: Coin Reward + Platform Icon */}
-          <div className="flex items-center justify-between sm:justify-end gap-3 shrink-0 w-full sm:w-auto pt-1 sm:pt-0">
+          {/* Row 2: Full-width Description (Starts BELOW Image and spans 100% full width) */}
+          <div className="w-full">
+            <p
+              style={{
+                fontFamily: '"Poppins", sans-serif',
+                fontWeight: 400,
+                color: '#000000',
+                letterSpacing: '0%',
+                opacity: 0.75,
+                margin: 0,
+                wordBreak: 'break-word',
+                overflowWrap: 'break-word',
+                whiteSpace: 'normal',
+                textAlign: 'justify',
+              }}
+              className="w-full text-[12px] sm:text-[13px] leading-[18px] sm:leading-[20px]"
+            >
+              {description}
+            </p>
+          </div>
+
+          {/* Row 3 on Mobile only: Coin Reward + Platform Icons */}
+          <div className="flex sm:hidden items-center justify-between gap-3 w-full pt-1.5 border-t border-slate-100/80">
             {/* Coins */}
             <div className="flex items-center gap-1.5">
               <img
@@ -413,11 +493,10 @@ export const GoodpicksDetailModal = ({ offer, onClose, token }) => {
                 style={{
                   fontFamily: '"Poppins", sans-serif',
                   fontWeight: 600,
-                  fontSize: '20px',
+                  fontSize: '18px',
                   letterSpacing: '-0.02em',
                   color: 'rgba(77, 116, 191, 1)',
                   lineHeight: '1',
-                  opacity: 1,
                 }}
               >
                 {rewardFormatted}
@@ -434,16 +513,14 @@ export const GoodpicksDetailModal = ({ offer, onClose, token }) => {
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    opacity: 1,
-                    transform: 'rotate(0deg)',
                   }}
-                  className="w-[35px] h-[35px] sm:w-[22px] sm:h-[22px] rounded-[10px] sm:rounded-full flex-shrink-0"
+                  className="w-[28px] h-[28px] rounded-[8px] flex-shrink-0"
                   title="Desktop / PC"
                 >
                   <img
                     src="/coins/desko.png"
                     alt="Desktop"
-                    className="w-[18px] h-[18px] sm:w-[11px] sm:h-[11px] object-contain brightness-0 invert"
+                    className="w-[14px] h-[14px] object-contain brightness-0 invert"
                   />
                 </div>
               )}
@@ -455,13 +532,11 @@ export const GoodpicksDetailModal = ({ offer, onClose, token }) => {
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    opacity: 1,
-                    transform: 'rotate(0deg)',
                   }}
-                  className="w-[35px] h-[35px] sm:w-[22px] sm:h-[22px] rounded-[10px] sm:rounded-full flex-shrink-0"
+                  className="w-[28px] h-[28px] rounded-[8px] flex-shrink-0"
                   title="Android"
                 >
-                  <svg className="w-[18px] h-[18px] sm:w-[11px] sm:h-[11px] text-white flex-shrink-0" viewBox="0 0 24 24" fill="currentColor">
+                  <svg className="w-[14px] h-[14px] text-white flex-shrink-0" viewBox="0 0 24 24" fill="currentColor">
                     <path d="M17.523 15.3414c-.5511 0-.9993-.4486-.9993-.9997s.4482-.9993.9993-.9993c.551 0 .9993.4482.9993.9993.0001.5511-.4482.9997-.9993.9997m-11.046 0c-.5511 0-.9993-.4486-.9993-.9997s.4482-.9993.9993-.9993c.5511 0 .9993.4482.9993.9993 0 .5511-.4482.9997-.9993.9997m11.4045-6.02l1.9973-3.4592a.416.416 0 00-.1521-.5676.416.416 0 00-.5676.1521l-2.0223 3.503C15.5902 8.411 13.8533 8.081 12 8.081s-3.5902.33-5.1367.8697L4.841 5.4477a.4161.4161 0 00-.5677-.1521.4157.4157 0 00-.1521.5676l1.9973 3.4592C2.6889 11.1867.3432 14.6589 0 18.761h24c-.3432-4.1021-2.6889-7.5743-6.1185-9.4396" />
                   </svg>
                 </div>
@@ -474,13 +549,11 @@ export const GoodpicksDetailModal = ({ offer, onClose, token }) => {
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    opacity: 1,
-                    transform: 'rotate(0deg)',
                   }}
-                  className="w-[35px] h-[35px] sm:w-[22px] sm:h-[22px] rounded-[10px] sm:rounded-full flex-shrink-0"
+                  className="w-[28px] h-[28px] rounded-[8px] flex-shrink-0"
                   title="iOS"
                 >
-                  <svg className="w-[18px] h-[18px] sm:w-[11px] sm:h-[11px] text-white flex-shrink-0" viewBox="0 0 24 24" fill="currentColor">
+                  <svg className="w-[14px] h-[14px] text-white flex-shrink-0" viewBox="0 0 24 24" fill="currentColor">
                     <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 6.37c.62-.75 1.04-1.8 0.92-2.85-.9.04-1.99.6-2.63 1.35-.57.65-1.07 1.72-.94 2.74 1.01.08 2.03-.49 2.65-1.24z" />
                   </svg>
                 </div>
@@ -1142,29 +1215,31 @@ export const GoodpicksOfferwallModal = ({ onClose, token }) => {
                           <div className="flex flex-col justify-center min-w-0 flex-1">
                             <h4
                               style={{
-                                maxWidth: '280px',
                                 fontFamily: '"IBM Plex Sans", "Poppins", sans-serif',
                                 fontWeight: 600,
                                 fontSize: '15px',
                                 lineHeight: '20px',
                                 color: '#000000',
                                 margin: 0,
+                                wordBreak: 'break-word',
+                                overflowWrap: 'break-word',
                               }}
-                              className="truncate"
                             >
                               {itemTitle}
                             </h4>
                             <p
                               style={{
-                                maxWidth: '300px',
                                 fontFamily: '"IBM Plex Sans", "Poppins", sans-serif',
                                 fontWeight: 400,
                                 fontSize: '11px',
                                 lineHeight: '16px',
                                 color: 'rgba(0, 0, 0, 0.7)',
                                 margin: '2px 0 0',
+                                wordBreak: 'break-word',
+                                overflowWrap: 'break-word',
+                                whiteSpace: 'normal',
+                                textAlign: 'justify',
                               }}
-                              className="line-clamp-2"
                             >
                               {itemDesc}
                             </p>
@@ -1347,7 +1422,7 @@ export const GoodpicksOfferwallModal = ({ onClose, token }) => {
                     <p className="text-slate-500 text-xs mt-1">{t('goodpicks.tryAnotherPlatform')}</p>
                   </div>
                 ) : (
-                  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-4 pb-4 w-full">
+                  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 items-start gap-3 sm:gap-4 pb-4 w-full">
                     {sortedOffers.map((offer) => {
                       const rewardStr = (offer.rewardAmount || 0).toLocaleString('de-DE');
                       const cardTitle = (isDe && offer.titleDe) ? offer.titleDe : offer.title;
@@ -1359,6 +1434,7 @@ export const GoodpicksOfferwallModal = ({ onClose, token }) => {
                           style={{
                             width: '100%',
                             minHeight: '191px',
+                            height: 'fit-content',
                             background: '#FFFFFF',
                             borderRadius: '16px',
                             padding: '8px 12px 10px 8px',
@@ -1371,7 +1447,7 @@ export const GoodpicksOfferwallModal = ({ onClose, token }) => {
                             border: '1px solid rgba(255, 255, 255, 0.8)',
                             opacity: 1,
                           }}
-                          className="hover:shadow-md transition-shadow"
+                          className="hover:shadow-md transition-shadow self-start"
                         >
                           {/* Top Row: 84x84 Image + Right Info Column */}
                           <div className="flex items-start gap-3">
@@ -1491,18 +1567,18 @@ export const GoodpicksOfferwallModal = ({ onClose, token }) => {
                               <h3
                                 style={{
                                   width: '100%',
-                                  maxWidth: '300px',
                                   fontFamily: '"Albra", "Bricolage Grotesque", Georgia, serif',
                                   fontWeight: 500,
                                   fontSize: '16px',
-                                  lineHeight: '27px',
+                                  lineHeight: '22px',
                                   letterSpacing: '0%',
                                   color: '#0F172A',
-                                  marginTop: '14px',
+                                  marginTop: '8px',
                                   marginBottom: 0,
                                   opacity: 1,
+                                  wordBreak: 'break-word',
+                                  overflowWrap: 'break-word',
                                 }}
-                                className="truncate"
                               >
                                 {cardTitle}
                               </h3>
@@ -1513,8 +1589,6 @@ export const GoodpicksOfferwallModal = ({ onClose, token }) => {
                           <p
                             style={{
                               width: '100%',
-                              maxWidth: '398px',
-                              minHeight: '24px',
                               fontFamily: '"Poppins", sans-serif',
                               fontWeight: 400,
                               fontSize: '11px',
@@ -1523,8 +1597,11 @@ export const GoodpicksOfferwallModal = ({ onClose, token }) => {
                               color: '#000000',
                               opacity: 0.7,
                               margin: '4px 0 0 0',
+                              wordBreak: 'break-word',
+                              overflowWrap: 'break-word',
+                              whiteSpace: 'normal',
+                              textAlign: 'justify',
                             }}
-                            className="line-clamp-2"
                           >
                             {cardDesc}
                           </p>
