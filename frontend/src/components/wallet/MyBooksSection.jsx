@@ -87,7 +87,7 @@ const BookDetailModal = ({ book, onClose, onOrder, balance }) => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  const itemsPerPage = isMobile ? 1 : 5;
+  const itemsPerPage = isMobile ? 4 : 5;
   const maxIdx = Math.max(0, validImages.length - itemsPerPage);
 
   const nextPreview = () => {
@@ -114,314 +114,314 @@ const BookDetailModal = ({ book, onClose, onOrder, balance }) => {
     <>
       <motion.div
         initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      className="fixed inset-0 z-[99999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 overflow-y-auto"
-      onClick={onClose}
-    >
-      <motion.div
-        initial={{ scale: 0.96, opacity: 0, y: 10 }}
-        animate={{ scale: 1, opacity: 1, y: 0 }}
-        exit={{ scale: 0.96, opacity: 0, y: 10 }}
-        transition={{ duration: 0.2 }}
-        className="bg-white shadow-2xl relative border border-gray-100 box-border flex flex-col p-6 sm:p-8 my-auto overflow-hidden"
-        style={{
-          width: '100%',
-          maxWidth: '1072px',
-          height: 'auto',
-          maxHeight: '912px',
-          borderRadius: '25px',
-          background: 'rgba(255, 255, 255, 1)',
-          opacity: 1,
-          boxSizing: 'border-box',
-        }}
-        onClick={e => e.stopPropagation()}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        className="fixed inset-0 z-[99999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-2.5 sm:p-4 overflow-y-auto"
+        onClick={onClose}
       >
-        {/* Header */}
-        <div className="flex items-center justify-between w-full mb-5 shrink-0">
-          <h2
-            style={{
-              fontFamily: '"Poppins", "Bricolage Grotesque", sans-serif',
-              fontWeight: 700,
-              fontSize: '24px',
-              lineHeight: '28px',
-              letterSpacing: '-0.02em',
-              color: '#000000',
-              margin: 0,
-              padding: 0,
-            }}
-          >
-            {t('withdraw.bookDetails', 'Book Details')}
-          </h2>
-          <button
-            onClick={onClose}
-            className="rounded-full bg-black text-white flex items-center justify-center hover:bg-gray-800 transition-colors shrink-0 cursor-pointer"
-            style={{
-              width: '24px',
-              height: '24px',
-            }}
-            title="Close"
-          >
-            <FiX size={14} strokeWidth={2.5} />
-          </button>
-        </div>
+        <motion.div
+          initial={{ scale: 0.96, opacity: 0, y: 10 }}
+          animate={{ scale: 1, opacity: 1, y: 0 }}
+          exit={{ scale: 0.96, opacity: 0, y: 10 }}
+          transition={{ duration: 0.2 }}
+          className="bg-white shadow-2xl relative border border-gray-100 box-border flex flex-col p-3.5 xs:p-4 md:p-8 my-auto overflow-hidden w-full max-w-[480px] md:max-w-[1072px] max-h-[94vh] md:max-h-[912px] rounded-[24px] md:rounded-[25px]"
+          onClick={e => e.stopPropagation()}
+        >
+          {/* Header */}
+          <div className="flex items-center justify-between w-full mb-3.5 md:mb-5 shrink-0">
+            <h2
+              className="font-bold text-[20px] xs:text-[22px] md:text-[24px] text-black tracking-tight m-0 p-0"
+              style={{
+                fontFamily: '"Poppins", "Bricolage Grotesque", sans-serif',
+                lineHeight: '1.2',
+              }}
+            >
+              {t('withdraw.bookDetails', 'Book Details')}
+            </h2>
+            <button
+              onClick={onClose}
+              className="rounded-full bg-black text-white flex items-center justify-center hover:bg-gray-800 transition-colors shrink-0 cursor-pointer w-[22px] h-[22px] md:w-[24px] md:h-[24px]"
+              title="Close"
+            >
+              <FiX size={13} strokeWidth={2.5} />
+            </button>
+          </div>
 
-        {/* Scrollable Container for Modal Content */}
-        <div className="w-full flex-1 overflow-y-auto select-none [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] flex flex-col gap-6">
-          {/* Top Card: Book Main Info */}
-          <div
-            className="w-full flex flex-col md:flex-row gap-6 md:gap-7 items-center md:items-start shrink-0"
-            style={{
-              width: '100%',
-              maxWidth: '1015px',
-              minHeight: '400px',
-              background: 'rgba(248, 245, 239, 1)',
-              borderRadius: '20px',
-              padding: '8px 24px 24px 8px',
-              boxSizing: 'border-box',
-              opacity: 1,
-            }}
-          >
-            {/* Cover Card Container */}
+          {/* Scrollable Container for Modal Content */}
+          <div className="w-full flex-1 overflow-y-auto select-none [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] flex flex-col gap-5 md:gap-6">
+            {/* Top Card: Book Main Info */}
             <div
-              className="flex items-center justify-center shrink-0 mx-auto md:mx-0"
+              className="w-full flex flex-col md:flex-row gap-3.5 md:gap-7 items-center md:items-start shrink-0 p-3 xs:p-3.5 md:p-[8px_24px_24px_8px] rounded-[20px] bg-[#F8F5EF]"
               style={{
-                width: '185px',
-                height: '246px',
-                borderRadius: '10px',
-                background: 'rgba(255, 255, 255, 1)',
+                maxWidth: '1015px',
+                minHeight: isMobile ? 'auto' : '400px',
                 boxSizing: 'border-box',
-                opacity: 1,
               }}
             >
-              {book.coverImage ? (
-                <img
-                  src={book.coverImage.startsWith('data:') || book.coverImage.startsWith('http') ? book.coverImage : `${BACKEND}${book.coverImage}`}
-                  alt={book.title}
-                  className="object-contain"
-                  style={{
-                    width: '138px',
-                    height: '210px',
-                    opacity: 1,
-                  }}
-                  onError={(e) => { e.target.style.display = 'none'; }}
-                />
-              ) : (
-                <FiBook className="text-slate-400 text-4xl" />
-              )}
-            </div>
+              {/* Mobile Top Row: Cover + Title */}
+              <div className="flex md:hidden flex-row items-center gap-3.5 w-full">
+                {/* Cover Card Container */}
+                <div
+                  className="w-[95.3px] h-[143px] rounded-[10px] bg-white shrink-0 flex items-center justify-center shadow-xs"
+                >
+                  {book.coverImage ? (
+                    <img
+                      src={book.coverImage.startsWith('data:') || book.coverImage.startsWith('http') ? book.coverImage : `${BACKEND}${book.coverImage}`}
+                      alt={book.title}
+                      className="w-[62.6px] h-[95.4px] object-contain drop-shadow-[0_4px_8px_rgba(0,0,0,0.15)]"
+                      onError={(e) => { e.target.style.display = 'none'; }}
+                    />
+                  ) : (
+                    <FiBook className="text-slate-400 text-3xl" />
+                  )}
+                </div>
 
-            {/* Info Right */}
-            <div 
-              className="flex flex-col flex-1 min-w-0 w-full justify-between"
-              style={{
-                maxWidth: '767px',
-                height: '363px',
-                opacity: 1,
-              }}
-            >
-              {/* Title */}
-              <h3
-                style={{
-                  fontFamily: '"Poppins", sans-serif',
-                  fontWeight: 700,
-                  fontSize: '22px',
-                  lineHeight: '28px',
-                  letterSpacing: '-0.01em',
-                  color: '#000000',
-                  margin: 0,
-                  padding: 0,
-                  marginTop: '10px',
-                }}
-              >
-                {book.title}
-              </h3>
+                {/* Title Right */}
+                <div className="flex-1 min-w-0 flex flex-col justify-center">
+                  <h3
+                    className="font-bold text-[17px] xs:text-[18px] leading-[22px] xs:leading-[24px] text-black tracking-tight line-clamp-4"
+                    style={{
+                      fontFamily: '"Bricolage Grotesque", sans-serif',
+                      fontWeight: 700,
+                      margin: 0,
+                      padding: 0,
+                    }}
+                  >
+                    {book.title}
+                  </h3>
+                </div>
+              </div>
 
-              {/* Price & Description Container */}
+              {/* Desktop Cover Card Container */}
               <div
-                className="flex flex-col w-full"
+                className="hidden md:flex items-center justify-center shrink-0 mx-auto md:mx-0"
                 style={{
-                  width: '100%',
-                  height: '286px',
+                  width: '185px',
+                  height: '246px',
+                  borderRadius: '10px',
                   background: 'rgba(255, 255, 255, 1)',
-                  borderRadius: '20px',
-                  gap: '17px',
-                  padding: '8px 12px 21px 12px',
                   boxSizing: 'border-box',
                   opacity: 1,
                 }}
               >
-                {/* Price & Action Button */}
-                <div className="flex items-center justify-between gap-4 flex-wrap sm:flex-nowrap">
-                  <div className="flex items-center gap-2">
-                    <img
-                      src="/coins/gfitcoin.png"
-                      alt="Coins"
-                      className="w-6 h-6 object-contain shrink-0"
-                      onError={(e) => {
-                        e.currentTarget.src = '/coins/Coin.png';
-                      }}
-                    />
-                    <span
+                {book.coverImage ? (
+                  <img
+                    src={book.coverImage.startsWith('data:') || book.coverImage.startsWith('http') ? book.coverImage : `${BACKEND}${book.coverImage}`}
+                    alt={book.title}
+                    className="object-contain"
+                    style={{
+                      width: '138px',
+                      height: '210px',
+                      opacity: 1,
+                    }}
+                    onError={(e) => { e.target.style.display = 'none'; }}
+                  />
+                ) : (
+                  <FiBook className="text-slate-400 text-4xl" />
+                )}
+              </div>
+
+              {/* Info Right */}
+              <div 
+                className="flex flex-col flex-1 min-w-0 w-full justify-between"
+                style={{
+                  maxWidth: '767px',
+                  height: isMobile ? 'auto' : '363px',
+                  opacity: 1,
+                }}
+              >
+                {/* Desktop Title */}
+                <h3
+                  className="hidden md:block"
+                  style={{
+                    fontFamily: '"Poppins", sans-serif',
+                    fontWeight: 700,
+                    fontSize: '22px',
+                    lineHeight: '28px',
+                    letterSpacing: '-0.01em',
+                    color: '#000000',
+                    margin: 0,
+                    padding: 0,
+                    marginTop: '10px',
+                  }}
+                >
+                  {book.title}
+                </h3>
+
+                {/* Price & Description Container */}
+                <div
+                  className="flex flex-col w-full bg-white rounded-[20px] p-3.5 xs:p-4 md:p-[8px_12px_21px_12px] gap-3.5 md:gap-[17px] box-border"
+                  style={{
+                    height: isMobile ? 'auto' : '286px',
+                    opacity: 1,
+                  }}
+                >
+                  {/* Price & Action Button */}
+                  <div className="flex items-center justify-between gap-3 xs:gap-4 flex-nowrap w-full">
+                    <div className="flex items-center gap-2 shrink-0">
+                      <img
+                        src="/coins/gfitcoin.png"
+                        alt="Coins"
+                        className="w-6 h-6 object-contain shrink-0"
+                        onError={(e) => {
+                          e.currentTarget.src = '/coins/Coin.png';
+                        }}
+                      />
+                      <span
+                        className="font-['Poppins',sans-serif] leading-none"
+                        style={{
+                          fontWeight: isMobile ? 600 : 700,
+                          fontSize: isMobile ? '20px' : '22px',
+                          color: isMobile ? 'rgba(190, 146, 0, 1)' : 'rgba(233, 179, 0, 1)',
+                          letterSpacing: isMobile ? '0' : 'normal',
+                        }}
+                      >
+                        {book.coinCost.toLocaleString('de-DE')}
+                      </span>
+                    </div>
+
+                    <button
+                      onClick={() => canAfford && onOrder(book)}
+                      disabled={!canAfford}
+                      className={`flex items-center justify-center font-semibold transition-all shrink-0 cursor-pointer w-[167px] h-[45px] rounded-[30px] px-3.5 xs:px-4 md:w-auto md:h-[40px] md:rounded-[9999px] md:px-6 ${
+                        canAfford
+                          ? 'bg-[#24324D] text-white hover:bg-[#1a2538] active:scale-95'
+                          : 'bg-[#24324D] text-white opacity-90 cursor-not-allowed'
+                      }`}
                       style={{
                         fontFamily: '"Poppins", sans-serif',
-                        fontWeight: 700,
-                        fontSize: '22px',
-                        lineHeight: '1',
-                        color: 'rgba(233, 179, 0, 1)',
+                        fontSize: '14px',
                       }}
                     >
-                      {book.coinCost.toLocaleString('de-DE')}
-                    </span>
+                      <span className="truncate">
+                        {canAfford ? t('withdraw.orderNow', 'Order Now') : t('withdraw.insufficientCoins', 'Insufficient Coins')}
+                      </span>
+                    </button>
                   </div>
 
-                  <button
-                    onClick={() => canAfford && onOrder(book)}
-                    disabled={!canAfford}
-                    className={`flex items-center justify-center font-semibold transition-all shrink-0 cursor-pointer ${
-                      canAfford
-                        ? 'bg-[#24324D] text-white hover:bg-[#1a2538] active:scale-95'
-                        : 'bg-[#24324D] text-white opacity-90 cursor-not-allowed'
-                    }`}
+                  {/* Description */}
+                  {book.description && (
+                    <>
+                      <hr className="w-full border-black/5 m-0" />
+                      <div className="flex flex-col gap-1.5">
+                        <h4
+                          style={{
+                            fontFamily: '"Poppins", sans-serif',
+                            fontWeight: 700,
+                            fontSize: '15px',
+                            color: '#000000',
+                            margin: 0,
+                          }}
+                        >
+                          {t('withdraw.description', 'Description')}
+                        </h4>
+                        <p
+                          className="overflow-y-auto select-text pr-1 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
+                          style={{
+                            width: '100%',
+                            maxWidth: '743px',
+                            height: isMobile ? 'auto' : '148px',
+                            maxHeight: isMobile ? '200px' : '148px',
+                            fontFamily: '"Poppins", sans-serif',
+                            fontWeight: 400,
+                            fontSize: '12.5px',
+                            lineHeight: '20px',
+                            color: '#333333',
+                            margin: 0,
+                            whiteSpace: 'pre-wrap',
+                            textAlign: 'justify',
+                          }}
+                        >
+                          {book.description}
+                        </p>
+                      </div>
+                    </>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Book Preview Section */}
+            <div className="w-full flex flex-col shrink-0">
+              <h3
+                style={{
+                  fontFamily: '"Poppins", "Bricolage Grotesque", sans-serif',
+                  fontWeight: 700,
+                  fontSize: '20px',
+                  lineHeight: '24px',
+                  letterSpacing: '-0.01em',
+                  color: '#000000',
+                  margin: '0 0 14px 0',
+                }}
+              >
+                {t('withdraw.bookPreview', 'Book Preview')}
+              </h3>
+
+              {validImages.length > 0 ? (
+                <>
+                  <div className="grid grid-cols-4 md:grid-cols-5 gap-2 md:gap-3.5 w-full">
+                    {visiblePreviews.map((url, i) => {
+                      const actualIdx = previewIdx + i;
+                      return (
+                        <div
+                          key={actualIdx}
+                          onClick={() => setLightboxIdx(actualIdx)}
+                          className="flex items-center justify-center p-1.5 md:p-2.5 rounded-[12px] md:rounded-[16px] cursor-pointer group transition-all hover:shadow-md bg-[#F8F5EF] h-[105px] xs:h-[115px] md:h-[240px] box-border"
+                        >
+                          <div
+                            className="bg-white rounded-[4px] shadow-xs w-full h-full flex items-center justify-center p-1 md:p-2 overflow-hidden group-hover:scale-[1.02] transition-transform"
+                          >
+                            <img
+                              src={url}
+                              alt={`Preview ${actualIdx + 1}`}
+                              className="max-w-full max-h-full object-contain"
+                            />
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  {/* Carousel Navigation Arrows */}
+                  <div className="flex items-center justify-center gap-3 mt-4">
+                    <button
+                      onClick={prevPreview}
+                      disabled={previewIdx === 0}
+                      className="w-9 h-9 rounded-full bg-[#24324D] text-white flex items-center justify-center hover:bg-[#1a2538] transition-colors disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+                      title="Previous"
+                    >
+                      <FiChevronLeft size={18} />
+                    </button>
+                    <button
+                      onClick={nextPreview}
+                      disabled={previewIdx >= maxIdx}
+                      className="w-9 h-9 rounded-full bg-white border border-[#CBD5E1] text-[#24324D] hover:bg-gray-50 flex items-center justify-center transition-colors disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+                      title="Next"
+                    >
+                      <FiChevronRight size={18} />
+                    </button>
+                  </div>
+                </>
+              ) : (
+                <div
+                  className="w-full flex items-center justify-center p-8 rounded-[16px] text-center"
+                  style={{ background: 'rgba(248, 245, 239, 1)' }}
+                >
+                  <p
                     style={{
                       fontFamily: '"Poppins", sans-serif',
                       fontSize: '14px',
-                      borderRadius: '9999px',
-                      height: '40px',
-                      padding: '0 24px',
-                    }}
-                  >
-                    {canAfford ? t('withdraw.orderNow', 'Order Now') : t('withdraw.insufficientCoins', 'Insufficient Coins')}
-                  </button>
-                </div>
-
-                {/* Description */}
-                {book.description && (
-                  <>
-                    <hr className="w-full border-black/5 m-0" />
-                    <div className="flex flex-col gap-1">
-                  <h4
-                    style={{
-                      fontFamily: '"Poppins", sans-serif',
-                      fontWeight: 700,
-                      fontSize: '15px',
-                      color: '#000000',
+                      color: '#666666',
                       margin: 0,
                     }}
                   >
-                    {t('withdraw.description', 'Description')}
-                  </h4>
-                  <p
-                    className="overflow-y-auto select-text pr-1 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
-                    style={{
-                      width: '100%',
-                      maxWidth: '743px',
-                      height: '148px',
-                      fontFamily: '"Poppins", sans-serif',
-                      fontWeight: 400,
-                      fontSize: '12px',
-                      lineHeight: '20px',
-                      color: '#333333',
-                      margin: 0,
-                      whiteSpace: 'pre-wrap',
-                      textAlign: 'justify',
-                    }}
-                  >
-                    {book.description}
+                    {t('withdraw.noPreviewPages', 'No preview pages available for this book.')}
                   </p>
-                  </div>
-                  </>
-                )}
-              </div>
+                </div>
+              )}
             </div>
           </div>
-
-          {/* Book Preview Section */}
-          <div className="w-full flex flex-col shrink-0">
-            <h3
-              style={{
-                fontFamily: '"Poppins", "Bricolage Grotesque", sans-serif',
-                fontWeight: 700,
-                fontSize: '20px',
-                lineHeight: '24px',
-                letterSpacing: '-0.01em',
-                color: '#000000',
-                margin: '0 0 16px 0',
-              }}
-            >
-              {t('withdraw.bookPreview', 'Book Preview')}
-            </h3>
-
-            {validImages.length > 0 ? (
-              <>
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3.5 w-full">
-                  {visiblePreviews.map((url, i) => {
-                    const actualIdx = previewIdx + i;
-                    return (
-                      <div
-                        key={actualIdx}
-                        onClick={() => setLightboxIdx(actualIdx)}
-                        className="flex items-center justify-center p-2.5 rounded-[16px] cursor-pointer group transition-all hover:shadow-md"
-                        style={{
-                          background: 'rgba(248, 245, 239, 1)',
-                          height: '240px',
-                          boxSizing: 'border-box',
-                        }}
-                      >
-                        <div
-                          className="bg-white rounded-[4px] shadow-sm w-full h-full flex items-center justify-center p-2 overflow-hidden group-hover:scale-[1.02] transition-transform"
-                        >
-                          <img
-                            src={url}
-                            alt={`Preview ${actualIdx + 1}`}
-                            className="max-w-full max-h-full object-contain"
-                          />
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-
-                {/* Carousel Navigation Arrows */}
-                <div className="flex items-center justify-center gap-3 mt-4">
-                  <button
-                    onClick={prevPreview}
-                    disabled={previewIdx === 0}
-                    className="w-9 h-9 rounded-full bg-[#24324D] text-white flex items-center justify-center hover:bg-[#1a2538] transition-colors disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
-                    title="Previous"
-                  >
-                    <FiChevronLeft size={18} />
-                  </button>
-                  <button
-                    onClick={nextPreview}
-                    disabled={previewIdx >= maxIdx}
-                    className="w-9 h-9 rounded-full bg-white border border-[#CBD5E1] text-[#24324D] hover:bg-gray-50 flex items-center justify-center transition-colors disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
-                    title="Next"
-                  >
-                    <FiChevronRight size={18} />
-                  </button>
-                </div>
-              </>
-            ) : (
-              <div
-                className="w-full flex items-center justify-center p-8 rounded-[16px] text-center"
-                style={{ background: 'rgba(248, 245, 239, 1)' }}
-              >
-                <p
-                  style={{
-                    fontFamily: '"Poppins", sans-serif',
-                    fontSize: '14px',
-                    color: '#666666',
-                    margin: 0,
-                  }}
-                >
-                  {t('withdraw.noPreviewPages', 'No preview pages available for this book.')}
-                </p>
-              </div>
-            )}
-          </div>
-        </div>
-      </motion.div>
+        </motion.div>
       </motion.div>
 
       {/* Lightbox Overlay */}
@@ -673,7 +673,7 @@ const OrderModal = ({ book, onClose, onSuccess, balance }) => {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 z-[999999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 overflow-y-auto"
+      className="fixed inset-0 z-[999999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-2.5 sm:p-4 overflow-y-auto"
       onClick={onClose}
     >
       <motion.div
@@ -681,73 +681,41 @@ const OrderModal = ({ book, onClose, onSuccess, balance }) => {
         animate={{ scale: 1, opacity: 1, y: 0 }}
         exit={{ scale: 0.96, opacity: 0, y: 10 }}
         transition={{ duration: 0.2 }}
-        className="bg-white shadow-2xl relative border border-gray-100 box-border flex flex-col p-6 sm:p-8 md:p-9 my-auto overflow-hidden"
-        style={{
-          width: '100%',
-          maxWidth: '1072px',
-          height: 'auto',
-          maxHeight: '929px',
-          borderRadius: '25px',
-          background: 'rgba(255, 255, 255, 1)',
-          opacity: 1,
-          boxSizing: 'border-box',
-        }}
+        className="bg-white shadow-2xl relative border border-gray-100 box-border flex flex-col p-3.5 xs:p-4 sm:p-6 md:p-9 my-auto overflow-hidden w-full max-w-[500px] md:max-w-[1072px] max-h-[94vh] md:max-h-[929px] rounded-[24px] md:rounded-[25px]"
         onClick={e => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-center justify-between w-full mb-4 shrink-0">
+        <div className="flex items-center justify-between w-full mb-3.5 md:mb-4 shrink-0">
           <h2
+            className="font-bold text-[20px] xs:text-[22px] md:text-[24px] text-black tracking-tight m-0 p-0 text-left"
             style={{
               fontFamily: '"Poppins", "Bricolage Grotesque", sans-serif',
-              fontWeight: 700,
-              fontSize: '24px',
-              lineHeight: '28px',
-              letterSpacing: '-0.02em',
-              color: '#000000',
-              margin: 0,
-              padding: 0,
+              lineHeight: '1.2',
             }}
           >
             {t('withdraw.bookDetails', 'Book Details')}
           </h2>
           <button
             onClick={onClose}
-            className="w-6 h-6 rounded-full bg-black text-white flex items-center justify-center hover:bg-gray-800 transition-colors shrink-0 cursor-pointer"
+            className="w-[22px] h-[22px] md:w-6 md:h-6 rounded-full bg-black text-white flex items-center justify-center hover:bg-gray-800 transition-colors shrink-0 cursor-pointer"
             title="Close"
           >
-            <FiX size={14} strokeWidth={2.5} />
+            <FiX size={13} strokeWidth={2.5} />
           </button>
         </div>
 
         {/* Scrollable Container */}
-        <div className="w-full flex-1 overflow-y-auto select-none [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] flex flex-col gap-5">
+        <div className="w-full flex-1 overflow-y-auto select-none [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] flex flex-col gap-4 md:gap-5">
           {/* Top Card: Selected Book Info Banner */}
           <div
-            className="w-full flex items-center shrink-0"
+            className="w-full flex items-center shrink-0 p-3 xs:p-3.5 md:p-[8px_24px_8px_12px] gap-3.5 md:gap-5 rounded-[16px] bg-[#F8F5EF] box-border min-h-[135px] md:h-[163px]"
             style={{
-              width: '100%',
               maxWidth: '1015px',
-              height: '163px',
-              background: 'rgba(248, 245, 239, 1)',
-              borderRadius: '16px',
-              padding: '8px 24px 8px 12px',
-              gap: '20px',
-              boxSizing: 'border-box',
-              opacity: 1,
             }}
           >
             {/* Book Cover Container */}
             <div
-              className="flex items-center justify-center shrink-0 bg-white"
-              style={{
-                width: '108px',
-                height: '147px',
-                borderRadius: '10px',
-                background: 'rgba(255, 255, 255, 1)',
-                boxShadow: '0 2px 10px rgba(0,0,0,0.06)',
-                padding: '6px',
-                boxSizing: 'border-box',
-              }}
+              className="flex items-center justify-center shrink-0 bg-white rounded-[10px] shadow-[0_2px_10px_rgba(0,0,0,0.06)] p-1.5 w-[95px] h-[125px] xs:h-[130px] md:w-[108px] md:h-[147px] box-border"
             >
               {book.coverImage ? (
                 <img
@@ -763,47 +731,35 @@ const OrderModal = ({ book, onClose, onSuccess, balance }) => {
 
             {/* Info Right */}
             <div
-              className="flex flex-col justify-center gap-2 flex-1 min-w-0"
+              className="flex flex-col justify-center gap-1.5 md:gap-2 flex-1 min-w-0 text-left"
               style={{
                 maxWidth: '836px',
-                opacity: 1,
               }}
             >
               <h3
-                className="line-clamp-2"
+                className="font-bold text-[17px] xs:text-[18px] md:text-[23px] leading-[22px] xs:leading-[24px] md:leading-[28px] text-black tracking-tight text-left break-words"
                 style={{
-                  width: '100%',
-                  maxWidth: '836px',
-                  fontFamily: '"Bricolage Grotesque", "Poppins", sans-serif',
-                  fontWeight: 700,
-                  fontSize: '23px',
-                  lineHeight: '28px',
-                  letterSpacing: '-0.02em',
-                  color: '#000000',
+                  fontFamily: '"Bricolage Grotesque", sans-serif',
                   margin: 0,
                   padding: 0,
-                  opacity: 1,
                 }}
               >
                 {book.title}
               </h3>
 
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1.5 md:gap-2 mt-0.5">
                 <img
                   src="/coins/gfitcoin.png"
                   alt="Coins"
-                  className="w-6 h-6 object-contain shrink-0"
+                  className="w-5 h-5 md:w-6 md:h-6 object-contain shrink-0"
                   onError={(e) => {
                     e.currentTarget.src = '/coins/Coin.png';
                   }}
                 />
                 <span
+                  className="font-bold text-[18px] md:text-[22px] leading-none text-[#E9B300]"
                   style={{
                     fontFamily: '"Bricolage Grotesque", "Poppins", sans-serif',
-                    fontWeight: 700,
-                    fontSize: '22px',
-                    lineHeight: '1',
-                    color: 'rgba(233, 179, 0, 1)',
                   }}
                 >
                   {book.coinCost ? book.coinCost.toLocaleString('de-DE') : '0'}
@@ -812,41 +768,27 @@ const OrderModal = ({ book, onClose, onSuccess, balance }) => {
             </div>
           </div>
 
-          <form onSubmit={handleSubmit} className="flex flex-col gap-5 w-full">
+          <form onSubmit={handleSubmit} className="flex flex-col gap-4 md:gap-5 w-full">
             {/* Shipping Address Section */}
-            <div className="flex flex-col gap-3.5 w-full">
+            <div className="flex flex-col gap-3 md:gap-3.5 w-full text-left">
               <h3
+                className="font-bold text-[20px] md:text-[23px] leading-[26px] md:leading-[28px] text-black tracking-tight text-left m-0 p-0"
                 style={{
-                  width: '100%',
-                  maxWidth: '1017px',
                   fontFamily: '"Bricolage Grotesque", sans-serif',
-                  fontWeight: 700,
-                  fontSize: '23px',
-                  lineHeight: '28px',
-                  letterSpacing: '-0.02em',
-                  color: '#000000',
-                  margin: 0,
-                  padding: 0,
-                  opacity: 1,
+                  maxWidth: '1017px',
                 }}
               >
                 {t('withdraw.shippingAddress', 'Shipping Address')}
               </h3>
 
-              <div className="flex flex-col gap-4 w-full">
+              <div className="flex flex-col gap-3.5 md:gap-4 w-full">
                 {/* Row 1: Full Name & Email Address */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="flex flex-col gap-1.5 w-full">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 md:gap-4 w-full">
+                  <div className="flex flex-col gap-1.5 w-full text-left">
                     <label
+                      className="font-medium text-[15px] md:text-[16px] text-black text-left block"
                       style={{
                         fontFamily: '"Poppins", sans-serif',
-                        fontWeight: 500,
-                        fontSize: '16px',
-                        lineHeight: '26px',
-                        letterSpacing: '0em',
-                        color: '#000000',
-                        opacity: 1,
-                        display: 'block',
                       }}
                     >
                       {t('withdraw.fullName', 'Full Name')}
@@ -857,30 +799,18 @@ const OrderModal = ({ book, onClose, onSuccess, balance }) => {
                       value={form.fullName}
                       onChange={e => set('fullName', e.target.value)}
                       placeholder={t('withdraw.enterFullName', 'Enter your full name')}
-                      className="w-full text-[#000000] placeholder:text-[#9CA3AF] px-6 text-[15px] focus:outline-none focus:ring-2 focus:ring-slate-400/50 border-none transition-all"
+                      className="w-full text-[#000000] placeholder:text-[#9CA3AF] px-5 xs:px-6 text-[14px] xs:text-[15px] focus:outline-none focus:ring-2 focus:ring-slate-400/50 border-none transition-all rounded-[50px] bg-[#EFEFEF] h-[52px] xs:h-[54px] md:h-[58px] box-border"
                       style={{
-                        maxWidth: '499.5px',
-                        height: '58px',
-                        background: 'rgba(239, 239, 239, 1)',
-                        borderRadius: '50px',
-                        opacity: 1,
                         fontFamily: '"Poppins", sans-serif',
-                        boxSizing: 'border-box',
                       }}
                     />
                   </div>
 
-                  <div className="flex flex-col gap-1.5 w-full">
+                  <div className="flex flex-col gap-1.5 w-full text-left">
                     <label
+                      className="font-medium text-[15px] md:text-[16px] text-black text-left block"
                       style={{
                         fontFamily: '"Poppins", sans-serif',
-                        fontWeight: 500,
-                        fontSize: '16px',
-                        lineHeight: '26px',
-                        letterSpacing: '0em',
-                        color: '#000000',
-                        opacity: 1,
-                        display: 'block',
                       }}
                     >
                       {t('withdraw.emailAddress', 'Email Address')}
@@ -891,32 +821,20 @@ const OrderModal = ({ book, onClose, onSuccess, balance }) => {
                       value={form.email}
                       onChange={e => set('email', e.target.value)}
                       placeholder={t('withdraw.enterEmailPlaceholder', 'Enter your email address')}
-                      className="w-full text-[#000000] placeholder:text-[#9CA3AF] px-6 text-[15px] focus:outline-none focus:ring-2 focus:ring-slate-400/50 border-none transition-all"
+                      className="w-full text-[#000000] placeholder:text-[#9CA3AF] px-5 xs:px-6 text-[14px] xs:text-[15px] focus:outline-none focus:ring-2 focus:ring-slate-400/50 border-none transition-all rounded-[50px] bg-[#EFEFEF] h-[52px] xs:h-[54px] md:h-[58px] box-border"
                       style={{
-                        maxWidth: '499.5px',
-                        height: '58px',
-                        background: 'rgba(239, 239, 239, 1)',
-                        borderRadius: '50px',
-                        opacity: 1,
                         fontFamily: '"Poppins", sans-serif',
-                        boxSizing: 'border-box',
                       }}
                     />
                   </div>
                 </div>
 
                 {/* Row 2: Address */}
-                <div className="flex flex-col gap-1.5 w-full">
+                <div className="flex flex-col gap-1.5 w-full text-left">
                   <label
+                    className="font-medium text-[15px] md:text-[16px] text-black text-left block"
                     style={{
                       fontFamily: '"Poppins", sans-serif',
-                      fontWeight: 500,
-                      fontSize: '16px',
-                      lineHeight: '26px',
-                      letterSpacing: '0em',
-                      color: '#000000',
-                      opacity: 1,
-                      display: 'block',
                     }}
                   >
                     {t('withdraw.address', 'Address')}
@@ -927,32 +845,20 @@ const OrderModal = ({ book, onClose, onSuccess, balance }) => {
                     value={form.address}
                     onChange={e => set('address', e.target.value)}
                     placeholder={t('withdraw.enterCompleteAddress', 'Enter your complete address')}
-                    className="w-full text-[#000000] placeholder:text-[#9CA3AF] px-6 text-[15px] focus:outline-none focus:ring-2 focus:ring-slate-400/50 border-none transition-all"
+                    className="w-full text-[#000000] placeholder:text-[#9CA3AF] px-5 xs:px-6 text-[14px] xs:text-[15px] focus:outline-none focus:ring-2 focus:ring-slate-400/50 border-none transition-all rounded-[50px] bg-[#EFEFEF] h-[52px] xs:h-[54px] md:h-[58px] box-border"
                     style={{
-                      maxWidth: '1018px',
-                      height: '58px',
-                      background: 'rgba(239, 239, 239, 1)',
-                      borderRadius: '50px',
-                      opacity: 1,
                       fontFamily: '"Poppins", sans-serif',
-                      boxSizing: 'border-box',
                     }}
                   />
                 </div>
 
                 {/* Row 3: City & Zipcode */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="flex flex-col gap-1.5 w-full">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 md:gap-4 w-full">
+                  <div className="flex flex-col gap-1.5 w-full text-left">
                     <label
+                      className="font-medium text-[15px] md:text-[16px] text-black text-left block"
                       style={{
                         fontFamily: '"Poppins", sans-serif',
-                        fontWeight: 500,
-                        fontSize: '16px',
-                        lineHeight: '26px',
-                        letterSpacing: '0em',
-                        color: '#000000',
-                        opacity: 1,
-                        display: 'block',
                       }}
                     >
                       {t('withdraw.city', 'City')}
@@ -963,30 +869,18 @@ const OrderModal = ({ book, onClose, onSuccess, balance }) => {
                       value={form.city}
                       onChange={e => set('city', e.target.value)}
                       placeholder={t('withdraw.enterCity', 'Enter your city')}
-                      className="w-full text-[#000000] placeholder:text-[#9CA3AF] px-6 text-[15px] focus:outline-none focus:ring-2 focus:ring-slate-400/50 border-none transition-all"
+                      className="w-full text-[#000000] placeholder:text-[#9CA3AF] px-5 xs:px-6 text-[14px] xs:text-[15px] focus:outline-none focus:ring-2 focus:ring-slate-400/50 border-none transition-all rounded-[50px] bg-[#EFEFEF] h-[52px] xs:h-[54px] md:h-[58px] box-border"
                       style={{
-                        maxWidth: '499.5px',
-                        height: '58px',
-                        background: 'rgba(239, 239, 239, 1)',
-                        borderRadius: '50px',
-                        opacity: 1,
                         fontFamily: '"Poppins", sans-serif',
-                        boxSizing: 'border-box',
                       }}
                     />
                   </div>
 
-                  <div className="flex flex-col gap-1.5 w-full">
+                  <div className="flex flex-col gap-1.5 w-full text-left">
                     <label
+                      className="font-medium text-[15px] md:text-[16px] text-black text-left block"
                       style={{
                         fontFamily: '"Poppins", sans-serif',
-                        fontWeight: 500,
-                        fontSize: '16px',
-                        lineHeight: '26px',
-                        letterSpacing: '0em',
-                        color: '#000000',
-                        opacity: 1,
-                        display: 'block',
                       }}
                     >
                       {t('withdraw.zipcode', 'Zipcode')}
@@ -997,15 +891,9 @@ const OrderModal = ({ book, onClose, onSuccess, balance }) => {
                       value={form.zipcode}
                       onChange={e => set('zipcode', e.target.value)}
                       placeholder={t('withdraw.enterZipcode', 'Enter zip code')}
-                      className="w-full text-[#000000] placeholder:text-[#9CA3AF] px-6 text-[15px] focus:outline-none focus:ring-2 focus:ring-slate-400/50 border-none transition-all"
+                      className="w-full text-[#000000] placeholder:text-[#9CA3AF] px-5 xs:px-6 text-[14px] xs:text-[15px] focus:outline-none focus:ring-2 focus:ring-slate-400/50 border-none transition-all rounded-[50px] bg-[#EFEFEF] h-[52px] xs:h-[54px] md:h-[58px] box-border"
                       style={{
-                        maxWidth: '499.5px',
-                        height: '58px',
-                        background: 'rgba(239, 239, 239, 1)',
-                        borderRadius: '50px',
-                        opacity: 1,
                         fontFamily: '"Poppins", sans-serif',
-                        boxSizing: 'border-box',
                       }}
                     />
                   </div>
@@ -1014,20 +902,12 @@ const OrderModal = ({ book, onClose, onSuccess, balance }) => {
             </div>
 
             {/* Personal Signature Section */}
-            <div className="flex flex-col gap-2 w-full">
+            <div className="flex flex-col gap-2 w-full text-left">
               <h3
+                className="font-bold text-[20px] md:text-[23px] leading-[26px] md:leading-[28px] text-black tracking-tight text-left m-0 p-0"
                 style={{
-                  width: '100%',
-                  maxWidth: '1017px',
                   fontFamily: '"Bricolage Grotesque", sans-serif',
-                  fontWeight: 700,
-                  fontSize: '23px',
-                  lineHeight: '28px',
-                  letterSpacing: '-0.02em',
-                  color: '#000000',
-                  margin: 0,
-                  padding: 0,
-                  opacity: 1,
+                  maxWidth: '1017px',
                 }}
               >
                 {t('withdraw.personalSignature', 'Personal Signature')}
@@ -1044,7 +924,6 @@ const OrderModal = ({ book, onClose, onSuccess, balance }) => {
                     borderRadius: '5px',
                     border: '1px solid rgba(36, 50, 77, 1)',
                     background: form.wantsSignature ? 'rgba(36, 50, 77, 1)' : '#FFFFFF',
-                    opacity: 1,
                     boxSizing: 'border-box',
                   }}
                   className="flex items-center justify-center shrink-0 transition-all"
@@ -1057,7 +936,6 @@ const OrderModal = ({ book, onClose, onSuccess, balance }) => {
                     fontWeight: 500,
                     fontSize: '15px',
                     color: '#000000',
-                    opacity: 1,
                   }}
                 >
                   {t('withdraw.wantsSignature', 'I would like a personal signature')}
@@ -1073,17 +951,11 @@ const OrderModal = ({ book, onClose, onSuccess, balance }) => {
                     transition={{ duration: 0.2 }}
                     className="overflow-hidden mt-1"
                   >
-                    <div className="flex flex-col gap-1.5 w-full">
+                    <div className="flex flex-col gap-1.5 w-full text-left">
                       <label
+                        className="font-medium text-[15px] md:text-[16px] text-black text-left block"
                         style={{
                           fontFamily: '"Poppins", sans-serif',
-                          fontWeight: 500,
-                          fontSize: '16px',
-                          lineHeight: '26px',
-                          letterSpacing: '0em',
-                          color: '#000000',
-                          opacity: 1,
-                          display: 'block',
                         }}
                       >
                         {t('withdraw.nameForSignature', 'Name for Signature')}
@@ -1093,15 +965,9 @@ const OrderModal = ({ book, onClose, onSuccess, balance }) => {
                         value={form.signatureName}
                         onChange={e => set('signatureName', e.target.value)}
                         placeholder={t('withdraw.enterNameForSignature', 'Enter name for signature')}
-                        className="w-full text-[#000000] placeholder:text-[#9CA3AF] px-6 text-[15px] focus:outline-none focus:ring-2 focus:ring-slate-400/50 border-none transition-all"
+                        className="w-full text-[#000000] placeholder:text-[#9CA3AF] px-5 xs:px-6 text-[14px] xs:text-[15px] focus:outline-none focus:ring-2 focus:ring-slate-400/50 border-none transition-all rounded-[50px] bg-[#EFEFEF] h-[52px] xs:h-[54px] md:h-[58px] box-border"
                         style={{
-                          maxWidth: '1018px',
-                          height: '58px',
-                          background: 'rgba(239, 239, 239, 1)',
-                          borderRadius: '50px',
-                          opacity: 1,
                           fontFamily: '"Poppins", sans-serif',
-                          boxSizing: 'border-box',
                         }}
                       />
                     </div>
@@ -1115,22 +981,17 @@ const OrderModal = ({ book, onClose, onSuccess, balance }) => {
               <button
                 type="submit"
                 disabled={submitting}
-                className="w-full bg-[#24324D] text-white rounded-full font-semibold text-[15px] hover:bg-[#1a2538] active:scale-[0.99] transition-all flex items-center justify-center disabled:opacity-50 cursor-pointer"
+                className="w-full bg-[#24324D] text-white rounded-full font-semibold text-[15px] hover:bg-[#1a2538] active:scale-[0.99] transition-all flex items-center justify-center disabled:opacity-50 cursor-pointer h-[50px]"
                 style={{
-                  height: '50px',
                   fontFamily: '"Poppins", sans-serif',
                 }}
               >
                 {submitting ? t('withdraw.placingOrder', 'Placing Order...') : t('withdraw.orderBookNow', 'Order Book Now')}
               </button>
               <p
+                className="text-center text-[12.5px] xs:text-[13px] text-[#777777] m-0 p-0"
                 style={{
                   fontFamily: '"Poppins", sans-serif',
-                  fontSize: '13px',
-                  color: '#777777',
-                  textAlign: 'center',
-                  margin: 0,
-                  padding: 0,
                 }}
               >
                 {t('withdraw.shippingTimeframe', 'After ordering, the book will be shipped within 3-5 business days')}
@@ -1286,51 +1147,27 @@ const MyBooksSection = ({ balance, onBalanceUpdate, onClose, preFetchedBooks, pr
 
   return createPortal(
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-      className="fixed inset-0 z-[99999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 overflow-y-auto"
+      className="fixed inset-0 z-[99999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-2.5 sm:p-4 overflow-y-auto"
       onClick={onClose}>
       <motion.div initial={{ scale: 0.96, opacity: 0, y: 10 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.96, opacity: 0, y: 10 }}
         transition={{ duration: 0.2 }}
-        className="bg-white shadow-2xl relative border border-gray-100 box-border flex flex-col p-6 sm:p-8 my-auto"
-        style={{
-          width: '100%',
-          maxWidth: '1072px',
-          height: 'auto',
-          maxHeight: '921px',
-          borderRadius: '25px',
-          background: 'rgba(255, 255, 255, 1)',
-          opacity: 1,
-          boxSizing: 'border-box',
-        }}
+        className="bg-white shadow-2xl relative border border-gray-100 box-border flex flex-col p-3.5 xs:p-4 sm:p-8 my-auto w-full max-w-[540px] sm:max-w-[1072px] max-h-[94vh] sm:max-h-[921px] rounded-[24px] sm:rounded-[25px]"
         onClick={e => e.stopPropagation()}>
 
         {/* Header */}
-        <div className="flex items-center justify-between w-full mb-5 shrink-0">
+        <div className="flex items-center justify-between w-full mb-4 sm:mb-5 shrink-0">
           <h2
+            className="font-bold text-[20px] sm:text-[23px] text-black tracking-tight m-0 p-0"
             style={{
-              width: '339px',
-              height: '23px',
               fontFamily: '"Bricolage Grotesque", sans-serif',
-              fontWeight: 700,
-              fontSize: '23px',
-              lineHeight: '23px',
-              letterSpacing: '-0.02em',
-              color: '#000000',
-              display: 'flex',
-              alignItems: 'center',
-              margin: 0,
-              padding: 0,
-              opacity: 1,
+              lineHeight: '1.2',
             }}
           >
             {t('withdraw.selectBookTitle', 'Select Book to Order')}
           </h2>
           <button
             onClick={onClose}
-            className="rounded-full bg-black text-white flex items-center justify-center hover:bg-gray-800 transition-colors shrink-0 cursor-pointer"
-            style={{
-              width: '22px',
-              height: '22px',
-            }}
+            className="rounded-full bg-black text-white flex items-center justify-center hover:bg-gray-800 transition-colors shrink-0 cursor-pointer w-[22px] h-[22px]"
             title="Close"
           >
             <FiX size={13} strokeWidth={2.5} />
@@ -1352,7 +1189,7 @@ const MyBooksSection = ({ balance, onBalanceUpdate, onClose, preFetchedBooks, pr
           </div>
         ) : (
           /* Books Grid with hidden scrollbar */
-          <div className="w-full overflow-y-auto max-h-[830px] select-none [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+          <div className="w-full overflow-y-auto max-h-[78vh] sm:max-h-[830px] select-none [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
             {books.length === 0 ? (
               <div className="flex flex-col items-center justify-center gap-3 py-20 text-center w-full">
                 <div className="w-12 h-12 rounded-2xl bg-amber-50 border border-amber-100 flex items-center justify-center text-amber-600">
@@ -1369,9 +1206,16 @@ const MyBooksSection = ({ balance, onBalanceUpdate, onClose, preFetchedBooks, pr
                 </p>
               </div>
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 sm:gap-4 w-full">
                 {books.map((book) => {
                   const isSelected = selectedBookId === book._id;
+                  const titleLen = book.title ? book.title.length : 0;
+                  const titleFontSizeClass = titleLen > 38
+                    ? 'text-[17px] sm:text-[19px] leading-[22px] sm:leading-[25px]'
+                    : titleLen > 22
+                      ? 'text-[20px] sm:text-[22px] leading-[26px] sm:leading-[29px]'
+                      : 'text-[23px] xs:text-[25px] sm:text-[25px] leading-[30px] xs:leading-[35px] sm:leading-[35px]';
+
                   return (
                     <div
                       key={book._id}
@@ -1379,59 +1223,38 @@ const MyBooksSection = ({ balance, onBalanceUpdate, onClose, preFetchedBooks, pr
                         setSelectedBookId(book._id);
                         setDetailBook(book);
                       }}
-                      className="flex items-center w-full transition-all cursor-pointer text-left group"
-                      style={{
-                        width: '100%',
-                        maxWidth: '503px',
-                        height: '262px',
-                        background: isSelected ? 'rgba(36, 50, 77, 1)' : 'rgba(248, 245, 239, 1)',
-                        borderRadius: '16px',
-                        padding: '8px 24px 8px 8px',
-                        gap: '24px',
-                        border: isSelected ? '2px solid rgba(36, 50, 77, 1)' : '2px solid transparent',
-                        boxSizing: 'border-box',
-                        opacity: 1,
-                      }}
+                      className={`flex items-center w-full sm:max-w-[503px] h-[197px] sm:h-[262px] transition-all cursor-pointer text-left group p-2 sm:p-[8px_24px_8px_8px] gap-3.5 sm:gap-6 rounded-[20px] sm:rounded-[16px] border-2 box-border opacity-100 shrink-0 ${
+                        isSelected
+                          ? 'bg-[#24324D] border-[#24324D]'
+                          : 'bg-[#F8F5EF] border-transparent'
+                      }`}
                     >
                       {/* Cover Card Container */}
                       <div
-                        className="flex items-center justify-center shrink-0 bg-white"
-                        style={{
-                          width: '185px',
-                          height: '246px',
-                          borderRadius: '14px',
-                          boxSizing: 'border-box',
-                          boxShadow: '0 4px 14px rgba(0,0,0,0.06)',
-                        }}
+                        className="w-[136px] sm:w-[185px] h-[181px] sm:h-[246px] rounded-[14px] flex items-center justify-center shrink-0 bg-white box-border shadow-[0_4px_14px_rgba(0,0,0,0.06)]"
                       >
                         {book.coverImage ? (
                           <img
                             src={book.coverImage.startsWith('data:') || book.coverImage.startsWith('http') ? book.coverImage : `${BACKEND}${book.coverImage}`}
                             alt={book.title}
-                            className="object-contain"
-                            style={{
-                              width: '138px',
-                              height: '210px',
-                              filter: 'drop-shadow(0 6px 10px rgba(0,0,0,0.18))',
-                            }}
+                            className="w-[101.5px] sm:w-[138px] h-[154.5px] sm:h-[210px] object-contain shrink-0 drop-shadow-[0_6px_10px_rgba(0,0,0,0.18)]"
                             onError={(e) => { e.target.style.display = 'none'; }}
                           />
                         ) : (
-                          <FiBook className="text-slate-400 text-4xl" />
+                          <FiBook className="text-slate-400 text-3xl sm:text-4xl" />
                         )}
                       </div>
 
                       {/* Info */}
-                      <div className="flex flex-col justify-center gap-3.5 flex-1 min-w-0">
+                      <div className="flex flex-col justify-center gap-2 sm:gap-3.5 flex-1 min-w-0 pr-1 sm:pr-0">
                         <h3
-                          className="line-clamp-3"
+                          className={`line-clamp-3 font-bold tracking-tight ${titleFontSizeClass} ${
+                            isSelected ? 'text-white' : 'text-black'
+                          }`}
                           style={{
-                            fontFamily: '"Poppins", sans-serif',
+                            fontFamily: '"Bricolage Grotesque", sans-serif',
                             fontWeight: 700,
-                            fontSize: '22px',
-                            lineHeight: '28px',
-                            letterSpacing: '-0.01em',
-                            color: isSelected ? '#FFFFFF' : '#000000',
+                            letterSpacing: '-0.02em',
                             margin: 0,
                             padding: 0,
                           }}
@@ -1439,22 +1262,19 @@ const MyBooksSection = ({ balance, onBalanceUpdate, onClose, preFetchedBooks, pr
                           {book.title}
                         </h3>
 
-                        <div className="flex items-center gap-2 mt-1">
+                        <div className="flex items-center gap-1.5 sm:gap-2 mt-0.5 sm:mt-1">
                           <img
                             src="/coins/gfitcoin.png"
                             alt="Coins"
-                            className="w-6 h-6 object-contain shrink-0"
+                            className="w-5 h-5 sm:w-6 sm:h-6 object-contain shrink-0"
                             onError={(e) => {
                               e.currentTarget.src = '/coins/Coin.png';
                             }}
                           />
                           <span
+                            className="font-bold text-[18px] sm:text-[22px] leading-none text-[#E9B300]"
                             style={{
                               fontFamily: '"Poppins", sans-serif',
-                              fontWeight: 700,
-                              fontSize: '22px',
-                              lineHeight: '1',
-                              color: 'rgba(233, 179, 0, 1)',
                             }}
                           >
                             {book.coinCost.toLocaleString('de-DE')}

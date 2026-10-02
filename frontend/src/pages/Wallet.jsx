@@ -58,7 +58,31 @@ const PromoCodeRedeem = ({ onSuccess }) => {
         setCode('');
         if (onSuccess) onSuccess(data.newBalance);
       } else {
-        setPopup({ type: 'error', text: data.error || t('withdraw.redemptionFailed', 'Failed to redeem code') });
+        const errorMsg = (data.error || '').trim();
+        let translatedError = errorMsg;
+        if (/^Invalid code/i.test(errorMsg)) {
+          translatedError = t('withdraw.invalidCode', 'Invalid code');
+        } else if (/^Code expired/i.test(errorMsg)) {
+          translatedError = t('withdraw.codeExpired', 'Code expired');
+        } else if (/^Already redeemed/i.test(errorMsg)) {
+          translatedError = t('withdraw.alreadyRedeemed', 'Already redeemed');
+        } else if (/^Code fully used/i.test(errorMsg)) {
+          translatedError = t('withdraw.codeFullyUsed', 'Code fully used');
+        } else if (/^Code is required/i.test(errorMsg)) {
+          translatedError = t('withdraw.codeRequired', 'Code is required');
+        } else if (/^User not found/i.test(errorMsg)) {
+          translatedError = t('withdraw.userNotFound', 'User not found');
+        } else if (data.errorType === 'min_earnings' || /You need to earn/i.test(errorMsg)) {
+          const m = errorMsg.match(/You need to earn (\d+) coins in the last 7 days to use this code\. You have earned (\d+) so far\./i);
+          if (m) {
+            translatedError = t('withdraw.minEarningsRequired', {
+              required: m[1],
+              earned: m[2],
+              defaultValue: errorMsg
+            });
+          }
+        }
+        setPopup({ type: 'error', text: translatedError || t('withdraw.redemptionFailed', 'Failed to redeem code') });
       }
     } catch (err) {
       setPopup({ type: 'error', text: t('withdraw.networkError', 'Network error. Try again later.') });

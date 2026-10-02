@@ -82,19 +82,24 @@ const Landing = () => {
           background: 'linear-gradient(0deg, #FAFAFA, #FAFAFA), linear-gradient(0deg, #FFFFFF, #FFFFFF)'
         }}
       >
-        {/* Absolute Right Hero Image (Overlaps header) */}
+        {/* Absolute Right Hero Image (Locked to 1328px content container) */}
         {!isMobile && (
-        <div
-          className="absolute top-0 right-0 z-0 pointer-events-none"
-          style={{ width: 755, height: 587 }}
-        >
-          <img
-            src="/coins/hero section image.png"
-            alt="Hero Background"
-            className="w-full h-full object-fill"
-          />
-        </div>
-      )}
+          <div
+            className="absolute top-0 left-1/2 -translate-x-1/2 w-full pointer-events-none z-0"
+            style={{ maxWidth: '1328px' }}
+          >
+            <div
+              className="absolute top-0 pointer-events-none"
+              style={{ width: 755, height: 587, right: '-30px' }}
+            >
+              <img
+                src="/coins/hero section image.png"
+                alt="Hero Background"
+                className="w-full h-full object-fill"
+              />
+            </div>
+          </div>
+        )}
 
       {/* NAVBAR */}
       {currentUser ? (
@@ -856,14 +861,14 @@ const Landing = () => {
 
         {/* Image (Second on mobile, First on Desktop) */}
         <div
-          className="order-2 lg:order-1 flex-shrink-0 w-full lg:w-[640px] h-auto lg:h-[558px] px-0 mt-6 lg:mt-0 flex justify-start"
-          style={isMobile ? { width: 'calc(100% + 8px)', maxWidth: 'calc(100% + 8px)', marginLeft: '-4px', marginRight: '-4px' } : {}}
+          className="order-2 lg:order-1 flex-shrink-0 w-full lg:w-[640px] h-auto lg:h-[558px] px-0 mt-6 lg:mt-0 flex justify-center lg:justify-start"
+          style={isMobile ? { width: '100%', maxWidth: '100%' } : {}}
         >
           <img
             src={isMobile ? "/coins/whychosemobile.png" : "/coins/why chose us.png"}
             alt="Why Choose Us"
             className="w-full h-auto object-cover rounded-[24px] lg:rounded-[32px]"
-            style={isMobile ? { width: '100%', opacity: 1, position: 'relative', left: '-16px' } : { width: '100%', height: '100%', position: 'relative', left: '-16px' }}
+            style={isMobile ? { width: '100%', opacity: 1 } : { width: '100%', height: '100%', position: 'relative', left: '-16px' }}
           />
         </div>
       </section>

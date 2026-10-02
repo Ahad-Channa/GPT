@@ -473,8 +473,8 @@ export const FeaturedOfferModal = ({ offer, token, onClose, onSubmitted }) => {
             </button>
           </div>
 
-          {/* Top Section: Icon + Title */}
-          <div className="flex items-end gap-3 sm:gap-4 pr-0 sm:pr-16 w-full">
+          {/* Top Section: Icon + Title (Elevated above bottom of image) */}
+          <div className="flex items-center gap-3 sm:gap-4 pr-0 sm:pr-16 w-full">
             <div
               className="w-[76px] h-[76px] sm:w-[100px] sm:h-[100px] rounded-[10px] sm:rounded-[11px] bg-[#EDE8DE] overflow-hidden flex-shrink-0 flex items-center justify-center shadow-sm"
             >
@@ -484,7 +484,7 @@ export const FeaturedOfferModal = ({ offer, token, onClose, onSubmitted }) => {
                 <span className="text-3xl sm:text-4xl">{emojiIcon}</span>
               )}
             </div>
-            <div className="flex-1 min-w-0 translate-y-[6px] sm:translate-y-[8px]">
+            <div className="flex-1 min-w-0">
               <h2
                 style={{
                   fontFamily: '"Bricolage Grotesque", sans-serif',

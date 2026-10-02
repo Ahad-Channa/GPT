@@ -151,7 +151,7 @@ const LiveEarningsBar = () => {
 
     if (tx.isWithdrawal || tx.transactionType === 'withdrawal') {
       const method = tx.method ? tx.method.charAt(0).toUpperCase() + tx.method.slice(1) : 'Withdrawal';
-      const usdValue = rawAmount >= 1000 
+      const usdValue = rawAmount >= 1000
         ? (rawAmount / 1000).toLocaleString('de-DE', { minimumFractionDigits: 0, maximumFractionDigits: 2 })
         : rawAmount.toLocaleString('de-DE');
 
@@ -344,6 +344,9 @@ const LiveEarningsBar = () => {
                       transition={{ duration: 0.2 }}
                       onClick={() => tx.userId?._id && setSelectedUserId(tx.userId._id)}
                       onMouseEnter={(e) => {
+                        if (typeof window !== 'undefined' && window.matchMedia && !window.matchMedia('(hover: hover) and (pointer: fine)').matches) {
+                          return;
+                        }
                         const rect = e.currentTarget.getBoundingClientRect();
                         setHoveredData({
                           tx,
@@ -497,7 +500,7 @@ const LiveEarningsBar = () => {
       {/* Floating Hover Tooltip: Rendered outside the scroll container directly below the hovered item */}
       {hoveredData && (
         <div
-          className="fixed z-[9999] pointer-events-none transition-opacity duration-150"
+          className="fixed z-[999999] pointer-events-none transition-opacity duration-150"
           style={{
             top: `${hoveredData.top}px`,
             left: `${hoveredData.left}px`,
@@ -508,14 +511,11 @@ const LiveEarningsBar = () => {
             className="flex flex-col"
             style={{
               width: '214px',
-              borderRadius: '0px 12px 12px 12px',
-              borderTopRightRadius: '12px',
-              borderBottomRightRadius: '12px',
-              borderBottomLeftRadius: '12px',
+              borderRadius: '16px',
               padding: '12px 13px 12px 13px',
               gap: '8px',
               background: 'rgba(255, 255, 255, 1)',
-              boxShadow: '0px 10px 23px 0px rgba(0, 0, 0, 0.09)',
+              boxShadow: '0px 10px 23px 0px rgba(0, 0, 0, 0.15)',
               border: '1px solid rgba(223, 225, 209, 0.8)',
               boxSizing: 'border-box',
               display: 'flex',

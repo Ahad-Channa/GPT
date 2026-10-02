@@ -223,7 +223,8 @@ const useReferredUsers = (token) => {
 };
 
 const Affiliates = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const isEn = (i18n?.language || 'en').startsWith('en');
   const { currentUser, mongoUser } = useAuth();
   const [token, setToken] = useState(null);
 
@@ -654,16 +655,10 @@ const Affiliates = () => {
         <div className="w-full max-w-[1328px] mx-auto px-2 sm:px-4 md:px-8 lg:px-0 pt-6 sm:pt-10 pb-8 sm:pb-16 flex flex-col gap-4 sm:gap-8">
           {/* Unique Referral Link Card */}
           <div
-            className="w-full flex flex-col justify-between transition-colors"
+            className="w-full flex flex-col justify-between transition-colors p-3.5 xs:p-4 min-[390px]:p-5 sm:pt-[36px] sm:pr-[28px] sm:pb-[39px] sm:pl-[30px] rounded-[24px] sm:rounded-[30px] gap-3.5 sm:gap-[25px]"
             style={{
               maxWidth: '1328px',
               minHeight: '212px',
-              borderRadius: '30px',
-              paddingTop: '36px',
-              paddingRight: '28px',
-              paddingBottom: '39px',
-              paddingLeft: '30px',
-              gap: '25px',
               background: 'rgba(249, 247, 241, 1)',
               boxSizing: 'border-box',
               opacity: 1,
@@ -681,15 +676,13 @@ const Affiliates = () => {
               }}
             >
               <h2
+                className={`${
+                  isEn
+                    ? 'text-[20px] min-[360px]:text-[22px] min-[390px]:text-[24px] sm:text-[27px]'
+                    : 'text-[17px] min-[350px]:text-[18.5px] min-[375px]:text-[20px] min-[390px]:text-[21.5px] min-[420px]:text-[23.5px] sm:text-[27px]'
+                } font-bold text-black m-0 leading-tight sm:leading-[18px] tracking-[-0.02em] whitespace-nowrap`}
                 style={{
                   fontFamily: '"Bricolage Grotesque", sans-serif',
-                  fontWeight: 700,
-                  fontSize: '27px',
-                  lineHeight: '18px',
-                  letterSpacing: '-0.02em',
-                  color: '#000000',
-                  margin: 0,
-                  whiteSpace: 'nowrap',
                 }}
               >
                 {t('affiliates.referralLinkTitle', 'Your Unique Referral Link')}
@@ -700,7 +693,7 @@ const Affiliates = () => {
                   fontFamily: '"Poppins", sans-serif',
                   fontWeight: 500,
                   fontSize: '14px',
-                  lineHeight: '14px',
+                  lineHeight: '18px',
                   letterSpacing: '0%',
                   color: '#000000',
                   margin: 0,
@@ -712,7 +705,7 @@ const Affiliates = () => {
 
             {/* Referral Link Field (1270x66, radius: 50px, background: white, padding: 8px 10px 9px 25px) */}
             <div
-              className="w-full flex items-center justify-between shadow-xs transition-colors"
+              className="w-full flex items-center justify-between shadow-xs transition-colors pl-3 sm:pl-[25px]"
               style={{
                 maxWidth: '1270px',
                 height: '66px',
@@ -720,7 +713,6 @@ const Affiliates = () => {
                 paddingTop: '8px',
                 paddingRight: '10px',
                 paddingBottom: '9px',
-                paddingLeft: '25px',
                 background: 'rgba(255, 255, 255, 1)',
                 boxSizing: 'border-box',
                 opacity: 1,
@@ -730,10 +722,10 @@ const Affiliates = () => {
                 type="text"
                 readOnly
                 value={referralUrl}
+                className="text-[11px] min-[360px]:text-[12px] min-[400px]:text-[13px] sm:text-[16px]"
                 style={{
                   fontFamily: '"Poppins", sans-serif',
                   fontWeight: 400,
-                  fontSize: '16px',
                   lineHeight: '26px',
                   letterSpacing: '0%',
                   color: '#000000',
@@ -742,14 +734,15 @@ const Affiliates = () => {
                   outline: 'none',
                   width: '100%',
                   minWidth: 0,
-                  paddingRight: '12px',
+                  paddingRight: '8px',
                 }}
               />
               <button
                 onClick={() => copyToClipboard(referralUrl)}
-                className="active:scale-95 transition-transform shrink-0 cursor-pointer flex items-center justify-center"
+                className="active:scale-95 transition-transform shrink-0 cursor-pointer flex items-center justify-center px-4 sm:px-0"
                 style={{
-                  width: '99px',
+                  minWidth: '85px',
+                  width: 'auto',
                   height: '49px',
                   borderRadius: '80px',
                   background: 'rgba(36, 50, 77, 1)',
@@ -764,7 +757,7 @@ const Affiliates = () => {
                   style={{
                     fontFamily: '"Poppins", sans-serif',
                     fontWeight: 500,
-                    fontSize: '16px',
+                    fontSize: '15px',
                     lineHeight: '28px',
                     letterSpacing: '0%',
                     color: '#FFFFFF',
@@ -779,10 +772,9 @@ const Affiliates = () => {
 
           {/* Lower Section: Tabs & Table Card (1328x625, background: rgba(249, 247, 241, 1), radius: 30px) */}
           <div
-            className="w-full flex flex-col justify-between transition-colors px-2 py-3 sm:py-8 sm:px-[28px] min-h-0 sm:min-h-[625px] gap-2.5 sm:gap-6"
+            className="w-full flex flex-col justify-between transition-colors px-2 py-3.5 sm:py-8 sm:px-[28px] min-h-0 sm:min-h-[625px] gap-2.5 sm:gap-6 rounded-[24px] sm:rounded-[30px]"
             style={{
               maxWidth: '1328px',
-              borderRadius: '30px',
               background: 'rgba(249, 247, 241, 1)',
               boxSizing: 'border-box',
               opacity: 1,
@@ -790,15 +782,18 @@ const Affiliates = () => {
           >
             {/* Segmented Control Tabs */}
             <div className="flex flex-col sm:flex-row items-start sm:items-center sm:justify-center gap-1.5 sm:gap-[5px] mb-2 sm:mb-6">
-              {/* Row 1 on mobile: Recent Affiliate Earnings + Referred Users */}
-              <div className="flex items-center flex-nowrap gap-1.5 sm:gap-[5px] max-w-full overflow-x-auto hide-scroll">
+              {/* Row 1 on mobile: Recent Affiliate Earnings + Referred Users (both in 1 row) */}
+              <div className="flex flex-row items-center flex-nowrap gap-1 min-[360px]:gap-1.5 sm:gap-[5px] max-w-full overflow-x-auto hide-scroll">
                 <button
                   onClick={() => setActiveTab('recent')}
-                  className="transition-all cursor-pointer flex items-center justify-center shrink-0 px-3 sm:px-[18px] py-[9px] sm:py-[11px]"
+                  className={`transition-all cursor-pointer flex items-center justify-center shrink-0 ${isEn
+                      ? 'px-2 min-[360px]:px-2.5 sm:px-[18px]'
+                      : 'px-1.5 min-[360px]:px-2 min-[390px]:px-2.5 sm:px-[18px]'
+                    } py-[7px] sm:py-[11px]`}
                   style={{
                     height: '37px',
                     borderRadius: '40px',
-                    gap: '8px',
+                    gap: isEn ? '6px' : '4px',
                     background: activeTab === 'recent' ? 'rgba(36, 50, 77, 1)' : 'transparent',
                     color: activeTab === 'recent' ? '#FFFFFF' : '#000000',
                     border: 'none',
@@ -811,15 +806,16 @@ const Affiliates = () => {
                     src="/coins/recentaffilation.png"
                     alt="Recent"
                     style={{
-                      width: '16px',
-                      height: '16px',
                       objectFit: 'contain',
                       filter: activeTab === 'recent' ? 'brightness(0) invert(1)' : 'brightness(0)',
                     }}
-                    className="shrink-0 transition-all"
+                    className="w-3.5 h-3.5 min-[360px]:w-4 min-[360px]:h-4 shrink-0 transition-all"
                   />
                   <span
-                    className="text-[13px] sm:text-[14px]"
+                    className={`${isEn
+                        ? 'text-[11.5px] min-[360px]:text-[12.5px] min-[390px]:text-[13px] sm:text-[14px]'
+                        : 'text-[9.5px] min-[350px]:text-[10px] min-[370px]:text-[11px] min-[400px]:text-[12px] min-[430px]:text-[13px] sm:text-[14px]'
+                      }`}
                     style={{
                       fontFamily: '"Bricolage Grotesque", sans-serif',
                       fontWeight: 700,
@@ -835,11 +831,14 @@ const Affiliates = () => {
 
                 <button
                   onClick={() => setActiveTab('users')}
-                  className="transition-all cursor-pointer flex items-center justify-center shrink-0 px-3 sm:px-[18px] py-[9px] sm:py-[11px]"
+                  className={`transition-all cursor-pointer flex items-center justify-center shrink-0 ${isEn
+                      ? 'px-2 min-[360px]:px-2.5 sm:px-[18px]'
+                      : 'px-1.5 min-[360px]:px-2 min-[390px]:px-2.5 sm:px-[18px]'
+                    } py-[7px] sm:py-[11px]`}
                   style={{
                     height: '37px',
                     borderRadius: '40px',
-                    gap: '8px',
+                    gap: isEn ? '6px' : '4px',
                     background: activeTab === 'users' ? 'rgba(36, 50, 77, 1)' : 'transparent',
                     color: activeTab === 'users' ? '#FFFFFF' : '#000000',
                     border: 'none',
@@ -852,15 +851,16 @@ const Affiliates = () => {
                     src="/coins/refereduser.png"
                     alt="Users"
                     style={{
-                      width: '16px',
-                      height: '16px',
                       objectFit: 'contain',
                       filter: activeTab === 'users' ? 'brightness(0) invert(1)' : 'brightness(0)',
                     }}
-                    className="shrink-0 transition-all"
+                    className="w-3.5 h-3.5 min-[360px]:w-4 min-[360px]:h-4 shrink-0 transition-all"
                   />
                   <span
-                    className="text-[13px] sm:text-[14px]"
+                    className={`${isEn
+                        ? 'text-[11.5px] min-[360px]:text-[12.5px] min-[390px]:text-[13px] sm:text-[14px]'
+                        : 'text-[9.5px] min-[350px]:text-[10px] min-[370px]:text-[11px] min-[400px]:text-[12px] min-[430px]:text-[13px] sm:text-[14px]'
+                      }`}
                     style={{
                       fontFamily: '"Bricolage Grotesque", sans-serif',
                       fontWeight: 700,
@@ -878,11 +878,14 @@ const Affiliates = () => {
               {/* Row 2 on mobile: Pending Affiliate Earnings */}
               <button
                 onClick={() => setActiveTab('pending')}
-                className="transition-all cursor-pointer flex items-center justify-center shrink-0 px-3 sm:px-[18px] py-[9px] sm:py-[11px]"
+                className={`transition-all cursor-pointer flex items-center justify-center shrink-0 ${isEn
+                    ? 'px-2 min-[360px]:px-2.5 sm:px-[18px]'
+                    : 'px-1.5 min-[360px]:px-2 min-[390px]:px-2.5 sm:px-[18px]'
+                  } py-[7px] sm:py-[11px]`}
                 style={{
                   height: '37px',
                   borderRadius: '40px',
-                  gap: '8px',
+                  gap: isEn ? '6px' : '4px',
                   background: activeTab === 'pending' ? 'rgba(36, 50, 77, 1)' : 'transparent',
                   color: activeTab === 'pending' ? '#FFFFFF' : '#000000',
                   border: 'none',
@@ -895,15 +898,16 @@ const Affiliates = () => {
                   src="/coins/pendignaff.png"
                   alt="Pending"
                   style={{
-                    width: '16px',
-                    height: '16px',
                     objectFit: 'contain',
                     filter: activeTab === 'pending' ? 'brightness(0) invert(1)' : 'brightness(0)',
                   }}
-                  className="shrink-0 transition-all"
+                  className="w-3.5 h-3.5 min-[360px]:w-4 min-[360px]:h-4 shrink-0 transition-all"
                 />
                 <span
-                  className="text-[13px] sm:text-[14px]"
+                  className={`${isEn
+                      ? 'text-[11.5px] min-[360px]:text-[12.5px] min-[390px]:text-[13px] sm:text-[14px]'
+                      : 'text-[9.5px] min-[350px]:text-[10px] min-[370px]:text-[11px] min-[400px]:text-[12px] min-[430px]:text-[13px] sm:text-[14px]'
+                    }`}
                   style={{
                     fontFamily: '"Bricolage Grotesque", sans-serif',
                     fontWeight: 700,

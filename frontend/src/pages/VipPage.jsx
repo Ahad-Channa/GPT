@@ -327,13 +327,22 @@ const VipPage = () => {
               if (tierLevels.length === 0) return null;
               const meta = TIER_METADATA[tierName];
               const lastTierLevel = tierLevels[tierLevels.length - 1];
+              const earned = totalEarned ?? 0;
+
+              // Check if all levels in this tier have been reached/completed
+              const isTierCompleted = tierLevels.every(lvl => lvl.reached || (lvl.threshold > 0 && earned >= lvl.threshold));
+
+              // Find next unreached level in this tier for progress display if not completed
+              const nextUnreachedInTier = tierLevels.find(lvl => !lvl.reached && (lvl.threshold > 0 ? earned < lvl.threshold : false));
+              const tierTargetLevel = nextUnreachedInTier || lastTierLevel;
+              const tierCoinsToNext = tierTargetLevel ? Math.max(0, tierTargetLevel.threshold - earned) : 0;
 
               return (
                 <div
                   key={tierName}
                   className="w-full max-w-[1329px] shadow-sm flex flex-col justify-between rounded-[25px] p-4 sm:pt-[24px] sm:pr-[28px] sm:pb-[18px] sm:pl-[28px] box-border gap-4 sm:gap-4"
                   style={{
-                    minHeight: '315px',
+                    minHeight: isTierCompleted ? 'auto' : '315px',
                     background: meta.sectionBg || 'rgba(255, 255, 255, 1)',
                   }}
                 >
@@ -371,7 +380,6 @@ const VipPage = () => {
                       {/* 3 Level Cards */}
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4 w-full">
                         {tierLevels.map(lvl => {
-                          const earned = totalEarned ?? 0;
                           const isReached = lvl.reached || (lvl.threshold > 0 && earned >= lvl.threshold);
                           const isClaimed = lvl.claimed || (isReached && (lvl.rewardAmount === 0 || lvl.key === 'bronze_1'));
                           const isClaimable = lvl.claimable || (isReached && !isClaimed && lvl.rewardAmount > 0);
@@ -520,38 +528,40 @@ const VipPage = () => {
                         })}
                       </div>
 
-                      {/* Bottom Row: Progress & Coin Bonus info */}
-                      <div
-                        className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-1 sm:gap-2 w-full text-left pt-1.5 sm:pt-1"
-                      >
-                        <span
-                          className="font-bold text-[14px] sm:text-[14px] text-[#1E2538] text-left"
-                          style={{
-                            fontFamily: '"Bricolage Grotesque", sans-serif',
-                          }}
-                        >
-                          {t('vipPage.progressTo', { rank: lastTierLevel ? getLevelLabel(lastTierLevel) : `${tierName} III`, defaultValue: `Progress to ${lastTierLevel ? getLevelLabel(lastTierLevel) : `${tierName} III`}` })}
-                        </span>
+                      {/* Bottom Row: Progress & Coin Bonus info (only shown if tier is not fully completed) */}
+                      {!isTierCompleted && (
                         <div
-                          className="flex flex-wrap items-center justify-start sm:justify-end gap-1 text-[12px] sm:text-[13px] font-medium text-black text-left"
-                          style={{
-                            fontFamily: '"Poppins", sans-serif',
-                          }}
+                          className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-1 sm:gap-2 w-full text-left pt-1.5 sm:pt-1"
                         >
-                          <span>{t('vipPage.earn', 'Earn')}</span>
-                          <img src="/coins/VIPcoin1.png" alt="Coin" className="w-3.5 h-3.5 object-contain inline-block shrink-0" />
-                          <span style={{ color: 'rgba(231, 171, 24, 1)', fontWeight: 600 }}>
-                            {coinsToNext.toLocaleString('de-DE')}
+                          <span
+                            className="font-bold text-[14px] sm:text-[14px] text-[#1E2538] text-left"
+                            style={{
+                              fontFamily: '"Bricolage Grotesque", sans-serif',
+                            }}
+                          >
+                            {t('vipPage.progressTo', { rank: tierTargetLevel ? getLevelLabel(tierTargetLevel) : `${tierName} III`, defaultValue: `Progress to ${tierTargetLevel ? getLevelLabel(tierTargetLevel) : `${tierName} III`}` })}
                           </span>
-                          <span>{t('vipPage.moreCoinsToUnlock', 'more coins to unlock your')}</span>
-                          <span className="basis-full h-0 sm:hidden" />
-                          <img src="/coins/VIPcoin1.png" alt="Coin" className="w-3.5 h-3.5 object-contain inline-block shrink-0" />
-                          <span style={{ color: 'rgba(231, 171, 24, 1)', fontWeight: 600 }}>
-                            {(lastTierLevel?.rewardAmount || 250000).toLocaleString('de-DE')}
-                          </span>
-                          <span>{t('vipPage.coinBonus', 'coin bonus.')}</span>
+                          <div
+                            className="flex flex-wrap items-center justify-start sm:justify-end gap-1 text-[12px] sm:text-[13px] font-medium text-black text-left"
+                            style={{
+                              fontFamily: '"Poppins", sans-serif',
+                            }}
+                          >
+                            <span>{t('vipPage.earn', 'Earn')}</span>
+                            <img src="/coins/VIPcoin1.png" alt="Coin" className="w-3.5 h-3.5 object-contain inline-block shrink-0" />
+                            <span style={{ color: 'rgba(231, 171, 24, 1)', fontWeight: 600 }}>
+                              {tierCoinsToNext.toLocaleString('de-DE')}
+                            </span>
+                            <span>{t('vipPage.moreCoinsToUnlock', 'more coins to unlock your')}</span>
+                            <span className="basis-full h-0 sm:hidden" />
+                            <img src="/coins/VIPcoin1.png" alt="Coin" className="w-3.5 h-3.5 object-contain inline-block shrink-0" />
+                            <span style={{ color: 'rgba(231, 171, 24, 1)', fontWeight: 600 }}>
+                              {(tierTargetLevel?.rewardAmount || 250000).toLocaleString('de-DE')}
+                            </span>
+                            <span>{t('vipPage.coinBonus', 'coin bonus.')}</span>
+                          </div>
                         </div>
-                      </div>
+                      )}
                     </div>
                   </div>
                 </div>

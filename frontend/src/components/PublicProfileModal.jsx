@@ -149,10 +149,11 @@ const PublicProfileModal = ({ userId, onClose }) => {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          padding: '16px',
+          padding: '6px',
         }}
+        className="p-1.5 sm:p-4"
       >
-        {/* Main Outer Panel: width 626px, background pure white */}
+        {/* Main Outer Panel: width up to 440px on mobile, 626px on desktop, background pure white */}
         <motion.div
           key="panel"
           initial={{ opacity: 0, scale: 0.95, y: 16 }}
@@ -160,7 +161,7 @@ const PublicProfileModal = ({ userId, onClose }) => {
           exit={{ opacity: 0, scale: 0.95, y: 12 }}
           transition={{ duration: 0.24, ease: [0.22, 1, 0.36, 1] }}
           onClick={(e) => e.stopPropagation()}
-          className="w-[95vw] sm:w-[626px] max-w-[626px]"
+          className="w-full max-w-[440px] sm:max-w-[626px]"
           style={{
             background: 'rgba(255, 255, 255, 1)',
             borderRadius: '24px',
@@ -402,21 +403,27 @@ const PublicProfileModal = ({ userId, onClose }) => {
                   <button
                     onClick={onClose}
                     aria-label="Close profile popup"
-                    className="absolute top-3.5 right-3.5 w-6 h-6 rounded-full bg-black text-white flex items-center justify-center cursor-pointer hover:opacity-80 active:scale-95 transition-all z-10 shadow-sm"
+                    style={{
+                      width: '18px',
+                      height: '18px',
+                      borderRadius: '50%',
+                      opacity: 1,
+                      transform: 'rotate(0deg)',
+                    }}
+                    className="absolute top-3.5 right-3.5 bg-black text-white flex items-center justify-center cursor-pointer hover:opacity-80 active:scale-95 transition-all z-10 shadow-sm"
                   >
-                    <FiX size={14} className="text-white" strokeWidth={3} />
+                    <FiX size={10} className="text-white" strokeWidth={2.5} />
                   </button>
 
-                  {/* Profile Header: height 70px, gap 20px */}
+                  {/* Profile Header: height 70px, gap 20px on desktop, tighter gap on mobile */}
                   <div
                     style={{
                       height: '70px',
                       display: 'flex',
                       alignItems: 'center',
-                      gap: '20px',
-                      paddingLeft: '10px',
                       paddingRight: '36px',
                     }}
+                    className="gap-2 sm:gap-[20px] pl-1.5 sm:pl-[10px]"
                   >
                     {/* Avatar: width 70px, height 70px, border-width 2px, color same as rank */}
                     <div
@@ -428,6 +435,8 @@ const PublicProfileModal = ({ userId, onClose }) => {
                         flexShrink: 0,
                         border: `2px solid ${tierBorderColor}`,
                         boxSizing: 'border-box',
+                        opacity: 1,
+                        transform: 'rotate(0deg)',
                       }}
                       className="bg-neutral-200 shadow-sm"
                     >
@@ -450,6 +459,7 @@ const PublicProfileModal = ({ userId, onClose }) => {
                         flexDirection: 'column',
                         justifyContent: 'space-between',
                         boxSizing: 'border-box',
+                        opacity: 1,
                       }}
                     >
                       {/* Username Layout: width 212px, height 18px, Bricolage Grotesque 700, 27px, -2% */}
@@ -460,6 +470,8 @@ const PublicProfileModal = ({ userId, onClose }) => {
                           display: 'flex',
                           alignItems: 'center',
                           overflow: 'visible',
+                          opacity: 1,
+                          transform: 'rotate(0deg)',
                         }}
                       >
                         <span
@@ -480,12 +492,16 @@ const PublicProfileModal = ({ userId, onClose }) => {
                         </span>
                       </div>
 
-                      {/* Badges Row */}
+                      {/* Badges Row: width 191px, height 21px, gap 5px */}
                       <div
                         style={{
+                          width: '191px',
+                          height: '21px',
                           display: 'flex',
                           alignItems: 'center',
-                          gap: '8px',
+                          gap: '5px',
+                          opacity: 1,
+                          transform: 'rotate(0deg)',
                         }}
                       >
                         {/* Joined Date Pill: width 111px, height 21px, gap 4px, border-radius 100px, padding: 4px 7px, background: white */}
@@ -502,6 +518,8 @@ const PublicProfileModal = ({ userId, onClose }) => {
                             justifyContent: 'center',
                             boxSizing: 'border-box',
                             boxShadow: '0 1px 2px rgba(0,0,0,0.03)',
+                            opacity: 1,
+                            transform: 'rotate(0deg)',
                           }}
                         >
                           <img
@@ -545,7 +563,7 @@ const PublicProfileModal = ({ userId, onClose }) => {
                           </div>
                         </div>
 
-                        {/* VIP Tier Rank Badge: width 75px (auto-adjust), height 21px, padding: 6px 7px, border-radius 100px */}
+                        {/* VIP Tier Rank Badge: width 75px (auto-adjust), height 21px, gap 4px, padding: 6px 7px, border-radius 100px */}
                         <div
                           style={{
                             minWidth: '75px',
@@ -563,6 +581,8 @@ const PublicProfileModal = ({ userId, onClose }) => {
                             justifyContent: 'center',
                             boxSizing: 'border-box',
                             boxShadow: '0 1px 2px rgba(0,0,0,0.03)',
+                            opacity: 1,
+                            transform: 'rotate(0deg)',
                           }}
                         >
                           <div
@@ -597,22 +617,20 @@ const PublicProfileModal = ({ userId, onClose }) => {
                     </div>
                   </div>
 
-                  {/* 4 Stats Boxes inside the cream card with pure white background: width 100%, gap: 5px, sitting lower */}
+                  {/* 4 Stats Boxes inside the cream card with pure white background */}
                   <div
                     style={{
                       width: '100%',
-                      minHeight: '105px',
-                      gap: '5px',
-                      display: 'grid',
-                      gridTemplateColumns: 'repeat(4, minmax(0, 1fr))',
                       boxSizing: 'border-box',
                       marginTop: '16px',
                     }}
-                    className="grid-cols-2 sm:grid-cols-4"
+                    className="grid grid-cols-2 sm:grid-cols-4 gap-[10px] sm:gap-[5px]"
                   >
                     {/* Box 1: Coin's Earned */}
                     <div
                       style={{
+                        width: '100%',
+                        height: '105px',
                         minHeight: '105px',
                         borderRadius: '13px',
                         paddingTop: '14px',
@@ -626,6 +644,7 @@ const PublicProfileModal = ({ userId, onClose }) => {
                         justifyContent: 'space-between',
                         boxSizing: 'border-box',
                         boxShadow: '0 1px 3px rgba(0,0,0,0.03)',
+                        opacity: 1,
                       }}
                     >
                       <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
@@ -652,13 +671,9 @@ const PublicProfileModal = ({ userId, onClose }) => {
                       <div
                         style={{
                           width: '100%',
-                          height: '36px',
-                          display: 'flex',
-                          flexDirection: 'column',
-                          justifyContent: 'space-between',
-                          gap: '13px',
                           boxSizing: 'border-box',
                         }}
+                        className="flex flex-col justify-start sm:justify-between h-auto sm:h-[36px] gap-[13px]"
                       >
                         <div
                           style={{
@@ -714,6 +729,8 @@ const PublicProfileModal = ({ userId, onClose }) => {
                     {/* Box 2: Total Earning */}
                     <div
                       style={{
+                        width: '100%',
+                        height: '105px',
                         minHeight: '105px',
                         borderRadius: '13px',
                         paddingTop: '14px',
@@ -727,6 +744,7 @@ const PublicProfileModal = ({ userId, onClose }) => {
                         justifyContent: 'space-between',
                         boxSizing: 'border-box',
                         boxShadow: '0 1px 3px rgba(0,0,0,0.03)',
+                        opacity: 1,
                       }}
                     >
                       <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
@@ -753,13 +771,9 @@ const PublicProfileModal = ({ userId, onClose }) => {
                       <div
                         style={{
                           width: '100%',
-                          height: '36px',
-                          display: 'flex',
-                          flexDirection: 'column',
-                          justifyContent: 'space-between',
-                          gap: '13px',
                           boxSizing: 'border-box',
                         }}
+                        className="flex flex-col justify-start sm:justify-between h-auto sm:h-[36px] gap-[13px]"
                       >
                         <div
                           style={{
@@ -815,6 +829,8 @@ const PublicProfileModal = ({ userId, onClose }) => {
                     {/* Box 3: Referred Affiliates */}
                     <div
                       style={{
+                        width: '100%',
+                        height: '105px',
                         minHeight: '105px',
                         borderRadius: '13px',
                         paddingTop: '14px',
@@ -828,6 +844,7 @@ const PublicProfileModal = ({ userId, onClose }) => {
                         justifyContent: 'space-between',
                         boxSizing: 'border-box',
                         boxShadow: '0 1px 3px rgba(0,0,0,0.03)',
+                        opacity: 1,
                       }}
                     >
                       <div style={{ display: 'flex', alignItems: 'center' }}>
@@ -849,13 +866,9 @@ const PublicProfileModal = ({ userId, onClose }) => {
                       <div
                         style={{
                           width: '100%',
-                          height: '36px',
-                          display: 'flex',
-                          flexDirection: 'column',
-                          justifyContent: 'space-between',
-                          gap: '13px',
                           boxSizing: 'border-box',
                         }}
+                        className="flex flex-col justify-start sm:justify-between h-auto sm:h-[36px] gap-[13px]"
                       >
                         <div
                           style={{
@@ -911,6 +924,8 @@ const PublicProfileModal = ({ userId, onClose }) => {
                     {/* Box 4: Task Completed */}
                     <div
                       style={{
+                        width: '100%',
+                        height: '105px',
                         minHeight: '105px',
                         borderRadius: '13px',
                         paddingTop: '14px',
@@ -924,6 +939,7 @@ const PublicProfileModal = ({ userId, onClose }) => {
                         justifyContent: 'space-between',
                         boxSizing: 'border-box',
                         boxShadow: '0 1px 3px rgba(0,0,0,0.03)',
+                        opacity: 1,
                       }}
                     >
                       <div style={{ display: 'flex', alignItems: 'center' }}>
@@ -945,13 +961,9 @@ const PublicProfileModal = ({ userId, onClose }) => {
                       <div
                         style={{
                           width: '100%',
-                          height: '36px',
-                          display: 'flex',
-                          flexDirection: 'column',
-                          justifyContent: 'space-between',
-                          gap: '13px',
                           boxSizing: 'border-box',
                         }}
+                        className="flex flex-col justify-start sm:justify-between h-auto sm:h-[36px] gap-[13px]"
                       >
                         <div
                           style={{

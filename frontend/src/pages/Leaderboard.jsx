@@ -589,7 +589,8 @@ const LeaderboardCountdown = ({ targetDate }) => {
 
 /* ── Main Leaderboard Page ───────────────────────────────────── */
 const Leaderboard = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const isEn = (i18n?.language || 'en').startsWith('en');
   const { currentUser } = useAuth();
   const [activeProfileId, setActiveProfileId] = useState(null);
   const [leaderboard, setLeaderboard] = useState(null);
@@ -900,7 +901,11 @@ const Leaderboard = () => {
                   }}
                 >
                   <div
-                    className="flex items-center bg-white border border-black/[0.06] shadow-sm w-[246px] h-[41px] p-[5px_6px] gap-[5px] rounded-[1000px] md:w-auto md:h-auto md:p-1 md:gap-0 md:rounded-[50px]"
+                    className={`flex items-center bg-white border border-black/[0.06] shadow-sm ${
+                      isEn
+                        ? 'w-[246px]'
+                        : 'w-auto min-w-[280px] min-[360px]:min-w-[310px] max-w-[calc(100vw-32px)]'
+                    } h-[41px] p-[5px_6px] gap-[5px] rounded-[1000px] md:w-auto md:h-auto md:p-1 md:gap-0 md:rounded-[50px]`}
                     style={{
                       boxSizing: 'border-box',
                       opacity: 1,
@@ -914,7 +919,9 @@ const Leaderboard = () => {
                           key={period}
                           type="button"
                           onClick={() => setActiveTab(period)}
-                          className="transition-all duration-200 cursor-pointer flex-1 md:flex-initial flex items-center justify-center select-none h-full md:h-[31px] md:min-w-[71px] rounded-[40px] px-2 md:px-[18px] py-0 md:py-[11px]"
+                          className={`transition-all duration-200 cursor-pointer flex-1 md:flex-initial flex items-center justify-center select-none h-full md:h-[31px] md:min-w-[71px] rounded-[40px] ${
+                            isEn ? 'px-2' : 'px-2 min-[360px]:px-3'
+                          } md:px-[18px] py-0 md:py-[11px]`}
                           style={{
                             background: isActive ? 'rgba(36, 50, 77, 1)' : 'transparent',
                             boxSizing: 'border-box',
@@ -924,7 +931,7 @@ const Leaderboard = () => {
                             style={{
                               fontFamily: '"Bricolage Grotesque", sans-serif',
                               fontWeight: 700,
-                              fontSize: '14px',
+                              fontSize: isEn ? '14px' : '13px',
                               lineHeight: '100%',
                               letterSpacing: '0%',
                               color: isActive ? 'rgba(255, 255, 255, 1)' : '#000000',

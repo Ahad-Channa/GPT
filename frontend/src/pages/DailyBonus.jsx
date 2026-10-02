@@ -48,7 +48,8 @@ function useCountdown(target) {
 }
 
 export default function DailyBonus() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const isEn = (i18n?.language || 'en').startsWith('en');
   const { currentUser } = useAuth();
   const { status, loading, fetchStatus } = useDailyBonus();
   const [claiming, setClaiming] = useState(false);
@@ -122,30 +123,28 @@ export default function DailyBonus() {
             <div className="flex flex-col lg:flex-row items-stretch gap-4 w-full">
               {/* Left Card: Daily Bonus */}
               <div
-                className="bg-white border border-gray-100/90 shadow-sm flex flex-col justify-between shrink-0 w-full lg:max-w-[915px]"
+                className="bg-white border border-gray-100/90 shadow-sm flex flex-col justify-between shrink-0 w-full lg:max-w-[915px] min-h-[200px] sm:h-[220px] p-3.5 sm:p-5 lg:pt-[19px] lg:pr-[23px] lg:pb-[20px] lg:pl-[20px] rounded-[24px] sm:rounded-[30px]"
                 style={{
-                  height: '220px',
                   opacity: 1,
                   transform: 'rotate(0deg)',
-                  borderRadius: '30px',
-                  paddingTop: '19px',
-                  paddingRight: '23px',
-                  paddingBottom: '20px',
-                  paddingLeft: '20px',
                   boxSizing: 'border-box',
                 }}
               >
                 {/* Top Row inside Left Card */}
-                <div className="flex items-start justify-between gap-3 sm:gap-4 w-full">
+                <div className="flex items-center sm:items-start justify-between gap-2 sm:gap-4 w-full">
                   <div
-                    className="flex flex-col justify-center"
+                    className="flex flex-col justify-center min-w-0"
                     style={{
                       maxWidth: '371px',
                       opacity: 1,
                     }}
                   >
                     <h1
-                      className="text-[22px] sm:text-[27px]"
+                      className={`${
+                        isEn
+                          ? 'text-[22px] min-[360px]:text-[24px] sm:text-[27px]'
+                          : 'text-[17px] min-[360px]:text-[19px] sm:text-[27px]'
+                      }`}
                       style={{
                         fontFamily: '"Bricolage Grotesque", sans-serif',
                         fontWeight: 700,
@@ -162,32 +161,26 @@ export default function DailyBonus() {
 
                   {/* Today's Reward Pill */}
                   <div
-                    className="flex flex-col items-center justify-center shrink-0"
+                    className={`flex flex-col items-center justify-center shrink-0 rounded-full ${
+                      isEn ? 'px-3 min-[360px]:px-3.5' : 'px-2.5 min-[360px]:px-3'
+                    } sm:px-[22px] py-1.5 sm:py-[10px] min-w-0 sm:min-w-[155px] h-auto sm:h-[57px] gap-0.5 sm:gap-[11px]`}
                     style={{
-                      minWidth: '155px',
-                      width: 'auto',
-                      height: '57px',
                       opacity: 1,
                       transform: 'rotate(0deg)',
-                      gap: '11px',
-                      borderRadius: '1000px',
-                      paddingTop: '10px',
-                      paddingRight: '22px',
-                      paddingBottom: '10px',
-                      paddingLeft: '22px',
                       background: 'rgba(249, 247, 241, 1)',
                       boxSizing: 'border-box',
                     }}
                   >
                     <span
-                      className="flex items-center justify-center"
+                      className={`flex items-center justify-center ${
+                        isEn
+                          ? 'text-[12px] min-[360px]:text-[13px] sm:text-[14px]'
+                          : 'text-[11px] min-[360px]:text-[12px] sm:text-[14px]'
+                      } leading-tight sm:leading-[28px] sm:h-[10px]`}
                       style={{
                         width: 'auto',
-                        height: '10px',
                         fontFamily: '"Poppins", sans-serif',
                         fontWeight: 500,
-                        fontSize: '14px',
-                        lineHeight: '28px',
                         letterSpacing: '0%',
                         color: '#0E0F0C',
                         textAlign: 'center',
@@ -198,30 +191,25 @@ export default function DailyBonus() {
                       {t('dailyBonus.todaysReward', "Today's Reward")}
                     </span>
                     <div
-                      className="flex items-center justify-center gap-1.5"
+                      className="flex items-center justify-center gap-1 sm:gap-1.5"
                       style={{
-                        minWidth: '78px',
-                        height: '16px',
                         opacity: 1,
                       }}
                     >
                       <img
                         src="/coins/coinbonushero.png"
                         alt="Coin"
-                        style={{
-                          width: '16px',
-                          height: '16px',
-                          objectFit: 'contain',
-                        }}
-                        className="shrink-0"
+                        className={`${isEn ? 'w-4 h-4' : 'w-3.5 h-3.5'} sm:w-[16px] sm:h-[16px] object-contain shrink-0`}
                       />
                       <span
-                        className="flex items-center"
+                        className={`flex items-center ${
+                          isEn
+                            ? 'text-[14px] min-[360px]:text-[16px] sm:text-[18px]'
+                            : 'text-[13px] min-[360px]:text-[15px] sm:text-[18px]'
+                        } leading-tight sm:leading-[28px]`}
                         style={{
                           fontFamily: '"Poppins", sans-serif',
                           fontWeight: 600,
-                          fontSize: '18px',
-                          lineHeight: '28px',
                           letterSpacing: '0%',
                           color: '#E5A00D',
                           whiteSpace: 'nowrap',
@@ -316,7 +304,11 @@ export default function DailyBonus() {
 
                   {isUnlocked ? (
                     <span
-                      className="text-[14px] sm:text-[16px] leading-[18px] sm:leading-[22px]"
+                      className={`${
+                        isEn
+                          ? 'text-[13px] min-[360px]:text-[14px] sm:text-[16px]'
+                          : 'text-[clamp(9.5px,2.7vw,13px)] sm:text-[16px]'
+                      } leading-[18px] sm:leading-[22px] whitespace-nowrap`}
                       style={{
                         marginTop: '16px',
                         maxWidth: '100%',
@@ -333,35 +325,33 @@ export default function DailyBonus() {
                     </span>
                   ) : (
                     <div
-                      className="flex items-center text-[14px] sm:text-[16px] leading-[18px] sm:leading-[22px] flex-wrap"
+                      className={`flex items-center ${
+                        isEn
+                          ? 'text-[12.5px] min-[360px]:text-[14px] sm:text-[16px]'
+                          : 'text-[clamp(9.5px,2.7vw,13px)] sm:text-[16px]'
+                      } leading-[18px] sm:leading-[22px] flex-nowrap whitespace-nowrap`}
                       style={{
                         marginTop: '16px',
                         maxWidth: '100%',
-                        gap: '4px',
+                        gap: isEn ? '4px' : '3px',
                         opacity: 1,
                         transform: 'rotate(0deg)',
                         fontFamily: '"Poppins", sans-serif',
                         fontWeight: 500,
                         letterSpacing: '0%',
-                        whiteSpace: 'nowrap',
                         justifyContent: 'flex-start',
                       }}
                     >
-                      <span style={{ color: '#0E0F0C' }}>{t('dailyBonus.earn', 'Earn')}</span>
+                      <span className="shrink-0" style={{ color: '#0E0F0C' }}>{t('dailyBonus.earn', 'Earn')}</span>
                       <img
                         src="/coins/coinbonushero.png"
                         alt="Coin"
-                        style={{
-                          width: '14px',
-                          height: '14px',
-                          objectFit: 'contain',
-                        }}
-                        className="shrink-0"
+                        className={`${isEn ? 'w-3.5 h-3.5' : 'w-3 h-3'} sm:w-[14px] sm:h-[14px] object-contain shrink-0`}
                       />
-                      <span style={{ color: 'rgba(231, 171, 24, 1)' }}>
+                      <span className="shrink-0" style={{ color: 'rgba(231, 171, 24, 1)' }}>
                         {formatCoins(remainingToUnlock)} {t('dailyBonus.coins', 'Coins')}
                       </span>
-                      <span style={{ color: '#0E0F0C' }}>{t('dailyBonus.moreToUnlock', 'more to unlock your bonus')}</span>
+                      <span className="shrink-0" style={{ color: '#0E0F0C' }}>{t('dailyBonus.moreToUnlock', 'more to unlock your bonus')}</span>
                     </div>
                   )}
                 </div>
