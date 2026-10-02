@@ -267,6 +267,16 @@ const Affiliates = () => {
   const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'https://taskmint.me';
   const referralUrl = referralCode ? `${baseUrl}/r/${referralCode}` : `${baseUrl}/r/`;
 
+  const getReferralUrlFontSize = (url) => {
+    const len = url ? url.length : 0;
+    if (len <= 24) return '14px';
+    if (len <= 30) return '12.5px';
+    if (len <= 36) return '10.5px';
+    if (len <= 42) return '9.5px';
+    if (len <= 48) return '8.5px';
+    return '8px';
+  };
+
   const copyToClipboard = (text) => {
     if (!text) return;
     navigator.clipboard.writeText(text);
@@ -705,7 +715,7 @@ const Affiliates = () => {
 
             {/* Referral Link Field (1270x66, radius: 50px, background: white, padding: 8px 10px 9px 25px) */}
             <div
-              className="w-full flex items-center justify-between shadow-xs transition-colors pl-3 sm:pl-[25px]"
+              className="w-full flex items-center justify-between shadow-xs transition-colors pl-2.5 sm:pl-[25px]"
               style={{
                 maxWidth: '1270px',
                 height: '66px',
@@ -722,10 +732,11 @@ const Affiliates = () => {
                 type="text"
                 readOnly
                 value={referralUrl}
-                className="text-[11px] min-[360px]:text-[12px] min-[400px]:text-[13px] sm:text-[16px]"
+                className="sm:!text-[16px]"
                 style={{
                   fontFamily: '"Poppins", sans-serif',
                   fontWeight: 400,
+                  fontSize: getReferralUrlFontSize(referralUrl),
                   lineHeight: '26px',
                   letterSpacing: '0%',
                   color: '#000000',
@@ -734,14 +745,14 @@ const Affiliates = () => {
                   outline: 'none',
                   width: '100%',
                   minWidth: 0,
-                  paddingRight: '8px',
+                  paddingRight: '6px',
                 }}
               />
               <button
                 onClick={() => copyToClipboard(referralUrl)}
-                className="active:scale-95 transition-transform shrink-0 cursor-pointer flex items-center justify-center px-4 sm:px-0"
+                className="active:scale-95 transition-transform shrink-0 cursor-pointer flex items-center justify-center px-3.5 sm:px-0"
                 style={{
-                  minWidth: '85px',
+                  minWidth: '78px',
                   width: 'auto',
                   height: '49px',
                   borderRadius: '80px',

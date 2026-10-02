@@ -22,6 +22,13 @@ const formatDate = (dateStr) => {
   return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 };
 
+const formatJoinedDate = (dateStr) => {
+  if (!dateStr) return '';
+  const d = new Date(dateStr);
+  if (isNaN(d.getTime())) return '';
+  return d.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+};
+
 const TIER_METADATA = {
   Bronze: {
     badge: '/coins/VIPbronze.png',
@@ -375,7 +382,7 @@ const PublicProfileModal = ({ userId, onClose }) => {
                           whiteSpace: 'nowrap',
                         }}
                       >
-                        Joined {profile.createdAt ? new Date(profile.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '2026'}
+                        Joined {formatJoinedDate(profile.createdAt) || '2026'}
                       </span>
                     </div>
 
@@ -566,26 +573,27 @@ const PublicProfileModal = ({ userId, onClose }) => {
                         </span>
                       </div>
 
-                      {/* Badges Row: width 191px, height 21px, gap 5px */}
+                      {/* Badges Row: auto width, height 21px, gap 5px */}
                       <div
                         style={{
-                          width: '191px',
+                          width: 'auto',
                           height: '21px',
                           display: 'flex',
                           alignItems: 'center',
-                          gap: '5px',
+                          gap: '6px',
                           opacity: 1,
                           transform: 'rotate(0deg)',
                         }}
                       >
-                        {/* Joined Date Pill: width 111px, height 21px, gap 4px, border-radius 100px, padding: 4px 7px, background: white */}
+                        {/* Joined Date Pill: auto width, height 21px, gap 4px, border-radius 100px, padding: 2px 8px, background: white */}
                         <div
                           style={{
-                            width: '111px',
+                            width: 'auto',
+                            minWidth: 'fit-content',
                             height: '21px',
                             gap: '4px',
                             borderRadius: '100px',
-                            padding: '4px 7px',
+                            padding: '2px 8px',
                             background: '#FFFFFF',
                             display: 'flex',
                             alignItems: 'center',
@@ -609,32 +617,21 @@ const PublicProfileModal = ({ userId, onClose }) => {
                               e.currentTarget.style.display = 'none';
                             }}
                           />
-                          <div
+                          <span
                             style={{
-                              width: '80px',
-                              height: '9px',
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              overflow: 'visible',
+                              fontFamily: '"Poppins", sans-serif',
+                              fontWeight: 500,
+                              fontSize: '12px',
+                              lineHeight: '1',
+                              letterSpacing: '0%',
+                              textAlign: 'center',
+                              color: '#1E293B',
+                              whiteSpace: 'nowrap',
+                              display: 'block',
                             }}
                           >
-                            <span
-                              style={{
-                                fontFamily: '"Poppins", sans-serif',
-                                fontWeight: 500,
-                                fontSize: '13px',
-                                lineHeight: '28px',
-                                letterSpacing: '0%',
-                                textAlign: 'center',
-                                color: '#1E293B',
-                                whiteSpace: 'nowrap',
-                                display: 'block',
-                              }}
-                            >
-                              Joined {profile.createdAt ? new Date(profile.createdAt).getFullYear() : '2026'}
-                            </span>
-                          </div>
+                            Joined {formatJoinedDate(profile.createdAt) || '2026'}
+                          </span>
                         </div>
 
                         {/* VIP Tier Rank Badge: width auto, height 21px, border-radius 100px */}

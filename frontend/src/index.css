@@ -305,33 +305,73 @@
   flex-direction: column;
 }
 
-/* ─── Toast Notifications Fix ─────────────────────────────────── */
+/* ─── Toast Notifications ─────────────────────────────────── */
 .custom-toast {
-  min-width: 276px;
-  max-width: 400px;
-  font-size: 22px;
+  min-width: 223px !important;
+  max-width: fit-content !important;
+  width: auto !important;
+  min-height: 52px !important;
+  height: auto !important;
+  background: rgba(255, 255, 255, 1) !important;
+  color: #111827 !important;
+  border: 1px solid rgba(0, 0, 0, 0.08) !important;
+  border-radius: 12px !important;
+  box-shadow: 0px 12px 20px 0px rgba(0, 0, 0, 0.15) !important;
+  padding: 19px 25px !important;
+  gap: 5px !important;
+  font-family: 'Bricolage Grotesque', sans-serif !important;
+  font-weight: 700 !important;
+  font-size: 18px !important;
+  line-height: 27px !important;
+  letter-spacing: -0.02em !important;
+  text-transform: uppercase !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  text-align: center !important;
+  box-sizing: border-box !important;
+  opacity: 1 !important;
 }
 
 .custom-toast div[role="status"],
 .custom-toast .go3958315143, /* Fallback for react-hot-toast generic inner wrapper */
 .custom-toast > div {
-  white-space: nowrap !important;
+  white-space: normal !important;
+  text-align: center !important;
+  color: #111827 !important;
+  font-family: inherit !important;
+  font-weight: inherit !important;
+  font-size: inherit !important;
+  letter-spacing: inherit !important;
+  text-transform: uppercase !important;
+  line-height: inherit !important;
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+}
+
+/* Hide any tick / checkmark / error icon inside toast */
+.custom-toast svg,
+.custom-toast img,
+.custom-toast .go2344853693,
+.custom-toast [data-icon],
+.custom-toast > span:first-child:not(:last-child) {
+  display: none !important;
 }
 
 @media (max-width: 768px) {
   .custom-toast {
-    min-width: 90vw !important;
-    max-width: 95vw !important;
-    font-size: clamp(14px, 4.5vw, 22px) !important;
-    padding: 18px 20px !important;
-    border-radius: 24px !important;
-  }
-  
-  .custom-toast div[role="status"],
-  .custom-toast .go3958315143,
-  .custom-toast > div {
-    white-space: normal !important;
-    text-align: center;
-    word-break: break-word;
+    min-width: 223px !important;
+    max-width: calc(100vw - 32px) !important;
+    width: auto !important;
+    min-height: 52px !important;
+    height: auto !important;
+    padding: 19px 25px !important;
+    font-size: clamp(15px, 4.2vw, 18px) !important;
+    line-height: 1.3 !important;
+    letter-spacing: -0.02em !important;
+    border-radius: 12px !important;
+    box-shadow: 0px 12px 20px 0px rgba(0, 0, 0, 0.15) !important;
+    margin: 0 auto !important;
   }
 }

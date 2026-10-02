@@ -277,6 +277,7 @@
     "paypalDisclaimer": "***Please double-check your paypal email address. Once the payout is processed, this action cannot be reversed. We are not responsible for lost rewards due to an incorrect address",
     "processingFees": "Processing Fees ({{percent}}%)",
     "method": "Method",
+    "giftCard": "Gift Card",
     "destination": "Destination",
     "confirmDisclaimer": "This action is irreversible. Your balance will be deducted immediately and the request will be reviewed by our team.",
     "confirmWithdrawal": "Confirm Withdrawal",
@@ -537,5 +538,51 @@
     "support": "Support",
     "leaveReview": "Leave a review",
     "copyright": "© {{year}} TaskMint. All rights reserved."
+  },
+  "auth": {
+    "enterEmail": "Please enter your email address.",
+    "enterPassword": "Please enter your password.",
+    "enterUsername": "Please enter a username.",
+    "passwordLength": "Password must be at least 8 characters long.",
+    "agreeTerms": "Please agree to the Terms and Conditions.",
+    "signingInGoogle": "Signing in with Google...",
+    "signedInSuccess": "Signed in successfully!",
+    "googleSignInFailed": "Google sign-in failed.",
+    "sendingResetEmail": "Sending password reset email...",
+    "resetSent": "Password reset link sent! Check your inbox.",
+    "noAccountFound": "No account found with this email.",
+    "failedToSendReset": "Failed to send reset link.",
+    "creatingAccount": "Creating your account...",
+    "accountCreated": "Account created! Welcome to TaskMint.",
+    "emailInUse": "Email is already registered. Please login.",
+    "passwordWeak": "Password is too weak.",
+    "registrationFailed": "Registration failed.",
+    "loggingIn": "Logging in...",
+    "welcomeBack": "Welcome back!",
+    "invalidCredentials": "Invalid email or password.",
+    "loginFailed": "Login failed.",
+    "enterValid2FACode": "Please enter a valid 6-digit code.",
+    "authenticatedSuccess": "Authenticated successfully!",
+    "invalid2FACode": "Invalid 2FA code.",
+    "failedToLogout": "Failed to log out."
+  },
+  "resetPassword": {
+    "invalidLink": "Invalid password reset link.",
+    "resetting": "Resetting password...",
+    "success": "Password successfully reset! You can now log in.",
+    "expired": "This reset link has expired. Please request a new one.",
+    "alreadyUsed": "Invalid reset link. It may have already been used.",
+    "genericError": "Something went wrong."
+  },
+  "withdrawal": {
+    "submittedSuccess": "Withdrawal of {{amount}} submitted!"
+  },
+  "books": {
+    "fillAllFields": "Please fill all shipping fields",
+    "failedToOrder": "Failed to place order"
+  },
+  "common": {
+    "networkError": "Network error. Please try again.",
+    "copiedToClipboard": "Copied to clipboard!"
   }
 }

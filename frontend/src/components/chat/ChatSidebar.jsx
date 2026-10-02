@@ -8,39 +8,39 @@ import { FiX, FiSend, FiTrash2, FiMessageSquare } from 'react-icons/fi';
 import { motion, AnimatePresence } from 'framer-motion';
 import toast from 'react-hot-toast';
 import PublicProfileModal from '../PublicProfileModal';
-import { getLevelFromEarned, getLevelLabel } from '../../utils/vipLevels';
+import { getLevelFromEarned, getLevelLabel, LEVEL_BADGES } from '../../utils/vipLevels';
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 const SOCKET_URL = API.replace(/\/api\/?$/, '');
 
 const TIER_BADGES = {
   Bronze: {
-    icon: '/coins/VIPbronze.png',
+    icon: '/coins/Bronz1.png',
     pillBg: 'linear-gradient(180deg, #F3B60A -26.79%, #BE6708 158.93%)',
     borderColor: '#BE6708',
   },
   Silver: {
-    icon: '/coins/VIPsilver.png',
+    icon: '/coins/silver1.png',
     pillBg: 'linear-gradient(180deg, #D6D6D6 -26.79%, #929292 158.93%)',
     borderColor: '#929292',
   },
   Gold: {
-    icon: '/coins/VIPgold.png',
+    icon: '/coins/gold1.png',
     pillBg: 'linear-gradient(180deg, #FEDD72 -23.08%, #FCBA21 74.64%)',
     borderColor: '#FCBA21',
   },
   Platinum: {
-    icon: '/coins/VIPplatinum.png',
+    icon: '/coins/platn1.png',
     pillBg: 'linear-gradient(180deg, #1FC4DE 0%, #207985 100%)',
     borderColor: '#207985',
   },
   Diamond: {
-    icon: '/coins/VIPdimond.png',
+    icon: '/coins/dimond1.png',
     pillBg: 'linear-gradient(180deg, #7E83F1 0%, #7941BB 100%)',
     borderColor: '#7941BB',
   },
   Opal: {
-    icon: '/coins/VIPopel.png',
+    icon: '/coins/opal1.png',
     pillBg: 'linear-gradient(180deg, #E92BFF 0%, #31BDFF 100%)',
     borderColor: '#E92BFF',
   },
@@ -51,6 +51,7 @@ const AvatarWithBadge = ({ user, size = 33 }) => {
   const vipLevel = getLevelFromEarned(user?.totalEarned || 0);
   const tierName = vipLevel?.tier || 'Bronze';
   const tierMeta = TIER_BADGES[tierName] || TIER_BADGES.Bronze;
+  const badgeIcon = (vipLevel && LEVEL_BADGES[vipLevel.key]) || LEVEL_BADGES.bronze_1 || '/coins/Bronz1.png';
 
   return (
     <div
@@ -82,14 +83,12 @@ const AvatarWithBadge = ({ user, size = 33 }) => {
         />
       </div>
 
-      {tierMeta?.icon && (
-        <img
-          src={tierMeta.icon}
-          alt="VIP Tier"
-          className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 object-contain drop-shadow-sm pointer-events-none"
-          style={{ width: '16px', height: '16px' }}
-        />
-      )}
+      <img
+        src={badgeIcon}
+        alt="VIP Tier"
+        className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 object-contain drop-shadow-sm pointer-events-none"
+        style={{ width: '16px', height: '16px' }}
+      />
     </div>
   );
 };
@@ -100,7 +99,7 @@ const RoleBadges = ({ user }) => {
   const vipLevel = getLevelFromEarned(user?.totalEarned || 0);
   const tierName = vipLevel?.tier || 'Bronze';
   const tierMeta = TIER_BADGES[tierName] || TIER_BADGES.Bronze;
-  const rankLabel = vipLevel ? (vipLevel.rank ? `${vipLevel.tier} ${vipLevel.rank}` : vipLevel.tier) : 'Bronze';
+  const rankLabel = vipLevel ? (vipLevel.rank ? `${vipLevel.tier} ${vipLevel.rank}` : vipLevel.tier) : 'Bronze I';
 
   return (
     <div className="flex items-center gap-1.5 shrink-0">
@@ -152,23 +151,26 @@ const RoleBadges = ({ user }) => {
         </span>
       )}
 
-      {/* VIP Tier Badge (using exact VIP page pill gradients) */}
+      {/* VIP Tier Badge */}
       <span
         style={{
           background: tierMeta.pillBg,
           color: '#FFFFFF',
           fontSize: '11px',
-          fontWeight: 700,
-          lineHeight: '100%',
+          fontWeight: 600,
+          lineHeight: '1',
           letterSpacing: '0%',
           borderRadius: '100px',
-          padding: '4px 10px',
-          fontFamily: '"Bricolage Grotesque", sans-serif',
+          padding: '2px 8px',
+          height: '18px',
+          fontFamily: '"Poppins", sans-serif',
           display: 'inline-flex',
           alignItems: 'center',
           justifyContent: 'center',
           opacity: 1,
           transform: 'rotate(0deg)',
+          whiteSpace: 'nowrap',
+          boxSizing: 'border-box',
         }}
       >
         {rankLabel}

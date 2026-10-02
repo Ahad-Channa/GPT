@@ -556,7 +556,7 @@ const OrderModal = ({ book, onClose, onSuccess, balance }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!form.fullName || !form.email || !form.address || !form.city || !form.zipcode) {
-      toast.error('Please fill all shipping fields');
+      toast.error(t('books.fillAllFields', 'Please fill all shipping fields'));
       return;
     }
     setSubmitting(true);
@@ -575,10 +575,10 @@ const OrderModal = ({ book, onClose, onSuccess, balance }) => {
         setResultData({ newBalance: data.newBalance, order: data.order });
         setSubmitted(true);
       } else {
-        toast.error(data.error || 'Failed to place order');
+        toast.error(data.error || t('books.failedToOrder', 'Failed to place order'));
       }
     } catch {
-      toast.error('Network error. Please try again.');
+      toast.error(t('common.networkError', 'Network error. Please try again.'));
     } finally {
       setSubmitting(false);
     }

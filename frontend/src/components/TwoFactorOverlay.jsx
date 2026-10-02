@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../contexts/AuthContext';
 import { FiShield, FiLoader, FiLogOut } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 
 const TwoFactorOverlay = () => {
+  const { t } = useTranslation();
   const { verify2FA, logout, mongoUser } = useAuth();
   const [code, setCode] = useState('');
   const [loading, setLoading] = useState(false);
@@ -11,16 +13,16 @@ const TwoFactorOverlay = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (code.length !== 6 || isNaN(code)) {
-      toast.error('Please enter a valid 6-digit code.');
+      toast.error(t('auth.enterValid2FACode', 'Please enter a valid 6-digit code.'));
       return;
     }
     setLoading(true);
     const result = await verify2FA(code);
     setLoading(false);
     if (result.success) {
-      toast.success('Authenticated successfully!');
+      toast.success(t('auth.authenticatedSuccess', 'Authenticated successfully!'));
     } else {
-      toast.error(result.error || 'Invalid 2FA code.');
+      toast.error(result.error || t('auth.invalid2FACode', 'Invalid 2FA code.'));
     }
   };
 
@@ -29,7 +31,7 @@ const TwoFactorOverlay = () => {
       await logout();
       window.location.href = '/';
     } catch (err) {
-      toast.error('Failed to log out.');
+      toast.error(t('auth.failedToLogout', 'Failed to log out.'));
     }
   };
 

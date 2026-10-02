@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../contexts/AuthContext';
 import { FcGoogle } from 'react-icons/fc';
 import { FiX, FiEye, FiEyeOff } from 'react-icons/fi';
@@ -7,6 +8,7 @@ import toast from 'react-hot-toast';
 import { motion } from 'framer-motion';
 
 export default function AuthModal({ isOpen, onClose, initialTab = 'login' }) {
+  const { t } = useTranslation();
   const { loginWithGoogle, loginWithEmail, registerWithEmail, resetPassword } = useAuth();
   const navigate = useNavigate();
 
@@ -45,14 +47,14 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }) {
 
   const handleGoogleLogin = async () => {
     setLoading(true);
-    const tid = toast.loading('Signing in with Google...');
+    const tid = toast.loading(t('auth.signingInGoogle', 'Signing in with Google...'));
     try {
       await loginWithGoogle();
-      toast.success('Signed in successfully!', { id: tid });
+      toast.success(t('auth.signedInSuccess', 'Signed in successfully!'), { id: tid });
       onClose();
       navigate('/dashboard');
     } catch (err) {
-      toast.error(err.message || 'Google sign-in failed.', { id: tid });
+      toast.error(err.message || t('auth.googleSignInFailed', 'Google sign-in failed.'), { id: tid });
     } finally {
       setLoading(false);
     }
@@ -61,22 +63,22 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!email.trim()) {
-      toast.error('Please enter your email address.');
+      toast.error(t('auth.enterEmail', 'Please enter your email address.'));
       return;
     }
 
     if (tab === 'forgot') {
       setLoading(true);
-      const tid = toast.loading('Sending password reset email...');
+      const tid = toast.loading(t('auth.sendingResetEmail', 'Sending password reset email...'));
       try {
         await resetPassword(email.trim());
-        toast.success('Password reset link sent! Check your inbox.', { id: tid });
+        toast.success(t('auth.resetSent', 'Password reset link sent! Check your inbox.'), { id: tid });
         setTab('login');
       } catch (err) {
         if (err.code === 'auth/user-not-found') {
-          toast.error('No account found with this email.', { id: tid });
+          toast.error(t('auth.noAccountFound', 'No account found with this email.'), { id: tid });
         } else {
-          toast.error(err.message || 'Failed to send reset link.', { id: tid });
+          toast.error(err.message || t('auth.failedToSendReset', 'Failed to send reset link.'), { id: tid });
         }
       } finally {
         setLoading(false);
@@ -85,38 +87,38 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }) {
     }
 
     if (!password) {
-      toast.error('Please enter your password.');
+      toast.error(t('auth.enterPassword', 'Please enter your password.'));
       return;
     }
 
     if (tab === 'register') {
       if (!displayName.trim()) {
-        toast.error('Please enter a username.');
+        toast.error(t('auth.enterUsername', 'Please enter a username.'));
         return;
       }
       if (password.length < 8) {
-        toast.error('Password must be at least 8 characters long.');
+        toast.error(t('auth.passwordLength', 'Password must be at least 8 characters long.'));
         return;
       }
       if (!agreeTerms) {
-        toast.error('Please agree to the Terms and Conditions.');
+        toast.error(t('auth.agreeTerms', 'Please agree to the Terms and Conditions.'));
         return;
       }
 
       setLoading(true);
-      const tid = toast.loading('Creating your account...');
+      const tid = toast.loading(t('auth.creatingAccount', 'Creating your account...'));
       try {
         await registerWithEmail(email.trim(), password, displayName.trim());
-        toast.success('Account created! Welcome to TaskMint.', { id: tid });
+        toast.success(t('auth.accountCreated', 'Account created! Welcome to TaskMint.'), { id: tid });
         onClose();
         navigate('/dashboard');
       } catch (err) {
         if (err.code === 'auth/email-already-in-use') {
-          toast.error('Email is already registered. Please login.', { id: tid });
+          toast.error(t('auth.emailInUse', 'Email is already registered. Please login.'), { id: tid });
         } else if (err.code === 'auth/weak-password') {
-          toast.error('Password is too weak.', { id: tid });
+          toast.error(t('auth.passwordWeak', 'Password is too weak.'), { id: tid });
         } else {
-          toast.error(err.message || 'Registration failed.', { id: tid });
+          toast.error(err.message || t('auth.registrationFailed', 'Registration failed.'), { id: tid });
         }
       } finally {
         setLoading(false);
@@ -124,17 +126,17 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }) {
     } else {
       // Login
       setLoading(true);
-      const tid = toast.loading('Logging in...');
+      const tid = toast.loading(t('auth.loggingIn', 'Logging in...'));
       try {
         await loginWithEmail(email.trim(), password);
-        toast.success('Welcome back!', { id: tid });
+        toast.success(t('auth.welcomeBack', 'Welcome back!'), { id: tid });
         onClose();
         navigate('/dashboard');
       } catch (err) {
         if (['auth/wrong-password', 'auth/user-not-found', 'auth/invalid-credential'].includes(err.code)) {
-          toast.error('Invalid email or password.', { id: tid });
+          toast.error(t('auth.invalidCredentials', 'Invalid email or password.'), { id: tid });
         } else {
-          toast.error(err.message || 'Login failed.', { id: tid });
+          toast.error(err.message || t('auth.loginFailed', 'Login failed.'), { id: tid });
         }
       } finally {
         setLoading(false);

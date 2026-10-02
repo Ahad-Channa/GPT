@@ -452,7 +452,7 @@ const Header = ({ onChatToggle, chatOpen, fullWidth }) => {
                   }}
                 />
                 {unreadCount > 0 && (
-                  <span className="absolute top-0 right-0 w-2 h-2 bg-[#49B265] rounded-full shadow-[0_0_8px_rgba(73,178,101,0.8)]" />
+                  <span className="absolute top-[3.5px] right-[3px] w-[7.5px] h-[7.5px] bg-[#49B265] rounded-full shadow-[0_0_6px_rgba(73,178,101,0.8)] pointer-events-none" />
                 )}
               </button>
 

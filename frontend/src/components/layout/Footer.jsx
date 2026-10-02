@@ -35,10 +35,15 @@ const Footer = () => {
   ];
 
   return (
-    <footer className="w-full flex justify-center pt-0 pb-12 px-2 sm:px-4 md:px-8 lg:px-0 bg-transparent shrink-0">
+    <footer className="w-full flex justify-center pt-0 pb-28 lg:pb-12 px-2 sm:px-4 md:px-8 lg:px-0 bg-transparent shrink-0">
       <div
         className="flex flex-col lg:flex-row justify-between w-full max-w-[440px] lg:max-w-[1328px] mx-auto items-center lg:items-start"
         style={{
+          width: '100%',
+          maxWidth: 1328,
+          height: isMobile ? 'auto' : 362,
+          justifyContent: 'space-between',
+          opacity: 1,
           gap: 40
         }}
       >
@@ -48,11 +53,11 @@ const Footer = () => {
           style={{
             width: 427,
             maxWidth: '100%',
-            height: isMobile ? 480 : 380,
+            height: isMobile ? 420 : 362,
             justifyContent: 'space-between',
             opacity: 1,
             borderRadius: 24,
-            paddingTop: 40,
+            paddingTop: 50,
             paddingRight: 32,
             paddingBottom: 24,
             paddingLeft: 32,
@@ -61,9 +66,14 @@ const Footer = () => {
         >
           {/* Background Image */}
           <img
-            src="/coins/side.png"
+            src={isMobile ? "/coins/image copy 18.png" : "/coins/image copy 16.png"}
             alt="Background graphics"
-            className="absolute bottom-[-32px] lg:bottom-0 left-[-32px] lg:left-[-13px] w-[112%] lg:w-full max-w-none h-auto z-0 pointer-events-none"
+            className="absolute bottom-0 left-0 w-full h-auto z-0 pointer-events-none object-contain object-bottom-left"
+            style={{
+              maxHeight: '100%',
+              maxWidth: '100%',
+              objectPosition: 'bottom left'
+            }}
           />
 
           {/* Logo area */}
@@ -93,7 +103,7 @@ const Footer = () => {
               className="flex items-center justify-between"
               style={{
                 width: 'auto',
-                minWidth: 260,
+                minWidth: 'min(260px, 100%)',
                 maxWidth: '100%',
                 height: 44,
                 gap: 16,
@@ -142,10 +152,11 @@ const Footer = () => {
 
           {/* Socials */}
           <div
-            className="flex justify-end items-center z-10 relative w-full max-w-[363px] translate-x-4 lg:translate-x-[18px]"
+            className="flex justify-end items-center z-10 relative w-full"
             style={{
-              height: 36,
-              gap: 4,
+              height: isMobile ? 28 : 36,
+              gap: isMobile ? 6 : 5,
+              transform: isMobile ? 'translate(18px, -2px)' : 'none',
             }}
           >
             {[
@@ -157,8 +168,8 @@ const Footer = () => {
                 key={idx}
                 className="flex items-center justify-center cursor-pointer hover:opacity-80 transition-opacity"
                 style={{
-                  width: 36,
-                  height: 36,
+                  width: isMobile ? 28 : 36,
+                  height: isMobile ? 28 : 36,
                   borderRadius: 75.42,
                   opacity: 1
                 }}
@@ -174,23 +185,37 @@ const Footer = () => {
         </div>
 
         {/* Right Area */}
-        <div className="flex flex-col justify-between flex-1 min-w-0 pt-2 lg:pt-4 w-full max-w-[440px] lg:max-w-[861px] mx-auto lg:mx-0">
+        <div className="flex flex-col justify-between flex-1 min-w-0 pt-2 lg:pt-0 w-full max-w-[440px] lg:max-w-[861px] mx-auto lg:mx-0"
+          style={{
+            height: isMobile ? 'auto' : 362,
+            justifyContent: 'space-between',
+          }}
+        >
 
           {/* Top Section */}
-          <div className="flex flex-col lg:flex-row justify-between items-center lg:items-start w-full gap-8 lg:gap-0">
+          <div
+            className="flex flex-col lg:flex-row justify-between items-center lg:items-start w-full gap-8 lg:gap-0"
+            style={{
+              width: '100%',
+              maxWidth: 861,
+              height: isMobile ? 'auto' : 273,
+              opacity: 1,
+            }}
+          >
             <div
-              className="flex justify-start w-full"
+              className="flex justify-start w-full lg:w-auto"
               style={{
-                width: isMobile ? 424 : 'auto',
+                width: isMobile ? '100%' : 'auto',
                 maxWidth: '100%',
                 height: 273,
                 paddingRight: 0,
                 paddingLeft: isMobile ? 24 : 0,
-                gap: isMobile ? 64 : 64,
-                transform: isMobile ? 'none' : 'translateY(-10px)'
+                gap: isMobile ? 40 : 56,
+                opacity: 1,
+                transform: 'translateY(-3px)',
               }}
             >
-              <div className="flex flex-col min-w-[135px]" style={{ height: 273, gap: 32 }}>
+              <div className="flex flex-col min-w-[135px]" style={{ height: 273, justifyContent: 'space-between' }}>
                 <h4
                   className="m-0 text-left whitespace-nowrap"
                   style={{
@@ -206,7 +231,7 @@ const Footer = () => {
                 >
                   {t('footer.quickLinks', 'Quick Links')}
                 </h4>
-                <ul className="flex flex-col list-none p-0 m-0" style={{ gap: 24 }}>
+                <ul className="flex flex-col list-none p-0 m-0 justify-between" style={{ height: 220, opacity: 1 }}>
                   {quickLinks.map((link) => (
                     <li key={link.nameKey} className="flex items-center">
                       <button
@@ -233,7 +258,7 @@ const Footer = () => {
                   ))}
                 </ul>
               </div>
-              <div className="flex flex-col min-w-[135px]" style={{ height: 273, gap: 32 }}>
+              <div className="flex flex-col min-w-[135px]" style={{ height: 273, justifyContent: 'space-between' }}>
                 <h4
                   className="m-0 text-left whitespace-nowrap"
                   style={{
@@ -249,7 +274,7 @@ const Footer = () => {
                 >
                   {t('footer.resources', 'Resources')}
                 </h4>
-                <ul className="flex flex-col list-none p-0 m-0" style={{ gap: 24 }}>
+                <ul className="flex flex-col list-none p-0 m-0 justify-between" style={{ height: 220, opacity: 1 }}>
                   {resourceLinks.map((link) => (
                     <li key={link.nameKey} className="flex items-center">
                       <a
@@ -276,48 +301,43 @@ const Footer = () => {
 
             {/* Banner */}
             <div
-              className="w-full flex justify-center items-center relative h-fit"
+              className="w-full lg:w-auto flex justify-center lg:justify-end items-center relative h-fit shrink-0"
               style={{
-                width: isMobile ? 424 : 420,
+                width: isMobile ? 424 : 440,
                 maxWidth: '100%',
-                height: isMobile ? 199.28 : 'auto',
-                transform: isMobile ? 'none' : 'translateY(-14px)',
+                height: isMobile ? 'auto' : 273,
               }}
             >
               <img
-                src="/coins/wybt.png"
+                src={isMobile ? "/coins/image copy 19.png" : "/coins/image copy 17.png"}
                 alt="Top Earner Graphic"
-                className="pointer-events-none w-full h-full object-contain"
+                className="pointer-events-none w-full h-full object-contain lg:object-right"
                 style={{
                   width: isMobile ? 424 : '100%',
-                  height: isMobile ? 199.28 : 'auto',
-                  objectFit: 'contain'
+                  height: isMobile ? 'auto' : '100%',
+                  objectFit: 'contain',
+                  objectPosition: isMobile ? 'center' : 'right'
                 }}
               />
             </div>
           </div>
 
-          {/* Bottom Action & Copyright Bar */}
-          <div className="flex flex-col-reverse sm:flex-row items-center justify-between w-full mt-6 pt-4 gap-4">
+          {/* Bottom Copyright Bar */}
+          <div className="flex items-center justify-center lg:justify-start w-full mt-6 lg:mt-auto pt-2 lg:pt-4">
             <p
-              className="m-0 text-center sm:text-left text-gray-800"
+              className="m-0 text-center lg:text-left text-black"
               style={{
                 fontFamily: '"Poppins", sans-serif',
                 fontWeight: 400,
                 fontSize: 14,
                 lineHeight: '20px',
+                color: '#000000',
+                opacity: 1,
+                textAlign: isMobile ? 'center' : 'left',
               }}
             >
               {t('footer.copyright', { year: new Date().getFullYear(), defaultValue: '© 2026 TaskMint. All rights reserved.' })}
             </p>
-
-            <button
-              onClick={() => window.open('https://trustpilot.com', '_blank')}
-              className="bg-[#2a3044] hover:bg-[#1a1e2e] transition-colors text-white font-medium text-[15px] px-8 py-3.5 rounded-[24px] cursor-pointer shrink-0 shadow-sm"
-              style={{ fontFamily: '"Poppins", sans-serif' }}
-            >
-              {t('footer.leaveReview', 'Leave a review')}
-            </button>
           </div>
 
         </div>

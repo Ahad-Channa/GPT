@@ -308,22 +308,28 @@ export const AuthProvider = ({ children }) => {
                                     }}
                                 >
                                     {msg}
-                                    <span style={{ display: 'block', fontSize: '0.75rem', marginTop: '4px', color: '#a5b4fc', fontWeight: 700 }}>
+                                    <span style={{ display: 'block', fontSize: '0.75rem', marginTop: '4px', color: '#2563eb', fontWeight: 700 }}>
                                         {openText}
                                     </span>
                                 </span>
                             ),
                             {
                                 duration: 12000,
-                                icon: '⭐',
+                                icon: null,
                                 style: {
                                     cursor: 'pointer',
-                                    background: '#0b101e',
-                                    border: '1px solid rgba(99,102,241,0.5)',
-                                    color: '#f1f5f9',
-                                    fontWeight: 600,
-                                    boxShadow: '0 0 20px rgba(99,102,241,0.3)',
-                                    maxWidth: '360px',
+                                    background: 'rgba(255, 255, 255, 1)',
+                                    border: '1px solid rgba(0, 0, 0, 0.08)',
+                                    color: '#111827',
+                                    fontFamily: '"Bricolage Grotesque", sans-serif',
+                                    fontWeight: 700,
+                                    fontSize: '18px',
+                                    lineHeight: '27px',
+                                    letterSpacing: '-0.02em',
+                                    borderRadius: '12px',
+                                    boxShadow: '0px 12px 20px 0px rgba(0, 0, 0, 0.15)',
+                                    padding: '19px 25px',
+                                    maxWidth: '400px',
                                 },
                             }
                         );
@@ -338,12 +344,19 @@ export const AuthProvider = ({ children }) => {
                         const localized = localizeNotification({ type, title, message }, i18n.language);
                         toast.success(`${localized.title}: ${localized.message}`, {
                             duration: 8000,
+                            icon: null,
                             style: {
-                                background: '#0b101e',
-                                border: '1px solid rgba(139,92,246,0.5)',
-                                color: '#f1f5f9',
-                                fontWeight: 600,
-                                boxShadow: '0 0 20px rgba(139,92,246,0.3)',
+                                background: 'rgba(255, 255, 255, 1)',
+                                border: '1px solid rgba(0, 0, 0, 0.08)',
+                                color: '#111827',
+                                fontFamily: '"Bricolage Grotesque", sans-serif',
+                                fontWeight: 700,
+                                fontSize: '18px',
+                                lineHeight: '27px',
+                                letterSpacing: '-0.02em',
+                                borderRadius: '12px',
+                                boxShadow: '0px 12px 20px 0px rgba(0, 0, 0, 0.15)',
+                                padding: '19px 25px',
                                 maxWidth: '400px',
                             },
                         });

@@ -251,7 +251,7 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess, filterType }) 
 
       setStep(4); // success screen
       onSuccess(data.newBalance);
-      toast.success(`Withdrawal of ${formatCoins(amountNum)} submitted!`);
+      toast.success(t('withdrawal.submittedSuccess', { amount: formatCoins(amountNum), defaultValue: `Withdrawal of ${formatCoins(amountNum)} submitted!` }));
     } catch (err) {
       setError('Network error. Please check your connection.');
       setSubmitting(false);
@@ -279,7 +279,7 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess, filterType }) 
         style={{
           width: '100%',
           maxWidth: isGiftCard && step < 3 ? '1072px' : '626px',
-          minHeight: isGiftCard && step === 1 ? 'auto' : step === 1 ? '339px' : step === 4 ? '402px' : 'auto',
+          minHeight: isGiftCard && step === 1 ? 'auto' : step === 1 ? '339px' : 'auto',
           background: 'rgba(255, 255, 255, 1)',
           borderRadius: isGiftCard && step < 3 ? '25px' : '30px',
           opacity: 1,
@@ -1391,7 +1391,7 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess, filterType }) 
 
                   {/* Warning Disclaimer */}
                   <p
-                    className="text-[8.5px] min-[350px]:text-[9px] min-[370px]:text-[9.5px] min-[400px]:text-[10.5px] sm:text-[12px] leading-[12.5px] min-[350px]:leading-[13.5px] min-[370px]:leading-[14px] sm:leading-[17px] w-full max-w-[602px] mt-1 text-[#E50914] font-medium"
+                    className="text-[9px] min-[350px]:text-[10px] min-[370px]:text-[10.5px] min-[400px]:text-[11px] sm:text-[12px] leading-[14px] min-[350px]:leading-[15px] sm:leading-[17px] w-full max-w-[602px] mt-1 text-[#E50914] font-medium"
                     style={{
                       fontFamily: '"Poppins", sans-serif',
                       letterSpacing: '0%',
@@ -1399,19 +1399,9 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess, filterType }) 
                       margin: 0,
                     }}
                   >
-                    {method === 'litecoin' ? (
-                      <>
-                        <span className="whitespace-nowrap sm:whitespace-normal">***Please double-check your LTC wallet address. Once the</span>{' '}
-                        <span className="block sm:inline whitespace-nowrap sm:whitespace-normal">payout is processed, this action cannot be reversed. We are not</span>{' '}
-                        <span className="block sm:inline whitespace-nowrap sm:whitespace-normal">responsible for lost rewards due to an incorrect address</span>
-                      </>
-                    ) : (
-                      <>
-                        <span className="whitespace-nowrap sm:whitespace-normal">***Please double-check your paypal email address. Once the</span>{' '}
-                        <span className="block sm:inline whitespace-nowrap sm:whitespace-normal">payout is processed, this action cannot be reversed. We are not</span>{' '}
-                        <span className="block sm:inline whitespace-nowrap sm:whitespace-normal">responsible for lost rewards due to an incorrect address</span>
-                      </>
-                    )}
+                    {method === 'litecoin'
+                      ? t('withdraw.ltcDisclaimer', '***Please double-check your LTC wallet address. Once the payout is processed, this action cannot be reversed. We are not responsible for lost rewards due to an incorrect address')
+                      : t('withdraw.paypalDisclaimer', '***Please double-check your paypal email address. Once the payout is processed, this action cannot be reversed. We are not responsible for lost rewards due to an incorrect address')}
                   </p>
                 </div>
 
@@ -1435,7 +1425,7 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess, filterType }) 
                       className="text-[17px] sm:text-[20px] font-bold text-[#0E0F0C] tracking-[-0.02em] px-1 sm:px-0"
                       style={{
                         fontFamily: '"Bricolage Grotesque", sans-serif',
-                        lineHeight: '13px',
+                        lineHeight: '1.2',
                         display: 'flex',
                         alignItems: 'center',
                         margin: 0,
@@ -1448,17 +1438,17 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess, filterType }) 
                     <div className="flex flex-col gap-2 w-full">
                       {/* Amount You Receive Pill */}
                       <div
-                        className="bg-white flex justify-between items-center w-full max-w-[572.5px] h-[48px] xs:h-[50px] sm:h-[53px] rounded-[11px] px-3 xs:px-3.5 sm:px-[20px]"
+                        className="bg-white flex justify-between items-center w-full max-w-[572.5px] min-h-[48px] xs:min-h-[50px] sm:min-h-[53px] py-2.5 rounded-[11px] px-3 xs:px-3.5 sm:px-[20px]"
                         style={{
                           boxSizing: 'border-box',
                           opacity: 1,
                         }}
                       >
                         <span
-                          className="text-[13px] min-[360px]:text-[14px] xs:text-[15px] sm:text-[18px] font-medium text-black truncate"
+                          className="text-[13px] min-[360px]:text-[14px] xs:text-[15px] sm:text-[18px] font-medium text-black"
                           style={{
                             fontFamily: '"Poppins", sans-serif',
-                            lineHeight: '13px',
+                            lineHeight: '1.4',
                             letterSpacing: '0%',
                             display: 'flex',
                             alignItems: 'center',
@@ -1473,6 +1463,7 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess, filterType }) 
                           className="text-[14px] min-[360px]:text-[15px] xs:text-[16px] sm:text-[18px] font-medium text-black shrink-0 ml-2"
                           style={{
                             fontFamily: '"Poppins", sans-serif',
+                            lineHeight: '1.4',
                             display: 'flex',
                             alignItems: 'center',
                           }}
@@ -1483,17 +1474,17 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess, filterType }) 
 
                       {/* Processing Fees Pill */}
                       <div
-                        className="bg-white flex justify-between items-center w-full max-w-[572.5px] h-[48px] xs:h-[50px] sm:h-[53px] rounded-[11px] px-3 xs:px-3.5 sm:px-[20px]"
+                        className="bg-white flex justify-between items-center w-full max-w-[572.5px] min-h-[48px] xs:min-h-[50px] sm:min-h-[53px] py-2.5 rounded-[11px] px-3 xs:px-3.5 sm:px-[20px]"
                         style={{
                           boxSizing: 'border-box',
                           opacity: 1,
                         }}
                       >
                         <span
-                          className="text-[13px] min-[360px]:text-[14px] xs:text-[15px] sm:text-[18px] font-medium text-black truncate"
+                          className="text-[13px] min-[360px]:text-[14px] xs:text-[15px] sm:text-[18px] font-medium text-black"
                           style={{
                             fontFamily: '"Poppins", sans-serif',
-                            lineHeight: '13px',
+                            lineHeight: '1.4',
                             letterSpacing: '0%',
                             display: 'flex',
                             alignItems: 'center',
@@ -1508,6 +1499,7 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess, filterType }) 
                           className="text-[14px] min-[360px]:text-[15px] xs:text-[16px] sm:text-[18px] font-medium text-black shrink-0 ml-2"
                           style={{
                             fontFamily: '"Poppins", sans-serif',
+                            lineHeight: '1.4',
                             display: 'flex',
                             alignItems: 'center',
                           }}
@@ -1529,7 +1521,7 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess, filterType }) 
                         className="text-[13px] min-[360px]:text-[14px] xs:text-[15px] sm:text-[20px] font-bold text-black"
                         style={{
                           fontFamily: '"Bricolage Grotesque", sans-serif',
-                          lineHeight: '13px',
+                          lineHeight: '1.3',
                           letterSpacing: '-0.02em',
                           display: 'flex',
                           alignItems: 'center',
@@ -1544,7 +1536,7 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess, filterType }) 
                         className="text-[14px] min-[360px]:text-[15px] xs:text-[16px] sm:text-[20px] font-bold text-black shrink-0 ml-2"
                         style={{
                           fontFamily: '"Bricolage Grotesque", sans-serif',
-                          lineHeight: '13px',
+                          lineHeight: '1.3',
                           letterSpacing: '-0.02em',
                           display: 'flex',
                           alignItems: 'center',
@@ -1662,7 +1654,7 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess, filterType }) 
                       fontFamily: '"Poppins", sans-serif',
                     }}
                   >
-                    {method === 'giftcard' ? `${selectedMethod.label} (${giftCardBrand})` : selectedMethod.label}
+                    {method === 'giftcard' ? `${t('withdraw.giftCard', 'Gift Card')} (${giftCardBrand})` : selectedMethod.label}
                   </span>
                 </div>
 
@@ -1780,7 +1772,7 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess, filterType }) 
 
             {/* Red Notice */}
             <p
-              className="text-[9.5px] min-[350px]:text-[10.5px] min-[380px]:text-[11px] sm:text-[12px] leading-[13.5px] min-[350px]:leading-[15px] sm:leading-[17px] text-[#E50914] font-medium w-full max-w-[604px]"
+              className="text-[9.5px] min-[350px]:text-[10.5px] min-[380px]:text-[11px] sm:text-[12px] leading-[14px] min-[350px]:leading-[15.5px] sm:leading-[17px] text-[#E50914] font-medium w-full max-w-[604px]"
               style={{
                 fontFamily: '"Poppins", sans-serif',
                 letterSpacing: '0%',
@@ -1789,8 +1781,7 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess, filterType }) 
                 opacity: 1,
               }}
             >
-              <span className="whitespace-nowrap sm:whitespace-normal">This action is irreversible. Your balance will be deducted</span>{' '}
-              <span className="block sm:inline whitespace-nowrap sm:whitespace-normal">immediately and the request will be reviewed by our team.</span>
+              {t('withdraw.confirmDisclaimer', 'This action is irreversible. Your balance will be deducted immediately and the request will be reviewed by our team.')}
             </p>
 
             {error && (
@@ -1850,11 +1841,11 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess, filterType }) 
         {/* ── STEP 4: Success ─────────────────────────────────────────────── */}
         {step === 4 && (
           <div
-            className="relative w-full flex flex-col items-center justify-center text-center overflow-hidden px-8 py-6 box-border"
+            className="relative w-full flex flex-col items-center justify-center text-center overflow-hidden px-4 xs:px-6 sm:px-8 py-5 sm:py-6 box-border min-h-[350px] sm:min-h-[382px]"
             style={{
               width: '100%',
               maxWidth: '606px',
-              height: '382px',
+              height: 'auto',
               background: 'rgba(248, 245, 239, 1)',
               borderRadius: '20px',
             }}
@@ -1863,9 +1854,8 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess, filterType }) 
             <img
               src="/coins/confirmbottom.png"
               alt=""
-              className="absolute bottom-0 right-0 pointer-events-none z-0 select-none"
+              className="absolute bottom-0 right-0 pointer-events-none z-0 select-none max-w-[170px] xs:max-w-[210px] sm:max-w-[260px]"
               style={{
-                maxWidth: '260px',
                 objectFit: 'contain',
               }}
             />
@@ -1873,17 +1863,17 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess, filterType }) 
             {/* Content Box */}
             <div className="relative z-10 flex flex-col items-center text-center w-full max-w-[500px]">
               {/* Blue Verified Badge Image */}
-              <div className="flex items-center justify-center mb-3">
+              <div className="flex items-center justify-center mb-2.5 sm:mb-3">
                 <img
                   src="/coins/confooooom.png"
                   alt="Success"
-                  className="w-[64px] h-[64px] object-contain"
+                  className="w-[52px] h-[52px] sm:w-[64px] sm:h-[64px] object-contain"
                 />
               </div>
 
               {/* Title */}
               <h2
-                className="text-[#000000] font-bold text-[32px] leading-tight m-0 mb-3"
+                className="text-[#000000] font-bold text-[24px] xs:text-[28px] sm:text-[32px] leading-tight m-0 mb-2 sm:mb-3"
                 style={{
                   fontFamily: '"Bricolage Grotesque", sans-serif',
                   letterSpacing: '-0.02em',
@@ -1894,13 +1884,13 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess, filterType }) 
 
               {/* Subtitle / Details */}
               <p
-                className="text-[#000000] text-[15px] font-normal leading-[23px] m-0 mb-6"
+                className="text-[#000000] text-[13.5px] xs:text-[14px] sm:text-[15px] font-normal leading-[20px] sm:leading-[23px] m-0 mb-4 sm:mb-6 px-1"
                 style={{ fontFamily: '"Poppins", sans-serif' }}
               >
                 {t('withdraw.successDetails', {
                   amount: amountNum ? formatCoins(amountNum) : formatCoins(youReceive),
-                  method: selectedMethod?.label || (method === 'paypal' ? 'PayPal' : 'Litecoin'),
-                  defaultValue: `Your withdrawal of ${amountNum ? formatCoins(amountNum) : formatCoins(youReceive)} Coins via ${selectedMethod?.label || (method === 'paypal' ? 'PayPal' : 'Litecoin')} has been submitted.`
+                  method: method === 'giftcard' ? `${t('withdraw.giftCard', 'Gift Card')} (${giftCardBrand})` : (selectedMethod?.label || (method === 'paypal' ? 'PayPal' : 'Litecoin')),
+                  defaultValue: `Your withdrawal of ${amountNum ? formatCoins(amountNum) : formatCoins(youReceive)} Coins via ${method === 'giftcard' ? `${t('withdraw.giftCard', 'Gift Card')} (${giftCardBrand})` : (selectedMethod?.label || (method === 'paypal' ? 'PayPal' : 'Litecoin'))} has been submitted.`
                 })}
                 <br />
                 {t('withdraw.successProcessing', 'Our team will process your request within 1–3 business days. Check your transaction history for updates.')}
@@ -1915,7 +1905,7 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess, filterType }) 
                 style={{
                   width: '100%',
                   maxWidth: '440px',
-                  height: '55px',
+                  height: '50px',
                   borderRadius: '30px',
                   background: 'rgba(36, 50, 77, 1)',
                   color: '#FFFFFF',

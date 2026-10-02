@@ -71,9 +71,7 @@ const RoleSymbol = ({ user }) => {
       )}
 
       {/* VIP Badge */}
-      {vipLevel && (
-        <VipBadge tier={vipLevel.tier} rank={vipLevel.rank} size="xs" />
-      )}
+      <VipBadge tier={vipLevel?.tier || 'Bronze'} rank={vipLevel?.rank || 'I'} size="xs" />
     </span>
   );
 };

@@ -1,5 +1,6 @@
 import { useState, useEffect, useLayoutEffect, useRef, useCallback } from 'react';
 import io from 'socket.io-client';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../contexts/AuthContext';
 import { FiX, FiSend, FiMessageSquare, FiTrash2, FiUsers, FiSmile } from 'react-icons/fi';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -58,6 +59,7 @@ const RoleBadge = ({ role }) => {
 
 /* ─── main component ─────────────────────── */
 const LiveChat = ({ isOpen, onClose }) => {
+  const { t } = useTranslation();
   const { mongoUser, currentUser, isAdmin } = useAuth();
   const isMod = mongoUser?.role === 'moderator';
   const canModerate = isAdmin || isMod;
@@ -132,8 +134,8 @@ const LiveChat = ({ isOpen, onClose }) => {
         headers: { Authorization: `Bearer ${token}` }
       });
       const data = await res.json();
-      if (data.status !== 'success') toast.error(data.message || 'Delete failed');
-    } catch { toast.error('Failed to delete message'); }
+      if (data.status !== 'success') toast.error(data.message || t('chat.deleteFailed', 'Failed to delete message'));
+    } catch { toast.error(t('chat.deleteFailed', 'Failed to delete message')); }
     finally { setDeletingId(null); }
   };
 
@@ -414,13 +416,13 @@ const MessageRow = ({ msg, isOwn, isDeleting, showAvatar, canModerate, onDelete,
             <RoleBadge role={msg.user?.role} />
             {(() => {
                 const vipLevel = getLevelFromEarned(msg.user?.totalEarned || 0);
-                return vipLevel ? (
+                return (
                   <VipBadge
-                    tier={vipLevel.tier}
-                    rank={vipLevel.rank}
+                    tier={vipLevel?.tier || 'Bronze'}
+                    rank={vipLevel?.rank || 'I'}
                     size="xs"
                   />
-                ) : null;
+                );
               })()}
             <span style={{ fontSize: '0.65rem', color: '#334155' }}>
               {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}

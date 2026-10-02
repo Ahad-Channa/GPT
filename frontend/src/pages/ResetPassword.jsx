@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../contexts/AuthContext';
 import { motion } from 'framer-motion';
 import { FiLock, FiArrowRight, FiEye, FiEyeOff } from 'react-icons/fi';
@@ -77,6 +78,7 @@ const Field = ({ label, name, type, placeholder, icon: Icon, formik, loading }) 
 };
 
 const ResetPassword = () => {
+  const { t } = useTranslation();
   const { confirmResetPassword } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -89,10 +91,10 @@ const ResetPassword = () => {
     if (code) {
       setOobCode(code);
     } else {
-      toast.error('Invalid password reset link.');
+      toast.error(t('resetPassword.invalidLink', 'Invalid password reset link.'));
       navigate('/login');
     }
-  }, [searchParams, navigate]);
+  }, [searchParams, navigate, t]);
 
   const validationSchema = Yup.object().shape({
     password: Yup.string()
@@ -111,18 +113,18 @@ const ResetPassword = () => {
     onSubmit: async (values) => {
       if (!oobCode) return;
       setLoading(true);
-      const tid = toast.loading('Resetting password...');
+      const tid = toast.loading(t('resetPassword.resetting', 'Resetting password...'));
       try {
         await confirmResetPassword(oobCode, values.password);
-        toast.success('Password successfully reset! You can now log in.', { id: tid });
+        toast.success(t('resetPassword.success', 'Password successfully reset! You can now log in.'), { id: tid });
         navigate('/login');
       } catch (error) {
         if (error.code === 'auth/expired-action-code') {
-          toast.error('This reset link has expired. Please request a new one.', { id: tid });
+          toast.error(t('resetPassword.expired', 'This reset link has expired. Please request a new one.'), { id: tid });
         } else if (error.code === 'auth/invalid-action-code') {
-          toast.error('Invalid reset link. It may have already been used.', { id: tid });
+          toast.error(t('resetPassword.alreadyUsed', 'Invalid reset link. It may have already been used.'), { id: tid });
         } else {
-          toast.error(error.message || 'Something went wrong.', { id: tid });
+          toast.error(error.message || t('resetPassword.genericError', 'Something went wrong.'), { id: tid });
         }
       }
       setLoading(false);
