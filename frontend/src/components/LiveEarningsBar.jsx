@@ -344,8 +344,10 @@ const LiveEarningsBar = () => {
                       transition={{ duration: 0.2 }}
                       onClick={() => tx.userId?._id && setSelectedUserId(tx.userId._id)}
                       onMouseEnter={(e) => {
-                        if (typeof window !== 'undefined' && window.matchMedia && !window.matchMedia('(hover: hover) and (pointer: fine)').matches) {
-                          return;
+                        if (typeof window !== 'undefined') {
+                          if (window.innerWidth < 768 || (window.matchMedia && !window.matchMedia('(hover: hover) and (pointer: fine)').matches)) {
+                            return;
+                          }
                         }
                         const rect = e.currentTarget.getBoundingClientRect();
                         setHoveredData({
@@ -500,7 +502,7 @@ const LiveEarningsBar = () => {
       {/* Floating Hover Tooltip: Rendered outside the scroll container directly below the hovered item */}
       {hoveredData && (
         <div
-          className="fixed z-[999999] pointer-events-none transition-opacity duration-150"
+          className="hidden md:block fixed z-[999999] pointer-events-none transition-opacity duration-150"
           style={{
             top: `${hoveredData.top}px`,
             left: `${hoveredData.left}px`,

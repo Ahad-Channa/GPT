@@ -112,26 +112,22 @@ const PromoCodeRedeem = ({ onSuccess }) => {
         }}
       >
         <div
-          className="flex flex-col justify-center"
+          className="flex flex-col justify-center h-auto sm:h-[46px] gap-2 sm:gap-[16px]"
           style={{
             width: '100%',
             maxWidth: '100%',
-            height: '46px',
-            gap: '16px',
             boxSizing: 'border-box',
             opacity: 1,
           }}
         >
           <h2
+            className="h-auto sm:h-[20px] text-[24px] sm:text-[30px] leading-[1.2] sm:leading-[20px]"
             style={{
               fontFamily: '"Bricolage Grotesque", sans-serif',
               fontWeight: 700,
-              fontSize: '30px',
-              lineHeight: '20px',
               letterSpacing: '-0.02em',
               color: '#000000',
               width: '100%',
-              height: '20px',
               display: 'flex',
               alignItems: 'center',
               margin: 0,
@@ -142,17 +138,14 @@ const PromoCodeRedeem = ({ onSuccess }) => {
             {t('withdraw.promoTitle', 'Redeem Promo Code')}
           </h2>
           <p
-            className="whitespace-normal sm:whitespace-nowrap"
+            className="whitespace-normal sm:whitespace-nowrap h-auto sm:h-[10px] leading-[22px] sm:leading-[10px] block sm:flex"
             style={{
               fontFamily: '"Poppins", sans-serif',
               fontWeight: 500,
               fontSize: '14px',
-              lineHeight: '10px',
               letterSpacing: '0%',
               color: '#000000',
               width: '100%',
-              height: '10px',
-              display: 'flex',
               alignItems: 'center',
               margin: 0,
               padding: 0,

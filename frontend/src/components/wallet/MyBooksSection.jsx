@@ -431,48 +431,77 @@ const BookDetailModal = ({ book, onClose, onOrder, balance }) => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[100000] flex items-center justify-center bg-black/90 backdrop-blur-md p-4"
+            className="fixed inset-0 z-[100000] flex items-center justify-center bg-black/90 backdrop-blur-md p-3 sm:p-4 select-none"
             onClick={(e) => {
               e.stopPropagation();
               setLightboxIdx(null);
             }}
           >
+            {/* Close Button */}
             <button
+              type="button"
               onClick={(e) => {
+                e.preventDefault();
                 e.stopPropagation();
                 setLightboxIdx(null);
               }}
-              className="absolute top-6 right-6 text-white/70 hover:text-white transition-colors cursor-pointer"
+              onTouchEnd={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                setLightboxIdx(null);
+              }}
+              className="absolute top-4 right-4 sm:top-6 sm:right-6 z-[100010] p-2 text-white/80 hover:text-white transition-colors cursor-pointer flex items-center justify-center"
+              title="Close"
+              aria-label="Close preview"
             >
-              <FiX size={32} />
+              <FiX size={30} strokeWidth={2.5} />
             </button>
 
-            <div className="relative w-full max-w-5xl h-full flex items-center justify-center" onClick={e => e.stopPropagation()}>
+            <div
+              className="relative w-full max-w-5xl max-h-[85vh] flex items-center justify-center pointer-events-auto my-auto"
+              onClick={e => e.stopPropagation()}
+            >
               <img
                 src={validImages[lightboxIdx]}
                 alt={`Enlarged Preview ${lightboxIdx + 1}`}
-                className="max-w-full max-h-[85vh] object-contain rounded-lg shadow-2xl"
+                className="max-w-full max-h-[80vh] sm:max-h-[85vh] object-contain rounded-lg shadow-2xl"
               />
 
               {validImages.length > 1 && (
                 <>
                   <button
+                    type="button"
                     onClick={(e) => {
+                      e.preventDefault();
                       e.stopPropagation();
                       setLightboxIdx(prev => (prev > 0 ? prev - 1 : validImages.length - 1));
                     }}
-                    className="absolute left-4 md:left-8 p-3 rounded-full bg-white/10 text-white hover:bg-white/20 transition-colors cursor-pointer"
+                    onTouchEnd={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      setLightboxIdx(prev => (prev > 0 ? prev - 1 : validImages.length - 1));
+                    }}
+                    className="absolute left-2 sm:left-4 md:left-8 z-[100005] p-2.5 sm:p-3 rounded-full bg-black/60 hover:bg-black/80 text-white transition-colors cursor-pointer flex items-center justify-center"
+                    aria-label="Previous image"
                   >
-                    <FiChevronLeft size={28} />
+                    <FiChevronLeft size={24} />
                   </button>
                   <button
+                    type="button"
                     onClick={(e) => {
+                      e.preventDefault();
                       e.stopPropagation();
                       setLightboxIdx(prev => (prev < validImages.length - 1 ? prev + 1 : 0));
                     }}
-                    className="absolute right-4 md:right-8 p-3 rounded-full bg-white/10 text-white hover:bg-white/20 transition-colors cursor-pointer"
+                    onTouchEnd={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      setLightboxIdx(prev => (prev < validImages.length - 1 ? prev + 1 : 0));
+                    }}
+                    className="absolute right-2 sm:right-4 md:right-8 z-[100005] p-2.5 sm:p-3 rounded-full bg-black/60 hover:bg-black/80 text-white transition-colors cursor-pointer flex items-center justify-center"
+                    aria-label="Next image"
                   >
-                    <FiChevronRight size={28} />
+                    <FiChevronRight size={24} />
                   </button>
                 </>
               )}

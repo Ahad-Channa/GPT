@@ -484,7 +484,7 @@ export const FeaturedOfferModal = ({ offer, token, onClose, onSubmitted }) => {
                 <span className="text-3xl sm:text-4xl">{emojiIcon}</span>
               )}
             </div>
-            <div className="flex-1 min-w-0">
+            <div className="flex-1 min-w-0" style={{ transform: 'translateY(10px)' }}>
               <h2
                 style={{
                   fontFamily: '"Bricolage Grotesque", sans-serif',
@@ -876,11 +876,15 @@ export const FeaturedOfferModal = ({ offer, token, onClose, onSubmitted }) => {
         {/* General Offer Rules Section */}
         <div
           style={{
+            width: '100%',
+            maxWidth: '610px',
+            background: 'rgba(248, 245, 239, 1)',
+            borderRadius: '16px',
+            boxSizing: 'border-box',
             display: 'flex',
             flexDirection: 'column',
-            padding: '4px 0 0',
           }}
-          className="w-full max-w-[381px] sm:max-w-none gap-2 sm:gap-2.5 shrink-0"
+          className="w-full p-3.5 sm:p-4 gap-2 sm:gap-2.5 shrink-0"
         >
           <h4
             style={{
@@ -892,12 +896,12 @@ export const FeaturedOfferModal = ({ offer, token, onClose, onSubmitted }) => {
               opacity: 1,
               transform: 'rotate(0deg)',
             }}
-            className="w-full max-w-[381px] sm:max-w-none min-h-[12px] text-[15px] sm:text-[17px] leading-[20px] sm:leading-[27px]"
+            className="w-full min-h-[12px] text-[15px] sm:text-[17px] leading-[20px] sm:leading-[27px]"
           >
             {t('offers.generalRules')}
           </h4>
           <div
-            className="flex flex-col w-full max-w-[381px] sm:max-w-none gap-[5px] sm:gap-1.5"
+            className="flex flex-col w-full gap-[5px] sm:gap-1.5"
             style={{
               transform: 'rotate(0deg)',
               opacity: 1,
@@ -906,7 +910,7 @@ export const FeaturedOfferModal = ({ offer, token, onClose, onSubmitted }) => {
             {generalRules.map((rule, idx) => (
               <div
                 key={idx}
-                className="w-full max-w-[381px] sm:max-w-none min-h-[8px] flex items-start gap-[5px] sm:gap-2"
+                className="w-full min-h-[8px] flex items-start gap-[6px] sm:gap-2"
                 style={{
                   transform: 'rotate(0deg)',
                   opacity: 1,

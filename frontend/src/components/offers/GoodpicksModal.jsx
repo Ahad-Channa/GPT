@@ -374,7 +374,7 @@ export const GoodpicksDetailModal = ({ offer, onClose, token }) => {
               </div>
 
               {/* Title */}
-              <div className="flex-1 min-w-0">
+              <div className="flex-1 min-w-0" style={{ transform: 'translateY(10px)' }}>
                 <h3
                   style={{
                     fontFamily: '"Bricolage Grotesque", "Poppins", Georgia, serif',
@@ -1388,7 +1388,7 @@ export const GoodpicksOfferwallModal = ({ onClose, token }) => {
                     <p className="text-slate-500 text-xs mt-1">{t('goodpicks.tryAnotherPlatform')}</p>
                   </div>
                 ) : (
-                  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 items-start gap-3 sm:gap-4 pb-4 w-full">
+                  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 items-start gap-2 md:gap-2.5 pb-4 w-full">
                     {sortedOffers.map((offer) => {
                       const rewardStr = (offer.rewardAmount || 0).toLocaleString('de-DE');
                       const cardTitle = (isDe && offer.titleDe) ? offer.titleDe : offer.title;

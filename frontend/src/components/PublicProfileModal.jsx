@@ -5,7 +5,7 @@ import {
 } from 'react-icons/fi';
 import { BsPatchCheckFill } from 'react-icons/bs';
 import VipBadge from './VipBadge';
-import { getLevelFromEarned } from '../utils/vipLevels';
+import { getLevelFromEarned, getLevelLabel } from '../utils/vipLevels';
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
@@ -22,28 +22,57 @@ const formatDate = (dateStr) => {
   return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 };
 
+const TIER_METADATA = {
+  Bronze: {
+    badge: '/coins/VIPbronze.png',
+    sectionBadge: '/coins/BronzeSection.png',
+    miniBadge: '/coins/bronze.png',
+    pillGradient: 'linear-gradient(180deg, #F3B60A -26.79%, #BE6708 158.93%)',
+    borderColor: '#BE6708',
+  },
+  Silver: {
+    badge: '/coins/VIPsilver.png',
+    sectionBadge: '/coins/SilverSection.png',
+    miniBadge: '/coins/silver.png',
+    pillGradient: 'linear-gradient(180deg, #D6D6D6 -26.79%, #929292 158.93%)',
+    borderColor: '#929292',
+  },
+  Gold: {
+    badge: '/coins/VIPgold.png',
+    sectionBadge: '/coins/Goldsection.png',
+    miniBadge: '/coins/gold.png',
+    pillGradient: 'linear-gradient(180deg, #FEDD72 -23.08%, #FCBA21 74.64%)',
+    borderColor: '#FCBA21',
+  },
+  Platinum: {
+    badge: '/coins/VIPplatinum.png',
+    sectionBadge: '/coins/PlatSection.png',
+    miniBadge: '/coins/platinum.png',
+    pillGradient: 'linear-gradient(180deg, #1FC4DE 0%, #207985 100%)',
+    borderColor: '#207985',
+  },
+  Diamond: {
+    badge: '/coins/VIPdimond.png',
+    sectionBadge: '/coins/DimSection.png',
+    miniBadge: '/coins/dimond.png',
+    pillGradient: 'linear-gradient(180deg, #7E83F1 0%, #7941BB 100%)',
+    borderColor: '#7941BB',
+  },
+  Opal: {
+    badge: '/coins/VIPopel.png',
+    sectionBadge: '/coins/OpalSection.png',
+    miniBadge: '/coins/opal.png',
+    pillGradient: 'linear-gradient(180deg, #E92BFF 0%, #31BDFF 100%)',
+    borderColor: '#E92BFF',
+  },
+};
+
 const getTierBorderColor = (tier) => {
-  switch (tier) {
-    case 'Bronze': return '#d97706';
-    case 'Silver': return '#94a3b8';
-    case 'Gold': return '#f59e0b';
-    case 'Platinum': return '#22d3ee';
-    case 'Diamond': return '#818cf8';
-    case 'Opal': return '#c084fc';
-    default: return '#818cf8';
-  }
+  return TIER_METADATA[tier]?.borderColor || TIER_METADATA.Bronze.borderColor;
 };
 
 const getTierGradient = (tier) => {
-  switch (tier) {
-    case 'Bronze': return 'linear-gradient(180deg, #F3B60A -26.79%, #BE6708 158.93%)';
-    case 'Silver': return 'linear-gradient(180deg, #D6D6D6 -26.79%, #929292 158.93%)';
-    case 'Gold': return 'linear-gradient(180deg, #FEDD72 -23.08%, #FCBA21 74.64%)';
-    case 'Platinum': return 'linear-gradient(180deg, #1FC4DE 0%, #207985 100%)';
-    case 'Diamond': return 'linear-gradient(180deg, #7E83F1 0%, #7941BB 100%)';
-    case 'Opal': return 'linear-gradient(180deg, #E92BFF 0%, #31BDFF 100%)';
-    default: return 'linear-gradient(180deg, #F3B60A -26.79%, #BE6708 158.93%)';
-  }
+  return TIER_METADATA[tier]?.pillGradient || TIER_METADATA.Bronze.pillGradient;
 };
 
 const parseOfferDescription = (offer) => {
@@ -126,8 +155,10 @@ const PublicProfileModal = ({ userId, onClose }) => {
   const vipLevel = profile && typeof profile.totalEarned !== 'undefined'
     ? getLevelFromEarned(profile.totalEarned)
     : null;
-  const tierName = vipLevel?.tier || 'Diamond';
-  const tierBorderColor = getTierBorderColor(tierName);
+  const tierName = vipLevel?.tier || 'Bronze';
+  const tierMeta = TIER_METADATA[tierName] || TIER_METADATA.Bronze;
+  const tierBorderColor = tierMeta.borderColor || '#BE6708';
+  const rankLabel = vipLevel ? getLevelLabel(vipLevel) : 'Bronze I';
 
   return (
     <AnimatePresence>
@@ -301,7 +332,7 @@ const PublicProfileModal = ({ userId, onClose }) => {
                     {profile.displayName}
                   </h3>
 
-                  {/* Joined Date */}
+                  {/* Joined Date & VIP Tier Pill */}
                   <div
                     style={{
                       display: 'flex',
@@ -310,34 +341,77 @@ const PublicProfileModal = ({ userId, onClose }) => {
                       gap: '6px',
                       marginTop: '8px',
                       marginBottom: '0',
+                      flexWrap: 'wrap',
                     }}
                   >
-                    <img
-                      src="/coins/userprofiledate.png"
-                      alt="calendar"
+                    <div
                       style={{
-                        width: '13px',
-                        height: '13px',
-                        objectFit: 'contain',
-                        flexShrink: 0,
-                      }}
-                      onError={(e) => {
-                        e.currentTarget.style.display = 'none';
-                      }}
-                    />
-                    <span
-                      style={{
-                        fontFamily: '"Poppins", sans-serif',
-                        fontWeight: 500,
-                        fontSize: '13px',
-                        lineHeight: '1.2',
-                        letterSpacing: '0%',
-                        color: '#1E293B',
-                        whiteSpace: 'nowrap',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '6px',
                       }}
                     >
-                      Joined {profile.createdAt ? new Date(profile.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '2026'}
-                    </span>
+                      <img
+                        src="/coins/userprofiledate.png"
+                        alt="calendar"
+                        style={{
+                          width: '13px',
+                          height: '13px',
+                          objectFit: 'contain',
+                          flexShrink: 0,
+                        }}
+                        onError={(e) => {
+                          e.currentTarget.style.display = 'none';
+                        }}
+                      />
+                      <span
+                        style={{
+                          fontFamily: '"Poppins", sans-serif',
+                          fontWeight: 500,
+                          fontSize: '13px',
+                          lineHeight: '1.2',
+                          letterSpacing: '0%',
+                          color: '#1E293B',
+                          whiteSpace: 'nowrap',
+                        }}
+                      >
+                        Joined {profile.createdAt ? new Date(profile.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '2026'}
+                      </span>
+                    </div>
+
+                    <div
+                      style={{
+                        minWidth: '60px',
+                        width: 'auto',
+                        height: '21px',
+                        borderRadius: '100px',
+                        paddingTop: '2px',
+                        paddingRight: '10px',
+                        paddingBottom: '2px',
+                        paddingLeft: '10px',
+                        background: tierMeta.pillGradient,
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        boxSizing: 'border-box',
+                        boxShadow: '0 1px 2px rgba(0,0,0,0.03)',
+                      }}
+                    >
+                      <span
+                        style={{
+                          fontFamily: '"Poppins", sans-serif',
+                          fontWeight: 600,
+                          fontSize: '12px',
+                          lineHeight: '1',
+                          letterSpacing: '0%',
+                          textAlign: 'center',
+                          color: '#FFFFFF',
+                          whiteSpace: 'nowrap',
+                        }}
+                      >
+                        {rankLabel}
+                      </span>
+                    </div>
                   </div>
 
                   {/* Private Profile Pill Badge Inside Card */}
@@ -563,19 +637,18 @@ const PublicProfileModal = ({ userId, onClose }) => {
                           </div>
                         </div>
 
-                        {/* VIP Tier Rank Badge: width 75px (auto-adjust), height 21px, gap 4px, padding: 6px 7px, border-radius 100px */}
+                        {/* VIP Tier Rank Badge: width auto, height 21px, border-radius 100px */}
                         <div
                           style={{
-                            minWidth: '75px',
+                            minWidth: '60px',
                             width: 'auto',
                             height: '21px',
-                            gap: '4px',
                             borderRadius: '100px',
-                            paddingTop: '6px',
-                            paddingRight: '7px',
-                            paddingBottom: '6px',
-                            paddingLeft: '7px',
-                            background: getTierGradient(tierName),
+                            paddingTop: '2px',
+                            paddingRight: '10px',
+                            paddingBottom: '2px',
+                            paddingLeft: '10px',
+                            background: tierMeta.pillGradient,
                             display: 'inline-flex',
                             alignItems: 'center',
                             justifyContent: 'center',
@@ -585,33 +658,21 @@ const PublicProfileModal = ({ userId, onClose }) => {
                             transform: 'rotate(0deg)',
                           }}
                         >
-                          <div
+                          <span
                             style={{
-                              minWidth: '61px',
-                              width: 'auto',
-                              height: '9px',
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              overflow: 'visible',
+                              fontFamily: '"Poppins", sans-serif',
+                              fontWeight: 600,
+                              fontSize: '12px',
+                              lineHeight: '1',
+                              letterSpacing: '0%',
+                              textAlign: 'center',
+                              color: '#FFFFFF',
+                              whiteSpace: 'nowrap',
+                              display: 'block',
                             }}
                           >
-                            <span
-                              style={{
-                                fontFamily: '"Poppins", sans-serif',
-                                fontWeight: 500,
-                                fontSize: '13px',
-                                lineHeight: '28px',
-                                letterSpacing: '0%',
-                                textAlign: 'center',
-                                color: '#FFFFFF',
-                                whiteSpace: 'nowrap',
-                                display: 'block',
-                              }}
-                            >
-                              {tierName}
-                            </span>
-                          </div>
+                            {rankLabel}
+                          </span>
                         </div>
                       </div>
                     </div>
