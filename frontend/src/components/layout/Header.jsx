@@ -1299,23 +1299,24 @@ const Header = ({ onChatToggle, chatOpen, fullWidth }) => {
 
       {/* MOBILE STICKY BOTTOM NAVIGATION */}
       <div
-        className="fixed left-0 right-0 z-40 lg:hidden pointer-events-auto flex justify-center px-2"
+        className="fixed left-0 right-0 bottom-0 z-40 lg:hidden pointer-events-auto w-full border-t border-black/5"
         style={{
-          bottom: 'env(safe-area-inset-bottom, 0px)',
+          background: 'rgba(255, 255, 255, 0.98)',
+          boxShadow: '0px -4px 20px 0px rgba(0, 0, 0, 0.06)',
+          backdropFilter: 'blur(29px)',
+          WebkitBackdropFilter: 'blur(29px)',
+          paddingBottom: 'env(safe-area-inset-bottom, 0px)',
+          transform: 'translateZ(0)',
+          WebkitTransform: 'translateZ(0)',
         }}
       >
         <div
           className="flex items-center justify-center w-full"
           style={{
             width: '100%',
-            height: '68px',
-            borderRadius: '100px',
-            background: 'rgba(255, 255, 255, 0.96)',
-            boxShadow: '0px 0px 64px 0px rgba(0, 0, 0, 0.13)',
-            backdropFilter: 'blur(29px)',
-            WebkitBackdropFilter: 'blur(29px)',
+            height: '66px',
+            borderRadius: '0px',
             opacity: 1,
-            transform: 'rotate(0deg)',
           }}
         >
           {/* Inner Tabs Container */}
@@ -1590,7 +1591,9 @@ const Header = ({ onChatToggle, chatOpen, fullWidth }) => {
             <div
               className="fixed left-0 right-0 z-50 lg:hidden flex justify-center pointer-events-none px-4"
               style={{
-                bottom: 'calc(72px + env(safe-area-inset-bottom, 0px))',
+                bottom: 'calc(74px + env(safe-area-inset-bottom, 0px))',
+                transform: 'translateZ(0)',
+                WebkitTransform: 'translateZ(0)',
               }}
             >
               <motion.div

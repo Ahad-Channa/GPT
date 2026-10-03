@@ -690,9 +690,10 @@ const Affiliates = () => {
                   isEn
                     ? 'text-[20px] min-[360px]:text-[22px] min-[390px]:text-[24px] sm:text-[27px]'
                     : 'text-[17px] min-[350px]:text-[18.5px] min-[375px]:text-[20px] min-[390px]:text-[21.5px] min-[420px]:text-[23.5px] sm:text-[27px]'
-                } font-bold text-black m-0 leading-tight sm:leading-[18px] tracking-[-0.02em] whitespace-nowrap`}
+                } font-bold text-black m-0 leading-[18px] tracking-[-0.02em] whitespace-nowrap`}
                 style={{
                   fontFamily: '"Bricolage Grotesque", sans-serif',
+                  lineHeight: '18px',
                 }}
               >
                 {t('affiliates.referralLinkTitle', 'Your Unique Referral Link')}
@@ -707,6 +708,7 @@ const Affiliates = () => {
                   letterSpacing: '0%',
                   color: '#000000',
                   margin: 0,
+                  marginTop: '4px',
                 }}
               >
                 {t('affiliates.referralLinkSubtitle', 'Share this link anywhere to start earning passive income.')}
