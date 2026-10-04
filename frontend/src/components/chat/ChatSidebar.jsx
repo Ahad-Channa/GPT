@@ -285,10 +285,10 @@ const MessageRow = ({ msg, canModerate, onDelete, deletingId, onUserClick }) => 
       {canModerate && hov && (
         <button
           onClick={() => onDelete(msg._id)}
-          className="absolute right-0 top-1 p-1 text-gray-400 hover:text-red-600 rounded transition-colors bg-white/80 backdrop-blur-sm"
+          className="absolute right-0 -top-[13px] p-1 text-gray-400 hover:text-red-600 rounded-full transition-colors bg-white/95 shadow-xs border border-gray-200/80 z-10 flex items-center justify-center"
           title={t('chat.deleteMessage', 'Delete message')}
         >
-          <FiTrash2 size={13} />
+          <FiTrash2 size={12} />
         </button>
       )}
     </div>
@@ -467,32 +467,13 @@ const ChatSidebar = ({ isOpen, onClose }) => {
             className="lg:bg-transparent bg-black/40 backdrop-blur-sm lg:backdrop-blur-none lg:pointer-events-none"
           />
 
-          {/* ── Main Chat Container (width: 370, height: 100vh, top: 0, right: 0, bottom: 0) ── */}
+          {/* ── Main Chat Container (width: 370, desktop: 10px from top, bottom, right) ── */}
           <motion.div
             initial={{ x: '110%', opacity: 0 }}
             animate={{ x: 0, opacity: 1 }}
             exit={{ x: '110%', opacity: 0 }}
             transition={{ type: 'spring', damping: 28, stiffness: 220 }}
-            style={{
-              position: 'fixed',
-              top: '0px',
-              right: '0px',
-              bottom: '0px',
-              width: '100%',
-              maxWidth: '370px',
-              height: '100vh',
-              borderRadius: '30px 0 0 30px',
-              background: '#FFFFFF',
-              boxShadow: '-8px 0px 36px 0px rgba(0, 0, 0, 0.12)',
-              borderLeft: '1px solid rgba(0, 0, 0, 0.05)',
-              opacity: 1,
-              transform: 'rotate(0deg)',
-              zIndex: 50,
-              display: 'flex',
-              flexDirection: 'column',
-              overflow: 'hidden',
-              boxSizing: 'border-box',
-            }}
+            className="fixed z-50 flex flex-col overflow-hidden box-border bg-[#FFFFFF] shadow-[-8px_0px_36px_0px_rgba(0,0,0,0.12)] border border-black/5 top-0 right-0 bottom-0 h-screen w-full max-w-[370px] rounded-l-[30px] rounded-r-none lg:top-[10px] lg:bottom-[10px] lg:right-[10px] lg:h-[calc(100vh-20px)] lg:rounded-[30px]"
           >
             {/* ── Header Area ── */}
             <div className="p-4 pb-3 flex flex-col gap-3 shrink-0">

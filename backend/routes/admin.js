@@ -307,7 +307,7 @@ router.put('/withdrawals/:id/reject', requirePermission('manage_withdrawals'), a
       amount: refundAmount,
       balanceAfter: updatedUser.walletBalance,
       description: `Withdrawal Refund — Request rejected. ${reason ? 'Reason: ' + reason : ''}`,
-      status: 'completed',
+      status: 'rejected',
     });
 
     tx.status = 'rejected';

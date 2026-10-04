@@ -156,13 +156,11 @@ const LiveChat = ({ isOpen, onClose }) => {
           <motion.div
             initial={{ x: '100%' }} animate={{ x: 0 }} exit={{ x: '100%' }}
             transition={{ type: 'spring', damping: 28, stiffness: 220 }}
+            className="fixed z-50 flex flex-col overflow-hidden box-border right-0 top-0 bottom-0 h-screen w-[360px] max-w-[92vw] lg:top-[10px] lg:bottom-[10px] lg:right-[10px] lg:h-[calc(100vh-20px)] lg:rounded-[24px]"
             style={{
-              position: 'fixed', right: 0, top: 0, height: '100%',
-              width: 360, maxWidth: '92vw',
               background: 'linear-gradient(180deg, #090d1a 0%, #080b17 100%)',
-              borderLeft: '1px solid rgba(255,255,255,0.07)',
+              border: '1px solid rgba(255,255,255,0.07)',
               boxShadow: '-8px 0 40px rgba(0,0,0,0.6)',
-              zIndex: 50, display: 'flex', flexDirection: 'column',
               fontFamily: "'Barlow', system-ui, sans-serif"
             }}
           >

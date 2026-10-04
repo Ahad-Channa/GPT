@@ -1064,13 +1064,13 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess, filterType }) 
 
                 {/* 5. Payout Breakdown Card */}
                 <div
-                  className="flex flex-col w-full mt-4 px-2 xs:px-2.5 py-4 sm:p-5 rounded-[16px] bg-[#F8F5EF]"
+                  className="flex flex-col w-full mt-4 px-3 xs:px-3.5 py-2.5 sm:px-[16px] sm:pt-[12px] sm:pb-[10px] rounded-[16px] bg-[#F8F5EF] gap-2 sm:gap-[8px]"
                   style={{
                     boxSizing: 'border-box',
                   }}
                 >
                   <h4
-                    className="text-[17px] sm:text-[20px] font-bold text-[#0E0F0C] tracking-[-0.02em] px-1 sm:px-0 mb-3 sm:mb-3.5"
+                    className="text-[17px] sm:text-[20px] font-bold text-[#0E0F0C] tracking-[-0.02em] px-1 sm:px-0"
                     style={{
                       fontFamily: '"Bricolage Grotesque", sans-serif',
                       margin: 0,
@@ -1106,7 +1106,7 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess, filterType }) 
 
                   {/* Total Deducted From Balance */}
                   <div
-                    className="flex justify-between items-center w-full mt-3.5 px-3 xs:px-3.5 sm:px-[20px]"
+                    className="flex justify-between items-center w-full px-3 xs:px-3.5 sm:px-[20px] pt-0 pb-0.5"
                     style={{
                       boxSizing: 'border-box',
                     }}
@@ -1405,124 +1405,43 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess, filterType }) 
                   </p>
                 </div>
 
-                {/* Payout Breakdown Card (606x240) */}
+                {/* Payout Breakdown Card */}
                 <div
-                  className="flex items-center justify-center w-full max-w-[606px] min-h-[210px] sm:h-[240px] rounded-[16px] bg-[#F8F5EF] px-2 xs:px-2.5 py-4 sm:py-[27px] sm:px-[16px]"
+                  className="flex flex-col w-full max-w-[606px] rounded-[16px] bg-[#F8F5EF] p-3 sm:px-[16px] sm:pt-[12px] sm:pb-[10px] gap-2 sm:gap-[8px]"
                   style={{
                     boxSizing: 'border-box',
                     opacity: 1,
                   }}
                 >
-                  {/* Four Elements as One Whole Layout (572.5x186, gap: 25px) */}
-                  <div
-                    className="flex flex-col justify-between w-full max-w-[572.5px] h-full sm:h-[186px] gap-3 sm:gap-[25px]"
+                  <h4
+                    className="text-[17px] sm:text-[20px] font-bold text-[#0E0F0C] tracking-[-0.02em] px-1 sm:px-0"
                     style={{
-                      boxSizing: 'border-box',
+                      fontFamily: '"Bricolage Grotesque", sans-serif',
+                      lineHeight: '1.2',
+                      display: 'flex',
+                      alignItems: 'center',
+                      margin: 0,
                       opacity: 1,
                     }}
                   >
-                    <h4
-                      className="text-[17px] sm:text-[20px] font-bold text-[#0E0F0C] tracking-[-0.02em] px-1 sm:px-0"
-                      style={{
-                        fontFamily: '"Bricolage Grotesque", sans-serif',
-                        lineHeight: '1.2',
-                        display: 'flex',
-                        alignItems: 'center',
-                        margin: 0,
-                        opacity: 1,
-                      }}
-                    >
-                      {t('withdraw.payoutBreakdown', 'Payout Breakdown')}
-                    </h4>
+                    {t('withdraw.payoutBreakdown', 'Payout Breakdown')}
+                  </h4>
 
-                    <div className="flex flex-col gap-2 w-full">
-                      {/* Amount You Receive Pill */}
-                      <div
-                        className="bg-white flex justify-between items-center w-full max-w-[572.5px] min-h-[48px] xs:min-h-[50px] sm:min-h-[53px] py-2.5 rounded-[11px] px-3 xs:px-3.5 sm:px-[20px]"
-                        style={{
-                          boxSizing: 'border-box',
-                          opacity: 1,
-                        }}
-                      >
-                        <span
-                          className="text-[13px] min-[360px]:text-[14px] xs:text-[15px] sm:text-[18px] font-medium text-black"
-                          style={{
-                            fontFamily: '"Poppins", sans-serif',
-                            lineHeight: '1.4',
-                            letterSpacing: '0%',
-                            display: 'flex',
-                            alignItems: 'center',
-                            margin: 0,
-                            padding: 0,
-                            opacity: 1,
-                          }}
-                        >
-                          {t('withdraw.amountYouReceive', 'Amount You Receive')}
-                        </span>
-                        <span
-                          className="text-[14px] min-[360px]:text-[15px] xs:text-[16px] sm:text-[18px] font-medium text-black shrink-0 ml-2"
-                          style={{
-                            fontFamily: '"Poppins", sans-serif',
-                            lineHeight: '1.4',
-                            display: 'flex',
-                            alignItems: 'center',
-                          }}
-                        >
-                          {youReceive > 0 ? formatCoins(youReceive) : '0'}
-                        </span>
-                      </div>
-
-                      {/* Processing Fees Pill */}
-                      <div
-                        className="bg-white flex justify-between items-center w-full max-w-[572.5px] min-h-[48px] xs:min-h-[50px] sm:min-h-[53px] py-2.5 rounded-[11px] px-3 xs:px-3.5 sm:px-[20px]"
-                        style={{
-                          boxSizing: 'border-box',
-                          opacity: 1,
-                        }}
-                      >
-                        <span
-                          className="text-[13px] min-[360px]:text-[14px] xs:text-[15px] sm:text-[18px] font-medium text-black"
-                          style={{
-                            fontFamily: '"Poppins", sans-serif',
-                            lineHeight: '1.4',
-                            letterSpacing: '0%',
-                            display: 'flex',
-                            alignItems: 'center',
-                            margin: 0,
-                            padding: 0,
-                            opacity: 1,
-                          }}
-                        >
-                          {t('withdraw.processingFees', { percent: methodFeePercent, defaultValue: `Processing Fees (${methodFeePercent}%)` })}
-                        </span>
-                        <span
-                          className="text-[14px] min-[360px]:text-[15px] xs:text-[16px] sm:text-[18px] font-medium text-black shrink-0 ml-2"
-                          style={{
-                            fontFamily: '"Poppins", sans-serif',
-                            lineHeight: '1.4',
-                            display: 'flex',
-                            alignItems: 'center',
-                          }}
-                        >
-                          {feeCoins > 0 ? `-${formatCoins(feeCoins)}` : '0'}
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* Total Deducted Row */}
+                  <div className="flex flex-col gap-2 w-full">
+                    {/* Amount You Receive Pill */}
                     <div
-                      className="flex justify-between items-center w-full px-3 xs:px-3.5 sm:px-[20px]"
+                      className="bg-white flex justify-between items-center w-full max-w-[572.5px] min-h-[48px] xs:min-h-[50px] sm:min-h-[53px] py-2.5 rounded-[11px] px-3 xs:px-3.5 sm:px-[20px] shadow-xs"
                       style={{
                         boxSizing: 'border-box',
                         opacity: 1,
                       }}
                     >
                       <span
-                        className="text-[13px] min-[360px]:text-[14px] xs:text-[15px] sm:text-[20px] font-bold text-black"
+                        className="text-[13px] min-[360px]:text-[14px] xs:text-[15px] sm:text-[18px] font-medium text-black"
                         style={{
-                          fontFamily: '"Bricolage Grotesque", sans-serif',
-                          lineHeight: '1.3',
-                          letterSpacing: '-0.02em',
+                          fontFamily: '"Poppins", sans-serif',
+                          lineHeight: '1.4',
+                          letterSpacing: '0%',
                           display: 'flex',
                           alignItems: 'center',
                           margin: 0,
@@ -1530,22 +1449,94 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess, filterType }) 
                           opacity: 1,
                         }}
                       >
-                        {t('withdraw.totalDeducted', 'Total Deducted From Balance')}
+                        {t('withdraw.amountYouReceive', 'Amount You Receive')}
                       </span>
                       <span
-                        className="text-[14px] min-[360px]:text-[15px] xs:text-[16px] sm:text-[20px] font-bold text-black shrink-0 ml-2"
+                        className="text-[14px] min-[360px]:text-[15px] xs:text-[16px] sm:text-[18px] font-medium text-black shrink-0 ml-2"
                         style={{
-                          fontFamily: '"Bricolage Grotesque", sans-serif',
-                          lineHeight: '1.3',
-                          letterSpacing: '-0.02em',
+                          fontFamily: '"Poppins", sans-serif',
+                          lineHeight: '1.4',
                           display: 'flex',
                           alignItems: 'center',
+                        }}
+                      >
+                        {youReceive > 0 ? formatCoins(youReceive) : '0'}
+                      </span>
+                    </div>
+
+                    {/* Processing Fees Pill */}
+                    <div
+                      className="bg-white flex justify-between items-center w-full max-w-[572.5px] min-h-[48px] xs:min-h-[50px] sm:min-h-[53px] py-2.5 rounded-[11px] px-3 xs:px-3.5 sm:px-[20px] shadow-xs"
+                      style={{
+                        boxSizing: 'border-box',
+                        opacity: 1,
+                      }}
+                    >
+                      <span
+                        className="text-[13px] min-[360px]:text-[14px] xs:text-[15px] sm:text-[18px] font-medium text-black"
+                        style={{
+                          fontFamily: '"Poppins", sans-serif',
+                          lineHeight: '1.4',
+                          letterSpacing: '0%',
+                          display: 'flex',
+                          alignItems: 'center',
+                          margin: 0,
+                          padding: 0,
                           opacity: 1,
                         }}
                       >
-                        {totalDeducted > 0 ? formatCoins(totalDeducted) : '0'}
+                        {t('withdraw.processingFees', { percent: methodFeePercent, defaultValue: `Processing Fees (${methodFeePercent}%)` })}
+                      </span>
+                      <span
+                        className="text-[14px] min-[360px]:text-[15px] xs:text-[16px] sm:text-[18px] font-medium text-black shrink-0 ml-2"
+                        style={{
+                          fontFamily: '"Poppins", sans-serif',
+                          lineHeight: '1.4',
+                          display: 'flex',
+                          alignItems: 'center',
+                        }}
+                      >
+                        {feeCoins > 0 ? `-${formatCoins(feeCoins)}` : '0'}
                       </span>
                     </div>
+                  </div>
+
+                  {/* Total Deducted Row */}
+                  <div
+                    className="flex justify-between items-center w-full px-3 xs:px-3.5 sm:px-[20px] pt-0 pb-0.5"
+                    style={{
+                      boxSizing: 'border-box',
+                      opacity: 1,
+                    }}
+                  >
+                    <span
+                      className="text-[13px] min-[360px]:text-[14px] xs:text-[15px] sm:text-[20px] font-bold text-black"
+                      style={{
+                        fontFamily: '"Bricolage Grotesque", sans-serif',
+                        lineHeight: '1.3',
+                        letterSpacing: '-0.02em',
+                        display: 'flex',
+                        alignItems: 'center',
+                        margin: 0,
+                        padding: 0,
+                        opacity: 1,
+                      }}
+                    >
+                      {t('withdraw.totalDeducted', 'Total Deducted From Balance')}
+                    </span>
+                    <span
+                      className="text-[14px] min-[360px]:text-[15px] xs:text-[16px] sm:text-[20px] font-bold text-black shrink-0 ml-2"
+                      style={{
+                        fontFamily: '"Bricolage Grotesque", sans-serif',
+                        lineHeight: '1.3',
+                        letterSpacing: '-0.02em',
+                        display: 'flex',
+                        alignItems: 'center',
+                        opacity: 1,
+                      }}
+                    >
+                      {totalDeducted > 0 ? formatCoins(totalDeducted) : '0'}
+                    </span>
                   </div>
                 </div>
 
@@ -1612,7 +1603,7 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess, filterType }) 
           <div className="flex flex-col gap-3.5 w-full mt-3 sm:mt-3">
             {/* Payout Breakdown Card */}
             <div
-              className="flex flex-col justify-between w-full max-w-[606px] rounded-[16px] bg-[#F8F5EF] px-2 xs:px-2.5 py-4 sm:py-[24px] sm:px-[16px] gap-3.5 sm:gap-[20px]"
+              className="flex flex-col w-full max-w-[606px] rounded-[16px] bg-[#F8F5EF] px-3 py-3 sm:pt-[14px] sm:pb-[10px] sm:px-[16px] gap-2 sm:gap-[10px]"
               style={{
                 boxSizing: 'border-box',
                 opacity: 1,
@@ -1622,7 +1613,7 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess, filterType }) 
                 className="text-[17px] sm:text-[20px] font-bold text-[#0E0F0C] tracking-[-0.02em] px-1 sm:px-0"
                 style={{
                   fontFamily: '"Bricolage Grotesque", sans-serif',
-                  lineHeight: '13px',
+                  lineHeight: '1.2',
                   display: 'flex',
                   alignItems: 'center',
                   margin: 0,
@@ -1737,7 +1728,7 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess, filterType }) 
 
               {/* Total Deducted Row */}
               <div
-                className="flex justify-between items-center w-full px-3 xs:px-3.5 sm:px-[20px]"
+                className="flex justify-between items-center w-full px-3 xs:px-3.5 sm:px-[20px] pt-0 pb-0.5"
                 style={{
                   boxSizing: 'border-box',
                   opacity: 1,

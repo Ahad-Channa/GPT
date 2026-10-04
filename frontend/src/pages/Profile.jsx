@@ -1312,8 +1312,8 @@ const getTxTypeLabel = (type, t) => {
 };
 
 const getStatusBadge = (status, isRejected, t) => {
-  if (status === 'completed') return t('profile.statusCompleted', 'Completed');
   if (isRejected) return t('profile.statusRejected', 'Rejected');
+  if (status === 'completed') return t('profile.statusCompleted', 'Completed');
   if (status === 'pending') return t('profile.statusPending', 'Pending');
   return status ? (status.charAt(0).toUpperCase() + status.slice(1)) : '';
 };
@@ -3490,7 +3490,8 @@ const Profile = () => {
                               const typeLabel = getTxTypeLabel(tx.transactionType, t);
                               const isDebit = tx.amount < 0;
                               const isPending = tx.status === 'pending';
-                              const isRejected = tx.status === 'rejected' || tx.status === 'failed';
+                              const isRefundRejected = /^Withdrawal Refund/i.test(tx.description || '') || /Request rejected/i.test(tx.description || '');
+                              const isRejected = tx.status === 'rejected' || tx.status === 'failed' || isRefundRejected;
                               return (
                                 <div
                                   key={tx._id}
@@ -3533,10 +3534,10 @@ const Profile = () => {
                                         fontFamily: 'Poppins, sans-serif',
                                         fontWeight: 500,
                                         backgroundColor:
-                                          tx.status === 'completed'
-                                            ? 'rgba(16, 185, 129, 1)'
-                                            : isRejected
-                                              ? 'rgba(224, 30, 33, 1)'
+                                          isRejected
+                                            ? 'rgba(224, 30, 33, 1)'
+                                            : tx.status === 'completed'
+                                              ? 'rgba(16, 185, 129, 1)'
                                               : '#24324D',
                                         color: '#ffffff',
                                       }}

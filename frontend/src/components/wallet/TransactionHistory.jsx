@@ -200,7 +200,9 @@ const TransactionHistory = ({ refreshKey = 0, onStatsLoaded }) => {
               const config  = TX_TYPES[tx.transactionType] || TX_TYPES.admin_adjustment;
               const Icon    = config.icon;
               const isDebit = tx.amount < 0;
-              const statusC = STATUS_COLORS[tx.status] || STATUS_COLORS.completed;
+              const isRefundRejected = /^Withdrawal Refund/i.test(tx.description || '') || /Request rejected/i.test(tx.description || '');
+              const displayStatus = isRefundRejected ? 'rejected' : tx.status;
+              const statusC = STATUS_COLORS[displayStatus] || STATUS_COLORS.completed;
 
               return (
                 <motion.div
@@ -213,10 +215,10 @@ const TransactionHistory = ({ refreshKey = 0, onStatsLoaded }) => {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-1.5 flex-wrap">
                       <p className="text-sm font-semibold text-slate-200 leading-none">{config.label}</p>
-                      {tx.status !== 'completed' && (
+                      {displayStatus !== 'completed' && (
                         <span className={`${statusC.text} text-[10px] font-mono flex items-center gap-1`}>
                           <span className={`w-1.5 h-1.5 rounded-full ${statusC.dot}`} />
-                          {tx.status}
+                          {displayStatus}
                         </span>
                       )}
                     </div>
