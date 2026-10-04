@@ -216,9 +216,9 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }) {
                     color: 'rgba(14, 15, 12, 1)',
                   }}
                 >
-                  {tab === 'login' && 'Login Your Account'}
-                  {tab === 'register' && 'Create Your Account'}
-                  {tab === 'forgot' && 'Forgot Password'}
+                  {tab === 'login' && t('auth.loginTitle', 'Login Your Account')}
+                  {tab === 'register' && t('auth.registerTitle', 'Create Your Account')}
+                  {tab === 'forgot' && t('auth.forgotTitle', 'Forgot Password')}
                 </h2>
 
                 <p
@@ -230,9 +230,9 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }) {
                     color: 'rgba(14, 15, 12, 1)',
                   }}
                 >
-                  {tab === 'login' && 'Login into your account to access all features'}
-                  {tab === 'register' && 'Create your account to access all features'}
-                  {tab === 'forgot' && 'Enter your registered email to get verification code'}
+                  {tab === 'login' && t('auth.loginSubtitle', 'Login into your account to access all features')}
+                  {tab === 'register' && t('auth.registerSubtitle', 'Create your account to access all features')}
+                  {tab === 'forgot' && t('auth.forgotSubtitle', 'Enter your registered email to get verification code')}
                 </p>
               </div>
 
@@ -276,11 +276,11 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }) {
                         color: 'rgba(0, 0, 0, 1)',
                       }}
                     >
-                      Username
+                      {t('auth.username', 'Username')}
                     </label>
                     <input
                       type="text"
-                      placeholder="Enter your Username"
+                      placeholder={t('auth.usernamePlaceholder', 'Enter your Username')}
                       value={displayName}
                       onChange={(e) => setDisplayName(e.target.value)}
                       disabled={loading}
@@ -317,11 +317,11 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }) {
                       color: 'rgba(0, 0, 0, 1)',
                     }}
                   >
-                    Email
+                    {t('auth.email', 'Email')}
                   </label>
                   <input
                     type="email"
-                    placeholder="Enter your email address"
+                    placeholder={t('auth.emailPlaceholder', 'Enter your email address')}
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     disabled={loading}
@@ -358,12 +358,12 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }) {
                         color: 'rgba(0, 0, 0, 1)',
                       }}
                     >
-                      Password
+                      {t('auth.password', 'Password')}
                     </label>
                     <div className="relative flex items-center w-full" style={{ maxWidth: '567px', height: '58px' }}>
                       <input
                         type={showPassword ? 'text' : 'password'}
-                        placeholder="Enter your Password"
+                        placeholder={t('auth.passwordPlaceholder', 'Enter your Password')}
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                         disabled={loading}
@@ -421,7 +421,7 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }) {
                           color: 'rgba(0, 0, 0, 0.5)',
                         }}
                       >
-                        Remember me
+                        {t('auth.rememberMe', 'Remember me')}
                       </span>
                     </label>
                     <div
@@ -435,7 +435,7 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }) {
                       }}
                     >
                       <span style={{ color: 'rgba(0, 0, 0, 0.5)' }}>
-                        Don't Remember Your Password?&nbsp;
+                        {t('auth.dontRememberPassword', "Don't Remember Your Password?")}&nbsp;
                       </span>
                       <button
                         type="button"
@@ -449,7 +449,7 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }) {
                           color: 'rgba(36, 50, 77, 1)',
                         }}
                       >
-                        Reset
+                        {t('auth.resetLink', 'Reset')}
                       </button>
                     </div>
                   </div>
@@ -485,19 +485,16 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }) {
                         }}
                       >
                         <span className="whitespace-nowrap sm:whitespace-normal">
-                          By signing up, you agree to our{' '}
+                          {t('auth.agreeTermsPrefix', 'By signing up, you agree to our')}{' '}
                           <span style={{ fontWeight: 600, color: 'rgba(36, 50, 77, 1)' }}>
-                            Terms and
+                            {t('auth.termsAndConditions', 'Terms and Conditions')}
                           </span>
                         </span>
                         <span className="whitespace-nowrap sm:whitespace-normal">
                           <span className="hidden sm:inline">&nbsp;</span>
+                          {t('auth.and', '&')}&nbsp;
                           <span style={{ fontWeight: 600, color: 'rgba(36, 50, 77, 1)' }}>
-                            Conditions
-                          </span>
-                          &nbsp;&&nbsp;
-                          <span style={{ fontWeight: 600, color: 'rgba(36, 50, 77, 1)' }}>
-                            Privacy Policy.
+                            {t('auth.privacyPolicy', 'Privacy Policy.')}
                           </span>
                         </span>
                       </span>
@@ -533,7 +530,7 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }) {
                         color: 'rgba(255, 255, 255, 1)',
                       }}
                     >
-                      {tab === 'login' ? 'Login' : tab === 'register' ? 'Sign Up' : 'Send Reset Link'}
+                      {tab === 'login' ? t('auth.login', 'Login') : tab === 'register' ? t('auth.signUp', 'Sign Up') : t('auth.sendResetLink', 'Send Reset Link')}
                     </span>
                   )}
                 </button>
@@ -556,7 +553,9 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }) {
                     <span
                       className="flex items-center justify-center text-center"
                       style={{
-                        width: '21px',
+                        width: 'auto',
+                        minWidth: '21px',
+                        padding: '0 8px',
                         height: '10px',
                         fontFamily: '"Poppins", sans-serif',
                         fontWeight: 400,
@@ -566,7 +565,7 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }) {
                         color: 'rgba(36, 50, 77, 1)',
                       }}
                     >
-                      OR
+                      {t('auth.or', 'OR')}
                     </span>
                     <div
                       style={{
@@ -593,7 +592,7 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }) {
                     }}
                   >
                     <FcGoogle style={{ width: '20px', height: '20px', minWidth: '20px', minHeight: '20px' }} />
-                    <span>{tab === 'login' ? 'Login with Google' : 'Sign up with Google'}</span>
+                    <span>{tab === 'login' ? t('auth.loginWithGoogle', 'Login with Google') : t('auth.signUpWithGoogle', 'Sign up with Google')}</span>
                   </button>
                 )}
 
@@ -601,40 +600,40 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }) {
                 <div className="text-center text-[13px] text-[#52525B]" style={{ fontFamily: '"Poppins", sans-serif' }}>
                   {tab === 'login' && (
                     <p className="m-0">
-                      Don't Have an Account?{' '}
+                      {t('auth.dontHaveAccount', "Don't Have an Account?")}{' '}
                       <button
                         type="button"
                         onClick={() => setTab('register')}
                         className="font-bold text-[#24324D] hover:underline cursor-pointer"
                       >
-                        Register Now
+                        {t('auth.registerNow', 'Register Now')}
                       </button>
                     </p>
                   )}
 
                   {tab === 'register' && (
                     <p className="m-0">
-                      Already Have an Account?{' '}
+                      {t('auth.alreadyHaveAccount', 'Already Have an Account?')}{' '}
                       <button
                         type="button"
                         onClick={() => setTab('login')}
                         className="font-bold text-[#24324D] hover:underline cursor-pointer"
                       >
-                        Login
+                        {t('auth.login', 'Login')}
                       </button>
                     </p>
                   )}
 
                   {tab === 'forgot' && (
                     <p className="m-0" style={{ fontFamily: '"Poppins", sans-serif', fontSize: '15px' }}>
-                      <span style={{ color: 'rgba(0, 0, 0, 0.5)' }}>Back to login </span>
+                      <span style={{ color: 'rgba(0, 0, 0, 0.5)' }}>{t('auth.backToLogin', 'Back to login')}{' '}</span>
                       <button
                         type="button"
                         onClick={() => setTab('login')}
                         className="font-semibold text-[#24324D] hover:underline cursor-pointer"
                         style={{ fontFamily: '"Poppins", sans-serif' }}
                       >
-                        Login Now
+                        {t('auth.loginNow', 'Login Now')}
                       </button>
                     </p>
                   )}

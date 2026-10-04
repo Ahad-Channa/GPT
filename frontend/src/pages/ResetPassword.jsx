@@ -98,11 +98,11 @@ const ResetPassword = () => {
 
   const validationSchema = Yup.object().shape({
     password: Yup.string()
-      .min(8, 'At least 8 characters')
-      .required('Password is required'),
+      .min(8, t('resetPassword.validationMinLength', 'At least 8 characters'))
+      .required(t('resetPassword.validationPasswordRequired', 'Password is required')),
     confirmPassword: Yup.string()
-      .oneOf([Yup.ref('password'), null], 'Passwords must match')
-      .required('Confirm Password is required'),
+      .oneOf([Yup.ref('password'), null], t('resetPassword.validationPasswordsMatch', 'Passwords must match'))
+      .required(t('resetPassword.validationConfirmRequired', 'Confirm Password is required')),
   });
 
   const formik = useFormik({
@@ -189,21 +189,31 @@ const ResetPassword = () => {
             fontSize: '1.55rem', fontWeight: 800, color: 'white',
             fontFamily: "'Barlow', Barlow, sans-serif", lineHeight: 1.2, marginBottom: '0.35rem',
           }}>
-            Set New Password
+            {t('resetPassword.title', 'Set New Password')}
           </h1>
           <p style={{ fontSize: '0.83rem', color: 'rgba(255,255,255,0.35)' }}>
-            Please enter your new password below.
+            {t('resetPassword.subtitle', 'Please enter your new password below.')}
           </p>
         </div>
 
         <form onSubmit={formik.handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
           <Field
-            name="password" type="password" label="NEW PASSWORD" placeholder="At least 8 characters"
-            icon={FiLock} formik={formik} loading={loading}
+            name="password"
+            type="password"
+            label={t('resetPassword.newPassword', 'NEW PASSWORD')}
+            placeholder={t('resetPassword.newPasswordPlaceholder', 'At least 8 characters')}
+            icon={FiLock}
+            formik={formik}
+            loading={loading}
           />
           <Field
-            name="confirmPassword" type="password" label="CONFIRM PASSWORD" placeholder="Re-enter password"
-            icon={FiLock} formik={formik} loading={loading}
+            name="confirmPassword"
+            type="password"
+            label={t('resetPassword.confirmPassword', 'CONFIRM PASSWORD')}
+            placeholder={t('resetPassword.confirmPasswordPlaceholder', 'Re-enter password')}
+            icon={FiLock}
+            formik={formik}
+            loading={loading}
           />
 
           <button
@@ -218,7 +228,7 @@ const ResetPassword = () => {
             onMouseEnter={e => { if (!loading && oobCode) { e.currentTarget.style.transform = 'scale(1.02)'; e.currentTarget.style.opacity = '0.92'; }}}
             onMouseLeave={e => { e.currentTarget.style.transform = 'scale(1)'; e.currentTarget.style.opacity = loading || !oobCode ? '0.6' : '1'; }}
           >
-            {loading ? 'Saving...' : 'Reset Password'}
+            {loading ? t('resetPassword.saving', 'Saving...') : t('resetPassword.button', 'Reset Password')}
             {!loading && <FiArrowRight size={15} />}
           </button>
         </form>

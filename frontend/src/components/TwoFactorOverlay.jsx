@@ -46,10 +46,10 @@ const TwoFactorOverlay = () => {
           className="text-2xl font-bold text-white mb-2"
           style={{ fontFamily: "'Barlow Condensed', sans-serif" }}
         >
-          2-Factor Verification
+          {t('twoFactor.title', '2-Factor Verification')}
         </h2>
         <p className="text-slate-400 text-sm mb-6 max-w-xs">
-          Enter the 6-digit code from your authenticator app to access your account {mongoUser?.displayName ? `(${mongoUser.displayName})` : ''}.
+          {t('twoFactor.subtitle', 'Enter the 6-digit code from your authenticator app to access your account')} {mongoUser?.displayName ? `(${mongoUser.displayName})` : ''}.
         </p>
 
         <form onSubmit={handleSubmit} className="w-full space-y-4">
@@ -69,7 +69,7 @@ const TwoFactorOverlay = () => {
             className="w-full flex items-center justify-center gap-2 py-3.5 bg-[#49b265] hover:bg-[#3bb770] disabled:bg-emerald-800/40 disabled:text-white/40 text-white rounded-xl font-bold hover:shadow-glow transition-all font-['Barlow_Condensed'] text-xl"
           >
             {loading ? <FiLoader className="animate-spin text-xl" /> : null}
-            {loading ? 'Verifying...' : 'Verify & Continue'}
+            {loading ? t('twoFactor.verifying', 'Verifying...') : t('twoFactor.verifyContinue', 'Verify & Continue')}
           </button>
         </form>
 
@@ -77,7 +77,7 @@ const TwoFactorOverlay = () => {
           onClick={handleLogout}
           className="mt-6 flex items-center gap-2 text-slate-400 hover:text-white transition-colors text-sm font-semibold"
         >
-          <FiLogOut /> Log Out
+          <FiLogOut /> {t('nav.logout', 'Log Out')}
         </button>
       </div>
     </div>

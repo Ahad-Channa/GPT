@@ -45,6 +45,7 @@ const AvatarWithBadge = ({ user, isSupport = false, size = 33 }) => {
   const tierName = vipLevel?.tier || 'Bronze';
   const tierMeta = TIER_BADGES[tierName] || TIER_BADGES.Bronze;
   const badgeIcon = (vipLevel && LEVEL_BADGES[vipLevel.key]) || LEVEL_BADGES.bronze_1 || '/coins/Bronz1.png';
+  const isOpal = tierName === 'Opal' || vipLevel?.key?.startsWith('opal');
 
   if (isSupport) {
     return (
@@ -107,8 +108,8 @@ const AvatarWithBadge = ({ user, isSupport = false, size = 33 }) => {
       <img
         src={badgeIcon}
         alt="VIP Tier"
-        className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 object-contain drop-shadow-sm pointer-events-none"
-        style={{ width: '16px', height: '16px' }}
+        className={`absolute left-1/2 -translate-x-1/2 object-contain drop-shadow-sm pointer-events-none ${isOpal ? '-bottom-[10px]' : '-bottom-1.5'}`}
+        style={isOpal ? { width: '25px', height: '25px', maxWidth: 'none' } : { width: '16px', height: '16px' }}
       />
     </div>
   );
