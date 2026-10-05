@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { FiDollarSign, FiStar, FiActivity } from 'react-icons/fi';
+import UserAvatar from './UserAvatar';
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
@@ -45,13 +46,12 @@ const LiveEarningsTicker = () => {
           {[...earnings, ...earnings].map((earning, i) => (
             <div key={`${earning._id || i}-${i}`} className="flex items-center gap-2 py-1 text-xs">
               <div className="flex items-center gap-1.5 bg-white/[0.04] px-2 py-1 rounded-md border border-white/[0.04]">
-                {earning.userId?.avatarUrl ? (
-                  <img src={earning.userId.avatarUrl} alt="User Avatar" className="w-4 h-4 rounded-full" />
-                ) : (
-                  <div className="w-4 h-4 rounded-full bg-indigo-500/20 text-indigo-400 flex items-center justify-center text-[8px] font-bold">
-                    {earning.userId?.displayName?.charAt(0)?.toUpperCase() || '?'}
-                  </div>
-                )}
+                <UserAvatar
+                  user={earning.userId}
+                  displayName={earning.userId?.displayName || 'Hidden User'}
+                  size={16}
+                  textClassName="text-[8px] font-bold"
+                />
                 <span className="text-slate-300 font-medium truncate max-w-[80px]">
                   {earning.userId?.displayName || 'Hidden User'}
                 </span>

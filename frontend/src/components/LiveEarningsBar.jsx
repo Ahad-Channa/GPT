@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import PublicProfileModal from './PublicProfileModal';
+import UserAvatar from './UserAvatar';
 import { io } from 'socket.io-client';
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
@@ -375,34 +376,14 @@ const LiveEarningsBar = () => {
                         boxSizing: 'border-box',
                       }}
                     >
-                      {/* Avatar Circle: 24px x 24px, border-radius: 25.71px */}
-                      <div
-                        className="shrink-0 overflow-hidden flex items-center justify-center shadow-inner"
-                        style={{
-                          width: '24px',
-                          height: '24px',
-                          borderRadius: '25.71px',
-                          opacity: 1,
-                          transform: 'rotate(0deg)',
-                        }}
-                      >
-                        {tx.userId?.avatarUrl ? (
-                          <img
-                            src={tx.userId.avatarUrl}
-                            alt={displayName}
-                            className="w-full h-full object-cover"
-                            onError={(e) => {
-                              e.target.style.display = 'none';
-                            }}
-                          />
-                        ) : (
-                          <div
-                            className={`w-full h-full ${avatarColor} text-white flex items-center justify-center text-[11px] font-bold uppercase select-none`}
-                          >
-                            {initialLetter}
-                          </div>
-                        )}
-                      </div>
+                      {/* Avatar Circle: 24px x 24px */}
+                      <UserAvatar
+                        user={tx.userId}
+                        displayName={displayName}
+                        size={24}
+                        textClassName="text-[11px] font-bold"
+                        className="shrink-0 shadow-inner"
+                      />
 
                       {/* Username & Amount Container */}
                       <div className="flex items-center gap-[6px] shrink-0 whitespace-nowrap">

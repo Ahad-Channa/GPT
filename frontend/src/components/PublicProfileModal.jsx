@@ -5,6 +5,7 @@ import {
 } from 'react-icons/fi';
 import { BsPatchCheckFill } from 'react-icons/bs';
 import VipBadge from './VipBadge';
+import UserAvatar from './UserAvatar';
 import { getLevelFromEarned, getLevelLabel } from '../utils/vipLevels';
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
@@ -308,15 +309,12 @@ const PublicProfileModal = ({ userId, onClose }) => {
                       border: `2px solid ${tierBorderColor}`,
                       boxSizing: 'border-box',
                     }}
-                    className="bg-neutral-100 shadow-sm"
+                    className="bg-neutral-100 shadow-sm flex items-center justify-center"
                   >
-                    <img
-                      src={profile.avatarUrl || '/avatars/avatar1.png'}
-                      alt={profile.displayName}
-                      className="w-full h-full object-cover"
-                      onError={(e) => {
-                        e.currentTarget.src = '/avatars/avatar1.png';
-                      }}
+                    <UserAvatar
+                      user={profile}
+                      size="100%"
+                      textClassName="text-[28px] font-bold"
                     />
                   </div>
 
@@ -519,15 +517,12 @@ const PublicProfileModal = ({ userId, onClose }) => {
                         opacity: 1,
                         transform: 'rotate(0deg)',
                       }}
-                      className="bg-neutral-200 shadow-sm"
+                      className="bg-neutral-200 shadow-sm flex items-center justify-center"
                     >
-                      <img
-                        src={profile.avatarUrl || '/avatars/avatar1.png'}
-                        alt={profile.displayName}
-                        className="w-full h-full object-cover"
-                        onError={(e) => {
-                          e.currentTarget.src = '/avatars/avatar1.png';
-                        }}
+                      <UserAvatar
+                        user={profile}
+                        size="100%"
+                        textClassName="text-[26px] font-bold"
                       />
                     </div>
 

@@ -12,6 +12,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import FitText from '../FitText';
 import LanguageToggle from '../LanguageToggle';
+import UserAvatar from '../UserAvatar';
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
@@ -524,21 +525,11 @@ const Header = ({ onChatToggle, chatOpen, fullWidth }) => {
                   }}
                 >
                   {/* Profile Picture (width: 38, height: 38) */}
-                  <div
-                    className="rounded-full overflow-hidden flex-shrink-0 bg-[#F3F4F6] flex items-center justify-center"
-                    style={{
-                      width: '38px',
-                      height: '38px',
-                      opacity: 1,
-                      transform: 'rotate(0deg)',
-                    }}
-                  >
-                    <img
-                      src={mongoUser?.avatarUrl || currentUser?.photoURL || `/avatars/avatar1.png`}
-                      alt="Avatar"
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
+                  <UserAvatar
+                    user={mongoUser}
+                    size={38}
+                    textClassName="text-[17px] font-bold"
+                  />
 
                   {/* Username and Coin */}
                   <div
@@ -979,21 +970,11 @@ const Header = ({ onChatToggle, chatOpen, fullWidth }) => {
                 }}
               >
                 {/* Profile Picture (width: 38, height: 38) */}
-                <div
-                  className="rounded-full overflow-hidden flex-shrink-0 bg-[#F3F4F6] flex items-center justify-center"
-                  style={{
-                    width: '38px',
-                    height: '38px',
-                    opacity: 1,
-                    transform: 'rotate(0deg)',
-                  }}
-                >
-                  <img
-                    src={mongoUser?.avatarUrl || currentUser?.photoURL || `/avatars/avatar1.png`}
-                    alt="Avatar"
-                    className="w-full h-full object-cover"
-                  />
-                </div>
+                <UserAvatar
+                  user={mongoUser}
+                  size={38}
+                  textClassName="text-[17px] font-bold"
+                />
 
                 {/* Username and Coin */}
                 <div

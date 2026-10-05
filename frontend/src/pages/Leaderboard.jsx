@@ -5,6 +5,7 @@ import DashboardLayout from '../components/layout/DashboardLayout';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FiLock } from 'react-icons/fi';
 import PublicProfileModal from '../components/PublicProfileModal';
+import UserAvatar from '../components/UserAvatar';
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
@@ -113,13 +114,13 @@ const PodiumCard = ({ rank, user, prize, onClick, isCenter = false }) => {
             opacity: 1,
             transform: 'rotate(0deg)',
           }}
-          className="shadow-md"
+          className="shadow-md cursor-pointer"
           onClick={() => onClick(user.userId)}
         >
-          <img
-            src={user.avatarUrl || user.avatar || '/avatars/avatar1.png'}
-            alt={user.displayName}
-            className="w-full h-full object-cover rounded-full bg-white"
+          <UserAvatar
+            user={user}
+            size="100%"
+            textClassName="text-[28px] font-bold"
           />
         </div>
 
@@ -676,17 +677,17 @@ const Leaderboard = () => {
           )}
 
           <div
-            className="w-[38px] h-[38px] sm:w-[52px] sm:h-[52px] rounded-full overflow-hidden bg-white shadow-sm shrink-0"
+            className="w-[38px] h-[38px] sm:w-[52px] sm:h-[52px] rounded-full overflow-hidden bg-white shadow-sm shrink-0 flex items-center justify-center"
             style={{
               opacity: 1,
               transform: 'rotate(0deg)',
               boxSizing: 'border-box',
             }}
           >
-            <img
-              src={user.avatarUrl || user.avatar || '/avatars/avatar1.png'}
-              alt={user.displayName}
-              className="w-full h-full object-cover"
+            <UserAvatar
+              user={user}
+              size="100%"
+              textClassName="text-[16px] sm:text-[22px] font-bold"
             />
           </div>
 

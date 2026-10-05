@@ -18,19 +18,15 @@ import { useNavigate } from 'react-router-dom';
 import { FaCrown, FaBolt } from 'react-icons/fa';
 import { getLevelFromEarned, getLevelLabel, TIER_STYLES } from '../utils/vipLevels';
 import VipBadge from '../components/VipBadge';
+import UserAvatar from '../components/UserAvatar';
 
 const AvatarCircle = ({ user, size = 20 }) => {
-   const dName = user?.displayName || 'Unknown';
-   const photo = user?.avatarUrl || user?.photoURL || `/avatars/avatar1.png`;
    return (
-      <div style={{
-         width: size, height: size, borderRadius: '50%', flexShrink: 0,
-         overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center',
-         background: 'transparent',
-         color: 'white', fontSize: size * 0.45, fontWeight: 'bold'
-      }}>
-         <img src={photo} alt="avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-      </div>
+      <UserAvatar
+         user={user}
+         size={size}
+         textClassName="font-bold"
+      />
    );
 };
 

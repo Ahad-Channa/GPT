@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useAuth } from '../contexts/AuthContext';
 import { FiHeadphones } from 'react-icons/fi';
 import { getLevelFromEarned, LEVEL_BADGES } from '../utils/vipLevels';
+import UserAvatar from './UserAvatar';
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
@@ -40,7 +41,6 @@ const TIER_BADGES = {
 };
 
 const AvatarWithBadge = ({ user, isSupport = false, size = 33 }) => {
-  const photo = isSupport ? '/coins/headp.png' : (user?.avatarUrl || user?.photoURL || '/avatars/avatar1.png');
   const vipLevel = getLevelFromEarned(user?.totalEarned || 0);
   const tierName = vipLevel?.tier || 'Bronze';
   const tierMeta = TIER_BADGES[tierName] || TIER_BADGES.Bronze;
@@ -65,7 +65,7 @@ const AvatarWithBadge = ({ user, isSupport = false, size = 33 }) => {
           style={{ boxSizing: 'border-box' }}
         >
           <img
-            src={photo}
+            src="/coins/headp.png"
             alt="Support"
             className="w-full h-full object-contain"
             onError={(e) => { e.currentTarget.src = '/avatars/avatar1.png'; }}
@@ -89,7 +89,7 @@ const AvatarWithBadge = ({ user, isSupport = false, size = 33 }) => {
         transform: 'rotate(0deg)',
       }}
     >
-      {/* Inner White Space Gap + Avatar Image */}
+      {/* Inner White Space Gap + Avatar */}
       <div
         className="w-full h-full rounded-full overflow-hidden flex items-center justify-center bg-white"
         style={{
@@ -97,11 +97,11 @@ const AvatarWithBadge = ({ user, isSupport = false, size = 33 }) => {
           boxSizing: 'border-box',
         }}
       >
-        <img
-          src={photo}
-          alt={user?.displayName || 'User'}
-          className="w-full h-full rounded-full object-cover"
-          onError={(e) => { e.currentTarget.src = '/avatars/avatar1.png'; }}
+        <UserAvatar
+          user={user}
+          size="100%"
+          imageClassName="rounded-full"
+          textClassName="text-[13px] font-bold"
         />
       </div>
 

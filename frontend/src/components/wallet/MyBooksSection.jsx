@@ -1180,7 +1180,7 @@ const MyBooksSection = ({ balance, onBalanceUpdate, onClose, preFetchedBooks, pr
       onClick={onClose}>
       <motion.div initial={{ scale: 0.96, opacity: 0, y: 10 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.96, opacity: 0, y: 10 }}
         transition={{ duration: 0.2 }}
-        className="bg-white shadow-2xl relative border border-gray-100 box-border flex flex-col p-3.5 xs:p-4 sm:p-8 my-auto w-full max-w-[540px] sm:max-w-[1072px] max-h-[94vh] sm:max-h-[921px] rounded-[24px] sm:rounded-[25px]"
+        className="bg-white shadow-2xl relative border border-gray-100 box-border flex flex-col p-3.5 xs:p-4 sm:p-8 my-auto w-full max-w-[540px] sm:max-w-[1072px] max-h-[94vh] sm:max-h-[660px] rounded-[24px] sm:rounded-[25px]"
         onClick={e => e.stopPropagation()}>
 
         {/* Header */}
@@ -1218,7 +1218,7 @@ const MyBooksSection = ({ balance, onBalanceUpdate, onClose, preFetchedBooks, pr
           </div>
         ) : (
           /* Books Grid with hidden scrollbar */
-          <div className="w-full overflow-y-auto max-h-[78vh] sm:max-h-[830px] select-none [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+          <div className="w-full overflow-y-auto max-h-[78vh] sm:max-h-[540px] select-none [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
             {books.length === 0 ? (
               <div className="flex flex-col items-center justify-center gap-3 py-20 text-center w-full">
                 <div className="w-12 h-12 rounded-2xl bg-amber-50 border border-amber-100 flex items-center justify-center text-amber-600">

@@ -203,7 +203,7 @@ router.get('/referred-users', verifyToken, async (req, res) => {
       referredUsers: referredUsers.map(u => ({
         _id: u._id,
         displayName: u.displayName || 'Anonymous',
-        avatarUrl: u.avatarUrl || u.photoURL || null,
+        avatarUrl: u.avatarUrl || null,
         totalEarned: u.totalEarned,
         referralEarnings: u.commissionGenerated || 0,
         createdAt: u.createdAt,

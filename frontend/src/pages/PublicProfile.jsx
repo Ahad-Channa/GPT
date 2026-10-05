@@ -4,6 +4,7 @@ import DashboardLayout from '../components/layout/DashboardLayout';
 import { motion } from 'framer-motion';
 import { FiStar, FiClock, FiShield, FiAlertTriangle, FiLock } from 'react-icons/fi';
 import CoinDisplay from '../components/CoinDisplay';
+import UserAvatar from '../components/UserAvatar';
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
@@ -89,11 +90,11 @@ const PublicProfile = () => {
 
           <div className="flex flex-col md:flex-row gap-8 items-center md:items-start relative z-10 text-center md:text-left">
             {/* Avatar */}
-            <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-white/[0.05] shadow-xl bg-[#1a2235]">
-              <img
-                src={profile.avatarUrl || `/avatars/avatar1.png`}
-                alt={profile.displayName}
-                className="w-full h-full object-cover"
+            <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-white/[0.05] shadow-xl bg-[#1a2235] flex items-center justify-center shrink-0">
+              <UserAvatar
+                user={profile}
+                size="100%"
+                textClassName="text-[52px] font-bold"
               />
             </div>
 

@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 
 const Footer = () => {
   const navigate = useNavigate();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [isMobile, setIsMobile] = useState(
     typeof window !== 'undefined' ? window.innerWidth < 1024 : false
   );
@@ -96,7 +96,16 @@ const Footer = () => {
               className="m-0 text-[17px] sm:text-[18px] font-bold text-gray-900 text-center"
               style={{ fontFamily: '"Bricolage Grotesque", sans-serif', lineHeight: '1.2' }}
             >
-              {t('footer.tagline', 'Complete tasks. Earn rewards.')}
+              {i18n.language?.startsWith('de') ? (
+                <>
+                  <span>{t('footer.tagline1', 'Aufgaben erledigen.')}</span>
+                  <br className="block sm:hidden" />
+                  <span className="hidden sm:inline"> </span>
+                  <span>{t('footer.tagline2', 'Prämien verdienen.')}</span>
+                </>
+              ) : (
+                t('footer.tagline', 'Complete tasks. Earn rewards.')
+              )}
             </p>
 
             <div

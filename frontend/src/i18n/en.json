@@ -529,6 +529,8 @@
   },
   "footer": {
     "tagline": "Complete tasks. Earn rewards.",
+    "tagline1": "Complete tasks.",
+    "tagline2": "Earn rewards.",
     "changeToDarkMode": "Change to dark mode",
     "quickLinks": "Quick Links",
     "resources": "Resources",

@@ -529,6 +529,8 @@
   },
   "footer": {
     "tagline": "Aufgaben erledigen. Prämien verdienen.",
+    "tagline1": "Aufgaben erledigen.",
+    "tagline2": "Prämien verdienen.",
     "changeToDarkMode": "Dark Mode aktivieren",
     "quickLinks": "Quick Links",
     "resources": "Ressourcen",

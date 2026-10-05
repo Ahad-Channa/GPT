@@ -9,6 +9,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import toast from 'react-hot-toast';
 import PublicProfileModal from '../PublicProfileModal';
 import { getLevelFromEarned, getLevelLabel, LEVEL_BADGES } from '../../utils/vipLevels';
+import UserAvatar from '../UserAvatar';
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 const SOCKET_URL = API.replace(/\/api\/?$/, '');
@@ -47,7 +48,6 @@ const TIER_BADGES = {
 };
 
 const AvatarWithBadge = ({ user, size = 33 }) => {
-  const photo = user?.avatarUrl || user?.photoURL || '/avatars/avatar1.png';
   const vipLevel = getLevelFromEarned(user?.totalEarned || 0);
   const tierName = vipLevel?.tier || 'Bronze';
   const tierMeta = TIER_BADGES[tierName] || TIER_BADGES.Bronze;
@@ -76,11 +76,11 @@ const AvatarWithBadge = ({ user, size = 33 }) => {
           boxSizing: 'border-box',
         }}
       >
-        <img
-          src={photo}
-          alt={user?.displayName || 'User'}
-          className="w-full h-full rounded-full object-cover"
-          onError={(e) => { e.currentTarget.src = '/avatars/avatar1.png'; }}
+        <UserAvatar
+          user={user}
+          size="100%"
+          className="w-full h-full rounded-full"
+          textClassName="text-[13px] font-bold"
         />
       </div>
 

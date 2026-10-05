@@ -8,7 +8,8 @@ import toast from 'react-hot-toast';
 import { motion } from 'framer-motion';
 
 export default function AuthModal({ isOpen, onClose, initialTab = 'login' }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const isGerman = i18n?.language === 'de' || i18n?.language?.startsWith('de');
   const { loginWithGoogle, loginWithEmail, registerWithEmail, resetPassword } = useAuth();
   const navigate = useNavigate();
 
@@ -458,12 +459,12 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }) {
                 {/* Terms Agreement Checkbox for Register */}
                 {tab === 'register' && (
                   <div className="flex items-center gap-2 px-1 w-full" style={{ maxWidth: '567px' }}>
-                    <label className="flex items-start sm:items-center gap-2 cursor-pointer select-none">
+                    <label className="flex items-start sm:items-center gap-2 cursor-pointer select-none w-full">
                       <input
                         type="checkbox"
                         checked={agreeTerms}
                         onChange={(e) => setAgreeTerms(e.target.checked)}
-                        className="cursor-pointer accent-[#24324D] flex-shrink-0 mt-1 sm:mt-0"
+                        className="cursor-pointer accent-[#24324D] flex-shrink-0 mt-0.5 sm:mt-0"
                         style={{
                           width: '15px',
                           height: '15px',
@@ -472,30 +473,27 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }) {
                         }}
                       />
                       <span
-                        className="flex flex-col sm:flex-row sm:items-center text-left"
+                        className={`text-left ${
+                          isGerman
+                            ? 'text-[12px] sm:text-[11.2px] sm:whitespace-nowrap tracking-tight leading-[18px] sm:leading-normal'
+                            : 'text-[12.5px] sm:text-[13.5px] leading-[20px] sm:leading-[22px]'
+                        }`}
                         style={{
                           maxWidth: '544px',
                           fontFamily: '"Poppins", sans-serif',
                           fontWeight: 400,
-                          fontSize: '13.5px',
-                          lineHeight: '22px',
-                          letterSpacing: '-0.01em',
+                          letterSpacing: isGerman ? '-0.02em' : '-0.01em',
                           color: 'rgba(0, 0, 0, 0.6)',
                           opacity: 1,
                         }}
                       >
-                        <span className="whitespace-nowrap sm:whitespace-normal">
-                          {t('auth.agreeTermsPrefix', 'By signing up, you agree to our')}{' '}
-                          <span style={{ fontWeight: 600, color: 'rgba(36, 50, 77, 1)' }}>
-                            {t('auth.termsAndConditions', 'Terms and Conditions')}
-                          </span>
-                        </span>
-                        <span className="whitespace-nowrap sm:whitespace-normal">
-                          <span className="hidden sm:inline">&nbsp;</span>
-                          {t('auth.and', '&')}&nbsp;
-                          <span style={{ fontWeight: 600, color: 'rgba(36, 50, 77, 1)' }}>
-                            {t('auth.privacyPolicy', 'Privacy Policy.')}
-                          </span>
+                        {t('auth.agreeTermsPrefix', 'By signing up, you agree to our')}{' '}
+                        <span style={{ fontWeight: 600, color: 'rgba(36, 50, 77, 1)' }}>
+                          {t('auth.termsAndConditions', 'Terms and Conditions')}
+                        </span>{' '}
+                        {t('auth.and', '&')}{' '}
+                        <span style={{ fontWeight: 600, color: 'rgba(36, 50, 77, 1)' }}>
+                          {t('auth.privacyPolicy', 'Privacy Policy.')}
                         </span>
                       </span>
                     </label>

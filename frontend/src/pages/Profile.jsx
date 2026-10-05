@@ -16,6 +16,7 @@ import {
 import TransactionHistory from '../components/wallet/TransactionHistory';
 import CoinDisplay from '../components/CoinDisplay';
 import CoinIcon from '../components/CoinIcon';
+import UserAvatar from '../components/UserAvatar';
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
@@ -2781,11 +2782,12 @@ const Profile = () => {
               }}
               className="w-[146px] h-[146px] lg:w-[164px] lg:h-[164px] shadow-sm flex items-center justify-center"
             >
-              <div className="w-full h-full rounded-full overflow-hidden bg-slate-800 flex items-center justify-center">
-                <img
-                  src={mongoUser?.avatarUrl || currentUser?.photoURL || `/avatars/avatar1.png`}
-                  alt="Avatar"
-                  className="w-full h-full object-cover"
+              <div className="w-full h-full rounded-full overflow-hidden flex items-center justify-center">
+                <UserAvatar
+                  user={mongoUser}
+                  size="100%"
+                  className="w-full h-full"
+                  textClassName="text-[60px] lg:text-[72px] font-bold"
                 />
               </div>
             </div>

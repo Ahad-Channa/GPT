@@ -5,6 +5,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { motion } from 'framer-motion';
 import { FiUsers, FiClock, FiChevronLeft, FiChevronRight, FiFileText } from 'react-icons/fi';
 import { toast } from 'react-hot-toast';
+import UserAvatar from '../components/UserAvatar';
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
@@ -975,10 +976,8 @@ const Affiliates = () => {
                         {/* Table Rows */}
                         <div className="divide-y divide-[rgba(0,0,0,0.1)] flex flex-col">
                           {referrals.dataList.map((tx) => {
-                            const avatar = tx.linkedTransactionId?.userId?.avatarUrl ||
-                              tx.linkedTransactionId?.userId?.photoURL ||
-                              `https://api.dicebear.com/7.x/adventurer/svg?seed=${tx._id}`;
-                            const username = tx.linkedTransactionId?.userId?.displayName || 'Xyz';
+                            const userObj = tx.linkedTransactionId?.userId;
+                            const username = userObj?.displayName || 'Xyz';
                             const earningVal = (tx.amount * (100 / (currentPercentage || 15))) || (tx.amount * 10);
                             const commVal = tx.amount;
 
@@ -989,10 +988,11 @@ const Affiliates = () => {
                               >
                                 {/* User */}
                                 <div className="flex items-center gap-1 sm:gap-3 min-w-0 pr-0.5 sm:pr-2">
-                                  <img
-                                    src={avatar}
-                                    alt={username}
-                                    className="w-5 h-5 sm:w-10 sm:h-10 rounded-full object-cover bg-gray-200 border border-gray-100 shrink-0"
+                                  <UserAvatar
+                                    user={userObj}
+                                    displayName={username}
+                                    className="w-5 h-5 sm:w-10 sm:h-10 border border-gray-100 shrink-0"
+                                    textClassName="text-[10px] sm:text-base font-bold"
                                   />
                                   <span
                                     style={{
@@ -1121,7 +1121,6 @@ const Affiliates = () => {
                         {/* Table Rows */}
                         <div className="divide-y divide-[rgba(0,0,0,0.1)] flex flex-col">
                           {referredUsersData.users.map((u) => {
-                            const avatar = u.avatarUrl || u.photoURL || `https://api.dicebear.com/7.x/adventurer/svg?seed=${u.displayName}`;
                             const commsEarned = u.referralEarnings > 0
                               ? u.referralEarnings
                               : ((u.totalEarned || 0) * (currentPercentage / 100));
@@ -1133,10 +1132,10 @@ const Affiliates = () => {
                               >
                                 {/* User */}
                                 <div className="flex items-center gap-1 sm:gap-3 min-w-0 pr-0.5 sm:pr-2">
-                                  <img
-                                    src={avatar}
-                                    alt={u.displayName}
-                                    className="w-5 h-5 sm:w-10 sm:h-10 rounded-full object-cover bg-gray-200 border border-gray-100 shrink-0"
+                                  <UserAvatar
+                                    user={u}
+                                    className="w-5 h-5 sm:w-10 sm:h-10 border border-gray-100 shrink-0"
+                                    textClassName="text-[10px] sm:text-base font-bold"
                                   />
                                   <span
                                     style={{
@@ -1263,10 +1262,8 @@ const Affiliates = () => {
                         {/* Table Rows */}
                         <div className="divide-y divide-[rgba(0,0,0,0.1)] flex flex-col">
                           {currentPendingHolds.map((tx) => {
-                            const avatar = tx.linkedTransactionId?.userId?.avatarUrl ||
-                              tx.linkedTransactionId?.userId?.photoURL ||
-                              `https://api.dicebear.com/7.x/adventurer/svg?seed=${tx._id}`;
-                            const username = tx.linkedTransactionId?.userId?.displayName || 'Unknown';
+                            const userObj = tx.linkedTransactionId?.userId;
+                            const username = userObj?.displayName || 'Unknown';
                             const earningVal = (tx.amount * (100 / (currentPercentage || 15))) || (tx.amount * 10);
                             const commVal = tx.amount;
 
@@ -1277,10 +1274,11 @@ const Affiliates = () => {
                               >
                                 {/* User */}
                                 <div className="flex items-center gap-1 sm:gap-3 min-w-0 pr-0.5 sm:pr-2">
-                                  <img
-                                    src={avatar}
-                                    alt={username}
-                                    className="w-5 h-5 sm:w-10 sm:h-10 rounded-full object-cover bg-gray-200 border border-gray-100 shrink-0"
+                                  <UserAvatar
+                                    user={userObj}
+                                    displayName={username}
+                                    className="w-5 h-5 sm:w-10 sm:h-10 border border-gray-100 shrink-0"
+                                    textClassName="text-[10px] sm:text-base font-bold"
                                   />
                                   <span
                                     style={{

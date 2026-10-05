@@ -6,6 +6,7 @@ import {
 } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 import CoinDisplay from '../../components/CoinDisplay';
+import UserAvatar from '../../components/UserAvatar';
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
@@ -120,10 +121,11 @@ const UserDetailModal = ({ user, onClose, currentUser }) => {
 
         {/* Header */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem' }}>
-          <img
-            src={user.avatarUrl || `/avatars/avatar1.png`}
-            alt="avatar"
-            style={{ width: 52, height: 52, borderRadius: '50%', border: '2px solid #E5E7EB', background: '#F3F4F6' }}
+          <UserAvatar
+            user={user}
+            size={52}
+            className="border-2 border-gray-200"
+            textClassName="text-xl font-bold"
           />
           <div>
             <h3 style={{ color: '#0E0F0C', fontWeight: 700, fontSize: '1.2rem', margin: 0, fontFamily: "'Bricolage Grotesque', sans-serif" }}>

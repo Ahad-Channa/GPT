@@ -69,7 +69,7 @@ router.post('/sync', verifyToken, fraudCheck('auth_sync', 'full'), async (req, r
         firebaseUid: uid,
         email: email,
         displayName: uniqueName,
-        avatarUrl: picture || '',
+        avatarUrl: '', // Default to empty so initial letter avatar is shown instead of Google photo
         referralCode,
         ...(referredById && { referredBy: referredById }),
         ...(isPrimaryAdmin && { role: 'admin', adminPermissions: allPermissions })
@@ -129,6 +129,12 @@ router.post('/sync', verifyToken, fraudCheck('auth_sync', 'full'), async (req, r
       // Existing user: backfill referralCode if they don't have one yet
       if (!user.referralCode) {
         user.referralCode = await generateUniqueReferralCode();
+        await user.save();
+      }
+
+      // If user still has legacy Google profile picture stored in avatarUrl, reset it to empty
+      if (user.avatarUrl && (user.avatarUrl.includes('googleusercontent.com') || user.avatarUrl.includes('ggpht.com'))) {
+        user.avatarUrl = '';
         await user.save();
       }
 
