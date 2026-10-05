@@ -7,6 +7,7 @@ const Settings = require('../models/Settings');
 const LeaderboardCycle = require('../models/Leaderboard');
 const notify = require('../utils/notify');
 const { emitWalletUpdate, emitToUser } = require('../utils/walletEvents');
+const { REAL_OFFER_EARNING_TYPES } = require('../utils/earningTypes');
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -54,14 +55,11 @@ function getPeriodEnd(period) {
 // These are the ONLY types that count toward leaderboard rankings.
 // Excluded: daily_bonus, promo_code, leaderboard_reward (bonuses, not real work).
 // Excluded: admin_adjustment — can represent withdrawal refunds (not new earnings)
-//   and manual balance bumps that are already recorded via offer_reward/custom_offer_reward.
+//   and manual balance bumps that are already recorded via real offer earning types.
 //   Including it would double-count those amounts.
 // Excluded: referral_reward — affiliate/referral commissions must NOT count toward
 //   leaderboard rankings (client requirement). They are passive income, not direct effort.
-const REAL_EARNING_TYPES = [
-  'offer_reward',
-  'custom_offer_reward',
-];
+const REAL_EARNING_TYPES = REAL_OFFER_EARNING_TYPES;
 
 /**
  * Aggregate live rankings for a single period.

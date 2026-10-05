@@ -27,6 +27,10 @@ import AdminOfferwalls from './pages/admin/AdminOfferwalls';
 import AdminPromoCodes from './pages/admin/AdminPromoCodes';
 import AdminCustomOffers from './pages/admin/AdminCustomOffers';
 import AdminGoodpicksOffers from './pages/admin/AdminGoodpicksOffers';
+import AdminDirectOffers from './pages/admin/AdminDirectOffers';
+import AdminProviders from './pages/admin/AdminProviders';
+import AdminConversions from './pages/admin/AdminConversions';
+import AdminPostbackLogs from './pages/admin/AdminPostbackLogs';
 import AdminLeaderboard from './pages/admin/AdminLeaderboard';
 import AdminAvatars from './pages/admin/AdminAvatars';
 import AdminChat from './pages/admin/AdminChat';
@@ -244,6 +248,10 @@ function App() {
           <Route path="users" element={<AdminUsers />} />
           <Route path="featured-offers" element={<AdminCustomOffers />} />
           <Route path="goodpicks-offers" element={<AdminGoodpicksOffers />} />
+          <Route path="direct-offers" element={<AdminDirectOffers />} />
+          <Route path="providers" element={<AdminProviders />} />
+          <Route path="conversions" element={<AdminConversions />} />
+          <Route path="postback-logs" element={<AdminPostbackLogs />} />
           <Route path="leaderboard" element={<AdminLeaderboard />} />
           <Route path="chat" element={<AdminChat />} />
           <Route path="support" element={<AdminSupport />} />

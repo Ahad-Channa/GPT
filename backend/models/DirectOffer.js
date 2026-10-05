@@ -1,6 +1,20 @@
 const mongoose = require('mongoose');
 const crypto = require('crypto');
 
+// Optional multi-step / goal configuration. When empty, the offer keeps the
+// original single-reward behavior using rewardAmount.
+const directOfferGoalSchema = new mongoose.Schema(
+  {
+    goalKey: { type: String, required: true, trim: true },
+    label: { type: String, trim: true, default: '' },
+    description: { type: String, trim: true, default: '' },
+    rewardAmount: { type: Number, required: true, min: 0 },
+    payoutAmount: { type: Number, default: 0, min: 0 },
+    enabled: { type: Boolean, default: true },
+  },
+  { _id: false }
+);
+
 const directOfferSchema = new mongoose.Schema(
   {
     title: { type: String, required: true },
@@ -12,6 +26,20 @@ const directOfferSchema = new mongoose.Schema(
     expirationDate: { type: Date, default: null },
     icon: { type: String, default: null }, // Emoji or image URL
     coverImage: { type: String, default: null }, // Card cover image URL
+    displayPlacements: {
+      featured: { type: Boolean, default: true },
+      brandedOfferwall: { type: Boolean, default: false },
+    },
+    allowedCountries: {
+      type: [String],
+      default: [],
+      set: (countries) => {
+        if (!Array.isArray(countries)) return [];
+        return [...new Set(countries
+          .map((country) => String(country || '').trim().toUpperCase())
+          .filter((country) => /^[A-Z]{2}$/.test(country)))];
+      },
+    },
     platforms: {
       desktop: { type: Boolean, default: true },
       android: { type: Boolean, default: true },
@@ -23,6 +51,8 @@ const directOfferSchema = new mongoose.Schema(
       enum: ['bullets', 'paragraph'], 
       default: 'bullets' 
     },
+    // Optional multi-step goals. Empty array = single-reward offer (unchanged).
+    goals: { type: [directOfferGoalSchema], default: [] },
     // S2S postback security
     postbackSecretKey: {
       type: String,
@@ -45,5 +75,13 @@ const directOfferSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
+
+directOfferSchema.pre('validate', function () {
+  this.allowedCountries = this.allowedCountries || [];
+  const placements = this.displayPlacements || {};
+  if (placements.featured === false && placements.brandedOfferwall === false) {
+    this.invalidate('displayPlacements', 'At least one direct-offer placement must be selected.');
+  }
+});
 
 module.exports = mongoose.model('DirectOffer', directOfferSchema);
