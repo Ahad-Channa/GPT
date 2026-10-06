@@ -43,6 +43,17 @@ const TIER_METADATA = {
     sectionBadge: '/coins/Goldsection.png',
     miniBadge: '/coins/gold.png',
     pillGradient: 'linear-gradient(180deg, #FEDD72 -23.08%, #FCBA21 74.64%)',
+    pillStyle: {
+      width: '46px',
+      height: '22px',
+      gap: '10px',
+      opacity: 1,
+      borderRadius: '100px',
+      paddingTop: '7px',
+      paddingRight: '8px',
+      paddingBottom: '7px',
+      paddingLeft: '8px',
+    },
     cardGradient: 'linear-gradient(180deg, #FEDD72 57.98%, #FCBA21 99.95%)',
     normalBoxBg: 'rgba(249, 247, 241, 1)',
     claimedBoxBg: 'linear-gradient(104.31deg, #FFF7DF 5.4%, #FFDE92 120.91%)',
@@ -84,12 +95,23 @@ const TIER_METADATA = {
     badge: '/coins/VIPopel.png',
     sectionBadge: '/coins/OpalSection.png',
     miniBadge: '/coins/opal.png',
-    pillGradient: 'linear-gradient(180deg, #E92BFF 0%, #31BDFF 100%)',
-    cardGradient: 'linear-gradient(180deg, #E92BFF 0%, #31BDFF 100%)',
+    pillGradient: 'linear-gradient(180deg, #7AA4F4 0%, #4264C0 100%)',
+    pillStyle: {
+      width: '46px',
+      height: '22px',
+      gap: '10px',
+      opacity: 1,
+      borderRadius: '100px',
+      paddingTop: '7px',
+      paddingRight: '8px',
+      paddingBottom: '7px',
+      paddingLeft: '8px',
+    },
+    cardGradient: 'linear-gradient(180deg, #7AA4F4 0%, #4264C0 100%)',
     normalBoxBg: 'rgba(249, 247, 241, 1)',
-    claimedBoxBg: 'linear-gradient(180deg, #7E83F1 0%, #7941BB 100%), linear-gradient(180deg, #E92BFF 0%, #31BDFF 100%)',
+    claimedBoxBg: 'linear-gradient(180deg, #7E83F1 0%, #7941BB 100%), linear-gradient(180deg, #7AA4F4 0%, #4264C0 100%)',
     pillText: 'Opal',
-    btnBg: 'bg-[#A855F7] hover:bg-[#9333EA]',
+    btnBg: 'bg-[#5B7FE6] hover:bg-[#4B6EC9]',
     barColor: 'repeating-linear-gradient(-45deg, rgba(255, 255, 255, 0.45) 0px, rgba(255, 255, 255, 0.45) 3px, transparent 3px, transparent 6px), linear-gradient(98.68deg, #749DEF -4.71%, #3858B6 100%)',
     sectionBg: 'rgba(241, 246, 255, 1)',
   },
@@ -356,8 +378,14 @@ const VipPage = () => {
                         className="w-[72px] h-[72px] sm:w-[84px] sm:h-[84px] object-contain shrink-0"
                       />
                       <span
-                        className="min-w-[58px] h-[20px] rounded-full px-2.5 py-0.5 inline-flex items-center justify-center text-white text-[11px] font-semibold text-center box-border"
+                        className="inline-flex items-center justify-center text-white text-[11px] font-semibold text-center box-border"
                         style={{
+                          minWidth: meta.pillStyle?.width ? undefined : '58px',
+                          height: '20px',
+                          borderRadius: '9999px',
+                          padding: '2px 10px',
+                          opacity: 1,
+                          ...meta.pillStyle,
                           background: meta.pillGradient,
                           fontFamily: '"Poppins", sans-serif',
                         }}

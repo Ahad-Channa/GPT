@@ -35,12 +35,12 @@ const TIER_BADGES = {
   },
   Opal: {
     icon: '/coins/opal1.png',
-    pillBg: 'linear-gradient(180deg, #E92BFF 0%, #31BDFF 100%)',
-    borderColor: '#E92BFF',
+    pillBg: 'linear-gradient(180deg, #7AA4F4 0%, #4264C0 100%)',
+    borderColor: '#7AA4F4',
   },
 };
 
-const AvatarWithBadge = ({ user, isSupport = false, size = 33 }) => {
+const AvatarWithBadge = ({ user, isSupport = false, size = 40 }) => {
   const vipLevel = getLevelFromEarned(user?.totalEarned || 0);
   const tierName = vipLevel?.tier || 'Bronze';
   const tierMeta = TIER_BADGES[tierName] || TIER_BADGES.Bronze;
@@ -101,15 +101,15 @@ const AvatarWithBadge = ({ user, isSupport = false, size = 33 }) => {
           user={user}
           size="100%"
           imageClassName="rounded-full"
-          textClassName="text-[13px] font-bold"
+          textClassName="text-[14px] font-bold"
         />
       </div>
 
       <img
         src={badgeIcon}
         alt="VIP Tier"
-        className={`absolute left-1/2 -translate-x-1/2 object-contain drop-shadow-sm pointer-events-none ${isOpal ? '-bottom-[10px]' : '-bottom-1.5'}`}
-        style={isOpal ? { width: '25px', height: '25px', maxWidth: 'none' } : { width: '16px', height: '16px' }}
+        className={`absolute left-1/2 -translate-x-1/2 object-contain drop-shadow-sm pointer-events-none ${isOpal ? '-bottom-[11px]' : '-bottom-2'}`}
+        style={isOpal ? { width: '28px', height: '28px', maxWidth: 'none' } : { width: '18px', height: '18px' }}
       />
     </div>
   );
@@ -246,9 +246,9 @@ const MessageRow = ({ msg, isOwn, mongoUser }) => {
       {/* Top Row: Avatar + Name/Date on left, Badges on right */}
       <div className="flex items-center justify-between gap-2 w-full">
         <div className="flex items-center gap-2.5 min-w-0">
-          {/* Avatar with mini tier badge (33x33) */}
+          {/* Avatar with mini tier badge (40x40) */}
           <div className="shrink-0">
-            <AvatarWithBadge user={senderUser} isSupport={isSupport} size={33} />
+            <AvatarWithBadge user={senderUser} isSupport={isSupport} size={40} />
           </div>
 
           {/* Name and Date Column */}
@@ -327,13 +327,13 @@ const MessageRow = ({ msg, isOwn, mongoUser }) => {
 const SupportChat = ({ socket }) => {
   const { t } = useTranslation();
   const { mongoUser, currentUser } = useAuth();
-  const [ticket, setTicket]       = useState(null);
-  const [messages, setMessages]   = useState([]);
-  const [text, setText]           = useState('');
-  const [loading, setLoading]     = useState(true);
-  const [sending, setSending]     = useState(false);
-  const [resetKey, setResetKey]   = useState(0);
-  const endRef  = useRef(null);
+  const [ticket, setTicket] = useState(null);
+  const [messages, setMessages] = useState([]);
+  const [text, setText] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [sending, setSending] = useState(false);
+  const [resetKey, setResetKey] = useState(0);
+  const endRef = useRef(null);
   const inputRef = useRef(null);
 
   const isInitialScroll = useRef(true);
@@ -346,7 +346,7 @@ const SupportChat = ({ socket }) => {
     (async () => {
       try {
         const token = await currentUser.getIdToken();
-        const res   = await fetch(`${API}/support/my-ticket`, {
+        const res = await fetch(`${API}/support/my-ticket`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         const data = await res.json();
@@ -426,7 +426,7 @@ const SupportChat = ({ socket }) => {
     setSending(true);
     try {
       const token = await currentUser.getIdToken();
-      const res   = await fetch(`${API}/support/message`, {
+      const res = await fetch(`${API}/support/message`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({ text: text.trim() })

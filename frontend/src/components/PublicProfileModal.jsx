@@ -70,8 +70,8 @@ const TIER_METADATA = {
     badge: '/coins/VIPopel.png',
     sectionBadge: '/coins/OpalSection.png',
     miniBadge: '/coins/opal.png',
-    pillGradient: 'linear-gradient(180deg, #E92BFF 0%, #31BDFF 100%)',
-    borderColor: '#E92BFF',
+    pillGradient: 'linear-gradient(180deg, #7AA4F4 0%, #4264C0 100%)',
+    borderColor: '#7AA4F4',
   },
 };
 
@@ -1071,8 +1071,8 @@ const PublicProfileModal = ({ userId, onClose }) => {
                   </div>
                 </div>
 
-              {/* Recent Activity Section */}
-              <div className="pt-4 pb-2 w-full" style={{ width: '100%' }}>
+                {/* Recent Activity Section */}
+                <div className="pt-4 pb-2 w-full" style={{ width: '100%' }}>
                   <div
                     style={{
                       width: '100%',
@@ -1289,11 +1289,10 @@ const PublicProfileModal = ({ userId, onClose }) => {
                               <button
                                 key={idx + 1}
                                 onClick={() => setActivityPage(idx + 1)}
-                                className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold transition-all ${
-                                  activityPage === idx + 1
+                                className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold transition-all ${activityPage === idx + 1
                                     ? 'bg-[#1E293B] text-white shadow-sm'
                                     : 'bg-white border border-[#E2E8F0] text-[#64748B] hover:text-[#1E293B]'
-                                }`}
+                                  }`}
                               >
                                 {idx + 1}
                               </button>

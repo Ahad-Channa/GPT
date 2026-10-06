@@ -42,12 +42,12 @@ const TIER_BADGES = {
   },
   Opal: {
     icon: '/coins/opal1.png',
-    pillBg: 'linear-gradient(180deg, #E92BFF 0%, #31BDFF 100%)',
-    borderColor: '#E92BFF',
+    pillBg: 'linear-gradient(180deg, #7AA4F4 0%, #4264C0 100%)',
+    borderColor: '#7AA4F4',
   },
 };
 
-const AvatarWithBadge = ({ user, size = 33 }) => {
+const AvatarWithBadge = ({ user, size = 40 }) => {
   const vipLevel = getLevelFromEarned(user?.totalEarned || 0);
   const tierName = vipLevel?.tier || 'Bronze';
   const tierMeta = TIER_BADGES[tierName] || TIER_BADGES.Bronze;
@@ -80,15 +80,15 @@ const AvatarWithBadge = ({ user, size = 33 }) => {
           user={user}
           size="100%"
           className="w-full h-full rounded-full"
-          textClassName="text-[13px] font-bold"
+          textClassName="text-[14px] font-bold"
         />
       </div>
 
       <img
         src={badgeIcon}
         alt="VIP Tier"
-        className={`absolute left-1/2 -translate-x-1/2 object-contain drop-shadow-sm pointer-events-none ${isOpal ? '-bottom-[10px]' : '-bottom-1.5'}`}
-        style={isOpal ? { width: '25px', height: '25px', maxWidth: 'none' } : { width: '16px', height: '16px' }}
+        className={`absolute left-1/2 -translate-x-1/2 object-contain drop-shadow-sm pointer-events-none ${isOpal ? '-bottom-[11px]' : '-bottom-2'}`}
+        style={isOpal ? { width: '28px', height: '28px', maxWidth: 'none' } : { width: '18px', height: '18px' }}
       />
     </div>
   );
@@ -198,12 +198,12 @@ const MessageRow = ({ msg, canModerate, onDelete, deletingId, onUserClick }) => 
       {/* Top Row: Avatar + Name/Date on left, Badges on right */}
       <div className="flex items-center justify-between gap-2 w-full">
         <div className="flex items-center gap-2.5 min-w-0">
-          {/* Avatar with mini tier badge (33x33) */}
+          {/* Avatar with mini tier badge (40x40) */}
           <button
             onClick={() => msg.user?._id && onUserClick(msg.user._id)}
             className="cursor-pointer bg-transparent border-none p-0 outline-none shrink-0"
           >
-            <AvatarWithBadge user={msg.user} size={33} />
+            <AvatarWithBadge user={msg.user} size={40} />
           </button>
 
           {/* Name and Date Column */}
@@ -467,13 +467,13 @@ const ChatSidebar = ({ isOpen, onClose }) => {
             className="lg:bg-transparent bg-black/40 backdrop-blur-sm lg:backdrop-blur-none lg:pointer-events-none"
           />
 
-          {/* ── Main Chat Container (width: 370, desktop: 10px from top, bottom, right) ── */}
+          {/* ── Main Chat Container (Mobile: top 16px, bottom 0, left 40px, right 10px, width 370px max; Desktop: 10px from top, bottom, right) ── */}
           <motion.div
             initial={{ x: '110%', opacity: 0 }}
             animate={{ x: 0, opacity: 1 }}
             exit={{ x: '110%', opacity: 0 }}
             transition={{ type: 'spring', damping: 28, stiffness: 220 }}
-            className="fixed z-50 flex flex-col overflow-hidden box-border bg-[#FFFFFF] shadow-[-8px_0px_36px_0px_rgba(0,0,0,0.12)] border border-black/5 top-0 right-0 bottom-0 h-screen w-full max-w-[370px] rounded-l-[30px] rounded-r-none lg:top-[10px] lg:bottom-[10px] lg:right-[10px] lg:h-[calc(100vh-20px)] lg:rounded-[30px]"
+            className="fixed z-50 flex flex-col overflow-hidden box-border bg-[#FFFFFF] shadow-[-8px_0px_36px_0px_rgba(0,0,0,0.12)] border border-black/5 top-[16px] bottom-0 left-[40px] right-[10px] max-w-[370px] max-h-[1000px] h-[calc(100dvh-16px)] rounded-t-[30px] rounded-b-none opacity-100 rotate-0 lg:top-[10px] lg:bottom-[10px] lg:right-[10px] lg:left-auto lg:h-[calc(100vh-20px)] lg:w-[370px] lg:max-w-[370px] lg:rounded-[30px]"
           >
             {/* ── Header Area ── */}
             <div className="p-4 pb-3 flex flex-col gap-3 shrink-0">

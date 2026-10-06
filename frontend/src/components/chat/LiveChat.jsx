@@ -38,8 +38,8 @@ const AvatarCircle = ({ user, size = 32 }) => {
 };
 
 const roleMeta = {
-  admin:     { label: 'ADMIN', color: '#fbbf24', bg: 'rgba(251,191,36,0.12)' },
-  moderator: { label: 'MOD',   color: '#38bdf8', bg: 'rgba(56,189,248,0.12)' },
+  admin: { label: 'ADMIN', color: '#fbbf24', bg: 'rgba(251,191,36,0.12)' },
+  moderator: { label: 'MOD', color: '#38bdf8', bg: 'rgba(56,189,248,0.12)' },
 };
 
 const RoleBadge = ({ role }) => {
@@ -64,14 +64,14 @@ const LiveChat = ({ isOpen, onClose }) => {
   const isMod = mongoUser?.role === 'moderator';
   const canModerate = isAdmin || isMod;
 
-  const [messages, setMessages]   = useState([]);
+  const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState('');
-  const [socket, setSocket]       = useState(null);
+  const [socket, setSocket] = useState(null);
   const [deletingId, setDeletingId] = useState(null);
   const [liveCount, setLiveCount] = useState(0);
-  const [isTyping, setIsTyping]   = useState(false);
+  const [isTyping, setIsTyping] = useState(false);
   const messagesEndRef = useRef(null);
-  const inputRef       = useRef(null);
+  const inputRef = useRef(null);
 
   const scrollToBottom = useCallback((instant = false) => {
     messagesEndRef.current?.scrollIntoView({ behavior: instant === true ? 'auto' : 'smooth' });
@@ -82,7 +82,7 @@ const LiveChat = ({ isOpen, onClose }) => {
     if (!isOpen) return;
     const fetchHistory = async () => {
       try {
-        const res  = await fetch(`${API}/chat/history`);
+        const res = await fetch(`${API}/chat/history`);
         const data = await res.json();
         if (data.status === 'success') {
           setMessages(data.data);
@@ -99,9 +99,9 @@ const LiveChat = ({ isOpen, onClose }) => {
     const sock = io(SOCKET_URL, { transports: ['websocket', 'polling'] });
     setSocket(sock);
 
-    sock.on('newMessage',    (msg) => setMessages((p) => [...p, msg]));
+    sock.on('newMessage', (msg) => setMessages((p) => [...p, msg]));
     sock.on('messageDeleted', ({ _id }) => setMessages((p) => p.filter((m) => m._id !== _id)));
-    sock.on('liveCount',     ({ count }) => setLiveCount(count));
+    sock.on('liveCount', ({ count }) => setLiveCount(count));
 
     return () => sock.disconnect();
   }, [isOpen]);
@@ -129,7 +129,7 @@ const LiveChat = ({ isOpen, onClose }) => {
     setDeletingId(msgId);
     try {
       const token = await currentUser.getIdToken();
-      const res  = await fetch(`${API}/chat/messages/${msgId}`, {
+      const res = await fetch(`${API}/chat/messages/${msgId}`, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -250,7 +250,7 @@ const LiveChat = ({ isOpen, onClose }) => {
               )}
 
               {messages.map((msg, idx) => {
-                const isOwn     = msg.user?._id === mongoUser?._id;
+                const isOwn = msg.user?._id === mongoUser?._id;
                 const isDeleting = deletingId === msg._id;
                 const showAvatar = idx === 0 || messages[idx - 1]?.user?._id !== msg.user?._id;
 
@@ -315,7 +315,7 @@ const LiveChat = ({ isOpen, onClose }) => {
                         caretColor: '#a5b4fc'
                       }}
                       onFocus={(e) => { e.target.style.borderColor = 'rgba(99,102,241,0.5)'; }}
-                      onBlur={(e)  => { e.target.style.borderColor = 'rgba(255,255,255,0.09)'; }}
+                      onBlur={(e) => { e.target.style.borderColor = 'rgba(255,255,255,0.09)'; }}
                     />
                     <button
                       type="submit"
@@ -362,12 +362,12 @@ const LiveChat = ({ isOpen, onClose }) => {
 const MessageRow = ({ msg, isOwn, isDeleting, showAvatar, canModerate, onDelete, idx }) => {
   const [hovered, setHovered] = useState(false);
 
-  const nameColor = msg.user?.role === 'admin'     ? '#fbbf24'
-                  : msg.user?.role === 'moderator' ? '#38bdf8'
-                  : isOwn                          ? '#a5b4fc'
-                  : '#94a3b8';
+  const nameColor = msg.user?.role === 'admin' ? '#fbbf24'
+    : msg.user?.role === 'moderator' ? '#38bdf8'
+      : isOwn ? '#a5b4fc'
+        : '#94a3b8';
 
-  const bubbleBg   = isOwn
+  const bubbleBg = isOwn
     ? 'linear-gradient(135deg, rgba(99,102,241,0.28), rgba(139,92,246,0.18))'
     : 'rgba(255,255,255,0.04)';
   const bubbleBorder = isOwn ? '1px solid rgba(99,102,241,0.3)' : '1px solid rgba(255,255,255,0.06)';
@@ -413,15 +413,15 @@ const MessageRow = ({ msg, isOwn, isDeleting, showAvatar, canModerate, onDelete,
             </span>
             <RoleBadge role={msg.user?.role} />
             {(() => {
-                const vipLevel = getLevelFromEarned(msg.user?.totalEarned || 0);
-                return (
-                  <VipBadge
-                    tier={vipLevel?.tier || 'Bronze'}
-                    rank={vipLevel?.rank || 'I'}
-                    size="xs"
-                  />
-                );
-              })()}
+              const vipLevel = getLevelFromEarned(msg.user?.totalEarned || 0);
+              return (
+                <VipBadge
+                  tier={vipLevel?.tier || 'Bronze'}
+                  rank={vipLevel?.rank || 'I'}
+                  size="xs"
+                />
+              );
+            })()}
             <span style={{ fontSize: '0.65rem', color: '#334155' }}>
               {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
             </span>
