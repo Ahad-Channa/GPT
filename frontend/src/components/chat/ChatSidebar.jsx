@@ -473,7 +473,7 @@ const ChatSidebar = ({ isOpen, onClose }) => {
             animate={{ x: 0, opacity: 1 }}
             exit={{ x: '110%', opacity: 0 }}
             transition={{ type: 'spring', damping: 28, stiffness: 220 }}
-            className="fixed z-50 flex flex-col overflow-hidden box-border bg-[#FFFFFF] shadow-[-8px_0px_36px_0px_rgba(0,0,0,0.12)] border border-black/5 top-[16px] bottom-0 left-[40px] right-[10px] max-w-[370px] max-h-[1000px] h-[calc(100dvh-16px)] rounded-t-[30px] rounded-b-none opacity-100 rotate-0 lg:top-[10px] lg:bottom-[10px] lg:right-[10px] lg:left-auto lg:h-[calc(100vh-20px)] lg:w-[370px] lg:max-w-[370px] lg:rounded-[30px]"
+            className="fixed z-50 flex flex-col overflow-hidden box-border bg-[#FFFFFF] shadow-[-8px_0px_36px_0px_rgba(0,0,0,0.12)] border border-black/5 top-[16px] bottom-0 left-[40px] right-[10px] max-w-[370px] max-h-[1000px] h-[calc(100dvh-16px)] rounded-t-[30px] rounded-b-none opacity-100 rotate-0 lg:top-[10px] lg:bottom-[10px] lg:right-[10px] lg:left-auto lg:h-[calc(100vh-20px)] lg:max-h-none lg:w-[370px] lg:max-w-[370px] lg:rounded-[30px]"
           >
             {/* ── Header Area ── */}
             <div className="p-4 pb-3 flex flex-col gap-3 shrink-0">
@@ -692,7 +692,7 @@ const ChatSidebar = ({ isOpen, onClose }) => {
                 </div>
 
                 {/* ── Bottom Input Area ── */}
-                <div className="p-4 pt-2 shrink-0">
+                <div className="mobile-chat-bottom p-4 pt-2 shrink-0">
                   {mongoUser ? (
                     <form onSubmit={sendMessage} className="w-full">
                       <div

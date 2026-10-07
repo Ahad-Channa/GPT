@@ -375,3 +375,35 @@
     margin: 0 auto !important;
   }
 }
+
+/* ─── Mobile Sticky Bottom Navigation & iOS Safe Area ──────── */
+:root {
+  --mobile-nav-pb: env(safe-area-inset-bottom, 0px);
+  --mobile-more-bottom: calc(74px + env(safe-area-inset-bottom, 0px));
+}
+
+@supports (-webkit-touch-callout: none) {
+  :root {
+    --mobile-nav-pb: calc(env(safe-area-inset-bottom, 0px) + 20px);
+    --mobile-more-bottom: calc(74px + env(safe-area-inset-bottom, 0px) + 20px);
+  }
+}
+
+.mobile-bottom-nav {
+  padding-bottom: var(--mobile-nav-pb) !important;
+}
+
+.mobile-more-popup {
+  bottom: var(--mobile-more-bottom) !important;
+}
+
+@media (max-width: 1023px) {
+  @supports (-webkit-touch-callout: none) {
+    .mobile-chat-bottom {
+      padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 20px) !important;
+    }
+    .mobile-notif-bottom {
+      padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 24px) !important;
+    }
+  }
+}

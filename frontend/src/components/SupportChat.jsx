@@ -564,7 +564,7 @@ const SupportChat = ({ socket }) => {
       </div>
 
       {/* ── Input Bar (matches Live Chat exactly) ── */}
-      <div className="p-4 pt-2 shrink-0">
+      <div className="mobile-chat-bottom p-4 pt-2 shrink-0">
         <form onSubmit={sendMessage}>
           <div
             style={{

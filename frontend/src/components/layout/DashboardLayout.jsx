@@ -27,20 +27,23 @@ const DashboardLayout = ({ children, showLiveBar = true, fullWidth = false }) =>
       {/* Ambient Background Glows */}
       {/* <div className="ambient-bg" aria-hidden="true" /> */}
 
-      {/* Sticky Header — passes chat toggle down */}
-      <Header onChatToggle={() => setChatOpen(o => !o)} chatOpen={chatOpen} />
+      {/* FIXED TOP HEADER + LIVE FEED BAR ON MOBILE (< 1024px) / NORMAL ON DESKTOP */}
+      <div className="fixed top-0 left-0 right-0 z-30 bg-[#FAFAFA] lg:static lg:bg-transparent lg:z-auto">
+        <Header onChatToggle={() => setChatOpen(o => !o)} chatOpen={chatOpen} />
+        {showLiveBar && <LiveEarningsBar />}
+      </div>
 
-      {/* Live Earnings Ticker */}
-      {showLiveBar && <LiveEarningsBar />}
-
-      {/* Main Content Wrapper */}
+      {/* Main Content Wrapper (offset for fixed mobile header) */}
       <div
-        className="transition-all duration-300 ease-in-out w-full flex-1 bg-[#FAFAFA]"
+        className={`transition-all duration-300 ease-in-out w-full flex-1 bg-[#FAFAFA] ${
+          showLiveBar
+            ? 'pt-[calc(124px+env(safe-area-inset-top,0px))] lg:pt-0'
+            : 'pt-[calc(72px+env(safe-area-inset-top,0px))] lg:pt-0'
+        }`}
       >
         <main
-          className={`w-full mx-auto flex flex-col ${
-            fullWidth ? 'pb-4 lg:pb-0' : 'px-4 md:px-8 lg:px-0 pt-0 pb-6 lg:pb-4 max-w-[1328px]'
-          }`}
+          className={`w-full mx-auto flex flex-col ${fullWidth ? 'pb-4 lg:pb-0' : 'px-4 md:px-8 lg:px-0 pt-0 pb-6 lg:pb-4 max-w-[1328px]'
+            }`}
         >
           {children}
         </main>

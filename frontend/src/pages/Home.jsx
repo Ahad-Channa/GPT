@@ -420,11 +420,9 @@ const Home = () => {
               className="flex items-center justify-center w-full mx-auto -mt-[8px] mb-8 md:mb-4 lg:mb-8 px-4"
             >
               <div
-                className="flex items-center justify-between sm:justify-around w-full max-w-[490px] px-8 sm:px-14 lg:px-16 py-3 sm:py-4 gap-6 sm:gap-12 lg:gap-16 transition-all"
+                className="flex items-center justify-between sm:justify-around lg:justify-between w-full max-w-[490px] lg:max-w-[430px] px-8 sm:px-14 lg:px-0 lg:pl-[34px] lg:pr-[26px] py-3 sm:py-4 lg:pt-3.5 lg:pb-2.5 gap-6 sm:gap-12 lg:gap-4 rounded-b-[70px] lg:rounded-b-[65px] transition-all"
                 style={{
                   width: '100%',
-                  maxWidth: '490px',
-                  borderRadius: '0px 0px 70px 70px',
                   background: 'rgba(255, 255, 255, 1)',
                   boxShadow: '0px 10px 30px -5px rgba(0, 0, 0, 0.06)',
                 }}
@@ -434,16 +432,14 @@ const Home = () => {
                   <img
                     src="/coins/total user.png"
                     alt="Users"
-                    className="w-[32px] h-[32px] sm:w-[38px] sm:h-[38px] lg:w-[44px] lg:h-[44px] object-contain flex-shrink-0 -translate-y-[5px]"
+                    className="w-[32px] h-[32px] sm:w-[38px] sm:h-[38px] lg:w-[50px] lg:h-[50px] object-contain flex-shrink-0 -translate-y-[5px] lg:translate-y-0"
                   />
                   <div className="flex flex-col justify-center min-w-0">
                     <span
-                      className="uppercase"
+                      className="uppercase text-[12px] lg:text-[13px] leading-[18px] lg:leading-[20px]"
                       style={{
                         fontFamily: '"Poppins", sans-serif',
                         fontWeight: 500,
-                        fontSize: '12px',
-                        lineHeight: '18px',
                         color: 'rgba(14, 15, 12, 1)',
                         opacity: 1,
                         transform: 'rotate(0deg)',
@@ -455,7 +451,7 @@ const Home = () => {
                       {t('earn.totalUsers')}
                     </span>
                     <span
-                      className="text-[18px] sm:text-[22px] lg:text-[28px] font-bold text-[#0E0F0C] leading-tight whitespace-nowrap"
+                      className="text-[18px] sm:text-[22px] lg:text-[32px] font-bold text-[#0E0F0C] leading-tight whitespace-nowrap"
                       style={{
                         fontFamily: '"Bricolage Grotesque", sans-serif',
                         fontWeight: 700,
@@ -474,16 +470,14 @@ const Home = () => {
                   <img
                     src="/coins/total paid.png"
                     alt="Paid"
-                    className="w-[32px] h-[32px] sm:w-[38px] sm:h-[38px] lg:w-[44px] lg:h-[44px] object-contain flex-shrink-0 translate-y-[1px]"
+                    className="w-[32px] h-[32px] sm:w-[38px] sm:h-[38px] lg:w-[50px] lg:h-[50px] object-contain flex-shrink-0 translate-y-[1px] lg:translate-y-0"
                   />
                   <div className="flex flex-col justify-center min-w-0">
                     <span
-                      className="uppercase"
+                      className="uppercase text-[12px] lg:text-[13px] leading-[18px] lg:leading-[20px]"
                       style={{
                         fontFamily: '"Poppins", sans-serif',
                         fontWeight: 500,
-                        fontSize: '12px',
-                        lineHeight: '18px',
                         color: 'rgba(14, 15, 12, 1)',
                         opacity: 1,
                         transform: 'rotate(0deg)',
@@ -495,7 +489,7 @@ const Home = () => {
                       {t('earn.totalPaid')}
                     </span>
                     <span
-                      className="text-[18px] sm:text-[22px] lg:text-[28px] font-bold text-[#0E0F0C] leading-tight whitespace-nowrap"
+                      className="text-[18px] sm:text-[22px] lg:text-[32px] font-bold text-[#0E0F0C] leading-tight whitespace-nowrap"
                       style={{
                         fontFamily: '"Bricolage Grotesque", sans-serif',
                         fontWeight: 700,

@@ -225,7 +225,7 @@ export default function NotificationPanel() {
 
             {/* ── Content / Notification Items List ── */}
             <div
-              className="flex-1 overflow-y-auto no-scrollbar"
+              className="mobile-notif-bottom flex-1 overflow-y-auto no-scrollbar"
               style={{
                 padding: '12px 20px',
                 display: 'flex',

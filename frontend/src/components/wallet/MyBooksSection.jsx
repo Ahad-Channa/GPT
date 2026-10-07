@@ -1048,6 +1048,89 @@ const MyBooksSection = ({ balance, onBalanceUpdate, onClose, preFetchedBooks, pr
   const [detailBook, setDetailBook] = useState(null);
   const [orderBook, setOrderBook] = useState(null);
   const [selectedBookId, setSelectedBookId] = useState(null);
+  const [desktopPage, setDesktopPage] = useState(1);
+
+  const totalDesktopPages = Math.max(1, Math.ceil(books.length / 4));
+  const currentDesktopPage = Math.min(desktopPage, totalDesktopPages);
+  const desktopBooks = books.slice((currentDesktopPage - 1) * 4, currentDesktopPage * 4);
+
+  const renderBookCard = (book) => {
+    const isSelected = selectedBookId === book._id;
+    const titleLen = book.title ? book.title.length : 0;
+    const titleFontSizeClass = titleLen > 38
+      ? 'text-[17px] sm:text-[19px] leading-[22px] sm:leading-[25px]'
+      : titleLen > 22
+        ? 'text-[20px] sm:text-[22px] leading-[26px] sm:leading-[29px]'
+        : 'text-[23px] xs:text-[25px] sm:text-[25px] leading-[30px] xs:leading-[35px] sm:leading-[35px]';
+
+    return (
+      <div
+        key={book._id}
+        onClick={() => {
+          setSelectedBookId(book._id);
+          setDetailBook(book);
+        }}
+        className={`flex items-center w-full sm:max-w-[503px] h-[197px] sm:h-[262px] transition-all cursor-pointer text-left group p-2 sm:p-[8px_24px_8px_8px] gap-3.5 sm:gap-6 rounded-[20px] sm:rounded-[16px] border-2 box-border opacity-100 shrink-0 ${
+          isSelected
+            ? 'bg-[#24324D] border-[#24324D]'
+            : 'bg-[#F8F5EF] border-transparent'
+        }`}
+      >
+        {/* Cover Card Container */}
+        <div
+          className="w-[136px] sm:w-[185px] h-[181px] sm:h-[246px] rounded-[14px] flex items-center justify-center shrink-0 bg-white box-border shadow-[0_4px_14px_rgba(0,0,0,0.06)]"
+        >
+          {book.coverImage ? (
+            <img
+              src={book.coverImage.startsWith('data:') || book.coverImage.startsWith('http') ? book.coverImage : `${BACKEND}${book.coverImage}`}
+              alt={book.title}
+              className="w-[101.5px] sm:w-[138px] h-[154.5px] sm:h-[210px] object-contain shrink-0 drop-shadow-[0_6px_10px_rgba(0,0,0,0.18)]"
+              onError={(e) => { e.target.style.display = 'none'; }}
+            />
+          ) : (
+            <FiBook className="text-slate-400 text-3xl sm:text-4xl" />
+          )}
+        </div>
+
+        {/* Info */}
+        <div className="flex flex-col justify-center gap-2 sm:gap-3.5 flex-1 min-w-0 pr-1 sm:pr-0">
+          <h3
+            className={`line-clamp-3 font-bold tracking-tight ${titleFontSizeClass} ${
+              isSelected ? 'text-white' : 'text-black'
+            }`}
+            style={{
+              fontFamily: '"Bricolage Grotesque", sans-serif',
+              fontWeight: 700,
+              letterSpacing: '-0.02em',
+              margin: 0,
+              padding: 0,
+            }}
+          >
+            {book.title}
+          </h3>
+
+          <div className="flex items-center gap-1.5 sm:gap-2 mt-0.5 sm:mt-1">
+            <img
+              src="/coins/gfitcoin.png"
+              alt="Coins"
+              className="w-5 h-5 sm:w-6 sm:h-6 object-contain shrink-0"
+              onError={(e) => {
+                e.currentTarget.src = '/coins/Coin.png';
+              }}
+            />
+            <span
+              className="font-bold text-[18px] sm:text-[22px] leading-none text-[#E9B300]"
+              style={{
+                fontFamily: '"Poppins", sans-serif',
+              }}
+            >
+              {book.coinCost.toLocaleString('de-DE')}
+            </span>
+          </div>
+        </div>
+      </div>
+    );
+  };
 
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   useEffect(() => {
@@ -1180,7 +1263,7 @@ const MyBooksSection = ({ balance, onBalanceUpdate, onClose, preFetchedBooks, pr
       onClick={onClose}>
       <motion.div initial={{ scale: 0.96, opacity: 0, y: 10 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.96, opacity: 0, y: 10 }}
         transition={{ duration: 0.2 }}
-        className="bg-white shadow-2xl relative border border-gray-100 box-border flex flex-col p-3.5 xs:p-4 sm:p-8 my-auto w-full max-w-[540px] sm:max-w-[1072px] max-h-[94vh] sm:max-h-[660px] rounded-[24px] sm:rounded-[25px]"
+        className="bg-white shadow-2xl relative border border-gray-100 box-border flex flex-col p-3.5 xs:p-4 sm:p-8 my-auto w-full max-w-[540px] sm:max-w-[1072px] max-h-[94vh] sm:max-h-[760px] rounded-[24px] sm:rounded-[25px]"
         onClick={e => e.stopPropagation()}>
 
         {/* Header */}
@@ -1217,105 +1300,103 @@ const MyBooksSection = ({ balance, onBalanceUpdate, onClose, preFetchedBooks, pr
             </p>
           </div>
         ) : (
-          /* Books Grid with hidden scrollbar */
-          <div className="w-full overflow-y-auto max-h-[78vh] sm:max-h-[540px] select-none [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
-            {books.length === 0 ? (
-              <div className="flex flex-col items-center justify-center gap-3 py-20 text-center w-full">
-                <div className="w-12 h-12 rounded-2xl bg-amber-50 border border-amber-100 flex items-center justify-center text-amber-600">
-                  <FiBook size={24} />
+          <>
+            {/* Mobile View: vertically scrollable list of all books */}
+            <div className="sm:hidden w-full overflow-y-auto max-h-[78vh] select-none [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+              {books.length === 0 ? (
+                <div className="flex flex-col items-center justify-center gap-3 py-20 text-center w-full">
+                  <div className="w-12 h-12 rounded-2xl bg-amber-50 border border-amber-100 flex items-center justify-center text-amber-600">
+                    <FiBook size={24} />
+                  </div>
+                  <p
+                    style={{
+                      fontFamily: '"Poppins", sans-serif',
+                      fontSize: '15px',
+                      color: '#666666',
+                    }}
+                  >
+                    {t('withdraw.noBooksAvailable', 'No books available right now.')}
+                  </p>
                 </div>
-                <p
-                  style={{
-                    fontFamily: '"Poppins", sans-serif',
-                    fontSize: '15px',
-                    color: '#666666',
-                  }}
-                >
-                  {t('withdraw.noBooksAvailable', 'No books available right now.')}
-                </p>
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 sm:gap-4 w-full">
-                {books.map((book) => {
-                  const isSelected = selectedBookId === book._id;
-                  const titleLen = book.title ? book.title.length : 0;
-                  const titleFontSizeClass = titleLen > 38
-                    ? 'text-[17px] sm:text-[19px] leading-[22px] sm:leading-[25px]'
-                    : titleLen > 22
-                      ? 'text-[20px] sm:text-[22px] leading-[26px] sm:leading-[29px]'
-                      : 'text-[23px] xs:text-[25px] sm:text-[25px] leading-[30px] xs:leading-[35px] sm:leading-[35px]';
+              ) : (
+                <div className="grid grid-cols-1 gap-3.5 w-full">
+                  {books.map((book) => renderBookCard(book))}
+                </div>
+              )}
+            </div>
 
-                  return (
+            {/* Desktop View: 4 items per page with circular navigation arrows */}
+            <div className="hidden sm:flex flex-col w-full">
+              {books.length === 0 ? (
+                <div className="flex flex-col items-center justify-center gap-3 py-20 text-center w-full">
+                  <div className="w-12 h-12 rounded-2xl bg-amber-50 border border-amber-100 flex items-center justify-center text-amber-600">
+                    <FiBook size={24} />
+                  </div>
+                  <p
+                    style={{
+                      fontFamily: '"Poppins", sans-serif',
+                      fontSize: '15px',
+                      color: '#666666',
+                    }}
+                  >
+                    {t('withdraw.noBooksAvailable', 'No books available right now.')}
+                  </p>
+                </div>
+              ) : (
+                <>
+                  <div className="grid grid-cols-2 gap-4 w-full min-h-[540px]">
+                    {desktopBooks.map((book) => renderBookCard(book))}
+                  </div>
+
+                  {/* Desktop Pagination Controls */}
+                  {totalDesktopPages > 1 && (
                     <div
-                      key={book._id}
-                      onClick={() => {
-                        setSelectedBookId(book._id);
-                        setDetailBook(book);
-                      }}
-                      className={`flex items-center w-full sm:max-w-[503px] h-[197px] sm:h-[262px] transition-all cursor-pointer text-left group p-2 sm:p-[8px_24px_8px_8px] gap-3.5 sm:gap-6 rounded-[20px] sm:rounded-[16px] border-2 box-border opacity-100 shrink-0 ${
-                        isSelected
-                          ? 'bg-[#24324D] border-[#24324D]'
-                          : 'bg-[#F8F5EF] border-transparent'
-                      }`}
+                      className="flex items-center justify-center w-full mt-5"
+                      style={{ gap: '12px' }}
                     >
-                      {/* Cover Card Container */}
-                      <div
-                        className="w-[136px] sm:w-[185px] h-[181px] sm:h-[246px] rounded-[14px] flex items-center justify-center shrink-0 bg-white box-border shadow-[0_4px_14px_rgba(0,0,0,0.06)]"
+                      <button
+                        onClick={() => setDesktopPage((p) => Math.max(1, p - 1))}
+                        disabled={currentDesktopPage <= 1}
+                        className="transition-all cursor-pointer flex items-center justify-center shrink-0 disabled:cursor-not-allowed"
+                        style={{
+                          width: '40px',
+                          height: '40px',
+                          borderRadius: '100px',
+                          boxSizing: 'border-box',
+                          background: currentDesktopPage > 1 ? 'rgba(36, 50, 77, 1)' : 'transparent',
+                          border: currentDesktopPage > 1 ? 'none' : '1px solid rgba(36, 50, 77, 1)',
+                          color: currentDesktopPage > 1 ? '#FFFFFF' : 'rgba(36, 50, 77, 1)',
+                        }}
+                        title="Previous page"
+                        aria-label="Previous page"
                       >
-                        {book.coverImage ? (
-                          <img
-                            src={book.coverImage.startsWith('data:') || book.coverImage.startsWith('http') ? book.coverImage : `${BACKEND}${book.coverImage}`}
-                            alt={book.title}
-                            className="w-[101.5px] sm:w-[138px] h-[154.5px] sm:h-[210px] object-contain shrink-0 drop-shadow-[0_6px_10px_rgba(0,0,0,0.18)]"
-                            onError={(e) => { e.target.style.display = 'none'; }}
-                          />
-                        ) : (
-                          <FiBook className="text-slate-400 text-3xl sm:text-4xl" />
-                        )}
-                      </div>
+                        <FiChevronLeft size={18} />
+                      </button>
 
-                      {/* Info */}
-                      <div className="flex flex-col justify-center gap-2 sm:gap-3.5 flex-1 min-w-0 pr-1 sm:pr-0">
-                        <h3
-                          className={`line-clamp-3 font-bold tracking-tight ${titleFontSizeClass} ${
-                            isSelected ? 'text-white' : 'text-black'
-                          }`}
-                          style={{
-                            fontFamily: '"Bricolage Grotesque", sans-serif',
-                            fontWeight: 700,
-                            letterSpacing: '-0.02em',
-                            margin: 0,
-                            padding: 0,
-                          }}
-                        >
-                          {book.title}
-                        </h3>
-
-                        <div className="flex items-center gap-1.5 sm:gap-2 mt-0.5 sm:mt-1">
-                          <img
-                            src="/coins/gfitcoin.png"
-                            alt="Coins"
-                            className="w-5 h-5 sm:w-6 sm:h-6 object-contain shrink-0"
-                            onError={(e) => {
-                              e.currentTarget.src = '/coins/Coin.png';
-                            }}
-                          />
-                          <span
-                            className="font-bold text-[18px] sm:text-[22px] leading-none text-[#E9B300]"
-                            style={{
-                              fontFamily: '"Poppins", sans-serif',
-                            }}
-                          >
-                            {book.coinCost.toLocaleString('de-DE')}
-                          </span>
-                        </div>
-                      </div>
+                      <button
+                        onClick={() => setDesktopPage((p) => Math.min(totalDesktopPages, p + 1))}
+                        disabled={currentDesktopPage >= totalDesktopPages}
+                        className="transition-all cursor-pointer flex items-center justify-center shrink-0 disabled:cursor-not-allowed"
+                        style={{
+                          width: '40px',
+                          height: '40px',
+                          borderRadius: '100px',
+                          boxSizing: 'border-box',
+                          background: currentDesktopPage < totalDesktopPages ? 'rgba(36, 50, 77, 1)' : 'transparent',
+                          border: currentDesktopPage < totalDesktopPages ? 'none' : '1px solid rgba(36, 50, 77, 1)',
+                          color: currentDesktopPage < totalDesktopPages ? '#FFFFFF' : 'rgba(36, 50, 77, 1)',
+                        }}
+                        title="Next page"
+                        aria-label="Next page"
+                      >
+                        <FiChevronRight size={18} />
+                      </button>
                     </div>
-                  );
-                })}
-              </div>
-            )}
-          </div>
+                  )}
+                </>
+              )}
+            </div>
+          </>
         )}
       </motion.div>
 

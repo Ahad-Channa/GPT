@@ -1280,13 +1280,13 @@ const Header = ({ onChatToggle, chatOpen, fullWidth }) => {
 
       {/* MOBILE STICKY BOTTOM NAVIGATION */}
       <div
-        className="fixed left-0 right-0 bottom-0 z-40 lg:hidden pointer-events-auto w-full border-t border-black/5"
+        className="mobile-bottom-nav fixed left-0 right-0 bottom-0 z-40 lg:hidden pointer-events-auto w-full border-t border-black/5"
         style={{
           background: 'rgba(255, 255, 255, 0.98)',
           boxShadow: '0px -4px 20px 0px rgba(0, 0, 0, 0.06)',
           backdropFilter: 'blur(29px)',
           WebkitBackdropFilter: 'blur(29px)',
-          paddingBottom: 'env(safe-area-inset-bottom, 0px)',
+          paddingBottom: 'var(--mobile-nav-pb, env(safe-area-inset-bottom, 0px))',
           transform: 'translateZ(0)',
           WebkitTransform: 'translateZ(0)',
         }}
@@ -1570,9 +1570,9 @@ const Header = ({ onChatToggle, chatOpen, fullWidth }) => {
             />
             {/* Popup Content Wrapper */}
             <div
-              className="fixed left-0 right-0 z-50 lg:hidden flex justify-center pointer-events-none px-4"
+              className="mobile-more-popup fixed left-0 right-0 z-50 lg:hidden flex justify-center pointer-events-none px-4"
               style={{
-                bottom: 'calc(74px + env(safe-area-inset-bottom, 0px))',
+                bottom: 'var(--mobile-more-bottom, calc(74px + env(safe-area-inset-bottom, 0px)))',
                 transform: 'translateZ(0)',
                 WebkitTransform: 'translateZ(0)',
               }}
