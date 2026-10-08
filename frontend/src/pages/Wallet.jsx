@@ -280,7 +280,8 @@ const DEFAULT_WALLET_SETTINGS = {
 };
 
 const Wallet = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const isDe = i18n?.language?.startsWith('de');
   const { currentUser, mongoUser, setMongoUser } = useAuth();
   const [showWithdraw, setShowWithdraw] = useState(false);
   const [filterType, setFilterType] = useState(null);
@@ -782,7 +783,7 @@ const Wallet = () => {
                   }}
                 >
                   <img
-                    src="/coins/bookcardbox3.png"
+                    src={isDe ? "/coins/bookcardbox3german.png" : "/coins/bookcardbox3.png"}
                     alt="Your Books"
                     className="w-full h-full object-contain"
                   />

@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 const Footer = () => {
   const navigate = useNavigate();
   const { t, i18n } = useTranslation();
+  const isDe = i18n?.language?.startsWith('de');
   const [isMobile, setIsMobile] = useState(
     typeof window !== 'undefined' ? window.innerWidth < 1024 : false
   );
@@ -318,7 +319,11 @@ const Footer = () => {
               }}
             >
               <img
-                src={isMobile ? "/coins/image copy 19.png" : "/coins/image copy 17.png"}
+                src={
+                  isDe
+                    ? (isMobile ? "/coins/image copy 19 german.png" : "/coins/image copy 17 german.png")
+                    : (isMobile ? "/coins/image copy 19.png" : "/coins/image copy 17.png")
+                }
                 alt="Top Earner Graphic"
                 className="pointer-events-none w-full h-full object-contain lg:object-right"
                 style={{

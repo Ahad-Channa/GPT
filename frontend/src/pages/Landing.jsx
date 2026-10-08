@@ -22,7 +22,8 @@ const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 const Landing = () => {
   const navigate = useNavigate();
   const { currentUser } = useAuth();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const isDe = i18n?.language?.startsWith('de');
   const [stats, setStats] = useState({ totalUsers: 0, totalPaidOut: 0 });
   const [openFaq, setOpenFaq] = useState(null);
   const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' ? window.innerWidth < 1024 : false);
@@ -93,7 +94,7 @@ const Landing = () => {
               style={{ width: 755, height: 587, right: '-30px' }}
             >
               <img
-                src="/coins/hero section image.png"
+                src={isDe ? "/coins/Hero section german desktop.png" : "/coins/hero section image.png"}
                 alt="Hero Background"
                 className="w-full h-full object-fill"
               />
@@ -512,7 +513,7 @@ const Landing = () => {
                 className="w-[calc(100%+2rem)] -mx-4 flex justify-center items-center mt-8 overflow-hidden"
               >
                 <img
-                  src="/coins/mobile hero.png"
+                  src={isDe ? "/coins/Hero section german mobile.png" : "/coins/mobile hero.png"}
                   alt="Mobile Hero Graphic"
                   className="w-full h-auto object-cover"
                   style={{
@@ -861,14 +862,32 @@ const Landing = () => {
 
         {/* Image (Second on mobile, First on Desktop) */}
         <div
-          className="order-2 lg:order-1 flex-shrink-0 w-full lg:w-[640px] h-auto lg:h-[558px] px-0 mt-6 lg:mt-0 flex justify-center lg:justify-start"
+          className="order-2 lg:order-1 flex-shrink-0 w-full lg:w-[640px] h-auto lg:h-[558px] px-0 mt-6 lg:mt-0 flex justify-center lg:justify-start overflow-hidden rounded-[24px] lg:rounded-[32px]"
           style={isMobile ? { width: '100%', maxWidth: '100%' } : {}}
         >
           <img
-            src={isMobile ? "/coins/whychosemobile.png" : "/coins/why chose us.png"}
+            src={
+              isDe
+                ? (isMobile ? "/coins/Germanwhychosusmobile.png" : "/coins/Germanwhychosus.png")
+                : (isMobile ? "/coins/whychosemobile.png" : "/coins/why chose us.png")
+            }
             alt="Why Choose Us"
             className="w-full h-auto object-cover rounded-[24px] lg:rounded-[32px]"
-            style={isMobile ? { width: '100%', opacity: 1 } : { width: '100%', height: '100%', position: 'relative', left: '-16px' }}
+            style={
+              isMobile
+                ? {
+                    width: '100%',
+                    opacity: 1,
+                    clipPath: isDe ? 'inset(0 3px 0 0 round 24px)' : undefined
+                  }
+                : {
+                    width: '100%',
+                    height: '100%',
+                    position: 'relative',
+                    left: '-16px',
+                    clipPath: isDe ? 'inset(0 3px 0 0 round 32px)' : undefined
+                  }
+            }
           />
         </div>
       </section>
@@ -942,7 +961,10 @@ const Landing = () => {
             className="grid grid-cols-1 lg:grid-cols-3 mx-auto w-full px-0"
             style={!isMobile ? { width: 1328, maxWidth: '100%', height: 368, gap: 22 } : { maxWidth: 440, height: 'auto', gap: 20 }}
           >
-            {['/coins/sew1.png', '/coins/Mask group.png', '/coins/sew3.png'].map((imgSrc, idx) => (
+            {(isDe
+              ? ['/coins/sew1german.png', '/coins/sew2german.png', '/coins/sew3german.png']
+              : ['/coins/sew1.png', '/coins/Mask group.png', '/coins/sew3.png']
+            ).map((imgSrc, idx) => (
               <img
                 key={idx}
                 src={imgSrc}
