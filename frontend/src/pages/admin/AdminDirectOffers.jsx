@@ -690,15 +690,15 @@ const AdminDirectOffers = () => {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-white flex items-center gap-2">
+          <h2 className="text-2xl font-bold text-slate-950 flex items-center gap-2">
             <FiLink className="text-indigo-400" /> Direct Offers
           </h2>
-          <p className="text-slate-400 text-sm mt-1">
+          <p className="text-slate-600 text-sm mt-1">
             S2S postback tracking for direct advertiser partnerships. Rewards are credited automatically when advertisers confirm conversions.
           </p>
         </div>
         <div className="flex items-center gap-3">
-          <button onClick={load} className="p-2 text-slate-400 hover:text-white transition-colors">
+          <button onClick={load} className="p-2 text-slate-600 hover:text-slate-950 transition-colors">
             <FiRefreshCw className={loading ? 'animate-spin' : ''} />
           </button>
           <button
@@ -736,67 +736,67 @@ const AdminDirectOffers = () => {
                     <div>
                       <div className="flex items-center gap-2">
                         <span className="text-xl">{offer.icon || '🔗'}</span>
-                        <h4 className="text-white font-bold text-base">{offer.title}</h4>
-                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${offer.isActive ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-slate-500/10 text-slate-400 border border-slate-500/20'}`}>
+                        <h4 className="text-slate-950 font-bold text-base">{offer.title}</h4>
+                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${offer.isActive ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-slate-100 text-slate-700 border border-slate-200'}`}>
                           {offer.isActive ? 'Active' : 'Inactive'}
                         </span>
                       </div>
-                      <p className="text-slate-400 text-sm mt-1 line-clamp-2">{offer.description}</p>
+                      <p className="text-slate-600 text-sm mt-1 line-clamp-2">{offer.description}</p>
                     </div>
                   </div>
 
                   {/* Stats row */}
-                  <div className="flex flex-wrap gap-4 mt-3 text-xs text-slate-400">
-                    <span>💰 <strong className="text-amber-400">{offer.rewardAmount?.toLocaleString()}</strong> coins reward</span>
+                  <div className="flex flex-wrap gap-4 mt-3 text-xs text-slate-700">
+                    <span>💰 <strong className="text-amber-700">{offer.rewardAmount?.toLocaleString()}</strong> coins reward</span>
                     <span>💵 ${offer.advertiserPayoutAmount || 0} payout</span>
-                    <span>Placement: <strong className="text-slate-300">{[
+                    <span>Placement: <strong className="text-slate-950">{[
                       offer.displayPlacements?.featured !== false ? 'Featured' : null,
                       offer.displayPlacements?.brandedOfferwall ? 'Branded Offerwall' : null,
                     ].filter(Boolean).join(' + ') || 'Hidden'}</strong></span>
-                    <span>Countries: <strong className="text-slate-300">{offer.allowedCountries?.length ? offer.allowedCountries.join(', ') : 'Global'}</strong></span>
-                    <span>👆 <strong className="text-white">{offer.totalClicks || 0}</strong> clicks</span>
-                    <span>✓ <strong className="text-emerald-400">{offer.totalApproved || 0}</strong> approved</span>
-                    <span>✗ <strong className="text-rose-400">{offer.totalRejected || 0}</strong> rejected</span>
+                    <span>Countries: <strong className="text-slate-950">{offer.allowedCountries?.length ? offer.allowedCountries.join(', ') : 'Global'}</strong></span>
+                    <span>👆 <strong className="text-slate-950">{offer.totalClicks || 0}</strong> clicks</span>
+                    <span>✓ <strong className="text-emerald-700">{offer.totalApproved || 0}</strong> approved</span>
+                    <span>✗ <strong className="text-rose-700">{offer.totalRejected || 0}</strong> rejected</span>
                   </div>
 
                   {/* Postback info */}
-                  <div className="mt-3 bg-black/20 border border-white/5 rounded-lg p-3 space-y-2">
-                    <p className="text-xs text-slate-500 font-semibold uppercase tracking-wide">Postback Setup</p>
+                  <div className="mt-3 bg-slate-50 border border-slate-200 rounded-lg p-3 space-y-2">
+                    <p className="text-xs text-slate-800 font-semibold uppercase tracking-wide">Postback Setup</p>
 
                     <div>
-                      <p className="text-[11px] text-slate-500 mb-1">Security:</p>
+                      <p className="text-[11px] text-slate-700 mb-1">Security:</p>
                       <div className="flex items-center gap-2">
-                        <span className={`text-xs font-semibold px-2 py-0.5 rounded border ${offer.postbackSecretConfigured ? 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20' : 'text-amber-400 bg-amber-500/10 border-amber-500/20'}`}>
+                        <span className={`text-xs font-semibold px-2 py-0.5 rounded border ${offer.postbackSecretConfigured ? 'text-emerald-700 bg-emerald-50 border-emerald-200' : 'text-amber-700 bg-amber-50 border-amber-200'}`}>
                           {offer.postbackSecretConfigured ? 'Secret configured' : 'Secret not configured'}
                         </span>
-                        <span className="text-[11px] text-slate-500">Stored server-side only.</span>
+                        <span className="text-[11px] text-slate-600">Stored server-side only.</span>
                       </div>
                     </div>
 
                     {/* Parameter mapping summary */}
                     {offer.postbackMapping && (
-                      <div className="flex flex-wrap gap-x-4 gap-y-1 text-[10px] text-slate-500">
-                        <span>Click ID: <strong className="text-slate-400">{offer.postbackMapping.clickIdParam || 'click_id'}</strong></span>
-                        <span>Status: <strong className="text-slate-400">{offer.postbackMapping.statusParam || 'status'}</strong></span>
-                        <span>Approved: <strong className="text-emerald-400">{offer.postbackMapping.approvedValue || 'approved'}</strong></span>
-                        <span>Rejected: <strong className="text-rose-400">{offer.postbackMapping.rejectedValue || 'rejected'}</strong></span>
-                        <span>Payout: <strong className="text-slate-400">{offer.postbackMapping.payoutParam || 'payout'}</strong></span>
+                      <div className="flex flex-wrap gap-x-4 gap-y-1 text-[10px] text-slate-700">
+                        <span>Click ID: <strong className="text-slate-950">{offer.postbackMapping.clickIdParam || 'click_id'}</strong></span>
+                        <span>Status: <strong className="text-slate-950">{offer.postbackMapping.statusParam || 'status'}</strong></span>
+                        <span>Approved: <strong className="text-emerald-700">{offer.postbackMapping.approvedValue || 'approved'}</strong></span>
+                        <span>Rejected: <strong className="text-rose-700">{offer.postbackMapping.rejectedValue || 'rejected'}</strong></span>
+                        <span>Payout: <strong className="text-slate-950">{offer.postbackMapping.payoutParam || 'payout'}</strong></span>
                       </div>
                     )}
 
                     <div>
-                      <p className="text-[11px] text-slate-500 mb-1">Give this URL to your advertiser:</p>
+                      <p className="text-[11px] text-slate-700 mb-1">Give this URL to your advertiser:</p>
                       <div className="flex items-start gap-2">
-                        <code className="text-[10px] text-slate-300 font-mono bg-black/30 px-2 py-1 rounded break-all flex-1">
+                        <code className="text-[10px] text-slate-950 font-mono bg-white border border-slate-200 px-2 py-1 rounded break-all flex-1">
                           {buildPostbackUrl(offer)}
                         </code>
                         <button onClick={() => copySecret(buildPostbackUrl(offer), offer._id + 'url')}
-                          className="text-slate-500 hover:text-white flex-shrink-0 mt-1" title="Copy postback URL">
-                          {copiedId === offer._id + 'url' ? <FiCheckCircle className="text-emerald-400" /> : <FiCopy />}
+                          className="text-slate-600 hover:text-slate-950 flex-shrink-0 mt-1" title="Copy postback URL">
+                          {copiedId === offer._id + 'url' ? <FiCheckCircle className="text-emerald-700" /> : <FiCopy />}
                         </button>
                       </div>
                       <p className="text-[10px] text-slate-600 mt-1">
-                        Replace <code className="text-slate-500">{'{CLICK_ID}'}</code>, <code className="text-slate-500">{'{PAYOUT}'}</code>, and <code className="text-slate-500">{'{SECRET}'}</code> in the advertiser system.
+                        Replace <code className="text-slate-800">{'{CLICK_ID}'}</code>, <code className="text-slate-800">{'{PAYOUT}'}</code>, and <code className="text-slate-800">{'{SECRET}'}</code> in the advertiser system.
                       </p>
                     </div>
                   </div>
@@ -806,19 +806,19 @@ const AdminDirectOffers = () => {
                 <div className="flex flex-row lg:flex-col gap-2 lg:items-end flex-shrink-0">
                   <button
                     onClick={() => setLogsOffer(offer)}
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-slate-300 hover:text-white text-xs font-semibold transition-colors"
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-100 border border-slate-200 text-slate-800 hover:bg-slate-200 text-xs font-semibold transition-colors"
                   >
                     <FiActivity /> Click Logs
                   </button>
                   <button
                     onClick={() => setEditOffer(offer)}
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-indigo-500/10 border border-indigo-500/20 text-indigo-300 hover:text-indigo-200 text-xs font-semibold transition-colors"
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-indigo-50 border border-indigo-200 text-indigo-700 hover:bg-indigo-100 text-xs font-semibold transition-colors"
                   >
                     <FiEye /> Edit
                   </button>
                   <button
                     onClick={() => handleToggle(offer)}
-                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border transition-colors ${offer.isActive ? 'bg-amber-500/10 border-amber-500/20 text-amber-400 hover:text-amber-300' : 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400 hover:text-emerald-300'}`}
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border transition-colors ${offer.isActive ? 'bg-amber-50 border-amber-200 text-amber-700 hover:bg-amber-100' : 'bg-emerald-50 border-emerald-200 text-emerald-700 hover:bg-emerald-100'}`}
                   >
                     {offer.isActive ? <><FiToggleRight /> Deactivate</> : <><FiToggleLeft /> Activate</>}
                   </button>
@@ -826,7 +826,7 @@ const AdminDirectOffers = () => {
                     href={offer.advertiserUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-slate-400 hover:text-white text-xs font-semibold transition-colors"
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-100 border border-slate-200 text-slate-800 hover:bg-slate-200 text-xs font-semibold transition-colors"
                   >
                     <FiExternalLink /> Preview URL
                   </a>
