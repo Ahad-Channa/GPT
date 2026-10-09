@@ -390,6 +390,7 @@ const Earn = () => {
             <DirectOfferModal
               offer={selectedDirectOffer}
               token={token}
+              placement="featured"
               onClose={() => setSelectedDirectOffer(null)}
               onClicked={(offerId) => setDirectOffers(prev =>
                 prev.map(o => o._id === offerId ? { ...o, clickStatus: 'clicked' } : o)

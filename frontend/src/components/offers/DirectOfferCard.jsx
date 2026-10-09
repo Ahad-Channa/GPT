@@ -205,7 +205,7 @@ export const DirectOfferCard = ({ offer, onClick }) => {
 };
 
 // ─── Modal shown when user clicks a card ─────────────────────────────────────
-export const DirectOfferModal = ({ offer, token, onClose, onClicked }) => {
+export const DirectOfferModal = ({ offer, token, placement = 'featured', onClose, onClicked }) => {
   const [loading, setLoading] = useState(false);
   const [showSupportModal, setShowSupportModal] = useState(false);
   const isExpired = offer.expirationDate && new Date(offer.expirationDate) < new Date();
@@ -221,7 +221,7 @@ export const DirectOfferModal = ({ offer, token, onClose, onClicked }) => {
         const res = await fetch(`${API}/direct-offers/click/${offer._id}`, {
           method: 'POST',
           headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-          body: JSON.stringify({ placement: 'featured' }),
+          body: JSON.stringify({ placement }),
         });
         const data = await res.json();
         if (data.success && data.url) {

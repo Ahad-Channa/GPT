@@ -6,6 +6,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ProviderCard, OfferwallCard, FeaturedOfferCard, FeaturedOfferModal } from '../components/offers/OfferCards';
+import { DirectOfferCard, DirectOfferModal } from '../components/offers/DirectOfferCard';
 import OfferwallModal from '../components/offers/OfferwallModal';
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
@@ -84,6 +85,7 @@ const TabButton = ({ active, onClick, iconSrc, label }) => {
 const homeCache = {
   settings: null,
   customOffers: null,
+  directOffers: null,
   tasksDone: null,
   globalStats: null,
 };
@@ -106,18 +108,20 @@ const Home = () => {
 
   const [settings, setSettings] = useState(() => homeCache.settings);
   const [customOffers, setCustomOffers] = useState(() => homeCache.customOffers || []);
+  const [directOffers, setDirectOffers] = useState(() => homeCache.directOffers || []);
   const [loadingSettings, setLoadingSettings] = useState(() => !homeCache.settings);
-  const [loadingOffers, setLoadingOffers] = useState(() => !homeCache.customOffers);
+  const [loadingOffers, setLoadingOffers] = useState(() => !homeCache.customOffers || !homeCache.directOffers);
   const [token, setToken] = useState(null);
 
   const [activeProvider, setActiveProvider] = useState(null);
   const [filter, setFilter] = useState('all');
   const [selectedOffer, setSelectedOffer] = useState(null);
+  const [selectedDirectOffer, setSelectedDirectOffer] = useState(null);
 
-  const allFeaturedOffers = customOffers;
+  const allFeaturedOffers = [...directOffers, ...customOffers];
 
   useEffect(() => {
-    if (activeProvider || selectedOffer) {
+    if (activeProvider || selectedOffer || selectedDirectOffer) {
       document.body.style.overflow = 'hidden';
     } else {
       document.body.style.overflow = '';
@@ -125,7 +129,7 @@ const Home = () => {
     return () => {
       document.body.style.overflow = '';
     };
-  }, [activeProvider, selectedOffer]);
+  }, [activeProvider, selectedOffer, selectedDirectOffer]);
 
 
   const featuredRef = useRef(null);
@@ -208,12 +212,14 @@ const Home = () => {
         const fetchDashboardStats = token ? fetch(`${API}/wallet/dashboard-stats`, { headers }).then(r => r.json()).catch(() => null) : Promise.resolve(null);
         const fetchWalletSettings = token ? fetch(`${API}/wallet/settings`, { headers }).then(r => r.json()).catch(() => null) : Promise.resolve(null);
         const fetchCustomOffers = token ? fetch(`${API}/custom-offers`, { headers }).then(r => r.json()).catch(() => null) : Promise.resolve(null);
+        const fetchDirectOffers = token ? fetch(`${API}/direct-offers?placement=featured`, { headers }).then(r => r.json()).catch(() => null) : Promise.resolve(null);
 
-        const [publicStatsData, dashStatsData, settingsData, customData] = await Promise.all([
+        const [publicStatsData, dashStatsData, settingsData, customData, directData] = await Promise.all([
           fetchPublicStats,
           fetchDashboardStats,
           fetchWalletSettings,
           fetchCustomOffers,
+          fetchDirectOffers,
         ]);
 
         if (!isMounted) return;
@@ -248,6 +254,15 @@ const Home = () => {
           });
           homeCache.customOffers = visibleOffers;
           setCustomOffers(visibleOffers);
+        }
+
+        if (directData?.success && Array.isArray(directData.offers)) {
+          const now = new Date();
+          const visibleOffers = directData.offers
+            .filter(o => !o.expirationDate || new Date(o.expirationDate) >= now)
+            .map(o => ({ ...o, __direct: true }));
+          homeCache.directOffers = visibleOffers;
+          setDirectOffers(visibleOffers);
         }
       } catch (err) {
         console.error('Failed to load dashboard data:', err);
@@ -595,12 +610,21 @@ const Home = () => {
                     >
                       {displayFeaturedOffers.map((offer) => (
                         <div key={offer._id} className="shrink-0 w-[181.14px]">
-                          <FeaturedOfferCard
-                            offer={offer}
-                            onClick={() => {
-                              if (!hasMovedRef.current && !hasMovedDrag) setSelectedOffer(offer);
-                            }}
-                          />
+                          {offer.__direct ? (
+                            <DirectOfferCard
+                              offer={offer}
+                              onClick={() => {
+                                if (!hasMovedRef.current && !hasMovedDrag) setSelectedDirectOffer(offer);
+                              }}
+                            />
+                          ) : (
+                            <FeaturedOfferCard
+                              offer={offer}
+                              onClick={() => {
+                                if (!hasMovedRef.current && !hasMovedDrag) setSelectedOffer(offer);
+                              }}
+                            />
+                          )}
                         </div>
                       ))}
                     </div>
@@ -776,6 +800,18 @@ const Home = () => {
             offer={selectedOffer}
             token={token}
             onClose={() => setSelectedOffer(null)}
+          />
+        )}
+
+        {selectedDirectOffer && (
+          <DirectOfferModal
+            offer={selectedDirectOffer}
+            token={token}
+            placement="featured"
+            onClose={() => setSelectedDirectOffer(null)}
+            onClicked={(offerId) => setDirectOffers(prev =>
+              prev.map(o => o._id === offerId ? { ...o, clickStatus: 'clicked' } : o)
+            )}
           />
         )}
       </AnimatePresence>
