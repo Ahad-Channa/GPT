@@ -1,9 +1,11 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useTheme } from '../contexts/ThemeContext';
 
 const LanguageToggle = ({ style, className = '' }) => {
   const { i18n } = useTranslation();
+  const { isDarkMode } = useTheme();
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef(null);
 
@@ -30,7 +32,11 @@ const LanguageToggle = ({ style, className = '' }) => {
       <button
         type="button"
         onClick={() => setIsOpen(prev => !prev)}
-        className="flex items-center justify-center transition-all cursor-pointer select-none bg-transparent border-0 p-0 gap-[3px] lg:gap-[10px] lg:w-[106px] lg:h-[49px] lg:pl-[8px] lg:pr-[14px] lg:rounded-[80px] lg:bg-white lg:hover:bg-gray-50 active:scale-95"
+        className={`flex items-center justify-center transition-all cursor-pointer select-none bg-transparent border-0 p-0 gap-[3px] lg:gap-[10px] lg:w-[106px] lg:h-[49px] lg:pl-[8px] lg:pr-[14px] lg:rounded-[80px] active:scale-95 ${
+          isDarkMode
+            ? 'lg:bg-[rgba(255,255,255,0.1)] lg:hover:bg-[rgba(255,255,255,0.16)]'
+            : 'lg:bg-white lg:hover:bg-gray-50'
+        }`}
         style={{
           opacity: 1,
           transform: 'rotate(0deg)',
@@ -56,12 +62,12 @@ const LanguageToggle = ({ style, className = '' }) => {
 
         {/* Text Code (EN / DE): 18x21 on mobile, 20x24 on desktop */}
         <span
-          className="flex items-center justify-center shrink-0 w-[18px] h-[21px] text-[14px] leading-[21px] lg:w-[20px] lg:h-[24px] lg:text-[16px] lg:leading-[100%]"
+          className="flex items-center justify-center shrink-0 w-[18px] h-[21px] text-[14px] leading-[21px] lg:w-[20px] lg:h-[24px] lg:text-[16px] lg:leading-[100%] transition-colors duration-300"
           style={{
             fontFamily: 'Poppins, sans-serif',
             fontWeight: 400,
             letterSpacing: '0%',
-            color: '#000000',
+            color: isDarkMode ? '#FFFFFF' : '#000000',
             opacity: 1,
             transform: 'rotate(0deg)',
           }}
@@ -78,12 +84,12 @@ const LanguageToggle = ({ style, className = '' }) => {
           className="hidden lg:block shrink-0 transition-transform duration-200"
           style={{
             transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)',
-            color: '#000000',
+            color: isDarkMode ? '#FFFFFF' : '#000000',
           }}
         >
           <path
             d="M1.5 2L6 6.5L10.5 2"
-            stroke="#000000"
+            stroke={isDarkMode ? '#FFFFFF' : '#000000'}
             strokeWidth="1.8"
             strokeLinecap="round"
             strokeLinejoin="round"
@@ -104,9 +110,9 @@ const LanguageToggle = ({ style, className = '' }) => {
               width: '180px',
               borderRadius: '16px',
               padding: '14px 16px',
-              background: '#FFFFFF',
-              boxShadow: '0px 10px 30px rgba(0, 0, 0, 0.12)',
-              border: '1px solid rgba(0, 0, 0, 0.08)',
+              background: isDarkMode ? 'rgba(18, 22, 28, 0.98)' : '#FFFFFF',
+              boxShadow: isDarkMode ? '0px 10px 30px rgba(0, 0, 0, 0.5)' : '0px 10px 30px rgba(0, 0, 0, 0.12)',
+              border: isDarkMode ? '1px solid rgba(255, 255, 255, 0.12)' : '1px solid rgba(0, 0, 0, 0.08)',
               boxSizing: 'border-box',
             }}
           >
@@ -122,7 +128,7 @@ const LanguageToggle = ({ style, className = '' }) => {
                   fontWeight: currentLang === 'en' ? 600 : 400,
                   fontSize: '15px',
                   lineHeight: '20px',
-                  color: currentLang === 'en' ? '#0E0F0C' : '#8E8E93',
+                  color: currentLang === 'en' ? (isDarkMode ? '#FFFFFF' : '#0E0F0C') : (isDarkMode ? '#9CA3AF' : '#8E8E93'),
                 }}
               >
                 English
@@ -141,7 +147,7 @@ const LanguageToggle = ({ style, className = '' }) => {
               style={{
                 width: '100%',
                 height: '1px',
-                background: 'rgba(0, 0, 0, 0.06)',
+                background: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.06)',
                 margin: '8px 0',
                 flexShrink: 0,
               }}
@@ -159,7 +165,7 @@ const LanguageToggle = ({ style, className = '' }) => {
                   fontWeight: currentLang === 'de' ? 600 : 400,
                   fontSize: '15px',
                   lineHeight: '20px',
-                  color: currentLang === 'de' ? '#0E0F0C' : '#8E8E93',
+                  color: currentLang === 'de' ? (isDarkMode ? '#FFFFFF' : '#0E0F0C') : (isDarkMode ? '#9CA3AF' : '#8E8E93'),
                 }}
               >
                 German
@@ -180,3 +186,4 @@ const LanguageToggle = ({ style, className = '' }) => {
 };
 
 export default LanguageToggle;
+

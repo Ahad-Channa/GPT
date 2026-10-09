@@ -387,6 +387,12 @@
     --mobile-nav-pb: calc(env(safe-area-inset-bottom, 0px) + 20px);
     --mobile-more-bottom: calc(74px + env(safe-area-inset-bottom, 0px) + 20px);
   }
+
+  .mobile-bottom-nav {
+    background: #ffffff !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
 }
 
 .mobile-bottom-nav {
@@ -400,10 +406,10 @@
 @media (max-width: 1023px) {
   @supports (-webkit-touch-callout: none) {
     .mobile-chat-bottom {
-      padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 20px) !important;
+      padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 72px) !important;
     }
     .mobile-notif-bottom {
-      padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 24px) !important;
+      padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 72px) !important;
     }
   }
 }
