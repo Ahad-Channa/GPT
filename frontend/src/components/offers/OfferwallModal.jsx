@@ -4,7 +4,7 @@ import { FiX } from 'react-icons/fi';
 import { buildProviderUrl, getProviderLogo } from './OfferCards';
 import { GoodpicksOfferwallModal } from './GoodpicksModal';
 
-export const OfferwallModal = ({ provider, userId, onClose }) => {
+export const OfferwallModal = ({ provider, userId, token, onClose }) => {
   useEffect(() => {
     if (provider) {
       document.body.style.overflow = 'hidden';
@@ -20,7 +20,7 @@ export const OfferwallModal = ({ provider, userId, onClose }) => {
 
   // Goodpicks is our in-house custom offerwall matching Figma specs
   if (provider.id === 'goodpicks') {
-    return <GoodpicksOfferwallModal onClose={onClose} />;
+    return <GoodpicksOfferwallModal onClose={onClose} token={token} />;
   }
 
   const url = buildProviderUrl(provider, userId);

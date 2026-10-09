@@ -791,6 +791,7 @@ const Home = () => {
           <OfferwallModal
             provider={activeProvider}
             userId={mongoUser?._id}
+            token={token}
             onClose={() => setActiveProvider(null)}
           />
         )}

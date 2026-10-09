@@ -194,6 +194,26 @@ const defaultGoodpicksHistory = [
 
 const isIconUrl = (icon) => icon && (icon.startsWith('http') || icon.startsWith('data:') || icon.includes('/') || icon.startsWith('fa-'));
 
+const formatCoins = (amount) => Number(amount || 0).toLocaleString('de-DE');
+
+const directOfferGoalsToRequirements = (offer) => {
+  const goals = Array.isArray(offer?.goals) ? offer.goals.filter(goal => goal && goal.enabled !== false) : [];
+  if (goals.length === 0) return offer.requirements || [];
+
+  return goals.map((goal) => {
+    const label = goal.label || goal.goalKey || 'Complete step';
+    return `${label} → receive ${formatCoins(goal.rewardAmount)} coins`;
+  });
+};
+
+const mapDirectOfferForGoodpicks = (offer) => ({
+  ...offer,
+  __direct: true,
+  externalLink: offer.advertiserUrl,
+  requirementType: offer.goals?.some(goal => goal && goal.enabled !== false) ? 'bullets' : offer.requirementType,
+  requirements: directOfferGoalsToRequirements(offer),
+});
+
 const renderOfferCover = (offer) => {
   const imgSrc = offer?.coverImage || (isIconUrl(offer?.icon) ? offer?.icon : null);
   const emoji = !imgSrc && offer?.icon ? offer?.icon : null;
@@ -248,6 +268,10 @@ export const GoodpicksDetailModal = ({ offer, onClose, token }) => {
   const handleStartOffer = async () => {
     // Tracked direct-offer click (Branded Offerwall placement) — no frontend reward logic.
     if (offer.__direct && offer._id) {
+      if (!token) {
+        console.error('Cannot start tracked offer without auth token.');
+        return;
+      }
       try {
         setLoading(true);
         const res = await fetch(`${API}/direct-offers/click/${offer._id}`, {
@@ -265,7 +289,6 @@ export const GoodpicksDetailModal = ({ offer, onClose, token }) => {
       } finally {
         setLoading(false);
       }
-      if (offer.externalLink) window.open(offer.externalLink, '_blank', 'noopener,noreferrer');
       return;
     }
 
@@ -962,11 +985,7 @@ export const GoodpicksOfferwallModal = ({ onClose, token }) => {
           });
           const data = await res.json();
           if (data.success && data.offers && data.offers.length > 0) {
-            setOffers(data.offers.map((o) => ({
-              ...o,
-              __direct: true,
-              externalLink: o.advertiserUrl,
-            })));
+            setOffers(data.offers.map(mapDirectOfferForGoodpicks));
             return;
           }
         }
