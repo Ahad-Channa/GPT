@@ -2,12 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../contexts/AuthContext';
+import { useTheme } from '../contexts/ThemeContext';
 import { FcGoogle } from 'react-icons/fc';
 import { FiX, FiEye, FiEyeOff } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 import { motion } from 'framer-motion';
 
 export default function AuthModal({ isOpen, onClose, initialTab = 'login' }) {
+  const { isDarkMode } = useTheme();
   const { t, i18n } = useTranslation();
   const isGerman = i18n?.language === 'de' || i18n?.language?.startsWith('de');
   const { loginWithGoogle, loginWithEmail, registerWithEmail, resetPassword } = useAuth();
@@ -162,28 +164,33 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }) {
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.96, y: 15 }}
           transition={{ duration: 0.22, ease: 'easeOut' }}
-          className="relative bg-white rounded-[28px] sm:rounded-[36px] shadow-2xl overflow-hidden flex flex-col justify-between w-full my-auto"
+          className={`relative rounded-[28px] sm:rounded-[36px] shadow-2xl overflow-hidden flex flex-col justify-between w-full my-auto transition-colors duration-300 ${
+            isDarkMode ? 'border border-white/10' : 'bg-white'
+          }`}
           style={{
             maxWidth: '626px',
             width: '100%',
             padding: '10px 10px 28px 10px',
+            backgroundColor: isDarkMode ? 'rgba(12, 14, 17, 1)' : 'rgba(255, 255, 255, 1)',
           }}
           onClick={(e) => e.stopPropagation()}
         >
           {/* Header Card (606px x 176px) */}
           <div
-            className="relative rounded-[20px] sm:rounded-[24px] overflow-hidden flex flex-col justify-center w-full"
+            className="relative rounded-[20px] sm:rounded-[24px] overflow-hidden flex flex-col justify-center w-full transition-colors duration-300"
             style={{
               maxWidth: '606px',
               minHeight: '145px',
-              background: 'rgba(250, 247, 240, 1)',
+              background: isDarkMode ? 'rgba(18, 22, 28, 1)' : 'rgba(248, 245, 239, 1)',
               padding: '20px 20px 20px 24px',
             }}
           >
             {/* Close Button */}
             <button
               onClick={onClose}
-              className="absolute rounded-full bg-black text-white flex items-center justify-center hover:opacity-80 transition-opacity z-30 cursor-pointer shadow-sm p-0"
+              className={`absolute rounded-full flex items-center justify-center hover:opacity-80 transition-opacity z-30 cursor-pointer shadow-sm p-0 ${
+                isDarkMode ? 'bg-white text-black' : 'bg-black text-white'
+              }`}
               style={{
                 width: '22px',
                 height: '22px',
@@ -209,12 +216,12 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }) {
             <div className="relative z-20 text-left flex flex-col pr-8 sm:pr-24" style={{ maxWidth: '100%' }}>
               <div className="flex flex-col gap-1 sm:gap-2">
                 <h2
-                  className="m-0 flex items-center text-[24px] sm:text-[35px] leading-[30px] sm:leading-[50px]"
+                  className="m-0 flex items-center text-[24px] sm:text-[35px] leading-[30px] sm:leading-[50px] transition-colors duration-300"
                   style={{
                     fontFamily: '"Bricolage Grotesque", sans-serif',
                     fontWeight: 700,
                     letterSpacing: '-0.02em',
-                    color: 'rgba(14, 15, 12, 1)',
+                    color: isDarkMode ? 'rgba(248, 245, 239, 1)' : 'rgba(14, 15, 12, 1)',
                   }}
                 >
                   {tab === 'login' && t('auth.loginTitle', 'Login Your Account')}
@@ -223,12 +230,12 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }) {
                 </h2>
 
                 <p
-                  className="m-0 text-[13px] sm:text-[16px] leading-[20px] sm:leading-[26px]"
+                  className="m-0 text-[13px] sm:text-[16px] leading-[20px] sm:leading-[26px] transition-colors duration-300"
                   style={{
                     fontFamily: '"Poppins", sans-serif',
                     fontWeight: 500,
                     letterSpacing: '0%',
-                    color: 'rgba(14, 15, 12, 1)',
+                    color: isDarkMode ? 'rgba(255, 255, 255, 0.7)' : 'rgba(14, 15, 12, 1)',
                   }}
                 >
                   {tab === 'login' && t('auth.loginSubtitle', 'Login into your account to access all features')}
@@ -265,7 +272,7 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }) {
                 {tab === 'register' && (
                   <div className="flex flex-col text-left w-full" style={{ maxWidth: '567px', height: '82px', gap: '13px' }}>
                     <label
-                      className="flex items-center"
+                      className="flex items-center transition-colors duration-300"
                       style={{
                         maxWidth: '567px',
                         height: '11px',
@@ -274,7 +281,7 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }) {
                         fontSize: '16px',
                         lineHeight: '26px',
                         letterSpacing: '0%',
-                        color: 'rgba(0, 0, 0, 1)',
+                        color: isDarkMode ? '#FFFFFF' : 'rgba(0, 0, 0, 1)',
                       }}
                     >
                       {t('auth.username', 'Username')}
@@ -285,20 +292,24 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }) {
                       value={displayName}
                       onChange={(e) => setDisplayName(e.target.value)}
                       disabled={loading}
-                      className="w-full text-[15px] outline-none border border-transparent focus:border-gray-400 transition-colors placeholder:text-black/50 text-black"
+                      className={`w-full text-[15px] outline-none border transition-colors ${
+                        isDarkMode
+                          ? 'border-transparent focus:border-gray-500 placeholder:text-white/40 text-white'
+                          : 'border-transparent focus:border-gray-400 placeholder:text-black/50 text-black'
+                      }`}
                       style={{
                         maxWidth: '567px',
                         height: '58px',
                         borderRadius: '50px',
                         paddingLeft: '24px',
                         paddingRight: '24px',
-                        background: 'rgba(239, 239, 239, 1)',
+                        background: isDarkMode ? 'rgba(34, 39, 48, 1)' : 'rgba(239, 239, 239, 1)',
                         fontFamily: '"Poppins", sans-serif',
                         fontWeight: 400,
                         fontSize: '15px',
                         lineHeight: '26px',
                         letterSpacing: '0%',
-                        color: 'rgba(0, 0, 0, 1)',
+                        color: isDarkMode ? '#FFFFFF' : 'rgba(0, 0, 0, 1)',
                       }}
                     />
                   </div>
@@ -306,7 +317,7 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }) {
 
                 <div className="flex flex-col text-left w-full" style={{ maxWidth: '567px', height: '82px', gap: '13px' }}>
                   <label
-                    className="flex items-center"
+                    className="flex items-center transition-colors duration-300"
                     style={{
                       maxWidth: '567px',
                       height: '11px',
@@ -315,7 +326,7 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }) {
                       fontSize: '16px',
                       lineHeight: '26px',
                       letterSpacing: '0%',
-                      color: 'rgba(0, 0, 0, 1)',
+                      color: isDarkMode ? '#FFFFFF' : 'rgba(0, 0, 0, 1)',
                     }}
                   >
                     {t('auth.email', 'Email')}
@@ -326,20 +337,24 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }) {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     disabled={loading}
-                    className="w-full text-[15px] outline-none border border-transparent focus:border-gray-400 transition-colors placeholder:text-black/50 text-black"
+                    className={`w-full text-[15px] outline-none border transition-colors ${
+                      isDarkMode
+                        ? 'border-transparent focus:border-gray-500 placeholder:text-white/40 text-white'
+                        : 'border-transparent focus:border-gray-400 placeholder:text-black/50 text-black'
+                    }`}
                     style={{
                       maxWidth: '567px',
                       height: '58px',
                       borderRadius: '50px',
                       paddingLeft: '24px',
                       paddingRight: '24px',
-                      background: 'rgba(239, 239, 239, 1)',
+                      background: isDarkMode ? 'rgba(34, 39, 48, 1)' : 'rgba(239, 239, 239, 1)',
                       fontFamily: '"Poppins", sans-serif',
                       fontWeight: 400,
                       fontSize: '15px',
                       lineHeight: '26px',
                       letterSpacing: '0%',
-                      color: 'rgba(0, 0, 0, 1)',
+                      color: isDarkMode ? '#FFFFFF' : 'rgba(0, 0, 0, 1)',
                     }}
                   />
                 </div>
@@ -347,7 +362,7 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }) {
                 {tab !== 'forgot' && (
                   <div className="flex flex-col text-left w-full" style={{ maxWidth: '567px', height: '82px', gap: '13px' }}>
                     <label
-                      className="flex items-center"
+                      className="flex items-center transition-colors duration-300"
                       style={{
                         maxWidth: '567px',
                         height: '11px',
@@ -356,7 +371,7 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }) {
                         fontSize: '16px',
                         lineHeight: '26px',
                         letterSpacing: '0%',
-                        color: 'rgba(0, 0, 0, 1)',
+                        color: isDarkMode ? '#FFFFFF' : 'rgba(0, 0, 0, 1)',
                       }}
                     >
                       {t('auth.password', 'Password')}
@@ -368,26 +383,32 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }) {
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                         disabled={loading}
-                        className="w-full text-[15px] outline-none border border-transparent focus:border-gray-400 transition-colors placeholder:text-black/50 text-black"
+                        className={`w-full text-[15px] outline-none border transition-colors ${
+                          isDarkMode
+                            ? 'border-transparent focus:border-gray-500 placeholder:text-white/40 text-white'
+                            : 'border-transparent focus:border-gray-400 placeholder:text-black/50 text-black'
+                        }`}
                         style={{
                           maxWidth: '567px',
                           height: '58px',
                           borderRadius: '50px',
                           paddingLeft: '24px',
                           paddingRight: '48px',
-                          background: 'rgba(239, 239, 239, 1)',
+                          background: isDarkMode ? 'rgba(34, 39, 48, 1)' : 'rgba(239, 239, 239, 1)',
                           fontFamily: '"Poppins", sans-serif',
                           fontWeight: 400,
                           fontSize: '15px',
                           lineHeight: '26px',
                           letterSpacing: '0%',
-                          color: 'rgba(0, 0, 0, 1)',
+                          color: isDarkMode ? '#FFFFFF' : 'rgba(0, 0, 0, 1)',
                         }}
                       />
                       <button
                         type="button"
                         onClick={() => setShowPassword(!showPassword)}
-                        className="absolute right-5 text-gray-500 hover:text-black transition-colors"
+                        className={`absolute right-5 transition-colors ${
+                          isDarkMode ? 'text-gray-400 hover:text-white' : 'text-gray-500 hover:text-black'
+                        }`}
                       >
                         {showPassword ? <FiEyeOff className="w-5 h-5" /> : <FiEye className="w-5 h-5" />}
                       </button>
@@ -408,18 +429,18 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }) {
                           width: '15px',
                           height: '15px',
                           borderRadius: '5px',
-                          border: '1px solid rgba(36, 50, 77, 1)',
+                          border: isDarkMode ? '1px solid rgba(255, 255, 255, 0.3)' : '1px solid rgba(36, 50, 77, 1)',
                         }}
                       />
                       <span
-                        className="flex items-center"
+                        className="flex items-center transition-colors duration-300"
                         style={{
                           fontFamily: '"Poppins", sans-serif',
                           fontWeight: 400,
                           fontSize: '15px',
                           lineHeight: '26px',
                           letterSpacing: '0%',
-                          color: 'rgba(0, 0, 0, 0.5)',
+                          color: isDarkMode ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.5)',
                         }}
                       >
                         {t('auth.rememberMe', 'Remember me')}
@@ -435,7 +456,7 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }) {
                         letterSpacing: '0%',
                       }}
                     >
-                      <span style={{ color: 'rgba(0, 0, 0, 0.5)' }}>
+                      <span style={{ color: isDarkMode ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.5)' }}>
                         {t('auth.dontRememberPassword', "Don't Remember Your Password?")}&nbsp;
                       </span>
                       <button
@@ -447,7 +468,7 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }) {
                           fontWeight: 600,
                           fontSize: '14.5px',
                           lineHeight: '26px',
-                          color: 'rgba(36, 50, 77, 1)',
+                          color: isDarkMode ? '#5271FF' : 'rgba(36, 50, 77, 1)',
                         }}
                       >
                         {t('auth.resetLink', 'Reset')}
@@ -469,7 +490,7 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }) {
                           width: '15px',
                           height: '15px',
                           borderRadius: '5px',
-                          border: '1px solid rgba(36, 50, 77, 1)',
+                          border: isDarkMode ? '1px solid rgba(255, 255, 255, 0.3)' : '1px solid rgba(36, 50, 77, 1)',
                         }}
                       />
                       <span
@@ -483,16 +504,16 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }) {
                           fontFamily: '"Poppins", sans-serif',
                           fontWeight: 400,
                           letterSpacing: isGerman ? '-0.02em' : '-0.01em',
-                          color: 'rgba(0, 0, 0, 0.6)',
+                          color: isDarkMode ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.6)',
                           opacity: 1,
                         }}
                       >
                         {t('auth.agreeTermsPrefix', 'By signing up, you agree to our')}{' '}
-                        <span style={{ fontWeight: 600, color: 'rgba(36, 50, 77, 1)' }}>
+                        <span style={{ fontWeight: 600, color: isDarkMode ? '#5271FF' : 'rgba(36, 50, 77, 1)' }}>
                           {t('auth.termsAndConditions', 'Terms and Conditions')}
                         </span>{' '}
                         {t('auth.and', '&')}{' '}
-                        <span style={{ fontWeight: 600, color: 'rgba(36, 50, 77, 1)' }}>
+                        <span style={{ fontWeight: 600, color: isDarkMode ? '#5271FF' : 'rgba(36, 50, 77, 1)' }}>
                           {t('auth.privacyPolicy', 'Privacy Policy.')}
                         </span>
                       </span>
@@ -504,7 +525,7 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }) {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full flex items-center justify-center transition-all hover:bg-[#1A253A] active:scale-[0.99] disabled:opacity-70 cursor-pointer shadow-sm mt-auto"
+                  className="w-full flex items-center justify-center transition-all hover:opacity-90 active:scale-[0.99] disabled:opacity-70 cursor-pointer shadow-sm mt-auto"
                   style={{
                     maxWidth: '567px',
                     height: '49px',
@@ -544,12 +565,12 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }) {
                         width: '267px',
                         maxWidth: 'calc(50% - 15px)',
                         height: '0px',
-                        borderTop: '1px solid rgba(0, 0, 0, 1)',
-                        opacity: 0.1,
+                        borderTop: isDarkMode ? '1px solid rgba(255, 255, 255, 0.15)' : '1px solid rgba(0, 0, 0, 1)',
+                        opacity: isDarkMode ? 1 : 0.1,
                       }}
                     />
                     <span
-                      className="flex items-center justify-center text-center"
+                      className="flex items-center justify-center text-center transition-colors duration-300"
                       style={{
                         width: 'auto',
                         minWidth: '21px',
@@ -560,7 +581,7 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }) {
                         fontSize: '15px',
                         lineHeight: '26px',
                         letterSpacing: '0%',
-                        color: 'rgba(36, 50, 77, 1)',
+                        color: isDarkMode ? 'rgba(255, 255, 255, 0.6)' : 'rgba(36, 50, 77, 1)',
                       }}
                     >
                       {t('auth.or', 'OR')}
@@ -570,8 +591,8 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }) {
                         width: '267px',
                         maxWidth: 'calc(50% - 15px)',
                         height: '0px',
-                        borderTop: '1px solid rgba(0, 0, 0, 1)',
-                        opacity: 0.1,
+                        borderTop: isDarkMode ? '1px solid rgba(255, 255, 255, 0.15)' : '1px solid rgba(0, 0, 0, 1)',
+                        opacity: isDarkMode ? 1 : 0.1,
                       }}
                     />
                   </div>
@@ -583,10 +604,12 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }) {
                     type="button"
                     onClick={handleGoogleLogin}
                     disabled={loading}
-                    className="w-full rounded-full text-[#0E0F0C] font-medium text-[15px] flex items-center justify-center gap-3 bg-[#EFEFEF] hover:bg-[#E5E5E5] transition-all cursor-pointer shadow-sm"
+                    className="w-full rounded-full font-medium text-[15px] flex items-center justify-center gap-3 transition-all cursor-pointer shadow-sm hover:opacity-90"
                     style={{
                       height: '52px',
                       fontFamily: '"Poppins", sans-serif',
+                      background: isDarkMode ? 'rgba(34, 39, 48, 1)' : '#EFEFEF',
+                      color: isDarkMode ? '#FFFFFF' : '#0E0F0C',
                     }}
                   >
                     <FcGoogle style={{ width: '20px', height: '20px', minWidth: '20px', minHeight: '20px' }} />
@@ -595,14 +618,15 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }) {
                 )}
 
                 {/* Bottom Switcher Links */}
-                <div className="text-center text-[13px] text-[#52525B]" style={{ fontFamily: '"Poppins", sans-serif' }}>
+                <div className="text-center text-[13px] transition-colors duration-300" style={{ fontFamily: '"Poppins", sans-serif' }}>
                   {tab === 'login' && (
-                    <p className="m-0">
+                    <p className="m-0" style={{ color: isDarkMode ? 'rgba(255, 255, 255, 0.7)' : '#52525B' }}>
                       {t('auth.dontHaveAccount', "Don't Have an Account?")}{' '}
                       <button
                         type="button"
                         onClick={() => setTab('register')}
-                        className="font-bold text-[#24324D] hover:underline cursor-pointer"
+                        className="font-bold hover:underline cursor-pointer"
+                        style={{ color: isDarkMode ? '#5271FF' : '#24324D' }}
                       >
                         {t('auth.registerNow', 'Register Now')}
                       </button>
@@ -610,12 +634,13 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }) {
                   )}
 
                   {tab === 'register' && (
-                    <p className="m-0">
+                    <p className="m-0" style={{ color: isDarkMode ? 'rgba(255, 255, 255, 0.7)' : '#52525B' }}>
                       {t('auth.alreadyHaveAccount', 'Already Have an Account?')}{' '}
                       <button
                         type="button"
                         onClick={() => setTab('login')}
-                        className="font-bold text-[#24324D] hover:underline cursor-pointer"
+                        className="font-bold hover:underline cursor-pointer"
+                        style={{ color: isDarkMode ? '#5271FF' : '#24324D' }}
                       >
                         {t('auth.login', 'Login')}
                       </button>
@@ -624,12 +649,12 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }) {
 
                   {tab === 'forgot' && (
                     <p className="m-0" style={{ fontFamily: '"Poppins", sans-serif', fontSize: '15px' }}>
-                      <span style={{ color: 'rgba(0, 0, 0, 0.5)' }}>{t('auth.backToLogin', 'Back to login')}{' '}</span>
+                      <span style={{ color: isDarkMode ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.5)' }}>{t('auth.backToLogin', 'Back to login')}{' '}</span>
                       <button
                         type="button"
                         onClick={() => setTab('login')}
-                        className="font-semibold text-[#24324D] hover:underline cursor-pointer"
-                        style={{ fontFamily: '"Poppins", sans-serif' }}
+                        className="font-semibold hover:underline cursor-pointer"
+                        style={{ fontFamily: '"Poppins", sans-serif', color: isDarkMode ? '#5271FF' : '#24324D' }}
                       >
                         {t('auth.loginNow', 'Login Now')}
                       </button>
