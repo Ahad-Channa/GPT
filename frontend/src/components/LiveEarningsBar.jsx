@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import PublicProfileModal from './PublicProfileModal';
 import UserAvatar from './UserAvatar';
+import { useTheme } from '../contexts/ThemeContext';
 import { io } from 'socket.io-client';
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
@@ -35,6 +36,7 @@ const getAvatarColor = (name = '') => {
 };
 
 const LiveEarningsBar = () => {
+  const { isDarkMode } = useTheme();
   const { t } = useTranslation();
   const [earnings, setEarnings] = useState(() => cachedEarningsGlobal);
   const [selectedUserId, setSelectedUserId] = useState(null);
@@ -233,7 +235,7 @@ const LiveEarningsBar = () => {
         className="w-full relative z-30 flex items-center transition-all select-none overflow-hidden"
         style={{
           height: '52px',
-          background: 'rgba(222, 223, 247, 1)',
+          background: isDarkMode ? 'rgba(27, 32, 40, 1)' : 'rgba(222, 223, 247, 1)',
           paddingTop: '8px',
           paddingBottom: '8px',
           opacity: 1,
@@ -244,7 +246,7 @@ const LiveEarningsBar = () => {
         <div
           className="flex items-center shrink-0 z-20 pl-4 md:pl-8 lg:pl-[56px] pr-2 h-full relative"
           style={{
-            background: 'rgba(222, 223, 247, 1)',
+            background: isDarkMode ? 'rgba(27, 32, 40, 1)' : 'rgba(222, 223, 247, 1)',
             gap: '8px',
           }}
         >
@@ -263,7 +265,7 @@ const LiveEarningsBar = () => {
                 fontSize: '18px',
                 lineHeight: '100%',
                 letterSpacing: '-0.02em',
-                color: '#0E0F0C',
+                color: isDarkMode ? '#FFFFFF' : '#0E0F0C',
                 opacity: 1,
                 transform: 'rotate(0deg)',
                 display: 'inline-flex',
@@ -279,7 +281,9 @@ const LiveEarningsBar = () => {
           <div
             className="absolute left-full top-0 bottom-0 w-5 pointer-events-none z-20"
             style={{
-              background: 'linear-gradient(to right, rgba(222, 223, 247, 1) 0%, rgba(222, 223, 247, 0) 100%)',
+              background: isDarkMode
+                ? 'linear-gradient(to right, rgba(27, 32, 40, 1) 0%, rgba(27, 32, 40, 0) 100%)'
+                : 'linear-gradient(to right, rgba(222, 223, 247, 1) 0%, rgba(222, 223, 247, 0) 100%)',
             }}
           />
         </div>
@@ -288,7 +292,9 @@ const LiveEarningsBar = () => {
         <div
           className="absolute right-0 top-0 bottom-0 w-6 pointer-events-none z-10"
           style={{
-            background: 'linear-gradient(to left, rgba(222, 223, 247, 1) 0%, rgba(222, 223, 247, 0) 100%)',
+            background: isDarkMode
+              ? 'linear-gradient(to left, rgba(27, 32, 40, 1) 0%, rgba(27, 32, 40, 0) 100%)'
+              : 'linear-gradient(to left, rgba(222, 223, 247, 1) 0%, rgba(222, 223, 247, 0) 100%)',
           }}
         />
 
@@ -316,7 +322,7 @@ const LiveEarningsBar = () => {
                       width: '120px',
                       height: '36px',
                       borderRadius: '30px',
-                      background: 'rgba(255, 255, 255, 0.6)',
+                      background: isDarkMode ? 'rgba(255, 255, 255, 0.05)' : 'rgba(255, 255, 255, 0.6)',
                       gap: '8.57px',
                       padding: '6px 14px 6px 6px',
                     }}
@@ -372,7 +378,7 @@ const LiveEarningsBar = () => {
                         paddingRight: '14px',
                         paddingBottom: '6px',
                         paddingLeft: '6px',
-                        background: 'rgba(255, 255, 255, 1)',
+                        background: isDarkMode ? 'rgba(255, 255, 255, 0.05)' : 'rgba(255, 255, 255, 1)',
                         boxSizing: 'border-box',
                       }}
                     >
@@ -395,7 +401,7 @@ const LiveEarningsBar = () => {
                             fontSize: '18px',
                             lineHeight: '100%',
                             letterSpacing: '-0.02em',
-                            color: 'rgba(14, 15, 12, 1)',
+                            color: isDarkMode ? '#FFFFFF' : 'rgba(14, 15, 12, 1)',
                             opacity: 1,
                             transform: 'rotate(0deg)',
                             whiteSpace: 'nowrap',

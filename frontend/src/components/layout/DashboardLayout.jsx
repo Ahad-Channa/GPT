@@ -3,8 +3,10 @@ import Header from './Header';
 import Footer from './Footer';
 import LiveEarningsBar from '../LiveEarningsBar';
 import ChatSidebar from '../chat/ChatSidebar';
+import { useTheme } from '../../contexts/ThemeContext';
 
 const DashboardLayout = ({ children, showLiveBar = true, fullWidth = false }) => {
+  const { isDarkMode } = useTheme();
   const [chatOpen, setChatOpen] = useState(() => {
     return localStorage.getItem('chatOpen') === 'true';
   });
@@ -16,26 +18,39 @@ const DashboardLayout = ({ children, showLiveBar = true, fullWidth = false }) =>
 
   useEffect(() => {
     const originalBg = document.body.style.backgroundColor;
-    document.body.style.backgroundColor = '#FAFAFA';
+    document.body.style.backgroundColor = isDarkMode ? 'rgba(12, 14, 17, 1)' : '#FAFAFA';
     return () => {
       document.body.style.backgroundColor = originalBg;
     };
-  }, []);
+  }, [isDarkMode]);
 
   return (
-    <div className="relative min-h-[100dvh] bg-[#FAFAFA] text-gray-900 overflow-x-hidden flex flex-col selection:bg-[#24324D] selection:text-white">
+    <div
+      className={`relative min-h-[100dvh] overflow-x-hidden flex flex-col selection:bg-[#24324D] selection:text-white transition-colors duration-300 ${
+        isDarkMode ? 'bg-[rgba(12,14,17,1)] text-white' : 'bg-[#FAFAFA] text-gray-900'
+      }`}
+      style={{
+        backgroundColor: isDarkMode ? 'rgba(12, 14, 17, 1)' : '#FAFAFA',
+      }}
+    >
       {/* Ambient Background Glows */}
       {/* <div className="ambient-bg" aria-hidden="true" /> */}
 
       {/* FIXED TOP HEADER + LIVE FEED BAR ON MOBILE (< 1024px) / NORMAL ON DESKTOP */}
-      <div className="fixed top-0 left-0 right-0 z-30 bg-[#FAFAFA] lg:static lg:bg-transparent lg:z-auto">
+      <div
+        className={`fixed top-0 left-0 right-0 z-30 lg:static lg:bg-transparent lg:z-auto transition-colors duration-300 ${
+          isDarkMode ? 'bg-[rgba(12,14,17,1)]' : 'bg-[#FAFAFA]'
+        }`}
+      >
         <Header onChatToggle={() => setChatOpen(o => !o)} chatOpen={chatOpen} />
         {showLiveBar && <LiveEarningsBar />}
       </div>
 
       {/* Main Content Wrapper (offset for fixed mobile header) */}
       <div
-        className={`transition-all duration-300 ease-in-out w-full flex-1 bg-[#FAFAFA] ${
+        className={`transition-all duration-300 ease-in-out w-full flex-1 ${
+          isDarkMode ? 'bg-[rgba(12,14,17,1)]' : 'bg-[#FAFAFA]'
+        } ${
           showLiveBar
             ? 'pt-[calc(124px+env(safe-area-inset-top,0px))] lg:pt-0'
             : 'pt-[calc(72px+env(safe-area-inset-top,0px))] lg:pt-0'

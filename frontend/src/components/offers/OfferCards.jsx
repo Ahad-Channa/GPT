@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useTheme } from '../../contexts/ThemeContext';
 import { FiMonitor, FiInbox, FiStar, FiZap, FiExternalLink, FiCheckCircle, FiSend, FiLoader, FiX } from 'react-icons/fi';
 import { FaApple, FaAndroid, FaDesktop } from 'react-icons/fa';
 import { BsQrCode } from 'react-icons/bs';
@@ -25,8 +26,37 @@ export const buildProviderUrl = (provider, userId) => {
   }
 };
 
-export const getProviderLogo = (id) => {
+export const getProviderLogo = (id, isDarkMode = false) => {
   const lowerId = id?.toLowerCase()?.trim();
+
+  const blackLogos = {
+    adgem: '/coins/adgemblack.png',
+    ad: '/coins/adgemblack.png',
+    adtowall: '/coins/adwallBlack.png',
+    adwall: '/coins/adwallBlack.png',
+    aw: '/coins/adwallBlack.png',
+    ayet: '/coins/Ayeblack.png',
+    'ayet-studios': '/coins/Ayeblack.png',
+    'ayet studios': '/coins/Ayeblack.png',
+    aye: '/coins/Ayeblack.png',
+    cpx: '/coins/cpxblack.png',
+    'cpx-research': '/coins/cpxblack.png',
+    'cpx research': '/coins/cpxblack.png',
+    cpr: '/coins/cpxblack.png',
+    goodpicks: '/coins/goopickBlack.png',
+    goodpick: '/coins/goopickBlack.png',
+    'good-picks': '/coins/goopickBlack.png',
+    'good picks': '/coins/goopickBlack.png',
+    gp: '/coins/goopickBlack.png',
+    goopick: '/coins/goopickBlack.png',
+    lootably: '/coins/lootBlack.png',
+    loot: '/coins/lootBlack.png',
+    lp: '/coins/lootBlack.png',
+  };
+
+  if (isDarkMode && blackLogos[lowerId]) {
+    return blackLogos[lowerId];
+  }
 
   const localLogos = {
     goodpicks: '/coins/image copy 6.png',
@@ -72,19 +102,21 @@ export const getProviderLogo = (id) => {
 };
 
 export const ProviderCard = ({ provider, onClick }) => {
-  const fallbackLogo = getProviderLogo(provider.id);
-  const logoUrl = provider.imageUrl || fallbackLogo;
+  const { isDarkMode } = useTheme();
+  const darkLogo = isDarkMode ? getProviderLogo(provider.id, true) : null;
+  const fallbackLogo = getProviderLogo(provider.id, false);
+  const logoUrl = darkLogo || provider.imageUrl || fallbackLogo;
 
   return (
     <motion.div
       variants={item}
       onClick={onClick}
-      className="cursor-pointer flex flex-col items-center justify-center shrink-0 w-full md:w-[323px]"
+      className="cursor-pointer flex flex-col items-center justify-center shrink-0 w-full md:w-[323px] transition-colors duration-300"
       style={{
         height: '76px',
         borderRadius: '24px',
-        background: 'rgba(249, 247, 241, 1)',
-        border: '1px solid rgba(223, 225, 209, 1)',
+        background: isDarkMode ? 'rgba(5, 7, 9, 1)' : 'rgba(249, 247, 241, 1)',
+        border: isDarkMode ? '1px solid rgba(255, 255, 255, 0.06)' : '1px solid rgba(223, 225, 209, 1)',
         gap: '10px',
         opacity: 1,
         transform: 'rotate(0deg)',
@@ -139,6 +171,7 @@ export const OfferwallCard = ({ provider, userId }) => {
 const isIconUrl = (icon) => icon && (icon.startsWith('http') || icon.startsWith('data:') || icon.includes('/') || icon.startsWith('fa-'));
 
 export const FeaturedOfferCard = ({ offer, onClick }) => {
+  const { isDarkMode } = useTheme();
   const { i18n } = useTranslation();
   const isDe = i18n.language?.startsWith('de');
   const title = (isDe && offer.titleDe) ? offer.titleDe : offer.title;
@@ -151,8 +184,11 @@ export const FeaturedOfferCard = ({ offer, onClick }) => {
     <motion.div
       variants={item}
       onClick={onClick}
-      className={`cursor-pointer flex flex-col shrink-0 bg-white shadow-[0_4px_20px_rgba(0,0,0,0.03)] border border-gray-100/80 ${isExpired ? 'opacity-50' : ''
-        }`}
+      className={`cursor-pointer flex flex-col shrink-0 transition-colors duration-300 ${
+        isDarkMode
+          ? 'border border-white/5'
+          : 'bg-white shadow-[0_4px_20px_rgba(0,0,0,0.03)] border border-gray-100/80'
+      } ${isExpired ? 'opacity-50' : ''}`}
       style={{
         width: '181.14px',
         height: '246.53px',
@@ -162,7 +198,7 @@ export const FeaturedOfferCard = ({ offer, onClick }) => {
         paddingLeft: '7.14px',
         paddingRight: '7.14px',
         gap: '15px',
-        background: 'rgba(255, 255, 255, 1)',
+        background: isDarkMode ? 'rgba(34, 39, 48, 1)' : 'rgba(255, 255, 255, 1)',
         boxSizing: 'border-box',
       }}
     >
@@ -214,7 +250,7 @@ export const FeaturedOfferCard = ({ offer, onClick }) => {
         {/* Top Center Platform Pill — only show selected platforms */}
         {(offer.platforms ? (offer.platforms.desktop || offer.platforms.android || offer.platforms.ios) : true) && (
           <div
-            className="absolute top-0 left-1/2 -translate-x-1/2 flex items-center justify-center z-10"
+            className="absolute top-0 left-1/2 -translate-x-1/2 flex items-center justify-center z-10 transition-colors duration-300"
             style={{
               width: '95.7px',
               height: '22.82px',
@@ -225,7 +261,7 @@ export const FeaturedOfferCard = ({ offer, onClick }) => {
               gap: '8px',
               borderBottomRightRadius: '16px',
               borderBottomLeftRadius: '16px',
-              background: 'rgba(255, 255, 255, 1)',
+              background: isDarkMode ? 'rgba(12, 14, 17, 0.85)' : 'rgba(255, 255, 255, 1)',
               boxSizing: 'border-box',
               opacity: 1,
             }}
@@ -234,7 +270,14 @@ export const FeaturedOfferCard = ({ offer, onClick }) => {
               <img
                 src="/coins/desko.png"
                 alt="Desktop"
-                style={{ width: '12px', height: '12px', opacity: 1, objectFit: 'contain', flexShrink: 0 }}
+                style={{
+                  width: '12px',
+                  height: '12px',
+                  opacity: 1,
+                  objectFit: 'contain',
+                  flexShrink: 0,
+                  filter: isDarkMode ? 'brightness(0) invert(1)' : 'none',
+                }}
               />
             )}
             {(!offer.platforms || offer.platforms.android) && (
@@ -243,7 +286,7 @@ export const FeaturedOfferCard = ({ offer, onClick }) => {
               </svg>
             )}
             {(!offer.platforms || offer.platforms.ios) && (
-              <svg style={{ width: '12px', height: '12px', opacity: 1, flexShrink: 0 }} className="text-gray-900" viewBox="0 0 24 24" fill="currentColor">
+              <svg style={{ width: '12px', height: '12px', opacity: 1, flexShrink: 0 }} className={isDarkMode ? 'text-white' : 'text-gray-900'} viewBox="0 0 24 24" fill="currentColor">
                 <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 6.37c.62-.75 1.04-1.8 0.92-2.85-.9.04-1.99.6-2.63 1.35-.57.65-1.07 1.72-.94 2.74 1.01.08 2.03-.49 2.65-1.24z" />
               </svg>
             )}
@@ -254,7 +297,7 @@ export const FeaturedOfferCard = ({ offer, onClick }) => {
       {/* Info */}
       <div className="flex flex-col w-full text-left justify-between min-h-0">
         <p
-          className="truncate text-[#0E0F0C]"
+          className="truncate transition-colors duration-300"
           title={title}
           style={{
             fontFamily: '"Bricolage Grotesque", sans-serif',
@@ -262,12 +305,13 @@ export const FeaturedOfferCard = ({ offer, onClick }) => {
             fontSize: '14px',
             lineHeight: '18px',
             letterSpacing: '-0.02em',
+            color: isDarkMode ? '#FFFFFF' : '#0E0F0C',
           }}
         >
           {title}
         </p>
         <div
-          className="flex items-center"
+          className="flex items-center transition-colors duration-300"
           style={{
             width: 'fit-content',
             height: '19.67px',
@@ -277,7 +321,7 @@ export const FeaturedOfferCard = ({ offer, onClick }) => {
             paddingBottom: '4px',
             paddingLeft: '6px',
             gap: '4px',
-            background: 'rgba(249, 247, 241, 1)',
+            background: isDarkMode ? 'rgba(12, 14, 17, 0.8)' : 'rgba(249, 247, 241, 1)',
             boxSizing: 'border-box',
           }}
         >

@@ -7,6 +7,7 @@ import { BsPatchCheckFill } from 'react-icons/bs';
 import VipBadge from './VipBadge';
 import UserAvatar from './UserAvatar';
 import { getLevelFromEarned, getLevelLabel } from '../utils/vipLevels';
+import { useTheme } from '../contexts/ThemeContext';
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
@@ -118,6 +119,7 @@ const ITEMS_PER_PAGE = 5;
  *   onClose – callback to close the modal
  */
 const PublicProfileModal = ({ userId, onClose }) => {
+  const { isDarkMode } = useTheme();
   const [profile, setProfile] = useState(null);
   const [recentOffers, setRecentOffers] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -202,10 +204,10 @@ const PublicProfileModal = ({ userId, onClose }) => {
           onClick={(e) => e.stopPropagation()}
           className="w-full max-w-[440px] sm:max-w-[626px]"
           style={{
-            background: 'rgba(255, 255, 255, 1)',
+            background: isDarkMode ? 'rgba(12, 14, 17, 1)' : 'rgba(255, 255, 255, 1)',
             borderRadius: '24px',
             padding: '10px',
-            boxShadow: '0 20px 50px rgba(0, 0, 0, 0.35)',
+            boxShadow: isDarkMode ? '0 20px 50px rgba(0, 0, 0, 0.7)' : '0 20px 50px rgba(0, 0, 0, 0.35)',
             maxHeight: '92vh',
             overflowY: 'auto',
             position: 'relative',
@@ -217,7 +219,7 @@ const PublicProfileModal = ({ userId, onClose }) => {
           {loading && (
             <div className="flex flex-col justify-center items-center py-24 gap-3">
               <div className="w-10 h-10 rounded-full border-3 border-amber-200 border-t-amber-500 animate-spin" />
-              <span className="text-sm font-medium text-neutral-500">Loading profile...</span>
+              <span className={`text-sm font-medium ${isDarkMode ? 'text-neutral-400' : 'text-neutral-500'}`}>Loading profile...</span>
             </div>
           )}
 
@@ -227,8 +229,8 @@ const PublicProfileModal = ({ userId, onClose }) => {
               <div className="w-14 h-14 rounded-2xl bg-red-100 flex items-center justify-center text-red-500">
                 <FiAlertTriangle size={24} />
               </div>
-              <div className="text-lg font-bold text-black">Profile Not Found</div>
-              <div className="text-sm text-neutral-500 max-w-[280px]">
+              <div className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-black'}`}>Profile Not Found</div>
+              <div className={`text-sm ${isDarkMode ? 'text-neutral-400' : 'text-neutral-500'} max-w-[280px]`}>
                 {error || 'This user does not exist or has been removed.'}
               </div>
               <button
@@ -249,7 +251,7 @@ const PublicProfileModal = ({ userId, onClose }) => {
                   width: '100%',
                   minHeight: '382px',
                   borderRadius: '20px',
-                  background: 'rgba(248, 245, 239, 1)',
+                  background: isDarkMode ? 'rgba(23, 26, 29, 1)' : 'rgba(248, 245, 239, 1)',
                   position: 'relative',
                   overflow: 'hidden',
                   display: 'flex',
@@ -274,15 +276,15 @@ const PublicProfileModal = ({ userId, onClose }) => {
                 <button
                   onClick={onClose}
                   aria-label="Close profile popup"
-                  className="absolute top-3.5 right-3.5 w-6 h-6 rounded-full bg-black text-white flex items-center justify-center cursor-pointer hover:opacity-80 active:scale-95 transition-all z-20 shadow-sm"
+                  className={`absolute top-3.5 right-3.5 w-6 h-6 rounded-full ${isDarkMode ? 'bg-white text-black' : 'bg-black text-white'} flex items-center justify-center cursor-pointer hover:opacity-80 active:scale-95 transition-all z-20 shadow-sm`}
                 >
-                  <FiX size={14} className="text-white" strokeWidth={3} />
+                  <FiX size={14} className={isDarkMode ? 'text-black' : 'text-white'} strokeWidth={3} />
                 </button>
 
                 {/* Center White Card */}
                 <div
                   style={{
-                    background: '#FFFFFF',
+                    background: isDarkMode ? 'rgba(12, 14, 17, 1)' : '#FFFFFF',
                     borderRadius: '24px',
                     padding: '28px 32px 28px 32px',
                     minWidth: '240px',
@@ -326,7 +328,7 @@ const PublicProfileModal = ({ userId, onClose }) => {
                       fontSize: '24px',
                       lineHeight: '1.2',
                       letterSpacing: '-0.02em',
-                      color: '#000000',
+                      color: isDarkMode ? '#FFFFFF' : '#000000',
                       margin: '14px 0 0 0',
                       whiteSpace: 'nowrap',
                       overflow: 'hidden',
@@ -337,23 +339,32 @@ const PublicProfileModal = ({ userId, onClose }) => {
                     {profile.displayName}
                   </h3>
 
-                  {/* Joined Date & VIP Tier Pill */}
+                  {/* Joined Date Pill */}
                   <div
                     style={{
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
-                      gap: '6px',
                       marginTop: '8px',
                       marginBottom: '0',
-                      flexWrap: 'wrap',
                     }}
                   >
                     <div
                       style={{
+                        width: 'auto',
+                        minWidth: 'fit-content',
+                        height: '21px',
+                        gap: '4px',
+                        borderRadius: '100px',
+                        padding: '2px 8px',
+                        background: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : '#FFFFFF',
                         display: 'flex',
                         alignItems: 'center',
-                        gap: '6px',
+                        justifyContent: 'center',
+                        boxSizing: 'border-box',
+                        boxShadow: '0 1px 2px rgba(0,0,0,0.03)',
+                        opacity: 1,
+                        transform: 'rotate(0deg)',
                       }}
                     >
                       <img
@@ -364,6 +375,7 @@ const PublicProfileModal = ({ userId, onClose }) => {
                           height: '13px',
                           objectFit: 'contain',
                           flexShrink: 0,
+                          filter: isDarkMode ? 'brightness(0) invert(1)' : 'none',
                         }}
                         onError={(e) => {
                           e.currentTarget.style.display = 'none';
@@ -373,48 +385,16 @@ const PublicProfileModal = ({ userId, onClose }) => {
                         style={{
                           fontFamily: '"Poppins", sans-serif',
                           fontWeight: 500,
-                          fontSize: '13px',
-                          lineHeight: '1.2',
-                          letterSpacing: '0%',
-                          color: '#1E293B',
-                          whiteSpace: 'nowrap',
-                        }}
-                      >
-                        Joined {formatJoinedDate(profile.createdAt) || '2026'}
-                      </span>
-                    </div>
-
-                    <div
-                      style={{
-                        minWidth: '60px',
-                        width: 'auto',
-                        height: '21px',
-                        borderRadius: '100px',
-                        paddingTop: '2px',
-                        paddingRight: '10px',
-                        paddingBottom: '2px',
-                        paddingLeft: '10px',
-                        background: tierMeta.pillGradient,
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        boxSizing: 'border-box',
-                        boxShadow: '0 1px 2px rgba(0,0,0,0.03)',
-                      }}
-                    >
-                      <span
-                        style={{
-                          fontFamily: '"Poppins", sans-serif',
-                          fontWeight: 600,
                           fontSize: '12px',
                           lineHeight: '1',
                           letterSpacing: '0%',
                           textAlign: 'center',
-                          color: '#FFFFFF',
+                          color: isDarkMode ? '#FFFFFF' : '#1E293B',
                           whiteSpace: 'nowrap',
+                          display: 'block',
                         }}
                       >
-                        {rankLabel}
+                        Joined {formatJoinedDate(profile.createdAt) || '2026'}
                       </span>
                     </div>
                   </div>
@@ -469,7 +449,7 @@ const PublicProfileModal = ({ userId, onClose }) => {
                     width: '100%',
                     minHeight: '224px',
                     borderRadius: '16px',
-                    background: 'rgba(248, 245, 239, 1)',
+                    background: isDarkMode ? 'rgba(23, 26, 29, 1)' : 'rgba(248, 245, 239, 1)',
                     padding: '16px 6px 6px 6px',
                     position: 'relative',
                     boxSizing: 'border-box',
@@ -489,9 +469,9 @@ const PublicProfileModal = ({ userId, onClose }) => {
                       opacity: 1,
                       transform: 'rotate(0deg)',
                     }}
-                    className="absolute top-3.5 right-3.5 bg-black text-white flex items-center justify-center cursor-pointer hover:opacity-80 active:scale-95 transition-all z-10 shadow-sm"
+                    className={`absolute top-3.5 right-3.5 ${isDarkMode ? 'bg-white text-black' : 'bg-black text-white'} flex items-center justify-center cursor-pointer hover:opacity-80 active:scale-95 transition-all z-10 shadow-sm`}
                   >
-                    <FiX size={10} className="text-white" strokeWidth={2.5} />
+                    <FiX size={10} className={isDarkMode ? 'text-black' : 'text-white'} strokeWidth={2.5} />
                   </button>
 
                   {/* Profile Header: height 70px, gap 20px on desktop, tighter gap on mobile */}
@@ -557,7 +537,7 @@ const PublicProfileModal = ({ userId, onClose }) => {
                             fontSize: '27px',
                             lineHeight: '1',
                             letterSpacing: '-0.02em',
-                            color: '#000000',
+                            color: isDarkMode ? '#FFFFFF' : '#000000',
                             whiteSpace: 'nowrap',
                             overflow: 'hidden',
                             textOverflow: 'ellipsis',
@@ -589,7 +569,7 @@ const PublicProfileModal = ({ userId, onClose }) => {
                             gap: '4px',
                             borderRadius: '100px',
                             padding: '2px 8px',
-                            background: '#FFFFFF',
+                            background: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : '#FFFFFF',
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
@@ -607,6 +587,7 @@ const PublicProfileModal = ({ userId, onClose }) => {
                               height: '13px',
                               objectFit: 'contain',
                               flexShrink: 0,
+                              filter: isDarkMode ? 'brightness(0) invert(1)' : 'none',
                             }}
                             onError={(e) => {
                               e.currentTarget.style.display = 'none';
@@ -620,7 +601,7 @@ const PublicProfileModal = ({ userId, onClose }) => {
                               lineHeight: '1',
                               letterSpacing: '0%',
                               textAlign: 'center',
-                              color: '#1E293B',
+                              color: isDarkMode ? '#FFFFFF' : '#1E293B',
                               whiteSpace: 'nowrap',
                               display: 'block',
                             }}
@@ -690,7 +671,7 @@ const PublicProfileModal = ({ userId, onClose }) => {
                         paddingRight: '11px',
                         paddingBottom: '14px',
                         paddingLeft: '11px',
-                        background: 'rgba(255, 255, 255, 1)',
+                        background: isDarkMode ? 'rgba(12, 14, 17, 1)' : 'rgba(255, 255, 255, 1)',
                         gap: '10px',
                         display: 'flex',
                         flexDirection: 'column',
@@ -713,7 +694,7 @@ const PublicProfileModal = ({ userId, onClose }) => {
                             fontSize: '20px',
                             lineHeight: '1',
                             letterSpacing: '-0.02em',
-                            color: '#C59114',
+                            color: isDarkMode ? '#E5A00D' : '#C59114',
                             whiteSpace: 'nowrap',
                             display: 'inline-block',
                           }}
@@ -744,7 +725,7 @@ const PublicProfileModal = ({ userId, onClose }) => {
                               fontSize: '14px',
                               lineHeight: '1',
                               letterSpacing: '-0.02em',
-                              color: '#000000',
+                              color: isDarkMode ? '#FFFFFF' : '#000000',
                               whiteSpace: 'nowrap',
                               display: 'block',
                             }}
@@ -768,7 +749,7 @@ const PublicProfileModal = ({ userId, onClose }) => {
                               fontSize: '12px',
                               lineHeight: '1',
                               letterSpacing: '0%',
-                              color: '#000000',
+                              color: isDarkMode ? 'rgba(255, 255, 255, 0.6)' : '#000000',
                               whiteSpace: 'nowrap',
                               display: 'block',
                             }}
@@ -790,7 +771,7 @@ const PublicProfileModal = ({ userId, onClose }) => {
                         paddingRight: '11px',
                         paddingBottom: '14px',
                         paddingLeft: '11px',
-                        background: 'rgba(255, 255, 255, 1)',
+                        background: isDarkMode ? 'rgba(12, 14, 17, 1)' : 'rgba(255, 255, 255, 1)',
                         gap: '10px',
                         display: 'flex',
                         flexDirection: 'column',
@@ -813,7 +794,7 @@ const PublicProfileModal = ({ userId, onClose }) => {
                             fontSize: '20px',
                             lineHeight: '1',
                             letterSpacing: '-0.02em',
-                            color: '#C59114',
+                            color: isDarkMode ? '#E5A00D' : '#C59114',
                             whiteSpace: 'nowrap',
                             display: 'inline-block',
                           }}
@@ -844,7 +825,7 @@ const PublicProfileModal = ({ userId, onClose }) => {
                               fontSize: '14px',
                               lineHeight: '1',
                               letterSpacing: '-0.02em',
-                              color: '#000000',
+                              color: isDarkMode ? '#FFFFFF' : '#000000',
                               whiteSpace: 'nowrap',
                               display: 'block',
                             }}
@@ -868,7 +849,7 @@ const PublicProfileModal = ({ userId, onClose }) => {
                               fontSize: '12px',
                               lineHeight: '1',
                               letterSpacing: '0%',
-                              color: '#000000',
+                              color: isDarkMode ? 'rgba(255, 255, 255, 0.6)' : '#000000',
                               whiteSpace: 'nowrap',
                               display: 'block',
                             }}
@@ -890,7 +871,7 @@ const PublicProfileModal = ({ userId, onClose }) => {
                         paddingRight: '11px',
                         paddingBottom: '14px',
                         paddingLeft: '11px',
-                        background: 'rgba(255, 255, 255, 1)',
+                        background: isDarkMode ? 'rgba(12, 14, 17, 1)' : 'rgba(255, 255, 255, 1)',
                         gap: '10px',
                         display: 'flex',
                         flexDirection: 'column',
@@ -908,7 +889,7 @@ const PublicProfileModal = ({ userId, onClose }) => {
                             fontSize: '20px',
                             lineHeight: '1',
                             letterSpacing: '-0.02em',
-                            color: '#1E293B',
+                            color: isDarkMode ? '#94A3B8' : '#1E293B',
                             whiteSpace: 'nowrap',
                             display: 'inline-block',
                           }}
@@ -939,7 +920,7 @@ const PublicProfileModal = ({ userId, onClose }) => {
                               fontSize: '14px',
                               lineHeight: '1',
                               letterSpacing: '-0.02em',
-                              color: '#000000',
+                              color: isDarkMode ? '#FFFFFF' : '#000000',
                               whiteSpace: 'nowrap',
                               display: 'block',
                             }}
@@ -963,7 +944,7 @@ const PublicProfileModal = ({ userId, onClose }) => {
                               fontSize: '12px',
                               lineHeight: '1',
                               letterSpacing: '0%',
-                              color: '#000000',
+                              color: isDarkMode ? 'rgba(255, 255, 255, 0.6)' : '#000000',
                               whiteSpace: 'nowrap',
                               display: 'block',
                             }}
@@ -985,7 +966,7 @@ const PublicProfileModal = ({ userId, onClose }) => {
                         paddingRight: '11px',
                         paddingBottom: '14px',
                         paddingLeft: '11px',
-                        background: 'rgba(255, 255, 255, 1)',
+                        background: isDarkMode ? 'rgba(12, 14, 17, 1)' : 'rgba(255, 255, 255, 1)',
                         gap: '10px',
                         display: 'flex',
                         flexDirection: 'column',
@@ -1003,7 +984,7 @@ const PublicProfileModal = ({ userId, onClose }) => {
                             fontSize: '20px',
                             lineHeight: '1',
                             letterSpacing: '-0.02em',
-                            color: '#1E293B',
+                            color: isDarkMode ? '#94A3B8' : '#1E293B',
                             whiteSpace: 'nowrap',
                             display: 'inline-block',
                           }}
@@ -1034,7 +1015,7 @@ const PublicProfileModal = ({ userId, onClose }) => {
                               fontSize: '14px',
                               lineHeight: '1',
                               letterSpacing: '-0.02em',
-                              color: '#000000',
+                              color: isDarkMode ? '#FFFFFF' : '#000000',
                               whiteSpace: 'nowrap',
                               display: 'block',
                             }}
@@ -1058,7 +1039,7 @@ const PublicProfileModal = ({ userId, onClose }) => {
                               fontSize: '12px',
                               lineHeight: '1',
                               letterSpacing: '0%',
-                              color: '#000000',
+                              color: isDarkMode ? 'rgba(255, 255, 255, 0.6)' : '#000000',
                               whiteSpace: 'nowrap',
                               display: 'block',
                             }}
@@ -1090,7 +1071,7 @@ const PublicProfileModal = ({ userId, onClose }) => {
                         fontSize: '20px',
                         lineHeight: '1',
                         letterSpacing: '-0.02em',
-                        color: '#000000',
+                        color: isDarkMode ? '#FFFFFF' : '#000000',
                         margin: 0,
                         whiteSpace: 'nowrap',
                         display: 'block',
@@ -1103,10 +1084,11 @@ const PublicProfileModal = ({ userId, onClose }) => {
                   {recentOffers.length === 0 ? (
                     <div
                       style={{
-                        background: 'rgba(248, 245, 239, 1)',
+                        background: isDarkMode ? 'rgba(23, 26, 29, 1)' : 'rgba(248, 245, 239, 1)',
                         borderRadius: '16px',
+                        color: isDarkMode ? 'rgba(255, 255, 255, 0.6)' : '#64748B',
                       }}
-                      className="p-4 text-center text-[#64748B] text-[13px] font-medium"
+                      className="p-4 text-center text-[13px] font-medium"
                     >
                       No recent activity found.
                     </div>
@@ -1124,7 +1106,7 @@ const PublicProfileModal = ({ userId, onClose }) => {
                             <div
                               key={offer._id}
                               style={{
-                                background: 'rgba(248, 245, 239, 1)',
+                                background: isDarkMode ? 'rgba(23, 26, 29, 1)' : 'rgba(248, 245, 239, 1)',
                                 borderRadius: '16px',
                               }}
                               className="p-3.5 px-4 flex items-center justify-between gap-4"
@@ -1157,7 +1139,7 @@ const PublicProfileModal = ({ userId, onClose }) => {
                                       fontSize: '15px',
                                       lineHeight: '1',
                                       letterSpacing: '-0.02em',
-                                      color: '#000000',
+                                      color: isDarkMode ? '#FFFFFF' : '#000000',
                                       whiteSpace: 'nowrap',
                                       overflow: 'hidden',
                                       textOverflow: 'ellipsis',
@@ -1182,7 +1164,7 @@ const PublicProfileModal = ({ userId, onClose }) => {
                                       fontSize: '12px',
                                       lineHeight: '1',
                                       letterSpacing: '0%',
-                                      color: '#000000',
+                                      color: isDarkMode ? 'rgba(255, 255, 255, 0.6)' : '#000000',
                                       whiteSpace: 'nowrap',
                                       overflow: 'hidden',
                                       textOverflow: 'ellipsis',
@@ -1237,7 +1219,7 @@ const PublicProfileModal = ({ userId, onClose }) => {
                                         fontSize: '20px',
                                         lineHeight: '1',
                                         letterSpacing: '-0.02em',
-                                        color: '#B8860B',
+                                        color: isDarkMode ? '#E5A00D' : '#B8860B',
                                         whiteSpace: 'nowrap',
                                         display: 'block',
                                       }}
@@ -1262,7 +1244,7 @@ const PublicProfileModal = ({ userId, onClose }) => {
                                       fontSize: '12px',
                                       lineHeight: '1',
                                       letterSpacing: '0%',
-                                      color: '#000000',
+                                      color: isDarkMode ? 'rgba(255, 255, 255, 0.6)' : '#000000',
                                       whiteSpace: 'nowrap',
                                       display: 'block',
                                     }}
@@ -1281,7 +1263,7 @@ const PublicProfileModal = ({ userId, onClose }) => {
                             <button
                               onClick={() => setActivityPage((p) => Math.max(1, p - 1))}
                               disabled={activityPage === 1}
-                              className="w-7 h-7 rounded-full flex items-center justify-center bg-white border border-[#E2E8F0] text-[#1E293B] disabled:opacity-30 disabled:cursor-not-allowed hover:bg-slate-50 transition-all text-xs font-bold"
+                              className={`w-7 h-7 rounded-full flex items-center justify-center ${isDarkMode ? 'bg-[rgba(23,26,29,1)] border border-white/10 text-white hover:bg-[rgba(34,39,48,1)]' : 'bg-white border-[#E2E8F0] text-[#1E293B] hover:bg-slate-50'} disabled:opacity-30 disabled:cursor-not-allowed transition-all text-xs font-bold`}
                             >
                               <FiChevronLeft size={14} />
                             </button>
@@ -1290,8 +1272,8 @@ const PublicProfileModal = ({ userId, onClose }) => {
                                 key={idx + 1}
                                 onClick={() => setActivityPage(idx + 1)}
                                 className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold transition-all ${activityPage === idx + 1
-                                    ? 'bg-[#1E293B] text-white shadow-sm'
-                                    : 'bg-white border border-[#E2E8F0] text-[#64748B] hover:text-[#1E293B]'
+                                    ? (isDarkMode ? 'bg-white text-black shadow-sm' : 'bg-[#1E293B] text-white shadow-sm')
+                                    : (isDarkMode ? 'bg-[rgba(23,26,29,1)] border border-white/10 text-[#94A3B8] hover:text-white' : 'bg-white border border-[#E2E8F0] text-[#64748B] hover:text-[#1E293B]')
                                   }`}
                               >
                                 {idx + 1}
@@ -1300,7 +1282,7 @@ const PublicProfileModal = ({ userId, onClose }) => {
                             <button
                               onClick={() => setActivityPage((p) => Math.min(totalPages, p + 1))}
                               disabled={activityPage === totalPages}
-                              className="w-7 h-7 rounded-full flex items-center justify-center bg-white border border-[#E2E8F0] text-[#1E293B] disabled:opacity-30 disabled:cursor-not-allowed hover:bg-slate-50 transition-all text-xs font-bold"
+                              className={`w-7 h-7 rounded-full flex items-center justify-center ${isDarkMode ? 'bg-[rgba(23,26,29,1)] border border-white/10 text-white hover:bg-[rgba(34,39,48,1)]' : 'bg-white border-[#E2E8F0] text-[#1E293B] hover:bg-slate-50'} disabled:opacity-30 disabled:cursor-not-allowed transition-all text-xs font-bold`}
                             >
                               <FiChevronRight size={14} />
                             </button>

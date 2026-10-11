@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../contexts/AuthContext';
+import { useTheme } from '../contexts/ThemeContext';
 import DashboardLayout from '../components/layout/DashboardLayout';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FiLock } from 'react-icons/fi';
@@ -68,6 +69,7 @@ const MedalBadge = ({ rank }) => {
 
 /* ── Podium Card ─────────────────────────────────────────────── */
 const PodiumCard = ({ rank, user, prize, onClick, isCenter = false }) => {
+  const { isDarkMode } = useTheme();
   const { t } = useTranslation();
   if (!user) {
     return (
@@ -158,7 +160,7 @@ const PodiumCard = ({ rank, user, prize, onClick, isCenter = false }) => {
         {/* Box 1: User & Coins (122x75) */}
         <div
           onClick={() => onClick(user.userId)}
-          className="flex flex-col justify-center overflow-hidden"
+          className="flex flex-col justify-center overflow-hidden transition-colors duration-300"
           style={{
             width: '122px',
             height: '75px',
@@ -170,7 +172,7 @@ const PodiumCard = ({ rank, user, prize, onClick, isCenter = false }) => {
             paddingBottom: '16px',
             paddingLeft: '12px',
             gap: '8px',
-            background: 'rgba(255, 255, 255, 1)',
+            background: isDarkMode ? 'rgba(34, 39, 48, 1)' : 'rgba(255, 255, 255, 1)',
             boxSizing: 'border-box',
           }}
         >
@@ -193,7 +195,7 @@ const PodiumCard = ({ rank, user, prize, onClick, isCenter = false }) => {
                   : '9px',
               lineHeight: '1.2',
               letterSpacing: '-0.02em',
-              color: '#0E0F0C',
+              color: isDarkMode ? '#FFFFFF' : '#0E0F0C',
               margin: 0,
               display: 'block',
               whiteSpace: 'nowrap',
@@ -216,7 +218,7 @@ const PodiumCard = ({ rank, user, prize, onClick, isCenter = false }) => {
                 fontSize: '14px',
                 lineHeight: '1.2',
                 letterSpacing: '0%',
-                color: 'rgba(190, 146, 0, 1)',
+                color: isDarkMode ? '#E5A00D' : 'rgba(190, 146, 0, 1)',
                 margin: 0,
                 display: 'flex',
                 alignItems: 'center',
@@ -231,7 +233,7 @@ const PodiumCard = ({ rank, user, prize, onClick, isCenter = false }) => {
         {/* Box 2: Prize (122x75) */}
         <div
           onClick={() => onClick(user.userId)}
-          className="flex flex-col justify-center overflow-hidden"
+          className="flex flex-col justify-center overflow-hidden transition-colors duration-300"
           style={{
             width: '122px',
             height: '75px',
@@ -243,7 +245,7 @@ const PodiumCard = ({ rank, user, prize, onClick, isCenter = false }) => {
             paddingBottom: '16px',
             paddingLeft: '12px',
             gap: '8px',
-            background: 'rgba(255, 255, 255, 1)',
+            background: isDarkMode ? 'rgba(34, 39, 48, 1)' : 'rgba(255, 255, 255, 1)',
             boxSizing: 'border-box',
           }}
         >
@@ -255,7 +257,7 @@ const PodiumCard = ({ rank, user, prize, onClick, isCenter = false }) => {
               fontSize: '18px',
               lineHeight: '1.2',
               letterSpacing: '-0.02em',
-              color: '#0E0F0C',
+              color: isDarkMode ? '#FFFFFF' : '#0E0F0C',
               margin: 0,
               display: 'block',
               whiteSpace: 'nowrap',
@@ -277,7 +279,7 @@ const PodiumCard = ({ rank, user, prize, onClick, isCenter = false }) => {
                 fontSize: '14px',
                 lineHeight: '1.2',
                 letterSpacing: '0%',
-                color: 'rgba(190, 146, 0, 1)',
+                color: isDarkMode ? '#E5A00D' : 'rgba(190, 146, 0, 1)',
                 margin: 0,
                 display: 'flex',
                 alignItems: 'center',
@@ -295,6 +297,7 @@ const PodiumCard = ({ rank, user, prize, onClick, isCenter = false }) => {
 
 /* ── Split Box Countdown ─────────────────────────────────────── */
 const LeaderboardCountdown = ({ targetDate }) => {
+  const { isDarkMode } = useTheme();
   const { t } = useTranslation();
   const [time, setTime] = useState({ d: '00', h: '00', m: '00', s: '00' });
 
@@ -347,7 +350,7 @@ const LeaderboardCountdown = ({ targetDate }) => {
           lineHeight: '18px',
           letterSpacing: '0%',
           textAlign: 'center',
-          color: '#0E0F0C',
+          color: isDarkMode ? 'rgba(255, 255, 255, 0.7)' : '#0E0F0C',
           margin: 0,
           display: 'flex',
           alignItems: 'center',
@@ -361,11 +364,12 @@ const LeaderboardCountdown = ({ targetDate }) => {
         {/* Days */}
         <div className="flex flex-col items-center">
           <div
+            className="transition-colors duration-300"
             style={{
               width: '42px',
               height: '42px',
               borderRadius: '11px',
-              background: 'rgba(36, 50, 77, 0.1)',
+              background: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(36, 50, 77, 0.1)',
               opacity: 1,
               transform: 'rotate(0deg)',
               display: 'flex',
@@ -381,7 +385,7 @@ const LeaderboardCountdown = ({ targetDate }) => {
                 fontSize: '19px',
                 lineHeight: '1.2',
                 letterSpacing: '-0.02em',
-                color: 'rgba(36, 50, 77, 1)',
+                color: isDarkMode ? '#FFFFFF' : 'rgba(36, 50, 77, 1)',
                 opacity: 1,
                 transform: 'rotate(0deg)',
                 margin: 0,
@@ -401,7 +405,7 @@ const LeaderboardCountdown = ({ targetDate }) => {
               lineHeight: '18px',
               letterSpacing: '0%',
               textAlign: 'center',
-              color: '#000000',
+              color: isDarkMode ? 'rgba(255, 255, 255, 0.7)' : '#000000',
               opacity: 1,
               transform: 'rotate(0deg)',
               marginTop: '4px',
@@ -413,16 +417,17 @@ const LeaderboardCountdown = ({ targetDate }) => {
           </span>
         </div>
 
-        <span style={{ color: 'rgba(36, 50, 77, 1)', fontFamily: '"Bricolage Grotesque", sans-serif', fontWeight: 700, fontSize: '18px', marginTop: '-20px' }}>:</span>
+        <span style={{ color: isDarkMode ? 'rgba(255, 255, 255, 0.5)' : 'rgba(36, 50, 77, 1)', fontFamily: '"Bricolage Grotesque", sans-serif', fontWeight: 700, fontSize: '18px', marginTop: '-20px' }}>:</span>
 
         {/* Hours */}
         <div className="flex flex-col items-center">
           <div
+            className="transition-colors duration-300"
             style={{
               width: '42px',
               height: '42px',
               borderRadius: '11px',
-              background: 'rgba(36, 50, 77, 0.1)',
+              background: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(36, 50, 77, 0.1)',
               opacity: 1,
               transform: 'rotate(0deg)',
               display: 'flex',
@@ -438,7 +443,7 @@ const LeaderboardCountdown = ({ targetDate }) => {
                 fontSize: '19px',
                 lineHeight: '1.2',
                 letterSpacing: '-0.02em',
-                color: 'rgba(36, 50, 77, 1)',
+                color: isDarkMode ? '#FFFFFF' : 'rgba(36, 50, 77, 1)',
                 opacity: 1,
                 transform: 'rotate(0deg)',
                 margin: 0,
@@ -458,7 +463,7 @@ const LeaderboardCountdown = ({ targetDate }) => {
               lineHeight: '18px',
               letterSpacing: '0%',
               textAlign: 'center',
-              color: '#000000',
+              color: isDarkMode ? 'rgba(255, 255, 255, 0.7)' : '#000000',
               opacity: 1,
               transform: 'rotate(0deg)',
               marginTop: '4px',
@@ -470,16 +475,17 @@ const LeaderboardCountdown = ({ targetDate }) => {
           </span>
         </div>
 
-        <span style={{ color: 'rgba(36, 50, 77, 1)', fontFamily: '"Bricolage Grotesque", sans-serif', fontWeight: 700, fontSize: '18px', marginTop: '-20px' }}>:</span>
+        <span style={{ color: isDarkMode ? 'rgba(255, 255, 255, 0.5)' : 'rgba(36, 50, 77, 1)', fontFamily: '"Bricolage Grotesque", sans-serif', fontWeight: 700, fontSize: '18px', marginTop: '-20px' }}>:</span>
 
         {/* Minutes */}
         <div className="flex flex-col items-center">
           <div
+            className="transition-colors duration-300"
             style={{
               width: '42px',
               height: '42px',
               borderRadius: '11px',
-              background: 'rgba(36, 50, 77, 0.1)',
+              background: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(36, 50, 77, 0.1)',
               opacity: 1,
               transform: 'rotate(0deg)',
               display: 'flex',
@@ -495,7 +501,7 @@ const LeaderboardCountdown = ({ targetDate }) => {
                 fontSize: '19px',
                 lineHeight: '1.2',
                 letterSpacing: '-0.02em',
-                color: 'rgba(36, 50, 77, 1)',
+                color: isDarkMode ? '#FFFFFF' : 'rgba(36, 50, 77, 1)',
                 opacity: 1,
                 transform: 'rotate(0deg)',
                 margin: 0,
@@ -515,7 +521,7 @@ const LeaderboardCountdown = ({ targetDate }) => {
               lineHeight: '18px',
               letterSpacing: '0%',
               textAlign: 'center',
-              color: '#000000',
+              color: isDarkMode ? 'rgba(255, 255, 255, 0.7)' : '#000000',
               opacity: 1,
               transform: 'rotate(0deg)',
               marginTop: '4px',
@@ -527,16 +533,17 @@ const LeaderboardCountdown = ({ targetDate }) => {
           </span>
         </div>
 
-        <span style={{ color: 'rgba(36, 50, 77, 1)', fontFamily: '"Bricolage Grotesque", sans-serif', fontWeight: 700, fontSize: '18px', marginTop: '-20px' }}>:</span>
+        <span style={{ color: isDarkMode ? 'rgba(255, 255, 255, 0.5)' : 'rgba(36, 50, 77, 1)', fontFamily: '"Bricolage Grotesque", sans-serif', fontWeight: 700, fontSize: '18px', marginTop: '-20px' }}>:</span>
 
         {/* Seconds */}
         <div className="flex flex-col items-center">
           <div
+            className="transition-colors duration-300"
             style={{
               width: '42px',
               height: '42px',
               borderRadius: '11px',
-              background: 'rgba(36, 50, 77, 0.1)',
+              background: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(36, 50, 77, 0.1)',
               opacity: 1,
               transform: 'rotate(0deg)',
               display: 'flex',
@@ -552,7 +559,7 @@ const LeaderboardCountdown = ({ targetDate }) => {
                 fontSize: '19px',
                 lineHeight: '1.2',
                 letterSpacing: '-0.02em',
-                color: 'rgba(36, 50, 77, 1)',
+                color: isDarkMode ? '#FFFFFF' : 'rgba(36, 50, 77, 1)',
                 opacity: 1,
                 transform: 'rotate(0deg)',
                 margin: 0,
@@ -572,7 +579,7 @@ const LeaderboardCountdown = ({ targetDate }) => {
               lineHeight: '18px',
               letterSpacing: '0%',
               textAlign: 'center',
-              color: '#000000',
+              color: isDarkMode ? 'rgba(255, 255, 255, 0.7)' : '#000000',
               opacity: 1,
               transform: 'rotate(0deg)',
               marginTop: '4px',
@@ -591,6 +598,7 @@ const LeaderboardCountdown = ({ targetDate }) => {
 /* ── Main Leaderboard Page ───────────────────────────────────── */
 const Leaderboard = () => {
   const { t, i18n } = useTranslation();
+  const { isDarkMode } = useTheme();
   const isEn = (i18n?.language || 'en').startsWith('en');
   const { currentUser } = useAuth();
   const [activeProfileId, setActiveProfileId] = useState(null);
@@ -647,12 +655,14 @@ const Leaderboard = () => {
       <div
         key={user.userId || rankNumber}
         onClick={() => setActiveProfileId(user.userId)}
-        className="w-full max-w-[428px] sm:max-w-[1102px] h-[62px] sm:h-[72px] rounded-[20px] flex items-center justify-between hover:bg-[#F3EFE6] transition-colors cursor-pointer select-none px-3.5 sm:px-[20px] py-[10px] gap-2 sm:gap-4"
+        className={`w-full max-w-[428px] sm:max-w-[1102px] h-[62px] sm:h-[72px] rounded-[20px] flex items-center justify-between ${
+          isDarkMode ? 'hover:bg-[rgba(43,51,64,0.7)]' : 'hover:bg-[#F3EFE6]'
+        } transition-colors cursor-pointer select-none px-3.5 sm:px-[20px] py-[10px] gap-2 sm:gap-4`}
         style={{
           opacity: 1,
           transform: 'rotate(0deg)',
           borderRadius: '20px',
-          background: 'rgba(249, 247, 241, 1)',
+          background: isDarkMode ? 'rgba(43, 51, 64, 0.5)' : 'rgba(249, 247, 241, 1)',
           boxSizing: 'border-box',
         }}
       >
@@ -667,7 +677,7 @@ const Leaderboard = () => {
                 fontFamily: '"Baloo 2", cursive, sans-serif',
                 fontWeight: 600,
                 letterSpacing: '-0.04em',
-                color: '#000000',
+                color: isDarkMode ? '#FFFFFF' : '#000000',
               }}
             >
               #{rankNumber}
@@ -693,7 +703,9 @@ const Leaderboard = () => {
 
           <div className="flex items-center gap-1.5 min-w-0 flex-1">
             <span
-              className="text-[14px] sm:text-[19.6px] text-[#0E0F0C] truncate leading-tight font-semibold"
+              className={`text-[14px] sm:text-[19.6px] ${
+                isDarkMode ? 'text-white' : 'text-[#0E0F0C]'
+              } truncate leading-tight font-semibold`}
               style={{
                 fontFamily: '"Baloo 2", cursive, sans-serif',
                 fontWeight: 600,
@@ -708,7 +720,9 @@ const Leaderboard = () => {
             </span>
             {isCurrent && (
               <span
-                className="text-gray-500 font-medium text-[10px] sm:text-[13px] shrink-0"
+                className={`${
+                  isDarkMode ? 'text-gray-300' : 'text-gray-500'
+                } font-medium text-[10px] sm:text-[13px] shrink-0`}
                 style={{ fontFamily: '"Poppins", sans-serif' }}
               >
                 {t('leaderboard.you', '(you)')}
@@ -729,7 +743,9 @@ const Leaderboard = () => {
           {/* Earning */}
           <div className="flex flex-col items-start min-w-[56px] sm:min-w-[90px] w-auto sm:w-[107.35px]">
             <span
-              className="text-[10px] sm:text-[14px] text-black h-[12px] sm:h-[14px] flex items-center"
+              className={`text-[10px] sm:text-[14px] ${
+                isDarkMode ? 'text-white/70' : 'text-black'
+              } h-[12px] sm:h-[14px] flex items-center`}
               style={{
                 opacity: 1,
                 transform: 'rotate(0deg)',
@@ -737,6 +753,7 @@ const Leaderboard = () => {
                 fontWeight: 500,
                 letterSpacing: '0%',
                 margin: 0,
+                color: isDarkMode ? 'rgba(255, 255, 255, 0.7)' : '#000000',
               }}
             >
               {t('leaderboard.earning', 'Earning')}
@@ -754,7 +771,7 @@ const Leaderboard = () => {
                   fontWeight: 600,
                   lineHeight: '1.2',
                   letterSpacing: '0%',
-                  color: 'rgba(190, 146, 0, 1)',
+                  color: isDarkMode ? '#E5A00D' : 'rgba(190, 146, 0, 1)',
                   opacity: 1,
                   transform: 'rotate(0deg)',
                   margin: 0,
@@ -771,7 +788,9 @@ const Leaderboard = () => {
           {/* Prize */}
           <div className="flex flex-col items-start min-w-[46px] sm:min-w-[80px] w-auto sm:w-[107.35px]">
             <span
-              className="text-[10px] sm:text-[14px] text-black h-[12px] sm:h-[14px] flex items-center"
+              className={`text-[10px] sm:text-[14px] ${
+                isDarkMode ? 'text-white/70' : 'text-black'
+              } h-[12px] sm:h-[14px] flex items-center`}
               style={{
                 opacity: 1,
                 transform: 'rotate(0deg)',
@@ -779,6 +798,7 @@ const Leaderboard = () => {
                 fontWeight: 500,
                 letterSpacing: '0%',
                 margin: 0,
+                color: isDarkMode ? 'rgba(255, 255, 255, 0.7)' : '#000000',
               }}
             >
               {t('leaderboard.prize', 'Prize')}
@@ -798,7 +818,7 @@ const Leaderboard = () => {
                       fontWeight: 600,
                       lineHeight: '1.2',
                       letterSpacing: '0%',
-                      color: 'rgba(190, 146, 0, 1)',
+                      color: isDarkMode ? '#E5A00D' : 'rgba(190, 146, 0, 1)',
                       opacity: 1,
                       transform: 'rotate(0deg)',
                       margin: 0,
@@ -811,7 +831,7 @@ const Leaderboard = () => {
                   </span>
                 </>
               ) : (
-                <span className="text-gray-400 text-[12px] sm:text-[14px] font-medium leading-none">-</span>
+                <span className={`${isDarkMode ? 'text-gray-500' : 'text-gray-400'} text-[12px] sm:text-[14px] font-medium leading-none`}>-</span>
               )}
             </div>
           </div>
@@ -825,9 +845,9 @@ const Leaderboard = () => {
       <div className="w-full flex flex-col items-center">
         {/* Top Hero Banner Section */}
         <div
-          className="w-full flex justify-center items-center"
+          className="w-full flex justify-center items-center transition-colors duration-300"
           style={{
-            background: 'rgba(249, 247, 241, 1)',
+            background: isDarkMode ? 'rgba(23, 26, 29, 1)' : 'rgba(249, 247, 241, 1)',
             opacity: 1,
             transform: 'rotate(0deg)',
           }}
@@ -861,10 +881,10 @@ const Leaderboard = () => {
                 style={{
                   width: '100%',
                   maxWidth: '387px',
-                  height: '44px',
+                  minHeight: '44px',
                   opacity: 1,
                   transform: 'rotate(0deg)',
-                  gap: '16px',
+                  gap: '8px',
                   boxSizing: 'border-box',
                 }}
               >
@@ -879,7 +899,7 @@ const Leaderboard = () => {
                     lineHeight: '28px',
                     letterSpacing: '-0.02em',
                     textAlign: 'center',
-                    color: '#000000',
+                    color: isDarkMode ? '#FFFFFF' : '#000000',
                     margin: 0,
                     display: 'flex',
                     alignItems: 'center',
@@ -889,6 +909,17 @@ const Leaderboard = () => {
                 >
                   {t('leaderboard.pageTitle', 'Leaderboard')}
                 </h1>
+                <p
+                  className="text-[12px] sm:text-[13px] text-center"
+                  style={{
+                    fontFamily: '"Poppins", sans-serif',
+                    fontWeight: 400,
+                    color: isDarkMode ? 'rgba(255, 255, 255, 0.7)' : 'rgba(14, 15, 12, 0.7)',
+                    margin: 0,
+                  }}
+                >
+                  {t('leaderboard.pageSubtitle', 'Top users ranked by earnings — win prizes every cycle!')}
+                </p>
               </div>
 
               {/* Period Switcher Tabs */}
@@ -902,12 +933,14 @@ const Leaderboard = () => {
                   }}
                 >
                   <div
-                    className={`flex items-center bg-white border border-black/[0.06] shadow-sm ${
+                    className={`flex items-center shadow-sm ${
                       isEn
                         ? 'w-[246px]'
                         : 'w-auto min-w-[280px] min-[360px]:min-w-[310px] max-w-[calc(100vw-32px)]'
-                    } h-[41px] p-[5px_6px] gap-[5px] rounded-[1000px] md:w-auto md:h-auto md:p-1 md:gap-0 md:rounded-[50px]`}
+                    } h-[41px] p-[5px_6px] gap-[5px] rounded-[1000px] md:w-auto md:h-auto md:p-1 md:gap-0 md:rounded-[50px] transition-colors duration-300`}
                     style={{
+                      background: isDarkMode ? 'rgba(34, 39, 48, 1)' : '#FFFFFF',
+                      border: isDarkMode ? '1px solid rgba(255, 255, 255, 0.06)' : '1px solid rgba(0, 0, 0, 0.06)',
                       boxSizing: 'border-box',
                       opacity: 1,
                       transform: 'rotate(0deg)',
@@ -924,7 +957,9 @@ const Leaderboard = () => {
                             isEn ? 'px-2' : 'px-2 min-[360px]:px-3'
                           } md:px-[18px] py-0 md:py-[11px]`}
                           style={{
-                            background: isActive ? 'rgba(36, 50, 77, 1)' : 'transparent',
+                            background: isActive
+                              ? (isDarkMode ? 'rgba(14, 15, 12, 1)' : 'rgba(36, 50, 77, 1)')
+                              : 'transparent',
                             boxSizing: 'border-box',
                           }}
                         >
@@ -935,7 +970,9 @@ const Leaderboard = () => {
                               fontSize: isEn ? '14px' : '13px',
                               lineHeight: '100%',
                               letterSpacing: '0%',
-                              color: isActive ? 'rgba(255, 255, 255, 1)' : '#000000',
+                              color: isActive
+                                ? '#FFFFFF'
+                                : (isDarkMode ? 'rgba(255, 255, 255, 0.7)' : '#000000'),
                               whiteSpace: 'nowrap',
                             }}
                           >
@@ -955,10 +992,10 @@ const Leaderboard = () => {
                 <div className="w-8 h-8 rounded-full border-2 border-amber-500 border-t-transparent animate-spin" />
               </div>
             ) : enabledPeriods.length === 0 ? (
-              <div className="text-center py-12 bg-white rounded-[20px] max-w-md w-full border border-gray-100 shadow-sm">
+              <div className={`text-center py-12 ${isDarkMode ? 'bg-[rgba(34,39,48,1)] text-white border-white/10' : 'bg-white border-gray-100'} rounded-[20px] max-w-md w-full border shadow-sm`}>
                 <FiLock className="text-4xl text-gray-400 mx-auto mb-3" />
-                <h2 className="text-lg font-bold text-gray-800 mb-1">{t('leaderboard.inactiveTitle', 'Leaderboard Inactive')}</h2>
-                <p className="text-gray-500 text-xs">{t('leaderboard.inactiveDesc', 'Check back later for active cycles!')}</p>
+                <h2 className="text-lg font-bold mb-1">{t('leaderboard.inactiveTitle', 'Leaderboard Inactive')}</h2>
+                <p className={`${isDarkMode ? 'text-gray-400' : 'text-gray-500'} text-xs`}>{t('leaderboard.inactiveDesc', 'Check back later for active cycles!')}</p>
               </div>
             ) : (
               <AnimatePresence mode="wait">
@@ -1024,7 +1061,7 @@ const Leaderboard = () => {
         {!loading && enabledPeriods.length > 0 && currentData?.enabled && (
           <div className="w-full max-w-[1102px] mx-auto mt-8 sm:mt-12 mb-12 sm:mb-16 flex flex-col gap-2.5 sm:gap-3 px-2 sm:px-4 md:px-0 items-center">
             {!others.length && rankings.length <= 3 && (
-              <div className="text-center py-10 text-gray-400 text-sm font-medium bg-white rounded-[20px] border border-gray-100">
+              <div className={`text-center py-10 ${isDarkMode ? 'bg-[rgba(43,51,64,0.5)] text-gray-300 border-white/5' : 'bg-white text-gray-400 border-gray-100'} text-sm font-medium rounded-[20px] border`}>
                 {t('leaderboard.noOtherUsers', 'No other users on the leaderboard yet.')}
               </div>
             )}
