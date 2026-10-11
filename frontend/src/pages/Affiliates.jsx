@@ -1009,7 +1009,7 @@ const Affiliates = () => {
                                   <UserAvatar
                                     user={userObj}
                                     displayName={username}
-                                    className="w-5 h-5 sm:w-10 sm:h-10 border border-gray-100 shrink-0"
+                                    className={`w-5 h-5 sm:w-10 sm:h-10 border ${isDarkMode ? 'border-white/10' : 'border-gray-100'} shrink-0`}
                                     textClassName="text-[10px] sm:text-base font-bold"
                                   />
                                   <span
@@ -1152,7 +1152,7 @@ const Affiliates = () => {
                                 <div className="flex items-center gap-1 sm:gap-3 min-w-0 pr-0.5 sm:pr-2">
                                   <UserAvatar
                                     user={u}
-                                    className="w-5 h-5 sm:w-10 sm:h-10 border border-gray-100 shrink-0"
+                                    className={`w-5 h-5 sm:w-10 sm:h-10 border ${isDarkMode ? 'border-white/10' : 'border-gray-100'} shrink-0`}
                                     textClassName="text-[10px] sm:text-base font-bold"
                                   />
                                   <span
@@ -1295,7 +1295,7 @@ const Affiliates = () => {
                                   <UserAvatar
                                     user={userObj}
                                     displayName={username}
-                                    className="w-5 h-5 sm:w-10 sm:h-10 border border-gray-100 shrink-0"
+                                    className={`w-5 h-5 sm:w-10 sm:h-10 border ${isDarkMode ? 'border-white/10' : 'border-gray-100'} shrink-0`}
                                     textClassName="text-[10px] sm:text-base font-bold"
                                   />
                                   <span
