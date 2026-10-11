@@ -360,13 +360,13 @@ const Header = ({ onChatToggle, chatOpen, fullWidth }) => {
     <header className="sticky top-0 z-40 w-full transition-all" style={{
       background: 'transparent',
     }}>
-      {/* MOBILE TOP HEADER (Figma specs: w: 416, h: 48, top: 16, left: 12, gap: 26) */}
+      {/* MOBILE TOP HEADER */}
       <div
         className="lg:hidden w-full flex justify-center bg-transparent"
         style={{
           paddingTop: 'calc(16px + env(safe-area-inset-top, 0px))',
-          paddingLeft: '12px',
-          paddingRight: '12px',
+          paddingLeft: '8px',
+          paddingRight: '8px',
           paddingBottom: '8px',
         }}
       >
@@ -375,7 +375,7 @@ const Header = ({ onChatToggle, chatOpen, fullWidth }) => {
           style={{
             maxWidth: '416px',
             height: '48px',
-            gap: '8px',
+            gap: '6px',
             opacity: 1,
             transform: 'rotate(0deg)',
           }}
@@ -384,17 +384,17 @@ const Header = ({ onChatToggle, chatOpen, fullWidth }) => {
           <button
             id="header-mobile-brand-logo"
             onClick={() => navigate('/')}
-            className="flex items-center cursor-pointer border-0 bg-transparent p-0 shrink"
+            className="flex items-center cursor-pointer border-0 bg-transparent p-0 flex-shrink-0"
             style={{
-              maxWidth: '160px',
-              height: '28.5px',
+              width: '88px',
+              height: '16px',
               opacity: 1,
               transform: 'rotate(0deg)',
             }}
           >
             <svg
-              width="160"
-              height="28.5"
+              width="88"
+              height="16"
               viewBox="0 0 161 29"
               fill="none"
               xmlns="http://www.w3.org/2000/svg"
@@ -411,9 +411,8 @@ const Header = ({ onChatToggle, chatOpen, fullWidth }) => {
           <div
             className="flex items-center justify-end shrink-0"
             style={{
-              maxWidth: '280px',
               height: '48px',
-              gap: '8px',
+              gap: '6px',
               opacity: 1,
               transform: 'rotate(0deg)',
             }}
@@ -426,7 +425,7 @@ const Header = ({ onChatToggle, chatOpen, fullWidth }) => {
               className="flex items-center"
               style={{
                 height: '29px',
-                gap: '8px',
+                gap: '5px',
                 opacity: 1,
                 transform: 'rotate(0deg)',
               }}
@@ -505,13 +504,12 @@ const Header = ({ onChatToggle, chatOpen, fullWidth }) => {
                 onClick={() => setIsMobileDropdownOpen(!isMobileDropdownOpen)}
                 className="flex items-center cursor-pointer flex-shrink-0"
                 style={{
-                  width: '150px',
                   height: '48px',
                   gap: '5px',
                   paddingTop: '5px',
-                  paddingRight: '11px',
+                  paddingRight: '10px',
                   paddingBottom: '5px',
-                  paddingLeft: '6px',
+                  paddingLeft: '5px',
                   borderRadius: '80px',
                   background: 'rgba(255, 255, 255, 1)',
                   border: 'none',
@@ -521,13 +519,12 @@ const Header = ({ onChatToggle, chatOpen, fullWidth }) => {
                   transform: 'rotate(0deg)',
                 }}
               >
-                {/* Profile Image, Username & Coin (width: 113, height: 38, gap: 8px) */}
+                {/* Profile Image, Username & Coin */}
                 <div
                   className="flex items-center"
                   style={{
-                    width: '113px',
                     height: '38px',
-                    gap: '8px',
+                    gap: '6px',
                     opacity: 1,
                     transform: 'rotate(0deg)',
                   }}
@@ -1298,7 +1295,7 @@ const Header = ({ onChatToggle, chatOpen, fullWidth }) => {
           boxShadow: '0px -4px 20px 0px rgba(0, 0, 0, 0.06)',
           backdropFilter: 'blur(29px)',
           WebkitBackdropFilter: 'blur(29px)',
-          paddingBottom: 'var(--mobile-nav-pb, env(safe-area-inset-bottom, 0px))',
+          paddingBottom: 'var(--mobile-nav-pb, 2px)',
           transform: 'translateZ(0)',
           WebkitTransform: 'translateZ(0)',
         }}

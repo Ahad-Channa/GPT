@@ -378,20 +378,38 @@
 
 /* ─── Mobile Sticky Bottom Navigation & iOS Safe Area ──────── */
 :root {
-  --mobile-nav-pb: env(safe-area-inset-bottom, 0px);
-  --mobile-more-bottom: calc(74px + env(safe-area-inset-bottom, 0px));
+  --mobile-nav-pb: 2px;
+  --mobile-more-bottom: 74px;
 }
 
 @supports (-webkit-touch-callout: none) {
   :root {
-    --mobile-nav-pb: calc(env(safe-area-inset-bottom, 0px) + 20px);
-    --mobile-more-bottom: calc(74px + env(safe-area-inset-bottom, 0px) + 20px);
+    --mobile-nav-pb: 2px;
+    --mobile-more-bottom: 74px;
   }
 
   .mobile-bottom-nav {
     background: #ffffff !important;
     backdrop-filter: none !important;
     -webkit-backdrop-filter: none !important;
+    bottom: 0 !important;
+    padding-bottom: 2px !important;
+    -webkit-transform: translate3d(0, 0, 0) !important;
+    transform: translate3d(0, 0, 0) !important;
+    -webkit-backface-visibility: hidden !important;
+    backface-visibility: hidden !important;
+  }
+
+  /* Seamless bleed extending under the Safari browser toolbar to eliminate any scroll gap */
+  .mobile-bottom-nav::after {
+    content: "";
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    height: 120px;
+    background: #ffffff;
+    pointer-events: none;
   }
 }
 
@@ -406,10 +424,10 @@
 @media (max-width: 1023px) {
   @supports (-webkit-touch-callout: none) {
     .mobile-chat-bottom {
-      padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 72px) !important;
+      padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 14px) !important;
     }
     .mobile-notif-bottom {
-      padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 72px) !important;
+      padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 14px) !important;
     }
   }
 }

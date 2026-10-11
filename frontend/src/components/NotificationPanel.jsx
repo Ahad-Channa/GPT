@@ -131,23 +131,23 @@ export default function NotificationPanel() {
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
             onClick={closePanel}
-            className="fixed inset-0 z-40 bg-black/25 backdrop-blur-[2px] cursor-pointer"
+            style={{ position: 'fixed', inset: 0, zIndex: 45 }}
+            className="lg:bg-transparent bg-black/40 backdrop-blur-sm lg:backdrop-blur-none lg:pointer-events-none cursor-pointer"
           />
 
-          {/* ── Main Notification Sidebar (width: 370, desktop: 10px from top, bottom, right) ── */}
+          {/* ── Main Notification Sidebar (Mobile: top 16px, bottom 0, left 40px, right 10px, max-w 370px, h: calc(100dvh-16px); Desktop: 10px from top, bottom, right) ── */}
           <motion.div
             ref={panelRef}
             initial={{ x: '110%', opacity: 0 }}
             animate={{ x: 0, opacity: 1 }}
             exit={{ x: '110%', opacity: 0 }}
             transition={{ type: 'spring', damping: 28, stiffness: 220 }}
-            className="fixed z-50 flex flex-col overflow-hidden box-border bg-[#FFFFFF] shadow-[-8px_0px_36px_0px_rgba(0,0,0,0.12)] border border-black/5 top-0 right-0 bottom-0 h-screen w-full max-w-[370px] rounded-l-[30px] rounded-r-none lg:top-[10px] lg:bottom-[10px] lg:right-[10px] lg:h-[calc(100vh-20px)] lg:rounded-[30px]"
+            className="fixed z-50 flex flex-col overflow-hidden box-border bg-[#FFFFFF] shadow-[-8px_0px_36px_0px_rgba(0,0,0,0.12)] border border-black/5 top-[16px] bottom-0 left-[40px] right-[10px] ml-auto max-w-[370px] max-h-[1000px] h-[calc(100dvh-16px)] rounded-t-[30px] rounded-b-none opacity-100 rotate-0 lg:top-[10px] lg:bottom-[10px] lg:right-[10px] lg:left-auto lg:h-[calc(100vh-20px)] lg:max-h-none lg:w-[370px] lg:max-w-[370px] lg:rounded-[30px]"
           >
             {/* ── Top Header Area ── */}
             <div
-              className="flex items-center justify-between shrink-0"
+              className="flex items-center justify-between shrink-0 p-4 pb-3"
               style={{
-                padding: '22px 20px 16px',
                 boxSizing: 'border-box',
               }}
             >
@@ -227,7 +227,7 @@ export default function NotificationPanel() {
             <div
               className="mobile-notif-bottom flex-1 overflow-y-auto no-scrollbar"
               style={{
-                padding: '12px 20px',
+                padding: '12px 16px',
                 display: 'flex',
                 flexDirection: 'column',
                 scrollbarWidth: 'none',
