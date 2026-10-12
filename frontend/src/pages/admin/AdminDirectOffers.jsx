@@ -710,17 +710,6 @@ const AdminDirectOffers = () => {
     }
   };
 
-  const backendBaseUrl = import.meta.env.VITE_API_URL?.replace(/\/api\/?$/, '') || 'http://localhost:5000';
-
-  const buildPostbackUrl = (offer) => {
-    const m = offer.postbackMapping || {};
-    const clickIdParam = m.clickIdParam || 'click_id';
-    const statusParam  = m.statusParam  || 'status';
-    const approvedVal  = m.approvedValue || 'approved';
-    const payoutParam  = m.payoutParam  || 'payout';
-    return `${backendBaseUrl}/api/direct-offers/postback?${clickIdParam}={CLICK_ID}&${statusParam}=${approvedVal}&${payoutParam}={PAYOUT}&secret={SECRET}`;
-  };
-
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -820,19 +809,22 @@ const AdminDirectOffers = () => {
                       </div>
                     )}
 
-                    <div>
-                      <p className="text-[11px] text-slate-700 mb-1">Give this URL to your advertiser:</p>
-                      <div className="flex items-start gap-2">
-                        <code className="text-[10px] text-slate-950 font-mono bg-white border border-slate-200 px-2 py-1 rounded break-all flex-1">
-                          {buildPostbackUrl(offer)}
-                        </code>
-                        <button onClick={() => copyPostbackUrl(offer)}
-                          className="text-slate-600 hover:text-slate-950 flex-shrink-0 mt-1" title="Copy postback URL">
-                          {copiedId === offer._id + 'url' ? <FiCheckCircle className="text-emerald-700" /> : <FiCopy />}
+                    <div className="space-y-2">
+                      <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:justify-between">
+                        <p className="text-xs font-semibold text-slate-800">
+                          Postback URL is configured securely.
+                        </p>
+                        <button
+                          type="button"
+                          onClick={() => copyPostbackUrl(offer)}
+                          className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-900 text-white hover:bg-slate-800 text-xs font-semibold transition-colors w-fit"
+                        >
+                          {copiedId === offer._id + 'url' ? <FiCheckCircle className="text-emerald-300" /> : <FiCopy />}
+                          {copiedId === offer._id + 'url' ? 'Copied' : 'Copy Advertiser Postback URL'}
                         </button>
                       </div>
-                      <p className="text-[10px] text-slate-600 mt-1">
-                        Replace <code className="text-slate-800">{'{CLICK_ID}'}</code>, <code className="text-slate-800">{'{PAYOUT}'}</code>, and <code className="text-slate-800">{'{SECRET}'}</code> in the advertiser system.
+                      <p className="text-[11px] text-slate-600">
+                        Send this URL to your advertiser. Their system will replace the placeholders automatically when a conversion happens.
                       </p>
                     </div>
                   </div>

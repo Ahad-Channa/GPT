@@ -411,7 +411,9 @@ test('frontend admin pages do not render plaintext provider or direct-offer secr
   assert.match(providers, /hashAlgorithm/);
   assert.match(providers, /adapterKey/);
   assert.doesNotMatch(directOffers, /postbackSecretKey/);
-  assert.match(directOffers, /secret=\{SECRET\}/);
+  assert.doesNotMatch(directOffers, /secret=\{SECRET\}/);
+  assert.match(directOffers, /Postback URL is configured securely/);
+  assert.match(directOffers, /Copy Advertiser Postback URL/);
   assert.doesNotMatch(postbackLogs, /secretValue|postbackSecretKey|authorization:\s*`Bearer/);
 });
 
