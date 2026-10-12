@@ -634,5 +634,37 @@
   "common": {
     "networkError": "Network error. Please try again.",
     "copiedToClipboard": "Copied to clipboard!"
+  },
+  "publicProfile": {
+    "loading": "Loading profile...",
+    "notFoundTitle": "Profile Not Found",
+    "notFoundDesc": "This user does not exist or has been removed.",
+    "close": "Close",
+    "networkError": "Network error loading profile",
+    "userNotFound": "User not found",
+    "backToLeaderboard": "Back to Leaderboard",
+    "joined": "Joined {{date}}",
+    "privateBadge": "This profile is private.",
+    "earningsPrivateTitle": "Earnings are private",
+    "earningsPrivateDesc": "This user has chosen to keep their offer history and earnings private.",
+    "coinsEarned": "Coin's Earned",
+    "thisMonth": "This Month",
+    "totalEarning": "Total Earning",
+    "allTime": "All Time",
+    "referredAffiliates": "Referred Affiliates",
+    "taskCompleted": "Task Completed",
+    "recentActivity": "Recent Activity",
+    "noRecentActivity": "No recent activity found.",
+    "noRecentOffers": "No recent offers found.",
+    "rewardCustomOffer": "Reward for custom offer",
+    "rewardTask": "Reward for completing task",
+    "rewardOffer": "Reward for completed offer",
+    "payoutProcessed": "Payout processed",
+    "withdrawal": "Withdrawal",
+    "taskPrefix": "Task: {{task}}",
+    "methodPrefix": "Method: {{method}}",
+    "taskCustomTask": "Task: custom task",
+    "taskOfferwall": "Task: offerwall task",
+    "taskCompletedText": "Task: completed"
   }
 }

@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 import {
   FiX, FiChevronLeft, FiChevronRight, FiAlertTriangle
 } from 'react-icons/fi';
@@ -17,18 +18,18 @@ const formatCoins = (val) => {
   return num.toLocaleString('de-DE');
 };
 
-const formatDate = (dateStr) => {
+const formatDate = (dateStr, locale = 'en-US') => {
   if (!dateStr) return '';
   const d = new Date(dateStr);
   if (isNaN(d.getTime())) return '';
-  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  return d.toLocaleDateString(locale, { month: 'short', day: 'numeric', year: 'numeric' });
 };
 
-const formatJoinedDate = (dateStr) => {
+const formatJoinedDate = (dateStr, locale = 'en-US') => {
   if (!dateStr) return '';
   const d = new Date(dateStr);
   if (isNaN(d.getTime())) return '';
-  return d.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+  return d.toLocaleDateString(locale, { month: 'short', year: 'numeric' });
 };
 
 const TIER_METADATA = {
@@ -84,27 +85,44 @@ const getTierGradient = (tier) => {
   return TIER_METADATA[tier]?.pillGradient || TIER_METADATA.Bronze.pillGradient;
 };
 
-const parseOfferDescription = (offer) => {
+const parseOfferDescription = (offer, t) => {
   const desc = offer.description || '';
   let heading = '';
   let subText = '';
 
+  const cleanPrefix = (str) => (str || '').replace(/^(task|aufgabe):\s*/i, '');
+
   if (desc.includes(':')) {
     const parts = desc.split(':');
-    heading = parts[0].trim();
-    subText = 'Task: ' + parts.slice(1).join(':').trim();
+    const first = parts[0].trim();
+    const rest = parts.slice(1).join(':').trim();
+
+    if (/^(reward for custom offer|custom offer)$/i.test(first)) {
+      heading = t ? t('publicProfile.rewardCustomOffer', 'Reward for custom offer') : 'Reward for custom offer';
+    } else if (/^(reward for completing task|offer reward)$/i.test(first)) {
+      heading = t ? t('publicProfile.rewardTask', 'Reward for completing task') : 'Reward for completing task';
+    } else {
+      heading = first;
+    }
+    subText = t ? t('publicProfile.taskPrefix', { task: cleanPrefix(rest), defaultValue: `Task: ${cleanPrefix(rest)}` }) : `Task: ${cleanPrefix(rest)}`;
   } else if (offer.transactionType === 'custom_offer_reward') {
-    heading = 'Reward for custom offer';
-    subText = desc ? `Task: ${desc}` : 'Task: custom task';
+    heading = t ? t('publicProfile.rewardCustomOffer', 'Reward for custom offer') : 'Reward for custom offer';
+    subText = desc
+      ? (t ? t('publicProfile.taskPrefix', { task: cleanPrefix(desc), defaultValue: `Task: ${cleanPrefix(desc)}` }) : `Task: ${cleanPrefix(desc)}`)
+      : (t ? t('publicProfile.taskCustomTask', 'Task: custom task') : 'Task: custom task');
   } else if (offer.transactionType === 'offer_reward') {
-    heading = 'Reward for completing task';
-    subText = desc ? `Task: ${desc}` : 'Task: offerwall task';
+    heading = t ? t('publicProfile.rewardTask', 'Reward for completing task') : 'Reward for completing task';
+    subText = desc
+      ? (t ? t('publicProfile.taskPrefix', { task: cleanPrefix(desc), defaultValue: `Task: ${cleanPrefix(desc)}` }) : `Task: ${cleanPrefix(desc)}`)
+      : (t ? t('publicProfile.taskOfferwall', 'Task: offerwall task') : 'Task: offerwall task');
   } else if (offer.transactionType === 'withdrawal') {
-    heading = 'Payout processed';
-    subText = desc ? `Method: ${desc}` : 'Withdrawal';
+    heading = t ? t('publicProfile.payoutProcessed', 'Payout processed') : 'Payout processed';
+    subText = desc
+      ? (t ? t('publicProfile.methodPrefix', { method: desc, defaultValue: `Method: ${desc}` }) : `Method: ${desc}`)
+      : (t ? t('publicProfile.withdrawal', 'Withdrawal') : 'Withdrawal');
   } else {
-    heading = desc || 'Reward for completed offer';
-    subText = 'Task: completed';
+    heading = desc || (t ? t('publicProfile.rewardOffer', 'Reward for completed offer') : 'Reward for completed offer');
+    subText = t ? t('publicProfile.taskCompletedText', 'Task: completed') : 'Task: completed';
   }
 
   return { heading, subText };
@@ -120,6 +138,10 @@ const ITEMS_PER_PAGE = 5;
  */
 const PublicProfileModal = ({ userId, onClose }) => {
   const { isDarkMode } = useTheme();
+  const { t, i18n } = useTranslation();
+  const isEn = (i18n?.language || 'en').startsWith('en');
+  const dateLocale = isEn ? 'en-US' : 'de-DE';
+
   const [profile, setProfile] = useState(null);
   const [recentOffers, setRecentOffers] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -219,7 +241,9 @@ const PublicProfileModal = ({ userId, onClose }) => {
           {loading && (
             <div className="flex flex-col justify-center items-center py-24 gap-3">
               <div className="w-10 h-10 rounded-full border-3 border-amber-200 border-t-amber-500 animate-spin" />
-              <span className={`text-sm font-medium ${isDarkMode ? 'text-neutral-400' : 'text-neutral-500'}`}>Loading profile...</span>
+              <span className={`text-sm font-medium ${isDarkMode ? 'text-neutral-400' : 'text-neutral-500'}`}>
+                {t('publicProfile.loading', 'Loading profile...')}
+              </span>
             </div>
           )}
 
@@ -229,15 +253,23 @@ const PublicProfileModal = ({ userId, onClose }) => {
               <div className="w-14 h-14 rounded-2xl bg-red-100 flex items-center justify-center text-red-500">
                 <FiAlertTriangle size={24} />
               </div>
-              <div className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-black'}`}>Profile Not Found</div>
+              <div className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-black'}`}>
+                {t('publicProfile.notFoundTitle', 'Profile Not Found')}
+              </div>
               <div className={`text-sm ${isDarkMode ? 'text-neutral-400' : 'text-neutral-500'} max-w-[280px]`}>
-                {error || 'This user does not exist or has been removed.'}
+                {error
+                  ? (error === 'User not found'
+                      ? t('publicProfile.userNotFound', 'User not found')
+                      : error === 'Network error loading profile'
+                        ? t('publicProfile.networkError', 'Network error loading profile')
+                        : error)
+                  : t('publicProfile.notFoundDesc', 'This user does not exist or has been removed.')}
               </div>
               <button
                 onClick={onClose}
                 className="mt-2 px-5 py-2 rounded-xl bg-black text-white font-semibold text-sm hover:bg-neutral-800 transition-colors"
               >
-                Close
+                {t('publicProfile.close', 'Close')}
               </button>
             </div>
           )}
@@ -356,7 +388,7 @@ const PublicProfileModal = ({ userId, onClose }) => {
                         height: '21px',
                         gap: '4px',
                         borderRadius: '100px',
-                        padding: '2px 8px',
+                        padding: isEn ? '2px 8px' : '2px 7px',
                         background: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : '#FFFFFF',
                         display: 'flex',
                         alignItems: 'center',
@@ -385,7 +417,7 @@ const PublicProfileModal = ({ userId, onClose }) => {
                         style={{
                           fontFamily: '"Poppins", sans-serif',
                           fontWeight: 500,
-                          fontSize: '12px',
+                          fontSize: isEn ? '12px' : '11.5px',
                           lineHeight: '1',
                           letterSpacing: '0%',
                           textAlign: 'center',
@@ -394,7 +426,10 @@ const PublicProfileModal = ({ userId, onClose }) => {
                           display: 'block',
                         }}
                       >
-                        Joined {formatJoinedDate(profile.createdAt) || '2026'}
+                        {t('publicProfile.joined', {
+                          date: formatJoinedDate(profile.createdAt, dateLocale) || '2026',
+                          defaultValue: `Joined ${formatJoinedDate(profile.createdAt, dateLocale) || '2026'}`
+                        })}
                       </span>
                     </div>
                   </div>
@@ -436,7 +471,7 @@ const PublicProfileModal = ({ userId, onClose }) => {
                         color: '#FFFFFF',
                       }}
                     >
-                      This profile is private.
+                      {t('publicProfile.privateBadge', 'This profile is private.')}
                     </span>
                   </div>
                 </div>
@@ -506,10 +541,13 @@ const PublicProfileModal = ({ userId, onClose }) => {
                       />
                     </div>
 
-                    {/* Info Layout: width 212px, height 54px, gap 15px */}
+                    {/* Info Layout */}
                     <div
                       style={{
-                        width: '212px',
+                        width: 'auto',
+                        minWidth: 0,
+                        maxWidth: 'calc(100% - 90px)',
+                        flex: 1,
                         height: '54px',
                         display: 'flex',
                         flexDirection: 'column',
@@ -518,10 +556,10 @@ const PublicProfileModal = ({ userId, onClose }) => {
                         opacity: 1,
                       }}
                     >
-                      {/* Username Layout: width 212px, height 18px, Bricolage Grotesque 700, 27px, -2% */}
+                      {/* Username Layout */}
                       <div
                         style={{
-                          width: '212px',
+                          width: '100%',
                           height: '18px',
                           display: 'flex',
                           alignItems: 'center',
@@ -568,7 +606,7 @@ const PublicProfileModal = ({ userId, onClose }) => {
                             height: '21px',
                             gap: '4px',
                             borderRadius: '100px',
-                            padding: '2px 8px',
+                            padding: isEn ? '2px 8px' : '2px 7px',
                             background: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : '#FFFFFF',
                             display: 'flex',
                             alignItems: 'center',
@@ -597,7 +635,7 @@ const PublicProfileModal = ({ userId, onClose }) => {
                             style={{
                               fontFamily: '"Poppins", sans-serif',
                               fontWeight: 500,
-                              fontSize: '12px',
+                              fontSize: isEn ? '12px' : '11.5px',
                               lineHeight: '1',
                               letterSpacing: '0%',
                               textAlign: 'center',
@@ -606,7 +644,10 @@ const PublicProfileModal = ({ userId, onClose }) => {
                               display: 'block',
                             }}
                           >
-                            Joined {formatJoinedDate(profile.createdAt) || '2026'}
+                            {t('publicProfile.joined', {
+                              date: formatJoinedDate(profile.createdAt, dateLocale) || '2026',
+                              defaultValue: `Joined ${formatJoinedDate(profile.createdAt, dateLocale) || '2026'}`
+                            })}
                           </span>
                         </div>
 
@@ -668,9 +709,9 @@ const PublicProfileModal = ({ userId, onClose }) => {
                         minHeight: '105px',
                         borderRadius: '13px',
                         paddingTop: '14px',
-                        paddingRight: '11px',
+                        paddingRight: isEn ? '11px' : '8px',
                         paddingBottom: '14px',
-                        paddingLeft: '11px',
+                        paddingLeft: isEn ? '11px' : '8px',
                         background: isDarkMode ? 'rgba(12, 14, 17, 1)' : 'rgba(255, 255, 255, 1)',
                         gap: '10px',
                         display: 'flex',
@@ -722,7 +763,7 @@ const PublicProfileModal = ({ userId, onClose }) => {
                             style={{
                               fontFamily: '"Bricolage Grotesque", sans-serif',
                               fontWeight: 700,
-                              fontSize: '14px',
+                              fontSize: isEn ? '14px' : '13px',
                               lineHeight: '1',
                               letterSpacing: '-0.02em',
                               color: isDarkMode ? '#FFFFFF' : '#000000',
@@ -730,7 +771,7 @@ const PublicProfileModal = ({ userId, onClose }) => {
                               display: 'block',
                             }}
                           >
-                            Coin's Earned
+                            {t('publicProfile.coinsEarned', "Coin's Earned")}
                           </span>
                         </div>
                         <div
@@ -754,7 +795,7 @@ const PublicProfileModal = ({ userId, onClose }) => {
                               display: 'block',
                             }}
                           >
-                            This Month
+                            {t('publicProfile.thisMonth', 'This Month')}
                           </span>
                         </div>
                       </div>
@@ -768,9 +809,9 @@ const PublicProfileModal = ({ userId, onClose }) => {
                         minHeight: '105px',
                         borderRadius: '13px',
                         paddingTop: '14px',
-                        paddingRight: '11px',
+                        paddingRight: isEn ? '11px' : '8px',
                         paddingBottom: '14px',
-                        paddingLeft: '11px',
+                        paddingLeft: isEn ? '11px' : '8px',
                         background: isDarkMode ? 'rgba(12, 14, 17, 1)' : 'rgba(255, 255, 255, 1)',
                         gap: '10px',
                         display: 'flex',
@@ -822,7 +863,7 @@ const PublicProfileModal = ({ userId, onClose }) => {
                             style={{
                               fontFamily: '"Bricolage Grotesque", sans-serif',
                               fontWeight: 700,
-                              fontSize: '14px',
+                              fontSize: isEn ? '14px' : '13px',
                               lineHeight: '1',
                               letterSpacing: '-0.02em',
                               color: isDarkMode ? '#FFFFFF' : '#000000',
@@ -830,7 +871,7 @@ const PublicProfileModal = ({ userId, onClose }) => {
                               display: 'block',
                             }}
                           >
-                            Total Earning
+                            {t('publicProfile.totalEarning', 'Total Earning')}
                           </span>
                         </div>
                         <div
@@ -854,7 +895,7 @@ const PublicProfileModal = ({ userId, onClose }) => {
                               display: 'block',
                             }}
                           >
-                            All Time
+                            {t('publicProfile.allTime', 'All Time')}
                           </span>
                         </div>
                       </div>
@@ -868,9 +909,9 @@ const PublicProfileModal = ({ userId, onClose }) => {
                         minHeight: '105px',
                         borderRadius: '13px',
                         paddingTop: '14px',
-                        paddingRight: '11px',
+                        paddingRight: isEn ? '11px' : '8px',
                         paddingBottom: '14px',
-                        paddingLeft: '11px',
+                        paddingLeft: isEn ? '11px' : '8px',
                         background: isDarkMode ? 'rgba(12, 14, 17, 1)' : 'rgba(255, 255, 255, 1)',
                         gap: '10px',
                         display: 'flex',
@@ -917,7 +958,7 @@ const PublicProfileModal = ({ userId, onClose }) => {
                             style={{
                               fontFamily: '"Bricolage Grotesque", sans-serif',
                               fontWeight: 700,
-                              fontSize: '14px',
+                              fontSize: isEn ? '14px' : '13px',
                               lineHeight: '1',
                               letterSpacing: '-0.02em',
                               color: isDarkMode ? '#FFFFFF' : '#000000',
@@ -925,7 +966,7 @@ const PublicProfileModal = ({ userId, onClose }) => {
                               display: 'block',
                             }}
                           >
-                            Referred Affiliates
+                            {t('publicProfile.referredAffiliates', 'Referred Affiliates')}
                           </span>
                         </div>
                         <div
@@ -949,7 +990,7 @@ const PublicProfileModal = ({ userId, onClose }) => {
                               display: 'block',
                             }}
                           >
-                            All Time
+                            {t('publicProfile.allTime', 'All Time')}
                           </span>
                         </div>
                       </div>
@@ -963,9 +1004,9 @@ const PublicProfileModal = ({ userId, onClose }) => {
                         minHeight: '105px',
                         borderRadius: '13px',
                         paddingTop: '14px',
-                        paddingRight: '11px',
+                        paddingRight: isEn ? '11px' : '8px',
                         paddingBottom: '14px',
-                        paddingLeft: '11px',
+                        paddingLeft: isEn ? '11px' : '8px',
                         background: isDarkMode ? 'rgba(12, 14, 17, 1)' : 'rgba(255, 255, 255, 1)',
                         gap: '10px',
                         display: 'flex',
@@ -1012,7 +1053,7 @@ const PublicProfileModal = ({ userId, onClose }) => {
                             style={{
                               fontFamily: '"Bricolage Grotesque", sans-serif',
                               fontWeight: 700,
-                              fontSize: '14px',
+                              fontSize: isEn ? '14px' : '13px',
                               lineHeight: '1',
                               letterSpacing: '-0.02em',
                               color: isDarkMode ? '#FFFFFF' : '#000000',
@@ -1020,7 +1061,7 @@ const PublicProfileModal = ({ userId, onClose }) => {
                               display: 'block',
                             }}
                           >
-                            Task Completed
+                            {t('publicProfile.taskCompleted', 'Task Completed')}
                           </span>
                         </div>
                         <div
@@ -1044,7 +1085,7 @@ const PublicProfileModal = ({ userId, onClose }) => {
                               display: 'block',
                             }}
                           >
-                            All Time
+                            {t('publicProfile.allTime', 'All Time')}
                           </span>
                         </div>
                       </div>
@@ -1077,7 +1118,7 @@ const PublicProfileModal = ({ userId, onClose }) => {
                         display: 'block',
                       }}
                     >
-                      Recent Activity
+                      {t('publicProfile.recentActivity', 'Recent Activity')}
                     </h3>
                   </div>
 
@@ -1090,7 +1131,7 @@ const PublicProfileModal = ({ userId, onClose }) => {
                       }}
                       className="p-4 text-center text-[13px] font-medium"
                     >
-                      No recent activity found.
+                      {t('publicProfile.noRecentActivity', 'No recent activity found.')}
                     </div>
                   ) : (() => {
                     const totalPages = Math.ceil(recentOffers.length / ITEMS_PER_PAGE);
@@ -1100,7 +1141,7 @@ const PublicProfileModal = ({ userId, onClose }) => {
                     return (
                       <div className="flex flex-col gap-2">
                         {pageOffers.map((offer) => {
-                          const { heading, subText } = parseOfferDescription(offer);
+                          const { heading, subText } = parseOfferDescription(offer, t);
 
                           return (
                             <div
@@ -1249,7 +1290,7 @@ const PublicProfileModal = ({ userId, onClose }) => {
                                       display: 'block',
                                     }}
                                   >
-                                    {formatDate(offer.createdAt)}
+                                    {formatDate(offer.createdAt, dateLocale)}
                                   </span>
                                 </div>
                               </div>

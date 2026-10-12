@@ -909,17 +909,6 @@ const Leaderboard = () => {
                 >
                   {t('leaderboard.pageTitle', 'Leaderboard')}
                 </h1>
-                <p
-                  className="text-[12px] sm:text-[13px] text-center"
-                  style={{
-                    fontFamily: '"Poppins", sans-serif',
-                    fontWeight: 400,
-                    color: isDarkMode ? 'rgba(255, 255, 255, 0.7)' : 'rgba(14, 15, 12, 0.7)',
-                    margin: 0,
-                  }}
-                >
-                  {t('leaderboard.pageSubtitle', 'Top users ranked by earnings — win prizes every cycle!')}
-                </p>
               </div>
 
               {/* Period Switcher Tabs */}

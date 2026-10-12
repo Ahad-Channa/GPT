@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import DashboardLayout from '../components/layout/DashboardLayout';
 import { motion } from 'framer-motion';
 import { FiStar, FiClock, FiShield, FiAlertTriangle, FiLock } from 'react-icons/fi';
@@ -25,6 +26,7 @@ function timeAgo(dateStr) {
 
 const PublicProfile = () => {
   const { id } = useParams();
+  const { t, i18n } = useTranslation();
   const [profile, setProfile] = useState(null);
   const [recentOffers, setRecentOffers] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -68,10 +70,10 @@ const PublicProfile = () => {
           <div className="w-16 h-16 rounded-2xl bg-rose-500/10 flex items-center justify-center mb-4">
             <FiAlertTriangle className="text-2xl text-rose-400" />
           </div>
-          <h2 className="text-xl font-bold text-white mb-2">Profile Not Found</h2>
-          <p className="text-slate-400 max-w-sm mb-6">{error || 'The user you are looking for does not exist or has been removed.'}</p>
+          <h2 className="text-xl font-bold text-white mb-2">{t('publicProfile.notFoundTitle', 'Profile Not Found')}</h2>
+          <p className="text-slate-400 max-w-sm mb-6">{error || t('publicProfile.notFoundDesc', 'The user you are looking for does not exist or has been removed.')}</p>
           <Link to="/leaderboard" className="px-6 py-3 rounded-xl bg-indigo-500/10 text-indigo-400 font-bold hover:bg-indigo-500/20 transition-colors">
-            Back to Leaderboard
+            {t('publicProfile.backToLeaderboard', 'Back to Leaderboard')}
           </Link>
         </div>
       </DashboardLayout>
@@ -107,13 +109,13 @@ const PublicProfile = () => {
                 {/* Total Earned — only shown for public profiles */}
                 {!profile.isPrivate && typeof profile.totalEarned !== 'undefined' && (
                   <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-amber-500/10 text-amber-400 border border-amber-500/20">
-                    Total Earned: <CoinDisplay amount={profile.totalEarned || 0} size={13} />
+                    {t('publicProfile.totalEarning', 'Total Earned')}: <CoinDisplay amount={profile.totalEarned || 0} size={13} />
                   </div>
                 )}
 
                 {profile.createdAt && (
                   <div className="flex items-center gap-1.5 text-slate-500">
-                    <FiClock /> Joined {new Date(profile.createdAt).getFullYear()}
+                    <FiClock /> {t('publicProfile.joined', { date: new Date(profile.createdAt).getFullYear() })}
                   </div>
                 )}
               </div>
@@ -127,22 +129,22 @@ const PublicProfile = () => {
             <div className="w-16 h-16 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center">
               <FiShield className="text-2xl text-indigo-400" />
             </div>
-            <h2 className="text-lg font-bold text-white">Earnings are private</h2>
+            <h2 className="text-lg font-bold text-white">{t('publicProfile.earningsPrivateTitle', 'Earnings are private')}</h2>
             <p className="text-slate-500 text-sm max-w-xs">
-              This user has chosen to keep their offer history and earnings private.
+              {t('publicProfile.earningsPrivateDesc', 'This user has chosen to keep their offer history and earnings private.')}
             </p>
           </motion.div>
         ) : (
           /* Recent Offers Section — public profiles only */
           <motion.div variants={item} className="bg-[#0c101b] border border-white/[0.08] rounded-3xl p-6 md:p-8">
             <h2 className="text-lg font-bold text-white mb-6 flex items-center gap-2">
-              <FiStar className="text-amber-400" /> Recent Activity
+              <FiStar className="text-amber-400" /> {t('publicProfile.recentActivity', 'Recent Activity')}
             </h2>
 
             <div className="space-y-3">
               {recentOffers.length === 0 ? (
                 <div className="text-center py-10 text-slate-500 text-sm">
-                  No recent offers found.
+                  {t('publicProfile.noRecentOffers', 'No recent offers found.')}
                 </div>
               ) : (
                 recentOffers.map((offer) => (

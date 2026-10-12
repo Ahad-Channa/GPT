@@ -634,5 +634,37 @@
   "common": {
     "networkError": "Netzwerkfehler. Bitte versuche es erneut.",
     "copiedToClipboard": "In die Zwischenablage kopiert!"
+  },
+  "publicProfile": {
+    "loading": "Profil wird geladen...",
+    "notFoundTitle": "Profil nicht gefunden",
+    "notFoundDesc": "Dieser Nutzer existiert nicht oder wurde entfernt.",
+    "close": "Schließen",
+    "networkError": "Netzwerkfehler beim Laden des Profils",
+    "userNotFound": "Benutzer nicht gefunden",
+    "backToLeaderboard": "Zurück zur Bestenliste",
+    "joined": "Dabei seit {{date}}",
+    "privateBadge": "Dieses Profil ist privat.",
+    "earningsPrivateTitle": "Einnahmen sind privat",
+    "earningsPrivateDesc": "Dieser Nutzer hat festgelegt, dass Angebotsverlauf und Einnahmen privat bleiben.",
+    "coinsEarned": "Verdiente Coins",
+    "thisMonth": "Diesen Monat",
+    "totalEarning": "Gesamtverdienst",
+    "allTime": "Gesamt",
+    "referredAffiliates": "Geworbene Partner",
+    "taskCompleted": "Erledigte Aufgaben",
+    "recentActivity": "Letzte Aktivitäten",
+    "noRecentActivity": "Keine aktuellen Aktivitäten gefunden.",
+    "noRecentOffers": "Keine aktuellen Angebote gefunden.",
+    "rewardCustomOffer": "Belohnung für Sonderangebot",
+    "rewardTask": "Belohnung für erledigte Aufgabe",
+    "rewardOffer": "Belohnung für abgeschlossenes Angebot",
+    "payoutProcessed": "Auszahlung verarbeitet",
+    "withdrawal": "Auszahlung",
+    "taskPrefix": "Aufgabe: {{task}}",
+    "methodPrefix": "Methode: {{method}}",
+    "taskCustomTask": "Aufgabe: Sonderangebot",
+    "taskOfferwall": "Aufgabe: Offerwall-Aufgabe",
+    "taskCompletedText": "Aufgabe: Abgeschlossen"
   }
 }

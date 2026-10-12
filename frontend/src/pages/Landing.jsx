@@ -893,7 +893,7 @@ const Landing = () => {
 
           {/* Image (Second on mobile, First on Desktop) */}
           <div
-            className="order-2 lg:order-1 flex-shrink-0 w-full lg:w-[640px] h-auto lg:h-[558px] px-0 mt-6 lg:mt-0 flex justify-center lg:justify-start overflow-hidden rounded-[24px] lg:rounded-[32px]"
+            className={`order-2 lg:order-1 flex-shrink-0 w-full lg:w-[640px] h-auto lg:h-[558px] px-0 mt-6 lg:mt-0 flex ${isMobile && isDe ? 'justify-start' : 'justify-center'} lg:justify-start overflow-hidden rounded-[24px] lg:rounded-[32px]`}
             style={isMobile ? { width: '100%', maxWidth: '100%' } : {}}
           >
             <img
@@ -910,9 +910,9 @@ const Landing = () => {
               style={
                 isMobile
                   ? {
-                    width: '100%',
-                    opacity: 1,
-                    clipPath: isDe ? 'inset(0 3px 0 0 round 24px)' : undefined
+                    width: isDe ? 'calc(100% + 18px)' : '100%',
+                    maxWidth: isDe ? 'none' : undefined,
+                    opacity: 1
                   }
                   : {
                     width: '100%',
