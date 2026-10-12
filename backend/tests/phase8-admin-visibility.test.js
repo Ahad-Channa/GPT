@@ -8,6 +8,7 @@ const path = require('node:path');
 process.env.FIREBASE_PROJECT_ID = process.env.FIREBASE_PROJECT_ID || 'your-project-id';
 
 const adminRouter = require('../routes/admin');
+const AdminLog = require('../models/AdminLog');
 const User = require('../models/User');
 const ClickLog = require('../models/ClickLog');
 const Conversion = require('../models/Conversion');
@@ -304,6 +305,42 @@ test('direct-offer postback URL helper includes stored secret without changing s
 
   const serialized = sanitizeDirectOfferAdmin({ ...offer, title: 'Direct' });
   assert.equal(JSON.stringify(serialized).includes('real-secret-value'), false);
+});
+
+test('direct-offer admin log actions validate and keep metadata secret-free', () => {
+  const adminId = '64f0f0f0f0f0f0f0f0f0f001';
+  const offerId = '64f0f0f0f0f0f0f0f0f0f002';
+  const details = {
+    offerId,
+    title: 'QA Direct Offer',
+    actionType: 'create',
+  };
+
+  for (const action of [
+    'CREATE_DIRECT_OFFER',
+    'UPDATE_DIRECT_OFFER',
+    'DEACTIVATE_DIRECT_OFFER',
+    'MANUAL_APPROVE_CLICK',
+    'MANUAL_REJECT_CLICK',
+  ]) {
+    const log = new AdminLog({ adminId, action, details });
+    assert.equal(log.validateSync(), undefined);
+  }
+
+  const json = JSON.stringify(details);
+  assert.equal(json.includes('postbackSecretKey'), false);
+  assert.equal(json.includes('secret='), false);
+});
+
+test('direct-offer admin routes log with db admin user and valid enum actions', () => {
+  const source = read('backend/routes/admin.js');
+
+  assert.match(source, /createLog\(req\.dbUser\._id,\s*'CREATE_DIRECT_OFFER'/);
+  assert.match(source, /createLog\(req\.dbUser\._id,\s*'UPDATE_DIRECT_OFFER'/);
+  assert.match(source, /createLog\(req\.dbUser\._id,\s*'DEACTIVATE_DIRECT_OFFER'/);
+  assert.doesNotMatch(source, /createLog\(req\.user\._id,\s*'create_direct_offer'/);
+  assert.doesNotMatch(source, /createLog\(req\.user\._id,\s*'update_direct_offer'/);
+  assert.doesNotMatch(source, /createLog\(req\.user\._id,\s*'deactivate_direct_offer'/);
 });
 
 test('phase 8 admin routes exist and are mounted under admin permission middleware', () => {

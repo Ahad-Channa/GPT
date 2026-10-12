@@ -40,7 +40,12 @@ const adminLogSchema = new mongoose.Schema(
         'TRANSACTION_PROOF_APPROVE',
         'TRANSACTION_PROOF_REJECT',
         'PROCESS_CHARGEBACK',
-        'PROCESS_CHARGEBACK_CASCADED'
+        'PROCESS_CHARGEBACK_CASCADED',
+        'CREATE_DIRECT_OFFER',
+        'UPDATE_DIRECT_OFFER',
+        'DEACTIVATE_DIRECT_OFFER',
+        'MANUAL_APPROVE_CLICK',
+        'MANUAL_REJECT_CLICK'
       ],
     },
     targetUserId: {
