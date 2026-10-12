@@ -53,6 +53,22 @@
 .hide-scrollbar::-webkit-scrollbar { display: none; }
 .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
+.dark-dropdown-scrollbar::-webkit-scrollbar {
+  width: 6px;
+  display: block;
+}
+.dark-dropdown-scrollbar::-webkit-scrollbar-track {
+  background: #0A0D12;
+  border-radius: 10px;
+}
+.dark-dropdown-scrollbar::-webkit-scrollbar-thumb {
+  background: #242B38;
+  border-radius: 10px;
+}
+.dark-dropdown-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #343E50;
+}
+
 /* ─── Glass Card ────────────────────────────────────────────── */
 .glass-card {
   background: rgba(255, 255, 255, 0.03);

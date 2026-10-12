@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../contexts/AuthContext';
+import { useTheme } from '../../contexts/ThemeContext';
 import {
   FiBook, FiX, FiArrowRight, FiChevronLeft, FiChevronRight,
   FiLoader, FiMapPin, FiUser, FiMail, FiHome, FiCheck,
@@ -72,6 +73,7 @@ const PreviewCarousel = ({ images }) => {
 /* ── Book Detail Modal ───────────────────────── */
 const BookDetailModal = ({ book, onClose, onOrder, balance }) => {
   const { t } = useTranslation();
+  const { isDarkMode } = useTheme();
   const canAfford = balance >= book.coinCost;
   const hasOrder = !!book.userOrder;
   const validImages = (book.previewImages?.filter(Boolean) || []).map(url =>
@@ -124,13 +126,20 @@ const BookDetailModal = ({ book, onClose, onOrder, balance }) => {
           animate={{ scale: 1, opacity: 1, y: 0 }}
           exit={{ scale: 0.96, opacity: 0, y: 10 }}
           transition={{ duration: 0.2 }}
-          className="bg-white shadow-2xl relative border border-gray-100 box-border flex flex-col p-3.5 xs:p-4 md:p-8 my-auto overflow-hidden w-full max-w-[480px] md:max-w-[1072px] max-h-[94vh] md:max-h-[912px] rounded-[24px] md:rounded-[25px]"
+          className={`shadow-2xl relative border box-border flex flex-col p-3.5 xs:p-4 md:p-8 my-auto overflow-hidden w-full max-w-[480px] md:max-w-[1072px] max-h-[94vh] md:max-h-[912px] rounded-[24px] md:rounded-[25px] ${
+            isDarkMode ? 'border-transparent' : 'bg-white border-gray-100'
+          }`}
+          style={{
+            background: isDarkMode ? 'rgba(12, 14, 17, 1)' : undefined,
+          }}
           onClick={e => e.stopPropagation()}
         >
           {/* Header */}
           <div className="flex items-center justify-between w-full mb-3.5 md:mb-5 shrink-0">
             <h2
-              className="font-bold text-[20px] xs:text-[22px] md:text-[24px] text-black tracking-tight m-0 p-0"
+              className={`font-bold text-[20px] xs:text-[22px] md:text-[24px] tracking-tight m-0 p-0 ${
+                isDarkMode ? 'text-white' : 'text-black'
+              }`}
               style={{
                 fontFamily: '"Poppins", "Bricolage Grotesque", sans-serif',
                 lineHeight: '1.2',
@@ -140,7 +149,9 @@ const BookDetailModal = ({ book, onClose, onOrder, balance }) => {
             </h2>
             <button
               onClick={onClose}
-              className="rounded-full bg-black text-white flex items-center justify-center hover:bg-gray-800 transition-colors shrink-0 cursor-pointer w-[22px] h-[22px] md:w-[24px] md:h-[24px]"
+              className={`rounded-full flex items-center justify-center transition-colors shrink-0 cursor-pointer w-[22px] h-[22px] md:w-[24px] md:h-[24px] ${
+                isDarkMode ? 'bg-white text-black hover:bg-gray-200' : 'bg-black text-white hover:bg-gray-800'
+              }`}
               title="Close"
             >
               <FiX size={13} strokeWidth={2.5} />
@@ -151,7 +162,9 @@ const BookDetailModal = ({ book, onClose, onOrder, balance }) => {
           <div className="w-full flex-1 overflow-y-auto select-none [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] flex flex-col gap-5 md:gap-6">
             {/* Top Card: Book Main Info */}
             <div
-              className="w-full flex flex-col md:flex-row gap-3.5 md:gap-7 items-center md:items-start shrink-0 p-3 xs:p-3.5 md:p-[8px_24px_24px_8px] rounded-[20px] bg-[#F8F5EF]"
+              className={`w-full flex flex-col md:flex-row gap-3.5 md:gap-7 items-center md:items-start shrink-0 p-3 xs:p-3.5 md:p-[8px_24px_24px_8px] rounded-[20px] ${
+                isDarkMode ? 'bg-[rgba(23,26,29,1)]' : 'bg-[#F8F5EF]'
+              }`}
               style={{
                 maxWidth: '1015px',
                 minHeight: isMobile ? 'auto' : '400px',
@@ -162,7 +175,9 @@ const BookDetailModal = ({ book, onClose, onOrder, balance }) => {
               <div className="flex md:hidden flex-row items-center gap-3.5 w-full">
                 {/* Cover Card Container */}
                 <div
-                  className="w-[95.3px] h-[143px] rounded-[10px] bg-white shrink-0 flex items-center justify-center shadow-xs"
+                  className={`w-[95.3px] h-[143px] rounded-[10px] shrink-0 flex items-center justify-center shadow-xs ${
+                    isDarkMode ? 'bg-[rgba(12,14,17,1)]' : 'bg-white'
+                  }`}
                 >
                   {book.coverImage ? (
                     <img
@@ -179,7 +194,9 @@ const BookDetailModal = ({ book, onClose, onOrder, balance }) => {
                 {/* Title Right */}
                 <div className="flex-1 min-w-0 flex flex-col justify-center">
                   <h3
-                    className="font-bold text-[17px] xs:text-[18px] leading-[22px] xs:leading-[24px] text-black tracking-tight line-clamp-4"
+                    className={`font-bold text-[17px] xs:text-[18px] leading-[22px] xs:leading-[24px] tracking-tight line-clamp-4 ${
+                      isDarkMode ? 'text-white' : 'text-black'
+                    }`}
                     style={{
                       fontFamily: '"Bricolage Grotesque", sans-serif',
                       fontWeight: 700,
@@ -199,7 +216,7 @@ const BookDetailModal = ({ book, onClose, onOrder, balance }) => {
                   width: '185px',
                   height: '246px',
                   borderRadius: '10px',
-                  background: 'rgba(255, 255, 255, 1)',
+                  background: isDarkMode ? 'rgba(12, 14, 17, 1)' : 'rgba(255, 255, 255, 1)',
                   boxSizing: 'border-box',
                   opacity: 1,
                 }}
@@ -239,7 +256,7 @@ const BookDetailModal = ({ book, onClose, onOrder, balance }) => {
                     fontSize: '22px',
                     lineHeight: '28px',
                     letterSpacing: '-0.01em',
-                    color: '#000000',
+                    color: isDarkMode ? '#FFFFFF' : '#000000',
                     margin: 0,
                     padding: 0,
                     marginTop: '10px',
@@ -250,9 +267,12 @@ const BookDetailModal = ({ book, onClose, onOrder, balance }) => {
 
                 {/* Price & Description Container */}
                 <div
-                  className="flex flex-col w-full bg-white rounded-[20px] p-3.5 xs:p-4 md:p-[8px_12px_21px_12px] gap-3.5 md:gap-[17px] box-border"
+                  className={`flex flex-col w-full rounded-[20px] p-3.5 xs:p-4 md:p-[8px_12px_21px_12px] gap-3.5 md:gap-[17px] box-border ${
+                    isDarkMode ? 'bg-[rgba(12,14,17,1)]' : 'bg-white'
+                  }`}
                   style={{
                     height: isMobile ? 'auto' : '286px',
+                    background: isDarkMode ? 'rgba(12, 14, 17, 1)' : undefined,
                     opacity: 1,
                   }}
                 >
@@ -283,14 +303,12 @@ const BookDetailModal = ({ book, onClose, onOrder, balance }) => {
                     <button
                       onClick={() => canAfford && onOrder(book)}
                       disabled={!canAfford}
-                      className={`flex items-center justify-center font-semibold transition-all shrink-0 cursor-pointer w-[167px] h-[45px] rounded-[30px] px-3.5 xs:px-4 md:w-auto md:h-[40px] md:rounded-[9999px] md:px-6 ${
-                        canAfford
-                          ? 'bg-[#24324D] text-white hover:bg-[#1a2538] active:scale-95'
-                          : 'bg-[#24324D] text-white opacity-90 cursor-not-allowed'
-                      }`}
+                      className="flex items-center justify-center font-semibold transition-all shrink-0 cursor-pointer w-[167px] h-[45px] rounded-[30px] px-3.5 xs:px-4 md:w-auto md:h-[40px] md:rounded-[9999px] md:px-6 disabled:opacity-75 disabled:cursor-not-allowed"
                       style={{
                         fontFamily: '"Poppins", sans-serif',
                         fontSize: '14px',
+                        background: 'rgba(36, 50, 77, 1)',
+                        color: '#FFFFFF',
                       }}
                     >
                       <span className="truncate">
@@ -302,14 +320,14 @@ const BookDetailModal = ({ book, onClose, onOrder, balance }) => {
                   {/* Description */}
                   {book.description && (
                     <>
-                      <hr className="w-full border-black/5 m-0" />
+                      <hr className={`w-full m-0 ${isDarkMode ? 'border-white/10' : 'border-black/5'}`} />
                       <div className="flex flex-col gap-1.5">
                         <h4
                           style={{
                             fontFamily: '"Poppins", sans-serif',
                             fontWeight: 700,
                             fontSize: '15px',
-                            color: '#000000',
+                            color: isDarkMode ? '#FFFFFF' : '#000000',
                             margin: 0,
                           }}
                         >
@@ -326,7 +344,7 @@ const BookDetailModal = ({ book, onClose, onOrder, balance }) => {
                             fontWeight: 400,
                             fontSize: '12.5px',
                             lineHeight: '20px',
-                            color: '#333333',
+                            color: isDarkMode ? 'rgba(255, 255, 255, 0.75)' : '#333333',
                             margin: 0,
                             whiteSpace: 'pre-wrap',
                             textAlign: 'justify',
@@ -350,7 +368,7 @@ const BookDetailModal = ({ book, onClose, onOrder, balance }) => {
                   fontSize: '20px',
                   lineHeight: '24px',
                   letterSpacing: '-0.01em',
-                  color: '#000000',
+                  color: isDarkMode ? '#FFFFFF' : '#000000',
                   margin: '0 0 14px 0',
                 }}
               >
@@ -366,7 +384,12 @@ const BookDetailModal = ({ book, onClose, onOrder, balance }) => {
                         <div
                           key={actualIdx}
                           onClick={() => setLightboxIdx(actualIdx)}
-                          className="flex items-center justify-center p-1.5 md:p-2.5 rounded-[12px] md:rounded-[16px] cursor-pointer group transition-all hover:shadow-md bg-[#F8F5EF] h-[105px] xs:h-[115px] md:h-[240px] box-border"
+                          className={`flex items-center justify-center p-1.5 md:p-2.5 rounded-[12px] md:rounded-[16px] cursor-pointer group transition-all hover:shadow-md h-[105px] xs:h-[115px] md:h-[240px] box-border ${
+                            isDarkMode ? 'bg-[rgba(23,26,29,1)]' : 'bg-[#F8F5EF]'
+                          }`}
+                          style={{
+                            background: isDarkMode ? 'rgba(23, 26, 29, 1)' : undefined,
+                          }}
                         >
                           <div
                             className="bg-white rounded-[4px] shadow-xs w-full h-full flex items-center justify-center p-1 md:p-2 overflow-hidden group-hover:scale-[1.02] transition-transform"
@@ -387,7 +410,9 @@ const BookDetailModal = ({ book, onClose, onOrder, balance }) => {
                     <button
                       onClick={prevPreview}
                       disabled={previewIdx === 0}
-                      className="w-9 h-9 rounded-full bg-[#24324D] text-white flex items-center justify-center hover:bg-[#1a2538] transition-colors disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+                      className={`w-9 h-9 rounded-full flex items-center justify-center transition-colors disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer ${
+                        isDarkMode ? 'bg-[rgba(36,50,77,1)] text-white' : 'bg-[#24324D] text-white hover:bg-[#1a2538]'
+                      }`}
                       title="Previous"
                     >
                       <FiChevronLeft size={18} />
@@ -395,7 +420,11 @@ const BookDetailModal = ({ book, onClose, onOrder, balance }) => {
                     <button
                       onClick={nextPreview}
                       disabled={previewIdx >= maxIdx}
-                      className="w-9 h-9 rounded-full bg-white border border-[#CBD5E1] text-[#24324D] hover:bg-gray-50 flex items-center justify-center transition-colors disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+                      className={`w-9 h-9 rounded-full flex items-center justify-center transition-colors disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer ${
+                        isDarkMode
+                          ? 'bg-transparent border border-white/20 text-white hover:bg-white/10'
+                          : 'bg-white border border-[#CBD5E1] text-[#24324D] hover:bg-gray-50'
+                      }`}
                       title="Next"
                     >
                       <FiChevronRight size={18} />
@@ -405,13 +434,16 @@ const BookDetailModal = ({ book, onClose, onOrder, balance }) => {
               ) : (
                 <div
                   className="w-full flex items-center justify-center p-8 rounded-[16px] text-center"
-                  style={{ background: 'rgba(248, 245, 239, 1)' }}
+                  style={{
+                    background: isDarkMode ? 'rgba(23, 26, 29, 1)' : 'rgba(248, 245, 239, 1)',
+                    color: isDarkMode ? '#FFFFFF' : undefined,
+                  }}
                 >
                   <p
                     style={{
                       fontFamily: '"Poppins", sans-serif',
                       fontSize: '14px',
-                      color: '#666666',
+                      color: isDarkMode ? 'rgba(255, 255, 255, 0.7)' : '#666666',
                       margin: 0,
                     }}
                   >
@@ -519,6 +551,7 @@ const BookDetailModal = ({ book, onClose, onOrder, balance }) => {
 const OrderModal = ({ book, onClose, onSuccess, balance }) => {
   const { t } = useTranslation();
   const { currentUser, mongoUser } = useAuth();
+  const { isDarkMode } = useTheme();
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [resultData, setResultData] = useState(null);
@@ -598,12 +631,14 @@ const OrderModal = ({ book, onClose, onSuccess, balance }) => {
           animate={{ scale: 1, opacity: 1, y: 0 }}
           exit={{ scale: 0.94, opacity: 0, y: 10 }}
           transition={{ duration: 0.2 }}
-          className="relative bg-white shadow-2xl w-full flex flex-col my-auto overflow-hidden border border-gray-100 box-border p-[10px]"
+          className={`relative shadow-2xl w-full flex flex-col my-auto overflow-hidden box-border p-[10px] ${
+            isDarkMode ? 'border-none' : 'bg-white border border-gray-100'
+          }`}
           style={{
             width: '100%',
             maxWidth: '626px',
             minHeight: '402px',
-            background: 'rgba(255, 255, 255, 1)',
+            background: isDarkMode ? '#000000' : 'rgba(255, 255, 255, 1)',
             borderRadius: '30px',
             opacity: 1,
           }}
@@ -615,7 +650,7 @@ const OrderModal = ({ book, onClose, onSuccess, balance }) => {
               width: '100%',
               maxWidth: '606px',
               height: '382px',
-              background: 'rgba(248, 245, 239, 1)',
+              background: isDarkMode ? '#000000' : 'rgba(248, 245, 239, 1)',
               borderRadius: '20px',
             }}
           >
@@ -643,7 +678,7 @@ const OrderModal = ({ book, onClose, onSuccess, balance }) => {
 
               {/* Title */}
               <h2
-                className="text-[#000000] font-bold text-[32px] leading-tight m-0 mb-3"
+                className={`${isDarkMode ? 'text-white' : 'text-[#000000]'} font-bold text-[32px] leading-tight m-0 mb-3`}
                 style={{
                   fontFamily: '"Bricolage Grotesque", sans-serif',
                   letterSpacing: '-0.02em',
@@ -654,7 +689,7 @@ const OrderModal = ({ book, onClose, onSuccess, balance }) => {
 
               {/* Book Title */}
               <p
-                className="text-[#000000] text-[15px] font-normal leading-[23px] m-0 mb-1 line-clamp-2"
+                className={`${isDarkMode ? 'text-white' : 'text-[#000000]'} text-[15px] font-normal leading-[23px] m-0 mb-1 line-clamp-2`}
                 style={{ fontFamily: '"Poppins", sans-serif' }}
               >
                 {book.title}
@@ -662,7 +697,7 @@ const OrderModal = ({ book, onClose, onSuccess, balance }) => {
 
               {/* Info Subtext */}
               <p
-                className="text-[#000000] text-[15px] font-normal leading-[23px] m-0 mb-6"
+                className={`${isDarkMode ? 'text-white/80' : 'text-[#000000]'} text-[15px] font-normal leading-[23px] m-0 mb-6`}
                 style={{ fontFamily: '"Poppins", sans-serif' }}
               >
                 {t('withdraw.orderProcessing', 'Our team will process your order within 1-3 business days. Check transaction for info')}
@@ -710,13 +745,20 @@ const OrderModal = ({ book, onClose, onSuccess, balance }) => {
         animate={{ scale: 1, opacity: 1, y: 0 }}
         exit={{ scale: 0.96, opacity: 0, y: 10 }}
         transition={{ duration: 0.2 }}
-        className="bg-white shadow-2xl relative border border-gray-100 box-border flex flex-col p-3.5 xs:p-4 sm:p-6 md:p-9 my-auto overflow-hidden w-full max-w-[500px] md:max-w-[1072px] max-h-[94vh] md:max-h-[929px] rounded-[24px] md:rounded-[25px]"
+        className={`shadow-2xl relative border box-border flex flex-col p-3.5 xs:p-4 sm:p-6 md:p-9 my-auto overflow-hidden w-full max-w-[500px] md:max-w-[1072px] max-h-[94vh] md:max-h-[929px] rounded-[24px] md:rounded-[25px] ${
+          isDarkMode ? 'border-transparent' : 'bg-white border-gray-100'
+        }`}
+        style={{
+          background: isDarkMode ? 'rgba(12, 14, 17, 1)' : undefined,
+        }}
         onClick={e => e.stopPropagation()}
       >
         {/* Header */}
         <div className="flex items-center justify-between w-full mb-3.5 md:mb-4 shrink-0">
           <h2
-            className="font-bold text-[20px] xs:text-[22px] md:text-[24px] text-black tracking-tight m-0 p-0 text-left"
+            className={`font-bold text-[20px] xs:text-[22px] md:text-[24px] tracking-tight m-0 p-0 text-left ${
+              isDarkMode ? 'text-white' : 'text-black'
+            }`}
             style={{
               fontFamily: '"Poppins", "Bricolage Grotesque", sans-serif',
               lineHeight: '1.2',
@@ -726,7 +768,9 @@ const OrderModal = ({ book, onClose, onSuccess, balance }) => {
           </h2>
           <button
             onClick={onClose}
-            className="w-[22px] h-[22px] md:w-6 md:h-6 rounded-full bg-black text-white flex items-center justify-center hover:bg-gray-800 transition-colors shrink-0 cursor-pointer"
+            className={`w-[22px] h-[22px] md:w-6 md:h-6 rounded-full flex items-center justify-center transition-colors shrink-0 cursor-pointer ${
+              isDarkMode ? 'bg-white text-black hover:bg-gray-200' : 'bg-black text-white hover:bg-gray-800'
+            }`}
             title="Close"
           >
             <FiX size={13} strokeWidth={2.5} />
@@ -737,14 +781,18 @@ const OrderModal = ({ book, onClose, onSuccess, balance }) => {
         <div className="w-full flex-1 overflow-y-auto select-none [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] flex flex-col gap-4 md:gap-5">
           {/* Top Card: Selected Book Info Banner */}
           <div
-            className="w-full flex items-center shrink-0 p-3 xs:p-3.5 md:p-[8px_24px_8px_12px] gap-3.5 md:gap-5 rounded-[16px] bg-[#F8F5EF] box-border min-h-[135px] md:h-[163px]"
+            className={`w-full flex items-center shrink-0 p-3 xs:p-3.5 md:p-[8px_24px_8px_12px] gap-3.5 md:gap-5 rounded-[16px] box-border min-h-[135px] md:h-[163px] ${
+              isDarkMode ? 'bg-[rgba(23,26,29,1)]' : 'bg-[#F8F5EF]'
+            }`}
             style={{
               maxWidth: '1015px',
             }}
           >
             {/* Book Cover Container */}
             <div
-              className="flex items-center justify-center shrink-0 bg-white rounded-[10px] shadow-[0_2px_10px_rgba(0,0,0,0.06)] p-1.5 w-[95px] h-[125px] xs:h-[130px] md:w-[108px] md:h-[147px] box-border"
+              className={`flex items-center justify-center shrink-0 rounded-[10px] p-1.5 w-[95px] h-[125px] xs:h-[130px] md:w-[108px] md:h-[147px] box-border ${
+                isDarkMode ? 'bg-[rgba(12,14,17,1)]' : 'bg-white shadow-[0_2px_10px_rgba(0,0,0,0.06)]'
+              }`}
             >
               {book.coverImage ? (
                 <img
@@ -766,7 +814,9 @@ const OrderModal = ({ book, onClose, onSuccess, balance }) => {
               }}
             >
               <h3
-                className="font-bold text-[17px] xs:text-[18px] md:text-[23px] leading-[22px] xs:leading-[24px] md:leading-[28px] text-black tracking-tight text-left break-words"
+                className={`font-bold text-[17px] xs:text-[18px] md:text-[23px] leading-[22px] xs:leading-[24px] md:leading-[28px] tracking-tight text-left break-words ${
+                  isDarkMode ? 'text-white' : 'text-black'
+                }`}
                 style={{
                   fontFamily: '"Bricolage Grotesque", sans-serif',
                   margin: 0,
@@ -801,7 +851,9 @@ const OrderModal = ({ book, onClose, onSuccess, balance }) => {
             {/* Shipping Address Section */}
             <div className="flex flex-col gap-3 md:gap-3.5 w-full text-left">
               <h3
-                className="font-bold text-[20px] md:text-[23px] leading-[26px] md:leading-[28px] text-black tracking-tight text-left m-0 p-0"
+                className={`font-bold text-[20px] md:text-[23px] leading-[26px] md:leading-[28px] tracking-tight text-left m-0 p-0 ${
+                  isDarkMode ? 'text-white' : 'text-black'
+                }`}
                 style={{
                   fontFamily: '"Bricolage Grotesque", sans-serif',
                   maxWidth: '1017px',
@@ -815,7 +867,9 @@ const OrderModal = ({ book, onClose, onSuccess, balance }) => {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 md:gap-4 w-full">
                   <div className="flex flex-col gap-1.5 w-full text-left">
                     <label
-                      className="font-medium text-[15px] md:text-[16px] text-black text-left block"
+                      className={`font-medium text-[15px] md:text-[16px] text-left block ${
+                        isDarkMode ? 'text-white' : 'text-black'
+                      }`}
                       style={{
                         fontFamily: '"Poppins", sans-serif',
                       }}
@@ -828,7 +882,11 @@ const OrderModal = ({ book, onClose, onSuccess, balance }) => {
                       value={form.fullName}
                       onChange={e => set('fullName', e.target.value)}
                       placeholder={t('withdraw.enterFullName', 'Enter your full name')}
-                      className="w-full text-[#000000] placeholder:text-[#9CA3AF] px-5 xs:px-6 text-[14px] xs:text-[15px] focus:outline-none focus:ring-2 focus:ring-slate-400/50 border-none transition-all rounded-[50px] bg-[#EFEFEF] h-[52px] xs:h-[54px] md:h-[58px] box-border"
+                      className={`w-full px-5 xs:px-6 text-[14px] xs:text-[15px] focus:outline-none focus:ring-2 focus:ring-slate-400/50 border-none transition-all rounded-[50px] h-[52px] xs:h-[54px] md:h-[58px] box-border ${
+                        isDarkMode
+                          ? 'bg-[rgba(23,26,29,1)] text-white placeholder:text-white/40'
+                          : 'bg-[#EFEFEF] text-[#000000] placeholder:text-[#9CA3AF]'
+                      }`}
                       style={{
                         fontFamily: '"Poppins", sans-serif',
                       }}
@@ -837,7 +895,9 @@ const OrderModal = ({ book, onClose, onSuccess, balance }) => {
 
                   <div className="flex flex-col gap-1.5 w-full text-left">
                     <label
-                      className="font-medium text-[15px] md:text-[16px] text-black text-left block"
+                      className={`font-medium text-[15px] md:text-[16px] text-left block ${
+                        isDarkMode ? 'text-white' : 'text-black'
+                      }`}
                       style={{
                         fontFamily: '"Poppins", sans-serif',
                       }}
@@ -850,7 +910,11 @@ const OrderModal = ({ book, onClose, onSuccess, balance }) => {
                       value={form.email}
                       onChange={e => set('email', e.target.value)}
                       placeholder={t('withdraw.enterEmailPlaceholder', 'Enter your email address')}
-                      className="w-full text-[#000000] placeholder:text-[#9CA3AF] px-5 xs:px-6 text-[14px] xs:text-[15px] focus:outline-none focus:ring-2 focus:ring-slate-400/50 border-none transition-all rounded-[50px] bg-[#EFEFEF] h-[52px] xs:h-[54px] md:h-[58px] box-border"
+                      className={`w-full px-5 xs:px-6 text-[14px] xs:text-[15px] focus:outline-none focus:ring-2 focus:ring-slate-400/50 border-none transition-all rounded-[50px] h-[52px] xs:h-[54px] md:h-[58px] box-border ${
+                        isDarkMode
+                          ? 'bg-[rgba(23,26,29,1)] text-white placeholder:text-white/40'
+                          : 'bg-[#EFEFEF] text-[#000000] placeholder:text-[#9CA3AF]'
+                      }`}
                       style={{
                         fontFamily: '"Poppins", sans-serif',
                       }}
@@ -861,7 +925,9 @@ const OrderModal = ({ book, onClose, onSuccess, balance }) => {
                 {/* Row 2: Address */}
                 <div className="flex flex-col gap-1.5 w-full text-left">
                   <label
-                    className="font-medium text-[15px] md:text-[16px] text-black text-left block"
+                    className={`font-medium text-[15px] md:text-[16px] text-left block ${
+                      isDarkMode ? 'text-white' : 'text-black'
+                    }`}
                     style={{
                       fontFamily: '"Poppins", sans-serif',
                     }}
@@ -874,7 +940,11 @@ const OrderModal = ({ book, onClose, onSuccess, balance }) => {
                     value={form.address}
                     onChange={e => set('address', e.target.value)}
                     placeholder={t('withdraw.enterCompleteAddress', 'Enter your complete address')}
-                    className="w-full text-[#000000] placeholder:text-[#9CA3AF] px-5 xs:px-6 text-[14px] xs:text-[15px] focus:outline-none focus:ring-2 focus:ring-slate-400/50 border-none transition-all rounded-[50px] bg-[#EFEFEF] h-[52px] xs:h-[54px] md:h-[58px] box-border"
+                    className={`w-full px-5 xs:px-6 text-[14px] xs:text-[15px] focus:outline-none focus:ring-2 focus:ring-slate-400/50 border-none transition-all rounded-[50px] h-[52px] xs:h-[54px] md:h-[58px] box-border ${
+                      isDarkMode
+                        ? 'bg-[rgba(23,26,29,1)] text-white placeholder:text-white/40'
+                        : 'bg-[#EFEFEF] text-[#000000] placeholder:text-[#9CA3AF]'
+                    }`}
                     style={{
                       fontFamily: '"Poppins", sans-serif',
                     }}
@@ -885,7 +955,9 @@ const OrderModal = ({ book, onClose, onSuccess, balance }) => {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 md:gap-4 w-full">
                   <div className="flex flex-col gap-1.5 w-full text-left">
                     <label
-                      className="font-medium text-[15px] md:text-[16px] text-black text-left block"
+                      className={`font-medium text-[15px] md:text-[16px] text-left block ${
+                        isDarkMode ? 'text-white' : 'text-black'
+                      }`}
                       style={{
                         fontFamily: '"Poppins", sans-serif',
                       }}
@@ -898,7 +970,11 @@ const OrderModal = ({ book, onClose, onSuccess, balance }) => {
                       value={form.city}
                       onChange={e => set('city', e.target.value)}
                       placeholder={t('withdraw.enterCity', 'Enter your city')}
-                      className="w-full text-[#000000] placeholder:text-[#9CA3AF] px-5 xs:px-6 text-[14px] xs:text-[15px] focus:outline-none focus:ring-2 focus:ring-slate-400/50 border-none transition-all rounded-[50px] bg-[#EFEFEF] h-[52px] xs:h-[54px] md:h-[58px] box-border"
+                      className={`w-full px-5 xs:px-6 text-[14px] xs:text-[15px] focus:outline-none focus:ring-2 focus:ring-slate-400/50 border-none transition-all rounded-[50px] h-[52px] xs:h-[54px] md:h-[58px] box-border ${
+                        isDarkMode
+                          ? 'bg-[rgba(23,26,29,1)] text-white placeholder:text-white/40'
+                          : 'bg-[#EFEFEF] text-[#000000] placeholder:text-[#9CA3AF]'
+                      }`}
                       style={{
                         fontFamily: '"Poppins", sans-serif',
                       }}
@@ -907,7 +983,9 @@ const OrderModal = ({ book, onClose, onSuccess, balance }) => {
 
                   <div className="flex flex-col gap-1.5 w-full text-left">
                     <label
-                      className="font-medium text-[15px] md:text-[16px] text-black text-left block"
+                      className={`font-medium text-[15px] md:text-[16px] text-left block ${
+                        isDarkMode ? 'text-white' : 'text-black'
+                      }`}
                       style={{
                         fontFamily: '"Poppins", sans-serif',
                       }}
@@ -920,7 +998,11 @@ const OrderModal = ({ book, onClose, onSuccess, balance }) => {
                       value={form.zipcode}
                       onChange={e => set('zipcode', e.target.value)}
                       placeholder={t('withdraw.enterZipcode', 'Enter zip code')}
-                      className="w-full text-[#000000] placeholder:text-[#9CA3AF] px-5 xs:px-6 text-[14px] xs:text-[15px] focus:outline-none focus:ring-2 focus:ring-slate-400/50 border-none transition-all rounded-[50px] bg-[#EFEFEF] h-[52px] xs:h-[54px] md:h-[58px] box-border"
+                      className={`w-full px-5 xs:px-6 text-[14px] xs:text-[15px] focus:outline-none focus:ring-2 focus:ring-slate-400/50 border-none transition-all rounded-[50px] h-[52px] xs:h-[54px] md:h-[58px] box-border ${
+                        isDarkMode
+                          ? 'bg-[rgba(23,26,29,1)] text-white placeholder:text-white/40'
+                          : 'bg-[#EFEFEF] text-[#000000] placeholder:text-[#9CA3AF]'
+                      }`}
                       style={{
                         fontFamily: '"Poppins", sans-serif',
                       }}
@@ -933,7 +1015,9 @@ const OrderModal = ({ book, onClose, onSuccess, balance }) => {
             {/* Personal Signature Section */}
             <div className="flex flex-col gap-2 w-full text-left">
               <h3
-                className="font-bold text-[20px] md:text-[23px] leading-[26px] md:leading-[28px] text-black tracking-tight text-left m-0 p-0"
+                className={`font-bold text-[20px] md:text-[23px] leading-[26px] md:leading-[28px] tracking-tight text-left m-0 p-0 ${
+                  isDarkMode ? 'text-white' : 'text-black'
+                }`}
                 style={{
                   fontFamily: '"Bricolage Grotesque", sans-serif',
                   maxWidth: '1017px',
@@ -951,8 +1035,8 @@ const OrderModal = ({ book, onClose, onSuccess, balance }) => {
                     width: '15px',
                     height: '15px',
                     borderRadius: '5px',
-                    border: '1px solid rgba(36, 50, 77, 1)',
-                    background: form.wantsSignature ? 'rgba(36, 50, 77, 1)' : '#FFFFFF',
+                    border: isDarkMode ? '1px solid rgba(255, 255, 255, 0.3)' : '1px solid rgba(36, 50, 77, 1)',
+                    background: form.wantsSignature ? 'rgba(36, 50, 77, 1)' : (isDarkMode ? 'transparent' : '#FFFFFF'),
                     boxSizing: 'border-box',
                   }}
                   className="flex items-center justify-center shrink-0 transition-all"
@@ -964,7 +1048,7 @@ const OrderModal = ({ book, onClose, onSuccess, balance }) => {
                     fontFamily: '"Poppins", sans-serif',
                     fontWeight: 500,
                     fontSize: '15px',
-                    color: '#000000',
+                    color: isDarkMode ? '#FFFFFF' : '#000000',
                   }}
                 >
                   {t('withdraw.wantsSignature', 'I would like a personal signature')}
@@ -982,7 +1066,9 @@ const OrderModal = ({ book, onClose, onSuccess, balance }) => {
                   >
                     <div className="flex flex-col gap-1.5 w-full text-left">
                       <label
-                        className="font-medium text-[15px] md:text-[16px] text-black text-left block"
+                        className={`font-medium text-[15px] md:text-[16px] text-left block ${
+                          isDarkMode ? 'text-white' : 'text-black'
+                        }`}
                         style={{
                           fontFamily: '"Poppins", sans-serif',
                         }}
@@ -994,7 +1080,11 @@ const OrderModal = ({ book, onClose, onSuccess, balance }) => {
                         value={form.signatureName}
                         onChange={e => set('signatureName', e.target.value)}
                         placeholder={t('withdraw.enterNameForSignature', 'Enter name for signature')}
-                        className="w-full text-[#000000] placeholder:text-[#9CA3AF] px-5 xs:px-6 text-[14px] xs:text-[15px] focus:outline-none focus:ring-2 focus:ring-slate-400/50 border-none transition-all rounded-[50px] bg-[#EFEFEF] h-[52px] xs:h-[54px] md:h-[58px] box-border"
+                        className={`w-full px-5 xs:px-6 text-[14px] xs:text-[15px] focus:outline-none focus:ring-2 focus:ring-slate-400/50 border-none transition-all rounded-[50px] h-[52px] xs:h-[54px] md:h-[58px] box-border ${
+                          isDarkMode
+                            ? 'bg-[rgba(23,26,29,1)] text-white placeholder:text-white/40'
+                            : 'bg-[#EFEFEF] text-[#000000] placeholder:text-[#9CA3AF]'
+                        }`}
                         style={{
                           fontFamily: '"Poppins", sans-serif',
                         }}
@@ -1010,15 +1100,18 @@ const OrderModal = ({ book, onClose, onSuccess, balance }) => {
               <button
                 type="submit"
                 disabled={submitting}
-                className="w-full bg-[#24324D] text-white rounded-full font-semibold text-[15px] hover:bg-[#1a2538] active:scale-[0.99] transition-all flex items-center justify-center disabled:opacity-50 cursor-pointer h-[50px]"
+                className="w-full text-white rounded-full font-semibold text-[15px] transition-all flex items-center justify-center disabled:opacity-50 cursor-pointer h-[50px]"
                 style={{
                   fontFamily: '"Poppins", sans-serif',
+                  background: 'rgba(36, 50, 77, 1)',
                 }}
               >
                 {submitting ? t('withdraw.placingOrder', 'Placing Order...') : t('withdraw.orderBookNow', 'Order Book Now')}
               </button>
               <p
-                className="text-center text-[12.5px] xs:text-[13px] text-[#777777] m-0 p-0"
+                className={`text-center text-[12.5px] xs:text-[13px] m-0 p-0 ${
+                  isDarkMode ? 'text-white/50' : 'text-[#777777]'
+                }`}
                 style={{
                   fontFamily: '"Poppins", sans-serif',
                 }}
@@ -1041,6 +1134,7 @@ const OrderModal = ({ book, onClose, onSuccess, balance }) => {
 const MyBooksSection = ({ balance, onBalanceUpdate, onClose, preFetchedBooks, preFetchedLoading, preFetchedVisible, onBooksUpdate }) => {
   const { t } = useTranslation();
   const { currentUser, getSocket } = useAuth();
+  const { isDarkMode } = useTheme();
   const [books, setBooks] = useState(preFetchedBooks || []);
   const [loading, setLoading] = useState(preFetchedBooks !== undefined ? preFetchedLoading : true);
   const [visible, setVisible] = useState(preFetchedBooks !== undefined ? preFetchedVisible : false); // whether this user is eligible to see books
@@ -1072,13 +1166,24 @@ const MyBooksSection = ({ balance, onBalanceUpdate, onClose, preFetchedBooks, pr
         }}
         className={`flex items-center w-full sm:max-w-[503px] h-[197px] sm:h-[262px] transition-all cursor-pointer text-left group p-2 sm:p-[8px_24px_8px_8px] gap-3.5 sm:gap-6 rounded-[20px] sm:rounded-[16px] border-2 box-border opacity-100 shrink-0 ${
           isSelected
-            ? 'bg-[#24324D] border-[#24324D]'
-            : 'bg-[#F8F5EF] border-transparent'
+            ? 'border-transparent'
+            : 'border-transparent'
         }`}
+        style={{
+          background: isSelected
+            ? 'rgba(36, 50, 77, 1)'
+            : isDarkMode
+            ? 'rgba(23, 26, 29, 1)'
+            : '#F8F5EF',
+        }}
       >
         {/* Cover Card Container */}
         <div
-          className="w-[136px] sm:w-[185px] h-[181px] sm:h-[246px] rounded-[14px] flex items-center justify-center shrink-0 bg-white box-border shadow-[0_4px_14px_rgba(0,0,0,0.06)]"
+          className={`w-[136px] sm:w-[185px] h-[181px] sm:h-[246px] rounded-[14px] flex items-center justify-center shrink-0 box-border ${
+            isDarkMode
+              ? 'bg-[rgba(12,14,17,1)]'
+              : 'bg-white shadow-[0_4px_14px_rgba(0,0,0,0.06)]'
+          }`}
         >
           {book.coverImage ? (
             <img
@@ -1096,7 +1201,7 @@ const MyBooksSection = ({ balance, onBalanceUpdate, onClose, preFetchedBooks, pr
         <div className="flex flex-col justify-center gap-2 sm:gap-3.5 flex-1 min-w-0 pr-1 sm:pr-0">
           <h3
             className={`line-clamp-3 font-bold tracking-tight ${titleFontSizeClass} ${
-              isSelected ? 'text-white' : 'text-black'
+              isSelected || isDarkMode ? 'text-white' : 'text-black'
             }`}
             style={{
               fontFamily: '"Bricolage Grotesque", sans-serif',
@@ -1263,13 +1368,20 @@ const MyBooksSection = ({ balance, onBalanceUpdate, onClose, preFetchedBooks, pr
       onClick={onClose}>
       <motion.div initial={{ scale: 0.96, opacity: 0, y: 10 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.96, opacity: 0, y: 10 }}
         transition={{ duration: 0.2 }}
-        className="bg-white shadow-2xl relative border border-gray-100 box-border flex flex-col p-3.5 xs:p-4 sm:p-8 my-auto w-full max-w-[540px] sm:max-w-[1072px] max-h-[94vh] sm:max-h-[760px] rounded-[24px] sm:rounded-[25px]"
+        className={`shadow-2xl relative border box-border flex flex-col p-3.5 xs:p-4 sm:p-8 my-auto w-full max-w-[540px] sm:max-w-[1072px] max-h-[94vh] sm:max-h-[760px] rounded-[24px] sm:rounded-[25px] ${
+          isDarkMode ? 'border-transparent' : 'bg-white border-gray-100'
+        }`}
+        style={{
+          background: isDarkMode ? 'rgba(12, 14, 17, 1)' : undefined,
+        }}
         onClick={e => e.stopPropagation()}>
 
         {/* Header */}
         <div className="flex items-center justify-between w-full mb-4 sm:mb-5 shrink-0">
           <h2
-            className="font-bold text-[20px] sm:text-[23px] text-black tracking-tight m-0 p-0"
+            className={`font-bold text-[20px] sm:text-[23px] tracking-tight m-0 p-0 ${
+              isDarkMode ? 'text-white' : 'text-black'
+            }`}
             style={{
               fontFamily: '"Bricolage Grotesque", sans-serif',
               lineHeight: '1.2',
@@ -1279,7 +1391,9 @@ const MyBooksSection = ({ balance, onBalanceUpdate, onClose, preFetchedBooks, pr
           </h2>
           <button
             onClick={onClose}
-            className="rounded-full bg-black text-white flex items-center justify-center hover:bg-gray-800 transition-colors shrink-0 cursor-pointer w-[22px] h-[22px]"
+            className={`rounded-full flex items-center justify-center transition-colors shrink-0 cursor-pointer w-[22px] h-[22px] ${
+              isDarkMode ? 'bg-white text-black hover:bg-gray-200' : 'bg-black text-white hover:bg-gray-800'
+            }`}
             title="Close"
           >
             <FiX size={13} strokeWidth={2.5} />
@@ -1364,8 +1478,8 @@ const MyBooksSection = ({ balance, onBalanceUpdate, onClose, preFetchedBooks, pr
                           borderRadius: '100px',
                           boxSizing: 'border-box',
                           background: currentDesktopPage > 1 ? 'rgba(36, 50, 77, 1)' : 'transparent',
-                          border: currentDesktopPage > 1 ? 'none' : '1px solid rgba(36, 50, 77, 1)',
-                          color: currentDesktopPage > 1 ? '#FFFFFF' : 'rgba(36, 50, 77, 1)',
+                          border: currentDesktopPage > 1 ? 'none' : isDarkMode ? '1px solid rgba(255, 255, 255, 0.2)' : '1px solid rgba(36, 50, 77, 1)',
+                          color: currentDesktopPage > 1 ? '#FFFFFF' : isDarkMode ? 'rgba(255, 255, 255, 0.3)' : 'rgba(36, 50, 77, 1)',
                         }}
                         title="Previous page"
                         aria-label="Previous page"
@@ -1383,8 +1497,8 @@ const MyBooksSection = ({ balance, onBalanceUpdate, onClose, preFetchedBooks, pr
                           borderRadius: '100px',
                           boxSizing: 'border-box',
                           background: currentDesktopPage < totalDesktopPages ? 'rgba(36, 50, 77, 1)' : 'transparent',
-                          border: currentDesktopPage < totalDesktopPages ? 'none' : '1px solid rgba(36, 50, 77, 1)',
-                          color: currentDesktopPage < totalDesktopPages ? '#FFFFFF' : 'rgba(36, 50, 77, 1)',
+                          border: currentDesktopPage < totalDesktopPages ? 'none' : isDarkMode ? '1px solid rgba(255, 255, 255, 0.2)' : '1px solid rgba(36, 50, 77, 1)',
+                          color: currentDesktopPage < totalDesktopPages ? '#FFFFFF' : isDarkMode ? 'rgba(255, 255, 255, 0.3)' : 'rgba(36, 50, 77, 1)',
                         }}
                         title="Next page"
                         aria-label="Next page"
