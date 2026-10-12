@@ -13,6 +13,11 @@ const item = { hidden: { opacity: 0, y: 16 }, show: { opacity: 1, y: 0, transiti
 const isIconUrl = (icon) =>
   icon && (icon.startsWith('http') || icon.startsWith('data:') || icon.includes('/') || icon.startsWith('fa-'));
 
+const isRequirementCompleted = (requirement) => {
+  if (!requirement || typeof requirement !== 'object') return false;
+  return requirement.completed === true || requirement.credited === true || requirement.status === 'approved';
+};
+
 // Status badge config
 const STATUS_CONFIG = {
   clicked: { label: 'In Progress', color: 'text-amber-400', bg: 'bg-amber-500/10  border-amber-500/20' },
@@ -415,7 +420,7 @@ export const DirectOfferModal = ({ offer, token, placement = 'featured', onClose
                   style={{ background: 'rgba(249, 247, 241, 1)' }}
                   className="flex items-center gap-3 px-4 py-2.5 rounded-full border border-[#EAE4D7]/70"
                 >
-                  {i === 0 ? (
+                  {isRequirementCompleted(req) ? (
                     <div className="w-5 h-5 rounded-full bg-[#202C44] text-white flex items-center justify-center shrink-0">
                       <FiCheckCircle className="w-3.5 h-3.5 text-white" />
                     </div>
@@ -423,7 +428,7 @@ export const DirectOfferModal = ({ offer, token, placement = 'featured', onClose
                     <div className="w-5 h-5 rounded-full border-2 border-[#D1CCC2] bg-white shrink-0" />
                   )}
                   <span className="text-[13px] font-medium text-[#1E293B]">
-                    {req}
+                    {typeof req === 'object' ? (req.label || req.title || req.text || '') : req}
                   </span>
                 </div>
               ))
@@ -432,9 +437,7 @@ export const DirectOfferModal = ({ offer, token, placement = 'featured', onClose
                 style={{ background: 'rgba(249, 247, 241, 1)' }}
                 className="flex items-center gap-3 px-4 py-2.5 rounded-full border border-[#EAE4D7]/70"
               >
-                <div className="w-5 h-5 rounded-full bg-[#202C44] text-white flex items-center justify-center shrink-0">
-                  <FiCheckCircle className="w-3.5 h-3.5 text-white" />
-                </div>
+                <div className="w-5 h-5 rounded-full border-2 border-[#D1CCC2] bg-white shrink-0" />
                 <span className="text-[13px] font-medium text-[#1E293B]">
                   Complete the required tasks → receive rewards
                 </span>

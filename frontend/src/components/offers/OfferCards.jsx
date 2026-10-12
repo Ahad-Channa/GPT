@@ -13,6 +13,11 @@ import { GoodpicksSupportModal } from './GoodpicksModal';
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 const item = { hidden: { opacity: 0, y: 16 }, show: { opacity: 1, y: 0, transition: { duration: 0.4 } } };
 
+const isRequirementCompleted = (requirement) => {
+  if (!requirement || typeof requirement !== 'object') return false;
+  return requirement.completed === true || requirement.credited === true || requirement.status === 'approved';
+};
+
 export const buildProviderUrl = (provider, userId) => {
   const CPX_APP_ID = '32283';
   switch (provider.id) {
@@ -684,7 +689,7 @@ export const FeaturedOfferModal = ({ offer, token, onClose, onSubmitted }) => {
               </div>
             ) : requirementsList && requirementsList.length > 0 ? (
               requirementsList.map((req, i) => {
-                const isCompleted = i === 0;
+                const isCompleted = isRequirementCompleted(req);
                 return (
                   <div
                     key={i}
@@ -748,8 +753,8 @@ export const FeaturedOfferModal = ({ offer, token, onClose, onSubmitted }) => {
                         }}
                       />
                     )}
-                    <span
-                      style={{
+                      <span
+                        style={{
                         fontFamily: '"Poppins", sans-serif',
                         fontWeight: 500,
                         fontSize: '14px',
@@ -757,9 +762,9 @@ export const FeaturedOfferModal = ({ offer, token, onClose, onSubmitted }) => {
                         letterSpacing: '0%',
                         color: '#000000',
                       }}
-                    >
-                      {req}
-                    </span>
+                      >
+                        {typeof req === 'object' ? (req.label || req.title || req.text || '') : req}
+                      </span>
                   </div>
                 );
               })

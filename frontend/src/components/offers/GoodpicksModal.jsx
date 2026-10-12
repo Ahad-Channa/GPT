@@ -196,6 +196,11 @@ const isIconUrl = (icon) => icon && (icon.startsWith('http') || icon.startsWith(
 
 const formatCoins = (amount) => Number(amount || 0).toLocaleString('de-DE');
 
+const isRequirementCompleted = (requirement) => {
+  if (!requirement || typeof requirement !== 'object') return false;
+  return requirement.completed === true || requirement.credited === true || requirement.status === 'approved';
+};
+
 const directOfferGoalsToRequirements = (offer) => {
   const goals = Array.isArray(offer?.goals) ? offer.goals.filter(goal => goal && goal.enabled !== false) : [];
   if (goals.length === 0) return offer.requirements || [];
@@ -591,7 +596,7 @@ export const GoodpicksDetailModal = ({ offer, onClose, token }) => {
                 key={i}
                 className={`flex items-center gap-3.5 ${i > 0 ? 'pt-3' : ''}`}
               >
-                {i === 0 ? (
+                {isRequirementCompleted(req) ? (
                   <div
                     style={{
                       width: '26px',
@@ -627,7 +632,7 @@ export const GoodpicksDetailModal = ({ offer, onClose, token }) => {
                     color: '#0F172A',
                   }}
                 >
-                  {req}
+                  {typeof req === 'object' ? (req.label || req.title || req.text || '') : req}
                 </span>
               </div>
             ))
@@ -638,16 +643,11 @@ export const GoodpicksDetailModal = ({ offer, onClose, token }) => {
                   width: '26px',
                   height: '26px',
                   borderRadius: '50%',
-                  background: '#1E293B',
-                  color: '#FFFFFF',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
+                  border: '1.5px solid #CBD5E1',
+                  background: '#FFFFFF',
                   flexShrink: 0,
                 }}
-              >
-                <FiCheck size={14} strokeWidth={3} />
-              </div>
+              />
               <span
                 style={{
                   fontFamily: '"Poppins", sans-serif',
