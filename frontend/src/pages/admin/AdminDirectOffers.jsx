@@ -667,6 +667,31 @@ const AdminDirectOffers = () => {
     } catch { alert('Failed to deactivate'); }
   };
 
+  const writeClipboardText = async (text) => {
+    if (navigator.clipboard?.writeText) {
+      await navigator.clipboard.writeText(text);
+      return true;
+    }
+
+    const textarea = document.createElement('textarea');
+    textarea.value = text;
+    textarea.setAttribute('readonly', '');
+    textarea.style.position = 'fixed';
+    textarea.style.top = '-9999px';
+    textarea.style.left = '-9999px';
+    document.body.appendChild(textarea);
+    textarea.focus();
+    textarea.select();
+
+    try {
+      const copied = document.execCommand('copy');
+      if (!copied) throw new Error('Fallback copy command failed');
+      return true;
+    } finally {
+      document.body.removeChild(textarea);
+    }
+  };
+
   const copyPostbackUrl = async (offer) => {
     try {
       const res = await fetch(`${API}/admin/direct-offers/${offer._id}/postback-url`, {
@@ -676,12 +701,12 @@ const AdminDirectOffers = () => {
       if (!data.success || !data.postbackUrl) {
         throw new Error(data.error || 'Failed to copy postback URL');
       }
-      await navigator.clipboard.writeText(data.postbackUrl);
+      await writeClipboardText(data.postbackUrl);
       setCopiedId(`${offer._id}url`);
       setTimeout(() => setCopiedId(''), 1500);
     } catch (error) {
       console.error('Failed to copy postback URL:', error);
-      alert(error.message || 'Failed to copy postback URL');
+      alert('Could not copy the postback URL. Please try again from a secure browser context or copy it manually from a secure environment.');
     }
   };
 
