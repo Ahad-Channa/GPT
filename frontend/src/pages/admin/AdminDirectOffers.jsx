@@ -667,11 +667,22 @@ const AdminDirectOffers = () => {
     } catch { alert('Failed to deactivate'); }
   };
 
-  const copySecret = (secret, id) => {
-    navigator.clipboard.writeText(secret).then(() => {
-      setCopiedId(id);
+  const copyPostbackUrl = async (offer) => {
+    try {
+      const res = await fetch(`${API}/admin/direct-offers/${offer._id}/postback-url`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await res.json();
+      if (!data.success || !data.postbackUrl) {
+        throw new Error(data.error || 'Failed to copy postback URL');
+      }
+      await navigator.clipboard.writeText(data.postbackUrl);
+      setCopiedId(`${offer._id}url`);
       setTimeout(() => setCopiedId(''), 1500);
-    }).catch(() => {});
+    } catch (error) {
+      console.error('Failed to copy postback URL:', error);
+      alert(error.message || 'Failed to copy postback URL');
+    }
   };
 
   const backendBaseUrl = import.meta.env.VITE_API_URL?.replace(/\/api\/?$/, '') || 'http://localhost:5000';
@@ -790,7 +801,7 @@ const AdminDirectOffers = () => {
                         <code className="text-[10px] text-slate-950 font-mono bg-white border border-slate-200 px-2 py-1 rounded break-all flex-1">
                           {buildPostbackUrl(offer)}
                         </code>
-                        <button onClick={() => copySecret(buildPostbackUrl(offer), offer._id + 'url')}
+                        <button onClick={() => copyPostbackUrl(offer)}
                           className="text-slate-600 hover:text-slate-950 flex-shrink-0 mt-1" title="Copy postback URL">
                           {copiedId === offer._id + 'url' ? <FiCheckCircle className="text-emerald-700" /> : <FiCopy />}
                         </button>

@@ -276,6 +276,44 @@ const sanitizeDirectOfferAdmin = (offer) => {
   return doc;
 };
 
+const directOfferPostbackBaseUrl = (req) => {
+  const envBase = cleanString(process.env.BACKEND_URL || '', 300).replace(/\/$/, '');
+  if (envBase) return envBase;
+  const proto = cleanString(req.get?.('x-forwarded-proto') || req.protocol || 'http', 40).split(',')[0].trim() || 'http';
+  const host = cleanString(req.get?.('x-forwarded-host') || req.get?.('host') || '', 200).split(',')[0].trim();
+  return host ? `${proto}://${host}` : 'http://localhost:5000';
+};
+
+const buildDirectOfferPostbackUrl = (offer, baseUrl) => {
+  const m = offer.postbackMapping || {};
+  const clickIdParam = m.clickIdParam || 'click_id';
+  const transactionIdParam = m.transactionIdParam || 'txn_id';
+  const statusParam = m.statusParam || 'status';
+  const payoutParam = m.payoutParam || 'payout';
+  const eventTypeParam = m.eventTypeParam || 'event_type';
+  const approvedVal = m.approvedValue || 'approved';
+  const hasGoals = Array.isArray(offer.goals) && offer.goals.some((goal) => goal && goal.enabled !== false);
+  const pairs = [
+    [clickIdParam, '{CLICK_ID}'],
+    [transactionIdParam, '{TRANSACTION_ID}'],
+    [statusParam, approvedVal],
+    [payoutParam, '{PAYOUT}'],
+  ];
+  if (hasGoals) pairs.push([eventTypeParam, '{EVENT_TYPE}']);
+  pairs.push(['secret', offer.postbackSecretKey]);
+  const query = pairs
+    .filter(([key]) => key)
+    .map(([key, value]) => {
+      const rawValue = String(value || '');
+      const safeValue = rawValue.startsWith('{') && rawValue.endsWith('}')
+        ? rawValue
+        : encodeURIComponent(rawValue);
+      return `${encodeURIComponent(key)}=${safeValue}`;
+    })
+    .join('&');
+  return `${String(baseUrl || '').replace(/\/$/, '')}/api/direct-offers/postback?${query}`;
+};
+
 const boundAdminPayload = (value, depth = 0) => {
   if (depth > 4) return '[Truncated]';
   if (value === null || value === undefined) return value;
@@ -2867,6 +2905,21 @@ router.get('/direct-offers', requirePermission('manage_offerwalls'), async (req,
   }
 });
 
+// GET /api/admin/direct-offers/:id/postback-url — Copy-ready URL with secret
+router.get('/direct-offers/:id/postback-url', requirePermission('manage_offerwalls'), async (req, res) => {
+  try {
+    const offer = await DirectOffer.findById(req.params.id);
+    if (!offer) return res.status(404).json({ success: false, error: 'Direct offer not found' });
+    res.json({
+      success: true,
+      postbackUrl: buildDirectOfferPostbackUrl(offer, directOfferPostbackBaseUrl(req)),
+    });
+  } catch (error) {
+    console.error('[/api/admin/direct-offers/:id/postback-url GET] Error:', error);
+    res.status(500).json({ success: false, error: 'Failed to build direct offer postback URL' });
+  }
+});
+
 // POST /api/admin/direct-offers — Create a new direct offer
 router.post('/direct-offers', requirePermission('manage_offerwalls'), async (req, res) => {
   try {
@@ -3282,6 +3335,7 @@ router._phase8AdminHelpers = {
   serializeProviderConfig,
   serializeClickLogAdmin,
   sanitizeDirectOfferAdmin,
+  buildDirectOfferPostbackUrl,
   serializePostbackLog,
   applyWriteOnlyProviderSecret,
   boundAdminPayload,

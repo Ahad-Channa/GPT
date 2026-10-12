@@ -17,6 +17,7 @@ const PostbackLog = require('../models/PostbackLog');
 const {
   applyWriteOnlyProviderSecret,
   boundAdminPayload,
+  buildDirectOfferPostbackUrl,
   cleanString,
   getPagination,
   normalizeResponseConfig,
@@ -281,6 +282,30 @@ test('direct-offer admin serialization does not expose postback secret', () => {
   assert.equal(JSON.stringify(serialized).includes('plaintext-secret'), false);
 });
 
+test('direct-offer postback URL helper includes stored secret without changing sanitized admin serialization', () => {
+  const offer = {
+    postbackSecretKey: 'real-secret-value',
+    postbackMapping: {
+      clickIdParam: 'cid',
+      transactionIdParam: 'tid',
+      statusParam: 'state',
+      payoutParam: 'amount',
+      eventTypeParam: 'goal',
+      approvedValue: 'ok',
+    },
+    goals: [{ goalKey: 'register', enabled: true }],
+  };
+
+  const postbackUrl = buildDirectOfferPostbackUrl(offer, 'https://api.example.test');
+  assert.equal(
+    postbackUrl,
+    'https://api.example.test/api/direct-offers/postback?cid={CLICK_ID}&tid={TRANSACTION_ID}&state=ok&amount={PAYOUT}&goal={EVENT_TYPE}&secret=real-secret-value'
+  );
+
+  const serialized = sanitizeDirectOfferAdmin({ ...offer, title: 'Direct' });
+  assert.equal(JSON.stringify(serialized).includes('real-secret-value'), false);
+});
+
 test('phase 8 admin routes exist and are mounted under admin permission middleware', () => {
   const paths = routePaths();
   for (const pathName of ['/provider-configs', '/conversions', '/postback-logs', '/postback-logs/:id', '/offerwall-providers']) {
@@ -296,6 +321,7 @@ test('phase 8 admin routes exist and are mounted under admin permission middlewa
     "router.get('/conversions', requirePermission('manage_offerwalls')",
     "router.get('/postback-logs', requirePermission('manage_offerwalls')",
     "router.get('/postback-logs/:id', requirePermission('manage_offerwalls')",
+    "router.get('/direct-offers/:id/postback-url', requirePermission('manage_offerwalls')",
   ]) {
     assert.equal(source.includes(route), true);
   }
