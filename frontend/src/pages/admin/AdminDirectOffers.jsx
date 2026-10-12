@@ -561,11 +561,13 @@ const ClickLogsModal = ({ offer, token, onClose }) => {
                 </tr>
               </thead>
               <tbody>
-                {clicks.map(click => (
+                {clicks.map(click => {
+                  const user = click.user || click.userId;
+                  return (
                   <tr key={click._id} className="border-b border-white/[0.04] hover:bg-white/[0.02]">
                     <td className="py-2 pr-3">
-                      <div className="text-white font-medium">{click.userId?.displayName || 'Unknown'}</div>
-                      <div className="text-slate-500 text-xs">{click.userId?.email}</div>
+                      <div className="text-white font-medium">{user?.displayName || user?.email || 'Unknown'}</div>
+                      <div className="text-slate-500 text-xs">{user?.email}</div>
                     </td>
                     <td className="py-2 pr-3">
                       <div className="flex items-center gap-1">
@@ -603,7 +605,8 @@ const ClickLogsModal = ({ offer, token, onClose }) => {
                       {click.status === 'rejected' && <span className="text-rose-400 text-xs">Rejected</span>}
                     </td>
                   </tr>
-                ))}
+                  );
+                })}
               </tbody>
             </table>
           )}
