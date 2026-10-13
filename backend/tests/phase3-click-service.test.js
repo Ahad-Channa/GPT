@@ -297,6 +297,50 @@ test('redirect URL injection preserves configured query params and blocks unsafe
   }), /http or https/);
 });
 
+test('redirect URL replaces advertiser macros and only appends click id when missing', () => {
+  const userId = new mongoose.Types.ObjectId();
+  const offerId = new mongoose.Types.ObjectId();
+
+  const lowerClick = new URL(buildRedirectUrl({
+    destinationUrl: 'https://advertiser.example/?click_id={click_id}',
+    clickId: 'generated-click-1',
+    userId,
+    offerId,
+  }));
+  assert.equal(lowerClick.searchParams.get('click_id'), 'generated-click-1');
+  assert.equal([...lowerClick.searchParams.keys()].filter((key) => key === 'click_id').length, 1);
+
+  const bracketClick = new URL(buildRedirectUrl({
+    destinationUrl: 'https://advertiser.example/?cid=[CLICK_ID]&uid=[USER_ID]&oid=[OFFER_ID]',
+    clickId: 'generated-click-2',
+    userId,
+    offerId,
+  }));
+  assert.equal(bracketClick.searchParams.get('cid'), 'generated-click-2');
+  assert.equal(bracketClick.searchParams.get('uid'), userId.toString());
+  assert.equal(bracketClick.searchParams.get('oid'), offerId.toString());
+  assert.equal(bracketClick.searchParams.get('click_id'), null);
+
+  const upperClick = new URL(buildRedirectUrl({
+    destinationUrl: 'https://advertiser.example/?cid={CLICK_ID}&uid={USER_ID}&oid={OFFER_ID}',
+    clickId: 'generated-click-3',
+    userId,
+    offerId,
+  }));
+  assert.equal(upperClick.searchParams.get('cid'), 'generated-click-3');
+  assert.equal(upperClick.searchParams.get('uid'), userId.toString());
+  assert.equal(upperClick.searchParams.get('oid'), offerId.toString());
+
+  const appended = new URL(buildRedirectUrl({
+    destinationUrl: 'https://advertiser.example/?campaign=abc',
+    clickId: 'generated-click-4',
+    userId,
+    offerId,
+  }));
+  assert.equal(appended.searchParams.get('campaign'), 'abc');
+  assert.equal(appended.searchParams.get('click_id'), 'generated-click-4');
+});
+
 test('arbitrary redirect override is not persisted or used', async () => {
   const { clickLog, redirectUrl } = await createClick({
     user: { _id: new mongoose.Types.ObjectId() },

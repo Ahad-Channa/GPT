@@ -64,7 +64,39 @@ const sanitizeTrackingParams = (params = {}) => {
   return sanitized;
 };
 
-const buildRedirectUrl = ({ destinationUrl, clickId, clickIdParam = 'click_id' }) => {
+const replaceTrackingMacros = ({ parsedUrl, clickId, userId, offerId }) => {
+  const replacements = [
+    { macros: ['{click_id}', '[CLICK_ID]', '{CLICK_ID}'], value: clickId },
+    { macros: ['{user_id}', '[USER_ID]', '{USER_ID}'], value: userId },
+    { macros: ['{offer_id}', '[OFFER_ID]', '{OFFER_ID}'], value: offerId },
+  ];
+  let replacedClickId = false;
+
+  const replaceValue = (value) => {
+    let next = String(value || '');
+    for (const { macros, value: replacementValue } of replacements) {
+      if (replacementValue === undefined || replacementValue === null) continue;
+      for (const macro of macros) {
+        if (next.includes(macro)) {
+          next = next.split(macro).join(String(replacementValue));
+          if (macros.includes('{click_id}')) replacedClickId = true;
+        }
+      }
+    }
+    return next;
+  };
+
+  for (const [key, value] of [...parsedUrl.searchParams.entries()]) {
+    parsedUrl.searchParams.set(key, replaceValue(value));
+  }
+
+  const hash = parsedUrl.hash || '';
+  if (hash) parsedUrl.hash = replaceValue(hash);
+
+  return { replacedClickId };
+};
+
+const buildRedirectUrl = ({ destinationUrl, clickId, userId, offerId, clickIdParam = 'click_id' }) => {
   if (!destinationUrl || typeof destinationUrl !== 'string') {
     const error = new Error('Destination URL is required.');
     error.statusCode = 400;
@@ -86,7 +118,8 @@ const buildRedirectUrl = ({ destinationUrl, clickId, clickIdParam = 'click_id' }
     throw error;
   }
 
-  parsed.searchParams.set(clickIdParam || 'click_id', clickId);
+  const { replacedClickId } = replaceTrackingMacros({ parsedUrl: parsed, clickId, userId, offerId });
+  if (!replacedClickId) parsed.searchParams.set(clickIdParam || 'click_id', clickId);
   return parsed.toString();
 };
 
@@ -139,7 +172,13 @@ const createClick = async ({
 
   for (let attempt = 1; attempt <= MAX_CLICK_ID_ATTEMPTS; attempt += 1) {
     const clickId = generateClickId();
-    const redirectUrl = buildRedirectUrl({ destinationUrl, clickId, clickIdParam });
+    const redirectUrl = buildRedirectUrl({
+      destinationUrl,
+      clickId,
+      userId: user._id,
+      offerId: offerId || campaignId,
+      clickIdParam,
+    });
 
     try {
       const clickLog = await clickLogModel.create({
