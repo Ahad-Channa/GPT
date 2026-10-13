@@ -264,17 +264,10 @@ export const DirectOfferModal = ({ offer, token, placement = 'featured', onClose
         if (data.success && data.url) {
           window.open(data.url, '_blank', 'noopener,noreferrer');
           if (onClicked) onClicked(offer._id);
-        } else if (offer.trackingUrl || offer.url) {
-          window.open(offer.trackingUrl || offer.url, '_blank', 'noopener,noreferrer');
         }
-      } else if (offer.trackingUrl || offer.url) {
-        window.open(offer.trackingUrl || offer.url, '_blank', 'noopener,noreferrer');
       }
     } catch (err) {
       console.error('Failed to process click:', err);
-      if (offer.trackingUrl || offer.url) {
-        window.open(offer.trackingUrl || offer.url, '_blank', 'noopener,noreferrer');
-      }
     } finally {
       setLoading(false);
     }

@@ -423,3 +423,10 @@ test('direct offer status mapping supports configured chargeback as reversal', (
   assert.deepEqual(config.statusMappings.rejected, ['rejected']);
   assert.deepEqual(config.statusMappings.reversed, ['chargeback']);
 });
+
+test('direct offer click route does not return raw advertiser URL for approved revisits', () => {
+  const fs = require('node:fs');
+  const source = fs.readFileSync(require('node:path').join(__dirname, '..', 'routes', 'directOffers.js'), 'utf8');
+  assert.match(source, /buildRedirectUrl/);
+  assert.doesNotMatch(source, /url:\s*offer\.advertiserUrl/);
+});

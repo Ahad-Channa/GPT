@@ -462,6 +462,13 @@ test('frontend offerwall URL builder supports Lootably placement and sid', () =>
   assert.match(offerCards, /LOOTABLY_PLACEMENT_ID|placementId/);
 });
 
+test('frontend direct-offer start only opens backend returned URLs', () => {
+  const directOfferCard = read('frontend/src/components/offers/DirectOfferCard.jsx');
+  assert.match(directOfferCard, /direct-offers\/click/);
+  assert.match(directOfferCard, /window\.open\(data\.url/);
+  assert.doesNotMatch(directOfferCard, /window\.open\(offer\.(trackingUrl|url|advertiserUrl)/);
+});
+
 test('offerwall readiness wording remains conservative and Phase 8 pages add no financial actions', () => {
   const offerwalls = read('frontend/src/pages/admin/AdminOfferwalls.jsx');
   const providers = read('frontend/src/pages/admin/AdminProviders.jsx');

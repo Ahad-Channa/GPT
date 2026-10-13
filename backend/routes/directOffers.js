@@ -7,7 +7,7 @@ const { emitToUser, emitWalletUpdate } = require('../utils/walletEvents');
 const { verifyToken } = require('../middlewares/authMiddleware');
 const { fraudCheck } = require('../middlewares/fraudCheck');
 const { processVipLevelUp } = require('../utils/vipUtils');
-const { createDirectOfferClick } = require('../services/tracking/clickService');
+const { buildRedirectUrl, createDirectOfferClick } = require('../services/tracking/clickService');
 const { processPostback } = require('../services/tracking/conversionService');
 const { processReward } = require('../services/rewards/rewardService');
 const { processReversal } = require('../services/rewards/reversalService');
@@ -133,7 +133,14 @@ router.post('/click/:offerId', verifyToken, fraudCheck('offer_click', 'full'), a
     });
     if (existingApproved) {
       // Already approved — just return the URL so they can revisit
-      return res.status(200).json({ success: true, url: offer.advertiserUrl, alreadyApproved: true });
+      const redirectUrl = buildRedirectUrl({
+        destinationUrl: offer.advertiserUrl,
+        clickId: existingApproved.clickId,
+        userId: user._id,
+        offerId: offer._id,
+        clickIdParam: offer.postbackMapping?.clickIdParam || 'click_id',
+      });
+      return res.status(200).json({ success: true, url: redirectUrl, clickId: existingApproved.clickId, alreadyApproved: true });
     }
 
     const { clickId, redirectUrl } = await createDirectOfferClick({
