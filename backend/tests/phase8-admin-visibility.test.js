@@ -454,6 +454,14 @@ test('frontend admin pages do not render plaintext provider or direct-offer secr
   assert.doesNotMatch(postbackLogs, /secretValue|postbackSecretKey|authorization:\s*`Bearer/);
 });
 
+test('frontend offerwall URL builder supports Lootably placement and sid', () => {
+  const offerCards = read('frontend/src/components/offers/OfferCards.jsx');
+  assert.match(offerCards, /desktop-wall\.lootably\.com/);
+  assert.match(offerCards, /placementID/);
+  assert.match(offerCards, /sid/);
+  assert.match(offerCards, /LOOTABLY_PLACEMENT_ID|placementId/);
+});
+
 test('offerwall readiness wording remains conservative and Phase 8 pages add no financial actions', () => {
   const offerwalls = read('frontend/src/pages/admin/AdminOfferwalls.jsx');
   const providers = read('frontend/src/pages/admin/AdminProviders.jsx');

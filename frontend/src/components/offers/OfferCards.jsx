@@ -47,10 +47,10 @@ export const buildProviderUrl = (provider, userId) => {
         : null;
     case 'lootably': {
       const configuredUrl = fillUserMacros(provider.iframeUrl || provider.offerwallUrl || provider.placementUrl || provider.url);
-      if (configuredUrl) return appendUserParam(configuredUrl, 'user_id');
+      if (configuredUrl) return appendUserParam(configuredUrl, 'sid');
       const placementId = provider.placementId || provider.placementID || provider.lootablyPlacementId;
       return placementId && userId
-        ? `https://wall.lootably.com/?placementID=${encodeURIComponent(placementId)}&user_id=${encodeURIComponent(userId)}`
+        ? `https://desktop-wall.lootably.com/?placementID=${encodeURIComponent(placementId)}&sid=${encodeURIComponent(userId)}`
         : null;
     }
     default:

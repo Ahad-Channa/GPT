@@ -82,10 +82,21 @@ router.get('/settings', verifyToken, async (req, res) => {
   try {
     const settings = await Settings.getSingleton();
     const ltcRateUSD = await getLitecoinRate();
+    const offerwalls = settings.offerwallProviders
+      .filter((p) => p.enabled)
+      .map((provider) => {
+        const pObj = provider.toObject ? provider.toObject() : { ...provider };
+        if (pObj.id === 'lootably') {
+          pObj.placementId = pObj.placementId || process.env.LOOTABLY_PLACEMENT_ID || '';
+          pObj.iframeUrl = pObj.iframeUrl || process.env.LOOTABLY_IFRAME_URL || '';
+          pObj.offerwallUrl = pObj.offerwallUrl || process.env.LOOTABLY_OFFERWALL_URL || '';
+        }
+        return pObj;
+      });
     const settingsPayload = {
       withdrawalFeePercent: settings.withdrawalFeePercent,
       withdrawalMethods: settings.withdrawalMethods.filter((m) => m.enabled),
-      offerwalls: settings.offerwallProviders.filter((p) => p.enabled),
+      offerwalls,
       coinsPerUSD: settings.coinsPerUSD,
       exchangeRates: { ltcUSD: ltcRateUSD },
     };

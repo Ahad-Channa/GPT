@@ -276,6 +276,16 @@ const sanitizeDirectOfferAdmin = (offer) => {
   return doc;
 };
 
+const hydrateOfferwallProviderSettings = (provider) => {
+  const pObj = provider?.toObject ? provider.toObject() : { ...(provider || {}) };
+  if (pObj.id === 'lootably') {
+    pObj.placementId = pObj.placementId || process.env.LOOTABLY_PLACEMENT_ID || '';
+    pObj.iframeUrl = pObj.iframeUrl || process.env.LOOTABLY_IFRAME_URL || '';
+    pObj.offerwallUrl = pObj.offerwallUrl || process.env.LOOTABLY_OFFERWALL_URL || '';
+  }
+  return pObj;
+};
+
 const directOfferPostbackBaseUrl = (req) => {
   const envBase = cleanString(process.env.BACKEND_URL || '', 300).replace(/\/$/, '');
   if (envBase) return envBase;
@@ -671,7 +681,7 @@ router.get('/settings', requirePermission('manage_withdrawals'), async (req, res
 
     // Dynamically set secretConfigured
     const providers = settings.offerwallProviders.map(p => {
-      const pObj = p.toObject ? p.toObject() : p;
+      const pObj = hydrateOfferwallProviderSettings(p);
       const envSecretMap = {
         cpx: 'CPX_HASH_KEY',
         adgem: 'ADGEM_API_KEY',
@@ -780,7 +790,7 @@ router.put('/settings', requirePermission('manage_withdrawals'), async (req, res
 
 router.put('/offerwalls/:providerId', requirePermission('manage_offerwalls'), async (req, res) => {
   try {
-    const { enabled, conversionRatio } = req.body;
+    const { enabled, conversionRatio, iframeUrl, offerwallUrl, placementId } = req.body;
     const settings = await Settings.getSingleton();
 
     const provider = settings.offerwallProviders.find(p => p.id === req.params.providerId);
@@ -791,11 +801,16 @@ router.put('/offerwalls/:providerId', requirePermission('manage_offerwalls'), as
       const ratio = Number(conversionRatio);
       if (!isNaN(ratio) && ratio > 0) provider.conversionRatio = ratio;
     }
+    if (provider.id === 'lootably') {
+      if (iframeUrl !== undefined) provider.iframeUrl = cleanString(iframeUrl, 500);
+      if (offerwallUrl !== undefined) provider.offerwallUrl = cleanString(offerwallUrl, 500);
+      if (placementId !== undefined) provider.placementId = cleanString(placementId, 120);
+    }
 
     await settings.save();
 
     await createLog(req.dbUser._id, 'UPDATE_OFFERWALL', null, {
-      providerId: provider.id, enabled, conversionRatio
+      providerId: provider.id, enabled, conversionRatio, ...(provider.id === 'lootably' ? { placementId: provider.placementId || '' } : {})
     });
 
     res.json({ success: true, provider });
@@ -821,7 +836,7 @@ router.get('/offerwall-providers', requirePermission('manage_offerwalls'), async
     };
 
     const providers = settings.offerwallProviders.map((provider) => {
-      const pObj = provider.toObject ? provider.toObject() : { ...provider };
+      const pObj = hydrateOfferwallProviderSettings(provider);
       const providerConfig = providerConfigMap.get(pObj.id);
       return {
         ...pObj,

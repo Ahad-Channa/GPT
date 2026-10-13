@@ -100,6 +100,9 @@ const settingsSchema = new mongoose.Schema(
           enabled: { type: Boolean, default: false },
           conversionRatio: { type: Number, default: 100 },
           secretConfigured: { type: Boolean, default: false },
+          iframeUrl: { type: String, default: '' },
+          offerwallUrl: { type: String, default: '' },
+          placementId: { type: String, default: '' },
           category: {
             type: String,
             enum: ['surveys', 'gaming', 'mixed'],
@@ -109,7 +112,7 @@ const settingsSchema = new mongoose.Schema(
       ],
       default: [
         { id: 'goodpicks', label: 'Goodpicks', enabled: true, conversionRatio: 100, secretConfigured: false, category: 'gaming' },
-        { id: 'lootably', label: 'Lootably', enabled: true, conversionRatio: 100, secretConfigured: false, category: 'mixed' },
+        { id: 'lootably', label: 'Lootably', enabled: true, conversionRatio: 100, secretConfigured: false, category: 'mixed', placementId: process.env.LOOTABLY_PLACEMENT_ID || '', iframeUrl: process.env.LOOTABLY_IFRAME_URL || '', offerwallUrl: process.env.LOOTABLY_OFFERWALL_URL || '' },
         { id: 'primeearn', label: 'Prime Surveys', enabled: true, conversionRatio: 100, secretConfigured: false, category: 'surveys' },
         { id: 'torox', label: 'Torox', enabled: true, conversionRatio: 100, secretConfigured: false, category: 'gaming' },
         { id: 'revu', label: 'Revu', enabled: true, conversionRatio: 100, secretConfigured: false, category: 'mixed' },
@@ -187,7 +190,7 @@ settingsSchema.statics.getSingleton = async function () {
   } else if (settings.offerwallProviders) {
     const stdProviders = [
       { id: 'goodpicks', label: 'Goodpicks', enabled: true, conversionRatio: 100, secretConfigured: false, category: 'gaming' },
-      { id: 'lootably', label: 'Lootably', enabled: true, conversionRatio: 100, secretConfigured: false, category: 'mixed' },
+      { id: 'lootably', label: 'Lootably', enabled: true, conversionRatio: 100, secretConfigured: false, category: 'mixed', placementId: process.env.LOOTABLY_PLACEMENT_ID || '', iframeUrl: process.env.LOOTABLY_IFRAME_URL || '', offerwallUrl: process.env.LOOTABLY_OFFERWALL_URL || '' },
       { id: 'primeearn', label: 'Prime Surveys', enabled: true, conversionRatio: 100, secretConfigured: false, category: 'surveys' },
       { id: 'torox', label: 'Torox', enabled: true, conversionRatio: 100, secretConfigured: false, category: 'gaming' },
       { id: 'revu', label: 'Revu', enabled: true, conversionRatio: 100, secretConfigured: false, category: 'mixed' },
@@ -200,6 +203,21 @@ settingsSchema.statics.getSingleton = async function () {
     for (const p of stdProviders) {
       if (!settings.offerwallProviders.some(existing => existing.id === p.id)) {
         settings.offerwallProviders.push(p);
+        modified = true;
+      }
+    }
+    const lootably = settings.offerwallProviders.find(existing => existing.id === 'lootably');
+    if (lootably) {
+      if (!lootably.placementId && process.env.LOOTABLY_PLACEMENT_ID) {
+        lootably.placementId = process.env.LOOTABLY_PLACEMENT_ID;
+        modified = true;
+      }
+      if (!lootably.iframeUrl && process.env.LOOTABLY_IFRAME_URL) {
+        lootably.iframeUrl = process.env.LOOTABLY_IFRAME_URL;
+        modified = true;
+      }
+      if (!lootably.offerwallUrl && process.env.LOOTABLY_OFFERWALL_URL) {
+        lootably.offerwallUrl = process.env.LOOTABLY_OFFERWALL_URL;
         modified = true;
       }
     }
