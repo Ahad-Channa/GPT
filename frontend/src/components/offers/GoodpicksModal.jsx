@@ -211,12 +211,24 @@ const directOfferGoalsToRequirements = (offer) => {
   });
 };
 
+const directOfferGoalsToRequirementRows = (offer) => {
+  const goals = Array.isArray(offer?.goals) ? offer.goals.filter(goal => goal && goal.enabled !== false) : [];
+  if (goals.length === 0) return offer.requirements || [];
+  return goals.map((goal) => {
+    const label = goal.label || goal.goalKey || 'Complete step';
+    return {
+      label: `${label} \u2192 receive ${formatCoins(goal.rewardAmount)} coins`,
+      completed: isRequirementCompleted(goal),
+    };
+  });
+};
+
 const mapDirectOfferForGoodpicks = (offer) => ({
   ...offer,
   __direct: true,
   externalLink: offer.advertiserUrl,
-  requirementType: offer.goals?.some(goal => goal && goal.enabled !== false) ? 'bullets' : offer.requirementType,
-  requirements: directOfferGoalsToRequirements(offer),
+  requirementType: offer.goals?.some(goal => goal && goal.enabled !== false) ? 'bullets' : 'paragraph',
+  requirements: directOfferGoalsToRequirementRows(offer),
 });
 
 const renderOfferCover = (offer) => {

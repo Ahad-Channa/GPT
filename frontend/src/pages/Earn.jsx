@@ -8,6 +8,7 @@ import {
   FiClock, FiLoader, FiInbox, FiSend
 } from 'react-icons/fi';
 import { ProviderCard, OfferwallCard, FeaturedOfferCard, FeaturedOfferModal } from '../components/offers/OfferCards';
+import OfferwallModal from '../components/offers/OfferwallModal';
 import { GoodpicksOfferwallModal } from '../components/offers/GoodpicksModal';
 import { DirectOfferCard, DirectOfferModal } from '../components/offers/DirectOfferCard';
 
@@ -168,7 +169,7 @@ const Earn = () => {
     { id: 'adscend', label: 'AdscendMedia', category: 'surveys', enabled: true },
   ];
 
-  const surveyProviders = [...defaultSurveyList, goodpicksItem];
+  const surveyProviders = [goodpicksItem, ...defaultSurveyList];
 
   const defaultBase8 = [
     { id: 'adgem', label: 'AdGem', category: 'gaming', enabled: true },
@@ -189,8 +190,7 @@ const Earn = () => {
     }
   }
 
-  // 9 items total: 4 on line 1, 4 on line 2, and Goodpicks as the 9th at start of line 3
-  const gamingProviders = [...combinedBase.slice(0, 8), goodpicksItem];
+  const gamingProviders = [goodpicksItem, ...combinedBase.slice(0, 8)];
 
   const tabs = [
     { id: 'surveys', label: t('earn.tabSurveys'), icon: FiCheckCircle, count: surveyProviders.length },
@@ -250,7 +250,7 @@ const Earn = () => {
             transition={{ duration: 0.25 }}
             className="space-y-6"
           >
-            {activeProvider ? (
+            {false && activeProvider ? (
               activeProvider.id === 'goodpicks' ? (
                 <GoodpicksOfferwallModal onClose={() => setActiveProvider(null)} token={token} />
               ) : (
@@ -373,6 +373,17 @@ const Earn = () => {
               </>
             )}
           </motion.div>
+        </AnimatePresence>
+
+        <AnimatePresence>
+          {activeProvider && (
+            <OfferwallModal
+              provider={activeProvider}
+              userId={mongoUser?._id}
+              token={token}
+              onClose={() => setActiveProvider(null)}
+            />
+          )}
         </AnimatePresence>
 
         <AnimatePresence>

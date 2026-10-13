@@ -20,13 +20,41 @@ const isRequirementCompleted = (requirement) => {
 
 export const buildProviderUrl = (provider, userId) => {
   const CPX_APP_ID = '32283';
+  const fillUserMacros = (url) => {
+    if (!url || !userId) return url || null;
+    return String(url)
+      .replaceAll('{USER_ID}', encodeURIComponent(userId))
+      .replaceAll('{userId}', encodeURIComponent(userId))
+      .replaceAll('{user_id}', encodeURIComponent(userId))
+      .replaceAll('[USER_ID]', encodeURIComponent(userId))
+      .replaceAll('[user_id]', encodeURIComponent(userId));
+  };
+  const appendUserParam = (url, paramName) => {
+    if (!url || !userId) return url || null;
+    try {
+      const parsed = new URL(url);
+      if (!parsed.searchParams.has(paramName)) parsed.searchParams.set(paramName, userId);
+      return parsed.toString();
+    } catch {
+      const separator = String(url).includes('?') ? '&' : '?';
+      return `${url}${separator}${encodeURIComponent(paramName)}=${encodeURIComponent(userId)}`;
+    }
+  };
   switch (provider.id) {
     case 'cpx':
       return userId
         ? `https://offers.cpx-research.com/index.php?app_id=${CPX_APP_ID}&ext_user_id=${userId}`
         : null;
+    case 'lootably': {
+      const configuredUrl = fillUserMacros(provider.iframeUrl || provider.offerwallUrl || provider.placementUrl || provider.url);
+      if (configuredUrl) return appendUserParam(configuredUrl, 'user_id');
+      const placementId = provider.placementId || provider.placementID || provider.lootablyPlacementId;
+      return placementId && userId
+        ? `https://wall.lootably.com/?placementID=${encodeURIComponent(placementId)}&user_id=${encodeURIComponent(userId)}`
+        : null;
+    }
     default:
-      return provider.iframeUrl || null;
+      return fillUserMacros(provider.iframeUrl) || null;
   }
 };
 

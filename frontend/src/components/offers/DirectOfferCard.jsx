@@ -18,6 +18,28 @@ const isRequirementCompleted = (requirement) => {
   return requirement.completed === true || requirement.credited === true || requirement.status === 'approved';
 };
 
+const formatCoins = (amount) => Number(amount || 0).toLocaleString('de-DE');
+
+const getEnabledGoals = (offer) =>
+  Array.isArray(offer?.goals) ? offer.goals.filter((goal) => goal && goal.enabled !== false) : [];
+
+const isGoalCompleted = (offer, goal) => {
+  const key = goal?.goalKey;
+  if (!key) return false;
+  if (Array.isArray(offer?.completedGoalKeys)) return offer.completedGoalKeys.includes(key);
+  if (Array.isArray(offer?.completedGoals)) {
+    return offer.completedGoals.some((completed) => completed === key || completed?.goalKey === key || completed?.key === key);
+  }
+  const goalState = offer?.goalStatuses?.[key] || offer?.goalCompletions?.[key];
+  return goalState === true || goalState?.completed === true || goalState?.credited === true || goalState?.status === 'approved';
+};
+
+const requirementText = (requirements) => {
+  if (Array.isArray(requirements) && requirements.length > 0) return requirements.join(' ');
+  if (typeof requirements === 'string' && requirements.trim()) return requirements;
+  return 'Complete the requirements to earn rewards.';
+};
+
 // Status badge config
 const STATUS_CONFIG = {
   clicked: { label: 'In Progress', color: 'text-amber-400', bg: 'bg-amber-500/10  border-amber-500/20' },
@@ -218,6 +240,16 @@ export const DirectOfferModal = ({ offer, token, placement = 'featured', onClose
   const coverImgSrc = offer.coverImage || (isIconUrl(offer.icon) ? offer.icon : null);
   const emojiIcon = !coverImgSrc && offer.icon ? offer.icon : '⚡';
 
+  const enabledGoals = getEnabledGoals(offer);
+  const hasGoalRows = enabledGoals.length > 0;
+  const displayRequirementType = hasGoalRows ? 'bullets' : 'paragraph';
+  const displayRequirements = hasGoalRows
+    ? enabledGoals.map((goal) => ({
+      label: `${goal.label || goal.goalKey || 'Complete step'} \u2192 receive ${formatCoins(goal.rewardAmount)} coins`,
+      completed: isGoalCompleted(offer, goal),
+    }))
+    : [requirementText(offer.requirements)];
+
   const handleGoToOffer = async () => {
     if (isExpired) return;
     setLoading(true);
@@ -400,21 +432,21 @@ export const DirectOfferModal = ({ offer, token, placement = 'featured', onClose
 
           {/* Requirements Content */}
           <div className="flex flex-col gap-2">
-            {offer.requirementType === 'paragraph' ? (
+            {displayRequirementType === 'paragraph' ? (
               <div
                 style={{ background: 'rgba(249, 247, 241, 1)' }}
                 className="flex items-center px-4 py-2.5 rounded-full border border-[#EAE4D7]/70"
               >
                 <p className="text-[13px] font-medium text-[#1E293B] m-0 leading-relaxed">
-                  {Array.isArray(offer.requirements) && offer.requirements.length > 0
-                    ? offer.requirements.join(' ')
-                    : typeof offer.requirements === 'string'
-                    ? offer.requirements
+                  {Array.isArray(displayRequirements) && displayRequirements.length > 0
+                    ? displayRequirements.join(' ')
+                    : typeof displayRequirements === 'string'
+                    ? displayRequirements
                     : 'Complete the requirements to earn rewards.'}
                 </p>
               </div>
-            ) : offer.requirements && offer.requirements.length > 0 ? (
-              offer.requirements.map((req, i) => (
+            ) : displayRequirements && displayRequirements.length > 0 ? (
+              displayRequirements.map((req, i) => (
                 <div
                   key={i}
                   style={{ background: 'rgba(249, 247, 241, 1)' }}

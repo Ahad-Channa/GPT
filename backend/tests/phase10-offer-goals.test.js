@@ -374,7 +374,7 @@ test('goal conversion without a trusted snapshot is rejected and not rewarded', 
 // ─── Part E: placements share one offer record and one click endpoint ─────────
 
 const directOffersRouter = require('../routes/directOffers');
-const { buildPlacementClause, resolveClickPlacement } = directOffersRouter.__testInternals;
+const { buildDirectOfferProviderConfig, buildPlacementClause, resolveClickPlacement } = directOffersRouter.__testInternals;
 
 test('featured and branded placements query the same DirectOffer collection with different placement filters', () => {
   assert.deepEqual(buildPlacementClause('featured'), { 'displayPlacements.featured': { $ne: false } });
@@ -404,4 +404,22 @@ test('public direct-offer responses never select or expose the postback secret',
   const fs = require('node:fs');
   const source = fs.readFileSync(require('node:path').join(__dirname, '..', 'routes', 'directOffers.js'), 'utf8');
   assert.match(source, /\.select\('-postbackSecretKey'\)/);
+});
+
+test('direct offer status mapping supports configured chargeback as reversal', () => {
+  const offer = new DirectOffer({
+    title: 'Chargeback Mapping Offer',
+    description: 'Status mapping QA',
+    rewardAmount: 100,
+    advertiserUrl: 'https://advertiser.example',
+    postbackMapping: {
+      approvedValue: 'approved',
+      rejectedValue: 'rejected',
+      reversedValue: 'chargeback',
+    },
+  });
+
+  const config = buildDirectOfferProviderConfig(offer);
+  assert.deepEqual(config.statusMappings.rejected, ['rejected']);
+  assert.deepEqual(config.statusMappings.reversed, ['chargeback']);
 });

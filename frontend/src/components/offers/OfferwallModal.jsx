@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FiX } from 'react-icons/fi';
+import { FiExternalLink, FiX } from 'react-icons/fi';
 import { buildProviderUrl, getProviderLogo } from './OfferCards';
 import { GoodpicksOfferwallModal } from './GoodpicksModal';
 
@@ -99,26 +99,53 @@ export const OfferwallModal = ({ provider, userId, token, onClose }) => {
             </div>
 
             {/* Right: Black Circular Close Button */}
-            <button
-              onClick={onClose}
-              style={{
-                width: '24px',
-                height: '24px',
-                borderRadius: '50%',
-                background: '#000000',
-                color: '#FFFFFF',
-                border: 'none',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                cursor: 'pointer',
-                padding: 0,
-              }}
-              className="hover:opacity-85 active:scale-95 shrink-0 z-10"
-              title="Close"
-            >
-              <FiX size={12} />
-            </button>
+            <div className="flex items-center gap-2 shrink-0 z-10">
+              {provider.id === 'lootably' && url && (
+                <button
+                  type="button"
+                  onClick={() => window.open(url, '_blank', 'noopener,noreferrer')}
+                  style={{
+                    width: '24px',
+                    height: '24px',
+                    borderRadius: '50%',
+                    background: '#FFFFFF',
+                    color: '#000000',
+                    border: '1px solid rgba(0,0,0,0.12)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    cursor: 'pointer',
+                    padding: 0,
+                  }}
+                  className="hover:opacity-85 active:scale-95"
+                  title="Open Lootably in new tab"
+                  aria-label="Open Lootably in new tab"
+                >
+                  <FiExternalLink size={12} />
+                </button>
+              )}
+              <button
+                onClick={onClose}
+                style={{
+                  width: '24px',
+                  height: '24px',
+                  borderRadius: '50%',
+                  background: '#000000',
+                  color: '#FFFFFF',
+                  border: 'none',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  cursor: 'pointer',
+                  padding: 0,
+                }}
+                className="hover:opacity-85 active:scale-95"
+                title="Close"
+                aria-label="Close offerwall"
+              >
+                <FiX size={12} />
+              </button>
+            </div>
           </div>
 
           {/* ── Body: Offerwall Iframe Area ── */}

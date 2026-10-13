@@ -174,7 +174,7 @@ const buildDirectOfferProviderConfig = (offer) => {
       pending: [mapping.pendingValue || 'pending'],
       approved: [mapping.approvedValue || 'approved'],
       rejected: [mapping.rejectedValue || 'rejected'],
-      reversed: [mapping.reversedValue || 'reversed', 'chargeback'],
+      reversed: [mapping.reversedValue || mapping.chargebackValue || 'reversed', mapping.chargebackValue].filter(Boolean),
     },
     security: {
       method: 'shared_secret',

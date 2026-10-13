@@ -124,6 +124,7 @@ const OfferFormModal = ({ offer, onClose, onSaved, token }) => {
       eventTypeParam:     offer?.postbackMapping?.eventTypeParam     || 'event_type',
       approvedValue:      offer?.postbackMapping?.approvedValue      || 'approved',
       rejectedValue:      offer?.postbackMapping?.rejectedValue      || 'rejected',
+      reversedValue:      offer?.postbackMapping?.reversedValue      || offer?.postbackMapping?.chargebackValue || 'reversed',
     },
   });
   const [loading, setLoading] = useState(false);
@@ -447,7 +448,11 @@ const OfferFormModal = ({ offer, onClose, onSaved, token }) => {
                   </div>
                   <div>
                     <label className={labelCls}>Rejected Value</label>
-                    <input className={inputCls} value={form.postbackMapping.rejectedValue} onChange={setMapping('rejectedValue')} placeholder="e.g. rejected, chargeback, 0" />
+                    <input className={inputCls} value={form.postbackMapping.rejectedValue} onChange={setMapping('rejectedValue')} placeholder="e.g. rejected, declined, 0" />
+                  </div>
+                  <div>
+                    <label className={labelCls}>Reversal / Chargeback Value</label>
+                    <input className={inputCls} value={form.postbackMapping.reversedValue} onChange={setMapping('reversedValue')} placeholder="e.g. reversed, chargeback" />
                   </div>
                 </div>
               </div>
@@ -808,6 +813,7 @@ const AdminDirectOffers = () => {
                         <span>Status: <strong className="text-slate-950">{offer.postbackMapping.statusParam || 'status'}</strong></span>
                         <span>Approved: <strong className="text-emerald-700">{offer.postbackMapping.approvedValue || 'approved'}</strong></span>
                         <span>Rejected: <strong className="text-rose-700">{offer.postbackMapping.rejectedValue || 'rejected'}</strong></span>
+                        <span>Reversal: <strong className="text-orange-700">{offer.postbackMapping.reversedValue || offer.postbackMapping.chargebackValue || 'reversed'}</strong></span>
                         <span>Payout: <strong className="text-slate-950">{offer.postbackMapping.payoutParam || 'payout'}</strong></span>
                       </div>
                     )}

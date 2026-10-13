@@ -324,10 +324,9 @@ const Home = () => {
     enabled: true
   };
 
-  const surveyProviders = [...defaultSurveyList, goodpicksItem];
+  const surveyProviders = [goodpicksItem, ...defaultSurveyList];
 
-  // 9 items total: 4 on line 1, 4 on line 2, and Goodpicks as the 9th at start of line 3
-  const gamingProviders = [...combinedBase.slice(0, 8), goodpicksItem];
+  const gamingProviders = [goodpicksItem, ...combinedBase.slice(0, 8)];
 
   const tabs = [
     {

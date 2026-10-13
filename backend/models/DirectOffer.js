@@ -67,6 +67,8 @@ const directOfferSchema = new mongoose.Schema(
       statusParam:        { type: String, default: 'status' },     // Query param for conversion status
       approvedValue:      { type: String, default: 'approved' },   // Value that means "approved"
       rejectedValue:      { type: String, default: 'rejected' },   // Value that means "rejected"
+      reversedValue:      { type: String, default: 'reversed' },   // Value that means "reversal/chargeback"
+      chargebackValue:    { type: String, default: '' },           // Optional legacy alias for reversal/chargeback
     },
     // Stats (denormalized for fast admin view)
     totalClicks: { type: Number, default: 0 },
