@@ -512,4 +512,8 @@ test('offerwall readiness wording remains conservative and conversion actions st
   assert.match(conversions, /admin\/conversions\/\$\{row\._id\}\/\$\{action\}/);
   assert.match(conversions, /Chargeback/);
   assert.doesNotMatch(`${providers}\n${logs}`, /force approve|force reward|retry reward|reverse transaction|credit user/i);
+  assert.match(conversions, /await load\(pagination\.page\)/);
+  assert.match(conversions, /!res\.ok \|\| !data\.success/);
+  assert.match(conversions, /setActionLoading\('\'\)/);
+  assert.match(conversions, /const canChargeback = !isReversed && isCredited/);
 });
