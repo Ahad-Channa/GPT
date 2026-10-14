@@ -158,31 +158,29 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }) {
       onClick={onClose}
     >
       {/* Centering & Scrollable Inner Container */}
-      <div className="min-h-full flex items-center justify-center p-4 sm:p-6 py-8 sm:py-12">
+      <div className="min-h-full flex items-center justify-center px-2.5 sm:p-6 py-4 sm:py-12">
         <motion.div
           initial={{ opacity: 0, scale: 0.96, y: 15 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.96, y: 15 }}
           transition={{ duration: 0.22, ease: 'easeOut' }}
-          className={`relative rounded-[28px] sm:rounded-[36px] shadow-2xl overflow-hidden flex flex-col justify-between w-full my-auto transition-colors duration-300 ${
+          className={`relative rounded-[24px] sm:rounded-[36px] shadow-2xl overflow-hidden flex flex-col justify-between w-full my-auto transition-colors duration-300 p-2 sm:p-[10px] pb-6 sm:pb-[28px] ${
             isDarkMode ? 'border border-white/10' : 'bg-white'
           }`}
           style={{
             maxWidth: '626px',
             width: '100%',
-            padding: '10px 10px 28px 10px',
             backgroundColor: isDarkMode ? 'rgba(12, 14, 17, 1)' : 'rgba(255, 255, 255, 1)',
           }}
           onClick={(e) => e.stopPropagation()}
         >
           {/* Header Card (606px x 176px) */}
           <div
-            className="relative rounded-[20px] sm:rounded-[24px] overflow-hidden flex flex-col justify-center w-full transition-colors duration-300"
+            className="relative rounded-[18px] sm:rounded-[24px] overflow-hidden flex flex-col justify-center w-full transition-colors duration-300 p-4 sm:p-[20px_20px_20px_24px]"
             style={{
               maxWidth: '606px',
-              minHeight: '145px',
+              minHeight: '140px',
               background: isDarkMode ? 'rgba(18, 22, 28, 1)' : 'rgba(248, 245, 239, 1)',
-              padding: '20px 20px 20px 24px',
             }}
           >
             {/* Close Button */}
@@ -202,21 +200,36 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }) {
               <FiX style={{ width: '12px', height: '12px', strokeWidth: 2.5 }} />
             </button>
 
-            {/* Right Side Decoration Image from Figma */}
+            {/* Right Side Decoration Image - Desktop */}
             <img
               src="/coins/logside.png"
               alt="Decoration"
-              className="absolute top-0 right-0 h-full w-auto object-contain pointer-events-none z-10"
+              className="hidden sm:block absolute top-0 right-0 h-full w-auto object-contain pointer-events-none z-10"
               style={{
                 maxHeight: '176px',
               }}
             />
 
+            {/* Right Side Decoration Image - Mobile */}
+            <img
+              src="/coins/image copy 20.png"
+              alt="Decoration"
+              className="block sm:hidden absolute bottom-0 right-0 h-full w-auto object-contain pointer-events-none z-10"
+              style={{
+                maxHeight: '140px',
+              }}
+            />
+
             {/* Header Content */}
-            <div className="relative z-20 text-left flex flex-col pr-8 sm:pr-24" style={{ maxWidth: '100%' }}>
-              <div className="flex flex-col gap-1 sm:gap-2">
+            <div
+              className={`relative z-20 text-left flex flex-col pr-8 sm:pr-24 ${
+                tab === 'forgot' ? '-translate-y-2.5 sm:translate-y-0' : ''
+              }`}
+              style={{ maxWidth: '100%' }}
+            >
+              <div className="flex flex-col gap-1 sm:gap-2 w-full">
                 <h2
-                  className="m-0 flex items-center text-[24px] sm:text-[35px] leading-[30px] sm:leading-[50px] transition-colors duration-300"
+                  className="m-0 flex items-center text-[24px] sm:text-[35px] leading-[28px] sm:leading-[50px] transition-colors duration-300"
                   style={{
                     fontFamily: '"Bricolage Grotesque", sans-serif',
                     fontWeight: 700,
@@ -230,7 +243,7 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }) {
                 </h2>
 
                 <p
-                  className="m-0 text-[13px] sm:text-[16px] leading-[20px] sm:leading-[26px] transition-colors duration-300"
+                  className="m-0 text-[11.5px] sm:text-[16px] leading-[18px] sm:leading-[26px] whitespace-nowrap transition-colors duration-300"
                   style={{
                     fontFamily: '"Poppins", sans-serif',
                     fontWeight: 500,
@@ -258,7 +271,7 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }) {
           </div>
 
           {/* Form Content */}
-          <div className="w-full flex flex-col items-center pt-7 sm:pt-9 px-4 sm:px-0">
+          <div className="w-full flex flex-col items-center pt-5 sm:pt-9 px-1.5 sm:px-0">
             <form onSubmit={handleSubmit} className="flex flex-col w-full items-center" style={{ maxWidth: '567px' }}>
               {/* Form Controls Group (567px x 288px, gap: 20px) */}
               <div
