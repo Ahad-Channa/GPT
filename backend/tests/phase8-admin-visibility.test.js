@@ -346,6 +346,18 @@ test('direct-offer admin routes log with db admin user and valid enum actions', 
   assert.doesNotMatch(source, /createLog\(req\.user\._id,\s*'deactivate_direct_offer'/);
 });
 
+test('manual chargeback passes the saved reversed conversion into reversal processing', () => {
+  const source = read('backend/routes/admin.js');
+  assert.match(
+    source,
+    /const reversalResult = await processReversal\(\{\s*\/\/ Pass the saved document[\s\S]*?conversion,\s*hooks: \{ emitWalletUpdate \}/
+  );
+  assert.doesNotMatch(
+    source,
+    /const reversalResult = await processReversal\(\{\s*conversionId: conversion\._id/
+  );
+});
+
 test('phase 8 admin routes exist and are mounted under admin permission middleware', () => {
   const paths = routePaths();
   for (const pathName of ['/provider-configs', '/conversions', '/conversions/:id/approve', '/conversions/:id/reject', '/conversions/:id/chargeback', '/postback-logs', '/postback-logs/:id', '/offerwall-providers']) {

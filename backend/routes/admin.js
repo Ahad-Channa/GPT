@@ -2382,7 +2382,10 @@ router.post('/conversions/:id/chargeback', requirePermission('manage_offerwalls'
     }
 
     const reversalResult = await processReversal({
-      conversionId: conversion._id,
+      // Pass the saved document so the reversal service evaluates the
+      // admin-applied reversed state immediately, even if a fresh lookup is
+      // briefly served from a stale read view.
+      conversion,
       hooks: { emitWalletUpdate },
     });
     const fresh = await refreshAdminConversion(conversion._id);
