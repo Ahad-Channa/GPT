@@ -358,6 +358,20 @@ test('manual chargeback passes the saved reversed conversion into reversal proce
   );
 });
 
+test('manual approve normalizes the conversion and passes the saved approved document to reward processing', () => {
+  const source = read('backend/routes/admin.js');
+  assert.match(source, /conversion\.incomingStatus = 'manual_approved';/);
+  assert.match(source, /conversion\.processingState = 'claimed';/);
+  assert.match(
+    source,
+    /const rewardResult = await processReward\(\{\s*\/\/ Pass the saved document[\s\S]*?conversion,\s*hooks:/
+  );
+  assert.doesNotMatch(
+    source,
+    /const rewardResult = await processReward\(\{\s*conversionId: conversion\._id/
+  );
+});
+
 test('phase 8 admin routes exist and are mounted under admin permission middleware', () => {
   const paths = routePaths();
   for (const pathName of ['/provider-configs', '/conversions', '/conversions/:id/approve', '/conversions/:id/reject', '/conversions/:id/chargeback', '/postback-logs', '/postback-logs/:id', '/offerwall-providers']) {

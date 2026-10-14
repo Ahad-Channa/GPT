@@ -2253,8 +2253,8 @@ router.post('/conversions/:id/approve', requirePermission('manage_offerwalls'), 
 
     if (!(conversion.processingState === 'processed' && conversion.rewardTransactionId)) {
       conversion.internalStatus = 'approved';
-      conversion.incomingStatus = conversion.incomingStatus || 'manual_approved';
-      conversion.processingState = ['processed', 'claimed', 'failed'].includes(conversion.processingState) ? conversion.processingState : 'claimed';
+      conversion.incomingStatus = 'manual_approved';
+      conversion.processingState = 'claimed';
       conversion.security = { checked: true, passed: true, method: 'admin_manual', reason: 'Manual admin approval' };
       conversion.rejectionReason = '';
       conversion.errorReason = '';
@@ -2267,7 +2267,10 @@ router.post('/conversions/:id/approve', requirePermission('manage_offerwalls'), 
     }
 
     const rewardResult = await processReward({
-      conversionId: conversion._id,
+      // Pass the saved document so the reward service evaluates the
+      // admin-applied approved state immediately, even if a fresh lookup is
+      // briefly served from a stale read view.
+      conversion,
       hooks: {
         emitWalletUpdate,
         processVipLevelUp: (user, amount) => processVipLevelUp(user, amount, emitToUser),
