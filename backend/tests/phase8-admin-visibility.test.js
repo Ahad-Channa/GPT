@@ -25,6 +25,7 @@ const {
   parseWriteOnlySecret,
   sanitizeDirectOfferAdmin,
   serializeClickLogAdmin,
+  serializeConversionAdmin,
   serializePostbackLog,
   serializeProviderConfig,
   validateProviderSettings,
@@ -42,6 +43,23 @@ const makeApp = () => {
   app.use('/api/admin', adminRouter);
   return app;
 };
+
+test('admin conversion serialization normalizes reversed lifecycle state without changing ledger references', () => {
+  const serialized = serializeConversionAdmin({
+    _id: 'conversion-1',
+    internalStatus: 'reversed',
+    incomingStatus: 'manual_approved',
+    processingState: 'processed',
+    rewardTransactionId: 'reward-1',
+    reversalTransactionId: 'reversal-1',
+  });
+
+  assert.equal(serialized.internalStatus, 'reversed');
+  assert.equal(serialized.incomingStatus, 'manual_approved');
+  assert.equal(serialized.processingState, 'reversed');
+  assert.equal(serialized.rewardTransaction, 'reward-1');
+  assert.equal(serialized.reversalTransaction, 'reversal-1');
+});
 
 const request = (app, { method = 'GET', path: requestPath, headers = {}, body } = {}) => new Promise((resolve, reject) => {
   const server = http.createServer(app);

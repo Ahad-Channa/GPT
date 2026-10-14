@@ -367,6 +367,7 @@ const serializeClickLogAdmin = (click) => ({
 
 const serializeConversionAdmin = (conversion) => {
   const doc = typeof conversion.toObject === 'function' ? conversion.toObject() : conversion;
+  const processingState = doc.internalStatus === 'reversed' ? 'reversed' : doc.processingState;
   return {
     _id: doc._id,
     createdAt: doc.createdAt,
@@ -390,7 +391,7 @@ const serializeConversionAdmin = (conversion) => {
     internalStatus: doc.internalStatus,
     payout: doc.payout,
     rewardAmount: doc.rewardAmount,
-    processingState: doc.processingState,
+    processingState,
     rewardTransaction: doc.rewardTransactionId || null,
     reversalTransaction: doc.reversalTransactionId || null,
     rejectionReason: doc.rejectionReason,
