@@ -370,6 +370,11 @@ test('manual approve normalizes the conversion and passes the saved approved doc
     source,
     /const rewardResult = await processReward\(\{\s*conversionId: conversion\._id/
   );
+  assert.match(source, /responseConversion\.processingState = 'processed';/);
+  assert.match(source, /conversion\.incomingStatus = 'manual_rejected';/);
+  assert.match(source, /responseConversion\.processingState = 'pending';/);
+  assert.match(source, /responseConversion\.internalStatus = 'reversed';/);
+  assert.match(source, /responseConversion\.processingState = 'reversed';/);
 });
 
 test('phase 8 admin routes exist and are mounted under admin permission middleware', () => {

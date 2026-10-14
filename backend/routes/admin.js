@@ -2277,6 +2277,12 @@ router.post('/conversions/:id/approve', requirePermission('manage_offerwalls'), 
       },
     });
     const fresh = await refreshAdminConversion(conversion._id);
+    const responseConversion = fresh || rewardResult.conversion || conversion;
+    if (rewardResult.ok) {
+      responseConversion.internalStatus = 'approved';
+      responseConversion.processingState = 'processed';
+      responseConversion.rewardTransactionId = rewardResult.rewardTransaction?._id || responseConversion.rewardTransactionId;
+    }
     const transactionId = rewardResult.rewardTransaction?._id || fresh?.rewardTransactionId?._id || fresh?.rewardTransactionId || null;
     await writeManualConversionPostbackLog({
       req,
@@ -2295,8 +2301,8 @@ router.post('/conversions/:id/approve', requirePermission('manage_offerwalls'), 
       result: rewardResult.duplicate ? 'duplicate' : (rewardResult.ok ? 'accepted' : 'error'),
     });
 
-    if (!rewardResult.ok) return res.status(400).json({ success: false, error: rewardResult.reason || 'Conversion could not be approved', conversion: serializeConversionAdmin(fresh) });
-    res.json({ success: true, conversion: serializeConversionAdmin(fresh), duplicate: Boolean(rewardResult.duplicate) });
+    if (!rewardResult.ok) return res.status(400).json({ success: false, error: rewardResult.reason || 'Conversion could not be approved', conversion: serializeConversionAdmin(responseConversion) });
+    res.json({ success: true, conversion: serializeConversionAdmin(responseConversion), duplicate: Boolean(rewardResult.duplicate) });
   } catch (error) {
     console.error('[/api/admin/conversions/:id/approve] Error:', error);
     res.status(500).json({ success: false, error: error.message || 'Failed to approve conversion' });
@@ -2318,7 +2324,7 @@ router.post('/conversions/:id/reject', requirePermission('manage_offerwalls'), a
 
     const wasRejected = conversion.internalStatus === 'rejected';
     conversion.internalStatus = 'rejected';
-    conversion.incomingStatus = conversion.incomingStatus || 'manual_rejected';
+    conversion.incomingStatus = 'manual_rejected';
     conversion.processingState = 'pending';
     conversion.rejectionReason = cleanString(req.body?.reason || 'Manually rejected by admin', 500);
     conversion.errorReason = '';
@@ -2338,6 +2344,9 @@ router.post('/conversions/:id/reject', requirePermission('manage_offerwalls'), a
     }
 
     const fresh = await refreshAdminConversion(conversion._id);
+    const responseConversion = fresh || conversion;
+    responseConversion.internalStatus = 'rejected';
+    responseConversion.processingState = 'pending';
     await writeManualConversionPostbackLog({
       req,
       conversion: fresh,
@@ -2354,7 +2363,7 @@ router.post('/conversions/:id/reject', requirePermission('manage_offerwalls'), a
       result: wasRejected ? 'duplicate' : 'rejected',
     });
 
-    res.json({ success: true, conversion: serializeConversionAdmin(fresh), duplicate: wasRejected });
+    res.json({ success: true, conversion: serializeConversionAdmin(responseConversion), duplicate: wasRejected });
   } catch (error) {
     console.error('[/api/admin/conversions/:id/reject] Error:', error);
     res.status(500).json({ success: false, error: error.message || 'Failed to reject conversion' });
@@ -2392,6 +2401,12 @@ router.post('/conversions/:id/chargeback', requirePermission('manage_offerwalls'
       hooks: { emitWalletUpdate },
     });
     const fresh = await refreshAdminConversion(conversion._id);
+    const responseConversion = fresh || reversalResult.conversion || conversion;
+    if (reversalResult.ok) {
+      responseConversion.internalStatus = 'reversed';
+      responseConversion.processingState = 'reversed';
+      responseConversion.reversalTransactionId = reversalResult.reversalTransaction?._id || responseConversion.reversalTransactionId;
+    }
     const transactionId = reversalResult.reversalTransaction?._id || fresh?.reversalTransactionId?._id || fresh?.reversalTransactionId || null;
     await writeManualConversionPostbackLog({
       req,
@@ -2410,8 +2425,8 @@ router.post('/conversions/:id/chargeback', requirePermission('manage_offerwalls'
       result: reversalResult.duplicate ? 'duplicate' : (reversalResult.ok ? 'accepted' : 'error'),
     });
 
-    if (!reversalResult.ok) return res.status(400).json({ success: false, error: reversalResult.reason || 'Conversion could not be reversed', conversion: serializeConversionAdmin(fresh) });
-    res.json({ success: true, conversion: serializeConversionAdmin(fresh), duplicate: Boolean(reversalResult.duplicate) });
+    if (!reversalResult.ok) return res.status(400).json({ success: false, error: reversalResult.reason || 'Conversion could not be reversed', conversion: serializeConversionAdmin(responseConversion) });
+    res.json({ success: true, conversion: serializeConversionAdmin(responseConversion), duplicate: Boolean(reversalResult.duplicate) });
   } catch (error) {
     console.error('[/api/admin/conversions/:id/chargeback] Error:', error);
     res.status(500).json({ success: false, error: error.message || 'Failed to chargeback conversion' });
