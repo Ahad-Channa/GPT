@@ -37,6 +37,8 @@ const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
 const { validateProviderAdapterKey } = require('../services/tracking/providerAdapterRegistry');
+const { processReward } = require('../services/rewards/rewardService');
+const { processReversal } = require('../services/rewards/reversalService');
 
 const PROVIDER_TYPES = ['offerwall', 'direct', 'affiliate_network', 'advertiser', 'internal'];
 const SECURITY_METHODS = ['none', 'shared_secret', 'md5', 'sha1', 'sha256', 'sha512', 'hmac', 'token', 'custom_adapter'];
@@ -362,6 +364,45 @@ const serializeClickLogAdmin = (click) => ({
   transactionId: click.transactionId,
   createdAt: click.createdAt,
 });
+
+const serializeConversionAdmin = (conversion) => {
+  const doc = typeof conversion.toObject === 'function' ? conversion.toObject() : conversion;
+  return {
+    _id: doc._id,
+    createdAt: doc.createdAt,
+    updatedAt: doc.updatedAt,
+    providerId: doc.providerId,
+    campaignType: doc.campaignType,
+    campaignId: doc.campaignId,
+    offer: doc.offerId ? { _id: doc.offerId._id || doc.offerId, title: doc.offerId.title } : null,
+    user: doc.userId ? {
+      _id: doc.userId._id || doc.userId,
+      displayName: doc.userId.displayName,
+      email: doc.userId.email,
+      avatarUrl: doc.userId.avatarUrl,
+    } : null,
+    clickId: doc.clickId,
+    clickLogId: doc.clickLogId?._id || doc.clickLogId || null,
+    providerTransactionId: doc.providerTransactionId,
+    eventType: doc.eventType,
+    goalKey: doc.goalKey || null,
+    incomingStatus: doc.incomingStatus,
+    internalStatus: doc.internalStatus,
+    payout: doc.payout,
+    rewardAmount: doc.rewardAmount,
+    processingState: doc.processingState,
+    rewardTransaction: doc.rewardTransactionId || null,
+    reversalTransaction: doc.reversalTransactionId || null,
+    rejectionReason: doc.rejectionReason,
+    errorReason: doc.errorReason,
+    security: doc.security ? {
+      checked: doc.security.checked,
+      passed: doc.security.passed,
+      method: doc.security.method,
+      reason: doc.security.reason,
+    } : null,
+  };
+};
 
 // Configure multer for Avatar uploads
 const storage = multer.diskStorage({
@@ -2138,43 +2179,236 @@ router.get('/conversions', requirePermission('manage_offerwalls'), async (req, r
 
     res.json({
       success: true,
-      conversions: conversions.map((conversion) => ({
-        _id: conversion._id,
-        createdAt: conversion.createdAt,
-        providerId: conversion.providerId,
-        campaignType: conversion.campaignType,
-        campaignId: conversion.campaignId,
-        offer: conversion.offerId ? { _id: conversion.offerId._id, title: conversion.offerId.title } : null,
-        user: conversion.userId ? {
-          _id: conversion.userId._id,
-          displayName: conversion.userId.displayName,
-          email: conversion.userId.email,
-          avatarUrl: conversion.userId.avatarUrl,
-        } : null,
-        clickId: conversion.clickId,
-        providerTransactionId: conversion.providerTransactionId,
-        eventType: conversion.eventType,
-        incomingStatus: conversion.incomingStatus,
-        internalStatus: conversion.internalStatus,
-        payout: conversion.payout,
-        rewardAmount: conversion.rewardAmount,
-        processingState: conversion.processingState,
-        rewardTransaction: conversion.rewardTransactionId || null,
-        reversalTransaction: conversion.reversalTransactionId || null,
-        rejectionReason: conversion.rejectionReason,
-        errorReason: conversion.errorReason,
-        security: conversion.security ? {
-          checked: conversion.security.checked,
-          passed: conversion.security.passed,
-          method: conversion.security.method,
-          reason: conversion.security.reason,
-        } : null,
-      })),
+      conversions: conversions.map(serializeConversionAdmin),
       pagination: { page, limit, total, totalPages: Math.ceil(total / limit) },
     });
   } catch (error) {
     console.error('[/api/admin/conversions GET] Error:', error);
     res.status(error.statusCode || 500).json({ success: false, error: error.statusCode ? error.message : 'Failed to fetch conversions' });
+  }
+});
+
+const loadAdminConversion = (id) => Conversion.findById(id)
+  .populate('userId', 'displayName email avatarUrl firebaseUid')
+  .populate('offerId', 'title')
+  .populate('rewardTransactionId', 'amount transactionType status balanceAfter createdAt')
+  .populate('reversalTransactionId', 'amount transactionType status balanceAfter createdAt');
+
+const writeManualConversionPostbackLog = async ({
+  req,
+  conversion,
+  action,
+  result = 'accepted',
+  isDuplicate = false,
+  rejectionReason = '',
+  transactionId = null,
+}) => {
+  try {
+    const doc = typeof conversion?.toObject === 'function' ? conversion.toObject() : conversion;
+    await PostbackLog.create({
+      providerId: doc?.providerId || 'manual',
+      route: `/api/admin/conversions/${doc?._id || ':id'}/${action}`,
+      method: 'POST',
+      sanitizedQuery: {},
+      sanitizedBody: boundAdminPayload({ action, reason: req.body?.reason || '' }),
+      sanitizedHeaders: {},
+      mappedFields: {
+        clickId: doc?.clickId || '',
+        transactionId: doc?.providerTransactionId || '',
+        status: action,
+        payout: doc?.payout?.amount ?? null,
+        eventType: doc?.eventType || '',
+        extra: { goalKey: doc?.goalKey || null, manualAdminAction: true },
+      },
+      security: {
+        checked: true,
+        passed: true,
+        method: 'admin_manual',
+        reason: 'Manual admin conversion action',
+      },
+      processingResult: result,
+      isDuplicate,
+      rejectionReason,
+      clickLogId: doc?.clickLogId?._id || doc?.clickLogId || null,
+      conversionId: doc?._id || null,
+      userId: doc?.userId?._id || doc?.userId || null,
+      transactionId,
+    });
+  } catch (error) {
+    console.error('[Admin] Failed to write manual conversion PostbackLog:', error);
+  }
+};
+
+const refreshAdminConversion = (id) => loadAdminConversion(id).lean();
+
+// POST /api/admin/conversions/:id/approve — manual approval through reward service
+router.post('/conversions/:id/approve', requirePermission('manage_offerwalls'), async (req, res) => {
+  try {
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) return res.status(404).json({ success: false, error: 'Conversion not found' });
+    const conversion = await Conversion.findById(req.params.id);
+    if (!conversion) return res.status(404).json({ success: false, error: 'Conversion not found' });
+    if (conversion.internalStatus === 'reversed' || ['reversed', 'reversal_processing'].includes(conversion.processingState)) {
+      return res.status(400).json({ success: false, error: 'Reversed conversions cannot be approved again' });
+    }
+
+    if (!(conversion.processingState === 'processed' && conversion.rewardTransactionId)) {
+      conversion.internalStatus = 'approved';
+      conversion.incomingStatus = conversion.incomingStatus || 'manual_approved';
+      conversion.processingState = ['processed', 'claimed', 'failed'].includes(conversion.processingState) ? conversion.processingState : 'claimed';
+      conversion.security = { checked: true, passed: true, method: 'admin_manual', reason: 'Manual admin approval' };
+      conversion.rejectionReason = '';
+      conversion.errorReason = '';
+      conversion.metadata = {
+        ...(conversion.metadata || {}),
+        manualApproval: true,
+        manualApprovalAdminId: req.dbUser._id,
+      };
+      await conversion.save();
+    }
+
+    const rewardResult = await processReward({
+      conversionId: conversion._id,
+      hooks: {
+        emitWalletUpdate,
+        processVipLevelUp: (user, amount) => processVipLevelUp(user, amount, emitToUser),
+      },
+    });
+    const fresh = await refreshAdminConversion(conversion._id);
+    const transactionId = rewardResult.rewardTransaction?._id || fresh?.rewardTransactionId?._id || fresh?.rewardTransactionId || null;
+    await writeManualConversionPostbackLog({
+      req,
+      conversion: fresh,
+      action: 'approve',
+      result: rewardResult.duplicate ? 'duplicate' : (rewardResult.ok ? 'accepted' : 'error'),
+      isDuplicate: Boolean(rewardResult.duplicate),
+      rejectionReason: rewardResult.ok ? '' : (rewardResult.reason || 'Manual approval failed'),
+      transactionId,
+    });
+    await createLog(req.dbUser._id, 'MANUAL_APPROVE_CONVERSION', fresh?.userId?._id || fresh?.userId || null, {
+      conversionId: conversion._id,
+      providerId: conversion.providerId,
+      offerId: conversion.offerId,
+      actionType: 'manual_approve_conversion',
+      result: rewardResult.duplicate ? 'duplicate' : (rewardResult.ok ? 'accepted' : 'error'),
+    });
+
+    if (!rewardResult.ok) return res.status(400).json({ success: false, error: rewardResult.reason || 'Conversion could not be approved', conversion: serializeConversionAdmin(fresh) });
+    res.json({ success: true, conversion: serializeConversionAdmin(fresh), duplicate: Boolean(rewardResult.duplicate) });
+  } catch (error) {
+    console.error('[/api/admin/conversions/:id/approve] Error:', error);
+    res.status(500).json({ success: false, error: error.message || 'Failed to approve conversion' });
+  }
+});
+
+// POST /api/admin/conversions/:id/reject — manual no-credit rejection
+router.post('/conversions/:id/reject', requirePermission('manage_offerwalls'), async (req, res) => {
+  try {
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) return res.status(404).json({ success: false, error: 'Conversion not found' });
+    const conversion = await Conversion.findById(req.params.id);
+    if (!conversion) return res.status(404).json({ success: false, error: 'Conversion not found' });
+    if (conversion.processingState === 'processed' || conversion.rewardTransactionId) {
+      return res.status(400).json({ success: false, error: 'Credited conversions must be reversed with chargeback, not rejected' });
+    }
+    if (conversion.internalStatus === 'reversed') {
+      return res.status(400).json({ success: false, error: 'Reversed conversions cannot be rejected' });
+    }
+
+    const wasRejected = conversion.internalStatus === 'rejected';
+    conversion.internalStatus = 'rejected';
+    conversion.incomingStatus = conversion.incomingStatus || 'manual_rejected';
+    conversion.processingState = 'pending';
+    conversion.rejectionReason = cleanString(req.body?.reason || 'Manually rejected by admin', 500);
+    conversion.errorReason = '';
+    conversion.security = { checked: true, passed: true, method: 'admin_manual', reason: 'Manual admin rejection' };
+    conversion.metadata = {
+      ...(conversion.metadata || {}),
+      manualRejection: true,
+      manualRejectionAdminId: req.dbUser._id,
+    };
+    await conversion.save();
+
+    if (conversion.clickLogId) {
+      await ClickLog.findByIdAndUpdate(conversion.clickLogId, { $set: { status: 'rejected', convertedAt: new Date() } });
+    }
+    if (!wasRejected && conversion.offerId) {
+      await DirectOffer.findByIdAndUpdate(conversion.offerId, { $inc: { totalRejected: 1 } });
+    }
+
+    const fresh = await refreshAdminConversion(conversion._id);
+    await writeManualConversionPostbackLog({
+      req,
+      conversion: fresh,
+      action: 'reject',
+      result: wasRejected ? 'duplicate' : 'rejected',
+      isDuplicate: wasRejected,
+      rejectionReason: conversion.rejectionReason,
+    });
+    await createLog(req.dbUser._id, 'MANUAL_REJECT_CONVERSION', fresh?.userId?._id || fresh?.userId || null, {
+      conversionId: conversion._id,
+      providerId: conversion.providerId,
+      offerId: conversion.offerId,
+      actionType: 'manual_reject_conversion',
+      result: wasRejected ? 'duplicate' : 'rejected',
+    });
+
+    res.json({ success: true, conversion: serializeConversionAdmin(fresh), duplicate: wasRejected });
+  } catch (error) {
+    console.error('[/api/admin/conversions/:id/reject] Error:', error);
+    res.status(500).json({ success: false, error: error.message || 'Failed to reject conversion' });
+  }
+});
+
+// POST /api/admin/conversions/:id/chargeback — manual reversal through reversal service
+router.post('/conversions/:id/chargeback', requirePermission('manage_offerwalls'), async (req, res) => {
+  try {
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) return res.status(404).json({ success: false, error: 'Conversion not found' });
+    const conversion = await Conversion.findById(req.params.id);
+    if (!conversion) return res.status(404).json({ success: false, error: 'Conversion not found' });
+    if (!conversion.rewardTransactionId) {
+      return res.status(400).json({ success: false, error: 'Only credited conversions can be reversed' });
+    }
+
+    if (!(conversion.processingState === 'reversed' && conversion.reversalTransactionId)) {
+      conversion.internalStatus = 'reversed';
+      conversion.incomingStatus = conversion.incomingStatus || 'manual_chargeback';
+      conversion.processingState = conversion.processingState === 'reversal_failed' ? 'reversal_failed' : 'processed';
+      conversion.security = { checked: true, passed: true, method: 'admin_manual', reason: 'Manual admin chargeback' };
+      conversion.metadata = {
+        ...(conversion.metadata || {}),
+        manualChargeback: true,
+        manualChargebackAdminId: req.dbUser._id,
+      };
+      await conversion.save();
+    }
+
+    const reversalResult = await processReversal({
+      conversionId: conversion._id,
+      hooks: { emitWalletUpdate },
+    });
+    const fresh = await refreshAdminConversion(conversion._id);
+    const transactionId = reversalResult.reversalTransaction?._id || fresh?.reversalTransactionId?._id || fresh?.reversalTransactionId || null;
+    await writeManualConversionPostbackLog({
+      req,
+      conversion: fresh,
+      action: 'chargeback',
+      result: reversalResult.duplicate ? 'duplicate' : (reversalResult.ok ? 'accepted' : 'error'),
+      isDuplicate: Boolean(reversalResult.duplicate),
+      rejectionReason: reversalResult.ok ? '' : (reversalResult.reason || 'Manual chargeback failed'),
+      transactionId,
+    });
+    await createLog(req.dbUser._id, 'MANUAL_CHARGEBACK_CONVERSION', fresh?.userId?._id || fresh?.userId || null, {
+      conversionId: conversion._id,
+      providerId: conversion.providerId,
+      offerId: conversion.offerId,
+      actionType: 'manual_chargeback_conversion',
+      result: reversalResult.duplicate ? 'duplicate' : (reversalResult.ok ? 'accepted' : 'error'),
+    });
+
+    if (!reversalResult.ok) return res.status(400).json({ success: false, error: reversalResult.reason || 'Conversion could not be reversed', conversion: serializeConversionAdmin(fresh) });
+    res.json({ success: true, conversion: serializeConversionAdmin(fresh), duplicate: Boolean(reversalResult.duplicate) });
+  } catch (error) {
+    console.error('[/api/admin/conversions/:id/chargeback] Error:', error);
+    res.status(500).json({ success: false, error: error.message || 'Failed to chargeback conversion' });
   }
 });
 
@@ -2939,9 +3173,9 @@ router.get('/direct-offers/:id/postback-url', requirePermission('manage_offerwal
 router.post('/direct-offers', requirePermission('manage_offerwalls'), async (req, res) => {
   try {
     const {
-      title, description, rewardAmount, advertiserPayoutAmount,
+      title, titleDe, description, descriptionDe, rewardAmount, advertiserPayoutAmount,
       advertiserUrl, isActive, expirationDate, icon, coverImage,
-      platforms, requirements, requirementType, postbackMapping, allowedCountries, displayPlacements, goals,
+      platforms, requirements, requirementsDe, requirementType, postbackMapping, allowedCountries, displayPlacements, goals,
     } = req.body;
 
     if (!title || !description || !rewardAmount || !advertiserUrl) {
@@ -2950,7 +3184,9 @@ router.post('/direct-offers', requirePermission('manage_offerwalls'), async (req
 
     const offer = await DirectOffer.create({
       title,
+      titleDe: titleDe || '',
       description,
+      descriptionDe: descriptionDe || '',
       rewardAmount: Number(rewardAmount),
       advertiserPayoutAmount: Number(advertiserPayoutAmount) || 0,
       advertiserUrl,
@@ -2962,6 +3198,7 @@ router.post('/direct-offers', requirePermission('manage_offerwalls'), async (req
       allowedCountries: parseAllowedCountriesInput(allowedCountries),
       platforms: platforms || { desktop: true, android: true, ios: true },
       requirements: requirements || [],
+      requirementsDe: Array.isArray(requirementsDe) ? requirementsDe : [],
       requirementType: requirementType === 'paragraph' ? 'paragraph' : 'bullets',
       goals: normalizeGoals(goals),
       postbackMapping: postbackMapping || {},
@@ -2980,16 +3217,18 @@ router.post('/direct-offers', requirePermission('manage_offerwalls'), async (req
 router.put('/direct-offers/:id', requirePermission('manage_offerwalls'), async (req, res) => {
   try {
     const {
-      title, description, rewardAmount, advertiserPayoutAmount,
+      title, titleDe, description, descriptionDe, rewardAmount, advertiserPayoutAmount,
       advertiserUrl, isActive, expirationDate, icon, coverImage,
-      platforms, requirements, requirementType, postbackMapping, allowedCountries, displayPlacements, goals,
+      platforms, requirements, requirementsDe, requirementType, postbackMapping, allowedCountries, displayPlacements, goals,
     } = req.body;
 
     const offer = await DirectOffer.findByIdAndUpdate(
       req.params.id,
       {
         ...(title !== undefined && { title }),
+        ...(titleDe !== undefined && { titleDe }),
         ...(description !== undefined && { description }),
+        ...(descriptionDe !== undefined && { descriptionDe }),
         ...(rewardAmount !== undefined && { rewardAmount: Number(rewardAmount) }),
         ...(advertiserPayoutAmount !== undefined && { advertiserPayoutAmount: Number(advertiserPayoutAmount) }),
         ...(advertiserUrl !== undefined && { advertiserUrl }),
@@ -3001,6 +3240,7 @@ router.put('/direct-offers/:id', requirePermission('manage_offerwalls'), async (
         ...(allowedCountries !== undefined && { allowedCountries: parseAllowedCountriesInput(allowedCountries) }),
         ...(platforms !== undefined && { platforms }),
         ...(requirements !== undefined && { requirements }),
+        ...(requirementsDe !== undefined && { requirementsDe }),
         ...(requirementType !== undefined && { requirementType: requirementType === 'paragraph' ? 'paragraph' : 'bullets' }),
         ...(goals !== undefined && { goals: normalizeGoals(goals) }),
         ...(postbackMapping !== undefined && { postbackMapping }),
@@ -3349,6 +3589,7 @@ router._phase8AdminHelpers = {
   parseWriteOnlySecret,
   serializeProviderConfig,
   serializeClickLogAdmin,
+  serializeConversionAdmin,
   sanitizeDirectOfferAdmin,
   buildDirectOfferPostbackUrl,
   serializePostbackLog,

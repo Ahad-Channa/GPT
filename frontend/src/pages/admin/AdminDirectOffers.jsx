@@ -39,7 +39,9 @@ const normalizeClientGoals = (goals) => (Array.isArray(goals) ? goals : [])
   .map(g => ({
     goalKey: g.goalKey,
     label: g.label || '',
+    labelDe: g.labelDe || '',
     description: g.description || '',
+    descriptionDe: g.descriptionDe || '',
     rewardAmount: g.rewardAmount ?? '',
     payoutAmount: g.payoutAmount ?? '',
     enabled: g.enabled !== false,
@@ -99,7 +101,9 @@ const OfferFormModal = ({ offer, onClose, onSaved, token }) => {
   const isEdit = Boolean(offer);
   const [form, setForm] = useState({
     title: offer?.title || '',
+    titleDe: offer?.titleDe || '',
     description: offer?.description || '',
+    descriptionDe: offer?.descriptionDe || '',
     rewardAmount: offer?.rewardAmount || '',
     advertiserPayoutAmount: offer?.advertiserPayoutAmount || '',
     advertiserUrl: offer?.advertiserUrl || '',
@@ -107,6 +111,7 @@ const OfferFormModal = ({ offer, onClose, onSaved, token }) => {
     icon: offer?.icon || '',
     coverImage: offer?.coverImage || '',
     requirements: (offer?.requirements || []).join('\n'),
+    requirementsDe: (offer?.requirementsDe || []).join('\n'),
     requirementType: offer?.requirementType || 'bullets',
     allowedCountries: (offer?.allowedCountries || []).join(', '),
     displayPlacements: {
@@ -152,13 +157,18 @@ const OfferFormModal = ({ offer, onClose, onSaved, token }) => {
           requirements: form.requirementType === 'paragraph'
             ? [form.requirements.trim()].filter(Boolean)
             : form.requirements.split('\n').map(r => r.trim()).filter(Boolean),
+          requirementsDe: form.requirementType === 'paragraph'
+            ? [form.requirementsDe.trim()].filter(Boolean)
+            : form.requirementsDe.split('\n').map(r => r.trim()).filter(Boolean),
           requirementType: form.requirementType,
           allowedCountries: form.allowedCountries.split(',').map(c => c.trim()).filter(Boolean),
           displayPlacements: form.displayPlacements,
           goals: form.goals.map(g => ({
             goalKey: g.goalKey,
             label: g.label,
+            labelDe: g.labelDe,
             description: g.description,
+            descriptionDe: g.descriptionDe,
             rewardAmount: Number(g.rewardAmount) || 0,
             payoutAmount: Number(g.payoutAmount) || 0,
             enabled: g.enabled !== false,
@@ -209,8 +219,16 @@ const OfferFormModal = ({ offer, onClose, onSaved, token }) => {
             <input className={inputCls} value={form.title} onChange={set('title')} required placeholder="e.g. Stake Casino — Deposit & Play" />
           </div>
           <div>
+            <label className={labelCls}>Title (German)</label>
+            <input className={inputCls} value={form.titleDe} onChange={set('titleDe')} placeholder="Optional manual German title" />
+          </div>
+          <div>
             <label className={labelCls}>Description *</label>
             <textarea className={inputCls} rows={3} value={form.description} onChange={set('description')} required placeholder="Describe what the user needs to do..." />
+          </div>
+          <div>
+            <label className={labelCls}>Description (German)</label>
+            <textarea className={inputCls} rows={2} value={form.descriptionDe} onChange={set('descriptionDe')} placeholder="Optional manual German description..." />
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
@@ -263,6 +281,20 @@ const OfferFormModal = ({ offer, onClose, onSaved, token }) => {
                 form.requirementType === 'paragraph'
                   ? "Register and deposit €50, then wager €100."
                   : "Register on the platform\nMake a deposit of at least $10\nPlay 5 rounds"
+              }
+            />
+          </div>
+          <div>
+            <label className={labelCls}>Requirements (German)</label>
+            <textarea
+              className={inputCls}
+              rows={form.requirementType === 'paragraph' ? 2 : 3}
+              value={form.requirementsDe}
+              onChange={set('requirementsDe')}
+              placeholder={
+                form.requirementType === 'paragraph'
+                  ? 'Optional German paragraph.'
+                  : 'Optional German steps, one per line'
               }
             />
           </div>
@@ -338,7 +370,7 @@ const OfferFormModal = ({ offer, onClose, onSaved, token }) => {
               <button
                 type="button"
                 disabled={form.goals.length >= MAX_GOALS}
-                onClick={() => setForm(f => ({ ...f, goals: [...f.goals, { goalKey: '', label: '', description: '', rewardAmount: '', payoutAmount: '', enabled: true }] }))}
+                onClick={() => setForm(f => ({ ...f, goals: [...f.goals, { goalKey: '', label: '', labelDe: '', description: '', descriptionDe: '', rewardAmount: '', payoutAmount: '', enabled: true }] }))}
                 className="shrink-0 flex items-center gap-1 px-2.5 py-1 rounded-lg bg-indigo-500/20 border border-indigo-500/40 text-[11px] font-semibold text-indigo-300 hover:bg-indigo-500/30 disabled:opacity-40"
               >
                 <FiPlus /> Add Goal
@@ -379,6 +411,10 @@ const OfferFormModal = ({ offer, onClose, onSaved, token }) => {
                         <input className={inputCls} value={goal.label} onChange={e => setForm(f => ({ ...f, goals: f.goals.map((g, i) => i === idx ? { ...g, label: e.target.value } : g) }))} placeholder="e.g. Complete registration" />
                       </div>
                       <div>
+                        <label className={labelCls}>Label (German)</label>
+                        <input className={inputCls} value={goal.labelDe || ''} onChange={e => setForm(f => ({ ...f, goals: f.goals.map((g, i) => i === idx ? { ...g, labelDe: e.target.value } : g) }))} placeholder="Optional German goal label" />
+                      </div>
+                      <div>
                         <label className={labelCls}>Reward (Coins) *</label>
                         <input type="number" min="0" className={inputCls} value={goal.rewardAmount} onChange={e => setForm(f => ({ ...f, goals: f.goals.map((g, i) => i === idx ? { ...g, rewardAmount: e.target.value } : g) }))} placeholder="e.g. 250" />
                       </div>
@@ -390,6 +426,10 @@ const OfferFormModal = ({ offer, onClose, onSaved, token }) => {
                     <div>
                       <label className={labelCls}>Description</label>
                       <input className={inputCls} value={goal.description} onChange={e => setForm(f => ({ ...f, goals: f.goals.map((g, i) => i === idx ? { ...g, description: e.target.value } : g) }))} placeholder="Optional description shown to admins" />
+                    </div>
+                    <div>
+                      <label className={labelCls}>Description (German)</label>
+                      <input className={inputCls} value={goal.descriptionDe || ''} onChange={e => setForm(f => ({ ...f, goals: f.goals.map((g, i) => i === idx ? { ...g, descriptionDe: e.target.value } : g) }))} placeholder="Optional German goal description" />
                     </div>
                   </div>
                 ))}

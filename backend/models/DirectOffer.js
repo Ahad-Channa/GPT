@@ -7,7 +7,9 @@ const directOfferGoalSchema = new mongoose.Schema(
   {
     goalKey: { type: String, required: true, trim: true },
     label: { type: String, trim: true, default: '' },
+    labelDe: { type: String, trim: true, default: '' },
     description: { type: String, trim: true, default: '' },
+    descriptionDe: { type: String, trim: true, default: '' },
     rewardAmount: { type: Number, required: true, min: 0 },
     payoutAmount: { type: Number, default: 0, min: 0 },
     enabled: { type: Boolean, default: true },
@@ -18,7 +20,9 @@ const directOfferGoalSchema = new mongoose.Schema(
 const directOfferSchema = new mongoose.Schema(
   {
     title: { type: String, required: true },
+    titleDe: { type: String, default: '' },
     description: { type: String, required: true },
+    descriptionDe: { type: String, default: '' },
     rewardAmount: { type: Number, required: true }, // Coins to credit user on approval
     advertiserPayoutAmount: { type: Number, default: 0 }, // USD you earn from advertiser (record only)
     advertiserUrl: { type: String, required: true }, // Where user is redirected after click
@@ -46,6 +50,7 @@ const directOfferSchema = new mongoose.Schema(
       ios: { type: Boolean, default: true },
     },
     requirements: [{ type: String }], // Step-by-step description of what user must do
+    requirementsDe: { type: [String], default: [] },
     requirementType: { 
       type: String, 
       enum: ['bullets', 'paragraph'], 

@@ -45,7 +45,10 @@ const adminLogSchema = new mongoose.Schema(
         'UPDATE_DIRECT_OFFER',
         'DEACTIVATE_DIRECT_OFFER',
         'MANUAL_APPROVE_CLICK',
-        'MANUAL_REJECT_CLICK'
+        'MANUAL_REJECT_CLICK',
+        'MANUAL_APPROVE_CONVERSION',
+        'MANUAL_REJECT_CONVERSION',
+        'MANUAL_CHARGEBACK_CONVERSION'
       ],
     },
     targetUserId: {

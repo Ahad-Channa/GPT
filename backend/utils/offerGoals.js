@@ -41,7 +41,9 @@ const normalizeGoals = (goals) => {
     normalized.push({
       goalKey,
       label: String(raw.label || raw.title || goalKey).trim().slice(0, MAX_LABEL_LENGTH) || goalKey,
+      labelDe: String(raw.labelDe || raw.titleDe || '').trim().slice(0, MAX_LABEL_LENGTH),
       description: String(raw.description || '').trim().slice(0, MAX_DESCRIPTION_LENGTH),
+      descriptionDe: String(raw.descriptionDe || '').trim().slice(0, MAX_DESCRIPTION_LENGTH),
       rewardAmount,
       payoutAmount: toSafeAmount(raw.payoutAmount) || 0,
       enabled: raw.enabled === undefined ? true : Boolean(raw.enabled),

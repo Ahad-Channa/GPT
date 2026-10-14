@@ -195,29 +195,41 @@ const defaultGoodpicksHistory = [
 const isIconUrl = (icon) => icon && (icon.startsWith('http') || icon.startsWith('data:') || icon.includes('/') || icon.startsWith('fa-'));
 
 const formatCoins = (amount) => Number(amount || 0).toLocaleString('de-DE');
+const formatDirectGoalRequirement = (goal, isDe = false) => {
+  const label = (isDe && goal.labelDe) ? goal.labelDe : (goal.label || goal.goalKey || 'Complete step');
+  return isDe
+    ? `${label} \u2192 ${formatCoins(goal.rewardAmount)} Coins erhalten`
+    : `${label} \u2192 receive ${formatCoins(goal.rewardAmount)} coins`;
+};
 
 const isRequirementCompleted = (requirement) => {
   if (!requirement || typeof requirement !== 'object') return false;
   return requirement.completed === true || requirement.credited === true || requirement.status === 'approved';
 };
 
-const directOfferGoalsToRequirements = (offer) => {
+const directOfferGoalsToRequirements = (offer, isDe = false) => {
   const goals = Array.isArray(offer?.goals) ? offer.goals.filter(goal => goal && goal.enabled !== false) : [];
-  if (goals.length === 0) return offer.requirements || [];
+  if (goals.length === 0) {
+    return isDe && Array.isArray(offer?.requirementsDe) && offer.requirementsDe.length > 0
+      ? offer.requirementsDe
+      : (offer.requirements || []);
+  }
 
   return goals.map((goal) => {
-    const label = goal.label || goal.goalKey || 'Complete step';
-    return `${label} → receive ${formatCoins(goal.rewardAmount)} coins`;
+    return formatDirectGoalRequirement(goal, isDe);
   });
 };
 
-const directOfferGoalsToRequirementRows = (offer) => {
+const directOfferGoalsToRequirementRows = (offer, isDe = false) => {
   const goals = Array.isArray(offer?.goals) ? offer.goals.filter(goal => goal && goal.enabled !== false) : [];
-  if (goals.length === 0) return offer.requirements || [];
+  if (goals.length === 0) {
+    return isDe && Array.isArray(offer?.requirementsDe) && offer.requirementsDe.length > 0
+      ? offer.requirementsDe
+      : (offer.requirements || []);
+  }
   return goals.map((goal) => {
-    const label = goal.label || goal.goalKey || 'Complete step';
     return {
-      label: `${label} \u2192 receive ${formatCoins(goal.rewardAmount)} coins`,
+      label: formatDirectGoalRequirement(goal, isDe),
       completed: isRequirementCompleted(goal),
     };
   });
@@ -229,6 +241,7 @@ const mapDirectOfferForGoodpicks = (offer) => ({
   externalLink: offer.advertiserUrl,
   requirementType: offer.goals?.some(goal => goal && goal.enabled !== false) ? 'bullets' : 'paragraph',
   requirements: directOfferGoalsToRequirementRows(offer),
+  requirementsDe: directOfferGoalsToRequirementRows(offer, true),
 });
 
 const renderOfferCover = (offer) => {

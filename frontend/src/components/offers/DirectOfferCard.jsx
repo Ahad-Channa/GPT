@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FiX, FiExternalLink, FiCheckCircle, FiClock, FiLoader, FiXCircle, FiZap } from 'react-icons/fi';
 import { FaApple, FaAndroid, FaDesktop } from 'react-icons/fa';
+import { useTranslation } from 'react-i18next';
 import CoinDisplay from '../CoinDisplay';
 import { GoodpicksSupportModal } from './GoodpicksModal';
 
@@ -19,6 +20,12 @@ const isRequirementCompleted = (requirement) => {
 };
 
 const formatCoins = (amount) => Number(amount || 0).toLocaleString('de-DE');
+const formatGoalRequirement = (goal, isDe = false) => {
+  const label = (isDe && goal.labelDe) ? goal.labelDe : (goal.label || goal.goalKey || 'Complete step');
+  return isDe
+    ? `${label} \u2192 ${formatCoins(goal.rewardAmount)} Coins erhalten`
+    : `${label} \u2192 receive ${formatCoins(goal.rewardAmount)} coins`;
+};
 
 const getEnabledGoals = (offer) =>
   Array.isArray(offer?.goals) ? offer.goals.filter((goal) => goal && goal.enabled !== false) : [];
@@ -50,6 +57,9 @@ const STATUS_CONFIG = {
 
 // ─── Small Card shown in the grid ────────────────────────────────────────────
 export const DirectOfferCard = ({ offer, onClick }) => {
+  const { i18n } = useTranslation();
+  const isDe = i18n.language?.startsWith('de');
+  const title = (isDe && offer.titleDe) ? offer.titleDe : offer.title;
   const isExpired = offer.expirationDate && new Date(offer.expirationDate) < new Date();
   const coverImgSrc = offer.coverImage || (isIconUrl(offer.icon) ? offer.icon : null);
   const emojiIcon = !coverImgSrc && offer.icon ? offer.icon : null;
@@ -87,7 +97,7 @@ export const DirectOfferCard = ({ offer, onClick }) => {
         {coverImgSrc ? (
           <img
             src={coverImgSrc}
-            alt={offer.title}
+            alt={title}
             draggable="false"
             className="w-full h-full object-cover pointer-events-none select-none"
           />
@@ -165,7 +175,7 @@ export const DirectOfferCard = ({ offer, onClick }) => {
       <div className="flex flex-col w-full text-left justify-between min-h-0">
         <p
           className="truncate text-[#0E0F0C]"
-          title={offer.title}
+          title={title}
           style={{
             fontFamily: '"Bricolage Grotesque", sans-serif',
             fontWeight: 700,
@@ -174,7 +184,7 @@ export const DirectOfferCard = ({ offer, onClick }) => {
             letterSpacing: '-0.02em',
           }}
         >
-          {offer.title}
+          {title}
         </p>
 
         {/* Status OR reward */}
@@ -233,6 +243,13 @@ export const DirectOfferCard = ({ offer, onClick }) => {
 
 // ─── Modal shown when user clicks a card ─────────────────────────────────────
 export const DirectOfferModal = ({ offer, token, placement = 'featured', onClose, onClicked }) => {
+  const { i18n } = useTranslation();
+  const isDe = i18n.language?.startsWith('de');
+  const title = (isDe && offer.titleDe) ? offer.titleDe : offer.title;
+  const description = (isDe && offer.descriptionDe) ? offer.descriptionDe : offer.description;
+  const requirements = (isDe && Array.isArray(offer.requirementsDe) && offer.requirementsDe.length > 0)
+    ? offer.requirementsDe
+    : offer.requirements;
   const [loading, setLoading] = useState(false);
   const [showSupportModal, setShowSupportModal] = useState(false);
   const isExpired = offer.expirationDate && new Date(offer.expirationDate) < new Date();
@@ -245,10 +262,10 @@ export const DirectOfferModal = ({ offer, token, placement = 'featured', onClose
   const displayRequirementType = hasGoalRows ? 'bullets' : 'paragraph';
   const displayRequirements = hasGoalRows
     ? enabledGoals.map((goal) => ({
-      label: `${goal.label || goal.goalKey || 'Complete step'} \u2192 receive ${formatCoins(goal.rewardAmount)} coins`,
+      label: formatGoalRequirement(goal, isDe),
       completed: isGoalCompleted(offer, goal),
     }))
-    : [requirementText(offer.requirements)];
+    : [requirementText(requirements)];
 
   const handleGoToOffer = async () => {
     if (isExpired) return;
@@ -369,7 +386,7 @@ export const DirectOfferModal = ({ offer, token, placement = 'featured', onClose
           <div className="flex items-start gap-4 pr-8">
             <div className="w-[76px] h-[76px] sm:w-[82px] sm:h-[82px] rounded-[16px] bg-[#EDE8DE] overflow-hidden flex-shrink-0 flex items-center justify-center shadow-sm">
               {coverImgSrc ? (
-                <img src={coverImgSrc} alt={offer.title} className="w-full h-full object-cover" />
+                <img src={coverImgSrc} alt={title} className="w-full h-full object-cover" />
               ) : (
                 <span className="text-4xl">{emojiIcon}</span>
               )}
@@ -379,10 +396,10 @@ export const DirectOfferModal = ({ offer, token, placement = 'featured', onClose
                 className="text-[18px] sm:text-[21px] font-bold text-[#0E0F0C] leading-snug tracking-tight m-0"
                 style={{ fontFamily: '"Bricolage Grotesque", sans-serif' }}
               >
-                {offer.title}
+                {title}
               </h2>
               <p className="text-[12px] sm:text-[13px] text-[#4A4C46] mt-1 leading-relaxed m-0 font-normal">
-                {offer.description || 'Complete this offer by sending it to your Android device from here'}
+                {description || 'Complete this offer by sending it to your Android device from here'}
               </p>
             </div>
           </div>

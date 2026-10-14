@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
-import { FiActivity, FiRefreshCw } from 'react-icons/fi';
+import { FiActivity, FiCheckCircle, FiRefreshCw, FiRotateCcw, FiXCircle } from 'react-icons/fi';
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
@@ -11,6 +11,7 @@ const AdminConversions = () => {
   const [pagination, setPagination] = useState({ page: 1, limit: 25, total: 0, totalPages: 0 });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [actionLoading, setActionLoading] = useState('');
 
   const load = useCallback(async (page = pagination.page) => {
     if (!currentUser) return;
@@ -35,6 +36,33 @@ const AdminConversions = () => {
   useEffect(() => { load(1); }, []);
 
   const set = (key) => (event) => setFilters(prev => ({ ...prev, [key]: event.target.value }));
+
+  const updateRow = (conversion) => {
+    if (!conversion?._id) return;
+    setRows(prev => prev.map(row => row._id === conversion._id ? conversion : row));
+  };
+
+  const runAction = async (row, action) => {
+    if (!currentUser || !row?._id) return;
+    const key = `${row._id}:${action}`;
+    setActionLoading(key);
+    setError('');
+    try {
+      const token = await currentUser.getIdToken();
+      const res = await fetch(`${API}/admin/conversions/${row._id}/${action}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ reason: `Manual ${action} from admin conversions page` }),
+      });
+      const data = await res.json();
+      if (!data.success) throw new Error(data.error || `Failed to ${action} conversion`);
+      updateRow(data.conversion);
+    } catch (err) {
+      setError(err.message || `Failed to ${action} conversion`);
+    } finally {
+      setActionLoading('');
+    }
+  };
 
   return (
     <div>
@@ -67,7 +95,7 @@ const AdminConversions = () => {
         <table className="admin-table">
           <thead>
             <tr>
-              <th>Time</th><th>Provider</th><th>User</th><th>Campaign</th><th>Click / Txn</th><th>Status</th><th>Reward</th><th>Ledger</th>
+              <th>Time</th><th>Provider</th><th>User</th><th>Campaign</th><th>Click / Txn</th><th>Status</th><th>Reward</th><th>Ledger</th><th>Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -84,6 +112,40 @@ const AdminConversions = () => {
                   <span>Reward: {row.rewardTransaction?._id || '-'}</span><br />
                   <span>Reversal: {row.reversalTransaction?._id || '-'}</span>
                   {(row.rejectionReason || row.errorReason) && <p className="text-rose-400 text-xs mt-1">{row.rejectionReason || row.errorReason}</p>}
+                </td>
+                <td>
+                  <div className="flex flex-wrap gap-2">
+                    {row.internalStatus !== 'approved' && row.internalStatus !== 'reversed' && (
+                      <button
+                        type="button"
+                        disabled={Boolean(actionLoading)}
+                        onClick={() => runAction(row, 'approve')}
+                        className="px-2 py-1 rounded bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 text-xs inline-flex items-center gap-1 disabled:opacity-50"
+                      >
+                        <FiCheckCircle /> Approve
+                      </button>
+                    )}
+                    {!row.rewardTransaction && row.internalStatus !== 'rejected' && row.internalStatus !== 'reversed' && (
+                      <button
+                        type="button"
+                        disabled={Boolean(actionLoading)}
+                        onClick={() => runAction(row, 'reject')}
+                        className="px-2 py-1 rounded bg-rose-500/10 border border-rose-500/20 text-rose-300 text-xs inline-flex items-center gap-1 disabled:opacity-50"
+                      >
+                        <FiXCircle /> Reject
+                      </button>
+                    )}
+                    {row.rewardTransaction && row.internalStatus !== 'reversed' && (
+                      <button
+                        type="button"
+                        disabled={Boolean(actionLoading)}
+                        onClick={() => runAction(row, 'chargeback')}
+                        className="px-2 py-1 rounded bg-amber-500/10 border border-amber-500/20 text-amber-300 text-xs inline-flex items-center gap-1 disabled:opacity-50"
+                      >
+                        <FiRotateCcw /> Chargeback
+                      </button>
+                    )}
+                  </div>
                 </td>
               </tr>
             ))}

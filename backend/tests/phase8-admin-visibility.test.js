@@ -322,6 +322,9 @@ test('direct-offer admin log actions validate and keep metadata secret-free', ()
     'DEACTIVATE_DIRECT_OFFER',
     'MANUAL_APPROVE_CLICK',
     'MANUAL_REJECT_CLICK',
+    'MANUAL_APPROVE_CONVERSION',
+    'MANUAL_REJECT_CONVERSION',
+    'MANUAL_CHARGEBACK_CONVERSION',
   ]) {
     const log = new AdminLog({ adminId, action, details });
     assert.equal(log.validateSync(), undefined);
@@ -345,7 +348,7 @@ test('direct-offer admin routes log with db admin user and valid enum actions', 
 
 test('phase 8 admin routes exist and are mounted under admin permission middleware', () => {
   const paths = routePaths();
-  for (const pathName of ['/provider-configs', '/conversions', '/postback-logs', '/postback-logs/:id', '/offerwall-providers']) {
+  for (const pathName of ['/provider-configs', '/conversions', '/conversions/:id/approve', '/conversions/:id/reject', '/conversions/:id/chargeback', '/postback-logs', '/postback-logs/:id', '/offerwall-providers']) {
     assert.equal(paths.some((route) => route.path === pathName), true);
   }
 
@@ -356,6 +359,9 @@ test('phase 8 admin routes exist and are mounted under admin permission middlewa
     "router.post('/provider-configs', requirePermission('manage_offerwalls')",
     "router.put('/provider-configs/:providerId', requirePermission('manage_offerwalls')",
     "router.get('/conversions', requirePermission('manage_offerwalls')",
+    "router.post('/conversions/:id/approve', requirePermission('manage_offerwalls')",
+    "router.post('/conversions/:id/reject', requirePermission('manage_offerwalls')",
+    "router.post('/conversions/:id/chargeback', requirePermission('manage_offerwalls')",
     "router.get('/postback-logs', requirePermission('manage_offerwalls')",
     "router.get('/postback-logs/:id', requirePermission('manage_offerwalls')",
     "router.get('/direct-offers/:id/postback-url', requirePermission('manage_offerwalls')",
@@ -469,14 +475,15 @@ test('frontend direct-offer start only opens backend returned URLs', () => {
   assert.doesNotMatch(directOfferCard, /window\.open\(offer\.(trackingUrl|url|advertiserUrl)/);
 });
 
-test('offerwall readiness wording remains conservative and Phase 8 pages add no financial actions', () => {
+test('offerwall readiness wording remains conservative and conversion actions stay admin gated', () => {
   const offerwalls = read('frontend/src/pages/admin/AdminOfferwalls.jsx');
   const providers = read('frontend/src/pages/admin/AdminProviders.jsx');
   const conversions = read('frontend/src/pages/admin/AdminConversions.jsx');
   const logs = read('frontend/src/pages/admin/AdminPostbackLogs.jsx');
-  const source = `${providers}\n${conversions}\n${logs}`;
 
   assert.match(offerwalls, /Generic tracking ready/);
   assert.doesNotMatch(offerwalls, /Fully integrated|Provider tested|Production tested/);
-  assert.doesNotMatch(source, /force approve|force reward|retry reward|reverse transaction|credit user/i);
+  assert.match(conversions, /admin\/conversions\/\$\{row\._id\}\/\$\{action\}/);
+  assert.match(conversions, /Chargeback/);
+  assert.doesNotMatch(`${providers}\n${logs}`, /force approve|force reward|retry reward|reverse transaction|credit user/i);
 });

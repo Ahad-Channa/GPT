@@ -72,13 +72,19 @@ test('DirectOffer accepts optional goals and still validates without them', () =
 
   const withGoals = new DirectOffer({
     title: 'Multi step',
+    titleDe: 'Mehrere Schritte',
     description: 'desc',
+    descriptionDe: 'Beschreibung',
     rewardAmount: 100,
     advertiserUrl: 'https://example.com',
-    goals: [{ goalKey: 'deposit', label: 'Deposit', rewardAmount: 250 }],
+    requirementsDe: ['Deutsche Anforderung'],
+    goals: [{ goalKey: 'deposit', label: 'Deposit', labelDe: 'Einzahlen', rewardAmount: 250 }],
   });
   assert.equal(withGoals.validateSync(), undefined);
   assert.equal(withGoals.goals[0].goalKey, 'deposit');
+  assert.equal(withGoals.titleDe, 'Mehrere Schritte');
+  assert.equal(withGoals.goals[0].labelDe, 'Einzahlen');
+  assert.deepEqual(withGoals.requirementsDe, ['Deutsche Anforderung']);
 });
 
 test('ClickLog stores a null goalsSnapshot for single-step offers and Conversion exposes goalKey', () => {
