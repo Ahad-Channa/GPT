@@ -64,20 +64,24 @@ const Footer = () => {
             paddingRight: 32,
             paddingBottom: 24,
             paddingLeft: 32,
-            background: isDarkMode ? 'rgba(34, 39, 48, 0.4)' : 'rgba(249, 247, 241, 1)',
+            background: isDarkMode ? 'rgba(23, 26, 29, 1)' : 'rgba(249, 247, 241, 1)',
             border: 'none'
           }}
         >
           {/* Background Image */}
           <img
-            src={isMobile ? "/coins/image copy 18.png" : "/coins/image copy 16.png"}
+            src={
+              isMobile
+                ? (isDarkMode ? "/coins/image copy 21.png" : "/coins/image copy 18.png")
+                : "/coins/image copy 16.png"
+            }
             alt="Background graphics"
-            className="absolute bottom-0 left-0 w-full h-auto z-0 pointer-events-none object-contain object-bottom-left"
+            className="absolute bottom-0 left-0 w-full h-auto z-0 pointer-events-none object-contain object-left-bottom"
             style={{
               maxHeight: '100%',
               maxWidth: '100%',
-              objectPosition: 'bottom left',
-              opacity: isDarkMode ? 0.35 : 1
+              objectPosition: 'left bottom',
+              opacity: (isMobile && isDarkMode) ? 1 : (isDarkMode ? 0.35 : 1)
             }}
           />
 
@@ -334,7 +338,10 @@ const Footer = () => {
               <img
                 src={
                   isMobile
-                    ? (isDe ? "/coins/image copy 19 german.png" : "/coins/image copy 19.png")
+                    ? (isDarkMode
+                        ? (isDe ? "/coins/wybt german black mobile.png" : "/coins/wybt eng black.png")
+                        : (isDe ? "/coins/image copy 19 german.png" : "/coins/image copy 19.png")
+                      )
                     : (isDarkMode
                         ? (isDe ? "/coins/footerimageblackgerman.png" : "/coins/footerimageblackenglish.png")
                         : (isDe ? "/coins/image copy 17 german.png" : "/coins/image copy 17.png")

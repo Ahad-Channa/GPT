@@ -223,7 +223,7 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }) {
             {/* Header Content */}
             <div
               className={`relative z-20 text-left flex flex-col pr-8 sm:pr-24 ${
-                tab === 'forgot' ? '-translate-y-2.5 sm:translate-y-0' : ''
+                isGerman ? '-translate-y-3 sm:translate-y-0' : tab === 'forgot' ? '-translate-y-2.5 sm:translate-y-0' : ''
               }`}
               style={{ maxWidth: '100%' }}
             >
@@ -243,7 +243,11 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }) {
                 </h2>
 
                 <p
-                  className="m-0 text-[11.5px] sm:text-[16px] leading-[18px] sm:leading-[26px] whitespace-nowrap transition-colors duration-300"
+                  className={`m-0 text-[11.5px] sm:text-[16px] leading-[18px] sm:leading-[26px] transition-colors duration-300 ${
+                    tab === 'forgot'
+                      ? 'whitespace-normal text-[10.5px] min-[390px]:text-[11px] leading-[15px] max-w-[245px] sm:max-w-none'
+                      : 'whitespace-nowrap sm:whitespace-normal'
+                  }`}
                   style={{
                     fontFamily: '"Poppins", sans-serif',
                     fontWeight: 500,
@@ -264,7 +268,7 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }) {
                   height: '4px',
                   borderRadius: '20px',
                   background: 'rgba(85, 88, 211, 1)',
-                  marginTop: '12px',
+                  marginTop: tab === 'forgot' && isGerman ? '8px' : '12px',
                 }}
               />
             </div>
@@ -527,8 +531,9 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }) {
                         </span>{' '}
                         {t('auth.and', '&')}{' '}
                         <span style={{ fontWeight: 600, color: isDarkMode ? '#5271FF' : 'rgba(36, 50, 77, 1)' }}>
-                          {t('auth.privacyPolicy', 'Privacy Policy.')}
+                          {t('auth.privacyPolicy', 'Privacy Policy.').replace(/\s+zu\.?$/, '')}
                         </span>
+                        {isGerman ? ' zu.' : t('auth.agreeTermsSuffix', '')}
                       </span>
                     </label>
                   </div>

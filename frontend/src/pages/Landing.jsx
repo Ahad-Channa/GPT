@@ -539,7 +539,11 @@ const Landing = () => {
                   className="w-[calc(100%+2rem)] -mx-4 flex justify-center items-center mt-8 overflow-hidden"
                 >
                   <img
-                    src={isDe ? "/coins/Hero section german mobile.png" : "/coins/mobile hero.png"}
+                    src={
+                      isDarkMode
+                        ? (isDe ? "/coins/Hero section german mobile Black.png" : "/coins/Hero section Eng mobile Black.png")
+                        : (isDe ? "/coins/Hero section german mobile.png" : "/coins/mobile hero.png")
+                    }
                     alt="Mobile Hero Graphic"
                     className="w-full h-auto object-cover"
                     style={{

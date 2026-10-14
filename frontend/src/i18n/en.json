@@ -561,6 +561,7 @@
     "termsAndConditions": "Terms and Conditions",
     "and": "&",
     "privacyPolicy": "Privacy Policy.",
+    "agreeTermsSuffix": "",
     "login": "Login",
     "signUp": "Sign Up",
     "sendResetLink": "Send Reset Link",

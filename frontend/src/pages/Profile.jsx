@@ -4,6 +4,7 @@ import { toast } from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
 import DashboardLayout from '../components/layout/DashboardLayout';
 import { useAuth } from '../contexts/AuthContext';
+import { useTheme } from '../contexts/ThemeContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   FiZap, FiStar, FiMail, FiCalendar, FiEdit2, FiCheck, FiX, FiShield,
@@ -23,6 +24,7 @@ const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 // ── Customization / Avatar Shop Modal ─────────────────────────────
 const CustomizationModal = ({ isOpen, onClose, mongoUser, token, setMongoUser }) => {
   const { t, i18n } = useTranslation();
+  const { isDarkMode } = useTheme();
   const [activeTab, setActiveTab] = useState('my_avatars');
   const [previewAvatar, setPreviewAvatar] = useState(null);
 
@@ -187,15 +189,16 @@ const CustomizationModal = ({ isOpen, onClose, mongoUser, token, setMongoUser })
       style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
       className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[999999] flex items-center justify-center p-2.5 sm:p-4 overflow-y-auto [&::-webkit-scrollbar]:hidden"
     >
-      {/* Outer White Frame */}
+      {/* Outer Frame */}
       <motion.div
         initial={{ scale: 0.96, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         style={{
           boxSizing: 'border-box',
-          fontFamily: '"Poppins", sans-serif'
+          fontFamily: '"Poppins", sans-serif',
+          background: isDarkMode ? 'rgba(12, 14, 17, 1)' : '#FFFFFF'
         }}
-        className="w-full max-w-[430px] md:max-w-[96vw] md:w-[1072px] h-auto max-h-[96vh] md:h-[610px] md:max-h-[94vh] bg-[#FFFFFF] rounded-[24px] p-1.5 sm:p-2 md:p-[6px] shadow-2xl flex flex-col md:flex-row items-center justify-center overflow-y-auto md:overflow-hidden relative my-auto [&::-webkit-scrollbar]:hidden"
+        className="w-full max-w-[430px] md:max-w-[96vw] md:w-[1072px] h-auto max-h-[96vh] md:h-[610px] md:max-h-[94vh] rounded-[24px] p-1.5 sm:p-2 md:p-[6px] shadow-2xl flex flex-col md:flex-row items-center justify-center overflow-y-auto md:overflow-hidden relative my-auto [&::-webkit-scrollbar]:hidden"
       >
         {/* Top Right Close Button (Circle with X) */}
         <button
@@ -204,17 +207,21 @@ const CustomizationModal = ({ isOpen, onClose, mongoUser, token, setMongoUser })
             e.stopPropagation();
             onClose();
           }}
-          className="w-[24px] h-[24px] md:w-[22px] md:h-[22px] bg-black text-white rounded-full flex items-center justify-center border-none cursor-pointer absolute top-3.5 right-3.5 md:top-[12px] md:right-[14px] z-50 p-0 hover:opacity-80 transition-opacity shrink-0 shadow-sm"
+          style={{
+            background: isDarkMode ? 'rgba(34, 39, 48, 1)' : '#000000',
+          }}
+          className="w-[24px] h-[24px] md:w-[22px] md:h-[22px] text-white rounded-full flex items-center justify-center border-none cursor-pointer absolute top-3.5 right-3.5 md:top-[12px] md:right-[14px] z-50 p-0 hover:opacity-80 transition-opacity shrink-0 shadow-sm"
         >
           <FiX size={12} strokeWidth={2.5} className="pointer-events-none" />
         </button>
 
-        {/* Inner Main Cream Container */}
+        {/* Inner Main Container */}
         <div
           style={{
-            boxSizing: 'border-box'
+            boxSizing: 'border-box',
+            background: isDarkMode ? 'rgba(23, 26, 29, 1)' : 'rgba(248, 245, 239, 1)'
           }}
-          className="w-full md:w-[1056px] md:max-w-full h-auto md:h-[596px] md:max-h-full bg-[rgba(248,245,239,1)] rounded-[20px] md:rounded-[18px] px-1.5 py-3 sm:px-2 sm:py-3.5 md:p-[10px_18px_12px_18px] flex flex-col justify-start md:justify-between gap-3 md:gap-0 relative overflow-y-auto md:overflow-hidden [&::-webkit-scrollbar]:hidden"
+          className="w-full md:w-[1056px] md:max-w-full h-auto md:h-[596px] md:max-h-full rounded-[20px] md:rounded-[18px] px-1.5 py-3 sm:px-2 sm:py-3.5 md:p-[10px_18px_12px_18px] flex flex-col justify-start md:justify-between gap-3 md:gap-0 relative overflow-y-auto md:overflow-hidden [&::-webkit-scrollbar]:hidden"
         >
           {/* Top Header Row */}
           <div
@@ -226,7 +233,7 @@ const CustomizationModal = ({ isOpen, onClose, mongoUser, token, setMongoUser })
                 style={{
                   fontFamily: '"Bricolage Grotesque", sans-serif',
                   letterSpacing: '-0.02em',
-                  color: 'rgba(14, 15, 12, 1)',
+                  color: isDarkMode ? '#FFFFFF' : 'rgba(14, 15, 12, 1)',
                   margin: 0
                 }}
                 className="font-bold text-[24px] sm:text-[28px] md:text-[32px] leading-tight md:leading-[1.1]"
@@ -236,7 +243,7 @@ const CustomizationModal = ({ isOpen, onClose, mongoUser, token, setMongoUser })
               <p
                 style={{
                   fontFamily: '"Poppins", sans-serif',
-                  color: 'rgba(14, 15, 12, 1)'
+                  color: isDarkMode ? 'rgba(255, 255, 255, 0.7)' : 'rgba(14, 15, 12, 1)'
                 }}
                 className="text-[12.5px] sm:text-[14px] md:text-[16px] font-medium leading-tight md:leading-[26px] max-w-full md:max-w-none whitespace-normal md:whitespace-nowrap mt-1 md:mt-1 opacity-90"
               >
@@ -250,7 +257,10 @@ const CustomizationModal = ({ isOpen, onClose, mongoUser, token, setMongoUser })
 
             {/* Right Coin Balance Badge */}
             <div
-              className="bg-[#FFFFFF] rounded-full md:rounded-[100px] h-auto md:h-[71px] px-3.5 py-1.5 sm:px-4 sm:py-2 md:p-[22px_26px] flex items-center justify-center gap-1.5 md:gap-[20px] shadow-sm shrink-0 self-start mr-7 md:mr-0 mt-0.5 md:mt-0"
+              style={{
+                background: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : '#FFFFFF'
+              }}
+              className="rounded-full md:rounded-[100px] h-auto md:h-[71px] px-3.5 py-1.5 sm:px-4 sm:py-2 md:p-[22px_26px] flex items-center justify-center gap-1.5 md:gap-[20px] shadow-sm shrink-0 self-start mr-7 md:mr-0 mt-0.5 md:mt-0"
             >
               <img
                 src="/coins/image copy 2.png"
@@ -272,9 +282,12 @@ const CustomizationModal = ({ isOpen, onClose, mongoUser, token, setMongoUser })
 
           {/* Main Content Row (Left White Grid Card + Right White/Beige Preview Card) */}
           <div className="flex flex-col md:flex-row gap-3 flex-1 min-h-0 md:mt-1.5 items-stretch w-full">
-            {/* Upper/Left White Grid Card */}
+            {/* Upper/Left Grid Card */}
             <div
-              className="w-full md:flex-1 bg-[#FFFFFF] rounded-[18px] md:rounded-[16px] p-2.5 sm:p-3 md:p-[12px_16px_14px_16px] box-border flex flex-col justify-between min-w-0 md:h-full md:min-h-[490px] self-stretch"
+              style={{
+                background: isDarkMode ? 'rgba(12, 14, 17, 1)' : '#FFFFFF'
+              }}
+              className="w-full md:flex-1 rounded-[18px] md:rounded-[16px] p-2.5 sm:p-3 md:p-[12px_16px_14px_16px] box-border flex flex-col justify-between min-w-0 md:h-full md:min-h-[490px] self-stretch"
             >
               {/* Buttons Switcher (My Avatars / Shop) */}
               <div className="flex justify-center items-center gap-2 sm:gap-2.5 mb-2.5 md:mb-2 shrink-0">
@@ -285,13 +298,15 @@ const CustomizationModal = ({ isOpen, onClose, mongoUser, token, setMongoUser })
                     fontFamily: '"Bricolage Grotesque", sans-serif',
                     letterSpacing: '0%',
                     boxSizing: 'border-box',
-                    transition: 'all 0.2s'
+                    transition: 'all 0.2s',
+                    background: activeTab === 'my_avatars'
+                      ? 'rgba(36, 50, 77, 1)'
+                      : (isDarkMode ? 'rgba(23, 26, 29, 1)' : 'rgba(249, 247, 241, 1)'),
+                    color: activeTab === 'my_avatars'
+                      ? '#FFFFFF'
+                      : (isDarkMode ? '#FFFFFF' : 'rgba(14, 15, 12, 1)')
                   }}
-                  className={`h-[34px] md:h-[37px] px-4 sm:px-5 md:px-6 md:w-[126px] rounded-full md:rounded-[40px] font-bold text-[13px] md:text-[14px] leading-none border-none cursor-pointer flex items-center justify-center gap-2 ${
-                    activeTab === 'my_avatars'
-                      ? 'bg-[rgba(36,50,77,1)] text-[#FFFFFF] shadow-sm'
-                      : 'bg-[rgba(249,247,241,1)] text-[rgba(14,15,12,1)] hover:opacity-90'
-                  }`}
+                  className="h-[34px] md:h-[37px] px-4 sm:px-5 md:px-6 md:w-[126px] rounded-full md:rounded-[40px] font-bold text-[13px] md:text-[14px] leading-none border-none cursor-pointer flex items-center justify-center gap-2 hover:opacity-90 shadow-sm"
                 >
                   {t('profile.myAvatars', 'My Avatars')}
                 </button>
@@ -302,13 +317,15 @@ const CustomizationModal = ({ isOpen, onClose, mongoUser, token, setMongoUser })
                     fontFamily: '"Bricolage Grotesque", sans-serif',
                     letterSpacing: '0%',
                     boxSizing: 'border-box',
-                    transition: 'all 0.2s'
+                    transition: 'all 0.2s',
+                    background: activeTab === 'shop'
+                      ? 'rgba(36, 50, 77, 1)'
+                      : (isDarkMode ? 'rgba(23, 26, 29, 1)' : 'rgba(249, 247, 241, 1)'),
+                    color: activeTab === 'shop'
+                      ? '#FFFFFF'
+                      : (isDarkMode ? '#FFFFFF' : 'rgba(14, 15, 12, 1)')
                   }}
-                  className={`h-[34px] md:h-[37px] px-4 sm:px-5 md:px-6 md:w-[84px] rounded-full md:rounded-[40px] font-bold text-[13px] md:text-[14px] leading-none border-none cursor-pointer flex items-center justify-center gap-2 ${
-                    activeTab === 'shop'
-                      ? 'bg-[rgba(36,50,77,1)] text-[#FFFFFF] shadow-sm'
-                      : 'bg-[rgba(249,247,241,1)] text-[rgba(14,15,12,1)] hover:opacity-90'
-                  }`}
+                  className="h-[34px] md:h-[37px] px-4 sm:px-5 md:px-6 md:w-[84px] rounded-full md:rounded-[40px] font-bold text-[13px] md:text-[14px] leading-none border-none cursor-pointer flex items-center justify-center gap-2 hover:opacity-90 shadow-sm"
                 >
                   {t('profile.shop', 'Shop')}
                 </button>
@@ -317,7 +334,7 @@ const CustomizationModal = ({ isOpen, onClose, mongoUser, token, setMongoUser })
               {/* Avatars Grid (6 on Mobile: 2 cols x 3 rows; 9 on Desktop: 3 cols x 3 rows) */}
               {loadingAvatars ? (
                 <div className="flex-1 flex items-center justify-center min-h-[180px] md:min-h-0">
-                  <FiLoader className="animate-spin text-3xl text-[#202C44]" />
+                  <FiLoader className="animate-spin text-3xl text-[#5356FB]" />
                 </div>
               ) : paginatedAvatars.length === 0 ? (
                 <div className="flex-1 flex items-center justify-center text-[#888888] text-center font-medium min-h-[180px] md:min-h-0 text-sm">
@@ -333,12 +350,18 @@ const CustomizationModal = ({ isOpen, onClose, mongoUser, token, setMongoUser })
                         onClick={() => setPreviewAvatar(avatar)}
                         style={{
                           boxSizing: 'border-box',
-                          transition: 'all 0.2s'
+                          transition: 'all 0.2s',
+                          background: isDarkMode
+                            ? 'rgba(23, 26, 29, 1)'
+                            : (isSelected ? 'rgba(36, 50, 77, 1)' : 'rgba(248, 245, 239, 1)'),
+                          border: isSelected
+                            ? (isDarkMode ? '1.5px solid rgba(255, 255, 255, 0.35)' : 'none')
+                            : (isDarkMode ? '1.5px solid transparent' : 'none')
                         }}
                         className={`w-full max-w-full md:max-w-[227px] h-[56px] sm:h-[60px] md:h-[86px] rounded-full md:rounded-[100px] p-1.5 pr-2 sm:p-2 sm:pr-2.5 md:p-[7px_12px_7px_5px] flex items-center gap-1.5 sm:gap-2 md:gap-[10px] cursor-pointer hover:opacity-95 select-none ${
                           isSelected
-                            ? 'bg-[rgba(36,50,77,1)] text-white shadow-sm'
-                            : 'bg-[rgba(248,245,239,1)] text-black'
+                            ? 'text-white shadow-sm'
+                            : (isDarkMode ? 'text-white' : 'text-black')
                         }`}
                       >
                         {/* Avatar Circle with Gap between Image and Border */}
@@ -346,7 +369,7 @@ const CustomizationModal = ({ isOpen, onClose, mongoUser, token, setMongoUser })
                           className={`w-[42px] h-[42px] sm:w-[46px] sm:h-[46px] md:w-[72px] md:h-[72px] rounded-full bg-white flex items-center justify-center shrink-0 box-border ${
                             isSelected
                               ? 'border-[2px] md:border-[2.5px] border-white'
-                              : 'border-[2px] md:border-[2.5px] border-[rgba(36,50,77,1)]'
+                              : (isDarkMode ? 'border-[2px] md:border-[2.5px] border-transparent' : 'border-[2px] md:border-[2.5px] border-[rgba(36,50,77,1)]')
                           }`}
                         >
                           <div
@@ -373,7 +396,7 @@ const CustomizationModal = ({ isOpen, onClose, mongoUser, token, setMongoUser })
                               letterSpacing: '0%'
                             }}
                             className={`font-bold text-[13px] sm:text-[14px] md:text-[19px] leading-tight md:leading-none truncate capitalize w-full text-left ${
-                              isSelected ? 'text-white' : 'text-black'
+                              isSelected ? 'text-white' : (isDarkMode ? 'text-white' : 'text-black')
                             }`}
                           >
                             {avatar.name}
@@ -387,7 +410,7 @@ const CustomizationModal = ({ isOpen, onClose, mongoUser, token, setMongoUser })
                                 letterSpacing: '0%'
                               }}
                               className={`font-medium text-[8.5px] sm:text-[9.5px] md:text-[10px] leading-tight md:leading-[14px] truncate w-full mt-0.5 md:mt-0 ${
-                                isSelected ? 'text-white/80' : 'text-black/70'
+                                isSelected ? 'text-white/80' : (isDarkMode ? 'text-white/70' : 'text-black/70')
                               }`}
                             >
                               {avatar.quantity ? t('profile.quantityAvailable', { count: avatar.quantity, defaultValue: `${avatar.quantity} Available` }) : t('profile.unlimitedAvailable', 'Unlimited Available')}
@@ -431,10 +454,13 @@ const CustomizationModal = ({ isOpen, onClose, mongoUser, token, setMongoUser })
                       else setShopPage(p => Math.max(1, p - 1));
                     }
                   }}
+                  style={{
+                    backgroundColor: currentPage > 1 ? 'rgba(36, 50, 77, 1)' : 'transparent',
+                    border: currentPage > 1 ? 'none' : (isDarkMode ? '1px solid rgba(255, 255, 255, 0.15)' : '1px solid rgba(36, 50, 77, 1)'),
+                    color: currentPage > 1 ? '#FFFFFF' : (isDarkMode ? 'rgba(255, 255, 255, 0.3)' : 'rgba(36, 50, 77, 1)'),
+                  }}
                   className={`w-[36px] h-[36px] md:w-[40px] md:h-[40px] rounded-full flex items-center justify-center p-0 box-border transition-all ${
-                    currentPage > 1
-                      ? 'bg-[rgba(36,50,77,1)] text-white border-none cursor-pointer hover:opacity-90 active:scale-95'
-                      : 'bg-transparent border border-[rgba(36,50,77,1)] text-[rgba(36,50,77,1)] cursor-default opacity-60'
+                    currentPage > 1 ? 'cursor-pointer hover:opacity-90 active:scale-95' : 'cursor-default opacity-60'
                   }`}
                 >
                   <FiChevronLeft size={16} />
@@ -451,10 +477,13 @@ const CustomizationModal = ({ isOpen, onClose, mongoUser, token, setMongoUser })
                       else setShopPage(p => Math.min(totalPages, p + 1));
                     }
                   }}
+                  style={{
+                    backgroundColor: currentPage >= totalPages ? 'transparent' : 'rgba(36, 50, 77, 1)',
+                    border: currentPage >= totalPages ? (isDarkMode ? '1px solid rgba(255, 255, 255, 0.15)' : '1px solid rgba(36, 50, 77, 1)') : 'none',
+                    color: currentPage >= totalPages ? (isDarkMode ? 'rgba(255, 255, 255, 0.3)' : 'rgba(36, 50, 77, 1)') : '#FFFFFF',
+                  }}
                   className={`w-[36px] h-[36px] md:w-[40px] md:h-[40px] rounded-full flex items-center justify-center p-0 box-border transition-all ${
-                    currentPage < totalPages
-                      ? 'bg-[rgba(36,50,77,1)] text-white border-none cursor-pointer hover:opacity-90 active:scale-95'
-                      : 'bg-transparent border border-[rgba(36,50,77,1)] text-[rgba(36,50,77,1)] cursor-default opacity-60'
+                    currentPage < totalPages ? 'cursor-pointer hover:opacity-90 active:scale-95' : 'cursor-default opacity-60'
                   }`}
                 >
                   <FiChevronRight size={16} />
@@ -462,18 +491,22 @@ const CustomizationModal = ({ isOpen, onClose, mongoUser, token, setMongoUser })
               </div>
             </div>
 
-            {/* Lower/Right Preview Card (White Card on both Mobile and Desktop) */}
+            {/* Lower/Right Preview Card */}
             <div
-              className="w-full md:w-[284px] bg-[#FFFFFF] rounded-[18px] md:rounded-[16px] p-[4px_4px_12px_4px] md:p-[4px_4px_14px_4px] flex flex-col items-center shrink-0 md:h-full md:min-h-[490px] box-border self-stretch"
+              style={{
+                background: isDarkMode ? 'rgba(12, 14, 17, 1)' : '#FFFFFF'
+              }}
+              className="w-full md:w-[284px] rounded-[18px] md:rounded-[16px] p-[4px_4px_12px_4px] md:p-[4px_4px_14px_4px] flex flex-col items-center shrink-0 md:h-full md:min-h-[490px] box-border self-stretch"
             >
               {previewAvatar ? (
                 <>
                   {/* Desktop Banner Top Section (hidden on mobile) */}
                   <div
                     style={{
-                      boxSizing: 'border-box'
+                      boxSizing: 'border-box',
+                      background: isDarkMode ? 'rgba(23, 26, 29, 1)' : 'rgba(248, 245, 239, 1)'
                     }}
-                    className="hidden md:block w-full max-w-[276px] h-[107px] bg-[rgba(248,245,239,1)] rounded-[15px] relative shrink-0 mb-[62px]"
+                    className="hidden md:block w-full max-w-[276px] h-[107px] rounded-[15px] relative shrink-0 mb-[62px]"
                   >
                     {/* Avatar Circle centered on the bg boundary */}
                     <div
@@ -481,8 +514,8 @@ const CustomizationModal = ({ isOpen, onClose, mongoUser, token, setMongoUser })
                         width: '128px',
                         height: '128px',
                         borderRadius: '50%',
-                        background: '#FFFFFF',
-                        border: '3px solid rgba(36, 50, 77, 1)',
+                        background: isDarkMode ? 'rgba(23, 26, 29, 1)' : '#FFFFFF',
+                        border: isDarkMode ? '3px solid #FFFFFF' : '3px solid rgba(36, 50, 77, 1)',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
@@ -524,8 +557,19 @@ const CustomizationModal = ({ isOpen, onClose, mongoUser, token, setMongoUser })
                   </div>
 
                   {/* Mobile Beige Banner with Overlapping Avatar Circle (hidden on desktop) */}
-                  <div className="block md:hidden w-full h-[70px] bg-[rgba(248,245,239,1)] rounded-[15px] relative shrink-0 mb-[48px]">
-                    <div className="w-[84px] h-[84px] rounded-full bg-white border-[3px] border-[rgba(36,50,77,1)] flex items-center justify-center absolute bottom-[-42px] left-1/2 -translate-x-1/2 z-10 shrink-0 shadow-sm">
+                  <div
+                    style={{
+                      background: isDarkMode ? 'rgba(23, 26, 29, 1)' : 'rgba(248, 245, 239, 1)'
+                    }}
+                    className="block md:hidden w-full h-[70px] rounded-[15px] relative shrink-0 mb-[48px]"
+                  >
+                    <div
+                      style={{
+                        background: isDarkMode ? 'rgba(23, 26, 29, 1)' : '#FFFFFF',
+                        borderColor: isDarkMode ? '#FFFFFF' : 'rgba(36, 50, 77, 1)'
+                      }}
+                      className="w-[84px] h-[84px] rounded-full border-[3px] flex items-center justify-center absolute bottom-[-42px] left-1/2 -translate-x-1/2 z-10 shrink-0 shadow-sm"
+                    >
                       <div className="w-[74px] h-[74px] rounded-full overflow-hidden flex items-center justify-center bg-[#3B82F6] shrink-0">
                         <img
                           src={previewAvatar.url}
@@ -541,7 +585,7 @@ const CustomizationModal = ({ isOpen, onClose, mongoUser, token, setMongoUser })
                     <h4
                       style={{
                         fontFamily: '"Bricolage Grotesque", sans-serif',
-                        color: 'rgba(14, 15, 12, 1)'
+                        color: isDarkMode ? '#FFFFFF' : 'rgba(14, 15, 12, 1)'
                       }}
                       className="font-bold text-[20px] sm:text-[22px] md:text-[24px] leading-tight capitalize truncate max-w-full text-center m-0 mb-0.5"
                     >
@@ -551,7 +595,7 @@ const CustomizationModal = ({ isOpen, onClose, mongoUser, token, setMongoUser })
                       style={{
                         fontFamily: '"Poppins", sans-serif',
                         letterSpacing: '0%',
-                        color: '#000000'
+                        color: isDarkMode ? 'rgba(255, 255, 255, 0.7)' : '#000000'
                       }}
                       className="font-medium text-[12.5px] sm:text-[14px] md:text-[16px] leading-tight md:leading-[26px] text-center truncate max-w-full m-0 mt-0.5 mb-2 md:mt-[19px] md:mb-[10px]"
                     >
@@ -565,13 +609,16 @@ const CustomizationModal = ({ isOpen, onClose, mongoUser, token, setMongoUser })
                   >
                     {activeTab === 'shop' && (
                       <div
-                        className="w-full md:max-w-[260px] h-[34px] sm:h-[36px] md:h-[37.8px] bg-[rgba(248,245,239,1)] rounded-[8px] md:rounded-[10px] px-3 md:px-[10px] flex justify-between items-center box-border"
+                        style={{
+                          background: isDarkMode ? 'rgba(23, 26, 29, 1)' : 'rgba(248, 245, 239, 1)'
+                        }}
+                        className="w-full md:max-w-[260px] h-[34px] sm:h-[36px] md:h-[37.8px] rounded-[8px] md:rounded-[10px] px-3 md:px-[10px] flex justify-between items-center box-border"
                       >
                         <span
                           style={{
                             fontFamily: '"Poppins", sans-serif',
                             letterSpacing: '0%',
-                            color: '#000000'
+                            color: isDarkMode ? 'rgba(255, 255, 255, 0.7)' : '#000000'
                           }}
                           className="font-medium text-[12.5px] sm:text-[13.5px] md:text-[14px] leading-none"
                         >
@@ -594,13 +641,16 @@ const CustomizationModal = ({ isOpen, onClose, mongoUser, token, setMongoUser })
                     )}
 
                     <div
-                      className="w-full md:max-w-[260px] h-[34px] sm:h-[36px] md:h-[37.8px] bg-[rgba(248,245,239,1)] rounded-[8px] md:rounded-[10px] px-3 md:px-[10px] flex justify-between items-center box-border"
+                      style={{
+                        background: isDarkMode ? 'rgba(23, 26, 29, 1)' : 'rgba(248, 245, 239, 1)'
+                      }}
+                      className="w-full md:max-w-[260px] h-[34px] sm:h-[36px] md:h-[37.8px] rounded-[8px] md:rounded-[10px] px-3 md:px-[10px] flex justify-between items-center box-border"
                     >
                       <span
                         style={{
                           fontFamily: '"Poppins", sans-serif',
                           letterSpacing: '0%',
-                          color: '#000000'
+                          color: isDarkMode ? 'rgba(255, 255, 255, 0.7)' : '#000000'
                         }}
                         className="font-medium text-[12.5px] sm:text-[13.5px] md:text-[14px] leading-none"
                       >
@@ -610,7 +660,7 @@ const CustomizationModal = ({ isOpen, onClose, mongoUser, token, setMongoUser })
                         style={{
                           fontFamily: '"Poppins", sans-serif',
                           letterSpacing: '0%',
-                          color: 'rgba(14, 15, 12, 1)'
+                          color: isDarkMode ? '#FFFFFF' : 'rgba(14, 15, 12, 1)'
                         }}
                         className="font-semibold text-[12.5px] sm:text-[13.5px] md:text-[14px] leading-none"
                       >
@@ -620,13 +670,16 @@ const CustomizationModal = ({ isOpen, onClose, mongoUser, token, setMongoUser })
 
                     {activeTab === 'shop' ? (
                       <div
-                        className="w-full md:max-w-[260px] h-[34px] sm:h-[36px] md:h-[37.8px] bg-[rgba(248,245,239,1)] rounded-[8px] md:rounded-[10px] px-3 md:px-[10px] flex justify-between items-center box-border"
+                        style={{
+                          background: isDarkMode ? 'rgba(23, 26, 29, 1)' : 'rgba(248, 245, 239, 1)'
+                        }}
+                        className="w-full md:max-w-[260px] h-[34px] sm:h-[36px] md:h-[37.8px] rounded-[8px] md:rounded-[10px] px-3 md:px-[10px] flex justify-between items-center box-border"
                       >
                         <span
                           style={{
                             fontFamily: '"Poppins", sans-serif',
                             letterSpacing: '0%',
-                            color: '#000000'
+                            color: isDarkMode ? 'rgba(255, 255, 255, 0.7)' : '#000000'
                           }}
                           className="font-medium text-[12.5px] sm:text-[13.5px] md:text-[14px] leading-none"
                         >
@@ -636,7 +689,7 @@ const CustomizationModal = ({ isOpen, onClose, mongoUser, token, setMongoUser })
                           style={{
                             fontFamily: '"Poppins", sans-serif',
                             letterSpacing: '0%',
-                            color: 'rgba(14, 15, 12, 1)'
+                            color: isDarkMode ? '#FFFFFF' : 'rgba(14, 15, 12, 1)'
                           }}
                           className="font-semibold text-[12.5px] sm:text-[13.5px] md:text-[14px] leading-none"
                         >
@@ -645,13 +698,16 @@ const CustomizationModal = ({ isOpen, onClose, mongoUser, token, setMongoUser })
                       </div>
                     ) : (
                       <div
-                        className="w-full md:max-w-[260px] h-[34px] sm:h-[36px] md:h-[37.8px] bg-[rgba(248,245,239,1)] rounded-[8px] md:rounded-[10px] px-3 md:px-[10px] flex justify-between items-center box-border"
+                        style={{
+                          background: isDarkMode ? 'rgba(23, 26, 29, 1)' : 'rgba(248, 245, 239, 1)'
+                        }}
+                        className="w-full md:max-w-[260px] h-[34px] sm:h-[36px] md:h-[37.8px] rounded-[8px] md:rounded-[10px] px-3 md:px-[10px] flex justify-between items-center box-border"
                       >
                         <span
                           style={{
                             fontFamily: '"Poppins", sans-serif',
                             letterSpacing: '0%',
-                            color: '#000000'
+                            color: isDarkMode ? 'rgba(255, 255, 255, 0.7)' : '#000000'
                           }}
                           className="font-medium text-[12.5px] sm:text-[13.5px] md:text-[14px] leading-none"
                         >
@@ -661,7 +717,7 @@ const CustomizationModal = ({ isOpen, onClose, mongoUser, token, setMongoUser })
                           style={{
                             fontFamily: '"Poppins", sans-serif',
                             letterSpacing: '0%',
-                            color: 'rgba(14, 15, 12, 1)'
+                            color: isDarkMode ? '#FFFFFF' : 'rgba(14, 15, 12, 1)'
                           }}
                           className="font-semibold text-[12.5px] sm:text-[13.5px] md:text-[14px] leading-none"
                         >
@@ -739,7 +795,7 @@ const CustomizationModal = ({ isOpen, onClose, mongoUser, token, setMongoUser })
             style={{
               width: '626px',
               maxWidth: '95vw',
-              background: '#FFFFFF',
+              background: isDarkMode ? 'rgba(12, 14, 17, 1)' : '#FFFFFF',
               borderRadius: '26px',
               padding: '10px 10px 18px 10px',
               boxSizing: 'border-box',
@@ -752,7 +808,7 @@ const CustomizationModal = ({ isOpen, onClose, mongoUser, token, setMongoUser })
               style={{
                 width: '100%',
                 height: '95px',
-                background: 'rgba(248, 245, 239, 1)',
+                background: isDarkMode ? 'rgba(23, 26, 29, 1)' : 'rgba(248, 245, 239, 1)',
                 borderRadius: '18px',
                 padding: '0 24px',
                 display: 'flex',
@@ -770,7 +826,7 @@ const CustomizationModal = ({ isOpen, onClose, mongoUser, token, setMongoUser })
                     fontSize: '28px',
                     lineHeight: '1.2',
                     letterSpacing: '-0.02em',
-                    color: '#000000',
+                    color: isDarkMode ? '#FFFFFF' : '#000000',
                     margin: 0
                   }}
                 >
@@ -794,7 +850,7 @@ const CustomizationModal = ({ isOpen, onClose, mongoUser, token, setMongoUser })
                 style={{
                   width: '22px',
                   height: '22px',
-                  background: '#000000',
+                  background: isDarkMode ? 'rgba(34, 39, 48, 1)' : '#000000',
                   borderRadius: '50%',
                   display: 'flex',
                   alignItems: 'center',
@@ -808,11 +864,11 @@ const CustomizationModal = ({ isOpen, onClose, mongoUser, token, setMongoUser })
               </button>
             </div>
 
-            {/* Modal Body (White Background) */}
+            {/* Modal Body */}
             <div
               style={{
                 width: '100%',
-                background: '#FFFFFF',
+                background: isDarkMode ? 'rgba(12, 14, 17, 1)' : '#FFFFFF',
                 padding: '20px 0 0 0',
                 display: 'flex',
                 flexDirection: 'column',
@@ -827,8 +883,8 @@ const CustomizationModal = ({ isOpen, onClose, mongoUser, token, setMongoUser })
                     width: '93px',
                     height: '93px',
                     borderRadius: '50%',
-                    background: '#FFFFFF',
-                    border: '4px solid rgba(36, 50, 77, 1)',
+                    background: isDarkMode ? 'rgba(23, 26, 29, 1)' : '#FFFFFF',
+                    border: isDarkMode ? '3px solid #FFFFFF' : '4px solid rgba(36, 50, 77, 1)',
                     padding: '3px',
                     display: 'flex',
                     alignItems: 'center',
@@ -849,7 +905,7 @@ const CustomizationModal = ({ isOpen, onClose, mongoUser, token, setMongoUser })
                       fontSize: '27px',
                       lineHeight: '1.2',
                       letterSpacing: '-0.02em',
-                      color: '#000000',
+                      color: isDarkMode ? '#FFFFFF' : '#000000',
                       margin: 0
                     }}
                     className="capitalize truncate"
@@ -863,7 +919,7 @@ const CustomizationModal = ({ isOpen, onClose, mongoUser, token, setMongoUser })
                       fontSize: '16px',
                       lineHeight: '26px',
                       letterSpacing: '0%',
-                      color: '#000000',
+                      color: isDarkMode ? 'rgba(255, 255, 255, 0.7)' : '#000000',
                       margin: '4px 0 0 0'
                     }}
                     className="truncate"
@@ -873,12 +929,12 @@ const CustomizationModal = ({ isOpen, onClose, mongoUser, token, setMongoUser })
                 </div>
               </div>
 
-              {/* Price Row (Cream Pill) */}
+              {/* Price Row */}
               <div
                 style={{
                   width: '100%',
                   height: '48px',
-                  background: 'rgba(248, 245, 239, 1)',
+                  background: isDarkMode ? 'rgba(23, 26, 29, 1)' : 'rgba(248, 245, 239, 1)',
                   borderRadius: '12px',
                   padding: '0 18px',
                   display: 'flex',
@@ -892,7 +948,7 @@ const CustomizationModal = ({ isOpen, onClose, mongoUser, token, setMongoUser })
                     fontFamily: '"Poppins", sans-serif',
                     fontWeight: 500,
                     fontSize: '16px',
-                    color: '#000000'
+                    color: isDarkMode ? 'rgba(255, 255, 255, 0.7)' : '#000000'
                   }}
                 >
                   {t('profile.price', 'Price')}
@@ -921,15 +977,15 @@ const CustomizationModal = ({ isOpen, onClose, mongoUser, token, setMongoUser })
                     height: '48px',
                     flex: 1,
                     background: 'transparent',
-                    border: '1.5px solid #202C44',
+                    border: isDarkMode ? '1.5px solid rgba(255, 255, 255, 0.2)' : '1.5px solid #202C44',
                     borderRadius: '9999px',
                     fontFamily: '"Poppins", sans-serif',
                     fontWeight: 500,
                     fontSize: '15px',
-                    color: '#202C44',
+                    color: isDarkMode ? '#FFFFFF' : '#202C44',
                     cursor: 'pointer'
                   }}
-                  className="hover:bg-slate-100 transition-colors"
+                  className="hover:opacity-80 transition-opacity"
                 >
                   {t('profile.cancel', 'Cancel')}
                 </button>
@@ -940,7 +996,7 @@ const CustomizationModal = ({ isOpen, onClose, mongoUser, token, setMongoUser })
                   style={{
                     height: '48px',
                     flex: 1,
-                    background: '#202C44',
+                    background: 'rgba(36, 50, 77, 1)',
                     border: 'none',
                     borderRadius: '9999px',
                     fontFamily: '"Poppins", sans-serif',
@@ -968,7 +1024,7 @@ const CustomizationModal = ({ isOpen, onClose, mongoUser, token, setMongoUser })
             style={{
               width: '560px',
               maxWidth: '95vw',
-              background: '#FFFFFF',
+              background: isDarkMode ? 'rgba(12, 14, 17, 1)' : '#FFFFFF',
               borderRadius: '28px',
               padding: '10px',
               boxSizing: 'border-box'
@@ -978,7 +1034,7 @@ const CustomizationModal = ({ isOpen, onClose, mongoUser, token, setMongoUser })
             <div
               style={{
                 width: '100%',
-                background: 'rgba(248, 245, 239, 1)',
+                background: isDarkMode ? 'rgba(23, 26, 29, 1)' : 'rgba(248, 245, 239, 1)',
                 borderRadius: '20px',
                 padding: '36px 24px 34px 24px',
                 display: 'flex',
@@ -994,7 +1050,7 @@ const CustomizationModal = ({ isOpen, onClose, mongoUser, token, setMongoUser })
               <img
                 src="/coins/confirmbottom.png"
                 alt=""
-                className="absolute bottom-0 right-0 pointer-events-none z-0 select-none"
+                className="absolute bottom-0 right-0 pointer-events-none z-0 select-none opacity-40 md:opacity-70"
                 style={{
                   maxWidth: '240px',
                   objectFit: 'contain'
@@ -1008,7 +1064,7 @@ const CustomizationModal = ({ isOpen, onClose, mongoUser, token, setMongoUser })
                 style={{
                   width: '24px',
                   height: '24px',
-                  background: '#000000',
+                  background: isDarkMode ? 'rgba(34, 39, 48, 1)' : '#000000',
                   borderRadius: '50%',
                   display: 'flex',
                   alignItems: 'center',
@@ -1044,7 +1100,7 @@ const CustomizationModal = ({ isOpen, onClose, mongoUser, token, setMongoUser })
                     fontSize: '32px',
                     lineHeight: '1.15',
                     letterSpacing: '-0.02em',
-                    color: '#000000',
+                    color: isDarkMode ? '#FFFFFF' : '#000000',
                     margin: '0 0 8px 0'
                   }}
                 >
@@ -1058,7 +1114,7 @@ const CustomizationModal = ({ isOpen, onClose, mongoUser, token, setMongoUser })
                     fontWeight: 400,
                     fontSize: '16px',
                     lineHeight: '24px',
-                    color: '#000000',
+                    color: isDarkMode ? 'rgba(255, 255, 255, 0.7)' : '#000000',
                     margin: '0 0 28px 0'
                   }}
                 >
@@ -1078,7 +1134,7 @@ const CustomizationModal = ({ isOpen, onClose, mongoUser, token, setMongoUser })
                     width: '100%',
                     maxWidth: '380px',
                     height: '52px',
-                    background: '#202C44',
+                    background: 'rgba(36, 50, 77, 1)',
                     borderRadius: '9999px',
                     border: 'none',
                     color: '#FFFFFF',
@@ -1109,7 +1165,7 @@ const CustomizationModal = ({ isOpen, onClose, mongoUser, token, setMongoUser })
             style={{
               width: '626px',
               maxWidth: '95vw',
-              background: '#FFFFFF',
+              background: isDarkMode ? 'rgba(12, 14, 17, 1)' : '#FFFFFF',
               borderRadius: '26px',
               padding: '10px 10px 18px 10px',
               boxSizing: 'border-box',
@@ -1122,7 +1178,7 @@ const CustomizationModal = ({ isOpen, onClose, mongoUser, token, setMongoUser })
               style={{
                 width: '100%',
                 height: '95px',
-                background: 'rgba(248, 245, 239, 1)',
+                background: isDarkMode ? 'rgba(23, 26, 29, 1)' : 'rgba(248, 245, 239, 1)',
                 borderRadius: '18px',
                 padding: '0 24px',
                 display: 'flex',
@@ -1140,7 +1196,7 @@ const CustomizationModal = ({ isOpen, onClose, mongoUser, token, setMongoUser })
                     fontSize: '28px',
                     lineHeight: '1.2',
                     letterSpacing: '-0.02em',
-                    color: '#000000',
+                    color: isDarkMode ? '#FFFFFF' : '#000000',
                     margin: 0
                   }}
                 >
@@ -1164,7 +1220,7 @@ const CustomizationModal = ({ isOpen, onClose, mongoUser, token, setMongoUser })
                 style={{
                   width: '22px',
                   height: '22px',
-                  background: '#000000',
+                  background: isDarkMode ? 'rgba(34, 39, 48, 1)' : '#000000',
                   borderRadius: '50%',
                   display: 'flex',
                   alignItems: 'center',
@@ -1178,11 +1234,11 @@ const CustomizationModal = ({ isOpen, onClose, mongoUser, token, setMongoUser })
               </button>
             </div>
 
-            {/* Modal Body (White Background) */}
+            {/* Modal Body */}
             <div
               style={{
                 width: '100%',
-                background: '#FFFFFF',
+                background: isDarkMode ? 'rgba(12, 14, 17, 1)' : '#FFFFFF',
                 padding: '20px 0 0 0',
                 display: 'flex',
                 flexDirection: 'column',
@@ -1197,8 +1253,8 @@ const CustomizationModal = ({ isOpen, onClose, mongoUser, token, setMongoUser })
                     width: '93px',
                     height: '93px',
                     borderRadius: '50%',
-                    background: '#FFFFFF',
-                    border: '4px solid rgba(36, 50, 77, 1)',
+                    background: isDarkMode ? 'rgba(23, 26, 29, 1)' : '#FFFFFF',
+                    border: isDarkMode ? '3px solid #FFFFFF' : '4px solid rgba(36, 50, 77, 1)',
                     padding: '3px',
                     display: 'flex',
                     alignItems: 'center',
@@ -1219,7 +1275,7 @@ const CustomizationModal = ({ isOpen, onClose, mongoUser, token, setMongoUser })
                       fontSize: '27px',
                       lineHeight: '1.2',
                       letterSpacing: '-0.02em',
-                      color: '#000000',
+                      color: isDarkMode ? '#FFFFFF' : '#000000',
                       margin: 0
                     }}
                     className="capitalize truncate"
@@ -1233,7 +1289,7 @@ const CustomizationModal = ({ isOpen, onClose, mongoUser, token, setMongoUser })
                       fontSize: '16px',
                       lineHeight: '26px',
                       letterSpacing: '0%',
-                      color: '#000000',
+                      color: isDarkMode ? 'rgba(255, 255, 255, 0.7)' : '#000000',
                       margin: '4px 0 0 0'
                     }}
                     className="truncate"
@@ -1243,12 +1299,12 @@ const CustomizationModal = ({ isOpen, onClose, mongoUser, token, setMongoUser })
                 </div>
               </div>
 
-              {/* Price Row (Cream Pill) */}
+              {/* Price Row */}
               <div
                 style={{
                   width: '100%',
                   height: '48px',
-                  background: 'rgba(248, 245, 239, 1)',
+                  background: isDarkMode ? 'rgba(23, 26, 29, 1)' : 'rgba(248, 245, 239, 1)',
                   borderRadius: '12px',
                   padding: '0 18px',
                   display: 'flex',
@@ -1262,7 +1318,7 @@ const CustomizationModal = ({ isOpen, onClose, mongoUser, token, setMongoUser })
                     fontFamily: '"Poppins", sans-serif',
                     fontWeight: 500,
                     fontSize: '16px',
-                    color: '#000000'
+                    color: isDarkMode ? 'rgba(255, 255, 255, 0.7)' : '#000000'
                   }}
                 >
                   {t('profile.price', 'Price')}
@@ -1337,6 +1393,7 @@ const calculateReleaseIn = (releaseDateStr) => {
 };
 
 const Pagination = ({ page = 1, totalPages = 1, onNext, onPrev, onPageClick }) => {
+  const { isDarkMode } = useTheme();
   const canPrev = page > 1;
   const canNext = page < totalPages;
 
@@ -1353,15 +1410,15 @@ const Pagination = ({ page = 1, totalPages = 1, onNext, onPrev, onPageClick }) =
           width: '40px',
           height: '40px',
           borderRadius: '100px',
-          backgroundColor: canPrev ? 'rgba(36, 50, 77, 1)' : 'transparent',
-          border: canPrev ? 'none' : '1px solid rgba(36, 50, 77, 1)',
+          backgroundColor: canPrev ? (isDarkMode ? 'rgba(21, 24, 29, 1)' : 'rgba(36, 50, 77, 1)') : 'transparent',
+          border: canPrev ? (isDarkMode ? '1px solid rgba(255, 255, 255, 0.15)' : 'none') : (isDarkMode ? '1px solid rgba(255, 255, 255, 0.15)' : '1px solid rgba(36, 50, 77, 1)'),
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
           cursor: !canPrev ? 'not-allowed' : 'pointer',
           opacity: 1,
         }}
-        className={`transition-all ${canPrev ? 'text-white' : 'text-[#24324D]'}`}
+        className={`transition-all ${canPrev ? 'text-white' : (isDarkMode ? 'text-white/30' : 'text-[#24324D]')}`}
         title="Previous"
       >
         <FiChevronLeft size={18} />
@@ -1375,15 +1432,15 @@ const Pagination = ({ page = 1, totalPages = 1, onNext, onPrev, onPageClick }) =
           width: '40px',
           height: '40px',
           borderRadius: '100px',
-          backgroundColor: canNext ? 'rgba(36, 50, 77, 1)' : 'transparent',
-          border: canNext ? 'none' : '1px solid rgba(36, 50, 77, 1)',
+          backgroundColor: canNext ? (isDarkMode ? 'rgba(21, 24, 29, 1)' : 'rgba(36, 50, 77, 1)') : 'transparent',
+          border: canNext ? (isDarkMode ? '1px solid rgba(255, 255, 255, 0.15)' : 'none') : (isDarkMode ? '1px solid rgba(255, 255, 255, 0.15)' : '1px solid rgba(36, 50, 77, 1)'),
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
           cursor: !canNext ? 'not-allowed' : 'pointer',
           opacity: 1,
         }}
-        className={`transition-all ${canNext ? 'text-white' : 'text-[#24324D]'}`}
+        className={`transition-all ${canNext ? 'text-white' : (isDarkMode ? 'text-white/30' : 'text-[#24324D]')}`}
         title="Next"
       >
         <FiChevronRight size={18} />
@@ -1441,58 +1498,64 @@ const useHistory = (token, type, endpoint = '/wallet/history') => {
 };
 
 // ── Tab Button
-const TabBtn = ({ active, onClick, icon, label, className = '' }) => (
-  <button
-    onClick={onClick}
-    style={{
-      fontFamily: '"Bricolage Grotesque", sans-serif',
-      fontWeight: 700,
-      fontSize: '14px',
-      lineHeight: '100%',
-      letterSpacing: '0%',
-      borderRadius: '80px',
-      height: '37px',
-      opacity: 1,
-    }}
-    className={`flex items-center justify-start md:justify-center gap-2 px-3 sm:px-4 py-2 transition-all cursor-pointer whitespace-nowrap w-fit ${active
-      ? 'bg-[#24324D] text-white shadow-sm'
-      : 'text-[#000000] hover:bg-black/5 bg-transparent'
-      } ${className}`}
-  >
-    {typeof icon === 'string' ? (
-      <img
-        src={icon}
-        alt=""
-        style={{
-          filter: active ? 'brightness(0) invert(1)' : 'brightness(0)',
-        }}
-        className="w-4 h-4 shrink-0 object-contain"
-      />
-    ) : icon ? (
-      React.createElement(icon, {
-        className: `w-4 h-4 shrink-0 ${active ? 'text-white' : 'text-black'}`,
-      })
-    ) : null}
-    <span>{label}</span>
-  </button>
-);
+const TabBtn = ({ active, onClick, icon, label, className = '' }) => {
+  const { isDarkMode } = useTheme();
+  return (
+    <button
+      onClick={onClick}
+      style={{
+        fontFamily: '"Bricolage Grotesque", sans-serif',
+        fontWeight: 700,
+        fontSize: '14px',
+        lineHeight: '100%',
+        letterSpacing: '0%',
+        borderRadius: '80px',
+        height: '37px',
+        opacity: 1,
+      }}
+      className={`flex items-center justify-start md:justify-center gap-2 px-3 sm:px-4 py-2 transition-all cursor-pointer whitespace-nowrap w-fit ${active
+        ? 'bg-[#24324D] text-white shadow-sm'
+        : (isDarkMode ? 'text-white hover:bg-white/10 bg-transparent' : 'text-[#000000] hover:bg-black/5 bg-transparent')
+        } ${className}`}
+    >
+      {typeof icon === 'string' ? (
+        <img
+          src={icon}
+          alt=""
+          style={{
+            filter: active ? 'brightness(0) invert(1)' : (isDarkMode ? 'brightness(0) invert(1)' : 'brightness(0)'),
+          }}
+          className="w-4 h-4 shrink-0 object-contain"
+        />
+      ) : icon ? (
+        React.createElement(icon, {
+          className: `w-4 h-4 shrink-0 ${active ? 'text-white' : (isDarkMode ? 'text-white' : 'text-black')}`,
+        })
+      ) : null}
+      <span>{label}</span>
+    </button>
+  );
+};
 
 // ── Clicked Offer Row (Clean table row with no proof buttons)
 const ClickedOfferRow = ({ offer, index = 0 }) => {
   const { t, i18n } = useTranslation();
+  const { isDarkMode } = useTheme();
   return (
     <div
       style={{
         width: '100%',
         borderRadius: index % 2 === 0 ? '10px' : '0px',
-        backgroundColor: index % 2 === 0 ? 'rgba(249, 247, 241, 1)' : 'transparent',
+        backgroundColor: index % 2 === 0
+          ? (isDarkMode ? 'rgba(34, 39, 48, 0.4)' : 'rgba(249, 247, 241, 1)')
+          : 'transparent',
       }}
       className="px-1.5 sm:px-6 py-2.5 sm:py-3.5 min-h-[50px] md:min-h-[69px] grid grid-cols-[1fr_60px_60px_56px] md:grid-cols-[1fr_180px_160px_140px] gap-1.5 md:gap-4 items-center"
     >
       {/* Offers Title */}
       <span
         style={{ fontFamily: 'Poppins, sans-serif', fontWeight: 500 }}
-        className="text-[#1e293b] leading-tight break-words line-clamp-2 text-[10px] md:text-[16px] md:leading-[26px]"
+        className={`${isDarkMode ? 'text-white' : 'text-[#1e293b]'} leading-tight break-words line-clamp-2 text-[10px] md:text-[16px] md:leading-[26px]`}
         title={offer.title}
       >
         {offer.title}
@@ -1501,7 +1564,7 @@ const ClickedOfferRow = ({ offer, index = 0 }) => {
       {/* Started On */}
       <span
         style={{ fontFamily: 'Poppins, sans-serif', fontWeight: 500 }}
-        className="text-[#1e293b] text-[10px] md:text-[16px] leading-tight md:leading-[26px]"
+        className={`${isDarkMode ? 'text-slate-300' : 'text-[#1e293b]'} text-[10px] md:text-[16px] leading-tight md:leading-[26px]`}
       >
         {offer.createdAt ? new Date(offer.createdAt).toLocaleDateString(i18n.language === 'de' ? 'de-DE' : 'en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'N/A'}
       </span>
@@ -1522,8 +1585,8 @@ const ClickedOfferRow = ({ offer, index = 0 }) => {
             fontFamily: 'Poppins, sans-serif',
             fontWeight: 500,
             borderRadius: '40px',
-            backgroundColor: 'rgba(36, 50, 77, 0.1)',
-            color: 'rgba(36, 50, 77, 1)',
+            backgroundColor: isDarkMode ? 'rgba(36, 50, 77, 0.45)' : 'rgba(36, 50, 77, 0.1)',
+            color: isDarkMode ? '#93c5fd' : 'rgba(36, 50, 77, 1)',
           }}
           className="inline-flex items-center justify-center whitespace-nowrap text-[8.5px] md:text-[16px] px-1.5 md:px-[18px] py-0.5 md:py-[3px] leading-tight"
         >
@@ -1537,6 +1600,7 @@ const ClickedOfferRow = ({ offer, index = 0 }) => {
 // ── Settings & Delete Account Modal
 const SettingsModal = ({ isOpen, onClose, mongoUser, token, setMongoUser, logout }) => {
   const { t } = useTranslation();
+  const { isDarkMode } = useTheme();
   const { setup2FA, confirm2FA, disable2FA } = useAuth();
 
   const [displayName, setDisplayName] = useState(mongoUser?.displayName || '');
@@ -1760,14 +1824,15 @@ const SettingsModal = ({ isOpen, onClose, mongoUser, token, setMongoUser, logout
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[999999] flex items-center justify-center p-3 sm:p-4 overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none']">
           <div
             style={{
-              fontFamily: '"Poppins", sans-serif'
+              fontFamily: '"Poppins", sans-serif',
+              background: isDarkMode ? 'rgba(12, 14, 17, 1)' : '#FFFFFF'
             }}
-            className="relative shadow-2xl overflow-y-auto max-h-[95vh] w-full max-w-[430px] md:max-w-none md:w-[626px] bg-[#FFFFFF] rounded-[22px] md:rounded-[28px] p-2 sm:p-2.5 md:p-[10px] flex flex-col gap-2.5 md:gap-[16px] box-border [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none']"
+            className="relative shadow-2xl overflow-y-auto max-h-[95vh] w-full max-w-[430px] md:max-w-none md:w-[626px] rounded-[22px] md:rounded-[28px] p-2 sm:p-2.5 md:p-[10px] flex flex-col gap-2.5 md:gap-[16px] box-border [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none']"
           >
             {/* Top Header Card */}
             <div
               style={{
-                background: 'rgba(248, 245, 239, 1)',
+                background: isDarkMode ? 'rgba(23, 26, 29, 1)' : 'rgba(248, 245, 239, 1)',
                 borderRadius: '16px',
                 opacity: 1,
                 transform: 'rotate(0deg)',
@@ -1783,7 +1848,7 @@ const SettingsModal = ({ isOpen, onClose, mongoUser, token, setMongoUser, logout
                     fontFamily: '"Bricolage Grotesque", sans-serif',
                     fontWeight: 700,
                     letterSpacing: '-0.02em',
-                    color: 'rgba(14, 15, 12, 1)',
+                    color: isDarkMode ? '#FFFFFF' : 'rgba(14, 15, 12, 1)',
                     margin: 0
                   }}
                   className="w-full max-w-[275px] md:max-w-none text-[26px] sm:text-[30px] md:text-[32px] leading-tight md:leading-[1.2]"
@@ -1795,7 +1860,7 @@ const SettingsModal = ({ isOpen, onClose, mongoUser, token, setMongoUser, logout
                     fontFamily: '"Poppins", sans-serif',
                     fontWeight: 500,
                     letterSpacing: '0%',
-                    color: 'rgba(14, 15, 12, 1)',
+                    color: isDarkMode ? 'rgba(255, 255, 255, 0.7)' : 'rgba(14, 15, 12, 1)',
                     margin: 0
                   }}
                   className="w-full text-[11px] min-[370px]:text-[11.5px] min-[400px]:text-[12.5px] md:text-[15px] leading-[18px] md:leading-[24px] tracking-tight md:tracking-normal"
@@ -1819,7 +1884,7 @@ const SettingsModal = ({ isOpen, onClose, mongoUser, token, setMongoUser, logout
               {qrCodeUrl ? (
                 <div
                   style={{
-                    background: 'rgba(248, 245, 239, 1)',
+                    background: isDarkMode ? 'rgba(23, 26, 29, 1)' : 'rgba(248, 245, 239, 1)',
                     borderRadius: '16px',
                     padding: '8px',
                     display: 'flex',
@@ -1828,12 +1893,12 @@ const SettingsModal = ({ isOpen, onClose, mongoUser, token, setMongoUser, logout
                   }}
                   className="shadow-sm select-none"
                 >
-                  <img src={qrCodeUrl} alt="2FA QR Code" className="w-[160px] h-[160px] md:w-[170px] md:h-[170px] rounded-[10px]" />
+                  <img src={qrCodeUrl} alt="2FA QR Code" className="w-[160px] h-[160px] md:w-[170px] md:h-[170px] rounded-[10px] bg-white p-2" />
                 </div>
               ) : (
                 <div
                   style={{
-                    background: 'rgba(248, 245, 239, 1)',
+                    background: isDarkMode ? 'rgba(23, 26, 29, 1)' : 'rgba(248, 245, 239, 1)',
                     borderRadius: '16px',
                     width: '176px',
                     height: '176px',
@@ -1849,14 +1914,14 @@ const SettingsModal = ({ isOpen, onClose, mongoUser, token, setMongoUser, logout
               {/* Secret Key Badge */}
               <div
                 style={{
-                  background: 'rgba(248, 245, 239, 1)',
+                  background: isDarkMode ? 'rgba(23, 26, 29, 1)' : 'rgba(248, 245, 239, 1)',
                   borderRadius: '10px',
                   padding: '6px 18px',
                   fontFamily: '"Poppins", monospace, sans-serif',
                   fontWeight: 600,
                   fontSize: '15px',
                   letterSpacing: '0.08em',
-                  color: 'rgba(14, 15, 12, 1)'
+                  color: isDarkMode ? '#FFFFFF' : 'rgba(14, 15, 12, 1)'
                 }}
                 className="select-all text-center"
               >
@@ -1882,16 +1947,16 @@ const SettingsModal = ({ isOpen, onClose, mongoUser, token, setMongoUser, logout
                       width: '48px',
                       height: '48px',
                       borderRadius: '14px',
-                      background: 'rgba(239, 239, 239, 1)',
+                      background: isDarkMode ? 'rgba(34, 39, 48, 1)' : 'rgba(239, 239, 239, 1)',
                       border: 'none',
                       outline: 'none',
                       textAlign: 'center',
                       fontSize: '22px',
                       fontWeight: 700,
-                      color: 'rgba(14, 15, 12, 1)',
+                      color: isDarkMode ? '#FFFFFF' : 'rgba(14, 15, 12, 1)',
                       fontFamily: '"Poppins", sans-serif'
                     }}
-                    className="focus:ring-2 focus:ring-[#5356FB]/30 focus:bg-white transition-all"
+                    className="focus:ring-2 focus:ring-[#5356FB]/30 transition-all"
                   />
                 ))}
               </div>
@@ -1907,9 +1972,9 @@ const SettingsModal = ({ isOpen, onClose, mongoUser, token, setMongoUser, logout
                     flex: 1,
                     height: '52px',
                     borderRadius: '9999px',
-                    border: '1.5px solid #202C44',
+                    border: isDarkMode ? '1.5px solid rgba(255, 255, 255, 0.2)' : '1.5px solid #202C44',
                     background: 'transparent',
-                    color: '#202C44',
+                    color: isDarkMode ? '#FFFFFF' : '#202C44',
                     fontFamily: '"Poppins", sans-serif',
                     fontWeight: 500,
                     fontSize: '16px',
@@ -1917,7 +1982,7 @@ const SettingsModal = ({ isOpen, onClose, mongoUser, token, setMongoUser, logout
                     letterSpacing: '0%',
                     cursor: 'pointer'
                   }}
-                  className="hover:bg-slate-50 transition-all flex items-center justify-center"
+                  className="hover:opacity-80 transition-all flex items-center justify-center"
                 >
                   <span>{t('profile.cancel', 'Cancel')}</span>
                 </button>
@@ -1929,7 +1994,7 @@ const SettingsModal = ({ isOpen, onClose, mongoUser, token, setMongoUser, logout
                     height: '52px',
                     borderRadius: '9999px',
                     border: 'none',
-                    background: '#202C44',
+                    background: 'rgba(36, 50, 77, 1)',
                     color: '#FFFFFF',
                     fontFamily: '"Poppins", sans-serif',
                     fontWeight: 500,
@@ -1938,7 +2003,7 @@ const SettingsModal = ({ isOpen, onClose, mongoUser, token, setMongoUser, logout
                     letterSpacing: '0%',
                     cursor: 'pointer'
                   }}
-                  className="hover:bg-[#182338] disabled:opacity-50 transition-all flex items-center justify-center shadow-sm"
+                  className="hover:opacity-90 disabled:opacity-50 transition-all flex items-center justify-center shadow-sm"
                 >
                   <span>{verifying2FA ? t('profile.enabling', 'Enabling...') : t('profile.verifyAndEnable', 'Verify & Enable')}</span>
                 </button>
@@ -1953,14 +2018,15 @@ const SettingsModal = ({ isOpen, onClose, mongoUser, token, setMongoUser, logout
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[999999] flex items-center justify-center p-3 sm:p-4 overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none']">
           <div
             style={{
-              fontFamily: '"Poppins", sans-serif'
+              fontFamily: '"Poppins", sans-serif',
+              background: isDarkMode ? 'rgba(12, 14, 17, 1)' : '#FFFFFF'
             }}
-            className="relative shadow-2xl overflow-y-auto max-h-[95vh] w-full max-w-[430px] md:max-w-none md:w-[626px] bg-[#FFFFFF] rounded-[22px] md:rounded-[28px] p-2 sm:p-2.5 md:p-[10px] flex flex-col gap-2.5 md:gap-[16px] box-border [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none']"
+            className="relative shadow-2xl overflow-y-auto max-h-[95vh] w-full max-w-[430px] md:max-w-none md:w-[626px] rounded-[22px] md:rounded-[28px] p-2 sm:p-2.5 md:p-[10px] flex flex-col gap-2.5 md:gap-[16px] box-border [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none']"
           >
             {/* Top Header Card */}
             <div
               style={{
-                background: 'rgba(248, 245, 239, 1)',
+                background: isDarkMode ? 'rgba(23, 26, 29, 1)' : 'rgba(248, 245, 239, 1)',
                 borderRadius: '16px',
                 opacity: 1,
                 transform: 'rotate(0deg)',
@@ -1976,7 +2042,7 @@ const SettingsModal = ({ isOpen, onClose, mongoUser, token, setMongoUser, logout
                     fontFamily: '"Bricolage Grotesque", sans-serif',
                     fontWeight: 700,
                     letterSpacing: '-0.02em',
-                    color: 'rgba(14, 15, 12, 1)',
+                    color: isDarkMode ? '#FFFFFF' : 'rgba(14, 15, 12, 1)',
                     margin: 0
                   }}
                   className="w-full max-w-[285px] md:max-w-none text-[26px] sm:text-[30px] md:text-[32px] leading-tight md:leading-[1.2]"
@@ -1988,7 +2054,7 @@ const SettingsModal = ({ isOpen, onClose, mongoUser, token, setMongoUser, logout
                     fontFamily: '"Poppins", sans-serif',
                     fontWeight: 500,
                     letterSpacing: '0%',
-                    color: 'rgba(14, 15, 12, 1)',
+                    color: isDarkMode ? 'rgba(255, 255, 255, 0.7)' : 'rgba(14, 15, 12, 1)',
                     margin: 0
                   }}
                   className="w-full text-[11px] min-[370px]:text-[11.5px] min-[400px]:text-[12.5px] md:text-[15px] leading-[18px] md:leading-[24px] tracking-tight md:tracking-normal"
@@ -2025,16 +2091,16 @@ const SettingsModal = ({ isOpen, onClose, mongoUser, token, setMongoUser, logout
                       width: '48px',
                       height: '48px',
                       borderRadius: '14px',
-                      background: 'rgba(239, 239, 239, 1)',
+                      background: isDarkMode ? 'rgba(34, 39, 48, 1)' : 'rgba(239, 239, 239, 1)',
                       border: 'none',
                       outline: 'none',
                       textAlign: 'center',
                       fontSize: '22px',
                       fontWeight: 700,
-                      color: 'rgba(14, 15, 12, 1)',
+                      color: isDarkMode ? '#FFFFFF' : 'rgba(14, 15, 12, 1)',
                       fontFamily: '"Poppins", sans-serif'
                     }}
-                    className="focus:ring-2 focus:ring-[#5356FB]/30 focus:bg-white transition-all"
+                    className="focus:ring-2 focus:ring-[#5356FB]/30 transition-all"
                   />
                 ))}
               </div>
@@ -2050,9 +2116,9 @@ const SettingsModal = ({ isOpen, onClose, mongoUser, token, setMongoUser, logout
                     flex: 1,
                     height: '52px',
                     borderRadius: '9999px',
-                    border: '1.5px solid #202C44',
+                    border: isDarkMode ? '1.5px solid rgba(255, 255, 255, 0.2)' : '1.5px solid #202C44',
                     background: 'transparent',
-                    color: '#202C44',
+                    color: isDarkMode ? '#FFFFFF' : '#202C44',
                     fontFamily: '"Poppins", sans-serif',
                     fontWeight: 500,
                     fontSize: '16px',
@@ -2060,7 +2126,7 @@ const SettingsModal = ({ isOpen, onClose, mongoUser, token, setMongoUser, logout
                     letterSpacing: '0%',
                     cursor: 'pointer'
                   }}
-                  className="hover:bg-slate-50 transition-all flex items-center justify-center"
+                  className="hover:opacity-80 transition-all flex items-center justify-center"
                 >
                   <span>{t('profile.cancel', 'Cancel')}</span>
                 </button>
@@ -2072,7 +2138,7 @@ const SettingsModal = ({ isOpen, onClose, mongoUser, token, setMongoUser, logout
                     height: '52px',
                     borderRadius: '9999px',
                     border: 'none',
-                    background: '#202C44',
+                    background: 'rgba(36, 50, 77, 1)',
                     color: '#FFFFFF',
                     fontFamily: '"Poppins", sans-serif',
                     fontWeight: 500,
@@ -2081,7 +2147,7 @@ const SettingsModal = ({ isOpen, onClose, mongoUser, token, setMongoUser, logout
                     letterSpacing: '0%',
                     cursor: 'pointer'
                   }}
-                  className="hover:bg-[#182338] disabled:opacity-50 transition-all flex items-center justify-center shadow-sm"
+                  className="hover:opacity-90 disabled:opacity-50 transition-all flex items-center justify-center shadow-sm"
                 >
                   <span>{verifying2FA ? t('profile.disabling', 'Disabling...') : t('profile.verifyAndDisable', 'Verify & Disable')}</span>
                 </button>
@@ -2094,23 +2160,23 @@ const SettingsModal = ({ isOpen, onClose, mongoUser, token, setMongoUser, logout
       {/* Delete Account Confirmation Modal */}
       {deletePhase === 1 && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[999999] flex items-center justify-center p-4">
-          {/* Outer White Border Frame */}
+          {/* Outer Border Frame */}
           <div
             style={{
               width: '510px',
               maxWidth: '95vw',
-              background: '#FFFFFF',
+              background: isDarkMode ? 'rgba(12, 14, 17, 1)' : '#FFFFFF',
               borderRadius: '28px',
               padding: '10px',
               boxSizing: 'border-box'
             }}
             className="shadow-2xl"
           >
-            {/* Inner Pink Card */}
+            {/* Inner Card */}
             <div
               style={{
                 width: '100%',
-                background: 'rgba(255, 234, 235, 1)',
+                background: isDarkMode ? 'rgba(239, 68, 68, 0.18)' : 'rgba(255, 234, 235, 1)',
                 borderRadius: '20px',
                 padding: '36px 24px 32px 24px',
                 display: 'flex',
@@ -2131,7 +2197,7 @@ const SettingsModal = ({ isOpen, onClose, mongoUser, token, setMongoUser, logout
                 style={{
                   width: '32px',
                   height: '32px',
-                  background: '#000000',
+                  background: isDarkMode ? 'rgba(34, 39, 48, 1)' : '#000000',
                   borderRadius: '50%',
                   display: 'flex',
                   alignItems: 'center',
@@ -2168,7 +2234,7 @@ const SettingsModal = ({ isOpen, onClose, mongoUser, token, setMongoUser, logout
                   fontFamily: '"Bricolage Grotesque", sans-serif',
                   fontWeight: 700,
                   fontSize: '30px',
-                  color: 'rgba(14, 15, 12, 1)',
+                  color: isDarkMode ? '#FFFFFF' : 'rgba(14, 15, 12, 1)',
                   margin: '0 0 10px 0'
                 }}
               >
@@ -2180,7 +2246,7 @@ const SettingsModal = ({ isOpen, onClose, mongoUser, token, setMongoUser, logout
                   fontWeight: 500,
                   fontSize: '15px',
                   lineHeight: '24px',
-                  color: 'rgba(14, 15, 12, 1)',
+                  color: isDarkMode ? 'rgba(255, 255, 255, 0.7)' : 'rgba(14, 15, 12, 1)',
                   maxWidth: '380px',
                   margin: '0 0 28px 0'
                 }}
@@ -2196,7 +2262,7 @@ const SettingsModal = ({ isOpen, onClose, mongoUser, token, setMongoUser, logout
                   style={{
                     height: '52px',
                     width: '100%',
-                    background: '#202C44',
+                    background: 'rgba(36, 50, 77, 1)',
                     borderRadius: '9999px',
                     border: 'none',
                     cursor: 'pointer',
@@ -2210,7 +2276,7 @@ const SettingsModal = ({ isOpen, onClose, mongoUser, token, setMongoUser, logout
                     alignItems: 'center',
                     justifyContent: 'center'
                   }}
-                  className="hover:bg-[#182338] transition-colors shadow-sm cursor-pointer active:scale-[0.99]"
+                  className="hover:opacity-90 transition-colors shadow-sm cursor-pointer active:scale-[0.99]"
                 >
                   <span>{t('profile.cancel', 'Cancel')}</span>
                 </button>
@@ -2252,14 +2318,15 @@ const SettingsModal = ({ isOpen, onClose, mongoUser, token, setMongoUser, logout
           exit={{ scale: 0.95, opacity: 0 }}
           transition={{ duration: 0.2 }}
           style={{
-            fontFamily: '"Poppins", sans-serif'
+            fontFamily: '"Poppins", sans-serif',
+            background: isDarkMode ? 'rgba(12, 14, 17, 1)' : '#FFFFFF'
           }}
-          className="relative shadow-2xl overflow-y-auto max-h-[95vh] w-full max-w-[430px] md:max-w-none md:w-[626px] bg-[#FFFFFF] rounded-[22px] md:rounded-[28px] p-2 sm:p-2.5 md:p-[10px] flex flex-col gap-2.5 md:gap-[16px] box-border [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none']"
+          className="relative shadow-2xl overflow-y-auto max-h-[95vh] w-full max-w-[430px] md:max-w-none md:w-[626px] rounded-[22px] md:rounded-[28px] p-2 sm:p-2.5 md:p-[10px] flex flex-col gap-2.5 md:gap-[16px] box-border [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none']"
         >
           {/* Top Header Card (Responsive auto-height with min-height to fit all languages) */}
           <div
             style={{
-              background: 'rgba(248, 245, 239, 1)',
+              background: isDarkMode ? 'rgba(23, 26, 29, 1)' : 'rgba(248, 245, 239, 1)',
               borderRadius: '16px',
               opacity: 1,
               transform: 'rotate(0deg)',
@@ -2273,7 +2340,7 @@ const SettingsModal = ({ isOpen, onClose, mongoUser, token, setMongoUser, logout
               style={{
                 width: '30px',
                 height: '30px',
-                background: '#000000',
+                background: isDarkMode ? 'rgba(34, 39, 48, 1)' : '#000000',
                 borderRadius: '50%',
                 display: 'flex',
                 alignItems: 'center',
@@ -2300,7 +2367,7 @@ const SettingsModal = ({ isOpen, onClose, mongoUser, token, setMongoUser, logout
                     fontFamily: '"Bricolage Grotesque", sans-serif',
                     fontWeight: 700,
                     letterSpacing: '-0.02em',
-                    color: 'rgba(14, 15, 12, 1)',
+                    color: isDarkMode ? '#FFFFFF' : 'rgba(14, 15, 12, 1)',
                     margin: 0,
                     opacity: 1,
                   }}
@@ -2313,7 +2380,7 @@ const SettingsModal = ({ isOpen, onClose, mongoUser, token, setMongoUser, logout
                     fontFamily: '"Poppins", sans-serif',
                     fontWeight: 500,
                     letterSpacing: '0%',
-                    color: 'rgba(14, 15, 12, 1)',
+                    color: isDarkMode ? 'rgba(255, 255, 255, 0.7)' : 'rgba(14, 15, 12, 1)',
                     margin: 0,
                     opacity: 1,
                   }}
@@ -2342,7 +2409,7 @@ const SettingsModal = ({ isOpen, onClose, mongoUser, token, setMongoUser, logout
             <label
               style={{
                 fontFamily: '"Poppins", sans-serif',
-                color: 'rgba(14, 15, 12, 1)',
+                color: isDarkMode ? '#FFFFFF' : 'rgba(14, 15, 12, 1)',
                 margin: 0,
               }}
               className="font-medium text-[12.5px] md:text-[16px] leading-tight md:leading-[26px]"
@@ -2354,8 +2421,8 @@ const SettingsModal = ({ isOpen, onClose, mongoUser, token, setMongoUser, logout
               value={displayName}
               onChange={e => setDisplayName(e.target.value)}
               style={{
-                background: 'rgba(239, 239, 239, 1)',
-                color: '#1E293B',
+                background: isDarkMode ? 'rgba(34, 39, 48, 1)' : 'rgba(239, 239, 239, 1)',
+                color: isDarkMode ? '#FFFFFF' : '#1E293B',
                 border: 'none',
                 outline: 'none',
                 boxSizing: 'border-box',
@@ -2373,7 +2440,7 @@ const SettingsModal = ({ isOpen, onClose, mongoUser, token, setMongoUser, logout
             {/* Private Profile Card */}
             <div
               style={{
-                background: 'rgba(248, 245, 239, 1)',
+                background: isDarkMode ? 'rgba(23, 26, 29, 1)' : 'rgba(248, 245, 239, 1)',
                 boxSizing: 'border-box',
               }}
               className="flex-1 w-full md:max-w-full rounded-[18px] md:rounded-[30px] p-4 md:p-[26px_16px_26px_17px] md:h-[198px] flex flex-col justify-between gap-3 md:gap-0"
@@ -2384,7 +2451,7 @@ const SettingsModal = ({ isOpen, onClose, mongoUser, token, setMongoUser, logout
                     fontFamily: '"Bricolage Grotesque", sans-serif',
                     fontWeight: 700,
                     letterSpacing: '-0.02em',
-                    color: 'rgba(14, 15, 12, 1)',
+                    color: isDarkMode ? '#FFFFFF' : 'rgba(14, 15, 12, 1)',
                     margin: 0,
                     opacity: 1,
                   }}
@@ -2422,7 +2489,7 @@ const SettingsModal = ({ isOpen, onClose, mongoUser, token, setMongoUser, logout
                   fontFamily: '"Poppins", sans-serif',
                   fontWeight: 500,
                   letterSpacing: '0%',
-                  color: 'rgba(14, 15, 12, 1)',
+                  color: isDarkMode ? 'rgba(255, 255, 255, 0.7)' : 'rgba(14, 15, 12, 1)',
                   margin: 0,
                   opacity: 1,
                 }}
@@ -2435,7 +2502,7 @@ const SettingsModal = ({ isOpen, onClose, mongoUser, token, setMongoUser, logout
             {/* 2FA Card */}
             <div
               style={{
-                background: 'rgba(248, 245, 239, 1)',
+                background: isDarkMode ? 'rgba(23, 26, 29, 1)' : 'rgba(248, 245, 239, 1)',
                 boxSizing: 'border-box',
               }}
               className="flex-1 w-full md:max-w-full rounded-[18px] md:rounded-[30px] p-4 md:p-[26px_16px_26px_17px] md:h-[198px] flex flex-col justify-between md:justify-start gap-3 md:gap-[12px]"
@@ -2446,7 +2513,7 @@ const SettingsModal = ({ isOpen, onClose, mongoUser, token, setMongoUser, logout
                     fontFamily: '"Bricolage Grotesque", sans-serif',
                     fontWeight: 700,
                     letterSpacing: '-0.02em',
-                    color: 'rgba(14, 15, 12, 1)',
+                    color: isDarkMode ? '#FFFFFF' : 'rgba(14, 15, 12, 1)',
                     margin: 0,
                     opacity: 1,
                   }}
@@ -2489,7 +2556,7 @@ const SettingsModal = ({ isOpen, onClose, mongoUser, token, setMongoUser, logout
                   fontFamily: '"Poppins", sans-serif',
                   fontWeight: 500,
                   letterSpacing: '0%',
-                  color: 'rgba(14, 15, 12, 1)',
+                  color: isDarkMode ? 'rgba(255, 255, 255, 0.7)' : 'rgba(14, 15, 12, 1)',
                   margin: 0,
                   opacity: 1,
                 }}
@@ -2517,7 +2584,7 @@ const SettingsModal = ({ isOpen, onClose, mongoUser, token, setMongoUser, logout
             onClick={handleSave}
             disabled={saving}
             style={{
-              background: '#202C44',
+              background: 'rgba(36, 50, 77, 1)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
@@ -2529,7 +2596,7 @@ const SettingsModal = ({ isOpen, onClose, mongoUser, token, setMongoUser, logout
               letterSpacing: '0%',
               color: '#FFFFFF'
             }}
-            className="w-full md:w-[606px] md:max-w-full h-[44px] md:h-[52px] rounded-[12px] md:rounded-[9999px] text-[13.5px] md:text-[16px] md:leading-[28px] gap-2 md:gap-[10px] hover:bg-[#182338] disabled:opacity-50 transition-all shrink-0 active:scale-[0.99] shadow-sm cursor-pointer"
+            className="w-full md:w-[606px] md:max-w-full h-[44px] md:h-[52px] rounded-[12px] md:rounded-[9999px] text-[13.5px] md:text-[16px] md:leading-[28px] gap-2 md:gap-[10px] hover:opacity-90 disabled:opacity-50 transition-all shrink-0 active:scale-[0.99] shadow-sm cursor-pointer"
           >
             {saving ? <FiLoader className="animate-spin text-base md:text-lg" /> : null}
             <span>{t('profile.saveProfile', 'Save Profile')}</span>
@@ -2538,7 +2605,7 @@ const SettingsModal = ({ isOpen, onClose, mongoUser, token, setMongoUser, logout
           {/* Danger Zone Card */}
           <div
             style={{
-              background: 'rgba(255, 234, 235, 1)',
+              background: isDarkMode ? 'rgba(239, 68, 68, 0.18)' : 'rgba(255, 234, 235, 1)',
               boxSizing: 'border-box',
             }}
             className="w-full md:w-[606px] md:max-w-full rounded-[18px] md:rounded-[20px] p-3.5 md:p-[26px_14px_25px_19px] md:h-[118px] flex flex-col md:flex-row md:items-center justify-between gap-3 md:gap-[10px] shrink-0"
@@ -2549,7 +2616,7 @@ const SettingsModal = ({ isOpen, onClose, mongoUser, token, setMongoUser, logout
                   fontFamily: '"Bricolage Grotesque", sans-serif',
                   fontWeight: 700,
                   letterSpacing: '-0.02em',
-                  color: '#000000',
+                  color: isDarkMode ? '#FFFFFF' : '#000000',
                   margin: 0
                 }}
                 className="text-[20px] md:text-[18px] leading-tight md:leading-normal"
@@ -2561,7 +2628,7 @@ const SettingsModal = ({ isOpen, onClose, mongoUser, token, setMongoUser, logout
                   fontFamily: '"Poppins", sans-serif',
                   fontWeight: 500,
                   letterSpacing: '0%',
-                  color: '#000000',
+                  color: isDarkMode ? 'rgba(255, 255, 255, 0.7)' : '#000000',
                   margin: 0
                 }}
                 className="w-full max-w-[363px] md:max-w-full text-[16px] md:text-[13.5px] leading-[26px] md:leading-[1.4]"
@@ -2602,6 +2669,7 @@ const SettingsModal = ({ isOpen, onClose, mongoUser, token, setMongoUser, logout
 const Profile = () => {
   const { t, i18n } = useTranslation();
   const { currentUser, mongoUser, setMongoUser, logout } = useAuth();
+  const { isDarkMode } = useTheme();
   const [showSettings, setShowSettings] = useState(false);
   const [showCustomization, setShowCustomization] = useState(false);
   const [activeTab, setActiveTab] = useState('started_offers');
@@ -2757,7 +2825,7 @@ const Profile = () => {
       <div
         className="w-full transition-colors duration-300 shrink-0 h-[153px] lg:h-[108px]"
         style={{
-          background: 'rgba(249, 247, 241, 1)',
+          background: isDarkMode ? 'rgba(23, 26, 29, 1)' : 'rgba(249, 247, 241, 1)',
           opacity: 1,
           transform: 'rotate(0deg)',
         }}
@@ -2774,7 +2842,7 @@ const Profile = () => {
           <div className="relative shrink-0 mx-auto lg:mx-0 lg:ml-[40px]">
             <div
               style={{
-                backgroundColor: '#ffffff',
+                backgroundColor: isDarkMode ? 'rgba(23, 26, 29, 1)' : '#ffffff',
                 border: '2.5px solid rgba(36, 50, 77, 1)',
                 borderRadius: '50%',
                 padding: '4.5px',
@@ -2814,7 +2882,7 @@ const Profile = () => {
                   fontSize: '27px',
                   lineHeight: '1.2',
                   letterSpacing: '-0.02em',
-                  color: '#000000',
+                  color: isDarkMode ? '#ffffff' : '#000000',
                   margin: 0,
                   whiteSpace: 'nowrap',
                   opacity: 1,
@@ -2840,13 +2908,14 @@ const Profile = () => {
                     fontSize: '13px',
                     lineHeight: '9px',
                     letterSpacing: '0%',
-                    color: '#000000',
+                    color: isDarkMode ? 'rgba(255, 255, 255, 0.7)' : '#000000',
                   }}
                   className="flex items-center gap-1.5"
                 >
                   <img
                     src="/coins/profileemail.png"
                     alt="Email"
+                    style={{ filter: isDarkMode ? 'brightness(0) invert(1)' : 'none' }}
                     className="w-[14px] h-[14px] object-contain shrink-0"
                   />
                   <span>{currentUser?.email || mongoUser?.email || 'futuristicbug1@gmail.com'}</span>
@@ -2858,13 +2927,14 @@ const Profile = () => {
                     fontSize: '13px',
                     lineHeight: '9px',
                     letterSpacing: '0%',
-                    color: '#000000',
+                    color: isDarkMode ? 'rgba(255, 255, 255, 0.7)' : '#000000',
                   }}
                   className="flex items-center gap-1.5"
                 >
                   <img
                     src="/coins/profiledate.png"
                     alt="Joined"
+                    style={{ filter: isDarkMode ? 'brightness(0) invert(1)' : 'none' }}
                     className="w-[14px] h-[14px] object-contain shrink-0"
                   />
                   <span>
@@ -2890,7 +2960,7 @@ const Profile = () => {
                   width: '45px',
                   height: '45px',
                   borderRadius: '80px',
-                  background: 'rgba(249, 247, 241, 1)',
+                  background: isDarkMode ? 'rgba(34, 39, 48, 1)' : 'rgba(249, 247, 241, 1)',
                   border: 'none',
                   opacity: 1,
                   display: 'flex',
@@ -2900,7 +2970,12 @@ const Profile = () => {
                 }}
                 className="hover:opacity-80 transition-opacity shrink-0"
               >
-                <img src="/coins/profilesetting.png" alt="Settings" className="w-[18px] h-[18px] object-contain" />
+                <img
+                  src="/coins/profilesetting.png"
+                  alt="Settings"
+                  style={{ filter: isDarkMode ? 'brightness(0) invert(1)' : 'none' }}
+                  className="w-[18px] h-[18px] object-contain"
+                />
               </button>
 
               <button
@@ -2910,7 +2985,7 @@ const Profile = () => {
                   width: '45px',
                   height: '45px',
                   borderRadius: '80px',
-                  background: 'rgba(249, 247, 241, 1)',
+                  background: isDarkMode ? 'rgba(34, 39, 48, 1)' : 'rgba(249, 247, 241, 1)',
                   border: 'none',
                   opacity: 1,
                   display: 'flex',
@@ -2920,7 +2995,12 @@ const Profile = () => {
                 }}
                 className="hover:opacity-80 transition-opacity shrink-0"
               >
-                <img src="/coins/profilecustumize.png" alt="Customize" className="w-[18px] h-[18px] object-contain" />
+                <img
+                  src="/coins/profilecustumize.png"
+                  alt="Customize"
+                  style={{ filter: isDarkMode ? 'brightness(0) invert(1)' : 'none' }}
+                  className="w-[18px] h-[18px] object-contain"
+                />
               </button>
 
               {/* Copy Referral Link Button */}
@@ -2979,7 +3059,7 @@ const Profile = () => {
             <div
               style={{
                 borderRadius: '25px',
-                background: 'rgba(249, 247, 241, 1)',
+                background: isDarkMode ? 'rgba(34, 39, 48, 1)' : 'rgba(249, 247, 241, 1)',
                 gap: '10px',
                 opacity: 1,
                 transform: 'rotate(0deg)',
@@ -2993,7 +3073,7 @@ const Profile = () => {
                     fontFamily: '"Bricolage Grotesque", sans-serif',
                     fontWeight: 700,
                     letterSpacing: '-0.02em',
-                    color: '#24324D',
+                    color: isDarkMode ? '#ffffff' : '#24324D',
                     display: 'block',
                   }}
                   className="text-[40px] md:text-[45px] leading-none md:leading-[30px]"
@@ -3021,7 +3101,7 @@ const Profile = () => {
                     fontSize: '20px',
                     lineHeight: '13px',
                     letterSpacing: '-0.02em',
-                    color: '#000000',
+                    color: isDarkMode ? '#ffffff' : '#000000',
                     margin: 0,
                   }}
                 >
@@ -3034,7 +3114,7 @@ const Profile = () => {
                     fontSize: '13px',
                     lineHeight: '10px',
                     letterSpacing: '0%',
-                    color: '#000000',
+                    color: isDarkMode ? 'rgba(255, 255, 255, 0.7)' : '#000000',
                     margin: 0,
                   }}
                 >
@@ -3047,7 +3127,7 @@ const Profile = () => {
             <div
               style={{
                 borderRadius: '25px',
-                background: 'rgba(249, 247, 241, 1)',
+                background: isDarkMode ? 'rgba(34, 39, 48, 1)' : 'rgba(249, 247, 241, 1)',
                 gap: '10px',
                 opacity: 1,
                 transform: 'rotate(0deg)',
@@ -3093,7 +3173,7 @@ const Profile = () => {
                     fontSize: '20px',
                     lineHeight: '13px',
                     letterSpacing: '-0.02em',
-                    color: '#000000',
+                    color: isDarkMode ? '#ffffff' : '#000000',
                     margin: 0,
                   }}
                 >
@@ -3106,7 +3186,7 @@ const Profile = () => {
                     fontSize: '13px',
                     lineHeight: '10px',
                     letterSpacing: '0%',
-                    color: '#000000',
+                    color: isDarkMode ? 'rgba(255, 255, 255, 0.7)' : '#000000',
                     margin: 0,
                   }}
                 >
@@ -3119,7 +3199,7 @@ const Profile = () => {
             <div
               style={{
                 borderRadius: '25px',
-                background: 'rgba(249, 247, 241, 1)',
+                background: isDarkMode ? 'rgba(34, 39, 48, 1)' : 'rgba(249, 247, 241, 1)',
                 gap: '10px',
                 opacity: 1,
                 transform: 'rotate(0deg)',
@@ -3165,7 +3245,7 @@ const Profile = () => {
                     fontSize: '20px',
                     lineHeight: '13px',
                     letterSpacing: '-0.02em',
-                    color: '#000000',
+                    color: isDarkMode ? '#ffffff' : '#000000',
                     margin: 0,
                     whiteSpace: 'nowrap',
                   }}
@@ -3179,7 +3259,7 @@ const Profile = () => {
                     fontSize: '13px',
                     lineHeight: '10px',
                     letterSpacing: '0%',
-                    color: '#000000',
+                    color: isDarkMode ? 'rgba(255, 255, 255, 0.7)' : '#000000',
                     margin: 0,
                     whiteSpace: 'nowrap',
                   }}
@@ -3196,11 +3276,11 @@ const Profile = () => {
           style={{
             width: '100%',
             maxWidth: '1325px',
-            background: 'rgba(249, 247, 241, 1)',
+            background: isDarkMode ? 'rgba(34, 39, 48, 1)' : 'rgba(249, 247, 241, 1)',
             opacity: 1,
             transform: 'rotate(0deg)',
           }}
-          className="w-full mx-auto px-1.5 py-4 sm:px-8 sm:py-7 rounded-[20px] md:rounded-[30px] border border-slate-100/60 shadow-sm flex flex-col justify-start gap-3 sm:gap-4 min-h-[500px] md:min-h-[593px]"
+          className={`w-full mx-auto px-1.5 py-4 sm:px-8 sm:py-7 rounded-[20px] md:rounded-[30px] border ${isDarkMode ? 'border-white/10' : 'border-slate-100/60'} shadow-sm flex flex-col justify-start gap-3 sm:gap-4 min-h-[500px] md:min-h-[593px]`}
         >
           {/* Tab pill bar navigation (Mobile: 2-column grid matching screenshot, Desktop: flex row) */}
           <div
@@ -3218,12 +3298,12 @@ const Profile = () => {
             style={{
               width: '100%',
               maxWidth: '1295px',
-              backgroundColor: 'rgba(255, 255, 255, 1)',
+              backgroundColor: isDarkMode ? 'rgba(21, 24, 29, 1)' : 'rgba(255, 255, 255, 1)',
               opacity: 1,
               transform: 'rotate(0deg)',
               boxSizing: 'border-box',
             }}
-            className="mx-auto shadow-sm flex flex-col justify-between w-full mt-2 rounded-[14px] md:rounded-[20px] p-1 sm:p-4 md:py-4 md:px-1 min-h-[400px] md:min-h-[462px]"
+            className={`mx-auto shadow-sm flex flex-col justify-between w-full mt-2 rounded-[14px] md:rounded-[20px] p-1 sm:p-4 md:py-4 md:px-1 min-h-[400px] md:min-h-[462px] ${isDarkMode ? 'border border-white/5' : ''}`}
           >
             <AnimatePresence mode="wait">
               {/* ══ STARTED OFFERS TAB ══ */}
@@ -3255,7 +3335,7 @@ const Profile = () => {
                                 fontFamily: 'Poppins, sans-serif',
                                 fontWeight: 400,
                                 letterSpacing: '0.06em',
-                                color: 'rgba(14, 15, 12, 0.6)',
+                                color: isDarkMode ? 'rgba(255, 255, 255, 0.5)' : 'rgba(14, 15, 12, 0.6)',
                                 textTransform: 'uppercase',
                               }}
                               className="grid grid-cols-[1fr_60px_60px_56px] md:grid-cols-[1fr_180px_160px_140px] gap-1.5 md:gap-4 px-1.5 sm:px-6 py-2 text-[9.5px] md:text-[14px] md:leading-[26px]"
@@ -3294,7 +3374,7 @@ const Profile = () => {
                   {loadingCompleted ? (
                     <div className="flex justify-center py-12"><FiLoader className="animate-spin text-2xl text-emerald-600" /></div>
                   ) : completedOffers.length === 0 ? (
-                    <p className="text-center py-12 text-slate-500 font-bold text-base">{t('profile.emptyCompletedOffers', 'No completed offers yet. Finish a started offer to earn your reward!')}</p>
+                    <p className={`text-center py-12 ${isDarkMode ? 'text-slate-400' : 'text-slate-500'} font-bold text-base`}>{t('profile.emptyCompletedOffers', 'No completed offers yet. Finish a started offer to earn your reward!')}</p>
                   ) : (() => {
                     const paginatedCompleted = completedOffers.slice((completedPage - 1) * itemsPerPage, completedPage * itemsPerPage);
                     return (
@@ -3306,7 +3386,7 @@ const Profile = () => {
                                 fontFamily: 'Poppins, sans-serif',
                                 fontWeight: 400,
                                 letterSpacing: '0.06em',
-                                color: 'rgba(14, 15, 12, 0.6)',
+                                color: isDarkMode ? 'rgba(255, 255, 255, 0.5)' : 'rgba(14, 15, 12, 0.6)',
                                 textTransform: 'uppercase',
                               }}
                               className="grid grid-cols-[1fr_75px_65px] md:grid-cols-[1fr_180px_150px] gap-1.5 md:gap-4 px-1.5 sm:px-6 py-2 text-[9.5px] md:text-[14px] md:leading-[26px]"
@@ -3322,19 +3402,21 @@ const Profile = () => {
                                   style={{
                                     width: '100%',
                                     borderRadius: idx % 2 === 0 ? '10px' : '0px',
-                                    backgroundColor: idx % 2 === 0 ? 'rgba(249, 247, 241, 1)' : 'transparent',
+                                    backgroundColor: idx % 2 === 0
+                                      ? (isDarkMode ? 'rgba(34, 39, 48, 0.4)' : 'rgba(249, 247, 241, 1)')
+                                      : 'transparent',
                                   }}
                                   className="px-1.5 sm:px-6 py-2.5 sm:py-3.5 min-h-[50px] md:min-h-[69px] grid grid-cols-[1fr_75px_65px] md:grid-cols-[1fr_180px_150px] gap-1.5 md:gap-4 items-center"
                                 >
                                   <span
                                     style={{ fontFamily: 'Poppins, sans-serif', fontWeight: 500 }}
-                                    className="text-[#1e293b] leading-tight break-words line-clamp-2 text-[10px] md:text-[16px] md:leading-[26px]"
+                                    className={`${isDarkMode ? 'text-white' : 'text-[#1e293b]'} leading-tight break-words line-clamp-2 text-[10px] md:text-[16px] md:leading-[26px]`}
                                   >
                                     {offer.title}
                                   </span>
                                   <span
                                     style={{ fontFamily: 'Poppins, sans-serif', fontWeight: 500 }}
-                                    className="text-[#1e293b] text-[10px] md:text-[16px] leading-tight md:leading-[26px]"
+                                    className={`${isDarkMode ? 'text-slate-300' : 'text-[#1e293b]'} text-[10px] md:text-[16px] leading-tight md:leading-[26px]`}
                                   >
                                     {offer.completedAt ? new Date(offer.completedAt).toLocaleDateString(i18n.language === 'de' ? 'de-DE' : 'en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'N/A'}
                                   </span>
@@ -3368,7 +3450,7 @@ const Profile = () => {
                   {loadingHolds ? (
                     <div className="flex justify-center py-12"><FiLoader className="animate-spin text-2xl text-emerald-600" /></div>
                   ) : heldOffers.length === 0 ? (
-                    <p className="text-center py-12 text-slate-500 font-bold text-base">{t('profile.emptyHeldOffers', 'No held earnings at the moment.')}</p>
+                    <p className={`text-center py-12 ${isDarkMode ? 'text-slate-400' : 'text-slate-500'} font-bold text-base`}>{t('profile.emptyHeldOffers', 'No held earnings at the moment.')}</p>
                   ) : (() => {
                     const paginatedHeld = heldOffers.slice((heldPage - 1) * itemsPerPage, heldPage * itemsPerPage);
                     return (
@@ -3380,7 +3462,7 @@ const Profile = () => {
                                 fontFamily: 'Poppins, sans-serif',
                                 fontWeight: 400,
                                 letterSpacing: '0.06em',
-                                color: 'rgba(14, 15, 12, 0.6)',
+                                color: isDarkMode ? 'rgba(255, 255, 255, 0.5)' : 'rgba(14, 15, 12, 0.6)',
                                 textTransform: 'uppercase',
                               }}
                               className="grid grid-cols-[1fr_58px_56px_42px_45px] md:grid-cols-[1fr_140px_130px_130px_130px] gap-1 md:gap-4 px-1.5 sm:px-6 py-2 text-[9px] md:text-[14px] md:leading-[26px]"
@@ -3405,19 +3487,21 @@ const Profile = () => {
                                     style={{
                                       width: '100%',
                                       borderRadius: idx % 2 === 0 ? '10px' : '0px',
-                                      backgroundColor: idx % 2 === 0 ? 'rgba(249, 247, 241, 1)' : 'transparent',
+                                      backgroundColor: idx % 2 === 0
+                                        ? (isDarkMode ? 'rgba(34, 39, 48, 0.4)' : 'rgba(249, 247, 241, 1)')
+                                        : 'transparent',
                                     }}
                                     className="px-1.5 sm:px-6 py-2.5 sm:py-3.5 min-h-[50px] md:min-h-[69px] grid grid-cols-[1fr_58px_56px_42px_45px] md:grid-cols-[1fr_140px_130px_130px_130px] gap-1 md:gap-4 items-center"
                                   >
                                     <span
                                       style={{ fontFamily: 'Poppins, sans-serif', fontWeight: 500 }}
-                                      className="text-[#1e293b] leading-tight break-words line-clamp-2 text-[10px] md:text-[16px] md:leading-[26px]"
+                                      className={`${isDarkMode ? 'text-white' : 'text-[#1e293b]'} leading-tight break-words line-clamp-2 text-[10px] md:text-[16px] md:leading-[26px]`}
                                     >
                                       {offer.description}
                                     </span>
                                     <span
                                       style={{ fontFamily: 'Poppins, sans-serif', fontWeight: 500 }}
-                                      className="text-[#1e293b] text-[10px] md:text-[16px] leading-tight md:leading-[26px]"
+                                      className={`${isDarkMode ? 'text-slate-300' : 'text-[#1e293b]'} text-[10px] md:text-[16px] leading-tight md:leading-[26px]`}
                                     >
                                       {offer.createdAt ? new Date(offer.createdAt).toLocaleDateString(i18n.language === 'de' ? 'de-DE' : 'en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'N/A'}
                                     </span>
@@ -3430,13 +3514,13 @@ const Profile = () => {
                                     </div>
                                     <span
                                       style={{ fontFamily: 'Poppins, sans-serif', fontWeight: 500 }}
-                                      className="text-[#1e293b] text-[10px] md:text-[16px]"
+                                      className={`${isDarkMode ? 'text-slate-300' : 'text-[#1e293b]'} text-[10px] md:text-[16px]`}
                                     >
                                       {holdPeriodDays}d
                                     </span>
                                     <div
                                       style={{ fontFamily: 'Poppins, sans-serif', fontWeight: 600 }}
-                                      className={`text-right text-[10px] md:text-[16px] ${offer.isReadyToRelease ? 'text-emerald-600' : 'text-[#1e293b]'}`}
+                                      className={`text-right text-[10px] md:text-[16px] ${offer.isReadyToRelease ? 'text-emerald-500' : (isDarkMode ? 'text-slate-300' : 'text-[#1e293b]')}`}
                                     >
                                       {releaseIn}
                                     </div>
@@ -3466,7 +3550,7 @@ const Profile = () => {
                   ) : txHistory.error ? (
                     <p className="text-rose-500 text-center py-12 font-semibold">{txHistory.error}</p>
                   ) : txHistory.dataList.length === 0 ? (
-                    <p className="text-center py-12 text-slate-500 font-bold text-base">{t('profile.emptyTransactionHistory', 'No transaction history found.')}</p>
+                    <p className={`text-center py-12 ${isDarkMode ? 'text-slate-400' : 'text-slate-500'} font-bold text-base`}>{t('profile.emptyTransactionHistory', 'No transaction history found.')}</p>
                   ) : (
                     <div>
                       <div className="w-full">
@@ -3476,7 +3560,7 @@ const Profile = () => {
                               fontFamily: 'Poppins, sans-serif',
                               fontWeight: 400,
                               letterSpacing: '0.06em',
-                              color: 'rgba(14, 15, 12, 0.6)',
+                              color: isDarkMode ? 'rgba(255, 255, 255, 0.5)' : 'rgba(14, 15, 12, 0.6)',
                               textTransform: 'uppercase',
                             }}
                             className="grid grid-cols-[48px_54px_1fr_60px_48px] md:grid-cols-[130px_140px_1fr_140px_120px] gap-1 md:gap-4 px-1.5 sm:px-6 py-2 text-[9px] md:text-[14px] md:leading-[26px]"
@@ -3500,25 +3584,27 @@ const Profile = () => {
                                   style={{
                                     width: '100%',
                                     borderRadius: idx % 2 === 0 ? '10px' : '0px',
-                                    backgroundColor: idx % 2 === 0 ? 'rgba(249, 247, 241, 1)' : 'transparent',
+                                    backgroundColor: idx % 2 === 0
+                                      ? (isDarkMode ? 'rgba(34, 39, 48, 0.4)' : 'rgba(249, 247, 241, 1)')
+                                      : 'transparent',
                                   }}
                                   className="px-1.5 sm:px-6 py-2 sm:py-3.5 min-h-[50px] md:min-h-[69px] grid grid-cols-[48px_54px_1fr_60px_48px] md:grid-cols-[130px_140px_1fr_140px_120px] gap-1 md:gap-4 items-center"
                                 >
                                   <span
                                     style={{ fontFamily: 'Poppins, sans-serif', fontWeight: 500 }}
-                                    className="text-[#1e293b] text-[9.5px] md:text-[16px] leading-[13px] md:leading-[26px]"
+                                    className={`${isDarkMode ? 'text-slate-300' : 'text-[#1e293b]'} text-[9.5px] md:text-[16px] leading-[13px] md:leading-[26px]`}
                                   >
                                     {tx.createdAt ? new Date(tx.createdAt).toLocaleDateString(i18n.language === 'de' ? 'de-DE' : 'en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'N/A'}
                                   </span>
                                   <span
                                     style={{ fontFamily: 'Poppins, sans-serif', fontWeight: 500 }}
-                                    className="text-[#1e293b] text-[9.5px] md:text-[16px] leading-[13px] md:leading-[26px] truncate"
+                                    className={`${isDarkMode ? 'text-white' : 'text-[#1e293b]'} text-[9.5px] md:text-[16px] leading-[13px] md:leading-[26px] truncate`}
                                   >
                                     {typeLabel}
                                   </span>
                                   <span
                                     style={{ fontFamily: 'Poppins, sans-serif', fontWeight: 500 }}
-                                    className="text-[#1e293b] text-[9.5px] md:text-[16px] leading-[13px] md:leading-[26px] line-clamp-2 pr-0.5"
+                                    className={`${isDarkMode ? 'text-white' : 'text-[#1e293b]'} text-[9.5px] md:text-[16px] leading-[13px] md:leading-[26px] line-clamp-2 pr-0.5`}
                                     title={tx.description}
                                   >
                                     {tx.description}
@@ -3573,7 +3659,7 @@ const Profile = () => {
                   ) : chargebacks.error ? (
                     <p className="text-rose-500 text-center py-12 font-semibold">{chargebacks.error}</p>
                   ) : chargebacks.dataList.length === 0 ? (
-                    <p className="text-center py-12 text-slate-500 font-bold text-base">{t('profile.emptyChargebacks', 'No chargebacks found on your account.')}</p>
+                    <p className={`text-center py-12 ${isDarkMode ? 'text-slate-400' : 'text-slate-500'} font-bold text-base`}>{t('profile.emptyChargebacks', 'No chargebacks found on your account.')}</p>
                   ) : (
                     <div>
                       <div className="w-full">
@@ -3583,7 +3669,7 @@ const Profile = () => {
                               fontFamily: 'Poppins, sans-serif',
                               fontWeight: 400,
                               letterSpacing: '0.06em',
-                              color: 'rgba(14, 15, 12, 0.6)',
+                              color: isDarkMode ? 'rgba(255, 255, 255, 0.5)' : 'rgba(14, 15, 12, 0.6)',
                               textTransform: 'uppercase',
                             }}
                             className="grid grid-cols-[1fr_75px_65px] md:grid-cols-[1fr_180px_150px] gap-1.5 md:gap-4 px-1.5 sm:px-6 py-2 text-[9.5px] md:text-[14px] md:leading-[26px]"
@@ -3599,19 +3685,21 @@ const Profile = () => {
                                 style={{
                                   width: '100%',
                                   borderRadius: idx % 2 === 0 ? '10px' : '0px',
-                                  backgroundColor: idx % 2 === 0 ? 'rgba(249, 247, 241, 1)' : 'transparent',
+                                  backgroundColor: idx % 2 === 0
+                                    ? (isDarkMode ? 'rgba(34, 39, 48, 0.4)' : 'rgba(249, 247, 241, 1)')
+                                    : 'transparent',
                                 }}
                                 className="px-1.5 sm:px-6 py-2.5 sm:py-3.5 min-h-[50px] md:min-h-[69px] grid grid-cols-[1fr_75px_65px] md:grid-cols-[1fr_180px_150px] gap-1.5 md:gap-4 items-center"
                               >
                                 <span
                                   style={{ fontFamily: 'Poppins, sans-serif', fontWeight: 500 }}
-                                  className="text-[#1e293b] leading-tight break-words line-clamp-2 text-[10px] md:text-[16px] md:leading-[26px]"
+                                  className={`${isDarkMode ? 'text-white' : 'text-[#1e293b]'} leading-tight break-words line-clamp-2 text-[10px] md:text-[16px] md:leading-[26px]`}
                                 >
                                   {tx.description}
                                 </span>
                                 <span
                                   style={{ fontFamily: 'Poppins, sans-serif', fontWeight: 500 }}
-                                  className="text-[#1e293b] text-[10px] md:text-[16px] leading-tight md:leading-[26px]"
+                                  className={`${isDarkMode ? 'text-slate-300' : 'text-[#1e293b]'} text-[10px] md:text-[16px] leading-tight md:leading-[26px]`}
                                 >
                                   {tx.createdAt ? new Date(tx.createdAt).toLocaleDateString(i18n.language === 'de' ? 'de-DE' : 'en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'N/A'}
                                 </span>
