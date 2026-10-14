@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { Routes, Route, Navigate, useParams } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { useAuth } from './contexts/AuthContext';
+import { useTheme } from './contexts/ThemeContext';
 import Home from './pages/Home';
 import ResetPassword from './pages/ResetPassword';
 import Landing from './pages/Landing';
@@ -74,6 +75,7 @@ const ReferralRedirect = () => {
 
 function App() {
   const { currentUser, isAdmin, hasAdminAccess, twoFactorRequired } = useAuth();
+  const { isDarkMode } = useTheme();
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -98,10 +100,10 @@ function App() {
             minWidth: '223px',
             width: 'auto',
             maxWidth: 'calc(100vw - 32px)',
-            background: 'rgba(255, 255, 255, 1)',
-            color: '#111827',
-            border: '1px solid rgba(0, 0, 0, 0.08)',
-            boxShadow: '0px 12px 20px 0px rgba(0, 0, 0, 0.15)',
+            background: isDarkMode ? 'rgba(12, 14, 17, 1)' : 'rgba(255, 255, 255, 1)',
+            color: isDarkMode ? '#FFFFFF' : '#111827',
+            border: isDarkMode ? '1px solid rgba(255, 255, 255, 0.08)' : '1px solid rgba(0, 0, 0, 0.08)',
+            boxShadow: isDarkMode ? '0px 12px 24px 0px rgba(0, 0, 0, 0.6)' : '0px 12px 20px 0px rgba(0, 0, 0, 0.15)',
             borderRadius: '12px',
             paddingTop: '19px',
             paddingRight: '25px',

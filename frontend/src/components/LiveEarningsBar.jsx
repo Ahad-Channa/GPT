@@ -503,21 +503,21 @@ const LiveEarningsBar = () => {
               borderRadius: '16px',
               padding: '12px 13px 12px 13px',
               gap: '8px',
-              background: 'rgba(255, 255, 255, 1)',
-              boxShadow: '0px 10px 23px 0px rgba(0, 0, 0, 0.15)',
-              border: '1px solid rgba(223, 225, 209, 0.8)',
+              background: isDarkMode ? 'rgba(12, 14, 17, 1)' : 'rgba(255, 255, 255, 1)',
+              boxShadow: isDarkMode ? '0px 10px 25px 0px rgba(0, 0, 0, 0.6)' : '0px 10px 23px 0px rgba(0, 0, 0, 0.15)',
+              border: isDarkMode ? '1px solid rgba(255, 255, 255, 0.08)' : '1px solid rgba(223, 225, 209, 0.8)',
               boxSizing: 'border-box',
               display: 'flex',
               flexDirection: 'column',
             }}
           >
-            {/* ── Top Row: Cream Pill Banner ── */}
+            {/* ── Top Row: Cream / Dark Pill Banner ── */}
             <div
               style={{
                 width: '100%',
                 height: '32px',
                 borderRadius: '100px',
-                background: 'rgba(249, 247, 241, 1)',
+                background: isDarkMode ? 'rgba(23, 26, 29, 1)' : 'rgba(249, 247, 241, 1)',
                 padding: '0 12px',
                 display: 'flex',
                 alignItems: 'center',
@@ -531,7 +531,7 @@ const LiveEarningsBar = () => {
                   fontFamily: '"Poppins", sans-serif',
                   fontWeight: 500,
                   fontSize: '13px',
-                  color: '#000000',
+                  color: isDarkMode ? '#FFFFFF' : '#000000',
                   lineHeight: '100%',
                 }}
               >
@@ -561,7 +561,7 @@ const LiveEarningsBar = () => {
                     fontSize: '13px',
                     lineHeight: '100%',
                     color: hoveredData.details.isWithdrawal
-                      ? '#027940'
+                      ? (isDarkMode ? '#059669' : '#027940')
                       : 'rgba(231, 171, 24, 1)',
                     whiteSpace: 'nowrap',
                   }}
@@ -580,7 +580,7 @@ const LiveEarningsBar = () => {
                   fontSize: '16px',
                   lineHeight: '20px',
                   letterSpacing: '0%',
-                  color: '#000000',
+                  color: isDarkMode ? '#FFFFFF' : '#000000',
                   whiteSpace: 'normal',
                   wordBreak: 'break-word',
                   display: 'block',
@@ -597,7 +597,7 @@ const LiveEarningsBar = () => {
                   fontSize: '13px',
                   lineHeight: '18px',
                   letterSpacing: '0%',
-                  color: '#000000',
+                  color: isDarkMode ? 'rgba(255, 255, 255, 0.7)' : '#000000',
                   whiteSpace: 'normal',
                   wordBreak: 'break-word',
                   display: 'block',

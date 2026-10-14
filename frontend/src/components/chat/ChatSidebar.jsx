@@ -10,6 +10,7 @@ import toast from 'react-hot-toast';
 import PublicProfileModal from '../PublicProfileModal';
 import { getLevelFromEarned, getLevelLabel, LEVEL_BADGES } from '../../utils/vipLevels';
 import UserAvatar from '../UserAvatar';
+import { useTheme } from '../../contexts/ThemeContext';
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 const SOCKET_URL = API.replace(/\/api\/?$/, '');
@@ -181,6 +182,7 @@ const RoleBadges = ({ user }) => {
 };
 
 const MessageRow = ({ msg, canModerate, onDelete, deletingId, onUserClick }) => {
+  const { isDarkMode } = useTheme();
   const { t, i18n } = useTranslation();
   const [hov, setHov] = useState(false);
   const isDeleting = deletingId === msg._id;
@@ -192,7 +194,9 @@ const MessageRow = ({ msg, canModerate, onDelete, deletingId, onUserClick }) => 
     <div
       onMouseEnter={() => setHov(true)}
       onMouseLeave={() => setHov(false)}
-      className="relative flex flex-col w-full pb-3.5 mb-3.5 border-b border-[#EFEFEF] transition-opacity"
+      className={`relative flex flex-col w-full pb-3.5 mb-3.5 border-b transition-opacity ${
+        isDarkMode ? 'border-white/10' : 'border-[#EFEFEF]'
+      }`}
       style={{ opacity: isDeleting ? 0.4 : 1 }}
     >
       {/* Top Row: Avatar + Name/Date on left, Badges on right */}
@@ -225,7 +229,7 @@ const MessageRow = ({ msg, canModerate, onDelete, deletingId, onUserClick }) => 
                 fontSize: '18px',
                 lineHeight: '100%',
                 letterSpacing: '0%',
-                color: '#000000',
+                color: isDarkMode ? '#FFFFFF' : '#000000',
                 textAlign: 'left',
                 background: 'transparent',
                 border: 'none',
@@ -248,7 +252,7 @@ const MessageRow = ({ msg, canModerate, onDelete, deletingId, onUserClick }) => 
                 fontSize: '12px',
                 lineHeight: '18px',
                 letterSpacing: '0%',
-                color: 'rgba(14, 15, 12, 0.7)',
+                color: isDarkMode ? 'rgba(255, 255, 255, 0.5)' : 'rgba(14, 15, 12, 0.7)',
                 opacity: 1,
                 transform: 'rotate(0deg)',
               }}
@@ -270,7 +274,7 @@ const MessageRow = ({ msg, canModerate, onDelete, deletingId, onUserClick }) => 
           fontSize: '13px',
           lineHeight: '20px',
           letterSpacing: '0%',
-          color: '#18181B',
+          color: isDarkMode ? 'rgba(255, 255, 255, 0.85)' : '#18181B',
           margin: 0,
           marginTop: '8px',
           wordBreak: 'break-word',
@@ -285,7 +289,11 @@ const MessageRow = ({ msg, canModerate, onDelete, deletingId, onUserClick }) => 
       {canModerate && hov && (
         <button
           onClick={() => onDelete(msg._id)}
-          className="absolute right-0 -top-[13px] p-1 text-gray-400 hover:text-red-600 rounded-full transition-colors bg-white/95 shadow-xs border border-gray-200/80 z-10 flex items-center justify-center"
+          className={`absolute right-0 -top-[13px] p-1 rounded-full transition-colors shadow-xs z-10 flex items-center justify-center ${
+            isDarkMode
+              ? 'bg-[#171A1D] text-gray-300 border border-white/10 hover:text-red-400'
+              : 'bg-white/95 text-gray-400 border border-gray-200/80 hover:text-red-600'
+          }`}
           title={t('chat.deleteMessage', 'Delete message')}
         >
           <FiTrash2 size={12} />
@@ -296,6 +304,7 @@ const MessageRow = ({ msg, canModerate, onDelete, deletingId, onUserClick }) => 
 };
 
 const ChatSidebar = ({ isOpen, onClose }) => {
+  const { isDarkMode } = useTheme();
   const { t } = useTranslation();
   const { mongoUser, currentUser, isAdmin } = useAuth();
   const { setHasUnreadChat } = useNotifications();
@@ -473,7 +482,12 @@ const ChatSidebar = ({ isOpen, onClose }) => {
             animate={{ x: 0, opacity: 1 }}
             exit={{ x: '110%', opacity: 0 }}
             transition={{ type: 'spring', damping: 28, stiffness: 220 }}
-            className="fixed z-50 flex flex-col overflow-hidden box-border bg-[#FFFFFF] shadow-[-8px_0px_36px_0px_rgba(0,0,0,0.12)] border border-black/5 top-[16px] bottom-0 left-[40px] right-[10px] max-w-[370px] max-h-[1000px] h-[calc(100dvh-16px)] rounded-t-[30px] rounded-b-none opacity-100 rotate-0 lg:top-[10px] lg:bottom-[10px] lg:right-[10px] lg:left-auto lg:h-[calc(100vh-20px)] lg:max-h-none lg:w-[370px] lg:max-w-[370px] lg:rounded-[30px]"
+            style={{
+              background: isDarkMode ? 'rgba(12, 14, 17, 1)' : '#FFFFFF',
+              border: isDarkMode ? '1px solid rgba(255, 255, 255, 0.08)' : '1px solid rgba(0, 0, 0, 0.05)',
+              boxShadow: isDarkMode ? '-8px 0px 36px 0px rgba(0, 0, 0, 0.5)' : '-8px 0px 36px 0px rgba(0, 0, 0, 0.12)',
+            }}
+            className="fixed z-50 flex flex-col overflow-hidden box-border top-[16px] bottom-0 left-[40px] right-[10px] max-w-[370px] max-h-[1000px] h-[calc(100dvh-16px)] rounded-t-[30px] rounded-b-none opacity-100 rotate-0 lg:top-[10px] lg:bottom-[10px] lg:right-[10px] lg:left-auto lg:h-[calc(100vh-20px)] lg:max-h-none lg:w-[370px] lg:max-w-[370px] lg:rounded-[30px]"
           >
             {/* ── Header Area ── */}
             <div className="p-4 pb-3 flex flex-col gap-3 shrink-0">
@@ -487,7 +501,7 @@ const ChatSidebar = ({ isOpen, onClose }) => {
                       width: 'auto',
                       height: '39px',
                       borderRadius: '100px',
-                      background: activeTab === 'chat' ? 'rgba(36, 50, 77, 1)' : 'rgba(249, 247, 241, 1)',
+                      background: activeTab === 'chat' ? 'rgba(36, 50, 77, 1)' : (isDarkMode ? '#FFFFFF' : 'rgba(249, 247, 241, 1)'),
                       color: activeTab === 'chat' ? '#FFFFFF' : '#000000',
                       padding: '10px 18px',
                       gap: '8px',
@@ -518,7 +532,7 @@ const ChatSidebar = ({ isOpen, onClose }) => {
                       width: 'auto',
                       height: '39px',
                       borderRadius: '100px',
-                      background: activeTab === 'support' ? 'rgba(36, 50, 77, 1)' : 'rgba(249, 247, 241, 1)',
+                      background: activeTab === 'support' ? 'rgba(36, 50, 77, 1)' : (isDarkMode ? '#FFFFFF' : 'rgba(249, 247, 241, 1)'),
                       color: activeTab === 'support' ? '#FFFFFF' : '#000000',
                       padding: '10px 18px',
                       gap: '8px',
@@ -544,15 +558,15 @@ const ChatSidebar = ({ isOpen, onClose }) => {
                   </button>
                 </div>
 
-                {/* Close Button (Black Circle with White X - 22x22) */}
+                {/* Close Button (White Circle in dark mode, Black in light mode) */}
                 <button
                   onClick={onClose}
                   style={{
                     width: '22px',
                     height: '22px',
                     borderRadius: '50%',
-                    background: '#000000',
-                    color: '#FFFFFF',
+                    background: isDarkMode ? '#FFFFFF' : '#000000',
+                    color: isDarkMode ? '#000000' : '#FFFFFF',
                     border: 'none',
                     display: 'flex',
                     alignItems: 'center',
@@ -673,8 +687,8 @@ const ChatSidebar = ({ isOpen, onClose }) => {
 
                   {messages.length === 0 ? (
                     <div className="flex-1 flex flex-col items-center justify-center text-center text-gray-400 gap-2 py-12">
-                      <FiMessageSquare size={28} className="text-gray-300" />
-                      <p className="text-sm font-medium text-gray-500 m-0">{t('chat.noMessages', 'No messages yet — say hi! 👋')}</p>
+                      <FiMessageSquare size={28} className={isDarkMode ? 'text-white/40' : 'text-gray-300'} />
+                      <p className={`text-sm font-medium m-0 ${isDarkMode ? 'text-white/60' : 'text-gray-500'}`}>{t('chat.noMessages', 'No messages yet — say hi! 👋')}</p>
                     </div>
                   ) : (
                     messages.map((msg, idx) => (
@@ -701,7 +715,7 @@ const ChatSidebar = ({ isOpen, onClose }) => {
                           maxWidth: '338px',
                           height: '49px',
                           borderRadius: '50px',
-                          background: 'rgba(239, 239, 239, 1)',
+                          background: isDarkMode ? 'rgba(23, 26, 29, 1)' : 'rgba(239, 239, 239, 1)',
                           padding: '4px 6px 4px 20px',
                           display: 'flex',
                           alignItems: 'center',
@@ -731,9 +745,9 @@ const ChatSidebar = ({ isOpen, onClose }) => {
                             fontSize: '13px',
                             lineHeight: '26px',
                             letterSpacing: '0%',
-                            color: 'rgba(0, 0, 0, 1)',
+                            color: isDarkMode ? '#FFFFFF' : 'rgba(0, 0, 0, 1)',
                           }}
-                          className="placeholder:text-black/70"
+                          className={isDarkMode ? "placeholder:text-white/40" : "placeholder:text-black/70"}
                         />
 
                         <button
@@ -774,7 +788,7 @@ const ChatSidebar = ({ isOpen, onClose }) => {
                       </div>
                     </form>
                   ) : (
-                    <div className="text-center py-2 text-xs font-semibold text-gray-500">
+                    <div className={`text-center py-2 text-xs font-semibold ${isDarkMode ? 'text-white/60' : 'text-gray-500'}`}>
                       {t('chat.loginToChat', 'Log in to join the conversation')}
                     </div>
                   )}

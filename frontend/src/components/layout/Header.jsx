@@ -627,9 +627,9 @@ const Header = ({ onChatToggle, chatOpen, fullWidth }) => {
                       borderRadius: '12px',
                       padding: '14px 15px 18px 13px',
                       gap: '12px',
-                      background: 'rgba(255, 255, 255, 1)',
-                      boxShadow: '0px 10px 30px rgba(0, 0, 0, 0.15)',
-                      border: '1px solid rgba(223, 225, 209, 0.8)',
+                      background: isDarkMode ? 'rgba(12, 14, 17, 1)' : 'rgba(255, 255, 255, 1)',
+                      boxShadow: isDarkMode ? '0px 10px 30px rgba(0, 0, 0, 0.5)' : '0px 10px 30px rgba(0, 0, 0, 0.15)',
+                      border: isDarkMode ? '1px solid rgba(255, 255, 255, 0.08)' : '1px solid rgba(223, 225, 209, 0.8)',
                       top: '48px',
                       boxSizing: 'border-box',
                     }}
@@ -646,14 +646,14 @@ const Header = ({ onChatToggle, chatOpen, fullWidth }) => {
                           fontWeight: 700,
                           fontSize: '15px',
                           lineHeight: '16px',
-                          color: '#000000',
+                          color: isDarkMode ? '#FFFFFF' : '#000000',
                         }}
                       >
                         {t('nav.myProfile')}
                       </span>
                     </button>
 
-                    <div style={{ width: '100%', height: '1px', background: 'rgba(0, 0, 0, 0.06)', flexShrink: 0 }} />
+                    <div style={{ width: '100%', height: '1px', background: isDarkMode ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.06)', flexShrink: 0 }} />
 
                     {/* Daily Bonus */}
                     <button
@@ -666,14 +666,14 @@ const Header = ({ onChatToggle, chatOpen, fullWidth }) => {
                           fontWeight: 700,
                           fontSize: '15px',
                           lineHeight: '16px',
-                          color: '#000000',
+                          color: isDarkMode ? '#FFFFFF' : '#000000',
                         }}
                       >
                         {t('nav.dailyBonus')}
                       </span>
                     </button>
 
-                    <div style={{ width: '100%', height: '1px', background: 'rgba(0, 0, 0, 0.06)', flexShrink: 0 }} />
+                    <div style={{ width: '100%', height: '1px', background: isDarkMode ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.06)', flexShrink: 0 }} />
 
                     {/* Leaderboard */}
                     <button
@@ -686,14 +686,14 @@ const Header = ({ onChatToggle, chatOpen, fullWidth }) => {
                           fontWeight: 700,
                           fontSize: '15px',
                           lineHeight: '16px',
-                          color: '#000000',
+                          color: isDarkMode ? '#FFFFFF' : '#000000',
                         }}
                       >
                         {t('nav.leaderboard')}
                       </span>
                     </button>
 
-                    <div style={{ width: '100%', height: '1px', background: 'rgba(0, 0, 0, 0.06)', flexShrink: 0 }} />
+                    <div style={{ width: '100%', height: '1px', background: isDarkMode ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.06)', flexShrink: 0 }} />
 
                     {/* Affiliates */}
                     <button
@@ -706,14 +706,14 @@ const Header = ({ onChatToggle, chatOpen, fullWidth }) => {
                           fontWeight: 700,
                           fontSize: '15px',
                           lineHeight: '16px',
-                          color: '#000000',
+                          color: isDarkMode ? '#FFFFFF' : '#000000',
                         }}
                       >
                         {t('nav.affiliates')}
                       </span>
                     </button>
 
-                    <div style={{ width: '100%', height: '1px', background: 'rgba(0, 0, 0, 0.06)', flexShrink: 0 }} />
+                    <div style={{ width: '100%', height: '1px', background: isDarkMode ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.06)', flexShrink: 0 }} />
 
                     {/* VIP Status */}
                     <button
@@ -727,14 +727,14 @@ const Header = ({ onChatToggle, chatOpen, fullWidth }) => {
                           fontWeight: 700,
                           fontSize: '15px',
                           lineHeight: '16px',
-                          color: '#000000',
+                          color: isDarkMode ? '#FFFFFF' : '#000000',
                         }}
                       >
                         {t('nav.vip')}
                       </span>
                     </button>
 
-                    <div style={{ width: '100%', height: '1px', background: 'rgba(0, 0, 0, 0.06)', flexShrink: 0 }} />
+                    <div style={{ width: '100%', height: '1px', background: isDarkMode ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.06)', flexShrink: 0 }} />
 
                     {/* Admin Panel */}
                     {isAdmin && (
@@ -756,7 +756,7 @@ const Header = ({ onChatToggle, chatOpen, fullWidth }) => {
                             Admin Panel
                           </span>
                         </button>
-                        <div style={{ width: '100%', height: '1px', background: 'rgba(0, 0, 0, 0.06)', flexShrink: 0 }} />
+                        <div style={{ width: '100%', height: '1px', background: isDarkMode ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.06)', flexShrink: 0 }} />
                       </>
                     )}
 
@@ -772,7 +772,7 @@ const Header = ({ onChatToggle, chatOpen, fullWidth }) => {
                           fontWeight: 700,
                           fontSize: '15px',
                           lineHeight: '16px',
-                          color: '#000000',
+                          color: isDarkMode ? '#FFFFFF' : '#000000',
                         }}
                       >
                         Sign Out
@@ -1076,9 +1076,9 @@ const Header = ({ onChatToggle, chatOpen, fullWidth }) => {
                     borderRadius: '12px',
                     padding: '14px 15px 18px 13px',
                     gap: '12px',
-                    background: 'rgba(255, 255, 255, 1)',
-                    boxShadow: '0px 10px 30px rgba(0, 0, 0, 0.12)',
-                    border: '1px solid rgba(223, 225, 209, 0.8)',
+                    background: isDarkMode ? 'rgba(12, 14, 17, 1)' : 'rgba(255, 255, 255, 1)',
+                    boxShadow: isDarkMode ? '0px 10px 30px rgba(0, 0, 0, 0.5)' : '0px 10px 30px rgba(0, 0, 0, 0.12)',
+                    border: isDarkMode ? '1px solid rgba(255, 255, 255, 0.08)' : '1px solid rgba(223, 225, 209, 0.8)',
                     top: '54px',
                     boxSizing: 'border-box',
                   }}
@@ -1103,14 +1103,14 @@ const Header = ({ onChatToggle, chatOpen, fullWidth }) => {
                         fontSize: '15px',
                         lineHeight: '16px',
                         letterSpacing: '0%',
-                        color: '#000000',
+                        color: isDarkMode ? '#FFFFFF' : '#000000',
                       }}
                     >
                       {t('nav.myProfile')}
                     </span>
                   </button>
 
-                  <div style={{ width: '100%', height: '1px', background: 'rgba(0, 0, 0, 0.06)', flexShrink: 0 }} />
+                  <div style={{ width: '100%', height: '1px', background: isDarkMode ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.06)', flexShrink: 0 }} />
 
                   {/* Daily Bonus (Mobile only) */}
                   <button
@@ -1131,13 +1131,13 @@ const Header = ({ onChatToggle, chatOpen, fullWidth }) => {
                         fontSize: '15px',
                         lineHeight: '16px',
                         letterSpacing: '0%',
-                        color: '#000000',
+                        color: isDarkMode ? '#FFFFFF' : '#000000',
                       }}
                     >
                       {t('nav.dailyBonus')}
                     </span>
                   </button>
-                  <div className="lg:hidden" style={{ width: '100%', height: '1px', background: 'rgba(0, 0, 0, 0.06)', flexShrink: 0 }} />
+                  <div className="lg:hidden" style={{ width: '100%', height: '1px', background: isDarkMode ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.06)', flexShrink: 0 }} />
 
                   {/* Leaderboard (Mobile only) */}
                   <button
@@ -1158,13 +1158,13 @@ const Header = ({ onChatToggle, chatOpen, fullWidth }) => {
                         fontSize: '15px',
                         lineHeight: '16px',
                         letterSpacing: '0%',
-                        color: '#000000',
+                        color: isDarkMode ? '#FFFFFF' : '#000000',
                       }}
                     >
                       {t('nav.leaderboard')}
                     </span>
                   </button>
-                  <div className="lg:hidden" style={{ width: '100%', height: '1px', background: 'rgba(0, 0, 0, 0.06)', flexShrink: 0 }} />
+                  <div className="lg:hidden" style={{ width: '100%', height: '1px', background: isDarkMode ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.06)', flexShrink: 0 }} />
 
                   {/* Affiliates (Mobile only) */}
                   <button
@@ -1185,13 +1185,13 @@ const Header = ({ onChatToggle, chatOpen, fullWidth }) => {
                         fontSize: '15px',
                         lineHeight: '16px',
                         letterSpacing: '0%',
-                        color: '#000000',
+                        color: isDarkMode ? '#FFFFFF' : '#000000',
                       }}
                     >
                       {t('nav.affiliates')}
                     </span>
                   </button>
-                  <div className="lg:hidden" style={{ width: '100%', height: '1px', background: 'rgba(0, 0, 0, 0.06)', flexShrink: 0 }} />
+                  <div className="lg:hidden" style={{ width: '100%', height: '1px', background: isDarkMode ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.06)', flexShrink: 0 }} />
 
                   {/* VIP Status */}
                   <button
@@ -1213,14 +1213,14 @@ const Header = ({ onChatToggle, chatOpen, fullWidth }) => {
                         fontSize: '15px',
                         lineHeight: '16px',
                         letterSpacing: '0%',
-                        color: '#000000',
+                        color: isDarkMode ? '#FFFFFF' : '#000000',
                       }}
                     >
                       {t('nav.vip')}
                     </span>
                   </button>
 
-                  <div style={{ width: '100%', height: '1px', background: 'rgba(0, 0, 0, 0.06)', flexShrink: 0 }} />
+                  <div style={{ width: '100%', height: '1px', background: isDarkMode ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.06)', flexShrink: 0 }} />
 
                   {/* Admin Panel */}
                   {isAdmin && (
@@ -1250,7 +1250,7 @@ const Header = ({ onChatToggle, chatOpen, fullWidth }) => {
                           Admin Panel
                         </span>
                       </button>
-                      <div style={{ width: '100%', height: '1px', background: 'rgba(0, 0, 0, 0.06)', flexShrink: 0 }} />
+                      <div style={{ width: '100%', height: '1px', background: isDarkMode ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.06)', flexShrink: 0 }} />
                     </>
                   )}
 
@@ -1274,7 +1274,7 @@ const Header = ({ onChatToggle, chatOpen, fullWidth }) => {
                         fontSize: '15px',
                         lineHeight: '16px',
                         letterSpacing: '0%',
-                        color: '#000000',
+                        color: isDarkMode ? '#FFFFFF' : '#000000',
                       }}
                     >
                       {t('nav.logout')}

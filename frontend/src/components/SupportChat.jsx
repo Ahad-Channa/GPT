@@ -4,6 +4,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { FiHeadphones } from 'react-icons/fi';
 import { getLevelFromEarned, LEVEL_BADGES } from '../utils/vipLevels';
 import UserAvatar from './UserAvatar';
+import { useTheme } from '../contexts/ThemeContext';
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
@@ -230,6 +231,7 @@ const RoleBadges = ({ user, isSupport = false }) => {
 
 /* ─── MessageRow (matching Live Chat exactly) ─── */
 const MessageRow = ({ msg, isOwn, mongoUser }) => {
+  const { isDarkMode } = useTheme();
   const { t, i18n } = useTranslation();
   const isSupport = !isOwn;
   const senderUser = isOwn ? mongoUser : { displayName: t('chat.supportTeam', 'Support Team'), role: 'moderator' };
@@ -242,7 +244,9 @@ const MessageRow = ({ msg, isOwn, mongoUser }) => {
     : (senderUser?.displayName || senderUser?.username || (senderUser?.email ? senderUser.email.split('@')[0] : '') || 'User');
 
   return (
-    <div className="relative flex flex-col w-full pb-3.5 mb-3.5 border-b border-[#EFEFEF] transition-opacity">
+    <div className={`relative flex flex-col w-full pb-3.5 mb-3.5 border-b transition-opacity ${
+      isDarkMode ? 'border-white/10' : 'border-[#EFEFEF]'
+    }`}>
       {/* Top Row: Avatar + Name/Date on left, Badges on right */}
       <div className="flex items-center justify-between gap-2 w-full">
         <div className="flex items-center gap-2.5 min-w-0">
@@ -269,7 +273,7 @@ const MessageRow = ({ msg, isOwn, mongoUser }) => {
                 fontSize: '18px',
                 lineHeight: '100%',
                 letterSpacing: '0%',
-                color: '#000000',
+                color: isDarkMode ? '#FFFFFF' : '#000000',
                 textAlign: 'left',
                 opacity: 1,
                 transform: 'rotate(0deg)',
@@ -287,7 +291,7 @@ const MessageRow = ({ msg, isOwn, mongoUser }) => {
                 fontSize: '12px',
                 lineHeight: '18px',
                 letterSpacing: '0%',
-                color: 'rgba(14, 15, 12, 0.7)',
+                color: isDarkMode ? 'rgba(255, 255, 255, 0.5)' : 'rgba(14, 15, 12, 0.7)',
                 opacity: 1,
                 transform: 'rotate(0deg)',
               }}
@@ -309,7 +313,7 @@ const MessageRow = ({ msg, isOwn, mongoUser }) => {
           fontSize: '13px',
           lineHeight: '20px',
           letterSpacing: '0%',
-          color: '#18181B',
+          color: isDarkMode ? 'rgba(255, 255, 255, 0.85)' : '#18181B',
           margin: 0,
           marginTop: '8px',
           wordBreak: 'break-word',
@@ -325,6 +329,7 @@ const MessageRow = ({ msg, isOwn, mongoUser }) => {
 };
 
 const SupportChat = ({ socket }) => {
+  const { isDarkMode } = useTheme();
   const { t } = useTranslation();
   const { mongoUser, currentUser } = useAuth();
   const [ticket, setTicket] = useState(null);
@@ -462,13 +467,13 @@ const SupportChat = ({ socket }) => {
   // ── Not logged in ──
   if (!mongoUser) return (
     <div className="flex-1 flex flex-col items-center justify-center gap-3 p-8 text-center">
-      <FiHeadphones size={36} className="text-gray-400" />
+      <FiHeadphones size={36} className={isDarkMode ? 'text-white/40' : 'text-gray-400'} />
       <p
         style={{
           fontFamily: '"Poppins", sans-serif',
           fontSize: '14px',
           fontWeight: 500,
-          color: '#71717A',
+          color: isDarkMode ? 'rgba(255, 255, 255, 0.65)' : '#71717A',
           margin: 0,
         }}
       >
@@ -502,7 +507,7 @@ const SupportChat = ({ socket }) => {
                   width: '80px',
                   height: '80px',
                   borderRadius: '20px',
-                  background: 'rgba(213, 248, 216, 0.6)',
+                  background: isDarkMode ? 'rgba(34, 197, 94, 0.15)' : 'rgba(213, 248, 216, 0.6)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
@@ -526,7 +531,7 @@ const SupportChat = ({ socket }) => {
                     fontWeight: 700,
                     fontSize: '24px',
                     lineHeight: '120%',
-                    color: '#000000',
+                    color: isDarkMode ? '#FFFFFF' : '#000000',
                   }}
                 >
                   {t('chat.contactSupport', 'Contact Support')}
@@ -538,7 +543,7 @@ const SupportChat = ({ socket }) => {
                     fontWeight: 400,
                     fontSize: '13px',
                     lineHeight: '20px',
-                    color: 'rgba(14, 15, 12, 0.7)',
+                    color: isDarkMode ? 'rgba(255, 255, 255, 0.65)' : 'rgba(14, 15, 12, 0.7)',
                   }}
                 >
                   {t('chat.contactSupportDesc', 'Send us a message below and our team will respond as soon as possible.')}
@@ -572,7 +577,7 @@ const SupportChat = ({ socket }) => {
               maxWidth: '338px',
               height: '49px',
               borderRadius: '50px',
-              background: 'rgba(239, 239, 239, 1)',
+              background: isDarkMode ? 'rgba(23, 26, 29, 1)' : 'rgba(239, 239, 239, 1)',
               padding: '4px 6px 4px 20px',
               display: 'flex',
               alignItems: 'center',
@@ -603,9 +608,9 @@ const SupportChat = ({ socket }) => {
                 fontSize: '13px',
                 lineHeight: '26px',
                 letterSpacing: '0%',
-                color: 'rgba(0, 0, 0, 1)',
+                color: isDarkMode ? '#FFFFFF' : 'rgba(0, 0, 0, 1)',
               }}
-              className="placeholder:text-black/70"
+              className={isDarkMode ? "placeholder:text-white/40" : "placeholder:text-black/70"}
             />
 
             <button
