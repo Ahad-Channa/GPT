@@ -18,6 +18,21 @@ const toSafeAmount = (value) => {
   return Math.floor(num);
 };
 
+// Display-only goal time in days. Optional: blank/absent -> null. When present
+// it must be a positive integer; anything else is rejected (HTTP 400). This is
+// the authoritative validation layer (not the Mongoose `min` rule, which would
+// still accept decimals). It drives a visual label only — no expiry/enforcement.
+const parseTimeLimitDays = (value) => {
+  if (value === undefined || value === null || value === '') return null;
+  const num = Number(value);
+  if (!Number.isInteger(num) || num < 1) {
+    const error = new Error('Goal time (days) must be a positive integer.');
+    error.statusCode = 400;
+    throw error;
+  }
+  return num;
+};
+
 // Normalizes admin-provided goals for storage on a DirectOffer.
 const normalizeGoals = (goals) => {
   if (!Array.isArray(goals)) return [];
@@ -46,6 +61,7 @@ const normalizeGoals = (goals) => {
       descriptionDe: String(raw.descriptionDe || '').trim().slice(0, MAX_DESCRIPTION_LENGTH),
       rewardAmount,
       payoutAmount: toSafeAmount(raw.payoutAmount) || 0,
+      timeLimitDays: parseTimeLimitDays(raw.timeLimitDays),
       enabled: raw.enabled === undefined ? true : Boolean(raw.enabled),
     });
 
@@ -113,5 +129,6 @@ module.exports = {
   buildGoalsSnapshot,
   getEnabledGoals,
   normalizeGoals,
+  parseTimeLimitDays,
   resolveGoal,
 };

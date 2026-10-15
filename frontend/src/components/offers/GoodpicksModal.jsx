@@ -4,6 +4,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { FiX, FiCheck, FiChevronDown, FiExternalLink, FiLoader } from 'react-icons/fi';
 import { FaAndroid, FaApple, FaDesktop } from 'react-icons/fa';
 import { BsQrCode } from 'react-icons/bs';
+import { formatGoalTimeLimit } from '../../utils/goalTimeLimit';
+import { isOfferClickLimitReached } from '../../utils/offerClickLimit';
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
@@ -220,6 +222,14 @@ const directOfferGoalsToRequirements = (offer, isDe = false) => {
   });
 };
 
+// A goal row is completed only when the backend reports that exact goalKey in
+// completedGoalKeys (credited milestones). No local/click-based inference.
+const directGoalIsCompleted = (offer, goal) => {
+  const key = goal?.goalKey;
+  if (!key) return false;
+  return Array.isArray(offer?.completedGoalKeys) && offer.completedGoalKeys.includes(key);
+};
+
 const directOfferGoalsToRequirementRows = (offer, isDe = false) => {
   const goals = Array.isArray(offer?.goals) ? offer.goals.filter(goal => goal && goal.enabled !== false) : [];
   if (goals.length === 0) {
@@ -230,7 +240,8 @@ const directOfferGoalsToRequirementRows = (offer, isDe = false) => {
   return goals.map((goal) => {
     return {
       label: formatDirectGoalRequirement(goal, isDe),
-      completed: isRequirementCompleted(goal),
+      completed: directGoalIsCompleted(offer, goal),
+      timeLimitDays: goal.timeLimitDays,
     };
   });
 };
@@ -290,10 +301,12 @@ export const GoodpicksDetailModal = ({ offer, onClose, token }) => {
 
   const [loading, setLoading] = useState(false);
   const [showSupportModal, setShowSupportModal] = useState(false);
+  const [actionError, setActionError] = useState('');
 
   if (!offer) return null;
 
   const rewardFormatted = (offer.rewardAmount || 0).toLocaleString('de-DE');
+  const limitReached = isOfferClickLimitReached(offer);
 
   const handleStartOffer = async () => {
     // Tracked direct-offer click (Branded Offerwall placement) — no frontend reward logic.
@@ -302,8 +315,13 @@ export const GoodpicksDetailModal = ({ offer, onClose, token }) => {
         console.error('Cannot start tracked offer without auth token.');
         return;
       }
+      if (limitReached) {
+        setActionError('This offer has reached its click limit.');
+        return;
+      }
       try {
         setLoading(true);
+        setActionError('');
         const res = await fetch(`${API}/direct-offers/click/${offer._id}`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
@@ -314,8 +332,14 @@ export const GoodpicksDetailModal = ({ offer, onClose, token }) => {
           window.open(data.url, '_blank', 'noopener,noreferrer');
           return;
         }
+        if (data.limitReached) {
+          setActionError('This offer has reached its click limit.');
+        } else {
+          setActionError(data.error || 'Could not start this offer.');
+        }
       } catch (err) {
         console.error('Failed to start tracked offer:', err);
+        setActionError('Could not start this offer.');
       } finally {
         setLoading(false);
       }
@@ -659,6 +683,23 @@ export const GoodpicksDetailModal = ({ offer, onClose, token }) => {
                 >
                   {typeof req === 'object' ? (req.label || req.title || req.text || '') : req}
                 </span>
+                {typeof req === 'object' && formatGoalTimeLimit(req.timeLimitDays) && (
+                  <span
+                    style={{
+                      marginLeft: 'auto',
+                      flexShrink: 0,
+                      padding: '2px 8px',
+                      borderRadius: '999px',
+                      background: '#1E293B',
+                      color: '#FFFFFF',
+                      fontFamily: '"Poppins", sans-serif',
+                      fontSize: '12px',
+                      fontWeight: 700,
+                    }}
+                  >
+                    {formatGoalTimeLimit(req.timeLimitDays)}
+                  </span>
+                )}
               </div>
             ))
           ) : (
@@ -687,10 +728,16 @@ export const GoodpicksDetailModal = ({ offer, onClose, token }) => {
           )}
         </div>
 
+        {actionError && (
+          <div style={{ textAlign: 'center', color: '#B91C1C', fontSize: '12px', fontWeight: 600 }}>
+            {actionError}
+          </div>
+        )}
+
         {/* Start Offer Button */}
         <button
           onClick={handleStartOffer}
-          disabled={loading}
+          disabled={loading || limitReached}
           style={{
             width: '100%',
             height: '48px',
@@ -701,8 +748,8 @@ export const GoodpicksDetailModal = ({ offer, onClose, token }) => {
             fontWeight: 600,
             fontSize: '15px',
             border: 'none',
-            cursor: loading ? 'wait' : 'pointer',
-            opacity: loading ? 0.7 : 1,
+            cursor: (loading || limitReached) ? 'not-allowed' : 'pointer',
+            opacity: (loading || limitReached) ? 0.7 : 1,
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
@@ -710,7 +757,7 @@ export const GoodpicksDetailModal = ({ offer, onClose, token }) => {
           }}
           className="hover:bg-[#151B24] transition-all shadow-md shrink-0"
         >
-          {t('goodpicks.startOffer')}
+          {limitReached ? 'Click limit reached' : t('goodpicks.startOffer')}
         </button>
 
         {/* General Offer Rules Section */}

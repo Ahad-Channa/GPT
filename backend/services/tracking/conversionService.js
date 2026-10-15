@@ -569,10 +569,33 @@ const processPostback = async ({
   }
 };
 
+// Returns an already-credited (approved + processed with a reward transaction)
+// Conversion for a click, if one exists. Used as one of several double-credit
+// guards so historical records whose ClickLog.transactionId is missing are still
+// detected. Defensive against test doubles that do not implement findOne.
+const findCreditedConversionForClickLog = async ({
+  clickLogId,
+  excludeConversionId = null,
+  conversionModel = Conversion,
+  session = null,
+} = {}) => {
+  if (!clickLogId || !conversionModel || typeof conversionModel.findOne !== 'function') return null;
+  const query = {
+    clickLogId,
+    internalStatus: 'approved',
+    processingState: 'processed',
+    rewardTransactionId: { $ne: null },
+  };
+  if (excludeConversionId) query._id = { $ne: excludeConversionId };
+  const cursor = conversionModel.findOne(query);
+  return session && cursor && typeof cursor.session === 'function' ? cursor.session(session) : cursor;
+};
+
 module.exports = {
   ALLOWED_STATUS_TRANSITIONS,
   canTransitionStatus,
   createOrResolveConversion,
+  findCreditedConversionForClickLog,
   findProviderConfig,
   findProviderConfigWithCredentials,
   processPostback,

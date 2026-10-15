@@ -15,6 +15,7 @@ const {
   REAL_OFFER_EARNING_TYPES,
   getCompletedRealOfferEarningMatch,
 } = require('../utils/earningTypes');
+const { sortOfferwallProviders } = require('../utils/offerwallOrder');
 
 /* ─────────────────────────────────────────────────────────────────
    UTILITY: Fetch live USD rates via CoinGecko (free, no key needed)
@@ -93,10 +94,11 @@ router.get('/settings', verifyToken, async (req, res) => {
         }
         return pObj;
       });
+    const orderedOfferwalls = sortOfferwallProviders(offerwalls);
     const settingsPayload = {
       withdrawalFeePercent: settings.withdrawalFeePercent,
       withdrawalMethods: settings.withdrawalMethods.filter((m) => m.enabled),
-      offerwalls,
+      offerwalls: orderedOfferwalls,
       coinsPerUSD: settings.coinsPerUSD,
       exchangeRates: { ltcUSD: ltcRateUSD },
     };

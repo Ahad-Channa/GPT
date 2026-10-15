@@ -46,14 +46,23 @@ const NumberInput = ({ value, onChange, min, max, step = 1, prefix, suffix, disa
   </div>
 );
 
+const parseOrderValue = (raw) => {
+  if (raw === '' || raw === null || raw === undefined) return undefined;
+  const parsed = Number(raw);
+  if (!Number.isInteger(parsed) || parsed < 0) return null;
+  return parsed;
+};
+
 const ProviderCard = ({ provider, onUpdate, loadingProvider }) => {
   const [enabled, setEnabled] = useState(provider.enabled);
   const [ratio, setRatio] = useState(String(provider.conversionRatio || 1.0));
+  const [order, setOrder] = useState(provider.order != null ? String(provider.order) : '');
   const [dirty, setDirty] = useState(false);
 
   useEffect(() => {
     setEnabled(provider.enabled);
     setRatio(String(provider.conversionRatio || 1.0));
+    setOrder(provider.order != null ? String(provider.order) : '');
     setDirty(false);
   }, [provider]);
 
@@ -62,8 +71,14 @@ const ProviderCard = ({ provider, onUpdate, loadingProvider }) => {
     setDirty(Number(val) !== provider.conversionRatio);
   };
 
+  const handleOrderChange = (val) => {
+    setOrder(val);
+    setDirty(true);
+  };
+
   const handleToggle = () => {
-    onUpdate(provider.id, !enabled, Number(ratio));
+    const parsedOrder = parseOrderValue(order);
+    onUpdate(provider.id, !enabled, Number(ratio), parsedOrder === null ? undefined : parsedOrder);
   };
 
   const handleSaveRatio = () => {
@@ -71,7 +86,12 @@ const ProviderCard = ({ provider, onUpdate, loadingProvider }) => {
       toast.error('Conversion ratio must be a positive number');
       return;
     }
-    onUpdate(provider.id, enabled, Number(ratio));
+    const parsedOrder = parseOrderValue(order);
+    if (parsedOrder === null) {
+      toast.error('Display order must be a non-negative integer');
+      return;
+    }
+    onUpdate(provider.id, enabled, Number(ratio), parsedOrder);
   };
 
   const isLoading = loadingProvider === provider.id;
@@ -168,6 +188,21 @@ const ProviderCard = ({ provider, onUpdate, loadingProvider }) => {
           </button>
         )}
       </div>
+      <div style={{ marginTop: '1rem' }}>
+        <label style={{ display: 'block', fontSize: '0.7rem', color: '#6B7280', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.35rem' }}>
+          Display Order
+        </label>
+        <NumberInput
+          value={order}
+          onChange={handleOrderChange}
+          min={0}
+          step={1}
+          disabled={isLoading}
+        />
+        <p style={{ fontSize: '0.68rem', color: '#9CA3AF', margin: '0.35rem 0 0' }}>
+          Lower shows first. Leave blank to keep the current position.
+        </p>
+      </div>
       {Number(ratio) > 0 && enabled && (
         <div style={{ fontSize: '0.75rem', color: '#6B7280', marginTop: '0.75rem', padding: '0.5rem 0.75rem', background: '#F9FAFB', border: '1px solid #F3F4F6', borderRadius: '8px', fontFamily: "'Barlow', system-ui, sans-serif", fontFeatureSettings: "'zero' 0" }}>
           <strong style={{ color: '#374151' }}>Formula:</strong> 1.00 Network Unit &times; {Number(ratio) || 1} = <span style={{ color: '#2563EB', fontWeight: 600 }}>{Math.round(1 * (Number(ratio) || 1))} Coins to user</span>.
@@ -204,19 +239,19 @@ const AdminOfferwalls = () => {
 
   useEffect(() => { fetchProviders(); }, [fetchProviders]);
 
-  const updateProvider = async (providerId, enabled, conversionRatio) => {
+  const updateProvider = async (providerId, enabled, conversionRatio, order) => {
     try {
       setLoadingProvider(providerId);
       const token = await currentUser.getIdToken();
       const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/admin/offerwalls/${providerId}`, {
         method: 'PUT',
         headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ enabled, conversionRatio })
+        body: JSON.stringify({ enabled, conversionRatio, ...(order === undefined ? {} : { order }) })
       });
       const data = await res.json();
       if (!data.success) throw new Error(data.error);
 
-      setProviders(prev => prev.map(p => p.id === providerId ? { ...p, enabled, conversionRatio } : p));
+      setProviders(prev => prev.map(p => p.id === providerId ? { ...p, enabled, conversionRatio, ...(order === undefined ? {} : { order }) } : p));
       toast.success(`${providerId} updated!`);
     } catch (err) {
       toast.error(err.message || 'Update failed');
@@ -226,6 +261,13 @@ const AdminOfferwalls = () => {
   };
 
   const canManage = isPrimaryAdmin || mongoUser?.adminPermissions?.includes('manage_offerwalls');
+
+  const sortedProviders = [...providers].sort((a, b) => {
+    const aOrder = Number.isFinite(a.order) ? a.order : Number.MAX_SAFE_INTEGER;
+    const bOrder = Number.isFinite(b.order) ? b.order : Number.MAX_SAFE_INTEGER;
+    if (aOrder !== bOrder) return aOrder - bOrder;
+    return String(a.id).localeCompare(String(b.id));
+  });
 
   if (!canManage) {
     return (
@@ -269,7 +311,7 @@ const AdminOfferwalls = () => {
       )}
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '1.25rem' }}>
-        {providers.map(provider => (
+        {sortedProviders.map(provider => (
           <ProviderCard
             key={provider.id}
             provider={provider}

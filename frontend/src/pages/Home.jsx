@@ -7,6 +7,7 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ProviderCard, OfferwallCard, FeaturedOfferCard, FeaturedOfferModal } from '../components/offers/OfferCards';
 import { DirectOfferCard, DirectOfferModal } from '../components/offers/DirectOfferCard';
+import { buildOfferwallSections } from '../utils/providerOrder';
 import OfferwallModal from '../components/offers/OfferwallModal';
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
@@ -292,41 +293,9 @@ const Home = () => {
 
   const enabledProviders = settings?.offerwalls || [];
 
-  const defaultSurveyList = [
-    { id: 'cpx', label: 'CPX Research', category: 'surveys', enabled: true },
-    { id: 'primeearn', label: 'Prime Surveys', category: 'surveys', enabled: true },
-    { id: 'adscend', label: 'AdscendMedia', category: 'surveys', enabled: true },
-  ];
-
-  const defaultBase8 = [
-    { id: 'adgem', label: 'AdGem', category: 'gaming', enabled: true },
-    { id: 'torox', label: 'Torox', category: 'gaming', enabled: true },
-    { id: 'lootably', label: 'Lootably', category: 'mixed', enabled: true },
-    { id: 'cpx', label: 'CPX Research', category: 'surveys', enabled: true },
-    { id: 'primeearn', label: 'Prime Surveys', category: 'surveys', enabled: true },
-    { id: 'ayet', label: 'Ayet Studios', category: 'mixed', enabled: true },
-    { id: 'adtowall', label: 'AdToWall', category: 'mixed', enabled: true },
-    { id: 'revu', label: 'Revu', category: 'mixed', enabled: true },
-  ];
-
-  const baseProviders = enabledProviders.filter(p => p.id !== 'goodpicks');
-  const combinedBase = [...baseProviders];
-  for (const def of defaultBase8) {
-    if (!combinedBase.some(p => p.id === def.id)) {
-      combinedBase.push(def);
-    }
-  }
-
-  const goodpicksItem = enabledProviders.find(p => p.id === 'goodpicks') || {
-    id: 'goodpicks',
-    label: 'Goodpicks',
-    category: 'gaming',
-    enabled: true
-  };
-
-  const surveyProviders = [goodpicksItem, ...defaultSurveyList];
-
-  const gamingProviders = [goodpicksItem, ...combinedBase.slice(0, 8)];
+  // Order is authoritative from the backend settings response; the shared
+  // helper only appends true fallback providers that are absent from config.
+  const { surveys: surveyProviders, gaming: gamingProviders } = buildOfferwallSections({ enabledProviders });
 
   const tabs = [
     {

@@ -13,6 +13,9 @@ const AdminConversions = () => {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [actionLoading, setActionLoading] = useState('');
+  const [pendingAction, setPendingAction] = useState(null);
+  const [reason, setReason] = useState('');
+  const [reasonError, setReasonError] = useState('');
 
   const load = useCallback(async (page = pagination.page) => {
     if (!currentUser) return;
@@ -43,8 +46,27 @@ const AdminConversions = () => {
     setRows(prev => prev.map(row => row._id === conversion._id ? conversion : row));
   };
 
-  const runAction = async (row, action) => {
+  const openAction = (row, action) => {
+    if (!currentUser || !row?._id || actionLoading) return;
+    setReason('');
+    setReasonError('');
+    setPendingAction({ row, action });
+  };
+
+  const closeAction = () => {
+    if (actionLoading) return;
+    setPendingAction(null);
+    setReason('');
+    setReasonError('');
+  };
+
+  const runAction = async (row, action, actionReason) => {
     if (!currentUser || !row?._id) return;
+    const trimmed = (actionReason || '').trim();
+    if (!trimmed) {
+      setReasonError('A reason is required.');
+      return;
+    }
     const key = `${row._id}:${action}`;
     setActionLoading(key);
     setError('');
@@ -54,14 +76,18 @@ const AdminConversions = () => {
       const res = await fetch(`${API}/admin/conversions/${row._id}/${action}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ reason: `Manual ${action} from admin conversions page` }),
+        body: JSON.stringify({ reason: trimmed }),
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok || !data.success) throw new Error(data.error || `Failed to ${action} conversion`);
       updateRow(data.conversion);
       setSuccess(`Conversion ${action} completed successfully.`);
+      setPendingAction(null);
+      setReason('');
+      setReasonError('');
       await load(pagination.page);
     } catch (err) {
+      setReasonError(err.message || `Failed to ${action} conversion`);
       setError(err.message || `Failed to ${action} conversion`);
     } finally {
       setActionLoading('');
@@ -130,7 +156,7 @@ const AdminConversions = () => {
                       <button
                         type="button"
                         disabled={Boolean(actionLoading)}
-                        onClick={() => runAction(row, 'approve')}
+                        onClick={() => openAction(row, 'approve')}
                         className="px-2 py-1 rounded bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 text-xs inline-flex items-center gap-1 disabled:opacity-50"
                       >
                         {actionLoading === `${row._id}:approve` ? <FiLoader className="spin" /> : <FiCheckCircle />} Approve
@@ -140,7 +166,7 @@ const AdminConversions = () => {
                       <button
                         type="button"
                         disabled={Boolean(actionLoading)}
-                        onClick={() => runAction(row, 'reject')}
+                        onClick={() => openAction(row, 'reject')}
                         className="px-2 py-1 rounded bg-rose-500/10 border border-rose-500/20 text-rose-300 text-xs inline-flex items-center gap-1 disabled:opacity-50"
                       >
                         {actionLoading === `${row._id}:reject` ? <FiLoader className="spin" /> : <FiXCircle />} Reject
@@ -150,7 +176,7 @@ const AdminConversions = () => {
                       <button
                         type="button"
                         disabled={Boolean(actionLoading)}
-                        onClick={() => runAction(row, 'chargeback')}
+                        onClick={() => openAction(row, 'chargeback')}
                         className="px-2 py-1 rounded bg-amber-500/10 border border-amber-500/20 text-amber-300 text-xs inline-flex items-center gap-1 disabled:opacity-50"
                       >
                         {actionLoading === `${row._id}:chargeback` ? <FiLoader className="spin" /> : <FiRotateCcw />} Chargeback
@@ -171,6 +197,45 @@ const AdminConversions = () => {
         <span>Page {pagination.page} of {pagination.totalPages || 1}</span>
         <button className="px-3 py-1 rounded bg-white/5" disabled={pagination.page >= pagination.totalPages} onClick={() => load(pagination.page + 1)}>Next</button>
       </div>
+
+      {pendingAction && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4" onClick={closeAction}>
+          <div className="w-full max-w-md rounded-xl border border-white/10 bg-[#1a1f2e] p-5" onClick={(e) => e.stopPropagation()}>
+            <h3 className="text-base font-bold text-white capitalize">{pendingAction.action} conversion</h3>
+            <p className="mt-1 text-xs text-slate-400">
+              {pendingAction.row?.user?.displayName || pendingAction.row?.user?.email || 'Unknown user'} · {pendingAction.row?.providerId} · {pendingAction.row?.clickId || '-'}
+            </p>
+            <label className="mt-4 block text-xs font-semibold text-slate-300">Reason (required)</label>
+            <textarea
+              className="admin-input mt-1 w-full"
+              rows={3}
+              value={reason}
+              onChange={(e) => { setReason(e.target.value); if (reasonError) setReasonError(''); }}
+              placeholder="Explain why this manual action is being taken"
+              autoFocus
+            />
+            {reasonError && <p className="mt-2 text-xs text-rose-400">{reasonError}</p>}
+            <div className="mt-4 flex justify-end gap-2">
+              <button
+                type="button"
+                className="px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-slate-300 text-sm"
+                onClick={closeAction}
+                disabled={Boolean(actionLoading)}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                className="px-3 py-2 rounded-lg bg-indigo-600 text-white text-sm inline-flex items-center gap-2 disabled:opacity-50"
+                onClick={() => runAction(pendingAction.row, pendingAction.action, reason)}
+                disabled={Boolean(actionLoading)}
+              >
+                {actionLoading && <FiLoader className="spin" />} Confirm
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

@@ -44,6 +44,7 @@ const normalizeClientGoals = (goals) => (Array.isArray(goals) ? goals : [])
     descriptionDe: g.descriptionDe || '',
     rewardAmount: g.rewardAmount ?? '',
     payoutAmount: g.payoutAmount ?? '',
+    timeLimitDays: g.timeLimitDays ?? '',
     enabled: g.enabled !== false,
   }));
 
@@ -106,6 +107,7 @@ const OfferFormModal = ({ offer, onClose, onSaved, token }) => {
     descriptionDe: offer?.descriptionDe || '',
     rewardAmount: offer?.rewardAmount || '',
     advertiserPayoutAmount: offer?.advertiserPayoutAmount || '',
+    maxTotalClicks: offer?.maxTotalClicks ?? '',
     advertiserUrl: offer?.advertiserUrl || '',
     expirationDate: offer?.expirationDate ? offer.expirationDate.slice(0, 10) : '',
     icon: offer?.icon || '',
@@ -171,10 +173,12 @@ const OfferFormModal = ({ offer, onClose, onSaved, token }) => {
             descriptionDe: g.descriptionDe,
             rewardAmount: Number(g.rewardAmount) || 0,
             payoutAmount: Number(g.payoutAmount) || 0,
+            timeLimitDays: (g.timeLimitDays === '' || g.timeLimitDays == null) ? null : Number(g.timeLimitDays),
             enabled: g.enabled !== false,
           })),
           platforms: form.platforms,
           postbackMapping: form.postbackMapping,
+          maxTotalClicks: (form.maxTotalClicks === '' || form.maxTotalClicks == null) ? null : Number(form.maxTotalClicks),
         }),
       });
       const data = await res.json();
@@ -243,6 +247,15 @@ const OfferFormModal = ({ offer, onClose, onSaved, token }) => {
           <div>
             <label className={labelCls}>Advertiser URL * <span className="text-slate-600 font-normal">(where user is sent)</span></label>
             <input className={inputCls} value={form.advertiserUrl} onChange={set('advertiserUrl')} required placeholder="https://advertiser.com/landing?ref=taskmint" />
+          </div>
+          <div>
+            <div className="flex items-center justify-between mb-1.5">
+              <label className={labelCls}>Max Total Clicks <span className="text-slate-600 font-normal">(overall · blank = unlimited)</span></label>
+              <span className="text-[11px] text-slate-400">
+                Clicks: {isEdit ? (offer?.totalClicks ?? 0) : 0} / {(form.maxTotalClicks === '' || form.maxTotalClicks == null) ? 'Unlimited' : form.maxTotalClicks}
+              </span>
+            </div>
+            <input type="number" min="1" step="1" className={inputCls} value={form.maxTotalClicks} onChange={set('maxTotalClicks')} placeholder="Leave blank for unlimited" />
           </div>
           <div>
             <div className="flex items-center justify-between mb-1.5">
@@ -370,7 +383,7 @@ const OfferFormModal = ({ offer, onClose, onSaved, token }) => {
               <button
                 type="button"
                 disabled={form.goals.length >= MAX_GOALS}
-                onClick={() => setForm(f => ({ ...f, goals: [...f.goals, { goalKey: '', label: '', labelDe: '', description: '', descriptionDe: '', rewardAmount: '', payoutAmount: '', enabled: true }] }))}
+                onClick={() => setForm(f => ({ ...f, goals: [...f.goals, { goalKey: '', label: '', labelDe: '', description: '', descriptionDe: '', rewardAmount: '', payoutAmount: '', timeLimitDays: '', enabled: true }] }))}
                 className="shrink-0 flex items-center gap-1 px-2.5 py-1 rounded-lg bg-indigo-500/20 border border-indigo-500/40 text-[11px] font-semibold text-indigo-300 hover:bg-indigo-500/30 disabled:opacity-40"
               >
                 <FiPlus /> Add Goal
@@ -421,6 +434,10 @@ const OfferFormModal = ({ offer, onClose, onSaved, token }) => {
                       <div>
                         <label className={labelCls}>Payout Metadata (USD)</label>
                         <input type="number" step="0.01" className={inputCls} value={goal.payoutAmount} onChange={e => setForm(f => ({ ...f, goals: f.goals.map((g, i) => i === idx ? { ...g, payoutAmount: e.target.value } : g) }))} placeholder="e.g. 1.20" />
+                      </div>
+                      <div>
+                        <label className={labelCls}>Time (days) <span className="text-slate-600 font-normal">(display only)</span></label>
+                        <input type="number" min="1" step="1" className={inputCls} value={goal.timeLimitDays ?? ''} onChange={e => setForm(f => ({ ...f, goals: f.goals.map((g, i) => i === idx ? { ...g, timeLimitDays: e.target.value } : g) }))} placeholder="e.g. 3" />
                       </div>
                     </div>
                     <div>
@@ -522,6 +539,9 @@ const ClickLogsModal = ({ offer, token, onClose }) => {
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('');
   const [actionLoading, setActionLoading] = useState('');
+  const [actionPrompt, setActionPrompt] = useState(null);
+  const [reasonValue, setReasonValue] = useState('');
+  const [reasonError, setReasonError] = useState('');
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -538,20 +558,43 @@ const ClickLogsModal = ({ offer, token, onClose }) => {
 
   useEffect(() => { load(); }, [load]);
 
-  const handleAction = async (clickId, action) => {
+  const openAction = (clickId, action) => {
+    if (actionLoading) return;
+    setReasonValue('');
+    setReasonError('');
+    setActionPrompt({ clickId, action });
+  };
+
+  const closeAction = () => {
+    if (actionLoading) return;
+    setActionPrompt(null);
+    setReasonValue('');
+    setReasonError('');
+  };
+
+  const handleAction = async (clickId, action, actionReason) => {
+    const trimmed = (actionReason || '').trim();
+    if (!trimmed) {
+      setReasonError('A reason is required.');
+      return;
+    }
     setActionLoading(clickId + action);
     try {
       const res = await fetch(`${API}/admin/click-logs/${clickId}/${action}`, {
         method: 'POST',
-        headers: { Authorization: `Bearer ${token}` },
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ reason: trimmed }),
       });
-      const data = await res.json();
+      const data = await res.json().catch(() => ({}));
       if (data.success) {
+        setActionPrompt(null);
+        setReasonValue('');
+        setReasonError('');
         await load();
       } else {
-        alert(data.error);
+        setReasonError(data.error || `Failed to ${action} click`);
       }
-    } catch { alert('Network error'); }
+    } catch { setReasonError('Network error'); }
     finally { setActionLoading(''); }
   };
 
@@ -631,14 +674,14 @@ const ClickLogsModal = ({ offer, token, onClose }) => {
                       {click.status !== 'approved' && click.status !== 'rejected' && (
                         <div className="flex gap-2">
                           <button
-                            onClick={() => handleAction(click.clickId, 'approve')}
+                            onClick={() => openAction(click.clickId, 'approve')}
                             disabled={actionLoading === click.clickId + 'approve'}
                             className="px-2 py-1 rounded bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 text-xs font-semibold hover:bg-emerald-500/25 disabled:opacity-50"
                           >
                             {actionLoading === click.clickId + 'approve' ? <FiLoader className="animate-spin" /> : '✓ Approve'}
                           </button>
                           <button
-                            onClick={() => handleAction(click.clickId, 'reject')}
+                            onClick={() => openAction(click.clickId, 'reject')}
                             disabled={actionLoading === click.clickId + 'reject'}
                             className="px-2 py-1 rounded bg-rose-500/15 border border-rose-500/30 text-rose-400 text-xs font-semibold hover:bg-rose-500/25 disabled:opacity-50"
                           >
@@ -657,6 +700,43 @@ const ClickLogsModal = ({ offer, token, onClose }) => {
           )}
         </div>
       </motion.div>
+
+      {actionPrompt && (
+        <div className="absolute inset-0 z-10 flex items-center justify-center bg-black/60 p-4" onClick={(e) => { e.stopPropagation(); closeAction(); }}>
+          <div className="w-full max-w-md rounded-xl border border-white/10 bg-[#12161f] p-5" onClick={(e) => e.stopPropagation()}>
+            <h4 className="text-sm font-bold text-white capitalize">{actionPrompt.action} click</h4>
+            <p className="mt-1 text-xs text-slate-400">Click ID: <code>{actionPrompt.clickId}</code></p>
+            <label className="mt-4 block text-xs font-semibold text-slate-300">Reason (required)</label>
+            <textarea
+              className="admin-input mt-1 w-full"
+              rows={3}
+              value={reasonValue}
+              onChange={(e) => { setReasonValue(e.target.value); if (reasonError) setReasonError(''); }}
+              placeholder="Explain why this manual action is being taken"
+              autoFocus
+            />
+            {reasonError && <p className="mt-2 text-xs text-rose-400">{reasonError}</p>}
+            <div className="mt-4 flex justify-end gap-2">
+              <button
+                type="button"
+                className="px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-slate-300 text-sm"
+                onClick={closeAction}
+                disabled={Boolean(actionLoading)}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                className="px-3 py-2 rounded-lg bg-indigo-600 text-white text-sm inline-flex items-center gap-2 disabled:opacity-50"
+                onClick={() => handleAction(actionPrompt.clickId, actionPrompt.action, reasonValue)}
+                disabled={Boolean(actionLoading)}
+              >
+                {actionLoading && <FiLoader className="animate-spin" />} Confirm
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

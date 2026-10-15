@@ -49,7 +49,23 @@ const parseAllowedCountriesInput = (allowedCountries) => {
   return normalized;
 };
 
+// Optional overall total click cap. Blank/absent -> null (unlimited). When
+// present it must be a positive integer; otherwise reject with HTTP 400. This is
+// the authoritative validation (not the Mongoose `min` rule, which still accepts
+// decimals).
+const parseMaxTotalClicks = (value) => {
+  if (value === undefined || value === null || value === '') return null;
+  const num = Number(value);
+  if (!Number.isInteger(num) || num < 1) {
+    const error = new Error('Max total clicks must be a positive integer.');
+    error.statusCode = 400;
+    throw error;
+  }
+  return num;
+};
+
 module.exports = {
   normalizeDisplayPlacements,
   parseAllowedCountriesInput,
+  parseMaxTotalClicks,
 };

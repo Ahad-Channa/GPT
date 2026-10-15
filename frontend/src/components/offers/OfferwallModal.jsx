@@ -200,6 +200,19 @@ export const OfferwallModal = ({ provider, userId, token, onClose }) => {
               </div>
             )}
           </div>
+
+          {provider.id === 'lootably' && url && (
+            <div className="w-full shrink-0 flex items-center justify-center gap-1.5 text-[11px] text-slate-500">
+              <span>Having trouble?</span>
+              <button
+                type="button"
+                onClick={() => window.open(url, '_blank', 'noopener,noreferrer')}
+                className="font-semibold text-indigo-600 hover:text-indigo-500 underline underline-offset-2"
+              >
+                Open Lootably in a new tab
+              </button>
+            </div>
+          )}
         </motion.div>
       </motion.div>
     </AnimatePresence>

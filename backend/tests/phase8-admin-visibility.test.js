@@ -20,6 +20,7 @@ const {
   boundAdminPayload,
   buildDirectOfferPostbackUrl,
   cleanString,
+  parseAdminManualReason,
   getPagination,
   normalizeResponseConfig,
   parseWriteOnlySecret,
@@ -510,11 +511,11 @@ test('frontend admin pages do not render plaintext provider or direct-offer secr
 });
 
 test('frontend offerwall URL builder supports Lootably placement and sid', () => {
-  const offerCards = read('frontend/src/components/offers/OfferCards.jsx');
-  assert.match(offerCards, /desktop-wall\.lootably\.com/);
-  assert.match(offerCards, /placementID/);
-  assert.match(offerCards, /sid/);
-  assert.match(offerCards, /LOOTABLY_PLACEMENT_ID|placementId/);
+  const providerUrl = read('frontend/src/utils/providerUrl.js');
+  assert.match(providerUrl, /desktop-wall\.lootably\.com/);
+  assert.match(providerUrl, /placementID/);
+  assert.match(providerUrl, /sid/);
+  assert.match(providerUrl, /LOOTABLY_PLACEMENT_ID|placementId/);
 });
 
 test('frontend direct-offer start only opens backend returned URLs', () => {
@@ -539,4 +540,70 @@ test('offerwall readiness wording remains conservative and conversion actions st
   assert.match(conversions, /!res\.ok \|\| !data\.success/);
   assert.match(conversions, /setActionLoading\('\'\)/);
   assert.match(conversions, /const canChargeback = !isReversed && isCredited/);
+});
+
+test('admin manual reason parsing trims, rejects blanks, and bounds length', () => {
+  assert.equal(parseAdminManualReason('   '), '');
+  assert.equal(parseAdminManualReason(undefined), '');
+  assert.equal(parseAdminManualReason(null), '');
+  assert.equal(parseAdminManualReason('  spaced reason  '), 'spaced reason');
+  assert.equal(parseAdminManualReason('x'.repeat(900)).length, 500);
+});
+
+test('manual conversion and legacy click actions reject a missing reason with 400', async () => {
+  const originalUserFindOne = User.findOne;
+  const originalConversionFindById = Conversion.findById;
+  const originalClickFindOne = ClickLog.findOne;
+  const app = makeApp();
+  User.findOne = () => Promise.resolve(makeDbUser());
+  Conversion.findById = () => { throw new Error('Conversion.findById must not run without a reason'); };
+  ClickLog.findOne = () => { throw new Error('ClickLog.findOne must not run without a reason'); };
+
+  try {
+    for (const action of ['approve', 'reject', 'chargeback']) {
+      const res = await request(app, {
+        method: 'POST',
+        path: `/api/admin/conversions/64f0f0f0f0f0f0f0f0f0f0f0f1/${action}`,
+        headers: { authorization: 'Bearer dev' },
+        body: { reason: '   ' },
+      });
+      assert.equal(res.statusCode, 400, `conversion ${action} must require a reason`);
+      assert.match(res.body.error, /reason/i);
+    }
+
+    for (const action of ['approve', 'reject']) {
+      const res = await request(app, {
+        method: 'POST',
+        path: `/api/admin/click-logs/click-1/${action}`,
+        headers: { authorization: 'Bearer dev' },
+        body: {},
+      });
+      assert.equal(res.statusCode, 400, `legacy ${action} must require a reason`);
+      assert.match(res.body.error, /reason/i);
+    }
+  } finally {
+    User.findOne = originalUserFindOne;
+    Conversion.findById = originalConversionFindById;
+    ClickLog.findOne = originalClickFindOne;
+  }
+});
+
+test('manual actions persist the reason in the audit log and legacy click approval is unified with the conversion pipeline', () => {
+  const source = read('backend/routes/admin.js');
+
+  assert.match(source, /actionType: 'manual_approve_conversion',\s*reason,/);
+  assert.match(source, /actionType: 'manual_reject_conversion',\s*reason,/);
+  assert.match(source, /actionType: 'manual_chargeback_conversion',\s*reason,/);
+
+  assert.match(source, /router\.post\('\/click-logs\/:clickId\/approve'[\s\S]*?parseAdminManualReason\(req\.body\?\.reason\)/);
+  assert.match(source, /router\.post\('\/click-logs\/:clickId\/reject'[\s\S]*?parseAdminManualReason\(req\.body\?\.reason\)/);
+
+  const approveBlock = source.slice(source.indexOf("router.post('/click-logs/:clickId/approve'"));
+  assert.match(approveBlock, /findCreditedConversionForClickLog\(/);
+  assert.match(approveBlock, /findExistingClickRewardTransaction\(/);
+  assert.match(approveBlock, /createOrResolveConversion\(/);
+  assert.match(approveBlock, /processReward\(/);
+
+  assert.doesNotMatch(source, /externalId: `direct:\$\{req\.params\.clickId\}`/);
+  assert.doesNotMatch(source, /description: `Direct offer reward \(manual\)/);
 });

@@ -9,6 +9,10 @@ import CoinDisplay from '../CoinDisplay';
 import CoinIcon from '../CoinIcon';
 import { ProofUploadView } from './ProofUploadView';
 import { GoodpicksSupportModal } from './GoodpicksModal';
+import { buildProviderUrl } from '../../utils/providerUrl';
+
+// Re-exported for existing consumers that import it from this module.
+export { buildProviderUrl };
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 const item = { hidden: { opacity: 0, y: 16 }, show: { opacity: 1, y: 0, transition: { duration: 0.4 } } };
@@ -16,46 +20,6 @@ const item = { hidden: { opacity: 0, y: 16 }, show: { opacity: 1, y: 0, transiti
 const isRequirementCompleted = (requirement) => {
   if (!requirement || typeof requirement !== 'object') return false;
   return requirement.completed === true || requirement.credited === true || requirement.status === 'approved';
-};
-
-export const buildProviderUrl = (provider, userId) => {
-  const CPX_APP_ID = '32283';
-  const fillUserMacros = (url) => {
-    if (!url || !userId) return url || null;
-    return String(url)
-      .replaceAll('{USER_ID}', encodeURIComponent(userId))
-      .replaceAll('{userId}', encodeURIComponent(userId))
-      .replaceAll('{user_id}', encodeURIComponent(userId))
-      .replaceAll('[USER_ID]', encodeURIComponent(userId))
-      .replaceAll('[user_id]', encodeURIComponent(userId));
-  };
-  const appendUserParam = (url, paramName) => {
-    if (!url || !userId) return url || null;
-    try {
-      const parsed = new URL(url);
-      if (!parsed.searchParams.has(paramName)) parsed.searchParams.set(paramName, userId);
-      return parsed.toString();
-    } catch {
-      const separator = String(url).includes('?') ? '&' : '?';
-      return `${url}${separator}${encodeURIComponent(paramName)}=${encodeURIComponent(userId)}`;
-    }
-  };
-  switch (provider.id) {
-    case 'cpx':
-      return userId
-        ? `https://offers.cpx-research.com/index.php?app_id=${CPX_APP_ID}&ext_user_id=${userId}`
-        : null;
-    case 'lootably': {
-      const configuredUrl = fillUserMacros(provider.iframeUrl || provider.offerwallUrl || provider.placementUrl || provider.url);
-      if (configuredUrl) return appendUserParam(configuredUrl, 'sid');
-      const placementId = provider.placementId || provider.placementID || provider.lootablyPlacementId;
-      return placementId && userId
-        ? `https://desktop-wall.lootably.com/?placementID=${encodeURIComponent(placementId)}&sid=${encodeURIComponent(userId)}`
-        : null;
-    }
-    default:
-      return fillUserMacros(provider.iframeUrl) || null;
-  }
 };
 
 export const getProviderLogo = (id) => {

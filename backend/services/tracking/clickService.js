@@ -1,5 +1,6 @@
 const crypto = require('crypto');
 const ClickLog = require('../../models/ClickLog');
+const DirectOffer = require('../../models/DirectOffer');
 const {
   isCountryAllowed,
   normalizeCountryCode,
@@ -262,6 +263,40 @@ const createDirectOfferClick = async ({
   });
 };
 
+// Atomically reserve one total-click slot on a DirectOffer. This is the ONLY
+// authoritative increment of totalClicks. Returns the updated offer when a slot
+// was reserved, or null when the (optional) overall cap is already reached.
+//
+// The check-and-increment happens in a single findOneAndUpdate so simultaneous
+// requests cannot exceed maxTotalClicks. `$ifNull` treats a missing/null
+// totalClicks as 0 for historical documents, and `$inc` initializes it.
+const reserveDirectOfferClickSlot = async ({ offerId, offerModel = DirectOffer }) => {
+  if (!offerId || !offerModel) return null;
+  return offerModel.findOneAndUpdate(
+    {
+      _id: offerId,
+      $or: [
+        { maxTotalClicks: null },
+        { $expr: { $lt: [{ $ifNull: ['$totalClicks', 0] }, '$maxTotalClicks'] } },
+      ],
+    },
+    { $inc: { totalClicks: 1 } },
+    { new: true }
+  );
+};
+
+// Compensating release for a slot reserved by the current request when the
+// subsequent ClickLog creation fails. Defensive: only decrements while the
+// counter is positive so totalClicks can never go negative.
+const releaseDirectOfferClickSlot = async ({ offerId, offerModel = DirectOffer }) => {
+  if (!offerId || !offerModel) return null;
+  return offerModel.findOneAndUpdate(
+    { _id: offerId, totalClicks: { $gt: 0 } },
+    { $inc: { totalClicks: -1 } },
+    { new: true }
+  );
+};
+
 module.exports = {
   assertDirectOfferAvailable,
   buildRedirectUrl,
@@ -271,5 +306,7 @@ module.exports = {
   detectPlatform,
   generateClickId,
   isDuplicateClickIdError,
+  releaseDirectOfferClickSlot,
+  reserveDirectOfferClickSlot,
   sanitizeTrackingParams,
 };

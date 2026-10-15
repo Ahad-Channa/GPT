@@ -2,12 +2,24 @@ const express = require('express');
 const router = express.Router();
 const DirectOffer = require('../models/DirectOffer');
 const ClickLog = require('../models/ClickLog');
+const Conversion = require('../models/Conversion');
 const User = require('../models/User');
 const { emitToUser, emitWalletUpdate } = require('../utils/walletEvents');
 const { verifyToken } = require('../middlewares/authMiddleware');
 const { fraudCheck } = require('../middlewares/fraudCheck');
 const { processVipLevelUp } = require('../utils/vipUtils');
-const { buildRedirectUrl, createDirectOfferClick } = require('../services/tracking/clickService');
+const {
+  buildRedirectUrl,
+  createDirectOfferClick,
+  releaseDirectOfferClickSlot,
+  reserveDirectOfferClickSlot,
+} = require('../services/tracking/clickService');
+const { buildDirectOfferProviderConfig } = require('../services/tracking/directOfferProvider');
+const {
+  buildActiveGoalConversionQuery,
+  groupCompletedGoalKeysByOffer,
+  resolveCompletedGoalKeys,
+} = require('../services/tracking/offerGoalCompletion');
 const { processPostback } = require('../services/tracking/conversionService');
 const { processReward } = require('../services/rewards/rewardService');
 const { processReversal } = require('../services/rewards/reversalService');
@@ -64,14 +76,20 @@ router.get('/', verifyToken, async (req, res) => {
     }).select('-postbackSecretKey').lean();
 
     if (!user) {
-      return res.status(200).json({ success: true, offers: offers.map(o => ({ ...o, clickStatus: null, clickId: null })) });
+      return res.status(200).json({ success: true, offers: offers.map(o => ({ ...o, clickStatus: null, clickId: null, completedGoalKeys: [] })) });
     }
 
-    // Single query for user's click logs instead of N individual queries
-    const userClicks = await ClickLog.find({ userId: user._id })
-      .sort({ createdAt: -1 })
-      .select('offerId status clickId')
-      .lean();
+    // Two bulk queries for the whole list (no per-offer N+1): the user's click
+    // logs and the user's credited direct-offer goal Conversions.
+    const [userClicks, creditedGoalConversions] = await Promise.all([
+      ClickLog.find({ userId: user._id })
+        .sort({ createdAt: -1 })
+        .select('offerId status clickId')
+        .lean(),
+      Conversion.find(buildActiveGoalConversionQuery(user._id))
+        .select('offerId campaignId goalKey')
+        .lean(),
+    ]);
 
     const clickMap = {};
     for (const c of userClicks) {
@@ -81,12 +99,15 @@ router.get('/', verifyToken, async (req, res) => {
       }
     }
 
+    const completedByOffer = groupCompletedGoalKeysByOffer(creditedGoalConversions);
+
     const offersWithStatus = offers.map((offer) => {
       const click = clickMap[offer._id.toString()];
       return {
         ...offer,
         clickStatus: click ? click.status : null,
         clickId: click ? click.clickId : null,
+        completedGoalKeys: resolveCompletedGoalKeys(offer, completedByOffer),
       };
     });
 
@@ -143,65 +164,37 @@ router.post('/click/:offerId', verifyToken, fraudCheck('offer_click', 'full'), a
       return res.status(200).json({ success: true, url: redirectUrl, clickId: existingApproved.clickId, alreadyApproved: true });
     }
 
-    const { clickId, redirectUrl } = await createDirectOfferClick({
-      user,
-      offer,
-      req,
-      trackingParams: {
-        source: placement === 'brandedOfferwall' ? 'branded_offerwall' : 'featured_offers',
-        placement,
-      },
-    });
+    // Atomically reserve one total-click slot. This is the ONLY place totalClicks
+    // is incremented, and it prevents simultaneous requests from exceeding the
+    // optional overall cap. Unlimited offers always reserve.
+    const reservedOffer = await reserveDirectOfferClickSlot({ offerId: offer._id });
+    if (!reservedOffer) {
+      return res.status(409).json({ success: false, error: 'Offer click limit reached.', limitReached: true });
+    }
 
-    // Increment offer click counter
-    await DirectOffer.findByIdAndUpdate(offer._id, { $inc: { totalClicks: 1 } });
+    let clickResult;
+    try {
+      clickResult = await createDirectOfferClick({
+        user,
+        offer,
+        req,
+        trackingParams: {
+          source: placement === 'brandedOfferwall' ? 'branded_offerwall' : 'featured_offers',
+          placement,
+        },
+      });
+    } catch (error) {
+      // ClickLog creation failed — give the reserved slot back (no net change).
+      await releaseDirectOfferClickSlot({ offerId: offer._id });
+      throw error;
+    }
 
-    return res.status(200).json({ success: true, url: redirectUrl, clickId });
+    return res.status(200).json({ success: true, url: clickResult.redirectUrl, clickId: clickResult.clickId });
   } catch (error) {
     console.error('[POST /api/direct-offers/click/:offerId] Error:', error);
     return res.status(error.statusCode || 500).json({ success: false, error: error.statusCode ? error.message : 'Failed to process click' });
   }
 });
-
-const buildDirectOfferProviderConfig = (offer) => {
-  const mapping = offer.postbackMapping || {};
-  return {
-    providerId: 'direct',
-    name: 'Direct Offers',
-    type: 'direct',
-    enabled: Boolean(offer.isActive),
-    parameterMappings: {
-      clickId: mapping.clickIdParam || 'click_id',
-      transactionId: mapping.transactionIdParam || 'txn_id',
-      status: mapping.statusParam || 'status',
-      payout: mapping.payoutParam || 'payout',
-      eventType: mapping.eventTypeParam || 'event_type',
-    },
-    statusMappings: {
-      pending: [mapping.pendingValue || 'pending'],
-      approved: [mapping.approvedValue || 'approved'],
-      rejected: [mapping.rejectedValue || 'rejected'],
-      reversed: [mapping.reversedValue || mapping.chargebackValue || 'reversed', mapping.chargebackValue].filter(Boolean),
-    },
-    security: {
-      method: 'shared_secret',
-      tokenParam: 'secret',
-      secretValue: offer.postbackSecretKey,
-    },
-    responseConfig: {
-      successStatus: 200,
-      successBody: '1',
-      duplicateStatus: 200,
-      duplicateBody: '1',
-      errorStatus: 200,
-      errorBody: '0',
-    },
-    ipAllowlist: [],
-    providerSettings: {
-      requiredFields: ['clickId', 'transactionId', 'status'],
-    },
-  };
-};
 
 // GET /api/direct-offers/postback
 // PUBLIC (no auth) — Called by advertiser's server to confirm a conversion

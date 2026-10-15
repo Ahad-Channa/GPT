@@ -25,8 +25,10 @@ const { processVipLevelUp } = require('../utils/vipUtils');
 const {
   normalizeDisplayPlacements,
   parseAllowedCountriesInput,
+  parseMaxTotalClicks,
 } = require('../utils/directOfferInput');
 const { normalizeGoals } = require('../utils/offerGoals');
+const { sortOfferwallProviders } = require('../utils/offerwallOrder');
 const {
   REAL_OFFER_EARNING_TYPES,
   getEarningHoldDecision,
@@ -37,8 +39,10 @@ const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
 const { validateProviderAdapterKey } = require('../services/tracking/providerAdapterRegistry');
-const { processReward } = require('../services/rewards/rewardService');
+const { processReward, findExistingClickRewardTransaction } = require('../services/rewards/rewardService');
 const { processReversal } = require('../services/rewards/reversalService');
+const { createOrResolveConversion, findCreditedConversionForClickLog } = require('../services/tracking/conversionService');
+const { buildDirectOfferProviderConfig } = require('../services/tracking/directOfferProvider');
 
 const PROVIDER_TYPES = ['offerwall', 'direct', 'affiliate_network', 'advertiser', 'internal'];
 const SECURITY_METHODS = ['none', 'shared_secret', 'md5', 'sha1', 'sha256', 'sha512', 'hmac', 'token', 'custom_adapter'];
@@ -75,6 +79,12 @@ const cleanString = (value, max = 200) => {
   return String(value).trim().slice(0, max);
 };
 const cleanProviderId = (value) => cleanString(value, 80).toLowerCase();
+
+// Manual admin actions (approve/reject/chargeback, legacy click approve/reject)
+// must carry an explicit, trimmed reason. Returns '' when missing/blank so the
+// caller can reject with 400. There is no silent default reason.
+const ADMIN_MANUAL_REASON_MAX_LENGTH = 500;
+const parseAdminManualReason = (value) => cleanString(value, ADMIN_MANUAL_REASON_MAX_LENGTH);
 
 const hasOwn = (obj, key) => Object.prototype.hasOwnProperty.call(obj || {}, key);
 
@@ -832,7 +842,7 @@ router.put('/settings', requirePermission('manage_withdrawals'), async (req, res
 
 router.put('/offerwalls/:providerId', requirePermission('manage_offerwalls'), async (req, res) => {
   try {
-    const { enabled, conversionRatio, iframeUrl, offerwallUrl, placementId } = req.body;
+    const { enabled, conversionRatio, order, iframeUrl, offerwallUrl, placementId } = req.body;
     const settings = await Settings.getSingleton();
 
     const provider = settings.offerwallProviders.find(p => p.id === req.params.providerId);
@@ -843,6 +853,13 @@ router.put('/offerwalls/:providerId', requirePermission('manage_offerwalls'), as
       const ratio = Number(conversionRatio);
       if (!isNaN(ratio) && ratio > 0) provider.conversionRatio = ratio;
     }
+    if (order !== undefined) {
+      const parsedOrder = Number(order);
+      if (!Number.isInteger(parsedOrder) || parsedOrder < 0) {
+        return res.status(400).json({ success: false, error: 'Display order must be a non-negative integer' });
+      }
+      provider.order = parsedOrder;
+    }
     if (provider.id === 'lootably') {
       if (iframeUrl !== undefined) provider.iframeUrl = cleanString(iframeUrl, 500);
       if (offerwallUrl !== undefined) provider.offerwallUrl = cleanString(offerwallUrl, 500);
@@ -852,7 +869,8 @@ router.put('/offerwalls/:providerId', requirePermission('manage_offerwalls'), as
     await settings.save();
 
     await createLog(req.dbUser._id, 'UPDATE_OFFERWALL', null, {
-      providerId: provider.id, enabled, conversionRatio, ...(provider.id === 'lootably' ? { placementId: provider.placementId || '' } : {})
+      providerId: provider.id, enabled, conversionRatio, order: provider.order,
+      ...(provider.id === 'lootably' ? { placementId: provider.placementId || '' } : {})
     });
 
     res.json({ success: true, provider });
@@ -897,7 +915,7 @@ router.get('/offerwall-providers', requirePermission('manage_offerwalls'), async
       };
     });
 
-    res.json({ success: true, providers });
+    res.json({ success: true, providers: sortOfferwallProviders(providers) });
   } catch (error) {
     console.error('[/api/admin/offerwall-providers GET] Error:', error);
     res.status(500).json({ success: false, error: 'Failed to fetch offerwall providers' });
@@ -2245,6 +2263,9 @@ const refreshAdminConversion = (id) => loadAdminConversion(id).lean();
 // POST /api/admin/conversions/:id/approve — manual approval through reward service
 router.post('/conversions/:id/approve', requirePermission('manage_offerwalls'), async (req, res) => {
   try {
+    const reason = parseAdminManualReason(req.body?.reason);
+    if (!reason) return res.status(400).json({ success: false, error: 'A reason is required.' });
+
     if (!mongoose.Types.ObjectId.isValid(req.params.id)) return res.status(404).json({ success: false, error: 'Conversion not found' });
     const conversion = await Conversion.findById(req.params.id);
     if (!conversion) return res.status(404).json({ success: false, error: 'Conversion not found' });
@@ -2263,6 +2284,7 @@ router.post('/conversions/:id/approve', requirePermission('manage_offerwalls'), 
         ...(conversion.metadata || {}),
         manualApproval: true,
         manualApprovalAdminId: req.dbUser._id,
+        manualReason: reason,
       };
       await conversion.save();
     }
@@ -2299,6 +2321,7 @@ router.post('/conversions/:id/approve', requirePermission('manage_offerwalls'), 
       providerId: conversion.providerId,
       offerId: conversion.offerId,
       actionType: 'manual_approve_conversion',
+      reason,
       result: rewardResult.duplicate ? 'duplicate' : (rewardResult.ok ? 'accepted' : 'error'),
     });
 
@@ -2313,6 +2336,9 @@ router.post('/conversions/:id/approve', requirePermission('manage_offerwalls'), 
 // POST /api/admin/conversions/:id/reject — manual no-credit rejection
 router.post('/conversions/:id/reject', requirePermission('manage_offerwalls'), async (req, res) => {
   try {
+    const reason = parseAdminManualReason(req.body?.reason);
+    if (!reason) return res.status(400).json({ success: false, error: 'A reason is required.' });
+
     if (!mongoose.Types.ObjectId.isValid(req.params.id)) return res.status(404).json({ success: false, error: 'Conversion not found' });
     const conversion = await Conversion.findById(req.params.id);
     if (!conversion) return res.status(404).json({ success: false, error: 'Conversion not found' });
@@ -2327,13 +2353,14 @@ router.post('/conversions/:id/reject', requirePermission('manage_offerwalls'), a
     conversion.internalStatus = 'rejected';
     conversion.incomingStatus = 'manual_rejected';
     conversion.processingState = 'pending';
-    conversion.rejectionReason = cleanString(req.body?.reason || 'Manually rejected by admin', 500);
+    conversion.rejectionReason = reason;
     conversion.errorReason = '';
     conversion.security = { checked: true, passed: true, method: 'admin_manual', reason: 'Manual admin rejection' };
     conversion.metadata = {
       ...(conversion.metadata || {}),
       manualRejection: true,
       manualRejectionAdminId: req.dbUser._id,
+      manualReason: reason,
     };
     await conversion.save();
 
@@ -2361,6 +2388,7 @@ router.post('/conversions/:id/reject', requirePermission('manage_offerwalls'), a
       providerId: conversion.providerId,
       offerId: conversion.offerId,
       actionType: 'manual_reject_conversion',
+      reason,
       result: wasRejected ? 'duplicate' : 'rejected',
     });
 
@@ -2374,6 +2402,9 @@ router.post('/conversions/:id/reject', requirePermission('manage_offerwalls'), a
 // POST /api/admin/conversions/:id/chargeback — manual reversal through reversal service
 router.post('/conversions/:id/chargeback', requirePermission('manage_offerwalls'), async (req, res) => {
   try {
+    const reason = parseAdminManualReason(req.body?.reason);
+    if (!reason) return res.status(400).json({ success: false, error: 'A reason is required.' });
+
     if (!mongoose.Types.ObjectId.isValid(req.params.id)) return res.status(404).json({ success: false, error: 'Conversion not found' });
     const conversion = await Conversion.findById(req.params.id);
     if (!conversion) return res.status(404).json({ success: false, error: 'Conversion not found' });
@@ -2390,6 +2421,7 @@ router.post('/conversions/:id/chargeback', requirePermission('manage_offerwalls'
         ...(conversion.metadata || {}),
         manualChargeback: true,
         manualChargebackAdminId: req.dbUser._id,
+        manualReason: reason,
       };
       await conversion.save();
     }
@@ -2423,6 +2455,7 @@ router.post('/conversions/:id/chargeback', requirePermission('manage_offerwalls'
       providerId: conversion.providerId,
       offerId: conversion.offerId,
       actionType: 'manual_chargeback_conversion',
+      reason,
       result: reversalResult.duplicate ? 'duplicate' : (reversalResult.ok ? 'accepted' : 'error'),
     });
 
@@ -3198,6 +3231,7 @@ router.post('/direct-offers', requirePermission('manage_offerwalls'), async (req
       title, titleDe, description, descriptionDe, rewardAmount, advertiserPayoutAmount,
       advertiserUrl, isActive, expirationDate, icon, coverImage,
       platforms, requirements, requirementsDe, requirementType, postbackMapping, allowedCountries, displayPlacements, goals,
+      maxTotalClicks,
     } = req.body;
 
     if (!title || !description || !rewardAmount || !advertiserUrl) {
@@ -3224,6 +3258,7 @@ router.post('/direct-offers', requirePermission('manage_offerwalls'), async (req
       requirementType: requirementType === 'paragraph' ? 'paragraph' : 'bullets',
       goals: normalizeGoals(goals),
       postbackMapping: postbackMapping || {},
+      maxTotalClicks: parseMaxTotalClicks(maxTotalClicks),
       // postbackSecretKey is auto-generated by the model default
     });
 
@@ -3242,6 +3277,7 @@ router.put('/direct-offers/:id', requirePermission('manage_offerwalls'), async (
       title, titleDe, description, descriptionDe, rewardAmount, advertiserPayoutAmount,
       advertiserUrl, isActive, expirationDate, icon, coverImage,
       platforms, requirements, requirementsDe, requirementType, postbackMapping, allowedCountries, displayPlacements, goals,
+      maxTotalClicks,
     } = req.body;
 
     const offer = await DirectOffer.findByIdAndUpdate(
@@ -3266,6 +3302,7 @@ router.put('/direct-offers/:id', requirePermission('manage_offerwalls'), async (
         ...(requirementType !== undefined && { requirementType: requirementType === 'paragraph' ? 'paragraph' : 'bullets' }),
         ...(goals !== undefined && { goals: normalizeGoals(goals) }),
         ...(postbackMapping !== undefined && { postbackMapping }),
+        ...(maxTotalClicks !== undefined && { maxTotalClicks: parseMaxTotalClicks(maxTotalClicks) }),
       },
       { new: true }
     );
@@ -3380,88 +3417,108 @@ router.get('/click-logs', requirePermission('manage_offerwalls'), async (req, re
   }
 });
 
-// POST /api/admin/click-logs/:clickId/approve — Manual override: approve a click
+// POST /api/admin/click-logs/:clickId/approve — Manual override: approve a click.
+// This is NOT a separate financial path: it resolves/creates the same Conversion
+// used by the postback + manual-conversion flows and credits through processReward,
+// so a click can only ever be credited once. A credited Conversion or an existing
+// reward ledger transaction (even for historical records with no clickLog
+// transactionId) short-circuits to a duplicate result instead of crediting again.
 router.post('/click-logs/:clickId/approve', requirePermission('manage_offerwalls'), async (req, res) => {
   try {
+    const reason = parseAdminManualReason(req.body?.reason);
+    if (!reason) return res.status(400).json({ success: false, error: 'A reason is required.' });
+
     const clickLog = await ClickLog.findOne({ clickId: req.params.clickId }).populate('offerId');
     if (!clickLog) return res.status(404).json({ success: false, error: 'Click log not found' });
     if (clickLog.status === 'approved') {
       return res.status(400).json({ success: false, error: 'Click already approved' });
     }
 
-    const offer = clickLog.offerId;
-    const user = await User.findById(clickLog.userId);
-    if (!user) return res.status(404).json({ success: false, error: 'User not found' });
+    const offer = await DirectOffer.findById(clickLog.offerId?._id || clickLog.offerId);
+    if (!offer) return res.status(404).json({ success: false, error: 'Offer not found' });
 
-    const coinsToCredit = clickLog.rewardAmount;
-    const settings = await Settings.getSingleton();
-    const holdDecision = getEarningHoldDecision(settings, coinsToCredit);
-    const newBalance = user.walletBalance + holdDecision.walletCredit;
+    const enabledGoals = Array.isArray(offer.goals) ? offer.goals.filter((goal) => goal && goal.enabled !== false) : [];
+    if (enabledGoals.length > 0) {
+      return res.status(400).json({ success: false, error: 'This is a multi-step offer. Approve the specific goal from the Conversions page.' });
+    }
 
-    const updatedUser = await User.findByIdAndUpdate(
-      user._id,
-      { $inc: { walletBalance: holdDecision.walletCredit, totalEarned: coinsToCredit } },
-      { new: true }
-    );
-
-    const tx = await Transaction.create({
-      userId: user._id,
-      transactionType: 'direct_offer_reward',
-      amount: coinsToCredit,
-      balanceAfter: newBalance,
-      description: `Direct offer reward (manual): ${offer ? offer.title : 'Unknown Offer'}`,
-      status: holdDecision.status,
-      holdUntil: holdDecision.holdUntil,
-      sourceType: 'direct_offer',
-      sourceId: clickLog.offerId._id,
-      metadata: {
+    // Double-credit guard: a credited Conversion or an existing reward ledger
+    // transaction for this click means it was already credited somewhere.
+    const existingCreditedConversion = await findCreditedConversionForClickLog({ clickLogId: clickLog._id });
+    const existingRewardTransaction = await findExistingClickRewardTransaction({ clickLog });
+    if (existingCreditedConversion || existingRewardTransaction) {
+      clickLog.status = 'approved';
+      clickLog.convertedAt = clickLog.convertedAt || new Date();
+      if (!clickLog.transactionId && existingRewardTransaction) clickLog.transactionId = existingRewardTransaction._id;
+      await clickLog.save();
+      await createLog(req.dbUser._id, 'MANUAL_APPROVE_CLICK', clickLog.userId, {
         clickId: req.params.clickId,
-        manualApproval: true,
-        adminId: req.user._id,
-        walletApplied: holdDecision.walletCredit > 0,
-        holdApplied: holdDecision.status === 'hold',
-        holdDays: holdDecision.holdDays,
+        reason,
+        actionType: 'manual_approve_click',
+        result: 'duplicate',
+      });
+      return res.json({ success: true, duplicate: true, message: 'Click was already credited; no additional reward applied.' });
+    }
+
+    const providerConfig = buildDirectOfferProviderConfig(offer);
+    const conversionResult = await createOrResolveConversion({
+      providerConfig,
+      mapped: {
+        clickId: clickLog.clickId,
+        transactionId: `manual:${clickLog.clickId}`,
+        status: 'approved',
+        payout: null,
+        eventType: '',
+        providerUserId: '',
+        extra: {},
       },
-      externalId: `direct:${req.params.clickId}`,
+      internalStatus: 'approved',
+      clickLog,
+      payoutAmount: 0,
+      security: { checked: true, passed: true, method: 'admin_manual', reason: 'Manual admin click approval' },
+      goalKey: null,
+      rewardAmount: clickLog.rewardAmount,
     });
 
-    clickLog.status = 'approved';
-    clickLog.convertedAt = new Date();
-    clickLog.transactionId = tx._id;
-    await clickLog.save();
-
-    if (offer) {
-      await DirectOffer.findByIdAndUpdate(offer._id, { $inc: { totalApproved: 1 } });
+    if (!conversionResult || !conversionResult.conversion) {
+      return res.status(400).json({ success: false, error: 'Could not resolve a conversion for this click approval.' });
     }
 
-    await notify(
-      user._id,
-      'direct_offer_reward',
-      holdDecision.status === 'hold' ? 'Offer Reward on Hold' : '🎉 Offer Completed!',
-      holdDecision.status === 'hold'
-        ? `Your reward of ${coinsToCredit.toLocaleString()} coins from "${offer ? offer.title : 'Direct Offer'}" is on hold.`
-        : `You earned ${coinsToCredit.toLocaleString()} coins from "${offer ? offer.title : 'Direct Offer'}".`,
-      { txId: tx._id, amount: coinsToCredit }
-    );
+    const rewardResult = await processReward({
+      conversion: conversionResult.conversion,
+      hooks: {
+        emitWalletUpdate,
+        processVipLevelUp: (user, amount) => processVipLevelUp(user, amount, emitToUser),
+      },
+    });
 
-    if (holdDecision.walletCredit > 0) {
-      emitWalletUpdate(user.firebaseUid, newBalance);
+    await createLog(req.dbUser._id, 'MANUAL_APPROVE_CLICK', clickLog.userId, {
+      clickId: req.params.clickId,
+      reason,
+      actionType: 'manual_approve_click',
+      conversionId: conversionResult.conversion._id,
+      result: rewardResult.duplicate ? 'duplicate' : (rewardResult.ok ? 'accepted' : 'error'),
+    });
+
+    if (!rewardResult.ok) {
+      return res.status(400).json({ success: false, error: rewardResult.reason || 'Click could not be approved' });
     }
-
-    try { await processVipLevelUp(updatedUser || user, coinsToCredit, emitToUser); } catch (e) { /* non-fatal */ }
-
-    await createLog(req.dbUser._id, 'MANUAL_APPROVE_CLICK', user._id, { clickId: req.params.clickId, coins: coinsToCredit, actionType: 'manual_approve_click' });
-    res.json({ success: true, message: `Approved. Credited ${coinsToCredit} coins to ${user.displayName || user.email}` });
+    return res.json({ success: true, duplicate: Boolean(rewardResult.duplicate), message: 'Click approved' });
   } catch (error) {
     console.error('[/api/admin/click-logs/:clickId/approve] Error:', error);
-    res.status(500).json({ success: false, error: 'Failed to approve click' });
+    res.status(error.statusCode || 500).json({ success: false, error: error.statusCode ? error.message : 'Failed to approve click' });
   }
 });
 
-// POST /api/admin/click-logs/:clickId/reject — Manual override: reject a click
+// POST /api/admin/click-logs/:clickId/reject — Manual override: reject a click.
+// Reason is required. Rejection never credits; it also advances the conversion
+// lifecycle where one can be resolved.
 router.post('/click-logs/:clickId/reject', requirePermission('manage_offerwalls'), async (req, res) => {
   try {
-    const clickLog = await ClickLog.findOne({ clickId: req.params.clickId });
+    const reason = parseAdminManualReason(req.body?.reason);
+    if (!reason) return res.status(400).json({ success: false, error: 'A reason is required.' });
+
+    const clickLog = await ClickLog.findOne({ clickId: req.params.clickId }).populate('offerId');
     if (!clickLog) return res.status(404).json({ success: false, error: 'Click log not found' });
     if (clickLog.status === 'approved') {
       return res.status(400).json({ success: false, error: 'Cannot reject an already approved click' });
@@ -3470,15 +3527,52 @@ router.post('/click-logs/:clickId/reject', requirePermission('manage_offerwalls'
       return res.status(400).json({ success: false, error: 'Click already rejected' });
     }
 
+    const existingCreditedConversion = await findCreditedConversionForClickLog({ clickLogId: clickLog._id });
+    const existingRewardTransaction = await findExistingClickRewardTransaction({ clickLog });
+    if (existingCreditedConversion || existingRewardTransaction) {
+      return res.status(400).json({ success: false, error: 'Credited clicks must be reversed with chargeback, not rejected' });
+    }
+
     clickLog.status = 'rejected';
     clickLog.convertedAt = new Date();
     await clickLog.save();
 
     if (clickLog.offerId) {
-      await DirectOffer.findByIdAndUpdate(clickLog.offerId, { $inc: { totalRejected: 1 } });
+      await DirectOffer.findByIdAndUpdate(clickLog.offerId?._id || clickLog.offerId, { $inc: { totalRejected: 1 } });
     }
 
-    await createLog(req.dbUser._id, 'MANUAL_REJECT_CLICK', clickLog.userId, { clickId: req.params.clickId, actionType: 'manual_reject_click' });
+    // Advance the conversion lifecycle where practical. A credited click is
+    // guarded above, so this only records a no-credit rejection. Transition
+    // conflicts are ignored because the click is already explicitly rejected.
+    const offer = clickLog.offerId && clickLog.offerId.goals !== undefined
+      ? clickLog.offerId
+      : await DirectOffer.findById(clickLog.offerId?._id || clickLog.offerId);
+    if (offer) {
+      try {
+        await createOrResolveConversion({
+          providerConfig: buildDirectOfferProviderConfig(offer),
+          mapped: {
+            clickId: clickLog.clickId,
+            transactionId: `manual:${clickLog.clickId}`,
+            status: 'rejected',
+            payout: null,
+            eventType: '',
+            providerUserId: '',
+            extra: {},
+          },
+          internalStatus: 'rejected',
+          clickLog,
+          payoutAmount: 0,
+          security: { checked: true, passed: true, method: 'admin_manual', reason: 'Manual admin click rejection' },
+          goalKey: null,
+          rewardAmount: clickLog.rewardAmount,
+        });
+      } catch (conversionError) {
+        console.warn('[click-logs reject] conversion lifecycle skip:', conversionError.message);
+      }
+    }
+
+    await createLog(req.dbUser._id, 'MANUAL_REJECT_CLICK', clickLog.userId, { clickId: req.params.clickId, reason, actionType: 'manual_reject_click' });
     res.json({ success: true, message: 'Click rejected' });
   } catch (error) {
     console.error('[/api/admin/click-logs/:clickId/reject] Error:', error);
@@ -3618,6 +3712,7 @@ router._phase8AdminHelpers = {
   applyWriteOnlyProviderSecret,
   boundAdminPayload,
   cleanString,
+  parseAdminManualReason,
   validateProviderSettings,
   validateParameterMappings,
   validateSecurityConfig,

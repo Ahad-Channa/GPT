@@ -12,6 +12,8 @@ const directOfferGoalSchema = new mongoose.Schema(
     descriptionDe: { type: String, trim: true, default: '' },
     rewardAmount: { type: Number, required: true, min: 0 },
     payoutAmount: { type: Number, default: 0, min: 0 },
+    // Display-only label (e.g. "3D"). Not an expiry/deadline; no enforcement.
+    timeLimitDays: { type: Number, default: null, min: 1 },
     enabled: { type: Boolean, default: true },
   },
   { _id: false }
@@ -75,6 +77,9 @@ const directOfferSchema = new mongoose.Schema(
       reversedValue:      { type: String, default: 'reversed' },   // Value that means "reversal/chargeback"
       chargebackValue:    { type: String, default: '' },           // Optional legacy alias for reversal/chargeback
     },
+    // Optional overall (not per-user) total click cap. null = unlimited.
+    // Enforced atomically at click time; editing it never resets totalClicks.
+    maxTotalClicks: { type: Number, default: null, min: 1 },
     // Stats (denormalized for fast admin view)
     totalClicks: { type: Number, default: 0 },
     totalApproved: { type: Number, default: 0 },

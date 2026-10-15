@@ -5,6 +5,8 @@ import { FaApple, FaAndroid, FaDesktop } from 'react-icons/fa';
 import { useTranslation } from 'react-i18next';
 import CoinDisplay from '../CoinDisplay';
 import { GoodpicksSupportModal } from './GoodpicksModal';
+import { formatGoalTimeLimit } from '../../utils/goalTimeLimit';
+import { isOfferClickLimitReached } from '../../utils/offerClickLimit';
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
@@ -252,7 +254,9 @@ export const DirectOfferModal = ({ offer, token, placement = 'featured', onClose
     : offer.requirements;
   const [loading, setLoading] = useState(false);
   const [showSupportModal, setShowSupportModal] = useState(false);
+  const [actionError, setActionError] = useState('');
   const isExpired = offer.expirationDate && new Date(offer.expirationDate) < new Date();
+  const limitReached = isOfferClickLimitReached(offer);
   const rewardVal = offer.rewardAmount ?? offer.points ?? offer.reward ?? 0;
   const coverImgSrc = offer.coverImage || (isIconUrl(offer.icon) ? offer.icon : null);
   const emojiIcon = !coverImgSrc && offer.icon ? offer.icon : '⚡';
@@ -264,12 +268,14 @@ export const DirectOfferModal = ({ offer, token, placement = 'featured', onClose
     ? enabledGoals.map((goal) => ({
       label: formatGoalRequirement(goal, isDe),
       completed: isGoalCompleted(offer, goal),
+      timeLimitDays: goal.timeLimitDays,
     }))
     : [requirementText(requirements)];
 
   const handleGoToOffer = async () => {
-    if (isExpired) return;
+    if (isExpired || limitReached) return;
     setLoading(true);
+    setActionError('');
     try {
       if (token) {
         const res = await fetch(`${API}/direct-offers/click/${offer._id}`, {
@@ -281,10 +287,15 @@ export const DirectOfferModal = ({ offer, token, placement = 'featured', onClose
         if (data.success && data.url) {
           window.open(data.url, '_blank', 'noopener,noreferrer');
           if (onClicked) onClicked(offer._id);
+        } else if (data.limitReached) {
+          setActionError('This offer has reached its click limit.');
+        } else {
+          setActionError(data.error || 'Could not start this offer.');
         }
       }
     } catch (err) {
       console.error('Failed to process click:', err);
+      setActionError('Could not start this offer.');
     } finally {
       setLoading(false);
     }
@@ -472,6 +483,14 @@ export const DirectOfferModal = ({ offer, token, placement = 'featured', onClose
                   <span className="text-[13px] font-medium text-[#1E293B]">
                     {typeof req === 'object' ? (req.label || req.title || req.text || '') : req}
                   </span>
+                  {typeof req === 'object' && formatGoalTimeLimit(req.timeLimitDays) && (
+                    <span
+                      className="ml-auto shrink-0 px-2 py-0.5 rounded-full text-[11px] font-bold"
+                      style={{ background: '#202C44', color: '#FFFFFF' }}
+                    >
+                      {formatGoalTimeLimit(req.timeLimitDays)}
+                    </span>
+                  )}
                 </div>
               ))
             ) : (
@@ -488,10 +507,14 @@ export const DirectOfferModal = ({ offer, token, placement = 'featured', onClose
           </div>
         </div>
 
+        {actionError && (
+          <div className="text-center text-[12px] font-semibold text-[#B91C1C] shrink-0">{actionError}</div>
+        )}
+
         {/* Start Offer Button */}
         <button
           onClick={handleGoToOffer}
-          disabled={loading || isExpired}
+          disabled={loading || isExpired || limitReached}
           style={{
             fontFamily: '"Bricolage Grotesque", sans-serif',
             background: '#24324D',
@@ -504,6 +527,8 @@ export const DirectOfferModal = ({ offer, token, placement = 'featured', onClose
             <FiLoader className="animate-spin text-lg" />
           ) : isExpired ? (
             'Offer Expired'
+          ) : limitReached ? (
+            'Click limit reached'
           ) : (
             'Start Offer'
           )}

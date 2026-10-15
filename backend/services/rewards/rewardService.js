@@ -7,8 +7,41 @@ const User = require('../../models/User');
 const notify = require('../../utils/notify');
 const { emitToUser, emitWalletUpdate } = require('../../utils/walletEvents');
 const { processVipLevelUp } = require('../../utils/vipUtils');
-const { getEarningHoldDecision } = require('../../utils/earningTypes');
+const { getEarningHoldDecision, REAL_OFFER_EARNING_TYPES } = require('../../utils/earningTypes');
+const { findCreditedConversionForClickLog } = require('../tracking/conversionService');
 const { createOne, runAtomic, withSession } = require('./atomicRunner');
+
+const ACTIVE_CREDIT_STATUSES = ['completed', 'hold'];
+
+const isActiveCreditTransaction = (transaction) =>
+  Boolean(transaction) &&
+  ACTIVE_CREDIT_STATUSES.includes(transaction.status) &&
+  Number(transaction.amount) > 0;
+
+// Finds an existing reward ledger transaction already associated with a click.
+// Used together with credited-conversion lookup and clickLog.transactionId so the
+// double-credit guard still works for historical/incomplete records where
+// ClickLog.transactionId is missing. Never the sole source of truth.
+const findExistingClickRewardTransaction = async ({ clickLog, transactionModel = Transaction, session } = {}) => {
+  if (!clickLog) return null;
+  const clickId = clickLog.clickId;
+  const candidates = [];
+  if (clickLog.transactionId) {
+    candidates.push(await queryOne(transactionModel.findById(clickLog.transactionId), session));
+  }
+  if (clickId) {
+    candidates.push(await queryOne(transactionModel.findOne({ externalId: `direct:${clickId}` }), session));
+    if (typeof transactionModel.findOne === 'function') {
+      candidates.push(await queryOne(transactionModel.findOne({
+        'metadata.clickId': clickId,
+        transactionType: { $in: REAL_OFFER_EARNING_TYPES },
+        amount: { $gt: 0 },
+        status: { $in: ACTIVE_CREDIT_STATUSES },
+      }), session));
+    }
+  }
+  return candidates.find(isActiveCreditTransaction) || null;
+};
 
 const rewardExternalId = (conversionId) => `conversion:${conversionId}:reward`;
 const referralExternalId = (conversionId) => `conversion:${conversionId}:referral`;
@@ -192,6 +225,40 @@ const processReward = async ({
       if (!user) throw new Error('User not found for reward.');
       if (user.isBanned) throw new Error('Banned user cannot receive reward.');
 
+      // Double-credit guard for single-step conversions. The same click may have
+      // already been credited through another path (legacy click approval or a
+      // different conversion) whose ClickLog.transactionId is missing, so we also
+      // look for an existing credited Conversion and an existing reward ledger
+      // transaction for the click. On a hit we link the existing ledger instead
+      // of crediting again. Multi-step goals are excluded (each goal has its own
+      // conversion and legitimately shares the click).
+      if (!claimed.goalKey && !clickLog.goalsSnapshot) {
+        const existingConversion = await findCreditedConversionForClickLog({
+          clickLogId: clickLog._id,
+          excludeConversionId: claimed._id,
+          conversionModel,
+          session,
+        });
+        const existingRewardTx = existingConversion?.rewardTransactionId
+          ? await queryOne(transactionModel.findById(existingConversion.rewardTransactionId), session)
+          : await findExistingClickRewardTransaction({ clickLog, transactionModel, session });
+        if (existingConversion || isActiveCreditTransaction(existingRewardTx)) {
+          const linkedTransactionId = existingRewardTx?._id || existingConversion?.rewardTransactionId || null;
+          const duplicated = await conversionModel.findByIdAndUpdate(
+            claimed._id,
+            { $set: { processingState: 'processed', rewardTransactionId: linkedTransactionId, errorReason: '' } },
+            { new: true, session }
+          );
+          return {
+            ok: true,
+            duplicate: true,
+            conversion: duplicated || applyUpdate(claimed, { $set: { processingState: 'processed', rewardTransactionId: linkedTransactionId } }),
+            rewardTransaction: existingRewardTx,
+            strategy,
+          };
+        }
+      }
+
       // Reward amount always comes from the trusted click-time snapshot.
       // Goal conversions use the goal's snapshotted amount; single-step offers
       // keep using the offer reward amount exactly as before.
@@ -352,4 +419,6 @@ module.exports = {
   processReward,
   referralExternalId,
   rewardExternalId,
+  findExistingClickRewardTransaction,
+  isActiveCreditTransaction,
 };
