@@ -336,6 +336,8 @@
   },
   "dailyBonus": {
     "pageTitle": "Daily Bonus",
+    "pageSubtitleLine1": "Claim your daily reward and",
+    "pageSubtitleLine2": "keep your streak going!",
     "todaysReward": "Today's Reward",
     "coins": "Coins",
     "coinsLower": "coins",

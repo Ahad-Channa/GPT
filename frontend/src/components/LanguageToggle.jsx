@@ -3,7 +3,13 @@ import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTheme } from '../contexts/ThemeContext';
 
-const LanguageToggle = ({ style, className = '' }) => {
+const LanguageToggle = ({
+  style,
+  className = '',
+  pillOnMobile = false,
+  showArrowOnMobile = false,
+  dropdownAlign = 'left',
+}) => {
   const { i18n } = useTranslation();
   const { isDarkMode } = useTheme();
   const [isOpen, setIsOpen] = useState(false);
@@ -23,24 +29,38 @@ const LanguageToggle = ({ style, className = '' }) => {
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    document.addEventListener('touchstart', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('touchstart', handleClickOutside);
+    };
   }, []);
 
   return (
     <div className={`relative shrink-0 ${className}`} ref={dropdownRef}>
-      {/* Trigger Button: Transparent on mobile, styled pill on desktop */}
+      {/* Trigger Button: Transparent by default on mobile unless pillOnMobile, styled pill on desktop */}
       <button
         type="button"
         onClick={() => setIsOpen(prev => !prev)}
-        className={`flex items-center justify-center transition-all cursor-pointer select-none bg-transparent border-0 p-0 gap-[3px] lg:gap-[10px] lg:w-[106px] lg:h-[49px] lg:pl-[8px] lg:pr-[14px] lg:rounded-[80px] active:scale-95 ${
+        className={`flex items-center justify-center transition-all cursor-pointer select-none border-0 active:scale-95 ${
+          pillOnMobile
+            ? (isDarkMode
+                ? 'bg-[rgba(255,255,255,0.1)] hover:bg-[rgba(255,255,255,0.16)] px-[10px] h-[44px] rounded-[80px] gap-[6px]'
+                : 'bg-white hover:bg-gray-50 px-[10px] h-[44px] rounded-[80px] gap-[6px]')
+            : 'bg-transparent border-0 p-0 gap-[3px]'
+        } lg:gap-[10px] lg:w-[106px] lg:h-[49px] lg:pl-[8px] lg:pr-[14px] lg:rounded-[80px] ${
           isDarkMode
             ? 'lg:bg-[rgba(255,255,255,0.1)] lg:hover:bg-[rgba(255,255,255,0.16)]'
             : 'lg:bg-white lg:hover:bg-gray-50'
         }`}
         style={{
+          border: 'none',
+          outline: 'none',
+          boxShadow: 'none',
           opacity: 1,
           transform: 'rotate(0deg)',
           boxSizing: 'border-box',
+          WebkitTapHighlightColor: 'transparent',
           ...style,
         }}
         title="Change Language"
@@ -75,13 +95,13 @@ const LanguageToggle = ({ style, className = '' }) => {
           {currentLang === 'en' ? 'EN' : 'DE'}
         </span>
 
-        {/* Arrow / Chevron Button: Hidden on mobile, visible on desktop */}
+        {/* Arrow / Chevron Button */}
         <svg
           width="12"
           height="8"
           viewBox="0 0 12 8"
           fill="none"
-          className="hidden lg:block shrink-0 transition-transform duration-200"
+          className={`${showArrowOnMobile ? 'block' : 'hidden lg:block'} shrink-0 transition-transform duration-200`}
           style={{
             transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)',
             color: isDarkMode ? '#FFFFFF' : '#000000',
@@ -97,7 +117,7 @@ const LanguageToggle = ({ style, className = '' }) => {
         </svg>
       </button>
 
-      {/* Dropdown Menu (Screenshot 3 style) */}
+      {/* Dropdown Menu */}
       <AnimatePresence>
         {isOpen && (
           <motion.div
@@ -105,9 +125,14 @@ const LanguageToggle = ({ style, className = '' }) => {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 6, scale: 0.97 }}
             transition={{ duration: 0.15 }}
-            className="absolute left-0 top-[32px] lg:top-[56px] z-50 flex flex-col"
+            className={`absolute z-50 flex flex-col ${
+              dropdownAlign === 'right'
+                ? 'right-0 top-[48px] lg:top-[56px]'
+                : 'left-0 top-[32px] lg:top-[56px]'
+            }`}
             style={{
               width: '180px',
+              maxWidth: 'calc(100vw - 32px)',
               borderRadius: '16px',
               padding: '14px 16px',
               background: isDarkMode ? 'rgba(18, 22, 28, 0.98)' : '#FFFFFF',

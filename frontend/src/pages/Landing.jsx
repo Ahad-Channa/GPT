@@ -192,17 +192,19 @@ const Landing = () => {
               </button>
             </div>
 
-            {/* Mobile Menu Dropdown Circle Button */}
-            <div className="lg:hidden flex items-center">
+            {/* Mobile Actions: Language Dropdown + Menu Dropdown Circle Button */}
+            <div className="lg:hidden flex items-center gap-[8px] shrink-0">
+              <LanguageToggle pillOnMobile showArrowOnMobile dropdownAlign="right" />
               <button
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                className="flex items-center justify-center rounded-full text-white transition-transform active:scale-95 shadow-md cursor-pointer"
+                className="flex items-center justify-center rounded-full text-white transition-transform active:scale-95 shadow-md cursor-pointer shrink-0"
                 style={{
                   width: '47px',
                   height: '47px',
                   backgroundColor: 'rgba(36, 50, 77, 1)',
                   opacity: 1,
                 }}
+                aria-label="Toggle mobile menu"
               >
                 {mobileMenuOpen ? <FiX className="w-6 h-6 text-white" /> : <FiMenu className="w-6 h-6 text-white" />}
               </button>
@@ -273,16 +275,14 @@ const Landing = () => {
                 </a>
               </div>
 
-              <div className={`flex items-center justify-center gap-[14px] pt-3 pb-1 border-t w-full ${isDarkMode ? 'border-white/10' : 'border-gray-100'}`}>
-                <LanguageToggle />
+              <div className={`flex items-center justify-center gap-[12px] pt-3 pb-1 border-t w-full ${isDarkMode ? 'border-white/10' : 'border-gray-100'}`}>
                 <button
                   onClick={() => {
                     setMobileMenuOpen(false);
                     setAuthModal({ isOpen: true, tab: 'login' });
                   }}
-                  className="flex items-center justify-center hover:opacity-90 transition-opacity shadow-sm whitespace-nowrap cursor-pointer"
+                  className="flex items-center justify-center hover:opacity-90 transition-opacity shadow-sm whitespace-nowrap cursor-pointer flex-1"
                   style={{
-                    width: '120px',
                     height: '52px',
                     borderRadius: '80px',
                     border: isDarkMode ? 'none' : '1px solid rgba(0, 0, 0, 0.15)',
@@ -300,9 +300,8 @@ const Landing = () => {
                     setMobileMenuOpen(false);
                     setAuthModal({ isOpen: true, tab: 'register' });
                   }}
-                  className="flex items-center justify-center hover:opacity-90 transition-opacity shadow-sm whitespace-nowrap cursor-pointer"
+                  className="flex items-center justify-center hover:opacity-90 transition-opacity shadow-sm whitespace-nowrap cursor-pointer flex-1"
                   style={{
-                    width: '205px',
                     height: '52px',
                     borderRadius: '80px',
                     border: 'none',

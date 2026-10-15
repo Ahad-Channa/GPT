@@ -336,6 +336,8 @@
   },
   "dailyBonus": {
     "pageTitle": "Täglicher Bonus",
+    "pageSubtitleLine1": "Hole deine tägliche Belohnung ab und",
+    "pageSubtitleLine2": "halte deine Serie am Laufen!",
     "todaysReward": "Heutige Belohnung",
     "coins": "Coins",
     "coinsLower": "Coins",

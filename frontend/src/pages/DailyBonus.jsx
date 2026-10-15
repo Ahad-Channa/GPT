@@ -163,18 +163,22 @@ export default function DailyBonus() {
                       {t('dailyBonus.pageTitle', 'Daily Bonus')}
                     </h1>
                     <p
-                      className="text-[12px] sm:text-[14px] mt-1"
+                      className="text-[12px] sm:text-[14px] mt-1 sm:whitespace-nowrap"
                       style={{
                         fontFamily: '"Poppins", sans-serif',
                         fontWeight: 400,
-                        lineHeight: '1.3',
+                        lineHeight: '1.35',
                         letterSpacing: '0%',
-                        color: isDarkMode ? 'rgba(255, 255, 255, 0.7)' : 'rgba(14, 15, 12, 0.7)',
+                        color: isDarkMode ? '#FFFFFF' : '#0E0F0C',
                         margin: 0,
-                        whiteSpace: 'nowrap',
                       }}
                     >
-                      {t('dailyBonus.pageSubtitle', 'Claim your daily reward and keep your streak going!')}
+                      <span className="block sm:inline">
+                        {t('dailyBonus.pageSubtitleLine1', isEn ? 'Claim your daily reward and' : 'Hole deine tägliche Belohnung ab und')}{' '}
+                      </span>
+                      <span className="block sm:inline">
+                        {t('dailyBonus.pageSubtitleLine2', isEn ? 'keep your streak going!' : 'halte deine Serie am Laufen!')}
+                      </span>
                     </p>
                   </div>
 

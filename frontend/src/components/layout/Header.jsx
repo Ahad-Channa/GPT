@@ -511,7 +511,7 @@ const Header = ({ onChatToggle, chatOpen, fullWidth }) => {
                   paddingBottom: '5px',
                   paddingLeft: '5px',
                   borderRadius: '80px',
-                  background: 'rgba(255, 255, 255, 1)',
+                  background: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(255, 255, 255, 1)',
                   border: 'none',
                   outline: 'none',
                   boxShadow: 'none',
@@ -550,7 +550,7 @@ const Header = ({ onChatToggle, chatOpen, fullWidth }) => {
                         fontSize: '16px',
                         lineHeight: '18px',
                         letterSpacing: '0%',
-                        color: 'rgba(14, 15, 12, 1)',
+                        color: isDarkMode ? '#FFFFFF' : 'rgba(14, 15, 12, 1)',
                         opacity: 1,
                         transform: 'rotate(0deg)',
                       }}
@@ -609,7 +609,7 @@ const Header = ({ onChatToggle, chatOpen, fullWidth }) => {
                     opacity: 1,
                     transform: isMobileDropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)',
                     objectFit: 'contain',
-                    filter: 'brightness(0)',
+                    filter: isDarkMode ? 'brightness(0) invert(1)' : 'brightness(0)',
                   }}
                 />
               </button>
@@ -959,7 +959,7 @@ const Header = ({ onChatToggle, chatOpen, fullWidth }) => {
                 paddingBottom: '5px',
                 paddingLeft: '6px',
                 borderRadius: '80px',
-                background: 'rgba(255, 255, 255, 1)',
+                background: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(255, 255, 255, 1)',
                 border: 'none',
                 outline: 'none',
                 boxShadow: 'none',
@@ -999,7 +999,7 @@ const Header = ({ onChatToggle, chatOpen, fullWidth }) => {
                       fontSize: '16px',
                       lineHeight: '18px',
                       letterSpacing: '0%',
-                      color: 'rgba(14, 15, 12, 1)',
+                      color: isDarkMode ? '#FFFFFF' : 'rgba(14, 15, 12, 1)',
                       opacity: 1,
                       transform: 'rotate(0deg)',
                     }}
@@ -1058,7 +1058,7 @@ const Header = ({ onChatToggle, chatOpen, fullWidth }) => {
                   opacity: 1,
                   transform: isDropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)',
                   objectFit: 'contain',
-                  filter: 'brightness(0)',
+                  filter: isDarkMode ? 'brightness(0) invert(1)' : 'brightness(0)',
                 }}
               />
             </button>

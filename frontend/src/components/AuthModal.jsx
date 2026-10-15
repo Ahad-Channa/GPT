@@ -513,27 +513,47 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }) {
                       <span
                         className={`text-left ${
                           isGerman
-                            ? 'text-[12px] sm:text-[11.2px] sm:whitespace-nowrap tracking-tight leading-[18px] sm:leading-normal'
+                            ? 'text-[9.8px] min-[360px]:text-[10.5px] min-[390px]:text-[11px] sm:text-[11.2px] sm:whitespace-nowrap tracking-tight leading-[15px] sm:leading-normal'
                             : 'text-[12.5px] sm:text-[13.5px] leading-[20px] sm:leading-[22px]'
                         }`}
                         style={{
                           maxWidth: '544px',
                           fontFamily: '"Poppins", sans-serif',
                           fontWeight: 400,
-                          letterSpacing: isGerman ? '-0.02em' : '-0.01em',
+                          letterSpacing: isGerman ? '-0.025em' : '-0.01em',
                           color: isDarkMode ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.6)',
                           opacity: 1,
                         }}
                       >
-                        {t('auth.agreeTermsPrefix', 'By signing up, you agree to our')}{' '}
-                        <span style={{ fontWeight: 600, color: isDarkMode ? '#5271FF' : 'rgba(36, 50, 77, 1)' }}>
-                          {t('auth.termsAndConditions', 'Terms and Conditions')}
-                        </span>{' '}
-                        {t('auth.and', '&')}{' '}
-                        <span style={{ fontWeight: 600, color: isDarkMode ? '#5271FF' : 'rgba(36, 50, 77, 1)' }}>
-                          {t('auth.privacyPolicy', 'Privacy Policy.').replace(/\s+zu\.?$/, '')}
-                        </span>
-                        {isGerman ? ' zu.' : t('auth.agreeTermsSuffix', '')}
+                        {isGerman ? (
+                          <>
+                            <span className="block sm:inline whitespace-nowrap">
+                              {t('auth.agreeTermsPrefix', 'By signing up, you agree to our')}{' '}
+                            </span>
+                            <span className="block sm:inline whitespace-nowrap">
+                              <span style={{ fontWeight: 600, color: isDarkMode ? '#5271FF' : 'rgba(36, 50, 77, 1)' }}>
+                                {t('auth.termsAndConditions', 'Terms and Conditions')}
+                              </span>{' '}
+                              {t('auth.and', '&')}{' '}
+                              <span style={{ fontWeight: 600, color: isDarkMode ? '#5271FF' : 'rgba(36, 50, 77, 1)' }}>
+                                {t('auth.privacyPolicy', 'Privacy Policy.').replace(/\s+zu\.?$/, '')}
+                              </span>
+                              {' zu.'}
+                            </span>
+                          </>
+                        ) : (
+                          <>
+                            {t('auth.agreeTermsPrefix', 'By signing up, you agree to our')}{' '}
+                            <span style={{ fontWeight: 600, color: isDarkMode ? '#5271FF' : 'rgba(36, 50, 77, 1)' }}>
+                              {t('auth.termsAndConditions', 'Terms and Conditions')}
+                            </span>{' '}
+                            {t('auth.and', '&')}{' '}
+                            <span style={{ fontWeight: 600, color: isDarkMode ? '#5271FF' : 'rgba(36, 50, 77, 1)' }}>
+                              {t('auth.privacyPolicy', 'Privacy Policy.').replace(/\s+zu\.?$/, '')}
+                            </span>
+                            {t('auth.agreeTermsSuffix', '')}
+                          </>
+                        )}
                       </span>
                     </label>
                   </div>
