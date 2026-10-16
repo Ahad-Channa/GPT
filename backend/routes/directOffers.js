@@ -87,7 +87,7 @@ router.get('/', verifyToken, async (req, res) => {
         .select('offerId status clickId')
         .lean(),
       Conversion.find(buildActiveGoalConversionQuery(user._id))
-        .select('offerId campaignId goalKey')
+        .select('offerId campaignId goalKey internalStatus processingState rewardTransactionId')
         .lean(),
     ]);
 
