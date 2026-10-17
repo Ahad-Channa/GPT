@@ -382,7 +382,11 @@ const Footer = () => {
 
           {/* Bottom Copyright & Policy Bar (Inside Right Area, aligned with social icons like original desktop layout) */}
           <div
-            className="flex items-center justify-center lg:justify-start flex-wrap lg:flex-nowrap whitespace-nowrap overflow-x-auto no-scrollbar gap-x-2 sm:gap-x-2.5 w-full mt-6 lg:mt-auto pt-2 lg:pt-4 text-[12px] sm:text-[13px] transition-colors duration-300"
+            className={`flex items-center justify-center lg:justify-start flex-wrap lg:flex-nowrap whitespace-nowrap overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none'] w-full mt-6 lg:mt-auto pt-2 lg:pt-4 transition-all duration-300 ${
+              isDe
+                ? 'text-[9.5px] sm:text-[10px] md:text-[10.5px] lg:text-[10px] xl:text-[10.8px] gap-x-1 sm:gap-x-1.5 lg:gap-x-1.5 tracking-tight'
+                : 'text-[12px] sm:text-[13px] gap-x-2 sm:gap-x-2.5'
+            }`}
             style={{
               fontFamily: '"Poppins", sans-serif',
               fontWeight: 400,
