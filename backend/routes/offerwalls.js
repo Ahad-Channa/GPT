@@ -9,6 +9,7 @@ const notify = require('../utils/notify');
 const { notifyAdmins } = require('../utils/adminNotify');
 const { emitWalletUpdate, emitToUser } = require('../utils/walletEvents');
 const { processVipLevelUp } = require('../utils/vipUtils');
+const { getEarningHoldDecision } = require('../utils/earningTypes');
 const { sanitizePostbackPayload } = require('../services/tracking/postbackSanitizer');
 
 const PROVIDER_SECRET_MAP = {
@@ -290,17 +291,12 @@ const handleLegacyOfferwallPostback = async (providerId, req, res, params) => {
     }
 
     // 10. Atomic: User.findOneAndUpdate $inc walletBalance by platformCoins
-    let creditBalance = platformCoins;
-    let txStatus = 'completed';
-    let holdDate = null;
-    
-    // Evaluate Earning Hold Config
-    if (settings.earningHoldConfig?.enabled && platformCoins >= settings.earningHoldConfig.threshold) {
-        txStatus = 'hold';
-        creditBalance = 0; // do not add to wallet yet
-        holdDate = new Date();
-        holdDate.setDate(holdDate.getDate() + (settings.earningHoldConfig.holdDays || 30));
-    }
+    const holdDecision = getEarningHoldDecision(settings, platformCoins, new Date(), {
+      providerConfig: provider,
+    });
+    const creditBalance = holdDecision.walletCredit;
+    const txStatus = holdDecision.status;
+    const holdDate = holdDecision.holdUntil;
 
     const updatedUser = await User.findOneAndUpdate(
       { _id: user._id },
@@ -327,13 +323,15 @@ const handleLegacyOfferwallPostback = async (providerId, req, res, params) => {
         providerId,
         providerUnits,
         conversionRatio: provider.conversionRatio,
+        holdApplied: holdDecision.status === 'hold',
+        holdDays: holdDecision.holdDays,
       },
     });
 
     // 12. Send Offer Reward Notification
     const notifTitle = txStatus === 'hold' ? 'Offer Reward on Hold' : 'Offer Credited';
     const notifMsg = txStatus === 'hold' 
-      ? `You completed an offer from ${provider.label} for +${platformCoins} coins. The reward is placed on hold for ${settings.earningHoldConfig.holdDays || 30} days.`
+      ? `You completed an offer from ${provider.label} for +${platformCoins} coins. The reward is placed on hold for ${holdDecision.holdDays} days.`
       : `You earned +${platformCoins} coins from ${provider.label}.`;
 
     await notify(

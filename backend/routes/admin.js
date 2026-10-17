@@ -288,6 +288,17 @@ const sanitizeDirectOfferAdmin = (offer) => {
   return doc;
 };
 
+const parseOptionalHoldInteger = (value, label) => {
+  if (value === undefined || value === null || value === '') return null;
+  const num = Number(value);
+  if (!Number.isInteger(num) || num < 0) {
+    const error = new Error(`${label} must be a non-negative integer.`);
+    error.statusCode = 400;
+    throw error;
+  }
+  return num;
+};
+
 const hydrateOfferwallProviderSettings = (provider) => {
   const pObj = provider?.toObject ? provider.toObject() : { ...(provider || {}) };
   if (pObj.id === 'lootably') {
@@ -842,7 +853,7 @@ router.put('/settings', requirePermission('manage_withdrawals'), async (req, res
 
 router.put('/offerwalls/:providerId', requirePermission('manage_offerwalls'), async (req, res) => {
   try {
-    const { enabled, conversionRatio, order, iframeUrl, offerwallUrl, placementId } = req.body;
+    const { enabled, conversionRatio, order, iframeUrl, offerwallUrl, placementId, holdEnabled, holdDays, holdThreshold } = req.body;
     const settings = await Settings.getSingleton();
 
     const provider = settings.offerwallProviders.find(p => p.id === req.params.providerId);
@@ -860,6 +871,23 @@ router.put('/offerwalls/:providerId', requirePermission('manage_offerwalls'), as
       }
       provider.order = parsedOrder;
     }
+    if (holdEnabled !== undefined) {
+      provider.holdEnabled = holdEnabled === true;
+    }
+    if (holdDays !== undefined) {
+      const parsedHoldDays = Number(holdDays);
+      if (!Number.isInteger(parsedHoldDays) || parsedHoldDays < 0) {
+        return res.status(400).json({ success: false, error: 'Hold days must be a non-negative integer' });
+      }
+      provider.holdDays = parsedHoldDays;
+    }
+    if (holdThreshold !== undefined) {
+      const parsedHoldThreshold = Number(holdThreshold);
+      if (!Number.isInteger(parsedHoldThreshold) || parsedHoldThreshold < 0) {
+        return res.status(400).json({ success: false, error: 'Hold threshold must be a non-negative integer' });
+      }
+      provider.holdThreshold = parsedHoldThreshold;
+    }
     if (provider.id === 'lootably') {
       if (iframeUrl !== undefined) provider.iframeUrl = cleanString(iframeUrl, 500);
       if (offerwallUrl !== undefined) provider.offerwallUrl = cleanString(offerwallUrl, 500);
@@ -870,6 +898,7 @@ router.put('/offerwalls/:providerId', requirePermission('manage_offerwalls'), as
 
     await createLog(req.dbUser._id, 'UPDATE_OFFERWALL', null, {
       providerId: provider.id, enabled, conversionRatio, order: provider.order,
+      holdEnabled: provider.holdEnabled, holdDays: provider.holdDays, holdThreshold: provider.holdThreshold,
       ...(provider.id === 'lootably' ? { placementId: provider.placementId || '' } : {})
     });
 
@@ -3231,7 +3260,7 @@ router.post('/direct-offers', requirePermission('manage_offerwalls'), async (req
       title, titleDe, description, descriptionDe, rewardAmount, advertiserPayoutAmount,
       advertiserUrl, isActive, expirationDate, icon, coverImage,
       platforms, requirements, requirementsDe, requirementType, postbackMapping, allowedCountries, displayPlacements, goals,
-      maxTotalClicks,
+      maxTotalClicks, holdEnabled, holdDays, holdThreshold,
     } = req.body;
 
     if (!title || !description || !rewardAmount || !advertiserUrl) {
@@ -3244,6 +3273,9 @@ router.post('/direct-offers', requirePermission('manage_offerwalls'), async (req
       description,
       descriptionDe: descriptionDe || '',
       rewardAmount: Number(rewardAmount),
+      holdEnabled: holdEnabled === true,
+      holdDays: parseOptionalHoldInteger(holdDays, 'Hold days') ?? 30,
+      holdThreshold: parseOptionalHoldInteger(holdThreshold, 'Hold threshold') ?? 0,
       advertiserPayoutAmount: Number(advertiserPayoutAmount) || 0,
       advertiserUrl,
       isActive: isActive !== undefined ? Boolean(isActive) : true,
@@ -3277,7 +3309,7 @@ router.put('/direct-offers/:id', requirePermission('manage_offerwalls'), async (
       title, titleDe, description, descriptionDe, rewardAmount, advertiserPayoutAmount,
       advertiserUrl, isActive, expirationDate, icon, coverImage,
       platforms, requirements, requirementsDe, requirementType, postbackMapping, allowedCountries, displayPlacements, goals,
-      maxTotalClicks,
+      maxTotalClicks, holdEnabled, holdDays, holdThreshold,
     } = req.body;
 
     const offer = await DirectOffer.findByIdAndUpdate(
@@ -3288,6 +3320,9 @@ router.put('/direct-offers/:id', requirePermission('manage_offerwalls'), async (
         ...(description !== undefined && { description }),
         ...(descriptionDe !== undefined && { descriptionDe }),
         ...(rewardAmount !== undefined && { rewardAmount: Number(rewardAmount) }),
+        ...(holdEnabled !== undefined && { holdEnabled: holdEnabled === true }),
+        ...(holdDays !== undefined && { holdDays: parseOptionalHoldInteger(holdDays, 'Hold days') ?? 30 }),
+        ...(holdThreshold !== undefined && { holdThreshold: parseOptionalHoldInteger(holdThreshold, 'Hold threshold') ?? 0 }),
         ...(advertiserPayoutAmount !== undefined && { advertiserPayoutAmount: Number(advertiserPayoutAmount) }),
         ...(advertiserUrl !== undefined && { advertiserUrl }),
         ...(isActive !== undefined && { isActive: Boolean(isActive) }),

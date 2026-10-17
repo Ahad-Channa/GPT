@@ -108,6 +108,9 @@ const OfferFormModal = ({ offer, onClose, onSaved, token }) => {
     rewardAmount: offer?.rewardAmount || '',
     advertiserPayoutAmount: offer?.advertiserPayoutAmount || '',
     maxTotalClicks: offer?.maxTotalClicks ?? '',
+    holdEnabled: offer?.holdEnabled === true,
+    holdDays: String(offer?.holdDays ?? 30),
+    holdThreshold: String(offer?.holdThreshold ?? 0),
     advertiserUrl: offer?.advertiserUrl || '',
     expirationDate: offer?.expirationDate ? offer.expirationDate.slice(0, 10) : '',
     icon: offer?.icon || '',
@@ -144,6 +147,14 @@ const OfferFormModal = ({ offer, onClose, onSaved, token }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+    const parsedHoldDays = Number(form.holdDays);
+    const parsedHoldThreshold = Number(form.holdThreshold);
+    if (form.holdEnabled && (!Number.isInteger(parsedHoldDays) || parsedHoldDays < 0)) {
+      return setError('Hold days must be a non-negative integer.');
+    }
+    if (form.holdEnabled && (!Number.isInteger(parsedHoldThreshold) || parsedHoldThreshold < 0)) {
+      return setError('Hold threshold must be a non-negative integer.');
+    }
     setLoading(true);
     try {
       const url = isEdit ? `${API}/admin/direct-offers/${offer._id}` : `${API}/admin/direct-offers`;
@@ -179,6 +190,9 @@ const OfferFormModal = ({ offer, onClose, onSaved, token }) => {
           platforms: form.platforms,
           postbackMapping: form.postbackMapping,
           maxTotalClicks: (form.maxTotalClicks === '' || form.maxTotalClicks == null) ? null : Number(form.maxTotalClicks),
+          holdEnabled: Boolean(form.holdEnabled),
+          holdDays: Number.isInteger(parsedHoldDays) && parsedHoldDays >= 0 ? parsedHoldDays : 0,
+          holdThreshold: Number.isInteger(parsedHoldThreshold) && parsedHoldThreshold >= 0 ? parsedHoldThreshold : 0,
         }),
       });
       const data = await res.json();
@@ -371,6 +385,59 @@ const OfferFormModal = ({ offer, onClose, onSaved, token }) => {
                 </label>
               ))}
             </div>
+          </div>
+
+          {/* Optional offer-specific hold policy — shared by Featured and Goodpicks */}
+          <div className="border border-white/10 rounded-lg p-3 space-y-2">
+            <label className="flex items-center gap-2 text-sm text-slate-300 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={form.holdEnabled}
+                onChange={e => setForm(f => ({ ...f, holdEnabled: e.target.checked }))}
+                className="accent-indigo-500"
+              />
+              Custom Hold Period
+            </label>
+            <p className="text-[11px] text-slate-500">
+              Overrides the global Earnings Hold settings for this offer. When off, global settings are used.
+            </p>
+            {form.holdEnabled ? (
+              <>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className={labelCls}>Hold Days</label>
+                    <input
+                      type="number"
+                      min="0"
+                      step="1"
+                      className={inputCls}
+                      value={form.holdDays}
+                      onChange={set('holdDays')}
+                      placeholder="e.g. 10"
+                    />
+                  </div>
+                  <div>
+                    <label className={labelCls}>Hold Threshold (Coins)</label>
+                    <input
+                      type="number"
+                      min="0"
+                      step="1"
+                      className={inputCls}
+                      value={form.holdThreshold}
+                      onChange={set('holdThreshold')}
+                      placeholder="e.g. 0"
+                    />
+                  </div>
+                </div>
+                <p className="text-[11px] text-slate-500">
+                  Set days to 0 for instant credit with no hold.
+                </p>
+              </>
+            ) : (
+              <p className="text-[11px] text-slate-500">
+                Global fallback: configure it in Platform Settings → Earnings Hold System.
+              </p>
+            )}
           </div>
 
           {/* Optional multi-step goals — empty keeps single-reward behavior */}

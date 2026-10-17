@@ -26,6 +26,12 @@ const directOfferSchema = new mongoose.Schema(
     description: { type: String, required: true },
     descriptionDe: { type: String, default: '' },
     rewardAmount: { type: Number, required: true }, // Coins to credit user on approval
+    // Optional offer-specific earning hold policy. Only active when holdEnabled
+    // is true; otherwise the global earningHoldConfig applies. Shared by the
+    // Featured and Goodpicks placements because it belongs to the offer itself.
+    holdEnabled: { type: Boolean, default: false },
+    holdDays: { type: Number, default: 30, min: 0 },
+    holdThreshold: { type: Number, default: 0, min: 0 },
     advertiserPayoutAmount: { type: Number, default: 0 }, // USD you earn from advertiser (record only)
     advertiserUrl: { type: String, required: true }, // Where user is redirected after click
     isActive: { type: Boolean, default: true },

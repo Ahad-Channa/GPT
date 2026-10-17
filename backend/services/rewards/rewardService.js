@@ -281,7 +281,14 @@ const processReward = async ({
       const externalId = rewardExternalId(claimed._id);
       const balanceBefore = user.walletBalance || 0;
       const settings = await queryOne(settingsModel.getSingleton(), session);
-      const holdDecision = getEarningHoldDecision(settings, rewardAmount);
+      const directOfferId = claimed.offerId || clickLog.offerId || claimed.campaignId || null;
+      let directOffer = null;
+      if (directOfferId && typeof directOfferModel.findById === 'function') {
+        directOffer = await queryOne(directOfferModel.findById(directOfferId), session);
+      }
+      const holdDecision = getEarningHoldDecision(settings, rewardAmount, new Date(), {
+        directOfferConfig: directOffer,
+      });
 
       const { transaction: rewardTx } = await createTransactionIdempotent({
         transactionModel,

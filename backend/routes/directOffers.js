@@ -73,7 +73,7 @@ router.get('/', verifyToken, async (req, res) => {
         { $or: [{ expirationDate: null }, { expirationDate: { $gt: now } }] },
         buildPlacementClause(placement),
       ],
-    }).select('-postbackSecretKey').lean();
+    }).select('-postbackSecretKey -holdEnabled -holdDays -holdThreshold').lean();
 
     if (!user) {
       return res.status(200).json({ success: true, offers: offers.map(o => ({ ...o, clickStatus: null, clickId: null, completedGoalKeys: [] })) });

@@ -104,6 +104,11 @@ const settingsSchema = new mongoose.Schema(
           iframeUrl: { type: String, default: '' },
           offerwallUrl: { type: String, default: '' },
           placementId: { type: String, default: '' },
+          // Optional provider-specific earning hold policy. Only active when
+          // holdEnabled is true; otherwise the global earningHoldConfig applies.
+          holdEnabled: { type: Boolean, default: false },
+          holdDays: { type: Number, default: 30, min: 0 },
+          holdThreshold: { type: Number, default: 0, min: 0 },
           // Admin-controlled display order (lower shows first). null = unset and
           // resolved to the current array index on read for old documents.
           order: { type: Number, default: null },
