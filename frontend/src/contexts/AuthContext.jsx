@@ -61,7 +61,7 @@ export const AuthProvider = ({ children }) => {
     const syncWithMongo = async (user) => {
         try {
             const token = await user.getIdToken();
-            const ref = localStorage.getItem('ref');
+            const ref = localStorage.getItem('ref') || sessionStorage.getItem('pending_ref');
             const fingerprint = await generateFingerprint();
             const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/auth/sync`, {
                 method: 'POST',

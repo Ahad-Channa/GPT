@@ -288,4 +288,25 @@ router.get('/legal/:slug', async (req, res) => {
   }
 });
 
+// ── GET /api/public/cookies ───────────────────────────────────────────────────
+// Returns all active cookies grouped by category for public banner, settings modal & policy.
+const CookieItem = require('../models/CookieItem');
+
+router.get('/cookies', async (req, res) => {
+  try {
+    const cookies = await CookieItem.getOrSeedAll();
+    const activeCookies = cookies.filter(c => c.isActive !== false);
+
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+    res.status(200).json({
+      success: true,
+      cookies: activeCookies,
+    });
+  } catch (err) {
+    console.error('[/api/public/cookies] Error:', err);
+    res.status(500).json({ success: false, error: 'Failed to fetch cookies' });
+  }
+});
+
 module.exports = router;
+

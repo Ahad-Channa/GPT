@@ -2611,4 +2611,118 @@ router.put('/legal-pages/:slug', async (req, res) => {
   }
 });
 
+// ═══════════════════════════════════════════════════════════════════════════
+// COOKIE CONSENT & STORAGE MANAGEMENT
+// ═══════════════════════════════════════════════════════════════════════════
+const CookieItem = require('../models/CookieItem');
+
+// GET /api/admin/cookies — fetch all cookies for admin management
+router.get('/cookies', async (req, res) => {
+  try {
+    if (req.dbUser.role === 'support_agent' && req.user.email !== process.env.PRIMARY_ADMIN_EMAIL) {
+      return res.status(403).json({ success: false, error: 'Forbidden' });
+    }
+    const cookies = await CookieItem.getOrSeedAll();
+    res.json({ success: true, cookies });
+  } catch (error) {
+    console.error('[/api/admin/cookies] Error:', error);
+    res.status(500).json({ success: false, error: 'Failed to fetch cookies' });
+  }
+});
+
+// POST /api/admin/cookies — create a new cookie
+router.post('/cookies', async (req, res) => {
+  try {
+    if (req.dbUser.role === 'support_agent' && req.user.email !== process.env.PRIMARY_ADMIN_EMAIL) {
+      return res.status(403).json({ success: false, error: 'Forbidden' });
+    }
+    const { name, provider, category, duration, description_en, description_de, isActive, order } = req.body;
+    if (!name || !provider || !category || !duration) {
+      return res.status(400).json({ success: false, error: 'Name, provider, category, and duration are required' });
+    }
+
+    const cookie = await CookieItem.create({
+      name: name.trim(),
+      provider: provider.trim(),
+      category,
+      duration: duration.trim(),
+      description_en: (description_en || '').trim(),
+      description_de: (description_de || '').trim(),
+      isActive: isActive !== false,
+      order: Number(order) || 0,
+      isDefault: false,
+    });
+
+    if (req.dbUser) {
+      await createLog(req.dbUser._id, 'create_cookie_item', null, { name: cookie.name, category: cookie.category });
+    }
+
+    res.status(201).json({ success: true, cookie });
+  } catch (error) {
+    console.error('[/api/admin/cookies POST] Error:', error);
+    res.status(500).json({ success: false, error: 'Failed to create cookie' });
+  }
+});
+
+// PUT /api/admin/cookies/:id — update a cookie
+router.put('/cookies/:id', async (req, res) => {
+  try {
+    if (req.dbUser.role === 'support_agent' && req.user.email !== process.env.PRIMARY_ADMIN_EMAIL) {
+      return res.status(403).json({ success: false, error: 'Forbidden' });
+    }
+    const { id } = req.params;
+    const { name, provider, category, duration, description_en, description_de, isActive, order } = req.body;
+
+    const cookie = await CookieItem.findById(id);
+    if (!cookie) {
+      return res.status(404).json({ success: false, error: 'Cookie not found' });
+    }
+
+    if (name !== undefined) cookie.name = name.trim();
+    if (provider !== undefined) cookie.provider = provider.trim();
+    if (category !== undefined) cookie.category = category;
+    if (duration !== undefined) cookie.duration = duration.trim();
+    if (description_en !== undefined) cookie.description_en = description_en.trim();
+    if (description_de !== undefined) cookie.description_de = description_de.trim();
+    if (isActive !== undefined) cookie.isActive = Boolean(isActive);
+    if (order !== undefined) cookie.order = Number(order);
+
+    await cookie.save();
+
+    if (req.dbUser) {
+      await createLog(req.dbUser._id, 'update_cookie_item', null, { id, name: cookie.name });
+    }
+
+    res.json({ success: true, cookie });
+  } catch (error) {
+    console.error('[/api/admin/cookies/:id PUT] Error:', error);
+    res.status(500).json({ success: false, error: 'Failed to update cookie' });
+  }
+});
+
+// DELETE /api/admin/cookies/:id — delete a cookie
+router.delete('/cookies/:id', async (req, res) => {
+  try {
+    if (req.dbUser.role === 'support_agent' && req.user.email !== process.env.PRIMARY_ADMIN_EMAIL) {
+      return res.status(403).json({ success: false, error: 'Forbidden' });
+    }
+    const { id } = req.params;
+    const cookie = await CookieItem.findById(id);
+    if (!cookie) {
+      return res.status(404).json({ success: false, error: 'Cookie not found' });
+    }
+
+    await CookieItem.findByIdAndDelete(id);
+
+    if (req.dbUser) {
+      await createLog(req.dbUser._id, 'delete_cookie_item', null, { id, name: cookie.name });
+    }
+
+    res.json({ success: true, message: 'Cookie deleted successfully' });
+  } catch (error) {
+    console.error('[/api/admin/cookies/:id DELETE] Error:', error);
+    res.status(500).json({ success: false, error: 'Failed to delete cookie' });
+  }
+});
+
 module.exports = router;

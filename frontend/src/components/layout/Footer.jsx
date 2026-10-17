@@ -3,11 +3,13 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useLegalModal } from '../../contexts/LegalModalContext';
+import { useCookieConsent } from '../../contexts/CookieConsentContext';
 import { FaFacebookF, FaInstagram, FaYoutube } from 'react-icons/fa';
 
 const Footer = () => {
   const navigate = useNavigate();
   const { openLegal } = useLegalModal();
+  const { openCookieSettings } = useCookieConsent();
   const { t, i18n } = useTranslation();
   const isDe = i18n?.language?.startsWith('de');
   const [isMobile, setIsMobile] = useState(
@@ -414,9 +416,13 @@ const Footer = () => {
               {t('footer.cookiePolicy', 'Cookie Policy')}
             </button>
             <span className="opacity-40 select-none shrink-0">•</span>
-            <span className="opacity-80 shrink-0">
+            <button
+              type="button"
+              onClick={openCookieSettings}
+              className="hover:underline hover:opacity-100 transition-opacity cursor-pointer bg-transparent border-none p-0 text-inherit shrink-0"
+            >
               {t('footer.cookieSettings', 'Cookie Settings')}
-            </span>
+            </button>
             <span className="opacity-40 select-none shrink-0">•</span>
             <button
               type="button"

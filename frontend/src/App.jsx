@@ -37,8 +37,12 @@ import VipPage from './pages/VipPage';
 
 import AdminBooks from './pages/admin/AdminBooks';
 import AdminLegalPages from './pages/admin/AdminLegalPages';
+import AdminCookies from './pages/admin/AdminCookies';
 import LegalPage from './pages/LegalPage';
 import NotificationPanel from './components/NotificationPanel';
+import CookieConsentBanner from './components/cookie/CookieConsentBanner';
+import CookieSettingsModal from './components/cookie/CookieSettingsModal';
+import { useCookieConsent } from './contexts/CookieConsentContext';
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
@@ -54,6 +58,7 @@ const PrivateRoute = ({ children }) => {
  */
 const ReferralRedirect = () => {
   const { code } = useParams();
+  const { hasConsent } = useCookieConsent();
 
   useEffect(() => {
     const resolve = async () => {
@@ -61,7 +66,11 @@ const ReferralRedirect = () => {
         const res = await fetch(`${API}/public/r/${code}`);
         const data = await res.json();
         if (data.success && data.referrerId) {
-          localStorage.setItem('ref', data.referrerId);
+          if (hasConsent('marketing')) {
+            localStorage.setItem('ref', data.referrerId);
+          } else {
+            sessionStorage.setItem('pending_ref', data.referrerId);
+          }
         }
       } catch (e) {
         // Ignore — user still lands on home page
@@ -70,7 +79,7 @@ const ReferralRedirect = () => {
       }
     };
     resolve();
-  }, [code]);
+  }, [code, hasConsent]);
 
   return null; // Nothing to render — redirect happens immediately
 };
@@ -78,17 +87,24 @@ const ReferralRedirect = () => {
 function App() {
   const { currentUser, isAdmin, hasAdminAccess, twoFactorRequired } = useAuth();
   const { isDarkMode } = useTheme();
+  const { hasConsent } = useCookieConsent();
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const ref = params.get('ref');
     if (ref) {
-      localStorage.setItem('ref', ref);
+      if (hasConsent('marketing')) {
+        localStorage.setItem('ref', ref);
+      } else {
+        sessionStorage.setItem('pending_ref', ref);
+      }
     }
-  }, []);
+  }, [hasConsent]);
 
   return (
     <>
+      <CookieConsentBanner />
+      <CookieSettingsModal />
       {currentUser && twoFactorRequired && <TwoFactorOverlay />}
       <Toaster
         position="bottom-right"
@@ -263,6 +279,7 @@ function App() {
           <Route path="logs" element={<AdminLogs />} />
           <Route path="settings" element={<AdminSettings />} />
           <Route path="legal-pages" element={<AdminLegalPages />} />
+          <Route path="cookies" element={<AdminCookies />} />
         </Route>
       </Routes>
     </>

@@ -2,6 +2,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useSearchParams, useParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '../contexts/ThemeContext';
+import { useCookieConsent } from '../contexts/CookieConsentContext';
+import { FiSliders, FiShield, FiTag, FiClock } from 'react-icons/fi';
 import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
 
@@ -174,6 +176,7 @@ export default function Policies({ customSlug }) {
   const { t, i18n } = useTranslation();
   const isDe = i18n?.language?.startsWith('de');
   const { isDarkMode } = useTheme();
+  const { openCookieSettings, cookiesList } = useCookieConsent();
 
   // Resolve initial active tab
   const rawTab = customSlug || routeSlug || searchParams.get('tab') || 'terms-of-use';
@@ -455,6 +458,144 @@ export default function Policies({ customSlug }) {
               <div className="space-y-1">
                 {renderMarkdown(cleanedContent, isDarkMode)}
               </div>
+
+              {/* Dynamic Live Cookie Registry Table when viewing Cookie Policy */}
+              {activeSlug === 'cookie-policy' && (
+                <div
+                  className="mt-10 pt-8 border-t transition-colors duration-300"
+                  style={{
+                    borderColor: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : '#E5E7EB',
+                  }}
+                >
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
+                    <div>
+                      <h3
+                        className="text-xl sm:text-2xl font-bold tracking-tight"
+                        style={{
+                          fontFamily: '"Bricolage Grotesque", sans-serif',
+                          color: isDarkMode ? '#FFFFFF' : '#111827',
+                          letterSpacing: '-0.01em',
+                        }}
+                      >
+                        {isDe ? 'Verzeichnis der verwendeten Cookies & Technologien' : 'Registry of Used Cookies & Technologies'}
+                      </h3>
+                      <p
+                        className="text-xs sm:text-sm mt-1"
+                        style={{ color: isDarkMode ? 'rgba(255,255,255,0.6)' : '#6B7280' }}
+                      >
+                        {isDe
+                          ? 'Aktuelle Übersicht der auf TaskMint eingesetzten Cookies und Speichertechnologien mit Verwendungszweck und Speicherdauer.'
+                          : 'Live directory of all cookies and browser storage technologies used on TaskMint, including purpose and duration.'}
+                      </p>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={openCookieSettings}
+                      className="shrink-0 flex items-center justify-center px-4 py-2.5 rounded-xl font-bold text-xs sm:text-sm text-white transition-all shadow-md active:scale-95 cursor-pointer hover:opacity-90"
+                      style={{
+                        background: 'rgba(36, 50, 77, 1)',
+                        color: '#FFFFFF',
+                        fontFamily: '"Bricolage Grotesque", sans-serif',
+                      }}
+                    >
+                      <span>{isDe ? 'Cookie-Einstellungen anpassen' : 'Manage Cookie Preferences'}</span>
+                    </button>
+                  </div>
+
+                  {/* Cookie items table */}
+                  {cookiesList && cookiesList.length > 0 ? (
+                    <div
+                      className="rounded-2xl overflow-hidden border transition-colors"
+                      style={{
+                        borderColor: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : '#E5E7EB',
+                        background: isDarkMode ? 'rgba(255, 255, 255, 0.02)' : '#F9FAFB',
+                      }}
+                    >
+                      <div className="overflow-x-auto">
+                        <table className="w-full text-left text-xs sm:text-sm border-collapse">
+                          <thead>
+                            <tr
+                              className="border-b text-[11px] font-bold uppercase tracking-wider"
+                              style={{
+                                borderColor: isDarkMode ? 'rgba(255, 255, 255, 0.08)' : '#E5E7EB',
+                                color: isDarkMode ? '#9CA3AF' : '#6B7280',
+                                background: isDarkMode ? 'rgba(255, 255, 255, 0.03)' : '#F3F4F6',
+                              }}
+                            >
+                              <th className="py-3 px-4 sm:px-6">Cookie / Name</th>
+                              <th className="py-3 px-4">Kategorie / Category</th>
+                              <th className="py-3 px-4">Anbieter / Provider</th>
+                              <th className="py-3 px-4">Dauer / Duration</th>
+                              <th className="py-3 px-4 sm:px-6">Zweck / Purpose</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {cookiesList.map((c) => (
+                              <tr
+                                key={c._id || c.name}
+                                className="border-b last:border-b-0 transition-colors"
+                                style={{
+                                  borderColor: isDarkMode ? 'rgba(255, 255, 255, 0.05)' : '#F3F4F6',
+                                }}
+                              >
+                                <td className="py-3.5 px-4 sm:px-6 font-semibold">
+                                  <code
+                                    className="px-2 py-0.5 rounded text-xs"
+                                    style={{
+                                      background: isDarkMode ? 'rgba(255, 255, 255, 0.08)' : '#E5E7EB',
+                                      color: isDarkMode ? '#E5E7EB' : '#1F2937',
+                                    }}
+                                  >
+                                    {c.name}
+                                  </code>
+                                </td>
+                                <td className="py-3.5 px-4">
+                                  <span
+                                    className="inline-block text-[11px] font-bold px-2.5 py-0.5 rounded-full capitalize"
+                                    style={{
+                                      background:
+                                        c.category === 'essential'
+                                          ? 'rgba(0, 214, 93, 0.15)'
+                                          : c.category === 'functional'
+                                          ? 'rgba(59, 130, 246, 0.15)'
+                                          : 'rgba(245, 158, 11, 0.15)',
+                                      color:
+                                        c.category === 'essential'
+                                          ? '#00D65D'
+                                          : c.category === 'functional'
+                                          ? '#3B82F6'
+                                          : '#F59E0B',
+                                    }}
+                                  >
+                                    {c.category}
+                                  </span>
+                                </td>
+                                <td className="py-3.5 px-4 text-xs" style={{ color: isDarkMode ? '#D1D5DB' : '#4B5563' }}>
+                                  {c.provider}
+                                </td>
+                                <td className="py-3.5 px-4 text-xs whitespace-nowrap" style={{ color: isDarkMode ? '#D1D5DB' : '#4B5563' }}>
+                                  <span className="flex items-center gap-1.5">
+                                    <FiClock className="w-3.5 h-3.5 text-gray-400" />
+                                    {c.duration}
+                                  </span>
+                                </td>
+                                <td className="py-3.5 px-4 sm:px-6 text-xs leading-relaxed" style={{ color: isDarkMode ? '#9CA3AF' : '#4B5563' }}>
+                                  {isDe ? c.description_de || c.description_en : c.description_en}
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="text-center py-6 text-xs text-gray-400">
+                      {isDe ? 'Keine Cookies registriert.' : 'No cookies registered.'}
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           )}
         </div>

@@ -84,6 +84,7 @@ const AdminLayout = () => {
     ...(isPrimaryAdmin ? [{ to: '/admin/announcements', end: false, icon: FiBell, label: 'Announcements' }] : []),
     ...(isPrimaryAdmin ? [{ to: '/admin/logs', end: false, icon: FiActivity, label: 'Audit Log', badgeKey: 'security' }] : []),
     ...(isPrimaryAdmin || isAdmin ? [{ to: '/admin/legal-pages', end: false, icon: FiFileText, label: 'Legal Pages' }] : []),
+    ...(isPrimaryAdmin || isAdmin ? [{ to: '/admin/cookies', end: false, icon: FiCheckSquare, label: 'Cookie Consent' }] : []),
     ...(isPrimaryAdmin ? [{ to: '/admin/settings', end: false, icon: FiSettings, label: 'Settings', accent: true }] : []),
   ];
 

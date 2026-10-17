@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
-import { FiFileText, FiSave, FiGlobe, FiCheck, FiAlertCircle } from 'react-icons/fi';
+import { FiFileText, FiSave, FiGlobe, FiCheck, FiAlertCircle, FiShield } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
@@ -193,6 +194,41 @@ const AdminLegalPages = () => {
                   <p style={{ margin: '6px 0 0', fontSize: '0.72rem', color: '#9CA3AF' }}>
                     Last updated: {new Date(pageObj.updatedAt).toLocaleString()}
                   </p>
+                )}
+                {activeSlug === 'cookie-policy' && (
+                  <div
+                    style={{
+                      marginTop: '12px',
+                      padding: '10px 14px',
+                      borderRadius: '8px',
+                      background: 'rgba(0, 214, 93, 0.08)',
+                      border: '1px solid rgba(0, 214, 93, 0.25)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      flexWrap: 'wrap',
+                      gap: '8px',
+                    }}
+                  >
+                    <span style={{ fontSize: '0.82rem', color: '#065F46', fontWeight: 500 }}>
+                      Looking to add, edit, or delete individual cookies and duration periods?
+                    </span>
+                    <Link
+                      to="/admin/cookies"
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        fontSize: '0.82rem',
+                        fontWeight: 700,
+                        color: '#00A247',
+                        textDecoration: 'none',
+                      }}
+                    >
+                      <FiShield size={14} />
+                      Open Cookie Consent Manager →
+                    </Link>
+                  </div>
                 )}
               </div>
 
