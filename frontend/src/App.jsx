@@ -36,6 +36,8 @@ import AdminVip from './pages/admin/AdminVip';
 import VipPage from './pages/VipPage';
 
 import AdminBooks from './pages/admin/AdminBooks';
+import AdminLegalPages from './pages/admin/AdminLegalPages';
+import LegalPage from './pages/LegalPage';
 import NotificationPanel from './components/NotificationPanel';
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
@@ -142,6 +144,15 @@ function App() {
         <Route path="/login" element={currentUser ? <Navigate to="/dashboard" replace /> : <Navigate to="/?tab=login" replace />} />
         <Route path="/register" element={currentUser ? <Navigate to="/dashboard" replace /> : <Navigate to="/?tab=register" replace />} />
         <Route path="/reset-password" element={<ResetPassword />} />
+        <Route path="/legal/:slug" element={<LegalPage />} />
+        <Route path="/policies" element={<LegalPage />} />
+        <Route path="/policies/:slug" element={<LegalPage />} />
+        <Route path="/impressum" element={<LegalPage customSlug="impressum" />} />
+        <Route path="/terms-of-use" element={<LegalPage customSlug="terms-of-use" />} />
+        <Route path="/terms-of-service" element={<LegalPage customSlug="terms-of-use" />} />
+        <Route path="/privacy-policy" element={<LegalPage customSlug="privacy-policy" />} />
+        <Route path="/affiliate-policy" element={<LegalPage customSlug="affiliate-policy" />} />
+        <Route path="/cookie-policy" element={<LegalPage customSlug="cookie-policy" />} />
         <Route
           path="/dashboard"
           element={
@@ -251,6 +262,7 @@ function App() {
           <Route path="support" element={<AdminSupport />} />
           <Route path="logs" element={<AdminLogs />} />
           <Route path="settings" element={<AdminSettings />} />
+          <Route path="legal-pages" element={<AdminLegalPages />} />
         </Route>
       </Routes>
     </>

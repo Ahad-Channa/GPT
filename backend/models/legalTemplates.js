@@ -1,0 +1,488 @@
+const LEGAL_TEMPLATES = {
+  'impressum': {
+    title_en: 'Impressum (Legal Notice)',
+    content_en: `# Impressum (Legal Notice)
+
+### Information pursuant to Section 5 of the German Telemedia Act (TMG):
+TaskMint Platform / TaskMint GmbH
+Musterstraße 123
+10115 Berlin
+Germany
+
+### Represented by:
+Managing Director: Max Mustermann
+
+### Contact Information:
+Telephone: +49 (0) 30 1234567
+E-Mail: contact@taskmint.me
+Website: https://taskmint.me
+
+### Register Entry:
+Entry in the Commercial Register (Handelsregister)
+Register Court: Amtsgericht Charlottenburg (Berlin)
+Registration Number: HRB 123456 B
+
+### VAT Identification Number (Umsatzsteuer-Identifikationsnummer):
+VAT identification number according to § 27a of the Value Added Tax Act:
+DE 123 456 789
+
+### Responsible for Content according to § 18 Para. 2 MStV:
+Max Mustermann
+Musterstraße 123
+10115 Berlin
+Germany
+
+---
+
+### Dispute Resolution
+The European Commission provides a platform for online dispute resolution (ODR): https://ec.europa.eu/consumers/odr.
+Our email address can be found above in the impressum.
+
+We are neither willing nor obligated to participate in dispute resolution proceedings before a consumer arbitration board.
+
+### Liability for Contents
+As a service provider, we are responsible for our own content on these pages in accordance with general legislation pursuant to Section 7 (1) of the German Telemedia Act (TMG). According to Sections 8 to 10 of the TMG, however, we are not obligated as a service provider to monitor transmitted or stored third-party information or to investigate circumstances that indicate illegal activity.
+
+Obligations to remove or block the use of information under general laws remain unaffected. However, liability in this regard is only possible from the moment of knowledge of a specific infringement. Upon notification of corresponding violations, we will remove this content immediately.
+
+### Liability for Links
+Our website contains links to external third-party websites over whose content we have no influence. Therefore, we cannot assume any liability for these external contents. The respective provider or operator of the pages is always responsible for the content of the linked pages.
+
+The linked pages were checked for possible legal violations at the time of linking. Illegal contents were not recognizable at the time of linking. A permanent control of the contents of the linked pages is not reasonable without concrete evidence of an infringement. Upon notification of violations, we will remove such links immediately.
+
+### Copyright
+The content and works created by the site operators on these pages are subject to German copyright law. Duplication, processing, distribution, or any form of commercialization of such material beyond the scope of the copyright law requires the prior written consent of its respective author or creator. Downloads and copies of this site are only permitted for private, non-commercial use.`,
+    title_de: 'Impressum',
+    content_de: `# Impressum
+
+### Angaben gemäß § 5 TMG:
+TaskMint Platform / TaskMint GmbH
+Musterstraße 123
+10115 Berlin
+Deutschland
+
+### Vertreten durch:
+Geschäftsführer: Max Mustermann
+
+### Kontakt:
+Telefon: +49 (0) 30 1234567
+E-Mail: contact@taskmint.me
+Website: https://taskmint.me
+
+### Registereintrag:
+Eintragung im Handelsregister
+Registergericht: Amtsgericht Charlottenburg (Berlin)
+Registernummer: HRB 123456 B
+
+### Umsatzsteuer-ID:
+Umsatzsteuer-Identifikationsnummer gemäß § 27 a Umsatzsteuergesetz:
+DE 123 456 789
+
+### Verantwortlich für den Inhalt nach § 18 Abs. 2 MStV:
+Max Mustermann
+Musterstraße 123
+10115 Berlin
+Deutschland
+
+---
+
+### EU-Streitschlichtung
+Die Europäische Kommission stellt eine Plattform zur Online-Streitbeilegung (OS) bereit: https://ec.europa.eu/consumers/odr.
+Unsere E-Mail-Adresse finden Sie oben im Impressum.
+
+### Verbraucherstreitbeilegung / Universalschlichtungsstelle
+Wir sind nicht bereit oder verpflichtet, an Streitbeilegungsverfahren vor einer Verbraucherschlichtungsstelle teilzunehmen.
+
+### Haftung für Inhalte
+Als Diensteanbieter sind wir gemäß § 7 Abs. 1 TMG für eigene Inhalte auf diesen Seiten nach den allgemeinen Gesetzen verantwortlich. Nach §§ 8 bis 10 TMG sind wir als Diensteanbieter jedoch nicht verpflichtet, übermittelte oder gespeicherte fremde Informationen zu überwachen oder nach Umständen zu forschen, die auf eine rechtswidrige Tätigkeit hinweisen.
+
+Verpflichtungen zur Entfernung oder Sperrung der Nutzung von Informationen nach den allgemeinen Gesetzen bleiben hiervon unberührt. Eine diesbezügliche Haftung ist jedoch erst ab dem Zeitpunkt der Kenntnis einer konkreten Rechtsverletzung möglich. Bei Bekanntwerden von entsprechenden Rechtsverletzungen werden wir diese Inhalte umgehend entfernen.
+
+### Haftung für Links
+Unser Angebot enthält Links zu externen Websites Dritter, auf deren Inhalte wir keinen Einfluss haben. Deshalb können wir für diese fremden Inhalte auch keine Gewähr übernehmen. Für die Inhalte der verlinkten Seiten ist stets der jeweilige Anbieter oder Betreiber der Seiten verantwortlich.
+
+Die verlinkten Seiten wurden zum Zeitpunkt der Verlinkung auf mögliche Rechtsverstöße überprüft. Rechtswidrige Inhalte waren zum Zeitpunkt der Verlinkung nicht erkennbar. Eine permanente inhaltliche Kontrolle der verlinkten Seiten ist jedoch ohne konkrete Anhaltspunkte einer Rechtsverletzung nicht zumutbar. Bei Bekanntwerden von Rechtsverletzungen werden wir derartige Links umgehend entfernen.
+
+### Urheberrecht
+Die durch die Seitenbetreiber erstellten Inhalte und Werke auf diesen Seiten unterliegen dem deutschen Urheberrecht. Die Vervielfältigung, Bearbeitung, Verbreitung und jede Art der Verwertung außerhalb der Grenzen des Urheberrechtes bedürfen der schriftlichen Zustimmung des jeweiligen Autors bzw. Erstellers. Downloads und Kopien dieser Seite sind nur für den privaten, nicht kommerziellen Gebrauch gestattet.`
+  },
+
+  'terms-of-use': {
+    title_en: 'Terms of Use',
+    content_en: `# Terms of Use
+
+*Last updated: October 2026*
+
+Welcome to TaskMint ("Platform", "we", "us", or "our"). By accessing or using our website, services, and applications, you agree to be bound by these Terms of Use ("Terms"). Please read them carefully.
+
+---
+
+### 1. Acceptance of Terms
+By creating an account, accessing, or using TaskMint, you confirm that you are at least 18 years old (or the legal age of majority in your jurisdiction) and possess the legal authority to enter into this agreement. If you do not agree to these Terms, you may not use our platform.
+
+### 2. User Accounts and Security
+- You are responsible for safeguarding your login credentials and maintaining the confidentiality of your account.
+- Each person is strictly permitted to have only **one (1) account**. Creating multiple accounts, using fake credentials, or sharing accounts is strictly prohibited.
+- You agree to notify us immediately of any unauthorized use or security breach of your account.
+
+### 3. Rewards, Tasks, and Offerwalls
+- TaskMint provides opportunities for registered users to earn virtual reward points ("Coins") by completing surveys, testing applications, viewing content, and completing partner tasks.
+- Rewards are credited only after the respective third-party advertising partner confirms legitimate task completion.
+- We reserve the right to withhold, cancel, or reverse Coins if we suspect fraud, chargebacks, system errors, or violation of these Terms.
+
+### 4. Prohibited Activities & Fraud Policy
+To maintain fair use and platform integrity, the following activities are strictly prohibited:
+- Using Virtual Private Networks (VPN), proxies, Tor, emulator software, or automated scripts/bots.
+- Completing offers through unauthorized means or fraudulent chargebacks.
+- Attempting to exploit platform bugs, reverse engineer, or manipulate reward tracking.
+- Abusing the referral program by referring self-created accounts or spamming referral links.
+
+Violations will result in immediate account termination, forfeiture of all accrued coins, and a permanent ban.
+
+### 5. Withdrawals and Payouts
+- Coins can be redeemed for supported payout options (e.g., cryptocurrency, gift cards, digital payments) once minimum withdrawal thresholds are met.
+- Payout requests are reviewed by our security team for fraud compliance and processed within stated processing timeframes.
+- Users are responsible for providing correct withdrawal details (e.g., wallet addresses, email accounts). TaskMint is not responsible for funds sent to incorrectly provided destinations.
+- Users are solely responsible for any applicable taxes associated with rewards received.
+
+### 6. Intellectual Property
+All content, branding, trademarks, logos, and software made available on TaskMint are the exclusive property of TaskMint or its licensors and are protected by applicable intellectual property laws.
+
+### 7. Limitation of Liability
+TaskMint and its affiliates shall not be liable for any indirect, incidental, special, consequential, or punitive damages arising from your access to or inability to use the platform. Our platform is provided on an "as is" and "as available" basis without warranties of any kind.
+
+### 8. Changes to Terms
+We reserve the right to modify these Terms at any time. When modifications are made, we will update the "Last updated" date at the top of this page. Your continued use of the platform constitutes acceptance of the modified Terms.
+
+### 9. Contact Us
+If you have any questions about these Terms of Use, please contact us at **contact@taskmint.me**.`,
+    title_de: 'Nutzungsbedingungen',
+    content_de: `# Nutzungsbedingungen
+
+*Zuletzt aktualisiert: Oktober 2026*
+
+Willkommen bei TaskMint („Plattform“, „wir“, „uns“ oder „unser“). Durch den Zugriff auf unsere Website oder die Nutzung unserer Dienste erklären Sie sich mit diesen Nutzungsbedingungen („Bedingungen“) einverstanden. Bitte lesen Sie diese aufmerksam durch.
+
+---
+
+### 1. Annahme der Bedingungen
+Mit der Registrierung eines Kontos oder der Nutzung von TaskMint bestätigen Sie, dass Sie mindestens 18 Jahre alt sind (oder das nach dem Recht Ihres Wohnsitzes erforderliche Mindestalter erreicht haben) und geschäftsfähig sind. Wenn Sie diesen Bedingungen nicht zustimmen, dürfen Sie unsere Plattform nicht nutzen.
+
+### 2. Benutzerkonto und Sicherheit
+- Sie sind für die Geheimhaltung Ihrer Zugangsdaten und für alle Aktivitäten unter Ihrem Konto selbst verantwortlich.
+- Jeder Nutzer darf ausschließlich **ein (1) Benutzerkonto** führen. Das Erstellen von Mehrfachkonten, gefälschten Profilen oder die Weitergabe des Kontos an Dritte ist streng untersagt.
+- Sie verpflichten sich, uns unverzüglich über jeden unbefugten Zugriff auf Ihr Konto zu informieren.
+
+### 3. Belohnungen, Aufgaben und Offerwalls
+- TaskMint bietet Nutzern die Möglichkeit, durch das Ausfüllen von Umfragen, das Testen von Apps und andere Partner-Aufgaben virtuelle Punkte („Coins“) zu sammeln.
+- Punkte werden gutgeschrieben, sobald der jeweilige Drittanbieter die erfolgreiche und ordnungsgemäße Erledigung der Aufgabe bestätigt.
+- Wir behalten uns das Recht vor, Punkte bei Verdacht auf Betrug, Rückbuchungen oder Verstöße gegen diese Bedingungen einzubehalten oder zu stornieren.
+
+### 4. Verbotene Aktivitäten & Betrugsprävention
+Zur Gewährleistung der Fairness und Systemsicherheit sind folgende Handlungen strikt untersagt:
+- Die Verwendung von VPNs (Virtual Private Network), Proxy-Servern, Emulatoren oder automatisierten Skripten/Bots.
+- Die Manipulation von Angeboten oder Rückbuchungsbetrug.
+- Das Ausnutzen von Sicherheitslücken oder Fehlern im System.
+- Missbrauch des Empfehlungsprogramms durch Selbstreferenzen oder Spam.
+
+Verstöße führen zur sofortigen Kontosperrung, dem Verfall sämtlicher gesammelter Punkte und einem dauerhaften Ausschluss.
+
+### 5. Auszahlungen
+- Gesammelte Coins können nach Erreichen des Mindestauszahlungsbetrags in verfügbare Prämien (z. B. Kryptowährungen, Gutscheine) eingetauscht werden.
+- Auszahlungsanträge werden vor der Ausführung aus Sicherheitsgründen geprüft.
+- Sie sind für die Richtigkeit der angegebenen Auszahlungsinformationen (z. B. Wallet-Adressen) selbst verantwortlich.
+- Etwaige steuerliche Verpflichtungen aus dem Erhalt von Prämien obliegen ausschließlich dem Nutzer.
+
+### 6. Geistiges Eigentum
+Alle Inhalte, Logos, Marken und Software auf dieser Website sind geistiges Eigentum von TaskMint oder den entsprechenden Lizenzgebern und urheberrechtlich geschützt.
+
+### 7. Haftungsbeschränkung
+TaskMint haftet nur für Schäden, die auf vorsätzlicher oder grob fahrlässiger Pflichtverletzung beruhen. Die Plattform wird im Zustand „wie besehen“ bereitgestellt.
+
+### 8. Änderungen der Nutzungsbedingungen
+Wir behalten uns das Recht vor, diese Nutzungsbedingungen jederzeit anzupassen. Die jeweils aktuelle Version wird auf dieser Seite veröffentlicht.
+
+### 9. Kontakt
+Bei Fragen zu diesen Nutzungsbedingungen erreichen Sie uns unter **contact@taskmint.me**.`
+  },
+
+  'privacy-policy': {
+    title_en: 'Privacy Policy',
+    content_en: `# Privacy Policy
+
+*Last updated: October 2026*
+
+TaskMint ("we", "us", or "our") is committed to protecting your personal data and respecting your privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you visit our website and use our service.
+
+---
+
+### 1. Data Controller
+The entity responsible for processing your personal data (the "Controller") under the General Data Protection Regulation (GDPR) is:
+
+TaskMint / TaskMint GmbH
+Musterstraße 123
+10115 Berlin, Germany
+E-Mail: contact@taskmint.me
+
+### 2. Information We Collect
+We collect information that you provide directly to us as well as data gathered automatically:
+- **Account Information:** Username, email address, password hash, and profile avatar.
+- **Transaction & Activity Data:** Completed offers, surveys, reward points, withdrawal requests, and transaction histories.
+- **Technical & Device Data:** IP address, browser type, operating system, device identifiers, and timestamp of access.
+- **Fraud Prevention Data:** Verification checks to detect duplicate accounts, VPN usage, and automated bots.
+
+### 3. Legal Basis for Processing (GDPR Art. 6)
+We process your personal data in accordance with the following legal grounds:
+- **Contract Performance (Art. 6(1)(b) GDPR):** To operate your account, track completed tasks, and process withdrawals.
+- **Legitimate Interests (Art. 6(1)(f) GDPR):** To detect and prevent fraud, maintain platform security, and improve our services.
+- **Legal Obligation (Art. 6(1)(c) GDPR):** To comply with tax, accounting, and anti-money laundering regulations.
+- **Consent (Art. 6(1)(a) GDPR):** Where you have given explicit consent (e.g., optional communications).
+
+### 4. Third-Party Services and Offerwalls
+When you participate in tasks hosted by third-party offerwall partners (such as BitLabs, AdGate, CPX Research, etc.), you interact directly with those third parties. We transmit non-personally identifiable pseudonymous identifiers (such as a unique user ID) to associate completed offers with your TaskMint account. Please review the respective privacy policies of these partners.
+
+### 5. Cookies and Local Storage
+We use essential cookies and local storage tokens to maintain your session authentication, remember user preferences (such as language and dark mode), and protect against Cross-Site Request Forgery (CSRF).
+
+### 6. Data Retention
+We retain your personal data only for as long as necessary to fulfill the purposes for which it was collected, including satisfying any legal, accounting, or reporting requirements. You may request account deletion at any time.
+
+### 7. Your Rights under GDPR
+Under European data protection law, you have the following rights:
+- **Right of Access (Art. 15 GDPR):** Request a copy of the personal data we hold about you.
+- **Right to Rectification (Art. 16 GDPR):** Request correction of inaccurate personal data.
+- **Right to Erasure ("Right to be Forgotten", Art. 17 GDPR):** Request deletion of your data when no longer required.
+- **Right to Restriction of Processing (Art. 18 GDPR):** Request limitation of data processing under certain circumstances.
+- **Right to Data Portability (Art. 20 GDPR):** Receive your personal data in a structured, machine-readable format.
+- **Right to Object (Art. 21 GDPR):** Object to processing based on legitimate interests.
+- **Right to Lodge a Complaint:** Lodge a complaint with a competent supervisory data protection authority.
+
+### 8. Contact for Data Protection
+If you wish to exercise any of your rights or have questions about our data protection practices, please contact us at **contact@taskmint.me**.`,
+    title_de: 'Datenschutzerklärung',
+    content_de: `# Datenschutzerklärung
+
+*Zuletzt aktualisiert: Oktober 2026*
+
+Der Schutz Ihrer persönlichen Daten ist uns ein wichtiges Anliegen. In dieser Datenschutzerklärung informieren wir Sie über die Art, den Umfang und den Zweck der Erhebung und Verwendung personenbezogener Daten auf der TaskMint-Plattform.
+
+---
+
+### 1. Verantwortlicher
+Verantwortliche Stelle im Sinne der Datenschutz-Grundverordnung (DSGVO) und anderer nationaler Datenschutzgesetze ist:
+
+TaskMint / TaskMint GmbH
+Musterstraße 123
+10115 Berlin, Deutschland
+E-Mail: contact@taskmint.me
+
+### 2. Erhebung und Speicherung personenbezogener Daten
+Wir verarbeiten personenbezogene Daten, die Sie uns bei der Nutzung unserer Dienste zur Verfügung stellen:
+- **Registrierungs- und Kontodaten:** Benutzername, E-Mail-Adresse, verschlüsseltes Passwort und Profilbild.
+- **Transaktions- und Aktivitätsdaten:** Erledigte Aufgaben, gesammelte Coins, Auszahlungsanträge und Transaktionsverläufe.
+- **Technische Protokolldaten:** IP-Adresse, Browsertyp, Betriebssystem, Gerätedaten sowie Datum und Uhrzeit des Zugriffs.
+- **Sicherheits- und Betrugspräventionsdaten:** Prüfdaten zur Verhinderung von Mehrfachkonten, VPN-Missbrauch und Bot-Aktivitäten.
+
+### 3. Rechtsgrundlagen der Verarbeitung (Art. 6 DSGVO)
+Die Verarbeitung Ihrer Daten erfolgt auf Basis der folgenden Rechtsgrundlagen:
+- **Vertragserfüllung (Art. 6 Abs. 1 lit. b DSGVO):** Zur Bereitstellung unseres Dienstes, der Gutschrift von Belohnungen und der Durchführung von Auszahlungen.
+- **Berechtigte Interessen (Art. 6 Abs. 1 lit. f DSGVO):** Zur Betrugsbekämpfung, Gewährleistung der IT-Sicherheit und Verbesserung unserer Plattform.
+- **Rechtliche Verpflichtung (Art. 6 Abs. 1 lit. c DSGVO):** Zur Erfüllung steuerrechtlicher und handelsrechtlicher Aufbewahrungspflichten.
+- **Einwilligung (Art. 6 Abs. 1 lit. a DSGVO):** Sofern Sie uns eine ausdrückliche Einwilligung erteilt haben.
+
+### 4. Einbindung von Drittanbietern und Offerwalls
+Zur Bereitstellung von Angeboten binden wir externe Partner (z. B. BitLabs, AdGate, CPX Research) ein. Dabei wird eine pseudonyme Benutzer-ID übermittelt, um absolvierte Aufgaben Ihrem Konto zuzuordnen. Für die Datenverarbeitung bei diesen Drittanbietern gelten deren jeweilige Datenschutzbestimmungen.
+
+### 5. Cookies und lokale Speicherung
+Wir verwenden technisch notwendige Cookies und Local-Storage-Einträge, um Ihre Anmeldung aufrechtzuerhalten, Einstellungen (wie Sprache und Dark Mode) zu speichern und die Sicherheit zu gewährleisten.
+
+### 6. Speicherdauer
+Ihre personenbezogenen Daten werden gelöscht, sobald der Zweck der Speicherung entfällt und keine gesetzlichen Aufbewahrungsfristen (z. B. steuerrechtlicher Art) entgegenstehen. Sie können jederzeit die Löschung Ihres Kontos verlangen.
+
+### 7. Ihre Rechte als betroffene Person (DSGVO)
+Sie haben nach der DSGVO folgende Rechte:
+- **Auskunftsrecht (Art. 15 DSGVO):** Sie können Auskunft über Ihre von uns verarbeiteten Daten verlangen.
+- **Recht auf Berichtigung (Art. 16 DSGVO):** Sie können die unverzügliche Berichtigung unrichtiger Daten verlangen.
+- **Recht auf Löschung (Art. 17 DSGVO):** Sie können die Löschung Ihrer bei uns gespeicherten personenbezogenen Daten verlangen.
+- **Recht auf Einschränkung der Verarbeitung (Art. 18 DSGVO):** Sie können die Einschränkung der Datenverarbeitung verlangen.
+- **Recht auf Datenübertragbarkeit (Art. 20 DSGVO):** Sie können Ihre Daten in einem strukturierten, gängigen Format erhalten.
+- **Widerspruchsrecht (Art. 21 DSGVO):** Sie können der Verarbeitung Ihrer Daten widersprechen.
+- **Beschwerderecht bei einer Aufsichtsbehörde (Art. 77 DSGVO):** Sie haben das Recht, sich bei einer Datenschutz-Aufsichtsbehörde zu beschweren.
+
+### 8. Kontakt zum Datenschutz
+Bei Fragen zur Erhebung, Verarbeitung oder Nutzung Ihrer personenbezogenen Daten sowie zur Ausübung Ihrer Rechte wenden Sie sich bitte an **contact@taskmint.me**.
+`
+  },
+  'affiliate-policy': {
+    title_en: 'Affiliate & Referral Policy',
+    content_en: `# Affiliate & Referral Policy
+
+*(Effective: July 17, 2026 | Last Updated: October 17, 2026)*
+
+Welcome to the TaskMint Affiliate and Referral Program. This Affiliate Policy ("Policy") governs your participation in our referral program and outlines the standards, disclosure obligations, and conduct required of all affiliates and members sharing TaskMint referral links.
+
+---
+
+### 1. Program Overview & Eligibility
+- **Eligibility:** You must hold an active, verified TaskMint account in good standing. You must be at least 18 years old (or the legal age of majority in your jurisdiction).
+- **Referral Links:** Each registered user receives a unique referral code and tracking link via their dashboard.
+- **Attribution:** When a new user registers using your referral link or enters your code, they are linked to your account as your referred user ("Referral").
+
+---
+
+### 2. Referral Rewards & Commission Structure
+- **Commission Rates:** Affiliates receive a percentage of coins earned by active referrals from eligible offerwall tasks, surveys, and activities as defined in your dashboard tier.
+- **Reward Payouts:** Affiliate earnings are credited to your TaskMint balance in accordance with the hold periods and verification checks applicable to the completed offers.
+- **Tiers & Milestones:** Commission percentages may increase dynamically as you refer more active users or unlock higher VIP affiliate tiers.
+
+---
+
+### 3. Disclosure Requirements (FTC & German UWG Compliance)
+Under applicable laws, including Federal Trade Commission (FTC) guidelines and Section 5a (4) of the German Act Against Unfair Competition (UWG):
+- **Clear & Conspicuous Disclosure:** Whenever you share your referral link (on websites, social media, forums, YouTube, blogs, or reviews), you **must clearly disclose** that you receive financial compensation or commissions if someone signs up through your link.
+- **Acceptable Tags:** Disclosures such as \`#ad\`, \`#affiliate\`, \`#sponsored\`, or explicit statements (e.g., *"I earn a commission when you join using my link"*) must be prominently visible and not hidden in obscure footers or behind multiple clicks.
+
+---
+
+### 4. Prohibited Marketing Practices
+TaskMint maintains a strict zero-tolerance policy against fraudulent and deceptive marketing. The following practices are strictly prohibited:
+- **No Spamming (UWG § 7):** Do not send unsolicited commercial emails, mass direct messages, or post repetitive comments on social media, Reddit, Discord, or forums.
+- **No False or Deceptive Claims:** Do not make unrealistic or fraudulent claims about earning potential (e.g., *"Make $500 an hour effortlessly"* or *"Guaranteed instant income"*).
+- **No Self-Referrals:** Creating multiple accounts to refer yourself, your own devices, or household members using VPNs, proxies, or emulators is strictly forbidden and constitutes fraud.
+- **No Trademark Bidding (PPC):** You may not bid on TaskMint brand terms ("TaskMint", "TaskMint.me", "TaskMint App") or common typos in Google Ads, Bing Ads, or other search engines.
+- **No Cookie Stuffing / Forced Redirects:** Using pop-unders, hidden iframes, or automated scripts to drop referral cookies without explicit user interaction is prohibited.
+
+---
+
+### 5. Account Auditing & Termination
+- **Auditing:** TaskMint continuously monitors referral traffic for suspicious activity, bot patterns, chargebacks, and high fraud ratios.
+- **Revocation:** If an affiliate is found violating this Policy or our Terms of Service, TaskMint reserves the right to suspend or terminate the affiliate's account, cancel pending referrals, and forfeit any accrued commissions earned through non-compliant methods.
+
+---
+
+### 6. Modifications to the Program
+TaskMint reserves the right to modify commission rates, referral bonus structures, and this Policy at any time. Material changes will be communicated via the platform or email.
+
+---
+
+### 7. Contact Us
+If you have questions regarding the Affiliate Program or wish to report unauthorized promotion, please contact us at **contact@taskmint.me**.`,
+    title_de: 'Partnerprogramm- & Empfehlungsrichtlinie',
+    content_de: `# Partnerprogramm- & Empfehlungsrichtlinie (Affiliate Policy)
+
+*(Gültig ab: 17. Juli 2026 | Zuletzt aktualisiert: 17. Oktober 2026)*
+
+Willkommen beim Partner- und Empfehlungsprogramm von TaskMint. Diese Richtlinie regelt die Teilnahme an unserem Empfehlungsprogramm und definiert die verbindlichen Verhaltens-, Werbe- und Transparenzpflichten aller Partner und Nutzer.
+
+---
+
+### 1. Teilnahmeberechtigung & Registrierung
+- **Berechtigung:** Teilnahmeberechtigt sind alle registrierten TaskMint-Nutzer mit einem verifizierten Konto in ordnungsgemäßem Zustand, die mindestens 18 Jahre alt sind.
+- **Empfehlungslink:** Jeder Nutzer erhält im Benutzerkonto einen individuellen Empfehlungslink und Empfehlungscode.
+- **Zuordnung:** Registriert sich ein Neukunde über Ihren Link oder gibt Ihren Code ein, wird dieser Ihrem Partnerkonto als geworbener Nutzer zugeordnet.
+
+---
+
+### 2. Vergütung & Provisionsmodell
+- **Provisionsbasis:** Partner erhalten eine anteilige Gutschrift an Coins auf Basis der erfolgreich abgeschlossenen Angebote und Umfragen ihrer geworbenen Nutzer gemäß den im Dashboard ausgewiesenen Stufen.
+- **Gutschrift & Haltefristen:** Die Auszahlung von Empfehlungsprämien unterliegt den für die jeweiligen Partnernetzwerke geltenden Prüf- und Haltefristen (Hold Periods) zur Betrugsprävention.
+- **Stufen:** Mit steigender Anzahl aktiver Empfehlungen können höhere Provisionsstufen freigeschaltet werden.
+
+---
+
+### 3. Gesetzliche Kennzeichnungspflicht von Werbung (§ 5a Abs. 4 UWG)
+Gemäß § 5a Abs. 4 des Gesetzes gegen den unlauteren Wettbewerb (UWG) sowie internationalen Werberichtlinien gilt:
+- **Transparenz:** Jede Veröffentlichung eines Empfehlungslinks (auf Websites, Social Media, YouTube, Blogs, Foren) **muss eindeutig und unübersehbar als Werbung gekennzeichnet sein**.
+- **Zulässige Kennzeichnung:** Die Kennzeichnung muss zu Beginn des Beitrags erfolgen (z. B. durch \`#Werbung\`, \`#Affiliate\` oder einen deutlichen Hinweis: *"Bei Registrierung über diesen Link erhalte ich eine Vergütung"*).
+
+---
+
+### 4. Unzulässige Werbemaßnahmen & Betrugsverbot
+Zum Schutz unserer Plattform und Partner sind folgende Praktiken ausdrücklich untersagt:
+- **Verbot von Spam (§ 7 UWG):** Das unaufgeforderte Versenden von Massen-E-Mails, Direktnachrichten oder das Spammen von Foren, Social-Media-Kommentaren und Chatkanälen ist streng untersagt.
+- **Irreführende Versprechungen:** Das Werben mit falschen oder unrealistischen Verdienstversprechen (z. B. *"Garantierter Sofortverdienst von 500 € am Tag"*) ist verboten.
+- **Eigenwerbung & Mehrfachkonten:** Das Werben eigener Konten, die Nutzung von VPNs, Proxies oder Emulatoren zur Manipulation von Empfehlungen gilt als schwerer Betrug.
+- **Brand Bidding (SEA / Google Ads):** Das Buchen von Anzeigen auf die Marke "TaskMint" oder Tippfehler in Suchmaschinen ist Partnern untersagt.
+- **Cookie-Stuffing:** Das automatisierte Setzen von Cookies über unsichtbare iFrames, Pop-Unders oder Skripte ist unzulässig.
+
+---
+
+### 5. Prüfung, Sperrung & Aberkennung
+- TaskMint überwacht Empfehlungsaktivitäten kontinuierlich mit automatisierten Betrugserkennungssystemen.
+- Bei Verstößen gegen diese Richtlinie oder unsere Nutzungsbedingungen behält sich TaskMint das Recht vor, das Partnerkonto zu sperren, geworbene Konten zu entkoppeln und unrechtmäßig erworbene Vergütungen einzubehalten.
+
+---
+
+### 6. Änderungen des Programms
+TaskMint behält sich vor, die Konditionen, Vergütungssätze und diese Richtlinie jederzeit mit angemessener Frist anzupassen.
+
+---
+
+### 7. Kontakt
+Bei Fragen zu unserem Partnerprogramm wenden Sie sich bitte an **contact@taskmint.me**.
+`
+  },
+  'cookie-policy': {
+    title_en: 'Cookie Policy',
+    content_en: `# Cookie Policy
+
+*(Effective: July 17, 2026 | Last Updated: October 17, 2026)*
+
+This Cookie Policy explains how TaskMint uses cookies and similar technologies (such as local storage and session tokens) when you visit our website and use our platform.
+
+---
+
+### 1. What Are Cookies?
+Cookies are small text files placed on your device by websites that you visit. They are widely used to make websites work properly, improve user experience, and provide analytical information to site operators.
+
+---
+
+### 2. Categories of Cookies We Use
+- **Strictly Necessary Cookies:** Essential for the operation of TaskMint. They enable basic functions like page navigation, session authentication, and account security. Without these cookies, services you request (like logging in) cannot be provided.
+- **Functional Preferences:** These cookies allow our website to remember choices you make, such as your preferred language (English or German) and theme preference (Dark Mode or Light Mode).
+- **Security & Anti-Fraud:** We store verification tokens to prevent multi-accounting, credential stuffing, and unauthorized access to your coin balances.
+- **Third-Party & Offerwall Integration:** When you interact with integrated offerwalls (e.g., BitLabs, AdGate, CPX), those partners may use tracking technologies to verify task completion and deliver rewards.
+
+---
+
+### 3. Managing Your Cookie Preferences
+You can control and manage cookies through your browser settings. Most browsers allow you to refuse or delete cookies. Please note that disabling strictly necessary cookies may impair platform functionality.
+
+---
+
+### 4. Contact
+For any inquiries regarding our use of cookies, please email **contact@taskmint.me**.`,
+    title_de: 'Cookie-Richtlinie',
+    content_de: `# Cookie-Richtlinie
+
+*(Gültig ab: 17. Juli 2026 | Zuletzt aktualisiert: 17. Oktober 2026)*
+
+Diese Cookie-Richtlinie erläutert, wie TaskMint Cookies und ähnliche Speichertechnologien (wie Local Storage und Session-Tokens) einsetzt, wenn Sie unsere Website und Dienste nutzen.
+
+---
+
+### 1. Was sind Cookies?
+Cookies sind kleine Textdateien, die beim Besuch einer Website auf Ihrem Endgerät gespeichert werden. Sie dienen dazu, Websites funktionsfähig zu machen, das Nutzererlebnis zu verbessern und Systemeinstellungen zu sichern.
+
+---
+
+### 2. Arten von Cookies, die wir verwenden
+- **Technisch notwendige Cookies (§ 25 Abs. 2 TDDDG):** Diese Cookies sind zwingend erforderlich, damit Sie sich anmelden, auf Ihr Benutzerkonto zugreifen und Sicherheitsprüfungen durchführen können.
+- **Präferenz-Cookies:** Speichern Ihre Einstellungen wie die gewählte Sprache (Deutsch / Englisch) und Ihr Farbschema (Dark Mode / Light Mode).
+- **Sicherheits- & Betrugspräventionstoken:** Dienen dem Schutz vor Mehrfachanmeldungen, Bot-Angriffen und der Absicherung von Auszahlungen.
+- **Drittanbieter & Partnernetzwerke:** Beim Zugriff auf Partnerangebote (Offerwalls) können diese Drittanbieter Tracking-Technologien einsetzen, um den erfolgreichen Abschluss einer Aufgabe zu bestätigen.
+
+---
+
+### 3. Verwaltung von Cookies
+Sie können das Speichern von Cookies in Ihren Browsereinstellungen einschränken oder vorhandene Cookies löschen. Bitte beachten Sie, dass die Plattform ohne technisch notwendige Cookies nicht ordnungsgemäß funktioniert.
+
+---
+
+### 4. Kontakt
+Fragen zu unserer Cookie-Nutzung richten Sie bitte an **contact@taskmint.me**.
+`
+  }
+};
+
+module.exports = { LEGAL_TEMPLATES };

@@ -538,10 +538,20 @@
     "resources": "Resources",
     "blog": "Blog",
     "termsOfUse": "Terms of Use",
+    "termsOfService": "Terms of Service",
     "privacyPolicy": "Privacy Policy",
+    "cookiePolicy": "Cookie Policy",
+    "cookieSettings": "Cookie Settings",
+    "affiliatePolicy": "Affiliate Policy",
+    "impressum": "Impressum",
     "support": "Support",
     "leaveReview": "Leave a review",
-    "copyright": "© {{year}} TaskMint. All rights reserved."
+    "copyright": "© {{year}} TaskMint"
+  },
+  "policies": {
+    "title": "Policies",
+    "lastUpdated": "Last Updated",
+    "effective": "Effective"
   },
   "auth": {
     "loginTitle": "Login Your Account",

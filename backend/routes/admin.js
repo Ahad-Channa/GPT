@@ -2555,4 +2555,60 @@ router.patch('/fraud-status/:userId', verifyToken, requireAdmin, requirePermissi
   }
 });
 
+// ═══════════════════════════════════════════════════════════════════════════
+// LEGAL PAGES MANAGEMENT (Impressum, Terms of Use, Privacy Policy)
+// ═══════════════════════════════════════════════════════════════════════════
+const LegalPage = require('../models/LegalPage');
+
+// GET /api/admin/legal-pages — fetch all 3 legal pages
+router.get('/legal-pages', async (req, res) => {
+  try {
+    if (req.dbUser.role === 'support_agent' && req.user.email !== process.env.PRIMARY_ADMIN_EMAIL) {
+      return res.status(403).json({ success: false, error: 'Forbidden' });
+    }
+    const slugs = ['impressum', 'terms-of-use', 'privacy-policy', 'affiliate-policy', 'cookie-policy'];
+    const pages = await Promise.all(slugs.map(s => LegalPage.getBySlug(s)));
+    res.json({ success: true, pages });
+  } catch (error) {
+    console.error('[/api/admin/legal-pages] Error:', error);
+    res.status(500).json({ success: false, error: 'Failed to fetch legal pages' });
+  }
+});
+
+// PUT /api/admin/legal-pages/:slug — update a specific legal page
+router.put('/legal-pages/:slug', async (req, res) => {
+  try {
+    if (req.dbUser.role === 'support_agent' && req.user.email !== process.env.PRIMARY_ADMIN_EMAIL) {
+      return res.status(403).json({ success: false, error: 'Forbidden' });
+    }
+    const { slug } = req.params;
+    const validSlugs = ['impressum', 'terms-of-use', 'privacy-policy', 'affiliate-policy', 'cookie-policy'];
+    if (!validSlugs.includes(slug)) {
+      return res.status(400).json({ success: false, error: 'Invalid page slug' });
+    }
+
+    const { title_en, content_en, title_de, content_de } = req.body;
+    const adminUser = req.dbUser;
+
+    const page = await LegalPage.getBySlug(slug);
+    if (title_en !== undefined) page.title_en = title_en;
+    if (content_en !== undefined) page.content_en = content_en;
+    if (title_de !== undefined) page.title_de = title_de;
+    if (content_de !== undefined) page.content_de = content_de;
+    if (adminUser) page.lastEditedBy = adminUser._id;
+
+    await page.save();
+
+    // Log the action
+    if (adminUser) {
+      await createLog(adminUser._id, 'update_legal_page', null, { slug });
+    }
+
+    res.json({ success: true, page });
+  } catch (error) {
+    console.error('[/api/admin/legal-pages/:slug] Error:', error);
+    res.status(500).json({ success: false, error: 'Failed to update legal page' });
+  }
+});
+
 module.exports = router;

@@ -6,6 +6,7 @@ import { AuthProvider } from './contexts/AuthContext'
 import { NotificationProvider } from './contexts/NotificationContext'
 import { DailyBonusProvider } from './contexts/DailyBonusContext'
 import { ThemeProvider } from './contexts/ThemeContext'
+import { LegalModalProvider } from './contexts/LegalModalContext'
 import './index.css'
 import App from './App.jsx'
 
@@ -16,7 +17,9 @@ createRoot(document.getElementById('root')).render(
         <AuthProvider>
           <NotificationProvider>
             <DailyBonusProvider>
-              <App />
+              <LegalModalProvider>
+                <App />
+              </LegalModalProvider>
             </DailyBonusProvider>
           </NotificationProvider>
         </AuthProvider>

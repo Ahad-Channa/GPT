@@ -538,10 +538,20 @@
     "resources": "Ressourcen",
     "blog": "Blog",
     "termsOfUse": "Nutzungsbedingungen",
+    "termsOfService": "Nutzungsbedingungen",
     "privacyPolicy": "Datenschutzrichtlinie",
+    "cookiePolicy": "Cookie-Richtlinie",
+    "cookieSettings": "Cookie-Einstellungen",
+    "affiliatePolicy": "Partnerprogramm-Richtlinie",
+    "impressum": "Impressum",
     "support": "Support",
     "leaveReview": "Bewertung schreiben",
-    "copyright": "© {{year}} TaskMint. Alle Rechte vorbehalten."
+    "copyright": "© {{year}} TaskMint"
+  },
+  "policies": {
+    "title": "Richtlinien",
+    "lastUpdated": "Zuletzt aktualisiert",
+    "effective": "Gültig ab"
   },
   "auth": {
     "loginTitle": "In dein Konto einloggen",

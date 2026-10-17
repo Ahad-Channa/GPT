@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '../../contexts/ThemeContext';
+import { useLegalModal } from '../../contexts/LegalModalContext';
 import { FaFacebookF, FaInstagram, FaYoutube } from 'react-icons/fa';
 
 const Footer = () => {
   const navigate = useNavigate();
+  const { openLegal } = useLegalModal();
   const { t, i18n } = useTranslation();
   const isDe = i18n?.language?.startsWith('de');
   const [isMobile, setIsMobile] = useState(
@@ -29,16 +31,13 @@ const Footer = () => {
   ];
 
   const resourceLinks = [
-    { nameKey: 'nav.features', defaultName: 'Features', href: '#features' },
-    { nameKey: 'nav.faq', defaultName: 'FAQ', href: '#faq' },
-    { nameKey: 'footer.blog', defaultName: 'Blog', href: '#' },
-    { nameKey: 'footer.termsOfUse', defaultName: 'Terms of Use', href: '#' },
-    { nameKey: 'footer.privacyPolicy', defaultName: 'Privacy Policy', href: '#' },
-    { nameKey: 'footer.support', defaultName: 'Support', href: '#' }
+    { nameKey: 'nav.features', defaultName: 'Features', href: '/#features' },
+    { nameKey: 'nav.faq', defaultName: 'FAQ', href: '/#faq' },
+    { nameKey: 'footer.support', defaultName: 'Support', href: 'mailto:contact@taskmint.me' }
   ];
 
   return (
-    <footer className="w-full flex justify-center pt-0 pb-28 lg:pb-12 px-2 sm:px-4 md:px-8 lg:px-0 bg-transparent shrink-0">
+    <footer className="w-full flex flex-col items-center pt-0 pb-28 lg:pb-12 px-2 sm:px-4 md:px-8 lg:px-0 bg-transparent shrink-0">
       <div
         className="flex flex-col lg:flex-row justify-between w-full max-w-[440px] lg:max-w-[1328px] mx-auto items-center lg:items-start"
         style={{
@@ -285,7 +284,7 @@ const Footer = () => {
                   ))}
                 </ul>
               </div>
-              <div className="flex flex-col min-w-[135px]" style={{ height: 273, justifyContent: 'space-between' }}>
+              <div className="flex flex-col min-w-[135px]" style={{ height: 273, justifyContent: 'flex-start', gap: 20 }}>
                 <h4
                   className="m-0 text-left whitespace-nowrap transition-colors duration-300"
                   style={{
@@ -301,25 +300,45 @@ const Footer = () => {
                 >
                   {t('footer.resources', 'Resources')}
                 </h4>
-                <ul className="flex flex-col list-none p-0 m-0 justify-between" style={{ height: 220, opacity: 1 }}>
+                <ul className="flex flex-col list-none p-0 m-0" style={{ gap: '18px', opacity: 1 }}>
                   {resourceLinks.map((link) => (
                     <li key={link.nameKey} className="flex items-center">
-                      <a
-                        href={link.href}
-                        className="no-underline hover:opacity-100 transition-opacity text-left"
-                        style={{
-                          fontFamily: '"Poppins", sans-serif',
-                          fontWeight: 400,
-                          fontSize: 14,
-                          lineHeight: '20px',
-                          letterSpacing: '0%',
-                          opacity: isDarkMode ? 0.8 : 0.7,
-                          color: isDarkMode ? '#FFFFFF' : '#0E0F0C',
-                          whiteSpace: 'nowrap'
-                        }}
-                      >
-                        {t(link.nameKey, link.defaultName)}
-                      </a>
+                      {link.path ? (
+                        <button
+                          type="button"
+                          onClick={() => navigate(link.path)}
+                          className="no-underline hover:opacity-100 transition-opacity text-left cursor-pointer bg-transparent border-none p-0"
+                          style={{
+                            fontFamily: '"Poppins", sans-serif',
+                            fontWeight: 400,
+                            fontSize: 14,
+                            lineHeight: '20px',
+                            letterSpacing: '0%',
+                            opacity: isDarkMode ? 0.8 : 0.7,
+                            color: isDarkMode ? '#FFFFFF' : '#0E0F0C',
+                            whiteSpace: 'nowrap'
+                          }}
+                        >
+                          {t(link.nameKey, link.defaultName)}
+                        </button>
+                      ) : (
+                        <a
+                          href={link.href}
+                          className="no-underline hover:opacity-100 transition-opacity text-left"
+                          style={{
+                            fontFamily: '"Poppins", sans-serif',
+                            fontWeight: 400,
+                            fontSize: 14,
+                            lineHeight: '20px',
+                            letterSpacing: '0%',
+                            opacity: isDarkMode ? 0.8 : 0.7,
+                            color: isDarkMode ? '#FFFFFF' : '#0E0F0C',
+                            whiteSpace: 'nowrap'
+                          }}
+                        >
+                          {t(link.nameKey, link.defaultName)}
+                        </a>
+                      )}
                     </li>
                   ))}
                 </ul>
@@ -359,24 +378,62 @@ const Footer = () => {
             </div>
           </div>
 
-          {/* Bottom Copyright Bar */}
-          <div className="flex items-center justify-center lg:justify-start w-full mt-6 lg:mt-auto pt-2 lg:pt-4">
-            <p
-              className="m-0 text-center lg:text-left transition-colors duration-300"
-              style={{
-                fontFamily: '"Poppins", sans-serif',
-                fontWeight: 400,
-                fontSize: 14,
-                lineHeight: '20px',
-                color: isDarkMode ? 'rgba(255, 255, 255, 0.6)' : '#000000',
-                opacity: 1,
-                textAlign: isMobile ? 'center' : 'left',
-              }}
+          {/* Bottom Copyright & Policy Bar (Inside Right Area, aligned with social icons like original desktop layout) */}
+          <div
+            className="flex items-center justify-center lg:justify-start flex-wrap lg:flex-nowrap whitespace-nowrap overflow-x-auto no-scrollbar gap-x-2 sm:gap-x-2.5 w-full mt-6 lg:mt-auto pt-2 lg:pt-4 text-[12px] sm:text-[13px] transition-colors duration-300"
+            style={{
+              fontFamily: '"Poppins", sans-serif',
+              fontWeight: 400,
+              lineHeight: '20px',
+              color: isDarkMode ? 'rgba(255, 255, 255, 0.65)' : '#4B5563',
+            }}
+          >
+            <span className="shrink-0">{t('footer.copyright', { year: new Date().getFullYear(), defaultValue: '© 2026 TaskMint' })}</span>
+            <span className="opacity-40 select-none shrink-0">•</span>
+            <button
+              type="button"
+              onClick={() => navigate('/policies?tab=terms-of-use')}
+              className="hover:underline hover:opacity-100 transition-opacity cursor-pointer bg-transparent border-none p-0 text-inherit shrink-0"
             >
-              {t('footer.copyright', { year: new Date().getFullYear(), defaultValue: '© 2026 TaskMint. All rights reserved.' })}
-            </p>
+              {t('footer.termsOfService', 'Terms of Service')}
+            </button>
+            <span className="opacity-40 select-none shrink-0">•</span>
+            <button
+              type="button"
+              onClick={() => navigate('/policies?tab=privacy-policy')}
+              className="hover:underline hover:opacity-100 transition-opacity cursor-pointer bg-transparent border-none p-0 text-inherit shrink-0"
+            >
+              {t('footer.privacyPolicy', 'Privacy Policy')}
+            </button>
+            <span className="opacity-40 select-none shrink-0">•</span>
+            <button
+              type="button"
+              onClick={() => navigate('/policies?tab=cookie-policy')}
+              className="hover:underline hover:opacity-100 transition-opacity cursor-pointer bg-transparent border-none p-0 text-inherit shrink-0"
+            >
+              {t('footer.cookiePolicy', 'Cookie Policy')}
+            </button>
+            <span className="opacity-40 select-none shrink-0">•</span>
+            <span className="opacity-80 shrink-0">
+              {t('footer.cookieSettings', 'Cookie Settings')}
+            </span>
+            <span className="opacity-40 select-none shrink-0">•</span>
+            <button
+              type="button"
+              onClick={() => navigate('/policies?tab=affiliate-policy')}
+              className="hover:underline hover:opacity-100 transition-opacity cursor-pointer bg-transparent border-none p-0 text-inherit shrink-0"
+            >
+              {t('footer.affiliatePolicy', 'Affiliate Policy')}
+            </button>
+            <span className="opacity-40 select-none shrink-0">•</span>
+            <button
+              type="button"
+              onClick={() => navigate('/policies?tab=impressum')}
+              className="hover:underline hover:opacity-100 transition-opacity cursor-pointer bg-transparent border-none p-0 text-inherit shrink-0"
+            >
+              {t('footer.impressum', 'Impressum')}
+            </button>
           </div>
-
         </div>
       </div>
     </footer>

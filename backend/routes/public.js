@@ -256,4 +256,36 @@ router.get('/r/:code', async (req, res) => {
   }
 });
 
+// ── GET /api/public/legal/:slug ───────────────────────────────────────────────
+// Returns a legal page (impressum, terms-of-use, privacy-policy) by slug.
+// No authentication required — these are publicly visible pages.
+const LegalPage = require('../models/LegalPage');
+
+router.get('/legal/:slug', async (req, res) => {
+  try {
+    const { slug } = req.params;
+    const validSlugs = ['impressum', 'terms-of-use', 'privacy-policy', 'affiliate-policy', 'cookie-policy'];
+    if (!validSlugs.includes(slug)) {
+      return res.status(404).json({ success: false, error: 'Page not found' });
+    }
+
+    const page = await LegalPage.getBySlug(slug);
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+    res.status(200).json({
+      success: true,
+      page: {
+        slug: page.slug,
+        title_en: page.title_en,
+        content_en: page.content_en,
+        title_de: page.title_de,
+        content_de: page.content_de,
+        updatedAt: page.updatedAt,
+      },
+    });
+  } catch (err) {
+    console.error('[/api/public/legal/:slug] Error:', err);
+    res.status(500).json({ success: false, error: 'Failed to fetch legal page' });
+  }
+});
+
 module.exports = router;

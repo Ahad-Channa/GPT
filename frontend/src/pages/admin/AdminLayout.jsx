@@ -4,7 +4,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import {
   FiGrid, FiUsers, FiShield, FiArrowRight, FiLogOut, FiDollarSign,
   FiActivity, FiSettings, FiTarget, FiTag, FiStar, FiCheckSquare,
-  FiAward, FiBook, FiUser, FiMessageSquare, FiHelpCircle, FiBell
+  FiAward, FiBook, FiUser, FiMessageSquare, FiHelpCircle, FiBell, FiFileText
 } from 'react-icons/fi';
 import { FaTrophy } from 'react-icons/fa6';
 import './Admin.css';
@@ -79,10 +79,11 @@ const AdminLayout = () => {
     // Support — manage_support perm, support_agent role, or primary admin
     ...(hasPerm('manage_support') || isSupportAgent ? [{ to: '/admin/support', end: false, icon: FiHelpCircle, label: 'Support', badgeKey: 'support' }] : []),
 
-    // Staff / Announcements / Logs / Settings — primary admin only
+    // Staff / Announcements / Logs / Settings / Legal Pages
     ...(isPrimaryAdmin ? [{ to: '/admin/admins', end: false, icon: FiShield, label: 'Staff' }] : []),
     ...(isPrimaryAdmin ? [{ to: '/admin/announcements', end: false, icon: FiBell, label: 'Announcements' }] : []),
     ...(isPrimaryAdmin ? [{ to: '/admin/logs', end: false, icon: FiActivity, label: 'Audit Log', badgeKey: 'security' }] : []),
+    ...(isPrimaryAdmin || isAdmin ? [{ to: '/admin/legal-pages', end: false, icon: FiFileText, label: 'Legal Pages' }] : []),
     ...(isPrimaryAdmin ? [{ to: '/admin/settings', end: false, icon: FiSettings, label: 'Settings', accent: true }] : []),
   ];
 
