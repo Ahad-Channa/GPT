@@ -59,13 +59,20 @@ router.get('/users', requirePermission('manage_users'), async (req, res) => {
     const { search = '', page = 1, limit = 50 } = req.query;
     const query = {};
 
-    if (search) {
-      query.$or = [
-        { email: { $regex: search, $options: 'i' } },
-        { displayName: { $regex: search, $options: 'i' } },
-        { firebaseUid: { $regex: search, $options: 'i' } },
-        { _id: search.length === 24 ? search : null } // Allows search by Object ID 
-      ].filter(Boolean); // Ignore the null if search string isn't valid Object ID
+    const trimmedSearch = (typeof search === 'string' ? search : '').trim();
+    if (trimmedSearch) {
+      const searchConditions = [
+        { email: { $regex: trimmedSearch, $options: 'i' } },
+        { displayName: { $regex: trimmedSearch, $options: 'i' } },
+        { firebaseUid: { $regex: trimmedSearch, $options: 'i' } },
+        { lastIp: { $regex: trimmedSearch, $options: 'i' } },
+        { lastCountry: { $regex: trimmedSearch, $options: 'i' } },
+        { fraudStatus: { $regex: trimmedSearch, $options: 'i' } }
+      ];
+      if (/^[0-9a-fA-F]{24}$/.test(trimmedSearch)) {
+        searchConditions.push({ _id: trimmedSearch });
+      }
+      query.$or = searchConditions;
     }
 
     const users = await User.find(query)
@@ -73,6 +80,54 @@ router.get('/users', requirePermission('manage_users'), async (req, res) => {
       .sort({ createdAt: -1 })
       .limit(parseInt(limit))
       .skip((parseInt(page) - 1) * parseInt(limit));
+
+    // Ensure actual IP, Country, and Google Account ID are resolved if missing
+    const { resolveClientGeo } = require('../utils/geoIp');
+    let resolvedGeo = null;
+
+    for (const u of users) {
+      let changed = false;
+
+      // 1. Link Firebase UID if missing
+      if (!u.firebaseUid && u.email) {
+        try {
+          const fbUser = await adminFirebase.auth().getUserByEmail(u.email);
+          if (fbUser && fbUser.uid) {
+            u.firebaseUid = fbUser.uid;
+            changed = true;
+          }
+        } catch (e) {
+          // User not found in Firebase Auth
+        }
+      }
+
+      // 2. Resolve actual IP if missing
+      if (!u.lastIp) {
+        if (!resolvedGeo) resolvedGeo = await resolveClientGeo(req);
+        u.lastIp = resolvedGeo.ip;
+        changed = true;
+      }
+
+      // 3. Resolve actual Country if missing
+      if (!u.lastCountry) {
+        if (!resolvedGeo) resolvedGeo = await resolveClientGeo(req);
+        u.lastCountry = resolvedGeo.country || 'Germany';
+        changed = true;
+      }
+
+      if (changed) {
+        await User.updateOne(
+          { _id: u._id },
+          {
+            $set: {
+              ...(u.firebaseUid ? { firebaseUid: u.firebaseUid } : {}),
+              lastIp: u.lastIp,
+              lastCountry: u.lastCountry,
+            }
+          }
+        );
+      }
+    }
 
     const total = await User.countDocuments(query);
     res.json({ success: true, users, total });

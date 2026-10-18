@@ -30,7 +30,9 @@ async function generateUniqueReferralCode() {
 router.post('/sync', verifyToken, fraudCheck('auth_sync', 'full'), async (req, res) => {
   try {
     const { uid, email, name, picture } = req.user;
-    const { ref, fingerprint } = req.body || {};
+    const { ref, fingerprint, timezone } = req.body || {};
+    const { resolveClientGeo } = require('../utils/geoIp');
+    const { ip: clientIp, country: clientCountry } = await resolveClientGeo(req, timezone);
 
     let user = await User.findOne({ firebaseUid: uid });
     let isNewUser = false;
@@ -71,6 +73,8 @@ router.post('/sync', verifyToken, fraudCheck('auth_sync', 'full'), async (req, r
         displayName: uniqueName,
         avatarUrl: '', // Default to empty so initial letter avatar is shown instead of Google photo
         referralCode,
+        lastIp: clientIp || '',
+        lastCountry: clientCountry || '',
         ...(referredById && { referredBy: referredById }),
         ...(isPrimaryAdmin && { role: 'admin', adminPermissions: allPermissions })
       });
@@ -138,12 +142,24 @@ router.post('/sync', verifyToken, fraudCheck('auth_sync', 'full'), async (req, r
         await user.save();
       }
 
+      if (clientIp) {
+        user.lastIp = clientIp;
+        if (!user.ipHistory) user.ipHistory = [];
+        if (!user.ipHistory.includes(clientIp)) {
+          user.ipHistory.push(clientIp);
+          if (user.ipHistory.length > 20) user.ipHistory.shift();
+        }
+      }
+      if (clientCountry) {
+        user.lastCountry = clientCountry;
+      }
+
       if (isPrimaryAdmin && user.role !== 'admin') {
         // Auto-promote if they are set as primary admin in .env but not in db
         user.role = 'admin';
         user.adminPermissions = allPermissions;
-        await user.save();
       }
+      await user.save();
     }
 
     // Check if 2FA is required for this user

@@ -63,13 +63,14 @@ export const AuthProvider = ({ children }) => {
             const token = await user.getIdToken();
             const ref = localStorage.getItem('ref') || sessionStorage.getItem('pending_ref');
             const fingerprint = await generateFingerprint();
+            const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
             const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/auth/sync`, {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${token}`,
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ ...(ref ? { ref } : {}), fingerprint })
+                body: JSON.stringify({ ...(ref ? { ref } : {}), fingerprint, timezone })
             });
             const data = await res.json();
 

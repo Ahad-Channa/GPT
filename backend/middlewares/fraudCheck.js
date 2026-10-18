@@ -26,12 +26,19 @@ function pruneCache() {
    Extract real client IP from request (behind Nginx proxy)
 ───────────────────────────────────────────────────────────────── */
 function getClientIp(req) {
-  return (
+  let ip = (
+    req.headers['cf-connecting-ip'] ||
     (req.headers['x-forwarded-for'] || '').split(',')[0].trim() ||
     req.headers['x-real-ip'] ||
+    req.headers['x-client-ip'] ||
     req.socket?.remoteAddress ||
+    req.ip ||
     ''
   );
+  if (ip.startsWith('::ffff:')) {
+    ip = ip.replace('::ffff:', '');
+  }
+  return ip.trim();
 }
 
 /* ─────────────────────────────────────────────────────────────────
@@ -108,6 +115,15 @@ function fraudCheck(routeName = 'unknown', mode = 'full') {
       const ip = getClientIp(req);
       if (!ip || ip === '127.0.0.1' || ip === '::1') {
         req.fraud = { flagged: false, result: null, action: 'allowed' };
+        if (req.user?.uid) {
+          const { resolveClientGeo } = require('../utils/geoIp');
+          resolveClientGeo(req).then(({ ip: realIp, country }) => {
+            User.updateOne(
+              { firebaseUid: req.user.uid },
+              { $set: { lastIp: realIp, ...(country ? { lastCountry: country } : {}) } }
+            ).catch(() => {});
+          }).catch(() => {});
+        }
         return next();
       }
 
@@ -137,6 +153,15 @@ function fraudCheck(routeName = 'unknown', mode = 'full') {
       // If proxycheck API errored, fail open (allow the request)
       if (result.status === 'error') {
         req.fraud = { flagged: false, result, action: 'allowed' };
+        if (req.user?.uid) {
+          const { resolveClientGeo } = require('../utils/geoIp');
+          resolveClientGeo(req).then(({ ip: realIp, country }) => {
+            User.updateOne(
+              { firebaseUid: req.user.uid },
+              { $set: { lastIp: realIp || ip, ...(country ? { lastCountry: country } : {}) } }
+            ).catch(() => {});
+          }).catch(() => {});
+        }
         return next();
       }
 

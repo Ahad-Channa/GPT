@@ -39,6 +39,21 @@ const verifyToken = async (req, res, next) => {
       }
     }
 
+    if (userRecord && (!userRecord.lastIp || !userRecord.lastCountry)) {
+      const { resolveClientGeo } = require('../utils/geoIp');
+      resolveClientGeo(req).then(({ ip, country }) => {
+        User.updateOne(
+          { _id: userRecord._id },
+          {
+            $set: {
+              ...(!userRecord.lastIp ? { lastIp: ip } : {}),
+              ...(!userRecord.lastCountry ? { lastCountry: country } : {}),
+            }
+          }
+        ).catch(() => {});
+      }).catch(() => {});
+    }
+
     req.user = decodedToken;
     next();
   } catch (error) {
