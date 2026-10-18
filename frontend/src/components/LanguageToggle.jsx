@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTheme } from '../contexts/ThemeContext';
+import { useCookieConsent } from '../contexts/CookieConsentContext';
 
 const LanguageToggle = ({
   style,
@@ -12,6 +13,8 @@ const LanguageToggle = ({
 }) => {
   const { i18n } = useTranslation();
   const { isDarkMode } = useTheme();
+  const cookieConsent = useCookieConsent();
+  const hasConsent = cookieConsent?.hasConsent;
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef(null);
 
@@ -19,6 +22,16 @@ const LanguageToggle = ({
 
   const selectLanguage = (lang) => {
     i18n.changeLanguage(lang);
+    if (typeof window !== 'undefined') {
+      window.__taskmintCurrentLang = lang;
+      if (hasConsent && hasConsent('functional')) {
+        localStorage.setItem('i18nextLng', lang);
+        document.cookie = `i18nextLng=${lang}; max-age=31536000; path=/; SameSite=Lax`;
+      } else {
+        localStorage.removeItem('i18nextLng');
+        document.cookie = 'i18nextLng=; max-age=0; path=/; SameSite=Lax';
+      }
+    }
     setIsOpen(false);
   };
 

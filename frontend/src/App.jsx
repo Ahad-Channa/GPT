@@ -66,10 +66,13 @@ const ReferralRedirect = () => {
         const res = await fetch(`${API}/public/r/${code}`);
         const data = await res.json();
         if (data.success && data.referrerId) {
-          if (hasConsent('marketing')) {
+          if (hasConsent && hasConsent('marketing')) {
             localStorage.setItem('ref', data.referrerId);
+            document.cookie = `ref=${encodeURIComponent(data.referrerId)}; max-age=2592000; path=/; SameSite=Lax`;
           } else {
             sessionStorage.setItem('pending_ref', data.referrerId);
+            localStorage.removeItem('ref');
+            document.cookie = 'ref=; max-age=0; path=/; SameSite=Lax';
           }
         }
       } catch (e) {
@@ -93,10 +96,13 @@ function App() {
     const params = new URLSearchParams(window.location.search);
     const ref = params.get('ref');
     if (ref) {
-      if (hasConsent('marketing')) {
+      if (hasConsent && hasConsent('marketing')) {
         localStorage.setItem('ref', ref);
+        document.cookie = `ref=${encodeURIComponent(ref)}; max-age=2592000; path=/; SameSite=Lax`;
       } else {
         sessionStorage.setItem('pending_ref', ref);
+        localStorage.removeItem('ref');
+        document.cookie = 'ref=; max-age=0; path=/; SameSite=Lax';
       }
     }
   }, [hasConsent]);

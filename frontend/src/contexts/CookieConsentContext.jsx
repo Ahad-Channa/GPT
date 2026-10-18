@@ -80,16 +80,52 @@ export const CookieConsentProvider = ({ children }) => {
       setIsBannerOpen(false);
       setIsSettingsOpen(false);
 
-      // Enforce marketing permissions on storage
+      // Enforce functional permissions on cookies & storage
+      if (dataToSave.functional) {
+        // Save current active theme
+        const isDark = document.documentElement.classList.contains('dark') || localStorage.getItem('taskmint_theme') === 'dark';
+        const themeVal = isDark ? 'dark' : 'light';
+        localStorage.setItem('taskmint_theme', themeVal);
+        document.cookie = `taskmint_theme=${themeVal}; max-age=${COOKIE_MAX_AGE}; path=/; SameSite=Lax`;
+
+        // Save current active language
+        const currentLang = localStorage.getItem('i18nextLng') || (window.__taskmintCurrentLang) || 'en';
+        localStorage.setItem('i18nextLng', currentLang);
+        document.cookie = `i18nextLng=${currentLang}; max-age=${COOKIE_MAX_AGE}; path=/; SameSite=Lax`;
+
+        // Save current chat state if present
+        const currentChat = localStorage.getItem('chatOpen');
+        if (currentChat !== null) {
+          document.cookie = `chatOpen=${currentChat}; max-age=${COOKIE_MAX_AGE}; path=/; SameSite=Lax`;
+        }
+
+        window.dispatchEvent(new CustomEvent('taskmint_functional_consent_granted', { detail: { theme: themeVal, lang: currentLang } }));
+      } else {
+        // User withdrew or rejected functional consent: delete cookies and storage
+        document.cookie = 'taskmint_theme=; max-age=0; path=/; SameSite=Lax';
+        document.cookie = 'i18nextLng=; max-age=0; path=/; SameSite=Lax';
+        document.cookie = 'chatOpen=; max-age=0; path=/; SameSite=Lax';
+
+        localStorage.removeItem('taskmint_theme');
+        localStorage.removeItem('i18nextLng');
+        localStorage.removeItem('chatOpen');
+
+        // Immediately revert website to defaults: Light Mode and English
+        window.dispatchEvent(new CustomEvent('taskmint_reset_functional_preferences'));
+      }
+
+      // Enforce marketing permissions on storage and cookies
       if (dataToSave.marketing) {
         // If there was a pending affiliate referral in sessionStorage, promote it
         const pendingRef = sessionStorage.getItem('pending_ref');
         if (pendingRef) {
           localStorage.setItem('ref', pendingRef);
+          document.cookie = `ref=${encodeURIComponent(pendingRef)}; max-age=${COOKIE_MAX_AGE}; path=/; SameSite=Lax`;
         }
       } else {
         // User withdrew or rejected marketing consent: remove persistent affiliate tracker
         localStorage.removeItem('ref');
+        document.cookie = 'ref=; max-age=0; path=/; SameSite=Lax';
       }
 
       return dataToSave;

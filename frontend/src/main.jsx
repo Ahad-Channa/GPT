@@ -14,19 +14,19 @@ import App from './App.jsx'
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <BrowserRouter>
-      <ThemeProvider>
-        <AuthProvider>
-          <NotificationProvider>
-            <DailyBonusProvider>
-              <LegalModalProvider>
-                <CookieConsentProvider>
+      <CookieConsentProvider>
+        <ThemeProvider>
+          <AuthProvider>
+            <NotificationProvider>
+              <DailyBonusProvider>
+                <LegalModalProvider>
                   <App />
-                </CookieConsentProvider>
-              </LegalModalProvider>
-            </DailyBonusProvider>
-          </NotificationProvider>
-        </AuthProvider>
-      </ThemeProvider>
+                </LegalModalProvider>
+              </DailyBonusProvider>
+            </NotificationProvider>
+          </AuthProvider>
+        </ThemeProvider>
+      </CookieConsentProvider>
     </BrowserRouter>
   </StrictMode>
 )

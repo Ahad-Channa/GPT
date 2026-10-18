@@ -4,17 +4,34 @@ import Footer from './Footer';
 import LiveEarningsBar from '../LiveEarningsBar';
 import ChatSidebar from '../chat/ChatSidebar';
 import { useTheme } from '../../contexts/ThemeContext';
+import { useCookieConsent } from '../../contexts/CookieConsentContext';
 
 const DashboardLayout = ({ children, showLiveBar = true, fullWidth = false }) => {
   const { isDarkMode } = useTheme();
+  const cookieConsent = useCookieConsent();
+  const hasConsent = cookieConsent?.hasConsent;
+
   const [chatOpen, setChatOpen] = useState(() => {
-    return localStorage.getItem('chatOpen') === 'true';
+    try {
+      const raw = localStorage.getItem('taskmint_cookie_consent');
+      const parsed = raw ? JSON.parse(raw) : null;
+      if (parsed?.functional) {
+        return localStorage.getItem('chatOpen') === 'true';
+      }
+    } catch (e) {}
+    return false;
   });
 
   useEffect(() => {
-    localStorage.setItem('chatOpen', chatOpen);
+    if (hasConsent && hasConsent('functional')) {
+      localStorage.setItem('chatOpen', chatOpen);
+      document.cookie = `chatOpen=${chatOpen}; max-age=31536000; path=/; SameSite=Lax`;
+    } else {
+      localStorage.removeItem('chatOpen');
+      document.cookie = 'chatOpen=; max-age=0; path=/; SameSite=Lax';
+    }
     window.dispatchEvent(new Event('chatToggle'));
-  }, [chatOpen]);
+  }, [chatOpen, hasConsent]);
 
   useEffect(() => {
     const originalBg = document.body.style.backgroundColor;
