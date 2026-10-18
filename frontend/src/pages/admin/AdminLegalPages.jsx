@@ -1,7 +1,15 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
-import { FiFileText, FiSave, FiGlobe, FiCheck, FiAlertCircle, FiShield } from 'react-icons/fi';
+import {
+  FiFileText,
+  FiSave,
+  FiGlobe,
+  FiCheck,
+  FiAlertCircle,
+  FiShield,
+  FiInfo,
+} from 'react-icons/fi';
 import toast from 'react-hot-toast';
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
@@ -232,6 +240,134 @@ const AdminLegalPages = () => {
                 )}
               </div>
 
+              {/* Markdown Formatting Explanation & Example (Applies to all 5 legal pages) */}
+              <div
+                style={{
+                  marginBottom: '1.5rem',
+                  borderRadius: '12px',
+                  border: '1px solid #E2E8F0',
+                  background: '#F8FAFC',
+                  padding: '1.15rem 1.25rem',
+                }}
+              >
+                {/* Header */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '0.85rem' }}>
+                  <div
+                    style={{
+                      width: 26,
+                      height: 26,
+                      borderRadius: 6,
+                      background: '#EFF6FF',
+                      color: '#2563EB',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      fontWeight: 700,
+                      flexShrink: 0,
+                    }}
+                  >
+                    <FiInfo size={16} />
+                  </div>
+                  <div>
+                    <h4
+                      style={{
+                        margin: 0,
+                        fontSize: '0.92rem',
+                        fontWeight: 700,
+                        color: '#0F172A',
+                        fontFamily: "'Bricolage Grotesque', sans-serif",
+                      }}
+                    >
+                      Formatting Instructions
+                    </h4>
+                    <p style={{ margin: '2px 0 0', fontSize: '0.76rem', color: '#64748B' }}>
+                      Use these standard symbols in the content box below. They will automatically be styled on the website:
+                    </p>
+                  </div>
+                </div>
+
+                {/* Explanation Rules */}
+                <div
+                  style={{
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+                    gap: '0.55rem 1.25rem',
+                    fontSize: '0.8rem',
+                    color: '#334155',
+                    marginBottom: '1rem',
+                    background: '#FFFFFF',
+                    padding: '0.85rem 1rem',
+                    borderRadius: '8px',
+                    border: '1px solid #E2E8F0',
+                  }}
+                >
+                  <div>
+                    <code style={{ background: '#EFF6FF', color: '#1D4ED8', padding: '2px 6px', borderRadius: 4, fontWeight: 700 }}>## Title</code>
+                    <span style={{ marginLeft: '8px' }}>— Major section heading</span>
+                  </div>
+                  <div>
+                    <code style={{ background: '#EFF6FF', color: '#1D4ED8', padding: '2px 6px', borderRadius: 4, fontWeight: 700 }}>### Title</code>
+                    <span style={{ marginLeft: '8px' }}>— Sub-heading (e.g. contact block)</span>
+                  </div>
+                  <div>
+                    <code style={{ background: '#F0FDF4', color: '#15803D', padding: '2px 6px', borderRadius: 4, fontWeight: 700 }}>- item</code>
+                    <span style={{ marginLeft: '8px' }}>— <strong>How to add a dot (●)</strong>: Start line with hyphen + space</span>
+                  </div>
+                  <div>
+                    <code style={{ background: '#FEF3C7', color: '#B45309', padding: '2px 6px', borderRadius: 4, fontWeight: 700 }}>---</code>
+                    <span style={{ marginLeft: '8px' }}>— Horizontal <strong>divider line</strong> between sections</span>
+                  </div>
+                  <div>
+                    <code style={{ background: '#FAF5FF', color: '#7E22CE', padding: '2px 6px', borderRadius: 4, fontWeight: 700 }}>**text**</code>
+                    <span style={{ marginLeft: '8px' }}>— <strong>Bold</strong> text</span>
+                  </div>
+                  <div>
+                    <code style={{ background: '#FAF5FF', color: '#7E22CE', padding: '2px 6px', borderRadius: 4, fontWeight: 700 }}>*text*</code>
+                    <span style={{ marginLeft: '8px' }}>— <em>Italic</em> text</span>
+                  </div>
+                  <div>
+                    <code style={{ background: '#F0F9FF', color: '#0369A1', padding: '2px 6px', borderRadius: 4, fontWeight: 700 }}>[Text](URL)</code>
+                    <span style={{ marginLeft: '8px' }}>— Clickable link (e.g. <code>[Support](mailto:info@...)</code>)</span>
+                  </div>
+                  <div>
+                    <code style={{ background: '#F1F5F9', color: '#475569', padding: '2px 6px', borderRadius: 4, fontWeight: 700 }}>Enter twice</code>
+                    <span style={{ marginLeft: '8px' }}>— Leave an empty line between paragraphs</span>
+                  </div>
+                </div>
+
+                {/* Single Example Block */}
+                <div>
+                  <div style={{ fontSize: '0.74rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#475569', marginBottom: '6px' }}>
+                    Example:
+                  </div>
+                  <pre
+                    style={{
+                      margin: 0,
+                      padding: '12px 16px',
+                      background: '#1E2538',
+                      color: '#F8FAFC',
+                      borderRadius: '8px',
+                      fontSize: '0.8rem',
+                      lineHeight: '1.6',
+                      fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace',
+                      overflowX: 'auto',
+                    }}
+                  >{`## 1. Company Information
+Pursuant to Section 5 DDG:
+TaskMint Platform / Goodpicks Media GmbH
+Musterstraße 123, 10115 Berlin, Germany
+
+---
+
+### Contact Information:
+- Telephone: +49 (0) 30 123456
+- Email: [support@taskmint.io](mailto:support@taskmint.io)
+- Website: [taskmint.io](https://taskmint.io)
+- Managing Director: **Max Mustermann**`}
+                  </pre>
+                </div>
+              </div>
+
               {/* Language Tabs */}
               <div style={{
                 display: 'flex',
@@ -266,11 +402,11 @@ const AdminLegalPages = () => {
                 ))}
               </div>
 
-              {/* Title Field */}
-              <div style={{ marginBottom: '1rem' }}>
+              {/* Title Field (Full Width) */}
+              <div style={{ marginBottom: '1.25rem', width: '100%' }}>
                 <label style={{
                   display: 'block',
-                  marginBottom: '0.4rem',
+                  marginBottom: '0.45rem',
                   fontSize: '0.78rem',
                   color: '#4B5563',
                   fontWeight: 600,
@@ -285,46 +421,87 @@ const AdminLegalPages = () => {
                   onChange={(e) => updateField(activeSlug, `title_${activeLang}`, e.target.value)}
                   placeholder={activeLang === 'en' ? `e.g. ${meta.label}` : `z.B. ${meta.label}`}
                   className="admin-input"
+                  style={{
+                    width: '100%',
+                    boxSizing: 'border-box',
+                    display: 'block',
+                    padding: '0.75rem 1rem',
+                    fontSize: '0.92rem',
+                    borderRadius: '10px',
+                    border: '1px solid #D1D5DB',
+                    background: '#FFFFFF',
+                    color: '#0E0F0C',
+                  }}
                 />
               </div>
 
-              {/* Content Field */}
-              <div style={{ marginBottom: '1.25rem' }}>
-                <label style={{
-                  display: 'block',
-                  marginBottom: '0.4rem',
-                  fontSize: '0.78rem',
-                  color: '#4B5563',
-                  fontWeight: 600,
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.05em',
-                }}>
-                  Page Content ({activeLang === 'en' ? 'English' : 'German'}) *
-                </label>
+              {/* Content Field (Full Width & Expanded Height) */}
+              <div style={{ marginBottom: '1.5rem', width: '100%' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.45rem' }}>
+                  <label style={{
+                    fontSize: '0.78rem',
+                    color: '#4B5563',
+                    fontWeight: 600,
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.05em',
+                  }}>
+                    Page Content ({activeLang === 'en' ? 'English' : 'German'}) *
+                  </label>
+                  <span style={{ fontSize: '0.75rem', color: '#9CA3AF' }}>
+                    Full Markdown Supported
+                  </span>
+                </div>
                 <textarea
+                  id="legal-page-content-textarea"
                   value={current[`content_${activeLang}`] || ''}
                   onChange={(e) => updateField(activeSlug, `content_${activeLang}`, e.target.value)}
                   placeholder={activeLang === 'en'
-                    ? 'Enter the full page content here...'
-                    : 'Geben Sie den vollständigen Seiteninhalt hier ein...'}
+                    ? 'Enter the full page content here using Markdown formatting (e.g. ## Heading, ### Subtitle, - Bullets, --- Dividers)...'
+                    : 'Geben Sie den vollständigen Seiteninhalt hier mit Markdown-Formatierung ein (z.B. ## Überschrift, ### Untertitel, - Aufzählungspunkte, --- Trennlinie)...'}
                   className="admin-input"
-                  rows={18}
-                  style={{ resize: 'vertical', minHeight: 300 }}
+                  rows={24}
+                  style={{
+                    width: '100%',
+                    minWidth: '100%',
+                    maxWidth: '100%',
+                    boxSizing: 'border-box',
+                    display: 'block',
+                    minHeight: 520,
+                    resize: 'vertical',
+                    fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace',
+                    fontSize: '0.88rem',
+                    lineHeight: '1.65',
+                    padding: '14px 16px',
+                    borderRadius: '10px',
+                    border: '1px solid #D1D5DB',
+                    background: '#FFFFFF',
+                    color: '#111827',
+                  }}
                 />
               </div>
 
               {/* Save Button */}
               <button
-                className="admin-btn-primary"
+                className="action-btn primary"
                 onClick={() => handleSave(activeSlug)}
                 disabled={saving}
                 style={{
-                  display: 'flex',
+                  display: 'inline-flex',
                   alignItems: 'center',
-                  gap: '0.5rem',
+                  gap: '0.55rem',
+                  padding: '0.75rem 1.85rem',
+                  fontSize: '0.92rem',
+                  fontWeight: 600,
+                  borderRadius: '10px',
+                  cursor: saving ? 'not-allowed' : 'pointer',
+                  background: '#1E2538',
+                  color: '#FFFFFF',
+                  border: 'none',
+                  boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+                  transition: 'all 0.18s ease',
                 }}
               >
-                <FiSave />
+                <FiSave size={16} />
                 {saving ? 'Saving...' : `Save ${meta.label}`}
               </button>
 
