@@ -39,6 +39,19 @@ router.post('/sync', verifyToken, fraudCheck('auth_sync', 'full'), async (req, r
     const isPrimaryAdmin = email === process.env.PRIMARY_ADMIN_EMAIL;
     const allPermissions = ['manage_users', 'manage_withdrawals', 'manage_support', 'manage_offerwalls', 'manage_admins'];
 
+    // Check if user is banned or blocked by the fraud system
+    if (user && user.role !== 'admin' && (user.isBanned || user.fraudStatus === 'blocked')) {
+      return res.status(403).json({
+        success: false,
+        error: user.isBanned
+          ? 'Forbidden: Account has been banned'
+          : 'Access denied: Account is blocked due to security/fraud violations.',
+        code: 'FRAUD_BLOCKED',
+        isBanned: user.isBanned,
+        isBlocked: user.fraudStatus === 'blocked',
+      });
+    }
+
     if (!user) {
       let baseName = (name || email.split('@')[0] || 'user').replace(/[^a-zA-Z0-9_-]/g, '');
       if (baseName.length < 3) baseName = 'user' + Math.floor(Math.random() * 10000);

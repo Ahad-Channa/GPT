@@ -64,31 +64,37 @@ export const AuthProvider = ({ children }) => {
             const ref = localStorage.getItem('ref') || sessionStorage.getItem('pending_ref');
             const fingerprint = await generateFingerprint();
             const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+            const isMockVpn = localStorage.getItem('test_mock_vpn') === 'true';
             const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/auth/sync`, {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
+                    'Content-Type': 'application/json',
+                    ...(isMockVpn ? { 'x-mock-vpn': 'true' } : {})
                 },
                 body: JSON.stringify({ ...(ref ? { ref } : {}), fingerprint, timezone })
             });
             const data = await res.json();
 
-            // VPN/Proxy blocked — sign out immediately
-            if (!data.success && data.code === 'FRAUD_BLOCKED') {
+            // VPN/Proxy blocked — sign out immediately and halt
+            if (!data.success && (data.code === 'FRAUD_BLOCKED' || /vpn|proxy|tor/i.test(data.error || ''))) {
                 await signOut(auth);
                 setMongoUser(null);
                 setCurrentUser(null);
-                throw new Error(data.error || 'VPN, proxy, or TOR connections are not allowed on this platform.');
+                const fraudError = new Error(data.error || 'Access denied. VPN, proxy, or TOR connections are not allowed on this platform.');
+                fraudError.isFraudBlocked = true;
+                throw fraudError;
             }
 
-            if (data.isBanned || (data.success && data.user?.isBanned)) {
-                alert("Your account has been banned due to violations of our terms. Please contact support.");
+            if (data.isBanned || data.isBlocked || (data.success && (data.user?.isBanned || data.user?.fraudStatus === 'blocked'))) {
                 await signOut(auth);
                 setMongoUser(null);
                 setCurrentUser(null);
-                return;
+                const banError = new Error(data.error || "Your account has been suspended or blocked due to security violations. Please contact support.");
+                banError.isFraudBlocked = true;
+                throw banError;
             }
+
             if (data.success) {
                 setMongoUser(data.user);
                 if (data.twoFactorRequired) {
@@ -96,13 +102,13 @@ export const AuthProvider = ({ children }) => {
                 } else {
                     setTwoFactorRequired(false);
                 }
+            } else {
+                throw new Error(data.error || 'Database Synchronization Error.');
             }
         } catch (error) {
             console.error("MongoDB Sync Failed:", error);
-            // Re-throw VPN block errors so the caller (login/register) can show the message
-            if (error.message && error.message.includes('VPN')) {
-                throw error;
-            }
+            // Re-throw so caller (login/register) knows authentication was blocked
+            throw error;
         }
     };
 
@@ -118,8 +124,10 @@ export const AuthProvider = ({ children }) => {
     };
 
     const registerWithEmail = async (email, password, displayName) => {
+        let createdUser = null;
         try {
             const result = await createUserWithEmailAndPassword(auth, email, password);
+            createdUser = result.user;
             
             if (displayName) {
                 await updateProfile(result.user, { displayName });
@@ -133,6 +141,12 @@ export const AuthProvider = ({ children }) => {
             return auth.currentUser;
         } catch (error) {
             console.error("Email Registration Error", error);
+            // If registration failed due to VPN / Fraud block, clean up the dangling Firebase auth user
+            if (createdUser && (error.isFraudBlocked || /vpn|proxy|tor|access denied/i.test(error.message || ''))) {
+                try {
+                    await createdUser.delete();
+                } catch (_) {}
+            }
             throw error;
         }
     };

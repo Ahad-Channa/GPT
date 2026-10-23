@@ -27,6 +27,7 @@ function pruneCache() {
 ───────────────────────────────────────────────────────────────── */
 function getClientIp(req) {
   let ip = (
+    req.headers['x-test-ip'] ||
     req.headers['cf-connecting-ip'] ||
     (req.headers['x-forwarded-for'] || '').split(',')[0].trim() ||
     req.headers['x-real-ip'] ||
@@ -112,6 +113,29 @@ function checkIpWithProxyCheck(ip) {
 function fraudCheck(routeName = 'unknown', mode = 'full') {
   return async (req, res, next) => {
     try {
+      // ── Developer Test Mode: Simulate VPN detection on localhost/test ──
+      if (req.headers['x-mock-vpn'] === 'true' || req.query?.mockVpn === 'true') {
+        const mockResult = {
+          status: 'ok',
+          proxy: true,
+          type: 'VPN',
+          risk: 99,
+          provider: 'Simulated VPN (Dev Test)',
+          country: 'Germany',
+          city: 'Frankfurt',
+          asn: 'AS12345',
+          raw: { simulated: true },
+        };
+        req.fraud = { flagged: true, result: mockResult, action: 'blocked' };
+        if (mode === 'full') {
+          return res.status(403).json({
+            success: false,
+            error: 'Access denied. VPN, proxy, or TOR connections are not allowed on this platform.',
+            code: 'FRAUD_BLOCKED',
+          });
+        }
+      }
+
       const ip = getClientIp(req);
       if (!ip || ip === '127.0.0.1' || ip === '::1') {
         req.fraud = { flagged: false, result: null, action: 'allowed' };
