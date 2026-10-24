@@ -58,7 +58,23 @@ export const AuthProvider = ({ children }) => {
     const [loading, setLoading] = useState(true);
     const socketRef = useRef(null);
 
+    const checkIpAllowed = async () => {
+        const isMockVpn = localStorage.getItem('test_mock_vpn') === 'true';
+        const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/auth/check-ip`, {
+            headers: isMockVpn ? { 'x-mock-vpn': 'true' } : {}
+        });
+        const data = await res.json();
+        if (!data.success && (data.code === 'FRAUD_BLOCKED' || /vpn|proxy|tor/i.test(data.error || ''))) {
+            const fraudError = new Error(data.error || 'Access denied. VPN, proxy, or TOR connections are not allowed on this platform.');
+            fraudError.isFraudBlocked = true;
+            throw fraudError;
+        }
+    };
+
     const syncWithMongo = async (user) => {
+        if (!user) {
+            throw new Error("No user available for synchronization.");
+        }
         try {
             const token = await user.getIdToken();
             const ref = localStorage.getItem('ref') || sessionStorage.getItem('pending_ref');
@@ -114,6 +130,8 @@ export const AuthProvider = ({ children }) => {
 
     const loginWithGoogle = async () => {
         try {
+            // Pre-check IP before opening Google OAuth
+            await checkIpAllowed();
             const result = await signInWithPopup(auth, googleProvider);
             await syncWithMongo(result.user);
             return result.user;
@@ -126,25 +144,42 @@ export const AuthProvider = ({ children }) => {
     const registerWithEmail = async (email, password, displayName) => {
         let createdUser = null;
         try {
+            // 1. Pre-check IP before creating user in Firebase
+            // This prevents creating a dangling Firebase user when connecting from VPN/proxy
+            await checkIpAllowed();
+
+            // 2. Create user in Firebase Auth
             const result = await createUserWithEmailAndPassword(auth, email, password);
             createdUser = result.user;
             
             if (displayName) {
-                await updateProfile(result.user, { displayName });
-                // Reload to reflect changes before sync
-                await result.user.reload();
+                await updateProfile(createdUser, { displayName });
+                await createdUser.reload();
             }
 
-            // Send verification email to ensure "email is real or not"
-            await sendEmailVerification(auth.currentUser);
-            await syncWithMongo(auth.currentUser);
-            return auth.currentUser;
+            // 3. Sync user with MongoDB using the verified createdUser instance
+            await syncWithMongo(createdUser);
+
+            // 4. Send verification email (non-blocking if it fails)
+            try {
+                await sendEmailVerification(createdUser);
+            } catch (vErr) {
+                console.warn("Failed to send verification email:", vErr.message);
+            }
+
+            return createdUser;
         } catch (error) {
             console.error("Email Registration Error", error);
-            // If registration failed due to VPN / Fraud block, clean up the dangling Firebase auth user
-            if (createdUser && (error.isFraudBlocked || /vpn|proxy|tor|access denied/i.test(error.message || ''))) {
+            // If registration failed for ANY reason after Firebase user was created,
+            // clean up the dangling Firebase auth user immediately so email is not locked
+            if (createdUser) {
                 try {
                     await createdUser.delete();
+                } catch (delErr) {
+                    console.warn("Could not delete dangling user:", delErr.message);
+                }
+                try {
+                    await signOut(auth);
                 } catch (_) {}
             }
             throw error;

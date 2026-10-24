@@ -57,7 +57,11 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }) {
       onClose();
       navigate('/dashboard');
     } catch (err) {
-      toast.error(err.message || t('auth.googleSignInFailed', 'Google sign-in failed.'), { id: tid });
+      if (err.isFraudBlocked || /vpn|proxy|tor|access denied/i.test(err.message || '')) {
+        toast.error(err.message || 'Access denied. VPN, proxy, or TOR connections are not allowed on this platform.', { id: tid });
+      } else {
+        toast.error(err.message || t('auth.googleSignInFailed', 'Google sign-in failed.'), { id: tid });
+      }
     } finally {
       setLoading(false);
     }
@@ -116,7 +120,9 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }) {
         onClose();
         navigate('/dashboard');
       } catch (err) {
-        if (err.code === 'auth/email-already-in-use') {
+        if (err.isFraudBlocked || /vpn|proxy|tor|access denied/i.test(err.message || '')) {
+          toast.error(err.message || 'Access denied. VPN, proxy, or TOR connections are not allowed on this platform.', { id: tid });
+        } else if (err.code === 'auth/email-already-in-use') {
           toast.error(t('auth.emailInUse', 'Email is already registered. Please login.'), { id: tid });
         } else if (err.code === 'auth/weak-password') {
           toast.error(t('auth.passwordWeak', 'Password is too weak.'), { id: tid });
@@ -136,7 +142,9 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }) {
         onClose();
         navigate('/dashboard');
       } catch (err) {
-        if (['auth/wrong-password', 'auth/user-not-found', 'auth/invalid-credential'].includes(err.code)) {
+        if (err.isFraudBlocked || /vpn|proxy|tor|access denied/i.test(err.message || '')) {
+          toast.error(err.message || 'Access denied. VPN, proxy, or TOR connections are not allowed on this platform.', { id: tid });
+        } else if (['auth/wrong-password', 'auth/user-not-found', 'auth/invalid-credential'].includes(err.code)) {
           toast.error(t('auth.invalidCredentials', 'Invalid email or password.'), { id: tid });
         } else {
           toast.error(err.message || t('auth.loginFailed', 'Login failed.'), { id: tid });

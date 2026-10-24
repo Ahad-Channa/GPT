@@ -25,6 +25,12 @@ async function generateUniqueReferralCode() {
   return crypto.randomBytes(8).toString('base64url').slice(0, 12).toUpperCase();
 }
 
+// GET /api/auth/check-ip
+// Pre-flight check to verify if the client's IP is allowed (blocks VPN/proxy before Firebase user creation)
+router.get('/check-ip', fraudCheck('check_ip', 'full'), (req, res) => {
+  res.json({ success: true, allowed: true });
+});
+
 // POST /api/auth/sync
 // Validates Firebase token. If user doesn't exist in MongoDB, inserts them securely.
 router.post('/sync', verifyToken, fraudCheck('auth_sync', 'full'), async (req, res) => {
