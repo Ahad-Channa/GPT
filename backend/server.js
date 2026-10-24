@@ -261,6 +261,28 @@ connectDB()
     } catch (e) {
       console.error('[MIGRATION] Error:', e);
     }
+
+    // AUTO-MIGRATION: Ensure all admin accounts are unblocked and permanently fraud-exempt
+    try {
+      const User = require('./models/User');
+      const result = await User.updateMany(
+        {
+          role: 'admin',
+          $or: [
+            { fraudExempt: { $ne: true } },
+            { isBanned: true },
+            { fraudStatus: { $ne: 'clean' } },
+            { fraudFlag: { $gt: 0 } }
+          ]
+        },
+        { $set: { fraudStatus: 'clean', fraudFlag: 0, isBanned: false, fraudExempt: true } }
+      );
+      if (result.modifiedCount > 0) {
+        console.log(`[STARTUP] Auto-fixed ${result.modifiedCount} admin account(s) — unbanned & set fraud-exempt.`);
+      }
+    } catch (e) {
+      console.error('[STARTUP] Admin fraud-exempt check error:', e.message);
+    }
     server.listen(PORT, () => {
       console.log(`Server runtime initiated on port ${PORT}`);
     });

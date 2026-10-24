@@ -178,6 +178,53 @@ router.put('/users/:id/ban', requirePermission('manage_users'), async (req, res)
   }
 });
 
+// ── Toggle fraud exemption for a user (e.g. household accounts, trusted testers) ──
+router.put('/users/:id/fraud-exempt', requirePermission('manage_users'), async (req, res) => {
+  try {
+    const { fraudExempt } = req.body;
+    const userToUpdate = await User.findById(req.params.id);
+    if (!userToUpdate) return res.status(404).json({ success: false, error: 'User not found' });
+
+    userToUpdate.fraudExempt = !!fraudExempt;
+    // If exempting, also clear any existing fraud flags
+    if (fraudExempt) {
+      userToUpdate.fraudStatus = 'clean';
+      userToUpdate.fraudFlag = 0;
+    }
+    await userToUpdate.save();
+
+    await createLog(req.dbUser._id, fraudExempt ? 'FRAUD_EXEMPT_USER' : 'FRAUD_UNEXEMPT_USER', userToUpdate._id, {
+      reason: req.body.reason || 'No reason provided',
+    });
+
+    res.json({ success: true, user: userToUpdate });
+  } catch (error) {
+    console.error('Fraud exempt toggle error:', error);
+    res.status(500).json({ success: false, error: 'Failed to update fraud exemption' });
+  }
+});
+
+// ── Reset fraud status for a user (clear flags, set status to clean) ──
+router.put('/users/:id/fraud-reset', requirePermission('manage_users'), async (req, res) => {
+  try {
+    const userToUpdate = await User.findById(req.params.id);
+    if (!userToUpdate) return res.status(404).json({ success: false, error: 'User not found' });
+
+    userToUpdate.fraudStatus = 'clean';
+    userToUpdate.fraudFlag = 0;
+    await userToUpdate.save();
+
+    await createLog(req.dbUser._id, 'FRAUD_RESET_USER', userToUpdate._id, {
+      reason: req.body.reason || 'Manual fraud status reset',
+    });
+
+    res.json({ success: true, user: userToUpdate });
+  } catch (error) {
+    console.error('Fraud reset error:', error);
+    res.status(500).json({ success: false, error: 'Failed to reset fraud status' });
+  }
+});
+
 router.put('/users/:id/balance', requirePermission('manage_users'), async (req, res) => {
   try {
     const { amount, reason } = req.body;

@@ -40,7 +40,8 @@ router.post('/sync', verifyToken, fraudCheck('auth_sync', 'full'), async (req, r
     const allPermissions = ['manage_users', 'manage_withdrawals', 'manage_support', 'manage_offerwalls', 'manage_admins'];
 
     // Check if user is banned or blocked by the fraud system
-    if (user && user.role !== 'admin' && (user.isBanned || user.fraudStatus === 'blocked')) {
+    // Admin accounts and fraud-exempt users are NEVER blocked
+    if (user && user.role !== 'admin' && !user.fraudExempt && (user.isBanned || user.fraudStatus === 'blocked')) {
       return res.status(403).json({
         success: false,
         error: user.isBanned

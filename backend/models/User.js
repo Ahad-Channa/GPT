@@ -112,6 +112,10 @@ const userSchema = new mongoose.Schema(
       enum: ['clean', 'suspicious', 'flagged', 'blocked'],
       default: 'clean',
     },
+    fraudExempt: {
+      type: Boolean,
+      default: false,
+    },
     lastIp: {
       type: String,
       default: '',

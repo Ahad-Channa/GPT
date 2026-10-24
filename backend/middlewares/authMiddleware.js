@@ -19,7 +19,7 @@ const verifyToken = async (req, res, next) => {
     
     // Check if user is banned or blocked by fraud system
     const userRecord = await User.findOne({ firebaseUid: decodedToken.uid });
-    if (userRecord && userRecord.role !== 'admin' && (userRecord.isBanned || userRecord.fraudStatus === 'blocked')) {
+    if (userRecord && userRecord.role !== 'admin' && !userRecord.fraudExempt && (userRecord.isBanned || userRecord.fraudStatus === 'blocked')) {
       return res.status(403).json({
         success: false,
         error: userRecord.isBanned

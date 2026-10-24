@@ -76,6 +76,8 @@ const UserDetailModal = ({ user, onClose, currentUser }) => {
   const [loadingLinked, setLoadingLinked] = useState(false);
   const [fraudStatusSelect, setFraudStatusSelect] = useState(user.fraudStatus || 'clean');
   const [savingFraud, setSavingFraud] = useState(false);
+  const [fraudExempt, setFraudExempt] = useState(user.fraudExempt || false);
+  const [savingExempt, setSavingExempt] = useState(false);
 
   useEffect(() => {
     if (tab === 'activity' && user) fetchTransactions();
@@ -132,6 +134,32 @@ const UserDetailModal = ({ user, onClose, currentUser }) => {
       toast.error('Failed to update fraud status');
     }
     setSavingFraud(false);
+  };
+
+  const handleFraudExemptToggle = async () => {
+    setSavingExempt(true);
+    try {
+      const token = await currentUser.getIdToken();
+      const newExempt = !fraudExempt;
+      const res = await fetch(`${API}/admin/users/${user._id}/fraud-exempt`, {
+        method: 'PUT',
+        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ fraudExempt: newExempt, reason: 'Admin toggled fraud exemption' }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setFraudExempt(newExempt);
+        if (newExempt) {
+          setFraudStatusSelect('clean');
+        }
+        toast.success(newExempt ? 'User is now exempt from fraud checks' : 'Fraud exemption removed');
+      } else {
+        toast.error(data.error || 'Failed to update');
+      }
+    } catch (e) {
+      toast.error('Failed to toggle fraud exemption');
+    }
+    setSavingExempt(false);
   };
 
   if (!user) return null;
@@ -396,6 +424,36 @@ const UserDetailModal = ({ user, onClose, currentUser }) => {
                 >
                   {savingFraud ? <FiLoader style={{ animation: 'spin 1s linear infinite' }} /> : <FiCheck size={14} />}
                   Save
+                </button>
+              </div>
+            </div>
+
+            {/* Fraud Exempt Toggle */}
+            <div style={{ background: fraudExempt ? '#ECFDF5' : '#F9FAFB', border: `1px solid ${fraudExempt ? '#A7F3D0' : '#E5E7EB'}`, borderRadius: '0.875rem', padding: '1rem', marginBottom: '1rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <div>
+                  <p style={{ fontSize: '0.7rem', fontWeight: 700, color: '#6B7280', textTransform: 'uppercase', letterSpacing: '0.05em', margin: '0 0 4px' }}>
+                    🛡️ Fraud Exemption
+                  </p>
+                  <p style={{ fontSize: '0.75rem', color: '#6B7280', margin: 0 }}>
+                    {fraudExempt
+                      ? 'This account is EXEMPT from fraud checks (household/trusted)'
+                      : 'This account follows normal fraud rules'
+                    }
+                  </p>
+                </div>
+                <button
+                  onClick={handleFraudExemptToggle}
+                  disabled={savingExempt}
+                  style={{
+                    background: fraudExempt ? '#DC2626' : '#059669',
+                    color: '#FFF', border: 'none', borderRadius: '0.5rem',
+                    padding: '0.45rem 0.85rem', fontSize: '0.75rem', fontWeight: 600,
+                    cursor: savingExempt ? 'not-allowed' : 'pointer', opacity: savingExempt ? 0.6 : 1,
+                    whiteSpace: 'nowrap',
+                  }}
+                >
+                  {savingExempt ? 'Saving...' : fraudExempt ? 'Remove Exemption' : 'Make Exempt'}
                 </button>
               </div>
             </div>
