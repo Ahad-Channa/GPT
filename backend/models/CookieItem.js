@@ -35,6 +35,17 @@ const DEFAULT_COOKIES = [
     order: 3,
   },
   {
+    name: '__tm_did',
+    provider: 'TaskMint',
+    category: 'essential',
+    duration: '12 months',
+    description_en: 'Cryptographically secure device identifier used for fraud prevention, multi-account abuse detection, and account protection.',
+    description_de: 'Kryptografisch sichere Gerätekennung zur Betrugsprävention, Erkennung unzulässiger Mehrfachkonten und zum Kontoschutz.',
+    isDefault: true,
+    isActive: true,
+    order: 4,
+  },
+  {
     name: 'taskmint_theme',
     provider: 'TaskMint',
     category: 'functional',
@@ -139,6 +150,14 @@ cookieItemSchema.statics.getOrSeedAll = async function () {
   const count = await this.countDocuments();
   if (count === 0) {
     await this.insertMany(DEFAULT_COOKIES);
+  } else {
+    // Automatically seed any missing default cookies (like __tm_did)
+    for (const def of DEFAULT_COOKIES) {
+      const exists = await this.findOne({ name: def.name });
+      if (!exists) {
+        await this.create(def);
+      }
+    }
   }
   return this.find({}).sort({ order: 1, createdAt: 1 });
 };

@@ -439,8 +439,9 @@ Cookies are small text files placed on your device by websites that you visit. T
 
 ### 2. Categories of Cookies We Use
 - **Strictly Necessary Cookies:** Essential for the operation of TaskMint. They enable basic functions like page navigation, session authentication, and account security. Without these cookies, services you request (like logging in) cannot be provided.
+- **Security & Fraud Prevention Identifier (\`__tm_did\`):** A cryptographically secure, randomly-generated device token (retained for 12 months) that allows our system to detect multi-accounting fraud, unauthorized access, and automated abuse. This cookie is strictly necessary for platform integrity, compliance, and user coin balance protection.
 - **Functional Preferences:** These cookies allow our website to remember choices you make, such as your preferred language (English or German) and theme preference (Dark Mode or Light Mode).
-- **Security & Anti-Fraud:** We store verification tokens to prevent multi-accounting, credential stuffing, and unauthorized access to your coin balances.
+- **Security & Anti-Fraud Tokens:** We store verification tokens (such as 2FA tokens) to prevent multi-accounting, credential stuffing, and unauthorized access to your coin balances.
 - **Third-Party & Offerwall Integration:** When you interact with integrated offerwalls (e.g., BitLabs, AdGate, CPX), those partners may use tracking technologies to verify task completion and deliver rewards.
 
 ---
@@ -455,7 +456,7 @@ For any inquiries regarding our use of cookies, please email **contact@taskmint.
     title_de: 'Cookie-Richtlinie',
     content_de: `# Cookie-Richtlinie
 
-*(Gültig ab: 17. Juli 2026 | Zuletzt aktualisiert: 17. Oktober 2026)*
+*(Gültig ab: 17. Juli 2026 | Zuletzt aktualisiert: 25. Oktober 2026)*
 
 Diese Cookie-Richtlinie erläutert, wie TaskMint Cookies und ähnliche Speichertechnologien (wie Local Storage und Session-Tokens) einsetzt, wenn Sie unsere Website und Dienste nutzen.
 
@@ -468,6 +469,7 @@ Cookies sind kleine Textdateien, die beim Besuch einer Website auf Ihrem Endger�
 
 ### 2. Arten von Cookies, die wir verwenden
 - **Technisch notwendige Cookies (§ 25 Abs. 2 TDDDG):** Diese Cookies sind zwingend erforderlich, damit Sie sich anmelden, auf Ihr Benutzerkonto zugreifen und Sicherheitsprüfungen durchführen können.
+- **Sicherheits- & Betrugspräventionskennung (\`__tm_did\`):** Ein sicheres, zufällig erzeugtes Geräte-Identifikationstoken (Speicherdauer: 12 Monate) zur Erkennung unzulässiger Mehrfachanmeldungen, Bot-Aktivitäten und zum Schutz der Benutzerguthaben. Diese Technologie ist technisch zwingend erforderlich gemäß § 25 Abs. 2 Nr. 2 TDDDG.
 - **Präferenz-Cookies:** Speichern Ihre Einstellungen wie die gewählte Sprache (Deutsch / Englisch) und Ihr Farbschema (Dark Mode / Light Mode).
 - **Sicherheits- & Betrugspräventionstoken:** Dienen dem Schutz vor Mehrfachanmeldungen, Bot-Angriffen und der Absicherung von Auszahlungen.
 - **Drittanbieter & Partnernetzwerke:** Beim Zugriff auf Partnerangebote (Offerwalls) können diese Drittanbieter Tracking-Technologien einsetzen, um den erfolgreichen Abschluss einer Aufgabe zu bestätigen.

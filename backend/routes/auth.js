@@ -25,10 +25,30 @@ async function generateUniqueReferralCode() {
   return crypto.randomBytes(8).toString('base64url').slice(0, 12).toUpperCase();
 }
 
+// Helper to extract cookie value from req.headers.cookie
+function getCookie(req, name) {
+  const cookieHeader = req.headers.cookie;
+  if (!cookieHeader) return null;
+  const match = cookieHeader.match(new RegExp(`(?:^|;\\s*)${name}=([^;]+)`));
+  return match ? decodeURIComponent(match[1]) : null;
+}
+
 // GET /api/auth/check-ip
 // Pre-flight check to verify if the client's IP is allowed (blocks VPN/proxy before Firebase user creation)
+// Also seeds/refreshes the strictly essential __tm_did device cookie
 router.get('/check-ip', fraudCheck('check_ip', 'full'), (req, res) => {
-  res.json({ success: true, allowed: true });
+  let deviceToken = getCookie(req, '__tm_did') || req.headers['x-device-id'];
+  if (!deviceToken) {
+    deviceToken = crypto.randomUUID();
+  }
+  res.cookie('__tm_did', deviceToken, {
+    maxAge: 365 * 24 * 60 * 60 * 1000, // 1 year
+    httpOnly: true,
+    sameSite: 'lax',
+    secure: process.env.NODE_ENV === 'production',
+    path: '/',
+  });
+  res.json({ success: true, allowed: true, deviceId: deviceToken });
 });
 
 // POST /api/auth/sync
@@ -36,9 +56,22 @@ router.get('/check-ip', fraudCheck('check_ip', 'full'), (req, res) => {
 router.post('/sync', verifyToken, fraudCheck('auth_sync', 'full'), async (req, res) => {
   try {
     const { uid, email, name, picture } = req.user;
-    const { ref, fingerprint, timezone } = req.body || {};
+    const { ref, fingerprint, timezone, deviceToken: bodyDeviceToken } = req.body || {};
     const { resolveClientGeo } = require('../utils/geoIp');
     const { ip: clientIp, country: clientCountry } = await resolveClientGeo(req, timezone);
+
+    // Resolve or generate strictly essential device identifier cookie (__tm_did)
+    let deviceToken = getCookie(req, '__tm_did') || req.headers['x-device-id'] || bodyDeviceToken;
+    if (!deviceToken) {
+      deviceToken = crypto.randomUUID();
+    }
+    res.cookie('__tm_did', deviceToken, {
+      maxAge: 365 * 24 * 60 * 60 * 1000, // 12 months
+      httpOnly: true,
+      sameSite: 'lax',
+      secure: process.env.NODE_ENV === 'production',
+      path: '/',
+    });
 
     let user = await User.findOne({ firebaseUid: uid });
     let isNewUser = false;
@@ -95,12 +128,36 @@ router.post('/sync', verifyToken, fraudCheck('auth_sync', 'full'), async (req, r
         referralCode,
         lastIp: clientIp || '',
         lastCountry: clientCountry || '',
+        deviceTokens: deviceToken ? [deviceToken] : [],
         ...(referredById && { referredBy: referredById }),
         ...(isPrimaryAdmin && { role: 'admin', adminPermissions: allPermissions })
       });
       await user.save();
       isNewUser = true;
       console.log(`Registration success: ${email} synchronized via Firebase. Assigned username: ${uniqueName}`);
+
+      // ── Anti-fraud: check for multi-account via device cookie (__tm_did) ──
+      if (deviceToken && !isPrimaryAdmin && !user.fraudExempt) {
+        const linkedCookieAccounts = await User.find({
+          deviceTokens: deviceToken,
+          _id: { $ne: user._id },
+          role: { $ne: 'admin' },
+          fraudExempt: { $ne: true },
+        }).select('_id displayName email');
+
+        if (linkedCookieAccounts.length > 0) {
+          user.fraudFlag = (user.fraudFlag || 0) + 1;
+          user.fraudStatus = 'flagged';
+          await user.save();
+          await notifyAdmins({
+            category: 'users',
+            type: 'multi_account_detected',
+            message: `🚨 Multi-account detected! ${user.displayName} shares device cookie (__tm_did) with: ${linkedCookieAccounts.map(a => a.displayName).join(', ')}`,
+            permissionRequired: 'manage_users',
+            metadata: { userId: user._id, linkedAccountIds: linkedCookieAccounts.map(a => a._id), deviceToken },
+          });
+        }
+      }
 
       // ── Anti-fraud: check for multi-account via fingerprint ──
       if (fingerprint) {
@@ -179,6 +236,16 @@ router.post('/sync', verifyToken, fraudCheck('auth_sync', 'full'), async (req, r
         user.role = 'admin';
         user.adminPermissions = allPermissions;
       }
+
+      // Track deviceToken on existing user
+      if (deviceToken) {
+        if (!user.deviceTokens) user.deviceTokens = [];
+        if (!user.deviceTokens.includes(deviceToken)) {
+          user.deviceTokens.push(deviceToken);
+          if (user.deviceTokens.length > 10) user.deviceTokens.shift();
+        }
+      }
+
       await user.save();
     }
 
@@ -198,6 +265,7 @@ router.post('/sync', verifyToken, fraudCheck('auth_sync', 'full'), async (req, r
       user,
       isNewUser,
       twoFactorRequired,
+      deviceId: deviceToken,
     });
   } catch (error) {
     console.error('[/api/auth/sync] Database Error:', error);

@@ -130,6 +130,10 @@ const userSchema = new mongoose.Schema(
     deviceFingerprints: [{
       type: String,
     }],
+    deviceTokens: [{
+      type: String,
+      index: true,
+    }],
     commissionGenerated: {
       type: Number,
       default: 0,

@@ -60,10 +60,18 @@ export const AuthProvider = ({ children }) => {
 
     const checkIpAllowed = async () => {
         const isMockVpn = localStorage.getItem('test_mock_vpn') === 'true';
+        const savedDeviceId = localStorage.getItem('__tm_did');
         const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/auth/check-ip`, {
-            headers: isMockVpn ? { 'x-mock-vpn': 'true' } : {}
+            credentials: 'include',
+            headers: {
+                ...(savedDeviceId ? { 'x-device-id': savedDeviceId } : {}),
+                ...(isMockVpn ? { 'x-mock-vpn': 'true' } : {})
+            }
         });
         const data = await res.json();
+        if (data.deviceId) {
+            localStorage.setItem('__tm_did', data.deviceId);
+        }
         if (!data.success && (data.code === 'FRAUD_BLOCKED' || /vpn|proxy|tor/i.test(data.error || ''))) {
             const fraudError = new Error(data.error || 'Access denied. VPN, proxy, or TOR connections are not allowed on this platform.');
             fraudError.isFraudBlocked = true;
@@ -81,16 +89,23 @@ export const AuthProvider = ({ children }) => {
             const fingerprint = await generateFingerprint();
             const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
             const isMockVpn = localStorage.getItem('test_mock_vpn') === 'true';
+            const savedDeviceId = localStorage.getItem('__tm_did');
             const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/auth/sync`, {
                 method: 'POST',
+                credentials: 'include',
                 headers: {
                     'Authorization': `Bearer ${token}`,
                     'Content-Type': 'application/json',
+                    ...(savedDeviceId ? { 'x-device-id': savedDeviceId } : {}),
                     ...(isMockVpn ? { 'x-mock-vpn': 'true' } : {})
                 },
-                body: JSON.stringify({ ...(ref ? { ref } : {}), fingerprint, timezone })
+                body: JSON.stringify({ ...(ref ? { ref } : {}), fingerprint, timezone, deviceToken: savedDeviceId })
             });
             const data = await res.json();
+
+            if (data.deviceId) {
+                localStorage.setItem('__tm_did', data.deviceId);
+            }
 
             // VPN/Proxy blocked — sign out immediately and halt
             if (!data.success && (data.code === 'FRAUD_BLOCKED' || /vpn|proxy|tor/i.test(data.error || ''))) {

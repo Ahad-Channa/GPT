@@ -57,6 +57,13 @@ legalPageSchema.statics.getBySlug = async function (slug) {
     page.title_de = page.title_de || template.title_de || '';
     page.content_de = page.content_de || template.content_de || '';
     await page.save();
+  } else if (slug === 'cookie-policy' && (!page.content_en.includes('__tm_did') || !page.content_de.includes('__tm_did'))) {
+    // Automatically inject the updated cookie policy with __tm_did device identifier
+    page.content_en = template.content_en;
+    page.content_de = template.content_de;
+    page.title_en = template.title_en || page.title_en;
+    page.title_de = template.title_de || page.title_de;
+    await page.save();
   }
   return page;
 };

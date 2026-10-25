@@ -982,9 +982,9 @@ export default function DailyBonus() {
                       >
                         {/* Top: Title & Sub + Reward Pill */}
                         <div className="flex items-start justify-between gap-1 sm:gap-2 w-full min-w-0">
-                          <div className="flex flex-col justify-start sm:justify-between h-auto sm:h-[37px] gap-0.5 sm:gap-0 min-w-0 flex-1 pr-1">
+                          <div className="flex flex-col justify-start h-auto gap-0.5 sm:gap-0 min-w-0 flex-1 pr-1">
                             <h3
-                              className="font-bold text-[18px] xs:text-[20px] sm:text-[22px] leading-tight sm:leading-[22px] tracking-[-0.02em] whitespace-nowrap truncate m-0"
+                              className="font-bold text-[18px] xs:text-[20px] sm:text-[22px] leading-tight sm:leading-[22px] tracking-[-0.02em] whitespace-nowrap overflow-visible m-0"
                               style={{
                                 fontFamily: '"Bricolage Grotesque", sans-serif',
                                 color: isDarkMode ? '#FFFFFF' : '#000000',
@@ -993,7 +993,7 @@ export default function DailyBonus() {
                               {milestone.title}
                             </h3>
                             <p
-                              className="font-medium text-[12px] sm:text-[14px] leading-tight sm:leading-[18px] whitespace-nowrap truncate m-0"
+                              className="font-medium text-[12px] sm:text-[14px] leading-tight sm:leading-[18px] whitespace-nowrap overflow-visible m-0"
                               style={{
                                 fontFamily: '"Poppins", sans-serif',
                                 color: isDarkMode ? 'rgba(255, 255, 255, 0.7)' : '#000000',
