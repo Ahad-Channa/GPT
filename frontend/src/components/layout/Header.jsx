@@ -318,6 +318,7 @@ const Header = ({ onChatToggle, chatOpen, fullWidth }) => {
   const { t, i18n } = useTranslation();
   const { isDarkMode } = useTheme();
   const isGerman = i18n.language?.startsWith('de');
+  const isUrdu = i18n.language?.startsWith('ur');
   const { currentUser, mongoUser, logout, isAdmin } = useAuth();
   const { unreadCount, togglePanel, hasUnreadChat, setHasUnreadChat } = useNotifications();
 
@@ -775,7 +776,7 @@ const Header = ({ onChatToggle, chatOpen, fullWidth }) => {
                           color: isDarkMode ? '#FFFFFF' : '#000000',
                         }}
                       >
-                        Sign Out
+                        {t('nav.logout')}
                       </span>
                     </button>
                   </motion.div>
@@ -834,7 +835,7 @@ const Header = ({ onChatToggle, chatOpen, fullWidth }) => {
 
       {/* Group 2: Main Links (Desktop) */}
       <div
-        className={`hidden lg:flex items-center relative ${isGerman ? '-left-[90px]' : '-left-[70px]'}`}
+        className={`hidden lg:flex items-center relative ${isUrdu ? 'left-0' : (isGerman ? '-left-[90px]' : '-left-[70px]')}`}
         style={{
           width: '598px',
           height: '20px',
@@ -1376,7 +1377,7 @@ const Header = ({ onChatToggle, chatOpen, fullWidth }) => {
                       whiteSpace: 'nowrap',
                     }}
                   >
-                    Earn
+                    {t('nav.earn')}
                   </span>
                 </div>
               </button>
@@ -1437,7 +1438,7 @@ const Header = ({ onChatToggle, chatOpen, fullWidth }) => {
                       whiteSpace: 'nowrap',
                     }}
                   >
-                    Leaderboard
+                    {t('nav.leaderboard')}
                   </span>
                 </div>
               </button>
@@ -1498,7 +1499,7 @@ const Header = ({ onChatToggle, chatOpen, fullWidth }) => {
                       whiteSpace: 'nowrap',
                     }}
                   >
-                    Withdraw
+                    {t('nav.withdraw')}
                   </span>
                 </div>
               </button>
@@ -1559,7 +1560,7 @@ const Header = ({ onChatToggle, chatOpen, fullWidth }) => {
                       whiteSpace: 'nowrap',
                     }}
                   >
-                    More
+                    {t('nav.more', 'More')}
                   </span>
                 </div>
               </button>
@@ -1683,7 +1684,7 @@ const Header = ({ onChatToggle, chatOpen, fullWidth }) => {
                           whiteSpace: 'nowrap',
                         }}
                       >
-                        Affiliates
+                        {t('nav.affiliates')}
                       </span>
                     </button>
 
@@ -1751,7 +1752,7 @@ const Header = ({ onChatToggle, chatOpen, fullWidth }) => {
                           whiteSpace: 'nowrap',
                         }}
                       >
-                        Daily Bonus
+                        {t('nav.dailyBonus')}
                       </span>
                     </button>
 
@@ -1819,7 +1820,7 @@ const Header = ({ onChatToggle, chatOpen, fullWidth }) => {
                           whiteSpace: 'nowrap',
                         }}
                       >
-                        VIP Status
+                        {t('nav.vip')}
                       </span>
                     </button>
 
@@ -1887,7 +1888,7 @@ const Header = ({ onChatToggle, chatOpen, fullWidth }) => {
                           whiteSpace: 'nowrap',
                         }}
                       >
-                        Profile
+                        {t('nav.myProfile')}
                       </span>
                     </button>
 
@@ -1955,7 +1956,7 @@ const Header = ({ onChatToggle, chatOpen, fullWidth }) => {
                           whiteSpace: 'nowrap',
                         }}
                       >
-                        Sign Out
+                        {t('nav.logout')}
                       </span>
                     </button>
 

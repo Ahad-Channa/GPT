@@ -53,6 +53,8 @@ const AdminLegalPages = () => {
             content_en: p.content_en || '',
             title_de: p.title_de || '',
             content_de: p.content_de || '',
+            title_ur: p.title_ur || '',
+            content_ur: p.content_ur || '',
           };
         });
         setEditData(ed);
@@ -115,7 +117,7 @@ const AdminLegalPages = () => {
             <FiFileText style={{ color: '#2563EB' }} />
             Legal Pages
           </h1>
-          <p className="admin-page-sub">Manage Impressum, Terms of Use, and Privacy Policy content in English and German.</p>
+          <p className="admin-page-sub">Manage Impressum, Terms of Use, Privacy Policy, and other legal content in English, German, and Urdu.</p>
         </div>
       </div>
 
@@ -381,6 +383,7 @@ Musterstraße 123, 10115 Berlin, Germany
                 {[
                   { key: 'en', label: '🇬🇧 English', flag: '🇬🇧' },
                   { key: 'de', label: '🇩🇪 Deutsch', flag: '🇩🇪' },
+                  { key: 'ur', label: '🇵🇰 اردو', flag: '🇵🇰' },
                 ].map(({ key, label }) => (
                   <button
                     key={key}
@@ -413,13 +416,20 @@ Musterstraße 123, 10115 Berlin, Germany
                   textTransform: 'uppercase',
                   letterSpacing: '0.05em',
                 }}>
-                  Page Title ({activeLang === 'en' ? 'English' : 'German'}) *
+                  Page Title ({activeLang === 'en' ? 'English' : activeLang === 'de' ? 'German' : 'Urdu'}) *
                 </label>
                 <input
                   type="text"
+                  dir={activeLang === 'ur' ? 'rtl' : 'ltr'}
                   value={current[`title_${activeLang}`] || ''}
                   onChange={(e) => updateField(activeSlug, `title_${activeLang}`, e.target.value)}
-                  placeholder={activeLang === 'en' ? `e.g. ${meta.label}` : `z.B. ${meta.label}`}
+                  placeholder={
+                    activeLang === 'en'
+                      ? `e.g. ${meta.label}`
+                      : activeLang === 'de'
+                      ? `z.B. ${meta.label}`
+                      : `مثال: ${meta.label}`
+                  }
                   className="admin-input"
                   style={{
                     width: '100%',
@@ -445,7 +455,7 @@ Musterstraße 123, 10115 Berlin, Germany
                     textTransform: 'uppercase',
                     letterSpacing: '0.05em',
                   }}>
-                    Page Content ({activeLang === 'en' ? 'English' : 'German'}) *
+                    Page Content ({activeLang === 'en' ? 'English' : activeLang === 'de' ? 'German' : 'Urdu'}) *
                   </label>
                   <span style={{ fontSize: '0.75rem', color: '#9CA3AF' }}>
                     Full Markdown Supported
@@ -453,11 +463,16 @@ Musterstraße 123, 10115 Berlin, Germany
                 </div>
                 <textarea
                   id="legal-page-content-textarea"
+                  dir={activeLang === 'ur' ? 'rtl' : 'ltr'}
                   value={current[`content_${activeLang}`] || ''}
                   onChange={(e) => updateField(activeSlug, `content_${activeLang}`, e.target.value)}
-                  placeholder={activeLang === 'en'
-                    ? 'Enter the full page content here using Markdown formatting (e.g. ## Heading, ### Subtitle, - Bullets, --- Dividers)...'
-                    : 'Geben Sie den vollständigen Seiteninhalt hier mit Markdown-Formatierung ein (z.B. ## Überschrift, ### Untertitel, - Aufzählungspunkte, --- Trennlinie)...'}
+                  placeholder={
+                    activeLang === 'en'
+                      ? 'Enter the full page content here using Markdown formatting (e.g. ## Heading, ### Subtitle, - Bullets, --- Dividers)...'
+                      : activeLang === 'de'
+                      ? 'Geben Sie den vollständigen Seiteninhalt hier mit Markdown-Formatierung ein (z.B. ## Überschrift, ### Untertitel, - Aufzählungspunkte, --- Trennlinie)...'
+                      : 'مارک ڈاؤن فارمیٹنگ کا استعمال کرتے ہوئے صفحہ کا مواد یہاں درج کریں (جیسے ## ہیڈنگ، ### ذیلی عنوان، - نکات، --- لکیر)...'
+                  }
                   className="admin-input"
                   rows={24}
                   style={{

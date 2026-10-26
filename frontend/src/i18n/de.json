@@ -14,7 +14,8 @@
     "features": "Funktionen",
     "faq": "FAQ",
     "login": "Anmelden",
-    "createAccount": "Registrieren"
+    "createAccount": "Registrieren",
+    "more": "Mehr"
   },
   "hero": {
     "titleLine1": "Deine Zeit hat Wert",
@@ -124,7 +125,8 @@
   },
   "languageToggle": {
     "en": "EN",
-    "de": "DE"
+    "de": "DE",
+    "ur": "UR"
   },
   "offers": {
     "requirements": "Voraussetzungen",
@@ -399,6 +401,7 @@
   },
   "vipPage": {
     "pageTitle": "VIP Status",
+    "pageSubtitle": "Höhere Belohnungen. Größere Vorteile. Mehr Verdienstmöglichkeiten.",
     "currentRank": "Aktueller Rang",
     "earnCoinsFor": "Verdiene Coins",
     "forBronzeTier": "für Bronze Tier",

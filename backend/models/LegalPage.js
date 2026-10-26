@@ -28,6 +28,15 @@ const legalPageSchema = new mongoose.Schema(
       type: String,
       default: '',
     },
+    // Urdu content
+    title_ur: {
+      type: String,
+      default: '',
+    },
+    content_ur: {
+      type: String,
+      default: '',
+    },
     // Last edited by (admin user ID)
     lastEditedBy: {
       type: mongoose.Schema.Types.ObjectId,
@@ -49,21 +58,38 @@ legalPageSchema.statics.getBySlug = async function (slug) {
       content_en: template.content_en || '',
       title_de: template.title_de || '',
       content_de: template.content_de || '',
+      title_ur: template.title_ur || '',
+      content_ur: template.content_ur || '',
     });
-  } else if (!page.content_en && !page.content_de) {
-    // If empty record was previously created, populate with template
-    page.title_en = page.title_en || template.title_en || '';
-    page.content_en = page.content_en || template.content_en || '';
-    page.title_de = page.title_de || template.title_de || '';
-    page.content_de = page.content_de || template.content_de || '';
-    await page.save();
-  } else if (slug === 'cookie-policy' && (!page.content_en.includes('__tm_did') || !page.content_de.includes('__tm_did'))) {
-    // Automatically inject the updated cookie policy with __tm_did device identifier
-    page.content_en = template.content_en;
-    page.content_de = template.content_de;
-    page.title_en = template.title_en || page.title_en;
-    page.title_de = template.title_de || page.title_de;
-    await page.save();
+  } else {
+    let changed = false;
+    if (!page.content_en && !page.content_de) {
+      // If empty record was previously created, populate with template
+      page.title_en = page.title_en || template.title_en || '';
+      page.content_en = page.content_en || template.content_en || '';
+      page.title_de = page.title_de || template.title_de || '';
+      page.content_de = page.content_de || template.content_de || '';
+      changed = true;
+    }
+    if (!page.content_ur && template.content_ur) {
+      page.title_ur = template.title_ur || '';
+      page.content_ur = template.content_ur || '';
+      changed = true;
+    }
+    if (slug === 'cookie-policy' && (!page.content_en.includes('__tm_did') || !page.content_de.includes('__tm_did'))) {
+      page.content_en = template.content_en;
+      page.content_de = template.content_de;
+      page.title_en = template.title_en || page.title_en;
+      page.title_de = template.title_de || page.title_de;
+      if (!page.content_ur && template.content_ur) {
+        page.title_ur = template.title_ur;
+        page.content_ur = template.content_ur;
+      }
+      changed = true;
+    }
+    if (changed) {
+      await page.save();
+    }
   }
   return page;
 };

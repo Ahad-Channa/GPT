@@ -174,7 +174,8 @@ export const FeaturedOfferCard = ({ offer, onClick }) => {
   const { isDarkMode } = useTheme();
   const { i18n } = useTranslation();
   const isDe = i18n.language?.startsWith('de');
-  const title = (isDe && offer.titleDe) ? offer.titleDe : offer.title;
+  const isUr = i18n.language?.startsWith('ur');
+  const title = (isUr && offer.titleUr) ? offer.titleUr : ((isDe && offer.titleDe) ? offer.titleDe : offer.title);
   const isExpired = offer.expirationDate && new Date(offer.expirationDate) < new Date();
   const coverImgSrc = offer.coverImage || (isIconUrl(offer.icon) ? offer.icon : null);
   const emojiIcon = !coverImgSrc && offer.icon ? offer.icon : null;
@@ -359,11 +360,14 @@ export const FeaturedOfferCard = ({ offer, onClick }) => {
 export const FeaturedOfferModal = ({ offer, token, onClose, onSubmitted }) => {
   const { t, i18n } = useTranslation();
   const isDe = i18n.language?.startsWith('de');
-  const title = (isDe && offer.titleDe) ? offer.titleDe : offer.title;
-  const description = (isDe && offer.descriptionDe) ? offer.descriptionDe : (offer.description || t('offers.defaultDescription'));
-  const requirementsList = (isDe && offer.requirementsDe && offer.requirementsDe.length > 0)
-    ? offer.requirementsDe
-    : offer.requirements;
+  const isUr = i18n.language?.startsWith('ur');
+  const title = (isUr && offer.titleUr) ? offer.titleUr : ((isDe && offer.titleDe) ? offer.titleDe : offer.title);
+  const description = (isUr && offer.descriptionUr) ? offer.descriptionUr : ((isDe && offer.descriptionDe) ? offer.descriptionDe : (offer.description || t('offers.defaultDescription')));
+  const requirementsList = (isUr && offer.requirementsUr && offer.requirementsUr.length > 0)
+    ? offer.requirementsUr
+    : ((isDe && offer.requirementsDe && offer.requirementsDe.length > 0)
+      ? offer.requirementsDe
+      : offer.requirements);
 
   const [loading, setLoading] = useState(false);
   const [showSupportModal, setShowSupportModal] = useState(false);

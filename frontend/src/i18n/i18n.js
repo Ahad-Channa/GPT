@@ -4,6 +4,7 @@ import LanguageDetector from 'i18next-browser-languagedetector';
 
 import en from './en.json';
 import de from './de.json';
+import ur from './ur.json';
 
 const hasFunctionalConsent = () => {
   if (typeof window === 'undefined') return false;
@@ -21,8 +22,10 @@ const getInitialLanguage = () => {
   if (typeof window === 'undefined') return 'en';
   if (hasFunctionalConsent()) {
     const saved = localStorage.getItem('i18nextLng');
-    if (saved && (saved.startsWith('de') || saved.startsWith('en'))) {
-      return saved.startsWith('de') ? 'de' : 'en';
+    if (saved) {
+      if (saved.startsWith('ur')) return 'ur';
+      if (saved.startsWith('de')) return 'de';
+      if (saved.startsWith('en')) return 'en';
     }
   }
   // Default without functional consent: English
@@ -37,7 +40,8 @@ i18n
   .init({
     resources: {
       en: { translation: en },
-      de: { translation: de }
+      de: { translation: de },
+      ur: { translation: ur }
     },
     fallbackLng: 'en',
     lng: getInitialLanguage(),

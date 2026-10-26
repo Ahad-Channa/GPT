@@ -355,14 +355,19 @@ export const AuthProvider = ({ children }) => {
                 socketRef.current.on('vipLevelUp', ({ label, rewardAmount, tier, rank }) => {
                     import('react-hot-toast').then(({ default: toast }) => {
                         const isDe = i18n.language === 'de';
+                        const isUr = i18n.language === 'ur';
                         const msg = rewardAmount > 0
-                            ? (isDe
+                            ? (isUr
+                                ? `🎉 آپ نے ${label} لیول حاصل کر لیا ہے! وی آئی پی پیج پر اپنا ${rewardAmount.toLocaleString()} کوائن بونس کلیم کریں۔`
+                                : isDe
                                 ? `🎉 Du hast ${label} erreicht! Hole dir deinen Bonus von ${rewardAmount.toLocaleString()} Coins auf der VIP Seite ab.`
                                 : `🎉 You reached ${label}! Claim your ${rewardAmount.toLocaleString()} coin bonus on the VIP page.`)
-                            : (isDe
+                            : (isUr
+                                ? `🎉 آپ نے ${label} وی آئی پی اسٹیٹس حاصل کر لیا ہے! وی آئی پی پیج پر اپنی پیش رفت دیکھیں۔`
+                                : isDe
                                 ? `🎉 Du hast den VIP-Status ${label} erreicht! Sieh dir deinen Fortschritt auf der VIP Seite an.`
                                 : `🎉 You reached ${label} VIP status! Check your progress on the VIP page.`);
-                        const openText = isDe ? '→ Zur VIP Seite' : '→ Open VIP page';
+                        const openText = isUr ? '← وی آئی پی پیج کھولیں' : (isDe ? '→ Zur VIP Seite' : '→ Open VIP page');
                         toast(
                             (t) => (
                                 <span

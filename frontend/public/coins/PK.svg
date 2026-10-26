@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
+  <defs>
+    <clipPath id="circle-pk">
+      <circle cx="12" cy="12" r="12"/>
+    </clipPath>
+  </defs>
+  <g clip-path="url(#circle-pk)">
+    <!-- Green background -->
+    <rect width="24" height="24" fill="#01411C"/>
+    <!-- White vertical stripe on hoist side (1/4th width) -->
+    <rect width="6" height="24" fill="#FFFFFF"/>
+    <!-- White Crescent -->
+    <path d="M 17.2 7.8 A 5.2 5.2 0 1 0 17.5 17.2 A 4.3 4.3 0 1 1 14.8 8.5 A 5.1 5.1 0 0 0 17.2 7.8 Z" fill="#FFFFFF"/>
+    <!-- Five-pointed star tilted towards top-right -->
+    <polygon points="17.6,9.2 18.2,10.7 19.8,10.6 18.5,11.5 19.0,13.0 17.7,12.0 16.5,13.0 16.9,11.5 15.6,10.6 17.2,10.7" fill="#FFFFFF"/>
+  </g>
+</svg>

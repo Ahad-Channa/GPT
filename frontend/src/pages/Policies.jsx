@@ -10,11 +10,11 @@ import Footer from '../components/layout/Footer';
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
 const TABS = [
-  { slug: 'terms-of-use', labelEn: 'Terms of Service', labelDe: 'Nutzungsbedingungen' },
-  { slug: 'privacy-policy', labelEn: 'Privacy Policy', labelDe: 'Datenschutzerklärung' },
-  { slug: 'cookie-policy', labelEn: 'Cookie Policy', labelDe: 'Cookie-Richtlinie' },
-  { slug: 'affiliate-policy', labelEn: 'Affiliate Policy', labelDe: 'Affiliate-Richtlinie' },
-  { slug: 'impressum', labelEn: 'Impressum', labelDe: 'Impressum' },
+  { slug: 'terms-of-use', labelEn: 'Terms of Service', labelDe: 'Nutzungsbedingungen', labelUr: 'استعمال کی شرائط' },
+  { slug: 'privacy-policy', labelEn: 'Privacy Policy', labelDe: 'Datenschutzerklärung', labelUr: 'پرائیویسی پالیسی' },
+  { slug: 'cookie-policy', labelEn: 'Cookie Policy', labelDe: 'Cookie-Richtlinie', labelUr: 'کوکی پالیسی' },
+  { slug: 'affiliate-policy', labelEn: 'Affiliate Policy', labelDe: 'Affiliate-Richtlinie', labelUr: 'ایفیلی ایٹ پالیسی' },
+  { slug: 'impressum', labelEn: 'Impressum', labelDe: 'Impressum', labelUr: 'امپریسم (قانونی معلومات)' },
 ];
 
 const SLUG_ALIASES = {
@@ -175,6 +175,7 @@ export default function Policies({ customSlug }) {
   const navigate = useNavigate();
   const { t, i18n } = useTranslation();
   const isDe = i18n?.language?.startsWith('de');
+  const isUr = i18n?.language === 'ur' || i18n?.language?.startsWith('ur');
   const { isDarkMode } = useTheme();
   const { openCookieSettings, cookiesList } = useCookieConsent();
 
@@ -244,13 +245,17 @@ export default function Policies({ customSlug }) {
   const currentPage = cache[activeSlug];
 
   const currentTitle = currentPage
-    ? (isDe
+    ? (isUr
+        ? (currentPage.title_ur || currentPage.title_en)
+        : isDe
         ? (currentPage.title_de || currentPage.title_en)
         : (currentPage.title_en || currentPage.title_de))
-    : (TABS.find(t => t.slug === activeSlug)?.[isDe ? 'labelDe' : 'labelEn'] || 'Policy');
+    : (TABS.find(t => t.slug === activeSlug)?.[isUr ? 'labelUr' : isDe ? 'labelDe' : 'labelEn'] || 'Policy');
 
   const currentContent = currentPage
-    ? (isDe
+    ? (isUr
+        ? (currentPage.content_ur || currentPage.content_en || '')
+        : isDe
         ? (currentPage.content_de || currentPage.content_en || '')
         : (currentPage.content_en || currentPage.content_de || ''))
     : '';
@@ -259,15 +264,16 @@ export default function Policies({ customSlug }) {
   const cleanedContent = currentContent ? currentContent.replace(/^#\s+[^\n]+\n+/, '') : '';
 
   const lastUpdatedDate = currentPage?.updatedAt
-    ? new Date(currentPage.updatedAt).toLocaleDateString(isDe ? 'de-DE' : 'en-US', {
+    ? new Date(currentPage.updatedAt).toLocaleDateString(isUr ? 'ur-PK' : isDe ? 'de-DE' : 'en-US', {
         month: 'long',
         day: 'numeric',
         year: 'numeric',
       })
-    : 'July 17, 2026';
+    : (isUr ? '17 جولائی 2026' : 'July 17, 2026');
 
   const renderTabButton = (tab, isMobile = false, isRow1 = false) => {
     const isActive = activeSlug === tab.slug;
+    const tabLabel = isUr ? tab.labelUr : isDe ? tab.labelDe : tab.labelEn;
     return (
       <button
         key={tab.slug}
@@ -290,7 +296,7 @@ export default function Policies({ customSlug }) {
             : (isDarkMode ? 'rgba(255, 255, 255, 0.75)' : '#000000'),
           minHeight: isMobile ? '36px' : '40px',
         }}
-        title={isDe ? tab.labelDe : tab.labelEn}
+        title={tabLabel}
       >
         <span
           className="whitespace-nowrap inline-block text-center"
@@ -303,7 +309,7 @@ export default function Policies({ customSlug }) {
               : undefined,
           }}
         >
-          {isDe ? tab.labelDe : tab.labelEn}
+          {tabLabel}
         </span>
       </button>
     );

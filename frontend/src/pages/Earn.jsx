@@ -129,6 +129,13 @@ const Earn = () => {
 
   const enabledProviders = settings?.offerwalls || [];
 
+  const goodpicksItem = enabledProviders.find(p => p.id === 'goodpicks') || {
+    id: 'goodpicks',
+    label: 'Goodpicks',
+    category: 'gaming',
+    enabled: true
+  };
+
   const defaultSurveyList = [
     { id: 'cpx', label: 'CPX Research', category: 'surveys', enabled: true },
     { id: 'primeearn', label: 'Prime Surveys', category: 'surveys', enabled: true },
@@ -155,13 +162,6 @@ const Earn = () => {
       combinedBase.push(def);
     }
   }
-
-  const goodpicksItem = enabledProviders.find(p => p.id === 'goodpicks') || {
-    id: 'goodpicks',
-    label: 'Goodpicks',
-    category: 'gaming',
-    enabled: true
-  };
 
   // 9 items total: 4 on line 1, 4 on line 2, and Goodpicks as the 9th at start of line 3
   const gamingProviders = [...combinedBase.slice(0, 8), goodpicksItem];

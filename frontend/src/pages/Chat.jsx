@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import io from 'socket.io-client';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../contexts/AuthContext';
 import Header from '../components/layout/Header';
 import SupportChat from '../components/SupportChat';
@@ -142,6 +143,7 @@ const MessageRow = ({ msg, canModerate, onDelete, deletingId }) => {
 
 /* ─── Main Page ──────────────────────────────── */
 const Chat = () => {
+  const { t } = useTranslation();
   const { mongoUser, currentUser, isAdmin, canModerateChat } = useAuth();
   const isMod = mongoUser?.role === 'chat_mod' || mongoUser?.role === 'moderator';
   const canModerate = canModerateChat;
@@ -205,8 +207,8 @@ const Chat = () => {
         headers: { Authorization: `Bearer ${token}` }
       });
       const data = await res.json();
-      if (data.status !== 'success') toast.error(data.message || 'Delete failed');
-    } catch { toast.error('Failed to delete'); }
+      if (data.status !== 'success') toast.error(data.message || t('chat.deleteFailed', 'Failed to delete message'));
+    } catch { toast.error(t('chat.deleteFailed', 'Failed to delete message')); }
     finally { setDeletingId(null); }
   };
 
@@ -259,15 +261,15 @@ const Chat = () => {
             }}>
               <FiUsers style={{ color: '#10b981', fontSize: 13 }} />
               <span style={{ color: '#10b981', fontWeight: 700 }}>{liveCount}</span>
-              <span>online</span>
+              <span>{t('chat.online', 'online')}</span>
             </span>
           </div>
 
           {/* Chat / Support tab switcher */}
           <div style={{ display: 'flex', gap: 4, background: 'rgba(255,255,255,0.04)', borderRadius: 10, padding: 3 }}>
             {[
-              { key: 'chat',    label: 'Live Chat',    icon: FiMessageSquare },
-              { key: 'support', label: 'Support', icon: FiHeadphones }
+              { key: 'chat',    label: t('chat.liveChat', 'Live Chat'),    icon: FiMessageSquare },
+              { key: 'support', label: t('chat.support', 'Support'), icon: FiHeadphones }
             ].map(({ key, label, icon: Icon }) => {
               const active = activeTab === key;
               const isSupport = key === 'support';
@@ -312,7 +314,7 @@ const Chat = () => {
               padding: '0 14px', marginBottom: 8
             }}>
               <FiUsers style={{ display: 'inline', marginRight: 4 }} />
-              Online — {liveCount}
+              {t('chat.online', 'Online')} — {liveCount}
             </p>
 
             {/* you */}
@@ -328,7 +330,7 @@ const Chat = () => {
                   <p style={{ margin: 0, fontSize: '0.76rem', fontWeight: 600, color: '#c7d2fe', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                     {mongoUser.displayName}
                   </p>
-                  <p style={{ margin: 0, fontSize: '0.6rem', color: '#10b981' }}>You · Online</p>
+                  <p style={{ margin: 0, fontSize: '0.6rem', color: '#10b981' }}>{mongoUser.displayName} · {t('chat.online', 'Online')}</p>
                 </div>
               </div>
             )}
@@ -403,7 +405,7 @@ const Chat = () => {
                     <FiMessageSquare style={{ fontSize: 24, color: '#334155' }} />
                   </div>
                   <p style={{ margin: 0, fontSize: '0.88rem', color: '#475569' }}>
-                    No messages yet — say hi 👋
+                    {t('chat.noMessages', 'No messages yet — say hi! 👋')}
                   </p>
                 </div>
               )}
@@ -434,7 +436,7 @@ const Chat = () => {
                       type="text"
                       value={newMsg}
                       onChange={e => setNewMsg(e.target.value)}
-                      placeholder="Message everyone..."
+                      placeholder={t('chat.inputPlaceholder', 'Message everyone...')}
                       maxLength={500}
                       style={{
                         width: '100%', boxSizing: 'border-box',
@@ -481,7 +483,7 @@ const Chat = () => {
               ) : (
                 <div style={{ textAlign: 'center', padding: '10px', color: '#475569', fontSize: '0.84rem' }}>
                   <FiZap style={{ display: 'inline', marginRight: 6, color: '#6366f1' }} />
-                  Log in to join the conversation
+                  {t('chat.loginToChat', 'Log in to join the conversation')}
                 </div>
               )}
             </div>

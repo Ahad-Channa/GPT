@@ -14,7 +14,8 @@
     "features": "Features",
     "faq": "FAQ",
     "login": "Login",
-    "createAccount": "Create Account"
+    "createAccount": "Create Account",
+    "more": "More"
   },
   "hero": {
     "titleLine1": "Your Time Has Value",
@@ -124,7 +125,8 @@
   },
   "languageToggle": {
     "en": "EN",
-    "de": "DE"
+    "de": "DE",
+    "ur": "UR"
   },
   "offers": {
     "requirements": "Requirements",
@@ -399,6 +401,7 @@
   },
   "vipPage": {
     "pageTitle": "VIP Status",
+    "pageSubtitle": "Higher rewards. Bigger perks. More earning power.",
     "currentRank": "Current rank",
     "earnCoinsFor": "Earn coins",
     "forBronzeTier": "for Bronze Tier",

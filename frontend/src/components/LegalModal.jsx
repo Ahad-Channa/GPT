@@ -7,11 +7,11 @@ import { motion } from 'framer-motion';
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
 const PAGE_TITLES = {
-  'impressum': { en: 'Impressum', de: 'Impressum' },
-  'terms-of-use': { en: 'Terms of Service', de: 'Nutzungsbedingungen' },
-  'privacy-policy': { en: 'Privacy Policy', de: 'Datenschutzerklärung' },
-  'affiliate-policy': { en: 'Affiliate Policy', de: 'Partnerprogramm-Richtlinie' },
-  'cookie-policy': { en: 'Cookie Policy', de: 'Cookie-Richtlinie' },
+  'impressum': { en: 'Impressum', de: 'Impressum', ur: 'امپریسم (قانونی معلومات)' },
+  'terms-of-use': { en: 'Terms of Service', de: 'Nutzungsbedingungen', ur: 'استعمال کی شرائط' },
+  'privacy-policy': { en: 'Privacy Policy', de: 'Datenschutzerklärung', ur: 'پرائیویسی پالیسی' },
+  'affiliate-policy': { en: 'Affiliate Policy', de: 'Partnerprogramm-Richtlinie', ur: 'ایفیلی ایٹ پالیسی' },
+  'cookie-policy': { en: 'Cookie Policy', de: 'Cookie-Richtlinie', ur: 'کوکی پالیسی' },
 };
 
 const formatInline = (text, isDarkMode, lineIdx = 0) => {
@@ -148,6 +148,7 @@ export default function LegalModal({ isOpen, onClose, initialSlug = 'impressum' 
   const { isDarkMode } = useTheme();
   const { i18n } = useTranslation();
   const isDe = i18n?.language?.startsWith('de');
+  const isUr = i18n?.language === 'ur' || i18n?.language?.startsWith('ur');
 
   const [cache, setCache] = useState({});
   const [loading, setLoading] = useState(false);
@@ -211,13 +212,17 @@ export default function LegalModal({ isOpen, onClose, initialSlug = 'impressum' 
   const currentPage = cache[activeSlug];
 
   const title = currentPage
-    ? (isDe
+    ? (isUr
+        ? (currentPage.title_ur || currentPage.title_en)
+        : isDe
         ? (currentPage.title_de || currentPage.title_en)
         : (currentPage.title_en || currentPage.title_de))
-    : PAGE_TITLES[activeSlug]?.[isDe ? 'de' : 'en'] || 'Legal';
+    : PAGE_TITLES[activeSlug]?.[isUr ? 'ur' : isDe ? 'de' : 'en'] || 'Legal';
 
   const content = currentPage
-    ? (isDe
+    ? (isUr
+        ? (currentPage.content_ur || currentPage.content_en || '')
+        : isDe
         ? (currentPage.content_de || currentPage.content_en || '')
         : (currentPage.content_en || currentPage.content_de || ''))
     : '';

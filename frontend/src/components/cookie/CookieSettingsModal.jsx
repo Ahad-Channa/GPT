@@ -10,6 +10,7 @@ const CookieSettingsModal = () => {
   const { i18n } = useTranslation();
 
   const isGerman = i18n.language?.startsWith('de');
+  const isUrdu = i18n.language === 'ur' || i18n.language?.startsWith('ur');
 
   // Category toggle states
   const [functional, setFunctional] = useState(false);
@@ -106,7 +107,7 @@ const CookieSettingsModal = () => {
                 margin: 0,
               }}
             >
-              {isGerman ? 'Cookie- & Privatsphäre-Einstellungen' : 'Cookie & Privacy Preferences'}
+              {isUrdu ? 'کوکی اور پرائیویسی کی ترتیبات' : isGerman ? 'Cookie- & Privatsphäre-Einstellungen' : 'Cookie & Privacy Preferences'}
             </h2>
             <p
               className="text-xs sm:text-[13px] mt-1.5 leading-relaxed"
@@ -115,7 +116,9 @@ const CookieSettingsModal = () => {
                 margin: 0,
               }}
             >
-              {isGerman
+              {isUrdu
+                ? 'یہاں آپ یہ منتخب کر سکتے ہیں کہ آپ کے ڈیوائس پر ڈیٹا محفوظ کرنے کے لیے کن ٹیکنالوجیز کے استعمال کی اجازت ہے۔ تکنیکی طور پر ضروری ڈیٹا ہمیشہ درکار ہوتا ہے۔'
+                : isGerman
                 ? 'Hier können Sie festlegen, welche Technologien für die Speicherung von Daten auf Ihrem Gerät verwendet werden dürfen. Technisch notwendige Daten werden stets benötigt.'
                 : 'Manage your individual consent preferences. Strictly necessary technologies are always active to provide essential functions.'}
             </p>
@@ -178,14 +181,14 @@ const CookieSettingsModal = () => {
                     color: isDarkMode ? '#FFFFFF' : '#000000',
                   }}
                 >
-                  {isGerman ? 'Technisch notwendig' : 'Strictly Essential'}
+                  {isUrdu ? 'تکنیکی طور پر ضروری' : isGerman ? 'Technisch notwendig' : 'Strictly Essential'}
                 </span>
                 <span
                   className={`text-[11px] font-bold px-2 py-0.5 rounded-full ${
                     isDarkMode ? 'bg-white/10 text-white' : 'bg-[#24324D]/10 text-[#24324D]'
                   }`}
                 >
-                  {isGerman ? 'Immer aktiv' : 'Always Active'}
+                  {isUrdu ? 'ہمیشہ فعال' : isGerman ? 'Immer aktiv' : 'Always Active'}
                 </span>
               </div>
               <p
@@ -194,7 +197,9 @@ const CookieSettingsModal = () => {
                   color: isDarkMode ? 'rgba(255, 255, 255, 0.65)' : 'rgba(0, 0, 0, 0.65)',
                 }}
               >
-                {isGerman
+                {isUrdu
+                  ? 'صارف کے لاگ ان، 2-مرحلہ سیکیورٹی، سیشن برقرار رکھنے اور آپ کے کوکی کے انتخاب کو یاد رکھنے کے لیے لازمی ہے۔ اسے غیر فعال نہیں کیا جا سکتا۔'
+                  : isGerman
                   ? 'Erforderlich für Benutzeranmeldung, 2-Faktor-Authentifizierung, Sicherheit und Speicherung Ihrer Cookie-Einstellungen. Kann nicht deaktiviert werden.'
                   : 'Required for user authentication, 2-Factor security, session persistence, and remembering your cookie choices. Cannot be disabled.'}
               </p>
@@ -285,7 +290,7 @@ const CookieSettingsModal = () => {
                     color: isDarkMode ? '#FFFFFF' : '#000000',
                   }}
                 >
-                  {isGerman ? 'Funktional & Präferenzen' : 'Functional & Preferences'}
+                  {isUrdu ? 'فنکشنل اور ترجیحات' : isGerman ? 'Funktional & Präferenzen' : 'Functional & Preferences'}
                 </span>
               </div>
               <p
@@ -294,9 +299,11 @@ const CookieSettingsModal = () => {
                   color: isDarkMode ? 'rgba(255, 255, 255, 0.65)' : 'rgba(0, 0, 0, 0.65)',
                 }}
               >
-                {isGerman
+                {isUrdu
+                  ? 'آپ کی منتخب کردہ زبان (انگریزی/جرمن/اردو)، ڈارک/لائٹ موڈ اور چیٹ سائڈبار کی سیٹنگز کو محفوظ رکھنے کی سہولت فراہم کرتا ہے۔'
+                  : isGerman
                   ? 'Ermöglicht das Speichern Ihrer Sprache (Deutsch/Englisch), Ihres Farbschemas (Dark Mode/Light Mode) und der Chat-Seitenleisten-Einstellung.'
-                  : 'Enables saving your selected language (English/German), Dark Mode/Light Mode theme preference, and chat sidebar state.'}
+                  : 'Enables saving your selected language (English/German/Urdu), Dark Mode/Light Mode theme preference, and chat sidebar state.'}
               </p>
             </div>
 
@@ -334,8 +341,8 @@ const CookieSettingsModal = () => {
               style={{ color: isDarkMode ? '#FFFFFF' : '#000000' }}
             >
               {openSection === 'functional'
-                ? (isGerman ? 'Details ausblenden' : 'Hide details')
-                : `${isGerman ? 'Details anzeigen' : 'Show details'} (${functionalCookies.length})`}
+                ? (isUrdu ? 'تفصیلات چھپائیں' : isGerman ? 'Details ausblenden' : 'Hide details')
+                : `${isUrdu ? 'تفصیلات دیکھیں' : isGerman ? 'Details anzeigen' : 'Show details'} (${functionalCookies.length})`}
             </span>
             {openSection === 'functional' ? <FiChevronUp /> : <FiChevronDown />}
           </div>
@@ -368,7 +375,7 @@ const CookieSettingsModal = () => {
                     </span>
                   </div>
                   <p style={{ color: isDarkMode ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.7)' }}>
-                    {isGerman ? c.description_de || c.description_en : c.description_en}
+                    {isUrdu ? c.description_ur || c.description_en : isGerman ? c.description_de || c.description_en : c.description_en}
                   </p>
                 </div>
               ))}
@@ -395,7 +402,7 @@ const CookieSettingsModal = () => {
                     color: isDarkMode ? '#FFFFFF' : '#000000',
                   }}
                 >
-                  {isGerman ? 'Marketing & Empfehlungsprogramm' : 'Marketing & Attribution'}
+                  {isUrdu ? 'مارکیٹنگ اور ایفیلی ایٹ' : isGerman ? 'Marketing & Empfehlungsprogramm' : 'Marketing & Attribution'}
                 </span>
               </div>
               <p
@@ -404,7 +411,9 @@ const CookieSettingsModal = () => {
                   color: isDarkMode ? 'rgba(255, 255, 255, 0.65)' : 'rgba(0, 0, 0, 0.65)',
                 }}
               >
-                {isGerman
+                {isUrdu
+                  ? 'ریفرل اور ایفیلی ایٹ لنکس کو ٹریک کرنے کے لیے تاکہ دوستوں اور پارٹنرز کو سائن اپ پر ان کے کمائے گئے بونس مل سکیں۔'
+                  : isGerman
                   ? 'Dient der korrekten Zuordnung von Empfehlungs- und Partnerlinks, damit Freunde und Partner ihre verdienten Registrierungsboni erhalten.'
                   : 'Used to track affiliate and referral links so that friends and partners receive their earned commission bonuses upon signup.'}
               </p>
@@ -444,8 +453,8 @@ const CookieSettingsModal = () => {
               style={{ color: isDarkMode ? '#FFFFFF' : '#000000' }}
             >
               {openSection === 'marketing'
-                ? (isGerman ? 'Details ausblenden' : 'Hide details')
-                : `${isGerman ? 'Details anzeigen' : 'Show details'} (${marketingCookies.length})`}
+                ? (isUrdu ? 'تفصیلات چھپائیں' : isGerman ? 'Details ausblenden' : 'Hide details')
+                : `${isUrdu ? 'تفصیلات دیکھیں' : isGerman ? 'Details anzeigen' : 'Show details'} (${marketingCookies.length})`}
             </span>
             {openSection === 'marketing' ? <FiChevronUp /> : <FiChevronDown />}
           </div>
@@ -478,7 +487,7 @@ const CookieSettingsModal = () => {
                     </span>
                   </div>
                   <p style={{ color: isDarkMode ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.7)' }}>
-                    {isGerman ? c.description_de || c.description_en : c.description_en}
+                    {isUrdu ? c.description_ur || c.description_en : isGerman ? c.description_de || c.description_en : c.description_en}
                   </p>
                 </div>
               ))}
@@ -497,7 +506,7 @@ const CookieSettingsModal = () => {
                 : 'bg-gray-200 hover:bg-gray-300 text-gray-800 border border-gray-300'
             }`}
           >
-            {isGerman ? 'Auswahl speichern' : 'Save Preferences'}
+            {isUrdu ? 'ترجیحات محفوظ کریں' : isGerman ? 'Auswahl speichern' : 'Save Preferences'}
           </button>
 
           <button
@@ -510,7 +519,7 @@ const CookieSettingsModal = () => {
               fontFamily: '"Bricolage Grotesque", sans-serif',
             }}
           >
-            <span>{isGerman ? 'Alle akzeptieren' : 'Accept All'}</span>
+            <span>{isUrdu ? 'سب قبول کریں' : isGerman ? 'Alle akzeptieren' : 'Accept All'}</span>
           </button>
         </div>
       </div>

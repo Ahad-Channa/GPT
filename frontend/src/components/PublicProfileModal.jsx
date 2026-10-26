@@ -90,7 +90,7 @@ const parseOfferDescription = (offer, t) => {
   let heading = '';
   let subText = '';
 
-  const cleanPrefix = (str) => (str || '').replace(/^(task|aufgabe):\s*/i, '');
+  const cleanPrefix = (str) => (str || '').replace(/^(task|aufgabe|ٹاسک):\s*/i, '');
 
   if (desc.includes(':')) {
     const parts = desc.split(':');
@@ -140,7 +140,8 @@ const PublicProfileModal = ({ userId, onClose }) => {
   const { isDarkMode } = useTheme();
   const { t, i18n } = useTranslation();
   const isEn = (i18n?.language || 'en').startsWith('en');
-  const dateLocale = isEn ? 'en-US' : 'de-DE';
+  const isUr = i18n?.language === 'ur';
+  const dateLocale = isEn ? 'en-US' : (isUr ? 'ur-PK' : 'de-DE');
 
   const [profile, setProfile] = useState(null);
   const [recentOffers, setRecentOffers] = useState([]);

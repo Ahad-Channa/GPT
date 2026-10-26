@@ -13,6 +13,7 @@ const CookieConsentBanner = () => {
   if (!isBannerOpen) return null;
 
   const isGerman = i18n.language?.startsWith('de');
+  const isUrdu = i18n.language === 'ur' || i18n.language?.startsWith('ur');
   const policyColor = isDarkMode ? '#FFFFFF' : 'rgba(36, 50, 77, 1)';
 
   return (
@@ -30,7 +31,7 @@ const CookieConsentBanner = () => {
         style={{ fontFamily: '"Poppins", sans-serif' }}
       >
         <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 sm:gap-6">
-          {/* Text & Content (Icon removed as requested) */}
+          {/* Text & Content */}
           <div className="flex-1 text-xs sm:text-sm leading-relaxed">
             <h4
               className={`font-bold text-sm sm:text-base mb-1 tracking-tight ${
@@ -38,11 +39,43 @@ const CookieConsentBanner = () => {
               }`}
               style={{ fontFamily: '"Bricolage Grotesque", sans-serif' }}
             >
-              {isGerman ? 'Privatsphäre & Cookie-Einstellungen' : 'Privacy & Cookie Settings'}
+              {isUrdu ? 'پرائیویسی اور کوکی کی ترتیبات' : isGerman ? 'Privatsphäre & Cookie-Einstellungen' : 'Privacy & Cookie Settings'}
             </h4>
 
             <p className={isDarkMode ? 'text-gray-300' : 'text-gray-600'}>
-              {isGerman ? (
+              {isUrdu ? (
+                <>
+                  ہم TaskMint کے محفوظ آپریشن کو یقینی بنانے کے لیے لازمی ٹیکنالوجیز استعمال کرتے ہیں۔ آپ کی اجازت سے، ہم فنکشنل ترجیحات (جیسے زبان اور ڈارک موڈ) اور ہمارے ایفیلی ایٹ پروگرام کے لیے مارکیٹنگ ٹیکنالوجیز بھی استعمال کرتے ہیں۔ مزید معلومات کے لیے ہماری{' '}
+                  <button
+                    type="button"
+                    onClick={() => navigate('/policies?tab=privacy-policy')}
+                    style={{
+                      color: policyColor,
+                      textDecoration: 'underline',
+                      textUnderlineOffset: '3px',
+                      fontWeight: 700,
+                    }}
+                    className="hover:opacity-80 transition-opacity bg-transparent border-none p-0 inline cursor-pointer"
+                  >
+                    پرائیویسی پالیسی
+                  </button>{' '}
+                  اور{' '}
+                  <button
+                    type="button"
+                    onClick={() => navigate('/policies?tab=cookie-policy')}
+                    style={{
+                      color: policyColor,
+                      textDecoration: 'underline',
+                      textUnderlineOffset: '3px',
+                      fontWeight: 700,
+                    }}
+                    className="hover:opacity-80 transition-opacity bg-transparent border-none p-0 inline cursor-pointer"
+                  >
+                    کوکی پالیسی
+                  </button>{' '}
+                  دیکھیں۔
+                </>
+              ) : isGerman ? (
                 <>
                   Wir nutzen technisch notwendige Speichertechnologien für den sicheren Betrieb von TaskMint. Mit
                   Ihrer Einwilligung verwenden wir zudem funktionale Technologien (wie Sprache und Dark Mode) sowie
@@ -114,7 +147,7 @@ const CookieConsentBanner = () => {
             </p>
           </div>
 
-          {/* Action Buttons with Equal Prominence (DSGVO / TDDDG compliant) */}
+          {/* Action Buttons with Equal Prominence */}
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 w-full lg:w-auto shrink-0">
             {/* Customize Settings Button */}
             <button
@@ -126,10 +159,10 @@ const CookieConsentBanner = () => {
                   : 'bg-gray-100 hover:bg-gray-200 text-gray-700 border border-gray-200'
               }`}
             >
-              <span>{isGerman ? 'Einstellungen' : 'Customize'}</span>
+              <span>{isUrdu ? 'ترتیبات' : isGerman ? 'Einstellungen' : 'Customize'}</span>
             </button>
 
-            {/* Essential Only (Reject All non-essential) */}
+            {/* Essential Only */}
             <button
               type="button"
               onClick={rejectNonEssential}
@@ -139,10 +172,10 @@ const CookieConsentBanner = () => {
                   : 'bg-gray-200 hover:bg-gray-300 text-gray-800 border border-gray-300'
               }`}
             >
-              <span>{isGerman ? 'Nur essenzielle' : 'Essential Only'}</span>
+              <span>{isUrdu ? 'صرف لازمی' : isGerman ? 'Nur essenzielle' : 'Essential Only'}</span>
             </button>
 
-            {/* Accept All (Active policy tab color rgba(36, 50, 77, 1)) */}
+            {/* Accept All */}
             <button
               type="button"
               onClick={acceptAll}
@@ -154,7 +187,7 @@ const CookieConsentBanner = () => {
                 boxShadow: isDarkMode ? '0 4px 14px rgba(0,0,0,0.5)' : '0 4px 14px rgba(36, 50, 77, 0.25)',
               }}
             >
-              <span>{isGerman ? 'Alle akzeptieren' : 'Accept All'}</span>
+              <span>{isUrdu ? 'سب قبول کریں' : isGerman ? 'Alle akzeptieren' : 'Accept All'}</span>
             </button>
           </div>
         </div>

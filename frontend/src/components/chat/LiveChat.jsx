@@ -187,7 +187,7 @@ const LiveChat = ({ isOpen, onClose }) => {
                 <div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                     <span style={{ fontSize: '0.9rem', fontWeight: 700, color: '#f1f5f9' }}>
-                      Global Chat
+                      {t('chat.liveChat', 'Live Chat')}
                     </span>
                     {/* live dot */}
                     <span style={{
@@ -201,10 +201,8 @@ const LiveChat = ({ isOpen, onClose }) => {
                   <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginTop: 2 }}>
                     <FiUsers style={{ color: '#10b981', fontSize: 10 }} />
                     <span style={{ fontSize: '0.7rem', color: '#10b981', fontWeight: 600 }}>
-                      {liveCount} online
+                      {liveCount} {t('chat.online', 'online')}
                     </span>
-                    <span style={{ color: 'rgba(255,255,255,0.2)', fontSize: '0.7rem' }}>·</span>
-                    <span style={{ fontSize: '0.7rem', color: '#475569' }}>Public Room</span>
                   </div>
                 </div>
               </div>
@@ -245,7 +243,7 @@ const LiveChat = ({ isOpen, onClose }) => {
                   }}>
                     <FiMessageSquare style={{ fontSize: 22, color: '#334155' }} />
                   </div>
-                  <p style={{ margin: 0, fontSize: '0.82rem', color: '#475569' }}>No messages yet — say hi! 👋</p>
+                  <p style={{ margin: 0, fontSize: '0.82rem', color: '#475569' }}>{t('chat.noMessages', 'No messages yet — say hi! 👋')}</p>
                 </div>
               )}
 
@@ -302,7 +300,7 @@ const LiveChat = ({ isOpen, onClose }) => {
                       type="text"
                       value={newMessage}
                       onChange={(e) => setNewMessage(e.target.value)}
-                      placeholder="Message everyone…"
+                      placeholder={t('chat.inputPlaceholder', 'Message everyone...')}
                       maxLength={500}
                       style={{
                         width: '100%', boxSizing: 'border-box',
@@ -340,7 +338,7 @@ const LiveChat = ({ isOpen, onClose }) => {
                   textAlign: 'center', fontSize: '0.8rem',
                   color: '#475569', margin: 0, padding: '8px 0'
                 }}>
-                  Log in to send messages
+                  {t('chat.loginToChat', 'Log in to join the conversation')}
                 </p>
               )}
             </div>
@@ -449,7 +447,7 @@ const MessageRow = ({ msg, isOwn, isDeleting, showAvatar, canModerate, onDelete,
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 flexShrink: 0
               }}
-              title="Delete message"
+              title={t('chat.deleteMessage', 'Delete message')}
             >
               <FiTrash2 style={{ fontSize: 11 }} />
             </button>
