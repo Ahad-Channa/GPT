@@ -358,6 +358,7 @@ export const FeaturedOfferCard = ({ offer, onClick }) => {
 };
 
 export const FeaturedOfferModal = ({ offer, token, onClose, onSubmitted }) => {
+  const { isDarkMode } = useTheme();
   const { t, i18n } = useTranslation();
   const isDe = i18n.language?.startsWith('de');
   const isUr = i18n.language?.startsWith('ur');
@@ -423,12 +424,13 @@ export const FeaturedOfferModal = ({ offer, token, onClose, onSubmitted }) => {
           width: '626px',
           maxWidth: '96vw',
           maxHeight: '92vh',
-          background: '#FFFFFF',
+          background: isDarkMode ? '#000000' : '#FFFFFF',
+          border: isDarkMode ? '1px solid rgba(255, 255, 255, 0.08)' : 'none',
           borderRadius: '25px',
           padding: '8px 8px 14px 8px',
           boxSizing: 'border-box',
           fontFamily: '"Poppins", sans-serif',
-          color: '#0E0F0C',
+          color: isDarkMode ? '#FFFFFF' : '#0E0F0C',
           opacity: 1,
           transform: 'rotate(0deg)',
           display: 'flex',
@@ -444,7 +446,8 @@ export const FeaturedOfferModal = ({ offer, token, onClose, onSubmitted }) => {
             maxWidth: '610px',
             minHeight: '197px',
             height: 'auto',
-            background: 'rgba(248, 245, 239, 1)',
+            background: isDarkMode ? 'rgba(23, 26, 29, 1)' : 'rgba(248, 245, 239, 1)',
+            border: isDarkMode ? '1px solid rgba(255, 255, 255, 0.06)' : 'none',
             borderRadius: '16px',
             boxSizing: 'border-box',
             position: 'relative',
@@ -481,7 +484,7 @@ export const FeaturedOfferModal = ({ offer, token, onClose, onSubmitted }) => {
               <img
                 src="/coins/image copy 13.png"
                 alt="Support"
-                className="w-[24px] h-[24px] object-contain"
+                className={`w-[24px] h-[24px] object-contain ${isDarkMode ? 'brightness-0 invert' : ''}`}
               />
             </button>
 
@@ -491,7 +494,7 @@ export const FeaturedOfferModal = ({ offer, token, onClose, onSubmitted }) => {
               style={{
                 width: '24px',
                 height: '24px',
-                background: '#000000',
+                background: isDarkMode ? '#FFFFFF' : '#000000',
                 borderRadius: '50%',
                 display: 'flex',
                 alignItems: 'center',
@@ -503,7 +506,7 @@ export const FeaturedOfferModal = ({ offer, token, onClose, onSubmitted }) => {
                 lineHeight: 0,
                 flexShrink: 0,
               }}
-              className="text-white hover:opacity-80 transition-opacity"
+              className={`${isDarkMode ? 'text-black' : 'text-white'} hover:opacity-80 transition-opacity`}
               aria-label="Close"
             >
               <svg
@@ -524,7 +527,9 @@ export const FeaturedOfferModal = ({ offer, token, onClose, onSubmitted }) => {
           {/* Top Section: Icon + Title (Elevated above bottom of image) */}
           <div className="flex items-center gap-3 sm:gap-4 pr-0 sm:pr-16 w-full">
             <div
-              className="w-[76px] h-[76px] sm:w-[100px] sm:h-[100px] rounded-[10px] sm:rounded-[11px] bg-[#EDE8DE] overflow-hidden flex-shrink-0 flex items-center justify-center shadow-sm"
+              className={`w-[76px] h-[76px] sm:w-[100px] sm:h-[100px] rounded-[10px] sm:rounded-[11px] ${
+                isDarkMode ? 'bg-[#1C212B]' : 'bg-[#EDE8DE]'
+              } overflow-hidden flex-shrink-0 flex items-center justify-center shadow-sm`}
             >
               {coverImgSrc ? (
                 <img src={coverImgSrc} alt={title} className="w-full h-full object-cover" />
@@ -537,7 +542,7 @@ export const FeaturedOfferModal = ({ offer, token, onClose, onSubmitted }) => {
                 style={{
                   fontFamily: '"Bricolage Grotesque", sans-serif',
                   letterSpacing: '0%',
-                  color: '#000000',
+                  color: isDarkMode ? '#FFFFFF' : '#000000',
                   opacity: 1,
                   transform: 'rotate(0deg)',
                   margin: 0,
@@ -557,7 +562,7 @@ export const FeaturedOfferModal = ({ offer, token, onClose, onSubmitted }) => {
               style={{
                 fontFamily: '"Poppins", sans-serif',
                 letterSpacing: '0%',
-                color: '#000000',
+                color: isDarkMode ? 'rgba(255, 255, 255, 0.85)' : '#000000',
                 opacity: 0.85,
                 transform: 'rotate(0deg)',
                 margin: 0,
@@ -578,8 +583,8 @@ export const FeaturedOfferModal = ({ offer, token, onClose, onSubmitted }) => {
               width: '100%',
               maxWidth: '575px',
               height: '0px',
-              opacity: 0.1,
-              borderTop: '1px solid rgba(0, 0, 0, 1)',
+              opacity: isDarkMode ? 0.2 : 0.1,
+              borderTop: isDarkMode ? '1px solid rgba(255, 255, 255, 1)' : '1px solid rgba(0, 0, 0, 1)',
               transform: 'rotate(0deg)',
             }}
           />
@@ -594,7 +599,7 @@ export const FeaturedOfferModal = ({ offer, token, onClose, onSubmitted }) => {
                     height: '21px',
                     opacity: 1,
                     transform: 'rotate(0deg)',
-                    color: '#000000',
+                    color: isDarkMode ? '#FFFFFF' : '#000000',
                   }}
                 />
               )}
@@ -616,7 +621,7 @@ export const FeaturedOfferModal = ({ offer, token, onClose, onSubmitted }) => {
                     height: '21px',
                     opacity: 1,
                     transform: 'rotate(0deg)',
-                    color: '#334155',
+                    color: isDarkMode ? '#94A3B8' : '#334155',
                   }}
                 />
               )}
@@ -633,7 +638,8 @@ export const FeaturedOfferModal = ({ offer, token, onClose, onSubmitted }) => {
                 paddingRight: '10px',
                 paddingBottom: '5px',
                 paddingLeft: '10px',
-                background: '#FFFFFF',
+                background: isDarkMode ? 'rgba(34, 39, 48, 1)' : '#FFFFFF',
+                border: isDarkMode ? '1px solid rgba(255, 255, 255, 0.08)' : 'none',
                 opacity: 1,
                 transform: 'rotate(0deg)',
                 display: 'inline-flex',
@@ -682,7 +688,7 @@ export const FeaturedOfferModal = ({ offer, token, onClose, onSubmitted }) => {
               fontSize: '20px',
               lineHeight: '27px',
               letterSpacing: '0%',
-              color: '#000000',
+              color: isDarkMode ? '#FFFFFF' : '#000000',
               opacity: 1,
               transform: 'rotate(0deg)',
               margin: 0,
@@ -699,7 +705,8 @@ export const FeaturedOfferModal = ({ offer, token, onClose, onSubmitted }) => {
                   width: '100%',
                   maxWidth: '610px',
                   minHeight: '43px',
-                  background: 'rgba(248, 245, 239, 1)',
+                  background: isDarkMode ? 'rgba(23, 26, 29, 1)' : 'rgba(248, 245, 239, 1)',
+                  border: isDarkMode ? '1px solid rgba(255, 255, 255, 0.06)' : 'none',
                   borderRadius: '16px',
                   paddingTop: '8px',
                   paddingRight: '12px',
@@ -719,7 +726,7 @@ export const FeaturedOfferModal = ({ offer, token, onClose, onSubmitted }) => {
                     fontSize: '14px',
                     lineHeight: '20px',
                     letterSpacing: '0%',
-                    color: '#000000',
+                    color: isDarkMode ? '#FFFFFF' : '#000000',
                     margin: 0,
                   }}
                 >
@@ -740,7 +747,8 @@ export const FeaturedOfferModal = ({ offer, token, onClose, onSubmitted }) => {
                       width: '100%',
                       maxWidth: '610px',
                       minHeight: '43px',
-                      background: 'rgba(248, 245, 239, 1)',
+                      background: isDarkMode ? 'rgba(23, 26, 29, 1)' : 'rgba(248, 245, 239, 1)',
+                      border: isDarkMode ? '1px solid rgba(255, 255, 255, 0.06)' : 'none',
                       borderRadius: '16px',
                       paddingTop: '8px',
                       paddingRight: '12px',
@@ -787,8 +795,8 @@ export const FeaturedOfferModal = ({ offer, token, onClose, onSubmitted }) => {
                           width: '27px',
                           height: '27px',
                           borderRadius: '100px',
-                          background: '#FFFFFF',
-                          border: '1px solid rgba(0, 0, 0, 0.2)',
+                          background: isDarkMode ? 'rgba(34, 39, 48, 1)' : '#FFFFFF',
+                          border: isDarkMode ? '1px solid rgba(255, 255, 255, 0.2)' : '1px solid rgba(0, 0, 0, 0.2)',
                           opacity: 1,
                           transform: 'rotate(0deg)',
                           flexShrink: 0,
@@ -803,7 +811,7 @@ export const FeaturedOfferModal = ({ offer, token, onClose, onSubmitted }) => {
                         fontSize: '14px',
                         lineHeight: '20px',
                         letterSpacing: '0%',
-                        color: '#000000',
+                        color: isDarkMode ? '#FFFFFF' : '#000000',
                       }}
                     >
                       {req}
@@ -817,7 +825,8 @@ export const FeaturedOfferModal = ({ offer, token, onClose, onSubmitted }) => {
                   width: '100%',
                   maxWidth: '610px',
                   minHeight: '43px',
-                  background: 'rgba(248, 245, 239, 1)',
+                  background: isDarkMode ? 'rgba(23, 26, 29, 1)' : 'rgba(248, 245, 239, 1)',
+                  border: isDarkMode ? '1px solid rgba(255, 255, 255, 0.06)' : 'none',
                   borderRadius: '16px',
                   paddingTop: '8px',
                   paddingRight: '12px',
@@ -864,7 +873,7 @@ export const FeaturedOfferModal = ({ offer, token, onClose, onSubmitted }) => {
                     fontSize: '14px',
                     lineHeight: '20px',
                     letterSpacing: '0%',
-                    color: '#000000',
+                    color: isDarkMode ? '#FFFFFF' : '#000000',
                   }}
                 >
                   {t('offers.defaultRequirementTask')}
@@ -926,7 +935,8 @@ export const FeaturedOfferModal = ({ offer, token, onClose, onSubmitted }) => {
           style={{
             width: '100%',
             maxWidth: '610px',
-            background: 'rgba(248, 245, 239, 1)',
+            background: isDarkMode ? 'rgba(23, 26, 29, 1)' : 'rgba(248, 245, 239, 1)',
+            border: isDarkMode ? '1px solid rgba(255, 255, 255, 0.06)' : 'none',
             borderRadius: '16px',
             boxSizing: 'border-box',
             display: 'flex',
@@ -939,7 +949,7 @@ export const FeaturedOfferModal = ({ offer, token, onClose, onSubmitted }) => {
               fontFamily: '"Bricolage Grotesque", "Poppins", sans-serif',
               fontWeight: 700,
               letterSpacing: '0%',
-              color: '#000000',
+              color: isDarkMode ? '#FFFFFF' : '#000000',
               margin: 0,
               opacity: 1,
               transform: 'rotate(0deg)',
@@ -969,7 +979,7 @@ export const FeaturedOfferModal = ({ offer, token, onClose, onSubmitted }) => {
                     width: '7px',
                     height: '7px',
                     borderRadius: '50%',
-                    background: 'rgba(63, 76, 99, 1)',
+                    background: isDarkMode ? 'rgba(100, 116, 139, 1)' : 'rgba(63, 76, 99, 1)',
                     flexShrink: 0,
                     opacity: 1,
                     transform: 'rotate(0deg)',
@@ -981,7 +991,7 @@ export const FeaturedOfferModal = ({ offer, token, onClose, onSubmitted }) => {
                     fontFamily: '"Poppins", sans-serif',
                     fontWeight: 500,
                     letterSpacing: '0%',
-                    color: '#000000',
+                    color: isDarkMode ? 'rgba(255, 255, 255, 0.85)' : '#000000',
                     opacity: 1,
                   }}
                   className="text-[11px] sm:text-[12px] leading-[15px] sm:leading-[21px]"
@@ -1024,9 +1034,11 @@ export const FeaturedOfferModal = ({ offer, token, onClose, onSubmitted }) => {
               justifyContent: 'center',
               flexShrink: 0,
               boxSizing: 'border-box',
+              background: isDarkMode ? '#FFFFFF' : 'transparent',
+              padding: isDarkMode ? '4px' : '0',
             }}
           >
-            <BsQrCode size={76} className="text-[#000000]" />
+            <BsQrCode size={isDarkMode ? 68 : 76} className="text-[#000000]" />
           </div>
 
           {/* Text Layout: 230px x 38px, angle: 0deg, opacity: 1 */}
@@ -1049,7 +1061,7 @@ export const FeaturedOfferModal = ({ offer, token, onClose, onSubmitted }) => {
                 fontSize: '16px',
                 lineHeight: '20px',
                 letterSpacing: '0%',
-                color: '#000000',
+                color: isDarkMode ? '#FFFFFF' : '#000000',
                 margin: 0,
                 padding: 0,
                 whiteSpace: 'pre-line',

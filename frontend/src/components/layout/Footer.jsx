@@ -12,6 +12,7 @@ const Footer = () => {
   const { openCookieSettings } = useCookieConsent();
   const { t, i18n } = useTranslation();
   const isDe = i18n?.language?.startsWith('de');
+  const isUr = i18n?.language === 'ur' || i18n?.language?.startsWith('ur');
   const [isMobile, setIsMobile] = useState(
     typeof window !== 'undefined' ? window.innerWidth < 1024 : false
   );
@@ -359,13 +360,25 @@ const Footer = () => {
               <img
                 src={
                   isMobile
-                    ? (isDarkMode
-                        ? (isDe ? "/coins/wybt german black mobile.png" : "/coins/wybt eng black.png")
-                        : (isDe ? "/coins/image copy 19 german.png" : "/coins/image copy 19.png")
+                    ? (isUr
+                        ? (isDarkMode
+                            ? "/coins/footer urdu dark mobile.png"
+                            : "/coins/footer urdu light mobil.png"
+                          )
+                        : (isDarkMode
+                            ? (isDe ? "/coins/wybt german black mobile.png" : "/coins/wybt eng black.png")
+                            : (isDe ? "/coins/image copy 19 german.png" : "/coins/image copy 19.png")
+                          )
                       )
-                    : (isDarkMode
-                        ? (isDe ? "/coins/footerimageblackgerman.png" : "/coins/footerimageblackenglish.png")
-                        : (isDe ? "/coins/image copy 17 german.png" : "/coins/image copy 17.png")
+                    : (isUr
+                        ? (isDarkMode
+                            ? "/coins/footer urdu dark desktop.png"
+                            : "/coins/footer urdu light desktop.png"
+                          )
+                        : (isDarkMode
+                            ? (isDe ? "/coins/footerimageblackgerman.png" : "/coins/footerimageblackenglish.png")
+                            : (isDe ? "/coins/image copy 17 german.png" : "/coins/image copy 17.png")
+                          )
                       )
                 }
                 alt="Top Earner Graphic"

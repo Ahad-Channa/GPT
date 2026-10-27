@@ -26,6 +26,7 @@ const Landing = () => {
   const { isDarkMode } = useTheme();
   const { t, i18n } = useTranslation();
   const isDe = i18n?.language?.startsWith('de');
+  const isUr = i18n?.language === 'ur' || i18n?.language?.startsWith('ur');
   const [stats, setStats] = useState({ totalUsers: 0, totalPaidOut: 0 });
   const [openFaq, setOpenFaq] = useState(null);
   const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' ? window.innerWidth < 1024 : false);
@@ -97,11 +98,11 @@ const Landing = () => {
               <img
                 src={
                   isDarkMode
-                    ? (isDe ? "/coins/HerosectionBlackGerman.png" : "/coins/HerosectionBlackEnglish.png")
-                    : (isDe ? "/coins/Hero section german desktop.png" : "/coins/hero section image.png")
+                    ? (isUr ? "/coins/Hero Urdu Dark Desktop.jpg" : (isDe ? "/coins/HerosectionBlackGerman.png" : "/coins/HerosectionBlackEnglish.png"))
+                    : (isUr ? "/coins/Hero Urdu Light Desktop.jpg" : (isDe ? "/coins/Hero section german desktop.png" : "/coins/hero section image.png"))
                 }
                 alt="Hero Background"
-                className="w-full h-full object-fill"
+                className={`w-full h-full object-fill ${isUr ? 'rounded-bl-[36px]' : ''}`}
               />
             </div>
           </div>
@@ -540,11 +541,11 @@ const Landing = () => {
                   <img
                     src={
                       isDarkMode
-                        ? (isDe ? "/coins/Hero section german mobile Black.png" : "/coins/Hero section Eng mobile Black.png")
-                        : (isDe ? "/coins/Hero section german mobile.png" : "/coins/mobile hero.png")
+                        ? (isUr ? "/coins/Hero Urdu Dark mobile.jpg" : (isDe ? "/coins/Hero section german mobile Black.png" : "/coins/Hero section Eng mobile Black.png"))
+                        : (isUr ? "/coins/Hero Urdu Light Mobile.jpg" : (isDe ? "/coins/Hero section german mobile.png" : "/coins/mobile hero.png"))
                     }
                     alt="Mobile Hero Graphic"
-                    className="w-full h-auto object-cover"
+                    className={`w-full h-auto object-cover ${isUr ? 'rounded-b-[26px]' : ''}`}
                     style={{
                       maxWidth: '440px',
                       width: '100%',
@@ -896,16 +897,22 @@ const Landing = () => {
 
           {/* Image (Second on mobile, First on Desktop) */}
           <div
-            className={`order-2 lg:order-1 flex-shrink-0 w-full lg:w-[640px] h-auto lg:h-[558px] px-0 mt-6 lg:mt-0 flex ${isMobile && isDe ? 'justify-start' : 'justify-center'} lg:justify-start overflow-hidden rounded-[24px] lg:rounded-[32px]`}
+            className={`order-2 lg:order-1 flex-shrink-0 w-full lg:w-[640px] h-auto lg:h-[558px] px-0 mt-6 lg:mt-0 flex ${isMobile && (isDe || isUr) ? 'justify-start' : 'justify-center'} lg:justify-start overflow-hidden rounded-[24px] lg:rounded-[32px]`}
             style={isMobile ? { width: '100%', maxWidth: '100%' } : {}}
           >
             <img
               src={
                 isMobile
-                  ? (isDe ? "/coins/Germanwhychosusmobile.png" : "/coins/whychosemobile.png")
+                  ? (isUr
+                      ? "/coins/why chose us Urdu Light Mobile.jpg"
+                      : (isDe ? "/coins/Germanwhychosusmobile.png" : "/coins/whychosemobile.png"))
                   : (isDarkMode
-                      ? (isDe ? "/coins/WhycoseusBlackGerman.png" : "/coins/WhycoseusBlackEnglish.png")
-                      : (isDe ? "/coins/Germanwhychosus.png" : "/coins/why chose us.png")
+                      ? (isUr
+                          ? "/coins/why chose us Urdu Dark Desktop.jpg"
+                          : (isDe ? "/coins/WhycoseusBlackGerman.png" : "/coins/WhycoseusBlackEnglish.png"))
+                      : (isUr
+                          ? "/coins/why chose us Urdu Light Desktop.png"
+                          : (isDe ? "/coins/Germanwhychosus.png" : "/coins/why chose us.png"))
                     )
               }
               alt="Why Choose Us"
@@ -921,8 +928,8 @@ const Landing = () => {
                     width: '100%',
                     height: '100%',
                     position: 'relative',
-                    left: '-16px',
-                    clipPath: isDe ? 'inset(0 3px 0 0 round 32px)' : undefined
+                    left: (isDe || isUr) ? '0px' : '-16px',
+                    clipPath: (isDe || isUr) ? 'inset(0 0 0 0 round 32px)' : undefined
                   }
               }
             />
@@ -998,7 +1005,12 @@ const Landing = () => {
               className="grid grid-cols-1 lg:grid-cols-3 mx-auto w-full px-0"
               style={!isMobile ? { width: 1328, maxWidth: '100%', height: 368, gap: 22 } : { maxWidth: 440, height: 'auto', gap: 20 }}
             >
-              {(isDe
+              {(isUr
+                ? (isDarkMode
+                    ? ['/coins/sew1 Urdu light.png', '/coins/sew2  Urdu dark.png', '/coins/sew3  Urdu dark.png']
+                    : ['/coins/sew1 Urdu light.png', '/coins/sew2  Urdu light.png', '/coins/sew3 Urdu light.png']
+                  )
+                : isDe
                 ? ['/coins/sew1german.png', '/coins/sew2german.png', '/coins/sew3german.png']
                 : (isDarkMode
                     ? ['/coins/sewBlackenglish.png', '/coins/sew2Blackenglish.png', '/coins/sew3Blackenglish.png']
