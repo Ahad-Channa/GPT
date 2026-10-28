@@ -20,7 +20,9 @@ const LanguageToggle = ({
 
   const currentLang = i18n.language?.startsWith('ur')
     ? 'ur'
-    : (i18n.language?.startsWith('de') ? 'de' : 'en');
+    : (i18n.language?.startsWith('de')
+        ? 'de'
+        : (i18n.language?.startsWith('fr') ? 'fr' : 'en'));
 
   const selectLanguage = (lang) => {
     i18n.changeLanguage(lang);
@@ -94,14 +96,16 @@ const LanguageToggle = ({
                 ? '/coins/EN.png'
                 : currentLang === 'de'
                   ? '/coins/DE.svg'
-                  : '/coins/PK.svg'
+                  : currentLang === 'fr'
+                    ? '/coins/FR.svg'
+                    : '/coins/PK.svg'
             }
-            alt={currentLang === 'en' ? 'EN Flag' : currentLang === 'de' ? 'DE Flag' : 'UR Flag'}
+            alt={currentLang === 'en' ? 'EN Flag' : currentLang === 'de' ? 'DE Flag' : currentLang === 'fr' ? 'FR Flag' : 'UR Flag'}
             className="w-full h-full object-cover"
           />
         </div>
 
-        {/* Text Code (EN / DE / UR): 18x21 on mobile, 20x24 on desktop */}
+        {/* Text Code (EN / DE / FR / UR): 18x21 on mobile, 20x24 on desktop */}
         <span
           className="flex items-center justify-center shrink-0 w-[18px] h-[21px] text-[14px] leading-[21px] lg:w-[20px] lg:h-[24px] lg:text-[16px] lg:leading-[100%] transition-colors duration-300"
           style={{
@@ -214,7 +218,7 @@ const LanguageToggle = ({
                   color: currentLang === 'de' ? (isDarkMode ? '#FFFFFF' : '#0E0F0C') : (isDarkMode ? '#9CA3AF' : '#8E8E93'),
                 }}
               >
-                German
+                Deutsch
               </span>
               <div className="w-[24px] h-[24px] rounded-full overflow-hidden shrink-0 flex items-center justify-center">
                 <img
@@ -236,7 +240,44 @@ const LanguageToggle = ({
               }}
             />
 
-            {/* 3. Urdu */}
+            {/* 3. French */}
+            <button
+              type="button"
+              onClick={() => selectLanguage('fr')}
+              className="flex items-center justify-between w-full py-1 cursor-pointer bg-transparent border-0 hover:opacity-75 transition-opacity"
+            >
+              <span
+                style={{
+                  fontFamily: 'Poppins, sans-serif',
+                  fontWeight: currentLang === 'fr' ? 600 : 400,
+                  fontSize: '15px',
+                  lineHeight: '20px',
+                  color: currentLang === 'fr' ? (isDarkMode ? '#FFFFFF' : '#0E0F0C') : (isDarkMode ? '#9CA3AF' : '#8E8E93'),
+                }}
+              >
+                Français
+              </span>
+              <div className="w-[24px] h-[24px] rounded-full overflow-hidden shrink-0 flex items-center justify-center">
+                <img
+                  src="/coins/FR.svg"
+                  alt="French Flag"
+                  className="w-full h-full object-cover"
+                />
+              </div>
+            </button>
+
+            {/* Divider */}
+            <div
+              style={{
+                width: '100%',
+                height: '1px',
+                background: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.06)',
+                margin: '8px 0',
+                flexShrink: 0,
+              }}
+            />
+
+            {/* 4. Urdu */}
             <button
               type="button"
               onClick={() => selectLanguage('ur')}

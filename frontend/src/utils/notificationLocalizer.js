@@ -190,6 +190,124 @@ export function localizeUrdu(rawTitle, rawMessage, rawMetadata = {}) {
   return { title, message, metadata };
 }
 
+// ─── FRENCH LOCALIZATION ───
+export function localizeFrench(rawTitle, rawMessage, rawMetadata = {}) {
+  let title = rawTitle || '';
+  let message = rawMessage || '';
+  let metadata = rawMetadata ? { ...rawMetadata } : {};
+  let m;
+
+  // Title localization
+  if ((m = title.match(/^🎉\s*You reached (.*?)!$/i))) {
+    title = `🎉 Vous avez atteint le rang ${m[1]} !`;
+  } else if (/^Offer Approved & Held/i.test(title)) {
+    title = 'Offre validée & en attente';
+  } else if (/^Proof Approved/i.test(title)) {
+    title = 'Preuve validée';
+  } else if (/^Custom Offer Approved!?/i.test(title)) {
+    title = 'Offre spéciale validée !';
+  } else if (/^Offer Approved/i.test(title)) {
+    title = 'Offre validée';
+  } else if (/^Proof Rejected/i.test(title)) {
+    title = 'Preuve rejetée';
+  } else if (/^Custom Offer Rejected/i.test(title) || /^Offer Rejected/i.test(title)) {
+    title = 'Offre rejetée';
+  } else if (/^Withdrawal Approved!?/i.test(title)) {
+    title = 'Retrait approuvé !';
+  } else if (/^Withdrawal Rejected/i.test(title)) {
+    title = 'Retrait rejeté';
+  } else if (/^Offer Chargeback(ed)?/i.test(title) || /^Transaction Reversed/i.test(title)) {
+    title = 'Débit / Opposition';
+  } else if (/^VIP Bonus Claimed!?/i.test(title)) {
+    title = 'Bonus VIP réclamé !';
+  } else if (/^Balance Adjustment/i.test(title)) {
+    title = 'Ajustement du solde';
+  } else if (/^Account Suspended/i.test(title)) {
+    title = 'Compte suspendu';
+  } else if (/^Offer Credited/i.test(title)) {
+    title = 'Offre créditée';
+  } else if (/^Offer Reward on Hold/i.test(title)) {
+    title = 'Récompense en attente';
+  } else if (/^🎉\s*Offer Completed!?/i.test(title)) {
+    title = '🎉 Offre complétée !';
+  } else if (/^Referral Funds Released!?/i.test(title)) {
+    title = "Gains d'affiliation débloqués !";
+  } else if (/^Held Earnings Released!?/i.test(title) || /^Earning Hold Released!?/i.test(title)) {
+    title = 'Gains en attente débloqués !';
+  } else if (/^Referral Bonus Credited!?/i.test(title)) {
+    title = 'Bonus de parrainage crédité !';
+  } else if (/^Referral Earning Pending!?/i.test(title)) {
+    title = "Gain d'affiliation en attente !";
+  } else if (/^Referral Earning!?/i.test(title)) {
+    title = "Gain d'affiliation !";
+  } else if (/^Referral Signup Bonus!?/i.test(title)) {
+    title = "Bonus d'inscription affilié !";
+  } else if (/^New Referral!?/i.test(title)) {
+    title = 'Nouvel affilié !';
+  } else if (/^Welcome!?/i.test(title)) {
+    title = 'Bienvenue !';
+  } else if (/^Claim Your Daily Bonus!?/i.test(title)) {
+    title = 'Réclamez votre bonus quotidien !';
+  } else if (/^Streak Expiring Soon/i.test(title)) {
+    title = 'Série bientôt expirée';
+  } else if (/^Order Placed/i.test(title)) {
+    title = 'Commande enregistrée';
+  } else if (/^Order Cancelled/i.test(title)) {
+    title = 'Commande annulée';
+  } else if (/^Order Updated/i.test(title)) {
+    title = 'Commande mise à jour';
+  } else if (/^Leaderboard Reward/i.test(title)) {
+    title = 'Récompense de classement';
+  }
+
+  // Messages
+  if ((m = message.match(/^Congratulations!\s*You(?:'ve|\s*have)\s*reached\s+(.*?)\s+VIP\s*status\.\s*Check your progress on the (?:VIP page|VIP Seite)\.?$/i))) {
+    message = `Félicitations ! Vous avez atteint le rang VIP ${m[1]}. Suivez votre progression sur la page VIP.`;
+    metadata.linkText = 'Page VIP';
+  } else if ((m = message.match(/^Congratulations!\s*You(?:'ve|\s*have)\s*reached\s+(.*?)\s+VIP\s*status\.\s*Claim your\s+([\d,.]+)\s+coin bonus on the (?:VIP page|VIP Seite)\.?$/i))) {
+    message = `Félicitations ! Vous avez atteint le rang VIP ${m[1]}. Réclamez votre bonus de ${m[2]} pièces sur la page VIP.`;
+    metadata.linkText = 'Page VIP';
+  } else if ((m = message.match(/^🎉\s*You reached\s+(.*?)!\s*Claim your\s+([\d,.]+)\s+coin bonus on the (?:VIP page|VIP Seite)\.?$/i))) {
+    message = `🎉 Vous avez atteint le rang ${m[1]} ! Réclamez votre bonus de ${m[2]} pièces sur la page VIP.`;
+    metadata.linkText = 'Page VIP';
+  } else if ((m = message.match(/^🎉\s*You reached\s+(.*?)\s+VIP status!\s*Check your progress on the (?:VIP page|VIP Seite)\.?$/i))) {
+    message = `🎉 Vous avez atteint le statut VIP ${m[1]} ! Suivez votre progression sur la page VIP.`;
+    metadata.linkText = 'Page VIP';
+  } else if ((m = message.match(/^You claimed\s+([\d,.]+)\s+coins for reaching\s+(.*?)\.?$/i))) {
+    message = `Vous avez réclamé ${m[1]} pièces pour avoir atteint le rang ${m[2]}.`;
+  } else if ((m = message.match(/^Your proof for\s*["'„](.*?)["'“]\s*was approved!\s*\+([\d,.]+)\s*coins\.?$/i))) {
+    message = `Votre preuve pour « ${m[1]} » a été validée ! +${m[2]} pièces.`;
+  } else if ((m = message.match(/^Your manual proof for\s*["'„](.*?)["'“]\s*was approved!\s*\+([\d,.]+)\s*coins\.?$/i))) {
+    message = `Votre preuve manuelle pour « ${m[1]} » a été validée ! +${m[2]} pièces.`;
+  } else if ((m = message.match(/^Your submission for\s*['"„](.*?)['"“]\s*was approved!\s*\+([\d,.]+)\s*coins placed on hold for\s*(\d+)\s*days\.?$/i))) {
+    message = `Votre participation pour « ${m[1]} » a été validée ! +${m[2]} pièces en attente pendant ${m[3]} jours.`;
+  } else if ((m = message.match(/^Your submission for\s*['"„](.*?)['"“]\s*was approved!\s*\+([\d,.]+)\s*coins\.?$/i))) {
+    message = `Votre participation pour « ${m[1]} » a été validée ! +${m[2]} pièces.`;
+  } else if ((m = message.match(/^Your proof for\s*["'„](.*?)["'“]\s*was rejected\.\s*Reason:\s*(.*)$/i))) {
+    message = `Votre preuve pour « ${m[1]} » a été rejetée. Motif : ${m[2]}`;
+  } else if ((m = message.match(/^Your payout of\s*([\d,.]+)\s*coins has been approved\.?$/i))) {
+    message = `Votre retrait de ${m[1]} pièces a été approuvé.`;
+  } else if ((m = message.match(/^Your withdrawal of\s*([\d,.]+)\s*coins was rejected\.\s*([\d,.]+)\s*coins refunded\.?$/i))) {
+    message = `Votre retrait de ${m[1]} pièces a été rejeté. ${m[2]} pièces remboursées.`;
+  } else if ((m = message.match(/^You earned\s*\+([\d,.]+)\s*coins from\s*(.*?)\.?$/i))) {
+    message = `Vous avez gagné +${m[1]} pièces grâce à ${m[2]}.`;
+  } else if ((m = message.match(/^You earned\s*([\d,.]+)\s*coins from\s*["'„](.*?)["'“]\.?$/i))) {
+    message = `Vous avez gagné ${m[1]} pièces sur « ${m[2]} ».`;
+  } else if ((m = message.match(/^An admin has adjusted your balance by\s*(.*?)\s*coins\.\s*Reason:\s*(.*)$/i))) {
+    message = `Un administrateur a ajusté votre solde de ${m[1]} pièces. Motif : ${m[2]}`;
+  } else if (/^Welcome to the platform! Start earning coins by completing tasks\.?$/i.test(message)) {
+    message = 'Bienvenue sur la plateforme ! Commencez à accomplir des tâches pour gagner des pièces.';
+  }
+
+  if (metadata.link && !metadata.linkText) {
+    if (metadata.link.includes('vip')) metadata.linkText = 'Page VIP';
+  } else if (metadata.linkText === 'VIP page' || metadata.linkText === 'VIP Seite') {
+    metadata.linkText = 'Page VIP';
+  }
+
+  return { title, message, metadata };
+}
+
 export function localizeNotification(notif, lang = 'en') {
   if (!notif) return { title: '', message: '', metadata: notif?.metadata };
 
@@ -204,6 +322,14 @@ export function localizeNotification(notif, lang = 'en') {
       if (metadata.link.includes('vip')) metadata.linkText = 'وی آئی پی پیج';
     }
     return localizeUrdu(title, message, metadata);
+  }
+
+  const isFr = lang === 'fr';
+  if (isFr) {
+    if (metadata.link && !metadata.linkText) {
+      if (metadata.link.includes('vip')) metadata.linkText = 'Page VIP';
+    }
+    return localizeFrench(title, message, metadata);
   }
 
   if (!isDe) {

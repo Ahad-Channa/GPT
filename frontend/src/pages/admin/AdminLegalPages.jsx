@@ -53,6 +53,8 @@ const AdminLegalPages = () => {
             content_en: p.content_en || '',
             title_de: p.title_de || '',
             content_de: p.content_de || '',
+            title_fr: p.title_fr || '',
+            content_fr: p.content_fr || '',
             title_ur: p.title_ur || '',
             content_ur: p.content_ur || '',
           };
@@ -383,6 +385,7 @@ Musterstraße 123, 10115 Berlin, Germany
                 {[
                   { key: 'en', label: '🇬🇧 English', flag: '🇬🇧' },
                   { key: 'de', label: '🇩🇪 Deutsch', flag: '🇩🇪' },
+                  { key: 'fr', label: '🇫🇷 Français', flag: '🇫🇷' },
                   { key: 'ur', label: '🇵🇰 اردو', flag: '🇵🇰' },
                 ].map(({ key, label }) => (
                   <button
@@ -416,7 +419,7 @@ Musterstraße 123, 10115 Berlin, Germany
                   textTransform: 'uppercase',
                   letterSpacing: '0.05em',
                 }}>
-                  Page Title ({activeLang === 'en' ? 'English' : activeLang === 'de' ? 'German' : 'Urdu'}) *
+                  Page Title ({activeLang === 'en' ? 'English' : activeLang === 'de' ? 'German' : activeLang === 'fr' ? 'French' : 'Urdu'}) *
                 </label>
                 <input
                   type="text"
@@ -428,6 +431,8 @@ Musterstraße 123, 10115 Berlin, Germany
                       ? `e.g. ${meta.label}`
                       : activeLang === 'de'
                       ? `z.B. ${meta.label}`
+                      : activeLang === 'fr'
+                      ? `ex. ${meta.label}`
                       : `مثال: ${meta.label}`
                   }
                   className="admin-input"
@@ -455,7 +460,7 @@ Musterstraße 123, 10115 Berlin, Germany
                     textTransform: 'uppercase',
                     letterSpacing: '0.05em',
                   }}>
-                    Page Content ({activeLang === 'en' ? 'English' : activeLang === 'de' ? 'German' : 'Urdu'}) *
+                    Page Content ({activeLang === 'en' ? 'English' : activeLang === 'de' ? 'German' : activeLang === 'fr' ? 'French' : 'Urdu'}) *
                   </label>
                   <span style={{ fontSize: '0.75rem', color: '#9CA3AF' }}>
                     Full Markdown Supported
@@ -471,6 +476,8 @@ Musterstraße 123, 10115 Berlin, Germany
                       ? 'Enter the full page content here using Markdown formatting (e.g. ## Heading, ### Subtitle, - Bullets, --- Dividers)...'
                       : activeLang === 'de'
                       ? 'Geben Sie den vollständigen Seiteninhalt hier mit Markdown-Formatierung ein (z.B. ## Überschrift, ### Untertitel, - Aufzählungspunkte, --- Trennlinie)...'
+                      : activeLang === 'fr'
+                      ? 'Entrez le contenu complet de la page ici en utilisant le format Markdown (ex. ## Titre, ### Sous-titre, - Puces, --- Séparateur)...'
                       : 'مارک ڈاؤن فارمیٹنگ کا استعمال کرتے ہوئے صفحہ کا مواد یہاں درج کریں (جیسے ## ہیڈنگ، ### ذیلی عنوان، - نکات، --- لکیر)...'
                   }
                   className="admin-input"

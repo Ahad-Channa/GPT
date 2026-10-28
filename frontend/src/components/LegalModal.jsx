@@ -7,11 +7,11 @@ import { motion } from 'framer-motion';
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
 const PAGE_TITLES = {
-  'impressum': { en: 'Impressum', de: 'Impressum', ur: 'امپریسم (قانونی معلومات)' },
-  'terms-of-use': { en: 'Terms of Service', de: 'Nutzungsbedingungen', ur: 'استعمال کی شرائط' },
-  'privacy-policy': { en: 'Privacy Policy', de: 'Datenschutzerklärung', ur: 'پرائیویسی پالیسی' },
-  'affiliate-policy': { en: 'Affiliate Policy', de: 'Partnerprogramm-Richtlinie', ur: 'ایفیلی ایٹ پالیسی' },
-  'cookie-policy': { en: 'Cookie Policy', de: 'Cookie-Richtlinie', ur: 'کوکی پالیسی' },
+  'impressum': { en: 'Impressum', de: 'Impressum', fr: 'Mentions Légales', ur: 'امپریسم (قانونی معلومات)' },
+  'terms-of-use': { en: 'Terms of Service', de: 'Nutzungsbedingungen', fr: "Conditions d'Utilisation", ur: 'استعمال کی شرائط' },
+  'privacy-policy': { en: 'Privacy Policy', de: 'Datenschutzerklärung', fr: 'Politique de Confidentialité', ur: 'پرائیویسی پالیسی' },
+  'affiliate-policy': { en: 'Affiliate Policy', de: 'Partnerprogramm-Richtlinie', fr: "Politique d'Affiliation", ur: 'ایفیلی ایٹ پالیسی' },
+  'cookie-policy': { en: 'Cookie Policy', de: 'Cookie-Richtlinie', fr: 'Politique relative aux Cookies', ur: 'کوکی پالیسی' },
 };
 
 const formatInline = (text, isDarkMode, lineIdx = 0) => {
@@ -148,6 +148,7 @@ export default function LegalModal({ isOpen, onClose, initialSlug = 'impressum' 
   const { isDarkMode } = useTheme();
   const { i18n } = useTranslation();
   const isDe = i18n?.language?.startsWith('de');
+  const isFr = i18n?.language?.startsWith('fr');
   const isUr = i18n?.language === 'ur' || i18n?.language?.startsWith('ur');
 
   const [cache, setCache] = useState({});
@@ -216,14 +217,18 @@ export default function LegalModal({ isOpen, onClose, initialSlug = 'impressum' 
         ? (currentPage.title_ur || currentPage.title_en)
         : isDe
         ? (currentPage.title_de || currentPage.title_en)
+        : isFr
+        ? (currentPage.title_fr || currentPage.title_en)
         : (currentPage.title_en || currentPage.title_de))
-    : PAGE_TITLES[activeSlug]?.[isUr ? 'ur' : isDe ? 'de' : 'en'] || 'Legal';
+    : PAGE_TITLES[activeSlug]?.[isUr ? 'ur' : isDe ? 'de' : isFr ? 'fr' : 'en'] || 'Legal';
 
   const content = currentPage
     ? (isUr
         ? (currentPage.content_ur || currentPage.content_en || '')
         : isDe
         ? (currentPage.content_de || currentPage.content_en || '')
+        : isFr
+        ? (currentPage.content_fr || currentPage.content_en || '')
         : (currentPage.content_en || currentPage.content_de || ''))
     : '';
 
@@ -348,13 +353,13 @@ export default function LegalModal({ isOpen, onClose, initialSlug = 'impressum' 
                   }}
                 />
                 <span style={{ fontSize: '13px', color: isDarkMode ? '#9CA3AF' : '#6B7280' }}>
-                  {isDe ? 'Wird geladen...' : 'Loading...'}
+                  {isDe ? 'Wird geladen...' : isFr ? 'Chargement...' : 'Loading...'}
                 </span>
               </div>
             ) : error && !currentPage ? (
               <div className="text-center py-14">
                 <p style={{ color: '#EF4444', fontWeight: 600, marginBottom: '6px' }}>
-                  {isDe ? 'Fehler beim Laden' : 'Failed to load content'}
+                  {isDe ? 'Fehler beim Laden' : isFr ? 'Échec du chargement' : 'Failed to load content'}
                 </p>
                 <p style={{ fontSize: '13px', color: isDarkMode ? '#9CA3AF' : '#6B7280' }}>
                   {error}
@@ -370,8 +375,8 @@ export default function LegalModal({ isOpen, onClose, initialSlug = 'impressum' 
                       marginBottom: '16px',
                     }}
                   >
-                    {isDe ? 'Zuletzt aktualisiert:' : 'Last updated:'}{' '}
-                    {new Date(currentPage.updatedAt).toLocaleDateString(isDe ? 'de-DE' : 'en-US', {
+                    {isDe ? 'Zuletzt aktualisiert:' : isFr ? 'Dernière mise à jour :' : 'Last updated:'}{' '}
+                    {new Date(currentPage.updatedAt).toLocaleDateString(isDe ? 'de-DE' : isFr ? 'fr-FR' : 'en-US', {
                       year: 'numeric',
                       month: 'long',
                       day: 'numeric',

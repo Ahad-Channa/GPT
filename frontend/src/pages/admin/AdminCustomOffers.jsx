@@ -18,14 +18,16 @@ const isIconUrl = (icon) => icon && (icon.startsWith('http') || icon.startsWith(
 
 const OfferModal = ({ offer, onClose, onSaved, token }) => {
   const isEditing = Boolean(offer);
-  const [activeTab, setActiveTab] = useState('en'); // 'en' | 'de' | 'ur'
+  const [activeTab, setActiveTab] = useState('en'); // 'en' | 'de' | 'fr' | 'ur'
   const [form, setForm] = useState({
     title: offer?.title || '',
     titleDe: offer?.titleDe || '',
     titleUr: offer?.titleUr || '',
+    titleFr: offer?.titleFr || '',
     description: offer?.description || '',
     descriptionDe: offer?.descriptionDe || '',
     descriptionUr: offer?.descriptionUr || '',
+    descriptionFr: offer?.descriptionFr || '',
     rewardAmount: offer?.rewardAmount || '',
     externalLink: offer?.externalLink || '',
     trackingType: offer?.trackingType || 'manual_approval',
@@ -41,6 +43,9 @@ const OfferModal = ({ offer, onClose, onSaved, token }) => {
     requirementsUr: Array.isArray(offer?.requirementsUr)
       ? offer.requirementsUr.join('\n')
       : (offer?.requirementsUr || ''),
+    requirementsFr: Array.isArray(offer?.requirementsFr)
+      ? offer.requirementsFr.join('\n')
+      : (offer?.requirementsFr || ''),
     requirementType: offer?.requirementType || 'bullets',
     platforms: offer?.platforms || { desktop: true, android: true, ios: true },
   });
@@ -75,6 +80,9 @@ const OfferModal = ({ offer, onClose, onSaved, token }) => {
           requirementsUr: form.requirementType === 'paragraph'
             ? [(form.requirementsUr || '').trim()].filter(Boolean)
             : (form.requirementsUr || '').split('\n').map(r => r.trim()).filter(Boolean),
+          requirementsFr: form.requirementType === 'paragraph'
+            ? [(form.requirementsFr || '').trim()].filter(Boolean)
+            : (form.requirementsFr || '').split('\n').map(r => r.trim()).filter(Boolean),
           requirementType: form.requirementType,
           platforms: form.platforms,
         }),
@@ -173,6 +181,21 @@ const OfferModal = ({ offer, onClose, onSaved, token }) => {
                 <span>Deutsch</span>
                 {Boolean(form.titleDe) && (
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" title="German translated" />
+                )}
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveTab('fr')}
+                className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-lg text-xs font-bold transition-all ${
+                  activeTab === 'fr'
+                    ? 'bg-white text-gray-900 shadow-sm border border-gray-200'
+                    : 'text-gray-500 hover:text-gray-800'
+                }`}
+              >
+                <span>🇫🇷</span>
+                <span>Français</span>
+                {Boolean(form.titleFr) && (
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" title="French translated" />
                 )}
               </button>
               <button
@@ -316,6 +339,56 @@ const OfferModal = ({ offer, onClose, onSaved, token }) => {
                     form.requirementType === 'paragraph'
                       ? "z.B. Registrieren und 50 € einzahlen, dann 100 € umsetzen."
                       : "z.B. Registrieren → 10 Coins erhalten\n50 € einzahlen → 50.000 Coins erhalten\n200 € Umsatz erzielen → 10.000 Coins erhalten"
+                  }
+                  rows={form.requirementType === 'paragraph' ? 2 : 3}
+                  className="w-full bg-white border border-gray-300 rounded-xl px-3.5 py-2 text-gray-900 text-sm placeholder-gray-400 focus:outline-none focus:border-[#1E2538] focus:ring-1 focus:ring-[#1E2538]/20 resize-none transition-all"
+                />
+              </div>
+            </div>
+          )}
+
+          {/* Tab 3: French Content */}
+          {activeTab === 'fr' && (
+            <div className="space-y-4">
+              <div>
+                <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1.5">
+                  🇫🇷 Title (French / Français)
+                </label>
+                <input
+                  value={form.titleFr}
+                  onChange={set('titleFr')}
+                  placeholder="ex. Inscrivez-vous sur CryptoGame et atteignez le niveau 5"
+                  className="w-full bg-white border border-gray-300 rounded-xl px-3.5 py-2 text-gray-900 text-sm placeholder-gray-400 focus:outline-none focus:border-[#1E2538] focus:ring-1 focus:ring-[#1E2538]/20 transition-all"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1.5">
+                  🇫🇷 Description (French / Français)
+                </label>
+                <textarea
+                  value={form.descriptionFr}
+                  onChange={set('descriptionFr')}
+                  placeholder="Décrivez les étapes pour compléter l'offre et recevoir la récompense..."
+                  rows={2}
+                  className="w-full bg-white border border-gray-300 rounded-xl px-3.5 py-2 text-gray-900 text-sm placeholder-gray-400 focus:outline-none focus:border-[#1E2538] focus:ring-1 focus:ring-[#1E2538]/20 resize-none transition-all"
+                />
+              </div>
+
+              <div>
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                    🇫🇷 Requirements (French / Français)
+                  </label>
+                  <span className="text-[11px] text-gray-400">Format: {form.requirementType === 'paragraph' ? 'Paragraph' : 'Bullets'}</span>
+                </div>
+                <textarea
+                  value={form.requirementsFr}
+                  onChange={set('requirementsFr')}
+                  placeholder={
+                    form.requirementType === 'paragraph'
+                      ? "ex. S'inscrire et déposer 50 €, puis miser 100 €."
+                      : "ex. S'inscrire → 10 Coins reçus\nDéposer 50 € → 50 000 Coins reçus\nMiser 200 € → 10 000 Coins reçus"
                   }
                   rows={form.requirementType === 'paragraph' ? 2 : 3}
                   className="w-full bg-white border border-gray-300 rounded-xl px-3.5 py-2 text-gray-900 text-sm placeholder-gray-400 focus:outline-none focus:border-[#1E2538] focus:ring-1 focus:ring-[#1E2538]/20 resize-none transition-all"
@@ -663,6 +736,11 @@ const AdminCustomOffers = () => {
                       {offer.titleDe && (
                         <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold bg-gray-100 text-gray-600 border border-gray-200" title={`DE: ${offer.titleDe}`}>
                           🇩🇪 DE
+                        </span>
+                      )}
+                      {offer.titleFr && (
+                        <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold bg-blue-50 text-blue-700 border border-blue-200" title={`FR: ${offer.titleFr}`}>
+                          🇫🇷 FR
                         </span>
                       )}
                       {offer.titleUr && (

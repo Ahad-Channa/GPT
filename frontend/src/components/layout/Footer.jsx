@@ -109,12 +109,12 @@ const Footer = () => {
               className={`m-0 text-[17px] sm:text-[18px] font-bold text-center transition-colors duration-300 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}
               style={{ fontFamily: '"Bricolage Grotesque", sans-serif', lineHeight: '1.2' }}
             >
-              {i18n.language?.startsWith('de') ? (
+              {i18n.language?.startsWith('de') || i18n.language?.startsWith('fr') ? (
                 <>
-                  <span>{t('footer.tagline1', 'Aufgaben erledigen.')}</span>
+                  <span>{t('footer.tagline1', 'Complétez des tâches.')}</span>
                   <br className="block sm:hidden" />
                   <span className="hidden sm:inline"> </span>
-                  <span>{t('footer.tagline2', 'Prämien verdienen.')}</span>
+                  <span>{t('footer.tagline2', 'Gagnez des récompenses.')}</span>
                 </>
               ) : (
                 t('footer.tagline', 'Complete tasks. Earn rewards.')

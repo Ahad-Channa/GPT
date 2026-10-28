@@ -26,7 +26,7 @@ const NavItem = ({ path, label }) => {
   return (
     <button
       onClick={() => navigate(path)}
-      className="hidden lg:flex items-center justify-center transition-all cursor-pointer hover:opacity-75"
+      className="hidden lg:flex items-center justify-center transition-all cursor-pointer hover:opacity-75 whitespace-nowrap shrink-0"
       style={{
         fontFamily: 'Poppins, sans-serif',
         fontWeight: 500,
@@ -39,9 +39,10 @@ const NavItem = ({ path, label }) => {
         padding: 0,
         opacity: 1,
         transform: 'rotate(0deg)',
+        whiteSpace: 'nowrap',
       }}
     >
-      {label}
+      <span className="whitespace-nowrap">{label}</span>
     </button>
   );
 };
@@ -256,7 +257,7 @@ const DailyBonusChip = () => {
   return (
     <button
       onClick={() => navigate('/dashboard/daily-bonus')}
-      className="hidden lg:flex items-center gap-[8px] transition-all cursor-pointer hover:opacity-75"
+      className="hidden lg:flex items-center gap-[8px] transition-all cursor-pointer hover:opacity-75 whitespace-nowrap shrink-0"
       style={{
         fontFamily: 'Poppins, sans-serif',
         fontWeight: 500,
@@ -269,9 +270,10 @@ const DailyBonusChip = () => {
         padding: 0,
         opacity: 1,
         transform: 'rotate(0deg)',
+        whiteSpace: 'nowrap',
       }}
     >
-      <span>{t('nav.dailyBonus')}</span>
+      <span className="whitespace-nowrap">{t('nav.dailyBonus')}</span>
       <div
         className="flex flex-col items-center justify-center"
         style={{
@@ -318,7 +320,8 @@ const Header = ({ onChatToggle, chatOpen, fullWidth }) => {
   const { t, i18n } = useTranslation();
   const { isDarkMode } = useTheme();
   const isGerman = i18n.language?.startsWith('de');
-  const isUrdu = i18n.language?.startsWith('ur');
+  const isFrench = i18n.language?.startsWith('fr');
+  const isUrdu = i18n.language === 'ur' || i18n.language?.startsWith('ur');
   const { currentUser, mongoUser, logout, isAdmin } = useAuth();
   const { unreadCount, togglePanel, hasUnreadChat, setHasUnreadChat } = useNotifications();
 
@@ -835,11 +838,12 @@ const Header = ({ onChatToggle, chatOpen, fullWidth }) => {
 
       {/* Group 2: Main Links (Desktop) */}
       <div
-        className={`hidden lg:flex items-center relative ${isUrdu ? 'left-0' : (isGerman ? '-left-[90px]' : '-left-[70px]')}`}
+        className={`hidden lg:flex items-center relative ${isUrdu ? 'left-0' : (isGerman || isFrench ? '-left-[90px]' : '-left-[70px]')}`}
         style={{
-          width: '598px',
+          width: 'auto',
           height: '20px',
-          gap: '40px',
+          gap: isFrench ? '24px' : (isGerman ? '32px' : '40px'),
+          whiteSpace: 'nowrap',
           opacity: 1,
           transform: 'rotate(0deg)',
         }}

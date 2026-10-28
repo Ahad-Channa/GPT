@@ -26,6 +26,7 @@ const Landing = () => {
   const { isDarkMode } = useTheme();
   const { t, i18n } = useTranslation();
   const isDe = i18n?.language?.startsWith('de');
+  const isFr = i18n?.language?.startsWith('fr');
   const isUr = i18n?.language === 'ur' || i18n?.language?.startsWith('ur');
   const [stats, setStats] = useState({ totalUsers: 0, totalPaidOut: 0 });
   const [openFaq, setOpenFaq] = useState(null);
@@ -357,17 +358,17 @@ const Landing = () => {
             >
               <div
                 className={isMobile ? "flex flex-col items-center text-center mx-auto w-full gap-6" : "flex flex-col text-left"}
-                style={!isMobile ? { width: 608, gap: 24 } : { maxWidth: 424 }}
+                style={!isMobile ? { width: isFr ? 664 : 608, gap: 24 } : { maxWidth: 424 }}
               >
                 <h1
                   className="m-0 transition-colors duration-300"
                   style={!isMobile ? {
                     width: '100%',
-                    maxWidth: 608,
+                    maxWidth: isFr ? 664 : 608,
                     fontFamily: '"Bricolage Grotesque", sans-serif',
                     fontWeight: 700,
-                    fontSize: 55,
-                    lineHeight: '60px',
+                    fontSize: isFr ? 45 : 55,
+                    lineHeight: isFr ? '52px' : '60px',
                     letterSpacing: '-0.02em',
                     color: isDarkMode ? '#FFFFFF' : 'rgba(14, 15, 12, 1)'
                   } : {
@@ -391,8 +392,8 @@ const Landing = () => {
                     </>
                   ) : (
                     <>
-                      {t('hero.titleLine1')}<br />
-                      {t('hero.titleLine2')}
+                      <span className="whitespace-nowrap">{t('hero.titleLine1')}</span><br />
+                      <span className="whitespace-nowrap">{t('hero.titleLine2')}</span>
                     </>
                   )}
                 </h1>
@@ -400,10 +401,10 @@ const Landing = () => {
                   className="m-0 whitespace-pre-line transition-colors duration-300"
                   style={!isMobile ? {
                     width: '100%',
-                    maxWidth: 608,
+                    maxWidth: isFr ? 664 : 608,
                     fontFamily: '"Poppins", sans-serif',
                     fontWeight: 500,
-                    fontSize: 16,
+                    fontSize: isFr ? 15.5 : 16,
                     lineHeight: '26px',
                     color: isDarkMode ? 'rgba(255, 255, 255, 0.7)' : 'rgba(14, 15, 12, 1)'
                   } : {

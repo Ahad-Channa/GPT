@@ -579,8 +579,24 @@ const Home = () => {
                 variants={item}
                 className="flex flex-col shrink-0 w-full"
               >
-                {displayFeaturedOffers.length === 0 ? (
-                  <div className="w-full py-8 text-center bg-white rounded-[20px] border border-gray-100/80 shadow-sm text-gray-400 text-sm font-medium">
+                {loadingOffers ? (
+                  <div
+                    className={`w-full py-8 text-center rounded-[20px] border shadow-sm text-sm font-medium transition-colors ${
+                      isDarkMode
+                        ? 'bg-[#222730] border-white/10 text-white'
+                        : 'bg-white border-gray-100/80 text-gray-400'
+                    }`}
+                  >
+                    {t('earn.loadingFeatured', 'Loading featured offers...')}
+                  </div>
+                ) : displayFeaturedOffers.length === 0 ? (
+                  <div
+                    className={`w-full py-8 text-center rounded-[20px] border shadow-sm text-sm font-medium transition-colors ${
+                      isDarkMode
+                        ? 'bg-[#222730] border-white/10 text-white'
+                        : 'bg-white border-gray-100/80 text-gray-400'
+                    }`}
+                  >
                     {t('earn.noFeaturedOffers')}
                   </div>
                 ) : (
@@ -749,7 +765,7 @@ const Home = () => {
                 {loadingSettings ? (
                   <div className="p-8 flex justify-center"><div className="w-8 h-8 rounded-full border-2 border-indigo-500 border-t-transparent animate-spin" /></div>
                 ) : surveyProviders.length === 0 ? (
-                  <div className="p-8 border border-gray-100 flex justify-center rounded-[20px] bg-white text-gray-400 text-sm">{t('earn.noSurveysActive')}</div>
+                  <div className={`p-8 border flex justify-center rounded-[20px] text-sm ${isDarkMode ? 'bg-[rgba(5,7,9,1)] border-white/5 text-gray-400' : 'bg-white border-gray-100 text-gray-400'}`}>{t('earn.noSurveysActive')}</div>
                 ) : (
                   <div
                     className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 w-full gap-[12px]"

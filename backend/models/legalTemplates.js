@@ -105,6 +105,55 @@ Die verlinkten Seiten wurden zum Zeitpunkt der Verlinkung auf mögliche Rechtsve
 
 ### Urheberrecht
 Die durch die Seitenbetreiber erstellten Inhalte und Werke auf diesen Seiten unterliegen dem deutschen Urheberrecht. Die Vervielfältigung, Bearbeitung, Verbreitung und jede Art der Verwertung außerhalb der Grenzen des Urheberrechtes bedürfen der schriftlichen Zustimmung des jeweiligen Autors bzw. Erstellers. Downloads und Kopien dieser Seite sind nur für den privaten, nicht kommerziellen Gebrauch gestattet.`,
+    title_fr: 'Mentions Légales',
+    content_fr: `# Mentions Légales
+
+### Informations conformément aux dispositions légales :
+TaskMint Platform / TaskMint GmbH
+Musterstraße 123
+10115 Berlin
+Allemagne
+
+### Représenté par :
+Directeur Général : Max Mustermann
+
+### Coordonnées de contact :
+Téléphone : +49 (0) 30 1234567
+E-Mail : contact@taskmint.me
+Site Web : https://taskmint.me
+
+### Inscription au registre :
+Inscription au Registre du Commerce (Handelsregister)
+Tribunal d'enregistrement : Amtsgericht Charlottenburg (Berlin)
+Numéro d'enregistrement : HRB 123456 B
+
+### Numéro d'identification TVA :
+Numéro d'identification TVA intracommunautaire :
+DE 123 456 789
+
+### Responsable du contenu éditorial :
+Max Mustermann
+Musterstraße 123
+10115 Berlin
+Allemagne
+
+---
+
+### Règlement des litiges en ligne
+La Commission européenne met à disposition une plateforme de règlement en ligne des litiges (RLL) : https://ec.europa.eu/consumers/odr.
+Notre adresse e-mail est indiquée ci-dessus.
+
+Nous ne sommes ni disposés ni tenus de participer à des procédures de règlement des litiges devant un conseil d'arbitrage de la consommation.
+
+### Responsabilité du contenu
+En tant que prestataire de services, nous sommes responsables de nos propres contenus sur ces pages conformément aux lois générales. Cependant, nous ne sommes pas tenus de surveiller les informations tierces transmises ou stockées, ni d'enquêter sur des circonstances indiquant une activité illicite. Dès notification d'infractions constatées, nous supprimerons immédiatement les contenus concernés.
+
+### Responsabilité des liens
+Notre site contient des liens vers des sites tiers externes sur lesquels nous n'avons aucune influence. Par conséquent, nous déclinons toute responsabilité quant à ces contenus externes. Le fournisseur ou exploitant respectif de ces sites est toujours responsable de leur contenu.
+
+### Droits d'auteur
+Les contenus et œuvres créés par les exploitants de ce site sont soumis au droit d'auteur. Toute reproduction, modification, distribution ou exploitation hors des limites du droit d'auteur nécessite l'accord écrit préalable de l'auteur concerné.`,
+
     title_ur: 'امپریسم (قانونی معلومات)',
     content_ur: `# امپریسم (قانونی معلومات)
 
@@ -252,6 +301,37 @@ Wir behalten uns das Recht vor, diese Nutzungsbedingungen jederzeit anzupassen. 
 
 ### 9. Kontakt
 Bei Fragen zu diesen Nutzungsbedingungen erreichen Sie uns unter **contact@taskmint.me**.`,
+    title_fr: 'Conditions d\'Utilisation',
+    content_fr: `# Conditions d'Utilisation
+
+*Dernière mise à jour : Octobre 2026*
+
+Bienvenue sur TaskMint ("la Plateforme", "nous" ou "notre"). En accédant à notre site ou en l'utilisant, vous acceptez d'être lié par les présentes conditions générales ("Conditions").
+
+---
+
+### 1. Acceptation des conditions
+En créant un compte ou en utilisant TaskMint, vous confirmez que vous êtes âgé d'au moins 18 ans et légalement capable de contracter.
+
+### 2. Comptes d'utilisateurs et sécurité
+- Vous êtes responsable du maintien de la confidentialité de vos identifiants.
+- Chaque individu n'a droit qu'à **un (1) seul compte**. Les comptes multiples sont strictement interdits.
+- Tout comportement frauduleux ou tentative de manipulation entraînera la suspension immédiate du compte.
+
+### 3. Récompenses et tâches
+- TaskMint permet aux utilisateurs de gagner des Coins virtuels en complétant des offres, des sondages et des tâches tierces.
+- Les Coins sont crédités dès que le partenaire annonceur valide l'accomplissement conforme de l'offre.
+
+### 4. Retraits
+- Les utilisateurs peuvent échanger leurs Coins contre les méthodes de paiement disponibles une fois le seuil minimum atteint.
+- Les demandes de retrait peuvent être soumises à un contrôle de sécurité avant exécution.
+
+### 5. Limitation de responsabilité
+TaskMint est fourni "en l'état" sans garantie d'aucune sorte.
+
+### 6. Contact
+Pour toute question : **contact@taskmint.me**.`,
+
     title_ur: 'استعمال کی شرائط',
     content_ur: `# استعمال کی شرائط
 
@@ -401,6 +481,39 @@ Sie haben nach der DSGVO folgende Rechte:
 ### 8. Kontakt zum Datenschutz
 Bei Fragen zur Erhebung, Verarbeitung oder Nutzung Ihrer personenbezogenen Daten sowie zur Ausübung Ihrer Rechte wenden Sie sich bitte an **contact@taskmint.me**.
 `,
+    title_fr: 'Politique de Confidentialité',
+    content_fr: `# Politique de Confidentialité
+
+*Dernière mise à jour : Octobre 2026*
+
+TaskMint accorde une grande importance à la protection de vos données personnelles. La présente politique explique comment nous traitons vos données conformément au Règlement Général sur la Protection des Données (RGPD).
+
+---
+
+### 1. Responsable du traitement
+TaskMint Platform / TaskMint GmbH
+Musterstraße 123, 10115 Berlin, Allemagne
+E-Mail : **contact@taskmint.me**
+
+### 2. Données que nous collectons
+- Données de compte : nom d'utilisateur, adresse e-mail, mot de passe haché.
+- Données techniques : adresse IP, informations sur le navigateur et l'appareil.
+- Activités : offres complétées, historique des gains et des retraits.
+
+### 3. Finalités du traitement
+- Fourniture et gestion de votre compte et du service TaskMint.
+- Prévention des fraudes, détection des comptes multiples et sécurité du système.
+- Traitement de vos demandes de retrait de récompenses.
+
+### 4. Vos droits (RGPD)
+Vous disposez des droits suivants concernant vos données :
+- Droit d'accès (Art. 15 RGPD)
+- Droit de rectification (Art. 16 RGPD)
+- Droit à l'effacement (Art. 17 RGPD)
+- Droit à la portabilité (Art. 20 RGPD)
+
+Pour exercer vos droits, contactez-nous à : **contact@taskmint.me**.`,
+
     title_ur: 'پرائیویسی پالیسی',
     content_ur: `# پرائیویسی پالیسی (ڈیٹا پروٹیکشن)
 
@@ -556,6 +669,26 @@ TaskMint behält sich vor, die Konditionen, Vergütungssätze und diese Richtlin
 ### 7. Kontakt
 Bei Fragen zu unserem Partnerprogramm wenden Sie sich bitte an **contact@taskmint.me**.
 `,
+    title_fr: 'Politique d\'Affiliation & de Parrainage',
+    content_fr: `# Politique d'Affiliation & de Parrainage
+
+*Dernière mise à jour : Octobre 2026*
+
+Le programme d'affiliation TaskMint vous permet de gagner des commissions en invitant de nouveaux utilisateurs sur la plateforme.
+
+---
+
+### 1. Éligibilité
+Tout membre actif et en règle de TaskMint peut participer au programme de parrainage via son lien unique.
+
+### 2. Règles de parrainage
+- Le self-referral (s'auto-parrainer via plusieurs comptes) est formellement interdit.
+- Les méthodes de spam, publicité mensongère ou trompeuse sont proscrites.
+- Les commissions sont créditées sur les gains légitimes validés par les filleuls.
+
+### 3. Conditions de paiement
+Les commissions d'affiliation s'ajoutent à votre solde principal et sont soumises aux mêmes règles de retrait standard.`,
+
     title_ur: 'ایفیلی ایٹ و ریفرل پالیسی',
     content_ur: `# ایفیلی ایٹ و ریفرل پالیسی
 
@@ -649,6 +782,26 @@ Sie können das Speichern von Cookies in Ihren Browsereinstellungen einschränke
 ### 4. Kontakt
 Fragen zu unserer Cookie-Nutzung richten Sie bitte an **contact@taskmint.me**.
 `,
+    title_fr: 'Politique relative aux Cookies',
+    content_fr: `# Politique relative aux Cookies
+
+*Dernière mise à jour : Octobre 2026*
+
+TaskMint utilise des cookies et des technologies de suivi similaires pour assurer le bon fonctionnement du site, mémoriser vos préférences et mesurer l'utilisation de nos services.
+
+---
+
+### 1. Que sont les cookies ?
+Les cookies sont de petits fichiers texte enregistrés sur votre terminal lors de la consultation d'un site web.
+
+### 2. Catégories de cookies utilisés
+- **Cookies Essentiels** : Indispensables à la connexion sécurisée et au fonctionnement basique.
+- **Cookies Fonctionnels** : Mémorisation de vos choix de langue et de thème (par exemple : \`i18nextLng\`).
+- **Cookies Analytiques** : Analyse statistique anonyme pour améliorer nos offres et nos performances.
+
+### 3. Gestion de vos préférences
+Vous pouvez à tout moment modifier vos préférences via notre outil de gestion du consentement aux cookies disponible en bas de page.`,
+
     title_ur: 'کوکی پالیسی',
     content_ur: `# کوکی پالیسی
 

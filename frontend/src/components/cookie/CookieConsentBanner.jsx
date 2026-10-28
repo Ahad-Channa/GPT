@@ -13,6 +13,7 @@ const CookieConsentBanner = () => {
   if (!isBannerOpen) return null;
 
   const isGerman = i18n.language?.startsWith('de');
+  const isFrench = i18n.language?.startsWith('fr');
   const isUrdu = i18n.language === 'ur' || i18n.language?.startsWith('ur');
   const policyColor = isDarkMode ? '#FFFFFF' : 'rgba(36, 50, 77, 1)';
 
@@ -39,7 +40,7 @@ const CookieConsentBanner = () => {
               }`}
               style={{ fontFamily: '"Bricolage Grotesque", sans-serif' }}
             >
-              {isUrdu ? 'پرائیویسی اور کوکی کی ترتیبات' : isGerman ? 'Privatsphäre & Cookie-Einstellungen' : 'Privacy & Cookie Settings'}
+              {isUrdu ? 'پرائیویسی اور کوکی کی ترتیبات' : isGerman ? 'Privatsphäre & Cookie-Einstellungen' : isFrench ? 'Confidentialité & Paramètres des Cookies' : 'Privacy & Cookie Settings'}
             </h4>
 
             <p className={isDarkMode ? 'text-gray-300' : 'text-gray-600'}>
@@ -109,6 +110,38 @@ const CookieConsentBanner = () => {
                   </button>
                   .
                 </>
+              ) : isFrench ? (
+                <>
+                  Nous utilisons des technologies strictement nécessaires pour le fonctionnement sécurisé de TaskMint. Avec votre consentement, nous utilisons également des technologies fonctionnelles (telles que la langue et le mode sombre) et marketing pour notre programme d'affiliation. En savoir plus dans notre{' '}
+                  <button
+                    type="button"
+                    onClick={() => navigate('/policies?tab=privacy-policy')}
+                    style={{
+                      color: policyColor,
+                      textDecoration: 'underline',
+                      textUnderlineOffset: '3px',
+                      fontWeight: 700,
+                    }}
+                    className="hover:opacity-80 transition-opacity bg-transparent border-none p-0 inline cursor-pointer"
+                  >
+                    Politique de Confidentialité
+                  </button>{' '}
+                  et notre{' '}
+                  <button
+                    type="button"
+                    onClick={() => navigate('/policies?tab=cookie-policy')}
+                    style={{
+                      color: policyColor,
+                      textDecoration: 'underline',
+                      textUnderlineOffset: '3px',
+                      fontWeight: 700,
+                    }}
+                    className="hover:opacity-80 transition-opacity bg-transparent border-none p-0 inline cursor-pointer"
+                  >
+                    Politique de Cookies
+                  </button>
+                  .
+                </>
               ) : (
                 <>
                   We use strictly essential technologies to ensure TaskMint operates securely. With your consent, we
@@ -159,7 +192,7 @@ const CookieConsentBanner = () => {
                   : 'bg-gray-100 hover:bg-gray-200 text-gray-700 border border-gray-200'
               }`}
             >
-              <span>{isUrdu ? 'ترتیبات' : isGerman ? 'Einstellungen' : 'Customize'}</span>
+              <span>{isUrdu ? 'ترتیبات' : isGerman ? 'Einstellungen' : isFrench ? 'Personnaliser' : 'Customize'}</span>
             </button>
 
             {/* Essential Only */}
@@ -172,7 +205,7 @@ const CookieConsentBanner = () => {
                   : 'bg-gray-200 hover:bg-gray-300 text-gray-800 border border-gray-300'
               }`}
             >
-              <span>{isUrdu ? 'صرف لازمی' : isGerman ? 'Nur essenzielle' : 'Essential Only'}</span>
+              <span>{isUrdu ? 'صرف لازمی' : isGerman ? 'Nur essenzielle' : isFrench ? 'Essentiels uniquement' : 'Essential Only'}</span>
             </button>
 
             {/* Accept All */}
@@ -187,7 +220,7 @@ const CookieConsentBanner = () => {
                 boxShadow: isDarkMode ? '0 4px 14px rgba(0,0,0,0.5)' : '0 4px 14px rgba(36, 50, 77, 0.25)',
               }}
             >
-              <span>{isUrdu ? 'سب قبول کریں' : isGerman ? 'Alle akzeptieren' : 'Accept All'}</span>
+              <span>{isUrdu ? 'سب قبول کریں' : isGerman ? 'Alle akzeptieren' : isFrench ? 'Tout accepter' : 'Accept All'}</span>
             </button>
           </div>
         </div>

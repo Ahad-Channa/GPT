@@ -721,7 +721,7 @@ const CustomizationModal = ({ isOpen, onClose, mongoUser, token, setMongoUser })
                           }}
                           className="font-semibold text-[12.5px] sm:text-[13.5px] md:text-[14px] leading-none"
                         >
-                          {previewAvatar.obtainedAt ? new Date(previewAvatar.obtainedAt).toLocaleDateString(i18n.language === 'de' ? 'de-DE' : 'en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'Aug 21, 2026'}
+                          {previewAvatar.obtainedAt ? new Date(previewAvatar.obtainedAt).toLocaleDateString(i18n.language === 'de' ? 'de-DE' : (i18n.language === 'fr' ? 'fr-FR' : 'en-US'), { month: 'short', day: 'numeric', year: 'numeric' }) : 'Aug 21, 2026'}
                         </span>
                       </div>
                     )}
@@ -1566,7 +1566,7 @@ const ClickedOfferRow = ({ offer, index = 0 }) => {
         style={{ fontFamily: 'Poppins, sans-serif', fontWeight: 500 }}
         className={`${isDarkMode ? 'text-slate-300' : 'text-[#1e293b]'} text-[10px] md:text-[16px] leading-tight md:leading-[26px]`}
       >
-        {offer.createdAt ? new Date(offer.createdAt).toLocaleDateString(i18n.language === 'de' ? 'de-DE' : 'en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'N/A'}
+        {offer.createdAt ? new Date(offer.createdAt).toLocaleDateString(i18n.language === 'de' ? 'de-DE' : (i18n.language === 'fr' ? 'fr-FR' : 'en-US'), { month: 'short', day: 'numeric', year: 'numeric' }) : 'N/A'}
       </span>
 
       {/* Reward */}
@@ -2940,7 +2940,7 @@ const Profile = () => {
                   <span>
                     {t('profile.joinedDate', {
                       date: mongoUser?.createdAt
-                        ? new Date(mongoUser.createdAt).toLocaleDateString(i18n.language === 'de' ? 'de-DE' : 'en-US', { month: 'short', year: 'numeric' })
+                        ? new Date(mongoUser.createdAt).toLocaleDateString(i18n.language === 'de' ? 'de-DE' : (i18n.language === 'fr' ? 'fr-FR' : 'en-US'), { month: 'short', year: 'numeric' })
                         : 'Aug 2026',
                       defaultValue: `Joined ${mongoUser?.createdAt ? new Date(mongoUser.createdAt).toLocaleDateString('en-US', { month: 'short', year: 'numeric' }) : 'Aug 2026'}`
                     })}
@@ -3418,7 +3418,7 @@ const Profile = () => {
                                     style={{ fontFamily: 'Poppins, sans-serif', fontWeight: 500 }}
                                     className={`${isDarkMode ? 'text-slate-300' : 'text-[#1e293b]'} text-[10px] md:text-[16px] leading-tight md:leading-[26px]`}
                                   >
-                                    {offer.completedAt ? new Date(offer.completedAt).toLocaleDateString(i18n.language === 'de' ? 'de-DE' : 'en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'N/A'}
+                                    {offer.completedAt ? new Date(offer.completedAt).toLocaleDateString(i18n.language === 'de' ? 'de-DE' : (i18n.language === 'fr' ? 'fr-FR' : 'en-US'), { month: 'short', day: 'numeric', year: 'numeric' }) : 'N/A'}
                                   </span>
                                   <div
                                     style={{ fontFamily: 'Poppins, sans-serif', fontWeight: 600, color: 'rgba(190, 146, 0, 1)' }}
@@ -3503,7 +3503,7 @@ const Profile = () => {
                                       style={{ fontFamily: 'Poppins, sans-serif', fontWeight: 500 }}
                                       className={`${isDarkMode ? 'text-slate-300' : 'text-[#1e293b]'} text-[10px] md:text-[16px] leading-tight md:leading-[26px]`}
                                     >
-                                      {offer.createdAt ? new Date(offer.createdAt).toLocaleDateString(i18n.language === 'de' ? 'de-DE' : 'en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'N/A'}
+                                      {offer.createdAt ? new Date(offer.createdAt).toLocaleDateString(i18n.language === 'de' ? 'de-DE' : (i18n.language === 'fr' ? 'fr-FR' : 'en-US'), { month: 'short', day: 'numeric', year: 'numeric' }) : 'N/A'}
                                     </span>
                                     <div
                                       style={{ fontFamily: 'Poppins, sans-serif', fontWeight: 600, color: 'rgba(190, 146, 0, 1)' }}
@@ -3594,7 +3594,7 @@ const Profile = () => {
                                     style={{ fontFamily: 'Poppins, sans-serif', fontWeight: 500 }}
                                     className={`${isDarkMode ? 'text-slate-300' : 'text-[#1e293b]'} text-[9.5px] md:text-[16px] leading-[13px] md:leading-[26px]`}
                                   >
-                                    {tx.createdAt ? new Date(tx.createdAt).toLocaleDateString(i18n.language === 'de' ? 'de-DE' : 'en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'N/A'}
+                                    {tx.createdAt ? new Date(tx.createdAt).toLocaleDateString(i18n.language === 'de' ? 'de-DE' : (i18n.language === 'fr' ? 'fr-FR' : 'en-US'), { month: 'short', day: 'numeric', year: 'numeric' }) : 'N/A'}
                                   </span>
                                   <span
                                     style={{ fontFamily: 'Poppins, sans-serif', fontWeight: 500 }}
@@ -3701,7 +3701,7 @@ const Profile = () => {
                                   style={{ fontFamily: 'Poppins, sans-serif', fontWeight: 500 }}
                                   className={`${isDarkMode ? 'text-slate-300' : 'text-[#1e293b]'} text-[10px] md:text-[16px] leading-tight md:leading-[26px]`}
                                 >
-                                  {tx.createdAt ? new Date(tx.createdAt).toLocaleDateString(i18n.language === 'de' ? 'de-DE' : 'en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'N/A'}
+                                  {tx.createdAt ? new Date(tx.createdAt).toLocaleDateString(i18n.language === 'de' ? 'de-DE' : (i18n.language === 'fr' ? 'fr-FR' : 'en-US'), { month: 'short', day: 'numeric', year: 'numeric' }) : 'N/A'}
                                 </span>
                                 <div
                                   style={{ fontFamily: 'Poppins, sans-serif', fontWeight: 600, color: 'rgba(190, 146, 0, 1)' }}

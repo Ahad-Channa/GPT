@@ -4,6 +4,7 @@ import LanguageDetector from 'i18next-browser-languagedetector';
 
 import en from './en.json';
 import de from './de.json';
+import fr from './fr.json';
 import ur from './ur.json';
 
 const hasFunctionalConsent = () => {
@@ -25,6 +26,7 @@ const getInitialLanguage = () => {
     if (saved) {
       if (saved.startsWith('ur')) return 'ur';
       if (saved.startsWith('de')) return 'de';
+      if (saved.startsWith('fr')) return 'fr';
       if (saved.startsWith('en')) return 'en';
     }
   }
@@ -41,6 +43,7 @@ i18n
     resources: {
       en: { translation: en },
       de: { translation: de },
+      fr: { translation: fr },
       ur: { translation: ur }
     },
     fallbackLng: 'en',

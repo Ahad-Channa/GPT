@@ -368,7 +368,7 @@ export default function NotificationPanel() {
                     >
                       {(() => {
                         const date = new Date(notif.createdAt);
-                        const locale = i18n.language === 'de' ? 'de-DE' : 'en-US';
+                        const locale = i18n.language === 'de' ? 'de-DE' : (i18n.language === 'fr' ? 'fr-FR' : 'en-US');
                         return (
                           date.toLocaleDateString(locale, {
                             day: 'numeric',

@@ -174,8 +174,9 @@ export const FeaturedOfferCard = ({ offer, onClick }) => {
   const { isDarkMode } = useTheme();
   const { i18n } = useTranslation();
   const isDe = i18n.language?.startsWith('de');
+  const isFr = i18n.language?.startsWith('fr');
   const isUr = i18n.language?.startsWith('ur');
-  const title = (isUr && offer.titleUr) ? offer.titleUr : ((isDe && offer.titleDe) ? offer.titleDe : offer.title);
+  const title = (isUr && offer.titleUr) ? offer.titleUr : ((isDe && offer.titleDe) ? offer.titleDe : ((isFr && offer.titleFr) ? offer.titleFr : offer.title));
   const isExpired = offer.expirationDate && new Date(offer.expirationDate) < new Date();
   const coverImgSrc = offer.coverImage || (isIconUrl(offer.icon) ? offer.icon : null);
   const emojiIcon = !coverImgSrc && offer.icon ? offer.icon : null;
@@ -361,14 +362,17 @@ export const FeaturedOfferModal = ({ offer, token, onClose, onSubmitted }) => {
   const { isDarkMode } = useTheme();
   const { t, i18n } = useTranslation();
   const isDe = i18n.language?.startsWith('de');
+  const isFr = i18n.language?.startsWith('fr');
   const isUr = i18n.language?.startsWith('ur');
-  const title = (isUr && offer.titleUr) ? offer.titleUr : ((isDe && offer.titleDe) ? offer.titleDe : offer.title);
-  const description = (isUr && offer.descriptionUr) ? offer.descriptionUr : ((isDe && offer.descriptionDe) ? offer.descriptionDe : (offer.description || t('offers.defaultDescription')));
+  const title = (isUr && offer.titleUr) ? offer.titleUr : ((isDe && offer.titleDe) ? offer.titleDe : ((isFr && offer.titleFr) ? offer.titleFr : offer.title));
+  const description = (isUr && offer.descriptionUr) ? offer.descriptionUr : ((isDe && offer.descriptionDe) ? offer.descriptionDe : ((isFr && offer.descriptionFr) ? offer.descriptionFr : (offer.description || t('offers.defaultDescription'))));
   const requirementsList = (isUr && offer.requirementsUr && offer.requirementsUr.length > 0)
     ? offer.requirementsUr
     : ((isDe && offer.requirementsDe && offer.requirementsDe.length > 0)
       ? offer.requirementsDe
-      : offer.requirements);
+      : ((isFr && offer.requirementsFr && offer.requirementsFr.length > 0)
+        ? offer.requirementsFr
+        : offer.requirements));
 
   const [loading, setLoading] = useState(false);
   const [showSupportModal, setShowSupportModal] = useState(false);

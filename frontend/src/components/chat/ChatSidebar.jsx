@@ -188,7 +188,7 @@ const MessageRow = ({ msg, canModerate, onDelete, deletingId, onUserClick }) => 
   const isDeleting = deletingId === msg._id;
 
   const date = new Date(msg.createdAt || Date.now());
-  const formattedDate = date.toLocaleDateString(i18n.language === 'de' ? 'de-DE' : 'en-US', { month: 'short', day: 'numeric' });
+  const formattedDate = date.toLocaleDateString(i18n.language === 'de' ? 'de-DE' : (i18n.language === 'fr' ? 'fr-FR' : 'en-US'), { month: 'short', day: 'numeric' });
 
   return (
     <div

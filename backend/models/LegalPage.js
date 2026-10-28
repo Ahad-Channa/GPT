@@ -28,6 +28,15 @@ const legalPageSchema = new mongoose.Schema(
       type: String,
       default: '',
     },
+    // French content
+    title_fr: {
+      type: String,
+      default: '',
+    },
+    content_fr: {
+      type: String,
+      default: '',
+    },
     // Urdu content
     title_ur: {
       type: String,
@@ -58,6 +67,8 @@ legalPageSchema.statics.getBySlug = async function (slug) {
       content_en: template.content_en || '',
       title_de: template.title_de || '',
       content_de: template.content_de || '',
+      title_fr: template.title_fr || '',
+      content_fr: template.content_fr || '',
       title_ur: template.title_ur || '',
       content_ur: template.content_ur || '',
     });
@@ -71,6 +82,11 @@ legalPageSchema.statics.getBySlug = async function (slug) {
       page.content_de = page.content_de || template.content_de || '';
       changed = true;
     }
+    if (!page.content_fr && template.content_fr) {
+      page.title_fr = template.title_fr || '';
+      page.content_fr = template.content_fr || '';
+      changed = true;
+    }
     if (!page.content_ur && template.content_ur) {
       page.title_ur = template.title_ur || '';
       page.content_ur = template.content_ur || '';
@@ -81,6 +97,10 @@ legalPageSchema.statics.getBySlug = async function (slug) {
       page.content_de = template.content_de;
       page.title_en = template.title_en || page.title_en;
       page.title_de = template.title_de || page.title_de;
+      if (!page.content_fr && template.content_fr) {
+        page.title_fr = template.title_fr;
+        page.content_fr = template.content_fr;
+      }
       if (!page.content_ur && template.content_ur) {
         page.title_ur = template.title_ur;
         page.content_ur = template.content_ur;

@@ -141,7 +141,8 @@ const PublicProfileModal = ({ userId, onClose }) => {
   const { t, i18n } = useTranslation();
   const isEn = (i18n?.language || 'en').startsWith('en');
   const isUr = i18n?.language === 'ur';
-  const dateLocale = isEn ? 'en-US' : (isUr ? 'ur-PK' : 'de-DE');
+  const isFr = i18n?.language === 'fr' || i18n?.language?.startsWith('fr');
+  const dateLocale = isEn ? 'en-US' : (isUr ? 'ur-PK' : (isFr ? 'fr-FR' : 'de-DE'));
 
   const [profile, setProfile] = useState(null);
   const [recentOffers, setRecentOffers] = useState([]);

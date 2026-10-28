@@ -667,14 +667,16 @@ router.get('/custom-offers', requirePermission('manage_offerwalls'), async (req,
 
 router.post('/custom-offers', requirePermission('manage_offerwalls'), async (req, res) => {
   try {
-    const { title, titleDe, titleUr, description, descriptionDe, descriptionUr, rewardAmount, externalLink, trackingType, expirationDate, icon, coverImage, requirements, requirementsDe, requirementsUr, requirementType, platforms } = req.body;
+    const { title, titleDe, titleUr, titleFr, description, descriptionDe, descriptionUr, descriptionFr, rewardAmount, externalLink, trackingType, expirationDate, icon, coverImage, requirements, requirementsDe, requirementsUr, requirementsFr, requirementType, platforms } = req.body;
     const newOffer = new CustomOffer({
       title,
       titleDe: titleDe || '',
       titleUr: titleUr || '',
+      titleFr: titleFr || '',
       description,
       descriptionDe: descriptionDe || '',
       descriptionUr: descriptionUr || '',
+      descriptionFr: descriptionFr || '',
       rewardAmount,
       externalLink,
       trackingType,
@@ -684,6 +686,7 @@ router.post('/custom-offers', requirePermission('manage_offerwalls'), async (req
       requirements: Array.isArray(requirements) ? requirements : [],
       requirementsDe: Array.isArray(requirementsDe) ? requirementsDe : [],
       requirementsUr: Array.isArray(requirementsUr) ? requirementsUr : [],
+      requirementsFr: Array.isArray(requirementsFr) ? requirementsFr : [],
       requirementType: requirementType === 'paragraph' ? 'paragraph' : 'bullets',
       platforms: platforms || { desktop: true, android: true, ios: true },
     });
@@ -733,14 +736,16 @@ router.get('/goodpicks-offers', requirePermission('manage_offerwalls'), async (r
 
 router.post('/goodpicks-offers', requirePermission('manage_offerwalls'), async (req, res) => {
   try {
-    const { title, titleDe, titleUr, description, descriptionDe, descriptionUr, rewardAmount, externalLink, expirationDate, icon, coverImage, requirements, requirementsDe, requirementsUr, requirementType, platforms } = req.body;
+    const { title, titleDe, titleUr, titleFr, description, descriptionDe, descriptionUr, descriptionFr, rewardAmount, externalLink, expirationDate, icon, coverImage, requirements, requirementsDe, requirementsUr, requirementsFr, requirementType, platforms } = req.body;
     const newOffer = new GoodpickOffer({
       title,
       titleDe: titleDe || '',
       titleUr: titleUr || '',
+      titleFr: titleFr || '',
       description,
       descriptionDe: descriptionDe || '',
       descriptionUr: descriptionUr || '',
+      descriptionFr: descriptionFr || '',
       rewardAmount,
       externalLink,
       expirationDate: expirationDate || null,
@@ -749,6 +754,7 @@ router.post('/goodpicks-offers', requirePermission('manage_offerwalls'), async (
       requirements: Array.isArray(requirements) ? requirements : [],
       requirementsDe: Array.isArray(requirementsDe) ? requirementsDe : [],
       requirementsUr: Array.isArray(requirementsUr) ? requirementsUr : [],
+      requirementsFr: Array.isArray(requirementsFr) ? requirementsFr : [],
       requirementType: requirementType === 'paragraph' ? 'paragraph' : 'bullets',
       platforms: platforms || { desktop: true, android: true, ios: true },
     });
@@ -2701,7 +2707,7 @@ router.put('/legal-pages/:slug', async (req, res) => {
       return res.status(400).json({ success: false, error: 'Invalid page slug' });
     }
 
-    const { title_en, content_en, title_de, content_de, title_ur, content_ur } = req.body;
+    const { title_en, content_en, title_de, content_de, title_fr, content_fr, title_ur, content_ur } = req.body;
     const adminUser = req.dbUser;
 
     const page = await LegalPage.getBySlug(slug);
@@ -2709,6 +2715,8 @@ router.put('/legal-pages/:slug', async (req, res) => {
     if (content_en !== undefined) page.content_en = content_en;
     if (title_de !== undefined) page.title_de = title_de;
     if (content_de !== undefined) page.content_de = content_de;
+    if (title_fr !== undefined) page.title_fr = title_fr;
+    if (content_fr !== undefined) page.content_fr = content_fr;
     if (title_ur !== undefined) page.title_ur = title_ur;
     if (content_ur !== undefined) page.content_ur = content_ur;
     if (adminUser) page.lastEditedBy = adminUser._id;

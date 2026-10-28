@@ -237,7 +237,7 @@ const MessageRow = ({ msg, isOwn, mongoUser }) => {
   const senderUser = isOwn ? mongoUser : { displayName: t('chat.supportTeam', 'Support Team'), role: 'moderator' };
 
   const date = new Date(msg.createdAt || Date.now());
-  const formattedDate = date.toLocaleDateString(i18n.language === 'de' ? 'de-DE' : 'en-US', { month: 'short', day: 'numeric' });
+  const formattedDate = date.toLocaleDateString(i18n.language === 'de' ? 'de-DE' : (i18n.language === 'fr' ? 'fr-FR' : 'en-US'), { month: 'short', day: 'numeric' });
 
   const displayName = isSupport
     ? t('chat.supportTeam', 'Support Team')

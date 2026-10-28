@@ -10,6 +10,7 @@ const CookieSettingsModal = () => {
   const { i18n } = useTranslation();
 
   const isGerman = i18n.language?.startsWith('de');
+  const isFrench = i18n.language?.startsWith('fr');
   const isUrdu = i18n.language === 'ur' || i18n.language?.startsWith('ur');
 
   // Category toggle states
@@ -107,7 +108,7 @@ const CookieSettingsModal = () => {
                 margin: 0,
               }}
             >
-              {isUrdu ? 'کوکی اور پرائیویسی کی ترتیبات' : isGerman ? 'Cookie- & Privatsphäre-Einstellungen' : 'Cookie & Privacy Preferences'}
+              {isUrdu ? 'کوکی اور پرائیویسی کی ترتیبات' : isGerman ? 'Cookie- & Privatsphäre-Einstellungen' : isFrench ? 'Préférences de Cookies & Confidentialité' : 'Cookie & Privacy Preferences'}
             </h2>
             <p
               className="text-xs sm:text-[13px] mt-1.5 leading-relaxed"
@@ -120,6 +121,8 @@ const CookieSettingsModal = () => {
                 ? 'یہاں آپ یہ منتخب کر سکتے ہیں کہ آپ کے ڈیوائس پر ڈیٹا محفوظ کرنے کے لیے کن ٹیکنالوجیز کے استعمال کی اجازت ہے۔ تکنیکی طور پر ضروری ڈیٹا ہمیشہ درکار ہوتا ہے۔'
                 : isGerman
                 ? 'Hier können Sie festlegen, welche Technologien für die Speicherung von Daten auf Ihrem Gerät verwendet werden dürfen. Technisch notwendige Daten werden stets benötigt.'
+                : isFrench
+                ? 'Gérez vos préférences individuelles de consentement. Les technologies strictement nécessaires restent toujours actives pour assurer le bon fonctionnement.'
                 : 'Manage your individual consent preferences. Strictly necessary technologies are always active to provide essential functions.'}
             </p>
           </div>
@@ -181,14 +184,14 @@ const CookieSettingsModal = () => {
                     color: isDarkMode ? '#FFFFFF' : '#000000',
                   }}
                 >
-                  {isUrdu ? 'تکنیکی طور پر ضروری' : isGerman ? 'Technisch notwendig' : 'Strictly Essential'}
+                  {isUrdu ? 'تکنیکی طور پر ضروری' : isGerman ? 'Technisch notwendig' : isFrench ? 'Strictement Nécessaires' : 'Strictly Essential'}
                 </span>
                 <span
                   className={`text-[11px] font-bold px-2 py-0.5 rounded-full ${
                     isDarkMode ? 'bg-white/10 text-white' : 'bg-[#24324D]/10 text-[#24324D]'
                   }`}
                 >
-                  {isUrdu ? 'ہمیشہ فعال' : isGerman ? 'Immer aktiv' : 'Always Active'}
+                  {isUrdu ? 'ہمیشہ فعال' : isGerman ? 'Immer aktiv' : isFrench ? 'Toujours Actif' : 'Always Active'}
                 </span>
               </div>
               <p
@@ -201,6 +204,8 @@ const CookieSettingsModal = () => {
                   ? 'صارف کے لاگ ان، 2-مرحلہ سیکیورٹی، سیشن برقرار رکھنے اور آپ کے کوکی کے انتخاب کو یاد رکھنے کے لیے لازمی ہے۔ اسے غیر فعال نہیں کیا جا سکتا۔'
                   : isGerman
                   ? 'Erforderlich für Benutzeranmeldung, 2-Faktor-Authentifizierung, Sicherheit und Speicherung Ihrer Cookie-Einstellungen. Kann nicht deaktiviert werden.'
+                  : isFrench
+                  ? "Requis pour la connexion, l'authentification 2FA, la persistance de session et la mémorisation de vos choix de cookies. Ne peut être désactivé."
                   : 'Required for user authentication, 2-Factor security, session persistence, and remembering your cookie choices. Cannot be disabled.'}
               </p>
             </div>
@@ -229,8 +234,8 @@ const CookieSettingsModal = () => {
               style={{ color: isDarkMode ? '#FFFFFF' : '#000000' }}
             >
               {openSection === 'essential'
-                ? (isGerman ? 'Details ausblenden' : 'Hide details')
-                : `${isGerman ? 'Details anzeigen' : 'Show details'} (${essentialCookies.length})`}
+                ? (isUrdu ? 'تفصیلات چھپائیں' : isGerman ? 'Details ausblenden' : isFrench ? 'Masquer les détails' : 'Hide details')
+                : `${isUrdu ? 'تفصیلات دیکھیں' : isGerman ? 'Details anzeigen' : isFrench ? 'Afficher les détails' : 'Show details'} (${essentialCookies.length})`}
             </span>
             {openSection === 'essential' ? <FiChevronUp /> : <FiChevronDown />}
           </div>
@@ -290,7 +295,7 @@ const CookieSettingsModal = () => {
                     color: isDarkMode ? '#FFFFFF' : '#000000',
                   }}
                 >
-                  {isUrdu ? 'فنکشنل اور ترجیحات' : isGerman ? 'Funktional & Präferenzen' : 'Functional & Preferences'}
+                  {isUrdu ? 'فنکشنل اور ترجیحات' : isGerman ? 'Funktional & Präferenzen' : isFrench ? 'Fonctionnel & Préférences' : 'Functional & Preferences'}
                 </span>
               </div>
               <p
@@ -303,7 +308,9 @@ const CookieSettingsModal = () => {
                   ? 'آپ کی منتخب کردہ زبان (انگریزی/جرمن/اردو)، ڈارک/لائٹ موڈ اور چیٹ سائڈبار کی سیٹنگز کو محفوظ رکھنے کی سہولت فراہم کرتا ہے۔'
                   : isGerman
                   ? 'Ermöglicht das Speichern Ihrer Sprache (Deutsch/Englisch), Ihres Farbschemas (Dark Mode/Light Mode) und der Chat-Seitenleisten-Einstellung.'
-                  : 'Enables saving your selected language (English/German/Urdu), Dark Mode/Light Mode theme preference, and chat sidebar state.'}
+                  : isFrench
+                  ? "Permet d'enregistrer votre langue préférée (anglais/allemand/français/ourdou), votre thème (mode sombre/clair) et l'état de la barre de chat."
+                  : 'Enables saving your selected language (English/German/French/Urdu), Dark Mode/Light Mode theme preference, and chat sidebar state.'}
               </p>
             </div>
 
@@ -341,8 +348,8 @@ const CookieSettingsModal = () => {
               style={{ color: isDarkMode ? '#FFFFFF' : '#000000' }}
             >
               {openSection === 'functional'
-                ? (isUrdu ? 'تفصیلات چھپائیں' : isGerman ? 'Details ausblenden' : 'Hide details')
-                : `${isUrdu ? 'تفصیلات دیکھیں' : isGerman ? 'Details anzeigen' : 'Show details'} (${functionalCookies.length})`}
+                ? (isUrdu ? 'تفصیلات چھپائیں' : isGerman ? 'Details ausblenden' : isFrench ? 'Masquer les détails' : 'Hide details')
+                : `${isUrdu ? 'تفصیلات دیکھیں' : isGerman ? 'Details anzeigen' : isFrench ? 'Afficher les détails' : 'Show details'} (${functionalCookies.length})`}
             </span>
             {openSection === 'functional' ? <FiChevronUp /> : <FiChevronDown />}
           </div>
@@ -402,7 +409,7 @@ const CookieSettingsModal = () => {
                     color: isDarkMode ? '#FFFFFF' : '#000000',
                   }}
                 >
-                  {isUrdu ? 'مارکیٹنگ اور ایفیلی ایٹ' : isGerman ? 'Marketing & Empfehlungsprogramm' : 'Marketing & Attribution'}
+                  {isUrdu ? 'مارکیٹنگ اور ایفیلی ایٹ' : isGerman ? 'Marketing & Empfehlungsprogramm' : isFrench ? 'Marketing & Affiliation' : 'Marketing & Attribution'}
                 </span>
               </div>
               <p
@@ -415,6 +422,8 @@ const CookieSettingsModal = () => {
                   ? 'ریفرل اور ایفیلی ایٹ لنکس کو ٹریک کرنے کے لیے تاکہ دوستوں اور پارٹنرز کو سائن اپ پر ان کے کمائے گئے بونس مل سکیں۔'
                   : isGerman
                   ? 'Dient der korrekten Zuordnung von Empfehlungs- und Partnerlinks, damit Freunde und Partner ihre verdienten Registrierungsboni erhalten.'
+                  : isFrench
+                  ? "Permet de suivre les liens d'affiliation et de parrainage afin que vos amis et partenaires reçoivent leurs commissions lors de l'inscription."
                   : 'Used to track affiliate and referral links so that friends and partners receive their earned commission bonuses upon signup.'}
               </p>
             </div>
@@ -453,8 +462,8 @@ const CookieSettingsModal = () => {
               style={{ color: isDarkMode ? '#FFFFFF' : '#000000' }}
             >
               {openSection === 'marketing'
-                ? (isUrdu ? 'تفصیلات چھپائیں' : isGerman ? 'Details ausblenden' : 'Hide details')
-                : `${isUrdu ? 'تفصیلات دیکھیں' : isGerman ? 'Details anzeigen' : 'Show details'} (${marketingCookies.length})`}
+                ? (isUrdu ? 'تفصیلات چھپائیں' : isGerman ? 'Details ausblenden' : isFrench ? 'Masquer les détails' : 'Hide details')
+                : `${isUrdu ? 'تفصیلات دیکھیں' : isGerman ? 'Details anzeigen' : isFrench ? 'Afficher les détails' : 'Show details'} (${marketingCookies.length})`}
             </span>
             {openSection === 'marketing' ? <FiChevronUp /> : <FiChevronDown />}
           </div>
@@ -506,7 +515,7 @@ const CookieSettingsModal = () => {
                 : 'bg-gray-200 hover:bg-gray-300 text-gray-800 border border-gray-300'
             }`}
           >
-            {isUrdu ? 'ترجیحات محفوظ کریں' : isGerman ? 'Auswahl speichern' : 'Save Preferences'}
+            {isUrdu ? 'ترجیحات محفوظ کریں' : isGerman ? 'Auswahl speichern' : isFrench ? 'Enregistrer les choix' : 'Save Preferences'}
           </button>
 
           <button
@@ -519,7 +528,7 @@ const CookieSettingsModal = () => {
               fontFamily: '"Bricolage Grotesque", sans-serif',
             }}
           >
-            <span>{isUrdu ? 'سب قبول کریں' : isGerman ? 'Alle akzeptieren' : 'Accept All'}</span>
+            <span>{isUrdu ? 'سب قبول کریں' : isGerman ? 'Alle akzeptieren' : isFrench ? 'Tout accepter' : 'Accept All'}</span>
           </button>
         </div>
       </div>

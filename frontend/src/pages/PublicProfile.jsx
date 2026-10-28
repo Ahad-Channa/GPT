@@ -12,7 +12,7 @@ const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 const container = { hidden: {}, show: { transition: { staggerChildren: 0.05 } } };
 const item = { hidden: { opacity: 0, y: 14 }, show: { opacity: 1, y: 0, transition: { duration: 0.3 } } };
 
-function timeAgo(dateStr) {
+function timeAgo(dateStr, locale = 'en-US') {
   const diff = Date.now() - new Date(dateStr).getTime();
   const m = Math.floor(diff / 60000);
   const h = Math.floor(diff / 3600000);
@@ -21,7 +21,7 @@ function timeAgo(dateStr) {
   if (m < 60) return `${m}m ago`;
   if (h < 24) return `${h}h ago`;
   if (d < 7)  return `${d}d ago`;
-  return new Date(dateStr).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  return new Date(dateStr).toLocaleDateString(locale, { month: 'short', day: 'numeric', year: 'numeric' });
 }
 
 const PublicProfile = () => {
@@ -158,7 +158,7 @@ const PublicProfile = () => {
                           {offer.description}
                         </p>
                         <p className="text-[11px] text-slate-500 mt-1">
-                          {timeAgo(offer.createdAt)}
+                          {timeAgo(offer.createdAt, i18n?.language === 'fr' ? 'fr-FR' : (i18n?.language === 'de' ? 'de-DE' : 'en-US'))}
                         </p>
                       </div>
                     </div>
