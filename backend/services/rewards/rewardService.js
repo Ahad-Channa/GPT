@@ -46,6 +46,17 @@ const findExistingClickRewardTransaction = async ({ clickLog, transactionModel =
 const rewardExternalId = (conversionId) => `conversion:${conversionId}:reward`;
 const referralExternalId = (conversionId) => `conversion:${conversionId}:referral`;
 
+const SINGLE_STEP_LABEL = 'Offer Reward';
+
+// Human-readable direct-offer ledger label. The title is snapshotted on the
+// click; the goal label comes from the trusted click-time goal snapshot.
+const buildDirectOfferRewardDescription = ({ offerTitle, stepLabel } = {}) => {
+  const title = String(offerTitle || '').trim();
+  const step = String(stepLabel || '').trim() || SINGLE_STEP_LABEL;
+  if (!title) return `Direct offer reward`;
+  return `${title} - ${step}`;
+};
+
 const applyUpdate = (doc, update = {}) => {
   if (!doc || !update.$set) return doc;
   Object.assign(doc, update.$set);
@@ -290,6 +301,21 @@ const processReward = async ({
         directOfferConfig: directOffer,
       });
 
+      const goalSnapshot = claimed.goalKey ? clickLog.goalsSnapshot?.[claimed.goalKey] : null;
+      const stepLabel = claimed.goalKey
+        ? String(goalSnapshot?.label || claimed.goalKey).trim()
+        : SINGLE_STEP_LABEL;
+      const offerTitle = String(clickLog.offerTitle || directOffer?.title || '').trim();
+      const isDirectOffer = Boolean(
+        claimed.offerId ||
+        clickLog.offerId ||
+        claimed.providerId === 'direct' ||
+        claimed.campaignType === 'direct_offer'
+      );
+      const description = isDirectOffer
+        ? buildDirectOfferRewardDescription({ offerTitle, stepLabel })
+        : `Direct offer reward${clickLog.offerId ? '' : ' conversion'}`;
+
       const { transaction: rewardTx } = await createTransactionIdempotent({
         transactionModel,
         session,
@@ -298,10 +324,10 @@ const processReward = async ({
           transactionType: 'direct_offer_reward',
           amount: rewardAmount,
           balanceAfter: balanceBefore,
-          description: `Direct offer reward${clickLog.offerId ? '' : ' conversion'}`,
+          description,
           status: 'pending',
           holdUntil: holdDecision.holdUntil,
-          sourceType: 'offer',
+          sourceType: isDirectOffer ? 'direct_offer' : 'offer',
           sourceId: claimed.offerId || clickLog.offerId || claimed.campaignId || null,
           conversionId: claimed._id,
           metadata: {
@@ -310,6 +336,9 @@ const processReward = async ({
             advertiserTransactionId: claimed.providerTransactionId,
             advertiserPayout: claimed.payout?.amount || 0,
             goalKey: claimed.goalKey || null,
+            offerTitle,
+            stepLabel,
+            goalLabel: claimed.goalKey ? stepLabel : null,
             walletApplied: false,
             holdApplied: holdDecision.status === 'hold',
             holdDays: holdDecision.holdDays,
@@ -424,6 +453,7 @@ const processReward = async ({
 
 module.exports = {
   processReward,
+  buildDirectOfferRewardDescription,
   referralExternalId,
   rewardExternalId,
   findExistingClickRewardTransaction,

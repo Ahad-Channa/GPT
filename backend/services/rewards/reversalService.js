@@ -9,6 +9,13 @@ const { referralExternalId, rewardExternalId } = require('./rewardService');
 const reversalExternalId = (conversionId) => `conversion:${conversionId}:reversal`;
 const referralReversalExternalId = (conversionId) => `conversion:${conversionId}:referral-reversal`;
 
+const buildChargebackDescription = (rewardTransaction) => {
+  const title = String(rewardTransaction?.metadata?.offerTitle || '').trim();
+  const stepLabel = String(rewardTransaction?.metadata?.stepLabel || rewardTransaction?.metadata?.goalLabel || '').trim();
+  if (!title) return 'Offer reward reversed';
+  return `Chargeback - ${title}${stepLabel ? ` - ${stepLabel}` : ''}`;
+};
+
 const queryOne = async (query, session) => withSession(query, session);
 
 const findTransactionByExternalId = (transactionModel, externalId, session) =>
@@ -193,7 +200,7 @@ const processReversal = async ({
           transactionType: 'chargeback',
           amount: reversalAmount,
           balanceAfter: user.walletBalance || 0,
-          description: 'Offer reward reversed',
+          description: buildChargebackDescription(rewardTx),
           status: 'pending',
           sourceType: 'chargeback',
           sourceId: rewardTx._id,
@@ -284,6 +291,7 @@ const processReversal = async ({
 
 module.exports = {
   processReversal,
+  buildChargebackDescription,
   referralReversalExternalId,
   reversalExternalId,
 };

@@ -28,6 +28,8 @@ import AdminPromoCodes from './pages/admin/AdminPromoCodes';
 import AdminCustomOffers from './pages/admin/AdminCustomOffers';
 import AdminGoodpicksOffers from './pages/admin/AdminGoodpicksOffers';
 import AdminDirectOffers from './pages/admin/AdminDirectOffers';
+import AdminPartnerIntegration from './pages/admin/AdminPartnerIntegration';
+import AdminTestingGuides from './pages/admin/AdminTestingGuides';
 import AdminProviders from './pages/admin/AdminProviders';
 import AdminConversions from './pages/admin/AdminConversions';
 import AdminPostbackLogs from './pages/admin/AdminPostbackLogs';
@@ -249,6 +251,8 @@ function App() {
           <Route path="featured-offers" element={<AdminCustomOffers />} />
           <Route path="goodpicks-offers" element={<AdminGoodpicksOffers />} />
           <Route path="direct-offers" element={<AdminDirectOffers />} />
+          <Route path="partner-integration" element={<AdminPartnerIntegration />} />
+          <Route path="testing-guides" element={<AdminTestingGuides />} />
           <Route path="providers" element={<AdminProviders />} />
           <Route path="conversions" element={<AdminConversions />} />
           <Route path="postback-logs" element={<AdminPostbackLogs />} />

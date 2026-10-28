@@ -512,6 +512,7 @@
     "statusRejected": "Rejected",
     "txOfferReward": "Offer Reward",
     "txCustomOffer": "Custom Offer",
+    "txDirectOffer": "Direct Offer",
     "txDailyBonus": "Daily Bonus",
     "txPromoCode": "Promo Code",
     "txReferral": "Referral",

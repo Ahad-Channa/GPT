@@ -43,6 +43,7 @@ const { processReward, findExistingClickRewardTransaction } = require('../servic
 const { processReversal } = require('../services/rewards/reversalService');
 const { createOrResolveConversion, findCreditedConversionForClickLog } = require('../services/tracking/conversionService');
 const { buildDirectOfferProviderConfig } = require('../services/tracking/directOfferProvider');
+const { syncManualProofSubmissionStatus } = require('../services/tracking/manualProofService');
 
 const PROVIDER_TYPES = ['offerwall', 'direct', 'affiliate_network', 'advertiser', 'internal'];
 const SECURITY_METHODS = ['none', 'shared_secret', 'md5', 'sha1', 'sha256', 'sha512', 'hmac', 'token', 'custom_adapter'];
@@ -283,10 +284,18 @@ const serializeProviderConfig = (provider) => {
 
 const sanitizeDirectOfferAdmin = (offer) => {
   const doc = typeof offer.toObject === 'function' ? offer.toObject() : { ...offer };
+  doc.trackingMode = doc.trackingMode === 'manual' ? 'manual' : 'postback';
   doc.postbackSecretConfigured = Boolean(doc.postbackSecretKey);
   delete doc.postbackSecretKey;
   return doc;
 };
+
+const normalizeTrackingMode = (value, fallback = 'postback') => {
+  if (value === undefined) return fallback;
+  return value === 'manual' ? 'manual' : 'postback';
+};
+
+const parseDirectOfferProofInstructions = (value) => cleanString(value, 1000);
 
 const parseOptionalHoldInteger = (value, label) => {
   if (value === undefined || value === null || value === '') return null;
@@ -1288,7 +1297,7 @@ router.delete('/goodpicks-offers/:id', requirePermission('manage_offerwalls'), a
 
 router.get('/custom-offers/submissions/all', requirePermission('manage_offerwalls'), async (req, res) => {
   try {
-    const submissions = await CustomOfferSubmission.find()
+    const submissions = await CustomOfferSubmission.find({ offerType: { $ne: 'direct_offer' } })
       .populate('userId', 'email displayName')
       .populate('offerId', 'title rewardAmount')
       .sort({ createdAt: -1 });
@@ -1311,6 +1320,9 @@ router.put('/custom-offers/submissions/:id', requirePermission('manage_offerwall
     if (!submission) {
       console.log(`[Approval] Submission not found: ${req.params.id}`);
       return res.status(404).json({ success: false, error: 'Submission not found' });
+    }
+    if (submission.offerType === 'direct_offer') {
+      return res.status(400).json({ success: false, error: 'Manual Direct Offers must be reviewed from the Direct Offers proof queue.' });
     }
 
     console.log(`[Approval] Found submission. Current status: ${submission.status}`);
@@ -2354,6 +2366,14 @@ router.post('/conversions/:id/approve', requirePermission('manage_offerwalls'), 
       result: rewardResult.duplicate ? 'duplicate' : (rewardResult.ok ? 'accepted' : 'error'),
     });
 
+    if (rewardResult.ok) {
+      try {
+        await syncManualProofSubmissionStatus({ conversion: fresh || conversion, status: 'approved', adminNote: '' });
+      } catch (syncError) {
+        console.error('[Admin] Failed to sync manual proof approval:', syncError);
+      }
+    }
+
     if (!rewardResult.ok) return res.status(400).json({ success: false, error: rewardResult.reason || 'Conversion could not be approved', conversion: serializeConversionAdmin(responseConversion) });
     res.json({ success: true, conversion: serializeConversionAdmin(responseConversion), duplicate: Boolean(rewardResult.duplicate) });
   } catch (error) {
@@ -2421,6 +2441,12 @@ router.post('/conversions/:id/reject', requirePermission('manage_offerwalls'), a
       result: wasRejected ? 'duplicate' : 'rejected',
     });
 
+    try {
+      await syncManualProofSubmissionStatus({ conversion: fresh || conversion, status: 'rejected', adminNote: reason });
+    } catch (syncError) {
+      console.error('[Admin] Failed to sync manual proof rejection:', syncError);
+    }
+
     res.json({ success: true, conversion: serializeConversionAdmin(responseConversion), duplicate: wasRejected });
   } catch (error) {
     console.error('[/api/admin/conversions/:id/reject] Error:', error);
@@ -2487,6 +2513,14 @@ router.post('/conversions/:id/chargeback', requirePermission('manage_offerwalls'
       reason,
       result: reversalResult.duplicate ? 'duplicate' : (reversalResult.ok ? 'accepted' : 'error'),
     });
+
+    if (reversalResult.ok) {
+      try {
+        await syncManualProofSubmissionStatus({ conversion: fresh || conversion, status: 'chargebacked', adminNote: reason });
+      } catch (syncError) {
+        console.error('[Admin] Failed to sync manual proof chargeback:', syncError);
+      }
+    }
 
     if (!reversalResult.ok) return res.status(400).json({ success: false, error: reversalResult.reason || 'Conversion could not be reversed', conversion: serializeConversionAdmin(responseConversion) });
     res.json({ success: true, conversion: serializeConversionAdmin(responseConversion), duplicate: Boolean(reversalResult.duplicate) });
@@ -2638,7 +2672,7 @@ router.post('/notifications/mark-read', async (req, res) => {
 router.get('/proofs', requirePermission('manage_offerwalls'), async (req, res) => {
   try {
     // 1. Get Custom Offer Submissions that are 'pending'
-    const pendingCustomOfferSubs = await CustomOfferSubmission.find({ status: 'pending' })
+    const pendingCustomOfferSubs = await CustomOfferSubmission.find({ status: 'pending', offerType: { $ne: 'direct_offer' } })
       .populate('userId', 'displayName email avatarUrl')
       .populate('offerId', 'title rewardAmount')
       .sort({ updatedAt: 1 })
@@ -2699,7 +2733,7 @@ router.get('/proofs/history', requirePermission('manage_offerwalls'), async (req
     const fetchAmount = skipNum + limitNum + 1; // +1 to check if there is a next page
     
     // 1. Get Processed Custom Offer Submissions
-    const processedSubs = await CustomOfferSubmission.find({ status: { $in: ['approved', 'rejected', 'chargebacked'] } })
+    const processedSubs = await CustomOfferSubmission.find({ status: { $in: ['approved', 'rejected', 'chargebacked'] }, offerType: { $ne: 'direct_offer' } })
       .populate('userId', 'displayName email avatarUrl')
       .populate('offerId', 'title rewardAmount')
       .sort({ updatedAt: -1 })
@@ -2777,6 +2811,9 @@ router.post('/proofs/:type/:id/chargeback', requirePermission('manage_offerwalls
     if (type === 'custom_offer') {
       const submission = await CustomOfferSubmission.findById(id).populate('offerId');
       if (!submission) return res.status(404).json({ success: false, error: 'Submission not found' });
+      if (submission.offerType === 'direct_offer') {
+        return res.status(400).json({ success: false, error: 'Manual Direct Offer chargebacks must use the Conversions page.' });
+      }
       if (submission.status !== 'approved') return res.status(400).json({ success: false, error: 'Only approved proofs can be charged back' });
 
       targetUserId = submission.userId;
@@ -2915,6 +2952,9 @@ router.post('/proofs/:type/:id/:action', requirePermission('manage_offerwalls'),
       // but we can re-implement the short version here for completeness or just update it
       const submission = await CustomOfferSubmission.findById(id).populate('offerId');
       if (!submission) return res.status(404).json({ success: false, error: 'Submission not found' });
+      if (submission.offerType === 'direct_offer') {
+        return res.status(400).json({ success: false, error: 'Manual Direct Offers must be reviewed from the Direct Offers proof queue.' });
+      }
       if (submission.status !== 'pending') return res.status(400).json({ success: false, error: 'Not in pending state' });
 
       if (action === 'approve') {
@@ -3243,6 +3283,9 @@ router.get('/direct-offers/:id/postback-url', requirePermission('manage_offerwal
   try {
     const offer = await DirectOffer.findById(req.params.id);
     if (!offer) return res.status(404).json({ success: false, error: 'Direct offer not found' });
+    if (offer.trackingMode === 'manual') {
+      return res.status(400).json({ success: false, error: 'Manual offers do not use postback URLs.' });
+    }
     res.json({
       success: true,
       postbackUrl: buildDirectOfferPostbackUrl(offer, directOfferPostbackBaseUrl(req)),
@@ -3250,6 +3293,57 @@ router.get('/direct-offers/:id/postback-url', requirePermission('manage_offerwal
   } catch (error) {
     console.error('[/api/admin/direct-offers/:id/postback-url GET] Error:', error);
     res.status(500).json({ success: false, error: 'Failed to build direct offer postback URL' });
+  }
+});
+
+// GET /api/admin/direct-offers/proofs — Manual Direct Offer proof queue/history
+router.get('/direct-offers/proofs', requirePermission('manage_offerwalls'), async (req, res) => {
+  try {
+    const status = cleanString(req.query.status, 30) || 'pending';
+    const filter = { offerType: 'direct_offer' };
+    if (status === 'pending') filter.status = 'pending';
+    else if (status === 'history') filter.status = { $in: ['approved', 'rejected', 'chargebacked'] };
+    else if (status !== 'all') return res.status(400).json({ success: false, error: 'Invalid proof status filter' });
+
+    const submissions = await CustomOfferSubmission.find(filter)
+      .populate('directOfferId', 'title titleDe rewardAmount trackingMode')
+      .populate('userId', 'displayName email avatarUrl')
+      .populate('conversionId', 'internalStatus processingState rewardTransactionId reversalTransactionId')
+      .sort({ updatedAt: status === 'history' ? -1 : 1 })
+      .limit(200)
+      .lean();
+
+    res.json({
+      success: true,
+      proofs: submissions.map((submission) => ({
+        _id: submission._id,
+        status: submission.status,
+        adminNote: submission.adminNote,
+        proofText: submission.proofText,
+        proofImage: submission.proofImage,
+        proofImages: submission.proofImages || [],
+        clickId: submission.clickId,
+        submittedAt: submission.updatedAt,
+        createdAt: submission.createdAt,
+        offer: submission.directOfferId ? {
+          _id: submission.directOfferId._id,
+          title: submission.directOfferId.title,
+          titleDe: submission.directOfferId.titleDe,
+          rewardAmount: submission.directOfferId.rewardAmount,
+        } : null,
+        user: submission.userId ? {
+          _id: submission.userId._id,
+          displayName: submission.userId.displayName,
+          email: submission.userId.email,
+          avatarUrl: submission.userId.avatarUrl,
+        } : null,
+        conversion: submission.conversionId || null,
+        conversionId: submission.conversionId?._id || null,
+      })),
+    });
+  } catch (error) {
+    console.error('[/api/admin/direct-offers/proofs GET] Error:', error);
+    res.status(500).json({ success: false, error: 'Failed to fetch manual proofs' });
   }
 });
 
@@ -3261,17 +3355,23 @@ router.post('/direct-offers', requirePermission('manage_offerwalls'), async (req
       advertiserUrl, isActive, expirationDate, icon, coverImage,
       platforms, requirements, requirementsDe, requirementType, postbackMapping, allowedCountries, displayPlacements, goals,
       maxTotalClicks, holdEnabled, holdDays, holdThreshold,
+      trackingMode, proofInstructions, proofInstructionsDe,
     } = req.body;
 
     if (!title || !description || !rewardAmount || !advertiserUrl) {
       return res.status(400).json({ success: false, error: 'title, description, rewardAmount, and advertiserUrl are required' });
     }
 
+    const normalizedTrackingMode = normalizeTrackingMode(trackingMode);
+
     const offer = await DirectOffer.create({
       title,
       titleDe: titleDe || '',
       description,
       descriptionDe: descriptionDe || '',
+      trackingMode: normalizedTrackingMode,
+      proofInstructions: parseDirectOfferProofInstructions(proofInstructions),
+      proofInstructionsDe: parseDirectOfferProofInstructions(proofInstructionsDe),
       rewardAmount: Number(rewardAmount),
       holdEnabled: holdEnabled === true,
       holdDays: parseOptionalHoldInteger(holdDays, 'Hold days') ?? 30,
@@ -3310,6 +3410,7 @@ router.put('/direct-offers/:id', requirePermission('manage_offerwalls'), async (
       advertiserUrl, isActive, expirationDate, icon, coverImage,
       platforms, requirements, requirementsDe, requirementType, postbackMapping, allowedCountries, displayPlacements, goals,
       maxTotalClicks, holdEnabled, holdDays, holdThreshold,
+      trackingMode, proofInstructions, proofInstructionsDe,
     } = req.body;
 
     const offer = await DirectOffer.findByIdAndUpdate(
@@ -3319,6 +3420,9 @@ router.put('/direct-offers/:id', requirePermission('manage_offerwalls'), async (
         ...(titleDe !== undefined && { titleDe }),
         ...(description !== undefined && { description }),
         ...(descriptionDe !== undefined && { descriptionDe }),
+        ...(trackingMode !== undefined && { trackingMode: normalizeTrackingMode(trackingMode) }),
+        ...(proofInstructions !== undefined && { proofInstructions: parseDirectOfferProofInstructions(proofInstructions) }),
+        ...(proofInstructionsDe !== undefined && { proofInstructionsDe: parseDirectOfferProofInstructions(proofInstructionsDe) }),
         ...(rewardAmount !== undefined && { rewardAmount: Number(rewardAmount) }),
         ...(holdEnabled !== undefined && { holdEnabled: holdEnabled === true }),
         ...(holdDays !== undefined && { holdDays: parseOptionalHoldInteger(holdDays, 'Hold days') ?? 30 }),
@@ -3471,6 +3575,9 @@ router.post('/click-logs/:clickId/approve', requirePermission('manage_offerwalls
 
     const offer = await DirectOffer.findById(clickLog.offerId?._id || clickLog.offerId);
     if (!offer) return res.status(404).json({ success: false, error: 'Offer not found' });
+    if (offer.trackingMode === 'manual') {
+      return res.status(400).json({ success: false, error: 'Manual offers must be approved from the manual proof queue.' });
+    }
 
     const enabledGoals = Array.isArray(offer.goals) ? offer.goals.filter((goal) => goal && goal.enabled !== false) : [];
     if (enabledGoals.length > 0) {
@@ -3560,6 +3667,9 @@ router.post('/click-logs/:clickId/reject', requirePermission('manage_offerwalls'
     }
     if (clickLog.status === 'rejected') {
       return res.status(400).json({ success: false, error: 'Click already rejected' });
+    }
+    if (clickLog.offerId?.trackingMode === 'manual') {
+      return res.status(400).json({ success: false, error: 'Manual offers must be reviewed from the manual proof queue.' });
     }
 
     const existingCreditedConversion = await findCreditedConversionForClickLog({ clickLogId: clickLog._id });

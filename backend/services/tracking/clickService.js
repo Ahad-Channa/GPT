@@ -162,6 +162,7 @@ const createClick = async ({
   trackingParams = {},
   rewardAmount,
   rewardSnapshot = {},
+  offerTitle = '',
   goalsSnapshot = null,
   destinationUrl,
   clickIdParam = 'click_id',
@@ -199,6 +200,7 @@ const createClick = async ({
         redirectUrl,
         status: 'clicked',
         rewardAmount,
+        offerTitle: String(offerTitle || '').slice(0, 250),
         rewardSnapshot,
         goalsSnapshot,
       });
@@ -255,8 +257,10 @@ const createDirectOfferClick = async ({
       currency: 'coins',
       source: 'direct_offer.rewardAmount',
     },
+    offerTitle: offer.title || '',
+    // Manual offers always reward as single-step through the manual proof flow.
     // null when the offer has no enabled goals (single-step offers unchanged).
-    goalsSnapshot: buildGoalsSnapshot(offer.goals),
+    goalsSnapshot: offer.trackingMode === 'manual' ? null : buildGoalsSnapshot(offer.goals),
     destinationUrl: offer.advertiserUrl,
     clickIdParam: offer.postbackMapping?.clickIdParam || 'click_id',
     clickLogModel,

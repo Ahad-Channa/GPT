@@ -10,6 +10,9 @@ const directOfferGoalSchema = new mongoose.Schema(
     labelDe: { type: String, trim: true, default: '' },
     description: { type: String, trim: true, default: '' },
     descriptionDe: { type: String, trim: true, default: '' },
+    // External partner event identifier (e.g. Plarium "Game Event 269").
+    externalEventId: { type: String, trim: true, default: '' },
+    externalEventAliases: { type: [String], default: [] },
     rewardAmount: { type: Number, required: true, min: 0 },
     payoutAmount: { type: Number, default: 0, min: 0 },
     // Display-only label (e.g. "3D"). Not an expiry/deadline; no enforcement.
@@ -25,6 +28,16 @@ const directOfferSchema = new mongoose.Schema(
     titleDe: { type: String, default: '' },
     description: { type: String, required: true },
     descriptionDe: { type: String, default: '' },
+    // 'postback' keeps the original automatic S2S tracking. 'manual' uses the
+    // manual proof submission workflow instead and never accepts postbacks.
+    // Historical documents without this field are treated as postback.
+    trackingMode: {
+      type: String,
+      enum: ['postback', 'manual'],
+      default: 'postback',
+    },
+    proofInstructions: { type: String, default: '' },
+    proofInstructionsDe: { type: String, default: '' },
     rewardAmount: { type: Number, required: true }, // Coins to credit user on approval
     // Optional offer-specific earning hold policy. Only active when holdEnabled
     // is true; otherwise the global earningHoldConfig applies. Shared by the

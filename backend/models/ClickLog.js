@@ -109,6 +109,9 @@ const clickLogSchema = new mongoose.Schema(
       index: true,
     },
     rewardAmount: { type: Number, required: true }, // Snapshot of offer reward at click time
+    // Human-readable offer title captured at click time so reward/chargeback
+    // descriptions remain meaningful even after an offer is renamed/removed.
+    offerTitle: { type: String, default: '' },
     rewardSnapshot: {
       amount: { type: Number, default: null },
       currency: { type: String, default: 'coins' },
