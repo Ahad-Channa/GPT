@@ -19,7 +19,7 @@ const buildDirectOfferProviderConfig = (offer) => {
       eventType: mapping.eventTypeParam || 'event_type',
     },
     statusMappings: {
-      pending: [mapping.pendingValue || 'pending'],
+      pending: ['pending'],
       approved: [mapping.approvedValue || 'approved'],
       rejected: [mapping.rejectedValue || 'rejected'],
       reversed: [mapping.reversedValue || mapping.chargebackValue || 'reversed', mapping.chargebackValue].filter(Boolean),

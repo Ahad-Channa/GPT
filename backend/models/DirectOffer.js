@@ -91,6 +91,7 @@ const directOfferSchema = new mongoose.Schema(
       transactionIdParam: { type: String, default: 'txn_id' },     // Query param for advertiser's transaction ID
       payoutParam:        { type: String, default: 'payout' },     // Query param for payout/revenue amount
       statusParam:        { type: String, default: 'status' },     // Query param for conversion status
+      eventTypeParam:     { type: String, trim: true, default: 'event_type' }, // Query param for event / goal ID
       approvedValue:      { type: String, default: 'approved' },   // Value that means "approved"
       rejectedValue:      { type: String, default: 'rejected' },   // Value that means "rejected"
       reversedValue:      { type: String, default: 'reversed' },   // Value that means "reversal/chargeback"
