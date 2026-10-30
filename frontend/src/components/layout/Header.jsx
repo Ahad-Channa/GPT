@@ -838,7 +838,7 @@ const Header = ({ onChatToggle, chatOpen, fullWidth }) => {
 
       {/* Group 2: Main Links (Desktop) */}
       <div
-        className={`hidden lg:flex items-center relative ${isUrdu ? 'left-0' : (isGerman || isFrench ? '-left-[90px]' : '-left-[70px]')}`}
+        className={`hidden lg:flex items-center relative ${isUrdu ? '-left-[60px]' : (isFrench ? '-left-[60px]' : (isGerman ? '-left-[75px]' : '-left-[70px]'))}`}
         style={{
           width: 'auto',
           height: '20px',

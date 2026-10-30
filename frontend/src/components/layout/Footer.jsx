@@ -12,6 +12,7 @@ const Footer = () => {
   const { openCookieSettings } = useCookieConsent();
   const { t, i18n } = useTranslation();
   const isDe = i18n?.language?.startsWith('de');
+  const isFr = i18n?.language?.startsWith('fr');
   const isUr = i18n?.language === 'ur' || i18n?.language?.startsWith('ur');
   const [isMobile, setIsMobile] = useState(
     typeof window !== 'undefined' ? window.innerWidth < 1024 : false
@@ -366,8 +367,8 @@ const Footer = () => {
                             : "/coins/footer urdu light mobil.png"
                           )
                         : (isDarkMode
-                            ? (isDe ? "/coins/wybt german black mobile.png" : "/coins/wybt eng black.png")
-                            : (isDe ? "/coins/image copy 19 german.png" : "/coins/image copy 19.png")
+                            ? (isFr ? "/coins/footherdarkmobilefranch.png" : (isDe ? "/coins/wybt german black mobile.png" : "/coins/wybt eng black.png"))
+                            : (isFr ? "/coins/footherlightmobilefranch.png" : (isDe ? "/coins/image copy 19 german.png" : "/coins/image copy 19.png"))
                           )
                       )
                     : (isUr
@@ -376,13 +377,13 @@ const Footer = () => {
                             : "/coins/footer urdu light desktop.png"
                           )
                         : (isDarkMode
-                            ? (isDe ? "/coins/footerimageblackgerman.png" : "/coins/footerimageblackenglish.png")
-                            : (isDe ? "/coins/image copy 17 german.png" : "/coins/image copy 17.png")
+                            ? (isFr ? "/coins/footherdarkfranch.png" : (isDe ? "/coins/footerimageblackgerman.png" : "/coins/footerimageblackenglish.png"))
+                            : (isFr ? "/coins/footherlightfranch.png" : (isDe ? "/coins/image copy 17 german.png" : "/coins/image copy 17.png"))
                           )
                       )
                 }
                 alt="Top Earner Graphic"
-                className="pointer-events-none w-full h-full object-contain lg:object-right"
+                className="pointer-events-none w-full h-full object-contain lg:object-right rounded-[20px] lg:rounded-[24px]"
                 style={{
                   width: isMobile ? 424 : '100%',
                   height: isMobile ? 'auto' : '100%',
