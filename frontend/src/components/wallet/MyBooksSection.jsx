@@ -882,7 +882,7 @@ const OrderModal = ({ book, onClose, onSuccess, balance }) => {
                       value={form.fullName}
                       onChange={e => set('fullName', e.target.value)}
                       placeholder={t('withdraw.enterFullName', 'Enter your full name')}
-                      className={`w-full px-5 xs:px-6 text-[14px] xs:text-[15px] focus:outline-none focus:ring-2 focus:ring-slate-400/50 border-none transition-all rounded-[50px] h-[52px] xs:h-[54px] md:h-[58px] box-border ${
+                      className={`w-full px-5 xs:px-6 text-[14px] xs:text-[15px] focus:outline-none focus:ring-2 focus:ring-inset focus:ring-slate-400/50 border-none transition-all rounded-[50px] h-[52px] xs:h-[54px] md:h-[58px] box-border ${
                         isDarkMode
                           ? 'bg-[rgba(23,26,29,1)] text-white placeholder:text-white/40'
                           : 'bg-[#EFEFEF] text-[#000000] placeholder:text-[#9CA3AF]'
@@ -910,7 +910,7 @@ const OrderModal = ({ book, onClose, onSuccess, balance }) => {
                       value={form.email}
                       onChange={e => set('email', e.target.value)}
                       placeholder={t('withdraw.enterEmailPlaceholder', 'Enter your email address')}
-                      className={`w-full px-5 xs:px-6 text-[14px] xs:text-[15px] focus:outline-none focus:ring-2 focus:ring-slate-400/50 border-none transition-all rounded-[50px] h-[52px] xs:h-[54px] md:h-[58px] box-border ${
+                      className={`w-full px-5 xs:px-6 text-[14px] xs:text-[15px] focus:outline-none focus:ring-2 focus:ring-inset focus:ring-slate-400/50 border-none transition-all rounded-[50px] h-[52px] xs:h-[54px] md:h-[58px] box-border ${
                         isDarkMode
                           ? 'bg-[rgba(23,26,29,1)] text-white placeholder:text-white/40'
                           : 'bg-[#EFEFEF] text-[#000000] placeholder:text-[#9CA3AF]'
@@ -970,7 +970,7 @@ const OrderModal = ({ book, onClose, onSuccess, balance }) => {
                       value={form.city}
                       onChange={e => set('city', e.target.value)}
                       placeholder={t('withdraw.enterCity', 'Enter your city')}
-                      className={`w-full px-5 xs:px-6 text-[14px] xs:text-[15px] focus:outline-none focus:ring-2 focus:ring-slate-400/50 border-none transition-all rounded-[50px] h-[52px] xs:h-[54px] md:h-[58px] box-border ${
+                      className={`w-full px-5 xs:px-6 text-[14px] xs:text-[15px] focus:outline-none focus:ring-2 focus:ring-inset focus:ring-slate-400/50 border-none transition-all rounded-[50px] h-[52px] xs:h-[54px] md:h-[58px] box-border ${
                         isDarkMode
                           ? 'bg-[rgba(23,26,29,1)] text-white placeholder:text-white/40'
                           : 'bg-[#EFEFEF] text-[#000000] placeholder:text-[#9CA3AF]'
@@ -998,7 +998,7 @@ const OrderModal = ({ book, onClose, onSuccess, balance }) => {
                       value={form.zipcode}
                       onChange={e => set('zipcode', e.target.value)}
                       placeholder={t('withdraw.enterZipcode', 'Enter zip code')}
-                      className={`w-full px-5 xs:px-6 text-[14px] xs:text-[15px] focus:outline-none focus:ring-2 focus:ring-slate-400/50 border-none transition-all rounded-[50px] h-[52px] xs:h-[54px] md:h-[58px] box-border ${
+                      className={`w-full px-5 xs:px-6 text-[14px] xs:text-[15px] focus:outline-none focus:ring-2 focus:ring-inset focus:ring-slate-400/50 border-none transition-all rounded-[50px] h-[52px] xs:h-[54px] md:h-[58px] box-border ${
                         isDarkMode
                           ? 'bg-[rgba(23,26,29,1)] text-white placeholder:text-white/40'
                           : 'bg-[#EFEFEF] text-[#000000] placeholder:text-[#9CA3AF]'
@@ -1062,7 +1062,7 @@ const OrderModal = ({ book, onClose, onSuccess, balance }) => {
                     animate={{ height: 'auto', opacity: 1 }}
                     exit={{ height: 0, opacity: 0 }}
                     transition={{ duration: 0.2 }}
-                    className="overflow-hidden mt-1"
+                    className="overflow-hidden mt-1 pb-1.5 pt-0.5"
                   >
                     <div className="flex flex-col gap-1.5 w-full text-left">
                       <label
@@ -1080,7 +1080,7 @@ const OrderModal = ({ book, onClose, onSuccess, balance }) => {
                         value={form.signatureName}
                         onChange={e => set('signatureName', e.target.value)}
                         placeholder={t('withdraw.enterNameForSignature', 'Enter name for signature')}
-                        className={`w-full px-5 xs:px-6 text-[14px] xs:text-[15px] focus:outline-none focus:ring-2 focus:ring-slate-400/50 border-none transition-all rounded-[50px] h-[52px] xs:h-[54px] md:h-[58px] box-border ${
+                        className={`w-full px-5 xs:px-6 text-[14px] xs:text-[15px] focus:outline-none focus:ring-2 focus:ring-inset focus:ring-slate-400/50 border-none transition-all rounded-[50px] h-[52px] xs:h-[54px] md:h-[58px] box-border ${
                           isDarkMode
                             ? 'bg-[rgba(23,26,29,1)] text-white placeholder:text-white/40'
                             : 'bg-[#EFEFEF] text-[#000000] placeholder:text-[#9CA3AF]'

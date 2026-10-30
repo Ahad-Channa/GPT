@@ -422,9 +422,9 @@ const Home = () => {
               className="flex items-center justify-center w-full mx-auto -mt-[8px] mb-8 md:mb-4 lg:mb-8 px-4"
             >
               <div
-                className="flex items-center justify-between sm:justify-around lg:justify-between w-full max-w-[490px] lg:max-w-[430px] px-8 sm:px-14 lg:px-0 lg:pl-[34px] lg:pr-[26px] py-3 sm:py-4 lg:pt-3.5 lg:pb-2.5 gap-6 sm:gap-12 lg:gap-4 rounded-b-[70px] lg:rounded-b-[65px] transition-all"
+                className="flex items-center justify-center w-auto max-w-full px-8 sm:px-12 lg:px-12 py-3 sm:py-4 lg:pt-3.5 lg:pb-3 gap-6 sm:gap-10 lg:gap-10 rounded-b-[70px] lg:rounded-b-[65px] transition-all"
                 style={{
-                  width: '100%',
+                  width: 'auto',
                   background: isDarkMode ? 'rgba(12, 14, 17, 1)' : 'rgba(255, 255, 255, 1)',
                   boxShadow: isDarkMode ? '0px 10px 30px -5px rgba(0, 0, 0, 0.4)' : '0px 10px 30px -5px rgba(0, 0, 0, 0.06)',
                 }}
