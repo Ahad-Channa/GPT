@@ -4,6 +4,9 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { FiX, FiCheck, FiChevronDown, FiExternalLink, FiLoader } from 'react-icons/fi';
 import { FaAndroid, FaApple, FaDesktop } from 'react-icons/fa';
 import { BsQrCode } from 'react-icons/bs';
+import { formatGoalTimeLimit } from '../../utils/goalTimeLimit';
+import { isOfferClickLimitReached } from '../../utils/offerClickLimit';
+import { ProofUploadView } from './ProofUploadView';
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
@@ -194,6 +197,68 @@ const defaultGoodpicksHistory = [
 
 const isIconUrl = (icon) => icon && (icon.startsWith('http') || icon.startsWith('data:') || icon.includes('/') || icon.startsWith('fa-'));
 
+const formatCoins = (amount) => Number(amount || 0).toLocaleString('de-DE');
+const formatDirectGoalRequirement = (goal, isDe = false) => {
+  const label = (isDe && goal.labelDe) ? goal.labelDe : (goal.label || goal.goalKey || 'Complete step');
+  return isDe
+    ? `${label} \u2192 ${formatCoins(goal.rewardAmount)} Coins erhalten`
+    : `${label} \u2192 receive ${formatCoins(goal.rewardAmount)} coins`;
+};
+
+const isRequirementCompleted = (requirement) => {
+  if (!requirement || typeof requirement !== 'object') return false;
+  return requirement.completed === true || requirement.credited === true || requirement.status === 'approved';
+};
+
+const directOfferGoalsToRequirements = (offer, isDe = false) => {
+  const goals = Array.isArray(offer?.goals) ? offer.goals.filter(goal => goal && goal.enabled !== false) : [];
+  if (goals.length === 0) {
+    return isDe && Array.isArray(offer?.requirementsDe) && offer.requirementsDe.length > 0
+      ? offer.requirementsDe
+      : (offer.requirements || []);
+  }
+
+  return goals.map((goal) => {
+    return formatDirectGoalRequirement(goal, isDe);
+  });
+};
+
+// A goal row is completed only when the backend reports that exact goalKey in
+// completedGoalKeys (credited milestones). No local/click-based inference.
+const directGoalIsCompleted = (offer, goal) => {
+  const key = goal?.goalKey;
+  if (!key) return false;
+  return Array.isArray(offer?.completedGoalKeys) && offer.completedGoalKeys.includes(key);
+};
+
+const directOfferGoalsToRequirementRows = (offer, isDe = false) => {
+  const goals = Array.isArray(offer?.goals) ? offer.goals.filter(goal => goal && goal.enabled !== false) : [];
+  if (goals.length === 0) {
+    return isDe && Array.isArray(offer?.requirementsDe) && offer.requirementsDe.length > 0
+      ? offer.requirementsDe
+      : (offer.requirements || []);
+  }
+  return goals.map((goal) => {
+    return {
+      label: formatDirectGoalRequirement(goal, isDe),
+      completed: directGoalIsCompleted(offer, goal),
+      timeLimitDays: goal.timeLimitDays,
+    };
+  });
+};
+
+const mapDirectOfferForGoodpicks = (offer) => {
+  const isManual = offer.trackingMode === 'manual';
+  return {
+    ...offer,
+    __direct: true,
+    externalLink: offer.advertiserUrl,
+    requirementType: !isManual && offer.goals?.some(goal => goal && goal.enabled !== false) ? 'bullets' : 'paragraph',
+    requirements: isManual ? (offer.requirements || []) : directOfferGoalsToRequirementRows(offer),
+    requirementsDe: isManual ? (offer.requirementsDe || []) : directOfferGoalsToRequirementRows(offer, true),
+  };
+};
+
 const renderOfferCover = (offer) => {
   const imgSrc = offer?.coverImage || (isIconUrl(offer?.icon) ? offer?.icon : null);
   const emoji = !imgSrc && offer?.icon ? offer?.icon : null;
@@ -234,7 +299,8 @@ export const GoodpicksDetailModal = ({ offer, onClose, token }) => {
   const isDe = i18n.language?.startsWith('de');
   const isFr = i18n.language?.startsWith('fr');
   const isUr = i18n.language?.startsWith('ur');
-  const title = (isUr && offer.titleUr) ? offer.titleUr : ((isDe && offer.titleDe) ? offer.titleDe : ((isFr && offer.titleFr) ? offer.titleFr : offer.title));
+  const baseTitle = (isDe && offer.titleDe) ? offer.titleDe : offer.title;
+  const title = (isUr && offer.titleUr) ? offer.titleUr : ((isFr && offer.titleFr) ? offer.titleFr : baseTitle);
   const description = (isUr && offer.descriptionUr) ? offer.descriptionUr : ((isDe && offer.descriptionDe) ? offer.descriptionDe : ((isFr && offer.descriptionFr) ? offer.descriptionFr : (offer.description || t('goodpicks.defaultDescription'))));
   const requirementsList = (isUr && offer.requirementsUr && offer.requirementsUr.length > 0)
     ? offer.requirementsUr
@@ -246,12 +312,62 @@ export const GoodpicksDetailModal = ({ offer, onClose, token }) => {
 
   const [loading, setLoading] = useState(false);
   const [showSupportModal, setShowSupportModal] = useState(false);
+  const [actionError, setActionError] = useState('');
+  const [proofStarted, setProofStarted] = useState(false);
+  const [proofMessage, setProofMessage] = useState(null);
+  const [submissionStatus, setSubmissionStatus] = useState(offer?.submissionStatus || null);
 
   if (!offer) return null;
 
+  const isManual = offer.trackingMode === 'manual';
+  const proofInstructions = isDe && offer.proofInstructionsDe
+    ? offer.proofInstructionsDe
+    : offer.proofInstructions;
   const rewardFormatted = (offer.rewardAmount || 0).toLocaleString('de-DE');
+  const limitReached = isOfferClickLimitReached(offer);
 
-  const handleStartOffer = () => {
+  const handleStartOffer = async () => {
+    // Tracked direct-offer click (Branded Offerwall placement) — no frontend reward logic.
+    if (offer.__direct && offer._id) {
+      if (!token) {
+        console.error('Cannot start tracked offer without auth token.');
+        return;
+      }
+      if (limitReached) {
+        setActionError('This offer has reached its click limit.');
+        return;
+      }
+      try {
+        setLoading(true);
+        setActionError('');
+        const res = await fetch(`${API}/direct-offers/click/${offer._id}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+          body: JSON.stringify({ placement: 'brandedOfferwall' }),
+        });
+        const data = await res.json();
+        if (data.success && data.url) {
+          window.open(data.url, '_blank', 'noopener,noreferrer');
+          if (isManual) {
+            setProofStarted(true);
+            if (data.submissionStatus) setSubmissionStatus(data.submissionStatus);
+          }
+          return;
+        }
+        if (data.limitReached) {
+          setActionError('This offer has reached its click limit.');
+        } else {
+          setActionError(data.error || 'Could not start this offer.');
+        }
+      } catch (err) {
+        console.error('Failed to start tracked offer:', err);
+        setActionError('Could not start this offer.');
+      } finally {
+        setLoading(false);
+      }
+      return;
+    }
+
     if (offer.externalLink) {
       window.open(offer.externalLink, '_blank', 'noopener,noreferrer');
     }
@@ -551,7 +667,7 @@ export const GoodpicksDetailModal = ({ offer, onClose, token }) => {
                 key={i}
                 className={`flex items-center gap-3.5 ${i > 0 ? 'pt-3' : ''}`}
               >
-                {i === 0 ? (
+                {isRequirementCompleted(req) ? (
                   <div
                     style={{
                       width: '26px',
@@ -587,8 +703,25 @@ export const GoodpicksDetailModal = ({ offer, onClose, token }) => {
                     color: '#0F172A',
                   }}
                 >
-                  {req}
+                  {typeof req === 'object' ? (req.label || req.title || req.text || '') : req}
                 </span>
+                {typeof req === 'object' && formatGoalTimeLimit(req.timeLimitDays) && (
+                  <span
+                    style={{
+                      marginLeft: 'auto',
+                      flexShrink: 0,
+                      padding: '2px 8px',
+                      borderRadius: '999px',
+                      background: '#1E293B',
+                      color: '#FFFFFF',
+                      fontFamily: '"Poppins", sans-serif',
+                      fontSize: '12px',
+                      fontWeight: 700,
+                    }}
+                  >
+                    {formatGoalTimeLimit(req.timeLimitDays)}
+                  </span>
+                )}
               </div>
             ))
           ) : (
@@ -598,16 +731,11 @@ export const GoodpicksDetailModal = ({ offer, onClose, token }) => {
                   width: '26px',
                   height: '26px',
                   borderRadius: '50%',
-                  background: '#1E293B',
-                  color: '#FFFFFF',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
+                  border: '1.5px solid #CBD5E1',
+                  background: '#FFFFFF',
                   flexShrink: 0,
                 }}
-              >
-                <FiCheck size={14} strokeWidth={3} />
-              </div>
+              />
               <span
                 style={{
                   fontFamily: '"Poppins", sans-serif',
@@ -622,9 +750,68 @@ export const GoodpicksDetailModal = ({ offer, onClose, token }) => {
           )}
         </div>
 
+        {isManual && proofInstructions && (
+          <div
+            style={{
+              background: '#EFF6FF',
+              border: '1px solid rgba(59,130,246,0.25)',
+              borderRadius: '14px',
+              padding: '12px',
+            }}
+            className="shrink-0"
+          >
+            <p style={{ fontFamily: '"Poppins", sans-serif', fontWeight: 700, fontSize: '13px', color: '#0F172A', margin: '0 0 4px' }}>
+              {isDe ? 'Nachweis-Anweisungen' : 'Proof Instructions'}
+            </p>
+            <p style={{ fontFamily: '"Poppins", sans-serif', fontSize: '12px', color: '#334155', margin: 0, whiteSpace: 'pre-wrap' }}>
+              {proofInstructions}
+            </p>
+          </div>
+        )}
+
+        {isManual && submissionStatus === 'pending' && (
+          <div style={{ textAlign: 'center', color: '#0369A1', fontSize: '12px', fontWeight: 600 }}>
+            {isDe ? 'Nachweis eingereicht – wartet auf Prüfung.' : 'Proof submitted – awaiting admin review.'}
+          </div>
+        )}
+        {isManual && submissionStatus === 'approved' && (
+          <div style={{ textAlign: 'center', color: '#047857', fontSize: '12px', fontWeight: 600 }}>
+            {isDe ? 'Dieses Angebot wurde bereits genehmigt.' : 'This offer has already been approved.'}
+          </div>
+        )}
+        {isManual && submissionStatus === 'rejected' && offer.adminNote && (
+          <div style={{ textAlign: 'center', color: '#BE123C', fontSize: '12px', fontWeight: 600 }}>
+            {isDe ? 'Abgelehnt' : 'Rejected'}: {offer.adminNote}
+          </div>
+        )}
+        {isManual && proofStarted && submissionStatus !== 'pending' && submissionStatus !== 'approved' && (
+          <div style={{ background: '#0e1726', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '14px', padding: '12px' }} className="shrink-0">
+            <ProofUploadView
+              offer={offer}
+              token={token}
+              API={API}
+              submitUrl={`${API}/direct-offers/${offer._id}/submit`}
+              setResult={setProofMessage}
+              onSubmitted={() => setSubmissionStatus('pending')}
+            />
+          </div>
+        )}
+        {proofMessage?.message && (
+          <div style={{ textAlign: 'center', color: proofMessage.type === 'error' ? '#B91C1C' : '#047857', fontSize: '12px', fontWeight: 600 }}>
+            {proofMessage.message}
+          </div>
+        )}
+
+        {actionError && (
+          <div style={{ textAlign: 'center', color: '#B91C1C', fontSize: '12px', fontWeight: 600 }}>
+            {actionError}
+          </div>
+        )}
+
         {/* Start Offer Button */}
         <button
           onClick={handleStartOffer}
+          disabled={loading || limitReached}
           style={{
             width: '100%',
             height: '48px',
@@ -635,7 +822,8 @@ export const GoodpicksDetailModal = ({ offer, onClose, token }) => {
             fontWeight: 600,
             fontSize: '15px',
             border: 'none',
-            cursor: 'pointer',
+            cursor: (loading || limitReached) ? 'not-allowed' : 'pointer',
+            opacity: (loading || limitReached) ? 0.7 : 1,
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
@@ -643,7 +831,7 @@ export const GoodpicksDetailModal = ({ offer, onClose, token }) => {
           }}
           className="hover:bg-[#151B24] transition-all shadow-md shrink-0"
         >
-          {t('goodpicks.startOffer')}
+          {limitReached ? 'Click limit reached' : t('goodpicks.startOffer')}
         </button>
 
         {/* General Offer Rules Section */}
@@ -933,10 +1121,22 @@ export const GoodpicksOfferwallModal = ({ onClose, token }) => {
   const [sortBy, setSortBy] = useState('highest'); // 'highest' | 'lowest' | 'newest'
   const [selectedOffer, setSelectedOffer] = useState(null);
 
-  // Fetch Goodpicks offers from API (fall back to mock items)
+  // Branded Offerwall offers come from the same DirectOffer source as Featured
+  // Offers (displayPlacements.brandedOfferwall) and use the same click tracking
+  // endpoint. The legacy Goodpicks CMS is only a fallback for offline content.
   useEffect(() => {
     const fetchOffers = async () => {
       try {
+        if (token) {
+          const res = await fetch(`${API}/direct-offers?placement=brandedOfferwall`, {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          const data = await res.json();
+          if (data.success && data.offers && data.offers.length > 0) {
+            setOffers(data.offers.map(mapDirectOfferForGoodpicks));
+            return;
+          }
+        }
         const res = await fetch(`${API}/goodpicks-offers`);
         const data = await res.json();
         if (data.success && data.offers && data.offers.length > 0) {
@@ -952,7 +1152,7 @@ export const GoodpicksOfferwallModal = ({ onClose, token }) => {
       }
     };
     fetchOffers();
-  }, []);
+  }, [token]);
 
   // Filter offers by platform
   const filteredOffers = offers.filter((offer) => {
@@ -1147,7 +1347,8 @@ export const GoodpicksOfferwallModal = ({ onClose, token }) => {
               <div className="flex-1 flex flex-col gap-2 pb-4 w-full">
                 {historyOffers && historyOffers.length > 0 ? (
                   historyOffers.map((item) => {
-                    const itemTitle = (isUr && item.titleUr) ? item.titleUr : ((isDe && item.titleDe) ? item.titleDe : ((isFr && item.titleFr) ? item.titleFr : item.title));
+                    const baseItemTitle = (isDe && item.titleDe) ? item.titleDe : item.title;
+                    const itemTitle = (isUr && item.titleUr) ? item.titleUr : ((isFr && item.titleFr) ? item.titleFr : baseItemTitle);
                     const itemDesc = (isUr && item.descriptionUr) ? item.descriptionUr : ((isDe && item.descriptionDe) ? item.descriptionDe : ((isFr && item.descriptionFr) ? item.descriptionFr : (item.description || t('goodpicks.defaultDescription'))));
                     const rewardStr = (item.rewardAmount || 0).toLocaleString('de-DE');
 
@@ -1399,7 +1600,8 @@ export const GoodpicksOfferwallModal = ({ onClose, token }) => {
                   <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 items-start gap-2 md:gap-2.5 pb-4 w-full">
                     {sortedOffers.map((offer) => {
                       const rewardStr = (offer.rewardAmount || 0).toLocaleString('de-DE');
-                      const cardTitle = (isUr && offer.titleUr) ? offer.titleUr : ((isDe && offer.titleDe) ? offer.titleDe : ((isFr && offer.titleFr) ? offer.titleFr : offer.title));
+                      const baseCardTitle = (isDe && offer.titleDe) ? offer.titleDe : offer.title;
+                      const cardTitle = (isUr && offer.titleUr) ? offer.titleUr : ((isFr && offer.titleFr) ? offer.titleFr : baseCardTitle);
                       const cardDesc = (isUr && offer.descriptionUr) ? offer.descriptionUr : ((isDe && offer.descriptionDe) ? offer.descriptionDe : ((isFr && offer.descriptionFr) ? offer.descriptionFr : (offer.description || t('goodpicks.defaultDescription'))));
 
                       return (

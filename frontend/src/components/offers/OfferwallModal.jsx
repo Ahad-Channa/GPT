@@ -1,13 +1,12 @@
 import { useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FiX } from 'react-icons/fi';
+import { FiExternalLink, FiX } from 'react-icons/fi';
 import { useTheme } from '../../contexts/ThemeContext';
 import { buildProviderUrl, getProviderLogo } from './OfferCards';
 import { GoodpicksOfferwallModal } from './GoodpicksModal';
 
-export const OfferwallModal = ({ provider, userId, onClose }) => {
+export const OfferwallModal = ({ provider, userId, token, onClose }) => {
   const { isDarkMode } = useTheme();
-
   useEffect(() => {
     if (provider) {
       document.body.style.overflow = 'hidden';
@@ -23,7 +22,7 @@ export const OfferwallModal = ({ provider, userId, onClose }) => {
 
   // Goodpicks is our in-house custom offerwall matching Figma specs
   if (provider.id === 'goodpicks') {
-    return <GoodpicksOfferwallModal onClose={onClose} />;
+    return <GoodpicksOfferwallModal onClose={onClose} token={token} />;
   }
 
   const url = buildProviderUrl(provider, userId);
@@ -103,26 +102,53 @@ export const OfferwallModal = ({ provider, userId, onClose }) => {
             </div>
 
             {/* Right: Black Circular Close Button */}
-            <button
-              onClick={onClose}
-              style={{
-                width: '24px',
-                height: '24px',
-                borderRadius: '50%',
-                background: '#000000',
-                color: '#FFFFFF',
-                border: 'none',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                cursor: 'pointer',
-                padding: 0,
-              }}
-              className="hover:opacity-85 active:scale-95 shrink-0 z-10"
-              title="Close"
-            >
-              <FiX size={12} />
-            </button>
+            <div className="flex items-center gap-2 shrink-0 z-10">
+              {provider.id === 'lootably' && url && (
+                <button
+                  type="button"
+                  onClick={() => window.open(url, '_blank', 'noopener,noreferrer')}
+                  style={{
+                    width: '24px',
+                    height: '24px',
+                    borderRadius: '50%',
+                    background: '#FFFFFF',
+                    color: '#000000',
+                    border: '1px solid rgba(0,0,0,0.12)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    cursor: 'pointer',
+                    padding: 0,
+                  }}
+                  className="hover:opacity-85 active:scale-95"
+                  title="Open Lootably in new tab"
+                  aria-label="Open Lootably in new tab"
+                >
+                  <FiExternalLink size={12} />
+                </button>
+              )}
+              <button
+                onClick={onClose}
+                style={{
+                  width: '24px',
+                  height: '24px',
+                  borderRadius: '50%',
+                  background: '#000000',
+                  color: '#FFFFFF',
+                  border: 'none',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  cursor: 'pointer',
+                  padding: 0,
+                }}
+                className="hover:opacity-85 active:scale-95"
+                title="Close"
+                aria-label="Close offerwall"
+              >
+                <FiX size={12} />
+              </button>
+            </div>
           </div>
 
           {/* ── Body: Offerwall Iframe Area ── */}
@@ -177,6 +203,19 @@ export const OfferwallModal = ({ provider, userId, onClose }) => {
               </div>
             )}
           </div>
+
+          {provider.id === 'lootably' && url && (
+            <div className="w-full shrink-0 flex items-center justify-center gap-1.5 text-[11px] text-slate-500">
+              <span>Having trouble?</span>
+              <button
+                type="button"
+                onClick={() => window.open(url, '_blank', 'noopener,noreferrer')}
+                className="font-semibold text-indigo-600 hover:text-indigo-500 underline underline-offset-2"
+              >
+                Open Lootably in a new tab
+              </button>
+            </div>
+          )}
         </motion.div>
       </motion.div>
     </AnimatePresence>

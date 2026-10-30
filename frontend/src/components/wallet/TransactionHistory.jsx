@@ -18,6 +18,7 @@ import {
 const TX_TYPES = {
   offer_reward:       { label: 'Offer Reward',       icon: FiZap,            color: 'text-indigo-400',  badge: 'badge-indigo',   sign: '+' },
   custom_offer_reward:{ label: 'Custom Offer',       icon: FiZap,            color: 'text-indigo-400',  badge: 'badge-indigo',   sign: '+' },
+  direct_offer_reward:{ label: 'Direct Offer',       icon: FiZap,            color: 'text-indigo-400',  badge: 'badge-indigo',   sign: '+' },
   daily_bonus:        { label: 'Daily Bonus',         icon: FiStar,           color: 'text-amber-400',   badge: 'badge-amber',    sign: '+' },
   referral_reward:    { label: 'Referral Reward',     icon: FiUsers,          color: 'text-cyan-400',    badge: 'badge-cyan',     sign: '+' },
   withdrawal:         { label: 'Withdrawal',          icon: FiArrowDownCircle,color: 'text-red-400',     badge: 'badge-red',      sign:  '' },
@@ -41,6 +42,7 @@ const FILTER_OPTIONS = [
   { value: 'all',                 label: 'All Activity' },
   { value: 'offer_reward',        label: 'Offer Rewards' },
   { value: 'custom_offer_reward', label: 'Custom Offers' },
+  { value: 'direct_offer_reward', label: 'Direct Offers' },
   { value: 'daily_bonus',         label: 'Daily Bonus' },
   { value: 'referral_reward',     label: 'Referrals' },
   { value: 'withdrawal',          label: 'Withdrawals' },
@@ -203,6 +205,9 @@ const TransactionHistory = ({ refreshKey = 0, onStatsLoaded }) => {
               const isRefundRejected = /^Withdrawal Refund/i.test(tx.description || '') || /Request rejected/i.test(tx.description || '');
               const displayStatus = isRefundRejected ? 'rejected' : tx.status;
               const statusC = STATUS_COLORS[displayStatus] || STATUS_COLORS.completed;
+              const preferDescription = ['direct_offer_reward', 'chargeback'].includes(tx.transactionType) && Boolean(tx.description);
+              const primaryLabel = preferDescription ? tx.description : config.label;
+              const secondaryDescription = tx.description && tx.description !== primaryLabel ? tx.description : null;
 
               return (
                 <motion.div
@@ -214,7 +219,7 @@ const TransactionHistory = ({ refreshKey = 0, onStatsLoaded }) => {
                   {/* Label + description */}
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-1.5 flex-wrap">
-                      <p className="text-sm font-semibold text-slate-200 leading-none">{config.label}</p>
+                      <p className="text-sm font-semibold text-slate-200 leading-none">{primaryLabel}</p>
                       {displayStatus !== 'completed' && (
                         <span className={`${statusC.text} text-[10px] font-mono flex items-center gap-1`}>
                           <span className={`w-1.5 h-1.5 rounded-full ${statusC.dot}`} />
@@ -222,7 +227,7 @@ const TransactionHistory = ({ refreshKey = 0, onStatsLoaded }) => {
                         </span>
                       )}
                     </div>
-                    <p className="text-xs text-slate-500 truncate mt-0.5">{tx.description}</p>
+                    {secondaryDescription && <p className="text-xs text-slate-500 truncate mt-0.5">{secondaryDescription}</p>}
                     {tx.fee > 0 && (
                       <p className="text-[10px] text-slate-600 mt-0.5 flex items-center gap-1">Fee: <CoinDisplay amount={tx.fee} size={10} /></p>
                     )}

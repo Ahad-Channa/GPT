@@ -7,6 +7,8 @@ import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ProviderCard, OfferwallCard, FeaturedOfferCard, FeaturedOfferModal } from '../components/offers/OfferCards';
+import { DirectOfferCard, DirectOfferModal } from '../components/offers/DirectOfferCard';
+import { buildOfferwallSections } from '../utils/providerOrder';
 import OfferwallModal from '../components/offers/OfferwallModal';
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
@@ -85,6 +87,7 @@ const TabButton = ({ active, onClick, iconSrc, label, isDarkMode }) => {
 const homeCache = {
   settings: null,
   customOffers: null,
+  directOffers: null,
   tasksDone: null,
   globalStats: null,
 };
@@ -108,18 +111,20 @@ const Home = () => {
 
   const [settings, setSettings] = useState(() => homeCache.settings);
   const [customOffers, setCustomOffers] = useState(() => homeCache.customOffers || []);
+  const [directOffers, setDirectOffers] = useState(() => homeCache.directOffers || []);
   const [loadingSettings, setLoadingSettings] = useState(() => !homeCache.settings);
-  const [loadingOffers, setLoadingOffers] = useState(() => !homeCache.customOffers);
+  const [loadingOffers, setLoadingOffers] = useState(() => !homeCache.customOffers || !homeCache.directOffers);
   const [token, setToken] = useState(null);
 
   const [activeProvider, setActiveProvider] = useState(null);
   const [filter, setFilter] = useState('all');
   const [selectedOffer, setSelectedOffer] = useState(null);
+  const [selectedDirectOffer, setSelectedDirectOffer] = useState(null);
 
-  const allFeaturedOffers = customOffers;
+  const allFeaturedOffers = [...directOffers, ...customOffers];
 
   useEffect(() => {
-    if (activeProvider || selectedOffer) {
+    if (activeProvider || selectedOffer || selectedDirectOffer) {
       document.body.style.overflow = 'hidden';
     } else {
       document.body.style.overflow = '';
@@ -127,7 +132,7 @@ const Home = () => {
     return () => {
       document.body.style.overflow = '';
     };
-  }, [activeProvider, selectedOffer]);
+  }, [activeProvider, selectedOffer, selectedDirectOffer]);
 
 
   const featuredRef = useRef(null);
@@ -210,12 +215,14 @@ const Home = () => {
         const fetchDashboardStats = token ? fetch(`${API}/wallet/dashboard-stats`, { headers }).then(r => r.json()).catch(() => null) : Promise.resolve(null);
         const fetchWalletSettings = token ? fetch(`${API}/wallet/settings`, { headers }).then(r => r.json()).catch(() => null) : Promise.resolve(null);
         const fetchCustomOffers = token ? fetch(`${API}/custom-offers`, { headers }).then(r => r.json()).catch(() => null) : Promise.resolve(null);
+        const fetchDirectOffers = token ? fetch(`${API}/direct-offers?placement=featured`, { headers }).then(r => r.json()).catch(() => null) : Promise.resolve(null);
 
-        const [publicStatsData, dashStatsData, settingsData, customData] = await Promise.all([
+        const [publicStatsData, dashStatsData, settingsData, customData, directData] = await Promise.all([
           fetchPublicStats,
           fetchDashboardStats,
           fetchWalletSettings,
           fetchCustomOffers,
+          fetchDirectOffers,
         ]);
 
         if (!isMounted) return;
@@ -251,6 +258,15 @@ const Home = () => {
           homeCache.customOffers = visibleOffers;
           setCustomOffers(visibleOffers);
         }
+
+        if (directData?.success && Array.isArray(directData.offers)) {
+          const now = new Date();
+          const visibleOffers = directData.offers
+            .filter(o => !o.expirationDate || new Date(o.expirationDate) >= now)
+            .map(o => ({ ...o, __direct: true }));
+          homeCache.directOffers = visibleOffers;
+          setDirectOffers(visibleOffers);
+        }
       } catch (err) {
         console.error('Failed to load dashboard data:', err);
       } finally {
@@ -279,42 +295,9 @@ const Home = () => {
 
   const enabledProviders = settings?.offerwalls || [];
 
-  const defaultSurveyList = [
-    { id: 'cpx', label: 'CPX Research', category: 'surveys', enabled: true },
-    { id: 'primeearn', label: 'Prime Surveys', category: 'surveys', enabled: true },
-    { id: 'adscend', label: 'AdscendMedia', category: 'surveys', enabled: true },
-  ];
-
-  const defaultBase8 = [
-    { id: 'adgem', label: 'AdGem', category: 'gaming', enabled: true },
-    { id: 'torox', label: 'Torox', category: 'gaming', enabled: true },
-    { id: 'lootably', label: 'Lootably', category: 'mixed', enabled: true },
-    { id: 'cpx', label: 'CPX Research', category: 'surveys', enabled: true },
-    { id: 'primeearn', label: 'Prime Surveys', category: 'surveys', enabled: true },
-    { id: 'ayet', label: 'Ayet Studios', category: 'mixed', enabled: true },
-    { id: 'adtowall', label: 'AdToWall', category: 'mixed', enabled: true },
-    { id: 'revu', label: 'Revu', category: 'mixed', enabled: true },
-  ];
-
-  const baseProviders = enabledProviders.filter(p => p.id !== 'goodpicks');
-  const combinedBase = [...baseProviders];
-  for (const def of defaultBase8) {
-    if (!combinedBase.some(p => p.id === def.id)) {
-      combinedBase.push(def);
-    }
-  }
-
-  const goodpicksItem = enabledProviders.find(p => p.id === 'goodpicks') || {
-    id: 'goodpicks',
-    label: 'Goodpicks',
-    category: 'gaming',
-    enabled: true
-  };
-
-  const surveyProviders = [...defaultSurveyList, goodpicksItem];
-
-  // 9 items total: 4 on line 1, 4 on line 2, and Goodpicks as the 9th at start of line 3
-  const gamingProviders = [...combinedBase.slice(0, 8), goodpicksItem];
+  // Order is authoritative from the backend settings response; the shared
+  // helper only appends true fallback providers that are absent from config.
+  const { surveys: surveyProviders, gaming: gamingProviders } = buildOfferwallSections({ enabledProviders });
 
   const tabs = [
     {
@@ -614,12 +597,21 @@ const Home = () => {
                     >
                       {displayFeaturedOffers.map((offer) => (
                         <div key={offer._id} className="shrink-0 w-[181.14px]">
-                          <FeaturedOfferCard
-                            offer={offer}
-                            onClick={() => {
-                              if (!hasMovedRef.current && !hasMovedDrag) setSelectedOffer(offer);
-                            }}
-                          />
+                          {offer.__direct ? (
+                            <DirectOfferCard
+                              offer={offer}
+                              onClick={() => {
+                                if (!hasMovedRef.current && !hasMovedDrag) setSelectedDirectOffer(offer);
+                              }}
+                            />
+                          ) : (
+                            <FeaturedOfferCard
+                              offer={offer}
+                              onClick={() => {
+                                if (!hasMovedRef.current && !hasMovedDrag) setSelectedOffer(offer);
+                              }}
+                            />
+                          )}
                         </div>
                       ))}
                     </div>
@@ -790,6 +782,7 @@ const Home = () => {
           <OfferwallModal
             provider={activeProvider}
             userId={mongoUser?._id}
+            token={token}
             onClose={() => setActiveProvider(null)}
           />
         )}
@@ -799,6 +792,18 @@ const Home = () => {
             offer={selectedOffer}
             token={token}
             onClose={() => setSelectedOffer(null)}
+          />
+        )}
+
+        {selectedDirectOffer && (
+          <DirectOfferModal
+            offer={selectedDirectOffer}
+            token={token}
+            placement="featured"
+            onClose={() => setSelectedDirectOffer(null)}
+            onClicked={(offerId) => setDirectOffers(prev =>
+              prev.map(o => o._id === offerId ? { ...o, clickStatus: 'clicked' } : o)
+            )}
           />
         )}
       </AnimatePresence>

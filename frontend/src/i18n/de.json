@@ -518,6 +518,7 @@
     "statusRejected": "Abgelehnt",
     "txOfferReward": "Angebotsbelohnung",
     "txCustomOffer": "Benutzerdefiniertes Angebot",
+    "txDirectOffer": "Direktes Angebot",
     "txDailyBonus": "Täglicher Bonus",
     "txPromoCode": "Gutscheincode",
     "txReferral": "Empfehlung",

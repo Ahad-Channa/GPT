@@ -1350,6 +1350,7 @@ const CustomizationModal = ({ isOpen, onClose, mongoUser, token, setMongoUser })
 const TX_TYPE_KEY = {
   offer_reward: 'profile.txOfferReward',
   custom_offer_reward: 'profile.txCustomOffer',
+  direct_offer_reward: 'profile.txDirectOffer',
   daily_bonus: 'profile.txDailyBonus',
   promo_code: 'profile.txPromoCode',
   referral_reward: 'profile.txReferral',

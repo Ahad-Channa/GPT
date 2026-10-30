@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const { ensureOfferwallOrder } = require('../utils/offerwallOrder');
 
 const settingsSchema = new mongoose.Schema(
   {
@@ -100,6 +101,17 @@ const settingsSchema = new mongoose.Schema(
           enabled: { type: Boolean, default: false },
           conversionRatio: { type: Number, default: 100 },
           secretConfigured: { type: Boolean, default: false },
+          iframeUrl: { type: String, default: '' },
+          offerwallUrl: { type: String, default: '' },
+          placementId: { type: String, default: '' },
+          // Optional provider-specific earning hold policy. Only active when
+          // holdEnabled is true; otherwise the global earningHoldConfig applies.
+          holdEnabled: { type: Boolean, default: false },
+          holdDays: { type: Number, default: 30, min: 0 },
+          holdThreshold: { type: Number, default: 0, min: 0 },
+          // Admin-controlled display order (lower shows first). null = unset and
+          // resolved to the current array index on read for old documents.
+          order: { type: Number, default: null },
           category: {
             type: String,
             enum: ['surveys', 'gaming', 'mixed'],
@@ -108,15 +120,16 @@ const settingsSchema = new mongoose.Schema(
         }
       ],
       default: [
-        { id: 'goodpicks', label: 'Goodpicks', enabled: true, conversionRatio: 100, secretConfigured: false, category: 'gaming' },
-        { id: 'lootably', label: 'Lootably', enabled: true, conversionRatio: 100, secretConfigured: false, category: 'mixed' },
-        { id: 'primeearn', label: 'Prime Surveys', enabled: true, conversionRatio: 100, secretConfigured: false, category: 'surveys' },
-        { id: 'torox', label: 'Torox', enabled: true, conversionRatio: 100, secretConfigured: false, category: 'gaming' },
-        { id: 'revu', label: 'Revu', enabled: true, conversionRatio: 100, secretConfigured: false, category: 'mixed' },
-        { id: 'adtowall', label: 'AdToWall', enabled: true, conversionRatio: 100, secretConfigured: false, category: 'mixed' },
-        { id: 'cpx', label: 'CPX Research', enabled: true, conversionRatio: 100, secretConfigured: false, category: 'surveys' },
-        { id: 'adgem', label: 'AdGem', enabled: true, conversionRatio: 100, secretConfigured: false, category: 'gaming' },
-        { id: 'ayet', label: 'Ayet Studios', enabled: true, conversionRatio: 100, secretConfigured: false, category: 'mixed' },
+        { id: 'goodpicks', label: 'Goodpicks', enabled: true, conversionRatio: 100, secretConfigured: false, order: 0, category: 'gaming' },
+        { id: 'lootably', label: 'Lootably', enabled: true, conversionRatio: 100, secretConfigured: false, order: 1, category: 'mixed', placementId: process.env.LOOTABLY_PLACEMENT_ID || '', iframeUrl: process.env.LOOTABLY_IFRAME_URL || '', offerwallUrl: process.env.LOOTABLY_OFFERWALL_URL || '' },
+        { id: 'primeearn', label: 'Prime Surveys', enabled: true, conversionRatio: 100, secretConfigured: false, order: 2, category: 'surveys' },
+        { id: 'torox', label: 'Torox', enabled: true, conversionRatio: 100, secretConfigured: false, order: 3, category: 'gaming' },
+        { id: 'revu', label: 'Revu', enabled: true, conversionRatio: 100, secretConfigured: false, order: 4, category: 'mixed' },
+        { id: 'adtowall', label: 'AdToWall', enabled: true, conversionRatio: 100, secretConfigured: false, order: 5, category: 'mixed' },
+        { id: 'cpx', label: 'CPX Research', enabled: true, conversionRatio: 100, secretConfigured: false, order: 6, category: 'surveys' },
+        { id: 'adgem', label: 'AdGem', enabled: true, conversionRatio: 100, secretConfigured: false, order: 7, category: 'gaming' },
+        { id: 'ayet', label: 'Ayet Studios', enabled: true, conversionRatio: 100, secretConfigured: false, order: 8, category: 'mixed' },
+        { id: 'adscend', label: 'AdscendMedia', enabled: true, conversionRatio: 100, secretConfigured: false, order: 9, category: 'surveys' },
       ]
     },
     // Block D — Leaderboard Configuration
@@ -186,20 +199,41 @@ settingsSchema.statics.getSingleton = async function () {
     settings = await this.create({ _singleton: 'platform_settings' });
   } else if (settings.offerwallProviders) {
     const stdProviders = [
-      { id: 'goodpicks', label: 'Goodpicks', enabled: true, conversionRatio: 100, secretConfigured: false, category: 'gaming' },
-      { id: 'lootably', label: 'Lootably', enabled: true, conversionRatio: 100, secretConfigured: false, category: 'mixed' },
-      { id: 'primeearn', label: 'Prime Surveys', enabled: true, conversionRatio: 100, secretConfigured: false, category: 'surveys' },
-      { id: 'torox', label: 'Torox', enabled: true, conversionRatio: 100, secretConfigured: false, category: 'gaming' },
-      { id: 'revu', label: 'Revu', enabled: true, conversionRatio: 100, secretConfigured: false, category: 'mixed' },
-      { id: 'adtowall', label: 'AdToWall', enabled: true, conversionRatio: 100, secretConfigured: false, category: 'mixed' },
-      { id: 'cpx', label: 'CPX Research', enabled: true, conversionRatio: 100, secretConfigured: false, category: 'surveys' },
-      { id: 'adgem', label: 'AdGem', enabled: true, conversionRatio: 100, secretConfigured: false, category: 'gaming' },
-      { id: 'ayet', label: 'Ayet Studios', enabled: true, conversionRatio: 100, secretConfigured: false, category: 'mixed' },
+      { id: 'goodpicks', label: 'Goodpicks', enabled: true, conversionRatio: 100, secretConfigured: false, order: 0, category: 'gaming' },
+      { id: 'lootably', label: 'Lootably', enabled: true, conversionRatio: 100, secretConfigured: false, order: 1, category: 'mixed', placementId: process.env.LOOTABLY_PLACEMENT_ID || '', iframeUrl: process.env.LOOTABLY_IFRAME_URL || '', offerwallUrl: process.env.LOOTABLY_OFFERWALL_URL || '' },
+      { id: 'primeearn', label: 'Prime Surveys', enabled: true, conversionRatio: 100, secretConfigured: false, order: 2, category: 'surveys' },
+      { id: 'torox', label: 'Torox', enabled: true, conversionRatio: 100, secretConfigured: false, order: 3, category: 'gaming' },
+      { id: 'revu', label: 'Revu', enabled: true, conversionRatio: 100, secretConfigured: false, order: 4, category: 'mixed' },
+      { id: 'adtowall', label: 'AdToWall', enabled: true, conversionRatio: 100, secretConfigured: false, order: 5, category: 'mixed' },
+      { id: 'cpx', label: 'CPX Research', enabled: true, conversionRatio: 100, secretConfigured: false, order: 6, category: 'surveys' },
+      { id: 'adgem', label: 'AdGem', enabled: true, conversionRatio: 100, secretConfigured: false, order: 7, category: 'gaming' },
+      { id: 'ayet', label: 'Ayet Studios', enabled: true, conversionRatio: 100, secretConfigured: false, order: 8, category: 'mixed' },
+      { id: 'adscend', label: 'AdscendMedia', enabled: true, conversionRatio: 100, secretConfigured: false, order: 9, category: 'surveys' },
     ];
     let modified = false;
     for (const p of stdProviders) {
       if (!settings.offerwallProviders.some(existing => existing.id === p.id)) {
         settings.offerwallProviders.push(p);
+        modified = true;
+      }
+    }
+    // Backfill display order for pre-existing providers (non-destructive: uses
+    // the current array index so the visible order is unchanged for old installs).
+    if (ensureOfferwallOrder(settings.offerwallProviders)) {
+      modified = true;
+    }
+    const lootably = settings.offerwallProviders.find(existing => existing.id === 'lootably');
+    if (lootably) {
+      if (!lootably.placementId && process.env.LOOTABLY_PLACEMENT_ID) {
+        lootably.placementId = process.env.LOOTABLY_PLACEMENT_ID;
+        modified = true;
+      }
+      if (!lootably.iframeUrl && process.env.LOOTABLY_IFRAME_URL) {
+        lootably.iframeUrl = process.env.LOOTABLY_IFRAME_URL;
+        modified = true;
+      }
+      if (!lootably.offerwallUrl && process.env.LOOTABLY_OFFERWALL_URL) {
+        lootably.offerwallUrl = process.env.LOOTABLY_OFFERWALL_URL;
         modified = true;
       }
     }

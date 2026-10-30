@@ -4,10 +4,13 @@ const router = express.Router();
 const Settings = require('../models/Settings');
 const User = require('../models/User');
 const Transaction = require('../models/Transaction');
+const PostbackLog = require('../models/PostbackLog');
 const notify = require('../utils/notify');
 const { notifyAdmins } = require('../utils/adminNotify');
 const { emitWalletUpdate, emitToUser } = require('../utils/walletEvents');
 const { processVipLevelUp } = require('../utils/vipUtils');
+const { getEarningHoldDecision } = require('../utils/earningTypes');
+const { sanitizePostbackPayload } = require('../services/tracking/postbackSanitizer');
 
 const PROVIDER_SECRET_MAP = {
   cpx:       'CPX_HASH_KEY',
@@ -20,76 +23,205 @@ const PROVIDER_SECRET_MAP = {
   revu:      'REVU_SECRET',
 };
 
-// Generic Postback Handler
-const handlePostback = async (providerId, req, res, params) => {
+const isSafePostbackScalar = (value, maxLength = 128) =>
+  typeof value === 'string' && value.trim().length > 0 && value.trim().length <= maxLength;
+
+const parseLegacyProviderUnits = (value) => {
+  if (!isSafePostbackScalar(value, 64) || !/^-?\d+(\.\d+)?$/.test(value.trim())) return null;
+  const parsed = Number(value.trim());
+  return Number.isFinite(parsed) ? parsed : null;
+};
+
+const legacyPostbackRoute = (providerId) => `/api/offerwalls/postback/${providerId}`;
+
+const sanitizeLegacyQuery = (query = {}) => {
+  const safeQuery = { ...query };
+  if (Object.prototype.hasOwnProperty.call(safeQuery, 'security_token')) {
+    safeQuery.security_token = '[REDACTED]';
+  }
+  return sanitizePostbackPayload(safeQuery);
+};
+
+const writeLegacyLootablyPostbackLog = async ({
+  req,
+  userId,
+  transaction,
+  mappedFields = {},
+  processingResult,
+  isDuplicate = false,
+  rejectionReason = '',
+  security = {},
+}) => {
+  try {
+    await PostbackLog.create({
+      providerId: 'lootably',
+      route: legacyPostbackRoute('lootably'),
+      method: req.method || 'GET',
+      sanitizedQuery: sanitizeLegacyQuery(req.query || {}),
+      sanitizedBody: sanitizePostbackPayload(req.body || {}),
+      sanitizedHeaders: {},
+      mappedFields: {
+        transactionId: mappedFields.transactionId || '',
+        status: mappedFields.status || '',
+        payout: mappedFields.payout ?? null,
+        extra: mappedFields.extra || {},
+      },
+      sourceIp: req.ip || req.headers['x-forwarded-for'] || '',
+      userAgent: req.get ? (req.get('user-agent') || '') : '',
+      security: {
+        checked: security.checked !== false,
+        passed: Boolean(security.passed),
+        method: 'shared_secret',
+        reason: security.reason || '',
+      },
+      processingResult,
+      isDuplicate,
+      rejectionReason,
+      userId: userId || null,
+      transactionId: transaction?._id || transaction || null,
+    });
+  } catch (error) {
+    console.error('[Reward Engine] Failed to write Lootably PostbackLog:', error);
+  }
+};
+
+// Legacy offerwall compatibility handler.
+//
+// These existing provider routes do not currently resolve a stored ClickLog, so
+// Phase 4 intentionally keeps them isolated instead of treating provider-supplied
+// user IDs as the new generic standard. Later phases should migrate offerwall
+// traffic only after outbound offerwall clicks are tracked through clickService.
+// Phase 6 reward/reversal services require exact Conversion linkage, which these
+// legacy routes do not have yet; Phase 10 should migrate them once tracked clicks
+// exist for each provider.
+const handleLegacyOfferwallPostback = async (providerId, req, res, params) => {
+  const shouldLogLootably = providerId === 'lootably';
+  const logLootably = (payload) => shouldLogLootably
+    ? writeLegacyLootablyPostbackLog({ req, ...payload })
+    : Promise.resolve();
+
   try {
     const { userId, providerUnits, transactionId, secretParam } = params;
+    const baseMappedFields = {
+      transactionId: typeof transactionId === 'string' ? transactionId : '',
+      payout: typeof providerUnits === 'string' ? providerUnits : null,
+    };
 
     const settings = await Settings.getSingleton();
     const provider = settings.offerwallProviders.find((p) => p.id === providerId);
 
     // 2. If provider.enabled === false → return "1" silently (ignores unexpected postbacks)
     if (!provider || !provider.enabled) {
+      await logLootably({
+        mappedFields: { ...baseMappedFields, status: 'ignored' },
+        processingResult: 'ignored',
+        rejectionReason: 'Provider disabled or not configured.',
+        security: { checked: false, passed: false, reason: 'Provider disabled or not configured.' },
+      });
       return res.status(200).send('1');
     }
+
+    if (
+      !isSafePostbackScalar(userId) ||
+      !isSafePostbackScalar(transactionId) ||
+      !isSafePostbackScalar(secretParam, 256)
+    ) {
+      console.warn(`[Reward Engine] ${providerId} postback rejected because required values are malformed.`);
+      await logLootably({
+        mappedFields: { ...baseMappedFields, status: 'rejected' },
+        processingResult: 'rejected',
+        rejectionReason: 'Required values are malformed.',
+        security: { checked: true, passed: false, reason: 'Required values are malformed.' },
+      });
+      return res.status(401).send('0');
+    }
+    const normalizedUserId = userId.trim();
+    const normalizedTransactionId = transactionId.trim();
+    const normalizedSecretParam = secretParam.trim();
 
     // 3. Validate hash/secret
     const envSecretKey = PROVIDER_SECRET_MAP[providerId];
     const envSecret = process.env[envSecretKey];
 
     if (!envSecret) {
-      console.warn(`[Reward Engine] ${providerId} postback received but ${envSecretKey} is not set. Skipping validation (dev mode).`);
+      console.warn(`[Reward Engine] ${providerId} postback rejected because ${envSecretKey} is not configured.`);
+      await logLootably({
+        mappedFields: { ...baseMappedFields, transactionId: normalizedTransactionId, payout: providerUnits, status: 'rejected' },
+        processingResult: 'rejected',
+        rejectionReason: `${envSecretKey} is not configured.`,
+        security: { checked: true, passed: false, reason: `${envSecretKey} is not configured.` },
+      });
+      return res.status(401).send('0');
     } else {
       // Provider specific validation
       if (providerId === 'cpx') {
         // CPX MD5 validation: MD5(trans_id + "-" + secure_hash)
         const expectedHash = crypto.createHash('md5')
-          .update(`${transactionId}-${envSecret}`)
+          .update(`${normalizedTransactionId}-${envSecret}`)
           .digest('hex');
           
-        if (secretParam !== expectedHash) {
-          console.error(`[Reward Engine] CPX MD5 signature mismatch! Expected: ${expectedHash}, Got: ${secretParam}`);
+        if (normalizedSecretParam !== expectedHash) {
+          console.error(`[Reward Engine] CPX MD5 signature mismatch! Expected: ${expectedHash}, Got: ${normalizedSecretParam}`);
           return res.status(401).send('0');
         }
       } else {
         // Fallback for others that use a direct secret match until implemented individually
-        if (secretParam !== envSecret) {
-          // Temporarily bypassing direct match rejections in dev if others use complex signatures
-          // console.warn(`[Reward Engine] ${providerId} invalid secret attempt.`);
-          // return res.status(401).send('0');
+        if (normalizedSecretParam !== envSecret) {
+          console.warn(`[Reward Engine] ${providerId} invalid secret attempt.`);
+          await logLootably({
+            mappedFields: { ...baseMappedFields, transactionId: normalizedTransactionId, payout: providerUnits, status: 'rejected' },
+            processingResult: 'rejected',
+            rejectionReason: 'Invalid security token.',
+            security: { checked: true, passed: false, reason: 'Invalid security token.' },
+          });
+          return res.status(401).send('0');
         }
       }
     }
 
     // 6. Convert: platformCoins = Math.floor(providerUnits * provider.conversionRatio)
-    const platformCoins = Math.floor(parseFloat(providerUnits) * provider.conversionRatio);
+    const parsedProviderUnits = parseLegacyProviderUnits(providerUnits);
+    if (parsedProviderUnits === null) {
+      console.warn(`[Reward Engine] ${providerId} postback rejected because provider units are malformed.`);
+      await logLootably({
+        mappedFields: { ...baseMappedFields, transactionId: normalizedTransactionId, payout: providerUnits, status: 'rejected' },
+        processingResult: 'rejected',
+        rejectionReason: 'Provider units are malformed.',
+        security: { checked: true, passed: true },
+      });
+      return res.status(401).send('0');
+    }
+
+    const platformCoins = Math.floor(parsedProviderUnits * provider.conversionRatio);
     if (isNaN(platformCoins) || platformCoins === 0) {
+      await logLootably({
+        mappedFields: { ...baseMappedFields, transactionId: normalizedTransactionId, payout: providerUnits, status: 'ignored' },
+        processingResult: 'ignored',
+        rejectionReason: 'Computed platform coins were zero or invalid.',
+        security: { checked: true, passed: true },
+      });
       return res.status(200).send('1'); // bad amount, silently ignore
     }
 
     // 7. Build externalId = `${providerId}:${transactionId}`
-    const externalId = `${providerId}:${transactionId}`;
+    const externalId = `${providerId}:${normalizedTransactionId}`;
 
     // Find User early to support chargebacks
-    const user = await User.findById(userId);
+    const user = await User.findById(normalizedUserId);
     if (!user) {
+      await logLootably({
+        mappedFields: { ...baseMappedFields, transactionId: normalizedTransactionId, payout: providerUnits, status: 'ignored' },
+        processingResult: 'ignored',
+        rejectionReason: 'User not found.',
+        security: { checked: true, passed: true },
+      });
       return res.status(200).send('1');
     }
 
     // CHARGEBACK HANDLING: If the offerwall returns negative, it's reversing an offer.
     if (platformCoins < 0) {
       const originalTxId = req.query.original_transaction_id || externalId;
-      // Try to find original by the provided ID, or match exact amount logically
-      let originalTx = await Transaction.findOne({ externalId: originalTxId });
-      if (!originalTx) {
-        originalTx = await Transaction.findOne({
-          userId: user._id,
-          transactionType: 'offer_reward',
-          'metadata.providerId': providerId,
-          amount: Math.abs(platformCoins),
-          status: 'completed'
-        }).sort({ createdAt: -1 });
-      }
+      const originalTx = await Transaction.findOne({ externalId: originalTxId });
 
       if (originalTx && originalTx.status !== 'reversed') {
         const { notifyAdmins } = require('../utils/adminNotify'); // require locally to prevent circular dep initially or rely on file top require
@@ -128,27 +260,43 @@ const handlePostback = async (providerId, req, res, params) => {
           permissionRequired: 'manage_offerwalls'
         });
       }
+      await logLootably({
+        userId: user._id,
+        transaction: originalTx,
+        mappedFields: {
+          ...baseMappedFields,
+          transactionId: normalizedTransactionId,
+          payout: providerUnits,
+          status: 'reversed',
+          extra: { originalTransactionId: originalTxId },
+        },
+        processingResult: 'accepted',
+        security: { checked: true, passed: true },
+      });
       return res.status(200).send('1');
     }
 
     // 8. Normal Positive Postback: Check Transaction.findOne({ externalId }) — if exists → return "1"
     const existingTx = await Transaction.findOne({ externalId });
     if (existingTx) {
+      await logLootably({
+        userId: user._id,
+        transaction: existingTx,
+        mappedFields: { ...baseMappedFields, transactionId: normalizedTransactionId, payout: providerUnits, status: 'duplicate' },
+        processingResult: 'duplicate',
+        isDuplicate: true,
+        security: { checked: true, passed: true },
+      });
       return res.status(200).send('1');
     }
 
     // 10. Atomic: User.findOneAndUpdate $inc walletBalance by platformCoins
-    let creditBalance = platformCoins;
-    let txStatus = 'completed';
-    let holdDate = null;
-    
-    // Evaluate Earning Hold Config
-    if (settings.earningHoldConfig?.enabled && platformCoins >= settings.earningHoldConfig.threshold) {
-        txStatus = 'hold';
-        creditBalance = 0; // do not add to wallet yet
-        holdDate = new Date();
-        holdDate.setDate(holdDate.getDate() + (settings.earningHoldConfig.holdDays || 30));
-    }
+    const holdDecision = getEarningHoldDecision(settings, platformCoins, new Date(), {
+      providerConfig: provider,
+    });
+    const creditBalance = holdDecision.walletCredit;
+    const txStatus = holdDecision.status;
+    const holdDate = holdDecision.holdUntil;
 
     const updatedUser = await User.findOneAndUpdate(
       { _id: user._id },
@@ -175,13 +323,15 @@ const handlePostback = async (providerId, req, res, params) => {
         providerId,
         providerUnits,
         conversionRatio: provider.conversionRatio,
+        holdApplied: holdDecision.status === 'hold',
+        holdDays: holdDecision.holdDays,
       },
     });
 
     // 12. Send Offer Reward Notification
     const notifTitle = txStatus === 'hold' ? 'Offer Reward on Hold' : 'Offer Credited';
     const notifMsg = txStatus === 'hold' 
-      ? `You completed an offer from ${provider.label} for +${platformCoins} coins. The reward is placed on hold for ${settings.earningHoldConfig.holdDays || 30} days.`
+      ? `You completed an offer from ${provider.label} for +${platformCoins} coins. The reward is placed on hold for ${holdDecision.holdDays} days.`
       : `You earned +${platformCoins} coins from ${provider.label}.`;
 
     await notify(
@@ -199,6 +349,14 @@ const handlePostback = async (providerId, req, res, params) => {
       message: `User ${user.displayName || user._id} completed an offer on ${provider.label} for ${platformCoins} Coins.`,
       permissionRequired: 'manage_offerwalls',
       metadata: { userId: user._id, transactionId: offerTx._id, providerId }
+    });
+
+    await logLootably({
+      userId: user._id,
+      transaction: offerTx,
+      mappedFields: { ...baseMappedFields, transactionId: normalizedTransactionId, payout: providerUnits, status: 'approved' },
+      processingResult: 'accepted',
+      security: { checked: true, passed: true },
     });
 
     // 13. Referral Logic (create in hold status)
@@ -305,6 +463,16 @@ const handlePostback = async (providerId, req, res, params) => {
     return res.status(200).send('1');
   } catch (err) {
     console.error(`[Reward Engine] ${providerId} postback error:`, err);
+    await logLootably({
+      mappedFields: {
+        transactionId: typeof params?.transactionId === 'string' ? params.transactionId : '',
+        payout: typeof params?.providerUnits === 'string' ? params.providerUnits : null,
+        status: 'error',
+      },
+      processingResult: 'error',
+      rejectionReason: err.message || 'Unexpected postback error.',
+      security: { checked: true, passed: false, reason: err.message || 'Unexpected postback error.' },
+    });
     return res.status(500).send('0');
   }
 };
@@ -313,7 +481,7 @@ const handlePostback = async (providerId, req, res, params) => {
 
 router.get('/postback/cpx', (req, res) => {
   // CPX: user_id, reward, trans_id, hash
-  handlePostback('cpx', req, res, {
+  handleLegacyOfferwallPostback('cpx', req, res, {
     userId: req.query.user_id,
     providerUnits: req.query.reward,
     transactionId: req.query.trans_id,
@@ -322,7 +490,7 @@ router.get('/postback/cpx', (req, res) => {
 });
 
 router.get('/postback/adgem', (req, res) => {
-  handlePostback('adgem', req, res, {
+  handleLegacyOfferwallPostback('adgem', req, res, {
     userId: req.query.user_id,
     providerUnits: req.query.amount,
     transactionId: req.query.oid,
@@ -331,7 +499,7 @@ router.get('/postback/adgem', (req, res) => {
 });
 
 router.get('/postback/lootably', (req, res) => {
-  handlePostback('lootably', req, res, {
+  handleLegacyOfferwallPostback('lootably', req, res, {
     userId: req.query.user_id,
     providerUnits: req.query.revenue,
     transactionId: req.query.transaction_id,
@@ -340,7 +508,7 @@ router.get('/postback/lootably', (req, res) => {
 });
 
 router.get('/postback/torox', (req, res) => {
-  handlePostback('torox', req, res, {
+  handleLegacyOfferwallPostback('torox', req, res, {
     userId: req.query.user_id,
     providerUnits: req.query.reward,
     transactionId: req.query.txid,
@@ -349,7 +517,7 @@ router.get('/postback/torox', (req, res) => {
 });
 
 router.get('/postback/primeearn', (req, res) => {
-  handlePostback('primeearn', req, res, {
+  handleLegacyOfferwallPostback('primeearn', req, res, {
     userId: req.query.user_id,
     providerUnits: req.query.amount,
     transactionId: req.query.offer_id,
@@ -358,7 +526,7 @@ router.get('/postback/primeearn', (req, res) => {
 });
 
 router.get('/postback/ayet', (req, res) => {
-  handlePostback('ayet', req, res, {
+  handleLegacyOfferwallPostback('ayet', req, res, {
     userId: req.query.uid,
     providerUnits: req.query.payout,
     transactionId: req.query.sid,
@@ -367,7 +535,7 @@ router.get('/postback/ayet', (req, res) => {
 });
 
 router.get('/postback/adtowall', (req, res) => {
-  handlePostback('adtowall', req, res, {
+  handleLegacyOfferwallPostback('adtowall', req, res, {
     userId: req.query.user_id,
     providerUnits: req.query.points,
     transactionId: req.query.transaction_id,
@@ -376,7 +544,7 @@ router.get('/postback/adtowall', (req, res) => {
 });
 
 router.get('/postback/revu', (req, res) => {
-  handlePostback('revu', req, res, {
+  handleLegacyOfferwallPostback('revu', req, res, {
     userId: req.query.pub_user_id,
     providerUnits: req.query.amount,
     transactionId: req.query.ref,

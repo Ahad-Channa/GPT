@@ -1,4 +1,5 @@
 const express = require('express');
+const mongoose = require('mongoose');
 const router = express.Router();
 const User = require('../models/User');
 const Transaction = require('../models/Transaction');
@@ -11,6 +12,9 @@ const GoodpickOffer = require('../models/GoodpickOffer');
 const DirectOffer = require('../models/DirectOffer');
 const ClickLog = require('../models/ClickLog');
 const FraudLog = require('../models/FraudLog');
+const ProviderConfig = require('../models/ProviderConfig');
+const Conversion = require('../models/Conversion');
+const PostbackLog = require('../models/PostbackLog');
 const adminFirebase = require('../config/firebase');
 const { verifyToken } = require('../middlewares/authMiddleware');
 const { requireAdmin, requirePrimaryAdmin, requirePermission } = require('../middlewares/adminMiddleware');
@@ -18,11 +22,423 @@ const notify = require('../utils/notify');
 const { notifyAdmins } = require('../utils/adminNotify');
 const { emitWalletUpdate, emitToUser } = require('../utils/walletEvents');
 const { processVipLevelUp } = require('../utils/vipUtils');
+const {
+  normalizeDisplayPlacements,
+  parseAllowedCountriesInput,
+  parseMaxTotalClicks,
+} = require('../utils/directOfferInput');
+const { normalizeGoals } = require('../utils/offerGoals');
+const { sortOfferwallProviders } = require('../utils/offerwallOrder');
+const {
+  REAL_OFFER_EARNING_TYPES,
+  getEarningHoldDecision,
+} = require('../utils/earningTypes');
 const AdminNotification = require('../models/AdminNotification');
 const Avatar = require('../models/Avatar');
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
+const { validateProviderAdapterKey } = require('../services/tracking/providerAdapterRegistry');
+const { processReward, findExistingClickRewardTransaction } = require('../services/rewards/rewardService');
+const { processReversal } = require('../services/rewards/reversalService');
+const { createOrResolveConversion, findCreditedConversionForClickLog } = require('../services/tracking/conversionService');
+const { buildDirectOfferProviderConfig } = require('../services/tracking/directOfferProvider');
+const { syncManualProofSubmissionStatus } = require('../services/tracking/manualProofService');
+
+const PROVIDER_TYPES = ['offerwall', 'direct', 'affiliate_network', 'advertiser', 'internal'];
+const SECURITY_METHODS = ['none', 'shared_secret', 'md5', 'sha1', 'sha256', 'sha512', 'hmac', 'token', 'custom_adapter'];
+const INTERNAL_STATUSES = ['pending', 'approved', 'rejected', 'reversed'];
+const PROCESSING_STATES = ['pending', 'claimed', 'processing', 'processed', 'failed', 'reversal_processing', 'reversed', 'reversal_failed'];
+const POSTBACK_RESULTS = ['received', 'accepted', 'rejected', 'duplicate', 'ignored', 'error'];
+const CLICK_STATUSES = ['clicked', 'pending', 'approved', 'rejected'];
+const CAMPAIGN_TYPES = ['direct_offer', 'offerwall', 'campaign', 'generic'];
+// Providers whose user-side wall builder actually consumes each config field.
+// Editing is gated by these sets so admin never saves an ineffective value.
+const OFFERWALL_IFRAME_URL_PROVIDER_IDS = new Set(['lootably', 'primeearn', 'torox', 'revu', 'adtowall', 'adgem', 'ayet', 'adscend']);
+const OFFERWALL_OFFERWALL_URL_PROVIDER_IDS = new Set(['lootably']);
+const OFFERWALL_PLACEMENT_ID_PROVIDER_IDS = new Set(['lootably']);
+const PARAM_NAME_RE = /^[A-Za-z0-9_.:-]{1,80}$/;
+const CREDENTIAL_REQUIRED_METHODS = ['shared_secret', 'token', 'md5', 'sha1', 'sha256', 'sha512', 'hmac'];
+const SENSITIVE_ADMIN_KEY_PATTERN = /(authorization|bearer|api[_-]?key|secret|password|private[_-]?key|access[_-]?token|refresh[_-]?token|credential|client[_-]?secret)/i;
+
+const validationError = (message) => {
+  const error = new Error(message);
+  error.statusCode = 400;
+  return error;
+};
+
+const clampInt = (value, fallback, min, max) => {
+  const parsed = parseInt(value, 10);
+  if (!Number.isFinite(parsed)) return fallback;
+  return Math.min(max, Math.max(min, parsed));
+};
+
+const getPagination = (query = {}) => {
+  const page = clampInt(query.page, 1, 1, 100000);
+  const limit = clampInt(query.limit, 25, 1, 100);
+  return { page, limit, skip: (page - 1) * limit };
+};
+
+const cleanString = (value, max = 200) => {
+  if (value === undefined || value === null) return '';
+  if (typeof value === 'object') throw validationError('Expected a scalar string value.');
+  return String(value).trim().slice(0, max);
+};
+const cleanProviderId = (value) => cleanString(value, 80).toLowerCase();
+
+// Manual admin actions (approve/reject/chargeback, legacy click approve/reject)
+// must carry an explicit, trimmed reason. Returns '' when missing/blank so the
+// caller can reject with 400. There is no silent default reason.
+const ADMIN_MANUAL_REASON_MAX_LENGTH = 500;
+const parseAdminManualReason = (value) => cleanString(value, ADMIN_MANUAL_REASON_MAX_LENGTH);
+
+const hasOwn = (obj, key) => Object.prototype.hasOwnProperty.call(obj || {}, key);
+
+const validateParamName = (value, field, required = false) => {
+  const clean = cleanString(value, 80);
+  if (!clean) {
+    if (required) throw new Error(`${field} is required.`);
+    return '';
+  }
+  if (!PARAM_NAME_RE.test(clean)) throw new Error(`${field} contains invalid characters.`);
+  return clean;
+};
+
+const normalizeAliases = (values, field) => {
+  if (!Array.isArray(values)) throw new Error(`${field} must be an array.`);
+  const aliases = [...new Set(values.map((value) => cleanString(value, 80).toLowerCase()).filter(Boolean))];
+  if (aliases.length === 0) throw new Error(`${field} requires at least one alias.`);
+  return aliases;
+};
+
+const validateStatusMappings = (statusMappings = {}) => {
+  if (!statusMappings || typeof statusMappings !== 'object' || Array.isArray(statusMappings)) {
+    throw validationError('statusMappings must be an object.');
+  }
+  const normalized = {
+    pending: normalizeAliases(statusMappings.pending || ['pending'], 'pending aliases'),
+    approved: normalizeAliases(statusMappings.approved || ['approved'], 'approved aliases'),
+    rejected: normalizeAliases(statusMappings.rejected || ['rejected'], 'rejected aliases'),
+    reversal: normalizeAliases(statusMappings.reversal || statusMappings.reversed || ['reversed'], 'reversal aliases'),
+  };
+  const seen = new Map();
+  for (const [status, aliases] of Object.entries(normalized)) {
+    for (const alias of aliases) {
+      if (seen.has(alias) && seen.get(alias) !== status) {
+        throw new Error(`Status alias "${alias}" maps to both ${seen.get(alias)} and ${status}.`);
+      }
+      seen.set(alias, status);
+    }
+  }
+  return normalized;
+};
+
+const sanitizeProviderSettings = (settings = {}) => {
+  if (!settings || typeof settings !== 'object' || Array.isArray(settings)) return {};
+  return Object.fromEntries(Object.entries(settings).slice(0, 100).map(([key, value]) => {
+    const cleanKey = cleanString(key, 120);
+    if (SENSITIVE_ADMIN_KEY_PATTERN.test(cleanKey)) return [cleanKey, '[REDACTED]'];
+    return [cleanKey, boundAdminPayload(value)];
+  }));
+};
+
+const validateProviderSettings = (settings = {}) => {
+  if (!settings || typeof settings !== 'object' || Array.isArray(settings)) return {};
+  for (const key of Object.keys(settings)) {
+    if (SENSITIVE_ADMIN_KEY_PATTERN.test(key)) {
+      throw validationError('Sensitive provider settings must use the write-only secret field or secretEnvVar.');
+    }
+  }
+  return boundAdminPayload(settings);
+};
+
+const normalizeExtraParameterMappings = (extra = {}) => {
+  if (!extra || typeof extra !== 'object' || Array.isArray(extra)) return {};
+  return Object.fromEntries(Object.entries(extra).map(([key, value]) => [
+    validateParamName(key, 'extra mapping key', true),
+    validateParamName(value, `extra mapping ${key}`, true),
+  ]));
+};
+
+const validateParameterMappings = (parameterMappings = {}) => {
+  if (!parameterMappings || typeof parameterMappings !== 'object' || Array.isArray(parameterMappings)) {
+    throw validationError('parameterMappings must be an object.');
+  }
+  const normalized = {
+    clickId: validateParamName(parameterMappings.clickId || 'click_id', 'clickId mapping', true),
+    transactionId: validateParamName(parameterMappings.transactionId || 'transaction_id', 'transactionId mapping', true),
+    status: validateParamName(parameterMappings.status || 'status', 'status mapping', true),
+    payout: validateParamName(parameterMappings.payout || 'payout', 'payout mapping'),
+    eventType: validateParamName(parameterMappings.eventType || 'event_type', 'eventType mapping'),
+    providerUserId: validateParamName(parameterMappings.providerUserId || 'user_id', 'providerUserId mapping'),
+    extra: normalizeExtraParameterMappings(parameterMappings.extra),
+  };
+  const configured = Object.entries(normalized)
+    .filter(([key, value]) => key !== 'extra' && value)
+    .map(([, value]) => value);
+  if (new Set(configured).size !== configured.length) {
+    throw new Error('Parameter mappings cannot use duplicate names.');
+  }
+  return normalized;
+};
+
+const validateSecurityConfig = (security = {}, existing = {}) => {
+  if (!security || typeof security !== 'object' || Array.isArray(security)) {
+    throw validationError('security must be an object.');
+  }
+  if (hasOwn(security, 'credentials')) {
+    throw validationError('Credentials must be updated through the write-only secret field.');
+  }
+  const methodChanged = hasOwn(security, 'method') && security.method !== existing.method;
+  const method = cleanString(security.method || existing.method || 'none', 40);
+  if (!SECURITY_METHODS.includes(method)) throw new Error('Unsupported security method.');
+
+  const normalized = {
+    method,
+    signatureParam: validateParamName(security.signatureParam ?? (methodChanged ? '' : existing.signatureParam) ?? '', 'signatureParam'),
+    tokenParam: validateParamName(security.tokenParam ?? (methodChanged ? '' : existing.tokenParam) ?? '', 'tokenParam'),
+    headerName: cleanString(security.headerName ?? (methodChanged ? '' : existing.headerName) ?? '', 120),
+    hashAlgorithm: cleanString(security.hashAlgorithm ?? (methodChanged ? '' : existing.hashAlgorithm) ?? '', 40),
+    hashTemplate: cleanString(security.hashTemplate ?? (methodChanged ? '' : existing.hashTemplate) ?? '', 500),
+    caseInsensitiveSignature: Boolean(security.caseInsensitiveSignature ?? existing.caseInsensitiveSignature),
+    ipAllowlistRequired: Boolean(security.ipAllowlistRequired ?? existing.ipAllowlistRequired),
+    secretEnvVar: cleanString(security.secretEnvVar ?? (methodChanged ? '' : existing.secretEnvVar) ?? '', 120),
+    adapterKey: cleanString(security.adapterKey ?? (methodChanged ? '' : existing.adapterKey) ?? '', 120),
+    config: typeof (security.config ?? (methodChanged ? {} : existing.config)) === 'object' && !Array.isArray(security.config ?? (methodChanged ? {} : existing.config))
+      ? (security.config ?? existing.config)
+      : {},
+  };
+
+  if (['shared_secret', 'token'].includes(method) && !normalized.tokenParam && !normalized.headerName) {
+    throw new Error('Shared secret/token security requires tokenParam or headerName.');
+  }
+  if (['md5', 'sha1', 'sha256', 'sha512', 'hmac'].includes(method) && !normalized.signatureParam) {
+    throw new Error('Signature security requires signatureParam.');
+  }
+  if (normalized.adapterKey) {
+    normalized.adapterKey = validateProviderAdapterKey(normalized.adapterKey);
+  }
+  if (['md5', 'sha1', 'sha256', 'sha512', 'hmac'].includes(method) && !normalized.hashTemplate && !normalized.adapterKey) {
+    throw new Error('Signature security requires hashTemplate or adapterKey.');
+  }
+  if (method === 'custom_adapter' && !normalized.adapterKey) {
+    throw new Error('Custom adapter security requires adapterKey.');
+  }
+  return normalized;
+};
+
+const parseWriteOnlySecret = (value) => {
+  if (value === undefined) return { supplied: false, value: '' };
+  if (typeof value !== 'string') throw validationError('Secret must be a string.');
+  const secret = value.trim();
+  if (secret.length > 500) throw validationError('Secret is too long.');
+  return { supplied: true, value: secret };
+};
+
+const assertProviderCredentialState = ({ security, existingCredentials, incomingSecret = '', removeSecret = false }) => {
+  if (!CREDENTIAL_REQUIRED_METHODS.includes(security.method)) return;
+  const hasCredential = Boolean(existingCredentials || incomingSecret || security.secretEnvVar);
+  if (removeSecret && !security.secretEnvVar) {
+    throw validationError('Cannot remove credential while selected security method requires one.');
+  }
+  if (!hasCredential) {
+    throw validationError('Selected security method requires a credential or secretEnvVar.');
+  }
+};
+
+const applyWriteOnlyProviderSecret = ({ nextSecurity, existingCredentials, secretInput, removeSecret }) => {
+  const credentials = removeSecret
+    ? undefined
+    : secretInput.value
+      ? { secret: secretInput.value }
+      : existingCredentials;
+  assertProviderCredentialState({
+    security: nextSecurity,
+    existingCredentials: credentials,
+    removeSecret,
+  });
+  if (credentials) nextSecurity.credentials = credentials;
+  else delete nextSecurity.credentials;
+  return nextSecurity;
+};
+
+const normalizeIpAllowlist = (list) => {
+  if (!Array.isArray(list)) return [];
+  return [...new Set(list.map((item) => cleanString(item, 80)).filter(Boolean))].slice(0, 200);
+};
+
+const normalizeResponseConfig = (config = {}) => ({
+  successStatus: clampInt(config.successStatus, 200, 100, 599),
+  successBody: cleanString(config.successBody ?? '1', 500),
+  duplicateStatus: clampInt(config.duplicateStatus, 200, 100, 599),
+  duplicateBody: cleanString(config.duplicateBody ?? '1', 500),
+  errorStatus: clampInt(config.errorStatus, 200, 100, 599),
+  errorBody: cleanString(config.errorBody ?? '0', 500),
+});
+
+const serializeProviderConfig = (provider) => {
+  const doc = typeof provider.toObject === 'function' ? provider.toObject() : { ...provider };
+  const credentialsConfigured = Boolean(provider?.security?.credentials || doc?.security?.secretEnvVar);
+  if (doc.security) {
+    delete doc.security.credentials;
+    doc.security.credentialsConfigured = credentialsConfigured;
+  }
+  doc.providerSettings = sanitizeProviderSettings(doc.providerSettings);
+  return doc;
+};
+
+const sanitizeDirectOfferAdmin = (offer) => {
+  const doc = typeof offer.toObject === 'function' ? offer.toObject() : { ...offer };
+  doc.trackingMode = doc.trackingMode === 'manual' ? 'manual' : 'postback';
+  doc.postbackSecretConfigured = Boolean(doc.postbackSecretKey);
+  delete doc.postbackSecretKey;
+  return doc;
+};
+
+const normalizeTrackingMode = (value, fallback = 'postback') => {
+  if (value === undefined) return fallback;
+  return value === 'manual' ? 'manual' : 'postback';
+};
+
+const parseDirectOfferProofInstructions = (value) => cleanString(value, 1000);
+
+const parseOptionalHoldInteger = (value, label) => {
+  if (value === undefined || value === null || value === '') return null;
+  const num = Number(value);
+  if (!Number.isInteger(num) || num < 0) {
+    const error = new Error(`${label} must be a non-negative integer.`);
+    error.statusCode = 400;
+    throw error;
+  }
+  return num;
+};
+
+const hydrateOfferwallProviderSettings = (provider) => {
+  const pObj = provider?.toObject ? provider.toObject() : { ...(provider || {}) };
+  if (pObj.id === 'lootably') {
+    pObj.placementId = pObj.placementId || process.env.LOOTABLY_PLACEMENT_ID || '';
+    pObj.iframeUrl = pObj.iframeUrl || process.env.LOOTABLY_IFRAME_URL || '';
+    pObj.offerwallUrl = pObj.offerwallUrl || process.env.LOOTABLY_OFFERWALL_URL || '';
+  }
+  return pObj;
+};
+
+const directOfferPostbackBaseUrl = (req) => {
+  const envBase = cleanString(process.env.BACKEND_URL || '', 300).replace(/\/$/, '');
+  if (envBase) return envBase;
+  const proto = cleanString(req.get?.('x-forwarded-proto') || req.protocol || 'http', 40).split(',')[0].trim() || 'http';
+  const host = cleanString(req.get?.('x-forwarded-host') || req.get?.('host') || '', 200).split(',')[0].trim();
+  return host ? `${proto}://${host}` : 'http://localhost:5000';
+};
+
+const buildDirectOfferPostbackUrl = (offer, baseUrl) => {
+  const m = offer.postbackMapping || {};
+  const clickIdParam = m.clickIdParam || 'click_id';
+  const transactionIdParam = m.transactionIdParam || 'txn_id';
+  const statusParam = m.statusParam || 'status';
+  const payoutParam = m.payoutParam || 'payout';
+  const eventTypeParam = m.eventTypeParam || 'event_type';
+  const approvedVal = m.approvedValue || 'approved';
+  const hasGoals = Array.isArray(offer.goals) && offer.goals.some((goal) => goal && goal.enabled !== false);
+  const pairs = [
+    [clickIdParam, '{CLICK_ID}'],
+    [transactionIdParam, '{TRANSACTION_ID}'],
+    [statusParam, approvedVal],
+    [payoutParam, '{PAYOUT}'],
+  ];
+  if (hasGoals) pairs.push([eventTypeParam, '{EVENT_TYPE}']);
+  pairs.push(['secret', offer.postbackSecretKey]);
+  const query = pairs
+    .filter(([key]) => key)
+    .map(([key, value]) => {
+      const rawValue = String(value || '');
+      const safeValue = rawValue.startsWith('{') && rawValue.endsWith('}')
+        ? rawValue
+        : encodeURIComponent(rawValue);
+      return `${encodeURIComponent(key)}=${safeValue}`;
+    })
+    .join('&');
+  return `${String(baseUrl || '').replace(/\/$/, '')}/api/direct-offers/postback?${query}`;
+};
+
+const boundAdminPayload = (value, depth = 0) => {
+  if (depth > 4) return '[Truncated]';
+  if (value === null || value === undefined) return value;
+  if (typeof value === 'string') return value.length > 1000 ? `${value.slice(0, 1000)}...[Truncated]` : value;
+  if (typeof value !== 'object') return value;
+  if (Array.isArray(value)) return value.slice(0, 50).map((item) => boundAdminPayload(item, depth + 1));
+  return Object.fromEntries(Object.entries(value).slice(0, 100).map(([key, item]) => [
+    cleanString(key, 120),
+    SENSITIVE_ADMIN_KEY_PATTERN.test(key) ? '[REDACTED]' : boundAdminPayload(item, depth + 1),
+  ]));
+};
+
+const serializeClickLogAdmin = (click) => ({
+  _id: click._id,
+  clickId: click.clickId,
+  providerId: click.providerId,
+  providerType: click.providerType,
+  campaignType: click.campaignType,
+  campaignId: click.campaignId,
+  offer: click.offerId ? {
+    _id: click.offerId._id || click.offerId,
+    title: click.offerId.title,
+    rewardAmount: click.offerId.rewardAmount,
+  } : null,
+  user: click.userId ? {
+    _id: click.userId._id || click.userId,
+    displayName: click.userId.displayName,
+    email: click.userId.email,
+  } : null,
+  country: click.country,
+  device: click.device,
+  status: click.status,
+  rewardAmount: click.rewardAmount,
+  advertiserPayout: click.advertiserPayout,
+  convertedAt: click.convertedAt,
+  transactionId: click.transactionId,
+  createdAt: click.createdAt,
+});
+
+const serializeConversionAdmin = (conversion) => {
+  const doc = typeof conversion.toObject === 'function' ? conversion.toObject() : conversion;
+  const processingState = doc.internalStatus === 'reversed' ? 'reversed' : doc.processingState;
+  return {
+    _id: doc._id,
+    createdAt: doc.createdAt,
+    updatedAt: doc.updatedAt,
+    providerId: doc.providerId,
+    campaignType: doc.campaignType,
+    campaignId: doc.campaignId,
+    offer: doc.offerId ? { _id: doc.offerId._id || doc.offerId, title: doc.offerId.title } : null,
+    user: doc.userId ? {
+      _id: doc.userId._id || doc.userId,
+      displayName: doc.userId.displayName,
+      email: doc.userId.email,
+      avatarUrl: doc.userId.avatarUrl,
+    } : null,
+    clickId: doc.clickId,
+    clickLogId: doc.clickLogId?._id || doc.clickLogId || null,
+    providerTransactionId: doc.providerTransactionId,
+    eventType: doc.eventType,
+    goalKey: doc.goalKey || null,
+    incomingStatus: doc.incomingStatus,
+    internalStatus: doc.internalStatus,
+    payout: doc.payout,
+    rewardAmount: doc.rewardAmount,
+    processingState,
+    rewardTransaction: doc.rewardTransactionId || null,
+    reversalTransaction: doc.reversalTransactionId || null,
+    rejectionReason: doc.rejectionReason,
+    errorReason: doc.errorReason,
+    security: doc.security ? {
+      checked: doc.security.checked,
+      passed: doc.security.passed,
+      method: doc.security.method,
+      reason: doc.security.reason,
+    } : null,
+  };
+};
 
 // Configure multer for Avatar uploads
 const storage = multer.diskStorage({
@@ -439,10 +855,12 @@ router.put('/withdrawals/:id/reject', requirePermission('manage_withdrawals'), a
 router.get('/settings', requirePermission('manage_withdrawals'), async (req, res) => {
   try {
     const settings = await Settings.getSingleton();
+    const providerConfigs = await ProviderConfig.find({}).select('providerId enabled type security.method updatedAt').lean();
+    const providerConfigMap = new Map(providerConfigs.map((config) => [config.providerId, config]));
 
     // Dynamically set secretConfigured
     const providers = settings.offerwallProviders.map(p => {
-      const pObj = p.toObject ? p.toObject() : p;
+      const pObj = hydrateOfferwallProviderSettings(p);
       const envSecretMap = {
         cpx: 'CPX_HASH_KEY',
         adgem: 'ADGEM_API_KEY',
@@ -454,6 +872,18 @@ router.get('/settings', requirePermission('manage_withdrawals'), async (req, res
         revu: 'REVU_SECRET',
       };
       pObj.secretConfigured = !!process.env[envSecretMap[p.id]];
+      const providerConfig = providerConfigMap.get(pObj.id);
+      pObj.providerConfig = providerConfig ? {
+        configured: true,
+        enabled: Boolean(providerConfig.enabled),
+        type: providerConfig.type,
+        securityMethod: providerConfig.security?.method || 'none',
+        updatedAt: providerConfig.updatedAt,
+        readiness: providerConfig.enabled ? 'generic_tracking_ready' : 'configured_paused',
+      } : {
+        configured: false,
+        readiness: 'legacy_provider',
+      };
       return pObj;
     });
 
@@ -539,7 +969,7 @@ router.put('/settings', requirePermission('manage_withdrawals'), async (req, res
 
 router.put('/offerwalls/:providerId', requirePermission('manage_offerwalls'), async (req, res) => {
   try {
-    const { enabled, conversionRatio } = req.body;
+    const { enabled, conversionRatio, order, label, iframeUrl, offerwallUrl, placementId, holdEnabled, holdDays, holdThreshold } = req.body;
     const settings = await Settings.getSingleton();
 
     const provider = settings.offerwallProviders.find(p => p.id === req.params.providerId);
@@ -550,16 +980,228 @@ router.put('/offerwalls/:providerId', requirePermission('manage_offerwalls'), as
       const ratio = Number(conversionRatio);
       if (!isNaN(ratio) && ratio > 0) provider.conversionRatio = ratio;
     }
+    if (order !== undefined) {
+      const parsedOrder = Number(order);
+      if (!Number.isInteger(parsedOrder) || parsedOrder < 0) {
+        return res.status(400).json({ success: false, error: 'Display order must be a non-negative integer' });
+      }
+      provider.order = parsedOrder;
+    }
+    if (holdEnabled !== undefined) {
+      provider.holdEnabled = holdEnabled === true;
+    }
+    if (holdDays !== undefined) {
+      const parsedHoldDays = Number(holdDays);
+      if (!Number.isInteger(parsedHoldDays) || parsedHoldDays < 0) {
+        return res.status(400).json({ success: false, error: 'Hold days must be a non-negative integer' });
+      }
+      provider.holdDays = parsedHoldDays;
+    }
+    if (holdThreshold !== undefined) {
+      const parsedHoldThreshold = Number(holdThreshold);
+      if (!Number.isInteger(parsedHoldThreshold) || parsedHoldThreshold < 0) {
+        return res.status(400).json({ success: false, error: 'Hold threshold must be a non-negative integer' });
+      }
+      provider.holdThreshold = parsedHoldThreshold;
+    }
+    // Label (display name) is editable for every provider.
+    if (label !== undefined) provider.label = cleanString(label, 120);
+
+    // URL/placement fields are applied only where the user-side builder uses them.
+    if (OFFERWALL_IFRAME_URL_PROVIDER_IDS.has(provider.id) && iframeUrl !== undefined) {
+      provider.iframeUrl = cleanString(iframeUrl, 500);
+    }
+    if (OFFERWALL_OFFERWALL_URL_PROVIDER_IDS.has(provider.id) && offerwallUrl !== undefined) {
+      provider.offerwallUrl = cleanString(offerwallUrl, 500);
+    }
+    if (OFFERWALL_PLACEMENT_ID_PROVIDER_IDS.has(provider.id) && placementId !== undefined) {
+      provider.placementId = cleanString(placementId, 120);
+    }
 
     await settings.save();
 
     await createLog(req.dbUser._id, 'UPDATE_OFFERWALL', null, {
-      providerId: provider.id, enabled, conversionRatio
+      providerId: provider.id, enabled, conversionRatio, order: provider.order,
+      label: provider.label,
+      holdEnabled: provider.holdEnabled, holdDays: provider.holdDays, holdThreshold: provider.holdThreshold,
+      ...(OFFERWALL_IFRAME_URL_PROVIDER_IDS.has(provider.id) ? { iframeUrl: provider.iframeUrl || '' } : {}),
+      ...(OFFERWALL_OFFERWALL_URL_PROVIDER_IDS.has(provider.id) ? { offerwallUrl: provider.offerwallUrl || '' } : {}),
+      ...(OFFERWALL_PLACEMENT_ID_PROVIDER_IDS.has(provider.id) ? { placementId: provider.placementId || '' } : {})
     });
 
     res.json({ success: true, provider });
   } catch (error) {
     res.status(500).json({ success: false, error: 'Failed to update offerwall provider' });
+  }
+});
+
+router.get('/offerwall-providers', requirePermission('manage_offerwalls'), async (req, res) => {
+  try {
+    const settings = await Settings.getSingleton();
+    const providerConfigs = await ProviderConfig.find({}).select('providerId enabled type security.method updatedAt').lean();
+    const providerConfigMap = new Map(providerConfigs.map((config) => [config.providerId, config]));
+    const envSecretMap = {
+      cpx: 'CPX_HASH_KEY',
+      adgem: 'ADGEM_API_KEY',
+      lootably: 'LOOTABLY_SECRET',
+      torox: 'TOROX_SECRET',
+      primeearn: 'PRIMEEARN_SECRET',
+      ayet: 'AYET_SECRET',
+      adtowall: 'ADTOWALL_SECRET',
+      revu: 'REVU_SECRET',
+    };
+
+    const providers = settings.offerwallProviders.map((provider) => {
+      const pObj = hydrateOfferwallProviderSettings(provider);
+      const providerConfig = providerConfigMap.get(pObj.id);
+      return {
+        ...pObj,
+        secretConfigured: !!process.env[envSecretMap[pObj.id]],
+        providerConfig: providerConfig ? {
+          configured: true,
+          enabled: Boolean(providerConfig.enabled),
+          type: providerConfig.type,
+          securityMethod: providerConfig.security?.method || 'none',
+          updatedAt: providerConfig.updatedAt,
+          readiness: providerConfig.enabled ? 'generic_tracking_ready' : 'configured_paused',
+        } : {
+          configured: false,
+          readiness: 'legacy_provider',
+        },
+      };
+    });
+
+    res.json({ success: true, providers: sortOfferwallProviders(providers) });
+  } catch (error) {
+    console.error('[/api/admin/offerwall-providers GET] Error:', error);
+    res.status(500).json({ success: false, error: 'Failed to fetch offerwall providers' });
+  }
+});
+
+// GET /api/admin/provider-configs — generic tracking provider configuration
+router.get('/provider-configs', requirePermission('manage_offerwalls'), async (req, res) => {
+  try {
+    const { page, limit, skip } = getPagination(req.query);
+    const filter = {};
+    const providerId = cleanProviderId(req.query.providerId);
+    const type = cleanString(req.query.type, 40);
+    const enabled = cleanString(req.query.enabled, 10);
+    if (providerId) filter.providerId = providerId;
+    if (type) {
+      if (!PROVIDER_TYPES.includes(type)) return res.status(400).json({ success: false, error: 'Invalid provider type' });
+      filter.type = type;
+    }
+    if (enabled) {
+      if (!['true', 'false'].includes(enabled)) return res.status(400).json({ success: false, error: 'Invalid enabled filter' });
+      filter.enabled = enabled === 'true';
+    }
+
+    const [providers, total] = await Promise.all([
+      ProviderConfig.find(filter).sort({ providerId: 1 }).skip(skip).limit(limit),
+      ProviderConfig.countDocuments(filter),
+    ]);
+
+    res.json({
+      success: true,
+      providers: providers.map(serializeProviderConfig),
+      pagination: { page, limit, total, totalPages: Math.ceil(total / limit) },
+    });
+  } catch (error) {
+    console.error('[/api/admin/provider-configs GET] Error:', error);
+    res.status(error.statusCode || 500).json({ success: false, error: error.statusCode ? error.message : 'Failed to fetch provider configs' });
+  }
+});
+
+// GET /api/admin/provider-configs/:providerId — sanitized provider detail
+router.get('/provider-configs/:providerId', requirePermission('manage_offerwalls'), async (req, res) => {
+  try {
+    const providerId = cleanProviderId(req.params.providerId);
+    const provider = await ProviderConfig.findOne({ providerId });
+    if (!provider) return res.status(404).json({ success: false, error: 'Provider config not found' });
+    res.json({ success: true, provider: serializeProviderConfig(provider) });
+  } catch (error) {
+    console.error('[/api/admin/provider-configs/:providerId GET] Error:', error);
+    res.status(error.statusCode || 500).json({ success: false, error: error.statusCode ? error.message : 'Failed to fetch provider config' });
+  }
+});
+
+// POST /api/admin/provider-configs — create generic provider config
+router.post('/provider-configs', requirePermission('manage_offerwalls'), async (req, res) => {
+  try {
+    const providerId = cleanProviderId(req.body.providerId);
+    if (!providerId) return res.status(400).json({ success: false, error: 'providerId is required' });
+    const type = cleanString(req.body.type || 'offerwall', 40);
+    if (!PROVIDER_TYPES.includes(type)) return res.status(400).json({ success: false, error: 'Invalid provider type' });
+
+    const security = validateSecurityConfig(req.body.security || {});
+    const secretInput = parseWriteOnlySecret(req.body.secret);
+    applyWriteOnlyProviderSecret({
+      nextSecurity: security,
+      existingCredentials: undefined,
+      secretInput,
+      removeSecret: false,
+    });
+
+    const provider = await ProviderConfig.create({
+      providerId,
+      name: cleanString(req.body.name, 120) || providerId,
+      label: cleanString(req.body.label, 120),
+      type,
+      enabled: Boolean(req.body.enabled),
+      parameterMappings: validateParameterMappings(req.body.parameterMappings || {}),
+      statusMappings: validateStatusMappings(req.body.statusMappings || {}),
+      security,
+      responseConfig: normalizeResponseConfig(req.body.responseConfig || {}),
+      ipAllowlist: normalizeIpAllowlist(req.body.ipAllowlist || []),
+      providerSettings: validateProviderSettings(req.body.providerSettings || {}),
+    });
+
+    await createLog(req.dbUser._id, 'CREATE_PROVIDER_CONFIG', null, { providerId });
+    res.status(201).json({ success: true, provider: serializeProviderConfig(provider) });
+  } catch (error) {
+    const message = error.code === 11000 ? 'Provider ID already exists' : (error.message || 'Failed to create provider config');
+    res.status(400).json({ success: false, error: message });
+  }
+});
+
+// PUT /api/admin/provider-configs/:providerId — update generic provider config
+router.put('/provider-configs/:providerId', requirePermission('manage_offerwalls'), async (req, res) => {
+  try {
+    const providerId = cleanProviderId(req.params.providerId);
+    const provider = await ProviderConfig.findOne({ providerId }).select('+security.credentials');
+    if (!provider) return res.status(404).json({ success: false, error: 'Provider config not found' });
+    const existingCredentials = provider.security?.credentials;
+    const secretInput = parseWriteOnlySecret(req.body.secret);
+    const removeSecret = req.body.removeSecret === true;
+
+    if (hasOwn(req.body, 'name')) provider.name = cleanString(req.body.name, 120) || provider.providerId;
+    if (hasOwn(req.body, 'label')) provider.label = cleanString(req.body.label, 120);
+    if (hasOwn(req.body, 'type')) {
+      const type = cleanString(req.body.type, 40);
+      if (!PROVIDER_TYPES.includes(type)) return res.status(400).json({ success: false, error: 'Invalid provider type' });
+      provider.type = type;
+    }
+    if (hasOwn(req.body, 'enabled')) provider.enabled = Boolean(req.body.enabled);
+    if (hasOwn(req.body, 'parameterMappings')) provider.parameterMappings = validateParameterMappings(req.body.parameterMappings);
+    if (hasOwn(req.body, 'statusMappings')) provider.statusMappings = validateStatusMappings(req.body.statusMappings);
+    const nextSecurity = validateSecurityConfig(hasOwn(req.body, 'security') ? req.body.security : {}, provider.security || {});
+    provider.security = applyWriteOnlyProviderSecret({
+      nextSecurity,
+      existingCredentials,
+      secretInput,
+      removeSecret,
+    });
+    if (hasOwn(req.body, 'responseConfig')) provider.responseConfig = normalizeResponseConfig(req.body.responseConfig);
+    if (hasOwn(req.body, 'ipAllowlist')) provider.ipAllowlist = normalizeIpAllowlist(req.body.ipAllowlist);
+    if (hasOwn(req.body, 'providerSettings')) {
+      provider.providerSettings = validateProviderSettings(req.body.providerSettings);
+    }
+
+    await provider.save();
+    await createLog(req.dbUser._id, 'UPDATE_PROVIDER_CONFIG', null, { providerId });
+    res.json({ success: true, provider: serializeProviderConfig(provider) });
+  } catch (error) {
+    res.status(400).json({ success: false, error: error.message || 'Failed to update provider config' });
   }
 });
 
@@ -791,7 +1433,7 @@ router.delete('/goodpicks-offers/:id', requirePermission('manage_offerwalls'), a
 
 router.get('/custom-offers/submissions/all', requirePermission('manage_offerwalls'), async (req, res) => {
   try {
-    const submissions = await CustomOfferSubmission.find()
+    const submissions = await CustomOfferSubmission.find({ offerType: { $ne: 'direct_offer' } })
       .populate('userId', 'email displayName')
       .populate('offerId', 'title rewardAmount')
       .sort({ createdAt: -1 });
@@ -814,6 +1456,9 @@ router.put('/custom-offers/submissions/:id', requirePermission('manage_offerwall
     if (!submission) {
       console.log(`[Approval] Submission not found: ${req.params.id}`);
       return res.status(404).json({ success: false, error: 'Submission not found' });
+    }
+    if (submission.offerType === 'direct_offer') {
+      return res.status(400).json({ success: false, error: 'Manual Direct Offers must be reviewed from the Direct Offers proof queue.' });
     }
 
     console.log(`[Approval] Found submission. Current status: ${submission.status}`);
@@ -1502,7 +2147,7 @@ router.get('/referral-debug/:userId', requirePermission('manage_users'), async (
     // Get all referral_reward transactions where THIS user's offers triggered commissions (linked)
     const offersThisUserCompleted = await Transaction.find({
       userId: user._id,
-      transactionType: { $in: ['offer_reward', 'custom_offer_reward'] },
+      transactionType: { $in: REAL_OFFER_EARNING_TYPES },
       status: 'completed',
     }).countDocuments();
 
@@ -1675,6 +2320,443 @@ router.get('/overview-stats', requirePrimaryAdmin, async (req, res) => {
   }
 });
 
+// GET /api/admin/conversions — paginated conversion visibility
+router.get('/conversions', requirePermission('manage_offerwalls'), async (req, res) => {
+  try {
+    const { page, limit, skip } = getPagination(req.query);
+    const filter = {};
+    const providerId = cleanProviderId(req.query.providerId);
+    const internalStatus = cleanString(req.query.internalStatus, 40);
+    const processingState = cleanString(req.query.processingState, 60);
+    const clickId = cleanString(req.query.clickId, 120);
+    const transactionId = cleanString(req.query.transactionId, 160);
+    const user = cleanString(req.query.user, 120);
+
+    if (providerId) filter.providerId = providerId;
+    if (internalStatus) {
+      if (!INTERNAL_STATUSES.includes(internalStatus)) return res.status(400).json({ success: false, error: 'Invalid internal status filter' });
+      filter.internalStatus = internalStatus;
+    }
+    if (processingState) {
+      if (!PROCESSING_STATES.includes(processingState)) return res.status(400).json({ success: false, error: 'Invalid processing state filter' });
+      filter.processingState = processingState;
+    }
+    if (clickId) filter.clickId = clickId;
+    if (transactionId) filter.providerTransactionId = transactionId;
+    if (user) {
+      if (!mongoose.Types.ObjectId.isValid(user)) return res.status(400).json({ success: false, error: 'Invalid user filter' });
+      filter.userId = user;
+    }
+    const fromRaw = cleanString(req.query.from, 80);
+    const toRaw = cleanString(req.query.to, 80);
+    if (fromRaw || toRaw) {
+      filter.createdAt = {};
+      const from = fromRaw ? new Date(fromRaw) : null;
+      const to = toRaw ? new Date(toRaw) : null;
+      if (fromRaw && Number.isNaN(from.getTime())) return res.status(400).json({ success: false, error: 'Invalid from date' });
+      if (toRaw && Number.isNaN(to.getTime())) return res.status(400).json({ success: false, error: 'Invalid to date' });
+      if (from && to && from > to) return res.status(400).json({ success: false, error: 'from date must be before to date' });
+      if (from) filter.createdAt.$gte = from;
+      if (to) filter.createdAt.$lte = to;
+    }
+
+    const [conversions, total] = await Promise.all([
+      Conversion.find(filter)
+        .populate('userId', 'displayName email avatarUrl')
+        .populate('offerId', 'title')
+        .populate('rewardTransactionId', 'amount transactionType status balanceAfter createdAt')
+        .populate('reversalTransactionId', 'amount transactionType status balanceAfter createdAt')
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit)
+        .lean(),
+      Conversion.countDocuments(filter),
+    ]);
+
+    res.json({
+      success: true,
+      conversions: conversions.map(serializeConversionAdmin),
+      pagination: { page, limit, total, totalPages: Math.ceil(total / limit) },
+    });
+  } catch (error) {
+    console.error('[/api/admin/conversions GET] Error:', error);
+    res.status(error.statusCode || 500).json({ success: false, error: error.statusCode ? error.message : 'Failed to fetch conversions' });
+  }
+});
+
+const loadAdminConversion = (id) => Conversion.findById(id)
+  .populate('userId', 'displayName email avatarUrl firebaseUid')
+  .populate('offerId', 'title')
+  .populate('rewardTransactionId', 'amount transactionType status balanceAfter createdAt')
+  .populate('reversalTransactionId', 'amount transactionType status balanceAfter createdAt');
+
+const writeManualConversionPostbackLog = async ({
+  req,
+  conversion,
+  action,
+  result = 'accepted',
+  isDuplicate = false,
+  rejectionReason = '',
+  transactionId = null,
+}) => {
+  try {
+    const doc = typeof conversion?.toObject === 'function' ? conversion.toObject() : conversion;
+    await PostbackLog.create({
+      providerId: doc?.providerId || 'manual',
+      route: `/api/admin/conversions/${doc?._id || ':id'}/${action}`,
+      method: 'POST',
+      sanitizedQuery: {},
+      sanitizedBody: boundAdminPayload({ action, reason: req.body?.reason || '' }),
+      sanitizedHeaders: {},
+      mappedFields: {
+        clickId: doc?.clickId || '',
+        transactionId: doc?.providerTransactionId || '',
+        status: action,
+        payout: doc?.payout?.amount ?? null,
+        eventType: doc?.eventType || '',
+        extra: { goalKey: doc?.goalKey || null, manualAdminAction: true },
+      },
+      security: {
+        checked: true,
+        passed: true,
+        method: 'admin_manual',
+        reason: 'Manual admin conversion action',
+      },
+      processingResult: result,
+      isDuplicate,
+      rejectionReason,
+      clickLogId: doc?.clickLogId?._id || doc?.clickLogId || null,
+      conversionId: doc?._id || null,
+      userId: doc?.userId?._id || doc?.userId || null,
+      transactionId,
+    });
+  } catch (error) {
+    console.error('[Admin] Failed to write manual conversion PostbackLog:', error);
+  }
+};
+
+const refreshAdminConversion = (id) => loadAdminConversion(id).lean();
+
+// POST /api/admin/conversions/:id/approve — manual approval through reward service
+router.post('/conversions/:id/approve', requirePermission('manage_offerwalls'), async (req, res) => {
+  try {
+    const reason = parseAdminManualReason(req.body?.reason);
+    if (!reason) return res.status(400).json({ success: false, error: 'A reason is required.' });
+
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) return res.status(404).json({ success: false, error: 'Conversion not found' });
+    const conversion = await Conversion.findById(req.params.id);
+    if (!conversion) return res.status(404).json({ success: false, error: 'Conversion not found' });
+    if (conversion.internalStatus === 'reversed' || ['reversed', 'reversal_processing'].includes(conversion.processingState)) {
+      return res.status(400).json({ success: false, error: 'Reversed conversions cannot be approved again' });
+    }
+
+    if (!(conversion.processingState === 'processed' && conversion.rewardTransactionId)) {
+      conversion.internalStatus = 'approved';
+      conversion.incomingStatus = 'manual_approved';
+      conversion.processingState = 'claimed';
+      conversion.security = { checked: true, passed: true, method: 'admin_manual', reason: 'Manual admin approval' };
+      conversion.rejectionReason = '';
+      conversion.errorReason = '';
+      conversion.metadata = {
+        ...(conversion.metadata || {}),
+        manualApproval: true,
+        manualApprovalAdminId: req.dbUser._id,
+        manualReason: reason,
+      };
+      await conversion.save();
+    }
+
+    const rewardResult = await processReward({
+      // Pass the saved document so the reward service evaluates the
+      // admin-applied approved state immediately, even if a fresh lookup is
+      // briefly served from a stale read view.
+      conversion,
+      hooks: {
+        emitWalletUpdate,
+        processVipLevelUp: (user, amount) => processVipLevelUp(user, amount, emitToUser),
+      },
+    });
+    const fresh = await refreshAdminConversion(conversion._id);
+    const responseConversion = fresh || rewardResult.conversion || conversion;
+    if (rewardResult.ok) {
+      responseConversion.internalStatus = 'approved';
+      responseConversion.processingState = 'processed';
+      responseConversion.rewardTransactionId = rewardResult.rewardTransaction?._id || responseConversion.rewardTransactionId;
+    }
+    const transactionId = rewardResult.rewardTransaction?._id || fresh?.rewardTransactionId?._id || fresh?.rewardTransactionId || null;
+    await writeManualConversionPostbackLog({
+      req,
+      conversion: fresh,
+      action: 'approve',
+      result: rewardResult.duplicate ? 'duplicate' : (rewardResult.ok ? 'accepted' : 'error'),
+      isDuplicate: Boolean(rewardResult.duplicate),
+      rejectionReason: rewardResult.ok ? '' : (rewardResult.reason || 'Manual approval failed'),
+      transactionId,
+    });
+    await createLog(req.dbUser._id, 'MANUAL_APPROVE_CONVERSION', fresh?.userId?._id || fresh?.userId || null, {
+      conversionId: conversion._id,
+      providerId: conversion.providerId,
+      offerId: conversion.offerId,
+      actionType: 'manual_approve_conversion',
+      reason,
+      result: rewardResult.duplicate ? 'duplicate' : (rewardResult.ok ? 'accepted' : 'error'),
+    });
+
+    if (rewardResult.ok) {
+      try {
+        await syncManualProofSubmissionStatus({ conversion: fresh || conversion, status: 'approved', adminNote: '' });
+      } catch (syncError) {
+        console.error('[Admin] Failed to sync manual proof approval:', syncError);
+      }
+    }
+
+    if (!rewardResult.ok) return res.status(400).json({ success: false, error: rewardResult.reason || 'Conversion could not be approved', conversion: serializeConversionAdmin(responseConversion) });
+    res.json({ success: true, conversion: serializeConversionAdmin(responseConversion), duplicate: Boolean(rewardResult.duplicate) });
+  } catch (error) {
+    console.error('[/api/admin/conversions/:id/approve] Error:', error);
+    res.status(500).json({ success: false, error: error.message || 'Failed to approve conversion' });
+  }
+});
+
+// POST /api/admin/conversions/:id/reject — manual no-credit rejection
+router.post('/conversions/:id/reject', requirePermission('manage_offerwalls'), async (req, res) => {
+  try {
+    const reason = parseAdminManualReason(req.body?.reason);
+    if (!reason) return res.status(400).json({ success: false, error: 'A reason is required.' });
+
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) return res.status(404).json({ success: false, error: 'Conversion not found' });
+    const conversion = await Conversion.findById(req.params.id);
+    if (!conversion) return res.status(404).json({ success: false, error: 'Conversion not found' });
+    if (conversion.processingState === 'processed' || conversion.rewardTransactionId) {
+      return res.status(400).json({ success: false, error: 'Credited conversions must be reversed with chargeback, not rejected' });
+    }
+    if (conversion.internalStatus === 'reversed') {
+      return res.status(400).json({ success: false, error: 'Reversed conversions cannot be rejected' });
+    }
+
+    const wasRejected = conversion.internalStatus === 'rejected';
+    conversion.internalStatus = 'rejected';
+    conversion.incomingStatus = 'manual_rejected';
+    conversion.processingState = 'pending';
+    conversion.rejectionReason = reason;
+    conversion.errorReason = '';
+    conversion.security = { checked: true, passed: true, method: 'admin_manual', reason: 'Manual admin rejection' };
+    conversion.metadata = {
+      ...(conversion.metadata || {}),
+      manualRejection: true,
+      manualRejectionAdminId: req.dbUser._id,
+      manualReason: reason,
+    };
+    await conversion.save();
+
+    if (conversion.clickLogId) {
+      await ClickLog.findByIdAndUpdate(conversion.clickLogId, { $set: { status: 'rejected', convertedAt: new Date() } });
+    }
+    if (!wasRejected && conversion.offerId) {
+      await DirectOffer.findByIdAndUpdate(conversion.offerId, { $inc: { totalRejected: 1 } });
+    }
+
+    const fresh = await refreshAdminConversion(conversion._id);
+    const responseConversion = fresh || conversion;
+    responseConversion.internalStatus = 'rejected';
+    responseConversion.processingState = 'pending';
+    await writeManualConversionPostbackLog({
+      req,
+      conversion: fresh,
+      action: 'reject',
+      result: wasRejected ? 'duplicate' : 'rejected',
+      isDuplicate: wasRejected,
+      rejectionReason: conversion.rejectionReason,
+    });
+    await createLog(req.dbUser._id, 'MANUAL_REJECT_CONVERSION', fresh?.userId?._id || fresh?.userId || null, {
+      conversionId: conversion._id,
+      providerId: conversion.providerId,
+      offerId: conversion.offerId,
+      actionType: 'manual_reject_conversion',
+      reason,
+      result: wasRejected ? 'duplicate' : 'rejected',
+    });
+
+    try {
+      await syncManualProofSubmissionStatus({ conversion: fresh || conversion, status: 'rejected', adminNote: reason });
+    } catch (syncError) {
+      console.error('[Admin] Failed to sync manual proof rejection:', syncError);
+    }
+
+    res.json({ success: true, conversion: serializeConversionAdmin(responseConversion), duplicate: wasRejected });
+  } catch (error) {
+    console.error('[/api/admin/conversions/:id/reject] Error:', error);
+    res.status(500).json({ success: false, error: error.message || 'Failed to reject conversion' });
+  }
+});
+
+// POST /api/admin/conversions/:id/chargeback — manual reversal through reversal service
+router.post('/conversions/:id/chargeback', requirePermission('manage_offerwalls'), async (req, res) => {
+  try {
+    const reason = parseAdminManualReason(req.body?.reason);
+    if (!reason) return res.status(400).json({ success: false, error: 'A reason is required.' });
+
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) return res.status(404).json({ success: false, error: 'Conversion not found' });
+    const conversion = await Conversion.findById(req.params.id);
+    if (!conversion) return res.status(404).json({ success: false, error: 'Conversion not found' });
+    if (!conversion.rewardTransactionId) {
+      return res.status(400).json({ success: false, error: 'Only credited conversions can be reversed' });
+    }
+
+    if (!(conversion.processingState === 'reversed' && conversion.reversalTransactionId)) {
+      conversion.internalStatus = 'reversed';
+      conversion.incomingStatus = conversion.incomingStatus || 'manual_chargeback';
+      conversion.processingState = conversion.processingState === 'reversal_failed' ? 'reversal_failed' : 'processed';
+      conversion.security = { checked: true, passed: true, method: 'admin_manual', reason: 'Manual admin chargeback' };
+      conversion.metadata = {
+        ...(conversion.metadata || {}),
+        manualChargeback: true,
+        manualChargebackAdminId: req.dbUser._id,
+        manualReason: reason,
+      };
+      await conversion.save();
+    }
+
+    const reversalResult = await processReversal({
+      // Pass the saved document so the reversal service evaluates the
+      // admin-applied reversed state immediately, even if a fresh lookup is
+      // briefly served from a stale read view.
+      conversion,
+      hooks: { emitWalletUpdate },
+    });
+    const fresh = await refreshAdminConversion(conversion._id);
+    const responseConversion = fresh || reversalResult.conversion || conversion;
+    if (reversalResult.ok) {
+      responseConversion.internalStatus = 'reversed';
+      responseConversion.processingState = 'reversed';
+      responseConversion.reversalTransactionId = reversalResult.reversalTransaction?._id || responseConversion.reversalTransactionId;
+    }
+    const transactionId = reversalResult.reversalTransaction?._id || fresh?.reversalTransactionId?._id || fresh?.reversalTransactionId || null;
+    await writeManualConversionPostbackLog({
+      req,
+      conversion: fresh,
+      action: 'chargeback',
+      result: reversalResult.duplicate ? 'duplicate' : (reversalResult.ok ? 'accepted' : 'error'),
+      isDuplicate: Boolean(reversalResult.duplicate),
+      rejectionReason: reversalResult.ok ? '' : (reversalResult.reason || 'Manual chargeback failed'),
+      transactionId,
+    });
+    await createLog(req.dbUser._id, 'MANUAL_CHARGEBACK_CONVERSION', fresh?.userId?._id || fresh?.userId || null, {
+      conversionId: conversion._id,
+      providerId: conversion.providerId,
+      offerId: conversion.offerId,
+      actionType: 'manual_chargeback_conversion',
+      reason,
+      result: reversalResult.duplicate ? 'duplicate' : (reversalResult.ok ? 'accepted' : 'error'),
+    });
+
+    if (reversalResult.ok) {
+      try {
+        await syncManualProofSubmissionStatus({ conversion: fresh || conversion, status: 'chargebacked', adminNote: reason });
+      } catch (syncError) {
+        console.error('[Admin] Failed to sync manual proof chargeback:', syncError);
+      }
+    }
+
+    if (!reversalResult.ok) return res.status(400).json({ success: false, error: reversalResult.reason || 'Conversion could not be reversed', conversion: serializeConversionAdmin(responseConversion) });
+    res.json({ success: true, conversion: serializeConversionAdmin(responseConversion), duplicate: Boolean(reversalResult.duplicate) });
+  } catch (error) {
+    console.error('[/api/admin/conversions/:id/chargeback] Error:', error);
+    res.status(500).json({ success: false, error: error.message || 'Failed to chargeback conversion' });
+  }
+});
+
+const serializePostbackLog = (log, includePayload = false) => {
+  const doc = typeof log.toObject === 'function' ? log.toObject() : log;
+  const payload = {
+    _id: doc._id,
+    createdAt: doc.createdAt,
+    providerId: doc.providerId,
+    route: doc.route,
+    method: doc.method,
+    mappedFields: boundAdminPayload(doc.mappedFields || {}),
+    sourceIp: doc.sourceIp,
+    userAgent: doc.userAgent,
+    security: boundAdminPayload(doc.security || {}),
+    processingResult: doc.processingResult,
+    isDuplicate: doc.isDuplicate,
+    rejectionReason: doc.rejectionReason,
+    clickLogId: doc.clickLogId,
+    conversion: doc.conversionId || null,
+    user: doc.userId || null,
+    transactionId: doc.transactionId,
+  };
+  if (includePayload) {
+    payload.sanitizedQuery = boundAdminPayload(doc.sanitizedQuery || {});
+    payload.sanitizedBody = boundAdminPayload(doc.sanitizedBody || {});
+    payload.sanitizedHeaders = boundAdminPayload(doc.sanitizedHeaders || {});
+  }
+  return payload;
+};
+
+// GET /api/admin/postback-logs — paginated sanitized postback logs
+router.get('/postback-logs', requirePermission('manage_offerwalls'), async (req, res) => {
+  try {
+    const { page, limit, skip } = getPagination(req.query);
+    const filter = {};
+    const providerId = cleanProviderId(req.query.providerId);
+    const result = cleanString(req.query.processingResult, 40);
+    const duplicate = cleanString(req.query.duplicate, 10);
+    const clickId = cleanString(req.query.clickId, 120);
+    const transactionId = cleanString(req.query.transactionId, 160);
+
+    if (providerId) filter.providerId = providerId;
+    if (result) {
+      if (!POSTBACK_RESULTS.includes(result)) return res.status(400).json({ success: false, error: 'Invalid processing result filter' });
+      filter.processingResult = result;
+    }
+    if (duplicate) {
+      if (!['true', 'false'].includes(duplicate)) return res.status(400).json({ success: false, error: 'Invalid duplicate filter' });
+      filter.isDuplicate = duplicate === 'true';
+    }
+    if (clickId) filter['mappedFields.clickId'] = clickId;
+    if (transactionId) filter['mappedFields.transactionId'] = transactionId;
+
+    const [logs, total] = await Promise.all([
+      PostbackLog.find(filter)
+        .populate('userId', 'displayName email')
+        .populate('conversionId', 'internalStatus processingState rewardAmount')
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit)
+        .lean(),
+      PostbackLog.countDocuments(filter),
+    ]);
+
+    res.json({
+      success: true,
+      logs: logs.map((log) => serializePostbackLog(log)),
+      pagination: { page, limit, total, totalPages: Math.ceil(total / limit) },
+    });
+  } catch (error) {
+    console.error('[/api/admin/postback-logs GET] Error:', error);
+    res.status(error.statusCode || 500).json({ success: false, error: error.statusCode ? error.message : 'Failed to fetch postback logs' });
+  }
+});
+
+// GET /api/admin/postback-logs/:id — sanitized detail view
+router.get('/postback-logs/:id', requirePermission('manage_offerwalls'), async (req, res) => {
+  try {
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+      return res.status(404).json({ success: false, error: 'Postback log not found' });
+    }
+    const log = await PostbackLog.findById(req.params.id)
+      .populate('userId', 'displayName email')
+      .populate('conversionId', 'internalStatus processingState rewardAmount rewardTransactionId reversalTransactionId')
+      .lean();
+    if (!log) return res.status(404).json({ success: false, error: 'Postback log not found' });
+    res.json({ success: true, log: serializePostbackLog(log, true) });
+  } catch (error) {
+    console.error('[/api/admin/postback-logs/:id GET] Error:', error);
+    res.status(500).json({ success: false, error: 'Failed to fetch postback log' });
+  }
+});
+
 router.get('/notifications', async (req, res) => {
   try {
     const notifs = await AdminNotification.find({ adminId: req.dbUser._id })
@@ -1726,7 +2808,7 @@ router.post('/notifications/mark-read', async (req, res) => {
 router.get('/proofs', requirePermission('manage_offerwalls'), async (req, res) => {
   try {
     // 1. Get Custom Offer Submissions that are 'pending'
-    const pendingCustomOfferSubs = await CustomOfferSubmission.find({ status: 'pending' })
+    const pendingCustomOfferSubs = await CustomOfferSubmission.find({ status: 'pending', offerType: { $ne: 'direct_offer' } })
       .populate('userId', 'displayName email avatarUrl')
       .populate('offerId', 'title rewardAmount')
       .sort({ updatedAt: 1 })
@@ -1787,7 +2869,7 @@ router.get('/proofs/history', requirePermission('manage_offerwalls'), async (req
     const fetchAmount = skipNum + limitNum + 1; // +1 to check if there is a next page
     
     // 1. Get Processed Custom Offer Submissions
-    const processedSubs = await CustomOfferSubmission.find({ status: { $in: ['approved', 'rejected', 'chargebacked'] } })
+    const processedSubs = await CustomOfferSubmission.find({ status: { $in: ['approved', 'rejected', 'chargebacked'] }, offerType: { $ne: 'direct_offer' } })
       .populate('userId', 'displayName email avatarUrl')
       .populate('offerId', 'title rewardAmount')
       .sort({ updatedAt: -1 })
@@ -1865,6 +2947,9 @@ router.post('/proofs/:type/:id/chargeback', requirePermission('manage_offerwalls
     if (type === 'custom_offer') {
       const submission = await CustomOfferSubmission.findById(id).populate('offerId');
       if (!submission) return res.status(404).json({ success: false, error: 'Submission not found' });
+      if (submission.offerType === 'direct_offer') {
+        return res.status(400).json({ success: false, error: 'Manual Direct Offer chargebacks must use the Conversions page.' });
+      }
       if (submission.status !== 'approved') return res.status(400).json({ success: false, error: 'Only approved proofs can be charged back' });
 
       targetUserId = submission.userId;
@@ -2003,6 +3088,9 @@ router.post('/proofs/:type/:id/:action', requirePermission('manage_offerwalls'),
       // but we can re-implement the short version here for completeness or just update it
       const submission = await CustomOfferSubmission.findById(id).populate('offerId');
       if (!submission) return res.status(404).json({ success: false, error: 'Submission not found' });
+      if (submission.offerType === 'direct_offer') {
+        return res.status(400).json({ success: false, error: 'Manual Direct Offers must be reviewed from the Direct Offers proof queue.' });
+      }
       if (submission.status !== 'pending') return res.status(400).json({ success: false, error: 'Not in pending state' });
 
       if (action === 'approve') {
@@ -2319,10 +3407,79 @@ router.delete('/avatars/:id', requirePermission('manage_users'), async (req, res
 router.get('/direct-offers', requirePermission('manage_offerwalls'), async (req, res) => {
   try {
     const offers = await DirectOffer.find().sort({ createdAt: -1 });
-    res.json({ success: true, offers });
+    res.json({ success: true, offers: offers.map(sanitizeDirectOfferAdmin) });
   } catch (error) {
     console.error('[/api/admin/direct-offers GET] Error:', error);
     res.status(500).json({ success: false, error: 'Failed to fetch direct offers' });
+  }
+});
+
+// GET /api/admin/direct-offers/:id/postback-url — Copy-ready URL with secret
+router.get('/direct-offers/:id/postback-url', requirePermission('manage_offerwalls'), async (req, res) => {
+  try {
+    const offer = await DirectOffer.findById(req.params.id);
+    if (!offer) return res.status(404).json({ success: false, error: 'Direct offer not found' });
+    if (offer.trackingMode === 'manual') {
+      return res.status(400).json({ success: false, error: 'Manual offers do not use postback URLs.' });
+    }
+    res.json({
+      success: true,
+      postbackUrl: buildDirectOfferPostbackUrl(offer, directOfferPostbackBaseUrl(req)),
+    });
+  } catch (error) {
+    console.error('[/api/admin/direct-offers/:id/postback-url GET] Error:', error);
+    res.status(500).json({ success: false, error: 'Failed to build direct offer postback URL' });
+  }
+});
+
+// GET /api/admin/direct-offers/proofs — Manual Direct Offer proof queue/history
+router.get('/direct-offers/proofs', requirePermission('manage_offerwalls'), async (req, res) => {
+  try {
+    const status = cleanString(req.query.status, 30) || 'pending';
+    const filter = { offerType: 'direct_offer' };
+    if (status === 'pending') filter.status = 'pending';
+    else if (status === 'history') filter.status = { $in: ['approved', 'rejected', 'chargebacked'] };
+    else if (status !== 'all') return res.status(400).json({ success: false, error: 'Invalid proof status filter' });
+
+    const submissions = await CustomOfferSubmission.find(filter)
+      .populate('directOfferId', 'title titleDe rewardAmount trackingMode')
+      .populate('userId', 'displayName email avatarUrl')
+      .populate('conversionId', 'internalStatus processingState rewardTransactionId reversalTransactionId')
+      .sort({ updatedAt: status === 'history' ? -1 : 1 })
+      .limit(200)
+      .lean();
+
+    res.json({
+      success: true,
+      proofs: submissions.map((submission) => ({
+        _id: submission._id,
+        status: submission.status,
+        adminNote: submission.adminNote,
+        proofText: submission.proofText,
+        proofImage: submission.proofImage,
+        proofImages: submission.proofImages || [],
+        clickId: submission.clickId,
+        submittedAt: submission.updatedAt,
+        createdAt: submission.createdAt,
+        offer: submission.directOfferId ? {
+          _id: submission.directOfferId._id,
+          title: submission.directOfferId.title,
+          titleDe: submission.directOfferId.titleDe,
+          rewardAmount: submission.directOfferId.rewardAmount,
+        } : null,
+        user: submission.userId ? {
+          _id: submission.userId._id,
+          displayName: submission.userId.displayName,
+          email: submission.userId.email,
+          avatarUrl: submission.userId.avatarUrl,
+        } : null,
+        conversion: submission.conversionId || null,
+        conversionId: submission.conversionId?._id || null,
+      })),
+    });
+  } catch (error) {
+    console.error('[/api/admin/direct-offers/proofs GET] Error:', error);
+    res.status(500).json({ success: false, error: 'Failed to fetch manual proofs' });
   }
 });
 
@@ -2330,37 +3487,54 @@ router.get('/direct-offers', requirePermission('manage_offerwalls'), async (req,
 router.post('/direct-offers', requirePermission('manage_offerwalls'), async (req, res) => {
   try {
     const {
-      title, description, rewardAmount, advertiserPayoutAmount,
+      title, titleDe, description, descriptionDe, rewardAmount, advertiserPayoutAmount,
       advertiserUrl, isActive, expirationDate, icon, coverImage,
-      platforms, requirements, requirementType, postbackMapping,
+      platforms, requirements, requirementsDe, requirementType, postbackMapping, allowedCountries, displayPlacements, goals,
+      maxTotalClicks, holdEnabled, holdDays, holdThreshold,
+      trackingMode, proofInstructions, proofInstructionsDe,
     } = req.body;
 
     if (!title || !description || !rewardAmount || !advertiserUrl) {
       return res.status(400).json({ success: false, error: 'title, description, rewardAmount, and advertiserUrl are required' });
     }
 
+    const normalizedTrackingMode = normalizeTrackingMode(trackingMode);
+
     const offer = await DirectOffer.create({
       title,
+      titleDe: titleDe || '',
       description,
+      descriptionDe: descriptionDe || '',
+      trackingMode: normalizedTrackingMode,
+      proofInstructions: parseDirectOfferProofInstructions(proofInstructions),
+      proofInstructionsDe: parseDirectOfferProofInstructions(proofInstructionsDe),
       rewardAmount: Number(rewardAmount),
+      holdEnabled: holdEnabled === true,
+      holdDays: parseOptionalHoldInteger(holdDays, 'Hold days') ?? 30,
+      holdThreshold: parseOptionalHoldInteger(holdThreshold, 'Hold threshold') ?? 0,
       advertiserPayoutAmount: Number(advertiserPayoutAmount) || 0,
       advertiserUrl,
       isActive: isActive !== undefined ? Boolean(isActive) : true,
       expirationDate: expirationDate || null,
       icon: icon || null,
       coverImage: coverImage || null,
+      displayPlacements: normalizeDisplayPlacements(displayPlacements),
+      allowedCountries: parseAllowedCountriesInput(allowedCountries),
       platforms: platforms || { desktop: true, android: true, ios: true },
       requirements: requirements || [],
+      requirementsDe: Array.isArray(requirementsDe) ? requirementsDe : [],
       requirementType: requirementType === 'paragraph' ? 'paragraph' : 'bullets',
+      goals: normalizeGoals(goals),
       postbackMapping: postbackMapping || {},
+      maxTotalClicks: parseMaxTotalClicks(maxTotalClicks),
       // postbackSecretKey is auto-generated by the model default
     });
 
-    await createLog(req.user._id, 'create_direct_offer', null, { offerId: offer._id, title });
-    res.status(201).json({ success: true, offer });
+    await createLog(req.dbUser._id, 'CREATE_DIRECT_OFFER', null, { offerId: offer._id, title: offer.title, actionType: 'create' });
+    res.status(201).json({ success: true, offer: sanitizeDirectOfferAdmin(offer) });
   } catch (error) {
     console.error('[/api/admin/direct-offers POST] Error:', error);
-    res.status(500).json({ success: false, error: 'Failed to create direct offer' });
+    res.status(error.statusCode || 500).json({ success: false, error: error.statusCode ? error.message : 'Failed to create direct offer' });
   }
 });
 
@@ -2368,38 +3542,53 @@ router.post('/direct-offers', requirePermission('manage_offerwalls'), async (req
 router.put('/direct-offers/:id', requirePermission('manage_offerwalls'), async (req, res) => {
   try {
     const {
-      title, description, rewardAmount, advertiserPayoutAmount,
+      title, titleDe, description, descriptionDe, rewardAmount, advertiserPayoutAmount,
       advertiserUrl, isActive, expirationDate, icon, coverImage,
-      platforms, requirements, requirementType, postbackMapping,
+      platforms, requirements, requirementsDe, requirementType, postbackMapping, allowedCountries, displayPlacements, goals,
+      maxTotalClicks, holdEnabled, holdDays, holdThreshold,
+      trackingMode, proofInstructions, proofInstructionsDe,
     } = req.body;
 
     const offer = await DirectOffer.findByIdAndUpdate(
       req.params.id,
       {
         ...(title !== undefined && { title }),
+        ...(titleDe !== undefined && { titleDe }),
         ...(description !== undefined && { description }),
+        ...(descriptionDe !== undefined && { descriptionDe }),
+        ...(trackingMode !== undefined && { trackingMode: normalizeTrackingMode(trackingMode) }),
+        ...(proofInstructions !== undefined && { proofInstructions: parseDirectOfferProofInstructions(proofInstructions) }),
+        ...(proofInstructionsDe !== undefined && { proofInstructionsDe: parseDirectOfferProofInstructions(proofInstructionsDe) }),
         ...(rewardAmount !== undefined && { rewardAmount: Number(rewardAmount) }),
+        ...(holdEnabled !== undefined && { holdEnabled: holdEnabled === true }),
+        ...(holdDays !== undefined && { holdDays: parseOptionalHoldInteger(holdDays, 'Hold days') ?? 30 }),
+        ...(holdThreshold !== undefined && { holdThreshold: parseOptionalHoldInteger(holdThreshold, 'Hold threshold') ?? 0 }),
         ...(advertiserPayoutAmount !== undefined && { advertiserPayoutAmount: Number(advertiserPayoutAmount) }),
         ...(advertiserUrl !== undefined && { advertiserUrl }),
         ...(isActive !== undefined && { isActive: Boolean(isActive) }),
         ...(expirationDate !== undefined && { expirationDate: expirationDate || null }),
         ...(icon !== undefined && { icon }),
         ...(coverImage !== undefined && { coverImage }),
+        ...(displayPlacements !== undefined && { displayPlacements: normalizeDisplayPlacements(displayPlacements) }),
+        ...(allowedCountries !== undefined && { allowedCountries: parseAllowedCountriesInput(allowedCountries) }),
         ...(platforms !== undefined && { platforms }),
         ...(requirements !== undefined && { requirements }),
+        ...(requirementsDe !== undefined && { requirementsDe }),
         ...(requirementType !== undefined && { requirementType: requirementType === 'paragraph' ? 'paragraph' : 'bullets' }),
+        ...(goals !== undefined && { goals: normalizeGoals(goals) }),
         ...(postbackMapping !== undefined && { postbackMapping }),
+        ...(maxTotalClicks !== undefined && { maxTotalClicks: parseMaxTotalClicks(maxTotalClicks) }),
       },
       { new: true }
     );
 
     if (!offer) return res.status(404).json({ success: false, error: 'Direct offer not found' });
 
-    await createLog(req.user._id, 'update_direct_offer', null, { offerId: offer._id, title: offer.title });
-    res.json({ success: true, offer });
+    await createLog(req.dbUser._id, 'UPDATE_DIRECT_OFFER', null, { offerId: offer._id, title: offer.title, actionType: 'update' });
+    res.json({ success: true, offer: sanitizeDirectOfferAdmin(offer) });
   } catch (error) {
     console.error('[/api/admin/direct-offers PUT] Error:', error);
-    res.status(500).json({ success: false, error: 'Failed to update direct offer' });
+    res.status(error.statusCode || 500).json({ success: false, error: error.statusCode ? error.message : 'Failed to update direct offer' });
   }
 });
 
@@ -2413,8 +3602,8 @@ router.delete('/direct-offers/:id', requirePermission('manage_offerwalls'), asyn
     );
     if (!offer) return res.status(404).json({ success: false, error: 'Direct offer not found' });
 
-    await createLog(req.user._id, 'deactivate_direct_offer', null, { offerId: offer._id, title: offer.title });
-    res.json({ success: true, message: 'Direct offer deactivated', offer });
+    await createLog(req.dbUser._id, 'DEACTIVATE_DIRECT_OFFER', null, { offerId: offer._id, title: offer.title, actionType: 'deactivate' });
+    res.json({ success: true, message: 'Direct offer deactivated', offer: sanitizeDirectOfferAdmin(offer) });
   } catch (error) {
     console.error('[/api/admin/direct-offers DELETE] Error:', error);
     res.status(500).json({ success: false, error: 'Failed to deactivate direct offer' });
@@ -2424,114 +3613,190 @@ router.delete('/direct-offers/:id', requirePermission('manage_offerwalls'), asyn
 // GET /api/admin/direct-offers/:id/clicks — View click logs for a specific offer
 router.get('/direct-offers/:id/clicks', requirePermission('manage_offerwalls'), async (req, res) => {
   try {
-    const { page = 1, limit = 50, status } = req.query;
+    const { page, limit, skip } = getPagination(req.query);
+    const status = cleanString(req.query.status, 40);
     const query = { offerId: req.params.id };
-    if (status) query.status = status;
+    if (status) {
+      if (!CLICK_STATUSES.includes(status)) return res.status(400).json({ success: false, error: 'Invalid click status filter' });
+      query.status = status;
+    }
 
     const clicks = await ClickLog.find(query)
-      .populate('userId', 'displayName email walletBalance')
+      .populate('userId', 'displayName email')
       .sort({ createdAt: -1 })
-      .limit(parseInt(limit))
-      .skip((parseInt(page) - 1) * parseInt(limit));
+      .limit(limit)
+      .skip(skip)
+      .lean();
 
     const total = await ClickLog.countDocuments(query);
-    res.json({ success: true, clicks, total });
+    res.json({ success: true, clicks: clicks.map(serializeClickLogAdmin), total, pagination: { page, limit, total, totalPages: Math.ceil(total / limit) } });
   } catch (error) {
     console.error('[/api/admin/direct-offers/:id/clicks GET] Error:', error);
-    res.status(500).json({ success: false, error: 'Failed to fetch click logs' });
+    res.status(error.statusCode || 500).json({ success: false, error: error.statusCode ? error.message : 'Failed to fetch click logs' });
   }
 });
 
 // GET /api/admin/click-logs — View all click logs (global, with filters)
 router.get('/click-logs', requirePermission('manage_offerwalls'), async (req, res) => {
   try {
-    const { page = 1, limit = 50, status, userId, offerId } = req.query;
+    const { page, limit, skip } = getPagination(req.query);
+    const status = cleanString(req.query.status, 40);
+    const userId = cleanString(req.query.userId, 120);
+    const offerId = cleanString(req.query.offerId, 120);
+    const providerId = cleanString(req.query.providerId, 80);
+    const providerType = cleanString(req.query.providerType, 60);
+    const campaignType = cleanString(req.query.campaignType, 60);
+    const clickId = cleanString(req.query.clickId, 120);
     const query = {};
-    if (status) query.status = status;
-    if (userId) query.userId = userId;
-    if (offerId) query.offerId = offerId;
+    if (status) {
+      if (!CLICK_STATUSES.includes(status)) return res.status(400).json({ success: false, error: 'Invalid click status filter' });
+      query.status = status;
+    }
+    if (userId) {
+      if (!mongoose.Types.ObjectId.isValid(userId)) return res.status(400).json({ success: false, error: 'Invalid user filter' });
+      query.userId = userId;
+    }
+    if (offerId) {
+      if (!mongoose.Types.ObjectId.isValid(offerId)) return res.status(400).json({ success: false, error: 'Invalid offer filter' });
+      query.offerId = offerId;
+    }
+    if (providerId) query.providerId = cleanProviderId(providerId);
+    if (providerType) {
+      if (!PROVIDER_TYPES.includes(providerType)) return res.status(400).json({ success: false, error: 'Invalid provider type filter' });
+      query.providerType = providerType;
+    }
+    if (campaignType) {
+      if (!CAMPAIGN_TYPES.includes(campaignType)) return res.status(400).json({ success: false, error: 'Invalid campaign type filter' });
+      query.campaignType = campaignType;
+    }
+    if (clickId) query.clickId = clickId;
 
     const clicks = await ClickLog.find(query)
       .populate('userId', 'displayName email')
       .populate('offerId', 'title rewardAmount')
       .sort({ createdAt: -1 })
-      .limit(parseInt(limit))
-      .skip((parseInt(page) - 1) * parseInt(limit));
+      .limit(limit)
+      .skip(skip)
+      .lean();
 
     const total = await ClickLog.countDocuments(query);
-    res.json({ success: true, clicks, total });
+    res.json({
+      success: true,
+      clicks: clicks.map(serializeClickLogAdmin),
+      total,
+      pagination: { page, limit, total, totalPages: Math.ceil(total / limit) },
+    });
   } catch (error) {
     console.error('[/api/admin/click-logs GET] Error:', error);
-    res.status(500).json({ success: false, error: 'Failed to fetch click logs' });
+    res.status(error.statusCode || 500).json({ success: false, error: error.statusCode ? error.message : 'Failed to fetch click logs' });
   }
 });
 
-// POST /api/admin/click-logs/:clickId/approve — Manual override: approve a click
+// POST /api/admin/click-logs/:clickId/approve — Manual override: approve a click.
+// This is NOT a separate financial path: it resolves/creates the same Conversion
+// used by the postback + manual-conversion flows and credits through processReward,
+// so a click can only ever be credited once. A credited Conversion or an existing
+// reward ledger transaction (even for historical records with no clickLog
+// transactionId) short-circuits to a duplicate result instead of crediting again.
 router.post('/click-logs/:clickId/approve', requirePermission('manage_offerwalls'), async (req, res) => {
   try {
+    const reason = parseAdminManualReason(req.body?.reason);
+    if (!reason) return res.status(400).json({ success: false, error: 'A reason is required.' });
+
     const clickLog = await ClickLog.findOne({ clickId: req.params.clickId }).populate('offerId');
     if (!clickLog) return res.status(404).json({ success: false, error: 'Click log not found' });
     if (clickLog.status === 'approved') {
       return res.status(400).json({ success: false, error: 'Click already approved' });
     }
 
-    const offer = clickLog.offerId;
-    const user = await User.findById(clickLog.userId);
-    if (!user) return res.status(404).json({ success: false, error: 'User not found' });
-
-    const coinsToCredit = clickLog.rewardAmount;
-    const newBalance = user.walletBalance + coinsToCredit;
-
-    await User.findByIdAndUpdate(user._id, {
-      $inc: { walletBalance: coinsToCredit, totalEarned: coinsToCredit },
-    });
-
-    const tx = await Transaction.create({
-      userId: user._id,
-      transactionType: 'direct_offer_reward',
-      amount: coinsToCredit,
-      balanceAfter: newBalance,
-      description: `Direct offer reward (manual): ${offer ? offer.title : 'Unknown Offer'}`,
-      status: 'completed',
-      sourceType: 'direct_offer',
-      sourceId: clickLog.offerId._id,
-      metadata: { clickId: req.params.clickId, manualApproval: true, adminId: req.user._id },
-      externalId: `direct:${req.params.clickId}`,
-    });
-
-    clickLog.status = 'approved';
-    clickLog.convertedAt = new Date();
-    clickLog.transactionId = tx._id;
-    await clickLog.save();
-
-    if (offer) {
-      await DirectOffer.findByIdAndUpdate(offer._id, { $inc: { totalApproved: 1 } });
+    const offer = await DirectOffer.findById(clickLog.offerId?._id || clickLog.offerId);
+    if (!offer) return res.status(404).json({ success: false, error: 'Offer not found' });
+    if (offer.trackingMode === 'manual') {
+      return res.status(400).json({ success: false, error: 'Manual offers must be approved from the manual proof queue.' });
     }
 
-    await notify(
-      user._id,
-      'direct_offer_reward',
-      '🎉 Offer Completed!',
-      `You earned ${coinsToCredit.toLocaleString()} coins from "${offer ? offer.title : 'Direct Offer'}".`,
-      { txId: tx._id, amount: coinsToCredit }
-    );
+    const enabledGoals = Array.isArray(offer.goals) ? offer.goals.filter((goal) => goal && goal.enabled !== false) : [];
+    if (enabledGoals.length > 0) {
+      return res.status(400).json({ success: false, error: 'This is a multi-step offer. Approve the specific goal from the Conversions page.' });
+    }
 
-    emitWalletUpdate(user.firebaseUid, newBalance);
+    // Double-credit guard: a credited Conversion or an existing reward ledger
+    // transaction for this click means it was already credited somewhere.
+    const existingCreditedConversion = await findCreditedConversionForClickLog({ clickLogId: clickLog._id });
+    const existingRewardTransaction = await findExistingClickRewardTransaction({ clickLog });
+    if (existingCreditedConversion || existingRewardTransaction) {
+      clickLog.status = 'approved';
+      clickLog.convertedAt = clickLog.convertedAt || new Date();
+      if (!clickLog.transactionId && existingRewardTransaction) clickLog.transactionId = existingRewardTransaction._id;
+      await clickLog.save();
+      await createLog(req.dbUser._id, 'MANUAL_APPROVE_CLICK', clickLog.userId, {
+        clickId: req.params.clickId,
+        reason,
+        actionType: 'manual_approve_click',
+        result: 'duplicate',
+      });
+      return res.json({ success: true, duplicate: true, message: 'Click was already credited; no additional reward applied.' });
+    }
 
-    try { await processVipLevelUp(user._id); } catch (e) { /* non-fatal */ }
+    const providerConfig = buildDirectOfferProviderConfig(offer);
+    const conversionResult = await createOrResolveConversion({
+      providerConfig,
+      mapped: {
+        clickId: clickLog.clickId,
+        transactionId: `manual:${clickLog.clickId}`,
+        status: 'approved',
+        payout: null,
+        eventType: '',
+        providerUserId: '',
+        extra: {},
+      },
+      internalStatus: 'approved',
+      clickLog,
+      payoutAmount: 0,
+      security: { checked: true, passed: true, method: 'admin_manual', reason: 'Manual admin click approval' },
+      goalKey: null,
+      rewardAmount: clickLog.rewardAmount,
+    });
 
-    await createLog(req.user._id, 'manual_approve_click', user._id, { clickId: req.params.clickId, coins: coinsToCredit });
-    res.json({ success: true, message: `Approved. Credited ${coinsToCredit} coins to ${user.displayName || user.email}` });
+    if (!conversionResult || !conversionResult.conversion) {
+      return res.status(400).json({ success: false, error: 'Could not resolve a conversion for this click approval.' });
+    }
+
+    const rewardResult = await processReward({
+      conversion: conversionResult.conversion,
+      hooks: {
+        emitWalletUpdate,
+        processVipLevelUp: (user, amount) => processVipLevelUp(user, amount, emitToUser),
+      },
+    });
+
+    await createLog(req.dbUser._id, 'MANUAL_APPROVE_CLICK', clickLog.userId, {
+      clickId: req.params.clickId,
+      reason,
+      actionType: 'manual_approve_click',
+      conversionId: conversionResult.conversion._id,
+      result: rewardResult.duplicate ? 'duplicate' : (rewardResult.ok ? 'accepted' : 'error'),
+    });
+
+    if (!rewardResult.ok) {
+      return res.status(400).json({ success: false, error: rewardResult.reason || 'Click could not be approved' });
+    }
+    return res.json({ success: true, duplicate: Boolean(rewardResult.duplicate), message: 'Click approved' });
   } catch (error) {
     console.error('[/api/admin/click-logs/:clickId/approve] Error:', error);
-    res.status(500).json({ success: false, error: 'Failed to approve click' });
+    res.status(error.statusCode || 500).json({ success: false, error: error.statusCode ? error.message : 'Failed to approve click' });
   }
 });
 
-// POST /api/admin/click-logs/:clickId/reject — Manual override: reject a click
+// POST /api/admin/click-logs/:clickId/reject — Manual override: reject a click.
+// Reason is required. Rejection never credits; it also advances the conversion
+// lifecycle where one can be resolved.
 router.post('/click-logs/:clickId/reject', requirePermission('manage_offerwalls'), async (req, res) => {
   try {
-    const clickLog = await ClickLog.findOne({ clickId: req.params.clickId });
+    const reason = parseAdminManualReason(req.body?.reason);
+    if (!reason) return res.status(400).json({ success: false, error: 'A reason is required.' });
+
+    const clickLog = await ClickLog.findOne({ clickId: req.params.clickId }).populate('offerId');
     if (!clickLog) return res.status(404).json({ success: false, error: 'Click log not found' });
     if (clickLog.status === 'approved') {
       return res.status(400).json({ success: false, error: 'Cannot reject an already approved click' });
@@ -2539,16 +3804,56 @@ router.post('/click-logs/:clickId/reject', requirePermission('manage_offerwalls'
     if (clickLog.status === 'rejected') {
       return res.status(400).json({ success: false, error: 'Click already rejected' });
     }
+    if (clickLog.offerId?.trackingMode === 'manual') {
+      return res.status(400).json({ success: false, error: 'Manual offers must be reviewed from the manual proof queue.' });
+    }
+
+    const existingCreditedConversion = await findCreditedConversionForClickLog({ clickLogId: clickLog._id });
+    const existingRewardTransaction = await findExistingClickRewardTransaction({ clickLog });
+    if (existingCreditedConversion || existingRewardTransaction) {
+      return res.status(400).json({ success: false, error: 'Credited clicks must be reversed with chargeback, not rejected' });
+    }
 
     clickLog.status = 'rejected';
     clickLog.convertedAt = new Date();
     await clickLog.save();
 
     if (clickLog.offerId) {
-      await DirectOffer.findByIdAndUpdate(clickLog.offerId, { $inc: { totalRejected: 1 } });
+      await DirectOffer.findByIdAndUpdate(clickLog.offerId?._id || clickLog.offerId, { $inc: { totalRejected: 1 } });
     }
 
-    await createLog(req.user._id, 'manual_reject_click', clickLog.userId, { clickId: req.params.clickId });
+    // Advance the conversion lifecycle where practical. A credited click is
+    // guarded above, so this only records a no-credit rejection. Transition
+    // conflicts are ignored because the click is already explicitly rejected.
+    const offer = clickLog.offerId && clickLog.offerId.goals !== undefined
+      ? clickLog.offerId
+      : await DirectOffer.findById(clickLog.offerId?._id || clickLog.offerId);
+    if (offer) {
+      try {
+        await createOrResolveConversion({
+          providerConfig: buildDirectOfferProviderConfig(offer),
+          mapped: {
+            clickId: clickLog.clickId,
+            transactionId: `manual:${clickLog.clickId}`,
+            status: 'rejected',
+            payout: null,
+            eventType: '',
+            providerUserId: '',
+            extra: {},
+          },
+          internalStatus: 'rejected',
+          clickLog,
+          payoutAmount: 0,
+          security: { checked: true, passed: true, method: 'admin_manual', reason: 'Manual admin click rejection' },
+          goalKey: null,
+          rewardAmount: clickLog.rewardAmount,
+        });
+      } catch (conversionError) {
+        console.warn('[click-logs reject] conversion lifecycle skip:', conversionError.message);
+      }
+    }
+
+    await createLog(req.dbUser._id, 'MANUAL_REJECT_CLICK', clickLog.userId, { clickId: req.params.clickId, reason, actionType: 'manual_reject_click' });
     res.json({ success: true, message: 'Click rejected' });
   } catch (error) {
     console.error('[/api/admin/click-logs/:clickId/reject] Error:', error);
@@ -2848,5 +4153,25 @@ router.delete('/cookies/:id', async (req, res) => {
     res.status(500).json({ success: false, error: 'Failed to delete cookie' });
   }
 });
+
+router._phase8AdminHelpers = {
+  getPagination,
+  normalizeResponseConfig,
+  parseWriteOnlySecret,
+  serializeProviderConfig,
+  serializeClickLogAdmin,
+  serializeConversionAdmin,
+  sanitizeDirectOfferAdmin,
+  buildDirectOfferPostbackUrl,
+  serializePostbackLog,
+  applyWriteOnlyProviderSecret,
+  boundAdminPayload,
+  cleanString,
+  parseAdminManualReason,
+  validateProviderSettings,
+  validateParameterMappings,
+  validateSecurityConfig,
+  validateStatusMappings,
+};
 
 module.exports = router;

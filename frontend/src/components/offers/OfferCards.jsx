@@ -10,20 +10,17 @@ import CoinDisplay from '../CoinDisplay';
 import CoinIcon from '../CoinIcon';
 import { ProofUploadView } from './ProofUploadView';
 import { GoodpicksSupportModal } from './GoodpicksModal';
+import { buildProviderUrl } from '../../utils/providerUrl';
+
+// Re-exported for existing consumers that import it from this module.
+export { buildProviderUrl };
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 const item = { hidden: { opacity: 0, y: 16 }, show: { opacity: 1, y: 0, transition: { duration: 0.4 } } };
 
-export const buildProviderUrl = (provider, userId) => {
-  const CPX_APP_ID = '32283';
-  switch (provider.id) {
-    case 'cpx':
-      return userId
-        ? `https://offers.cpx-research.com/index.php?app_id=${CPX_APP_ID}&ext_user_id=${userId}`
-        : null;
-    default:
-      return provider.iframeUrl || null;
-  }
+const isRequirementCompleted = (requirement) => {
+  if (!requirement || typeof requirement !== 'object') return false;
+  return requirement.completed === true || requirement.credited === true || requirement.status === 'approved';
 };
 
 export const getProviderLogo = (id, isDarkMode = false) => {
@@ -743,7 +740,7 @@ export const FeaturedOfferModal = ({ offer, token, onClose, onSubmitted }) => {
               </div>
             ) : requirementsList && requirementsList.length > 0 ? (
               requirementsList.map((req, i) => {
-                const isCompleted = i === 0;
+                const isCompleted = isRequirementCompleted(req);
                 return (
                   <div
                     key={i}
@@ -808,8 +805,8 @@ export const FeaturedOfferModal = ({ offer, token, onClose, onSubmitted }) => {
                         }}
                       />
                     )}
-                    <span
-                      style={{
+                      <span
+                        style={{
                         fontFamily: '"Poppins", sans-serif',
                         fontWeight: 500,
                         fontSize: '14px',
@@ -817,9 +814,9 @@ export const FeaturedOfferModal = ({ offer, token, onClose, onSubmitted }) => {
                         letterSpacing: '0%',
                         color: isDarkMode ? '#FFFFFF' : '#000000',
                       }}
-                    >
-                      {req}
-                    </span>
+                      >
+                        {typeof req === 'object' ? (req.label || req.title || req.text || '') : req}
+                      </span>
                   </div>
                 );
               })

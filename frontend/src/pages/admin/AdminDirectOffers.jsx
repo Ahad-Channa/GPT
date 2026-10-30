@@ -1,0 +1,1496 @@
+import { useState, useEffect, useCallback } from 'react';
+import { useAuth } from '../../contexts/AuthContext';
+import { motion, AnimatePresence } from 'framer-motion';
+import {
+  FiLink, FiPlus, FiTrash2, FiToggleLeft, FiToggleRight,
+  FiExternalLink, FiCheckCircle, FiXCircle, FiClock,
+  FiLoader, FiRefreshCw, FiEye, FiCopy, FiActivity,
+  FiChevronDown, FiChevronUp, FiSettings, FiFileText, FiBookOpen
+} from 'react-icons/fi';
+
+const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+
+const CLICK_STATUS_COLORS = {
+  clicked:  { text: 'text-slate-300',   bg: 'bg-slate-500/10',   border: 'border-slate-500/20'  },
+  pending:  { text: 'text-amber-400',   bg: 'bg-amber-500/10',   border: 'border-amber-500/20'  },
+  approved: { text: 'text-emerald-400', bg: 'bg-emerald-500/10', border: 'border-emerald-500/20' },
+  rejected: { text: 'text-rose-400',    bg: 'bg-rose-500/10',    border: 'border-rose-500/20'   },
+};
+
+const Badge = ({ status }) => {
+  const c = CLICK_STATUS_COLORS[status] || CLICK_STATUS_COLORS.clicked;
+  return (
+    <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${c.text} ${c.bg} border ${c.border}`}>
+      {status}
+    </span>
+  );
+};
+
+const PRESET_ICONS = [
+  '🎮', '🏆', '💰', '🎯', '🎁', '💎', '🔥', '⚡',
+  '🚀', '📱', '🛒', '🎵', '💪', '🌟', '🎲', '📺',
+  '🏨', '✈️', '🛍️', '🎰', '🏦', '🎬',
+];
+
+const MAX_GOALS = 25;
+
+const normalizeClientGoals = (goals) => (Array.isArray(goals) ? goals : [])
+  .filter(g => g && g.goalKey)
+  .map(g => ({
+    goalKey: g.goalKey,
+    label: g.label || '',
+    labelDe: g.labelDe || '',
+    description: g.description || '',
+    descriptionDe: g.descriptionDe || '',
+    externalEventId: g.externalEventId || '',
+    externalEventAliases: Array.isArray(g.externalEventAliases) ? g.externalEventAliases.join(', ') : (g.externalEventAliases || ''),
+    rewardAmount: g.rewardAmount ?? '',
+    payoutAmount: g.payoutAmount ?? '',
+    timeLimitDays: g.timeLimitDays ?? '',
+    enabled: g.enabled !== false,
+  }));
+
+// Unlimited ISO-2 country tag input (no 3-country cap).
+const CountryTagInput = ({ value, onChange, inputCls }) => {
+  const [draft, setDraft] = useState('');
+  const countries = value ? value.split(',').map(c => c.trim().toUpperCase()).filter(Boolean) : [];
+
+  const commit = (raw) => {
+    const code = String(raw || '').trim().toUpperCase();
+    if (!/^[A-Z]{2}$/.test(code)) return;
+    if (countries.includes(code)) { setDraft(''); return; }
+    onChange([...countries, code].join(', '));
+    setDraft('');
+  };
+
+  const remove = (code) => onChange(countries.filter(c => c !== code).join(', '));
+
+  return (
+    <div>
+      <div className="flex gap-2">
+        <input
+          className={inputCls}
+          value={draft}
+          onChange={(e) => setDraft(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ',') { e.preventDefault(); commit(draft); }
+          }}
+          placeholder="Type ISO-2 code (e.g. US) and press Enter"
+        />
+        <button
+          type="button"
+          onClick={() => commit(draft)}
+          className="shrink-0 px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-xs font-semibold text-slate-300 hover:bg-white/10"
+        >
+          Add
+        </button>
+      </div>
+      <div className="flex flex-wrap gap-1.5 mt-2">
+        {countries.length === 0 ? (
+          <span className="text-[11px] text-slate-500">No countries selected — offer is global.</span>
+        ) : countries.map((code) => (
+          <span key={code} className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold bg-indigo-500/15 text-indigo-300 border border-indigo-500/30">
+            {code}
+            <button type="button" onClick={() => remove(code)} className="text-indigo-300/70 hover:text-white">✕</button>
+          </span>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+// ─── Create / Edit Offer Modal ────────────────────────────────────────────────
+const OfferFormModal = ({ offer, onClose, onSaved, token }) => {
+  const isEdit = Boolean(offer);
+  const [form, setForm] = useState({
+    title: offer?.title || '',
+    titleDe: offer?.titleDe || '',
+    description: offer?.description || '',
+    descriptionDe: offer?.descriptionDe || '',
+    trackingMode: offer?.trackingMode === 'manual' ? 'manual' : 'postback',
+    proofInstructions: offer?.proofInstructions || '',
+    proofInstructionsDe: offer?.proofInstructionsDe || '',
+    rewardAmount: offer?.rewardAmount || '',
+    advertiserPayoutAmount: offer?.advertiserPayoutAmount || '',
+    maxTotalClicks: offer?.maxTotalClicks ?? '',
+    holdEnabled: offer?.holdEnabled === true,
+    holdDays: String(offer?.holdDays ?? 30),
+    holdThreshold: String(offer?.holdThreshold ?? 0),
+    advertiserUrl: offer?.advertiserUrl || '',
+    expirationDate: offer?.expirationDate ? offer.expirationDate.slice(0, 10) : '',
+    icon: offer?.icon || '',
+    coverImage: offer?.coverImage || '',
+    requirements: (offer?.requirements || []).join('\n'),
+    requirementsDe: (offer?.requirementsDe || []).join('\n'),
+    requirementType: offer?.requirementType || 'bullets',
+    allowedCountries: (offer?.allowedCountries || []).join(', '),
+    displayPlacements: {
+      featured: offer?.displayPlacements?.featured !== undefined ? offer.displayPlacements.featured : true,
+      brandedOfferwall: offer?.displayPlacements?.brandedOfferwall || false,
+    },
+    platforms: offer?.platforms || { desktop: true, android: true, ios: true },
+    isActive: offer?.isActive !== undefined ? offer.isActive : true,
+    goals: normalizeClientGoals(offer?.goals),
+    postbackMapping: {
+      clickIdParam:       offer?.postbackMapping?.clickIdParam       || 'click_id',
+      transactionIdParam: offer?.postbackMapping?.transactionIdParam || 'txn_id',
+      payoutParam:        offer?.postbackMapping?.payoutParam        || 'payout',
+      statusParam:        offer?.postbackMapping?.statusParam        || 'status',
+      eventTypeParam:     offer?.postbackMapping?.eventTypeParam     || 'event_type',
+      approvedValue:      offer?.postbackMapping?.approvedValue      || 'approved',
+      rejectedValue:      offer?.postbackMapping?.rejectedValue      || 'rejected',
+      reversedValue:      offer?.postbackMapping?.reversedValue      || offer?.postbackMapping?.chargebackValue || 'reversed',
+    },
+  });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [showMapping, setShowMapping] = useState(false);
+  const isManual = form.trackingMode === 'manual';
+
+  const set = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.value }));
+  const setMapping = (k) => (e) => setForm((f) => ({ ...f, postbackMapping: { ...f.postbackMapping, [k]: e.target.value } }));
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError('');
+    const parsedHoldDays = Number(form.holdDays);
+    const parsedHoldThreshold = Number(form.holdThreshold);
+    if (form.holdEnabled && (!Number.isInteger(parsedHoldDays) || parsedHoldDays < 0)) {
+      return setError('Hold days must be a non-negative integer.');
+    }
+    if (form.holdEnabled && (!Number.isInteger(parsedHoldThreshold) || parsedHoldThreshold < 0)) {
+      return setError('Hold threshold must be a non-negative integer.');
+    }
+    setLoading(true);
+    try {
+      const url = isEdit ? `${API}/admin/direct-offers/${offer._id}` : `${API}/admin/direct-offers`;
+      const method = isEdit ? 'PUT' : 'POST';
+      const res = await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({
+          ...form,
+          rewardAmount: Number(form.rewardAmount),
+          advertiserPayoutAmount: Number(form.advertiserPayoutAmount) || 0,
+          expirationDate: form.expirationDate || null,
+          requirements: form.requirementType === 'paragraph'
+            ? [form.requirements.trim()].filter(Boolean)
+            : form.requirements.split('\n').map(r => r.trim()).filter(Boolean),
+          requirementsDe: form.requirementType === 'paragraph'
+            ? [form.requirementsDe.trim()].filter(Boolean)
+            : form.requirementsDe.split('\n').map(r => r.trim()).filter(Boolean),
+          requirementType: form.requirementType,
+          allowedCountries: form.allowedCountries.split(',').map(c => c.trim()).filter(Boolean),
+          displayPlacements: form.displayPlacements,
+          goals: form.goals.map(g => ({
+            goalKey: g.goalKey,
+            label: g.label,
+            labelDe: g.labelDe,
+            description: g.description,
+            descriptionDe: g.descriptionDe,
+            externalEventId: g.externalEventId,
+            externalEventAliases: String(g.externalEventAliases || '')
+              .split(',')
+              .map((alias) => alias.trim())
+              .filter(Boolean),
+            rewardAmount: Number(g.rewardAmount) || 0,
+            payoutAmount: Number(g.payoutAmount) || 0,
+            timeLimitDays: (g.timeLimitDays === '' || g.timeLimitDays == null) ? null : Number(g.timeLimitDays),
+            enabled: g.enabled !== false,
+          })),
+          platforms: form.platforms,
+          postbackMapping: form.postbackMapping,
+          maxTotalClicks: (form.maxTotalClicks === '' || form.maxTotalClicks == null) ? null : Number(form.maxTotalClicks),
+          holdEnabled: Boolean(form.holdEnabled),
+          holdDays: Number.isInteger(parsedHoldDays) && parsedHoldDays >= 0 ? parsedHoldDays : 0,
+          holdThreshold: Number.isInteger(parsedHoldThreshold) && parsedHoldThreshold >= 0 ? parsedHoldThreshold : 0,
+        }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        onSaved(data.offer);
+        onClose();
+      } else {
+        setError(data.error || 'Failed to save offer');
+      }
+    } catch {
+      setError('Network error. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const inputCls = 'w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500/50';
+  const labelCls = 'block text-xs font-semibold text-slate-400 mb-1';
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
+      <div className="bg-[#0e1726] border border-white/10 rounded-2xl w-full max-w-2xl max-h-[90vh] flex flex-col shadow-2xl overflow-hidden">
+        {/* Modal Header */}
+        <div className="flex items-center justify-between px-6 py-4 border-b border-white/10 shrink-0">
+          <h2 className="text-base font-bold text-white flex items-center gap-2">
+            <FiLink className="text-indigo-400" />
+            {isEdit ? 'Edit Direct Offer' : 'New Direct Offer'}
+          </h2>
+          <button onClick={onClose} className="text-slate-400 hover:text-white transition-colors text-lg">✕</button>
+        </div>
+
+        {/* Modal Body */}
+        <form onSubmit={handleSubmit} className="p-6 space-y-4 overflow-y-auto flex-1 custom-scrollbar">
+          {error && (
+            <div className="p-3 bg-rose-500/10 border border-rose-500/20 rounded-lg text-rose-400 text-sm">
+              {error}
+            </div>
+          )}
+
+          <div>
+            <label className={labelCls}>Offer Type</label>
+            <div className="grid grid-cols-2 gap-2">
+              {[
+                ['manual', 'Manual Offer', 'User submits proof; admin approves.'],
+                ['postback', 'Postback Offer', 'Advertiser confirms via S2S postback.'],
+              ].map(([value, label, hint]) => (
+                <button
+                  key={value}
+                  type="button"
+                  onClick={() => setForm(f => ({ ...f, trackingMode: value }))}
+                  className={`text-left rounded-xl border px-3 py-2 transition-colors ${
+                    form.trackingMode === value
+                      ? 'bg-indigo-500/20 border-indigo-500/50 text-white'
+                      : 'bg-white/5 border-white/10 text-slate-400 hover:bg-white/10'
+                  }`}
+                >
+                  <span className="block text-xs font-bold">{label}</span>
+                  <span className="block text-[10px] mt-0.5 opacity-80">{hint}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+          <div>
+            <label className={labelCls}>Offer Title *</label>
+            <input className={inputCls} value={form.title} onChange={set('title')} required placeholder="e.g. Stake Casino — Deposit & Play" />
+          </div>
+          <div>
+            <label className={labelCls}>Title (German)</label>
+            <input className={inputCls} value={form.titleDe} onChange={set('titleDe')} placeholder="Optional manual German title" />
+          </div>
+          <div>
+            <label className={labelCls}>Description *</label>
+            <textarea className={inputCls} rows={3} value={form.description} onChange={set('description')} required placeholder="Describe what the user needs to do..." />
+          </div>
+          <div>
+            <label className={labelCls}>Description (German)</label>
+            <textarea className={inputCls} rows={2} value={form.descriptionDe} onChange={set('descriptionDe')} placeholder="Optional manual German description..." />
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className={labelCls}>Reward (Coins) *</label>
+              <input type="number" className={inputCls} value={form.rewardAmount} onChange={set('rewardAmount')} required min="1" placeholder="e.g. 500" />
+            </div>
+            <div>
+              <label className={labelCls}>Advertiser Payout (USD)</label>
+              <input type="number" step="0.01" className={inputCls} value={form.advertiserPayoutAmount} onChange={set('advertiserPayoutAmount')} placeholder="e.g. 2.50" />
+            </div>
+          </div>
+          <div>
+            <label className={labelCls}>
+              {isManual ? 'Affiliate / External URL *' : 'Advertiser URL *'}{' '}
+              <span className="text-slate-600 font-normal">(where user is sent)</span>
+            </label>
+            <input className={inputCls} value={form.advertiserUrl} onChange={set('advertiserUrl')} required placeholder="https://advertiser.com/landing?ref=taskmint" />
+          </div>
+          <div>
+            <div className="flex items-center justify-between mb-1.5">
+              <label className={labelCls}>Max Total Clicks <span className="text-slate-600 font-normal">(overall · blank = unlimited)</span></label>
+              <span className="text-[11px] text-slate-400">
+                Clicks: {isEdit ? (offer?.totalClicks ?? 0) : 0} / {(form.maxTotalClicks === '' || form.maxTotalClicks == null) ? 'Unlimited' : form.maxTotalClicks}
+              </span>
+            </div>
+            <input type="number" min="1" step="1" className={inputCls} value={form.maxTotalClicks} onChange={set('maxTotalClicks')} placeholder="Leave blank for unlimited" />
+          </div>
+          <div>
+            <div className="flex items-center justify-between mb-1.5">
+              <label className={labelCls}>Requirements Format</label>
+              <div className="flex items-center gap-1 bg-white/5 p-0.5 rounded-lg border border-white/10">
+                <button
+                  type="button"
+                  onClick={() => setForm(f => ({ ...f, requirementType: 'bullets' }))}
+                  className={`px-2.5 py-1 rounded-md text-xs font-semibold transition-all ${
+                    form.requirementType === 'bullets'
+                      ? 'bg-indigo-500/30 text-indigo-300 border border-indigo-500/40'
+                      : 'text-slate-400 hover:text-white'
+                  }`}
+                >
+                  Bullet Points
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setForm(f => ({ ...f, requirementType: 'paragraph' }))}
+                  className={`px-2.5 py-1 rounded-md text-xs font-semibold transition-all ${
+                    form.requirementType === 'paragraph'
+                      ? 'bg-indigo-500/30 text-indigo-300 border border-indigo-500/40'
+                      : 'text-slate-400 hover:text-white'
+                  }`}
+                >
+                  Paragraph
+                </button>
+              </div>
+            </div>
+            <textarea
+              className={inputCls}
+              rows={form.requirementType === 'paragraph' ? 2 : 3}
+              value={form.requirements}
+              onChange={set('requirements')}
+              placeholder={
+                form.requirementType === 'paragraph'
+                  ? "Register and deposit €50, then wager €100."
+                  : "Register on the platform\nMake a deposit of at least $10\nPlay 5 rounds"
+              }
+            />
+          </div>
+          <div>
+            <label className={labelCls}>Requirements (German)</label>
+            <textarea
+              className={inputCls}
+              rows={form.requirementType === 'paragraph' ? 2 : 3}
+              value={form.requirementsDe}
+              onChange={set('requirementsDe')}
+              placeholder={
+                form.requirementType === 'paragraph'
+                  ? 'Optional German paragraph.'
+                  : 'Optional German steps, one per line'
+              }
+            />
+          </div>
+          {isManual && (
+            <div className="border border-emerald-500/20 bg-emerald-500/[0.04] rounded-lg p-3 space-y-3">
+              <div>
+                <p className="text-xs font-semibold text-emerald-300">Manual Proof Instructions</p>
+                <p className="text-[11px] text-slate-500 mt-0.5">
+                  Shown only for Manual Offers. German text is used when German is selected, with English fallback.
+                </p>
+              </div>
+              <div>
+                <label className={labelCls}>Proof Instructions (English)</label>
+                <textarea
+                  className={inputCls}
+                  rows={2}
+                  value={form.proofInstructions}
+                  onChange={set('proofInstructions')}
+                  placeholder="Please submit proof of completion through support and include your username."
+                />
+              </div>
+              <div>
+                <label className={labelCls}>Proof Instructions (German)</label>
+                <textarea
+                  className={inputCls}
+                  rows={2}
+                  value={form.proofInstructionsDe}
+                  onChange={set('proofInstructionsDe')}
+                  placeholder="Bitte reiche den Nachweis über den Support ein und gib deinen Benutzernamen an."
+                />
+              </div>
+            </div>
+          )}
+
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className={labelCls}>Icon / Emoji</label>
+              <input className={inputCls} value={form.icon} onChange={set('icon')} placeholder="🎰 or image URL" />
+              <div className="flex flex-wrap gap-1 mt-1">
+                {PRESET_ICONS.map(e => (
+                  <button key={e} type="button" onClick={() => setForm(f => ({ ...f, icon: e }))}
+                    className={`text-lg p-0.5 rounded hover:bg-white/10 ${form.icon === e ? 'bg-white/20' : ''}`}>{e}</button>
+                ))}
+              </div>
+            </div>
+            <div>
+              <label className={labelCls}>Cover Image URL</label>
+              <input className={inputCls} value={form.coverImage} onChange={set('coverImage')} placeholder="https://..." />
+              {form.coverImage && (
+                <img src={form.coverImage} alt="preview" className="mt-1 w-16 h-16 object-cover rounded-lg border border-white/10" />
+              )}
+            </div>
+          </div>
+          <div>
+            <label className={labelCls}>Expiration Date</label>
+            <input type="date" className={inputCls} value={form.expirationDate} onChange={set('expirationDate')} />
+          </div>
+          <div>
+            <label className={labelCls}>Allowed Countries <span className="text-slate-600 font-normal">(ISO-2; add as many as needed; none = global)</span></label>
+            <CountryTagInput
+              value={form.allowedCountries}
+              onChange={(next) => setForm(f => ({ ...f, allowedCountries: next }))}
+              inputCls={inputCls}
+            />
+          </div>
+          <div>
+            <label className={labelCls}>Placements</label>
+            <div className="flex flex-wrap gap-3">
+              {[
+                ['featured', 'Featured Offers'],
+                ['brandedOfferwall', 'Branded Offerwall'],
+              ].map(([key, label]) => (
+                <label key={key} className="flex items-center gap-1.5 text-xs text-slate-300 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={form.displayPlacements[key]}
+                    onChange={e => setForm(f => ({ ...f, displayPlacements: { ...f.displayPlacements, [key]: e.target.checked } }))}
+                    className="accent-indigo-500"
+                  />
+                  {label}
+                </label>
+              ))}
+            </div>
+          </div>
+          <div>
+            <label className={labelCls}>Platforms</label>
+            <div className="flex gap-3">
+              {['desktop', 'android', 'ios'].map(p => (
+                <label key={p} className="flex items-center gap-1.5 text-xs text-slate-300 cursor-pointer">
+                  <input type="checkbox" checked={form.platforms[p]} onChange={e => setForm(f => ({ ...f, platforms: { ...f.platforms, [p]: e.target.checked } }))} className="accent-indigo-500" />
+                  {p.charAt(0).toUpperCase() + p.slice(1)}
+                </label>
+              ))}
+            </div>
+          </div>
+
+          {/* Optional offer-specific hold policy — shared by Featured and Goodpicks */}
+          <div className="border border-white/10 rounded-lg p-3 space-y-2">
+            <label className="flex items-center gap-2 text-sm text-slate-300 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={form.holdEnabled}
+                onChange={e => setForm(f => ({ ...f, holdEnabled: e.target.checked }))}
+                className="accent-indigo-500"
+              />
+              Custom Hold Period
+            </label>
+            <p className="text-[11px] text-slate-500">
+              Overrides the global Earnings Hold settings for this offer. When off, global settings are used.
+            </p>
+            {form.holdEnabled ? (
+              <>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className={labelCls}>Hold Days</label>
+                    <input
+                      type="number"
+                      min="0"
+                      step="1"
+                      className={inputCls}
+                      value={form.holdDays}
+                      onChange={set('holdDays')}
+                      placeholder="e.g. 10"
+                    />
+                  </div>
+                  <div>
+                    <label className={labelCls}>Hold Threshold (Coins)</label>
+                    <input
+                      type="number"
+                      min="0"
+                      step="1"
+                      className={inputCls}
+                      value={form.holdThreshold}
+                      onChange={set('holdThreshold')}
+                      placeholder="e.g. 0"
+                    />
+                  </div>
+                </div>
+                <p className="text-[11px] text-slate-500">
+                  Set days to 0 for instant credit with no hold.
+                </p>
+              </>
+            ) : (
+              <p className="text-[11px] text-slate-500">
+                Global fallback: configure it in Platform Settings → Earnings Hold System.
+              </p>
+            )}
+          </div>
+
+          {/* Optional multi-step goals — empty keeps single-reward behavior */}
+          {!isManual && (
+          <div className="border border-white/10 rounded-lg p-3 space-y-3">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-xs font-semibold text-slate-300">Multi-step Goals <span className="text-slate-600 font-normal">(optional)</span></p>
+                <p className="text-[11px] text-slate-500 mt-0.5">Leave empty for a single reward. When set, the postback <code>event_type</code> selects the goal and its reward.</p>
+              </div>
+              <button
+                type="button"
+                disabled={form.goals.length >= MAX_GOALS}
+                onClick={() => setForm(f => ({ ...f, goals: [...f.goals, { goalKey: '', label: '', labelDe: '', description: '', descriptionDe: '', externalEventId: '', externalEventAliases: '', rewardAmount: '', payoutAmount: '', timeLimitDays: '', enabled: true }] }))}
+                className="shrink-0 flex items-center gap-1 px-2.5 py-1 rounded-lg bg-indigo-500/20 border border-indigo-500/40 text-[11px] font-semibold text-indigo-300 hover:bg-indigo-500/30 disabled:opacity-40"
+              >
+                <FiPlus /> Add Goal
+              </button>
+            </div>
+            {form.goals.length > 0 && (
+              <div className="space-y-3">
+                {form.goals.map((goal, idx) => (
+                  <div key={idx} className="border border-white/10 rounded-lg p-2.5 space-y-2 bg-white/[0.02]">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[11px] font-semibold text-slate-400">Goal #{idx + 1}</span>
+                      <div className="flex items-center gap-2">
+                        <label className="flex items-center gap-1 text-[11px] text-slate-400 cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={goal.enabled}
+                            onChange={e => setForm(f => ({ ...f, goals: f.goals.map((g, i) => i === idx ? { ...g, enabled: e.target.checked } : g) }))}
+                            className="accent-indigo-500"
+                          />
+                          Enabled
+                        </label>
+                        <button
+                          type="button"
+                          onClick={() => setForm(f => ({ ...f, goals: f.goals.filter((_, i) => i !== idx) }))}
+                          className="text-rose-400 hover:text-rose-300 text-sm"
+                        >
+                          <FiTrash2 />
+                        </button>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2">
+                      <div>
+                        <label className={labelCls}>Goal Key * <span className="text-slate-600 font-normal">(event_type value)</span></label>
+                        <input className={inputCls} value={goal.goalKey} onChange={e => setForm(f => ({ ...f, goals: f.goals.map((g, i) => i === idx ? { ...g, goalKey: e.target.value } : g) }))} placeholder="e.g. registration, deposit, level_5" />
+                      </div>
+                      <div>
+                        <label className={labelCls}>Label</label>
+                        <input className={inputCls} value={goal.label} onChange={e => setForm(f => ({ ...f, goals: f.goals.map((g, i) => i === idx ? { ...g, label: e.target.value } : g) }))} placeholder="e.g. Complete registration" />
+                      </div>
+                      <div>
+                        <label className={labelCls}>Label (German)</label>
+                        <input className={inputCls} value={goal.labelDe || ''} onChange={e => setForm(f => ({ ...f, goals: f.goals.map((g, i) => i === idx ? { ...g, labelDe: e.target.value } : g) }))} placeholder="Optional German goal label" />
+                      </div>
+                      <div>
+                        <label className={labelCls}>External Event ID <span className="text-slate-600 font-normal">(partner value)</span></label>
+                        <input className={inputCls} value={goal.externalEventId || ''} onChange={e => setForm(f => ({ ...f, goals: f.goals.map((g, i) => i === idx ? { ...g, externalEventId: e.target.value } : g) }))} placeholder="e.g. Game Event 269" />
+                      </div>
+                      <div>
+                        <label className={labelCls}>External Aliases <span className="text-slate-600 font-normal">(comma separated)</span></label>
+                        <input className={inputCls} value={goal.externalEventAliases || ''} onChange={e => setForm(f => ({ ...f, goals: f.goals.map((g, i) => i === idx ? { ...g, externalEventAliases: e.target.value } : g) }))} placeholder="e.g. GE-269, Event 269" />
+                      </div>
+                      <div>
+                        <label className={labelCls}>Reward (Coins) *</label>
+                        <input type="number" min="0" className={inputCls} value={goal.rewardAmount} onChange={e => setForm(f => ({ ...f, goals: f.goals.map((g, i) => i === idx ? { ...g, rewardAmount: e.target.value } : g) }))} placeholder="e.g. 250" />
+                      </div>
+                      <div>
+                        <label className={labelCls}>Payout Metadata (USD)</label>
+                        <input type="number" step="0.01" className={inputCls} value={goal.payoutAmount} onChange={e => setForm(f => ({ ...f, goals: f.goals.map((g, i) => i === idx ? { ...g, payoutAmount: e.target.value } : g) }))} placeholder="e.g. 1.20" />
+                      </div>
+                      <div>
+                        <label className={labelCls}>Time (days) <span className="text-slate-600 font-normal">(display only)</span></label>
+                        <input type="number" min="1" step="1" className={inputCls} value={goal.timeLimitDays ?? ''} onChange={e => setForm(f => ({ ...f, goals: f.goals.map((g, i) => i === idx ? { ...g, timeLimitDays: e.target.value } : g) }))} placeholder="e.g. 3" />
+                      </div>
+                    </div>
+                    <div>
+                      <label className={labelCls}>Description</label>
+                      <input className={inputCls} value={goal.description} onChange={e => setForm(f => ({ ...f, goals: f.goals.map((g, i) => i === idx ? { ...g, description: e.target.value } : g) }))} placeholder="Optional description shown to admins" />
+                    </div>
+                    <div>
+                      <label className={labelCls}>Description (German)</label>
+                      <input className={inputCls} value={goal.descriptionDe || ''} onChange={e => setForm(f => ({ ...f, goals: f.goals.map((g, i) => i === idx ? { ...g, descriptionDe: e.target.value } : g) }))} placeholder="Optional German goal description" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+          )}
+
+          {isEdit && (
+            <label className="flex items-center gap-2 text-sm text-slate-300 cursor-pointer">
+              <input type="checkbox" checked={form.isActive} onChange={e => setForm(f => ({ ...f, isActive: e.target.checked }))} className="accent-indigo-500" />
+              Offer is Active
+            </label>
+          )}
+
+          {/* Postback Parameter Mapping — Collapsible */}
+          {!isManual && (
+          <div className="border border-white/10 rounded-lg overflow-hidden">
+            <button
+              type="button"
+              onClick={() => setShowMapping(m => !m)}
+              className="w-full flex items-center justify-between px-3 py-2 bg-white/[0.03] hover:bg-white/[0.06] transition-colors text-left"
+            >
+              <span className="flex items-center gap-2 text-xs font-semibold text-slate-400">
+                <FiSettings className="text-indigo-400" /> Postback Parameter Mapping
+              </span>
+              {showMapping ? <FiChevronUp className="text-slate-500" /> : <FiChevronDown className="text-slate-500" />}
+            </button>
+            {showMapping && (
+              <div className="p-3 space-y-3 border-t border-white/5">
+                <p className="text-[11px] text-slate-500">
+                  Configure which query parameter names this advertiser uses. Leave defaults if unsure.
+                </p>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className={labelCls}>Click ID Parameter</label>
+                    <input className={inputCls} value={form.postbackMapping.clickIdParam} onChange={setMapping('clickIdParam')} placeholder="e.g. clickid, subid, click_id" />
+                  </div>
+                  <div>
+                    <label className={labelCls}>Transaction ID Parameter</label>
+                    <input className={inputCls} value={form.postbackMapping.transactionIdParam} onChange={setMapping('transactionIdParam')} placeholder="e.g. txn_id, tid" />
+                  </div>
+                  <div>
+                    <label className={labelCls}>Payout / Revenue Parameter</label>
+                    <input className={inputCls} value={form.postbackMapping.payoutParam} onChange={setMapping('payoutParam')} placeholder="e.g. payout, reward, commission" />
+                  </div>
+                  <div>
+                    <label className={labelCls}>Status Parameter</label>
+                    <input className={inputCls} value={form.postbackMapping.statusParam} onChange={setMapping('statusParam')} placeholder="e.g. status, event, action" />
+                  </div>
+                  <div>
+                        <label className={labelCls}>Event / Goal Parameter <span className="text-slate-600 font-normal">(default: event_type)</span></label>
+                        <input className={inputCls} value={form.postbackMapping.eventTypeParam} onChange={setMapping('eventTypeParam')} placeholder="e.g. event_type, event_id, event, goal" />
+                  </div>
+                  <div>
+                    <label className={labelCls}>Approved Value</label>
+                    <input className={inputCls} value={form.postbackMapping.approvedValue} onChange={setMapping('approvedValue')} placeholder="e.g. approved, conversion, 1" />
+                  </div>
+                  <div>
+                    <label className={labelCls}>Rejected Value</label>
+                    <input className={inputCls} value={form.postbackMapping.rejectedValue} onChange={setMapping('rejectedValue')} placeholder="e.g. rejected, declined, 0" />
+                  </div>
+                  <div>
+                    <label className={labelCls}>Reversal / Chargeback Value</label>
+                    <input className={inputCls} value={form.postbackMapping.reversedValue} onChange={setMapping('reversedValue')} placeholder="e.g. reversed, chargeback" />
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+          )}
+
+          {error && <p className="text-rose-400 text-sm">{error}</p>}
+
+          <div className="flex gap-3 pt-2">
+            <button type="button" onClick={onClose} className="flex-1 py-2 rounded-lg bg-white/5 border border-white/10 text-slate-400 hover:text-white text-sm font-semibold transition-colors">
+              Cancel
+            </button>
+            <button type="submit" disabled={loading} className="flex-1 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-semibold flex items-center justify-center gap-2 disabled:opacity-60 transition-colors">
+              {loading ? <FiLoader className="animate-spin" /> : isEdit ? 'Save Changes' : 'Create Offer'}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+};
+
+// ─── Click Logs Modal ─────────────────────────────────────────────────────────
+const ClickLogsModal = ({ offer, token, onClose }) => {
+  const [clicks, setClicks] = useState([]);
+  const [total, setTotal] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [filter, setFilter] = useState('');
+  const [actionLoading, setActionLoading] = useState('');
+  const [actionPrompt, setActionPrompt] = useState(null);
+  const [reasonValue, setReasonValue] = useState('');
+  const [reasonError, setReasonError] = useState('');
+
+  const load = useCallback(async () => {
+    setLoading(true);
+    try {
+      const params = filter ? `?status=${filter}` : '';
+      const res = await fetch(`${API}/admin/direct-offers/${offer._id}/clicks${params}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await res.json();
+      if (data.success) { setClicks(data.clicks); setTotal(data.total); }
+    } catch (e) { console.error(e); }
+    finally { setLoading(false); }
+  }, [offer._id, token, filter]);
+
+  useEffect(() => { load(); }, [load]);
+
+  const openAction = (clickId, action) => {
+    if (actionLoading) return;
+    setReasonValue('');
+    setReasonError('');
+    setActionPrompt({ clickId, action });
+  };
+
+  const closeAction = () => {
+    if (actionLoading) return;
+    setActionPrompt(null);
+    setReasonValue('');
+    setReasonError('');
+  };
+
+  const handleAction = async (clickId, action, actionReason) => {
+    const trimmed = (actionReason || '').trim();
+    if (!trimmed) {
+      setReasonError('A reason is required.');
+      return;
+    }
+    setActionLoading(clickId + action);
+    try {
+      const res = await fetch(`${API}/admin/click-logs/${clickId}/${action}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ reason: trimmed }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (data.success) {
+        setActionPrompt(null);
+        setReasonValue('');
+        setReasonError('');
+        await load();
+      } else {
+        setReasonError(data.error || `Failed to ${action} click`);
+      }
+    } catch { setReasonError('Network error'); }
+    finally { setActionLoading(''); }
+  };
+
+  const copyToClipboard = (text) => {
+    navigator.clipboard.writeText(text).catch(() => {});
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm" onClick={onClose}>
+      <motion.div
+        initial={{ scale: 0.95, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        exit={{ scale: 0.95, opacity: 0 }}
+        onClick={(e) => e.stopPropagation()}
+        className="bg-[#1a1f2e] border border-white/10 rounded-2xl p-6 w-full max-w-4xl max-h-[90vh] flex flex-col gap-4"
+      >
+        <div className="flex items-center justify-between">
+          <h3 className="text-lg font-bold text-white">Click Logs — <span className="text-indigo-300">{offer.title}</span></h3>
+          <button onClick={onClose} className="text-slate-400 hover:text-white text-xl font-bold">&times;</button>
+        </div>
+
+        <div className="flex items-center gap-3 flex-wrap">
+          <span className="text-sm text-slate-400">{total} total clicks</span>
+          <div className="flex gap-2">
+            {['', 'clicked', 'approved', 'rejected'].map(s => (
+              <button key={s} onClick={() => setFilter(s)}
+                className={`px-3 py-1 rounded-lg text-xs font-semibold ${filter === s ? 'bg-indigo-500/30 text-indigo-300 border border-indigo-500/40' : 'bg-white/5 text-slate-400 border border-white/10 hover:text-white'}`}>
+                {s || 'All'}
+              </button>
+            ))}
+          </div>
+          <button onClick={load} className="ml-auto p-1.5 text-slate-400 hover:text-white">
+            <FiRefreshCw className={loading ? 'animate-spin' : ''} />
+          </button>
+        </div>
+
+        <div className="overflow-y-auto flex-1">
+          {loading ? (
+            <div className="text-center text-slate-500 py-10"><FiLoader className="animate-spin inline text-2xl" /></div>
+          ) : clicks.length === 0 ? (
+            <div className="text-center text-slate-500 py-10">No click logs found.</div>
+          ) : (
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="text-xs text-slate-500 border-b border-white/5 text-left">
+                  <th className="pb-2 pr-3">User</th>
+                  <th className="pb-2 pr-3">Click ID</th>
+                  <th className="pb-2 pr-3">Device</th>
+                  <th className="pb-2 pr-3">Status</th>
+                  <th className="pb-2 pr-3">Date</th>
+                  <th className="pb-2">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {clicks.map(click => {
+                  const user = click.user || click.userId;
+                  return (
+                  <tr key={click._id} className="border-b border-white/[0.04] hover:bg-white/[0.02]">
+                    <td className="py-2 pr-3">
+                      <div className="text-white font-medium">{user?.displayName || user?.email || 'Unknown'}</div>
+                      <div className="text-slate-500 text-xs">{user?.email}</div>
+                    </td>
+                    <td className="py-2 pr-3">
+                      <div className="flex items-center gap-1">
+                        <span className="text-slate-400 text-xs font-mono truncate max-w-[100px]" title={click.clickId}>
+                          {click.clickId?.slice(0, 8)}...
+                        </span>
+                        <button onClick={() => copyToClipboard(click.clickId)} className="text-slate-500 hover:text-white" title="Copy full click ID">
+                          <FiCopy className="text-xs" />
+                        </button>
+                      </div>
+                    </td>
+                    <td className="py-2 pr-3 text-slate-400 text-xs">{click.device || 'unknown'}</td>
+                    <td className="py-2 pr-3"><Badge status={click.status} /></td>
+                    <td className="py-2 pr-3 text-slate-500 text-xs">{new Date(click.createdAt).toLocaleDateString()}</td>
+                    <td className="py-2">
+                      {offer.trackingMode === 'manual' ? (
+                        <span className="text-sky-300 text-xs">Use Manual Proofs</span>
+                      ) : click.status !== 'approved' && click.status !== 'rejected' && (
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => openAction(click.clickId, 'approve')}
+                            disabled={actionLoading === click.clickId + 'approve'}
+                            className="px-2 py-1 rounded bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 text-xs font-semibold hover:bg-emerald-500/25 disabled:opacity-50"
+                          >
+                            {actionLoading === click.clickId + 'approve' ? <FiLoader className="animate-spin" /> : '✓ Approve'}
+                          </button>
+                          <button
+                            onClick={() => openAction(click.clickId, 'reject')}
+                            disabled={actionLoading === click.clickId + 'reject'}
+                            className="px-2 py-1 rounded bg-rose-500/15 border border-rose-500/30 text-rose-400 text-xs font-semibold hover:bg-rose-500/25 disabled:opacity-50"
+                          >
+                            {actionLoading === click.clickId + 'reject' ? <FiLoader className="animate-spin" /> : '✗ Reject'}
+                          </button>
+                        </div>
+                      )}
+                      {click.status === 'approved' && <span className="text-emerald-400 text-xs">Credited ✓</span>}
+                      {click.status === 'rejected' && <span className="text-rose-400 text-xs">Rejected</span>}
+                    </td>
+                  </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          )}
+        </div>
+      </motion.div>
+
+      {actionPrompt && (
+        <div className="absolute inset-0 z-10 flex items-center justify-center bg-black/60 p-4" onClick={(e) => { e.stopPropagation(); closeAction(); }}>
+          <div className="w-full max-w-md rounded-xl border border-white/10 bg-[#12161f] p-5" onClick={(e) => e.stopPropagation()}>
+            <h4 className="text-sm font-bold text-white capitalize">{actionPrompt.action} click</h4>
+            <p className="mt-1 text-xs text-slate-400">Click ID: <code>{actionPrompt.clickId}</code></p>
+            <label className="mt-4 block text-xs font-semibold text-slate-300">Reason (required)</label>
+            <textarea
+              className="admin-input mt-1 w-full"
+              rows={3}
+              value={reasonValue}
+              onChange={(e) => { setReasonValue(e.target.value); if (reasonError) setReasonError(''); }}
+              placeholder="Explain why this manual action is being taken"
+              autoFocus
+            />
+            {reasonError && <p className="mt-2 text-xs text-rose-400">{reasonError}</p>}
+            <div className="mt-4 flex justify-end gap-2">
+              <button
+                type="button"
+                className="px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-slate-300 text-sm"
+                onClick={closeAction}
+                disabled={Boolean(actionLoading)}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                className="px-3 py-2 rounded-lg bg-indigo-600 text-white text-sm inline-flex items-center gap-2 disabled:opacity-50"
+                onClick={() => handleAction(actionPrompt.clickId, actionPrompt.action, reasonValue)}
+                disabled={Boolean(actionLoading)}
+              >
+                {actionLoading && <FiLoader className="animate-spin" />} Confirm
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+// ─── Manual Proof Review Modal ────────────────────────────────────────────────
+const ManualProofsModal = ({ token, onClose }) => {
+  const [tab, setTab] = useState('pending');
+  const [proofs, setProofs] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [pendingAction, setPendingAction] = useState(null);
+  const [reason, setReason] = useState('');
+  const [reasonError, setReasonError] = useState('');
+  const [actionLoading, setActionLoading] = useState('');
+
+  const load = useCallback(async () => {
+    if (!token) return;
+    setLoading(true);
+    setError('');
+    try {
+      const res = await fetch(`${API}/admin/direct-offers/proofs?status=${tab}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await res.json();
+      if (!data.success) throw new Error(data.error || 'Failed to load manual proofs');
+      setProofs(data.proofs || []);
+    } catch (err) {
+      setError(err.message || 'Failed to load manual proofs');
+    } finally {
+      setLoading(false);
+    }
+  }, [token, tab]);
+
+  useEffect(() => { load(); }, [load]);
+
+  const openAction = (proof, action) => {
+    if (!proof.conversionId || actionLoading) return;
+    setReason('');
+    setReasonError('');
+    setPendingAction({ proof, action });
+  };
+
+  const closeAction = () => {
+    if (actionLoading) return;
+    setPendingAction(null);
+    setReason('');
+    setReasonError('');
+  };
+
+  const runAction = async () => {
+    const trimmed = reason.trim();
+    if (!trimmed) {
+      setReasonError('A reason is required.');
+      return;
+    }
+    const { proof, action } = pendingAction;
+    setActionLoading(`${proof.conversionId}:${action}`);
+    setReasonError('');
+    try {
+      const res = await fetch(`${API}/admin/conversions/${proof.conversionId}/${action}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ reason: trimmed }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data.success) throw new Error(data.error || `Failed to ${action} manual proof`);
+      setPendingAction(null);
+      setReason('');
+      await load();
+    } catch (err) {
+      setReasonError(err.message || `Failed to ${action} manual proof`);
+    } finally {
+      setActionLoading('');
+    }
+  };
+
+  const statusColor = (status) => {
+    if (status === 'approved') return 'bg-emerald-50 text-emerald-700 border-emerald-200';
+    if (status === 'rejected') return 'bg-rose-50 text-rose-700 border-rose-200';
+    if (status === 'chargebacked') return 'bg-orange-50 text-orange-700 border-orange-200';
+    return 'bg-sky-50 text-sky-700 border-sky-200';
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm" onClick={onClose}>
+      <div className="bg-[#0e1726] border border-white/10 rounded-2xl w-full max-w-4xl max-h-[90vh] flex flex-col shadow-2xl overflow-hidden" onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-center justify-between px-6 py-4 border-b border-white/10 shrink-0">
+          <div>
+            <h2 className="text-base font-bold text-white flex items-center gap-2">
+              <FiActivity className="text-sky-400" /> Manual Direct Offer Proofs
+            </h2>
+            <p className="text-[11px] text-slate-400 mt-0.5">Approvals use the same Conversion reward path; chargebacks use reversal.</p>
+          </div>
+          <button onClick={onClose} className="text-slate-400 hover:text-white text-lg">✕</button>
+        </div>
+
+        <div className="flex items-center gap-2 px-6 py-3 border-b border-white/5">
+          {[
+            ['pending', 'Pending'],
+            ['history', 'History'],
+          ].map(([value, label]) => (
+            <button
+              key={value}
+              type="button"
+              onClick={() => setTab(value)}
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold border ${
+                tab === value
+                  ? 'bg-sky-500/20 text-sky-300 border-sky-500/40'
+                  : 'bg-white/5 text-slate-400 border-white/10 hover:text-white'
+              }`}
+            >
+              {label}
+            </button>
+          ))}
+          <button onClick={load} className="ml-auto p-1.5 text-slate-400 hover:text-white">
+            <FiRefreshCw className={loading ? 'animate-spin' : ''} />
+          </button>
+        </div>
+
+        <div className="p-6 overflow-y-auto flex-1 space-y-3 custom-scrollbar">
+          {error && <div className="p-3 bg-rose-500/10 border border-rose-500/20 rounded-lg text-rose-400 text-sm">{error}</div>}
+          {loading ? (
+            <div className="text-center text-slate-500 py-10"><FiLoader className="animate-spin inline text-2xl" /></div>
+          ) : proofs.length === 0 ? (
+            <div className="text-center text-slate-500 py-10">No {tab === 'pending' ? 'pending' : 'processed'} manual proofs.</div>
+          ) : proofs.map((proof) => {
+            const conversion = proof.conversion || {};
+            return (
+              <div key={proof._id} className="border border-white/10 rounded-xl p-4 bg-white/[0.02] space-y-2">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="text-white font-semibold text-sm">{proof.offer?.title || 'Removed offer'}</span>
+                  <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase border ${statusColor(proof.status)}`}>
+                    {proof.status}
+                  </span>
+                  <span className="text-[11px] text-slate-400">
+                    {proof.user?.displayName || proof.user?.email || 'Unknown user'} · {proof.offer?.rewardAmount || 0} coins
+                  </span>
+                  <span className="ml-auto text-[10px] text-slate-500">
+                    {proof.submittedAt ? new Date(proof.submittedAt).toLocaleString() : ''}
+                  </span>
+                </div>
+
+                {proof.proofText && (
+                  <p className="text-xs text-slate-300 whitespace-pre-wrap bg-white/[0.03] rounded-lg p-2">{proof.proofText}</p>
+                )}
+                {Array.isArray(proof.proofImages) && proof.proofImages.length > 0 && (
+                  <div className="flex flex-wrap gap-2">
+                    {proof.proofImages.map((image, index) => (
+                      <a
+                        key={index}
+                        href={image}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="block w-16 h-16 rounded-lg overflow-hidden border border-white/10 bg-black/20"
+                        title="Open proof"
+                      >
+                        <img src={image} alt={`Proof ${index + 1}`} className="w-full h-full object-cover" />
+                      </a>
+                    ))}
+                  </div>
+                )}
+                {proof.adminNote && (
+                  <p className="text-[11px] text-amber-300">Admin note: {proof.adminNote}</p>
+                )}
+                <div className="flex flex-wrap items-center gap-2 text-[10px] text-slate-500">
+                  <span>Click: <code>{proof.clickId || '-'}</code></span>
+                  <span>Conversion: <code>{proof.conversionId || '-'}</code></span>
+                  {conversion.internalStatus && <span>State: {conversion.internalStatus} / {conversion.processingState}</span>}
+                </div>
+
+                <div className="flex flex-wrap gap-2 pt-1">
+                  {proof.status === 'pending' && proof.conversionId && (
+                    <>
+                      <button
+                        type="button"
+                        onClick={() => openAction(proof, 'approve')}
+                        className="px-2.5 py-1.5 rounded bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 text-xs font-semibold hover:bg-emerald-500/25"
+                      >
+                        ✓ Approve
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => openAction(proof, 'reject')}
+                        className="px-2.5 py-1.5 rounded bg-rose-500/15 border border-rose-500/30 text-rose-300 text-xs font-semibold hover:bg-rose-500/25"
+                      >
+                        ✗ Reject
+                      </button>
+                    </>
+                  )}
+                  {proof.status === 'approved' && proof.conversionId && (
+                    <button
+                      type="button"
+                      onClick={() => openAction(proof, 'chargeback')}
+                      className="px-2.5 py-1.5 rounded bg-orange-500/15 border border-orange-500/30 text-orange-300 text-xs font-semibold hover:bg-orange-500/25"
+                    >
+                      ↺ Chargeback
+                    </button>
+                  )}
+                  {!proof.conversionId && (
+                    <span className="text-[11px] text-amber-300">No linked Conversion found for this proof.</span>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {pendingAction && (
+        <div className="absolute inset-0 z-10 flex items-center justify-center bg-black/60 p-4" onClick={(e) => { e.stopPropagation(); closeAction(); }}>
+          <div className="w-full max-w-md rounded-xl border border-white/10 bg-[#12161f] p-5" onClick={(e) => e.stopPropagation()}>
+            <h4 className="text-sm font-bold text-white capitalize">{pendingAction.action} manual proof</h4>
+            <p className="mt-1 text-xs text-slate-400">{pendingAction.proof.offer?.title} · {pendingAction.proof.user?.displayName || pendingAction.proof.user?.email}</p>
+            <label className="mt-4 block text-xs font-semibold text-slate-300">Reason (required)</label>
+            <textarea
+              className="admin-input mt-1 w-full"
+              rows={3}
+              value={reason}
+              onChange={(e) => { setReason(e.target.value); if (reasonError) setReasonError(''); }}
+              placeholder="Explain why this manual action is being taken"
+              autoFocus
+            />
+            {reasonError && <p className="mt-2 text-xs text-rose-400">{reasonError}</p>}
+            <div className="mt-4 flex justify-end gap-2">
+              <button type="button" className="px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-slate-300 text-sm" onClick={closeAction} disabled={Boolean(actionLoading)}>
+                Cancel
+              </button>
+              <button type="button" className="px-3 py-2 rounded-lg bg-indigo-600 text-white text-sm inline-flex items-center gap-2 disabled:opacity-50" onClick={runAction} disabled={Boolean(actionLoading)}>
+                {actionLoading && <FiLoader className="animate-spin" />} Confirm
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+// ─── Main Page ────────────────────────────────────────────────────────────────
+const AdminDirectOffers = () => {
+  const { currentUser } = useAuth();
+  const [token, setToken] = useState(null);
+  const [offers, setOffers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [showCreate, setShowCreate] = useState(false);
+  const [editOffer, setEditOffer] = useState(null);
+  const [logsOffer, setLogsOffer] = useState(null);
+  const [showProofs, setShowProofs] = useState(false);
+  const [copiedId, setCopiedId] = useState('');
+  const [postbackPreviews, setPostbackPreviews] = useState({});
+
+  useEffect(() => {
+    if (currentUser) currentUser.getIdToken().then(setToken);
+  }, [currentUser]);
+
+  const load = useCallback(async () => {
+    if (!token) return;
+    setLoading(true);
+    try {
+      const res = await fetch(`${API}/admin/direct-offers`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await res.json();
+      if (data.success) setOffers(data.offers);
+    } catch (e) { console.error(e); }
+    finally { setLoading(false); }
+  }, [token]);
+
+  useEffect(() => { load(); }, [load]);
+
+  const handleToggle = async (offer) => {
+    try {
+      const res = await fetch(`${API}/admin/direct-offers/${offer._id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ isActive: !offer.isActive }),
+      });
+      const data = await res.json();
+      if (data.success) setOffers(prev => prev.map(o => o._id === offer._id ? data.offer : o));
+    } catch { alert('Failed to toggle offer'); }
+  };
+
+  const handleDelete = async (offer) => {
+    if (!window.confirm(`Deactivate "${offer.title}"?`)) return;
+    try {
+      const res = await fetch(`${API}/admin/direct-offers/${offer._id}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await res.json();
+      if (data.success) setOffers(prev => prev.map(o => o._id === offer._id ? { ...o, isActive: false } : o));
+    } catch { alert('Failed to deactivate'); }
+  };
+
+  const writeClipboardText = async (text) => {
+    if (navigator.clipboard?.writeText) {
+      await navigator.clipboard.writeText(text);
+      return true;
+    }
+
+    const textarea = document.createElement('textarea');
+    textarea.value = text;
+    textarea.setAttribute('readonly', '');
+    textarea.style.position = 'fixed';
+    textarea.style.top = '-9999px';
+    textarea.style.left = '-9999px';
+    document.body.appendChild(textarea);
+    textarea.focus();
+    textarea.select();
+
+    try {
+      const copied = document.execCommand('copy');
+      if (!copied) throw new Error('Fallback copy command failed');
+      return true;
+    } finally {
+      document.body.removeChild(textarea);
+    }
+  };
+
+  const copyPostbackUrl = async (offer) => {
+    try {
+      const res = await fetch(`${API}/admin/direct-offers/${offer._id}/postback-url`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await res.json();
+      if (!data.success || !data.postbackUrl) {
+        throw new Error(data.error || 'Failed to copy postback URL');
+      }
+      await writeClipboardText(data.postbackUrl);
+      setPostbackPreviews((prev) => ({ ...prev, [offer._id]: data.postbackUrl }));
+      setCopiedId(`${offer._id}url`);
+      setTimeout(() => setCopiedId(''), 1500);
+    } catch (error) {
+      console.error('Failed to copy postback URL:', error);
+      alert('Could not copy the postback URL. Please try again from a secure browser context or copy it manually from a secure environment.');
+    }
+  };
+
+  return (
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-2xl font-bold text-slate-950 flex items-center gap-2">
+            <FiLink className="text-indigo-400" /> Direct Offers
+          </h2>
+          <p className="text-slate-600 text-sm mt-1">
+            S2S postback tracking for direct advertiser partnerships. Rewards are credited automatically when advertisers confirm conversions.
+          </p>
+        </div>
+        <div className="flex items-center gap-2 flex-wrap justify-end">
+          <button onClick={load} className="p-2 text-slate-600 hover:text-slate-950 transition-colors">
+            <FiRefreshCw className={loading ? 'animate-spin' : ''} />
+          </button>
+          <a
+            href="/admin/partner-integration"
+            className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-100 border border-slate-200 text-slate-700 hover:bg-slate-200 text-xs font-semibold"
+          >
+            <FiFileText /> Partner Integration
+          </a>
+          <a
+            href="/admin/testing-guides"
+            className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-100 border border-slate-200 text-slate-700 hover:bg-slate-200 text-xs font-semibold"
+          >
+            <FiBookOpen /> Testing Guides
+          </a>
+          <button
+            onClick={() => setShowProofs(true)}
+            className="flex items-center gap-2 px-3 py-2 rounded-xl bg-sky-50 border border-sky-200 text-sky-700 hover:bg-sky-100 text-xs font-semibold"
+          >
+            <FiActivity /> Manual Proofs
+          </button>
+          <button
+            onClick={() => setShowCreate(true)}
+            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-sm transition-colors"
+          >
+            <FiPlus /> New Offer
+          </button>
+        </div>
+      </div>
+
+      {/* Offers Grid */}
+      {loading ? (
+        <div className="text-center py-16 text-slate-500"><FiLoader className="animate-spin inline text-3xl" /></div>
+      ) : offers.length === 0 ? (
+        <div className="glass-card p-16 text-center">
+          <FiLink className="text-slate-600 text-4xl mx-auto mb-3" />
+          <p className="text-slate-400 font-semibold">No direct offers yet</p>
+          <p className="text-slate-500 text-sm mt-1">Create your first direct offer to start tracking advertiser conversions.</p>
+        </div>
+      ) : (
+        <div className="space-y-4">
+          {offers.map(offer => (
+            <motion.div
+              key={offer._id}
+              layout
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="glass-card p-4"
+            >
+              <div className="flex flex-col lg:flex-row gap-4">
+                {/* Left: Info */}
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-start gap-3 flex-wrap">
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-xl">{offer.icon || '🔗'}</span>
+                        <h4 className="text-slate-950 font-bold text-base">{offer.title}</h4>
+                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${offer.isActive ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-slate-100 text-slate-700 border border-slate-200'}`}>
+                          {offer.isActive ? 'Active' : 'Inactive'}
+                        </span>
+                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${offer.trackingMode === 'manual' ? 'bg-sky-50 text-sky-700 border border-sky-200' : 'bg-violet-50 text-violet-700 border border-violet-200'}`}>
+                          {offer.trackingMode === 'manual' ? 'Manual' : 'Postback'}
+                        </span>
+                      </div>
+                      <p className="text-slate-600 text-sm mt-1 line-clamp-2">{offer.description}</p>
+                    </div>
+                  </div>
+
+                  {/* Stats row */}
+                  <div className="flex flex-wrap gap-4 mt-3 text-xs text-slate-700">
+                    <span>💰 <strong className="text-amber-700">{offer.rewardAmount?.toLocaleString()}</strong> coins reward</span>
+                    <span>💵 ${offer.advertiserPayoutAmount || 0} payout</span>
+                    <span>Placement: <strong className="text-slate-950">{[
+                      offer.displayPlacements?.featured !== false ? 'Featured' : null,
+                      offer.displayPlacements?.brandedOfferwall ? 'Branded Offerwall' : null,
+                    ].filter(Boolean).join(' + ') || 'Hidden'}</strong></span>
+                    <span>Countries: <strong className="text-slate-950">{offer.allowedCountries?.length ? offer.allowedCountries.join(', ') : 'Global'}</strong></span>
+                    <span>
+                      👆 Clicks: <strong className="text-slate-950">{offer.totalClicks || 0}</strong>
+                      {' / '}
+                      <strong className="text-slate-950">
+                        {offer.maxTotalClicks == null ? 'Unlimited' : offer.maxTotalClicks}
+                      </strong>
+                    </span>
+                    <span>✓ <strong className="text-emerald-700">{offer.totalApproved || 0}</strong> approved</span>
+                    <span>✗ <strong className="text-rose-700">{offer.totalRejected || 0}</strong> rejected</span>
+                  </div>
+
+                  {offer.trackingMode === 'manual' ? (
+                    <div className="mt-3 bg-sky-50 border border-sky-200 rounded-lg p-3 space-y-2">
+                      <p className="text-xs text-slate-800 font-semibold uppercase tracking-wide">Manual Proof Setup</p>
+                      <p className="text-[11px] text-slate-600">
+                        Users start the offer, open the external URL and submit proof. Admins review it from Manual Proofs or Conversions.
+                      </p>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[11px]">
+                        <div className="bg-white/70 border border-sky-100 rounded-lg p-2">
+                          <p className="font-semibold text-slate-700 mb-0.5">Proof instructions (EN)</p>
+                          <p className="text-slate-600 whitespace-pre-wrap">{offer.proofInstructions || 'No English proof instructions set.'}</p>
+                        </div>
+                        <div className="bg-white/70 border border-sky-100 rounded-lg p-2">
+                          <p className="font-semibold text-slate-700 mb-0.5">Proof instructions (DE)</p>
+                          <p className="text-slate-600 whitespace-pre-wrap">{offer.proofInstructionsDe || 'No German proof instructions set (English fallback).'}</p>
+                        </div>
+                      </div>
+                      <span className={`inline-flex text-xs font-semibold px-2 py-0.5 rounded border ${offer.postbackSecretConfigured ? 'text-emerald-700 bg-emerald-50 border-emerald-200' : 'text-slate-600 bg-slate-50 border-slate-200'}`}>
+                        S2S postback disabled for manual offers
+                      </span>
+                    </div>
+                  ) : (
+                  <div className="mt-3 bg-slate-50 border border-slate-200 rounded-lg p-3 space-y-2">
+                    <p className="text-xs text-slate-800 font-semibold uppercase tracking-wide">Postback Setup</p>
+
+                    <div>
+                      <p className="text-[11px] text-slate-700 mb-1">Security:</p>
+                      <div className="flex items-center gap-2">
+                        <span className={`text-xs font-semibold px-2 py-0.5 rounded border ${offer.postbackSecretConfigured ? 'text-emerald-700 bg-emerald-50 border-emerald-200' : 'text-amber-700 bg-amber-50 border-amber-200'}`}>
+                          {offer.postbackSecretConfigured ? 'Secret configured' : 'Secret not configured'}
+                        </span>
+                        <span className="text-[11px] text-slate-600">Stored server-side only.</span>
+                      </div>
+                    </div>
+
+                    {/* Parameter mapping summary */}
+                    {offer.postbackMapping && (
+                      <div className="flex flex-wrap gap-x-4 gap-y-1 text-[10px] text-slate-700">
+                        <span>Click ID: <strong className="text-slate-950">{offer.postbackMapping.clickIdParam || 'click_id'}</strong></span>
+                        <span>Transaction ID: <strong className="text-slate-950">{offer.postbackMapping.transactionIdParam || 'txn_id'}</strong></span>
+                        <span>Status: <strong className="text-slate-950">{offer.postbackMapping.statusParam || 'status'}</strong></span>
+                        <span>Payout: <strong className="text-slate-950">{offer.postbackMapping.payoutParam || 'payout'}</strong></span>
+                        <span>Event / Goal: <strong className="text-slate-950">{offer.postbackMapping.eventTypeParam || 'event_type'}</strong></span>
+                        <span>Approved: <strong className="text-emerald-700">{offer.postbackMapping.approvedValue || 'approved'}</strong></span>
+                        <span>Rejected: <strong className="text-rose-700">{offer.postbackMapping.rejectedValue || 'rejected'}</strong></span>
+                        <span>Reversal: <strong className="text-orange-700">{offer.postbackMapping.reversedValue || offer.postbackMapping.chargebackValue || 'reversed'}</strong></span>
+                      </div>
+                    )}
+
+                    {Array.isArray(offer.goals) && offer.goals.some((goal) => goal?.externalEventId) && (
+                      <div className="text-[10px] text-slate-700">
+                        <span className="font-semibold">External event mappings:</span>{' '}
+                        {offer.goals
+                          .filter((goal) => goal?.externalEventId)
+                          .map((goal) => `${goal.externalEventId} → ${goal.goalKey}`)
+                          .join(' · ')}
+                      </div>
+                    )}
+
+                    <div className="space-y-2">
+                      <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:justify-between">
+                        <p className="text-xs font-semibold text-slate-800">
+                          Postback URL is configured securely.
+                        </p>
+                        <button
+                          type="button"
+                          onClick={() => copyPostbackUrl(offer)}
+                          className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-900 text-white hover:bg-slate-800 text-xs font-semibold transition-colors w-fit"
+                        >
+                          {copiedId === offer._id + 'url' ? <FiCheckCircle className="text-emerald-300" /> : <FiCopy />}
+                          {copiedId === offer._id + 'url' ? 'Copied' : 'Show & Copy Advertiser Postback URL'}
+                        </button>
+                      </div>
+                      {postbackPreviews[offer._id] && (
+                        <input
+                          readOnly
+                          value={postbackPreviews[offer._id]}
+                          onFocus={(e) => e.target.select()}
+                          className="w-full bg-white border border-slate-200 rounded-lg px-2 py-1.5 text-[10px] font-mono text-slate-700"
+                        />
+                      )}
+                      <p className="text-[11px] text-slate-600">
+                        Send this URL to your advertiser. Their system will replace the placeholders automatically when a conversion happens.
+                      </p>
+                    </div>
+                  </div>
+                  )}
+                </div>
+
+                {/* Right: Actions */}
+                <div className="flex flex-row lg:flex-col gap-2 lg:items-end flex-shrink-0">
+                  <button
+                    onClick={() => setLogsOffer(offer)}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-100 border border-slate-200 text-slate-800 hover:bg-slate-200 text-xs font-semibold transition-colors"
+                  >
+                    <FiActivity /> Click Logs
+                  </button>
+                  <button
+                    onClick={() => setEditOffer(offer)}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-indigo-50 border border-indigo-200 text-indigo-700 hover:bg-indigo-100 text-xs font-semibold transition-colors"
+                  >
+                    <FiEye /> Edit
+                  </button>
+                  <button
+                    onClick={() => handleToggle(offer)}
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border transition-colors ${offer.isActive ? 'bg-amber-50 border-amber-200 text-amber-700 hover:bg-amber-100' : 'bg-emerald-50 border-emerald-200 text-emerald-700 hover:bg-emerald-100'}`}
+                  >
+                    {offer.isActive ? <><FiToggleRight /> Deactivate</> : <><FiToggleLeft /> Activate</>}
+                  </button>
+                  <a
+                    href={offer.advertiserUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-100 border border-slate-200 text-slate-800 hover:bg-slate-200 text-xs font-semibold transition-colors"
+                  >
+                    <FiExternalLink /> Preview URL
+                  </a>
+                </div>
+              </div>
+            </motion.div>
+          ))}
+        </div>
+      )}
+
+      {/* Modals */}
+      <AnimatePresence>
+        {showCreate && (
+          <OfferFormModal
+            offer={null}
+            token={token}
+            onClose={() => setShowCreate(false)}
+            onSaved={(offer) => setOffers(prev => [offer, ...prev])}
+          />
+        )}
+      </AnimatePresence>
+      <AnimatePresence>
+        {editOffer && (
+          <OfferFormModal
+            offer={editOffer}
+            token={token}
+            onClose={() => setEditOffer(null)}
+            onSaved={(updated) => {
+              setOffers(prev => prev.map(o => o._id === updated._id ? updated : o));
+              setEditOffer(null);
+            }}
+          />
+        )}
+      </AnimatePresence>
+      <AnimatePresence>
+        {logsOffer && (
+          <ClickLogsModal
+            offer={logsOffer}
+            token={token}
+            onClose={() => setLogsOffer(null)}
+          />
+        )}
+      </AnimatePresence>
+      <AnimatePresence>
+        {showProofs && (
+          <ManualProofsModal
+            token={token}
+            onClose={() => setShowProofs(false)}
+          />
+        )}
+      </AnimatePresence>
+    </div>
+  );
+};
+
+export default AdminDirectOffers;

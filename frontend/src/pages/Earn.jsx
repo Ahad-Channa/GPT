@@ -8,7 +8,10 @@ import {
   FiClock, FiLoader, FiInbox, FiSend
 } from 'react-icons/fi';
 import { ProviderCard, OfferwallCard, FeaturedOfferCard, FeaturedOfferModal } from '../components/offers/OfferCards';
+import OfferwallModal from '../components/offers/OfferwallModal';
 import { GoodpicksOfferwallModal } from '../components/offers/GoodpicksModal';
+import { DirectOfferCard, DirectOfferModal } from '../components/offers/DirectOfferCard';
+import { buildOfferwallSections } from '../utils/providerOrder';
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
@@ -62,12 +65,15 @@ const Earn = () => {
   const [activeProvider, setActiveProvider] = useState(null);
   const [settings, setSettings] = useState(null);
   const [customOffers, setCustomOffers] = useState([]);
+  const [directOffers, setDirectOffers] = useState([]);
   const [loadingSettings, setLoadingSettings] = useState(true);
   const [loadingCustomOffers, setLoadingCustomOffers] = useState(true);
+  const [loadingDirectOffers, setLoadingDirectOffers] = useState(true);
   const [token, setToken] = useState(null);
   const [selectedOffer, setSelectedOffer] = useState(null);
+  const [selectedDirectOffer, setSelectedDirectOffer] = useState(null);
 
-  const loadingOffers = loadingCustomOffers;
+  const loadingOffers = loadingCustomOffers || loadingDirectOffers;
 
   // Clear active provider when changing tabs
   useEffect(() => {
@@ -127,49 +133,38 @@ const Earn = () => {
     fetchOffers();
   }, [token]);
 
+  // Fetch auto-tracked direct offers for the Featured Offers placement
+  useEffect(() => {
+    if (!token) return;
+    const fetchDirectOffers = async () => {
+      try {
+        const res = await fetch(`${API}/direct-offers?placement=featured`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const data = await res.json();
+        if (data.success && Array.isArray(data.offers)) {
+          const now = new Date();
+          setDirectOffers(data.offers.filter(o => !o.expirationDate || new Date(o.expirationDate) >= now));
+        }
+      } catch (err) {
+        console.error('Failed to load direct offers:', err);
+      } finally {
+        setLoadingDirectOffers(false);
+      }
+    };
+    fetchDirectOffers();
+  }, [token]);
+
   const enabledProviders = settings?.offerwalls || [];
 
-  const goodpicksItem = enabledProviders.find(p => p.id === 'goodpicks') || {
-    id: 'goodpicks',
-    label: 'Goodpicks',
-    category: 'gaming',
-    enabled: true
-  };
-
-  const defaultSurveyList = [
-    { id: 'cpx', label: 'CPX Research', category: 'surveys', enabled: true },
-    { id: 'primeearn', label: 'Prime Surveys', category: 'surveys', enabled: true },
-    { id: 'adscend', label: 'AdscendMedia', category: 'surveys', enabled: true },
-  ];
-
-  const surveyProviders = [...defaultSurveyList, goodpicksItem];
-
-  const defaultBase8 = [
-    { id: 'adgem', label: 'AdGem', category: 'gaming', enabled: true },
-    { id: 'torox', label: 'Torox', category: 'gaming', enabled: true },
-    { id: 'lootably', label: 'Lootably', category: 'mixed', enabled: true },
-    { id: 'cpx', label: 'CPX Research', category: 'surveys', enabled: true },
-    { id: 'primeearn', label: 'Prime Surveys', category: 'surveys', enabled: true },
-    { id: 'ayet', label: 'Ayet Studios', category: 'mixed', enabled: true },
-    { id: 'adtowall', label: 'AdToWall', category: 'mixed', enabled: true },
-    { id: 'revu', label: 'Revu', category: 'mixed', enabled: true },
-  ];
-
-  const baseProviders = enabledProviders.filter(p => p.id !== 'goodpicks');
-  const combinedBase = [...baseProviders];
-  for (const def of defaultBase8) {
-    if (!combinedBase.some(p => p.id === def.id)) {
-      combinedBase.push(def);
-    }
-  }
-
-  // 9 items total: 4 on line 1, 4 on line 2, and Goodpicks as the 9th at start of line 3
-  const gamingProviders = [...combinedBase.slice(0, 8), goodpicksItem];
+  // Order is authoritative from the backend settings response; the shared
+  // helper only appends true fallback providers that are absent from config.
+  const { surveys: surveyProviders, gaming: gamingProviders } = buildOfferwallSections({ enabledProviders });
 
   const tabs = [
     { id: 'surveys', label: t('earn.tabSurveys'), icon: FiCheckCircle, count: surveyProviders.length },
     { id: 'gaming', label: t('earn.tabGaming'), icon: FiMonitor, count: gamingProviders.length },
-    { id: 'featured', label: t('earn.tabFeatured'), icon: FiStar, count: customOffers.length },
+    { id: 'featured', label: t('earn.tabFeatured'), icon: FiStar, count: directOffers.length + customOffers.length },
   ];
 
   const renderEmptyState = (labelKey) => (
@@ -224,9 +219,9 @@ const Earn = () => {
             transition={{ duration: 0.25 }}
             className="space-y-6"
           >
-            {activeProvider ? (
+            {false && activeProvider ? (
               activeProvider.id === 'goodpicks' ? (
-                <GoodpicksOfferwallModal onClose={() => setActiveProvider(null)} />
+                <GoodpicksOfferwallModal onClose={() => setActiveProvider(null)} token={token} />
               ) : (
                 <div className="space-y-4">
                   <button
@@ -288,7 +283,7 @@ const Earn = () => {
                         <div className="w-10 h-10 rounded-full border-2 border-amber-500 border-t-transparent animate-spin" />
                         <p className="text-slate-400 text-sm">{t('earn.loadingFeatured')}</p>
                       </div>
-                    ) : customOffers.length === 0 ? (
+                    ) : directOffers.length === 0 && customOffers.length === 0 ? (
                       <div className="glass-card p-16 text-center flex flex-col items-center gap-4">
                         <div className="w-16 h-16 rounded-2xl bg-amber-500/[0.06] border border-amber-500/[0.15] flex items-center justify-center">
                           <FiStar className="text-amber-500/50 text-2xl" />
@@ -301,15 +296,46 @@ const Earn = () => {
                         </div>
                       </div>
                     ) : (
-                      <motion.div variants={container} initial="hidden" animate="show" className="grid grid-cols-2 lg:grid-cols-[repeat(auto-fill,minmax(156px,1fr))] gap-3 lg:gap-4">
-                        {customOffers.map(offer => (
-                          <FeaturedOfferCard
-                            key={offer._id}
-                            offer={offer}
-                            onClick={() => setSelectedOffer(offer)}
-                          />
-                        ))}
-                      </motion.div>
+                      <div className="space-y-6">
+                        {directOffers.length > 0 && (
+                          <div className="space-y-3">
+                            <div>
+                              <h2 className="text-lg font-bold text-white flex items-center gap-2">
+                                <FiZap className="text-amber-400" /> Auto-Tracked Offers
+                              </h2>
+                              <p className="text-slate-500 text-xs mt-0.5">Rewarded automatically when the advertiser confirms completion.</p>
+                            </div>
+                            <motion.div variants={container} initial="hidden" animate="show" className="grid grid-cols-2 lg:grid-cols-[repeat(auto-fill,minmax(156px,1fr))] gap-3 lg:gap-4">
+                              {directOffers.map(offer => (
+                                <DirectOfferCard
+                                  key={offer._id}
+                                  offer={offer}
+                                  onClick={() => setSelectedDirectOffer(offer)}
+                                />
+                              ))}
+                            </motion.div>
+                          </div>
+                        )}
+                        {customOffers.length > 0 && (
+                          <div className="space-y-3">
+                            <div>
+                              <h2 className="text-lg font-bold text-white flex items-center gap-2">
+                                <FiExternalLink className="text-indigo-400" /> Manual Offers
+                              </h2>
+                              <p className="text-slate-500 text-xs mt-0.5">Submit proof after completing the offer.</p>
+                            </div>
+                            <motion.div variants={container} initial="hidden" animate="show" className="grid grid-cols-2 lg:grid-cols-[repeat(auto-fill,minmax(156px,1fr))] gap-3 lg:gap-4">
+                              {customOffers.map(offer => (
+                                <FeaturedOfferCard
+                                  key={offer._id}
+                                  offer={offer}
+                                  onClick={() => setSelectedOffer(offer)}
+                                />
+                              ))}
+                            </motion.div>
+                          </div>
+                        )}
+                      </div>
                     )}
                   </>
                 )}
@@ -319,11 +345,36 @@ const Earn = () => {
         </AnimatePresence>
 
         <AnimatePresence>
+          {activeProvider && (
+            <OfferwallModal
+              provider={activeProvider}
+              userId={mongoUser?._id}
+              token={token}
+              onClose={() => setActiveProvider(null)}
+            />
+          )}
+        </AnimatePresence>
+
+        <AnimatePresence>
           {selectedOffer && (
             <FeaturedOfferModal
               offer={selectedOffer}
               token={token}
               onClose={() => setSelectedOffer(null)}
+            />
+          )}
+        </AnimatePresence>
+
+        <AnimatePresence>
+          {selectedDirectOffer && (
+            <DirectOfferModal
+              offer={selectedDirectOffer}
+              token={token}
+              placement="featured"
+              onClose={() => setSelectedDirectOffer(null)}
+              onClicked={(offerId) => setDirectOffers(prev =>
+                prev.map(o => o._id === offerId ? { ...o, clickStatus: 'clicked' } : o)
+              )}
             />
           )}
         </AnimatePresence>

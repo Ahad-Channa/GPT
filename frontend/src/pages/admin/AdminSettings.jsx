@@ -461,8 +461,15 @@ const AdminSettings = () => {
             </div>
             <div>
               <h3 style={{ color: '#0E0F0C', fontSize: '0.95rem', fontWeight: 700, margin: 0, fontFamily: "'Bricolage Grotesque', sans-serif" }}>Earnings Hold System</h3>
-              <p style={{ color: '#6B7280', fontSize: '0.75rem', margin: 0 }}>Lock large earnings to protect the economy</p>
+              <p style={{ color: '#6B7280', fontSize: '0.75rem', margin: 0 }}>Global default and fallback for offerwall and direct-offer earnings</p>
             </div>
+          </div>
+
+          <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.5rem', padding: '0.65rem 0.85rem', background: '#FFFBEB', border: '1px solid #FDE68A', borderRadius: '10px', marginBottom: '1.25rem' }}>
+            <FiInfo style={{ color: '#D97706', flexShrink: 0, marginTop: 2 }} />
+            <p style={{ fontSize: '0.75rem', color: '#92400E', margin: 0 }}>
+              These settings are used by default. Individual offerwall providers can override them on the Offerwalls page, and each Direct Offer can override them in Direct Offers.
+            </p>
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0.75rem 1rem', background: '#F9FAFB', borderRadius: '12px', border: '1px solid #E5E7EB', marginBottom: '1.25rem' }}>
