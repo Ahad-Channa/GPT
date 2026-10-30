@@ -5,6 +5,7 @@ import { FaApple, FaAndroid, FaDesktop } from 'react-icons/fa';
 import { useTranslation } from 'react-i18next';
 import CoinDisplay from '../CoinDisplay';
 import { GoodpicksSupportModal } from './GoodpicksModal';
+import { ProofUploadView } from './ProofUploadView';
 import { formatGoalTimeLimit } from '../../utils/goalTimeLimit';
 import { isOfferClickLimitReached } from '../../utils/offerClickLimit';
 
@@ -255,13 +256,20 @@ export const DirectOfferModal = ({ offer, token, placement = 'featured', onClose
   const [loading, setLoading] = useState(false);
   const [showSupportModal, setShowSupportModal] = useState(false);
   const [actionError, setActionError] = useState('');
+  const [proofStarted, setProofStarted] = useState(false);
+  const [proofMessage, setProofMessage] = useState(null);
+  const [submissionStatus, setSubmissionStatus] = useState(offer.submissionStatus || null);
+  const isManual = offer.trackingMode === 'manual';
+  const proofInstructions = isDe && offer.proofInstructionsDe
+    ? offer.proofInstructionsDe
+    : offer.proofInstructions;
   const isExpired = offer.expirationDate && new Date(offer.expirationDate) < new Date();
   const limitReached = isOfferClickLimitReached(offer);
   const rewardVal = offer.rewardAmount ?? offer.points ?? offer.reward ?? 0;
   const coverImgSrc = offer.coverImage || (isIconUrl(offer.icon) ? offer.icon : null);
   const emojiIcon = !coverImgSrc && offer.icon ? offer.icon : '⚡';
 
-  const enabledGoals = getEnabledGoals(offer);
+  const enabledGoals = isManual ? [] : getEnabledGoals(offer);
   const hasGoalRows = enabledGoals.length > 0;
   const displayRequirementType = hasGoalRows ? 'bullets' : 'paragraph';
   const displayRequirements = hasGoalRows
@@ -286,6 +294,10 @@ export const DirectOfferModal = ({ offer, token, placement = 'featured', onClose
         const data = await res.json();
         if (data.success && data.url) {
           window.open(data.url, '_blank', 'noopener,noreferrer');
+          if (isManual) {
+            setProofStarted(true);
+            if (data.submissionStatus) setSubmissionStatus(data.submissionStatus);
+          }
           if (onClicked) onClicked(offer._id);
         } else if (data.limitReached) {
           setActionError('This offer has reached its click limit.');
@@ -506,6 +518,65 @@ export const DirectOfferModal = ({ offer, token, placement = 'featured', onClose
             )}
           </div>
         </div>
+
+        {isManual && proofInstructions && (
+          <div
+            style={{ background: 'rgba(239, 246, 255, 0.9)', border: '1px solid rgba(59, 130, 246, 0.25)' }}
+            className="rounded-[14px] p-3 shrink-0"
+          >
+            <h4
+              className="text-[13px] font-bold text-[#0E0F0C] m-0 mb-1"
+              style={{ fontFamily: '"Bricolage Grotesque", sans-serif' }}
+            >
+              {isDe ? 'Nachweis-Anweisungen' : 'Proof Instructions'}
+            </h4>
+            <p className="text-[12px] text-[#334155] m-0 whitespace-pre-wrap leading-relaxed">{proofInstructions}</p>
+          </div>
+        )}
+
+        {isManual && submissionStatus === 'pending' && (
+          <div className="text-center text-[12px] font-semibold text-[#0369A1] shrink-0">
+            {isDe ? 'Nachweis eingereicht – wartet auf Prüfung.' : 'Proof submitted – awaiting admin review.'}
+          </div>
+        )}
+        {isManual && submissionStatus === 'approved' && (
+          <div className="text-center text-[12px] font-semibold text-emerald-700 shrink-0">
+            {isDe ? 'Dieses Angebot wurde bereits genehmigt.' : 'This offer has already been approved.'}
+          </div>
+        )}
+        {isManual && submissionStatus === 'rejected' && offer.adminNote && (
+          <div className="text-center text-[12px] font-semibold text-rose-700 shrink-0">
+            {isDe ? 'Abgelehnt' : 'Rejected'}: {offer.adminNote}
+          </div>
+        )}
+
+        {isManual && proofStarted && submissionStatus !== 'pending' && submissionStatus !== 'approved' && (
+          <div
+            className="rounded-[14px] p-3 shrink-0"
+            style={{ background: '#0e1726', border: '1px solid rgba(255,255,255,0.08)' }}
+          >
+            <ProofUploadView
+              offer={offer}
+              token={token}
+              API={API}
+              submitUrl={`${API}/direct-offers/${offer._id}/submit`}
+              setResult={setProofMessage}
+              onSubmitted={() => setSubmissionStatus('pending')}
+            />
+          </div>
+        )}
+
+        {proofMessage?.message && (
+          <div className={`text-center text-[12px] font-semibold shrink-0 ${proofMessage.type === 'error' ? 'text-rose-700' : 'text-emerald-700'}`}>
+            {proofMessage.message}
+          </div>
+        )}
+
+        {isManual && !proofStarted && submissionStatus !== 'pending' && submissionStatus !== 'approved' && (
+          <div className="text-center text-[11px] text-[#64748B] shrink-0">
+            {isDe ? 'Starte das Angebot, um danach den Nachweis einzureichen.' : 'Start the offer, then submit your proof here.'}
+          </div>
+        )}
 
         {actionError && (
           <div className="text-center text-[12px] font-semibold text-[#B91C1C] shrink-0">{actionError}</div>

@@ -406,10 +406,10 @@ test('one offer record can be clicked from both placements and rejected from pla
   assert.deepEqual(resolveClickPlacement({ displayPlacements: { featured: true } }, undefined), { placement: 'featured', allowed: true });
 });
 
-test('public direct-offer responses never select or expose the postback secret', () => {
+test('public direct-offer responses never select or expose the postback secret or internal hold fields', () => {
   const fs = require('node:fs');
   const source = fs.readFileSync(require('node:path').join(__dirname, '..', 'routes', 'directOffers.js'), 'utf8');
-  assert.match(source, /\.select\('-postbackSecretKey'\)/);
+  assert.match(source, /\.select\('-postbackSecretKey -holdEnabled -holdDays -holdThreshold'\)/);
 });
 
 test('direct offer status mapping supports configured chargeback as reversal', () => {

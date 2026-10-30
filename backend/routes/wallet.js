@@ -92,6 +92,10 @@ router.get('/settings', verifyToken, async (req, res) => {
           pObj.iframeUrl = pObj.iframeUrl || process.env.LOOTABLY_IFRAME_URL || '';
           pObj.offerwallUrl = pObj.offerwallUrl || process.env.LOOTABLY_OFFERWALL_URL || '';
         }
+        // Internal hold policy is admin-only; never expose it publicly.
+        delete pObj.holdEnabled;
+        delete pObj.holdDays;
+        delete pObj.holdThreshold;
         return pObj;
       });
     const orderedOfferwalls = sortOfferwallProviders(offerwalls);

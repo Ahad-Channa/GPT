@@ -14,7 +14,7 @@ const FIELD_LIMITS = {
   transactionId: 128,
   status: 64,
   payout: 64,
-  eventType: 64,
+  eventType: 128,
   providerUserId: 128,
 };
 const EXTRA_FIELD_LIMIT = 512;

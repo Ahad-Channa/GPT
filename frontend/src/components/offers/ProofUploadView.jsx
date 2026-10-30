@@ -33,7 +33,7 @@ const compressImage = (file) => {
   });
 };
 
-export const ProofUploadView = ({ offer, token, API, onSubmitted, setResult, onCancel }) => {
+export const ProofUploadView = ({ offer, token, API, submitUrl, onSubmitted, setResult, onCancel }) => {
   const [proof, setProof] = useState('');
   const [proofImages, setProofImages] = useState([]);
   const [submitting, setSubmitting] = useState(false);
@@ -93,7 +93,8 @@ export const ProofUploadView = ({ offer, token, API, onSubmitted, setResult, onC
     e.preventDefault();
     setSubmitting(true);
     try {
-      const res = await fetch(`${API}/custom-offers/${offer._id}/submit`, {
+      const endpoint = submitUrl || `${API}/custom-offers/${offer._id}/submit`;
+      const res = await fetch(endpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({ 

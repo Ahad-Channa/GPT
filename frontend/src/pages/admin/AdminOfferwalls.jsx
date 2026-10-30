@@ -57,18 +57,24 @@ const ProviderCard = ({ provider, onUpdate, loadingProvider }) => {
   const [enabled, setEnabled] = useState(provider.enabled);
   const [ratio, setRatio] = useState(String(provider.conversionRatio || 1.0));
   const [order, setOrder] = useState(provider.order != null ? String(provider.order) : '');
+  const [holdEnabled, setHoldEnabled] = useState(Boolean(provider.holdEnabled));
+  const [holdDays, setHoldDays] = useState(String(provider.holdDays ?? 30));
+  const [holdThreshold, setHoldThreshold] = useState(String(provider.holdThreshold ?? 0));
   const [dirty, setDirty] = useState(false);
 
   useEffect(() => {
     setEnabled(provider.enabled);
     setRatio(String(provider.conversionRatio || 1.0));
     setOrder(provider.order != null ? String(provider.order) : '');
+    setHoldEnabled(Boolean(provider.holdEnabled));
+    setHoldDays(String(provider.holdDays ?? 30));
+    setHoldThreshold(String(provider.holdThreshold ?? 0));
     setDirty(false);
   }, [provider]);
 
   const handleRatioChange = (val) => {
     setRatio(val);
-    setDirty(Number(val) !== provider.conversionRatio);
+    setDirty(true);
   };
 
   const handleOrderChange = (val) => {
@@ -76,9 +82,35 @@ const ProviderCard = ({ provider, onUpdate, loadingProvider }) => {
     setDirty(true);
   };
 
-  const handleToggle = () => {
+  const buildUpdates = (overrides = {}) => {
     const parsedOrder = parseOrderValue(order);
-    onUpdate(provider.id, !enabled, Number(ratio), parsedOrder === null ? undefined : parsedOrder);
+    if (parsedOrder === null) {
+      toast.error('Display order must be a non-negative integer');
+      return null;
+    }
+    const parsedHoldDays = Number(holdDays);
+    const parsedHoldThreshold = Number(holdThreshold);
+    if (holdEnabled && (!Number.isInteger(parsedHoldDays) || parsedHoldDays < 0)) {
+      toast.error('Hold days must be a non-negative integer');
+      return null;
+    }
+    if (holdEnabled && (!Number.isInteger(parsedHoldThreshold) || parsedHoldThreshold < 0)) {
+      toast.error('Hold threshold must be a non-negative integer');
+      return null;
+    }
+    return {
+      conversionRatio: Number(ratio),
+      ...(parsedOrder === undefined ? {} : { order: parsedOrder }),
+      holdEnabled,
+      holdDays: Number.isInteger(parsedHoldDays) && parsedHoldDays >= 0 ? parsedHoldDays : 0,
+      holdThreshold: Number.isInteger(parsedHoldThreshold) && parsedHoldThreshold >= 0 ? parsedHoldThreshold : 0,
+      ...overrides,
+    };
+  };
+
+  const handleToggle = () => {
+    const updates = buildUpdates({ enabled: !enabled });
+    if (updates) onUpdate(provider.id, updates);
   };
 
   const handleSaveRatio = () => {
@@ -86,12 +118,8 @@ const ProviderCard = ({ provider, onUpdate, loadingProvider }) => {
       toast.error('Conversion ratio must be a positive number');
       return;
     }
-    const parsedOrder = parseOrderValue(order);
-    if (parsedOrder === null) {
-      toast.error('Display order must be a non-negative integer');
-      return;
-    }
-    onUpdate(provider.id, enabled, Number(ratio), parsedOrder);
+    const updates = buildUpdates({ enabled });
+    if (updates) onUpdate(provider.id, updates);
   };
 
   const isLoading = loadingProvider === provider.id;
@@ -203,6 +231,70 @@ const ProviderCard = ({ provider, onUpdate, loadingProvider }) => {
           Lower shows first. Leave blank to keep the current position.
         </p>
       </div>
+
+      <div style={{ marginTop: '1rem', padding: '0.85rem', background: '#F9FAFB', border: '1px solid #E5E7EB', borderRadius: '12px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.75rem' }}>
+          <div>
+            <p style={{ color: '#0E0F0C', fontWeight: 600, fontSize: '0.82rem', margin: 0 }}>Custom Hold Period</p>
+            <p style={{ color: '#6B7280', fontSize: '0.7rem', margin: '2px 0 0' }}>
+              Overrides the global Earnings Hold settings for this provider. When off, global settings are used.
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={() => { setHoldEnabled(!holdEnabled); setDirty(true); }}
+            disabled={isLoading}
+            style={{ background: 'none', border: 'none', cursor: isLoading ? 'not-allowed' : 'pointer', padding: 0, display: 'flex', alignItems: 'center', gap: '0.35rem' }}
+          >
+            {holdEnabled
+              ? <FiToggleRight style={{ fontSize: '1.5rem', color: '#10B981' }} />
+              : <FiToggleLeft style={{ fontSize: '1.5rem', color: '#9CA3AF' }} />
+            }
+            <span style={{ fontSize: '0.7rem', color: holdEnabled ? '#059669' : '#6B7280', fontWeight: 700 }}>
+              {holdEnabled ? 'ON' : 'OFF'}
+            </span>
+          </button>
+        </div>
+
+        {holdEnabled ? (
+          <div style={{ display: 'flex', gap: '0.75rem', marginTop: '0.75rem' }}>
+            <div style={{ flex: 1 }}>
+              <label style={{ display: 'block', fontSize: '0.68rem', color: '#6B7280', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.35rem' }}>
+                Hold Days
+              </label>
+              <NumberInput
+                value={holdDays}
+                onChange={(v) => { setHoldDays(v); setDirty(true); }}
+                min={0}
+                step={1}
+                disabled={isLoading}
+              />
+            </div>
+            <div style={{ flex: 1 }}>
+              <label style={{ display: 'block', fontSize: '0.68rem', color: '#6B7280', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.35rem' }}>
+                Hold Threshold (Coins)
+              </label>
+              <NumberInput
+                value={holdThreshold}
+                onChange={(v) => { setHoldThreshold(v); setDirty(true); }}
+                min={0}
+                step={1}
+                disabled={isLoading}
+              />
+            </div>
+          </div>
+        ) : (
+          <p style={{ fontSize: '0.7rem', color: '#9CA3AF', margin: '0.6rem 0 0' }}>
+            Global fallback: configure it in Platform Settings → Earnings Hold System.
+          </p>
+        )}
+        {holdEnabled && (
+          <p style={{ fontSize: '0.68rem', color: '#9CA3AF', margin: '0.45rem 0 0' }}>
+            Set days to 0 for instant credit with no hold.
+          </p>
+        )}
+      </div>
+
       {Number(ratio) > 0 && enabled && (
         <div style={{ fontSize: '0.75rem', color: '#6B7280', marginTop: '0.75rem', padding: '0.5rem 0.75rem', background: '#F9FAFB', border: '1px solid #F3F4F6', borderRadius: '8px', fontFamily: "'Barlow', system-ui, sans-serif", fontFeatureSettings: "'zero' 0" }}>
           <strong style={{ color: '#374151' }}>Formula:</strong> 1.00 Network Unit &times; {Number(ratio) || 1} = <span style={{ color: '#2563EB', fontWeight: 600 }}>{Math.round(1 * (Number(ratio) || 1))} Coins to user</span>.
@@ -239,19 +331,19 @@ const AdminOfferwalls = () => {
 
   useEffect(() => { fetchProviders(); }, [fetchProviders]);
 
-  const updateProvider = async (providerId, enabled, conversionRatio, order) => {
+  const updateProvider = async (providerId, updates) => {
     try {
       setLoadingProvider(providerId);
       const token = await currentUser.getIdToken();
       const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/admin/offerwalls/${providerId}`, {
         method: 'PUT',
         headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ enabled, conversionRatio, ...(order === undefined ? {} : { order }) })
+        body: JSON.stringify(updates)
       });
       const data = await res.json();
       if (!data.success) throw new Error(data.error);
 
-      setProviders(prev => prev.map(p => p.id === providerId ? { ...p, enabled, conversionRatio, ...(order === undefined ? {} : { order }) } : p));
+      setProviders(prev => prev.map(p => p.id === providerId ? { ...p, ...updates } : p));
       toast.success(`${providerId} updated!`);
     } catch (err) {
       toast.error(err.message || 'Update failed');

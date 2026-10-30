@@ -6,6 +6,7 @@ import { FaAndroid, FaApple, FaDesktop } from 'react-icons/fa';
 import { BsQrCode } from 'react-icons/bs';
 import { formatGoalTimeLimit } from '../../utils/goalTimeLimit';
 import { isOfferClickLimitReached } from '../../utils/offerClickLimit';
+import { ProofUploadView } from './ProofUploadView';
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
@@ -246,14 +247,17 @@ const directOfferGoalsToRequirementRows = (offer, isDe = false) => {
   });
 };
 
-const mapDirectOfferForGoodpicks = (offer) => ({
-  ...offer,
-  __direct: true,
-  externalLink: offer.advertiserUrl,
-  requirementType: offer.goals?.some(goal => goal && goal.enabled !== false) ? 'bullets' : 'paragraph',
-  requirements: directOfferGoalsToRequirementRows(offer),
-  requirementsDe: directOfferGoalsToRequirementRows(offer, true),
-});
+const mapDirectOfferForGoodpicks = (offer) => {
+  const isManual = offer.trackingMode === 'manual';
+  return {
+    ...offer,
+    __direct: true,
+    externalLink: offer.advertiserUrl,
+    requirementType: !isManual && offer.goals?.some(goal => goal && goal.enabled !== false) ? 'bullets' : 'paragraph',
+    requirements: isManual ? (offer.requirements || []) : directOfferGoalsToRequirementRows(offer),
+    requirementsDe: isManual ? (offer.requirementsDe || []) : directOfferGoalsToRequirementRows(offer, true),
+  };
+};
 
 const renderOfferCover = (offer) => {
   const imgSrc = offer?.coverImage || (isIconUrl(offer?.icon) ? offer?.icon : null);
@@ -309,9 +313,16 @@ export const GoodpicksDetailModal = ({ offer, onClose, token }) => {
   const [loading, setLoading] = useState(false);
   const [showSupportModal, setShowSupportModal] = useState(false);
   const [actionError, setActionError] = useState('');
+  const [proofStarted, setProofStarted] = useState(false);
+  const [proofMessage, setProofMessage] = useState(null);
+  const [submissionStatus, setSubmissionStatus] = useState(offer?.submissionStatus || null);
 
   if (!offer) return null;
 
+  const isManual = offer.trackingMode === 'manual';
+  const proofInstructions = isDe && offer.proofInstructionsDe
+    ? offer.proofInstructionsDe
+    : offer.proofInstructions;
   const rewardFormatted = (offer.rewardAmount || 0).toLocaleString('de-DE');
   const limitReached = isOfferClickLimitReached(offer);
 
@@ -337,6 +348,10 @@ export const GoodpicksDetailModal = ({ offer, onClose, token }) => {
         const data = await res.json();
         if (data.success && data.url) {
           window.open(data.url, '_blank', 'noopener,noreferrer');
+          if (isManual) {
+            setProofStarted(true);
+            if (data.submissionStatus) setSubmissionStatus(data.submissionStatus);
+          }
           return;
         }
         if (data.limitReached) {
@@ -734,6 +749,58 @@ export const GoodpicksDetailModal = ({ offer, onClose, token }) => {
             </div>
           )}
         </div>
+
+        {isManual && proofInstructions && (
+          <div
+            style={{
+              background: '#EFF6FF',
+              border: '1px solid rgba(59,130,246,0.25)',
+              borderRadius: '14px',
+              padding: '12px',
+            }}
+            className="shrink-0"
+          >
+            <p style={{ fontFamily: '"Poppins", sans-serif', fontWeight: 700, fontSize: '13px', color: '#0F172A', margin: '0 0 4px' }}>
+              {isDe ? 'Nachweis-Anweisungen' : 'Proof Instructions'}
+            </p>
+            <p style={{ fontFamily: '"Poppins", sans-serif', fontSize: '12px', color: '#334155', margin: 0, whiteSpace: 'pre-wrap' }}>
+              {proofInstructions}
+            </p>
+          </div>
+        )}
+
+        {isManual && submissionStatus === 'pending' && (
+          <div style={{ textAlign: 'center', color: '#0369A1', fontSize: '12px', fontWeight: 600 }}>
+            {isDe ? 'Nachweis eingereicht – wartet auf Prüfung.' : 'Proof submitted – awaiting admin review.'}
+          </div>
+        )}
+        {isManual && submissionStatus === 'approved' && (
+          <div style={{ textAlign: 'center', color: '#047857', fontSize: '12px', fontWeight: 600 }}>
+            {isDe ? 'Dieses Angebot wurde bereits genehmigt.' : 'This offer has already been approved.'}
+          </div>
+        )}
+        {isManual && submissionStatus === 'rejected' && offer.adminNote && (
+          <div style={{ textAlign: 'center', color: '#BE123C', fontSize: '12px', fontWeight: 600 }}>
+            {isDe ? 'Abgelehnt' : 'Rejected'}: {offer.adminNote}
+          </div>
+        )}
+        {isManual && proofStarted && submissionStatus !== 'pending' && submissionStatus !== 'approved' && (
+          <div style={{ background: '#0e1726', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '14px', padding: '12px' }} className="shrink-0">
+            <ProofUploadView
+              offer={offer}
+              token={token}
+              API={API}
+              submitUrl={`${API}/direct-offers/${offer._id}/submit`}
+              setResult={setProofMessage}
+              onSubmitted={() => setSubmissionStatus('pending')}
+            />
+          </div>
+        )}
+        {proofMessage?.message && (
+          <div style={{ textAlign: 'center', color: proofMessage.type === 'error' ? '#B91C1C' : '#047857', fontSize: '12px', fontWeight: 600 }}>
+            {proofMessage.message}
+          </div>
+        )}
 
         {actionError && (
           <div style={{ textAlign: 'center', color: '#B91C1C', fontSize: '12px', fontWeight: 600 }}>

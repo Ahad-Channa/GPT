@@ -10,6 +10,9 @@ const directOfferGoalSchema = new mongoose.Schema(
     labelDe: { type: String, trim: true, default: '' },
     description: { type: String, trim: true, default: '' },
     descriptionDe: { type: String, trim: true, default: '' },
+    // External partner event identifier (e.g. Plarium "Game Event 269").
+    externalEventId: { type: String, trim: true, default: '' },
+    externalEventAliases: { type: [String], default: [] },
     rewardAmount: { type: Number, required: true, min: 0 },
     payoutAmount: { type: Number, default: 0, min: 0 },
     // Display-only label (e.g. "3D"). Not an expiry/deadline; no enforcement.
@@ -25,7 +28,23 @@ const directOfferSchema = new mongoose.Schema(
     titleDe: { type: String, default: '' },
     description: { type: String, required: true },
     descriptionDe: { type: String, default: '' },
+    // 'postback' keeps the original automatic S2S tracking. 'manual' uses the
+    // manual proof submission workflow instead and never accepts postbacks.
+    // Historical documents without this field are treated as postback.
+    trackingMode: {
+      type: String,
+      enum: ['postback', 'manual'],
+      default: 'postback',
+    },
+    proofInstructions: { type: String, default: '' },
+    proofInstructionsDe: { type: String, default: '' },
     rewardAmount: { type: Number, required: true }, // Coins to credit user on approval
+    // Optional offer-specific earning hold policy. Only active when holdEnabled
+    // is true; otherwise the global earningHoldConfig applies. Shared by the
+    // Featured and Goodpicks placements because it belongs to the offer itself.
+    holdEnabled: { type: Boolean, default: false },
+    holdDays: { type: Number, default: 30, min: 0 },
+    holdThreshold: { type: Number, default: 0, min: 0 },
     advertiserPayoutAmount: { type: Number, default: 0 }, // USD you earn from advertiser (record only)
     advertiserUrl: { type: String, required: true }, // Where user is redirected after click
     isActive: { type: Boolean, default: true },
@@ -72,6 +91,7 @@ const directOfferSchema = new mongoose.Schema(
       transactionIdParam: { type: String, default: 'txn_id' },     // Query param for advertiser's transaction ID
       payoutParam:        { type: String, default: 'payout' },     // Query param for payout/revenue amount
       statusParam:        { type: String, default: 'status' },     // Query param for conversion status
+      eventTypeParam:     { type: String, trim: true, default: 'event_type' }, // Query param for event / goal ID
       approvedValue:      { type: String, default: 'approved' },   // Value that means "approved"
       rejectedValue:      { type: String, default: 'rejected' },   // Value that means "rejected"
       reversedValue:      { type: String, default: 'reversed' },   // Value that means "reversal/chargeback"

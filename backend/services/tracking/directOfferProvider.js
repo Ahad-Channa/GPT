@@ -8,7 +8,9 @@ const buildDirectOfferProviderConfig = (offer) => {
     providerId: 'direct',
     name: 'Direct Offers',
     type: 'direct',
-    enabled: Boolean(offer && offer.isActive),
+    // Manual offers must never be rewardable through the S2S postback route.
+    // Historical documents without trackingMode are treated as postback.
+    enabled: Boolean(offer && offer.isActive) && offer.trackingMode !== 'manual',
     parameterMappings: {
       clickId: mapping.clickIdParam || 'click_id',
       transactionId: mapping.transactionIdParam || 'txn_id',
@@ -17,7 +19,7 @@ const buildDirectOfferProviderConfig = (offer) => {
       eventType: mapping.eventTypeParam || 'event_type',
     },
     statusMappings: {
-      pending: [mapping.pendingValue || 'pending'],
+      pending: ['pending'],
       approved: [mapping.approvedValue || 'approved'],
       rejected: [mapping.rejectedValue || 'rejected'],
       reversed: [mapping.reversedValue || mapping.chargebackValue || 'reversed', mapping.chargebackValue].filter(Boolean),
