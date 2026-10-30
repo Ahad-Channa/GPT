@@ -15,15 +15,14 @@ export const DEFAULT_PROVIDER_ORDER = {
   cpx: 6,
   adgem: 7,
   ayet: 8,
+  adscend: 9,
 };
 
-// Providers that were historically hardcoded in the frontend but are NOT part
-// of the backend registry. They are kept for layout parity and appended last.
-// Registry providers are never re-added here, so a disabled provider stays
-// excluded.
-export const FALLBACK_PROVIDER_DEFS = [
-  { id: 'adscend', label: 'AdscendMedia', category: 'surveys', enabled: true },
-];
+// Providers that are NOT part of the backend registry and must still render even
+// if the server omits them. Adscend is now a first-class Settings provider, so
+// it is intentionally NOT listed here: this ensures that disabling it in Admin
+// keeps it excluded instead of being re-added by the frontend fallback.
+export const FALLBACK_PROVIDER_DEFS = [];
 
 const fallbackRank = (id) =>
   Object.prototype.hasOwnProperty.call(DEFAULT_PROVIDER_ORDER, id)
@@ -50,8 +49,12 @@ export const buildOrderedProviders = (enabledProviders = [], fallbackDefs = FALL
 };
 
 // Reproduces the existing Surveys / Gaming sections but honours the configured
-// order (server order preserved). Goodpicks appears in both sections positioned
-// by its configured order. Gaming keeps at most 8 non-Goodpicks providers.
+// order (server order preserved). Category membership is authoritative:
+//   * Surveys: category 'surveys' + Goodpicks
+//   * Gaming & App: category 'gaming'/'mixed' + Goodpicks (survey providers never
+//     leak in, even if reordered earlier)
+// Goodpicks appears in both sections positioned by its configured order. Gaming
+// keeps at most 8 non-Goodpicks providers.
 export const buildOfferwallSections = ({ enabledProviders = [] } = {}) => {
   const ordered = buildOrderedProviders(enabledProviders);
 
@@ -67,6 +70,8 @@ export const buildOfferwallSections = ({ enabledProviders = [] } = {}) => {
       gaming.push(provider);
       continue;
     }
+    // Category is authoritative: survey providers belong to Surveys only.
+    if (provider.category === 'surveys') continue;
     // Gaming reflects server-configured providers only (fallbacks stay in the
     // surveys section), preserving the previous layout.
     if (!enabledProviders.includes(provider)) continue;

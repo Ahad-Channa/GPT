@@ -70,7 +70,7 @@ test('Settings defaults give Goodpicks order 0 (first) for old config', () => {
   assert.equal(settings.offerwallProviders[0].id, 'goodpicks');
   assert.equal(settings.offerwallProviders[0].order, 0);
   const orders = settings.offerwallProviders.map((p) => p.order);
-  assert.deepEqual(orders, [0, 1, 2, 3, 4, 5, 6, 7, 8]);
+  assert.deepEqual(orders, [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]);
 });
 
 // ─── Backend: routes consume the shared order ─────────────────────────────────
@@ -228,15 +228,18 @@ test('frontend helper keeps disabled providers excluded (no re-adding of registr
   assert.equal(allIds.includes('lootably'), false);
 });
 
-test('frontend helper appends fallback providers deterministically last', async () => {
-  const { buildOfferwallSections } = await loadProviderOrder();
-  const { surveys } = buildOfferwallSections({
-    enabledProviders: [
+test('frontend helper appends injected fallback providers deterministically last', async () => {
+  const { buildOrderedProviders } = await loadProviderOrder();
+  // Adscend is now a backend-registry provider, so the fallback mechanism is
+  // exercised with an explicitly injected fallback definition.
+  const ordered = buildOrderedProviders(
+    [
       { id: 'goodpicks', category: 'gaming', order: 0 },
       { id: 'cpx', category: 'surveys', order: 6 },
     ],
-  });
-  assert.equal(surveys[surveys.length - 1].id, 'adscend');
+    [{ id: 'fallback-network', category: 'surveys', enabled: true }]
+  );
+  assert.deepEqual(ordered.map((p) => p.id), ['goodpicks', 'cpx', 'fallback-network']);
 });
 
 test('frontend pages consume the shared ordering helper', () => {

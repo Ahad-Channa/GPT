@@ -129,6 +129,7 @@ const settingsSchema = new mongoose.Schema(
         { id: 'cpx', label: 'CPX Research', enabled: true, conversionRatio: 100, secretConfigured: false, order: 6, category: 'surveys' },
         { id: 'adgem', label: 'AdGem', enabled: true, conversionRatio: 100, secretConfigured: false, order: 7, category: 'gaming' },
         { id: 'ayet', label: 'Ayet Studios', enabled: true, conversionRatio: 100, secretConfigured: false, order: 8, category: 'mixed' },
+        { id: 'adscend', label: 'AdscendMedia', enabled: true, conversionRatio: 100, secretConfigured: false, order: 9, category: 'surveys' },
       ]
     },
     // Block D — Leaderboard Configuration
@@ -207,6 +208,7 @@ settingsSchema.statics.getSingleton = async function () {
       { id: 'cpx', label: 'CPX Research', enabled: true, conversionRatio: 100, secretConfigured: false, order: 6, category: 'surveys' },
       { id: 'adgem', label: 'AdGem', enabled: true, conversionRatio: 100, secretConfigured: false, order: 7, category: 'gaming' },
       { id: 'ayet', label: 'Ayet Studios', enabled: true, conversionRatio: 100, secretConfigured: false, order: 8, category: 'mixed' },
+      { id: 'adscend', label: 'AdscendMedia', enabled: true, conversionRatio: 100, secretConfigured: false, order: 9, category: 'surveys' },
     ];
     let modified = false;
     for (const p of stdProviders) {

@@ -52,6 +52,11 @@ const PROCESSING_STATES = ['pending', 'claimed', 'processing', 'processed', 'fai
 const POSTBACK_RESULTS = ['received', 'accepted', 'rejected', 'duplicate', 'ignored', 'error'];
 const CLICK_STATUSES = ['clicked', 'pending', 'approved', 'rejected'];
 const CAMPAIGN_TYPES = ['direct_offer', 'offerwall', 'campaign', 'generic'];
+// Providers whose user-side wall builder actually consumes each config field.
+// Editing is gated by these sets so admin never saves an ineffective value.
+const OFFERWALL_IFRAME_URL_PROVIDER_IDS = new Set(['lootably', 'primeearn', 'torox', 'revu', 'adtowall', 'adgem', 'ayet', 'adscend']);
+const OFFERWALL_OFFERWALL_URL_PROVIDER_IDS = new Set(['lootably']);
+const OFFERWALL_PLACEMENT_ID_PROVIDER_IDS = new Set(['lootably']);
 const PARAM_NAME_RE = /^[A-Za-z0-9_.:-]{1,80}$/;
 const CREDENTIAL_REQUIRED_METHODS = ['shared_secret', 'token', 'md5', 'sha1', 'sha256', 'sha512', 'hmac'];
 const SENSITIVE_ADMIN_KEY_PATTERN = /(authorization|bearer|api[_-]?key|secret|password|private[_-]?key|access[_-]?token|refresh[_-]?token|credential|client[_-]?secret)/i;
@@ -964,7 +969,7 @@ router.put('/settings', requirePermission('manage_withdrawals'), async (req, res
 
 router.put('/offerwalls/:providerId', requirePermission('manage_offerwalls'), async (req, res) => {
   try {
-    const { enabled, conversionRatio, order, iframeUrl, offerwallUrl, placementId, holdEnabled, holdDays, holdThreshold } = req.body;
+    const { enabled, conversionRatio, order, label, iframeUrl, offerwallUrl, placementId, holdEnabled, holdDays, holdThreshold } = req.body;
     const settings = await Settings.getSingleton();
 
     const provider = settings.offerwallProviders.find(p => p.id === req.params.providerId);
@@ -999,18 +1004,29 @@ router.put('/offerwalls/:providerId', requirePermission('manage_offerwalls'), as
       }
       provider.holdThreshold = parsedHoldThreshold;
     }
-    if (provider.id === 'lootably') {
-      if (iframeUrl !== undefined) provider.iframeUrl = cleanString(iframeUrl, 500);
-      if (offerwallUrl !== undefined) provider.offerwallUrl = cleanString(offerwallUrl, 500);
-      if (placementId !== undefined) provider.placementId = cleanString(placementId, 120);
+    // Label (display name) is editable for every provider.
+    if (label !== undefined) provider.label = cleanString(label, 120);
+
+    // URL/placement fields are applied only where the user-side builder uses them.
+    if (OFFERWALL_IFRAME_URL_PROVIDER_IDS.has(provider.id) && iframeUrl !== undefined) {
+      provider.iframeUrl = cleanString(iframeUrl, 500);
+    }
+    if (OFFERWALL_OFFERWALL_URL_PROVIDER_IDS.has(provider.id) && offerwallUrl !== undefined) {
+      provider.offerwallUrl = cleanString(offerwallUrl, 500);
+    }
+    if (OFFERWALL_PLACEMENT_ID_PROVIDER_IDS.has(provider.id) && placementId !== undefined) {
+      provider.placementId = cleanString(placementId, 120);
     }
 
     await settings.save();
 
     await createLog(req.dbUser._id, 'UPDATE_OFFERWALL', null, {
       providerId: provider.id, enabled, conversionRatio, order: provider.order,
+      label: provider.label,
       holdEnabled: provider.holdEnabled, holdDays: provider.holdDays, holdThreshold: provider.holdThreshold,
-      ...(provider.id === 'lootably' ? { placementId: provider.placementId || '' } : {})
+      ...(OFFERWALL_IFRAME_URL_PROVIDER_IDS.has(provider.id) ? { iframeUrl: provider.iframeUrl || '' } : {}),
+      ...(OFFERWALL_OFFERWALL_URL_PROVIDER_IDS.has(provider.id) ? { offerwallUrl: provider.offerwallUrl || '' } : {}),
+      ...(OFFERWALL_PLACEMENT_ID_PROVIDER_IDS.has(provider.id) ? { placementId: provider.placementId || '' } : {})
     });
 
     res.json({ success: true, provider });

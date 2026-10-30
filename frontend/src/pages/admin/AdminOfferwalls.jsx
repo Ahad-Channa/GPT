@@ -53,6 +53,19 @@ const parseOrderValue = (raw) => {
   return parsed;
 };
 
+// Fields are only editable for providers whose user-side wall builder actually
+// consumes them, so admin never saves a control that has no effect.
+const IFRAME_URL_PROVIDERS = new Set(['lootably', 'primeearn', 'torox', 'revu', 'adtowall', 'adgem', 'ayet', 'adscend']);
+const OFFERWALL_URL_PROVIDERS = new Set(['lootably']);
+const PLACEMENT_ID_PROVIDERS = new Set(['lootably']);
+
+const providerFieldNote = (providerId, field) => {
+  if (providerId === 'cpx') return 'CPX URL is hardcoded; not editable.';
+  if (providerId === 'goodpicks') return 'Goodpicks is a branded Direct Offers area; no URL config.';
+  if (field === 'offerwallUrl' || field === 'placementId') return 'Used by Lootably only.';
+  return 'Not configurable for this provider.';
+};
+
 const ProviderCard = ({ provider, onUpdate, loadingProvider }) => {
   const [enabled, setEnabled] = useState(provider.enabled);
   const [ratio, setRatio] = useState(String(provider.conversionRatio || 1.0));
@@ -60,6 +73,10 @@ const ProviderCard = ({ provider, onUpdate, loadingProvider }) => {
   const [holdEnabled, setHoldEnabled] = useState(Boolean(provider.holdEnabled));
   const [holdDays, setHoldDays] = useState(String(provider.holdDays ?? 30));
   const [holdThreshold, setHoldThreshold] = useState(String(provider.holdThreshold ?? 0));
+  const [label, setLabel] = useState(provider.label || '');
+  const [iframeUrl, setIframeUrl] = useState(provider.iframeUrl || '');
+  const [offerwallUrl, setOfferwallUrl] = useState(provider.offerwallUrl || '');
+  const [placementId, setPlacementId] = useState(provider.placementId || '');
   const [dirty, setDirty] = useState(false);
 
   useEffect(() => {
@@ -69,8 +86,16 @@ const ProviderCard = ({ provider, onUpdate, loadingProvider }) => {
     setHoldEnabled(Boolean(provider.holdEnabled));
     setHoldDays(String(provider.holdDays ?? 30));
     setHoldThreshold(String(provider.holdThreshold ?? 0));
+    setLabel(provider.label || '');
+    setIframeUrl(provider.iframeUrl || '');
+    setOfferwallUrl(provider.offerwallUrl || '');
+    setPlacementId(provider.placementId || '');
     setDirty(false);
   }, [provider]);
+
+  const supportsIframeUrl = IFRAME_URL_PROVIDERS.has(provider.id);
+  const supportsOfferwallUrl = OFFERWALL_URL_PROVIDERS.has(provider.id);
+  const supportsPlacementId = PLACEMENT_ID_PROVIDERS.has(provider.id);
 
   const handleRatioChange = (val) => {
     setRatio(val);
@@ -98,12 +123,19 @@ const ProviderCard = ({ provider, onUpdate, loadingProvider }) => {
       toast.error('Hold threshold must be a non-negative integer');
       return null;
     }
+    const trimmedLabel = label.trim();
     return {
       conversionRatio: Number(ratio),
       ...(parsedOrder === undefined ? {} : { order: parsedOrder }),
       holdEnabled,
       holdDays: Number.isInteger(parsedHoldDays) && parsedHoldDays >= 0 ? parsedHoldDays : 0,
       holdThreshold: Number.isInteger(parsedHoldThreshold) && parsedHoldThreshold >= 0 ? parsedHoldThreshold : 0,
+      // Label is editable for all providers (skip if blank to preserve existing).
+      ...(trimmedLabel ? { label: trimmedLabel } : {}),
+      // URL/placement only for providers whose runtime actually uses them.
+      ...(supportsIframeUrl ? { iframeUrl: iframeUrl.trim() } : {}),
+      ...(supportsOfferwallUrl ? { offerwallUrl: offerwallUrl.trim() } : {}),
+      ...(supportsPlacementId ? { placementId: placementId.trim() } : {}),
       ...overrides,
     };
   };
@@ -154,7 +186,7 @@ const ProviderCard = ({ provider, onUpdate, loadingProvider }) => {
           </span>
           <div>
             <p style={{ color: '#0E0F0C', fontWeight: 700, fontSize: '0.95rem', margin: 0, textTransform: 'capitalize', fontFamily: "'Bricolage Grotesque', sans-serif" }}>
-              {provider.name || provider.id}
+              {provider.label || provider.name || provider.id}
             </p>
             {!provider.secretConfigured && (
               <p style={{ color: '#DC2626', fontSize: '0.75rem', margin: '2px 0 0 0', display: 'flex', alignItems: 'center', gap: '4px', fontWeight: 500 }}>
@@ -230,6 +262,77 @@ const ProviderCard = ({ provider, onUpdate, loadingProvider }) => {
         <p style={{ fontSize: '0.68rem', color: '#9CA3AF', margin: '0.35rem 0 0' }}>
           Lower shows first. Leave blank to keep the current position.
         </p>
+      </div>
+
+      <div style={{ marginTop: '1rem' }}>
+        <label style={{ display: 'block', fontSize: '0.7rem', color: '#6B7280', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.35rem' }}>
+          Provider Name
+        </label>
+        <input
+          className="admin-input"
+          value={label}
+          onChange={(e) => { setLabel(e.target.value); setDirty(true); }}
+          disabled={isLoading}
+          style={{ width: '100%' }}
+        />
+      </div>
+
+      <div style={{ marginTop: '1rem', padding: '0.85rem', background: '#F9FAFB', border: '1px solid #E5E7EB', borderRadius: '12px' }}>
+        <p style={{ color: '#0E0F0C', fontWeight: 600, fontSize: '0.82rem', margin: 0 }}>Wall URL / Placement</p>
+        <p style={{ color: '#6B7280', fontSize: '0.7rem', margin: '2px 0 0' }}>
+          Only fields the user-side wall actually uses are editable.
+        </p>
+
+        <div style={{ marginTop: '0.7rem' }}>
+          <label style={{ display: 'block', fontSize: '0.68rem', color: '#6B7280', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.35rem' }}>
+            Iframe URL
+          </label>
+          <input
+            className="admin-input"
+            value={supportsIframeUrl ? iframeUrl : (provider.iframeUrl || '')}
+            onChange={(e) => { setIframeUrl(e.target.value); setDirty(true); }}
+            disabled={!supportsIframeUrl || isLoading}
+            placeholder="https://..."
+            style={{ width: '100%', opacity: supportsIframeUrl ? 1 : 0.6 }}
+          />
+          {!supportsIframeUrl && (
+            <p style={{ fontSize: '0.68rem', color: '#9CA3AF', margin: '0.3rem 0 0' }}>{providerFieldNote(provider.id, 'iframeUrl')}</p>
+          )}
+        </div>
+
+        <div style={{ marginTop: '0.7rem' }}>
+          <label style={{ display: 'block', fontSize: '0.68rem', color: '#6B7280', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.35rem' }}>
+            Offerwall URL
+          </label>
+          <input
+            className="admin-input"
+            value={supportsOfferwallUrl ? offerwallUrl : (provider.offerwallUrl || '')}
+            onChange={(e) => { setOfferwallUrl(e.target.value); setDirty(true); }}
+            disabled={!supportsOfferwallUrl || isLoading}
+            placeholder="https://..."
+            style={{ width: '100%', opacity: supportsOfferwallUrl ? 1 : 0.6 }}
+          />
+          {!supportsOfferwallUrl && (
+            <p style={{ fontSize: '0.68rem', color: '#9CA3AF', margin: '0.3rem 0 0' }}>{providerFieldNote(provider.id, 'offerwallUrl')}</p>
+          )}
+        </div>
+
+        <div style={{ marginTop: '0.7rem' }}>
+          <label style={{ display: 'block', fontSize: '0.68rem', color: '#6B7280', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.35rem' }}>
+            Placement ID
+          </label>
+          <input
+            className="admin-input"
+            value={supportsPlacementId ? placementId : (provider.placementId || '')}
+            onChange={(e) => { setPlacementId(e.target.value); setDirty(true); }}
+            disabled={!supportsPlacementId || isLoading}
+            placeholder="e.g. 12345"
+            style={{ width: '100%', opacity: supportsPlacementId ? 1 : 0.6 }}
+          />
+          {!supportsPlacementId && (
+            <p style={{ fontSize: '0.68rem', color: '#9CA3AF', margin: '0.3rem 0 0' }}>{providerFieldNote(provider.id, 'placementId')}</p>
+          )}
+        </div>
       </div>
 
       <div style={{ marginTop: '1rem', padding: '0.85rem', background: '#F9FAFB', border: '1px solid #E5E7EB', borderRadius: '12px' }}>
@@ -310,6 +413,7 @@ const AdminOfferwalls = () => {
   const [loading, setLoading] = useState(true);
   const [loadingProvider, setLoadingProvider] = useState(null);
   const [error, setError] = useState('');
+  const [activeTab, setActiveTab] = useState('all');
 
   const fetchProviders = useCallback(async () => {
     try {
@@ -361,6 +465,23 @@ const AdminOfferwalls = () => {
     return String(a.id).localeCompare(String(b.id));
   });
 
+  // Goodpicks is a branded Direct Offer (category 'gaming') but also appears in
+  // the user-side Surveys section, so it is shown in both admin tabs without
+  // changing its category.
+  const visibleProviders = sortedProviders.filter((p) => {
+    if (activeTab === 'all') return true;
+    const isSurvey = p.category === 'surveys';
+    const isGoodpicks = p.id === 'goodpicks';
+    if (activeTab === 'surveys') return isSurvey || isGoodpicks;
+    return !isSurvey || isGoodpicks; // gaming & app
+  });
+
+  const tabCounts = {
+    all: sortedProviders.length,
+    gaming: sortedProviders.filter((p) => p.category !== 'surveys' || p.id === 'goodpicks').length,
+    surveys: sortedProviders.filter((p) => p.category === 'surveys' || p.id === 'goodpicks').length,
+  };
+
   if (!canManage) {
     return (
       <div>
@@ -402,8 +523,30 @@ const AdminOfferwalls = () => {
         </div>
       )}
 
+      <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem', flexWrap: 'wrap' }}>
+        {[['all', 'All'], ['gaming', 'Gaming & App'], ['surveys', 'Surveys']].map(([key, tabLabel]) => (
+          <button
+            key={key}
+            type="button"
+            onClick={() => setActiveTab(key)}
+            style={{
+              padding: '0.5rem 0.9rem',
+              borderRadius: '10px',
+              border: `1px solid ${activeTab === key ? '#7C3AED' : '#E5E7EB'}`,
+              background: activeTab === key ? '#F5F3FF' : '#FFFFFF',
+              color: activeTab === key ? '#6D28D9' : '#374151',
+              fontWeight: 700,
+              fontSize: '0.82rem',
+              cursor: 'pointer',
+            }}
+          >
+            {tabLabel} ({tabCounts[key]})
+          </button>
+        ))}
+      </div>
+
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '1.25rem' }}>
-        {sortedProviders.map(provider => (
+        {visibleProviders.map(provider => (
           <ProviderCard
             key={provider.id}
             provider={provider}
