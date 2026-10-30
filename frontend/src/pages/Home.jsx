@@ -1,5 +1,6 @@
 import DashboardLayout from '../components/layout/DashboardLayout';
 import { useAuth } from '../contexts/AuthContext';
+import { useTheme } from '../contexts/ThemeContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FiUsers, FiGift, FiDollarSign, FiClipboard, FiMonitor, FiInbox } from 'react-icons/fi';
 import { useState, useEffect, useRef } from 'react';
@@ -29,14 +30,14 @@ const FeaturedOfferBadge = () => (
 
 
 
-const TabButton = ({ active, onClick, iconSrc, label }) => {
+const TabButton = ({ active, onClick, iconSrc, label, isDarkMode }) => {
   return (
     <button
       type="button"
       onClick={onClick}
       className={`relative z-10 flex items-center justify-center transition-all duration-200 cursor-pointer whitespace-nowrap select-none shrink-0 ${active
         ? 'bg-[#1E2538] text-white shadow-sm'
-        : 'text-[#0E0F0C] hover:bg-black/5'
+        : (isDarkMode ? 'text-white/80 hover:bg-white/10' : 'text-[#0E0F0C] hover:bg-black/5')
         }`}
       style={{
         width: 'auto',
@@ -57,7 +58,7 @@ const TabButton = ({ active, onClick, iconSrc, label }) => {
         style={{
           width: '16px',
           height: '16px',
-          filter: active ? 'brightness(0) invert(1)' : 'brightness(0)',
+          filter: (active || isDarkMode) ? 'brightness(0) invert(1)' : 'brightness(0)',
           opacity: active ? 1 : 0.9,
         }}
       />
@@ -92,6 +93,7 @@ const homeCache = {
 };
 
 const Home = () => {
+  const { isDarkMode } = useTheme();
   const { t } = useTranslation();
   const { mongoUser, currentUser } = useAuth();
   const navigate = useNavigate();
@@ -390,10 +392,10 @@ const Home = () => {
     <DashboardLayout showLiveBar={true} fullWidth={true}>
       <motion.div variants={container} initial="hidden" animate="show" className="w-full flex flex-col">
 
-        {/* ─── Top Banner Area (Warm Background: rgba(249, 247, 241, 1)) ─── */}
+        {/* ─── Top Banner Area (Warm Background: rgba(249, 247, 241, 1) / Dark: rgba(23, 26, 29, 1)) ─── */}
         <div
           className="w-full transition-colors duration-300"
-          style={{ background: 'rgba(249, 247, 241, 1)' }}
+          style={{ background: isDarkMode ? 'rgba(23, 26, 29, 1)' : 'rgba(249, 247, 241, 1)' }}
         >
           <div className="w-full max-w-[1328px] mx-auto px-4 md:px-8 lg:px-0 space-y-3 lg:space-y-6 pb-6 lg:pb-10">
 
@@ -403,13 +405,11 @@ const Home = () => {
               className="flex items-center justify-center w-full mx-auto -mt-[8px] mb-8 md:mb-4 lg:mb-8 px-4"
             >
               <div
-                className="flex items-center justify-between sm:justify-around w-full max-w-[490px] px-8 sm:px-14 lg:px-16 py-3 sm:py-4 gap-6 sm:gap-12 lg:gap-16 transition-all"
+                className="flex items-center justify-between sm:justify-around lg:justify-between w-full max-w-[490px] lg:max-w-[430px] px-8 sm:px-14 lg:px-0 lg:pl-[34px] lg:pr-[26px] py-3 sm:py-4 lg:pt-3.5 lg:pb-2.5 gap-6 sm:gap-12 lg:gap-4 rounded-b-[70px] lg:rounded-b-[65px] transition-all"
                 style={{
                   width: '100%',
-                  maxWidth: '490px',
-                  borderRadius: '0px 0px 70px 70px',
-                  background: 'rgba(255, 255, 255, 1)',
-                  boxShadow: '0px 10px 30px -5px rgba(0, 0, 0, 0.06)',
+                  background: isDarkMode ? 'rgba(12, 14, 17, 1)' : 'rgba(255, 255, 255, 1)',
+                  boxShadow: isDarkMode ? '0px 10px 30px -5px rgba(0, 0, 0, 0.4)' : '0px 10px 30px -5px rgba(0, 0, 0, 0.06)',
                 }}
               >
                 {/* Total Users */}
@@ -417,17 +417,15 @@ const Home = () => {
                   <img
                     src="/coins/total user.png"
                     alt="Users"
-                    className="w-[32px] h-[32px] sm:w-[38px] sm:h-[38px] lg:w-[44px] lg:h-[44px] object-contain flex-shrink-0 -translate-y-[5px]"
+                    className="w-[32px] h-[32px] sm:w-[38px] sm:h-[38px] lg:w-[50px] lg:h-[50px] object-contain flex-shrink-0 -translate-y-[5px] lg:translate-y-0"
                   />
                   <div className="flex flex-col justify-center min-w-0">
                     <span
-                      className="uppercase"
+                      className="uppercase text-[12px] lg:text-[13px] leading-[18px] lg:leading-[20px] transition-colors duration-300"
                       style={{
                         fontFamily: '"Poppins", sans-serif',
                         fontWeight: 500,
-                        fontSize: '12px',
-                        lineHeight: '18px',
-                        color: 'rgba(14, 15, 12, 1)',
+                        color: isDarkMode ? 'rgba(255, 255, 255, 0.7)' : 'rgba(14, 15, 12, 1)',
                         opacity: 1,
                         transform: 'rotate(0deg)',
                         display: 'flex',
@@ -438,7 +436,9 @@ const Home = () => {
                       {t('earn.totalUsers')}
                     </span>
                     <span
-                      className="text-[18px] sm:text-[22px] lg:text-[28px] font-bold text-[#0E0F0C] leading-tight whitespace-nowrap"
+                      className={`text-[18px] sm:text-[22px] lg:text-[32px] font-bold leading-tight whitespace-nowrap transition-colors duration-300 ${
+                        isDarkMode ? 'text-white' : 'text-[#0E0F0C]'
+                      }`}
                       style={{
                         fontFamily: '"Bricolage Grotesque", sans-serif',
                         fontWeight: 700,
@@ -457,17 +457,15 @@ const Home = () => {
                   <img
                     src="/coins/total paid.png"
                     alt="Paid"
-                    className="w-[32px] h-[32px] sm:w-[38px] sm:h-[38px] lg:w-[44px] lg:h-[44px] object-contain flex-shrink-0 translate-y-[1px]"
+                    className="w-[32px] h-[32px] sm:w-[38px] sm:h-[38px] lg:w-[50px] lg:h-[50px] object-contain flex-shrink-0 translate-y-[1px] lg:translate-y-0"
                   />
                   <div className="flex flex-col justify-center min-w-0">
                     <span
-                      className="uppercase"
+                      className="uppercase text-[12px] lg:text-[13px] leading-[18px] lg:leading-[20px] transition-colors duration-300"
                       style={{
                         fontFamily: '"Poppins", sans-serif',
                         fontWeight: 500,
-                        fontSize: '12px',
-                        lineHeight: '18px',
-                        color: 'rgba(14, 15, 12, 1)',
+                        color: isDarkMode ? 'rgba(255, 255, 255, 0.7)' : 'rgba(14, 15, 12, 1)',
                         opacity: 1,
                         transform: 'rotate(0deg)',
                         display: 'flex',
@@ -478,7 +476,9 @@ const Home = () => {
                       {t('earn.totalPaid')}
                     </span>
                     <span
-                      className="text-[18px] sm:text-[22px] lg:text-[28px] font-bold text-[#0E0F0C] leading-tight whitespace-nowrap"
+                      className={`text-[18px] sm:text-[22px] lg:text-[32px] font-bold leading-tight whitespace-nowrap transition-colors duration-300 ${
+                        isDarkMode ? 'text-white' : 'text-[#0E0F0C]'
+                      }`}
                       style={{
                         fontFamily: '"Bricolage Grotesque", sans-serif',
                         fontWeight: 700,
@@ -515,22 +515,24 @@ const Home = () => {
                   }}
                 >
                   <h2
-                    className="w-auto text-[24px] md:text-[27px] leading-tight md:leading-[1.1] text-black md:text-[#0E0F0C] tracking-[-0.02em] font-bold m-0 md:whitespace-nowrap"
+                    className="w-auto text-[24px] md:text-[27px] leading-tight md:leading-[1.1] tracking-[-0.02em] font-bold m-0 md:whitespace-nowrap transition-colors duration-300"
                     style={{
                       fontFamily: '"Bricolage Grotesque", sans-serif',
                       opacity: 1,
                       transform: 'rotate(0deg)',
+                      color: isDarkMode ? '#FFFFFF' : '#0E0F0C',
                     }}
                   >
                     {currentHeader.title}
                   </h2>
                   <p
-                    className="w-[311px] max-w-full text-[14px] leading-[20px] md:leading-[14px] text-black md:text-[rgba(14,15,12,0.7)] font-medium m-0 md:whitespace-nowrap"
+                    className="w-[311px] max-w-full text-[14px] leading-[20px] md:leading-[14px] font-medium m-0 md:whitespace-nowrap transition-colors duration-300"
                     style={{
                       fontFamily: '"Poppins", sans-serif',
                       letterSpacing: '0%',
                       opacity: 1,
                       transform: 'rotate(0deg)',
+                      color: isDarkMode ? 'rgba(255, 255, 255, 0.7)' : 'rgba(14, 15, 12, 0.7)',
                     }}
                   >
                     {currentHeader.subtitle}
@@ -547,6 +549,7 @@ const Home = () => {
                     onClick={() => scrollTo(tab.ref, tab.id)}
                     iconSrc={tab.iconSrc}
                     label={tab.label}
+                    isDarkMode={isDarkMode}
                   />
                 ))}
               </div>
@@ -559,8 +562,24 @@ const Home = () => {
                 variants={item}
                 className="flex flex-col shrink-0 w-full"
               >
-                {displayFeaturedOffers.length === 0 ? (
-                  <div className="w-full py-8 text-center bg-white rounded-[20px] border border-gray-100/80 shadow-sm text-gray-400 text-sm font-medium">
+                {loadingOffers ? (
+                  <div
+                    className={`w-full py-8 text-center rounded-[20px] border shadow-sm text-sm font-medium transition-colors ${
+                      isDarkMode
+                        ? 'bg-[#222730] border-white/10 text-white'
+                        : 'bg-white border-gray-100/80 text-gray-400'
+                    }`}
+                  >
+                    {t('earn.loadingFeatured', 'Loading featured offers...')}
+                  </div>
+                ) : displayFeaturedOffers.length === 0 ? (
+                  <div
+                    className={`w-full py-8 text-center rounded-[20px] border shadow-sm text-sm font-medium transition-colors ${
+                      isDarkMode
+                        ? 'bg-[#222730] border-white/10 text-white'
+                        : 'bg-white border-gray-100/80 text-gray-400'
+                    }`}
+                  >
                     {t('earn.noFeaturedOffers')}
                   </div>
                 ) : (
@@ -639,22 +658,24 @@ const Home = () => {
                       }}
                     >
                       <h2
-                        className="w-auto text-[24px] md:text-[30px] leading-tight md:leading-[1] text-black md:text-[#0E0F0C] tracking-[-0.02em] font-bold m-0 md:whitespace-nowrap"
+                        className="w-auto text-[24px] md:text-[30px] leading-tight md:leading-[1] tracking-[-0.02em] font-bold m-0 md:whitespace-nowrap transition-colors duration-300"
                         style={{
                           fontFamily: '"Bricolage Grotesque", sans-serif',
                           opacity: 1,
                           transform: 'rotate(0deg)',
+                          color: isDarkMode ? '#FFFFFF' : '#0E0F0C',
                         }}
                       >
                         {t('earn.gamingOffers')}
                       </h2>
                       <p
-                        className="w-[311px] max-w-full text-[14px] leading-[20px] md:leading-[1.2] text-black md:text-[#0E0F0C] font-medium m-0 md:whitespace-nowrap"
+                        className="w-[311px] max-w-full text-[14px] leading-[20px] md:leading-[1.2] font-medium m-0 md:whitespace-nowrap transition-colors duration-300"
                         style={{
                           fontFamily: '"Poppins", sans-serif',
                           letterSpacing: '0%',
                           opacity: 1,
                           transform: 'rotate(0deg)',
+                          color: isDarkMode ? 'rgba(255, 255, 255, 0.7)' : 'rgba(14, 15, 12, 0.7)',
                         }}
                       >
                         {t('earn.gamingOffersSubtitle')}
@@ -666,7 +687,7 @@ const Home = () => {
                 {loadingSettings ? (
                   <div className="p-8 flex justify-center"><div className="w-8 h-8 rounded-full border-2 border-emerald-500 border-t-transparent animate-spin" /></div>
                 ) : gamingProviders.length === 0 ? (
-                  <div className="p-8 border border-gray-100 flex justify-center rounded-[20px] bg-white text-gray-400 text-sm">{t('earn.noGamingActive')}</div>
+                  <div className={`p-8 border flex justify-center rounded-[20px] text-sm ${isDarkMode ? 'bg-[rgba(5,7,9,1)] border-white/5 text-gray-400' : 'bg-white border-gray-100 text-gray-400'}`}>{t('earn.noGamingActive')}</div>
                 ) : (
                   <div
                     className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 w-full gap-[12px]"
@@ -708,22 +729,24 @@ const Home = () => {
                       }}
                     >
                       <h2
-                        className="w-auto text-[24px] md:text-[30px] leading-tight md:leading-[1] text-black md:text-[#0E0F0C] tracking-[-0.02em] font-bold m-0 md:whitespace-nowrap"
+                        className="w-auto text-[24px] md:text-[30px] leading-tight md:leading-[1] tracking-[-0.02em] font-bold m-0 md:whitespace-nowrap transition-colors duration-300"
                         style={{
                           fontFamily: '"Bricolage Grotesque", sans-serif',
                           opacity: 1,
                           transform: 'rotate(0deg)',
+                          color: isDarkMode ? '#FFFFFF' : '#0E0F0C',
                         }}
                       >
                         {t('earn.surveys')}
                       </h2>
                       <p
-                        className="w-[311px] max-w-full text-[14px] leading-[20px] md:leading-[1.2] text-black md:text-[#0E0F0C] font-medium m-0 md:whitespace-nowrap"
+                        className="w-[311px] max-w-full text-[14px] leading-[20px] md:leading-[1.2] font-medium m-0 md:whitespace-nowrap transition-colors duration-300"
                         style={{
                           fontFamily: '"Poppins", sans-serif',
                           letterSpacing: '0%',
                           opacity: 1,
                           transform: 'rotate(0deg)',
+                          color: isDarkMode ? 'rgba(255, 255, 255, 0.7)' : 'rgba(14, 15, 12, 0.7)',
                         }}
                       >
                         {t('earn.surveysSubtitle')}
@@ -734,7 +757,7 @@ const Home = () => {
                 {loadingSettings ? (
                   <div className="p-8 flex justify-center"><div className="w-8 h-8 rounded-full border-2 border-indigo-500 border-t-transparent animate-spin" /></div>
                 ) : surveyProviders.length === 0 ? (
-                  <div className="p-8 border border-gray-100 flex justify-center rounded-[20px] bg-white text-gray-400 text-sm">{t('earn.noSurveysActive')}</div>
+                  <div className={`p-8 border flex justify-center rounded-[20px] text-sm ${isDarkMode ? 'bg-[rgba(5,7,9,1)] border-white/5 text-gray-400' : 'bg-white border-gray-100 text-gray-400'}`}>{t('earn.noSurveysActive')}</div>
                 ) : (
                   <div
                     className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 w-full gap-[12px]"

@@ -6,6 +6,7 @@ import {
   FiClock, FiAlertCircle, FiCheck
 } from 'react-icons/fi';
 import toast from 'react-hot-toast';
+import UserAvatar from '../../components/UserAvatar';
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 const SOCKET_URL = API.replace(/\/api\/?$/, '');
@@ -351,16 +352,12 @@ const AdminChat = () => {
 
               {/* User */}
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', overflow: 'hidden' }}>
-                <div style={{
-                  width: 28, height: 28, borderRadius: '50%', overflow: 'hidden',
-                  background: '#F3F4F6', border: '1px solid #E5E7EB', flexShrink: 0
-                }}>
-                  <img
-                    src={msg.user?.avatarUrl || '/avatars/avatar1.png'}
-                    alt=""
-                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                  />
-                </div>
+                <UserAvatar
+                  user={msg.user}
+                  size={28}
+                  className="border border-[#E5E7EB]"
+                  textClassName="text-[10px] font-bold"
+                />
                 <div style={{ overflow: 'hidden' }}>
                   <p style={{ margin: 0, fontSize: '0.82rem', color: '#0E0F0C', fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                     {msg.user?.displayName || 'Unknown'}

@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import DashboardLayout from '../components/layout/DashboardLayout';
 import { useAuth } from '../contexts/AuthContext';
 import { useDailyBonus } from '../contexts/DailyBonusContext';
+import { useTheme } from '../contexts/ThemeContext';
 import { FiCheck, FiLock } from 'react-icons/fi';
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
@@ -48,6 +49,7 @@ function useCountdown(target) {
 }
 
 export default function DailyBonus() {
+  const { isDarkMode } = useTheme();
   const { t, i18n } = useTranslation();
   const isEn = (i18n?.language || 'en').startsWith('en');
   const { currentUser } = useAuth();
@@ -116,15 +118,18 @@ export default function DailyBonus() {
         {/* ─── Top Banner Area (Warm Background: rgba(249, 247, 241, 1)) ─── */}
         <div
           className="w-full transition-colors duration-300"
-          style={{ background: 'rgba(249, 247, 241, 1)' }}
+          style={{ background: isDarkMode ? 'rgba(23, 26, 29, 1)' : 'rgba(249, 247, 241, 1)' }}
         >
           <div className="w-full max-w-[1328px] mx-auto px-2 sm:px-4 md:px-8 lg:px-0 py-6 sm:py-8">
             {/* Top 2 Cards: Daily Bonus + Streak Action */}
             <div className="flex flex-col lg:flex-row items-stretch gap-4 w-full">
               {/* Left Card: Daily Bonus */}
               <div
-                className="bg-white border border-gray-100/90 shadow-sm flex flex-col justify-between shrink-0 w-full lg:max-w-[915px] min-h-[200px] sm:h-[220px] p-3.5 sm:p-5 lg:pt-[19px] lg:pr-[23px] lg:pb-[20px] lg:pl-[20px] rounded-[24px] sm:rounded-[30px]"
+                className={`transition-colors duration-300 flex flex-col justify-between shrink-0 w-full lg:max-w-[915px] min-h-[200px] sm:h-[220px] p-3.5 sm:p-5 lg:pt-[19px] lg:pr-[23px] lg:pb-[20px] lg:pl-[20px] rounded-[24px] sm:rounded-[30px] ${
+                  isDarkMode ? 'border border-white/5' : 'bg-white border border-gray-100/90 shadow-sm'
+                }`}
                 style={{
+                  background: isDarkMode ? 'rgba(34, 39, 48, 1)' : '#FFFFFF',
                   opacity: 1,
                   transform: 'rotate(0deg)',
                   boxSizing: 'border-box',
@@ -150,24 +155,42 @@ export default function DailyBonus() {
                         fontWeight: 700,
                         lineHeight: '1.2',
                         letterSpacing: '-0.02em',
-                        color: '#0E0F0C',
+                        color: isDarkMode ? '#FFFFFF' : '#0E0F0C',
                         margin: 0,
                         whiteSpace: 'nowrap',
                       }}
                     >
                       {t('dailyBonus.pageTitle', 'Daily Bonus')}
                     </h1>
+                    <p
+                      className="text-[12px] sm:text-[14px] mt-1 sm:whitespace-nowrap"
+                      style={{
+                        fontFamily: '"Poppins", sans-serif',
+                        fontWeight: 400,
+                        lineHeight: '1.35',
+                        letterSpacing: '0%',
+                        color: isDarkMode ? '#FFFFFF' : '#0E0F0C',
+                        margin: 0,
+                      }}
+                    >
+                      <span className="block sm:inline">
+                        {t('dailyBonus.pageSubtitleLine1', isEn ? 'Claim your daily reward and' : 'Hole deine tägliche Belohnung ab und')}{' '}
+                      </span>
+                      <span className="block sm:inline">
+                        {t('dailyBonus.pageSubtitleLine2', isEn ? 'keep your streak going!' : 'halte deine Serie am Laufen!')}
+                      </span>
+                    </p>
                   </div>
 
                   {/* Today's Reward Pill */}
                   <div
-                    className={`flex flex-col items-center justify-center shrink-0 rounded-full ${
+                    className={`flex flex-col items-center justify-center shrink-0 rounded-full transition-colors duration-300 ${
                       isEn ? 'px-3 min-[360px]:px-3.5' : 'px-2.5 min-[360px]:px-3'
                     } sm:px-[22px] py-1.5 sm:py-[10px] min-w-0 sm:min-w-[155px] h-auto sm:h-[57px] gap-0.5 sm:gap-[11px]`}
                     style={{
                       opacity: 1,
                       transform: 'rotate(0deg)',
-                      background: 'rgba(249, 247, 241, 1)',
+                      background: isDarkMode ? 'rgba(27, 32, 40, 1)' : 'rgba(249, 247, 241, 1)',
                       boxSizing: 'border-box',
                     }}
                   >
@@ -182,7 +205,7 @@ export default function DailyBonus() {
                         fontFamily: '"Poppins", sans-serif',
                         fontWeight: 500,
                         letterSpacing: '0%',
-                        color: '#0E0F0C',
+                        color: isDarkMode ? 'rgba(255, 255, 255, 0.7)' : '#0E0F0C',
                         textAlign: 'center',
                         whiteSpace: 'nowrap',
                         opacity: 1,
@@ -234,7 +257,7 @@ export default function DailyBonus() {
                         fontSize: '14px',
                         lineHeight: '28px',
                         letterSpacing: '0%',
-                        color: '#0E0F0C',
+                        color: isDarkMode ? 'rgba(255, 255, 255, 0.7)' : '#0E0F0C',
                         opacity: 1,
                         whiteSpace: 'nowrap',
                         transform: 'rotate(0deg)',
@@ -282,13 +305,13 @@ export default function DailyBonus() {
 
                   {/* Progress Bar */}
                   <div
-                    className="w-full max-w-[391px] lg:max-w-[872px] overflow-hidden"
+                    className="w-full max-w-[391px] lg:max-w-[872px] overflow-hidden transition-colors duration-300"
                     style={{
                       height: '15px',
                       opacity: 1,
                       transform: 'rotate(0deg)',
                       borderRadius: '30px',
-                      background: 'rgba(249, 247, 241, 1)',
+                      background: isDarkMode ? 'rgba(27, 32, 40, 1)' : 'rgba(249, 247, 241, 1)',
                       boxSizing: 'border-box',
                     }}
                   >
@@ -315,7 +338,7 @@ export default function DailyBonus() {
                         fontFamily: '"Poppins", sans-serif',
                         fontWeight: 500,
                         letterSpacing: '0%',
-                        color: '#0E0F0C',
+                        color: isDarkMode ? '#FFFFFF' : '#0E0F0C',
                         opacity: 1,
                         textAlign: 'left',
                         display: 'block',
@@ -342,7 +365,7 @@ export default function DailyBonus() {
                         justifyContent: 'flex-start',
                       }}
                     >
-                      <span className="shrink-0" style={{ color: '#0E0F0C' }}>{t('dailyBonus.earn', 'Earn')}</span>
+                      <span className="shrink-0" style={{ color: isDarkMode ? '#FFFFFF' : '#0E0F0C' }}>{t('dailyBonus.earn', 'Earn')}</span>
                       <img
                         src="/coins/coinbonushero.png"
                         alt="Coin"
@@ -351,7 +374,7 @@ export default function DailyBonus() {
                       <span className="shrink-0" style={{ color: 'rgba(231, 171, 24, 1)' }}>
                         {formatCoins(remainingToUnlock)} {t('dailyBonus.coins', 'Coins')}
                       </span>
-                      <span className="shrink-0" style={{ color: '#0E0F0C' }}>{t('dailyBonus.moreToUnlock', 'more to unlock your bonus')}</span>
+                      <span className="shrink-0" style={{ color: isDarkMode ? '#FFFFFF' : '#0E0F0C' }}>{t('dailyBonus.moreToUnlock', 'more to unlock your bonus')}</span>
                     </div>
                   )}
                 </div>
@@ -359,7 +382,9 @@ export default function DailyBonus() {
 
               {/* Right Card: Streak Stats & Claim Action */}
               <div
-                className="w-full lg:flex-1 bg-white border border-gray-100/90 shadow-sm flex flex-col justify-between h-auto min-h-[222px] lg:h-[222px]"
+                className={`w-full lg:flex-1 transition-colors duration-300 flex flex-col justify-between h-auto min-h-[222px] lg:h-[222px] ${
+                  isDarkMode ? 'border border-white/5' : 'bg-white border border-gray-100/90 shadow-sm'
+                }`}
                 style={{
                   opacity: 1,
                   transform: 'rotate(0deg)',
@@ -369,7 +394,7 @@ export default function DailyBonus() {
                   paddingRight: '20px',
                   paddingBottom: '18px',
                   paddingLeft: '19px',
-                  background: 'rgba(255, 255, 255, 1)',
+                  background: isDarkMode ? 'rgba(34, 39, 48, 1)' : 'rgba(255, 255, 255, 1)',
                   boxSizing: 'border-box',
                 }}
               >
@@ -398,7 +423,7 @@ export default function DailyBonus() {
                         fontSize: '14px',
                         lineHeight: '18px',
                         letterSpacing: '0%',
-                        color: '#0E0F0C',
+                        color: isDarkMode ? 'rgba(255, 255, 255, 0.7)' : '#0E0F0C',
                         whiteSpace: 'nowrap',
                       }}
                     >
@@ -413,7 +438,7 @@ export default function DailyBonus() {
                         fontSize: '27px',
                         lineHeight: '27px',
                         letterSpacing: '-0.02em',
-                        color: '#0E0F0C',
+                        color: isDarkMode ? '#FFFFFF' : '#0E0F0C',
                         whiteSpace: 'nowrap',
                       }}
                     >
@@ -425,8 +450,8 @@ export default function DailyBonus() {
                     style={{
                       width: '0px',
                       height: '48px',
-                      opacity: 0.2,
-                      borderLeft: '1px solid rgba(0, 0, 0, 1)',
+                      opacity: isDarkMode ? 0.15 : 0.2,
+                      borderLeft: isDarkMode ? '1px solid rgba(255, 255, 255, 1)' : '1px solid rgba(0, 0, 0, 1)',
                     }}
                   />
 
@@ -442,7 +467,7 @@ export default function DailyBonus() {
                         fontSize: '14px',
                         lineHeight: '18px',
                         letterSpacing: '0%',
-                        color: '#0E0F0C',
+                        color: isDarkMode ? 'rgba(255, 255, 255, 0.7)' : '#0E0F0C',
                         textAlign: 'left',
                         whiteSpace: 'nowrap',
                       }}
@@ -458,7 +483,7 @@ export default function DailyBonus() {
                         fontSize: '27px',
                         lineHeight: '27px',
                         letterSpacing: '-0.02em',
-                        color: '#0E0F0C',
+                        color: isDarkMode ? '#FFFFFF' : '#0E0F0C',
                         textAlign: 'left',
                         whiteSpace: 'nowrap',
                       }}
@@ -475,8 +500,8 @@ export default function DailyBonus() {
                     width: '362px',
                     maxWidth: '100%',
                     height: '0px',
-                    opacity: 0.1,
-                    borderTop: '1px solid rgba(0, 0, 0, 1)',
+                    opacity: isDarkMode ? 0.1 : 0.1,
+                    borderTop: isDarkMode ? '1px solid rgba(255, 255, 255, 1)' : '1px solid rgba(0, 0, 0, 1)',
                   }}
                 />
 
@@ -490,7 +515,7 @@ export default function DailyBonus() {
                       fontSize: '14px',
                       lineHeight: '18px',
                       letterSpacing: '0%',
-                      color: '#0E0F0C',
+                      color: isDarkMode ? 'rgba(255, 255, 255, 0.7)' : '#0E0F0C',
                       opacity: 1,
                       whiteSpace: 'nowrap',
                     }}
@@ -556,7 +581,9 @@ export default function DailyBonus() {
                       paddingLeft: '28px',
                       background:
                         !isUnlocked || status.alreadyClaimed
-                          ? 'rgba(249, 247, 241, 1)'
+                          ? isDarkMode
+                            ? 'rgba(27, 32, 40, 1)'
+                            : 'rgba(249, 247, 241, 1)'
                           : 'rgba(36, 50, 77, 1)',
                       border: 'none',
                       boxSizing: 'border-box',
@@ -571,6 +598,7 @@ export default function DailyBonus() {
                           height: '20px',
                           opacity: 1,
                           objectFit: 'contain',
+                          filter: isDarkMode ? 'brightness(0) invert(1)' : 'none',
                         }}
                         className="shrink-0"
                       />
@@ -585,9 +613,11 @@ export default function DailyBonus() {
                         letterSpacing: '0%',
                         color:
                           !isUnlocked || status.alreadyClaimed
-                            ? 'rgba(0, 0, 0, 1)'
+                            ? isDarkMode
+                              ? '#FFFFFF'
+                              : 'rgba(0, 0, 0, 1)'
                             : '#FFFFFF',
-                        opacity: !isUnlocked || status.alreadyClaimed ? 0.4 : 1,
+                        opacity: !isUnlocked || status.alreadyClaimed ? (isDarkMode ? 0.7 : 0.4) : 1,
                         textAlign: 'center',
                         whiteSpace: 'nowrap',
                       }}
@@ -612,7 +642,7 @@ export default function DailyBonus() {
                         fontSize: '16px',
                         lineHeight: '20px',
                         letterSpacing: '0%',
-                        color: '#0E0F0C',
+                        color: isDarkMode ? 'rgba(255, 255, 255, 0.7)' : '#0E0F0C',
                         opacity: 1,
                         whiteSpace: 'nowrap',
                         textAlign: 'right',
@@ -627,7 +657,7 @@ export default function DailyBonus() {
                         fontSize: '18px',
                         lineHeight: '20px',
                         letterSpacing: '-0.02em',
-                        color: 'rgba(36, 50, 77, 1)',
+                        color: isDarkMode ? '#FFFFFF' : 'rgba(36, 50, 77, 1)',
                         opacity: 1,
                         whiteSpace: 'nowrap',
                       }}
@@ -646,14 +676,16 @@ export default function DailyBonus() {
           <div className="w-full max-w-[1328px] mx-auto px-2 sm:px-4 md:px-8 lg:px-0 flex flex-col gap-6 sm:gap-8">
             {/* ─── Middle Section: Current Streak (10-Day Timeline Card) ──── */}
             <div
-              className="w-full shadow-sm flex flex-col justify-between"
+              className={`w-full flex flex-col justify-between transition-colors duration-300 ${
+                isDarkMode ? 'border border-white/5' : 'shadow-sm'
+              }`}
               style={{
                 width: '100%',
                 minHeight: '176px',
                 opacity: 1,
                 transform: 'rotate(0deg)',
                 borderRadius: '30px',
-                background: 'rgba(249, 247, 241, 1)',
+                background: isDarkMode ? 'rgba(23, 26, 29, 1)' : 'rgba(249, 247, 241, 1)',
                 padding: '24px 20px',
                 boxSizing: 'border-box',
                 gap: '24px',
@@ -668,7 +700,7 @@ export default function DailyBonus() {
                     fontWeight: 700,
                     lineHeight: '1.2',
                     letterSpacing: '-0.02em',
-                    color: '#000000',
+                    color: isDarkMode ? '#FFFFFF' : '#000000',
                     margin: 0,
                     whiteSpace: 'nowrap',
                   }}
@@ -683,7 +715,7 @@ export default function DailyBonus() {
                     fontWeight: 700,
                     lineHeight: '1.2',
                     letterSpacing: '-0.02em',
-                    color: 'rgba(36, 50, 77, 1)',
+                    color: isDarkMode ? '#FFFFFF' : 'rgba(36, 50, 77, 1)',
                     textAlign: 'right',
                     whiteSpace: 'nowrap',
                   }}
@@ -700,12 +732,12 @@ export default function DailyBonus() {
                 <div className="relative min-w-[1050px] sm:min-w-0 w-full max-w-[1259px] mx-auto flex items-center justify-between px-6">
                   {/* Background Connecting Line */}
                   <div
-                    className="absolute left-6 right-6 top-[19px] -translate-y-1/2 z-0 overflow-hidden flex items-center"
+                    className="absolute left-6 right-6 top-[19px] -translate-y-1/2 z-0 overflow-hidden flex items-center transition-colors duration-300"
                     style={{
                       height: '19px',
                       borderRadius: '30px',
-                      background: 'rgba(237, 234, 225, 1)',
-                      boxShadow: '0px 4px 4px 0px rgba(0, 0, 0, 0.05) inset',
+                      background: isDarkMode ? 'rgba(27, 32, 40, 1)' : 'rgba(237, 234, 225, 1)',
+                      boxShadow: isDarkMode ? 'none' : '0px 4px 4px 0px rgba(0, 0, 0, 0.05) inset',
                       paddingLeft: '3px',
                       paddingRight: '3px',
                       boxSizing: 'border-box',
@@ -746,12 +778,12 @@ export default function DailyBonus() {
                         <div className="w-[38px] h-[38px] flex items-center justify-center shrink-0">
                           {isClaimed ? (
                             <div
-                              className="flex items-center justify-center shrink-0"
+                              className="flex items-center justify-center shrink-0 transition-colors duration-300"
                               style={{
                                 width: '38px',
                                 height: '38px',
                                 borderRadius: '30px',
-                                background: 'rgba(237, 234, 225, 1)',
+                                background: isDarkMode ? 'rgba(27, 32, 40, 1)' : 'rgba(237, 234, 225, 1)',
                               }}
                             >
                               <div
@@ -779,12 +811,12 @@ export default function DailyBonus() {
                             </div>
                           ) : isTodayActive ? (
                             <div
-                              className="flex items-center justify-center shrink-0"
+                              className="flex items-center justify-center shrink-0 transition-colors duration-300"
                               style={{
                                 width: '52px',
                                 height: '52px',
                                 borderRadius: '30px',
-                                background: 'rgba(237, 234, 225, 1)',
+                                background: isDarkMode ? 'rgba(27, 32, 40, 1)' : 'rgba(237, 234, 225, 1)',
                               }}
                             >
                               <div
@@ -807,13 +839,13 @@ export default function DailyBonus() {
                             </div>
                           ) : (
                             <div
-                              className="flex items-center justify-center shrink-0"
+                              className="flex items-center justify-center shrink-0 transition-colors duration-300"
                               style={{
                                 width: '38px',
                                 height: '38px',
                                 borderRadius: '30px',
-                                background: 'rgba(237, 234, 225, 1)',
-                                boxShadow: '0px 4px 4px 0px rgba(0, 0, 0, 0.05) inset',
+                                background: isDarkMode ? 'rgba(27, 32, 40, 1)' : 'rgba(237, 234, 225, 1)',
+                                boxShadow: isDarkMode ? 'none' : '0px 4px 4px 0px rgba(0, 0, 0, 0.05) inset',
                                 paddingTop: '10px',
                                 paddingRight: '11px',
                                 paddingBottom: '10px',
@@ -828,8 +860,8 @@ export default function DailyBonus() {
                                   width: '15px',
                                   height: '17.61px',
                                   objectFit: 'contain',
-                                  opacity: 0.35,
-                                  filter: 'grayscale(1) brightness(0.8)',
+                                  opacity: isDarkMode ? 0.3 : 0.35,
+                                  filter: isDarkMode ? 'brightness(0) invert(1)' : 'grayscale(1) brightness(0.8)',
                                 }}
                                 className="shrink-0"
                               />
@@ -842,7 +874,7 @@ export default function DailyBonus() {
                           className="text-[12px] font-medium"
                           style={{
                             fontFamily: '"Poppins", sans-serif',
-                            color: isClaimed || isTodayActive ? '#0E0F0C' : '#8E8E93',
+                            color: isClaimed || isTodayActive ? (isDarkMode ? '#FFFFFF' : '#0E0F0C') : (isDarkMode ? 'rgba(255, 255, 255, 0.4)' : '#8E8E93'),
                             fontWeight: isClaimed || isTodayActive ? 600 : 500,
                             whiteSpace: 'nowrap',
                           }}
@@ -875,7 +907,7 @@ export default function DailyBonus() {
                     fontSize: '27px',
                     lineHeight: '27px',
                     letterSpacing: '-0.02em',
-                    color: '#000000',
+                    color: isDarkMode ? '#FFFFFF' : '#000000',
                     margin: 0,
                   }}
                 >
@@ -888,7 +920,7 @@ export default function DailyBonus() {
                     fontSize: '14px',
                     lineHeight: '28px',
                     letterSpacing: '0%',
-                    color: '#000000',
+                    color: isDarkMode ? 'rgba(255, 255, 255, 0.7)' : '#000000',
                     margin: 0,
                   }}
                 >
@@ -930,9 +962,11 @@ export default function DailyBonus() {
                   return (
                     <div
                       key={milestone.target}
-                      className="shadow-sm flex flex-row items-center justify-between w-full rounded-[20px] box-border p-3 sm:pt-[30px] sm:pr-[20px] sm:pb-[30px] sm:pl-[15px] gap-2.5 sm:gap-[19px] min-h-[118px] sm:min-h-[135px]"
+                      className={`transition-colors duration-300 flex flex-row items-center justify-between w-full rounded-[20px] box-border p-3 sm:pt-[30px] sm:pr-[20px] sm:pb-[30px] sm:pl-[15px] gap-2.5 sm:gap-[19px] min-h-[118px] sm:min-h-[135px] ${
+                        isDarkMode ? 'border border-white/5' : 'shadow-sm'
+                      }`}
                       style={{
-                        background: 'rgba(249, 247, 241, 1)',
+                        background: isDarkMode ? 'rgba(34, 39, 48, 1)' : 'rgba(249, 247, 241, 1)',
                       }}
                     >
                       {/* Left Badge Image */}
@@ -948,19 +982,21 @@ export default function DailyBonus() {
                       >
                         {/* Top: Title & Sub + Reward Pill */}
                         <div className="flex items-start justify-between gap-1 sm:gap-2 w-full min-w-0">
-                          <div className="flex flex-col justify-start sm:justify-between h-auto sm:h-[37px] gap-0.5 sm:gap-0 min-w-0 flex-1 pr-1">
+                          <div className="flex flex-col justify-start h-auto gap-0.5 sm:gap-0 min-w-0 flex-1 pr-1">
                             <h3
-                              className="font-bold text-[18px] xs:text-[20px] sm:text-[22px] leading-tight sm:leading-[22px] text-black tracking-[-0.02em] whitespace-nowrap truncate m-0"
+                              className="font-bold text-[18px] xs:text-[20px] sm:text-[22px] leading-tight sm:leading-[22px] tracking-[-0.02em] whitespace-nowrap overflow-visible m-0"
                               style={{
                                 fontFamily: '"Bricolage Grotesque", sans-serif',
+                                color: isDarkMode ? '#FFFFFF' : '#000000',
                               }}
                             >
                               {milestone.title}
                             </h3>
                             <p
-                              className="font-medium text-[12px] sm:text-[14px] leading-tight sm:leading-[18px] text-black whitespace-nowrap truncate m-0"
+                              className="font-medium text-[12px] sm:text-[14px] leading-tight sm:leading-[18px] whitespace-nowrap overflow-visible m-0"
                               style={{
                                 fontFamily: '"Poppins", sans-serif',
+                                color: isDarkMode ? 'rgba(255, 255, 255, 0.7)' : '#000000',
                               }}
                             >
                               {milestone.sub}
@@ -969,7 +1005,10 @@ export default function DailyBonus() {
 
                           {/* Reward Pill */}
                           <div
-                            className="flex items-center justify-center shrink-0 h-[20px] rounded-[50px] gap-1 px-2 py-[5px] bg-white box-border"
+                            className="flex items-center justify-center shrink-0 h-[20px] rounded-[50px] gap-1 px-2 py-[5px] box-border transition-colors duration-300"
+                            style={{
+                              background: isDarkMode ? 'rgba(23, 26, 29, 1)' : 'rgba(255, 255, 255, 1)',
+                            }}
                           >
                             <img
                               src="/coins/coinbonushero.png"
@@ -995,7 +1034,10 @@ export default function DailyBonus() {
 
                         {/* Bottom: Progress Bar with Inside Text */}
                         <div
-                          className="relative flex items-center justify-end overflow-hidden w-full h-[18px] sm:h-[20px] rounded-[30px] bg-white pr-2.5 sm:pr-[14px] box-border"
+                          className="relative flex items-center justify-end overflow-hidden w-full h-[18px] sm:h-[20px] rounded-[30px] pr-2.5 sm:pr-[14px] box-border transition-colors duration-300"
+                          style={{
+                            background: isDarkMode ? 'rgba(23, 26, 29, 1)' : 'rgba(255, 255, 255, 1)',
+                          }}
                         >
                           <div
                             className="absolute left-0 top-0 bottom-0 transition-all duration-500 rounded-[30px]"
@@ -1005,9 +1047,10 @@ export default function DailyBonus() {
                             }}
                           />
                           <span
-                            className="relative z-10 select-none whitespace-nowrap font-medium text-[11px] sm:text-[12px] leading-[18px] sm:leading-[20px] text-black text-right"
+                            className="relative z-10 select-none whitespace-nowrap font-medium text-[11px] sm:text-[12px] leading-[18px] sm:leading-[20px] text-right"
                             style={{
                               fontFamily: '"Poppins", sans-serif',
+                              color: isDarkMode ? '#FFFFFF' : '#000000',
                             }}
                           >
                             {t('dailyBonus.daysTarget', { current: currentProgress, target: milestone.target, defaultValue: `${currentProgress} / ${milestone.target} Days` })}

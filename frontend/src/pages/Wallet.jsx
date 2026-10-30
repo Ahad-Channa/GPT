@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import DashboardLayout from '../components/layout/DashboardLayout';
 import { useAuth } from '../contexts/AuthContext';
+import { useTheme } from '../contexts/ThemeContext';
 import WithdrawalModal from '../components/wallet/WithdrawalModal';
 import MyBooksSection from '../components/wallet/MyBooksSection';
 import CoinDisplay from '../components/CoinDisplay';
@@ -17,6 +18,7 @@ const item = { hidden: { opacity: 0, y: 18 }, show: { opacity: 1, y: 0, transiti
 const PromoCodeRedeem = ({ onSuccess }) => {
   const { t } = useTranslation();
   const { currentUser } = useAuth();
+  const { isDarkMode } = useTheme();
   const [code, setCode] = useState('');
   const [loading, setLoading] = useState(false);
   const [popup, setPopup] = useState(null); // { type: 'success'|'error', text: '' }
@@ -101,7 +103,7 @@ const PromoCodeRedeem = ({ onSuccess }) => {
           maxWidth: '1328px',
           minHeight: '212px',
           borderRadius: '30px',
-          background: 'rgba(249, 247, 241, 1)',
+          background: isDarkMode ? 'rgba(34, 39, 48, 1)' : 'rgba(249, 247, 241, 1)',
           paddingTop: '36px',
           paddingRight: '28px',
           paddingBottom: '39px',
@@ -126,7 +128,7 @@ const PromoCodeRedeem = ({ onSuccess }) => {
               fontFamily: '"Bricolage Grotesque", sans-serif',
               fontWeight: 700,
               letterSpacing: '-0.02em',
-              color: '#000000',
+              color: isDarkMode ? '#FFFFFF' : '#000000',
               width: '100%',
               display: 'flex',
               alignItems: 'center',
@@ -144,7 +146,7 @@ const PromoCodeRedeem = ({ onSuccess }) => {
               fontWeight: 500,
               fontSize: '14px',
               letterSpacing: '0%',
-              color: '#000000',
+              color: isDarkMode ? 'rgba(255, 255, 255, 0.7)' : '#000000',
               width: '100%',
               alignItems: 'center',
               margin: 0,
@@ -168,7 +170,7 @@ const PromoCodeRedeem = ({ onSuccess }) => {
             paddingRight: '10px',
             paddingBottom: '9px',
             paddingLeft: '25px',
-            background: 'rgba(255, 255, 255, 1)',
+            background: isDarkMode ? 'rgba(12, 14, 17, 0.5)' : 'rgba(255, 255, 255, 1)',
             justifyContent: 'space-between',
             boxSizing: 'border-box',
             opacity: 1,
@@ -179,21 +181,21 @@ const PromoCodeRedeem = ({ onSuccess }) => {
             value={code}
             onChange={(e) => setCode(e.target.value.toUpperCase())}
             placeholder={t('withdraw.promoPlaceholder', 'Enter code here')}
-            className="w-full bg-transparent border-none outline-none p-0 uppercase placeholder:text-black/56"
+            className={`w-full bg-transparent border-none outline-none p-0 uppercase ${isDarkMode ? 'placeholder:text-white/40' : 'placeholder:text-black/56'}`}
             style={{
               fontFamily: '"Poppins", sans-serif',
               fontWeight: 400,
               fontSize: '14px',
               lineHeight: '20px',
               letterSpacing: '0%',
-              color: 'rgba(0, 0, 0, 1)',
+              color: isDarkMode ? '#94A3B8' : 'rgba(0, 0, 0, 1)',
             }}
             disabled={loading}
           />
           <button
             type="submit"
             disabled={loading || !code.trim()}
-            className="h-[44px] sm:h-[48px] px-8 sm:px-10 rounded-full bg-[#1E2538] hover:bg-[#151b29] text-white font-semibold text-[15px] flex items-center justify-center shrink-0 transition-all disabled:opacity-40 cursor-pointer disabled:cursor-not-allowed shadow-sm"
+            className={`h-[44px] sm:h-[48px] px-8 sm:px-10 rounded-full ${isDarkMode ? 'bg-[rgba(36,50,77,1)] hover:bg-[rgba(45,63,98,1)]' : 'bg-[#1E2538] hover:bg-[#151b29]'} text-white font-semibold text-[15px] flex items-center justify-center shrink-0 transition-all disabled:opacity-40 cursor-pointer disabled:cursor-not-allowed shadow-sm`}
             style={{ fontFamily: '"Poppins", sans-serif' }}
           >
             {loading ? '...' : t('withdraw.promoRedeem', 'Redeem')}
@@ -216,7 +218,7 @@ const PromoCodeRedeem = ({ onSuccess }) => {
                 animate={{ scale: 1, opacity: 1 }}
                 exit={{ scale: 0.95, opacity: 0 }}
                 onClick={(e) => e.stopPropagation()}
-                className="flex flex-col items-center justify-center w-full max-w-[480px] bg-white rounded-[24px] p-8 border border-gray-100 shadow-2xl relative gap-5"
+                className={`flex flex-col items-center justify-center w-full max-w-[480px] rounded-[24px] p-8 shadow-2xl relative gap-5 ${isDarkMode ? 'bg-[rgba(34,39,48,1)] border border-white/10 text-white' : 'bg-white border border-gray-100 text-[#0E0F0C]'}`}
               >
                 <div
                   className="flex items-center justify-center rounded-full shrink-0"
@@ -236,13 +238,13 @@ const PromoCodeRedeem = ({ onSuccess }) => {
                 {/* Title */}
                 <div className="flex flex-col items-center gap-2 w-full px-4 text-center">
                   <h2
-                    className="m-0 p-0 font-bold text-[26px] text-[#0E0F0C]"
+                    className={`m-0 p-0 font-bold text-[26px] ${isDarkMode ? 'text-white' : 'text-[#0E0F0C]'}`}
                     style={{ fontFamily: '"Bricolage Grotesque", sans-serif' }}
                   >
                     {popup.type === 'success' ? t('withdraw.codeRedeemed', 'Code Redeemed!') : t('withdraw.redemptionFailed', 'Redemption Failed')}
                   </h2>
                   <p
-                    className="m-0 p-0 font-medium text-[15px] text-[#71717A]"
+                    className={`m-0 p-0 font-medium text-[15px] ${isDarkMode ? 'text-zinc-400' : 'text-[#71717A]'}`}
                     style={{ fontFamily: '"Poppins", sans-serif' }}
                   >
                     {popup.type === 'success'
@@ -254,7 +256,7 @@ const PromoCodeRedeem = ({ onSuccess }) => {
                 {/* Close button */}
                 <button
                   onClick={() => setPopup(null)}
-                  className="flex items-center justify-center w-full h-[48px] rounded-full bg-[#1E2538] hover:bg-[#151b29] text-white font-semibold text-[15px] transition-all mt-2 cursor-pointer"
+                  className={`flex items-center justify-center w-full h-[48px] rounded-full ${isDarkMode ? 'bg-[rgba(36,50,77,1)] hover:bg-[rgba(45,63,98,1)]' : 'bg-[#1E2538] hover:bg-[#151b29]'} text-white font-semibold text-[15px] transition-all mt-2 cursor-pointer`}
                   style={{ fontFamily: '"Poppins", sans-serif' }}
                 >
                   {popup.type === 'success' ? t('withdraw.awesome', 'Awesome!') : t('withdraw.tryAgain', 'Try Again')}
@@ -280,8 +282,10 @@ const DEFAULT_WALLET_SETTINGS = {
 };
 
 const Wallet = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const isDe = i18n?.language?.startsWith('de');
   const { currentUser, mongoUser, setMongoUser } = useAuth();
+  const { isDarkMode } = useTheme();
   const [showWithdraw, setShowWithdraw] = useState(false);
   const [filterType, setFilterType] = useState(null);
   const [settings, setSettings] = useState(DEFAULT_WALLET_SETTINGS);
@@ -358,11 +362,11 @@ const Wallet = () => {
   return (
     <DashboardLayout showLiveBar={true} fullWidth={true}>
       <div className="w-full min-h-[calc(100vh-200px)] flex flex-col items-center">
-        {/* ─── Top Banner Area (Warm Background: rgba(249, 247, 241, 1)) ─── */}
+        {/* ─── Top Banner Area (Hero: rgba(23, 26, 29, 1) in dark, rgba(249, 247, 241, 1) in light) ─── */}
         <div
           className="w-full flex justify-center items-center transition-colors duration-300"
           style={{
-            background: 'rgba(249, 247, 241, 1)',
+            background: isDarkMode ? 'rgba(23, 26, 29, 1)' : 'rgba(249, 247, 241, 1)',
             minHeight: '248px',
             opacity: 1,
             transform: 'rotate(0deg)',
@@ -395,7 +399,7 @@ const Wallet = () => {
                   fontSize: '27px',
                   lineHeight: '18px',
                   letterSpacing: '-0.02em',
-                  color: '#000000',
+                  color: isDarkMode ? '#FFFFFF' : '#000000',
                   margin: 0,
                   padding: 0,
                 }}
@@ -409,7 +413,7 @@ const Wallet = () => {
                   fontSize: '14px',
                   lineHeight: '26px',
                   letterSpacing: '0%',
-                  color: '#000000',
+                  color: isDarkMode ? 'rgba(255, 255, 255, 0.7)' : '#000000',
                   margin: 0,
                   padding: 0,
                   maxWidth: '354px',
@@ -422,7 +426,7 @@ const Wallet = () => {
             {/* Your Balance Card */}
             <motion.div
               variants={item}
-              className="bg-white shadow-sm flex flex-col shrink-0"
+              className={`shadow-sm flex flex-col shrink-0 ${isDarkMode ? 'bg-[rgba(34,39,48,1)]' : 'bg-white'}`}
               style={{
                 width: '100%',
                 maxWidth: '402px',
@@ -441,7 +445,7 @@ const Wallet = () => {
                   maxWidth: '392px',
                   height: '50px',
                   borderRadius: '14px',
-                  background: 'rgba(36, 50, 77, 0.08)',
+                  background: isDarkMode ? 'rgba(21, 24, 29, 1)' : 'rgba(36, 50, 77, 0.08)',
                   paddingLeft: '16px',
                   gap: '10px',
                   boxSizing: 'border-box',
@@ -455,7 +459,7 @@ const Wallet = () => {
                     fontSize: '15px',
                     lineHeight: '10px',
                     letterSpacing: '-0.02em',
-                    color: '#24324D',
+                    color: isDarkMode ? '#FFFFFF' : '#24324D',
                     minWidth: '93px',
                     height: '10px',
                     display: 'flex',
@@ -525,7 +529,7 @@ const Wallet = () => {
                     }}
                   >
                     {settings?.coinsPerUSD ? settings.coinsPerUSD.toLocaleString('de-DE') : '1.000'}
-                    <span style={{ color: '#000000' }}>{t('withdraw.equalOneUsd', '= 1 USD')}</span>
+                    <span style={{ color: isDarkMode ? '#FFFFFF' : '#000000' }}>{t('withdraw.equalOneUsd', '= 1 USD')}</span>
                   </span>
                 </div>
               </div>
@@ -561,7 +565,7 @@ const Wallet = () => {
                 maxWidth: '427px',
                 height: '462px',
                 borderRadius: '30px',
-                background: 'rgba(249, 247, 241, 1)',
+                background: isDarkMode ? 'rgba(34, 39, 48, 1)' : 'rgba(249, 247, 241, 1)',
                 padding: '6px 6px 20px 6px',
                 boxSizing: 'border-box',
                 opacity: 1,
@@ -595,7 +599,7 @@ const Wallet = () => {
                       fontSize: '26px',
                       lineHeight: '17px',
                       letterSpacing: '-0.02em',
-                      color: '#0E0F0C',
+                      color: isDarkMode ? '#FFFFFF' : '#0E0F0C',
                       width: '100%',
                       maxWidth: '379px',
                       height: '17px',
@@ -615,7 +619,7 @@ const Wallet = () => {
                       fontSize: '14px',
                       lineHeight: '25px',
                       letterSpacing: '0%',
-                      color: '#71717A',
+                      color: isDarkMode ? 'rgba(255, 255, 255, 0.6)' : '#71717A',
                       width: '100%',
                       maxWidth: '296px',
                       minHeight: '35px',
@@ -635,7 +639,7 @@ const Wallet = () => {
                 <button
                   onClick={() => handleOpenWithdrawal('paypal_litecoin')}
                   disabled={settingsLoad}
-                  className="w-full flex items-center justify-center transition-colors cursor-pointer bg-white text-black hover:bg-[#24324D] hover:text-white active:bg-[#24324D] active:text-white disabled:opacity-50 shadow-none border-none outline-none"
+                  className={`w-full flex items-center justify-center transition-colors cursor-pointer disabled:opacity-50 shadow-none border-none outline-none ${isDarkMode ? 'bg-[rgba(36,50,77,1)] text-white hover:bg-[rgba(45,63,98,1)]' : 'bg-white text-black hover:bg-[#24324D] hover:text-white active:bg-[#24324D] active:text-white'}`}
                   style={{
                     maxWidth: '379px',
                     height: '49px',
@@ -662,7 +666,7 @@ const Wallet = () => {
                 maxWidth: '427px',
                 height: '462px',
                 borderRadius: '30px',
-                background: 'rgba(249, 247, 241, 1)',
+                background: isDarkMode ? 'rgba(34, 39, 48, 1)' : 'rgba(249, 247, 241, 1)',
                 padding: '6px 6px 20px 6px',
                 boxSizing: 'border-box',
                 opacity: 1,
@@ -696,7 +700,7 @@ const Wallet = () => {
                       fontSize: '26px',
                       lineHeight: '17px',
                       letterSpacing: '-0.02em',
-                      color: '#0E0F0C',
+                      color: isDarkMode ? '#FFFFFF' : '#0E0F0C',
                       width: '100%',
                       maxWidth: '379px',
                       height: '17px',
@@ -716,7 +720,7 @@ const Wallet = () => {
                       fontSize: '14px',
                       lineHeight: '25px',
                       letterSpacing: '0%',
-                      color: '#71717A',
+                      color: isDarkMode ? 'rgba(255, 255, 255, 0.6)' : '#71717A',
                       width: '100%',
                       maxWidth: '296px',
                       minHeight: '35px',
@@ -736,7 +740,7 @@ const Wallet = () => {
                 <button
                   onClick={() => handleOpenWithdrawal('giftcards')}
                   disabled={settingsLoad}
-                  className="w-full flex items-center justify-center transition-colors cursor-pointer bg-white text-black hover:bg-[#24324D] hover:text-white active:bg-[#24324D] active:text-white disabled:opacity-50 shadow-none border-none outline-none"
+                  className={`w-full flex items-center justify-center transition-colors cursor-pointer disabled:opacity-50 shadow-none border-none outline-none ${isDarkMode ? 'bg-[rgba(36,50,77,1)] text-white hover:bg-[rgba(45,63,98,1)]' : 'bg-white text-black hover:bg-[#24324D] hover:text-white active:bg-[#24324D] active:text-white'}`}
                   style={{
                     maxWidth: '379px',
                     height: '49px',
@@ -763,7 +767,7 @@ const Wallet = () => {
                 maxWidth: '427px',
                 height: '462px',
                 borderRadius: '30px',
-                background: 'rgba(249, 247, 241, 1)',
+                background: isDarkMode ? 'rgba(34, 39, 48, 1)' : 'rgba(249, 247, 241, 1)',
                 padding: '6px 6px 20px 6px',
                 boxSizing: 'border-box',
                 opacity: 1,
@@ -782,7 +786,7 @@ const Wallet = () => {
                   }}
                 >
                   <img
-                    src="/coins/bookcardbox3.png"
+                    src={isDe ? "/coins/bookcardbox3german.png" : "/coins/bookcardbox3.png"}
                     alt="Your Books"
                     className="w-full h-full object-contain"
                   />
@@ -797,7 +801,7 @@ const Wallet = () => {
                       fontSize: '26px',
                       lineHeight: '17px',
                       letterSpacing: '-0.02em',
-                      color: '#0E0F0C',
+                      color: isDarkMode ? '#FFFFFF' : '#0E0F0C',
                       width: '100%',
                       maxWidth: '379px',
                       height: '17px',
@@ -817,7 +821,7 @@ const Wallet = () => {
                       fontSize: '14px',
                       lineHeight: '25px',
                       letterSpacing: '0%',
-                      color: '#71717A',
+                      color: isDarkMode ? 'rgba(255, 255, 255, 0.6)' : '#71717A',
                       width: '100%',
                       maxWidth: '296px',
                       minHeight: '35px',
@@ -836,7 +840,7 @@ const Wallet = () => {
               <div className="w-full flex justify-center px-3.5">
                 <button
                   onClick={() => setShowBookSelector(true)}
-                  className="w-full flex items-center justify-center transition-colors cursor-pointer bg-white text-black hover:bg-[#24324D] hover:text-white active:bg-[#24324D] active:text-white disabled:opacity-50 shadow-none border-none outline-none"
+                  className={`w-full flex items-center justify-center transition-colors cursor-pointer disabled:opacity-50 shadow-none border-none outline-none ${isDarkMode ? 'bg-[rgba(36,50,77,1)] text-white hover:bg-[rgba(45,63,98,1)]' : 'bg-white text-black hover:bg-[#24324D] hover:text-white active:bg-[#24324D] active:text-white'}`}
                   style={{
                     maxWidth: '379px',
                     height: '49px',

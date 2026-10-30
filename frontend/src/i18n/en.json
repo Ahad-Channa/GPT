@@ -14,7 +14,8 @@
     "features": "Features",
     "faq": "FAQ",
     "login": "Login",
-    "createAccount": "Create Account"
+    "createAccount": "Create Account",
+    "more": "More"
   },
   "hero": {
     "titleLine1": "Your Time Has Value",
@@ -25,8 +26,8 @@
     "titleMobileLine4": "For It",
     "subtitle": "Complete offers, surveys, and tasks to earn real rewards. Join thousands\nof users already earning every day.",
     "subtitleMobileLine1": "Complete offers, surveys, and tasks to earn real",
-    "subtitleMobileLine2": "rewards. Join thousands of users already earning",
-    "subtitleMobileLine3": "every day.",
+    "subtitleMobileLine2": "rewards. Join thousands of users already",
+    "subtitleMobileLine3": "earning every day.",
     "startEarning": "Start Earning",
     "totalUsers": "Total Users:",
     "totalPaid": "Total Paid:"
@@ -124,7 +125,9 @@
   },
   "languageToggle": {
     "en": "EN",
-    "de": "DE"
+    "de": "DE",
+    "ur": "UR",
+    "fr": "FR"
   },
   "offers": {
     "requirements": "Requirements",
@@ -336,6 +339,8 @@
   },
   "dailyBonus": {
     "pageTitle": "Daily Bonus",
+    "pageSubtitleLine1": "Claim your daily reward and",
+    "pageSubtitleLine2": "keep your streak going!",
     "todaysReward": "Today's Reward",
     "coins": "Coins",
     "coinsLower": "coins",
@@ -397,6 +402,7 @@
   },
   "vipPage": {
     "pageTitle": "VIP Status",
+    "pageSubtitle": "Higher rewards. Bigger perks. More earning power.",
     "currentRank": "Current rank",
     "earnCoinsFor": "Earn coins",
     "forBronzeTier": "for Bronze Tier",
@@ -529,15 +535,27 @@
   },
   "footer": {
     "tagline": "Complete tasks. Earn rewards.",
+    "tagline1": "Complete tasks.",
+    "tagline2": "Earn rewards.",
     "changeToDarkMode": "Change to dark mode",
     "quickLinks": "Quick Links",
     "resources": "Resources",
     "blog": "Blog",
     "termsOfUse": "Terms of Use",
+    "termsOfService": "Terms of Service",
     "privacyPolicy": "Privacy Policy",
+    "cookiePolicy": "Cookie Policy",
+    "cookieSettings": "Cookie Settings",
+    "affiliatePolicy": "Affiliate Policy",
+    "impressum": "Impressum",
     "support": "Support",
     "leaveReview": "Leave a review",
-    "copyright": "© {{year}} TaskMint. All rights reserved."
+    "copyright": "© {{year}} TaskMint"
+  },
+  "policies": {
+    "title": "Policies",
+    "lastUpdated": "Last Updated",
+    "effective": "Effective"
   },
   "auth": {
     "loginTitle": "Login Your Account",
@@ -559,6 +577,7 @@
     "termsAndConditions": "Terms and Conditions",
     "and": "&",
     "privacyPolicy": "Privacy Policy.",
+    "agreeTermsSuffix": "",
     "login": "Login",
     "signUp": "Sign Up",
     "sendResetLink": "Send Reset Link",
@@ -632,5 +651,37 @@
   "common": {
     "networkError": "Network error. Please try again.",
     "copiedToClipboard": "Copied to clipboard!"
+  },
+  "publicProfile": {
+    "loading": "Loading profile...",
+    "notFoundTitle": "Profile Not Found",
+    "notFoundDesc": "This user does not exist or has been removed.",
+    "close": "Close",
+    "networkError": "Network error loading profile",
+    "userNotFound": "User not found",
+    "backToLeaderboard": "Back to Leaderboard",
+    "joined": "Joined {{date}}",
+    "privateBadge": "This profile is private.",
+    "earningsPrivateTitle": "Earnings are private",
+    "earningsPrivateDesc": "This user has chosen to keep their offer history and earnings private.",
+    "coinsEarned": "Coin's Earned",
+    "thisMonth": "This Month",
+    "totalEarning": "Total Earning",
+    "allTime": "All Time",
+    "referredAffiliates": "Referred Affiliates",
+    "taskCompleted": "Task Completed",
+    "recentActivity": "Recent Activity",
+    "noRecentActivity": "No recent activity found.",
+    "noRecentOffers": "No recent offers found.",
+    "rewardCustomOffer": "Reward for custom offer",
+    "rewardTask": "Reward for completing task",
+    "rewardOffer": "Reward for completed offer",
+    "payoutProcessed": "Payout processed",
+    "withdrawal": "Withdrawal",
+    "taskPrefix": "Task: {{task}}",
+    "methodPrefix": "Method: {{method}}",
+    "taskCustomTask": "Task: custom task",
+    "taskOfferwall": "Task: offerwall task",
+    "taskCompletedText": "Task: completed"
   }
 }

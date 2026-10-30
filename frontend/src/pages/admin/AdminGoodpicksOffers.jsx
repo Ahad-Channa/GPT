@@ -20,12 +20,17 @@ const isIconUrl = (icon) => icon && (icon.startsWith('http') || icon.startsWith(
 // ─── Modal for Create & Edit ────────────────────────────────────────────────
 const GoodpickModal = ({ offer, onClose, onSaved, token, currentUser }) => {
   const isEditing = Boolean(offer);
+  const [activeTab, setActiveTab] = useState('en'); // 'en' | 'de' | 'fr' | 'ur'
 
   const [form, setForm] = useState({
     title: offer?.title || '',
     titleDe: offer?.titleDe || '',
+    titleUr: offer?.titleUr || '',
+    titleFr: offer?.titleFr || '',
     description: offer?.description || '',
     descriptionDe: offer?.descriptionDe || '',
+    descriptionUr: offer?.descriptionUr || '',
+    descriptionFr: offer?.descriptionFr || '',
     rewardAmount: offer?.rewardAmount || '',
     externalLink: offer?.externalLink || '',
     expirationDate: offer?.expirationDate ? new Date(offer.expirationDate).toISOString().slice(0, 16) : '',
@@ -37,6 +42,12 @@ const GoodpickModal = ({ offer, onClose, onSaved, token, currentUser }) => {
     requirementsDe: Array.isArray(offer?.requirementsDe)
       ? offer.requirementsDe.join('\n')
       : (offer?.requirementsDe || ''),
+    requirementsUr: Array.isArray(offer?.requirementsUr)
+      ? offer.requirementsUr.join('\n')
+      : (offer?.requirementsUr || ''),
+    requirementsFr: Array.isArray(offer?.requirementsFr)
+      ? offer.requirementsFr.join('\n')
+      : (offer?.requirementsFr || ''),
     requirementType: offer?.requirementType || 'bullets',
     platforms: offer?.platforms || { desktop: true, android: true, ios: true },
   });
@@ -71,6 +82,12 @@ const GoodpickModal = ({ offer, onClose, onSaved, token, currentUser }) => {
           requirementsDe: form.requirementType === 'paragraph'
             ? [(form.requirementsDe || '').trim()].filter(Boolean)
             : (form.requirementsDe || '').split('\n').map((r) => r.trim()).filter(Boolean),
+          requirementsUr: form.requirementType === 'paragraph'
+            ? [(form.requirementsUr || '').trim()].filter(Boolean)
+            : (form.requirementsUr || '').split('\n').map((r) => r.trim()).filter(Boolean),
+          requirementsFr: form.requirementType === 'paragraph'
+            ? [(form.requirementsFr || '').trim()].filter(Boolean)
+            : (form.requirementsFr || '').split('\n').map((r) => r.trim()).filter(Boolean),
           requirementType: form.requirementType,
           platforms: form.platforms,
         }),
@@ -137,129 +154,306 @@ const GoodpickModal = ({ offer, onClose, onSaved, token, currentUser }) => {
             </div>
           )}
 
-          {/* Title */}
+          {/* Language Tabs Selector */}
           <div>
-            <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1.5">
-              Title (English) *
-            </label>
-            <input
-              value={form.title}
-              onChange={set('title')}
-              placeholder="e.g. Treehouse Fishing"
-              required
-              className="w-full bg-white border border-gray-300 rounded-xl px-3.5 py-2 text-gray-900 text-sm placeholder-gray-400 focus:outline-none focus:border-[#1E2538] focus:ring-1 focus:ring-[#1E2538]/20 transition-all"
-            />
-          </div>
-
-          {/* Title DE */}
-          <div>
-            <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1.5">
-              🇩🇪 Title (German)
-            </label>
-            <input
-              value={form.titleDe}
-              onChange={set('titleDe')}
-              placeholder="z.B. Baumhaus-Angeln"
-              className="w-full bg-white border border-gray-300 rounded-xl px-3.5 py-2 text-gray-900 text-sm placeholder-gray-400 focus:outline-none focus:border-[#1E2538] focus:ring-1 focus:ring-[#1E2538]/20 transition-all"
-            />
-          </div>
-
-          {/* Description */}
-          <div>
-            <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1.5">
-              Description (English) *
-            </label>
-            <textarea
-              value={form.description}
-              onChange={set('description')}
-              placeholder="Short description for the offer card and modal..."
-              rows={2}
-              required
-              className="w-full bg-white border border-gray-300 rounded-xl px-3.5 py-2 text-gray-900 text-sm placeholder-gray-400 focus:outline-none focus:border-[#1E2538] focus:ring-1 focus:ring-[#1E2538]/20 resize-none transition-all"
-            />
-          </div>
-
-          {/* Description DE */}
-          <div>
-            <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1.5">
-              🇩🇪 Description (German)
-            </label>
-            <textarea
-              value={form.descriptionDe}
-              onChange={set('descriptionDe')}
-              placeholder="Kurzbeschreibung für die Angebotskarte und das Detailfenster..."
-              rows={2}
-              className="w-full bg-white border border-gray-300 rounded-xl px-3.5 py-2 text-gray-900 text-sm placeholder-gray-400 focus:outline-none focus:border-[#1E2538] focus:ring-1 focus:ring-[#1E2538]/20 resize-none transition-all"
-            />
-          </div>
-
-          {/* Requirement Style Toggle & Input */}
-          <div>
-            <div className="flex items-center justify-between mb-1.5">
+            <div className="flex items-center justify-between mb-2">
               <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                Requirements Format
+                Language / Translations *
               </label>
-              <div className="flex items-center gap-1 bg-gray-100 p-1 rounded-lg border border-gray-200">
-                <button
-                  type="button"
-                  onClick={() => setForm((f) => ({ ...f, requirementType: 'bullets' }))}
-                  className={`px-3 py-1 rounded-md text-xs font-semibold transition-all ${
-                    form.requirementType === 'bullets'
-                      ? 'bg-[#1E2538] text-white shadow-sm'
-                      : 'text-gray-600 hover:text-gray-900'
-                  }`}
-                >
-                  Bullet Points
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setForm((f) => ({ ...f, requirementType: 'paragraph' }))}
-                  className={`px-3 py-1 rounded-md text-xs font-semibold transition-all ${
+              <span className="text-[11px] text-gray-400">Switch tabs to provide translations</span>
+            </div>
+            <div className="flex items-center gap-1.5 p-1 bg-gray-100 rounded-xl border border-gray-200">
+              <button
+                type="button"
+                onClick={() => setActiveTab('en')}
+                className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-lg text-xs font-bold transition-all ${
+                  activeTab === 'en'
+                    ? 'bg-white text-gray-900 shadow-sm border border-gray-200'
+                    : 'text-gray-500 hover:text-gray-800'
+                }`}
+              >
+                <span>🇬🇧</span>
+                <span>English</span>
+                <span className="text-[10px] text-gray-400 font-normal">(Default)</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveTab('de')}
+                className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-lg text-xs font-bold transition-all ${
+                  activeTab === 'de'
+                    ? 'bg-white text-gray-900 shadow-sm border border-gray-200'
+                    : 'text-gray-500 hover:text-gray-800'
+                }`}
+              >
+                <span>🇩🇪</span>
+                <span>Deutsch</span>
+                {Boolean(form.titleDe) && (
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" title="German translated" />
+                )}
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveTab('fr')}
+                className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-lg text-xs font-bold transition-all ${
+                  activeTab === 'fr'
+                    ? 'bg-white text-gray-900 shadow-sm border border-gray-200'
+                    : 'text-gray-500 hover:text-gray-800'
+                }`}
+              >
+                <span>🇫🇷</span>
+                <span>Français</span>
+                {Boolean(form.titleFr) && (
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" title="French translated" />
+                )}
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveTab('ur')}
+                className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-lg text-xs font-bold transition-all ${
+                  activeTab === 'ur'
+                    ? 'bg-white text-gray-900 shadow-sm border border-gray-200'
+                    : 'text-gray-500 hover:text-gray-800'
+                }`}
+              >
+                <span>🇵🇰</span>
+                <span>اردو</span>
+                {Boolean(form.titleUr) && (
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" title="Urdu translated" />
+                )}
+              </button>
+            </div>
+          </div>
+
+          {/* Tab 1: English Content */}
+          {activeTab === 'en' && (
+            <div className="space-y-4">
+              <div>
+                <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1.5">
+                  Title (English) *
+                </label>
+                <input
+                  value={form.title}
+                  onChange={set('title')}
+                  placeholder="e.g. Treehouse Fishing"
+                  required
+                  className="w-full bg-white border border-gray-300 rounded-xl px-3.5 py-2 text-gray-900 text-sm placeholder-gray-400 focus:outline-none focus:border-[#1E2538] focus:ring-1 focus:ring-[#1E2538]/20 transition-all"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1.5">
+                  Description (English) *
+                </label>
+                <textarea
+                  value={form.description}
+                  onChange={set('description')}
+                  placeholder="Short description for the offer card and modal..."
+                  rows={2}
+                  required
+                  className="w-full bg-white border border-gray-300 rounded-xl px-3.5 py-2 text-gray-900 text-sm placeholder-gray-400 focus:outline-none focus:border-[#1E2538] focus:ring-1 focus:ring-[#1E2538]/20 resize-none transition-all"
+                />
+              </div>
+
+              <div>
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                    Requirements (English)
+                  </label>
+                  <div className="flex items-center gap-1 bg-gray-100 p-1 rounded-lg border border-gray-200">
+                    <button
+                      type="button"
+                      onClick={() => setForm((f) => ({ ...f, requirementType: 'bullets' }))}
+                      className={`px-2.5 py-0.5 rounded-md text-[11px] font-semibold transition-all ${
+                        form.requirementType === 'bullets'
+                          ? 'bg-[#1E2538] text-white shadow-sm'
+                          : 'text-gray-600 hover:text-gray-900'
+                      }`}
+                    >
+                      Bullet Points
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setForm((f) => ({ ...f, requirementType: 'paragraph' }))}
+                      className={`px-2.5 py-0.5 rounded-md text-[11px] font-semibold transition-all ${
+                        form.requirementType === 'paragraph'
+                          ? 'bg-[#1E2538] text-white shadow-sm'
+                          : 'text-gray-600 hover:text-gray-900'
+                      }`}
+                    >
+                      Paragraph
+                    </button>
+                  </div>
+                </div>
+
+                <textarea
+                  value={form.requirements}
+                  onChange={set('requirements')}
+                  placeholder={
                     form.requirementType === 'paragraph'
-                      ? 'bg-[#1E2538] text-white shadow-sm'
-                      : 'text-gray-600 hover:text-gray-900'
-                  }`}
-                >
-                  Paragraph
-                </button>
+                      ? 'e.g. Complete this offer by downloading and registering on your device.'
+                      : 'e.g. Register → receive 10 coins\nDeposit €50 → receive 50,000 coins\nGenerate €200 in revenue → receive 10,000 coins'
+                  }
+                  rows={form.requirementType === 'paragraph' ? 2 : 3}
+                  className="w-full bg-white border border-gray-300 rounded-xl px-3.5 py-2 text-gray-900 text-sm placeholder-gray-400 focus:outline-none focus:border-[#1E2538] focus:ring-1 focus:ring-[#1E2538]/20 resize-none transition-all"
+                />
+                <span className="text-[11px] text-gray-500 block mt-1">
+                  {form.requirementType === 'paragraph'
+                    ? 'Displays as text inside the detail modal.'
+                    : 'Enter each requirement on a separate line for the checklist.'}
+                </span>
               </div>
             </div>
+          )}
 
-            <textarea
-              value={form.requirements}
-              onChange={set('requirements')}
-              placeholder={
-                form.requirementType === 'paragraph'
-                  ? 'e.g. Complete this offer by downloading and registering on your device.'
-                  : 'e.g. Register → receive 10 coins\nDeposit €50 → receive 50,000 coins\nGenerate €200 in revenue → receive 10,000 coins'
-              }
-              rows={form.requirementType === 'paragraph' ? 2 : 3}
-              className="w-full bg-white border border-gray-300 rounded-xl px-3.5 py-2 text-gray-900 text-sm placeholder-gray-400 focus:outline-none focus:border-[#1E2538] focus:ring-1 focus:ring-[#1E2538]/20 resize-none transition-all"
-            />
-            <span className="text-[11px] text-gray-500 block mt-1">
-              {form.requirementType === 'paragraph'
-                ? 'Displays as text inside the detail modal.'
-                : 'Enter each requirement on a separate line for the checklist.'}
-            </span>
-          </div>
+          {/* Tab 2: German Content */}
+          {activeTab === 'de' && (
+            <div className="space-y-4">
+              <div>
+                <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1.5">
+                  🇩🇪 Title (German / Deutsch)
+                </label>
+                <input
+                  value={form.titleDe}
+                  onChange={set('titleDe')}
+                  placeholder="z.B. Baumhaus-Angeln"
+                  className="w-full bg-white border border-gray-300 rounded-xl px-3.5 py-2 text-gray-900 text-sm placeholder-gray-400 focus:outline-none focus:border-[#1E2538] focus:ring-1 focus:ring-[#1E2538]/20 transition-all"
+                />
+              </div>
 
-          {/* Requirements DE */}
-          <div>
-            <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1.5">
-              🇩🇪 Requirements (German)
-            </label>
-            <textarea
-              value={form.requirementsDe}
-              onChange={set('requirementsDe')}
-              placeholder={
-                form.requirementType === 'paragraph'
-                  ? 'z.B. Registrieren und die App auf dem Gerät herunterladen.'
-                  : 'z.B. Registrieren → 10 Coins erhalten\n50 € einzahlen → 50.000 Coins erhalten'
-              }
-              rows={form.requirementType === 'paragraph' ? 2 : 3}
-              className="w-full bg-white border border-gray-300 rounded-xl px-3.5 py-2 text-gray-900 text-sm placeholder-gray-400 focus:outline-none focus:border-[#1E2538] focus:ring-1 focus:ring-[#1E2538]/20 resize-none transition-all"
-            />
-          </div>
+              <div>
+                <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1.5">
+                  🇩🇪 Description (German / Deutsch)
+                </label>
+                <textarea
+                  value={form.descriptionDe}
+                  onChange={set('descriptionDe')}
+                  placeholder="Kurzbeschreibung für die Angebotskarte und das Detailfenster..."
+                  rows={2}
+                  className="w-full bg-white border border-gray-300 rounded-xl px-3.5 py-2 text-gray-900 text-sm placeholder-gray-400 focus:outline-none focus:border-[#1E2538] focus:ring-1 focus:ring-[#1E2538]/20 resize-none transition-all"
+                />
+              </div>
+
+              <div>
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                    🇩🇪 Requirements (German / Deutsch)
+                  </label>
+                  <span className="text-[11px] text-gray-400">Format: {form.requirementType === 'paragraph' ? 'Paragraph' : 'Bullets'}</span>
+                </div>
+                <textarea
+                  value={form.requirementsDe}
+                  onChange={set('requirementsDe')}
+                  placeholder={
+                    form.requirementType === 'paragraph'
+                      ? 'z.B. Registrieren und die App auf dem Gerät herunterladen.'
+                      : 'z.B. Registrieren → 10 Coins erhalten\n50 € einzahlen → 50.000 Coins erhalten'
+                  }
+                  rows={form.requirementType === 'paragraph' ? 2 : 3}
+                  className="w-full bg-white border border-gray-300 rounded-xl px-3.5 py-2 text-gray-900 text-sm placeholder-gray-400 focus:outline-none focus:border-[#1E2538] focus:ring-1 focus:ring-[#1E2538]/20 resize-none transition-all"
+                />
+              </div>
+            </div>
+          )}
+
+          {/* Tab 3: French Content */}
+          {activeTab === 'fr' && (
+            <div className="space-y-4">
+              <div>
+                <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1.5">
+                  🇫🇷 Title (French / Français)
+                </label>
+                <input
+                  value={form.titleFr}
+                  onChange={set('titleFr')}
+                  placeholder="ex. Pêche dans les arbres"
+                  className="w-full bg-white border border-gray-300 rounded-xl px-3.5 py-2 text-gray-900 text-sm placeholder-gray-400 focus:outline-none focus:border-[#1E2538] focus:ring-1 focus:ring-[#1E2538]/20 transition-all"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1.5">
+                  🇫🇷 Description (French / Français)
+                </label>
+                <textarea
+                  value={form.descriptionFr}
+                  onChange={set('descriptionFr')}
+                  placeholder="Brève description pour la carte et la fenêtre détaillée..."
+                  rows={2}
+                  className="w-full bg-white border border-gray-300 rounded-xl px-3.5 py-2 text-gray-900 text-sm placeholder-gray-400 focus:outline-none focus:border-[#1E2538] focus:ring-1 focus:ring-[#1E2538]/20 resize-none transition-all"
+                />
+              </div>
+
+              <div>
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                    🇫🇷 Requirements (French / Français)
+                  </label>
+                  <span className="text-[11px] text-gray-400">Format: {form.requirementType === 'paragraph' ? 'Paragraph' : 'Bullets'}</span>
+                </div>
+                <textarea
+                  value={form.requirementsFr}
+                  onChange={set('requirementsFr')}
+                  placeholder={
+                    form.requirementType === 'paragraph'
+                      ? 'ex. S\'inscrire et installer l\'application sur votre appareil.'
+                      : 'ex. S\'inscrire → 10 Coins reçus\nDéposer 50 € → 50 000 Coins reçus'
+                  }
+                  rows={form.requirementType === 'paragraph' ? 2 : 3}
+                  className="w-full bg-white border border-gray-300 rounded-xl px-3.5 py-2 text-gray-900 text-sm placeholder-gray-400 focus:outline-none focus:border-[#1E2538] focus:ring-1 focus:ring-[#1E2538]/20 resize-none transition-all"
+                />
+              </div>
+            </div>
+          )}
+
+          {/* Tab 3: Urdu Content */}
+          {activeTab === 'ur' && (
+            <div className="space-y-4">
+              <div>
+                <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1.5">
+                  🇵🇰 Title (Urdu / اردو)
+                </label>
+                <input
+                  value={form.titleUr}
+                  onChange={set('titleUr')}
+                  placeholder="مثال: ٹری ہاؤس فشنگ"
+                  className="w-full bg-white border border-gray-300 rounded-xl px-3.5 py-2 text-gray-900 text-sm placeholder-gray-400 focus:outline-none focus:border-[#1E2538] focus:ring-1 focus:ring-[#1E2538]/20 transition-all"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1.5">
+                  🇵🇰 Description (Urdu / اردو)
+                </label>
+                <textarea
+                  value={form.descriptionUr}
+                  onChange={set('descriptionUr')}
+                  placeholder="آفر کارڈ اور موڈل کے لیے مختصر تفصیل..."
+                  rows={2}
+                  className="w-full bg-white border border-gray-300 rounded-xl px-3.5 py-2 text-gray-900 text-sm placeholder-gray-400 focus:outline-none focus:border-[#1E2538] focus:ring-1 focus:ring-[#1E2538]/20 resize-none transition-all"
+                />
+              </div>
+
+              <div>
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                    🇵🇰 Requirements (Urdu / اردو)
+                  </label>
+                  <span className="text-[11px] text-gray-400">Format: {form.requirementType === 'paragraph' ? 'Paragraph' : 'Bullets'}</span>
+                </div>
+                <textarea
+                  value={form.requirementsUr}
+                  onChange={set('requirementsUr')}
+                  placeholder={
+                    form.requirementType === 'paragraph'
+                      ? 'مثال: اپنے ڈیوائس پر ڈاؤن لوڈ اور رجسٹر کر کے یہ آفر مکمل کریں۔'
+                      : 'مثال: رجسٹر کریں ← 10 کوائنز حاصل کریں\nایپ ڈاؤن لوڈ کریں ← 5,000 کوائنز حاصل کریں'
+                  }
+                  rows={form.requirementType === 'paragraph' ? 2 : 3}
+                  className="w-full bg-white border border-gray-300 rounded-xl px-3.5 py-2 text-gray-900 text-sm placeholder-gray-400 focus:outline-none focus:border-[#1E2538] focus:ring-1 focus:ring-[#1E2538]/20 resize-none transition-all"
+                />
+              </div>
+            </div>
+          )}
 
           {/* Icon Picker */}
           <div>
@@ -622,7 +816,24 @@ const AdminGoodpicksOffers = () => {
                             )}
                           </div>
                           <div className="min-w-0 max-w-[240px]">
-                            <p className="text-gray-900 font-bold truncate text-sm">{offer.title}</p>
+                            <div className="flex items-center gap-1.5 flex-wrap">
+                              <p className="text-gray-900 font-bold truncate text-sm">{offer.title}</p>
+                              {offer.titleDe && (
+                                <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold bg-gray-100 text-gray-600 border border-gray-200" title={`DE: ${offer.titleDe}`}>
+                                  🇩🇪 DE
+                                </span>
+                              )}
+                              {offer.titleFr && (
+                                <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold bg-blue-50 text-blue-700 border border-blue-200" title={`FR: ${offer.titleFr}`}>
+                                  🇫🇷 FR
+                                </span>
+                              )}
+                              {offer.titleUr && (
+                                <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200" title={`UR: ${offer.titleUr}`}>
+                                  🇵🇰 UR
+                                </span>
+                              )}
+                            </div>
                             <p className="text-gray-500 text-xs truncate mt-0.5">{offer.description}</p>
                             {offer.externalLink && (
                               <a

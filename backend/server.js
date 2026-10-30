@@ -36,6 +36,8 @@ app.use((req, res, next) => {
 const allowedOrigins = [
   'http://localhost:5173',
   'http://localhost:3000',
+  'http://127.0.0.1:5173',
+  'http://127.0.0.1:3000',
   process.env.CLIENT_URL,
 ].filter(Boolean);
 
@@ -56,7 +58,6 @@ app.use(cors({
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'x-two-factor-token'],
 }));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ limit: '10mb', extended: true }));
@@ -259,6 +260,28 @@ connectDB()
       }
     } catch (e) {
       console.error('[MIGRATION] Error:', e);
+    }
+
+    // AUTO-MIGRATION: Ensure all admin accounts are unblocked and permanently fraud-exempt
+    try {
+      const User = require('./models/User');
+      const result = await User.updateMany(
+        {
+          role: 'admin',
+          $or: [
+            { fraudExempt: { $ne: true } },
+            { isBanned: true },
+            { fraudStatus: { $ne: 'clean' } },
+            { fraudFlag: { $gt: 0 } }
+          ]
+        },
+        { $set: { fraudStatus: 'clean', fraudFlag: 0, isBanned: false, fraudExempt: true } }
+      );
+      if (result.modifiedCount > 0) {
+        console.log(`[STARTUP] Auto-fixed ${result.modifiedCount} admin account(s) — unbanned & set fraud-exempt.`);
+      }
+    } catch (e) {
+      console.error('[STARTUP] Admin fraud-exempt check error:', e.message);
     }
     server.listen(PORT, () => {
       console.log(`Server runtime initiated on port ${PORT}`);

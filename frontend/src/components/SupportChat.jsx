@@ -3,6 +3,8 @@ import { useTranslation } from 'react-i18next';
 import { useAuth } from '../contexts/AuthContext';
 import { FiHeadphones } from 'react-icons/fi';
 import { getLevelFromEarned, LEVEL_BADGES } from '../utils/vipLevels';
+import UserAvatar from './UserAvatar';
+import { useTheme } from '../contexts/ThemeContext';
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
@@ -34,13 +36,12 @@ const TIER_BADGES = {
   },
   Opal: {
     icon: '/coins/opal1.png',
-    pillBg: 'linear-gradient(180deg, #E92BFF 0%, #31BDFF 100%)',
-    borderColor: '#E92BFF',
+    pillBg: 'linear-gradient(180deg, #7AA4F4 0%, #4264C0 100%)',
+    borderColor: '#7AA4F4',
   },
 };
 
-const AvatarWithBadge = ({ user, isSupport = false, size = 33 }) => {
-  const photo = isSupport ? '/coins/headp.png' : (user?.avatarUrl || user?.photoURL || '/avatars/avatar1.png');
+const AvatarWithBadge = ({ user, isSupport = false, size = 40 }) => {
   const vipLevel = getLevelFromEarned(user?.totalEarned || 0);
   const tierName = vipLevel?.tier || 'Bronze';
   const tierMeta = TIER_BADGES[tierName] || TIER_BADGES.Bronze;
@@ -65,7 +66,7 @@ const AvatarWithBadge = ({ user, isSupport = false, size = 33 }) => {
           style={{ boxSizing: 'border-box' }}
         >
           <img
-            src={photo}
+            src="/coins/headp.png"
             alt="Support"
             className="w-full h-full object-contain"
             onError={(e) => { e.currentTarget.src = '/avatars/avatar1.png'; }}
@@ -89,7 +90,7 @@ const AvatarWithBadge = ({ user, isSupport = false, size = 33 }) => {
         transform: 'rotate(0deg)',
       }}
     >
-      {/* Inner White Space Gap + Avatar Image */}
+      {/* Inner White Space Gap + Avatar */}
       <div
         className="w-full h-full rounded-full overflow-hidden flex items-center justify-center bg-white"
         style={{
@@ -97,19 +98,19 @@ const AvatarWithBadge = ({ user, isSupport = false, size = 33 }) => {
           boxSizing: 'border-box',
         }}
       >
-        <img
-          src={photo}
-          alt={user?.displayName || 'User'}
-          className="w-full h-full rounded-full object-cover"
-          onError={(e) => { e.currentTarget.src = '/avatars/avatar1.png'; }}
+        <UserAvatar
+          user={user}
+          size="100%"
+          imageClassName="rounded-full"
+          textClassName="text-[14px] font-bold"
         />
       </div>
 
       <img
         src={badgeIcon}
         alt="VIP Tier"
-        className={`absolute left-1/2 -translate-x-1/2 object-contain drop-shadow-sm pointer-events-none ${isOpal ? '-bottom-[10px]' : '-bottom-1.5'}`}
-        style={isOpal ? { width: '25px', height: '25px', maxWidth: 'none' } : { width: '16px', height: '16px' }}
+        className={`absolute left-1/2 -translate-x-1/2 object-contain drop-shadow-sm pointer-events-none ${isOpal ? '-bottom-[11px]' : '-bottom-2'}`}
+        style={isOpal ? { width: '28px', height: '28px', maxWidth: 'none' } : { width: '18px', height: '18px' }}
       />
     </div>
   );
@@ -230,25 +231,28 @@ const RoleBadges = ({ user, isSupport = false }) => {
 
 /* ─── MessageRow (matching Live Chat exactly) ─── */
 const MessageRow = ({ msg, isOwn, mongoUser }) => {
+  const { isDarkMode } = useTheme();
   const { t, i18n } = useTranslation();
   const isSupport = !isOwn;
   const senderUser = isOwn ? mongoUser : { displayName: t('chat.supportTeam', 'Support Team'), role: 'moderator' };
 
   const date = new Date(msg.createdAt || Date.now());
-  const formattedDate = date.toLocaleDateString(i18n.language === 'de' ? 'de-DE' : 'en-US', { month: 'short', day: 'numeric' });
+  const formattedDate = date.toLocaleDateString(i18n.language === 'de' ? 'de-DE' : (i18n.language === 'fr' ? 'fr-FR' : 'en-US'), { month: 'short', day: 'numeric' });
 
   const displayName = isSupport
     ? t('chat.supportTeam', 'Support Team')
     : (senderUser?.displayName || senderUser?.username || (senderUser?.email ? senderUser.email.split('@')[0] : '') || 'User');
 
   return (
-    <div className="relative flex flex-col w-full pb-3.5 mb-3.5 border-b border-[#EFEFEF] transition-opacity">
+    <div className={`relative flex flex-col w-full pb-3.5 mb-3.5 border-b transition-opacity ${
+      isDarkMode ? 'border-white/10' : 'border-[#EFEFEF]'
+    }`}>
       {/* Top Row: Avatar + Name/Date on left, Badges on right */}
       <div className="flex items-center justify-between gap-2 w-full">
         <div className="flex items-center gap-2.5 min-w-0">
-          {/* Avatar with mini tier badge (33x33) */}
+          {/* Avatar with mini tier badge (40x40) */}
           <div className="shrink-0">
-            <AvatarWithBadge user={senderUser} isSupport={isSupport} size={33} />
+            <AvatarWithBadge user={senderUser} isSupport={isSupport} size={40} />
           </div>
 
           {/* Name and Date Column */}
@@ -269,7 +273,7 @@ const MessageRow = ({ msg, isOwn, mongoUser }) => {
                 fontSize: '18px',
                 lineHeight: '100%',
                 letterSpacing: '0%',
-                color: '#000000',
+                color: isDarkMode ? '#FFFFFF' : '#000000',
                 textAlign: 'left',
                 opacity: 1,
                 transform: 'rotate(0deg)',
@@ -287,7 +291,7 @@ const MessageRow = ({ msg, isOwn, mongoUser }) => {
                 fontSize: '12px',
                 lineHeight: '18px',
                 letterSpacing: '0%',
-                color: 'rgba(14, 15, 12, 0.7)',
+                color: isDarkMode ? 'rgba(255, 255, 255, 0.5)' : 'rgba(14, 15, 12, 0.7)',
                 opacity: 1,
                 transform: 'rotate(0deg)',
               }}
@@ -309,7 +313,7 @@ const MessageRow = ({ msg, isOwn, mongoUser }) => {
           fontSize: '13px',
           lineHeight: '20px',
           letterSpacing: '0%',
-          color: '#18181B',
+          color: isDarkMode ? 'rgba(255, 255, 255, 0.85)' : '#18181B',
           margin: 0,
           marginTop: '8px',
           wordBreak: 'break-word',
@@ -325,15 +329,16 @@ const MessageRow = ({ msg, isOwn, mongoUser }) => {
 };
 
 const SupportChat = ({ socket }) => {
+  const { isDarkMode } = useTheme();
   const { t } = useTranslation();
   const { mongoUser, currentUser } = useAuth();
-  const [ticket, setTicket]       = useState(null);
-  const [messages, setMessages]   = useState([]);
-  const [text, setText]           = useState('');
-  const [loading, setLoading]     = useState(true);
-  const [sending, setSending]     = useState(false);
-  const [resetKey, setResetKey]   = useState(0);
-  const endRef  = useRef(null);
+  const [ticket, setTicket] = useState(null);
+  const [messages, setMessages] = useState([]);
+  const [text, setText] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [sending, setSending] = useState(false);
+  const [resetKey, setResetKey] = useState(0);
+  const endRef = useRef(null);
   const inputRef = useRef(null);
 
   const isInitialScroll = useRef(true);
@@ -346,7 +351,7 @@ const SupportChat = ({ socket }) => {
     (async () => {
       try {
         const token = await currentUser.getIdToken();
-        const res   = await fetch(`${API}/support/my-ticket`, {
+        const res = await fetch(`${API}/support/my-ticket`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         const data = await res.json();
@@ -426,7 +431,7 @@ const SupportChat = ({ socket }) => {
     setSending(true);
     try {
       const token = await currentUser.getIdToken();
-      const res   = await fetch(`${API}/support/message`, {
+      const res = await fetch(`${API}/support/message`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({ text: text.trim() })
@@ -462,13 +467,13 @@ const SupportChat = ({ socket }) => {
   // ── Not logged in ──
   if (!mongoUser) return (
     <div className="flex-1 flex flex-col items-center justify-center gap-3 p-8 text-center">
-      <FiHeadphones size={36} className="text-gray-400" />
+      <FiHeadphones size={36} className={isDarkMode ? 'text-white/40' : 'text-gray-400'} />
       <p
         style={{
           fontFamily: '"Poppins", sans-serif',
           fontSize: '14px',
           fontWeight: 500,
-          color: '#71717A',
+          color: isDarkMode ? 'rgba(255, 255, 255, 0.65)' : '#71717A',
           margin: 0,
         }}
       >
@@ -502,7 +507,7 @@ const SupportChat = ({ socket }) => {
                   width: '80px',
                   height: '80px',
                   borderRadius: '20px',
-                  background: 'rgba(213, 248, 216, 0.6)',
+                  background: isDarkMode ? 'rgba(34, 197, 94, 0.15)' : 'rgba(213, 248, 216, 0.6)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
@@ -526,7 +531,7 @@ const SupportChat = ({ socket }) => {
                     fontWeight: 700,
                     fontSize: '24px',
                     lineHeight: '120%',
-                    color: '#000000',
+                    color: isDarkMode ? '#FFFFFF' : '#000000',
                   }}
                 >
                   {t('chat.contactSupport', 'Contact Support')}
@@ -538,7 +543,7 @@ const SupportChat = ({ socket }) => {
                     fontWeight: 400,
                     fontSize: '13px',
                     lineHeight: '20px',
-                    color: 'rgba(14, 15, 12, 0.7)',
+                    color: isDarkMode ? 'rgba(255, 255, 255, 0.65)' : 'rgba(14, 15, 12, 0.7)',
                   }}
                 >
                   {t('chat.contactSupportDesc', 'Send us a message below and our team will respond as soon as possible.')}
@@ -564,7 +569,7 @@ const SupportChat = ({ socket }) => {
       </div>
 
       {/* ── Input Bar (matches Live Chat exactly) ── */}
-      <div className="p-4 pt-2 shrink-0">
+      <div className="mobile-chat-bottom p-4 pt-2 shrink-0">
         <form onSubmit={sendMessage}>
           <div
             style={{
@@ -572,7 +577,7 @@ const SupportChat = ({ socket }) => {
               maxWidth: '338px',
               height: '49px',
               borderRadius: '50px',
-              background: 'rgba(239, 239, 239, 1)',
+              background: isDarkMode ? 'rgba(23, 26, 29, 1)' : 'rgba(239, 239, 239, 1)',
               padding: '4px 6px 4px 20px',
               display: 'flex',
               alignItems: 'center',
@@ -603,9 +608,9 @@ const SupportChat = ({ socket }) => {
                 fontSize: '13px',
                 lineHeight: '26px',
                 letterSpacing: '0%',
-                color: 'rgba(0, 0, 0, 1)',
+                color: isDarkMode ? '#FFFFFF' : 'rgba(0, 0, 0, 1)',
               }}
-              className="placeholder:text-black/70"
+              className={isDarkMode ? "placeholder:text-white/40" : "placeholder:text-black/70"}
             />
 
             <button

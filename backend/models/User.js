@@ -112,6 +112,10 @@ const userSchema = new mongoose.Schema(
       enum: ['clean', 'suspicious', 'flagged', 'blocked'],
       default: 'clean',
     },
+    fraudExempt: {
+      type: Boolean,
+      default: false,
+    },
     lastIp: {
       type: String,
       default: '',
@@ -125,6 +129,10 @@ const userSchema = new mongoose.Schema(
     }],
     deviceFingerprints: [{
       type: String,
+    }],
+    deviceTokens: [{
+      type: String,
+      index: true,
     }],
     commissionGenerated: {
       type: Number,

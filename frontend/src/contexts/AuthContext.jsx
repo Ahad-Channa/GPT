@@ -58,36 +58,74 @@ export const AuthProvider = ({ children }) => {
     const [loading, setLoading] = useState(true);
     const socketRef = useRef(null);
 
+    const checkIpAllowed = async () => {
+        const isMockVpn = localStorage.getItem('test_mock_vpn') === 'true';
+        const savedDeviceId = localStorage.getItem('__tm_did');
+        const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/auth/check-ip`, {
+            credentials: 'include',
+            headers: {
+                ...(savedDeviceId ? { 'x-device-id': savedDeviceId } : {}),
+                ...(isMockVpn ? { 'x-mock-vpn': 'true' } : {})
+            }
+        });
+        const data = await res.json();
+        if (data.deviceId) {
+            localStorage.setItem('__tm_did', data.deviceId);
+        }
+        if (!data.success && (data.code === 'FRAUD_BLOCKED' || /vpn|proxy|tor/i.test(data.error || ''))) {
+            const fraudError = new Error(data.error || 'Access denied. VPN, proxy, or TOR connections are not allowed on this platform.');
+            fraudError.isFraudBlocked = true;
+            throw fraudError;
+        }
+    };
+
     const syncWithMongo = async (user) => {
+        if (!user) {
+            throw new Error("No user available for synchronization.");
+        }
         try {
             const token = await user.getIdToken();
-            const ref = localStorage.getItem('ref');
+            const ref = localStorage.getItem('ref') || sessionStorage.getItem('pending_ref');
             const fingerprint = await generateFingerprint();
+            const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+            const isMockVpn = localStorage.getItem('test_mock_vpn') === 'true';
+            const savedDeviceId = localStorage.getItem('__tm_did');
             const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/auth/sync`, {
                 method: 'POST',
+                credentials: 'include',
                 headers: {
                     'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
+                    'Content-Type': 'application/json',
+                    ...(savedDeviceId ? { 'x-device-id': savedDeviceId } : {}),
+                    ...(isMockVpn ? { 'x-mock-vpn': 'true' } : {})
                 },
-                body: JSON.stringify({ ...(ref ? { ref } : {}), fingerprint })
+                body: JSON.stringify({ ...(ref ? { ref } : {}), fingerprint, timezone, deviceToken: savedDeviceId })
             });
             const data = await res.json();
 
-            // VPN/Proxy blocked — sign out immediately
-            if (!data.success && data.code === 'FRAUD_BLOCKED') {
-                await signOut(auth);
-                setMongoUser(null);
-                setCurrentUser(null);
-                throw new Error(data.error || 'VPN, proxy, or TOR connections are not allowed on this platform.');
+            if (data.deviceId) {
+                localStorage.setItem('__tm_did', data.deviceId);
             }
 
-            if (data.isBanned || (data.success && data.user?.isBanned)) {
-                alert("Your account has been banned due to violations of our terms. Please contact support.");
+            // VPN/Proxy blocked — sign out immediately and halt
+            if (!data.success && (data.code === 'FRAUD_BLOCKED' || /vpn|proxy|tor/i.test(data.error || ''))) {
                 await signOut(auth);
                 setMongoUser(null);
                 setCurrentUser(null);
-                return;
+                const fraudError = new Error(data.error || 'Access denied. VPN, proxy, or TOR connections are not allowed on this platform.');
+                fraudError.isFraudBlocked = true;
+                throw fraudError;
             }
+
+            if (data.isBanned || data.isBlocked || (data.success && (data.user?.isBanned || data.user?.fraudStatus === 'blocked'))) {
+                await signOut(auth);
+                setMongoUser(null);
+                setCurrentUser(null);
+                const banError = new Error(data.error || "Your account has been suspended or blocked due to security violations. Please contact support.");
+                banError.isFraudBlocked = true;
+                throw banError;
+            }
+
             if (data.success) {
                 setMongoUser(data.user);
                 if (data.twoFactorRequired) {
@@ -95,18 +133,20 @@ export const AuthProvider = ({ children }) => {
                 } else {
                     setTwoFactorRequired(false);
                 }
+            } else {
+                throw new Error(data.error || 'Database Synchronization Error.');
             }
         } catch (error) {
             console.error("MongoDB Sync Failed:", error);
-            // Re-throw VPN block errors so the caller (login/register) can show the message
-            if (error.message && error.message.includes('VPN')) {
-                throw error;
-            }
+            // Re-throw so caller (login/register) knows authentication was blocked
+            throw error;
         }
     };
 
     const loginWithGoogle = async () => {
         try {
+            // Pre-check IP before opening Google OAuth
+            await checkIpAllowed();
             const result = await signInWithPopup(auth, googleProvider);
             await syncWithMongo(result.user);
             return result.user;
@@ -117,21 +157,46 @@ export const AuthProvider = ({ children }) => {
     };
 
     const registerWithEmail = async (email, password, displayName) => {
+        let createdUser = null;
         try {
+            // 1. Pre-check IP before creating user in Firebase
+            // This prevents creating a dangling Firebase user when connecting from VPN/proxy
+            await checkIpAllowed();
+
+            // 2. Create user in Firebase Auth
             const result = await createUserWithEmailAndPassword(auth, email, password);
+            createdUser = result.user;
             
             if (displayName) {
-                await updateProfile(result.user, { displayName });
-                // Reload to reflect changes before sync
-                await result.user.reload();
+                await updateProfile(createdUser, { displayName });
+                await createdUser.reload();
             }
 
-            // Send verification email to ensure "email is real or not"
-            await sendEmailVerification(auth.currentUser);
-            await syncWithMongo(auth.currentUser);
-            return auth.currentUser;
+            // 3. Sync user with MongoDB using the verified createdUser instance
+            await syncWithMongo(createdUser);
+
+            // 4. Send verification email (non-blocking if it fails)
+            try {
+                await sendEmailVerification(createdUser);
+            } catch (vErr) {
+                console.warn("Failed to send verification email:", vErr.message);
+            }
+
+            return createdUser;
         } catch (error) {
             console.error("Email Registration Error", error);
+            // If registration failed for ANY reason after Firebase user was created,
+            // clean up the dangling Firebase auth user immediately so email is not locked
+            if (createdUser) {
+                try {
+                    await createdUser.delete();
+                } catch (delErr) {
+                    console.warn("Could not delete dangling user:", delErr.message);
+                }
+                try {
+                    await signOut(auth);
+                } catch (_) {}
+            }
             throw error;
         }
     };
@@ -290,14 +355,24 @@ export const AuthProvider = ({ children }) => {
                 socketRef.current.on('vipLevelUp', ({ label, rewardAmount, tier, rank }) => {
                     import('react-hot-toast').then(({ default: toast }) => {
                         const isDe = i18n.language === 'de';
+                        const isFr = i18n.language === 'fr';
+                        const isUr = i18n.language === 'ur';
                         const msg = rewardAmount > 0
-                            ? (isDe
+                            ? (isUr
+                                ? `🎉 آپ نے ${label} لیول حاصل کر لیا ہے! وی آئی پی پیج پر اپنا ${rewardAmount.toLocaleString()} کوائن بونس کلیم کریں۔`
+                                : isDe
                                 ? `🎉 Du hast ${label} erreicht! Hole dir deinen Bonus von ${rewardAmount.toLocaleString()} Coins auf der VIP Seite ab.`
+                                : isFr
+                                ? `🎉 Vous avez atteint ${label} ! Réclamez votre bonus de ${rewardAmount.toLocaleString()} coins sur la page VIP.`
                                 : `🎉 You reached ${label}! Claim your ${rewardAmount.toLocaleString()} coin bonus on the VIP page.`)
-                            : (isDe
+                            : (isUr
+                                ? `🎉 آپ نے ${label} وی آئی پی اسٹیٹس حاصل کر لیا ہے! وی آئی پی پیج پر اپنی پیش رفت دیکھیں۔`
+                                : isDe
                                 ? `🎉 Du hast den VIP-Status ${label} erreicht! Sieh dir deinen Fortschritt auf der VIP Seite an.`
+                                : isFr
+                                ? `🎉 Vous avez atteint le statut VIP ${label} ! Suivez votre progression sur la page VIP.`
                                 : `🎉 You reached ${label} VIP status! Check your progress on the VIP page.`);
-                        const openText = isDe ? '→ Zur VIP Seite' : '→ Open VIP page';
+                        const openText = isUr ? '← وی آئی پی پیج کھولیں' : (isDe ? '→ Zur VIP Seite' : (isFr ? '→ Ouvrir la page VIP' : '→ Open VIP page'));
                         toast(
                             (t) => (
                                 <span

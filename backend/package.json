@@ -5,6 +5,7 @@
   "scripts": {
     "start": "node server.js",
     "dev": "nodemon server.js",
+    "fix-admin": "node fix-admin-accounts.js",
     "test": "node --test tests/*.test.js"
   },
   "keywords": [],

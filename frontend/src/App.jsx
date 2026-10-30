@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { Routes, Route, Navigate, useParams } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { useAuth } from './contexts/AuthContext';
+import { useTheme } from './contexts/ThemeContext';
 import Home from './pages/Home';
 import ResetPassword from './pages/ResetPassword';
 import Landing from './pages/Landing';
@@ -39,7 +40,13 @@ import AdminVip from './pages/admin/AdminVip';
 import VipPage from './pages/VipPage';
 
 import AdminBooks from './pages/admin/AdminBooks';
+import AdminLegalPages from './pages/admin/AdminLegalPages';
+import AdminCookies from './pages/admin/AdminCookies';
+import LegalPage from './pages/LegalPage';
 import NotificationPanel from './components/NotificationPanel';
+import CookieConsentBanner from './components/cookie/CookieConsentBanner';
+import CookieSettingsModal from './components/cookie/CookieSettingsModal';
+import { useCookieConsent } from './contexts/CookieConsentContext';
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
@@ -55,6 +62,7 @@ const PrivateRoute = ({ children }) => {
  */
 const ReferralRedirect = () => {
   const { code } = useParams();
+  const { hasConsent } = useCookieConsent();
 
   useEffect(() => {
     const resolve = async () => {
@@ -62,7 +70,14 @@ const ReferralRedirect = () => {
         const res = await fetch(`${API}/public/r/${code}`);
         const data = await res.json();
         if (data.success && data.referrerId) {
-          localStorage.setItem('ref', data.referrerId);
+          if (hasConsent && hasConsent('marketing')) {
+            localStorage.setItem('ref', data.referrerId);
+            document.cookie = `ref=${encodeURIComponent(data.referrerId)}; max-age=2592000; path=/; SameSite=Lax`;
+          } else {
+            sessionStorage.setItem('pending_ref', data.referrerId);
+            localStorage.removeItem('ref');
+            document.cookie = 'ref=; max-age=0; path=/; SameSite=Lax';
+          }
         }
       } catch (e) {
         // Ignore — user still lands on home page
@@ -71,24 +86,35 @@ const ReferralRedirect = () => {
       }
     };
     resolve();
-  }, [code]);
+  }, [code, hasConsent]);
 
   return null; // Nothing to render — redirect happens immediately
 };
 
 function App() {
   const { currentUser, isAdmin, hasAdminAccess, twoFactorRequired } = useAuth();
+  const { isDarkMode } = useTheme();
+  const { hasConsent } = useCookieConsent();
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const ref = params.get('ref');
     if (ref) {
-      localStorage.setItem('ref', ref);
+      if (hasConsent && hasConsent('marketing')) {
+        localStorage.setItem('ref', ref);
+        document.cookie = `ref=${encodeURIComponent(ref)}; max-age=2592000; path=/; SameSite=Lax`;
+      } else {
+        sessionStorage.setItem('pending_ref', ref);
+        localStorage.removeItem('ref');
+        document.cookie = 'ref=; max-age=0; path=/; SameSite=Lax';
+      }
     }
-  }, []);
+  }, [hasConsent]);
 
   return (
     <>
+      <CookieConsentBanner />
+      <CookieSettingsModal />
       {currentUser && twoFactorRequired && <TwoFactorOverlay />}
       <Toaster
         position="bottom-right"
@@ -102,10 +128,10 @@ function App() {
             minWidth: '223px',
             width: 'auto',
             maxWidth: 'calc(100vw - 32px)',
-            background: 'rgba(255, 255, 255, 1)',
-            color: '#111827',
-            border: '1px solid rgba(0, 0, 0, 0.08)',
-            boxShadow: '0px 12px 20px 0px rgba(0, 0, 0, 0.15)',
+            background: isDarkMode ? 'rgba(12, 14, 17, 1)' : 'rgba(255, 255, 255, 1)',
+            color: isDarkMode ? '#FFFFFF' : '#111827',
+            border: isDarkMode ? '1px solid rgba(255, 255, 255, 0.08)' : '1px solid rgba(0, 0, 0, 0.08)',
+            boxShadow: isDarkMode ? '0px 12px 24px 0px rgba(0, 0, 0, 0.6)' : '0px 12px 20px 0px rgba(0, 0, 0, 0.15)',
             borderRadius: '12px',
             paddingTop: '19px',
             paddingRight: '25px',
@@ -144,6 +170,15 @@ function App() {
         <Route path="/login" element={currentUser ? <Navigate to="/dashboard" replace /> : <Navigate to="/?tab=login" replace />} />
         <Route path="/register" element={currentUser ? <Navigate to="/dashboard" replace /> : <Navigate to="/?tab=register" replace />} />
         <Route path="/reset-password" element={<ResetPassword />} />
+        <Route path="/legal/:slug" element={<LegalPage />} />
+        <Route path="/policies" element={<LegalPage />} />
+        <Route path="/policies/:slug" element={<LegalPage />} />
+        <Route path="/impressum" element={<LegalPage customSlug="impressum" />} />
+        <Route path="/terms-of-use" element={<LegalPage customSlug="terms-of-use" />} />
+        <Route path="/terms-of-service" element={<LegalPage customSlug="terms-of-use" />} />
+        <Route path="/privacy-policy" element={<LegalPage customSlug="privacy-policy" />} />
+        <Route path="/affiliate-policy" element={<LegalPage customSlug="affiliate-policy" />} />
+        <Route path="/cookie-policy" element={<LegalPage customSlug="cookie-policy" />} />
         <Route
           path="/dashboard"
           element={
@@ -257,6 +292,8 @@ function App() {
           <Route path="support" element={<AdminSupport />} />
           <Route path="logs" element={<AdminLogs />} />
           <Route path="settings" element={<AdminSettings />} />
+          <Route path="legal-pages" element={<AdminLegalPages />} />
+          <Route path="cookies" element={<AdminCookies />} />
         </Route>
       </Routes>
     </>

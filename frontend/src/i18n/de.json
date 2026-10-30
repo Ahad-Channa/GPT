@@ -14,7 +14,8 @@
     "features": "Funktionen",
     "faq": "FAQ",
     "login": "Anmelden",
-    "createAccount": "Registrieren"
+    "createAccount": "Registrieren",
+    "more": "Mehr"
   },
   "hero": {
     "titleLine1": "Deine Zeit hat Wert",
@@ -124,7 +125,9 @@
   },
   "languageToggle": {
     "en": "EN",
-    "de": "DE"
+    "de": "DE",
+    "ur": "UR",
+    "fr": "FR"
   },
   "offers": {
     "requirements": "Voraussetzungen",
@@ -336,6 +339,8 @@
   },
   "dailyBonus": {
     "pageTitle": "Täglicher Bonus",
+    "pageSubtitleLine1": "Hole deine tägliche Belohnung ab und",
+    "pageSubtitleLine2": "halte deine Serie am Laufen!",
     "todaysReward": "Heutige Belohnung",
     "coins": "Coins",
     "coinsLower": "Coins",
@@ -397,6 +402,7 @@
   },
   "vipPage": {
     "pageTitle": "VIP Status",
+    "pageSubtitle": "Höhere Belohnungen. Größere Vorteile. Mehr Verdienstmöglichkeiten.",
     "currentRank": "Aktueller Rang",
     "earnCoinsFor": "Verdiene Coins",
     "forBronzeTier": "für Bronze Tier",
@@ -529,15 +535,27 @@
   },
   "footer": {
     "tagline": "Aufgaben erledigen. Prämien verdienen.",
+    "tagline1": "Aufgaben erledigen.",
+    "tagline2": "Prämien verdienen.",
     "changeToDarkMode": "Dark Mode aktivieren",
     "quickLinks": "Quick Links",
     "resources": "Ressourcen",
     "blog": "Blog",
     "termsOfUse": "Nutzungsbedingungen",
+    "termsOfService": "Nutzungsbedingungen",
     "privacyPolicy": "Datenschutzrichtlinie",
+    "cookiePolicy": "Cookie-Richtlinie",
+    "cookieSettings": "Cookie-Einstellungen",
+    "affiliatePolicy": "Partnerprogramm-Richtlinie",
+    "impressum": "Impressum",
     "support": "Support",
     "leaveReview": "Bewertung schreiben",
-    "copyright": "© {{year}} TaskMint. Alle Rechte vorbehalten."
+    "copyright": "© {{year}} TaskMint"
+  },
+  "policies": {
+    "title": "Richtlinien",
+    "lastUpdated": "Zuletzt aktualisiert",
+    "effective": "Gültig ab"
   },
   "auth": {
     "loginTitle": "In dein Konto einloggen",
@@ -558,7 +576,8 @@
     "agreeTermsPrefix": "Mit deiner Registrierung stimmst du unseren",
     "termsAndConditions": "Nutzungsbedingungen",
     "and": "&",
-    "privacyPolicy": "Datenschutzbestimmungen zu.",
+    "privacyPolicy": "Datenschutzbestimmungen",
+    "agreeTermsSuffix": " zu.",
     "login": "Anmelden",
     "signUp": "Registrieren",
     "sendResetLink": "Link zum Zurücksetzen senden",
@@ -632,5 +651,37 @@
   "common": {
     "networkError": "Netzwerkfehler. Bitte versuche es erneut.",
     "copiedToClipboard": "In die Zwischenablage kopiert!"
+  },
+  "publicProfile": {
+    "loading": "Profil wird geladen...",
+    "notFoundTitle": "Profil nicht gefunden",
+    "notFoundDesc": "Dieser Nutzer existiert nicht oder wurde entfernt.",
+    "close": "Schließen",
+    "networkError": "Netzwerkfehler beim Laden des Profils",
+    "userNotFound": "Benutzer nicht gefunden",
+    "backToLeaderboard": "Zurück zur Bestenliste",
+    "joined": "Dabei seit {{date}}",
+    "privateBadge": "Dieses Profil ist privat.",
+    "earningsPrivateTitle": "Einnahmen sind privat",
+    "earningsPrivateDesc": "Dieser Nutzer hat festgelegt, dass Angebotsverlauf und Einnahmen privat bleiben.",
+    "coinsEarned": "Verdiente Coins",
+    "thisMonth": "Diesen Monat",
+    "totalEarning": "Gesamtverdienst",
+    "allTime": "Gesamt",
+    "referredAffiliates": "Geworbene Partner",
+    "taskCompleted": "Erledigte Aufgaben",
+    "recentActivity": "Letzte Aktivitäten",
+    "noRecentActivity": "Keine aktuellen Aktivitäten gefunden.",
+    "noRecentOffers": "Keine aktuellen Angebote gefunden.",
+    "rewardCustomOffer": "Belohnung für Sonderangebot",
+    "rewardTask": "Belohnung für erledigte Aufgabe",
+    "rewardOffer": "Belohnung für abgeschlossenes Angebot",
+    "payoutProcessed": "Auszahlung verarbeitet",
+    "withdrawal": "Auszahlung",
+    "taskPrefix": "Aufgabe: {{task}}",
+    "methodPrefix": "Methode: {{method}}",
+    "taskCustomTask": "Aufgabe: Sonderangebot",
+    "taskOfferwall": "Aufgabe: Offerwall-Aufgabe",
+    "taskCompletedText": "Aufgabe: Abgeschlossen"
   }
 }

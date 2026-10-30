@@ -5,26 +5,19 @@ import {
   FiAlertCircle, FiRefreshCw, FiUser
 } from 'react-icons/fi';
 import io from 'socket.io-client';
+import UserAvatar from '../../components/UserAvatar';
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 const SOCKET_URL = API.replace(/\/api\/?$/, '');
 
-const getInitials = (name) => (name || '?').slice(0, 2).toUpperCase();
-const getHue = (name) => name ? [...name].reduce((a, c) => a + c.charCodeAt(0), 0) % 360 : 210;
-
 const AvatarCircle = ({ user, size = 34 }) => {
-  const src = user?.avatarUrl;
-  const hue = getHue(user?.displayName);
   return (
-    <div style={{
-      width: size, height: size, borderRadius: '50%', overflow: 'hidden', flexShrink: 0,
-      background: src ? 'transparent' : `hsl(${hue}, 45%, 90%)`,
-      border: '1px solid #E5E7EB',
-      display: 'flex', alignItems: 'center', justifyContent: 'center',
-      fontSize: size * 0.36, fontWeight: 700, color: src ? 'inherit' : `hsl(${hue}, 60%, 30%)`, userSelect: 'none'
-    }}>
-      {src ? <img src={src} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : getInitials(user?.displayName)}
-    </div>
+    <UserAvatar
+      user={user}
+      size={size}
+      className="border border-[#E5E7EB]"
+      textClassName="text-xs font-bold"
+    />
   );
 };
 

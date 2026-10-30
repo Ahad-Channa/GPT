@@ -53,6 +53,22 @@
 .hide-scrollbar::-webkit-scrollbar { display: none; }
 .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
+.dark-dropdown-scrollbar::-webkit-scrollbar {
+  width: 6px;
+  display: block;
+}
+.dark-dropdown-scrollbar::-webkit-scrollbar-track {
+  background: #0A0D12;
+  border-radius: 10px;
+}
+.dark-dropdown-scrollbar::-webkit-scrollbar-thumb {
+  background: #242B38;
+  border-radius: 10px;
+}
+.dark-dropdown-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #343E50;
+}
+
 /* ─── Glass Card ────────────────────────────────────────────── */
 .glass-card {
   background: rgba(255, 255, 255, 0.03);
@@ -350,6 +366,25 @@
   align-items: center !important;
 }
 
+/* Dark mode toast notification */
+.dark .custom-toast,
+html.dark .custom-toast,
+:root.dark .custom-toast {
+  background: rgba(12, 14, 17, 1) !important;
+  color: #FFFFFF !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  box-shadow: 0px 12px 24px 0px rgba(0, 0, 0, 0.6) !important;
+}
+
+.dark .custom-toast div[role="status"],
+.dark .custom-toast .go3958315143,
+.dark .custom-toast > div,
+html.dark .custom-toast div[role="status"],
+html.dark .custom-toast .go3958315143,
+html.dark .custom-toast > div {
+  color: #FFFFFF !important;
+}
+
 /* Hide any tick / checkmark / error icon inside toast */
 .custom-toast svg,
 .custom-toast img,
@@ -373,5 +408,61 @@
     border-radius: 12px !important;
     box-shadow: 0px 12px 20px 0px rgba(0, 0, 0, 0.15) !important;
     margin: 0 auto !important;
+  }
+}
+
+/* ─── Mobile Sticky Bottom Navigation & iOS Safe Area ──────── */
+:root {
+  --mobile-nav-pb: 2px;
+  --mobile-more-bottom: 74px;
+}
+
+@supports (-webkit-touch-callout: none) {
+  :root {
+    --mobile-nav-pb: 2px;
+    --mobile-more-bottom: 74px;
+  }
+
+  .mobile-bottom-nav {
+    background: #ffffff !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    bottom: 0 !important;
+    padding-bottom: 2px !important;
+    -webkit-transform: translate3d(0, 0, 0) !important;
+    transform: translate3d(0, 0, 0) !important;
+    -webkit-backface-visibility: hidden !important;
+    backface-visibility: hidden !important;
+  }
+
+  /* Seamless bleed extending under the Safari browser toolbar to eliminate any scroll gap */
+  .mobile-bottom-nav::after {
+    content: "";
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    height: 120px;
+    background: #ffffff;
+    pointer-events: none;
+  }
+}
+
+.mobile-bottom-nav {
+  padding-bottom: var(--mobile-nav-pb) !important;
+}
+
+.mobile-more-popup {
+  bottom: var(--mobile-more-bottom) !important;
+}
+
+@media (max-width: 1023px) {
+  @supports (-webkit-touch-callout: none) {
+    .mobile-chat-bottom {
+      padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 14px) !important;
+    }
+    .mobile-notif-bottom {
+      padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 14px) !important;
+    }
   }
 }

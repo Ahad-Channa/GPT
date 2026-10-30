@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../contexts/AuthContext';
+import { useTheme } from '../../contexts/ThemeContext';
 import toast from 'react-hot-toast';
 import { formatCoins } from '../../config/platform';
 import {
@@ -128,6 +129,7 @@ const BRANDS = [
 const WithdrawalModal = ({ settings, balance, onClose, onSuccess, filterType }) => {
   const { t } = useTranslation();
   const { currentUser } = useAuth();
+  const { isDarkMode } = useTheme();
 
   // Steps: 1 = select method/country, 2 = enter details/brand, 3 = confirm, 4 = done
   const [step,        setStep]        = useState(1);
@@ -273,14 +275,14 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess, filterType }) 
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.96, y: 10 }}
         transition={{ duration: 0.2 }}
-        className={`relative bg-white shadow-2xl w-full flex flex-col my-auto overflow-visible border border-gray-100 box-border ${
+        className={`relative shadow-2xl w-full flex flex-col my-auto overflow-visible box-border ${
           isGiftCard && step < 3 ? 'p-2 xs:p-2.5 sm:p-8' : 'p-[10px]'
-        }`}
+        } ${isDarkMode ? 'bg-black border-none' : 'bg-white border border-gray-100'}`}
         style={{
           width: '100%',
           maxWidth: isGiftCard && step < 3 ? '1072px' : '626px',
           minHeight: isGiftCard && step === 1 ? 'auto' : step === 1 ? '339px' : 'auto',
-          background: 'rgba(255, 255, 255, 1)',
+          background: isDarkMode ? '#000000' : 'rgba(255, 255, 255, 1)',
           borderRadius: isGiftCard && step < 3 ? '25px' : '30px',
           opacity: 1,
         }}
@@ -289,11 +291,14 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess, filterType }) 
         {/* Header & Close Button Box for Normal Steps and Step 3 */}
         {step < 4 && (!isGiftCard || step === 3) && (
           <div
-            className="w-full flex flex-col justify-between shrink-0 relative p-3.5 xs:p-4 pb-3 sm:pt-[34px] sm:pr-[20px] sm:pb-[14px] sm:pl-[20px] rounded-[20px] sm:rounded-[16px] min-h-0 sm:min-h-[140px] sm:h-[143px] bg-[#F8F5EF]"
+            className={`w-full flex flex-col justify-between shrink-0 relative p-3.5 xs:p-4 pb-3 sm:pt-[34px] sm:pr-[20px] sm:pb-[14px] sm:pl-[20px] rounded-[20px] sm:rounded-[16px] min-h-0 sm:min-h-[140px] sm:h-[143px] ${
+              isDarkMode ? 'bg-[rgba(23,26,29,1)]' : 'bg-[#F8F5EF]'
+            }`}
             style={{
               width: '100%',
               maxWidth: '606px',
               boxSizing: 'border-box',
+              background: isDarkMode ? 'rgba(23, 26, 29, 1)' : undefined,
               opacity: 1,
             }}
           >
@@ -301,7 +306,9 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess, filterType }) 
             <button
               id="withdrawal-modal-close"
               onClick={onClose}
-              className="absolute top-3 right-3 sm:top-[16px] sm:right-[20px] rounded-full bg-black text-white flex items-center justify-center hover:bg-gray-800 transition-colors shrink-0 cursor-pointer z-10 w-[24px] h-[24px] sm:w-[22px] sm:h-[22px]"
+              className={`absolute top-3 right-3 sm:top-[16px] sm:right-[20px] rounded-full flex items-center justify-center transition-colors shrink-0 cursor-pointer z-10 w-[24px] h-[24px] sm:w-[22px] sm:h-[22px] ${
+                isDarkMode ? 'bg-white text-black hover:bg-gray-200' : 'bg-black text-white hover:bg-gray-800'
+              }`}
               title="Close"
             >
               <FiX size={13} strokeWidth={2.5} />
@@ -317,7 +324,9 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess, filterType }) 
             >
               <div className="flex flex-col">
                 <h2
-                  className="text-[23px] xs:text-[26px] sm:text-[35px] font-bold text-black m-0 leading-[1.15] sm:leading-[23px] tracking-[-0.02em] w-full max-w-[438px]"
+                  className={`text-[23px] xs:text-[26px] sm:text-[35px] font-bold m-0 leading-[1.15] sm:leading-[23px] tracking-[-0.02em] w-full max-w-[438px] ${
+                    isDarkMode ? 'text-white' : 'text-black'
+                  }`}
                   style={{
                     fontFamily: '"Bricolage Grotesque", sans-serif',
                     opacity: 1,
@@ -332,7 +341,9 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess, filterType }) 
                     : t('withdraw.modalTitleStep3Confirm', 'Confirm Withdrawal')}
                 </h2>
                 <p
-                  className="text-[13.5px] sm:text-[16px] font-medium text-black mt-1.5 sm:mt-[16px] leading-tight sm:leading-[13px] w-full max-w-[565px]"
+                  className={`text-[13.5px] sm:text-[16px] font-medium mt-1.5 sm:mt-[16px] leading-tight sm:leading-[13px] w-full max-w-[565px] ${
+                    isDarkMode ? 'text-white/70' : 'text-black'
+                  }`}
                   style={{
                     fontFamily: '"Poppins", sans-serif',
                     letterSpacing: '0%',
@@ -346,15 +357,8 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess, filterType }) 
               {/* 3-Segment Progress Bar */}
               <div className="flex items-center gap-1.5 w-full mt-0.5 sm:mt-0">
                 <div
-                  className="transition-all bg-[#5B6BF5] h-[5px] sm:h-[6px] rounded-full"
-                  style={{
-                    flex: 1,
-                    opacity: 1,
-                  }}
-                />
-                <div
                   className={`transition-all h-[5px] sm:h-[6px] rounded-full ${
-                    step >= 2 ? 'bg-[#5B6BF5]' : 'bg-[#ECECF4]'
+                    isDarkMode ? 'bg-white' : 'bg-[#5B6BF5]'
                   }`}
                   style={{
                     flex: 1,
@@ -363,7 +367,16 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess, filterType }) 
                 />
                 <div
                   className={`transition-all h-[5px] sm:h-[6px] rounded-full ${
-                    step >= 3 || (method === 'giftcard' && step === 3) ? 'bg-[#5B6BF5]' : 'bg-[#ECECF4]'
+                    step >= 2 ? (isDarkMode ? 'bg-white' : 'bg-[#5B6BF5]') : isDarkMode ? 'bg-white/10' : 'bg-[#ECECF4]'
+                  }`}
+                  style={{
+                    flex: 1,
+                    opacity: 1,
+                  }}
+                />
+                <div
+                  className={`transition-all h-[5px] sm:h-[6px] rounded-full ${
+                    step >= 3 || (method === 'giftcard' && step === 3) ? (isDarkMode ? 'bg-white' : 'bg-[#5B6BF5]') : isDarkMode ? 'bg-white/10' : 'bg-[#ECECF4]'
                   }`}
                   style={{
                     flex: 1,
@@ -392,7 +405,7 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess, filterType }) 
                   <div className="flex items-start justify-between w-full">
                     <div className="flex flex-col">
                       <h2
-                        className="text-[22px] min-[350px]:text-[25px] sm:text-[32px] font-bold text-black m-0 leading-tight sm:leading-[34px] tracking-[-0.02em]"
+                        className={`${isDarkMode ? 'text-white' : 'text-black'} text-[22px] min-[350px]:text-[25px] sm:text-[32px] font-bold m-0 leading-tight sm:leading-[34px] tracking-[-0.02em]`}
                         style={{
                           fontFamily: '"Bricolage Grotesque", sans-serif',
                           opacity: 1,
@@ -401,7 +414,7 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess, filterType }) 
                         {t('withdraw.giftCardModalTitle', 'Redeem Gift Card')}
                       </h2>
                       <p
-                        className="text-[13px] sm:text-[14px] font-medium text-black mt-1 sm:mt-[4px] leading-snug sm:leading-[18px]"
+                        className={`${isDarkMode ? 'text-white/70' : 'text-black'} text-[13px] sm:text-[14px] font-medium mt-1 sm:mt-[4px] leading-snug sm:leading-[18px]`}
                         style={{
                           fontFamily: '"Poppins", sans-serif',
                           letterSpacing: '0%',
@@ -416,7 +429,9 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess, filterType }) 
                     <button
                       id="giftcard-modal-close"
                       onClick={onClose}
-                      className="rounded-full bg-black text-white flex items-center justify-center hover:bg-gray-800 transition-colors shrink-0 cursor-pointer w-[24px] h-[24px] sm:w-[22px] sm:h-[22px]"
+                      className={`rounded-full flex items-center justify-center transition-colors shrink-0 cursor-pointer w-[24px] h-[24px] sm:w-[22px] sm:h-[22px] ${
+                        isDarkMode ? 'bg-white text-black hover:bg-gray-200' : 'bg-black text-white hover:bg-gray-800'
+                      }`}
                       title="Close"
                     >
                       <FiX size={13} strokeWidth={2.5} />
@@ -426,13 +441,13 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess, filterType }) 
                   {/* 3-Segment Progress Bar */}
                   <div className="flex items-center gap-2 w-full mt-1 sm:mt-0">
                     <div
-                      className="bg-[#5B6BF5] h-[4px] rounded-full flex-1"
+                      className={`h-[4px] rounded-full flex-1 ${isDarkMode ? 'bg-white' : 'bg-[#5B6BF5]'}`}
                     />
                     <div
-                      className="bg-[#ECECF4] h-[4px] rounded-full flex-1"
+                      className={`h-[4px] rounded-full flex-1 ${isDarkMode ? 'bg-white/10' : 'bg-[#ECECF4]'}`}
                     />
                     <div
-                      className="bg-[#ECECF4] h-[4px] rounded-full flex-1"
+                      className={`h-[4px] rounded-full flex-1 ${isDarkMode ? 'bg-white/10' : 'bg-[#ECECF4]'}`}
                     />
                   </div>
                 </div>
@@ -448,7 +463,7 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess, filterType }) 
                       fontSize: '23px',
                       lineHeight: '28px',
                       letterSpacing: '-0.02em',
-                      color: '#000000',
+                      color: isDarkMode ? '#FFFFFF' : '#000000',
                       display: 'flex',
                       alignItems: 'center',
                       margin: 0,
@@ -474,7 +489,7 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess, filterType }) 
                       paddingLeft: '7px',
                       paddingRight: '24px',
                       gap: '10px',
-                      background: 'rgba(239, 239, 239, 1)',
+                      background: isDarkMode ? 'rgba(34, 39, 48, 1)' : 'rgba(239, 239, 239, 1)',
                       boxSizing: 'border-box',
                       opacity: 1,
                     }}
@@ -489,7 +504,7 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess, filterType }) 
                             fontSize: '15px',
                             lineHeight: '26px',
                             letterSpacing: '0%',
-                            color: '#000000',
+                            color: isDarkMode ? '#FFFFFF' : '#000000',
                             height: '10px',
                             display: 'flex',
                             alignItems: 'center',
@@ -506,7 +521,7 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess, filterType }) 
                             width: '43px',
                             height: '43px',
                             borderRadius: '50%',
-                            background: '#E5E7EB',
+                            background: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : '#E5E7EB',
                           }}
                           className="flex items-center justify-center text-[18px]"
                         >
@@ -519,7 +534,7 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess, filterType }) 
                             fontSize: '15px',
                             lineHeight: '26px',
                             letterSpacing: '0%',
-                            color: '#71717A',
+                            color: isDarkMode ? 'rgba(255, 255, 255, 0.85)' : '#71717A',
                             height: '10px',
                             display: 'flex',
                             alignItems: 'center',
@@ -531,7 +546,7 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess, filterType }) 
                       </div>
                     )}
 
-                    <span className="text-[#0E0F0C] flex items-center justify-center">
+                    <span className={`flex items-center justify-center ${isDarkMode ? 'text-white' : 'text-[#0E0F0C]'}`}>
                       {countryDropdownOpen ? (
                         <FaCaretUp className="text-[20px]" />
                       ) : (
@@ -543,39 +558,53 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess, filterType }) 
                   {/* Floating Country Dropdown Menu */}
                   {countryDropdownOpen && (
                     <div
-                      className="absolute right-0 top-[90px] w-[300px] max-h-[260px] overflow-y-auto bg-white rounded-[20px] shadow-2xl border border-gray-100 p-2 z-50 flex flex-col gap-1"
+                      className={`absolute right-0 top-[90px] w-[320px] max-h-[300px] overflow-y-auto rounded-[24px] shadow-2xl p-2.5 z-50 flex flex-col ${
+                        isDarkMode
+                          ? 'bg-[#0E1116] border border-[#1E232B] text-white dark-dropdown-scrollbar'
+                          : 'bg-white border border-gray-100 text-black'
+                      }`}
                       style={{
                         scrollbarWidth: 'thin',
+                        scrollbarColor: isDarkMode ? '#222730 #0E1116' : undefined,
                       }}
                     >
-                      {COUNTRIES.map((c) => {
+                      {COUNTRIES.map((c, index) => {
                         const isSelected = country === c.id;
+                        const isLast = index === COUNTRIES.length - 1;
                         return (
-                          <div
-                            key={c.id}
-                            onClick={() => {
-                              setCountry(c.id);
-                              setCountryDropdownOpen(false);
-                              setStep(2);
-                              setError('');
-                            }}
-                            className={`flex items-center gap-3 px-3.5 py-2.5 rounded-[14px] cursor-pointer transition-colors ${
-                              isSelected
-                                ? 'bg-[rgba(248,245,239,1)]'
-                                : 'hover:bg-[rgba(248,245,239,0.7)]'
-                            }`}
-                          >
-                            <CountryFlag id={c.id} />
-                            <span
-                              style={{
-                                fontFamily: '"Poppins", sans-serif',
-                                fontWeight: 500,
-                                fontSize: '14px',
-                                color: '#000000',
+                          <div key={c.id} className="flex flex-col">
+                            <div
+                              onClick={() => {
+                                setCountry(c.id);
+                                setCountryDropdownOpen(false);
+                                setStep(2);
+                                setError('');
                               }}
+                              className={`flex items-center gap-3.5 px-3.5 py-3 rounded-[16px] cursor-pointer transition-colors ${
+                                isSelected
+                                  ? (isDarkMode ? 'bg-[rgba(34,39,48,0.95)] text-white' : 'bg-[rgba(248,245,239,1)] text-black')
+                                  : (isDarkMode ? 'hover:bg-[rgba(34,39,48,0.5)] text-white' : 'hover:bg-[rgba(248,245,239,0.7)] text-black')
+                              }`}
                             >
-                              {c.name}
-                            </span>
+                              <CountryFlag id={c.id} size={36} />
+                              <span
+                                style={{
+                                  fontFamily: '"Poppins", sans-serif',
+                                  fontWeight: 500,
+                                  fontSize: '15px',
+                                  color: isDarkMode ? '#FFFFFF' : '#000000',
+                                }}
+                              >
+                                {c.name}
+                              </span>
+                            </div>
+                            {!isLast && (
+                              <div
+                                className={`h-[1px] w-full my-1 ${
+                                  isDarkMode ? 'bg-[#1C212B]' : 'bg-[#F0EEE6]'
+                                }`}
+                              />
+                            )}
                           </div>
                         );
                       })}
@@ -586,7 +615,7 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess, filterType }) 
             ) : (
               /* PayPal / Litecoin methods */
               <>
-                <div className="flex flex-col sm:flex-row items-center sm:justify-between gap-3 w-full my-3 sm:mb-3 sm:mt-0">
+                <div className="flex flex-col sm:flex-row items-center sm:justify-between gap-3 w-full my-3 sm:my-3.5">
                   {orderedMethods.map((m) => {
                     const minCoins = m.minUSD * coinsPerUSD;
                     const canSelect = balance >= minCoins;
@@ -600,16 +629,21 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess, filterType }) 
                         disabled={!canSelect}
                         className={`flex items-center transition-all text-left border border-transparent w-full sm:max-w-[297px] min-h-[86px] sm:h-[90px] rounded-[20px] sm:rounded-[16px] p-2.5 sm:pt-2 sm:pr-5 sm:pb-2 sm:pl-2 gap-3.5 sm:gap-2.5 box-border ${
                           isSelected
-                            ? 'bg-[#1E2538] text-white shadow-sm'
-                            : 'bg-[#F9F7F1] hover:bg-[#f4efe3] text-[#0E0F0C]'
+                            ? (isDarkMode ? 'bg-[rgba(36,50,77,1)] text-white shadow-sm' : 'bg-[#1E2538] text-white shadow-sm')
+                            : (isDarkMode ? 'bg-[rgba(23,26,29,1)] hover:bg-[rgba(30,34,39,1)] text-white' : 'bg-[#F9F7F1] hover:bg-[#f4efe3] text-[#0E0F0C]')
                         } ${canSelect ? 'cursor-pointer' : 'opacity-40 cursor-not-allowed'}`}
                         style={{
+                          background: isDarkMode ? (isSelected ? 'rgba(36, 50, 77, 1)' : 'rgba(23, 26, 29, 1)') : undefined,
                           opacity: 1,
                         }}
                       >
                         {/* Left Icon Box */}
                         <div
-                          className="bg-white flex items-center justify-center shadow-xs shrink-0 rounded-[14px] sm:rounded-[10px] w-[66px] h-[66px] xs:w-[70px] xs:h-[70px] sm:w-[74px] sm:h-[74px]"
+                          className={`flex items-center justify-center shadow-xs shrink-0 rounded-[14px] sm:rounded-[10px] w-[66px] h-[66px] xs:w-[70px] xs:h-[70px] sm:w-[74px] sm:h-[74px] ${
+                            isDarkMode
+                              ? (isSelected ? 'bg-white' : 'bg-[rgba(12,14,17,1)]')
+                              : 'bg-white'
+                          }`}
                         >
                           {m.id === 'paypal' ? (
                             <FaPaypal className="text-[#00457C] text-[34px] sm:text-[34px]" />
@@ -624,7 +658,7 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess, filterType }) 
                             className="text-[20px] sm:text-[20px] font-bold leading-tight sm:leading-[13px] tracking-[-0.02em]"
                             style={{
                               fontFamily: '"Bricolage Grotesque", sans-serif',
-                              color: isSelected ? '#FFFFFF' : '#000000',
+                              color: isDarkMode ? '#FFFFFF' : (isSelected ? '#FFFFFF' : '#000000'),
                             }}
                           >
                             {m.id === 'paypal' ? 'PayPal' : 'Litecoin'}
@@ -633,7 +667,7 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess, filterType }) 
                             className="text-[13px] sm:text-[12px] font-normal leading-snug sm:leading-[17px] mt-0.5 sm:mt-0"
                             style={{
                               fontFamily: '"Poppins", sans-serif',
-                              color: isSelected ? 'rgba(255, 255, 255, 0.85)' : '#000000',
+                              color: isDarkMode ? (isSelected ? 'rgba(255, 255, 255, 0.85)' : 'rgba(255, 255, 255, 0.6)') : (isSelected ? 'rgba(255, 255, 255, 0.85)' : '#000000'),
                             }}
                           >
                             {t('withdraw.minWithdrawal', 'Minimum withdrawal')} {t('withdraw.coinsCount', { count: formatCoins(minCoins), defaultValue: `${formatCoins(minCoins)} coin` })}
@@ -650,9 +684,12 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess, filterType }) 
                   type="button"
                   onClick={() => { if (canContinue) { setStep(2); setError(''); } }}
                   disabled={!canContinue}
-                  className="w-full flex items-center justify-center transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed shadow-none border-none outline-none h-[54px] sm:h-[55px] rounded-full sm:rounded-[30px] bg-[#24324D] text-white font-medium text-[16px] py-0 px-6 sm:px-7 mt-1 sm:mt-0"
+                  className={`w-full flex items-center justify-center transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed shadow-none border-none outline-none h-[54px] sm:h-[55px] rounded-full sm:rounded-[30px] font-medium text-[16px] py-0 px-6 sm:px-7 mt-1 sm:mt-0 ${
+                    isDarkMode ? 'bg-[rgba(36,50,77,1)] hover:bg-[rgba(45,63,98,1)] text-white' : 'bg-[#24324D] text-white'
+                  }`}
                   style={{
                     boxSizing: 'border-box',
+                    background: isDarkMode ? 'rgba(36, 50, 77, 1)' : undefined,
                     opacity: !canContinue ? 0.45 : 1,
                     cursor: !canContinue ? 'not-allowed' : 'pointer',
                   }}
@@ -693,7 +730,7 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess, filterType }) 
                   <div className="flex items-start justify-between w-full">
                     <div className="flex flex-col">
                       <h2
-                        className="text-[22px] min-[350px]:text-[25px] sm:text-[32px] font-bold text-black m-0 leading-tight sm:leading-[34px] tracking-[-0.02em]"
+                        className={`${isDarkMode ? 'text-white' : 'text-black'} text-[22px] min-[350px]:text-[25px] sm:text-[32px] font-bold m-0 leading-tight sm:leading-[34px] tracking-[-0.02em]`}
                         style={{
                           fontFamily: '"Bricolage Grotesque", sans-serif',
                           opacity: 1,
@@ -702,7 +739,7 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess, filterType }) 
                         {t('withdraw.giftCardModalTitle', 'Redeem Gift Card')}
                       </h2>
                       <p
-                        className="text-[13px] sm:text-[14px] font-medium text-black mt-1 sm:mt-[4px] leading-snug sm:leading-[18px]"
+                        className={`${isDarkMode ? 'text-white/70' : 'text-black'} text-[13px] sm:text-[14px] font-medium mt-1 sm:mt-[4px] leading-snug sm:leading-[18px]`}
                         style={{
                           fontFamily: '"Poppins", sans-serif',
                           letterSpacing: '0%',
@@ -717,7 +754,9 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess, filterType }) 
                     <button
                       id="giftcard-modal-close-step2"
                       onClick={onClose}
-                      className="rounded-full bg-black text-white flex items-center justify-center hover:bg-gray-800 transition-colors shrink-0 cursor-pointer w-[24px] h-[24px] sm:w-[22px] sm:h-[22px]"
+                      className={`rounded-full flex items-center justify-center transition-colors shrink-0 cursor-pointer w-[24px] h-[24px] sm:w-[22px] sm:h-[22px] ${
+                        isDarkMode ? 'bg-white text-black hover:bg-gray-200' : 'bg-black text-white hover:bg-gray-800'
+                      }`}
                       title="Close"
                     >
                       <FiX size={13} strokeWidth={2.5} />
@@ -727,13 +766,13 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess, filterType }) 
                   {/* 3-Segment Progress Bar */}
                   <div className="flex items-center gap-2 w-full mt-1 sm:mt-0">
                     <div
-                      className="bg-[#5B6BF5] h-[4px] rounded-full flex-1"
+                      className={`h-[4px] rounded-full flex-1 ${isDarkMode ? 'bg-white' : 'bg-[#5B6BF5]'}`}
                     />
                     <div
-                      className="bg-[#5B6BF5] h-[4px] rounded-full flex-1"
+                      className={`h-[4px] rounded-full flex-1 ${isDarkMode ? 'bg-white' : 'bg-[#5B6BF5]'}`}
                     />
                     <div
-                      className="bg-[#ECECF4] h-[4px] rounded-full flex-1"
+                      className={`h-[4px] rounded-full flex-1 ${isDarkMode ? 'bg-white/10' : 'bg-[#ECECF4]'}`}
                     />
                   </div>
                 </div>
@@ -749,7 +788,7 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess, filterType }) 
                       fontSize: '23px',
                       lineHeight: '28px',
                       letterSpacing: '-0.02em',
-                      color: '#000000',
+                      color: isDarkMode ? '#FFFFFF' : '#000000',
                       display: 'flex',
                       alignItems: 'center',
                       margin: 0,
@@ -775,7 +814,7 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess, filterType }) 
                       paddingLeft: '7px',
                       paddingRight: '24px',
                       gap: '10px',
-                      background: 'rgba(239, 239, 239, 1)',
+                      background: isDarkMode ? 'rgba(34, 39, 48, 1)' : 'rgba(239, 239, 239, 1)',
                       boxSizing: 'border-box',
                       opacity: 1,
                     }}
@@ -790,7 +829,7 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess, filterType }) 
                             fontSize: '15px',
                             lineHeight: '26px',
                             letterSpacing: '0%',
-                            color: '#000000',
+                            color: isDarkMode ? '#FFFFFF' : '#000000',
                             height: '10px',
                             display: 'flex',
                             alignItems: 'center',
@@ -807,7 +846,7 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess, filterType }) 
                             width: '43px',
                             height: '43px',
                             borderRadius: '50%',
-                            background: '#E5E7EB',
+                            background: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : '#E5E7EB',
                           }}
                           className="flex items-center justify-center text-[18px]"
                         >
@@ -820,7 +859,7 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess, filterType }) 
                             fontSize: '15px',
                             lineHeight: '26px',
                             letterSpacing: '0%',
-                            color: '#71717A',
+                            color: isDarkMode ? 'rgba(255, 255, 255, 0.85)' : '#71717A',
                             height: '10px',
                             display: 'flex',
                             alignItems: 'center',
@@ -832,7 +871,7 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess, filterType }) 
                       </div>
                     )}
 
-                    <span className="text-[#0E0F0C] flex items-center justify-center">
+                    <span className={`flex items-center justify-center ${isDarkMode ? 'text-white' : 'text-[#0E0F0C]'}`}>
                       {countryDropdownOpen ? (
                         <FaCaretUp className="text-[20px]" />
                       ) : (
@@ -844,37 +883,51 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess, filterType }) 
                   {/* Floating Country Dropdown Menu */}
                   {countryDropdownOpen && (
                     <div
-                      className="absolute right-0 top-[90px] w-[300px] max-h-[260px] overflow-y-auto bg-white rounded-[20px] shadow-2xl border border-gray-100 p-2 z-50 flex flex-col gap-1"
+                      className={`absolute right-0 top-[90px] w-[320px] max-h-[300px] overflow-y-auto rounded-[24px] shadow-2xl p-2.5 z-50 flex flex-col ${
+                        isDarkMode
+                          ? 'bg-[#0E1116] border border-[#1E232B] text-white dark-dropdown-scrollbar'
+                          : 'bg-white border border-gray-100 text-black'
+                      }`}
                       style={{
                         scrollbarWidth: 'thin',
+                        scrollbarColor: isDarkMode ? '#222730 #0E1116' : undefined,
                       }}
                     >
-                      {COUNTRIES.map((c) => {
+                      {COUNTRIES.map((c, index) => {
                         const isSelected = country === c.id;
+                        const isLast = index === COUNTRIES.length - 1;
                         return (
-                          <div
-                            key={c.id}
-                            onClick={() => {
-                              setCountry(c.id);
-                              setCountryDropdownOpen(false);
-                            }}
-                            className={`flex items-center gap-3 px-3.5 py-2.5 rounded-[14px] cursor-pointer transition-colors ${
-                              isSelected
-                                ? 'bg-[rgba(248,245,239,1)]'
-                                : 'hover:bg-[rgba(248,245,239,0.7)]'
-                            }`}
-                          >
-                            <CountryFlag id={c.id} />
-                            <span
-                              style={{
-                                fontFamily: '"Poppins", sans-serif',
-                                fontWeight: 500,
-                                fontSize: '14px',
-                                color: '#000000',
+                          <div key={c.id} className="flex flex-col">
+                            <div
+                              onClick={() => {
+                                setCountry(c.id);
+                                setCountryDropdownOpen(false);
                               }}
+                              className={`flex items-center gap-3.5 px-3.5 py-3 rounded-[16px] cursor-pointer transition-colors ${
+                                isSelected
+                                  ? (isDarkMode ? 'bg-[rgba(34,39,48,0.95)] text-white' : 'bg-[rgba(248,245,239,1)] text-black')
+                                  : (isDarkMode ? 'hover:bg-[rgba(34,39,48,0.5)] text-white' : 'hover:bg-[rgba(248,245,239,0.7)] text-black')
+                              }`}
                             >
-                              {c.name}
-                            </span>
+                              <CountryFlag id={c.id} size={36} />
+                              <span
+                                style={{
+                                  fontFamily: '"Poppins", sans-serif',
+                                  fontWeight: 500,
+                                  fontSize: '15px',
+                                  color: isDarkMode ? '#FFFFFF' : '#000000',
+                                }}
+                              >
+                                {c.name}
+                              </span>
+                            </div>
+                            {!isLast && (
+                              <div
+                                className={`h-[1px] w-full my-1 ${
+                                  isDarkMode ? 'bg-[#1C212B]' : 'bg-[#F0EEE6]'
+                                }`}
+                              />
+                            )}
                           </div>
                         );
                       })}
@@ -884,13 +937,17 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess, filterType }) 
 
                 {/* 2. Select Gift Card Box */}
                 <div
-                  className="w-full flex flex-col mt-4 px-2.5 xs:px-3 py-3.5 sm:py-[18px] sm:px-[20px] rounded-[20px] bg-[#F8F5EF]"
+                  className={`w-full flex flex-col mt-4 px-2.5 xs:px-3 py-3.5 sm:py-[18px] sm:px-[20px] rounded-[20px] ${
+                    isDarkMode ? 'bg-[rgba(23,26,29,1)]' : 'bg-[#F8F5EF]'
+                  }`}
                   style={{
                     boxSizing: 'border-box',
                   }}
                 >
                   <label
-                    className="text-[18px] sm:text-[23px] font-bold text-black tracking-[-0.02em] leading-snug sm:leading-[28px]"
+                    className={`text-[18px] sm:text-[23px] font-bold tracking-[-0.02em] leading-snug sm:leading-[28px] ${
+                      isDarkMode ? 'text-white' : 'text-black'
+                    }`}
                     style={{
                       fontFamily: '"Bricolage Grotesque", sans-serif',
                       opacity: 1,
@@ -909,7 +966,11 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess, filterType }) 
                           onClick={() => setGiftCardBrand(brand.id)}
                           className={`flex items-center justify-center p-1.5 xs:p-2 rounded-[14px] sm:rounded-[12px] transition-all cursor-pointer h-[52px] xs:h-[56px] sm:h-[58px] w-full ${
                             isSelected
-                              ? 'bg-[#1E2538] shadow-md ring-2 ring-[#1E2538]'
+                              ? isDarkMode
+                                ? 'bg-[rgba(36,50,77,1)] shadow-md'
+                                : 'bg-[#1E2538] shadow-md ring-2 ring-[#1E2538]'
+                              : isDarkMode
+                              ? 'bg-transparent hover:bg-white/5 opacity-90 hover:opacity-100'
                               : 'bg-transparent hover:bg-black/5 opacity-90 hover:opacity-100'
                           }`}
                         >
@@ -925,7 +986,9 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess, filterType }) 
                 {/* 3. Vouchers Section */}
                 <div className="flex flex-col w-full mt-4">
                   <label
-                    className="text-[18px] sm:text-[23px] font-bold text-black tracking-[-0.02em] leading-snug sm:leading-[28px]"
+                    className={`text-[18px] sm:text-[23px] font-bold tracking-[-0.02em] leading-snug sm:leading-[28px] ${
+                      isDarkMode ? 'text-white' : 'text-black'
+                    }`}
                     style={{
                       fontFamily: '"Bricolage Grotesque", sans-serif',
                       opacity: 1,
@@ -947,7 +1010,11 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess, filterType }) 
                           }}
                           className={`flex items-center justify-between cursor-pointer transition-all w-full max-w-[246px] h-[60px] xs:h-[66px] sm:h-[73px] rounded-[12px] px-2.5 xs:px-3.5 sm:px-5 py-2 sm:py-4 box-border ${
                             isSelected
-                              ? 'bg-[#F8F5EF] border border-[#24324D]'
+                              ? isDarkMode
+                                ? 'bg-[rgba(34,39,48,1)] border border-transparent'
+                                : 'bg-[#F8F5EF] border border-[#24324D]'
+                              : isDarkMode
+                              ? 'bg-[rgba(23,26,29,0.6)] border border-transparent'
                               : 'bg-white border border-[#E8E8E8]'
                           }`}
                         >
@@ -969,7 +1036,9 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess, filterType }) 
                               </span>
                             </div>
                             <span
-                              className="text-[9.5px] xs:text-[11px] sm:text-[12px] font-normal text-black/50 mt-1 sm:mt-1.5 leading-none"
+                              className={`text-[9.5px] xs:text-[11px] sm:text-[12px] font-normal mt-1 sm:mt-1.5 leading-none ${
+                                isDarkMode ? 'text-white/60' : 'text-black/50'
+                              }`}
                               style={{
                                 fontFamily: '"Poppins", sans-serif',
                                 letterSpacing: '0%',
@@ -979,7 +1048,9 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess, filterType }) 
                             </span>
                           </div>
                           <span
-                            className="text-[15px] xs:text-[17px] sm:text-[20px] font-bold text-[#1E2538] sm:text-black shrink-0 ml-1.5"
+                            className={`text-[15px] xs:text-[17px] sm:text-[20px] font-bold shrink-0 ml-1.5 ${
+                              isDarkMode ? 'text-white' : 'text-[#1E2538] sm:text-black'
+                            }`}
                             style={{
                               fontFamily: '"Poppins", sans-serif',
                             }}
@@ -1001,7 +1072,7 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess, filterType }) 
                       fontSize: '16px',
                       lineHeight: '26px',
                       letterSpacing: '0%',
-                      color: '#000000',
+                      color: isDarkMode ? '#FFFFFF' : '#000000',
                       display: 'flex',
                       alignItems: 'center',
                       margin: 0,
@@ -1022,7 +1093,7 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess, filterType }) 
                       gap: '10px',
                       paddingLeft: '28px',
                       paddingRight: '28px',
-                      background: 'rgba(239, 239, 239, 1)',
+                      background: isDarkMode ? 'rgba(34, 39, 48, 1)' : 'rgba(239, 239, 239, 1)',
                       boxSizing: 'border-box',
                       opacity: 1,
                     }}
@@ -1033,16 +1104,19 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess, filterType }) 
                       value={destination}
                       onChange={(e) => { setDestination(e.target.value); setError(''); }}
                       placeholder={t('withdraw.enterEmailPlaceholder', 'Enter your email address')}
-                      className="bg-transparent border-none outline-none p-0 flex-1 h-full placeholder:text-black/50"
+                      className={`bg-transparent border-none outline-none p-0 flex-1 h-full ${
+                        isDarkMode ? 'text-white placeholder:text-white/40' : 'text-black placeholder:text-black/50'
+                      }`}
                       style={{
                         fontFamily: '"Poppins", sans-serif',
                         fontWeight: 400,
                         fontSize: '15px',
                         lineHeight: '26px',
                         letterSpacing: '0%',
-                        color: 'rgba(0, 0, 0, 1)',
+                        color: isDarkMode ? '#FFFFFF' : 'rgba(0, 0, 0, 1)',
                       }}
-                    />
+                    >
+                    </input>
                   </div>
 
                   {/* Warning Disclaimer */}
@@ -1052,7 +1126,7 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess, filterType }) 
                       fontWeight: 500,
                       fontSize: '12px',
                       lineHeight: '17px',
-                      color: 'rgba(229, 9, 20, 1)',
+                      color: isDarkMode ? '#FF5C5C' : 'rgba(229, 9, 20, 1)',
                       margin: 0,
                       padding: 0,
                       marginTop: '8px',
@@ -1064,13 +1138,17 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess, filterType }) 
 
                 {/* 5. Payout Breakdown Card */}
                 <div
-                  className="flex flex-col w-full mt-4 px-3 xs:px-3.5 py-2.5 sm:px-[16px] sm:pt-[12px] sm:pb-[10px] rounded-[16px] bg-[#F8F5EF] gap-2 sm:gap-[8px]"
+                  className={`flex flex-col w-full mt-4 px-3 xs:px-3.5 py-2.5 sm:px-[16px] sm:pt-[12px] sm:pb-[10px] rounded-[16px] gap-2 sm:gap-[8px] ${
+                    isDarkMode ? 'bg-[rgba(23,26,29,1)]' : 'bg-[#F8F5EF]'
+                  }`}
                   style={{
                     boxSizing: 'border-box',
                   }}
                 >
                   <h4
-                    className="text-[17px] sm:text-[20px] font-bold text-[#0E0F0C] tracking-[-0.02em] px-1 sm:px-0"
+                    className={`text-[17px] sm:text-[20px] font-bold tracking-[-0.02em] px-1 sm:px-0 ${
+                      isDarkMode ? 'text-white' : 'text-[#0E0F0C]'
+                    }`}
                     style={{
                       fontFamily: '"Bricolage Grotesque", sans-serif',
                       margin: 0,
@@ -1081,13 +1159,17 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess, filterType }) 
 
                   {/* Amount You Receive */}
                   <div
-                    className="bg-white flex justify-between items-center w-full h-[48px] xs:h-[50px] sm:h-[53px] rounded-[11px] px-3 xs:px-3.5 sm:px-[20px] shadow-xs"
+                    className={`flex justify-between items-center w-full h-[48px] xs:h-[50px] sm:h-[53px] rounded-[11px] px-3 xs:px-3.5 sm:px-[20px] shadow-xs ${
+                      isDarkMode ? 'bg-[rgba(12,14,17,1)]' : 'bg-white'
+                    }`}
                     style={{
                       boxSizing: 'border-box',
                     }}
                   >
                     <span
-                      className="text-[13px] min-[360px]:text-[14px] xs:text-[15px] sm:text-[16px] font-medium text-black"
+                      className={`text-[13px] min-[360px]:text-[14px] xs:text-[15px] sm:text-[16px] font-medium ${
+                        isDarkMode ? 'text-white' : 'text-black'
+                      }`}
                       style={{
                         fontFamily: '"Poppins", sans-serif',
                       }}
@@ -1095,7 +1177,9 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess, filterType }) 
                       {t('withdraw.amountYouReceive', 'Amount You Receive')}
                     </span>
                     <span
-                      className="text-[14px] min-[360px]:text-[15px] xs:text-[16px] sm:text-[16px] font-bold text-black shrink-0 ml-2"
+                      className={`text-[14px] min-[360px]:text-[15px] xs:text-[16px] sm:text-[16px] font-bold shrink-0 ml-2 ${
+                        isDarkMode ? 'text-white' : 'text-black'
+                      }`}
                       style={{
                         fontFamily: '"Poppins", sans-serif',
                       }}
@@ -1112,7 +1196,9 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess, filterType }) 
                     }}
                   >
                     <span
-                      className="text-[13px] min-[360px]:text-[14px] xs:text-[15px] sm:text-[18px] font-bold text-black whitespace-nowrap"
+                      className={`text-[13px] min-[360px]:text-[14px] xs:text-[15px] sm:text-[18px] font-bold whitespace-nowrap ${
+                        isDarkMode ? 'text-white' : 'text-black'
+                      }`}
                       style={{
                         fontFamily: '"Bricolage Grotesque", sans-serif',
                         lineHeight: '18px',
@@ -1124,7 +1210,9 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess, filterType }) 
                       {t('withdraw.totalDeducted', 'Total Deducted From Balance')}
                     </span>
                     <span
-                      className="text-[14px] min-[360px]:text-[15px] xs:text-[16px] sm:text-[18px] font-bold text-black shrink-0 ml-2"
+                      className={`text-[14px] min-[360px]:text-[15px] xs:text-[16px] sm:text-[18px] font-bold shrink-0 ml-2 ${
+                        isDarkMode ? 'text-white' : 'text-black'
+                      }`}
                       style={{
                         fontFamily: '"Bricolage Grotesque", sans-serif',
                         lineHeight: '18px',
@@ -1280,7 +1368,7 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess, filterType }) 
                       fontSize: '16px',
                       lineHeight: '22px',
                       letterSpacing: '0%',
-                      color: '#000000',
+                      color: isDarkMode ? '#FFFFFF' : '#000000',
                       display: 'flex',
                       alignItems: 'center',
                       margin: 0,
@@ -1300,7 +1388,7 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess, filterType }) 
                       borderRadius: '50px',
                       paddingLeft: '24px',
                       paddingRight: '24px',
-                      background: 'rgba(239, 239, 239, 1)',
+                      background: isDarkMode ? 'rgba(34, 39, 48, 1)' : 'rgba(239, 239, 239, 1)',
                       boxSizing: 'border-box',
                       opacity: 1,
                     }}
@@ -1314,14 +1402,16 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess, filterType }) 
                       value={amount}
                       onChange={(e) => { setAmount(e.target.value); setError(''); }}
                       placeholder={t('withdraw.minCoinsPlaceholder', { min: formatCoins(minimumCoins), defaultValue: `Minimum: ${formatCoins(minimumCoins)} Coins` })}
-                      className="bg-transparent border-none outline-none p-0 flex-1 h-full placeholder:text-black/50"
+                      className={`bg-transparent border-none outline-none p-0 flex-1 h-full ${
+                        isDarkMode ? 'text-white placeholder:text-white/40' : 'placeholder:text-black/50'
+                      }`}
                       style={{
                         fontFamily: '"Poppins", sans-serif',
                         fontWeight: 400,
                         fontSize: '15px',
                         lineHeight: '26px',
                         letterSpacing: '0%',
-                        color: 'rgba(0, 0, 0, 1)',
+                        color: isDarkMode ? '#FFFFFF' : 'rgba(0, 0, 0, 1)',
                       }}
                     />
                   </div>
@@ -1346,7 +1436,7 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess, filterType }) 
                       fontSize: '16px',
                       lineHeight: '22px',
                       letterSpacing: '0%',
-                      color: '#000000',
+                      color: isDarkMode ? '#FFFFFF' : '#000000',
                       display: 'flex',
                       alignItems: 'center',
                       margin: 0,
@@ -1366,7 +1456,7 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess, filterType }) 
                       borderRadius: '50px',
                       paddingLeft: '24px',
                       paddingRight: '24px',
-                      background: 'rgba(239, 239, 239, 1)',
+                      background: isDarkMode ? 'rgba(34, 39, 48, 1)' : 'rgba(239, 239, 239, 1)',
                       boxSizing: 'border-box',
                       opacity: 1,
                     }}
@@ -1377,14 +1467,16 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess, filterType }) 
                       value={destination}
                       onChange={(e) => { setDestination(e.target.value); setError(''); }}
                       placeholder={method === 'litecoin' ? t('withdraw.ltcPlaceholder', selectedConfig.placeholder) : t('withdraw.paypalPlaceholder', selectedConfig.placeholder)}
-                      className="bg-transparent border-none outline-none p-0 flex-1 h-full placeholder:text-black/50"
+                      className={`bg-transparent border-none outline-none p-0 flex-1 h-full ${
+                        isDarkMode ? 'text-white placeholder:text-white/40' : 'placeholder:text-black/50'
+                      }`}
                       style={{
                         fontFamily: '"Poppins", sans-serif',
                         fontWeight: 400,
                         fontSize: '15px',
                         lineHeight: '26px',
                         letterSpacing: '0%',
-                        color: 'rgba(0, 0, 0, 1)',
+                        color: isDarkMode ? '#FFFFFF' : 'rgba(0, 0, 0, 1)',
                       }}
                     />
                   </div>
@@ -1407,14 +1499,19 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess, filterType }) 
 
                 {/* Payout Breakdown Card */}
                 <div
-                  className="flex flex-col w-full max-w-[606px] rounded-[16px] bg-[#F8F5EF] p-3 sm:px-[16px] sm:pt-[12px] sm:pb-[10px] gap-2 sm:gap-[8px]"
+                  className={`flex flex-col w-full max-w-[606px] rounded-[16px] p-3 sm:px-[16px] sm:pt-[12px] sm:pb-[10px] gap-2 sm:gap-[8px] ${
+                    isDarkMode ? 'bg-[rgba(23,26,29,1)]' : 'bg-[#F8F5EF]'
+                  }`}
                   style={{
                     boxSizing: 'border-box',
+                    background: isDarkMode ? 'rgba(23, 26, 29, 1)' : undefined,
                     opacity: 1,
                   }}
                 >
                   <h4
-                    className="text-[17px] sm:text-[20px] font-bold text-[#0E0F0C] tracking-[-0.02em] px-1 sm:px-0"
+                    className={`text-[17px] sm:text-[20px] font-bold tracking-[-0.02em] px-1 sm:px-0 ${
+                      isDarkMode ? 'text-white' : 'text-[#0E0F0C]'
+                    }`}
                     style={{
                       fontFamily: '"Bricolage Grotesque", sans-serif',
                       lineHeight: '1.2',
@@ -1430,14 +1527,19 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess, filterType }) 
                   <div className="flex flex-col gap-2 w-full">
                     {/* Amount You Receive Pill */}
                     <div
-                      className="bg-white flex justify-between items-center w-full max-w-[572.5px] min-h-[48px] xs:min-h-[50px] sm:min-h-[53px] py-2.5 rounded-[11px] px-3 xs:px-3.5 sm:px-[20px] shadow-xs"
+                      className={`flex justify-between items-center w-full max-w-[572.5px] min-h-[48px] xs:min-h-[50px] sm:min-h-[53px] py-2.5 rounded-[11px] px-3 xs:px-3.5 sm:px-[20px] shadow-xs ${
+                        isDarkMode ? 'bg-[rgba(12,14,17,1)]' : 'bg-white'
+                      }`}
                       style={{
                         boxSizing: 'border-box',
+                        background: isDarkMode ? 'rgba(12, 14, 17, 1)' : undefined,
                         opacity: 1,
                       }}
                     >
                       <span
-                        className="text-[13px] min-[360px]:text-[14px] xs:text-[15px] sm:text-[18px] font-medium text-black"
+                        className={`text-[13px] min-[360px]:text-[14px] xs:text-[15px] sm:text-[18px] font-medium ${
+                          isDarkMode ? 'text-white' : 'text-black'
+                        }`}
                         style={{
                           fontFamily: '"Poppins", sans-serif',
                           lineHeight: '1.4',
@@ -1452,7 +1554,9 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess, filterType }) 
                         {t('withdraw.amountYouReceive', 'Amount You Receive')}
                       </span>
                       <span
-                        className="text-[14px] min-[360px]:text-[15px] xs:text-[16px] sm:text-[18px] font-medium text-black shrink-0 ml-2"
+                        className={`text-[14px] min-[360px]:text-[15px] xs:text-[16px] sm:text-[18px] font-medium shrink-0 ml-2 ${
+                          isDarkMode ? 'text-white' : 'text-black'
+                        }`}
                         style={{
                           fontFamily: '"Poppins", sans-serif',
                           lineHeight: '1.4',
@@ -1466,14 +1570,19 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess, filterType }) 
 
                     {/* Processing Fees Pill */}
                     <div
-                      className="bg-white flex justify-between items-center w-full max-w-[572.5px] min-h-[48px] xs:min-h-[50px] sm:min-h-[53px] py-2.5 rounded-[11px] px-3 xs:px-3.5 sm:px-[20px] shadow-xs"
+                      className={`flex justify-between items-center w-full max-w-[572.5px] min-h-[48px] xs:min-h-[50px] sm:min-h-[53px] py-2.5 rounded-[11px] px-3 xs:px-3.5 sm:px-[20px] shadow-xs ${
+                        isDarkMode ? 'bg-[rgba(12,14,17,1)]' : 'bg-white'
+                      }`}
                       style={{
                         boxSizing: 'border-box',
+                        background: isDarkMode ? 'rgba(12, 14, 17, 1)' : undefined,
                         opacity: 1,
                       }}
                     >
                       <span
-                        className="text-[13px] min-[360px]:text-[14px] xs:text-[15px] sm:text-[18px] font-medium text-black"
+                        className={`text-[13px] min-[360px]:text-[14px] xs:text-[15px] sm:text-[18px] font-medium ${
+                          isDarkMode ? 'text-white' : 'text-black'
+                        }`}
                         style={{
                           fontFamily: '"Poppins", sans-serif',
                           lineHeight: '1.4',
@@ -1488,7 +1597,9 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess, filterType }) 
                         {t('withdraw.processingFees', { percent: methodFeePercent, defaultValue: `Processing Fees (${methodFeePercent}%)` })}
                       </span>
                       <span
-                        className="text-[14px] min-[360px]:text-[15px] xs:text-[16px] sm:text-[18px] font-medium text-black shrink-0 ml-2"
+                        className={`text-[14px] min-[360px]:text-[15px] xs:text-[16px] sm:text-[18px] font-medium shrink-0 ml-2 ${
+                          isDarkMode ? 'text-white' : 'text-black'
+                        }`}
                         style={{
                           fontFamily: '"Poppins", sans-serif',
                           lineHeight: '1.4',
@@ -1510,7 +1621,9 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess, filterType }) 
                     }}
                   >
                     <span
-                      className="text-[13px] min-[360px]:text-[14px] xs:text-[15px] sm:text-[20px] font-bold text-black"
+                      className={`text-[13px] min-[360px]:text-[14px] xs:text-[15px] sm:text-[20px] font-bold ${
+                        isDarkMode ? 'text-white' : 'text-black'
+                      }`}
                       style={{
                         fontFamily: '"Bricolage Grotesque", sans-serif',
                         lineHeight: '1.3',
@@ -1525,7 +1638,9 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess, filterType }) 
                       {t('withdraw.totalDeducted', 'Total Deducted From Balance')}
                     </span>
                     <span
-                      className="text-[14px] min-[360px]:text-[15px] xs:text-[16px] sm:text-[20px] font-bold text-black shrink-0 ml-2"
+                      className={`text-[14px] min-[360px]:text-[15px] xs:text-[16px] sm:text-[20px] font-bold shrink-0 ml-2 ${
+                        isDarkMode ? 'text-white' : 'text-black'
+                      }`}
                       style={{
                         fontFamily: '"Bricolage Grotesque", sans-serif',
                         lineHeight: '1.3',
@@ -1603,14 +1718,19 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess, filterType }) 
           <div className="flex flex-col gap-3.5 w-full mt-3 sm:mt-3">
             {/* Payout Breakdown Card */}
             <div
-              className="flex flex-col w-full max-w-[606px] rounded-[16px] bg-[#F8F5EF] px-3 py-3 sm:pt-[14px] sm:pb-[10px] sm:px-[16px] gap-2 sm:gap-[10px]"
+              className={`flex flex-col w-full max-w-[606px] rounded-[16px] px-3 py-3 sm:pt-[14px] sm:pb-[10px] sm:px-[16px] gap-2 sm:gap-[10px] ${
+                isDarkMode ? 'bg-[rgba(23,26,29,1)]' : 'bg-[#F8F5EF]'
+              }`}
               style={{
                 boxSizing: 'border-box',
+                background: isDarkMode ? 'rgba(23, 26, 29, 1)' : undefined,
                 opacity: 1,
               }}
             >
               <h4
-                className="text-[17px] sm:text-[20px] font-bold text-[#0E0F0C] tracking-[-0.02em] px-1 sm:px-0"
+                className={`text-[17px] sm:text-[20px] font-bold tracking-[-0.02em] px-1 sm:px-0 ${
+                  isDarkMode ? 'text-white' : 'text-[#0E0F0C]'
+                }`}
                 style={{
                   fontFamily: '"Bricolage Grotesque", sans-serif',
                   lineHeight: '1.2',
@@ -1626,13 +1746,18 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess, filterType }) 
               <div className="flex flex-col gap-2 w-full">
                 {/* Method Pill */}
                 <div
-                  className="bg-white flex justify-between items-center w-full max-w-[572.5px] h-[48px] xs:h-[50px] sm:h-[53px] rounded-[11px] px-3 xs:px-3.5 sm:px-[20px] shadow-xs"
+                  className={`flex justify-between items-center w-full max-w-[572.5px] h-[48px] xs:h-[50px] sm:h-[53px] rounded-[11px] px-3 xs:px-3.5 sm:px-[20px] shadow-xs ${
+                    isDarkMode ? 'bg-[rgba(12,14,17,1)]' : 'bg-white'
+                  }`}
                   style={{
                     boxSizing: 'border-box',
+                    background: isDarkMode ? 'rgba(12, 14, 17, 1)' : undefined,
                   }}
                 >
                   <span
-                    className="text-[13px] min-[360px]:text-[14px] xs:text-[15px] sm:text-[18px] font-medium text-black"
+                    className={`text-[13px] min-[360px]:text-[14px] xs:text-[15px] sm:text-[18px] font-medium ${
+                      isDarkMode ? 'text-white' : 'text-black'
+                    }`}
                     style={{
                       fontFamily: '"Poppins", sans-serif',
                     }}
@@ -1640,7 +1765,9 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess, filterType }) 
                     {t('withdraw.method', 'Method')}
                   </span>
                   <span
-                    className="text-[13px] min-[360px]:text-[14px] xs:text-[15px] sm:text-[18px] font-medium text-black shrink-0 ml-2"
+                    className={`text-[13px] min-[360px]:text-[14px] xs:text-[15px] sm:text-[18px] font-medium shrink-0 ml-2 ${
+                      isDarkMode ? 'text-white' : 'text-black'
+                    }`}
                     style={{
                       fontFamily: '"Poppins", sans-serif',
                     }}
@@ -1651,13 +1778,18 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess, filterType }) 
 
                 {/* Destination Pill */}
                 <div
-                  className="bg-white flex justify-between items-center w-full max-w-[572.5px] h-[48px] xs:h-[50px] sm:h-[53px] rounded-[11px] px-3 xs:px-3.5 sm:px-[20px] shadow-xs"
+                  className={`flex justify-between items-center w-full max-w-[572.5px] h-[48px] xs:h-[50px] sm:h-[53px] rounded-[11px] px-3 xs:px-3.5 sm:px-[20px] shadow-xs ${
+                    isDarkMode ? 'bg-[rgba(12,14,17,1)]' : 'bg-white'
+                  }`}
                   style={{
                     boxSizing: 'border-box',
+                    background: isDarkMode ? 'rgba(12, 14, 17, 1)' : undefined,
                   }}
                 >
                   <span
-                    className="text-[13px] min-[360px]:text-[14px] xs:text-[15px] sm:text-[18px] font-medium text-black shrink-0 mr-2"
+                    className={`text-[13px] min-[360px]:text-[14px] xs:text-[15px] sm:text-[18px] font-medium shrink-0 mr-2 ${
+                      isDarkMode ? 'text-white' : 'text-black'
+                    }`}
                     style={{
                       fontFamily: '"Poppins", sans-serif',
                     }}
@@ -1665,7 +1797,9 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess, filterType }) 
                     {t('withdraw.destination', 'Destination')}
                   </span>
                   <span
-                    className="text-[12px] min-[360px]:text-[13px] xs:text-[14px] sm:text-[18px] font-medium text-black truncate max-w-[170px] min-[360px]:max-w-[190px] xs:max-w-[240px] sm:max-w-[320px] text-right"
+                    className={`text-[12px] min-[360px]:text-[13px] xs:text-[14px] sm:text-[18px] font-medium truncate max-w-[170px] min-[360px]:max-w-[190px] xs:max-w-[240px] sm:max-w-[320px] text-right ${
+                      isDarkMode ? 'text-white' : 'text-black'
+                    }`}
                     style={{
                       fontFamily: '"Poppins", sans-serif',
                     }}
@@ -1677,13 +1811,18 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess, filterType }) 
 
                 {/* Amount You Receive Pill */}
                 <div
-                  className="bg-white flex justify-between items-center w-full max-w-[572.5px] h-[48px] xs:h-[50px] sm:h-[53px] rounded-[11px] px-3 xs:px-3.5 sm:px-[20px] shadow-xs"
+                  className={`flex justify-between items-center w-full max-w-[572.5px] h-[48px] xs:h-[50px] sm:h-[53px] rounded-[11px] px-3 xs:px-3.5 sm:px-[20px] shadow-xs ${
+                    isDarkMode ? 'bg-[rgba(12,14,17,1)]' : 'bg-white'
+                  }`}
                   style={{
                     boxSizing: 'border-box',
+                    background: isDarkMode ? 'rgba(12, 14, 17, 1)' : undefined,
                   }}
                 >
                   <span
-                    className="text-[13px] min-[360px]:text-[14px] xs:text-[15px] sm:text-[18px] font-medium text-black truncate"
+                    className={`text-[13px] min-[360px]:text-[14px] xs:text-[15px] sm:text-[18px] font-medium truncate ${
+                      isDarkMode ? 'text-white' : 'text-black'
+                    }`}
                     style={{
                       fontFamily: '"Poppins", sans-serif',
                     }}
@@ -1691,7 +1830,9 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess, filterType }) 
                     {t('withdraw.amountYouReceiveStep3', 'Amount you receive')}
                   </span>
                   <span
-                    className="text-[13px] min-[360px]:text-[14px] xs:text-[15px] sm:text-[18px] font-medium text-black shrink-0 ml-2"
+                    className={`text-[13px] min-[360px]:text-[14px] xs:text-[15px] sm:text-[18px] font-medium shrink-0 ml-2 ${
+                      isDarkMode ? 'text-white' : 'text-black'
+                    }`}
                     style={{
                       fontFamily: '"Poppins", sans-serif',
                     }}
@@ -1702,13 +1843,18 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess, filterType }) 
 
                 {/* Processing Fees Pill */}
                 <div
-                  className="bg-white flex justify-between items-center w-full max-w-[572.5px] h-[48px] xs:h-[50px] sm:h-[53px] rounded-[11px] px-3 xs:px-3.5 sm:px-[20px] shadow-xs"
+                  className={`flex justify-between items-center w-full max-w-[572.5px] h-[48px] xs:h-[50px] sm:h-[53px] rounded-[11px] px-3 xs:px-3.5 sm:px-[20px] shadow-xs ${
+                    isDarkMode ? 'bg-[rgba(12,14,17,1)]' : 'bg-white'
+                  }`}
                   style={{
                     boxSizing: 'border-box',
+                    background: isDarkMode ? 'rgba(12, 14, 17, 1)' : undefined,
                   }}
                 >
                   <span
-                    className="text-[13px] min-[360px]:text-[14px] xs:text-[15px] sm:text-[18px] font-medium text-black truncate"
+                    className={`text-[13px] min-[360px]:text-[14px] xs:text-[15px] sm:text-[18px] font-medium truncate ${
+                      isDarkMode ? 'text-white' : 'text-black'
+                    }`}
                     style={{
                       fontFamily: '"Poppins", sans-serif',
                     }}
@@ -1716,7 +1862,9 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess, filterType }) 
                     {t('withdraw.processingFees', { percent: isGiftCard ? '0' : methodFeePercent, defaultValue: `Processing Fees (${isGiftCard ? '0%' : `${methodFeePercent}%`})` })}
                   </span>
                   <span
-                    className="text-[13px] min-[360px]:text-[14px] xs:text-[15px] sm:text-[18px] font-medium text-black shrink-0 ml-2"
+                    className={`text-[13px] min-[360px]:text-[14px] xs:text-[15px] sm:text-[18px] font-medium shrink-0 ml-2 ${
+                      isDarkMode ? 'text-white' : 'text-black'
+                    }`}
                     style={{
                       fontFamily: '"Poppins", sans-serif',
                     }}
@@ -1735,7 +1883,9 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess, filterType }) 
                 }}
               >
                 <span
-                  className="text-[13px] min-[360px]:text-[14px] xs:text-[15px] sm:text-[20px] font-bold text-black whitespace-nowrap"
+                  className={`text-[13px] min-[360px]:text-[14px] xs:text-[15px] sm:text-[20px] font-bold whitespace-nowrap ${
+                    isDarkMode ? 'text-white' : 'text-black'
+                  }`}
                   style={{
                     fontFamily: '"Bricolage Grotesque", sans-serif',
                     lineHeight: '18px',
@@ -1747,7 +1897,9 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess, filterType }) 
                   {t('withdraw.totalDeducted', 'Total Deducted From Balance')}
                 </span>
                 <span
-                  className="text-[14px] min-[360px]:text-[15px] xs:text-[16px] sm:text-[20px] font-bold text-black shrink-0 ml-2"
+                  className={`text-[14px] min-[360px]:text-[15px] xs:text-[16px] sm:text-[20px] font-bold shrink-0 ml-2 ${
+                    isDarkMode ? 'text-white' : 'text-black'
+                  }`}
                   style={{
                     fontFamily: '"Bricolage Grotesque", sans-serif',
                     lineHeight: '18px',
@@ -1837,7 +1989,7 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess, filterType }) 
               width: '100%',
               maxWidth: '606px',
               height: 'auto',
-              background: 'rgba(248, 245, 239, 1)',
+              background: isDarkMode ? '#000000' : 'rgba(248, 245, 239, 1)',
               borderRadius: '20px',
             }}
           >
@@ -1864,7 +2016,7 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess, filterType }) 
 
               {/* Title */}
               <h2
-                className="text-[#000000] font-bold text-[24px] xs:text-[28px] sm:text-[32px] leading-tight m-0 mb-2 sm:mb-3"
+                className={`${isDarkMode ? 'text-white' : 'text-[#000000]'} font-bold text-[24px] xs:text-[28px] sm:text-[32px] leading-tight m-0 mb-2 sm:mb-3`}
                 style={{
                   fontFamily: '"Bricolage Grotesque", sans-serif',
                   letterSpacing: '-0.02em',
@@ -1875,14 +2027,16 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess, filterType }) 
 
               {/* Subtitle / Details */}
               <p
-                className="text-[#000000] text-[13.5px] xs:text-[14px] sm:text-[15px] font-normal leading-[20px] sm:leading-[23px] m-0 mb-4 sm:mb-6 px-1"
+                className={`${isDarkMode ? 'text-white' : 'text-[#000000]'} text-[13.5px] xs:text-[14px] sm:text-[15px] font-normal leading-[20px] sm:leading-[23px] m-0 mb-4 sm:mb-6 px-1`}
                 style={{ fontFamily: '"Poppins", sans-serif' }}
               >
-                {t('withdraw.successDetails', {
-                  amount: amountNum ? formatCoins(amountNum) : formatCoins(youReceive),
-                  method: method === 'giftcard' ? `${t('withdraw.giftCard', 'Gift Card')} (${giftCardBrand})` : (selectedMethod?.label || (method === 'paypal' ? 'PayPal' : 'Litecoin')),
-                  defaultValue: `Your withdrawal of ${amountNum ? formatCoins(amountNum) : formatCoins(youReceive)} Coins via ${method === 'giftcard' ? `${t('withdraw.giftCard', 'Gift Card')} (${giftCardBrand})` : (selectedMethod?.label || (method === 'paypal' ? 'PayPal' : 'Litecoin'))} has been submitted.`
-                })}
+                {t('withdraw.successDetailsIntro', 'Your withdrawal of')}{' '}
+                <span className="font-bold">
+                  {amountNum ? formatCoins(amountNum) : formatCoins(youReceive)}
+                </span>{' '}
+                {t('withdraw.coinsVia', 'Coins via')}{' '}
+                {method === 'giftcard' ? t('withdraw.giftCard', 'Gift Card') : (selectedMethod?.label || (method === 'paypal' ? 'PayPal' : 'Litecoin'))}{' '}
+                {t('withdraw.hasBeenSubmitted', 'has been submitted.')}
                 <br />
                 {t('withdraw.successProcessing', 'Our team will process your request within 1–3 business days. Check your transaction history for updates.')}
               </p>

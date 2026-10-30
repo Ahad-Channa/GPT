@@ -4,8 +4,12 @@ const customOfferSchema = new mongoose.Schema(
   {
     title: { type: String, required: true },
     titleDe: { type: String, default: '' },
+    titleUr: { type: String, default: '' },
+    titleFr: { type: String, default: '' },
     description: { type: String, required: true },
     descriptionDe: { type: String, default: '' },
+    descriptionUr: { type: String, default: '' },
+    descriptionFr: { type: String, default: '' },
     rewardAmount: { type: Number, required: true },
     externalLink: { type: String, required: true },
     isActive: { type: Boolean, default: true },
@@ -19,6 +23,8 @@ const customOfferSchema = new mongoose.Schema(
     },
     requirements: [{ type: String }],
     requirementsDe: [{ type: String }],
+    requirementsUr: [{ type: String }],
+    requirementsFr: [{ type: String }],
     requirementType: { 
       type: String, 
       enum: ['bullets', 'paragraph'], 

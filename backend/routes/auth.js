@@ -25,17 +25,72 @@ async function generateUniqueReferralCode() {
   return crypto.randomBytes(8).toString('base64url').slice(0, 12).toUpperCase();
 }
 
+// Helper to extract cookie value from req.headers.cookie
+function getCookie(req, name) {
+  const cookieHeader = req.headers.cookie;
+  if (!cookieHeader) return null;
+  const match = cookieHeader.match(new RegExp(`(?:^|;\\s*)${name}=([^;]+)`));
+  return match ? decodeURIComponent(match[1]) : null;
+}
+
+// GET /api/auth/check-ip
+// Pre-flight check to verify if the client's IP is allowed (blocks VPN/proxy before Firebase user creation)
+// Also seeds/refreshes the strictly essential __tm_did device cookie
+router.get('/check-ip', fraudCheck('check_ip', 'full'), (req, res) => {
+  let deviceToken = getCookie(req, '__tm_did') || req.headers['x-device-id'];
+  if (!deviceToken) {
+    deviceToken = crypto.randomUUID();
+  }
+  res.cookie('__tm_did', deviceToken, {
+    maxAge: 365 * 24 * 60 * 60 * 1000, // 1 year
+    httpOnly: true,
+    sameSite: 'lax',
+    secure: process.env.NODE_ENV === 'production',
+    path: '/',
+  });
+  res.json({ success: true, allowed: true, deviceId: deviceToken });
+});
+
 // POST /api/auth/sync
 // Validates Firebase token. If user doesn't exist in MongoDB, inserts them securely.
 router.post('/sync', verifyToken, fraudCheck('auth_sync', 'full'), async (req, res) => {
   try {
     const { uid, email, name, picture } = req.user;
-    const { ref, fingerprint } = req.body || {};
+    const { ref, fingerprint, timezone, deviceToken: bodyDeviceToken } = req.body || {};
+    const { resolveClientGeo } = require('../utils/geoIp');
+    const { ip: clientIp, country: clientCountry } = await resolveClientGeo(req, timezone);
+
+    // Resolve or generate strictly essential device identifier cookie (__tm_did)
+    let deviceToken = getCookie(req, '__tm_did') || req.headers['x-device-id'] || bodyDeviceToken;
+    if (!deviceToken) {
+      deviceToken = crypto.randomUUID();
+    }
+    res.cookie('__tm_did', deviceToken, {
+      maxAge: 365 * 24 * 60 * 60 * 1000, // 12 months
+      httpOnly: true,
+      sameSite: 'lax',
+      secure: process.env.NODE_ENV === 'production',
+      path: '/',
+    });
 
     let user = await User.findOne({ firebaseUid: uid });
     let isNewUser = false;
     const isPrimaryAdmin = email === process.env.PRIMARY_ADMIN_EMAIL;
     const allPermissions = ['manage_users', 'manage_withdrawals', 'manage_support', 'manage_offerwalls', 'manage_admins'];
+
+    // Check if user is banned or blocked by the fraud system
+    // Admin accounts and fraud-exempt users are NEVER blocked
+    if (user && user.role !== 'admin' && !user.fraudExempt && (user.isBanned || user.fraudStatus === 'blocked')) {
+      return res.status(403).json({
+        success: false,
+        error: user.isBanned
+          ? 'Forbidden: Account has been banned'
+          : 'Access denied: Account is blocked due to security/fraud violations.',
+        code: 'FRAUD_BLOCKED',
+        isBanned: user.isBanned,
+        isBlocked: user.fraudStatus === 'blocked',
+      });
+    }
 
     if (!user) {
       let baseName = (name || email.split('@')[0] || 'user').replace(/[^a-zA-Z0-9_-]/g, '');
@@ -69,14 +124,40 @@ router.post('/sync', verifyToken, fraudCheck('auth_sync', 'full'), async (req, r
         firebaseUid: uid,
         email: email,
         displayName: uniqueName,
-        avatarUrl: picture || '',
+        avatarUrl: '', // Default to empty so initial letter avatar is shown instead of Google photo
         referralCode,
+        lastIp: clientIp || '',
+        lastCountry: clientCountry || '',
+        deviceTokens: deviceToken ? [deviceToken] : [],
         ...(referredById && { referredBy: referredById }),
         ...(isPrimaryAdmin && { role: 'admin', adminPermissions: allPermissions })
       });
       await user.save();
       isNewUser = true;
       console.log(`Registration success: ${email} synchronized via Firebase. Assigned username: ${uniqueName}`);
+
+      // ── Anti-fraud: check for multi-account via device cookie (__tm_did) ──
+      if (deviceToken && !isPrimaryAdmin && !user.fraudExempt) {
+        const linkedCookieAccounts = await User.find({
+          deviceTokens: deviceToken,
+          _id: { $ne: user._id },
+          role: { $ne: 'admin' },
+          fraudExempt: { $ne: true },
+        }).select('_id displayName email');
+
+        if (linkedCookieAccounts.length > 0) {
+          user.fraudFlag = (user.fraudFlag || 0) + 1;
+          user.fraudStatus = 'flagged';
+          await user.save();
+          await notifyAdmins({
+            category: 'users',
+            type: 'multi_account_detected',
+            message: `🚨 Multi-account detected! ${user.displayName} shares device cookie (__tm_did) with: ${linkedCookieAccounts.map(a => a.displayName).join(', ')}`,
+            permissionRequired: 'manage_users',
+            metadata: { userId: user._id, linkedAccountIds: linkedCookieAccounts.map(a => a._id), deviceToken },
+          });
+        }
+      }
 
       // ── Anti-fraud: check for multi-account via fingerprint ──
       if (fingerprint) {
@@ -132,12 +213,40 @@ router.post('/sync', verifyToken, fraudCheck('auth_sync', 'full'), async (req, r
         await user.save();
       }
 
+      // If user still has legacy Google profile picture stored in avatarUrl, reset it to empty
+      if (user.avatarUrl && (user.avatarUrl.includes('googleusercontent.com') || user.avatarUrl.includes('ggpht.com'))) {
+        user.avatarUrl = '';
+        await user.save();
+      }
+
+      if (clientIp) {
+        user.lastIp = clientIp;
+        if (!user.ipHistory) user.ipHistory = [];
+        if (!user.ipHistory.includes(clientIp)) {
+          user.ipHistory.push(clientIp);
+          if (user.ipHistory.length > 20) user.ipHistory.shift();
+        }
+      }
+      if (clientCountry) {
+        user.lastCountry = clientCountry;
+      }
+
       if (isPrimaryAdmin && user.role !== 'admin') {
         // Auto-promote if they are set as primary admin in .env but not in db
         user.role = 'admin';
         user.adminPermissions = allPermissions;
-        await user.save();
       }
+
+      // Track deviceToken on existing user
+      if (deviceToken) {
+        if (!user.deviceTokens) user.deviceTokens = [];
+        if (!user.deviceTokens.includes(deviceToken)) {
+          user.deviceTokens.push(deviceToken);
+          if (user.deviceTokens.length > 10) user.deviceTokens.shift();
+        }
+      }
+
+      await user.save();
     }
 
     // Check if 2FA is required for this user
@@ -156,6 +265,7 @@ router.post('/sync', verifyToken, fraudCheck('auth_sync', 'full'), async (req, r
       user,
       isNewUser,
       twoFactorRequired,
+      deviceId: deviceToken,
     });
   } catch (error) {
     console.error('[/api/auth/sync] Database Error:', error);

@@ -2,12 +2,70 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import {
   FiCopy, FiSearch, FiX, FiCheck, FiLoader, FiMessageSquare,
-  FiEye, FiUser, FiDollarSign, FiActivity, FiShield, FiAlertTriangle
+  FiEye, FiUser, FiDollarSign, FiActivity, FiShield, FiAlertTriangle, FiGlobe
 } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 import CoinDisplay from '../../components/CoinDisplay';
+import UserAvatar from '../../components/UserAvatar';
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+
+// Helper for displaying fraud status badge
+const renderFraudBadge = (status = 'clean') => {
+  const s = (status || 'clean').toLowerCase();
+  const configs = {
+    clean: {
+      label: 'Clean',
+      color: '#059669',
+      bg: '#ECFDF5',
+      border: '#A7F3D0',
+      icon: '🛡️',
+    },
+    suspicious: {
+      label: 'Suspicious',
+      color: '#D97706',
+      bg: '#FFFBEB',
+      border: '#FDE68A',
+      icon: '⚠️',
+    },
+    flagged: {
+      label: 'Flagged',
+      color: '#EA580C',
+      bg: '#FFF7ED',
+      border: '#FFEDD5',
+      icon: '🚨',
+    },
+    blocked: {
+      label: 'Blocked',
+      color: '#DC2626',
+      bg: '#FEF2F2',
+      border: '#FECACA',
+      icon: '🚫',
+    },
+  };
+  const cfg = configs[s] || configs.clean;
+  return (
+    <span
+      style={{
+        display: 'inline-flex',
+        alignItems: 'center',
+        gap: '4px',
+        padding: '2px 8px',
+        borderRadius: '9999px',
+        fontSize: '0.72rem',
+        fontWeight: 700,
+        textTransform: 'capitalize',
+        color: cfg.color,
+        background: cfg.bg,
+        border: `1px solid ${cfg.border}`,
+        letterSpacing: '0.02em',
+      }}
+    >
+      <span style={{ fontSize: '10px' }}>{cfg.icon}</span>
+      <span>{cfg.label}</span>
+    </span>
+  );
+};
 
 // ── User Detail Modal ────────────────────────────────────────────
 const UserDetailModal = ({ user, onClose, currentUser }) => {
@@ -18,6 +76,8 @@ const UserDetailModal = ({ user, onClose, currentUser }) => {
   const [loadingLinked, setLoadingLinked] = useState(false);
   const [fraudStatusSelect, setFraudStatusSelect] = useState(user.fraudStatus || 'clean');
   const [savingFraud, setSavingFraud] = useState(false);
+  const [fraudExempt, setFraudExempt] = useState(user.fraudExempt || false);
+  const [savingExempt, setSavingExempt] = useState(false);
 
   useEffect(() => {
     if (tab === 'activity' && user) fetchTransactions();
@@ -76,6 +136,32 @@ const UserDetailModal = ({ user, onClose, currentUser }) => {
     setSavingFraud(false);
   };
 
+  const handleFraudExemptToggle = async () => {
+    setSavingExempt(true);
+    try {
+      const token = await currentUser.getIdToken();
+      const newExempt = !fraudExempt;
+      const res = await fetch(`${API}/admin/users/${user._id}/fraud-exempt`, {
+        method: 'PUT',
+        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ fraudExempt: newExempt, reason: 'Admin toggled fraud exemption' }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setFraudExempt(newExempt);
+        if (newExempt) {
+          setFraudStatusSelect('clean');
+        }
+        toast.success(newExempt ? 'User is now exempt from fraud checks' : 'Fraud exemption removed');
+      } else {
+        toast.error(data.error || 'Failed to update');
+      }
+    } catch (e) {
+      toast.error('Failed to toggle fraud exemption');
+    }
+    setSavingExempt(false);
+  };
+
   if (!user) return null;
 
   const txTypeColor = (type) => {
@@ -120,10 +206,11 @@ const UserDetailModal = ({ user, onClose, currentUser }) => {
 
         {/* Header */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem' }}>
-          <img
-            src={user.avatarUrl || `/avatars/avatar1.png`}
-            alt="avatar"
-            style={{ width: 52, height: 52, borderRadius: '50%', border: '2px solid #E5E7EB', background: '#F3F4F6' }}
+          <UserAvatar
+            user={user}
+            size={52}
+            className="border-2 border-gray-200"
+            textClassName="text-xl font-bold"
           />
           <div>
             <h3 style={{ color: '#0E0F0C', fontWeight: 700, fontSize: '1.2rem', margin: 0, fontFamily: "'Bricolage Grotesque', sans-serif" }}>
@@ -187,11 +274,11 @@ const UserDetailModal = ({ user, onClose, currentUser }) => {
               { label: 'Daily Streak', value: `${user.dailyBonusStreak || 0} days`, color: '#D97706' },
               { label: 'Fraud Flag', value: user.fraudFlag || 0, color: user.fraudFlag > 0 ? '#DC2626' : '#6B7280' },
               { label: 'Fraud Status', value: (user.fraudStatus || 'clean').toUpperCase(), color: user.fraudStatus === 'blocked' ? '#DC2626' : user.fraudStatus === 'flagged' ? '#EA580C' : user.fraudStatus === 'suspicious' ? '#D97706' : '#059669' },
-              { label: 'Last IP', value: user.lastIp || '—', color: '#374151' },
-              { label: 'Last Country', value: user.lastCountry || '—', color: '#374151' },
+              { label: 'IP Address', value: user.lastIp || '—', color: '#374151' },
+              { label: 'Country', value: user.lastCountry || '—', color: '#374151' },
               { label: 'Referral %', value: user.referralPercentage !== null && user.referralPercentage !== undefined ? `${user.referralPercentage}% (override)` : 'Global default', color: '#374151' },
               { label: 'Referred By', value: user.referredBy ? `Yes (tracked)` : 'Organic', color: '#374151' },
-              { label: 'Joined', value: user.createdAt ? new Date(user.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '—', color: '#374151' },
+              { label: 'Registration Date', value: user.createdAt ? new Date(user.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '—', color: '#374151' },
               { label: 'Private Profile', value: user.isPrivate ? 'Yes' : 'No', color: '#374151' },
             ].map(({ label, value, color }) => (
               <div
@@ -209,13 +296,31 @@ const UserDetailModal = ({ user, onClose, currentUser }) => {
             ))}
 
             {/* User ID row — full width */}
-            <div style={{ gridColumn: '1 / -1', background: '#F9FAFB', border: '1px solid #E5E7EB', borderRadius: '0.875rem', padding: '0.875rem 1rem' }}>
-              <p style={{ fontSize: '0.7rem', fontWeight: 600, color: '#6B7280', textTransform: 'uppercase', letterSpacing: '0.05em', margin: '0 0 4px' }}>User ID (MongoDB)</p>
-              <p style={{ fontSize: '0.82rem', fontFamily: "'Barlow', system-ui, sans-serif", color: '#374151', margin: 0 }}>{user._id}</p>
+            <div style={{ gridColumn: '1 / -1', background: '#F9FAFB', border: '1px solid #E5E7EB', borderRadius: '0.875rem', padding: '0.875rem 1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div>
+                <p style={{ fontSize: '0.7rem', fontWeight: 600, color: '#6B7280', textTransform: 'uppercase', letterSpacing: '0.05em', margin: '0 0 4px' }}>User ID (MongoDB)</p>
+                <p style={{ fontSize: '0.82rem', fontFamily: "'Barlow', system-ui, sans-serif", color: '#374151', margin: 0 }}>{user._id}</p>
+              </div>
+              <button
+                onClick={() => { navigator.clipboard.writeText(user._id); toast.success('User ID copied!'); }}
+                style={{ background: '#FFFFFF', border: '1px solid #D1D5DB', borderRadius: '6px', padding: '4px 8px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.75rem', color: '#374151' }}
+              >
+                <FiCopy size={12} /> Copy
+              </button>
             </div>
-            <div style={{ gridColumn: '1 / -1', background: '#F9FAFB', border: '1px solid #E5E7EB', borderRadius: '0.875rem', padding: '0.875rem 1rem' }}>
-              <p style={{ fontSize: '0.7rem', fontWeight: 600, color: '#6B7280', textTransform: 'uppercase', letterSpacing: '0.05em', margin: '0 0 4px' }}>Firebase UID</p>
-              <p style={{ fontSize: '0.82rem', fontFamily: "'Barlow', system-ui, sans-serif", color: '#374151', margin: 0 }}>{user.firebaseUid}</p>
+            <div style={{ gridColumn: '1 / -1', background: '#F9FAFB', border: '1px solid #E5E7EB', borderRadius: '0.875rem', padding: '0.875rem 1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div>
+                <p style={{ fontSize: '0.7rem', fontWeight: 600, color: '#6B7280', textTransform: 'uppercase', letterSpacing: '0.05em', margin: '0 0 4px' }}>Google Account ID (Firebase UID)</p>
+                <p style={{ fontSize: '0.82rem', fontFamily: "'Barlow', system-ui, sans-serif", color: '#374151', margin: 0 }}>{user.firebaseUid || '—'}</p>
+              </div>
+              {user.firebaseUid && (
+                <button
+                  onClick={() => { navigator.clipboard.writeText(user.firebaseUid); toast.success('Google Account ID copied!'); }}
+                  style={{ background: '#FFFFFF', border: '1px solid #D1D5DB', borderRadius: '6px', padding: '4px 8px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.75rem', color: '#374151' }}
+                >
+                  <FiCopy size={12} /> Copy
+                </button>
+              )}
             </div>
 
             {/* Referral link */}
@@ -319,6 +424,36 @@ const UserDetailModal = ({ user, onClose, currentUser }) => {
                 >
                   {savingFraud ? <FiLoader style={{ animation: 'spin 1s linear infinite' }} /> : <FiCheck size={14} />}
                   Save
+                </button>
+              </div>
+            </div>
+
+            {/* Fraud Exempt Toggle */}
+            <div style={{ background: fraudExempt ? '#ECFDF5' : '#F9FAFB', border: `1px solid ${fraudExempt ? '#A7F3D0' : '#E5E7EB'}`, borderRadius: '0.875rem', padding: '1rem', marginBottom: '1rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <div>
+                  <p style={{ fontSize: '0.7rem', fontWeight: 700, color: '#6B7280', textTransform: 'uppercase', letterSpacing: '0.05em', margin: '0 0 4px' }}>
+                    🛡️ Fraud Exemption
+                  </p>
+                  <p style={{ fontSize: '0.75rem', color: '#6B7280', margin: 0 }}>
+                    {fraudExempt
+                      ? 'This account is EXEMPT from fraud checks (household/trusted)'
+                      : 'This account follows normal fraud rules'
+                    }
+                  </p>
+                </div>
+                <button
+                  onClick={handleFraudExemptToggle}
+                  disabled={savingExempt}
+                  style={{
+                    background: fraudExempt ? '#DC2626' : '#059669',
+                    color: '#FFF', border: 'none', borderRadius: '0.5rem',
+                    padding: '0.45rem 0.85rem', fontSize: '0.75rem', fontWeight: 600,
+                    cursor: savingExempt ? 'not-allowed' : 'pointer', opacity: savingExempt ? 0.6 : 1,
+                    whiteSpace: 'nowrap',
+                  }}
+                >
+                  {savingExempt ? 'Saving...' : fraudExempt ? 'Remove Exemption' : 'Make Exempt'}
                 </button>
               </div>
             </div>
@@ -431,13 +566,18 @@ const AdminUsers = () => {
   const [refError,  setRefError]  = useState('');
   const [referredByCode, setReferredByCode] = useState('');
 
-  useEffect(() => { fetchUsers(); }, [search]);
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      fetchUsers();
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [search]);
 
   const fetchUsers = async () => {
     setLoading(true);
     try {
       const token = await currentUser.getIdToken();
-      const res   = await fetch(`${API}/admin/users?search=${search}`, {
+      const res   = await fetch(`${API}/admin/users?search=${encodeURIComponent(search.trim())}`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       const data = await res.json();
@@ -542,9 +682,10 @@ const AdminUsers = () => {
     setActionLoading(false);
   };
 
-  const copyToClipboard = (text) => {
+  const copyToClipboard = (text, label = 'Copied!') => {
+    if (!text) return;
     navigator.clipboard.writeText(text);
-    toast.success('Copied!');
+    toast.success(label);
   };
 
   return (
@@ -559,11 +700,33 @@ const AdminUsers = () => {
           <input
             type="text"
             className="admin-input"
-            style={{ paddingLeft: '2.5rem' }}
-            placeholder="Search by email or username..."
+            style={{ paddingLeft: '2.5rem', paddingRight: search ? '2.5rem' : '1rem' }}
+            placeholder="Search by email, name, Google ID, IP, country, or fraud status..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
+            onKeyDown={(e) => { if (e.key === 'Enter') fetchUsers(); }}
           />
+          {search && (
+            <button
+              onClick={() => setSearch('')}
+              style={{
+                position: 'absolute',
+                right: '0.85rem',
+                top: '50%',
+                transform: 'translateY(-50%)',
+                background: 'none',
+                border: 'none',
+                color: '#9CA3AF',
+                cursor: 'pointer',
+                padding: '4px',
+                display: 'flex',
+                alignItems: 'center',
+              }}
+              title="Clear search"
+            >
+              <FiX size={15} />
+            </button>
+          )}
         </div>
         <button className="action-btn primary" onClick={fetchUsers} style={{ height: '42px', padding: '0 1.25rem' }}>
           Search
@@ -578,7 +741,11 @@ const AdminUsers = () => {
               <th style={{ whiteSpace: 'nowrap' }}>User ID</th>
               <th>Name</th>
               <th>Email</th>
-              <th>Role</th>
+              <th style={{ whiteSpace: 'nowrap' }}>Google Account ID</th>
+              <th style={{ whiteSpace: 'nowrap' }}>Registration Date</th>
+              <th style={{ whiteSpace: 'nowrap' }}>IP Address</th>
+              <th>Country</th>
+              <th style={{ whiteSpace: 'nowrap' }}>Fraud Status</th>
               <th>Balance</th>
               <th>Status</th>
               <th style={{ textAlign: 'right', paddingRight: '1.25rem', whiteSpace: 'nowrap' }}>Actions</th>
@@ -587,45 +754,166 @@ const AdminUsers = () => {
           <tbody>
             {loading ? (
               <tr className="loading-row">
-                <td colSpan="7">Loading users...</td>
+                <td colSpan="11">Loading users...</td>
               </tr>
             ) : users.length === 0 ? (
               <tr className="loading-row">
-                <td colSpan="7">No users found.</td>
+                <td colSpan="11">No users found.</td>
               </tr>
             ) : users.map(u => (
               <tr key={u._id}>
+                {/* 1. User ID */}
                 <td style={{ whiteSpace: 'nowrap' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    <span style={{ fontSize: '0.78rem', color: '#6B7280', fontFamily: "'Barlow', system-ui, sans-serif" }}>
-                      {u._id.substring(0, 10)}...
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
+                    <span style={{ fontSize: '0.78rem', color: '#6B7280', fontFamily: "'Barlow', system-ui, sans-serif" }} title={u._id}>
+                      {u._id.substring(0, 8)}...
                     </span>
                     <button
-                      onClick={() => copyToClipboard(u._id)}
-                      title="Copy ID"
+                      onClick={() => copyToClipboard(u._id, 'User ID copied!')}
+                      title="Copy MongoDB User ID"
                       style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#1E2538', padding: 0 }}
                     >
                       <FiCopy size={13} />
                     </button>
                   </div>
                 </td>
-                <td style={{ color: '#0E0F0C', fontWeight: 600, whiteSpace: 'nowrap' }}>{u.displayName || '—'}</td>
-                <td style={{ color: '#4B5563', whiteSpace: 'nowrap' }}>{u.email}</td>
-                <td>
-                  {u.role === 'admin'
-                    ? <span className="super-badge">{u.role}</span>
-                    : <span style={{ color: '#6B7280', textTransform: 'capitalize' }}>{u.role}</span>
-                  }
+
+                {/* 2. Name */}
+                <td style={{ color: '#0E0F0C', fontWeight: 600, whiteSpace: 'nowrap' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                    <span>{u.displayName || '—'}</span>
+                    {u.role === 'admin' && (
+                      <span className="super-badge" style={{ fontSize: '0.62rem', padding: '1px 6px' }}>Admin</span>
+                    )}
+                  </div>
                 </td>
-                <td style={{ fontFamily: "'Bricolage Grotesque', sans-serif", fontWeight: 700, color: '#1E2538', fontSize: '0.95rem', whiteSpace: 'nowrap' }}>
-                  {(u.walletBalance || 0).toLocaleString()}
+
+                {/* 3. Email */}
+                <td style={{ color: '#4B5563', whiteSpace: 'nowrap' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                    <span>{u.email}</span>
+                    <button
+                      onClick={() => copyToClipboard(u.email, 'Email copied!')}
+                      title="Copy Email"
+                      style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#9CA3AF', padding: 0 }}
+                    >
+                      <FiCopy size={12} />
+                    </button>
+                  </div>
                 </td>
+
+                {/* 4. Google Account ID */}
+                <td style={{ whiteSpace: 'nowrap' }}>
+                  {u.firebaseUid ? (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                      <span
+                        style={{
+                          fontSize: '0.75rem',
+                          fontFamily: "'Barlow', monospace, sans-serif",
+                          color: '#1E2538',
+                          background: '#F3F4F6',
+                          padding: '2px 7px',
+                          borderRadius: '6px',
+                          border: '1px solid #E5E7EB',
+                          fontWeight: 500,
+                        }}
+                        title={u.firebaseUid}
+                      >
+                        {u.firebaseUid.length > 10 ? `${u.firebaseUid.substring(0, 8)}...` : u.firebaseUid}
+                      </span>
+                      <button
+                        onClick={() => copyToClipboard(u.firebaseUid, 'Google Account ID copied!')}
+                        title="Copy Google Account ID"
+                        style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#6B7280', padding: 0 }}
+                      >
+                        <FiCopy size={13} />
+                      </button>
+                    </div>
+                  ) : (
+                    <span style={{ color: '#9CA3AF', fontSize: '0.8rem' }}>—</span>
+                  )}
+                </td>
+
+                {/* 5. Registration Date */}
+                <td style={{ whiteSpace: 'nowrap', fontSize: '0.82rem', color: '#4B5563' }} title={u.createdAt ? new Date(u.createdAt).toLocaleString() : ''}>
+                  {u.createdAt ? new Date(u.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '—'}
+                </td>
+
+                {/* 6. IP Address */}
+                <td style={{ whiteSpace: 'nowrap' }}>
+                  {u.lastIp ? (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                      <span
+                        style={{
+                          fontSize: '0.78rem',
+                          fontFamily: "'Barlow', monospace, sans-serif",
+                          color: '#374151',
+                          background: '#F9FAFB',
+                          border: '1px solid #E5E7EB',
+                          padding: '2px 6px',
+                          borderRadius: '4px',
+                        }}
+                        title={u.lastIp}
+                      >
+                        {u.lastIp}
+                      </span>
+                      <button
+                        onClick={() => copyToClipboard(u.lastIp, 'IP copied!')}
+                        title="Copy IP Address"
+                        style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#9CA3AF', padding: 0 }}
+                      >
+                        <FiCopy size={11} />
+                      </button>
+                    </div>
+                  ) : (
+                    <span style={{ color: '#9CA3AF', fontSize: '0.8rem' }}>—</span>
+                  )}
+                </td>
+
+                {/* 7. Country */}
+                <td style={{ whiteSpace: 'nowrap' }}>
+                  {u.lastCountry ? (
+                    <span
+                      style={{
+                        fontSize: '0.75rem',
+                        fontWeight: 600,
+                        color: '#1E2538',
+                        background: '#F3F4F6',
+                        border: '1px solid #E5E7EB',
+                        padding: '2px 8px',
+                        borderRadius: '6px',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '4px',
+                      }}
+                    >
+                      <FiGlobe size={11} style={{ color: '#6B7280' }} />
+                      {u.lastCountry}
+                    </span>
+                  ) : (
+                    <span style={{ color: '#9CA3AF', fontSize: '0.8rem' }}>—</span>
+                  )}
+                </td>
+
+                {/* 8. Fraud Status */}
+                <td style={{ whiteSpace: 'nowrap' }}>
+                  {renderFraudBadge(u.fraudStatus)}
+                </td>
+
+                {/* 9. Balance */}
+                <td style={{ whiteSpace: 'nowrap' }}>
+                  <CoinDisplay amount={u.walletBalance || 0} size={14} compact={false} />
+                </td>
+
+                {/* 10. Status */}
                 <td style={{ whiteSpace: 'nowrap' }}>
                   {u.isBanned
                     ? <span style={{ color: '#DC2626', fontSize: '0.75rem', fontWeight: 700 }}>● Banned</span>
                     : <span style={{ color: '#059669', fontSize: '0.75rem', fontWeight: 700 }}>● Active</span>
                   }
                 </td>
+
+                {/* 11. Actions */}
                 <td style={{ textAlign: 'right', paddingRight: '1.25rem', whiteSpace: 'nowrap' }}>
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '0.35rem', width: '185px', marginLeft: 'auto' }}>
                     {/* View Details */}

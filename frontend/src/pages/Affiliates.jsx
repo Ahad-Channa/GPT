@@ -2,9 +2,11 @@ import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import DashboardLayout from '../components/layout/DashboardLayout';
 import { useAuth } from '../contexts/AuthContext';
+import { useTheme } from '../contexts/ThemeContext';
 import { motion } from 'framer-motion';
 import { FiUsers, FiClock, FiChevronLeft, FiChevronRight, FiFileText } from 'react-icons/fi';
 import { toast } from 'react-hot-toast';
+import UserAvatar from '../components/UserAvatar';
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
@@ -39,6 +41,7 @@ const formatDate = (dateStr) => {
 };
 
 const Pagination = ({ page, totalPages, onNext, onPrev }) => {
+  const { isDarkMode } = useTheme();
   const canGoNext = page < (totalPages || 1);
   const canGoPrev = page > 1;
 
@@ -63,9 +66,13 @@ const Pagination = ({ page, totalPages, onNext, onPrev }) => {
           gap: '10px',
           boxSizing: 'border-box',
           opacity: 1,
-          background: isLeftActive ? 'rgba(36, 50, 77, 1)' : 'transparent',
-          border: isLeftActive ? 'none' : '1px solid rgba(36, 50, 77, 1)',
-          color: isLeftActive ? '#FFFFFF' : 'rgba(36, 50, 77, 1)',
+          background: isLeftActive
+            ? 'rgba(36, 50, 77, 1)'
+            : (isDarkMode ? 'rgba(21, 24, 29, 1)' : 'transparent'),
+          border: isLeftActive
+            ? 'none'
+            : (isDarkMode ? '1px solid rgba(255, 255, 255, 0.1)' : '1px solid rgba(36, 50, 77, 1)'),
+          color: isLeftActive ? '#FFFFFF' : (isDarkMode ? '#FFFFFF' : 'rgba(36, 50, 77, 1)'),
         }}
         aria-label="Previous page"
       >
@@ -83,9 +90,13 @@ const Pagination = ({ page, totalPages, onNext, onPrev }) => {
           gap: '10px',
           boxSizing: 'border-box',
           opacity: 1,
-          background: isRightActive ? 'rgba(36, 50, 77, 1)' : 'transparent',
-          border: isRightActive ? 'none' : '1px solid rgba(36, 50, 77, 1)',
-          color: isRightActive ? '#FFFFFF' : 'rgba(36, 50, 77, 1)',
+          background: isRightActive
+            ? 'rgba(36, 50, 77, 1)'
+            : (isDarkMode ? 'rgba(21, 24, 29, 1)' : 'transparent'),
+          border: isRightActive
+            ? 'none'
+            : (isDarkMode ? '1px solid rgba(255, 255, 255, 0.1)' : '1px solid rgba(36, 50, 77, 1)'),
+          color: isRightActive ? '#FFFFFF' : (isDarkMode ? '#FFFFFF' : 'rgba(36, 50, 77, 1)'),
         }}
         aria-label="Next page"
       >
@@ -226,6 +237,7 @@ const Affiliates = () => {
   const { t, i18n } = useTranslation();
   const isEn = (i18n?.language || 'en').startsWith('en');
   const { currentUser, mongoUser } = useAuth();
+  const { isDarkMode } = useTheme();
   const [token, setToken] = useState(null);
 
   useEffect(() => {
@@ -293,11 +305,11 @@ const Affiliates = () => {
         transition={{ duration: 0.3 }}
         className="w-full flex flex-col items-center"
       >
-        {/* ─── Top Banner Area (Warm Background: rgba(249, 247, 241, 1)) ─── */}
+        {/* ─── Top Banner Area (Hero: rgba(23, 26, 29, 1) in dark, rgba(249, 247, 241, 1) in light) ─── */}
         <div
           className="w-full flex justify-center items-center transition-colors duration-300"
           style={{
-            background: 'rgba(249, 247, 241, 1)',
+            background: isDarkMode ? 'rgba(23, 26, 29, 1)' : 'rgba(249, 247, 241, 1)',
             minHeight: '366px',
             opacity: 1,
             transform: 'rotate(0deg)',
@@ -324,7 +336,7 @@ const Affiliates = () => {
                   fontSize: '27px',
                   lineHeight: '18px',
                   letterSpacing: '-0.02em',
-                  color: '#000000',
+                  color: isDarkMode ? '#FFFFFF' : '#000000',
                   margin: 0,
                   whiteSpace: 'nowrap',
                 }}
@@ -339,7 +351,7 @@ const Affiliates = () => {
                   fontSize: '14px',
                   lineHeight: '14px',
                   letterSpacing: '0%',
-                  color: '#000000',
+                  color: isDarkMode ? 'rgba(255, 255, 255, 0.7)' : '#000000',
                   margin: 0,
                 }}
               >
@@ -368,7 +380,7 @@ const Affiliates = () => {
                   paddingBottom: '25px',
                   paddingLeft: '23px',
                   gap: '10px',
-                  background: 'rgba(255, 255, 255, 1)',
+                  background: isDarkMode ? 'rgba(34, 39, 48, 1)' : 'rgba(255, 255, 255, 1)',
                   boxSizing: 'border-box',
                   opacity: 1,
                 }}
@@ -381,7 +393,7 @@ const Affiliates = () => {
                     fontSize: '45px',
                     lineHeight: '30px',
                     letterSpacing: '-0.02em',
-                    color: '#1E293B',
+                    color: isDarkMode ? '#FFFFFF' : '#1E293B',
                     display: 'flex',
                     alignItems: 'center',
                   }}
@@ -403,7 +415,7 @@ const Affiliates = () => {
                       fontSize: '20px',
                       lineHeight: '1.2',
                       letterSpacing: '-0.02em',
-                      color: '#000000',
+                      color: isDarkMode ? '#FFFFFF' : '#000000',
                       margin: 0,
                       whiteSpace: 'nowrap',
                     }}
@@ -417,7 +429,7 @@ const Affiliates = () => {
                       fontSize: '14px',
                       lineHeight: '1.2',
                       letterSpacing: '0%',
-                      color: '#6B7280',
+                      color: isDarkMode ? 'rgba(255, 255, 255, 0.6)' : '#6B7280',
                       margin: 0,
                       whiteSpace: 'nowrap',
                     }}
@@ -438,7 +450,7 @@ const Affiliates = () => {
                   paddingBottom: '25px',
                   paddingLeft: '23px',
                   gap: '10px',
-                  background: 'rgba(255, 255, 255, 1)',
+                  background: isDarkMode ? 'rgba(34, 39, 48, 1)' : 'rgba(255, 255, 255, 1)',
                   boxSizing: 'border-box',
                   opacity: 1,
                 }}
@@ -451,7 +463,7 @@ const Affiliates = () => {
                     fontSize: '45px',
                     lineHeight: '30px',
                     letterSpacing: '-0.02em',
-                    color: 'rgba(231, 171, 24, 1)',
+                    color: isDarkMode ? '#E5A00D' : 'rgba(231, 171, 24, 1)',
                     display: 'flex',
                     alignItems: 'center',
                     gap: '8px',
@@ -480,7 +492,7 @@ const Affiliates = () => {
                       fontSize: '20px',
                       lineHeight: '1.2',
                       letterSpacing: '-0.02em',
-                      color: '#000000',
+                      color: isDarkMode ? '#FFFFFF' : '#000000',
                       margin: 0,
                       whiteSpace: 'nowrap',
                     }}
@@ -494,7 +506,7 @@ const Affiliates = () => {
                       fontSize: '14px',
                       lineHeight: '1.2',
                       letterSpacing: '0%',
-                      color: '#6B7280',
+                      color: isDarkMode ? 'rgba(255, 255, 255, 0.6)' : '#6B7280',
                       margin: 0,
                       whiteSpace: 'nowrap',
                     }}
@@ -515,7 +527,7 @@ const Affiliates = () => {
                   paddingBottom: '25px',
                   paddingLeft: '23px',
                   gap: '10px',
-                  background: 'rgba(255, 255, 255, 1)',
+                  background: isDarkMode ? 'rgba(34, 39, 48, 1)' : 'rgba(255, 255, 255, 1)',
                   boxSizing: 'border-box',
                   opacity: 1,
                 }}
@@ -528,7 +540,7 @@ const Affiliates = () => {
                     fontSize: '45px',
                     lineHeight: '30px',
                     letterSpacing: '-0.02em',
-                    color: 'rgba(231, 171, 24, 1)',
+                    color: isDarkMode ? '#E5A00D' : 'rgba(231, 171, 24, 1)',
                     display: 'flex',
                     alignItems: 'center',
                     gap: '8px',
@@ -557,7 +569,7 @@ const Affiliates = () => {
                       fontSize: '20px',
                       lineHeight: '1.2',
                       letterSpacing: '-0.02em',
-                      color: '#000000',
+                      color: isDarkMode ? '#FFFFFF' : '#000000',
                       margin: 0,
                       whiteSpace: 'nowrap',
                     }}
@@ -571,7 +583,7 @@ const Affiliates = () => {
                       fontSize: '14px',
                       lineHeight: '1.2',
                       letterSpacing: '0%',
-                      color: '#6B7280',
+                      color: isDarkMode ? 'rgba(255, 255, 255, 0.6)' : '#6B7280',
                       margin: 0,
                       whiteSpace: 'nowrap',
                     }}
@@ -592,7 +604,7 @@ const Affiliates = () => {
                   paddingBottom: '25px',
                   paddingLeft: '23px',
                   gap: '10px',
-                  background: 'rgba(255, 255, 255, 1)',
+                  background: isDarkMode ? 'rgba(34, 39, 48, 1)' : 'rgba(255, 255, 255, 1)',
                   boxSizing: 'border-box',
                   opacity: 1,
                 }}
@@ -605,7 +617,7 @@ const Affiliates = () => {
                     fontSize: '45px',
                     lineHeight: '30px',
                     letterSpacing: '-0.02em',
-                    color: 'rgba(231, 171, 24, 1)',
+                    color: isDarkMode ? '#E5A00D' : 'rgba(231, 171, 24, 1)',
                     display: 'flex',
                     alignItems: 'center',
                     gap: '8px',
@@ -634,7 +646,7 @@ const Affiliates = () => {
                       fontSize: '20px',
                       lineHeight: '1.2',
                       letterSpacing: '-0.02em',
-                      color: '#000000',
+                      color: isDarkMode ? '#FFFFFF' : '#000000',
                       margin: 0,
                       whiteSpace: 'nowrap',
                     }}
@@ -648,7 +660,7 @@ const Affiliates = () => {
                       fontSize: '14px',
                       lineHeight: '1.2',
                       letterSpacing: '0%',
-                      color: '#6B7280',
+                      color: isDarkMode ? 'rgba(255, 255, 255, 0.6)' : '#6B7280',
                       margin: 0,
                       whiteSpace: 'nowrap',
                     }}
@@ -669,7 +681,7 @@ const Affiliates = () => {
             style={{
               maxWidth: '1328px',
               minHeight: '212px',
-              background: 'rgba(249, 247, 241, 1)',
+              background: isDarkMode ? 'rgba(34, 39, 48, 1)' : 'rgba(249, 247, 241, 1)',
               boxSizing: 'border-box',
               opacity: 1,
             }}
@@ -690,7 +702,7 @@ const Affiliates = () => {
                   isEn
                     ? 'text-[20px] min-[360px]:text-[22px] min-[390px]:text-[24px] sm:text-[27px]'
                     : 'text-[17px] min-[350px]:text-[18.5px] min-[375px]:text-[20px] min-[390px]:text-[21.5px] min-[420px]:text-[23.5px] sm:text-[27px]'
-                } font-bold text-black m-0 leading-[18px] tracking-[-0.02em] whitespace-nowrap`}
+                } font-bold ${isDarkMode ? 'text-white' : 'text-black'} m-0 leading-[18px] tracking-[-0.02em] whitespace-nowrap`}
                 style={{
                   fontFamily: '"Bricolage Grotesque", sans-serif',
                   lineHeight: '18px',
@@ -706,7 +718,7 @@ const Affiliates = () => {
                   fontSize: '14px',
                   lineHeight: '18px',
                   letterSpacing: '0%',
-                  color: '#000000',
+                  color: isDarkMode ? 'rgba(255, 255, 255, 0.7)' : '#000000',
                   margin: 0,
                   marginTop: '4px',
                 }}
@@ -725,7 +737,7 @@ const Affiliates = () => {
                 paddingTop: '8px',
                 paddingRight: '10px',
                 paddingBottom: '9px',
-                background: 'rgba(255, 255, 255, 1)',
+                background: isDarkMode ? 'rgba(12, 14, 17, 0.5)' : 'rgba(255, 255, 255, 1)',
                 boxSizing: 'border-box',
                 opacity: 1,
               }}
@@ -741,7 +753,7 @@ const Affiliates = () => {
                   fontSize: getReferralUrlFontSize(referralUrl),
                   lineHeight: '26px',
                   letterSpacing: '0%',
-                  color: '#000000',
+                  color: isDarkMode ? '#94A3B8' : '#000000',
                   background: 'transparent',
                   border: 'none',
                   outline: 'none',
@@ -783,12 +795,12 @@ const Affiliates = () => {
             </div>
           </div>
 
-          {/* Lower Section: Tabs & Table Card (1328x625, background: rgba(249, 247, 241, 1), radius: 30px) */}
+          {/* Lower Section: Tabs & Table Card (1328x625, background: rgba(34, 39, 48, 1) in dark, rgba(249, 247, 241, 1) in light, radius: 30px) */}
           <div
             className="w-full flex flex-col justify-between transition-colors px-2 py-3.5 sm:py-8 sm:px-[28px] min-h-0 sm:min-h-[625px] gap-2.5 sm:gap-6 rounded-[24px] sm:rounded-[30px]"
             style={{
               maxWidth: '1328px',
-              background: 'rgba(249, 247, 241, 1)',
+              background: isDarkMode ? 'rgba(34, 39, 48, 1)' : 'rgba(249, 247, 241, 1)',
               boxSizing: 'border-box',
               opacity: 1,
             }}
@@ -808,7 +820,7 @@ const Affiliates = () => {
                     borderRadius: '40px',
                     gap: isEn ? '6px' : '4px',
                     background: activeTab === 'recent' ? 'rgba(36, 50, 77, 1)' : 'transparent',
-                    color: activeTab === 'recent' ? '#FFFFFF' : '#000000',
+                    color: activeTab === 'recent' ? '#FFFFFF' : (isDarkMode ? 'rgba(255, 255, 255, 0.7)' : '#000000'),
                     border: 'none',
                     outline: 'none',
                     boxSizing: 'border-box',
@@ -820,7 +832,7 @@ const Affiliates = () => {
                     alt="Recent"
                     style={{
                       objectFit: 'contain',
-                      filter: activeTab === 'recent' ? 'brightness(0) invert(1)' : 'brightness(0)',
+                      filter: activeTab === 'recent' ? 'brightness(0) invert(1)' : (isDarkMode ? 'brightness(0) invert(1) opacity(0.7)' : 'brightness(0)'),
                     }}
                     className="w-3.5 h-3.5 min-[360px]:w-4 min-[360px]:h-4 shrink-0 transition-all"
                   />
@@ -834,7 +846,7 @@ const Affiliates = () => {
                       fontWeight: 700,
                       lineHeight: '100%',
                       letterSpacing: '0%',
-                      color: activeTab === 'recent' ? '#FFFFFF' : '#000000',
+                      color: activeTab === 'recent' ? '#FFFFFF' : (isDarkMode ? 'rgba(255, 255, 255, 0.7)' : '#000000'),
                       whiteSpace: 'nowrap',
                     }}
                   >
@@ -853,7 +865,7 @@ const Affiliates = () => {
                     borderRadius: '40px',
                     gap: isEn ? '6px' : '4px',
                     background: activeTab === 'users' ? 'rgba(36, 50, 77, 1)' : 'transparent',
-                    color: activeTab === 'users' ? '#FFFFFF' : '#000000',
+                    color: activeTab === 'users' ? '#FFFFFF' : (isDarkMode ? 'rgba(255, 255, 255, 0.7)' : '#000000'),
                     border: 'none',
                     outline: 'none',
                     boxSizing: 'border-box',
@@ -865,7 +877,7 @@ const Affiliates = () => {
                     alt="Users"
                     style={{
                       objectFit: 'contain',
-                      filter: activeTab === 'users' ? 'brightness(0) invert(1)' : 'brightness(0)',
+                      filter: activeTab === 'users' ? 'brightness(0) invert(1)' : (isDarkMode ? 'brightness(0) invert(1) opacity(0.7)' : 'brightness(0)'),
                     }}
                     className="w-3.5 h-3.5 min-[360px]:w-4 min-[360px]:h-4 shrink-0 transition-all"
                   />
@@ -879,7 +891,7 @@ const Affiliates = () => {
                       fontWeight: 700,
                       lineHeight: '100%',
                       letterSpacing: '0%',
-                      color: activeTab === 'users' ? '#FFFFFF' : '#000000',
+                      color: activeTab === 'users' ? '#FFFFFF' : (isDarkMode ? 'rgba(255, 255, 255, 0.7)' : '#000000'),
                       whiteSpace: 'nowrap',
                     }}
                   >
@@ -900,7 +912,7 @@ const Affiliates = () => {
                   borderRadius: '40px',
                   gap: isEn ? '6px' : '4px',
                   background: activeTab === 'pending' ? 'rgba(36, 50, 77, 1)' : 'transparent',
-                  color: activeTab === 'pending' ? '#FFFFFF' : '#000000',
+                  color: activeTab === 'pending' ? '#FFFFFF' : (isDarkMode ? 'rgba(255, 255, 255, 0.7)' : '#000000'),
                   border: 'none',
                   outline: 'none',
                   boxSizing: 'border-box',
@@ -912,7 +924,7 @@ const Affiliates = () => {
                   alt="Pending"
                   style={{
                     objectFit: 'contain',
-                    filter: activeTab === 'pending' ? 'brightness(0) invert(1)' : 'brightness(0)',
+                    filter: activeTab === 'pending' ? 'brightness(0) invert(1)' : (isDarkMode ? 'brightness(0) invert(1) opacity(0.7)' : 'brightness(0)'),
                   }}
                   className="w-3.5 h-3.5 min-[360px]:w-4 min-[360px]:h-4 shrink-0 transition-all"
                 />
@@ -926,7 +938,7 @@ const Affiliates = () => {
                     fontWeight: 700,
                     lineHeight: '100%',
                     letterSpacing: '0%',
-                    color: activeTab === 'pending' ? '#FFFFFF' : '#000000',
+                    color: activeTab === 'pending' ? '#FFFFFF' : (isDarkMode ? 'rgba(255, 255, 255, 0.7)' : '#000000'),
                     whiteSpace: 'nowrap',
                   }}
                 >
@@ -935,8 +947,15 @@ const Affiliates = () => {
               </button>
             </div>
 
-            {/* Inner White Card for Table Content */}
-            <div className="bg-white rounded-[16px] sm:rounded-[24px] p-2 xs:p-2.5 sm:p-6 md:p-8 w-full shadow-xs border border-[#E5E7EB]/60">
+            {/* Inner Card for Table Content (Rows container: rgba(21, 24, 29, 1) in dark, white in light) */}
+            <div
+              className={`rounded-[16px] sm:rounded-[24px] p-2 xs:p-2.5 sm:p-6 md:p-8 w-full shadow-xs border transition-colors ${
+                isDarkMode ? 'border-white/5' : 'bg-white border-[#E5E7EB]/60'
+              }`}
+              style={{
+                background: isDarkMode ? 'rgba(21, 24, 29, 1)' : '#FFFFFF',
+              }}
+            >
               {/* Tab 1: Recent Affiliate Earnings */}
               {activeTab === 'recent' && (
                 <div>
@@ -949,7 +968,7 @@ const Affiliates = () => {
                   ) : referrals.error ? (
                     <p className="text-rose-500 text-center py-8 font-medium">{referrals.error}</p>
                   ) : referrals.dataList.length === 0 ? (
-                    <div className="text-center py-12 text-[#6B7280] font-medium text-sm sm:text-base">
+                    <div className={`text-center py-12 ${isDarkMode ? 'text-white/60' : 'text-[#6B7280]'} font-medium text-sm sm:text-base`}>
                       {t('affiliates.noRecentEarnings', 'No referral earnings yet.')}
                     </div>
                   ) : (
@@ -960,7 +979,7 @@ const Affiliates = () => {
                       >
                         {/* Table Header */}
                         <div
-                          className="grid grid-cols-[1.3fr_1.1fr_1.1fr_1.1fr_0.8fr] sm:grid-cols-[1.6fr_1.2fr_1.2fr_1.2fr_1fr] items-center text-[7.5px] xs:text-[9px] sm:text-[14px] leading-tight sm:leading-[26px] tracking-[0.02em] sm:tracking-[0.06em] text-[rgba(14,15,12,0.6)] uppercase font-[500] whitespace-nowrap"
+                          className={`grid grid-cols-[1.3fr_1.1fr_1.1fr_1.1fr_0.8fr] sm:grid-cols-[1.6fr_1.2fr_1.2fr_1.2fr_1fr] items-center text-[7.5px] xs:text-[9px] sm:text-[14px] leading-tight sm:leading-[26px] tracking-[0.02em] sm:tracking-[0.06em] ${isDarkMode ? 'text-white/60' : 'text-[rgba(14,15,12,0.6)]'} uppercase font-[500] whitespace-nowrap`}
                           style={{
                             fontFamily: '"Poppins", sans-serif',
                           }}
@@ -973,12 +992,10 @@ const Affiliates = () => {
                         </div>
 
                         {/* Table Rows */}
-                        <div className="divide-y divide-[rgba(0,0,0,0.1)] flex flex-col">
+                        <div className={`divide-y ${isDarkMode ? 'divide-white/5' : 'divide-[rgba(0,0,0,0.1)]'} flex flex-col`}>
                           {referrals.dataList.map((tx) => {
-                            const avatar = tx.linkedTransactionId?.userId?.avatarUrl ||
-                              tx.linkedTransactionId?.userId?.photoURL ||
-                              `https://api.dicebear.com/7.x/adventurer/svg?seed=${tx._id}`;
-                            const username = tx.linkedTransactionId?.userId?.displayName || 'Xyz';
+                            const userObj = tx.linkedTransactionId?.userId;
+                            const username = userObj?.displayName || 'Xyz';
                             const earningVal = (tx.amount * (100 / (currentPercentage || 15))) || (tx.amount * 10);
                             const commVal = tx.amount;
 
@@ -989,17 +1006,18 @@ const Affiliates = () => {
                               >
                                 {/* User */}
                                 <div className="flex items-center gap-1 sm:gap-3 min-w-0 pr-0.5 sm:pr-2">
-                                  <img
-                                    src={avatar}
-                                    alt={username}
-                                    className="w-5 h-5 sm:w-10 sm:h-10 rounded-full object-cover bg-gray-200 border border-gray-100 shrink-0"
+                                  <UserAvatar
+                                    user={userObj}
+                                    displayName={username}
+                                    className={`w-5 h-5 sm:w-10 sm:h-10 border ${isDarkMode ? 'border-white/10' : 'border-gray-100'} shrink-0`}
+                                    textClassName="text-[10px] sm:text-base font-bold"
                                   />
                                   <span
                                     style={{
                                       fontFamily: '"Bricolage Grotesque", sans-serif',
                                       fontWeight: 700,
                                       letterSpacing: '0%',
-                                      color: '#000000',
+                                      color: isDarkMode ? '#FFFFFF' : '#000000',
                                     }}
                                     className="whitespace-nowrap text-[8.5px] xs:text-[10px] sm:text-[16px] leading-tight"
                                   >
@@ -1013,7 +1031,7 @@ const Affiliates = () => {
                                     fontFamily: '"Poppins", sans-serif',
                                     fontWeight: 500,
                                     letterSpacing: '0%',
-                                    color: '#000000',
+                                    color: isDarkMode ? '#94A3B8' : '#000000',
                                   }}
                                   className="whitespace-nowrap text-[8px] xs:text-[9px] sm:text-[16px] leading-tight sm:leading-[26px]"
                                 >
@@ -1032,7 +1050,7 @@ const Affiliates = () => {
                                       fontFamily: '"Poppins", sans-serif',
                                       fontWeight: 600,
                                       letterSpacing: '0%',
-                                      color: 'rgba(190, 146, 0, 1)',
+                                      color: isDarkMode ? '#E5A00D' : 'rgba(190, 146, 0, 1)',
                                     }}
                                     className="whitespace-nowrap text-[8px] xs:text-[9.5px] sm:text-[16px] leading-tight sm:leading-[26px]"
                                   >
@@ -1052,7 +1070,7 @@ const Affiliates = () => {
                                       fontFamily: '"Poppins", sans-serif',
                                       fontWeight: 600,
                                       letterSpacing: '0%',
-                                      color: 'rgba(190, 146, 0, 1)',
+                                      color: isDarkMode ? '#E5A00D' : 'rgba(190, 146, 0, 1)',
                                     }}
                                     className="whitespace-nowrap text-[8px] xs:text-[9.5px] sm:text-[16px] leading-tight sm:leading-[26px]"
                                   >
@@ -1095,7 +1113,7 @@ const Affiliates = () => {
                   ) : referredUsersData.error ? (
                     <p className="text-rose-500 text-center py-8 font-medium">{referredUsersData.error}</p>
                   ) : referredUsersData.users.length === 0 ? (
-                    <div className="text-center py-12 text-[#6B7280] font-medium text-sm sm:text-base">
+                    <div className={`text-center py-12 ${isDarkMode ? 'text-white/60' : 'text-[#6B7280]'} font-medium text-sm sm:text-base`}>
                       {t('affiliates.noReferredUsers', 'No referred users yet.')}
                     </div>
                   ) : (
@@ -1106,7 +1124,7 @@ const Affiliates = () => {
                       >
                         {/* Table Header */}
                         <div
-                          className="grid grid-cols-[1.3fr_1.1fr_1.1fr_1.1fr_0.8fr] sm:grid-cols-[1.6fr_1.2fr_1.2fr_1.2fr_1fr] items-center text-[7.5px] xs:text-[9px] sm:text-[14px] leading-tight sm:leading-[26px] tracking-[0.02em] sm:tracking-[0.06em] text-[rgba(14,15,12,0.6)] uppercase font-[500] whitespace-nowrap"
+                          className={`grid grid-cols-[1.3fr_1.1fr_1.1fr_1.1fr_0.8fr] sm:grid-cols-[1.6fr_1.2fr_1.2fr_1.2fr_1fr] items-center text-[7.5px] xs:text-[9px] sm:text-[14px] leading-tight sm:leading-[26px] tracking-[0.02em] sm:tracking-[0.06em] ${isDarkMode ? 'text-white/60' : 'text-[rgba(14,15,12,0.6)]'} uppercase font-[500] whitespace-nowrap`}
                           style={{
                             fontFamily: '"Poppins", sans-serif',
                           }}
@@ -1119,9 +1137,8 @@ const Affiliates = () => {
                         </div>
 
                         {/* Table Rows */}
-                        <div className="divide-y divide-[rgba(0,0,0,0.1)] flex flex-col">
+                        <div className={`divide-y ${isDarkMode ? 'divide-white/5' : 'divide-[rgba(0,0,0,0.1)]'} flex flex-col`}>
                           {referredUsersData.users.map((u) => {
-                            const avatar = u.avatarUrl || u.photoURL || `https://api.dicebear.com/7.x/adventurer/svg?seed=${u.displayName}`;
                             const commsEarned = u.referralEarnings > 0
                               ? u.referralEarnings
                               : ((u.totalEarned || 0) * (currentPercentage / 100));
@@ -1133,17 +1150,17 @@ const Affiliates = () => {
                               >
                                 {/* User */}
                                 <div className="flex items-center gap-1 sm:gap-3 min-w-0 pr-0.5 sm:pr-2">
-                                  <img
-                                    src={avatar}
-                                    alt={u.displayName}
-                                    className="w-5 h-5 sm:w-10 sm:h-10 rounded-full object-cover bg-gray-200 border border-gray-100 shrink-0"
+                                  <UserAvatar
+                                    user={u}
+                                    className={`w-5 h-5 sm:w-10 sm:h-10 border ${isDarkMode ? 'border-white/10' : 'border-gray-100'} shrink-0`}
+                                    textClassName="text-[10px] sm:text-base font-bold"
                                   />
                                   <span
                                     style={{
                                       fontFamily: '"Bricolage Grotesque", sans-serif',
                                       fontWeight: 700,
                                       letterSpacing: '0%',
-                                      color: '#000000',
+                                      color: isDarkMode ? '#FFFFFF' : '#000000',
                                     }}
                                     className="whitespace-nowrap text-[8.5px] xs:text-[10px] sm:text-[16px] leading-tight"
                                   >
@@ -1157,7 +1174,7 @@ const Affiliates = () => {
                                     fontFamily: '"Poppins", sans-serif',
                                     fontWeight: 500,
                                     letterSpacing: '0%',
-                                    color: '#000000',
+                                    color: isDarkMode ? '#94A3B8' : '#000000',
                                   }}
                                   className="whitespace-nowrap text-[8px] xs:text-[9px] sm:text-[16px] leading-tight sm:leading-[26px]"
                                 >
@@ -1176,7 +1193,7 @@ const Affiliates = () => {
                                       fontFamily: '"Poppins", sans-serif',
                                       fontWeight: 600,
                                       letterSpacing: '0%',
-                                      color: 'rgba(190, 146, 0, 1)',
+                                      color: isDarkMode ? '#E5A00D' : 'rgba(190, 146, 0, 1)',
                                     }}
                                     className="whitespace-nowrap text-[8px] xs:text-[9.5px] sm:text-[16px] leading-tight sm:leading-[26px]"
                                   >
@@ -1196,7 +1213,7 @@ const Affiliates = () => {
                                       fontFamily: '"Poppins", sans-serif',
                                       fontWeight: 600,
                                       letterSpacing: '0%',
-                                      color: 'rgba(190, 146, 0, 1)',
+                                      color: isDarkMode ? '#E5A00D' : 'rgba(190, 146, 0, 1)',
                                     }}
                                     className="whitespace-nowrap text-[8px] xs:text-[9.5px] sm:text-[16px] leading-tight sm:leading-[26px]"
                                   >
@@ -1237,7 +1254,7 @@ const Affiliates = () => {
                       <div className="h-14 bg-gray-200/70 rounded w-full"></div>
                     </div>
                   ) : currentPendingHolds.length === 0 ? (
-                    <div className="text-center py-12 text-[#6B7280] font-medium text-sm sm:text-base">
+                    <div className={`text-center py-12 ${isDarkMode ? 'text-white/60' : 'text-[#6B7280]'} font-medium text-sm sm:text-base`}>
                       {t('affiliates.noPendingHolds', 'No affiliate earnings on hold right now.')}
                     </div>
                   ) : (
@@ -1248,7 +1265,7 @@ const Affiliates = () => {
                       >
                         {/* Table Header */}
                         <div
-                          className="grid grid-cols-[1.3fr_1.1fr_1.1fr_1.1fr_0.8fr] sm:grid-cols-[1.6fr_1.2fr_1.2fr_1.2fr_1fr] items-center text-[7.5px] xs:text-[9px] sm:text-[14px] leading-tight sm:leading-[26px] tracking-[0.02em] sm:tracking-[0.06em] text-[rgba(14,15,12,0.6)] uppercase font-[500] whitespace-nowrap"
+                          className={`grid grid-cols-[1.3fr_1.1fr_1.1fr_1.1fr_0.8fr] sm:grid-cols-[1.6fr_1.2fr_1.2fr_1.2fr_1fr] items-center text-[7.5px] xs:text-[9px] sm:text-[14px] leading-tight sm:leading-[26px] tracking-[0.02em] sm:tracking-[0.06em] ${isDarkMode ? 'text-white/60' : 'text-[rgba(14,15,12,0.6)]'} uppercase font-[500] whitespace-nowrap`}
                           style={{
                             fontFamily: '"Poppins", sans-serif',
                           }}
@@ -1261,12 +1278,10 @@ const Affiliates = () => {
                         </div>
 
                         {/* Table Rows */}
-                        <div className="divide-y divide-[rgba(0,0,0,0.1)] flex flex-col">
+                        <div className={`divide-y ${isDarkMode ? 'divide-white/5' : 'divide-[rgba(0,0,0,0.1)]'} flex flex-col`}>
                           {currentPendingHolds.map((tx) => {
-                            const avatar = tx.linkedTransactionId?.userId?.avatarUrl ||
-                              tx.linkedTransactionId?.userId?.photoURL ||
-                              `https://api.dicebear.com/7.x/adventurer/svg?seed=${tx._id}`;
-                            const username = tx.linkedTransactionId?.userId?.displayName || 'Unknown';
+                            const userObj = tx.linkedTransactionId?.userId;
+                            const username = userObj?.displayName || 'Unknown';
                             const earningVal = (tx.amount * (100 / (currentPercentage || 15))) || (tx.amount * 10);
                             const commVal = tx.amount;
 
@@ -1277,17 +1292,18 @@ const Affiliates = () => {
                               >
                                 {/* User */}
                                 <div className="flex items-center gap-1 sm:gap-3 min-w-0 pr-0.5 sm:pr-2">
-                                  <img
-                                    src={avatar}
-                                    alt={username}
-                                    className="w-5 h-5 sm:w-10 sm:h-10 rounded-full object-cover bg-gray-200 border border-gray-100 shrink-0"
+                                  <UserAvatar
+                                    user={userObj}
+                                    displayName={username}
+                                    className={`w-5 h-5 sm:w-10 sm:h-10 border ${isDarkMode ? 'border-white/10' : 'border-gray-100'} shrink-0`}
+                                    textClassName="text-[10px] sm:text-base font-bold"
                                   />
                                   <span
                                     style={{
                                       fontFamily: '"Bricolage Grotesque", sans-serif',
                                       fontWeight: 700,
                                       letterSpacing: '0%',
-                                      color: '#000000',
+                                      color: isDarkMode ? '#FFFFFF' : '#000000',
                                     }}
                                     className="whitespace-nowrap text-[8.5px] xs:text-[10px] sm:text-[16px] leading-tight"
                                   >
@@ -1301,7 +1317,7 @@ const Affiliates = () => {
                                     fontFamily: '"Poppins", sans-serif',
                                     fontWeight: 500,
                                     letterSpacing: '0%',
-                                    color: '#000000',
+                                    color: isDarkMode ? '#94A3B8' : '#000000',
                                   }}
                                   className="whitespace-nowrap text-[8px] xs:text-[9px] sm:text-[16px] leading-tight sm:leading-[26px]"
                                 >
@@ -1320,7 +1336,7 @@ const Affiliates = () => {
                                       fontFamily: '"Poppins", sans-serif',
                                       fontWeight: 600,
                                       letterSpacing: '0%',
-                                      color: 'rgba(190, 146, 0, 1)',
+                                      color: isDarkMode ? '#E5A00D' : 'rgba(190, 146, 0, 1)',
                                     }}
                                     className="whitespace-nowrap text-[8px] xs:text-[9.5px] sm:text-[16px] leading-tight sm:leading-[26px]"
                                   >
@@ -1340,7 +1356,7 @@ const Affiliates = () => {
                                       fontFamily: '"Poppins", sans-serif',
                                       fontWeight: 600,
                                       letterSpacing: '0%',
-                                      color: 'rgba(190, 146, 0, 1)',
+                                      color: isDarkMode ? '#E5A00D' : 'rgba(190, 146, 0, 1)',
                                     }}
                                     className="whitespace-nowrap text-[8px] xs:text-[9.5px] sm:text-[16px] leading-tight sm:leading-[26px]"
                                   >

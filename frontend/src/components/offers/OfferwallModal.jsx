@@ -1,10 +1,12 @@
 import { useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FiExternalLink, FiX } from 'react-icons/fi';
+import { useTheme } from '../../contexts/ThemeContext';
 import { buildProviderUrl, getProviderLogo } from './OfferCards';
 import { GoodpicksOfferwallModal } from './GoodpicksModal';
 
 export const OfferwallModal = ({ provider, userId, token, onClose }) => {
+  const { isDarkMode } = useTheme();
   useEffect(() => {
     if (provider) {
       document.body.style.overflow = 'hidden';
@@ -24,8 +26,9 @@ export const OfferwallModal = ({ provider, userId, token, onClose }) => {
   }
 
   const url = buildProviderUrl(provider, userId);
-  const fallbackLogo = getProviderLogo(provider.id);
-  const logoUrl = provider.imageUrl || fallbackLogo;
+  const darkLogo = isDarkMode ? getProviderLogo(provider.id, true) : null;
+  const fallbackLogo = getProviderLogo(provider.id, false);
+  const logoUrl = darkLogo || provider.imageUrl || fallbackLogo;
 
   return (
     <AnimatePresence>

@@ -5,6 +5,7 @@ import { TIER_STYLES, getLevelLabel, LEVEL_BADGES } from '../utils/vipLevels';
 import { FiLock } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 import DashboardLayout from '../components/layout/DashboardLayout';
+import { useTheme } from '../contexts/ThemeContext';
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
@@ -22,6 +23,7 @@ const TIER_METADATA = {
     btnBg: 'bg-[#F59E0B] hover:bg-[#D97706]',
     barColor: 'repeating-linear-gradient(-45deg, rgba(255, 255, 255, 0.45) 0px, rgba(255, 255, 255, 0.45) 3px, transparent 3px, transparent 6px), linear-gradient(98.68deg, #FFF0C7 -4.71%, #FFDFBD 100%)',
     sectionBg: 'rgba(249, 247, 241, 1)',
+    darkSectionBg: 'linear-gradient(180deg, rgba(243, 182, 10, 0.12) 0%, rgba(190, 103, 8, 0.05) 100%), rgba(17, 23, 30, 1)',
   },
   Silver: {
     subtext: 'Starter level',
@@ -36,6 +38,7 @@ const TIER_METADATA = {
     btnBg: 'bg-[#F59E0B] hover:bg-[#D97706]',
     barColor: 'repeating-linear-gradient(-45deg, rgba(255, 255, 255, 0.45) 0px, rgba(255, 255, 255, 0.45) 3px, transparent 3px, transparent 6px), linear-gradient(98.68deg, #DBDBDB -4.71%, #CBCBCB 100%)',
     sectionBg: 'rgba(246, 246, 246, 1)',
+    darkSectionBg: 'linear-gradient(180deg, rgba(214, 214, 214, 0.10) 0%, rgba(146, 146, 146, 0.04) 100%), rgba(17, 23, 30, 1)',
   },
   Gold: {
     subtext: 'Getting Serious',
@@ -43,6 +46,17 @@ const TIER_METADATA = {
     sectionBadge: '/coins/Goldsection.png',
     miniBadge: '/coins/gold.png',
     pillGradient: 'linear-gradient(180deg, #FEDD72 -23.08%, #FCBA21 74.64%)',
+    pillStyle: {
+      width: '46px',
+      height: '22px',
+      gap: '10px',
+      opacity: 1,
+      borderRadius: '100px',
+      paddingTop: '7px',
+      paddingRight: '8px',
+      paddingBottom: '7px',
+      paddingLeft: '8px',
+    },
     cardGradient: 'linear-gradient(180deg, #FEDD72 57.98%, #FCBA21 99.95%)',
     normalBoxBg: 'rgba(249, 247, 241, 1)',
     claimedBoxBg: 'linear-gradient(104.31deg, #FFF7DF 5.4%, #FFDE92 120.91%)',
@@ -50,6 +64,7 @@ const TIER_METADATA = {
     btnBg: 'bg-[#F59E0B] hover:bg-[#D97706]',
     barColor: 'repeating-linear-gradient(-45deg, rgba(255, 255, 255, 0.45) 0px, rgba(255, 255, 255, 0.45) 3px, transparent 3px, transparent 6px), linear-gradient(98.68deg, #FBE5A3 -4.71%, #FFC000 100%)',
     sectionBg: 'rgba(255, 250, 235, 1)',
+    darkSectionBg: 'linear-gradient(180deg, rgba(254, 221, 114, 0.13) 0%, rgba(252, 186, 33, 0.05) 100%), rgba(17, 23, 30, 1)',
   },
   Platinum: {
     subtext: 'Almost There',
@@ -64,6 +79,7 @@ const TIER_METADATA = {
     btnBg: 'bg-[#06B6D4] hover:bg-[#0891B2]',
     barColor: 'repeating-linear-gradient(-45deg, rgba(255, 255, 255, 0.45) 0px, rgba(255, 255, 255, 0.45) 3px, transparent 3px, transparent 6px), linear-gradient(98.68deg, #79D4E2 -4.71%, #79BBC5 100%)',
     sectionBg: 'rgba(227, 244, 246, 1)',
+    darkSectionBg: 'linear-gradient(180deg, rgba(31, 196, 222, 0.12) 0%, rgba(32, 121, 133, 0.05) 100%), rgba(17, 23, 30, 1)',
   },
   Diamond: {
     subtext: 'Elite level',
@@ -78,26 +94,40 @@ const TIER_METADATA = {
     btnBg: 'bg-[#7C3AED] hover:bg-[#6D28D9]',
     barColor: 'repeating-linear-gradient(-45deg, rgba(255, 255, 255, 0.45) 0px, rgba(255, 255, 255, 0.45) 3px, transparent 3px, transparent 6px), linear-gradient(98.68deg, #B2B2F4 -4.71%, #7D6EE0 100%)',
     sectionBg: 'rgba(241, 241, 255, 1)',
+    darkSectionBg: 'linear-gradient(180deg, rgba(126, 131, 241, 0.13) 0%, rgba(121, 65, 187, 0.05) 100%), rgba(17, 23, 30, 1)',
   },
   Opal: {
     subtext: 'The Highest',
     badge: '/coins/VIPopel.png',
     sectionBadge: '/coins/OpalSection.png',
     miniBadge: '/coins/opal.png',
-    pillGradient: 'linear-gradient(180deg, #E92BFF 0%, #31BDFF 100%)',
-    cardGradient: 'linear-gradient(180deg, #E92BFF 0%, #31BDFF 100%)',
+    pillGradient: 'linear-gradient(180deg, #7AA4F4 0%, #4264C0 100%)',
+    pillStyle: {
+      width: '46px',
+      height: '22px',
+      gap: '10px',
+      opacity: 1,
+      borderRadius: '100px',
+      paddingTop: '7px',
+      paddingRight: '8px',
+      paddingBottom: '7px',
+      paddingLeft: '8px',
+    },
+    cardGradient: 'linear-gradient(180deg, #7AA4F4 0%, #4264C0 100%)',
     normalBoxBg: 'rgba(249, 247, 241, 1)',
-    claimedBoxBg: 'linear-gradient(180deg, #7E83F1 0%, #7941BB 100%), linear-gradient(180deg, #E92BFF 0%, #31BDFF 100%)',
+    claimedBoxBg: 'linear-gradient(180deg, #7E83F1 0%, #7941BB 100%), linear-gradient(180deg, #7AA4F4 0%, #4264C0 100%)',
     pillText: 'Opal',
-    btnBg: 'bg-[#A855F7] hover:bg-[#9333EA]',
+    btnBg: 'bg-[#5B7FE6] hover:bg-[#4B6EC9]',
     barColor: 'repeating-linear-gradient(-45deg, rgba(255, 255, 255, 0.45) 0px, rgba(255, 255, 255, 0.45) 3px, transparent 3px, transparent 6px), linear-gradient(98.68deg, #749DEF -4.71%, #3858B6 100%)',
     sectionBg: 'rgba(241, 246, 255, 1)',
+    darkSectionBg: 'linear-gradient(180deg, rgba(122, 164, 244, 0.13) 0%, rgba(66, 100, 192, 0.05) 100%), rgba(17, 23, 30, 1)',
   },
 };
 
 const VipPage = () => {
   const { t } = useTranslation();
   const { currentUser } = useAuth();
+  const { isDarkMode } = useTheme();
   const [status, setStatus] = useState(null);
   const [loading, setLoading] = useState(true);
   const [claiming, setClaiming] = useState(null);
@@ -162,13 +192,18 @@ const VipPage = () => {
 
   return (
     <DashboardLayout hideStartEarning={true} fullWidth={true}>
-      <div className="w-full min-h-screen bg-[#FAFAFA] flex flex-col items-center">
+      <div
+        className="w-full min-h-screen flex flex-col items-center"
+        style={{
+          background: isDarkMode ? 'rgba(12, 14, 17, 1)' : '#FAFAFA'
+        }}
+      >
 
-        {/* ─── Top Banner Area (rgba(249, 247, 241, 1)) ─── */}
+        {/* ─── Top Banner Area (rgba(23, 26, 29, 1) in dark mode) ─── */}
         <div
           className="w-full flex justify-center items-center transition-colors duration-300 py-6 sm:py-10"
           style={{
-            background: 'rgba(249, 247, 241, 1)',
+            background: isDarkMode ? 'rgba(23, 26, 29, 1)' : 'rgba(249, 247, 241, 1)',
             minHeight: '220px',
           }}
         >
@@ -176,23 +211,38 @@ const VipPage = () => {
           <div
             className="w-full max-w-[782px] mx-auto px-3 sm:px-4 md:px-0 flex flex-col items-start justify-center gap-4 sm:gap-[30px]"
           >
-            {/* VIP Status Text */}
-            <h1
-              className="text-[22px] sm:text-[27px] font-bold text-black"
-              style={{
-                fontFamily: '"Bricolage Grotesque", sans-serif',
-                lineHeight: '1.2',
-                letterSpacing: '-0.02em',
-                margin: 0,
-                textAlign: 'left',
-              }}
-            >
-              {t('vipPage.pageTitle', 'VIP Status')}
-            </h1>
+            {/* VIP Status Text & Subtitle Row */}
+            <div className="w-full flex flex-col sm:flex-row sm:items-baseline justify-between gap-1 sm:gap-4">
+              <h1
+                className="text-[22px] sm:text-[27px] font-bold"
+                style={{
+                  fontFamily: '"Bricolage Grotesque", sans-serif',
+                  lineHeight: '1.2',
+                  letterSpacing: '-0.02em',
+                  margin: 0,
+                  textAlign: 'left',
+                  color: isDarkMode ? '#FFFFFF' : '#000000',
+                }}
+              >
+                {t('vipPage.pageTitle', 'VIP Status')}
+              </h1>
+              <span
+                className="text-[12px] sm:text-[13px] font-medium"
+                style={{
+                  fontFamily: '"Poppins", sans-serif',
+                  color: isDarkMode ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.6)',
+                }}
+              >
+                {t('vipPage.pageSubtitle', 'Higher rewards. Bigger perks. More earning power.')}
+              </span>
+            </div>
 
-            {/* Top Status Card */}
+            {/* Top Status Card (rgba(34, 39, 48, 1) in dark mode) */}
             <div
-              className="w-full shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between rounded-[24px] sm:rounded-[30px] p-3.5 sm:pt-[10px] sm:pr-[10px] sm:pb-[10px] sm:pl-[15px] gap-3.5 sm:gap-0 box-border bg-white min-h-[105px] sm:min-h-[114px]"
+              className="w-full shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between rounded-[24px] sm:rounded-[30px] p-3.5 sm:pt-[10px] sm:pr-[10px] sm:pb-[10px] sm:pl-[15px] gap-3.5 sm:gap-0 box-border min-h-[105px] sm:min-h-[114px]"
+              style={{
+                background: isDarkMode ? 'rgba(34, 39, 48, 1)' : '#FFFFFF'
+              }}
             >
               {/* Left Side: Badge & Rank info */}
               <div className="flex items-center gap-3 sm:gap-4 w-full sm:w-auto">
@@ -203,22 +253,24 @@ const VipPage = () => {
                 />
                 <div className="flex flex-col gap-0.5 min-w-0 flex-1 sm:flex-initial">
                   <span
-                    className="text-[12px] sm:text-[13px] text-black font-medium"
+                    className="text-[12px] sm:text-[13px] font-medium"
                     style={{
                       fontFamily: '"Poppins", sans-serif',
                       lineHeight: '16px',
                       margin: 0,
+                      color: isDarkMode ? 'rgba(255, 255, 255, 0.7)' : '#000000',
                     }}
                   >
                     {t('vipPage.currentRank', 'Current rank')}
                   </span>
                   <h2
-                    className="text-[19px] sm:text-[22px] font-bold text-black"
+                    className="text-[19px] sm:text-[22px] font-bold"
                     style={{
                       fontFamily: '"Bricolage Grotesque", sans-serif',
                       lineHeight: '1.2',
                       letterSpacing: '-0.02em',
                       margin: 0,
+                      color: isDarkMode ? '#FFFFFF' : '#000000',
                     }}
                   >
                     {currentLevel ? getLevelLabel(currentLevel) : (
@@ -229,7 +281,10 @@ const VipPage = () => {
                   </h2>
                   {isMaxLevel && (
                     <div
-                      className="flex items-center gap-1.5 rounded-full py-1 px-3 bg-[#EAF1FF] mt-1 w-fit"
+                      className="flex items-center gap-1.5 rounded-full py-1 px-3 mt-1 w-fit"
+                      style={{
+                        background: isDarkMode ? 'rgba(23, 26, 29, 1)' : '#EAF1FF'
+                      }}
                     >
                       <img
                         src="/coins/image copy 11.png"
@@ -237,9 +292,10 @@ const VipPage = () => {
                         className="w-4 h-4 object-contain shrink-0"
                       />
                       <span
-                        className="text-[11px] sm:text-[12px] font-medium text-black whitespace-nowrap"
+                        className="text-[11px] sm:text-[12px] font-medium whitespace-nowrap"
                         style={{
                           fontFamily: '"Poppins", sans-serif',
+                          color: isDarkMode ? '#FFFFFF' : '#000000'
                         }}
                       >
                         {t('vipPage.maxLevelReached', 'You have reached max level')}
@@ -255,15 +311,16 @@ const VipPage = () => {
                 <div
                   className="flex-1 sm:flex-initial sm:w-[136px] h-[52px] rounded-[17px] py-1.5 px-3 flex flex-col items-center justify-center gap-0.5 box-border"
                   style={{
-                    background: 'rgba(249, 247, 241, 1)',
+                    background: isDarkMode ? 'rgba(23, 26, 29, 1)' : 'rgba(249, 247, 241, 1)',
                   }}
                 >
                   <span
-                    className="text-[11px] sm:text-[12px] font-medium text-black text-center whitespace-nowrap"
+                    className="text-[11px] sm:text-[12px] font-medium text-center whitespace-nowrap"
                     style={{
                       fontFamily: '"Poppins", sans-serif',
                       lineHeight: '14px',
                       margin: 0,
+                      color: isDarkMode ? 'rgba(255, 255, 255, 0.7)' : '#000000',
                     }}
                   >
                     {t('vipPage.totalEarned', 'Total Earned')}
@@ -288,15 +345,16 @@ const VipPage = () => {
                 <div
                   className="flex-1 sm:flex-initial sm:w-[109px] h-[52px] rounded-[17px] py-1.5 px-3 flex flex-col items-center justify-center gap-0.5 box-border"
                   style={{
-                    background: 'rgba(249, 247, 241, 1)',
+                    background: isDarkMode ? 'rgba(23, 26, 29, 1)' : 'rgba(249, 247, 241, 1)',
                   }}
                 >
                   <span
-                    className="text-[11px] sm:text-[12px] font-medium text-black text-center whitespace-nowrap"
+                    className="text-[11px] sm:text-[12px] font-medium text-center whitespace-nowrap"
                     style={{
                       fontFamily: '"Poppins", sans-serif',
                       lineHeight: '14px',
                       margin: 0,
+                      color: isDarkMode ? 'rgba(255, 255, 255, 0.7)' : '#000000',
                     }}
                   >
                     {t('vipPage.rankLevel', 'Rank Level')}
@@ -306,7 +364,7 @@ const VipPage = () => {
                     style={{
                       fontFamily: '"Bricolage Grotesque", sans-serif',
                       letterSpacing: '-0.02em',
-                      color: 'rgba(36, 50, 77, 1)',
+                      color: isDarkMode ? '#FFFFFF' : 'rgba(36, 50, 77, 1)',
                       lineHeight: '16px',
                       margin: 0,
                     }}
@@ -319,8 +377,13 @@ const VipPage = () => {
           </div>
         </div>
 
-        {/* ─── Bottom Section (Background: #FAFAFA) ─── */}
-        <div className="w-full bg-[#FAFAFA] flex justify-center py-6 sm:py-10 pb-20 sm:pb-24">
+        {/* ─── Bottom Section (Background: rgba(12, 14, 17, 1) in dark mode) ─── */}
+        <div
+          className="w-full flex justify-center py-6 sm:py-10 pb-20 sm:pb-24"
+          style={{
+            background: isDarkMode ? 'rgba(12, 14, 17, 1)' : '#FAFAFA'
+          }}
+        >
           <div className="w-full max-w-[1329px] mx-auto px-3 sm:px-4 md:px-8 lg:px-0 flex flex-col gap-6 sm:gap-8">
             {tiers.map(tierName => {
               const tierLevels = levels.filter(l => l.tier === tierName);
@@ -343,7 +406,7 @@ const VipPage = () => {
                   className="w-full max-w-[1329px] shadow-sm flex flex-col justify-between rounded-[25px] p-4 sm:pt-[24px] sm:pr-[28px] sm:pb-[18px] sm:pl-[28px] box-border gap-4 sm:gap-4"
                   style={{
                     minHeight: isTierCompleted ? 'auto' : '315px',
-                    background: meta.sectionBg || 'rgba(255, 255, 255, 1)',
+                    background: isDarkMode ? (meta.darkSectionBg || 'rgba(17, 23, 30, 1)') : (meta.sectionBg || 'rgba(255, 255, 255, 1)'),
                   }}
                 >
                   {/* Upper Row: Left Tier Info & Right 3 Cards */}
@@ -356,8 +419,14 @@ const VipPage = () => {
                         className="w-[72px] h-[72px] sm:w-[84px] sm:h-[84px] object-contain shrink-0"
                       />
                       <span
-                        className="min-w-[58px] h-[20px] rounded-full px-2.5 py-0.5 inline-flex items-center justify-center text-white text-[11px] font-semibold text-center box-border"
+                        className="inline-flex items-center justify-center text-white text-[11px] font-semibold text-center box-border"
                         style={{
+                          minWidth: meta.pillStyle?.width ? undefined : '58px',
+                          height: '20px',
+                          borderRadius: '9999px',
+                          padding: '2px 10px',
+                          opacity: 1,
+                          ...meta.pillStyle,
                           background: meta.pillGradient,
                           fontFamily: '"Poppins", sans-serif',
                         }}
@@ -365,10 +434,11 @@ const VipPage = () => {
                         {meta.pillText}
                       </span>
                       <h3
-                        className="font-bold text-[18px] sm:text-[18px] leading-[22px] text-black text-center m-0"
+                        className="font-bold text-[18px] sm:text-[18px] leading-[22px] text-center m-0"
                         style={{
                           fontFamily: '"Bricolage Grotesque", sans-serif',
                           letterSpacing: '-0.02em',
+                          color: isDarkMode ? '#FFFFFF' : '#000000',
                         }}
                       >
                         {t('vipPage.tierTitle', { tier: tierName, defaultValue: `${tierName} Tier` })}
@@ -377,7 +447,7 @@ const VipPage = () => {
 
                     {/* Right Content: 3 Level Cards + Progress Row */}
                     <div className="flex-1 flex flex-col justify-between gap-3 w-full min-w-0">
-                      {/* 3 Level Cards */}
+                      {/* 3 Level Cards (rgba(12, 14, 17, 1) in dark mode) */}
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4 w-full">
                         {tierLevels.map(lvl => {
                           const isReached = lvl.reached || (lvl.threshold > 0 && earned >= lvl.threshold);
@@ -394,14 +464,18 @@ const VipPage = () => {
                           return (
                             <div
                               key={lvl.key}
-                              className="bg-white flex flex-col justify-between shadow-sm w-full rounded-[16px] p-4 sm:pt-[20px] sm:pr-[15px] sm:pb-[20px] sm:pl-[16px] gap-2.5 min-h-[235px] sm:min-h-[242px] box-border"
+                              className="flex flex-col justify-between shadow-sm w-full rounded-[16px] p-4 sm:pt-[20px] sm:pr-[15px] sm:pb-[20px] sm:pl-[16px] gap-2.5 min-h-[235px] sm:min-h-[242px] box-border"
+                              style={{
+                                background: isDarkMode ? 'rgba(12, 14, 17, 1)' : '#FFFFFF'
+                              }}
                             >
                               {/* Card Top: Title and Mini Badge */}
                               <div className="flex items-start justify-between">
                                 <h4
-                                  className="font-bold text-[21px] sm:text-[23px] leading-[28px] text-black m-0 tracking-[-0.02em]"
+                                  className="font-bold text-[21px] sm:text-[23px] leading-[28px] m-0 tracking-[-0.02em]"
                                   style={{
                                     fontFamily: '"Bricolage Grotesque", sans-serif',
+                                    color: isDarkMode ? '#FFFFFF' : '#000000',
                                   }}
                                 >
                                   {getLevelLabel(lvl)}
@@ -421,9 +495,10 @@ const VipPage = () => {
                               <div className="flex flex-col gap-2 w-full">
                                 {/* Requires Coin Text */}
                                 <p
-                                  className="text-[12px] sm:text-[13px] font-normal text-black/60 m-0 leading-[16px]"
+                                  className="text-[12px] sm:text-[13px] font-normal m-0 leading-[16px]"
                                   style={{
                                     fontFamily: '"Poppins", sans-serif',
+                                    color: isDarkMode ? 'rgba(255, 255, 255, 0.6)' : 'rgba(0, 0, 0, 0.6)',
                                   }}
                                 >
                                   {t('vipPage.requiresCoins', { count: lvl.threshold.toLocaleString('de-DE'), defaultValue: `Requires ${lvl.threshold.toLocaleString('de-DE')} coins` })}
@@ -449,9 +524,10 @@ const VipPage = () => {
                                   </div>
                                   {levelProgressPct > 0 && (
                                     <span
-                                      className="font-semibold text-[12px] sm:text-[13px] text-[#71717A]"
+                                      className="font-semibold text-[12px] sm:text-[13px]"
                                       style={{
                                         fontFamily: '"Poppins", sans-serif',
+                                        color: isDarkMode ? 'rgba(255, 255, 255, 0.7)' : '#71717A',
                                       }}
                                     >
                                       {levelProgressPct}%
@@ -462,7 +538,10 @@ const VipPage = () => {
 
                               {/* Progress Bar */}
                               <div
-                                className="overflow-hidden w-full h-[36px] sm:h-[40px] rounded-l-[10px] rounded-r-[5px] bg-[#DEDAD0]"
+                                className="overflow-hidden w-full h-[36px] sm:h-[40px] rounded-l-[10px] rounded-r-[5px]"
+                                style={{
+                                  background: isDarkMode ? 'rgba(34, 39, 48, 1)' : '#DEDAD0'
+                                }}
                               >
                                 <div
                                   className="h-full transition-all duration-500 rounded-l-[10px]"
@@ -487,9 +566,10 @@ const VipPage = () => {
                                         className="w-4 h-4 sm:w-5 sm:h-5 object-contain shrink-0"
                                       />
                                       <span
-                                        className="font-medium text-[13px] sm:text-[14px] text-[#24324D] whitespace-nowrap"
+                                        className="font-medium text-[13px] sm:text-[14px] whitespace-nowrap"
                                         style={{
                                           fontFamily: '"Poppins", sans-serif',
+                                          color: isDarkMode ? '#FFFFFF' : '#24324D',
                                         }}
                                       >
                                         {t('vipPage.claimedSuccess', 'Congrats, Claimed successfully')}
@@ -500,8 +580,9 @@ const VipPage = () => {
                                   <button
                                     onClick={() => handleClaim(lvl.key)}
                                     disabled={claiming === lvl.key}
-                                    className="w-full py-2 sm:py-2.5 bg-[#24324D] hover:bg-[#1E293B] text-white rounded-full font-semibold text-sm transition-all cursor-pointer"
+                                    className="w-full py-2 sm:py-2.5 text-white rounded-full font-semibold text-sm transition-all cursor-pointer hover:opacity-90"
                                     style={{
+                                      background: 'rgba(36, 50, 77, 1)',
                                       fontFamily: '"Poppins", sans-serif',
                                     }}
                                   >
@@ -509,17 +590,23 @@ const VipPage = () => {
                                   </button>
                                 ) : (
                                   <div
-                                    className="w-full py-2 sm:py-2.5 bg-[#EFEFEF] text-[#9CA3AF] rounded-full flex items-center justify-center gap-2 text-sm font-medium"
+                                    className="w-full py-2 sm:py-2.5 rounded-full flex items-center justify-center gap-2 text-sm font-medium shadow-sm"
                                     style={{
+                                      background: isDarkMode ? 'rgba(255, 255, 255, 1)' : '#EFEFEF',
+                                      color: isDarkMode ? '#1E2538' : '#9CA3AF',
                                       fontFamily: '"Poppins", sans-serif',
                                     }}
                                   >
                                     <img
                                       src="/coins/VIPlock.png"
                                       alt="Locked"
-                                      className="w-3.5 h-3.5 object-contain opacity-50"
+                                      className="w-3.5 h-3.5 object-contain"
+                                      style={{
+                                        filter: isDarkMode ? 'brightness(0.2)' : 'none',
+                                        opacity: isDarkMode ? 0.7 : 0.5
+                                      }}
                                     />
-                                    <span>{t('vipPage.locked', 'Locked')}</span>
+                                    <span style={{ color: isDarkMode ? '#1E2538' : '#9CA3AF' }}>{t('vipPage.locked', 'Locked')}</span>
                                   </div>
                                 )}
                               </div>
@@ -534,17 +621,19 @@ const VipPage = () => {
                           className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-1 sm:gap-2 w-full text-left pt-1.5 sm:pt-1"
                         >
                           <span
-                            className="font-bold text-[14px] sm:text-[14px] text-[#1E2538] text-left"
+                            className="font-bold text-[14px] sm:text-[14px] text-left"
                             style={{
                               fontFamily: '"Bricolage Grotesque", sans-serif',
+                              color: isDarkMode ? '#FFFFFF' : '#1E2538',
                             }}
                           >
                             {t('vipPage.progressTo', { rank: tierTargetLevel ? getLevelLabel(tierTargetLevel) : `${tierName} III`, defaultValue: `Progress to ${tierTargetLevel ? getLevelLabel(tierTargetLevel) : `${tierName} III`}` })}
                           </span>
                           <div
-                            className="flex flex-wrap items-center justify-start sm:justify-end gap-1 text-[12px] sm:text-[13px] font-medium text-black text-left"
+                            className="flex flex-wrap items-center justify-start sm:justify-end gap-1 text-[12px] sm:text-[13px] font-medium text-left"
                             style={{
                               fontFamily: '"Poppins", sans-serif',
+                              color: isDarkMode ? 'rgba(255, 255, 255, 0.8)' : '#000000',
                             }}
                           >
                             <span>{t('vipPage.earn', 'Earn')}</span>

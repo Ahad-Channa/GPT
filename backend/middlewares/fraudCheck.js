@@ -26,12 +26,20 @@ function pruneCache() {
    Extract real client IP from request (behind Nginx proxy)
 ───────────────────────────────────────────────────────────────── */
 function getClientIp(req) {
-  return (
+  let ip = (
+    req.headers['x-test-ip'] ||
+    req.headers['cf-connecting-ip'] ||
     (req.headers['x-forwarded-for'] || '').split(',')[0].trim() ||
     req.headers['x-real-ip'] ||
+    req.headers['x-client-ip'] ||
     req.socket?.remoteAddress ||
+    req.ip ||
     ''
   );
+  if (ip.startsWith('::ffff:')) {
+    ip = ip.replace('::ffff:', '');
+  }
+  return ip.trim();
 }
 
 /* ─────────────────────────────────────────────────────────────────
@@ -105,9 +113,50 @@ function checkIpWithProxyCheck(ip) {
 function fraudCheck(routeName = 'unknown', mode = 'full') {
   return async (req, res, next) => {
     try {
+      // ── Look up user early so we can check admin / exempt status ──
+      let dbUser = null;
+      if (req.user?.uid) {
+        dbUser = await User.findOne({ firebaseUid: req.user.uid });
+      }
+
+      // ── Admin accounts and fraud-exempt users are NEVER blocked ──
+      const isProtected = dbUser && (dbUser.role === 'admin' || dbUser.fraudExempt === true);
+
+      // ── Developer Test Mode: Simulate VPN detection on localhost/test ──
+      if (!isProtected && (req.headers['x-mock-vpn'] === 'true' || req.query?.mockVpn === 'true')) {
+        const mockResult = {
+          status: 'ok',
+          proxy: true,
+          type: 'VPN',
+          risk: 99,
+          provider: 'Simulated VPN (Dev Test)',
+          country: 'Germany',
+          city: 'Frankfurt',
+          asn: 'AS12345',
+          raw: { simulated: true },
+        };
+        req.fraud = { flagged: true, result: mockResult, action: 'blocked' };
+        if (mode === 'full') {
+          return res.status(403).json({
+            success: false,
+            error: 'Access denied. VPN, proxy, or TOR connections are not allowed on this platform.',
+            code: 'FRAUD_BLOCKED',
+          });
+        }
+      }
+
       const ip = getClientIp(req);
       if (!ip || ip === '127.0.0.1' || ip === '::1') {
         req.fraud = { flagged: false, result: null, action: 'allowed' };
+        if (req.user?.uid) {
+          const { resolveClientGeo } = require('../utils/geoIp');
+          resolveClientGeo(req).then(({ ip: realIp, country }) => {
+            User.updateOne(
+              { firebaseUid: req.user.uid },
+              { $set: { lastIp: realIp, ...(country ? { lastCountry: country } : {}) } }
+            ).catch(() => {});
+          }).catch(() => {});
+        }
         return next();
       }
 
@@ -118,8 +167,8 @@ function fraudCheck(routeName = 'unknown', mode = 'full') {
         const ttl = cached.result.proxy ? FLAGGED_TTL : CLEAN_TTL;
         if (now - cached.fetchedAt < ttl) {
           req.fraud = { flagged: cached.result.proxy, result: cached.result, action: cached.action };
-          // Still log the access for tracking but don't block if mode is light
-          if (mode === 'full' && cached.result.proxy) {
+          // Block NON-protected users on cached proxy result
+          if (mode === 'full' && cached.result.proxy && !isProtected) {
             return res.status(403).json({
               success: false,
               error: 'Access denied. VPN, proxy, or TOR connections are not allowed on this platform.',
@@ -134,9 +183,34 @@ function fraudCheck(routeName = 'unknown', mode = 'full') {
       // ── Call proxycheck.io ──
       const result = await checkIpWithProxyCheck(ip);
 
-      // If proxycheck API errored, fail open (allow the request)
+      // If proxycheck API errored, log warning but still allow (don't crash the app)
+      // However, do NOT silently pass — mark as unknown so we can track
       if (result.status === 'error') {
+        console.warn('[FraudCheck] proxycheck.io API failed for IP:', ip, '— allowing through but logging');
         req.fraud = { flagged: false, result, action: 'allowed' };
+        if (req.user?.uid) {
+          const { resolveClientGeo } = require('../utils/geoIp');
+          resolveClientGeo(req).then(({ ip: realIp, country }) => {
+            User.updateOne(
+              { firebaseUid: req.user.uid },
+              { $set: { lastIp: realIp || ip, ...(country ? { lastCountry: country } : {}) } }
+            ).catch(() => {});
+          }).catch(() => {});
+        }
+        // Log the failed check so admin can review
+        try {
+          await FraudLog.create({
+            userId: dbUser?._id || null,
+            ip,
+            isProxy: false,
+            isVpn: false,
+            isTor: false,
+            riskScore: 0,
+            route: routeName,
+            action: 'api_error',
+            rawResponse: result.raw || { error: 'proxycheck API failed' },
+          });
+        } catch (_) {}
         return next();
       }
 
@@ -144,9 +218,9 @@ function fraudCheck(routeName = 'unknown', mode = 'full') {
       const isVpn = (result.type || '').toUpperCase() === 'VPN';
       const isProxy = result.proxy && !isTor && !isVpn;
 
-      // Determine action
+      // Determine action (protected users are always allowed)
       let action = 'allowed';
-      if (result.proxy) {
+      if (result.proxy && !isProtected) {
         action = mode === 'full' ? 'blocked' : 'warned';
       }
 
@@ -154,41 +228,39 @@ function fraudCheck(routeName = 'unknown', mode = 'full') {
       ipCache.set(ip, { result, action, fetchedAt: now });
       pruneCache();
 
-      // ── Get user from request (set by verifyToken middleware) ──
+      // ── Update user tracking (IP, fingerprints, fraud flags) ──
       let userId = null;
-      if (req.user?.uid) {
-        const user = await User.findOne({ firebaseUid: req.user.uid });
-        if (user) {
-          userId = user._id;
+      if (dbUser) {
+        userId = dbUser._id;
 
-          // Update user IP tracking
-          user.lastIp = ip;
-          if (!user.ipHistory) user.ipHistory = [];
-          if (!user.ipHistory.includes(ip)) {
-            user.ipHistory.push(ip);
-            if (user.ipHistory.length > 20) user.ipHistory.shift();
-          }
-
-          // Update country if we got one
-          if (result.country) user.lastCountry = result.country;
-
-          // Fingerprint from frontend (sent in request body or header)
-          const fingerprint = req.body?.fingerprint || req.headers['x-device-fingerprint'] || '';
-          if (fingerprint) {
-            if (!user.deviceFingerprints) user.deviceFingerprints = [];
-            if (!user.deviceFingerprints.includes(fingerprint)) {
-              user.deviceFingerprints.push(fingerprint);
-              if (user.deviceFingerprints.length > 10) user.deviceFingerprints.shift();
-            }
-          }
-
-          if (result.proxy) {
-            user.fraudFlag = (user.fraudFlag || 0) + 1;
-            user.fraudStatus = user.fraudFlag >= 3 ? 'blocked' : user.fraudFlag >= 1 ? 'flagged' : 'clean';
-          }
-
-          await user.save();
+        // Update user IP tracking
+        dbUser.lastIp = ip;
+        if (!dbUser.ipHistory) dbUser.ipHistory = [];
+        if (!dbUser.ipHistory.includes(ip)) {
+          dbUser.ipHistory.push(ip);
+          if (dbUser.ipHistory.length > 20) dbUser.ipHistory.shift();
         }
+
+        // Update country if we got one
+        if (result.country) dbUser.lastCountry = result.country;
+
+        // Fingerprint from frontend (sent in request body or header)
+        const fingerprint = req.body?.fingerprint || req.headers['x-device-fingerprint'] || '';
+        if (fingerprint) {
+          if (!dbUser.deviceFingerprints) dbUser.deviceFingerprints = [];
+          if (!dbUser.deviceFingerprints.includes(fingerprint)) {
+            dbUser.deviceFingerprints.push(fingerprint);
+            if (dbUser.deviceFingerprints.length > 10) dbUser.deviceFingerprints.shift();
+          }
+        }
+
+        // Only increment fraud flags for NON-protected users
+        if (result.proxy && !isProtected) {
+          dbUser.fraudFlag = (dbUser.fraudFlag || 0) + 1;
+          dbUser.fraudStatus = dbUser.fraudFlag >= 3 ? 'blocked' : dbUser.fraudFlag >= 1 ? 'flagged' : 'clean';
+        }
+
+        await dbUser.save();
       }
 
       // ── Log to database ──
@@ -215,14 +287,13 @@ function fraudCheck(routeName = 'unknown', mode = 'full') {
         console.error('[FraudCheck] Failed to save fraud log:', logErr.message);
       }
 
-      // ── Notify admins on detection ──
-      if (result.proxy && userId) {
+      // ── Notify admins on detection (only for non-protected users) ──
+      if (result.proxy && userId && !isProtected) {
         try {
-          const user = await User.findById(userId);
           await notifyAdmins({
             category: 'users',
             type: 'fraud_detected',
-            message: `🚨 ${result.type || 'Proxy'} detected for user ${user?.displayName || 'Unknown'} (IP: ${ip}, Risk: ${result.risk}%, Route: ${routeName})`,
+            message: `🚨 ${result.type || 'Proxy'} detected for user ${dbUser?.displayName || 'Unknown'} (IP: ${ip}, Risk: ${result.risk}%, Route: ${routeName})`,
             permissionRequired: 'manage_users',
             metadata: { userId, ip, riskScore: result.risk, proxyType: result.type, route: routeName },
           });
@@ -233,8 +304,8 @@ function fraudCheck(routeName = 'unknown', mode = 'full') {
 
       req.fraud = { flagged: result.proxy, result, action };
 
-      // ── Block if mode is full and proxy detected ──
-      if (mode === 'full' && result.proxy) {
+      // ── Block if mode is full and proxy detected (NEVER block protected users) ──
+      if (mode === 'full' && result.proxy && !isProtected) {
         return res.status(403).json({
           success: false,
           error: 'Access denied. VPN, proxy, or TOR connections are not allowed on this platform.',
@@ -253,3 +324,4 @@ function fraudCheck(routeName = 'unknown', mode = 'full') {
 }
 
 module.exports = { fraudCheck, getClientIp };
+

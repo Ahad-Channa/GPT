@@ -17,10 +17,17 @@ const verifyToken = async (req, res, next) => {
 
     const decodedToken = await admin.auth().verifyIdToken(token);
     
-    // Check if user is banned
+    // Check if user is banned or blocked by fraud system
     const userRecord = await User.findOne({ firebaseUid: decodedToken.uid });
-    if (userRecord && userRecord.isBanned) {
-      return res.status(403).json({ success: false, error: 'Forbidden: Account has been banned', isBanned: true });
+    if (userRecord && userRecord.role !== 'admin' && !userRecord.fraudExempt && (userRecord.isBanned || userRecord.fraudStatus === 'blocked')) {
+      return res.status(403).json({
+        success: false,
+        error: userRecord.isBanned
+          ? 'Forbidden: Account has been banned'
+          : 'Access denied: Account is blocked due to security violations',
+        isBanned: userRecord.isBanned,
+        isBlocked: userRecord.fraudStatus === 'blocked',
+      });
     }
 
     // Enforce 2FA verification if enabled
@@ -37,6 +44,21 @@ const verifyToken = async (req, res, next) => {
           return res.status(401).json({ success: false, code: 'TWO_FACTOR_REQUIRED', error: 'Invalid or expired two-factor token.' });
         }
       }
+    }
+
+    if (userRecord && (!userRecord.lastIp || !userRecord.lastCountry)) {
+      const { resolveClientGeo } = require('../utils/geoIp');
+      resolveClientGeo(req).then(({ ip, country }) => {
+        User.updateOne(
+          { _id: userRecord._id },
+          {
+            $set: {
+              ...(!userRecord.lastIp ? { lastIp: ip } : {}),
+              ...(!userRecord.lastCountry ? { lastCountry: country } : {}),
+            }
+          }
+        ).catch(() => {});
+      }).catch(() => {});
     }
 
     req.user = decodedToken;

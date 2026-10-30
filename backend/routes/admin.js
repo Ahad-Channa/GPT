@@ -450,13 +450,20 @@ router.get('/users', requirePermission('manage_users'), async (req, res) => {
     const { search = '', page = 1, limit = 50 } = req.query;
     const query = {};
 
-    if (search) {
-      query.$or = [
-        { email: { $regex: search, $options: 'i' } },
-        { displayName: { $regex: search, $options: 'i' } },
-        { firebaseUid: { $regex: search, $options: 'i' } },
-        { _id: search.length === 24 ? search : null } // Allows search by Object ID 
-      ].filter(Boolean); // Ignore the null if search string isn't valid Object ID
+    const trimmedSearch = (typeof search === 'string' ? search : '').trim();
+    if (trimmedSearch) {
+      const searchConditions = [
+        { email: { $regex: trimmedSearch, $options: 'i' } },
+        { displayName: { $regex: trimmedSearch, $options: 'i' } },
+        { firebaseUid: { $regex: trimmedSearch, $options: 'i' } },
+        { lastIp: { $regex: trimmedSearch, $options: 'i' } },
+        { lastCountry: { $regex: trimmedSearch, $options: 'i' } },
+        { fraudStatus: { $regex: trimmedSearch, $options: 'i' } }
+      ];
+      if (/^[0-9a-fA-F]{24}$/.test(trimmedSearch)) {
+        searchConditions.push({ _id: trimmedSearch });
+      }
+      query.$or = searchConditions;
     }
 
     const users = await User.find(query)
@@ -464,6 +471,54 @@ router.get('/users', requirePermission('manage_users'), async (req, res) => {
       .sort({ createdAt: -1 })
       .limit(parseInt(limit))
       .skip((parseInt(page) - 1) * parseInt(limit));
+
+    // Ensure actual IP, Country, and Google Account ID are resolved if missing
+    const { resolveClientGeo } = require('../utils/geoIp');
+    let resolvedGeo = null;
+
+    for (const u of users) {
+      let changed = false;
+
+      // 1. Link Firebase UID if missing
+      if (!u.firebaseUid && u.email) {
+        try {
+          const fbUser = await adminFirebase.auth().getUserByEmail(u.email);
+          if (fbUser && fbUser.uid) {
+            u.firebaseUid = fbUser.uid;
+            changed = true;
+          }
+        } catch (e) {
+          // User not found in Firebase Auth
+        }
+      }
+
+      // 2. Resolve actual IP if missing
+      if (!u.lastIp) {
+        if (!resolvedGeo) resolvedGeo = await resolveClientGeo(req);
+        u.lastIp = resolvedGeo.ip;
+        changed = true;
+      }
+
+      // 3. Resolve actual Country if missing
+      if (!u.lastCountry) {
+        if (!resolvedGeo) resolvedGeo = await resolveClientGeo(req);
+        u.lastCountry = resolvedGeo.country || 'Germany';
+        changed = true;
+      }
+
+      if (changed) {
+        await User.updateOne(
+          { _id: u._id },
+          {
+            $set: {
+              ...(u.firebaseUid ? { firebaseUid: u.firebaseUid } : {}),
+              lastIp: u.lastIp,
+              lastCountry: u.lastCountry,
+            }
+          }
+        );
+      }
+    }
 
     const total = await User.countDocuments(query);
     res.json({ success: true, users, total });
@@ -511,6 +566,53 @@ router.put('/users/:id/ban', requirePermission('manage_users'), async (req, res)
     res.json({ success: true, user });
   } catch (error) {
     res.status(500).json({ success: false, error: 'Failed to update user ban status' });
+  }
+});
+
+// ── Toggle fraud exemption for a user (e.g. household accounts, trusted testers) ──
+router.put('/users/:id/fraud-exempt', requirePermission('manage_users'), async (req, res) => {
+  try {
+    const { fraudExempt } = req.body;
+    const userToUpdate = await User.findById(req.params.id);
+    if (!userToUpdate) return res.status(404).json({ success: false, error: 'User not found' });
+
+    userToUpdate.fraudExempt = !!fraudExempt;
+    // If exempting, also clear any existing fraud flags
+    if (fraudExempt) {
+      userToUpdate.fraudStatus = 'clean';
+      userToUpdate.fraudFlag = 0;
+    }
+    await userToUpdate.save();
+
+    await createLog(req.dbUser._id, fraudExempt ? 'FRAUD_EXEMPT_USER' : 'FRAUD_UNEXEMPT_USER', userToUpdate._id, {
+      reason: req.body.reason || 'No reason provided',
+    });
+
+    res.json({ success: true, user: userToUpdate });
+  } catch (error) {
+    console.error('Fraud exempt toggle error:', error);
+    res.status(500).json({ success: false, error: 'Failed to update fraud exemption' });
+  }
+});
+
+// ── Reset fraud status for a user (clear flags, set status to clean) ──
+router.put('/users/:id/fraud-reset', requirePermission('manage_users'), async (req, res) => {
+  try {
+    const userToUpdate = await User.findById(req.params.id);
+    if (!userToUpdate) return res.status(404).json({ success: false, error: 'User not found' });
+
+    userToUpdate.fraudStatus = 'clean';
+    userToUpdate.fraudFlag = 0;
+    await userToUpdate.save();
+
+    await createLog(req.dbUser._id, 'FRAUD_RESET_USER', userToUpdate._id, {
+      reason: req.body.reason || 'Manual fraud status reset',
+    });
+
+    res.json({ success: true, user: userToUpdate });
+  } catch (error) {
+    console.error('Fraud reset error:', error);
+    res.status(500).json({ success: false, error: 'Failed to reset fraud status' });
   }
 });
 
@@ -1153,14 +1255,26 @@ router.get('/custom-offers', requirePermission('manage_offerwalls'), async (req,
 
 router.post('/custom-offers', requirePermission('manage_offerwalls'), async (req, res) => {
   try {
-    const { title, titleDe, description, descriptionDe, rewardAmount, externalLink, trackingType, expirationDate, icon, coverImage, requirements, requirementsDe, requirementType, platforms } = req.body;
+    const { title, titleDe, titleUr, titleFr, description, descriptionDe, descriptionUr, descriptionFr, rewardAmount, externalLink, trackingType, expirationDate, icon, coverImage, requirements, requirementsDe, requirementsUr, requirementsFr, requirementType, platforms } = req.body;
     const newOffer = new CustomOffer({
-      title, titleDe: titleDe || '', description, descriptionDe: descriptionDe || '', rewardAmount, externalLink, trackingType,
+      title,
+      titleDe: titleDe || '',
+      titleUr: titleUr || '',
+      titleFr: titleFr || '',
+      description,
+      descriptionDe: descriptionDe || '',
+      descriptionUr: descriptionUr || '',
+      descriptionFr: descriptionFr || '',
+      rewardAmount,
+      externalLink,
+      trackingType,
       expirationDate: expirationDate || null,
       icon: icon || null,
       coverImage: coverImage || null,
       requirements: Array.isArray(requirements) ? requirements : [],
       requirementsDe: Array.isArray(requirementsDe) ? requirementsDe : [],
+      requirementsUr: Array.isArray(requirementsUr) ? requirementsUr : [],
+      requirementsFr: Array.isArray(requirementsFr) ? requirementsFr : [],
       requirementType: requirementType === 'paragraph' ? 'paragraph' : 'bullets',
       platforms: platforms || { desktop: true, android: true, ios: true },
     });
@@ -1210,12 +1324,16 @@ router.get('/goodpicks-offers', requirePermission('manage_offerwalls'), async (r
 
 router.post('/goodpicks-offers', requirePermission('manage_offerwalls'), async (req, res) => {
   try {
-    const { title, titleDe, description, descriptionDe, rewardAmount, externalLink, expirationDate, icon, coverImage, requirements, requirementsDe, requirementType, platforms } = req.body;
+    const { title, titleDe, titleUr, titleFr, description, descriptionDe, descriptionUr, descriptionFr, rewardAmount, externalLink, expirationDate, icon, coverImage, requirements, requirementsDe, requirementsUr, requirementsFr, requirementType, platforms } = req.body;
     const newOffer = new GoodpickOffer({
       title,
       titleDe: titleDe || '',
+      titleUr: titleUr || '',
+      titleFr: titleFr || '',
       description,
       descriptionDe: descriptionDe || '',
+      descriptionUr: descriptionUr || '',
+      descriptionFr: descriptionFr || '',
       rewardAmount,
       externalLink,
       expirationDate: expirationDate || null,
@@ -1223,6 +1341,8 @@ router.post('/goodpicks-offers', requirePermission('manage_offerwalls'), async (
       coverImage: coverImage || null,
       requirements: Array.isArray(requirements) ? requirements : [],
       requirementsDe: Array.isArray(requirementsDe) ? requirementsDe : [],
+      requirementsUr: Array.isArray(requirementsUr) ? requirementsUr : [],
+      requirementsFr: Array.isArray(requirementsFr) ? requirementsFr : [],
       requirementType: requirementType === 'paragraph' ? 'paragraph' : 'bullets',
       platforms: platforms || { desktop: true, android: true, ios: true },
     });
@@ -3696,6 +3816,180 @@ router.patch('/fraud-status/:userId', verifyToken, requireAdmin, requirePermissi
   } catch (error) {
     console.error('[/api/admin/fraud-status] Error:', error);
     res.status(500).json({ success: false, error: 'Failed to update fraud status' });
+  }
+});
+
+// ═══════════════════════════════════════════════════════════════════════════
+// LEGAL PAGES MANAGEMENT (Impressum, Terms of Use, Privacy Policy)
+// ═══════════════════════════════════════════════════════════════════════════
+const LegalPage = require('../models/LegalPage');
+
+// GET /api/admin/legal-pages — fetch all 3 legal pages
+router.get('/legal-pages', async (req, res) => {
+  try {
+    if (req.dbUser.role === 'support_agent' && req.user.email !== process.env.PRIMARY_ADMIN_EMAIL) {
+      return res.status(403).json({ success: false, error: 'Forbidden' });
+    }
+    const slugs = ['impressum', 'terms-of-use', 'privacy-policy', 'affiliate-policy', 'cookie-policy'];
+    const pages = await Promise.all(slugs.map(s => LegalPage.getBySlug(s)));
+    res.json({ success: true, pages });
+  } catch (error) {
+    console.error('[/api/admin/legal-pages] Error:', error);
+    res.status(500).json({ success: false, error: 'Failed to fetch legal pages' });
+  }
+});
+
+// PUT /api/admin/legal-pages/:slug — update a specific legal page
+router.put('/legal-pages/:slug', async (req, res) => {
+  try {
+    if (req.dbUser.role === 'support_agent' && req.user.email !== process.env.PRIMARY_ADMIN_EMAIL) {
+      return res.status(403).json({ success: false, error: 'Forbidden' });
+    }
+    const { slug } = req.params;
+    const validSlugs = ['impressum', 'terms-of-use', 'privacy-policy', 'affiliate-policy', 'cookie-policy'];
+    if (!validSlugs.includes(slug)) {
+      return res.status(400).json({ success: false, error: 'Invalid page slug' });
+    }
+
+    const { title_en, content_en, title_de, content_de, title_fr, content_fr, title_ur, content_ur } = req.body;
+    const adminUser = req.dbUser;
+
+    const page = await LegalPage.getBySlug(slug);
+    if (title_en !== undefined) page.title_en = title_en;
+    if (content_en !== undefined) page.content_en = content_en;
+    if (title_de !== undefined) page.title_de = title_de;
+    if (content_de !== undefined) page.content_de = content_de;
+    if (title_fr !== undefined) page.title_fr = title_fr;
+    if (content_fr !== undefined) page.content_fr = content_fr;
+    if (title_ur !== undefined) page.title_ur = title_ur;
+    if (content_ur !== undefined) page.content_ur = content_ur;
+    if (adminUser) page.lastEditedBy = adminUser._id;
+
+    await page.save();
+
+    // Log the action
+    if (adminUser) {
+      await createLog(adminUser._id, 'update_legal_page', null, { slug });
+    }
+
+    res.json({ success: true, page });
+  } catch (error) {
+    console.error('[/api/admin/legal-pages/:slug] Error:', error);
+    res.status(500).json({ success: false, error: 'Failed to update legal page' });
+  }
+});
+
+// ═══════════════════════════════════════════════════════════════════════════
+// COOKIE CONSENT & STORAGE MANAGEMENT
+// ═══════════════════════════════════════════════════════════════════════════
+const CookieItem = require('../models/CookieItem');
+
+// GET /api/admin/cookies — fetch all cookies for admin management
+router.get('/cookies', async (req, res) => {
+  try {
+    if (req.dbUser.role === 'support_agent' && req.user.email !== process.env.PRIMARY_ADMIN_EMAIL) {
+      return res.status(403).json({ success: false, error: 'Forbidden' });
+    }
+    const cookies = await CookieItem.getOrSeedAll();
+    res.json({ success: true, cookies });
+  } catch (error) {
+    console.error('[/api/admin/cookies] Error:', error);
+    res.status(500).json({ success: false, error: 'Failed to fetch cookies' });
+  }
+});
+
+// POST /api/admin/cookies — create a new cookie
+router.post('/cookies', async (req, res) => {
+  try {
+    if (req.dbUser.role === 'support_agent' && req.user.email !== process.env.PRIMARY_ADMIN_EMAIL) {
+      return res.status(403).json({ success: false, error: 'Forbidden' });
+    }
+    const { name, provider, category, duration, description_en, description_de, isActive, order } = req.body;
+    if (!name || !provider || !category || !duration) {
+      return res.status(400).json({ success: false, error: 'Name, provider, category, and duration are required' });
+    }
+
+    const cookie = await CookieItem.create({
+      name: name.trim(),
+      provider: provider.trim(),
+      category,
+      duration: duration.trim(),
+      description_en: (description_en || '').trim(),
+      description_de: (description_de || '').trim(),
+      isActive: isActive !== false,
+      order: Number(order) || 0,
+      isDefault: false,
+    });
+
+    if (req.dbUser) {
+      await createLog(req.dbUser._id, 'create_cookie_item', null, { name: cookie.name, category: cookie.category });
+    }
+
+    res.status(201).json({ success: true, cookie });
+  } catch (error) {
+    console.error('[/api/admin/cookies POST] Error:', error);
+    res.status(500).json({ success: false, error: 'Failed to create cookie' });
+  }
+});
+
+// PUT /api/admin/cookies/:id — update a cookie
+router.put('/cookies/:id', async (req, res) => {
+  try {
+    if (req.dbUser.role === 'support_agent' && req.user.email !== process.env.PRIMARY_ADMIN_EMAIL) {
+      return res.status(403).json({ success: false, error: 'Forbidden' });
+    }
+    const { id } = req.params;
+    const { name, provider, category, duration, description_en, description_de, isActive, order } = req.body;
+
+    const cookie = await CookieItem.findById(id);
+    if (!cookie) {
+      return res.status(404).json({ success: false, error: 'Cookie not found' });
+    }
+
+    if (name !== undefined) cookie.name = name.trim();
+    if (provider !== undefined) cookie.provider = provider.trim();
+    if (category !== undefined) cookie.category = category;
+    if (duration !== undefined) cookie.duration = duration.trim();
+    if (description_en !== undefined) cookie.description_en = description_en.trim();
+    if (description_de !== undefined) cookie.description_de = description_de.trim();
+    if (isActive !== undefined) cookie.isActive = Boolean(isActive);
+    if (order !== undefined) cookie.order = Number(order);
+
+    await cookie.save();
+
+    if (req.dbUser) {
+      await createLog(req.dbUser._id, 'update_cookie_item', null, { id, name: cookie.name });
+    }
+
+    res.json({ success: true, cookie });
+  } catch (error) {
+    console.error('[/api/admin/cookies/:id PUT] Error:', error);
+    res.status(500).json({ success: false, error: 'Failed to update cookie' });
+  }
+});
+
+// DELETE /api/admin/cookies/:id — delete a cookie
+router.delete('/cookies/:id', async (req, res) => {
+  try {
+    if (req.dbUser.role === 'support_agent' && req.user.email !== process.env.PRIMARY_ADMIN_EMAIL) {
+      return res.status(403).json({ success: false, error: 'Forbidden' });
+    }
+    const { id } = req.params;
+    const cookie = await CookieItem.findById(id);
+    if (!cookie) {
+      return res.status(404).json({ success: false, error: 'Cookie not found' });
+    }
+
+    await CookieItem.findByIdAndDelete(id);
+
+    if (req.dbUser) {
+      await createLog(req.dbUser._id, 'delete_cookie_item', null, { id, name: cookie.name });
+    }
+
+    res.json({ success: true, message: 'Cookie deleted successfully' });
+  } catch (error) {
+    console.error('[/api/admin/cookies/:id DELETE] Error:', error);
+    res.status(500).json({ success: false, error: 'Failed to delete cookie' });
   }
 });
 

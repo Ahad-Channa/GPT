@@ -6,11 +6,15 @@ import { useTranslation } from 'react-i18next';
 import { useNotifications } from '../contexts/NotificationContext';
 import { localizeNotification } from '../utils/notificationLocalizer';
 
+import { useTheme } from '../contexts/ThemeContext';
+
 /**
  * Renders notification message text, replacing the linkText (e.g. "VIP page")
  * with a clickable anchor when metadata.link and metadata.linkText are present.
  */
 function NotificationMessage({ message, metadata, onLinkClick }) {
+  const { isDarkMode } = useTheme();
+
   if (!metadata?.link || !metadata?.linkText) {
     return (
       <div
@@ -20,7 +24,7 @@ function NotificationMessage({ message, metadata, onLinkClick }) {
           fontWeight: 400,
           fontSize: '13px',
           lineHeight: '20px',
-          color: '#18181B',
+          color: isDarkMode ? 'rgba(255, 255, 255, 0.85)' : '#18181B',
           wordBreak: 'break-word',
         }}
       >
@@ -41,7 +45,7 @@ function NotificationMessage({ message, metadata, onLinkClick }) {
           fontWeight: 400,
           fontSize: '13px',
           lineHeight: '20px',
-          color: '#18181B',
+          color: isDarkMode ? 'rgba(255, 255, 255, 0.85)' : '#18181B',
           wordBreak: 'break-word',
         }}
       >
@@ -58,7 +62,7 @@ function NotificationMessage({ message, metadata, onLinkClick }) {
         fontWeight: 400,
         fontSize: '13px',
         lineHeight: '20px',
-        color: '#18181B',
+        color: isDarkMode ? 'rgba(255, 255, 255, 0.85)' : '#18181B',
         wordBreak: 'break-word',
       }}
     >
@@ -68,7 +72,7 @@ function NotificationMessage({ message, metadata, onLinkClick }) {
           e.stopPropagation();
           onLinkClick(link);
         }}
-        className="text-indigo-600 hover:text-indigo-800 underline underline-offset-2 font-semibold transition-colors"
+        className={isDarkMode ? "text-indigo-400 hover:text-indigo-300 underline underline-offset-2 font-semibold transition-colors" : "text-indigo-600 hover:text-indigo-800 underline underline-offset-2 font-semibold transition-colors"}
         style={{ fontFamily: '"Poppins", sans-serif', fontWeight: 600, fontSize: '13px' }}
       >
         {linkText}
@@ -79,6 +83,7 @@ function NotificationMessage({ message, metadata, onLinkClick }) {
 }
 
 export default function NotificationPanel() {
+  const { isDarkMode } = useTheme();
   const { t, i18n } = useTranslation();
   const {
     notifications,
@@ -131,10 +136,11 @@ export default function NotificationPanel() {
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
             onClick={closePanel}
-            className="fixed inset-0 z-40 bg-black/25 backdrop-blur-[2px] cursor-pointer"
+            style={{ position: 'fixed', inset: 0, zIndex: 45 }}
+            className="lg:bg-transparent bg-black/40 backdrop-blur-sm lg:backdrop-blur-none lg:pointer-events-none cursor-pointer"
           />
 
-          {/* ── Main Notification Sidebar (width: 370, height: 100vh, top: 0, right: 0, bottom: 0) ── */}
+          {/* ── Main Notification Sidebar (Mobile: top 16px, bottom 0, left 40px, right 10px, max-w 370px, h: calc(100dvh-16px); Desktop: 10px from top, bottom, right) ── */}
           <motion.div
             ref={panelRef}
             initial={{ x: '110%', opacity: 0 }}
@@ -142,31 +148,16 @@ export default function NotificationPanel() {
             exit={{ x: '110%', opacity: 0 }}
             transition={{ type: 'spring', damping: 28, stiffness: 220 }}
             style={{
-              position: 'fixed',
-              top: '0px',
-              right: '0px',
-              bottom: '0px',
-              width: '100%',
-              maxWidth: '370px',
-              height: '100vh',
-              borderRadius: '30px 0 0 30px',
-              background: '#FFFFFF',
-              boxShadow: '-8px 0px 36px 0px rgba(0, 0, 0, 0.12)',
-              borderLeft: '1px solid rgba(0, 0, 0, 0.05)',
-              opacity: 1,
-              transform: 'rotate(0deg)',
-              zIndex: 50,
-              display: 'flex',
-              flexDirection: 'column',
-              overflow: 'hidden',
-              boxSizing: 'border-box',
+              background: isDarkMode ? 'rgba(12, 14, 17, 1)' : '#FFFFFF',
+              border: isDarkMode ? '1px solid rgba(255, 255, 255, 0.08)' : '1px solid rgba(0, 0, 0, 0.05)',
+              boxShadow: isDarkMode ? '-8px 0px 36px 0px rgba(0, 0, 0, 0.5)' : '-8px 0px 36px 0px rgba(0, 0, 0, 0.12)',
             }}
+            className="fixed z-50 flex flex-col overflow-hidden box-border top-[16px] bottom-0 left-[40px] right-[10px] ml-auto max-w-[370px] max-h-[1000px] h-[calc(100dvh-16px)] rounded-t-[30px] rounded-b-none opacity-100 rotate-0 lg:top-[10px] lg:bottom-[10px] lg:right-[10px] lg:left-auto lg:h-[calc(100vh-20px)] lg:max-h-none lg:w-[370px] lg:max-w-[370px] lg:rounded-[30px]"
           >
             {/* ── Top Header Area ── */}
             <div
-              className="flex items-center justify-between shrink-0"
+              className="flex items-center justify-between shrink-0 p-4 pb-3"
               style={{
-                padding: '22px 20px 16px',
                 boxSizing: 'border-box',
               }}
             >
@@ -176,7 +167,7 @@ export default function NotificationPanel() {
                   fontWeight: 700,
                   fontSize: '20px',
                   lineHeight: '100%',
-                  color: '#000000',
+                  color: isDarkMode ? '#FFFFFF' : '#000000',
                   margin: 0,
                   padding: 0,
                   display: 'flex',
@@ -216,15 +207,15 @@ export default function NotificationPanel() {
                   </button>
                 )}
 
-                {/* Close Button (Black Circle with White X - 22x22) */}
+                {/* Close Button (White circle in dark mode, Black circle in light mode) */}
                 <button
                   onClick={closePanel}
                   style={{
                     width: '22px',
                     height: '22px',
                     borderRadius: '50%',
-                    background: '#000000',
-                    color: '#FFFFFF',
+                    background: isDarkMode ? '#FFFFFF' : '#000000',
+                    color: isDarkMode ? '#000000' : '#FFFFFF',
                     border: 'none',
                     display: 'flex',
                     alignItems: 'center',
@@ -244,9 +235,9 @@ export default function NotificationPanel() {
 
             {/* ── Content / Notification Items List ── */}
             <div
-              className="flex-1 overflow-y-auto no-scrollbar"
+              className="mobile-notif-bottom flex-1 overflow-y-auto no-scrollbar"
               style={{
-                padding: '12px 20px',
+                padding: '12px 16px',
                 display: 'flex',
                 flexDirection: 'column',
                 scrollbarWidth: 'none',
@@ -255,15 +246,15 @@ export default function NotificationPanel() {
             >
               {notifications.length === 0 ? (
                 <div className="flex flex-col items-center justify-center flex-1 py-16 text-center text-gray-400 gap-2">
-                  <div className="w-12 h-12 rounded-full bg-black/5 flex items-center justify-center mb-2">
-                    <FiBell size={22} className="text-gray-400" />
+                  <div className={`w-12 h-12 rounded-full flex items-center justify-center mb-2 ${isDarkMode ? 'bg-white/10' : 'bg-black/5'}`}>
+                    <FiBell size={22} className={isDarkMode ? 'text-white/60' : 'text-gray-400'} />
                   </div>
                   <h4
                     style={{
                       fontFamily: '"Bricolage Grotesque", sans-serif',
                       fontWeight: 700,
                       fontSize: '16px',
-                      color: '#000000',
+                      color: isDarkMode ? '#FFFFFF' : '#000000',
                       margin: 0,
                     }}
                   >
@@ -273,7 +264,7 @@ export default function NotificationPanel() {
                     style={{
                       fontFamily: '"Poppins", sans-serif',
                       fontSize: '12px',
-                      color: 'rgba(14, 15, 12, 0.5)',
+                      color: isDarkMode ? 'rgba(255, 255, 255, 0.6)' : 'rgba(14, 15, 12, 0.5)',
                       margin: 0,
                       maxWidth: '220px',
                     }}
@@ -301,7 +292,7 @@ export default function NotificationPanel() {
                         padding: '16px 0',
                         borderBottom:
                           idx !== notifications.length - 1
-                            ? '1px solid rgba(0, 0, 0, 0.07)'
+                            ? (isDarkMode ? '1px solid rgba(255, 255, 255, 0.1)' : '1px solid rgba(0, 0, 0, 0.07)')
                             : 'none',
                         display: 'flex',
                         flexDirection: 'column',
@@ -319,7 +310,7 @@ export default function NotificationPanel() {
                             fontWeight: 700,
                             fontSize: '16px',
                             lineHeight: '120%',
-                            color: '#000000',
+                            color: isDarkMode ? '#FFFFFF' : '#000000',
                             margin: 0,
                             padding: 0,
                             display: 'flex',
@@ -339,8 +330,8 @@ export default function NotificationPanel() {
                             width: '18px',
                             height: '18px',
                             borderRadius: '50%',
-                            background: '#000000',
-                            color: '#FFFFFF',
+                            background: isDarkMode ? '#FFFFFF' : '#000000',
+                            color: isDarkMode ? '#000000' : '#FFFFFF',
                             border: 'none',
                             cursor: 'pointer',
                             display: 'flex',
@@ -370,14 +361,14 @@ export default function NotificationPanel() {
                         fontFamily: '"Poppins", sans-serif',
                         fontWeight: 400,
                         fontSize: '12px',
-                        color: 'rgba(14, 15, 12, 0.5)',
+                        color: isDarkMode ? 'rgba(255, 255, 255, 0.45)' : 'rgba(14, 15, 12, 0.5)',
                         lineHeight: '100%',
                         marginTop: '4px',
                       }}
                     >
                       {(() => {
                         const date = new Date(notif.createdAt);
-                        const locale = i18n.language === 'de' ? 'de-DE' : 'en-US';
+                        const locale = i18n.language === 'de' ? 'de-DE' : (i18n.language === 'fr' ? 'fr-FR' : 'en-US');
                         return (
                           date.toLocaleDateString(locale, {
                             day: 'numeric',
