@@ -27,10 +27,12 @@ const GoodpickModal = ({ offer, onClose, onSaved, token, currentUser }) => {
     titleDe: offer?.titleDe || '',
     titleUr: offer?.titleUr || '',
     titleFr: offer?.titleFr || '',
+    titleEs: offer?.titleEs || '',
     description: offer?.description || '',
     descriptionDe: offer?.descriptionDe || '',
     descriptionUr: offer?.descriptionUr || '',
     descriptionFr: offer?.descriptionFr || '',
+    descriptionEs: offer?.descriptionEs || '',
     rewardAmount: offer?.rewardAmount || '',
     externalLink: offer?.externalLink || '',
     expirationDate: offer?.expirationDate ? new Date(offer.expirationDate).toISOString().slice(0, 16) : '',
@@ -48,6 +50,9 @@ const GoodpickModal = ({ offer, onClose, onSaved, token, currentUser }) => {
     requirementsFr: Array.isArray(offer?.requirementsFr)
       ? offer.requirementsFr.join('\n')
       : (offer?.requirementsFr || ''),
+    requirementsEs: Array.isArray(offer?.requirementsEs)
+      ? offer.requirementsEs.join('\n')
+      : (offer?.requirementsEs || ''),
     requirementType: offer?.requirementType || 'bullets',
     platforms: offer?.platforms || { desktop: true, android: true, ios: true },
   });
@@ -88,6 +93,9 @@ const GoodpickModal = ({ offer, onClose, onSaved, token, currentUser }) => {
           requirementsFr: form.requirementType === 'paragraph'
             ? [(form.requirementsFr || '').trim()].filter(Boolean)
             : (form.requirementsFr || '').split('\n').map((r) => r.trim()).filter(Boolean),
+          requirementsEs: form.requirementType === 'paragraph'
+            ? [(form.requirementsEs || '').trim()].filter(Boolean)
+            : (form.requirementsEs || '').split('\n').map((r) => r.trim()).filter(Boolean),
           requirementType: form.requirementType,
           platforms: form.platforms,
         }),
@@ -204,6 +212,21 @@ const GoodpickModal = ({ offer, onClose, onSaved, token, currentUser }) => {
                 <span>Français</span>
                 {Boolean(form.titleFr) && (
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" title="French translated" />
+                )}
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveTab('es')}
+                className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-lg text-xs font-bold transition-all ${
+                  activeTab === 'es'
+                    ? 'bg-white text-gray-900 shadow-sm border border-gray-200'
+                    : 'text-gray-500 hover:text-gray-800'
+                }`}
+              >
+                <span>🇪🇸</span>
+                <span>Español</span>
+                {Boolean(form.titleEs) && (
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" title="Spanish translated" />
                 )}
               </button>
               <button
@@ -397,6 +420,56 @@ const GoodpickModal = ({ offer, onClose, onSaved, token, currentUser }) => {
                     form.requirementType === 'paragraph'
                       ? 'ex. S\'inscrire et installer l\'application sur votre appareil.'
                       : 'ex. S\'inscrire → 10 Coins reçus\nDéposer 50 € → 50 000 Coins reçus'
+                  }
+                  rows={form.requirementType === 'paragraph' ? 2 : 3}
+                  className="w-full bg-white border border-gray-300 rounded-xl px-3.5 py-2 text-gray-900 text-sm placeholder-gray-400 focus:outline-none focus:border-[#1E2538] focus:ring-1 focus:ring-[#1E2538]/20 resize-none transition-all"
+                />
+              </div>
+            </div>
+          )}
+
+          {/* Tab: Spanish Content */}
+          {activeTab === 'es' && (
+            <div className="space-y-4">
+              <div>
+                <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1.5">
+                  🇪🇸 Title (Spanish / Español)
+                </label>
+                <input
+                  value={form.titleEs}
+                  onChange={set('titleEs')}
+                  placeholder="ej. Pesca en la casa del árbol"
+                  className="w-full bg-white border border-gray-300 rounded-xl px-3.5 py-2 text-gray-900 text-sm placeholder-gray-400 focus:outline-none focus:border-[#1E2538] focus:ring-1 focus:ring-[#1E2538]/20 transition-all"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1.5">
+                  🇪🇸 Description (Spanish / Español)
+                </label>
+                <textarea
+                  value={form.descriptionEs}
+                  onChange={set('descriptionEs')}
+                  placeholder="Breve descripción para la tarjeta y la ventana de detalle..."
+                  rows={2}
+                  className="w-full bg-white border border-gray-300 rounded-xl px-3.5 py-2 text-gray-900 text-sm placeholder-gray-400 focus:outline-none focus:border-[#1E2538] focus:ring-1 focus:ring-[#1E2538]/20 resize-none transition-all"
+                />
+              </div>
+
+              <div>
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                    🇪🇸 Requirements (Spanish / Español)
+                  </label>
+                  <span className="text-[11px] text-gray-400">Format: {form.requirementType === 'paragraph' ? 'Paragraph' : 'Bullets'}</span>
+                </div>
+                <textarea
+                  value={form.requirementsEs}
+                  onChange={set('requirementsEs')}
+                  placeholder={
+                    form.requirementType === 'paragraph'
+                      ? "ej. Regístrate e instala la app en tu dispositivo."
+                      : "ej. Registrarse → recibir 10 Monedas\nDepositar 50 € → recibir 50.000 Monedas"
                   }
                   rows={form.requirementType === 'paragraph' ? 2 : 3}
                   className="w-full bg-white border border-gray-300 rounded-xl px-3.5 py-2 text-gray-900 text-sm placeholder-gray-400 focus:outline-none focus:border-[#1E2538] focus:ring-1 focus:ring-[#1E2538]/20 resize-none transition-all"
@@ -816,6 +889,11 @@ const AdminGoodpicksOffers = () => {
                               {offer.titleFr && (
                                 <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold bg-blue-50 text-blue-700 border border-blue-200" title={`FR: ${offer.titleFr}`}>
                                   🇫🇷 FR
+                                </span>
+                              )}
+                              {offer.titleEs && (
+                                <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold bg-amber-50 text-amber-700 border border-amber-200" title={`ES: ${offer.titleEs}`}>
+                                  🇪🇸 ES
                                 </span>
                               )}
                               {offer.titleUr && (

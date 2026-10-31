@@ -321,6 +321,7 @@ const Header = ({ onChatToggle, chatOpen, fullWidth }) => {
   const { isDarkMode } = useTheme();
   const isGerman = i18n.language?.startsWith('de');
   const isFrench = i18n.language?.startsWith('fr');
+  const isSpanish = i18n.language?.startsWith('es');
   const isUrdu = i18n.language === 'ur' || i18n.language?.startsWith('ur');
   const { currentUser, mongoUser, logout, isAdmin } = useAuth();
   const { unreadCount, togglePanel, hasUnreadChat, setHasUnreadChat } = useNotifications();
@@ -838,11 +839,11 @@ const Header = ({ onChatToggle, chatOpen, fullWidth }) => {
 
       {/* Group 2: Main Links (Desktop) */}
       <div
-        className={`hidden lg:flex items-center relative ${isUrdu ? '-left-[60px]' : (isFrench ? '-left-[60px]' : (isGerman ? '-left-[75px]' : '-left-[70px]'))}`}
+        className={`hidden lg:flex items-center relative ${isSpanish ? '-left-[85px]' : (isUrdu ? '-left-[60px]' : (isFrench ? '-left-[60px]' : (isGerman ? '-left-[75px]' : '-left-[70px]')))}`}
         style={{
           width: 'auto',
           height: '20px',
-          gap: isFrench ? '24px' : (isGerman ? '32px' : '40px'),
+          gap: (isFrench || isSpanish) ? '24px' : (isGerman ? '32px' : '40px'),
           whiteSpace: 'nowrap',
           opacity: 1,
           transform: 'rotate(0deg)',

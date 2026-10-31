@@ -233,16 +233,19 @@ export const GoodpicksDetailModal = ({ offer, onClose, token }) => {
   const { t, i18n } = useTranslation();
   const isDe = i18n.language?.startsWith('de');
   const isFr = i18n.language?.startsWith('fr');
+  const isEs = i18n.language?.startsWith('es');
   const isUr = i18n.language?.startsWith('ur');
-  const title = (isUr && offer.titleUr) ? offer.titleUr : ((isDe && offer.titleDe) ? offer.titleDe : ((isFr && offer.titleFr) ? offer.titleFr : offer.title));
-  const description = (isUr && offer.descriptionUr) ? offer.descriptionUr : ((isDe && offer.descriptionDe) ? offer.descriptionDe : ((isFr && offer.descriptionFr) ? offer.descriptionFr : (offer.description || t('goodpicks.defaultDescription'))));
+  const title = (isUr && offer.titleUr) ? offer.titleUr : ((isDe && offer.titleDe) ? offer.titleDe : ((isFr && offer.titleFr) ? offer.titleFr : ((isEs && offer.titleEs) ? offer.titleEs : offer.title)));
+  const description = (isUr && offer.descriptionUr) ? offer.descriptionUr : ((isDe && offer.descriptionDe) ? offer.descriptionDe : ((isFr && offer.descriptionFr) ? offer.descriptionFr : ((isEs && offer.descriptionEs) ? offer.descriptionEs : (offer.description || t('goodpicks.defaultDescription')))));
   const requirementsList = (isUr && offer.requirementsUr && offer.requirementsUr.length > 0)
     ? offer.requirementsUr
     : ((isDe && offer.requirementsDe && offer.requirementsDe.length > 0)
       ? offer.requirementsDe
       : ((isFr && offer.requirementsFr && offer.requirementsFr.length > 0)
         ? offer.requirementsFr
-        : offer.requirements));
+        : ((isEs && offer.requirementsEs && offer.requirementsEs.length > 0)
+          ? offer.requirementsEs
+          : offer.requirements)));
 
   const [loading, setLoading] = useState(false);
   const [showSupportModal, setShowSupportModal] = useState(false);
@@ -923,6 +926,7 @@ export const GoodpicksOfferwallModal = ({ onClose, token }) => {
   const { t, i18n } = useTranslation();
   const isDe = i18n.language?.startsWith('de');
   const isFr = i18n.language?.startsWith('fr');
+  const isEs = i18n.language?.startsWith('es');
   const isUr = i18n.language?.startsWith('ur');
   const [offers, setOffers] = useState([]);
   const [historyOffers, setHistoryOffers] = useState(defaultGoodpicksHistory);
@@ -1147,8 +1151,8 @@ export const GoodpicksOfferwallModal = ({ onClose, token }) => {
               <div className="flex-1 flex flex-col gap-2 pb-4 w-full">
                 {historyOffers && historyOffers.length > 0 ? (
                   historyOffers.map((item) => {
-                    const itemTitle = (isUr && item.titleUr) ? item.titleUr : ((isDe && item.titleDe) ? item.titleDe : ((isFr && item.titleFr) ? item.titleFr : item.title));
-                    const itemDesc = (isUr && item.descriptionUr) ? item.descriptionUr : ((isDe && item.descriptionDe) ? item.descriptionDe : ((isFr && item.descriptionFr) ? item.descriptionFr : (item.description || t('goodpicks.defaultDescription'))));
+                    const itemTitle = (isUr && item.titleUr) ? item.titleUr : ((isDe && item.titleDe) ? item.titleDe : ((isFr && item.titleFr) ? item.titleFr : ((isEs && item.titleEs) ? item.titleEs : item.title)));
+                    const itemDesc = (isUr && item.descriptionUr) ? item.descriptionUr : ((isDe && item.descriptionDe) ? item.descriptionDe : ((isFr && item.descriptionFr) ? item.descriptionFr : ((isEs && item.descriptionEs) ? item.descriptionEs : (item.description || t('goodpicks.defaultDescription')))));
                     const rewardStr = (item.rewardAmount || 0).toLocaleString('de-DE');
 
                     return (
@@ -1399,8 +1403,8 @@ export const GoodpicksOfferwallModal = ({ onClose, token }) => {
                   <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 items-start gap-2 md:gap-2.5 pb-4 w-full">
                     {sortedOffers.map((offer) => {
                       const rewardStr = (offer.rewardAmount || 0).toLocaleString('de-DE');
-                      const cardTitle = (isUr && offer.titleUr) ? offer.titleUr : ((isDe && offer.titleDe) ? offer.titleDe : ((isFr && offer.titleFr) ? offer.titleFr : offer.title));
-                      const cardDesc = (isUr && offer.descriptionUr) ? offer.descriptionUr : ((isDe && offer.descriptionDe) ? offer.descriptionDe : ((isFr && offer.descriptionFr) ? offer.descriptionFr : (offer.description || t('goodpicks.defaultDescription'))));
+                      const cardTitle = (isUr && offer.titleUr) ? offer.titleUr : ((isDe && offer.titleDe) ? offer.titleDe : ((isFr && offer.titleFr) ? offer.titleFr : ((isEs && offer.titleEs) ? offer.titleEs : offer.title)));
+                      const cardDesc = (isUr && offer.descriptionUr) ? offer.descriptionUr : ((isDe && offer.descriptionDe) ? offer.descriptionDe : ((isFr && offer.descriptionFr) ? offer.descriptionFr : ((isEs && offer.descriptionEs) ? offer.descriptionEs : (offer.description || t('goodpicks.defaultDescription')))));
 
                       return (
                         <div

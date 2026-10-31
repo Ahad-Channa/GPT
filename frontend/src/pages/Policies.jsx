@@ -10,11 +10,11 @@ import Footer from '../components/layout/Footer';
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
 const TABS = [
-  { slug: 'terms-of-use', labelEn: 'Terms of Service', labelDe: 'Nutzungsbedingungen', labelUr: 'استعمال کی شرائط', labelFr: "Conditions d'Utilisation" },
-  { slug: 'privacy-policy', labelEn: 'Privacy Policy', labelDe: 'Datenschutzerklärung', labelUr: 'پرائیویسی پالیسی', labelFr: 'Politique de Confidentialité' },
-  { slug: 'cookie-policy', labelEn: 'Cookie Policy', labelDe: 'Cookie-Richtlinie', labelUr: 'کوکی پالیسی', labelFr: 'Politique de Cookies' },
-  { slug: 'affiliate-policy', labelEn: 'Affiliate Policy', labelDe: 'Affiliate-Richtlinie', labelUr: 'ایفیلی ایٹ پالیسی', labelFr: "Conditions d'Affiliation" },
-  { slug: 'impressum', labelEn: 'Impressum', labelDe: 'Impressum', labelUr: 'امپریسم (قانونی معلومات)', labelFr: 'Mentions Légales' },
+  { slug: 'terms-of-use', labelEn: 'Terms of Service', labelDe: 'Nutzungsbedingungen', labelUr: 'استعمال کی شرائط', labelFr: "Conditions d'Utilisation", labelEs: 'Términos de Servicio' },
+  { slug: 'privacy-policy', labelEn: 'Privacy Policy', labelDe: 'Datenschutzerklärung', labelUr: 'پرائیویسی پالیسی', labelFr: 'Politique de Confidentialité', labelEs: 'Política de Privacidad' },
+  { slug: 'cookie-policy', labelEn: 'Cookie Policy', labelDe: 'Cookie-Richtlinie', labelUr: 'کوکی پالیسی', labelFr: 'Politique de Cookies', labelEs: 'Política de Cookies' },
+  { slug: 'affiliate-policy', labelEn: 'Affiliate Policy', labelDe: 'Affiliate-Richtlinie', labelUr: 'ایفیلی ایٹ پالیسی', labelFr: "Conditions d'Affiliation", labelEs: 'Política de Afiliados' },
+  { slug: 'impressum', labelEn: 'Impressum', labelDe: 'Impressum', labelUr: 'امپریسم (قانونی معلومات)', labelFr: 'Mentions Légales', labelEs: 'Aviso Legal' },
 ];
 
 const SLUG_ALIASES = {
@@ -176,6 +176,7 @@ export default function Policies({ customSlug }) {
   const { t, i18n } = useTranslation();
   const isDe = i18n?.language?.startsWith('de');
   const isFr = i18n?.language?.startsWith('fr');
+  const isEs = i18n?.language?.startsWith('es');
   const isUr = i18n?.language === 'ur' || i18n?.language?.startsWith('ur');
   const { isDarkMode } = useTheme();
   const { openCookieSettings, cookiesList } = useCookieConsent();
@@ -252,8 +253,10 @@ export default function Policies({ customSlug }) {
         ? (currentPage.title_de || currentPage.title_en)
         : isFr
         ? (currentPage.title_fr || currentPage.title_en)
+        : isEs
+        ? (currentPage.title_es || currentPage.title_en)
         : (currentPage.title_en || currentPage.title_de))
-    : (TABS.find(t => t.slug === activeSlug)?.[isUr ? 'labelUr' : isDe ? 'labelDe' : isFr ? 'labelFr' : 'labelEn'] || 'Policy');
+    : (TABS.find(t => t.slug === activeSlug)?.[isUr ? 'labelUr' : isDe ? 'labelDe' : isFr ? 'labelFr' : isEs ? 'labelEs' : 'labelEn'] || 'Policy');
 
   const currentContent = currentPage
     ? (isUr
@@ -262,6 +265,8 @@ export default function Policies({ customSlug }) {
         ? (currentPage.content_de || currentPage.content_en || '')
         : isFr
         ? (currentPage.content_fr || currentPage.content_en || '')
+        : isEs
+        ? (currentPage.content_es || currentPage.content_en || '')
         : (currentPage.content_en || currentPage.content_de || ''))
     : '';
 
@@ -269,7 +274,7 @@ export default function Policies({ customSlug }) {
   const cleanedContent = currentContent ? currentContent.replace(/^#\s+[^\n]+\n+/, '') : '';
 
   const lastUpdatedDate = currentPage?.updatedAt
-    ? new Date(currentPage.updatedAt).toLocaleDateString(isUr ? 'ur-PK' : isDe ? 'de-DE' : isFr ? 'fr-FR' : 'en-US', {
+    ? new Date(currentPage.updatedAt).toLocaleDateString(isUr ? 'ur-PK' : isDe ? 'de-DE' : isFr ? 'fr-FR' : isEs ? 'es-ES' : 'en-US', {
         month: 'long',
         day: 'numeric',
         year: 'numeric',
@@ -278,7 +283,7 @@ export default function Policies({ customSlug }) {
 
   const renderTabButton = (tab, isMobile = false, isRow1 = false) => {
     const isActive = activeSlug === tab.slug;
-    const tabLabel = isUr ? tab.labelUr : isDe ? tab.labelDe : isFr ? tab.labelFr : tab.labelEn;
+    const tabLabel = isUr ? tab.labelUr : isDe ? tab.labelDe : isFr ? tab.labelFr : isEs ? tab.labelEs : tab.labelEn;
     return (
       <button
         key={tab.slug}

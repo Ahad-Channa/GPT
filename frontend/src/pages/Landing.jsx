@@ -27,6 +27,7 @@ const Landing = () => {
   const { t, i18n } = useTranslation();
   const isDe = i18n?.language?.startsWith('de');
   const isFr = i18n?.language?.startsWith('fr');
+  const isEs = i18n?.language?.startsWith('es');
   const isUr = i18n?.language === 'ur' || i18n?.language?.startsWith('ur');
   const [stats, setStats] = useState({ totalUsers: 0, totalPaidOut: 0 });
   const [openFaq, setOpenFaq] = useState(null);
@@ -352,17 +353,17 @@ const Landing = () => {
             >
               <div
                 className={isMobile ? "flex flex-col items-center text-center mx-auto w-full gap-6" : "flex flex-col text-left"}
-                style={!isMobile ? { width: isFr ? 664 : 608, gap: 24 } : { maxWidth: 424 }}
+                style={!isMobile ? { width: (isFr || isEs) ? 664 : 608, gap: 24 } : { maxWidth: 424 }}
               >
                 <h1
                   className="m-0 transition-colors duration-300"
                   style={!isMobile ? {
                     width: '100%',
-                    maxWidth: isFr ? 664 : 608,
+                    maxWidth: (isFr || isEs) ? 664 : 608,
                     fontFamily: '"Bricolage Grotesque", sans-serif',
                     fontWeight: 700,
-                    fontSize: isFr ? 45 : 55,
-                    lineHeight: isFr ? '52px' : '60px',
+                    fontSize: isEs ? 42 : (isFr ? 45 : 55),
+                    lineHeight: isEs ? '48px' : (isFr ? '52px' : '60px'),
                     letterSpacing: '-0.02em',
                     color: isDarkMode ? '#FFFFFF' : 'rgba(14, 15, 12, 1)'
                   } : {
@@ -370,8 +371,8 @@ const Landing = () => {
                     maxWidth: 424,
                     fontFamily: '"Bricolage Grotesque", sans-serif',
                     fontWeight: 700,
-                    fontSize: 'clamp(42px, 14vw, 64px)',
-                    lineHeight: 'clamp(38px, 12.5vw, 56px)',
+                    fontSize: (isFr || isEs) ? 'clamp(30px, 8.5vw, 40px)' : 'clamp(42px, 14vw, 64px)',
+                    lineHeight: (isFr || isEs) ? 'clamp(34px, 9.8vw, 44px)' : 'clamp(38px, 12.5vw, 56px)',
                     letterSpacing: '-0.02em',
                     textAlign: 'center',
                     color: isDarkMode ? '#FFFFFF' : 'rgba(14, 15, 12, 1)'
@@ -379,10 +380,10 @@ const Landing = () => {
                 >
                   {isMobile ? (
                     <>
-                      {t('hero.titleMobileLine1')}<br />
-                      {t('hero.titleMobileLine2')}<br />
-                      {t('hero.titleMobileLine3')}<br />
-                      {t('hero.titleMobileLine4')}
+                      <span className="whitespace-nowrap">{t('hero.titleMobileLine1')}</span><br />
+                      <span className="whitespace-nowrap">{t('hero.titleMobileLine2')}</span><br />
+                      <span className="whitespace-nowrap">{t('hero.titleMobileLine3')}</span><br />
+                      <span className="whitespace-nowrap">{t('hero.titleMobileLine4')}</span>
                     </>
                   ) : (
                     <>
@@ -395,10 +396,10 @@ const Landing = () => {
                   className="m-0 whitespace-pre-line transition-colors duration-300"
                   style={!isMobile ? {
                     width: '100%',
-                    maxWidth: isFr ? 664 : 608,
+                    maxWidth: (isFr || isEs) ? 664 : 608,
                     fontFamily: '"Poppins", sans-serif',
                     fontWeight: 500,
-                    fontSize: isFr ? 15.5 : 16,
+                    fontSize: (isFr || isEs) ? 15.5 : 16,
                     lineHeight: '26px',
                     color: isDarkMode ? 'rgba(255, 255, 255, 0.7)' : 'rgba(14, 15, 12, 1)'
                   } : {
@@ -406,8 +407,8 @@ const Landing = () => {
                     maxWidth: 400,
                     fontFamily: '"Poppins", sans-serif',
                     fontWeight: 500,
-                    fontSize: 'clamp(13px, 3.8vw, 15.5px)',
-                    lineHeight: '26px',
+                    fontSize: (isFr || isEs) ? 'clamp(12px, 3.4vw, 14.5px)' : 'clamp(13px, 3.8vw, 15.5px)',
+                    lineHeight: (isFr || isEs) ? '22px' : '26px',
                     letterSpacing: '0%',
                     textAlign: 'center',
                     color: isDarkMode ? 'rgba(255, 255, 255, 0.7)' : 'rgba(14, 15, 12, 1)'
@@ -415,9 +416,9 @@ const Landing = () => {
                 >
                   {isMobile ? (
                     <>
-                      <span className="block">{t('hero.subtitleMobileLine1')}</span>
-                      <span className="block">{t('hero.subtitleMobileLine2')}</span>
-                      <span className="block">{t('hero.subtitleMobileLine3')}</span>
+                      <span className="block whitespace-nowrap">{t('hero.subtitleMobileLine1')}</span>
+                      <span className="block whitespace-nowrap">{t('hero.subtitleMobileLine2')}</span>
+                      <span className="block whitespace-nowrap">{t('hero.subtitleMobileLine3')}</span>
                     </>
                   ) : (
                     t('hero.subtitle')
@@ -425,21 +426,21 @@ const Landing = () => {
                 </p>
 
                 <div
-                  className={isMobile ? "flex items-center justify-center mx-auto gap-3" : "flex items-center gap-3"}
+                  className={isMobile ? "flex items-center justify-center mx-auto gap-2.5 sm:gap-3 w-full max-w-[360px]" : "flex items-center gap-3"}
                   style={{ width: 'auto', minHeight: 49 }}
                 >
                   <button
                     onClick={() => currentUser ? navigate('/dashboard') : setAuthModal({ isOpen: true, tab: 'register' })}
                     className="flex items-center justify-center transition-all hover:bg-[#2A3544] cursor-pointer whitespace-nowrap"
                     style={{
-                      minWidth: 150,
+                      minWidth: isMobile ? 120 : 150,
                       height: 49,
-                      padding: '0 28px',
+                      padding: isMobile ? '0 16px' : '0 28px',
                       borderRadius: 80,
                       backgroundColor: 'rgba(36, 50, 77, 1)',
                       fontFamily: '"Poppins", sans-serif',
                       fontWeight: 500,
-                      fontSize: 16,
+                      fontSize: isMobile ? (isFr || isEs ? 14 : 15) : 16,
                       color: 'rgba(255, 255, 255, 1)'
                     }}
                   >
@@ -449,14 +450,14 @@ const Landing = () => {
                     onClick={() => currentUser ? navigate('/dashboard') : setAuthModal({ isOpen: true, tab: 'login' })}
                     className="flex items-center justify-center transition-all hover:opacity-90 cursor-pointer whitespace-nowrap"
                     style={{
-                      minWidth: 99,
+                      minWidth: isMobile ? 80 : 99,
                       height: 49,
-                      padding: '0 28px',
+                      padding: isMobile ? '0 16px' : '0 28px',
                       borderRadius: 80,
                       backgroundColor: isDarkMode ? 'rgba(255, 255, 255, 1)' : 'rgba(239, 239, 239, 1)',
                       fontFamily: '"Poppins", sans-serif',
                       fontWeight: 500,
-                      fontSize: 16,
+                      fontSize: isMobile ? (isFr || isEs ? 14 : 15) : 16,
                       color: 'rgba(0, 0, 0, 1)'
                     }}
                   >
@@ -468,7 +469,7 @@ const Landing = () => {
               {/* Stats below buttons */}
               <div
                 className={isMobile ? "flex items-center justify-between w-full mx-auto" : "flex items-center"}
-                style={!isMobile ? { minWidth: 460, gap: 48, marginTop: 8 } : { maxWidth: 360, marginTop: 32, gap: 20 }}
+                style={!isMobile ? { minWidth: 460, gap: 48, marginTop: 8 } : { maxWidth: 360, marginTop: 32, gap: (isFr || isEs) ? 12 : 20, paddingLeft: 4, paddingRight: 4 }}
               >
                 {/* Total Users */}
                 <div className="flex items-center gap-3 sm:gap-4">
@@ -477,20 +478,20 @@ const Landing = () => {
                     alt="Users"
                     className="object-contain flex-shrink-0"
                     style={{
-                      width: isMobile ? 54 : 44,
-                      height: isMobile ? 54 : 44,
+                      width: isMobile ? ((isFr || isEs) ? 44 : 54) : 44,
+                      height: isMobile ? ((isFr || isEs) ? 44 : 54) : 44,
                     }}
                   />
                   <div className="flex flex-col justify-center">
                     <span className="uppercase whitespace-nowrap transition-colors duration-300" style={{
-                      fontFamily: '"Poppins", sans-serif', fontWeight: 500, fontSize: 12,
-                      lineHeight: '16px', letterSpacing: '0.08em', color: isDarkMode ? 'rgba(255, 255, 255, 0.6)' : 'rgba(14, 15, 12, 1)',
+                      fontFamily: '"Poppins", sans-serif', fontWeight: 500, fontSize: isMobile ? ((isFr || isEs) ? 10.5 : 11) : 12,
+                      lineHeight: '16px', letterSpacing: isMobile ? ((isFr || isEs) ? '0.02em' : '0.04em') : '0.08em', color: isDarkMode ? 'rgba(255, 255, 255, 0.6)' : 'rgba(14, 15, 12, 1)',
                       marginBottom: 4
                     }}>
                       {t('hero.totalUsers')}
                     </span>
                     <span className="transition-colors duration-300" style={{
-                      fontFamily: '"Bricolage Grotesque", sans-serif', fontWeight: 700, fontSize: 30,
+                      fontFamily: '"Bricolage Grotesque", sans-serif', fontWeight: 700, fontSize: isMobile ? 26 : 30,
                       lineHeight: '32px', letterSpacing: '-0.02em', color: isDarkMode ? '#FFFFFF' : 'rgba(14, 15, 12, 1)',
                     }}>
                       {stats.totalUsers.toLocaleString('de-DE')}
@@ -505,21 +506,21 @@ const Landing = () => {
                     alt="Paid"
                     className="object-contain flex-shrink-0"
                     style={{
-                      width: isMobile ? 54 : 44,
-                      height: isMobile ? 54 : 44,
+                      width: isMobile ? ((isFr || isEs) ? 44 : 54) : 44,
+                      height: isMobile ? ((isFr || isEs) ? 44 : 54) : 44,
                       transform: 'translateY(2px)',
                     }}
                   />
                   <div className="flex flex-col justify-center">
                     <span className="uppercase whitespace-nowrap transition-colors duration-300" style={{
-                      fontFamily: '"Poppins", sans-serif', fontWeight: 500, fontSize: 12,
-                      lineHeight: '16px', letterSpacing: '0.08em', color: isDarkMode ? 'rgba(255, 255, 255, 0.6)' : 'rgba(14, 15, 12, 1)',
+                      fontFamily: '"Poppins", sans-serif', fontWeight: 500, fontSize: isMobile ? ((isFr || isEs) ? 10.5 : 11) : 12,
+                      lineHeight: '16px', letterSpacing: isMobile ? ((isFr || isEs) ? '0.02em' : '0.04em') : '0.08em', color: isDarkMode ? 'rgba(255, 255, 255, 0.6)' : 'rgba(14, 15, 12, 1)',
                       marginBottom: 4
                     }}>
                       {t('hero.totalPaid')}
                     </span>
                     <span className="transition-colors duration-300" style={{
-                      fontFamily: '"Bricolage Grotesque", sans-serif', fontWeight: 700, fontSize: 30,
+                      fontFamily: '"Bricolage Grotesque", sans-serif', fontWeight: 700, fontSize: isMobile ? 26 : 30,
                       lineHeight: '32px', letterSpacing: '-0.02em', color: isDarkMode ? '#FFFFFF' : 'rgba(14, 15, 12, 1)',
                     }}>
                       ${stats.totalPaidOut.toLocaleString('de-DE', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}

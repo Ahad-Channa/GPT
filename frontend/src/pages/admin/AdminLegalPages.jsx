@@ -55,6 +55,8 @@ const AdminLegalPages = () => {
             content_de: p.content_de || '',
             title_fr: p.title_fr || '',
             content_fr: p.content_fr || '',
+            title_es: p.title_es || '',
+            content_es: p.content_es || '',
             title_ur: p.title_ur || '',
             content_ur: p.content_ur || '',
           };
@@ -386,6 +388,7 @@ Musterstraße 123, 10115 Berlin, Germany
                   { key: 'en', label: '🇬🇧 English', flag: '🇬🇧' },
                   { key: 'de', label: '🇩🇪 Deutsch', flag: '🇩🇪' },
                   { key: 'fr', label: '🇫🇷 Français', flag: '🇫🇷' },
+                  { key: 'es', label: '🇪🇸 Español', flag: '🇪🇸' },
                   { key: 'ur', label: '🇵🇰 اردو', flag: '🇵🇰' },
                 ].map(({ key, label }) => (
                   <button
@@ -419,7 +422,7 @@ Musterstraße 123, 10115 Berlin, Germany
                   textTransform: 'uppercase',
                   letterSpacing: '0.05em',
                 }}>
-                  Page Title ({activeLang === 'en' ? 'English' : activeLang === 'de' ? 'German' : activeLang === 'fr' ? 'French' : 'Urdu'}) *
+                  Page Title ({activeLang === 'en' ? 'English' : activeLang === 'de' ? 'German' : activeLang === 'fr' ? 'French' : activeLang === 'es' ? 'Spanish' : 'Urdu'}) *
                 </label>
                 <input
                   type="text"
@@ -433,6 +436,8 @@ Musterstraße 123, 10115 Berlin, Germany
                       ? `z.B. ${meta.label}`
                       : activeLang === 'fr'
                       ? `ex. ${meta.label}`
+                      : activeLang === 'es'
+                      ? `ej. ${meta.label}`
                       : `مثال: ${meta.label}`
                   }
                   className="admin-input"
@@ -460,7 +465,7 @@ Musterstraße 123, 10115 Berlin, Germany
                     textTransform: 'uppercase',
                     letterSpacing: '0.05em',
                   }}>
-                    Page Content ({activeLang === 'en' ? 'English' : activeLang === 'de' ? 'German' : activeLang === 'fr' ? 'French' : 'Urdu'}) *
+                    Page Content ({activeLang === 'en' ? 'English' : activeLang === 'de' ? 'German' : activeLang === 'fr' ? 'French' : activeLang === 'es' ? 'Spanish' : 'Urdu'}) *
                   </label>
                   <span style={{ fontSize: '0.75rem', color: '#9CA3AF' }}>
                     Full Markdown Supported
