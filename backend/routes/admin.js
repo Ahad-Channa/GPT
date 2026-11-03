@@ -1509,13 +1509,21 @@ router.put('/custom-offers/submissions/:id', requirePermission('manage_offerwall
         holdUntil: holdDate,
         sourceType: 'offer',
         sourceId: submission.offerId._id,
+        metadata: {
+          offerTitle: submission.offerId.title,
+          sourceLabel: 'Custom Offer',
+          holdApplied: txStatus === 'hold',
+        },
       });
 
       await createLog(req.dbUser._id, 'APPROVE_CUSTOM_OFFER', freshUser._id, { offerTitle: submission.offerId.title, submissionId: submission._id });
       
       const notifTitle = txStatus === 'hold' ? 'Offer Approved & Held' : 'Custom Offer Approved!';
+      const customHoldDays = holdDate
+        ? Math.max(1, Math.ceil((new Date(holdDate).getTime() - Date.now()) / (1000 * 60 * 60 * 24)))
+        : 0;
       const notifMsg = txStatus === 'hold'
-        ? `Your submission for '${submission.offerId.title}' was approved! +${amountNum} coins placed on hold for ${settings.earningHoldConfig.holdDays || 30} days.`
+        ? `Your submission for '${submission.offerId.title}' was approved! +${amountNum} coins placed on hold for ${customHoldDays} days.`
         : `Your submission for '${submission.offerId.title}' was approved! +${amountNum} coins.`;
       
       await notify(freshUser._id, 'offer_approved', notifTitle, notifMsg, { offerId: submission.offerId._id });

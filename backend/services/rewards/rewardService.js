@@ -422,6 +422,7 @@ const processReward = async ({
         rewardTx,
         referralTransaction,
         walletApplied: holdDecision.walletCredit > 0,
+        displayName: description,
       });
       return { ok: true, duplicate: false, conversion: finalized || applyUpdate(claimed, { $set: { processingState: 'processed', rewardTransactionId: rewardTx._id } }), rewardTransaction: rewardTx, referralTransaction, walletBalance: effectiveUser.walletBalance, strategy };
     } catch (error) {
@@ -433,13 +434,19 @@ const processReward = async ({
   for (const effect of sideEffects) {
     try {
       const isHeld = effect.rewardTx.status === 'hold';
+      const displayName = String(effect.displayName || '').trim() || 'this offer';
+      // Use the actual transaction hold window (holdUntil) rather than a fixed 30.
+      const holdUntil = effect.rewardTx?.holdUntil ? new Date(effect.rewardTx.holdUntil) : null;
+      const holdDays = holdUntil
+        ? Math.max(1, Math.ceil((holdUntil.getTime() - Date.now()) / (1000 * 60 * 60 * 24)))
+        : 0;
       await (hooks.notify || notify)(
         effect.user._id,
         'direct_offer_reward',
         isHeld ? 'Offer Reward on Hold' : 'Offer Completed!',
         isHeld
-          ? `You completed an offer for ${effect.rewardAmount.toLocaleString()} coins. The reward is on hold.`
-          : `You earned ${effect.rewardAmount.toLocaleString()} coins from an offer.`,
+          ? `You completed an offer from ${displayName} for +${effect.rewardAmount.toLocaleString()} coins. The reward is placed on hold for ${holdDays} days.`
+          : `You earned +${effect.rewardAmount.toLocaleString()} coins from ${displayName}.`,
         { txId: effect.rewardTx._id, amount: effect.rewardAmount }
       );
       if (effect.walletApplied) {

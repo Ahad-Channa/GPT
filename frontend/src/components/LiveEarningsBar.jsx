@@ -5,6 +5,7 @@ import PublicProfileModal from './PublicProfileModal';
 import UserAvatar from './UserAvatar';
 import { useTheme } from '../contexts/ThemeContext';
 import { io } from 'socket.io-client';
+import { getEarningDisplay } from '../utils/earningDisplay';
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 const SOCKET_URL = import.meta.env.VITE_API_URL
@@ -197,13 +198,11 @@ const LiveEarningsBar = () => {
       offerwall = 'Rewards';
       taskCategory = 'Task: Redeemed Promo Code';
     } else {
-      if (tx.metadata?.offerwall) {
-        offerwall = tx.metadata.offerwall;
-        taskCategory = `Task: Completed ${tx.metadata.offerwall} offer`;
-      } else {
-        taskCategory = 'Task: Completed offer';
-      }
-      if (tx.description) task = tx.description;
+      // Offer-style earnings: compact primary/secondary from structured metadata.
+      // This intentionally avoids the generic "Task: Completed offer" text.
+      const display = getEarningDisplay(tx);
+      task = display.primary || tx.description || '';
+      taskCategory = display.secondary || '';
     }
 
     const amountStr = rawAmount.toLocaleString('de-DE');
@@ -605,7 +604,7 @@ const LiveEarningsBar = () => {
               >
                 {hoveredData.details.isWithdrawal
                   ? `Method: ${hoveredData.details.method}`
-                  : (hoveredData.details.taskCategory || 'Task completed')}
+                  : (hoveredData.details.taskCategory || '')}
               </span>
             </div>
           </div>

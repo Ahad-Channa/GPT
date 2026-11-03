@@ -321,6 +321,7 @@ const handleLegacyOfferwallPostback = async (providerId, req, res, params) => {
       externalId,
       metadata: {
         providerId,
+        providerName: provider.label || providerId,
         providerUnits,
         conversionRatio: provider.conversionRatio,
         holdApplied: holdDecision.status === 'hold',
@@ -330,9 +331,13 @@ const handleLegacyOfferwallPostback = async (providerId, req, res, params) => {
 
     // 12. Send Offer Reward Notification
     const notifTitle = txStatus === 'hold' ? 'Offer Reward on Hold' : 'Offer Credited';
+    const holdDaysRemaining = holdDate
+      ? Math.max(1, Math.ceil((new Date(holdDate).getTime() - Date.now()) / (1000 * 60 * 60 * 24)))
+      : 0;
+    const providerName = provider.label || providerId;
     const notifMsg = txStatus === 'hold' 
-      ? `You completed an offer from ${provider.label} for +${platformCoins} coins. The reward is placed on hold for ${holdDecision.holdDays} days.`
-      : `You earned +${platformCoins} coins from ${provider.label}.`;
+      ? `You completed an offer from ${providerName} for +${platformCoins} coins. The reward is placed on hold for ${holdDaysRemaining} days.`
+      : `You earned +${platformCoins} coins from ${providerName}.`;
 
     await notify(
       user._id,
