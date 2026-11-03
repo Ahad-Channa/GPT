@@ -308,7 +308,7 @@ test('admin conversion actions sync the manual proof submission status', async (
 test('reward description helpers use offer title plus goal label', () => {
   assert.equal(
     buildDirectOfferRewardDescription({ offerTitle: 'Plarium Vikings' }),
-    'Plarium Vikings - Offer Reward'
+    'Plarium Vikings'
   );
   assert.equal(
     buildDirectOfferRewardDescription({ offerTitle: 'Plarium Vikings', stepLabel: 'Fight 20 Battles' }),
@@ -424,7 +424,7 @@ test('single-step direct reward stores the offer title in the ledger description
 
   assert.equal(result.ok, true);
   assert.equal(state.transactions.length, 1);
-  assert.equal(state.transactions[0].description, 'Plarium Vikings - Offer Reward');
+  assert.equal(state.transactions[0].description, 'Plarium Vikings');
   assert.equal(state.transactions[0].metadata.offerTitle, 'Plarium Vikings');
   assert.equal(state.transactions[0].sourceType, 'direct_offer');
 });

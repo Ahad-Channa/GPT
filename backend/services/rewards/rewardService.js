@@ -50,11 +50,14 @@ const SINGLE_STEP_LABEL = 'Offer Reward';
 
 // Human-readable direct-offer ledger label. The title is snapshotted on the
 // click; the goal label comes from the trusted click-time goal snapshot.
+// Single-step offers show just the offer title (no generic suffix); multi-step
+// offers keep the specific goal/step name. The generic label is only used when
+// there is no meaningful title at all.
 const buildDirectOfferRewardDescription = ({ offerTitle, stepLabel } = {}) => {
   const title = String(offerTitle || '').trim();
-  const step = String(stepLabel || '').trim() || SINGLE_STEP_LABEL;
-  if (!title) return `Direct offer reward`;
-  return `${title} - ${step}`;
+  const step = String(stepLabel || '').trim();
+  if (title) return step ? `${title} - ${step}` : title;
+  return step || SINGLE_STEP_LABEL;
 };
 
 const applyUpdate = (doc, update = {}) => {
@@ -304,7 +307,7 @@ const processReward = async ({
       const goalSnapshot = claimed.goalKey ? clickLog.goalsSnapshot?.[claimed.goalKey] : null;
       const stepLabel = claimed.goalKey
         ? String(goalSnapshot?.label || claimed.goalKey).trim()
-        : SINGLE_STEP_LABEL;
+        : '';
       const offerTitle = String(clickLog.offerTitle || directOffer?.title || '').trim();
       const isDirectOffer = Boolean(
         claimed.offerId ||

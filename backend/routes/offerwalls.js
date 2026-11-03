@@ -315,7 +315,7 @@ const handleLegacyOfferwallPostback = async (providerId, req, res, params) => {
       sourceType: 'offer',
       amount: platformCoins,
       balanceAfter: updatedUser.walletBalance,
-      description: `${provider.label} Offer Reward`,
+      description: provider.label || 'Offer Reward',
       status: txStatus,
       holdUntil: holdDate,
       externalId,

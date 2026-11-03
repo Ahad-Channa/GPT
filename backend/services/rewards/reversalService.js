@@ -11,7 +11,9 @@ const referralReversalExternalId = (conversionId) => `conversion:${conversionId}
 
 const buildChargebackDescription = (rewardTransaction) => {
   const title = String(rewardTransaction?.metadata?.offerTitle || '').trim();
-  const stepLabel = String(rewardTransaction?.metadata?.stepLabel || rewardTransaction?.metadata?.goalLabel || '').trim();
+  const rawStep = String(rewardTransaction?.metadata?.stepLabel || rewardTransaction?.metadata?.goalLabel || '').trim();
+  // Legacy single-step rows stored the generic label as the step; ignore it.
+  const stepLabel = rawStep && rawStep.toLowerCase() !== 'offer reward' ? rawStep : '';
   if (!title) return 'Offer reward reversed';
   return `Chargeback - ${title}${stepLabel ? ` - ${stepLabel}` : ''}`;
 };
