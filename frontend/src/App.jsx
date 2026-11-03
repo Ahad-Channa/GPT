@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { Routes, Route, Navigate, useParams } from 'react-router-dom';
+import { Routes, Route, Navigate, useParams, useLocation } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { useAuth } from './contexts/AuthContext';
 import { useTheme } from './contexts/ThemeContext';
@@ -45,6 +45,20 @@ import CookieSettingsModal from './components/cookie/CookieSettingsModal';
 import { useCookieConsent } from './contexts/CookieConsentContext';
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+
+const ScrollToTop = () => {
+  const { pathname, search, hash } = useLocation();
+
+  useEffect(() => {
+    if (!hash) {
+      window.scrollTo(0, 0);
+      document.documentElement.scrollTop = 0;
+      document.body.scrollTop = 0;
+    }
+  }, [pathname, search, hash]);
+
+  return null;
+};
 
 const PrivateRoute = ({ children }) => {
   const { currentUser } = useAuth();
@@ -160,6 +174,7 @@ function App() {
         }}
       />
       <NotificationPanel />
+      <ScrollToTop />
       <Routes>
         <Route path="/" element={<Landing />} />
         <Route path="/r/:code" element={<ReferralRedirect />} />

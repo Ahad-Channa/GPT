@@ -10,9 +10,17 @@ const Footer = () => {
   const navigate = useNavigate();
   const { openLegal } = useLegalModal();
   const { openCookieSettings } = useCookieConsent();
+
+  const handleNav = (targetPath) => {
+    navigate(targetPath);
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
+  };
   const { t, i18n } = useTranslation();
   const isDe = i18n?.language?.startsWith('de');
   const isFr = i18n?.language?.startsWith('fr');
+  const isEs = i18n?.language?.startsWith('es');
   const isUr = i18n?.language === 'ur' || i18n?.language?.startsWith('ur');
   const [isMobile, setIsMobile] = useState(
     typeof window !== 'undefined' ? window.innerWidth < 1024 : false
@@ -26,7 +34,7 @@ const Footer = () => {
   }, []);
 
   const quickLinks = [
-    { nameKey: 'nav.home', defaultName: 'Home', path: '/dashboard' },
+    { nameKey: 'nav.home', defaultName: 'Home', path: '/' },
     { nameKey: 'nav.earn', defaultName: 'Earn', path: '/dashboard' },
     { nameKey: 'nav.leaderboard', defaultName: 'Leaderboard', path: '/dashboard/leaderboard' },
     { nameKey: 'nav.affiliates', defaultName: 'Affiliates', path: '/dashboard/affiliates' },
@@ -245,7 +253,7 @@ const Footer = () => {
                 transform: 'translateY(-3px)',
               }}
             >
-              <div className="flex flex-col min-w-[135px]" style={{ height: 273, justifyContent: 'space-between' }}>
+              <div className="flex flex-col min-w-[135px]" style={{ height: 273, justifyContent: 'flex-start', gap: 21 }}>
                 <h4
                   className="m-0 text-left whitespace-nowrap transition-colors duration-300"
                   style={{
@@ -261,13 +269,13 @@ const Footer = () => {
                 >
                   {t('footer.quickLinks', 'Quick Links')}
                 </h4>
-                <ul className="flex flex-col list-none p-0 m-0 justify-between" style={{ height: 220, opacity: 1 }}>
+                <ul className="flex flex-col list-none p-0 m-0" style={{ gap: '20px', opacity: 1 }}>
                   {quickLinks.map((link) => (
                     <li key={link.nameKey} className="flex items-center">
                       <button
                         onClick={() => {
                           if (link.path.startsWith('/')) {
-                            navigate(link.path);
+                            handleNav(link.path);
                           }
                         }}
                         className="no-underline hover:opacity-100 transition-opacity text-left cursor-pointer bg-transparent border-none p-0"
@@ -288,7 +296,7 @@ const Footer = () => {
                   ))}
                 </ul>
               </div>
-              <div className="flex flex-col min-w-[135px]" style={{ height: 273, justifyContent: 'flex-start', gap: 20 }}>
+              <div className="flex flex-col min-w-[135px]" style={{ height: 273, justifyContent: 'flex-start', gap: 21 }}>
                 <h4
                   className="m-0 text-left whitespace-nowrap transition-colors duration-300"
                   style={{
@@ -304,13 +312,13 @@ const Footer = () => {
                 >
                   {t('footer.resources', 'Resources')}
                 </h4>
-                <ul className="flex flex-col list-none p-0 m-0" style={{ gap: '18px', opacity: 1 }}>
+                <ul className="flex flex-col list-none p-0 m-0" style={{ gap: '20px', opacity: 1 }}>
                   {resourceLinks.map((link) => (
                     <li key={link.nameKey} className="flex items-center">
                       {link.path ? (
                         <button
                           type="button"
-                          onClick={() => navigate(link.path)}
+                          onClick={() => handleNav(link.path)}
                           className="no-underline hover:opacity-100 transition-opacity text-left cursor-pointer bg-transparent border-none p-0"
                           style={{
                             fontFamily: '"Poppins", sans-serif',
@@ -397,9 +405,13 @@ const Footer = () => {
           {/* Bottom Copyright & Policy Bar (Inside Right Area, aligned with social icons like original desktop layout) */}
           <div
             className={`flex items-center justify-center lg:justify-start flex-wrap lg:flex-nowrap whitespace-nowrap overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none'] w-full mt-6 lg:mt-auto pt-2 lg:pt-4 transition-all duration-300 ${
-              isDe
-                ? 'text-[9.5px] sm:text-[10px] md:text-[10.5px] lg:text-[10px] xl:text-[10.8px] gap-x-1 sm:gap-x-1.5 lg:gap-x-1.5 tracking-tight'
-                : 'text-[12px] sm:text-[13px] gap-x-2 sm:gap-x-2.5'
+              isFr
+                ? 'text-[9px] sm:text-[9.5px] md:text-[10px] lg:text-[9.4px] xl:text-[10.2px] gap-x-1 sm:gap-x-1 lg:gap-x-1 tracking-tight'
+                : isEs
+                  ? 'text-[9px] sm:text-[9.5px] md:text-[10px] lg:text-[9.6px] xl:text-[10.4px] gap-x-1 sm:gap-x-1.2 lg:gap-x-1.2 tracking-tight'
+                  : isDe
+                    ? 'text-[9.5px] sm:text-[10px] md:text-[10.5px] lg:text-[10px] xl:text-[10.8px] gap-x-1 sm:gap-x-1.5 lg:gap-x-1.5 tracking-tight'
+                    : 'text-[12px] sm:text-[13px] gap-x-2 sm:gap-x-2.5'
             }`}
             style={{
               fontFamily: '"Poppins", sans-serif',
@@ -412,7 +424,7 @@ const Footer = () => {
             <span className="opacity-40 select-none shrink-0">•</span>
             <button
               type="button"
-              onClick={() => navigate('/policies?tab=terms-of-use')}
+              onClick={() => handleNav('/policies?tab=terms-of-use')}
               className="hover:underline hover:opacity-100 transition-opacity cursor-pointer bg-transparent border-none p-0 text-inherit shrink-0"
             >
               {t('footer.termsOfService', 'Terms of Service')}
@@ -420,7 +432,7 @@ const Footer = () => {
             <span className="opacity-40 select-none shrink-0">•</span>
             <button
               type="button"
-              onClick={() => navigate('/policies?tab=privacy-policy')}
+              onClick={() => handleNav('/policies?tab=privacy-policy')}
               className="hover:underline hover:opacity-100 transition-opacity cursor-pointer bg-transparent border-none p-0 text-inherit shrink-0"
             >
               {t('footer.privacyPolicy', 'Privacy Policy')}
@@ -428,7 +440,7 @@ const Footer = () => {
             <span className="opacity-40 select-none shrink-0">•</span>
             <button
               type="button"
-              onClick={() => navigate('/policies?tab=cookie-policy')}
+              onClick={() => handleNav('/policies?tab=cookie-policy')}
               className="hover:underline hover:opacity-100 transition-opacity cursor-pointer bg-transparent border-none p-0 text-inherit shrink-0"
             >
               {t('footer.cookiePolicy', 'Cookie Policy')}
@@ -444,7 +456,7 @@ const Footer = () => {
             <span className="opacity-40 select-none shrink-0">•</span>
             <button
               type="button"
-              onClick={() => navigate('/policies?tab=affiliate-policy')}
+              onClick={() => handleNav('/policies?tab=affiliate-policy')}
               className="hover:underline hover:opacity-100 transition-opacity cursor-pointer bg-transparent border-none p-0 text-inherit shrink-0"
             >
               {t('footer.affiliatePolicy', 'Affiliate Policy')}
@@ -452,7 +464,7 @@ const Footer = () => {
             <span className="opacity-40 select-none shrink-0">•</span>
             <button
               type="button"
-              onClick={() => navigate('/policies?tab=impressum')}
+              onClick={() => handleNav('/policies?tab=impressum')}
               className="hover:underline hover:opacity-100 transition-opacity cursor-pointer bg-transparent border-none p-0 text-inherit shrink-0"
             >
               {t('footer.impressum', 'Impressum')}
