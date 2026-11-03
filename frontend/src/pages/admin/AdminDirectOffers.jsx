@@ -7,6 +7,7 @@ import {
   FiLoader, FiRefreshCw, FiEye, FiCopy, FiActivity,
   FiChevronDown, FiChevronUp, FiSettings, FiFileText, FiBookOpen
 } from 'react-icons/fi';
+import { writeClipboardText } from '../../utils/clipboard';
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
@@ -689,6 +690,8 @@ const ClickLogsModal = ({ offer, token, onClose }) => {
   const [actionPrompt, setActionPrompt] = useState(null);
   const [reasonValue, setReasonValue] = useState('');
   const [reasonError, setReasonError] = useState('');
+  const [copiedClickId, setCopiedClickId] = useState('');
+  const [copyError, setCopyError] = useState('');
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -745,8 +748,20 @@ const ClickLogsModal = ({ offer, token, onClose }) => {
     finally { setActionLoading(''); }
   };
 
-  const copyToClipboard = (text) => {
-    navigator.clipboard.writeText(text).catch(() => {});
+  const copyToClipboard = async (clickId) => {
+    if (!clickId) {
+      setCopyError('No click ID available to copy.');
+      return;
+    }
+    setCopyError('');
+    try {
+      await writeClipboardText(clickId);
+      setCopiedClickId(clickId);
+      setTimeout(() => setCopiedClickId((current) => (current === clickId ? '' : current)), 1500);
+    } catch {
+      // Do not swallow: surface a clear fallback with the full ID for manual copy.
+      setCopyError(`Could not copy this Click ID automatically. Copy it manually: ${clickId}`);
+    }
   };
 
   return (
@@ -777,6 +792,10 @@ const ClickLogsModal = ({ offer, token, onClose }) => {
             <FiRefreshCw className={loading ? 'animate-spin' : ''} />
           </button>
         </div>
+
+        {copyError && (
+          <div className="text-rose-400 text-xs break-all">{copyError}</div>
+        )}
 
         <div className="overflow-y-auto flex-1">
           {loading ? (
@@ -809,8 +828,12 @@ const ClickLogsModal = ({ offer, token, onClose }) => {
                         <span className="text-slate-400 text-xs font-mono truncate max-w-[100px]" title={click.clickId}>
                           {click.clickId?.slice(0, 8)}...
                         </span>
-                        <button onClick={() => copyToClipboard(click.clickId)} className="text-slate-500 hover:text-white" title="Copy full click ID">
-                          <FiCopy className="text-xs" />
+                        <button
+                          onClick={() => copyToClipboard(click.clickId)}
+                          className={copiedClickId === click.clickId ? 'text-emerald-400' : 'text-slate-500 hover:text-white'}
+                          title={copiedClickId === click.clickId ? 'Copied' : 'Copy full click ID'}
+                        >
+                          {copiedClickId === click.clickId ? <FiCheckCircle className="text-xs" /> : <FiCopy className="text-xs" />}
                         </button>
                       </div>
                     </td>
@@ -1178,31 +1201,6 @@ const AdminDirectOffers = () => {
       const data = await res.json();
       if (data.success) setOffers(prev => prev.map(o => o._id === offer._id ? { ...o, isActive: false } : o));
     } catch { alert('Failed to deactivate'); }
-  };
-
-  const writeClipboardText = async (text) => {
-    if (navigator.clipboard?.writeText) {
-      await navigator.clipboard.writeText(text);
-      return true;
-    }
-
-    const textarea = document.createElement('textarea');
-    textarea.value = text;
-    textarea.setAttribute('readonly', '');
-    textarea.style.position = 'fixed';
-    textarea.style.top = '-9999px';
-    textarea.style.left = '-9999px';
-    document.body.appendChild(textarea);
-    textarea.focus();
-    textarea.select();
-
-    try {
-      const copied = document.execCommand('copy');
-      if (!copied) throw new Error('Fallback copy command failed');
-      return true;
-    } finally {
-      document.body.removeChild(textarea);
-    }
   };
 
   const copyPostbackUrl = async (offer) => {
