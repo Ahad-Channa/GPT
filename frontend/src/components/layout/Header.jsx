@@ -279,7 +279,7 @@ const DailyBonusChip = () => {
         style={{
           gap: '1px',
           opacity: 1,
-          transform: 'rotate(0deg)',
+          transform: 'translateY(-3px)',
         }}
       >
         <span
