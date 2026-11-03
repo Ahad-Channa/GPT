@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -8,6 +8,7 @@ import {
   FiChevronDown, FiChevronUp, FiSettings, FiFileText, FiBookOpen
 } from 'react-icons/fi';
 import { writeClipboardText } from '../../utils/clipboard';
+import { createAdminApi } from '../../utils/adminApi';
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
@@ -101,7 +102,7 @@ const CountryTagInput = ({ value, onChange, inputCls }) => {
 };
 
 // ─── Create / Edit Offer Modal ────────────────────────────────────────────────
-const OfferFormModal = ({ offer, onClose, onSaved, token }) => {
+const OfferFormModal = ({ offer, onClose, onSaved, adminApi }) => {
   const isEdit = Boolean(offer);
   const [form, setForm] = useState({
     title: offer?.title || '',
@@ -164,11 +165,11 @@ const OfferFormModal = ({ offer, onClose, onSaved, token }) => {
     }
     setLoading(true);
     try {
-      const url = isEdit ? `${API}/admin/direct-offers/${offer._id}` : `${API}/admin/direct-offers`;
+      const path = isEdit ? `/admin/direct-offers/${offer._id}` : '/admin/direct-offers';
       const method = isEdit ? 'PUT' : 'POST';
-      const res = await fetch(url, {
+      const res = await adminApi(path, {
         method,
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ...form,
           rewardAmount: Number(form.rewardAmount),
@@ -681,11 +682,12 @@ const OfferFormModal = ({ offer, onClose, onSaved, token }) => {
 };
 
 // ─── Click Logs Modal ─────────────────────────────────────────────────────────
-const ClickLogsModal = ({ offer, token, onClose }) => {
+const ClickLogsModal = ({ offer, adminApi, onClose }) => {
   const [clicks, setClicks] = useState([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('');
+  const [loadError, setLoadError] = useState('');
   const [actionLoading, setActionLoading] = useState('');
   const [actionPrompt, setActionPrompt] = useState(null);
   const [reasonValue, setReasonValue] = useState('');
@@ -694,17 +696,35 @@ const ClickLogsModal = ({ offer, token, onClose }) => {
   const [copyError, setCopyError] = useState('');
 
   const load = useCallback(async () => {
+    if (!adminApi) return;
     setLoading(true);
+    setLoadError('');
     try {
       const params = filter ? `?status=${filter}` : '';
-      const res = await fetch(`${API}/admin/direct-offers/${offer._id}/clicks${params}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      const data = await res.json();
-      if (data.success) { setClicks(data.clicks); setTotal(data.total); }
-    } catch (e) { console.error(e); }
-    finally { setLoading(false); }
-  }, [offer._id, token, filter]);
+      const res = await adminApi(`/admin/direct-offers/${offer._id}/clicks${params}`);
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data.success) {
+        setClicks([]);
+        setTotal(0);
+        if (res.status === 401) {
+          setLoadError('Your session expired. Please refresh the page and sign in again.');
+        } else {
+          setLoadError(data.error || 'Failed to load click logs.');
+        }
+        return;
+      }
+      setClicks(data.clicks || []);
+      setTotal(data.total || 0);
+    } catch (e) {
+      setClicks([]);
+      setTotal(0);
+      setLoadError(
+        e?.code === 'AUTH_REFRESH_FAILED' || e?.code === 'NOT_AUTHENTICATED'
+          ? 'Your session expired. Please refresh the page and sign in again.'
+          : 'Failed to load click logs.'
+      );
+    } finally { setLoading(false); }
+  }, [offer._id, adminApi, filter]);
 
   useEffect(() => { load(); }, [load]);
 
@@ -730,9 +750,9 @@ const ClickLogsModal = ({ offer, token, onClose }) => {
     }
     setActionLoading(clickId + action);
     try {
-      const res = await fetch(`${API}/admin/click-logs/${clickId}/${action}`, {
+      const res = await adminApi(`/admin/click-logs/${clickId}/${action}`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ reason: trimmed }),
       });
       const data = await res.json().catch(() => ({}));
@@ -793,6 +813,10 @@ const ClickLogsModal = ({ offer, token, onClose }) => {
           </button>
         </div>
 
+        {loadError && (
+          <div className="text-rose-400 text-sm break-all">{loadError}</div>
+        )}
+
         {copyError && (
           <div className="text-rose-400 text-xs break-all">{copyError}</div>
         )}
@@ -800,6 +824,8 @@ const ClickLogsModal = ({ offer, token, onClose }) => {
         <div className="overflow-y-auto flex-1">
           {loading ? (
             <div className="text-center text-slate-500 py-10"><FiLoader className="animate-spin inline text-2xl" /></div>
+          ) : loadError ? (
+            <div className="text-center text-slate-500 py-10">Click logs are unavailable until the request succeeds.</div>
           ) : clicks.length === 0 ? (
             <div className="text-center text-slate-500 py-10">No click logs found.</div>
           ) : (
@@ -914,7 +940,7 @@ const ClickLogsModal = ({ offer, token, onClose }) => {
 };
 
 // ─── Manual Proof Review Modal ────────────────────────────────────────────────
-const ManualProofsModal = ({ token, onClose }) => {
+const ManualProofsModal = ({ adminApi, onClose }) => {
   const [tab, setTab] = useState('pending');
   const [proofs, setProofs] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -925,22 +951,20 @@ const ManualProofsModal = ({ token, onClose }) => {
   const [actionLoading, setActionLoading] = useState('');
 
   const load = useCallback(async () => {
-    if (!token) return;
+    if (!adminApi) return;
     setLoading(true);
     setError('');
     try {
-      const res = await fetch(`${API}/admin/direct-offers/proofs?status=${tab}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      const data = await res.json();
-      if (!data.success) throw new Error(data.error || 'Failed to load manual proofs');
+      const res = await adminApi(`/admin/direct-offers/proofs?status=${tab}`);
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data.success) throw new Error(data.error || 'Failed to load manual proofs');
       setProofs(data.proofs || []);
     } catch (err) {
       setError(err.message || 'Failed to load manual proofs');
     } finally {
       setLoading(false);
     }
-  }, [token, tab]);
+  }, [adminApi, tab]);
 
   useEffect(() => { load(); }, [load]);
 
@@ -968,9 +992,9 @@ const ManualProofsModal = ({ token, onClose }) => {
     setActionLoading(`${proof.conversionId}:${action}`);
     setReasonError('');
     try {
-      const res = await fetch(`${API}/admin/conversions/${proof.conversionId}/${action}`, {
+      const res = await adminApi(`/admin/conversions/${proof.conversionId}/${action}`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ reason: trimmed }),
       });
       const data = await res.json().catch(() => ({}));
@@ -1150,7 +1174,7 @@ const ManualProofsModal = ({ token, onClose }) => {
 // ─── Main Page ────────────────────────────────────────────────────────────────
 const AdminDirectOffers = () => {
   const { currentUser } = useAuth();
-  const [token, setToken] = useState(null);
+  const adminApi = useMemo(() => (currentUser ? createAdminApi(currentUser, API) : null), [currentUser]);
   const [offers, setOffers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showCreate, setShowCreate] = useState(false);
@@ -1160,56 +1184,50 @@ const AdminDirectOffers = () => {
   const [copiedId, setCopiedId] = useState('');
   const [postbackPreviews, setPostbackPreviews] = useState({});
 
-  useEffect(() => {
-    if (currentUser) currentUser.getIdToken().then(setToken);
-  }, [currentUser]);
-
   const load = useCallback(async () => {
-    if (!token) return;
+    if (!adminApi) return;
     setLoading(true);
     try {
-      const res = await fetch(`${API}/admin/direct-offers`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      const data = await res.json();
-      if (data.success) setOffers(data.offers);
+      const res = await adminApi('/admin/direct-offers');
+      const data = await res.json().catch(() => ({}));
+      if (data.success) setOffers(data.offers || []);
     } catch (e) { console.error(e); }
     finally { setLoading(false); }
-  }, [token]);
+  }, [adminApi]);
 
   useEffect(() => { load(); }, [load]);
 
   const handleToggle = async (offer) => {
+    if (!adminApi) return;
     try {
-      const res = await fetch(`${API}/admin/direct-offers/${offer._id}`, {
+      const res = await adminApi(`/admin/direct-offers/${offer._id}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ isActive: !offer.isActive }),
       });
-      const data = await res.json();
+      const data = await res.json().catch(() => ({}));
       if (data.success) setOffers(prev => prev.map(o => o._id === offer._id ? data.offer : o));
     } catch { alert('Failed to toggle offer'); }
   };
 
   const handleDelete = async (offer) => {
     if (!window.confirm(`Deactivate "${offer.title}"?`)) return;
+    if (!adminApi) return;
     try {
-      const res = await fetch(`${API}/admin/direct-offers/${offer._id}`, {
+      const res = await adminApi(`/admin/direct-offers/${offer._id}`, {
         method: 'DELETE',
-        headers: { Authorization: `Bearer ${token}` },
       });
-      const data = await res.json();
+      const data = await res.json().catch(() => ({}));
       if (data.success) setOffers(prev => prev.map(o => o._id === offer._id ? { ...o, isActive: false } : o));
     } catch { alert('Failed to deactivate'); }
   };
 
   const copyPostbackUrl = async (offer) => {
+    if (!adminApi) return;
     try {
-      const res = await fetch(`${API}/admin/direct-offers/${offer._id}/postback-url`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      const data = await res.json();
-      if (!data.success || !data.postbackUrl) {
+      const res = await adminApi(`/admin/direct-offers/${offer._id}/postback-url`);
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data.success || !data.postbackUrl) {
         throw new Error(data.error || 'Failed to copy postback URL');
       }
       await writeClipboardText(data.postbackUrl);
@@ -1451,7 +1469,7 @@ const AdminDirectOffers = () => {
         {showCreate && (
           <OfferFormModal
             offer={null}
-            token={token}
+            adminApi={adminApi}
             onClose={() => setShowCreate(false)}
             onSaved={(offer) => setOffers(prev => [offer, ...prev])}
           />
@@ -1461,7 +1479,7 @@ const AdminDirectOffers = () => {
         {editOffer && (
           <OfferFormModal
             offer={editOffer}
-            token={token}
+            adminApi={adminApi}
             onClose={() => setEditOffer(null)}
             onSaved={(updated) => {
               setOffers(prev => prev.map(o => o._id === updated._id ? updated : o));
@@ -1474,7 +1492,7 @@ const AdminDirectOffers = () => {
         {logsOffer && (
           <ClickLogsModal
             offer={logsOffer}
-            token={token}
+            adminApi={adminApi}
             onClose={() => setLogsOffer(null)}
           />
         )}
@@ -1482,7 +1500,7 @@ const AdminDirectOffers = () => {
       <AnimatePresence>
         {showProofs && (
           <ManualProofsModal
-            token={token}
+            adminApi={adminApi}
             onClose={() => setShowProofs(false)}
           />
         )}
