@@ -375,8 +375,8 @@ const Footer = () => {
                             : "/coins/footer urdu light mobil.png"
                           )
                         : (isDarkMode
-                            ? (isFr ? "/coins/footherdarkmobilefranch.png" : (isDe ? "/coins/wybt german black mobile.png" : "/coins/wybt eng black.png"))
-                            : (isFr ? "/coins/footherlightmobilefranch.png" : (isDe ? "/coins/image copy 19 german.png" : "/coins/image copy 19.png"))
+                            ? (isEs ? "/coins/footerdarkspanishmobile.png" : (isFr ? "/coins/footherdarkmobilefranch.png" : (isDe ? "/coins/wybt german black mobile.png" : "/coins/wybt eng black.png")))
+                            : (isEs ? "/coins/footerlightspanishmobile.png" : (isFr ? "/coins/footherlightmobilefranch.png" : (isDe ? "/coins/image copy 19 german.png" : "/coins/image copy 19.png")))
                           )
                       )
                     : (isUr
@@ -385,8 +385,8 @@ const Footer = () => {
                             : "/coins/footer urdu light desktop.png"
                           )
                         : (isDarkMode
-                            ? (isFr ? "/coins/footherdarkfranch.png" : (isDe ? "/coins/footerimageblackgerman.png" : "/coins/footerimageblackenglish.png"))
-                            : (isFr ? "/coins/footherlightfranch.png" : (isDe ? "/coins/image copy 17 german.png" : "/coins/image copy 17.png"))
+                            ? (isEs ? "/coins/footerdarkspanish.png" : (isFr ? "/coins/footherdarkfranch.png" : (isDe ? "/coins/footerimageblackgerman.png" : "/coins/footerimageblackenglish.png")))
+                            : (isEs ? "/coins/footerlightspanish.png" : (isFr ? "/coins/footherlightfranch.png" : (isDe ? "/coins/image copy 17 german.png" : "/coins/image copy 17.png")))
                           )
                       )
                 }

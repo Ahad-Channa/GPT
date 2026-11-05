@@ -100,8 +100,8 @@ const Landing = () => {
               <img
                 src={
                   isDarkMode
-                    ? (isFr ? "/coins/HeroDarktFranch.png" : (isUr ? "/coins/Hero Urdu Dark Desktop.jpg" : (isDe ? "/coins/HerosectionBlackGerman.png" : "/coins/HerosectionBlackEnglish.png")))
-                    : (isFr ? "/coins/HeroLightFranch.png" : (isUr ? "/coins/Hero Urdu Light Desktop.jpg" : (isDe ? "/coins/Hero section german desktop.png" : "/coins/hero section image.png")))
+                    ? (isEs ? "/coins/herodarkspanish.png" : (isFr ? "/coins/HeroDarktFranch.png" : (isUr ? "/coins/Hero Urdu Dark Desktop.jpg" : (isDe ? "/coins/HerosectionBlackGerman.png" : "/coins/HerosectionBlackEnglish.png"))))
+                    : (isEs ? "/coins/herolightspanish.png" : (isFr ? "/coins/HeroLightFranch.png" : (isUr ? "/coins/Hero Urdu Light Desktop.jpg" : (isDe ? "/coins/Hero section german desktop.png" : "/coins/hero section image.png"))))
                 }
                 alt="Hero Background"
                 className={`w-full h-full object-fill ${isUr ? 'rounded-bl-[36px]' : ''}`}
@@ -537,8 +537,8 @@ const Landing = () => {
                   <img
                     src={
                       isDarkMode
-                        ? (isFr ? "/coins/HeroDarktFranchMobile.png" : (isUr ? "/coins/Hero Urdu Dark mobile.jpg" : (isDe ? "/coins/Hero section german mobile Black.png" : "/coins/Hero section Eng mobile Black.png")))
-                        : (isFr ? "/coins/HeroLightFranchMobile.png" : (isUr ? "/coins/Hero Urdu Light Mobile.jpg" : (isDe ? "/coins/Hero section german mobile.png" : "/coins/mobile hero.png")))
+                        ? (isEs ? "/coins/herodarkspanishmobile.png" : (isFr ? "/coins/HeroDarktFranchMobile.png" : (isUr ? "/coins/Hero Urdu Dark mobile.jpg" : (isDe ? "/coins/Hero section german mobile Black.png" : "/coins/Hero section Eng mobile Black.png"))))
+                        : (isEs ? "/coins/herolightspanishmobile.png" : (isFr ? "/coins/HeroLightFranchMobile.png" : (isUr ? "/coins/Hero Urdu Light Mobile.jpg" : (isDe ? "/coins/Hero section german mobile.png" : "/coins/mobile hero.png"))))
                     }
                     alt="Mobile Hero Graphic"
                     className={`w-full h-auto object-cover ${isUr ? 'rounded-b-[26px]' : ''}`}
@@ -893,22 +893,28 @@ const Landing = () => {
 
           {/* Image (Second on mobile, First on Desktop) */}
           <div
-            className={`order-2 lg:order-1 flex-shrink-0 w-full lg:w-[640px] h-auto lg:h-[558px] px-0 mt-6 lg:mt-0 flex ${isMobile && (isDe || isUr || isFr) ? 'justify-start' : 'justify-center'} lg:justify-start overflow-hidden rounded-[24px] lg:rounded-[32px]`}
+            className={`order-2 lg:order-1 flex-shrink-0 w-full lg:w-[640px] h-auto lg:h-[558px] px-0 mt-6 lg:mt-0 flex ${isMobile && (isDe || isUr || isFr || isEs) ? 'justify-start' : 'justify-center'} lg:justify-start overflow-hidden rounded-[24px] lg:rounded-[32px]`}
             style={isMobile ? { width: '100%', maxWidth: '100%' } : {}}
           >
             <img
               src={
                 isMobile
-                  ? (isUr
-                    ? "/coins/why chose us Urdu Light Mobile.jpg"
-                    : (isDe ? "/coins/Germanwhychosusmobile.png" : (isFr ? "/coins/whychoseusmobile.png" : "/coins/whychosemobile.png")))
-                  : (isDarkMode
-                    ? (isUr
-                      ? "/coins/why chose us Urdu Dark Desktop.jpg"
-                      : (isDe ? "/coins/WhycoseusBlackGerman.png" : (isFr ? "/coins/whychoseusdark.png" : "/coins/WhycoseusBlackEnglish.png")))
+                  ? (isEs
+                    ? "/coins/whychoseusspanishmobile.png"
                     : (isUr
-                      ? "/coins/why chose us Urdu Light Desktop.png"
-                      : (isDe ? "/coins/Germanwhychosus.png" : (isFr ? "/coins/whychoseuslight.png" : "/coins/why chose us.png")))
+                      ? "/coins/why chose us Urdu Light Mobile.jpg"
+                      : (isDe ? "/coins/Germanwhychosusmobile.png" : (isFr ? "/coins/whychoseusmobile.png" : "/coins/whychosemobile.png"))))
+                  : (isDarkMode
+                    ? (isEs
+                      ? "/coins/whychoseusdarkspanish.png"
+                      : (isUr
+                        ? "/coins/why chose us Urdu Dark Desktop.jpg"
+                        : (isDe ? "/coins/WhycoseusBlackGerman.png" : (isFr ? "/coins/whychoseusdark.png" : "/coins/WhycoseusBlackEnglish.png"))))
+                    : (isEs
+                      ? "/coins/whychoseuslightspanish.png"
+                      : (isUr
+                        ? "/coins/why chose us Urdu Light Desktop.png"
+                        : (isDe ? "/coins/Germanwhychosus.png" : (isFr ? "/coins/whychoseuslight.png" : "/coins/why chose us.png"))))
                   )
               }
               alt="Why Choose Us"
@@ -924,8 +930,8 @@ const Landing = () => {
                     width: '100%',
                     height: '100%',
                     position: 'relative',
-                    left: (isDe || isUr || isFr) ? '0px' : '-16px',
-                    clipPath: (isDe || isUr || isFr) ? 'inset(0 0 0 0 round 32px)' : undefined
+                    left: (isDe || isUr || isFr || isEs) ? '0px' : '-16px',
+                    clipPath: (isDe || isUr || isFr || isEs) ? 'inset(0 0 0 0 round 32px)' : undefined
                   }
               }
             />
@@ -1001,7 +1007,12 @@ const Landing = () => {
               className="grid grid-cols-1 lg:grid-cols-3 mx-auto w-full px-0"
               style={!isMobile ? { width: 1328, maxWidth: '100%', height: 368, gap: 22 } : { maxWidth: 440, height: 'auto', gap: 20 }}
             >
-              {(isFr
+              {(isEs
+                ? (isDarkMode
+                  ? ['/coins/sew1darkspanihs.png', '/coins/sew2darkspanihs.png', '/coins/sew3darkspanihs.png']
+                  : ['/coins/sew1lightspanihs.png', '/coins/sew2lightspanihs.png', '/coins/sew3lightspanihs.png']
+                )
+                : isFr
                 ? (isDarkMode
                   ? ['/coins/sew1darkfranch.png', '/coins/sew2darkfranch.png', '/coins/sew3darkfranch.png']
                   : ['/coins/sew1lightfranch.png', '/coins/sew2lightfranch.png', '/coins/sew3lightfranch.png']
