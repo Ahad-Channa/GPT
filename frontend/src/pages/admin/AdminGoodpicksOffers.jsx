@@ -20,7 +20,7 @@ const isIconUrl = (icon) => icon && (icon.startsWith('http') || icon.startsWith(
 // ─── Modal for Create & Edit ────────────────────────────────────────────────
 const GoodpickModal = ({ offer, onClose, onSaved, token, currentUser }) => {
   const isEditing = Boolean(offer);
-  const [activeTab, setActiveTab] = useState('en'); // 'en' | 'de' | 'fr' | 'ur'
+  const [activeTab, setActiveTab] = useState('en'); // 'en' | 'de' | 'fr' | 'es' | 'ur' | 'ru'
 
   const [form, setForm] = useState({
     title: offer?.title || '',
@@ -28,11 +28,13 @@ const GoodpickModal = ({ offer, onClose, onSaved, token, currentUser }) => {
     titleUr: offer?.titleUr || '',
     titleFr: offer?.titleFr || '',
     titleEs: offer?.titleEs || '',
+    titleRu: offer?.titleRu || '',
     description: offer?.description || '',
     descriptionDe: offer?.descriptionDe || '',
     descriptionUr: offer?.descriptionUr || '',
     descriptionFr: offer?.descriptionFr || '',
     descriptionEs: offer?.descriptionEs || '',
+    descriptionRu: offer?.descriptionRu || '',
     rewardAmount: offer?.rewardAmount || '',
     externalLink: offer?.externalLink || '',
     expirationDate: offer?.expirationDate ? new Date(offer.expirationDate).toISOString().slice(0, 16) : '',
@@ -53,6 +55,9 @@ const GoodpickModal = ({ offer, onClose, onSaved, token, currentUser }) => {
     requirementsEs: Array.isArray(offer?.requirementsEs)
       ? offer.requirementsEs.join('\n')
       : (offer?.requirementsEs || ''),
+    requirementsRu: Array.isArray(offer?.requirementsRu)
+      ? offer.requirementsRu.join('\n')
+      : (offer?.requirementsRu || ''),
     requirementType: offer?.requirementType || 'bullets',
     platforms: offer?.platforms || { desktop: true, android: true, ios: true },
   });
@@ -96,6 +101,9 @@ const GoodpickModal = ({ offer, onClose, onSaved, token, currentUser }) => {
           requirementsEs: form.requirementType === 'paragraph'
             ? [(form.requirementsEs || '').trim()].filter(Boolean)
             : (form.requirementsEs || '').split('\n').map((r) => r.trim()).filter(Boolean),
+          requirementsRu: form.requirementType === 'paragraph'
+            ? [(form.requirementsRu || '').trim()].filter(Boolean)
+            : (form.requirementsRu || '').split('\n').map((r) => r.trim()).filter(Boolean),
           requirementType: form.requirementType,
           platforms: form.platforms,
         }),
@@ -242,6 +250,21 @@ const GoodpickModal = ({ offer, onClose, onSaved, token, currentUser }) => {
                 <span>اردو</span>
                 {Boolean(form.titleUr) && (
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" title="Urdu translated" />
+                )}
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveTab('ru')}
+                className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-lg text-xs font-bold transition-all ${
+                  activeTab === 'ru'
+                    ? 'bg-white text-gray-900 shadow-sm border border-gray-200'
+                    : 'text-gray-500 hover:text-gray-800'
+                }`}
+              >
+                <span>🇷🇺</span>
+                <span>Русский</span>
+                {Boolean(form.titleRu) && (
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" title="Russian translated" />
                 )}
               </button>
             </div>
@@ -520,6 +543,56 @@ const GoodpickModal = ({ offer, onClose, onSaved, token, currentUser }) => {
                     form.requirementType === 'paragraph'
                       ? 'مثال: اپنے ڈیوائس پر ڈاؤن لوڈ اور رجسٹر کر کے یہ آفر مکمل کریں۔'
                       : 'مثال: رجسٹر کریں ← 10 کوائنز حاصل کریں\nایپ ڈاؤن لوڈ کریں ← 5,000 کوائنز حاصل کریں'
+                  }
+                  rows={form.requirementType === 'paragraph' ? 2 : 3}
+                  className="w-full bg-white border border-gray-300 rounded-xl px-3.5 py-2 text-gray-900 text-sm placeholder-gray-400 focus:outline-none focus:border-[#1E2538] focus:ring-1 focus:ring-[#1E2538]/20 resize-none transition-all"
+                />
+              </div>
+            </div>
+          )}
+
+          {/* Tab: Russian Content */}
+          {activeTab === 'ru' && (
+            <div className="space-y-4">
+              <div>
+                <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1.5">
+                  🇷🇺 Title (Russian / Русский)
+                </label>
+                <input
+                  value={form.titleRu}
+                  onChange={set('titleRu')}
+                  placeholder="напр. Treehouse Fishing"
+                  className="w-full bg-white border border-gray-300 rounded-xl px-3.5 py-2 text-gray-900 text-sm placeholder-gray-400 focus:outline-none focus:border-[#1E2538] focus:ring-1 focus:ring-[#1E2538]/20 transition-all"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1.5">
+                  🇷🇺 Description (Russian / Русский)
+                </label>
+                <textarea
+                  value={form.descriptionRu}
+                  onChange={set('descriptionRu')}
+                  placeholder="Краткое описание задания для карточки и модального окна..."
+                  rows={2}
+                  className="w-full bg-white border border-gray-300 rounded-xl px-3.5 py-2 text-gray-900 text-sm placeholder-gray-400 focus:outline-none focus:border-[#1E2538] focus:ring-1 focus:ring-[#1E2538]/20 resize-none transition-all"
+                />
+              </div>
+
+              <div>
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                    🇷🇺 Requirements (Russian / Русский)
+                  </label>
+                  <span className="text-[11px] text-gray-400">Формат: {form.requirementType === 'paragraph' ? 'Абзац' : 'По пунктам'}</span>
+                </div>
+                <textarea
+                  value={form.requirementsRu}
+                  onChange={set('requirementsRu')}
+                  placeholder={
+                    form.requirementType === 'paragraph'
+                      ? 'напр. Завершите это задание, загрузив приложение и зарегистрировавшись на устройстве.'
+                      : 'напр. Зарегистрироваться → получить 10 Монет\nСкачать приложение → получить 5 000 Монет'
                   }
                   rows={form.requirementType === 'paragraph' ? 2 : 3}
                   className="w-full bg-white border border-gray-300 rounded-xl px-3.5 py-2 text-gray-900 text-sm placeholder-gray-400 focus:outline-none focus:border-[#1E2538] focus:ring-1 focus:ring-[#1E2538]/20 resize-none transition-all"
@@ -899,6 +972,11 @@ const AdminGoodpicksOffers = () => {
                               {offer.titleUr && (
                                 <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200" title={`UR: ${offer.titleUr}`}>
                                   🇵🇰 UR
+                                </span>
+                              )}
+                              {offer.titleRu && (
+                                <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold bg-red-50 text-red-700 border border-red-200" title={`RU: ${offer.titleRu}`}>
+                                  🇷🇺 RU
                                 </span>
                               )}
                             </div>

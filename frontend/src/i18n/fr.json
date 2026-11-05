@@ -94,7 +94,7 @@
   "earn": {
     "pageTitle": "Gagner des Pièces",
     "pageSubtitle": "Complétez des sondages, jouez à des jeux et découvrez les offres en vedette pour gagner.",
-    "totalUsers": "TOTAL UTILISATEURS :",
+    "totalUsers": "UTILISATEURS :",
     "totalPaid": "TOTAL PAYÉ :",
     "featuredOffers": "Offres en Vedette",
     "featuredOffersSubtitle": "Tâches directes à forte récompense.",
@@ -127,7 +127,9 @@
     "en": "EN",
     "de": "DE",
     "ur": "UR",
-    "fr": "FR"
+    "fr": "FR",
+    "ru": "RU",
+    "es": "ES"
   },
   "offers": {
     "requirements": "Conditions",

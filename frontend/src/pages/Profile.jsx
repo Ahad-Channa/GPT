@@ -1506,14 +1506,12 @@ const TabBtn = ({ active, onClick, icon, label, className = '' }) => {
       style={{
         fontFamily: '"Bricolage Grotesque", sans-serif',
         fontWeight: 700,
-        fontSize: '14px',
         lineHeight: '100%',
         letterSpacing: '0%',
         borderRadius: '80px',
-        height: '37px',
         opacity: 1,
       }}
-      className={`flex items-center justify-start md:justify-center gap-2 px-3 sm:px-4 py-2 transition-all cursor-pointer whitespace-nowrap w-fit ${active
+      className={`flex items-center justify-start md:justify-center gap-1.5 sm:gap-2 px-2.5 sm:px-4 py-2 h-[35px] md:h-[37px] text-[12px] sm:text-[13px] md:text-[14px] transition-all cursor-pointer w-full md:w-auto min-w-0 ${active
         ? 'bg-[#24324D] text-white shadow-sm'
         : (isDarkMode ? 'text-white hover:bg-white/10 bg-transparent' : 'text-[#000000] hover:bg-black/5 bg-transparent')
         } ${className}`}
@@ -1525,14 +1523,14 @@ const TabBtn = ({ active, onClick, icon, label, className = '' }) => {
           style={{
             filter: active ? 'brightness(0) invert(1)' : (isDarkMode ? 'brightness(0) invert(1)' : 'brightness(0)'),
           }}
-          className="w-4 h-4 shrink-0 object-contain"
+          className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0 object-contain"
         />
       ) : icon ? (
         React.createElement(icon, {
-          className: `w-4 h-4 shrink-0 ${active ? 'text-white' : (isDarkMode ? 'text-white' : 'text-black')}`,
+          className: `w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0 ${active ? 'text-white' : (isDarkMode ? 'text-white' : 'text-black')}`,
         })
       ) : null}
-      <span>{label}</span>
+      <span className="truncate">{label}</span>
     </button>
   );
 };
@@ -2899,18 +2897,18 @@ const Profile = () => {
                   opacity: 1,
                   transform: 'rotate(0deg)',
                 }}
-                className="flex items-center justify-center lg:justify-start gap-4 sm:gap-6 whitespace-nowrap"
+                className="flex flex-wrap items-center justify-center lg:justify-start gap-x-3 sm:gap-x-6 gap-y-1.5"
               >
                 <div
                   style={{
                     fontFamily: '"Poppins", sans-serif',
                     fontWeight: 500,
-                    fontSize: '13px',
-                    lineHeight: '9px',
+                    fontSize: '12px',
+                    lineHeight: '16px',
                     letterSpacing: '0%',
                     color: isDarkMode ? 'rgba(255, 255, 255, 0.7)' : '#000000',
                   }}
-                  className="flex items-center gap-1.5"
+                  className="flex items-center gap-1.5 max-w-full"
                 >
                   <img
                     src="/coins/profileemail.png"
@@ -2918,18 +2916,18 @@ const Profile = () => {
                     style={{ filter: isDarkMode ? 'brightness(0) invert(1)' : 'none' }}
                     className="w-[14px] h-[14px] object-contain shrink-0"
                   />
-                  <span>{currentUser?.email || mongoUser?.email || 'futuristicbug1@gmail.com'}</span>
+                  <span className="truncate max-w-[210px] sm:max-w-none">{currentUser?.email || mongoUser?.email || 'futuristicbug1@gmail.com'}</span>
                 </div>
                 <div
                   style={{
                     fontFamily: '"Poppins", sans-serif',
                     fontWeight: 500,
-                    fontSize: '13px',
-                    lineHeight: '9px',
+                    fontSize: '12px',
+                    lineHeight: '16px',
                     letterSpacing: '0%',
                     color: isDarkMode ? 'rgba(255, 255, 255, 0.7)' : '#000000',
                   }}
-                  className="flex items-center gap-1.5"
+                  className="flex items-center gap-1.5 shrink-0"
                 >
                   <img
                     src="/coins/profiledate.png"
@@ -2940,7 +2938,7 @@ const Profile = () => {
                   <span>
                     {t('profile.joinedDate', {
                       date: mongoUser?.createdAt
-                        ? new Date(mongoUser.createdAt).toLocaleDateString(i18n.language === 'de' ? 'de-DE' : (i18n.language === 'fr' ? 'fr-FR' : 'en-US'), { month: 'short', year: 'numeric' })
+                        ? new Date(mongoUser.createdAt).toLocaleDateString(i18n.language === 'de' ? 'de-DE' : (i18n.language === 'fr' ? 'fr-FR' : (i18n.language === 'ru' ? 'ru-RU' : (i18n.language === 'es' ? 'es-ES' : 'en-US'))), { month: 'short', year: 'numeric' })
                         : 'Aug 2026',
                       defaultValue: `Joined ${mongoUser?.createdAt ? new Date(mongoUser.createdAt).toLocaleDateString('en-US', { month: 'short', year: 'numeric' }) : 'Aug 2026'}`
                     })}
@@ -3282,9 +3280,9 @@ const Profile = () => {
           }}
           className={`w-full mx-auto px-1.5 py-4 sm:px-8 sm:py-7 rounded-[20px] md:rounded-[30px] border ${isDarkMode ? 'border-white/10' : 'border-slate-100/60'} shadow-sm flex flex-col justify-start gap-3 sm:gap-4 min-h-[500px] md:min-h-[593px]`}
         >
-          {/* Tab pill bar navigation (Mobile: 2-column grid matching screenshot, Desktop: flex row) */}
+          {/* Tab pill bar navigation (Mobile: 2-column grid: 2 per line, last 1 on 3rd line; Desktop: flex row) */}
           <div
-            className="w-full max-w-[839px] mx-auto grid grid-cols-2 md:flex md:flex-nowrap items-center justify-start md:justify-center gap-x-2 gap-y-2 md:gap-[5px] h-auto md:h-[37px]"
+            className="w-full max-w-[839px] mx-auto grid grid-cols-2 md:flex md:flex-nowrap items-center justify-start md:justify-center gap-2 md:gap-[5px] h-auto md:h-[37px]"
           >
             <TabBtn active={activeTab === 'started_offers'} onClick={() => setActiveTab('started_offers')} icon="/coins/profilestarted.png" label={t('profile.startedOffers', 'Started Offers')} />
             <TabBtn active={activeTab === 'completed_offers'} onClick={() => setActiveTab('completed_offers')} icon="/coins/image copy 3.png" label={t('profile.completedOffers', 'Completed Offers')} />

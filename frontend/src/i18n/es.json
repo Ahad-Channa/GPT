@@ -94,8 +94,8 @@
   "earn": {
     "pageTitle": "Ganar Puntos",
     "pageSubtitle": "Completa encuestas, juega y descubre ofertas destacadas para ganar monedas.",
-    "totalUsers": "TOTAL DE USUARIOS:",
-    "totalPaid": "TOTAL PAGADO:",
+    "totalUsers": "USUARIOS:",
+    "totalPaid": "PAGADO:",
     "featuredOffers": "Ofertas Destacadas",
     "featuredOffersSubtitle": "Tareas directas con altas recompensas.",
     "gamingOffers": "Juegos y Aplicaciones",
@@ -128,7 +128,8 @@
     "de": "DE",
     "ur": "UR",
     "fr": "FR",
-    "es": "ES"
+    "es": "ES",
+    "ru": "RU"
   },
   "offers": {
     "requirements": "Requisitos",

@@ -419,10 +419,10 @@ const Home = () => {
             {/* ─── Platform Stats (Top Count Pill) ───────────────────────────── */}
             <motion.div
               variants={item}
-              className="flex items-center justify-center w-full mx-auto -mt-[8px] mb-8 md:mb-4 lg:mb-8 px-4"
+              className="flex items-center justify-center w-full mx-auto -mt-[8px] mb-8 md:mb-4 lg:mb-8 px-2 sm:px-4"
             >
               <div
-                className="flex items-center justify-center w-auto max-w-full px-8 sm:px-12 lg:px-12 py-3 sm:py-4 lg:pt-3.5 lg:pb-3 gap-6 sm:gap-10 lg:gap-10 rounded-b-[70px] lg:rounded-b-[65px] transition-all"
+                className="flex items-center justify-center w-auto max-w-full px-3.5 sm:px-8 lg:px-12 py-2 sm:py-4 lg:pt-3.5 lg:pb-3 gap-3 sm:gap-8 lg:gap-10 rounded-b-[40px] sm:rounded-b-[70px] lg:rounded-b-[65px] transition-all"
                 style={{
                   width: 'auto',
                   background: isDarkMode ? 'rgba(12, 14, 17, 1)' : 'rgba(255, 255, 255, 1)',
@@ -430,15 +430,15 @@ const Home = () => {
                 }}
               >
                 {/* Total Users */}
-                <div className="flex items-center gap-2.5 sm:gap-3.5 shrink-0">
+                <div className="flex items-center gap-1.5 sm:gap-3.5 shrink-0">
                   <img
                     src="/coins/total user.png"
                     alt="Users"
-                    className="w-[32px] h-[32px] sm:w-[38px] sm:h-[38px] lg:w-[50px] lg:h-[50px] object-contain flex-shrink-0 -translate-y-[5px] lg:translate-y-0"
+                    className="w-[26px] h-[26px] sm:w-[38px] sm:h-[38px] lg:w-[50px] lg:h-[50px] object-contain flex-shrink-0 -translate-y-[2px] sm:-translate-y-[5px] lg:translate-y-0"
                   />
                   <div className="flex flex-col justify-center min-w-0">
                     <span
-                      className="uppercase text-[12px] lg:text-[13px] leading-[18px] lg:leading-[20px] transition-colors duration-300"
+                      className="uppercase text-[9.5px] sm:text-[12px] lg:text-[13px] leading-[13px] sm:leading-[18px] lg:leading-[20px] transition-colors duration-300"
                       style={{
                         fontFamily: '"Poppins", sans-serif',
                         fontWeight: 500,
@@ -453,7 +453,7 @@ const Home = () => {
                       {t('earn.totalUsers')}
                     </span>
                     <span
-                      className={`text-[18px] sm:text-[22px] lg:text-[32px] font-bold leading-tight whitespace-nowrap transition-colors duration-300 ${
+                      className={`text-[15px] sm:text-[22px] lg:text-[32px] font-bold leading-tight whitespace-nowrap transition-colors duration-300 ${
                         isDarkMode ? 'text-white' : 'text-[#0E0F0C]'
                       }`}
                       style={{
@@ -470,15 +470,15 @@ const Home = () => {
                 </div>
 
                 {/* Total Paid */}
-                <div className="flex items-center gap-2.5 sm:gap-3.5 shrink-0">
+                <div className="flex items-center gap-1.5 sm:gap-3.5 shrink-0">
                   <img
                     src="/coins/total paid.png"
                     alt="Paid"
-                    className="w-[32px] h-[32px] sm:w-[38px] sm:h-[38px] lg:w-[50px] lg:h-[50px] object-contain flex-shrink-0 translate-y-[1px] lg:translate-y-0"
+                    className="w-[26px] h-[26px] sm:w-[38px] sm:h-[38px] lg:w-[50px] lg:h-[50px] object-contain flex-shrink-0 translate-y-[1px] lg:translate-y-0"
                   />
                   <div className="flex flex-col justify-center min-w-0">
                     <span
-                      className="uppercase text-[12px] lg:text-[13px] leading-[18px] lg:leading-[20px] transition-colors duration-300"
+                      className="uppercase text-[9.5px] sm:text-[12px] lg:text-[13px] leading-[13px] sm:leading-[18px] lg:leading-[20px] transition-colors duration-300"
                       style={{
                         fontFamily: '"Poppins", sans-serif',
                         fontWeight: 500,
@@ -493,7 +493,7 @@ const Home = () => {
                       {t('earn.totalPaid')}
                     </span>
                     <span
-                      className={`text-[18px] sm:text-[22px] lg:text-[32px] font-bold leading-tight whitespace-nowrap transition-colors duration-300 ${
+                      className={`text-[15px] sm:text-[22px] lg:text-[32px] font-bold leading-tight whitespace-nowrap transition-colors duration-300 ${
                         isDarkMode ? 'text-white' : 'text-[#0E0F0C]'
                       }`}
                       style={{
@@ -515,16 +515,16 @@ const Home = () => {
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-3.5 md:gap-4 w-full">
               {/* Left: Dynamic Icon + Title + Subtitle */}
               <div
-                className="flex items-center"
+                className="flex items-center w-full md:w-auto min-w-0"
                 style={{
-                  gap: '5.25px',
+                  gap: '8px',
                   opacity: 1,
                   transform: 'rotate(0deg)',
                 }}
               >
                 {currentHeader.icon}
                 <div
-                  className="flex flex-col justify-center max-w-[371px] md:min-h-[44px]"
+                  className="flex flex-col justify-center flex-1 min-w-0 max-w-full md:max-w-[371px] md:min-h-[44px]"
                   style={{
                     gap: '4px',
                     opacity: 1,
@@ -532,7 +532,7 @@ const Home = () => {
                   }}
                 >
                   <h2
-                    className="w-auto text-[24px] md:text-[27px] leading-tight md:leading-[1.1] tracking-[-0.02em] font-bold m-0 md:whitespace-nowrap transition-colors duration-300"
+                    className="w-auto text-[22px] sm:text-[24px] md:text-[27px] leading-tight md:leading-[1.1] tracking-[-0.02em] font-bold m-0 md:whitespace-nowrap transition-colors duration-300"
                     style={{
                       fontFamily: '"Bricolage Grotesque", sans-serif',
                       opacity: 1,
@@ -543,7 +543,7 @@ const Home = () => {
                     {currentHeader.title}
                   </h2>
                   <p
-                    className="w-[311px] max-w-full text-[14px] leading-[20px] md:leading-[14px] font-medium m-0 md:whitespace-nowrap transition-colors duration-300"
+                    className="w-full max-w-full text-[13px] sm:text-[14px] leading-[18px] md:leading-[14px] font-medium m-0 md:whitespace-nowrap transition-colors duration-300"
                     style={{
                       fontFamily: '"Poppins", sans-serif',
                       letterSpacing: '0%',
@@ -647,18 +647,14 @@ const Home = () => {
               >
                 {/* Header with icon and typography (only when filter === 'all') */}
                 {filter === 'all' && (
-                  <div className="flex items-center" style={{ gap: '5.25px', opacity: 1, transform: 'rotate(0deg)' }}>
+                  <div className="flex items-center w-full min-w-0" style={{ gap: '8px', opacity: 1, transform: 'rotate(0deg)' }}>
                     <img
                       src="/coins/gameseciton.png"
                       alt="Gaming Offers"
-                      className="w-[53px] h-[53px] md:w-[67.2px] md:h-[67.2px] flex-shrink-0 object-contain select-none"
-                      style={{
-                        opacity: 1,
-                        transform: 'rotate(0deg)',
-                      }}
+                      className="w-[44px] h-[44px] sm:w-[53px] sm:h-[53px] md:w-[67.2px] md:h-[67.2px] flex-shrink-0 object-contain select-none"
                     />
                     <div
-                      className="flex flex-col justify-center max-w-[371px] md:min-h-[44px]"
+                      className="flex flex-col justify-center flex-1 min-w-0 max-w-full md:max-w-[371px] md:min-h-[44px]"
                       style={{
                         gap: '4px',
                         opacity: 1,
@@ -666,23 +662,18 @@ const Home = () => {
                       }}
                     >
                       <h2
-                        className="w-auto text-[24px] md:text-[30px] leading-tight md:leading-[1] tracking-[-0.02em] font-bold m-0 md:whitespace-nowrap transition-colors duration-300"
+                        className="w-auto text-[22px] sm:text-[24px] md:text-[30px] leading-tight md:leading-[1] tracking-[-0.02em] font-bold m-0 md:whitespace-nowrap transition-colors duration-300"
                         style={{
                           fontFamily: '"Bricolage Grotesque", sans-serif',
-                          opacity: 1,
-                          transform: 'rotate(0deg)',
                           color: isDarkMode ? '#FFFFFF' : '#0E0F0C',
                         }}
                       >
                         {t('earn.gamingOffers')}
                       </h2>
                       <p
-                        className="w-[311px] max-w-full text-[14px] leading-[20px] md:leading-[1.2] font-medium m-0 md:whitespace-nowrap transition-colors duration-300"
+                        className="w-full max-w-full text-[13px] sm:text-[14px] leading-[18px] md:leading-[1.2] font-medium m-0 md:whitespace-nowrap transition-colors duration-300"
                         style={{
                           fontFamily: '"Poppins", sans-serif',
-                          letterSpacing: '0%',
-                          opacity: 1,
-                          transform: 'rotate(0deg)',
                           color: isDarkMode ? 'rgba(255, 255, 255, 0.7)' : 'rgba(14, 15, 12, 0.7)',
                         }}
                       >
@@ -718,18 +709,14 @@ const Home = () => {
                 className="flex flex-col shrink-0 w-full max-w-[1328px] gap-[20px]"
               >
                 {filter === 'all' && (
-                  <div className="flex items-center" style={{ gap: '5.25px', opacity: 1, transform: 'rotate(0deg)', position: 'relative', left: '-3px' }}>
+                  <div className="flex items-center w-full min-w-0" style={{ gap: '8px', opacity: 1, transform: 'rotate(0deg)' }}>
                     <img
                       src="/coins/survay section.png"
                       alt="Surveys"
-                      className="w-[53px] h-[53px] md:w-[67.2px] md:h-[67.2px] flex-shrink-0 object-contain select-none"
-                      style={{
-                        opacity: 1,
-                        transform: 'rotate(0deg)',
-                      }}
+                      className="w-[44px] h-[44px] sm:w-[53px] sm:h-[53px] md:w-[67.2px] md:h-[67.2px] flex-shrink-0 object-contain select-none"
                     />
                     <div
-                      className="flex flex-col justify-center max-w-[371px] md:min-h-[44px]"
+                      className="flex flex-col justify-center flex-1 min-w-0 max-w-full md:max-w-[371px] md:min-h-[44px]"
                       style={{
                         gap: '4px',
                         opacity: 1,
@@ -737,23 +724,18 @@ const Home = () => {
                       }}
                     >
                       <h2
-                        className="w-auto text-[24px] md:text-[30px] leading-tight md:leading-[1] tracking-[-0.02em] font-bold m-0 md:whitespace-nowrap transition-colors duration-300"
+                        className="w-auto text-[22px] sm:text-[24px] md:text-[30px] leading-tight md:leading-[1] tracking-[-0.02em] font-bold m-0 md:whitespace-nowrap transition-colors duration-300"
                         style={{
                           fontFamily: '"Bricolage Grotesque", sans-serif',
-                          opacity: 1,
-                          transform: 'rotate(0deg)',
                           color: isDarkMode ? '#FFFFFF' : '#0E0F0C',
                         }}
                       >
                         {t('earn.surveys')}
                       </h2>
                       <p
-                        className="w-[311px] max-w-full text-[14px] leading-[20px] md:leading-[1.2] font-medium m-0 md:whitespace-nowrap transition-colors duration-300"
+                        className="w-full max-w-full text-[13px] sm:text-[14px] leading-[18px] md:leading-[1.2] font-medium m-0 md:whitespace-nowrap transition-colors duration-300"
                         style={{
                           fontFamily: '"Poppins", sans-serif',
-                          letterSpacing: '0%',
-                          opacity: 1,
-                          transform: 'rotate(0deg)',
                           color: isDarkMode ? 'rgba(255, 255, 255, 0.7)' : 'rgba(14, 15, 12, 0.7)',
                         }}
                       >

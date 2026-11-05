@@ -29,6 +29,7 @@ const Landing = () => {
   const isFr = i18n?.language?.startsWith('fr');
   const isEs = i18n?.language?.startsWith('es');
   const isUr = i18n?.language === 'ur' || i18n?.language?.startsWith('ur');
+  const isRu = i18n?.language?.startsWith('ru');
   const [stats, setStats] = useState({ totalUsers: 0, totalPaidOut: 0 });
   const [openFaq, setOpenFaq] = useState(null);
   const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' ? window.innerWidth < 1024 : false);
@@ -353,17 +354,17 @@ const Landing = () => {
             >
               <div
                 className={isMobile ? "flex flex-col items-center text-center mx-auto w-full gap-6" : "flex flex-col text-left"}
-                style={!isMobile ? { width: (isFr || isEs) ? 664 : 608, gap: 24 } : { maxWidth: 424 }}
+                style={!isMobile ? { width: isRu ? 580 : ((isFr || isEs) ? 664 : 608), gap: 24 } : { maxWidth: 424 }}
               >
                 <h1
                   className="m-0 transition-colors duration-300"
                   style={!isMobile ? {
                     width: '100%',
-                    maxWidth: (isFr || isEs) ? 664 : 608,
+                    maxWidth: isRu ? 580 : ((isFr || isEs) ? 664 : 608),
                     fontFamily: '"Bricolage Grotesque", sans-serif',
                     fontWeight: 700,
-                    fontSize: isEs ? 42 : (isFr ? 45 : 55),
-                    lineHeight: isEs ? '48px' : (isFr ? '52px' : '60px'),
+                    fontSize: (isEs || isRu) ? 42 : (isFr ? 45 : 55),
+                    lineHeight: (isEs || isRu) ? '48px' : (isFr ? '52px' : '60px'),
                     letterSpacing: '-0.02em',
                     color: isDarkMode ? '#FFFFFF' : 'rgba(14, 15, 12, 1)'
                   } : {
@@ -371,8 +372,8 @@ const Landing = () => {
                     maxWidth: 424,
                     fontFamily: '"Bricolage Grotesque", sans-serif',
                     fontWeight: 700,
-                    fontSize: (isFr || isEs) ? 'clamp(30px, 8.5vw, 40px)' : 'clamp(42px, 14vw, 64px)',
-                    lineHeight: (isFr || isEs) ? 'clamp(34px, 9.8vw, 44px)' : 'clamp(38px, 12.5vw, 56px)',
+                    fontSize: (isFr || isEs || isRu) ? 'clamp(30px, 8.5vw, 40px)' : 'clamp(42px, 14vw, 64px)',
+                    lineHeight: (isFr || isEs || isRu) ? 'clamp(34px, 9.8vw, 44px)' : 'clamp(38px, 12.5vw, 56px)',
                     letterSpacing: '-0.02em',
                     textAlign: 'center',
                     color: isDarkMode ? '#FFFFFF' : 'rgba(14, 15, 12, 1)'
@@ -396,19 +397,19 @@ const Landing = () => {
                   className="m-0 whitespace-pre-line transition-colors duration-300"
                   style={!isMobile ? {
                     width: '100%',
-                    maxWidth: (isFr || isEs) ? 664 : 608,
+                    maxWidth: isRu ? 575 : ((isFr || isEs) ? 664 : 608),
                     fontFamily: '"Poppins", sans-serif',
                     fontWeight: 500,
-                    fontSize: (isFr || isEs) ? 15.5 : 16,
-                    lineHeight: '26px',
+                    fontSize: isRu ? 14 : ((isFr || isEs) ? 15.5 : 16),
+                    lineHeight: isRu ? '24px' : '26px',
                     color: isDarkMode ? 'rgba(255, 255, 255, 0.7)' : 'rgba(14, 15, 12, 1)'
                   } : {
                     width: '100%',
                     maxWidth: 400,
                     fontFamily: '"Poppins", sans-serif',
                     fontWeight: 500,
-                    fontSize: (isFr || isEs) ? 'clamp(12px, 3.4vw, 14.5px)' : 'clamp(13px, 3.8vw, 15.5px)',
-                    lineHeight: (isFr || isEs) ? '22px' : '26px',
+                    fontSize: (isFr || isEs || isRu) ? 'clamp(12px, 3.4vw, 14.5px)' : 'clamp(13px, 3.8vw, 15.5px)',
+                    lineHeight: (isFr || isEs || isRu) ? '22px' : '26px',
                     letterSpacing: '0%',
                     textAlign: 'center',
                     color: isDarkMode ? 'rgba(255, 255, 255, 0.7)' : 'rgba(14, 15, 12, 1)'
@@ -440,7 +441,7 @@ const Landing = () => {
                       backgroundColor: 'rgba(36, 50, 77, 1)',
                       fontFamily: '"Poppins", sans-serif',
                       fontWeight: 500,
-                      fontSize: isMobile ? (isFr || isEs ? 14 : 15) : 16,
+                      fontSize: isMobile ? (isFr || isEs || isRu ? 14 : 15) : 16,
                       color: 'rgba(255, 255, 255, 1)'
                     }}
                   >
@@ -457,7 +458,7 @@ const Landing = () => {
                       backgroundColor: isDarkMode ? 'rgba(255, 255, 255, 1)' : 'rgba(239, 239, 239, 1)',
                       fontFamily: '"Poppins", sans-serif',
                       fontWeight: 500,
-                      fontSize: isMobile ? (isFr || isEs ? 14 : 15) : 16,
+                      fontSize: isMobile ? (isFr || isEs || isRu ? 14 : 15) : 16,
                       color: 'rgba(0, 0, 0, 1)'
                     }}
                   >
@@ -469,29 +470,29 @@ const Landing = () => {
               {/* Stats below buttons */}
               <div
                 className={isMobile ? "flex items-center justify-between w-full mx-auto" : "flex items-center"}
-                style={!isMobile ? { minWidth: 460, gap: 48, marginTop: 8 } : { maxWidth: 360, marginTop: 32, gap: (isFr || isEs) ? 12 : 20, paddingLeft: 4, paddingRight: 4 }}
+                style={!isMobile ? { minWidth: 460, gap: 48, marginTop: 8 } : { maxWidth: 360, width: '100%', marginTop: 32, gap: isRu ? 8 : ((isFr || isEs) ? 12 : 20), paddingLeft: isRu ? 2 : 4, paddingRight: isRu ? 2 : 4 }}
               >
                 {/* Total Users */}
-                <div className="flex items-center gap-3 sm:gap-4">
+                <div className={`flex items-center ${isRu ? 'gap-2 sm:gap-3' : 'gap-3 sm:gap-4'} min-w-0`}>
                   <img
                     src="/coins/total user.png"
                     alt="Users"
                     className="object-contain flex-shrink-0"
                     style={{
-                      width: isMobile ? ((isFr || isEs) ? 44 : 54) : 44,
-                      height: isMobile ? ((isFr || isEs) ? 44 : 54) : 44,
+                      width: isMobile ? (isRu ? 38 : ((isFr || isEs) ? 44 : 54)) : 44,
+                      height: isMobile ? (isRu ? 38 : ((isFr || isEs) ? 44 : 54)) : 44,
                     }}
                   />
-                  <div className="flex flex-col justify-center">
+                  <div className="flex flex-col justify-center min-w-0">
                     <span className="uppercase whitespace-nowrap transition-colors duration-300" style={{
-                      fontFamily: '"Poppins", sans-serif', fontWeight: 500, fontSize: isMobile ? ((isFr || isEs) ? 10.5 : 11) : 12,
-                      lineHeight: '16px', letterSpacing: isMobile ? ((isFr || isEs) ? '0.02em' : '0.04em') : '0.08em', color: isDarkMode ? 'rgba(255, 255, 255, 0.6)' : 'rgba(14, 15, 12, 1)',
+                      fontFamily: '"Poppins", sans-serif', fontWeight: 500, fontSize: isMobile ? (isRu ? 9.5 : ((isFr || isEs) ? 10.5 : 11)) : 12,
+                      lineHeight: '16px', letterSpacing: isMobile ? (isRu ? '0.01em' : ((isFr || isEs) ? '0.02em' : '0.04em')) : '0.08em', color: isDarkMode ? 'rgba(255, 255, 255, 0.6)' : 'rgba(14, 15, 12, 1)',
                       marginBottom: 4
                     }}>
                       {t('hero.totalUsers')}
                     </span>
                     <span className="transition-colors duration-300" style={{
-                      fontFamily: '"Bricolage Grotesque", sans-serif', fontWeight: 700, fontSize: isMobile ? 26 : 30,
+                      fontFamily: '"Bricolage Grotesque", sans-serif', fontWeight: 700, fontSize: isMobile ? (isRu ? 24 : 26) : 30,
                       lineHeight: '32px', letterSpacing: '-0.02em', color: isDarkMode ? '#FFFFFF' : 'rgba(14, 15, 12, 1)',
                     }}>
                       {stats.totalUsers.toLocaleString('de-DE')}
@@ -500,27 +501,27 @@ const Landing = () => {
                 </div>
 
                 {/* Total Paid */}
-                <div className="flex items-center gap-3 sm:gap-4">
+                <div className={`flex items-center ${isRu ? 'gap-2 sm:gap-3' : 'gap-3 sm:gap-4'} min-w-0`}>
                   <img
                     src="/coins/total paid.png"
                     alt="Paid"
                     className="object-contain flex-shrink-0"
                     style={{
-                      width: isMobile ? ((isFr || isEs) ? 44 : 54) : 44,
-                      height: isMobile ? ((isFr || isEs) ? 44 : 54) : 44,
+                      width: isMobile ? (isRu ? 38 : ((isFr || isEs) ? 44 : 54)) : 44,
+                      height: isMobile ? (isRu ? 38 : ((isFr || isEs) ? 44 : 54)) : 44,
                       transform: 'translateY(2px)',
                     }}
                   />
-                  <div className="flex flex-col justify-center">
+                  <div className="flex flex-col justify-center min-w-0">
                     <span className="uppercase whitespace-nowrap transition-colors duration-300" style={{
-                      fontFamily: '"Poppins", sans-serif', fontWeight: 500, fontSize: isMobile ? ((isFr || isEs) ? 10.5 : 11) : 12,
-                      lineHeight: '16px', letterSpacing: isMobile ? ((isFr || isEs) ? '0.02em' : '0.04em') : '0.08em', color: isDarkMode ? 'rgba(255, 255, 255, 0.6)' : 'rgba(14, 15, 12, 1)',
+                      fontFamily: '"Poppins", sans-serif', fontWeight: 500, fontSize: isMobile ? (isRu ? 9.5 : ((isFr || isEs) ? 10.5 : 11)) : 12,
+                      lineHeight: '16px', letterSpacing: isMobile ? (isRu ? '0.01em' : ((isFr || isEs) ? '0.02em' : '0.04em')) : '0.08em', color: isDarkMode ? 'rgba(255, 255, 255, 0.6)' : 'rgba(14, 15, 12, 1)',
                       marginBottom: 4
                     }}>
                       {t('hero.totalPaid')}
                     </span>
                     <span className="transition-colors duration-300" style={{
-                      fontFamily: '"Bricolage Grotesque", sans-serif', fontWeight: 700, fontSize: isMobile ? 26 : 30,
+                      fontFamily: '"Bricolage Grotesque", sans-serif', fontWeight: 700, fontSize: isMobile ? (isRu ? 24 : 26) : 30,
                       lineHeight: '32px', letterSpacing: '-0.02em', color: isDarkMode ? '#FFFFFF' : 'rgba(14, 15, 12, 1)',
                     }}>
                       ${stats.totalPaidOut.toLocaleString('de-DE', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
@@ -893,7 +894,7 @@ const Landing = () => {
 
           {/* Image (Second on mobile, First on Desktop) */}
           <div
-            className={`order-2 lg:order-1 flex-shrink-0 w-full lg:w-[640px] h-auto lg:h-[558px] px-0 mt-6 lg:mt-0 flex ${isMobile && (isDe || isUr || isFr || isEs) ? 'justify-start' : 'justify-center'} lg:justify-start overflow-hidden rounded-[24px] lg:rounded-[32px]`}
+            className={`order-2 lg:order-1 flex-shrink-0 w-full lg:w-[640px] h-auto lg:h-[558px] px-0 mt-6 lg:mt-0 flex ${isMobile && (isDe || isUr || isFr || isEs || isRu) ? 'justify-start' : 'justify-center'} lg:justify-start overflow-hidden rounded-[24px] lg:rounded-[32px]`}
             style={isMobile ? { width: '100%', maxWidth: '100%' } : {}}
           >
             <img
@@ -930,8 +931,8 @@ const Landing = () => {
                     width: '100%',
                     height: '100%',
                     position: 'relative',
-                    left: (isDe || isUr || isFr || isEs) ? '0px' : '-16px',
-                    clipPath: (isDe || isUr || isFr || isEs) ? 'inset(0 0 0 0 round 32px)' : undefined
+                    left: (isDe || isUr || isFr || isEs || isRu) ? '0px' : '-16px',
+                    clipPath: (isDe || isUr || isFr || isEs || isRu) ? 'inset(0 0 0 0 round 32px)' : undefined
                   }
               }
             />

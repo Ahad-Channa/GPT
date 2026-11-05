@@ -24,7 +24,9 @@ const LanguageToggle = ({
         ? 'de'
         : (i18n.language?.startsWith('fr')
             ? 'fr'
-            : (i18n.language?.startsWith('es') ? 'es' : 'en')));
+            : (i18n.language?.startsWith('es')
+                ? 'es'
+                : (i18n.language?.startsWith('ru') ? 'ru' : 'en'))));
 
   const selectLanguage = (lang) => {
     i18n.changeLanguage(lang);
@@ -102,9 +104,11 @@ const LanguageToggle = ({
                     ? '/coins/FR.svg'
                     : currentLang === 'es'
                       ? '/coins/ES.svg'
-                      : '/coins/PK.svg'
+                      : currentLang === 'ru'
+                        ? '/coins/RU.svg'
+                        : '/coins/PK.svg'
             }
-            alt={currentLang === 'en' ? 'EN Flag' : currentLang === 'de' ? 'DE Flag' : currentLang === 'fr' ? 'FR Flag' : currentLang === 'es' ? 'ES Flag' : 'UR Flag'}
+            alt={currentLang === 'en' ? 'EN Flag' : currentLang === 'de' ? 'DE Flag' : currentLang === 'fr' ? 'FR Flag' : currentLang === 'es' ? 'ES Flag' : currentLang === 'ru' ? 'RU Flag' : 'UR Flag'}
             className="w-full h-full object-cover"
           />
         </div>
@@ -339,6 +343,43 @@ const LanguageToggle = ({
                 <img
                   src="/coins/PK.svg"
                   alt="Urdu Flag"
+                  className="w-full h-full object-cover"
+                />
+              </div>
+            </button>
+
+            {/* Divider */}
+            <div
+              style={{
+                width: '100%',
+                height: '1px',
+                background: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.06)',
+                margin: '8px 0',
+                flexShrink: 0,
+              }}
+            />
+
+            {/* 6. Russian */}
+            <button
+              type="button"
+              onClick={() => selectLanguage('ru')}
+              className="flex items-center justify-between w-full py-1 cursor-pointer bg-transparent border-0 hover:opacity-75 transition-opacity"
+            >
+              <span
+                style={{
+                  fontFamily: 'Poppins, sans-serif',
+                  fontWeight: currentLang === 'ru' ? 600 : 400,
+                  fontSize: '15px',
+                  lineHeight: '20px',
+                  color: currentLang === 'ru' ? (isDarkMode ? '#FFFFFF' : '#0E0F0C') : (isDarkMode ? '#9CA3AF' : '#8E8E93'),
+                }}
+              >
+                Русский
+              </span>
+              <div className="w-[24px] h-[24px] rounded-full overflow-hidden shrink-0 flex items-center justify-center">
+                <img
+                  src="/coins/RU.svg"
+                  alt="Russian Flag"
                   className="w-full h-full object-cover"
                 />
               </div>

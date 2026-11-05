@@ -675,20 +675,20 @@ router.get('/custom-offers', requirePermission('manage_offerwalls'), async (req,
 
 router.post('/custom-offers', requirePermission('manage_offerwalls'), async (req, res) => {
   try {
-    const { title, titleDe, titleUr, titleFr, titleEs, description, descriptionDe, descriptionUr, descriptionFr, descriptionEs, rewardAmount, externalLink, trackingType, expirationDate, icon, coverImage, requirements, requirementsDe, requirementsUr, requirementsFr, requirementsEs, requirementType, platforms } = req.body;
+    const { title, titleDe, titleUr, titleFr, titleEs, titleRu, description, descriptionDe, descriptionUr, descriptionFr, descriptionEs, descriptionRu, rewardAmount, externalLink, trackingType, expirationDate, icon, coverImage, requirements, requirementsDe, requirementsUr, requirementsFr, requirementsEs, requirementsRu, requirementType, platforms } = req.body;
     const newOffer = new CustomOffer({
       title,
       titleDe: titleDe || '',
       titleUr: titleUr || '',
       titleFr: titleFr || '',
       titleEs: titleEs || '',
-      titleEs: titleEs || '',
+      titleRu: titleRu || '',
       description,
       descriptionDe: descriptionDe || '',
       descriptionUr: descriptionUr || '',
       descriptionFr: descriptionFr || '',
       descriptionEs: descriptionEs || '',
-      descriptionEs: descriptionEs || '',
+      descriptionRu: descriptionRu || '',
       rewardAmount,
       externalLink,
       trackingType,
@@ -700,7 +700,7 @@ router.post('/custom-offers', requirePermission('manage_offerwalls'), async (req
       requirementsUr: Array.isArray(requirementsUr) ? requirementsUr : [],
       requirementsFr: Array.isArray(requirementsFr) ? requirementsFr : [],
       requirementsEs: Array.isArray(requirementsEs) ? requirementsEs : [],
-      requirementsEs: Array.isArray(requirementsEs) ? requirementsEs : [],
+      requirementsRu: Array.isArray(requirementsRu) ? requirementsRu : [],
       requirementType: requirementType === 'paragraph' ? 'paragraph' : 'bullets',
       platforms: platforms || { desktop: true, android: true, ios: true },
     });
@@ -750,16 +750,20 @@ router.get('/goodpicks-offers', requirePermission('manage_offerwalls'), async (r
 
 router.post('/goodpicks-offers', requirePermission('manage_offerwalls'), async (req, res) => {
   try {
-    const { title, titleDe, titleUr, titleFr, titleEs, description, descriptionDe, descriptionUr, descriptionFr, descriptionEs, rewardAmount, externalLink, expirationDate, icon, coverImage, requirements, requirementsDe, requirementsUr, requirementsFr, requirementsEs, requirementType, platforms } = req.body;
+    const { title, titleDe, titleUr, titleFr, titleEs, titleRu, description, descriptionDe, descriptionUr, descriptionFr, descriptionEs, descriptionRu, rewardAmount, externalLink, expirationDate, icon, coverImage, requirements, requirementsDe, requirementsUr, requirementsFr, requirementsEs, requirementsRu, requirementType, platforms } = req.body;
     const newOffer = new GoodpickOffer({
       title,
       titleDe: titleDe || '',
       titleUr: titleUr || '',
       titleFr: titleFr || '',
+      titleEs: titleEs || '',
+      titleRu: titleRu || '',
       description,
       descriptionDe: descriptionDe || '',
       descriptionUr: descriptionUr || '',
       descriptionFr: descriptionFr || '',
+      descriptionEs: descriptionEs || '',
+      descriptionRu: descriptionRu || '',
       rewardAmount,
       externalLink,
       expirationDate: expirationDate || null,
@@ -769,6 +773,8 @@ router.post('/goodpicks-offers', requirePermission('manage_offerwalls'), async (
       requirementsDe: Array.isArray(requirementsDe) ? requirementsDe : [],
       requirementsUr: Array.isArray(requirementsUr) ? requirementsUr : [],
       requirementsFr: Array.isArray(requirementsFr) ? requirementsFr : [],
+      requirementsEs: Array.isArray(requirementsEs) ? requirementsEs : [],
+      requirementsRu: Array.isArray(requirementsRu) ? requirementsRu : [],
       requirementType: requirementType === 'paragraph' ? 'paragraph' : 'bullets',
       platforms: platforms || { desktop: true, android: true, ios: true },
     });
@@ -2721,7 +2727,7 @@ router.put('/legal-pages/:slug', async (req, res) => {
       return res.status(400).json({ success: false, error: 'Invalid page slug' });
     }
 
-    const { title_en, content_en, title_de, content_de, title_fr, content_fr, title_es, content_es, title_ur, content_ur } = req.body;
+    const { title_en, content_en, title_de, content_de, title_fr, content_fr, title_es, content_es, title_ur, content_ur, title_ru, content_ru } = req.body;
     const adminUser = req.dbUser;
 
     const page = await LegalPage.getBySlug(slug);
@@ -2735,6 +2741,8 @@ router.put('/legal-pages/:slug', async (req, res) => {
     if (content_es !== undefined) page.content_es = content_es;
     if (title_ur !== undefined) page.title_ur = title_ur;
     if (content_ur !== undefined) page.content_ur = content_ur;
+    if (title_ru !== undefined) page.title_ru = title_ru;
+    if (content_ru !== undefined) page.content_ru = content_ru;
     if (adminUser) page.lastEditedBy = adminUser._id;
 
     await page.save();

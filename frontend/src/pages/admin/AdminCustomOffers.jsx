@@ -18,18 +18,20 @@ const isIconUrl = (icon) => icon && (icon.startsWith('http') || icon.startsWith(
 
 const OfferModal = ({ offer, onClose, onSaved, token }) => {
   const isEditing = Boolean(offer);
-  const [activeTab, setActiveTab] = useState('en'); // 'en' | 'de' | 'fr' | 'ur'
+  const [activeTab, setActiveTab] = useState('en'); // 'en' | 'de' | 'fr' | 'es' | 'ur' | 'ru'
   const [form, setForm] = useState({
     title: offer?.title || '',
     titleDe: offer?.titleDe || '',
     titleUr: offer?.titleUr || '',
     titleFr: offer?.titleFr || '',
     titleEs: offer?.titleEs || '',
+    titleRu: offer?.titleRu || '',
     description: offer?.description || '',
     descriptionDe: offer?.descriptionDe || '',
     descriptionUr: offer?.descriptionUr || '',
     descriptionFr: offer?.descriptionFr || '',
     descriptionEs: offer?.descriptionEs || '',
+    descriptionRu: offer?.descriptionRu || '',
     rewardAmount: offer?.rewardAmount || '',
     externalLink: offer?.externalLink || '',
     trackingType: offer?.trackingType || 'manual_approval',
@@ -51,6 +53,9 @@ const OfferModal = ({ offer, onClose, onSaved, token }) => {
     requirementsEs: Array.isArray(offer?.requirementsEs)
       ? offer.requirementsEs.join('\n')
       : (offer?.requirementsEs || ''),
+    requirementsRu: Array.isArray(offer?.requirementsRu)
+      ? offer.requirementsRu.join('\n')
+      : (offer?.requirementsRu || ''),
     requirementType: offer?.requirementType || 'bullets',
     platforms: offer?.platforms || { desktop: true, android: true, ios: true },
   });
@@ -91,6 +96,9 @@ const OfferModal = ({ offer, onClose, onSaved, token }) => {
           requirementsEs: form.requirementType === 'paragraph'
             ? [(form.requirementsEs || '').trim()].filter(Boolean)
             : (form.requirementsEs || '').split('\n').map(r => r.trim()).filter(Boolean),
+          requirementsRu: form.requirementType === 'paragraph'
+            ? [(form.requirementsRu || '').trim()].filter(Boolean)
+            : (form.requirementsRu || '').split('\n').map(r => r.trim()).filter(Boolean),
           requirementType: form.requirementType,
           platforms: form.platforms,
         }),
@@ -234,6 +242,21 @@ const OfferModal = ({ offer, onClose, onSaved, token }) => {
                 <span>اردو</span>
                 {Boolean(form.titleUr) && (
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" title="Urdu translated" />
+                )}
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveTab('ru')}
+                className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-lg text-xs font-bold transition-all ${
+                  activeTab === 'ru'
+                    ? 'bg-white text-gray-900 shadow-sm border border-gray-200'
+                    : 'text-gray-500 hover:text-gray-800'
+                }`}
+              >
+                <span>🇷🇺</span>
+                <span>Русский</span>
+                {Boolean(form.titleRu) && (
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" title="Russian translated" />
                 )}
               </button>
             </div>
@@ -470,29 +493,29 @@ const OfferModal = ({ offer, onClose, onSaved, token }) => {
             </div>
           )}
 
-          {/* Tab: Spanish Content */}
-          {activeTab === 'es' && (
+          {/* Tab: Russian Content */}
+          {activeTab === 'ru' && (
             <div className="space-y-4">
               <div>
                 <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1.5">
-                  🇪🇸 Title (Spanish / Español)
+                  🇷🇺 Title (Russian / Русский)
                 </label>
                 <input
-                  value={form.titleEs}
-                  onChange={set('titleEs')}
-                  placeholder="ej. Regístrate en CryptoGame y alcanza el Nivel 5"
+                  value={form.titleRu}
+                  onChange={set('titleRu')}
+                  placeholder="напр. Зарегистрируйтесь в CryptoGame и достигните 5 уровня"
                   className="w-full bg-white border border-gray-300 rounded-xl px-3.5 py-2 text-gray-900 text-sm placeholder-gray-400 focus:outline-none focus:border-[#1E2538] focus:ring-1 focus:ring-[#1E2538]/20 transition-all"
                 />
               </div>
 
               <div>
                 <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1.5">
-                  🇪🇸 Description (Spanish / Español)
+                  🇷🇺 Description (Russian / Русский)
                 </label>
                 <textarea
-                  value={form.descriptionEs}
-                  onChange={set('descriptionEs')}
-                  placeholder="Describe los pasos para completar la oferta y recibir la recompensa..."
+                  value={form.descriptionRu}
+                  onChange={set('descriptionRu')}
+                  placeholder="Опишите шаги для выполнения задания и получения награды..."
                   rows={2}
                   className="w-full bg-white border border-gray-300 rounded-xl px-3.5 py-2 text-gray-900 text-sm placeholder-gray-400 focus:outline-none focus:border-[#1E2538] focus:ring-1 focus:ring-[#1E2538]/20 resize-none transition-all"
                 />
@@ -501,17 +524,17 @@ const OfferModal = ({ offer, onClose, onSaved, token }) => {
               <div>
                 <div className="flex items-center justify-between mb-1.5">
                   <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                    🇪🇸 Requirements (Spanish / Español)
+                    🇷🇺 Requirements (Russian / Русский)
                   </label>
-                  <span className="text-[11px] text-gray-400">Format: {form.requirementType === 'paragraph' ? 'Paragraph' : 'Bullets'}</span>
+                  <span className="text-[11px] text-gray-400">Формат: {form.requirementType === 'paragraph' ? 'Абзац' : 'По пунктам'}</span>
                 </div>
                 <textarea
-                  value={form.requirementsEs}
-                  onChange={set('requirementsEs')}
+                  value={form.requirementsRu}
+                  onChange={set('requirementsRu')}
                   placeholder={
                     form.requirementType === 'paragraph'
-                      ? "ej. Regístrate y deposita 50 €, luego apuesta 100 €."
-                      : "ej. Registrarse → recibir 10 Monedas\nDepositar 50 € → recibir 50.000 Monedas\nGenerar 200 € en apuestas → recibir 10.000 Monedas"
+                      ? "напр. Зарегистрируйтесь и внесите депозит 50 €, затем сделайте ставки на 100 €."
+                      : "напр. Зарегистрироваться → получить 10 Монет\nВнести 50 € → получить 50 000 Монет\nСделать ставок на 200 € → получить 10 000 Монет"
                   }
                   rows={form.requirementType === 'paragraph' ? 2 : 3}
                   className="w-full bg-white border border-gray-300 rounded-xl px-3.5 py-2 text-gray-900 text-sm placeholder-gray-400 focus:outline-none focus:border-[#1E2538] focus:ring-1 focus:ring-[#1E2538]/20 resize-none transition-all"
@@ -871,14 +894,14 @@ const AdminCustomOffers = () => {
                           🇪🇸 ES
                         </span>
                       )}
-                      {offer.titleEs && (
-                        <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold bg-amber-50 text-amber-700 border border-amber-200" title={`ES: ${offer.titleEs}`}>
-                          🇪🇸 ES
-                        </span>
-                      )}
                       {offer.titleUr && (
                         <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200" title={`UR: ${offer.titleUr}`}>
                           🇵🇰 UR
+                        </span>
+                      )}
+                      {offer.titleRu && (
+                        <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold bg-red-50 text-red-700 border border-red-200" title={`RU: ${offer.titleRu}`}>
+                          🇷🇺 RU
                         </span>
                       )}
                       <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border ${
