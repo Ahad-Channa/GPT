@@ -614,7 +614,13 @@
     "enterValid2FACode": "Por favor ingresa un código de 6 dígitos válido.",
     "authenticatedSuccess": "¡Autenticación completada con éxito!",
     "invalid2FACode": "Código 2FA incorrecto.",
-    "failedToLogout": "Error al cerrar sesión."
+    "failedToLogout": "Error al cerrar sesión.",
+    "bannedModalTitle": "Cuenta Suspendida",
+    "bannedModalMultiAccount": "Tu cuenta ha sido suspendida automáticamente por violar nuestros Términos de Servicio debido a abuso confirmado de cuentas múltiples. No se permiten múltiples cuentas pertenecientes al mismo usuario.",
+    "bannedModalGeneral": "Tu cuenta ha sido suspendida por infringir nuestros Términos de Servicio.",
+    "bannedModalAppealHeading": "¿Crees que es un error?",
+    "bannedModalAppeal": "Si crees que esta suspensión es un error, contacta a nuestro equipo de soporte. Nuestros administradores revisarán tu caso y restaurarán tu cuenta si se verifica.",
+    "contactSupport": "Contactar Soporte"
   },
   "resetPassword": {
     "title": "Establecer Nueva Contraseña",

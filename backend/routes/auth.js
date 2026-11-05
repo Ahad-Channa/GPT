@@ -9,6 +9,7 @@ const { verifyToken } = require('../middlewares/authMiddleware');
 const { fraudCheck, getClientIp } = require('../middlewares/fraudCheck');
 const notify = require('../utils/notify');
 const { notifyAdmins } = require('../utils/adminNotify');
+const { enforceMultiAccountCheck } = require('../utils/fraudMultiAccount');
 const Avatar = require('../models/Avatar');
 
 /**
@@ -73,7 +74,19 @@ router.post('/sync', verifyToken, fraudCheck('auth_sync', 'full'), async (req, r
       path: '/',
     });
 
-    let user = await User.findOne({ firebaseUid: uid });
+    const normalizedEmail = (email || '').toLowerCase().trim();
+    let user = await User.findOne({
+      $or: [
+        { firebaseUid: uid },
+        ...(normalizedEmail ? [{ email: normalizedEmail }] : [])
+      ]
+    });
+
+    if (user && user.firebaseUid !== uid) {
+      user.firebaseUid = uid;
+      await user.save();
+    }
+
     let isNewUser = false;
     const isPrimaryAdmin = email === process.env.PRIMARY_ADMIN_EMAIL;
     const allPermissions = ['manage_users', 'manage_withdrawals', 'manage_support', 'manage_offerwalls', 'manage_admins'];
@@ -83,11 +96,14 @@ router.post('/sync', verifyToken, fraudCheck('auth_sync', 'full'), async (req, r
     if (user && user.role !== 'admin' && !user.fraudExempt && (user.isBanned || user.fraudStatus === 'blocked')) {
       return res.status(403).json({
         success: false,
-        error: user.isBanned
-          ? 'Forbidden: Account has been banned'
-          : 'Access denied: Account is blocked due to security/fraud violations.',
+        error: user.banReason === 'auto_multi_account'
+          ? 'Your account has been suspended for violating our Terms of Service (multiple accounts detected). If you believe this is an error, please contact support.'
+          : (user.isBanned
+              ? 'Forbidden: Account has been banned'
+              : 'Access denied: Account is blocked due to security/fraud violations.'),
         code: 'FRAUD_BLOCKED',
         isBanned: user.isBanned,
+        banReason: user.banReason || (user.isBanned ? 'manual_admin' : 'fraud_blocked'),
         isBlocked: user.fraudStatus === 'blocked',
       });
     }
@@ -122,61 +138,52 @@ router.post('/sync', verifyToken, fraudCheck('auth_sync', 'full'), async (req, r
 
       user = new User({
         firebaseUid: uid,
-        email: email,
+        email: normalizedEmail,
         displayName: uniqueName,
         avatarUrl: '', // Default to empty so initial letter avatar is shown instead of Google photo
         referralCode,
         lastIp: clientIp || '',
         lastCountry: clientCountry || '',
         deviceTokens: deviceToken ? [deviceToken] : [],
+        deviceFingerprints: fingerprint ? [fingerprint] : [],
         ...(referredById && { referredBy: referredById }),
         ...(isPrimaryAdmin && { role: 'admin', adminPermissions: allPermissions })
       });
-      await user.save();
-      isNewUser = true;
-      console.log(`Registration success: ${email} synchronized via Firebase. Assigned username: ${uniqueName}`);
 
-      // ── Anti-fraud: check for multi-account via device cookie (__tm_did) ──
-      if (deviceToken && !isPrimaryAdmin && !user.fraudExempt) {
-        const linkedCookieAccounts = await User.find({
-          deviceTokens: deviceToken,
-          _id: { $ne: user._id },
-          role: { $ne: 'admin' },
-          fraudExempt: { $ne: true },
-        }).select('_id displayName email');
-
-        if (linkedCookieAccounts.length > 0) {
-          user.fraudFlag = (user.fraudFlag || 0) + 1;
-          user.fraudStatus = 'flagged';
-          await user.save();
-          await notifyAdmins({
-            category: 'users',
-            type: 'multi_account_detected',
-            message: `🚨 Multi-account detected! ${user.displayName} shares device cookie (__tm_did) with: ${linkedCookieAccounts.map(a => a.displayName).join(', ')}`,
-            permissionRequired: 'manage_users',
-            metadata: { userId: user._id, linkedAccountIds: linkedCookieAccounts.map(a => a._id), deviceToken },
+      try {
+        await user.save();
+        isNewUser = true;
+        console.log(`Registration success: ${normalizedEmail} synchronized via Firebase. Assigned username: ${uniqueName}`);
+      } catch (saveErr) {
+        if (saveErr.code === 11000) {
+          console.log(`[Sync] Handled concurrent insertion for ${normalizedEmail}`);
+          user = await User.findOne({
+            $or: [
+              { firebaseUid: uid },
+              { email: normalizedEmail }
+            ]
           });
+          if (!user) throw saveErr;
+          if (user.firebaseUid !== uid) {
+            user.firebaseUid = uid;
+            await user.save();
+          }
+        } else {
+          throw saveErr;
         }
       }
 
-      // ── Anti-fraud: check for multi-account via fingerprint ──
-      if (fingerprint) {
-        const linkedAccounts = await User.find({
-          deviceFingerprints: fingerprint,
-          _id: { $ne: user._id },
-        }).select('_id displayName email');
-        if (linkedAccounts.length > 0) {
-          user.fraudFlag = (user.fraudFlag || 0) + 1;
-          user.fraudStatus = 'flagged';
-          await user.save();
-          await notifyAdmins({
-            category: 'users',
-            type: 'multi_account_detected',
-            message: `🚨 Multi-account detected! ${user.displayName} shares device fingerprint with: ${linkedAccounts.map(a => a.displayName).join(', ')}`,
-            permissionRequired: 'manage_users',
-            metadata: { userId: user._id, linkedAccountIds: linkedAccounts.map(a => a._id) },
-          });
-        }
+      // ── Anti-fraud: enforce multi-account detection & auto-ban ──
+      const multiCheck = await enforceMultiAccountCheck(user, { deviceToken, fingerprint, clientIp });
+      if (multiCheck.autoBanned) {
+        return res.status(403).json({
+          success: false,
+          error: 'Your account has been suspended for violating our Terms of Service (multiple accounts detected). If you believe this is an error, please contact support.',
+          code: 'FRAUD_BLOCKED',
+          isBanned: true,
+          banReason: 'auto_multi_account',
+          isBlocked: true,
+        });
       }
 
       // Send Welcome Notification
@@ -246,7 +253,29 @@ router.post('/sync', verifyToken, fraudCheck('auth_sync', 'full'), async (req, r
         }
       }
 
+      // Track deviceFingerprints on existing user
+      if (fingerprint) {
+        if (!user.deviceFingerprints) user.deviceFingerprints = [];
+        if (!user.deviceFingerprints.includes(fingerprint)) {
+          user.deviceFingerprints.push(fingerprint);
+          if (user.deviceFingerprints.length > 10) user.deviceFingerprints.shift();
+        }
+      }
+
       await user.save();
+
+      // Check multi-account enforcement on login
+      const multiCheck = await enforceMultiAccountCheck(user, { deviceToken, fingerprint, clientIp });
+      if (multiCheck.autoBanned) {
+        return res.status(403).json({
+          success: false,
+          error: 'Your account has been suspended for violating our Terms of Service (multiple accounts detected). If you believe this is an error, please contact support.',
+          code: 'FRAUD_BLOCKED',
+          isBanned: true,
+          banReason: 'auto_multi_account',
+          isBlocked: true,
+        });
+      }
     }
 
     // Check if 2FA is required for this user

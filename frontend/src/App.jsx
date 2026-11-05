@@ -40,6 +40,7 @@ import AdminLegalPages from './pages/admin/AdminLegalPages';
 import AdminCookies from './pages/admin/AdminCookies';
 import LegalPage from './pages/LegalPage';
 import NotificationPanel from './components/NotificationPanel';
+import BannedAccountModal from './components/BannedAccountModal';
 import CookieConsentBanner from './components/cookie/CookieConsentBanner';
 import CookieSettingsModal from './components/cookie/CookieSettingsModal';
 import { useCookieConsent } from './contexts/CookieConsentContext';
@@ -174,6 +175,7 @@ function App() {
         }}
       />
       <NotificationPanel />
+      <BannedAccountModal />
       <ScrollToTop />
       <Routes>
         <Route path="/" element={<Landing />} />

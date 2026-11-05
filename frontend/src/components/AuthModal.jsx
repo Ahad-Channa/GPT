@@ -57,6 +57,10 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }) {
       onClose();
       navigate('/dashboard');
     } catch (err) {
+      if (err.isBanned) {
+        onClose();
+        return;
+      }
       if (err.isFraudBlocked || /vpn|proxy|tor|access denied/i.test(err.message || '')) {
         toast.error(err.message || 'Access denied. VPN, proxy, or TOR connections are not allowed on this platform.', { id: tid });
       } else {
@@ -120,6 +124,10 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }) {
         onClose();
         navigate('/dashboard');
       } catch (err) {
+        if (err.isBanned) {
+          onClose();
+          return;
+        }
         if (err.isFraudBlocked || /vpn|proxy|tor|access denied/i.test(err.message || '')) {
           toast.error(err.message || 'Access denied. VPN, proxy, or TOR connections are not allowed on this platform.', { id: tid });
         } else if (err.code === 'auth/email-already-in-use') {
@@ -142,6 +150,10 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }) {
         onClose();
         navigate('/dashboard');
       } catch (err) {
+        if (err.isBanned) {
+          onClose();
+          return;
+        }
         if (err.isFraudBlocked || /vpn|proxy|tor|access denied/i.test(err.message || '')) {
           toast.error(err.message || 'Access denied. VPN, proxy, or TOR connections are not allowed on this platform.', { id: tid });
         } else if (['auth/wrong-password', 'auth/user-not-found', 'auth/invalid-credential'].includes(err.code)) {

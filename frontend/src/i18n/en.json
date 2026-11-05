@@ -613,7 +613,13 @@
     "enterValid2FACode": "Please enter a valid 6-digit code.",
     "authenticatedSuccess": "Authenticated successfully!",
     "invalid2FACode": "Invalid 2FA code.",
-    "failedToLogout": "Failed to log out."
+    "failedToLogout": "Failed to log out.",
+    "bannedModalTitle": "Account Suspended",
+    "bannedModalMultiAccount": "Your account has been automatically suspended for violating our Terms of Service due to confirmed multi-account abuse. Multiple accounts belonging to the same user are not permitted.",
+    "bannedModalGeneral": "Your account has been suspended for violating our Terms of Service.",
+    "bannedModalAppealHeading": "Think this is a mistake?",
+    "bannedModalAppeal": "If you believe this ban was made in error, please contact our support team. Our administrators will review your case and restore your account if verified.",
+    "contactSupport": "Contact Support"
   },
   "resetPassword": {
     "title": "Set New Password",

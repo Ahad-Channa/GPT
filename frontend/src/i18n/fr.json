@@ -613,7 +613,13 @@
     "enterValid2FACode": "Veuillez entrer un code à 6 chiffres valide.",
     "authenticatedSuccess": "Authentification réussie !",
     "invalid2FACode": "Code 2FA invalide.",
-    "failedToLogout": "Échec de la déconnexion."
+    "failedToLogout": "Échec de la déconnexion.",
+    "bannedModalTitle": "Compte Suspendu",
+    "bannedModalMultiAccount": "Votre compte a été automatiquement suspendu pour violation de nos Conditions d'Utilisation en raison d'un abus confirmé de comptes multiples. La création de plusieurs comptes par un même utilisateur est interdite.",
+    "bannedModalGeneral": "Votre compte a été suspendu pour violation de nos Conditions d'Utilisation.",
+    "bannedModalAppealHeading": "Vous pensez qu'il s'agit d'une erreur ?",
+    "bannedModalAppeal": "Si vous pensez que cette suspension est une erreur, veuillez contacter notre équipe d'assistance. Nos administrateurs examineront votre dossier et rétabliront votre compte après vérification.",
+    "contactSupport": "Contacter le Support"
   },
   "resetPassword": {
     "title": "Nouveau Mot de Passe",

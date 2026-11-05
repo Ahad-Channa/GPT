@@ -56,7 +56,10 @@ export const AuthProvider = ({ children }) => {
     const [mongoUser, setMongoUser] = useState(null);
     const [twoFactorRequired, setTwoFactorRequired] = useState(false);
     const [loading, setLoading] = useState(true);
+    const [banModal, setBanModal] = useState({ isOpen: false, reason: null, message: '' });
+    const closeBanModal = () => setBanModal({ isOpen: false, reason: null, message: '' });
     const socketRef = useRef(null);
+    const activeSyncRef = useRef(null);
 
     const checkIpAllowed = async () => {
         const isMockVpn = localStorage.getItem('test_mock_vpn') === 'true';
@@ -83,64 +86,89 @@ export const AuthProvider = ({ children }) => {
         if (!user) {
             throw new Error("No user available for synchronization.");
         }
-        try {
-            const token = await user.getIdToken();
-            const ref = localStorage.getItem('ref') || sessionStorage.getItem('pending_ref');
-            const fingerprint = await generateFingerprint();
-            const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-            const isMockVpn = localStorage.getItem('test_mock_vpn') === 'true';
-            const savedDeviceId = localStorage.getItem('__tm_did');
-            const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/auth/sync`, {
-                method: 'POST',
-                credentials: 'include',
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json',
-                    ...(savedDeviceId ? { 'x-device-id': savedDeviceId } : {}),
-                    ...(isMockVpn ? { 'x-mock-vpn': 'true' } : {})
-                },
-                body: JSON.stringify({ ...(ref ? { ref } : {}), fingerprint, timezone, deviceToken: savedDeviceId })
-            });
-            const data = await res.json();
-
-            if (data.deviceId) {
-                localStorage.setItem('__tm_did', data.deviceId);
-            }
-
-            // VPN/Proxy blocked — sign out immediately and halt
-            if (!data.success && (data.code === 'FRAUD_BLOCKED' || /vpn|proxy|tor/i.test(data.error || ''))) {
-                await signOut(auth);
-                setMongoUser(null);
-                setCurrentUser(null);
-                const fraudError = new Error(data.error || 'Access denied. VPN, proxy, or TOR connections are not allowed on this platform.');
-                fraudError.isFraudBlocked = true;
-                throw fraudError;
-            }
-
-            if (data.isBanned || data.isBlocked || (data.success && (data.user?.isBanned || data.user?.fraudStatus === 'blocked'))) {
-                await signOut(auth);
-                setMongoUser(null);
-                setCurrentUser(null);
-                const banError = new Error(data.error || "Your account has been suspended or blocked due to security violations. Please contact support.");
-                banError.isFraudBlocked = true;
-                throw banError;
-            }
-
-            if (data.success) {
-                setMongoUser(data.user);
-                if (data.twoFactorRequired) {
-                    setTwoFactorRequired(true);
-                } else {
-                    setTwoFactorRequired(false);
-                }
-            } else {
-                throw new Error(data.error || 'Database Synchronization Error.');
-            }
-        } catch (error) {
-            console.error("MongoDB Sync Failed:", error);
-            // Re-throw so caller (login/register) knows authentication was blocked
-            throw error;
+        if (activeSyncRef.current) {
+            return activeSyncRef.current;
         }
+
+        const syncPromise = (async () => {
+            try {
+                const token = await user.getIdToken();
+                const ref = localStorage.getItem('ref') || sessionStorage.getItem('pending_ref');
+                const fingerprint = await generateFingerprint();
+                const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+                const isMockVpn = localStorage.getItem('test_mock_vpn') === 'true';
+                const savedDeviceId = localStorage.getItem('__tm_did');
+                const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/auth/sync`, {
+                    method: 'POST',
+                    credentials: 'include',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json',
+                        ...(savedDeviceId ? { 'x-device-id': savedDeviceId } : {}),
+                        ...(isMockVpn ? { 'x-mock-vpn': 'true' } : {})
+                    },
+                    body: JSON.stringify({ ...(ref ? { ref } : {}), fingerprint, timezone, deviceToken: savedDeviceId })
+                });
+                const data = await res.json();
+
+                if (data.deviceId) {
+                    localStorage.setItem('__tm_did', data.deviceId);
+                }
+
+                // Check for banned or blocked account
+                if (data.isBanned || data.isBlocked || (data.success && (data.user?.isBanned || data.user?.fraudStatus === 'blocked'))) {
+                    const banReason = data.banReason || data.user?.banReason || 'manual_admin';
+                    const banMessage = data.error || (banReason === 'auto_multi_account'
+                        ? 'Your account has been suspended for violating our Terms of Service (multiple accounts detected).'
+                        : 'Your account has been suspended by an administrator.');
+
+                    await signOut(auth);
+                    setMongoUser(null);
+                    setCurrentUser(null);
+
+                    setBanModal({
+                        isOpen: true,
+                        reason: banReason,
+                        message: banMessage
+                    });
+
+                    const banError = new Error(banMessage);
+                    banError.isFraudBlocked = true;
+                    banError.isBanned = true;
+                    banError.banReason = banReason;
+                    throw banError;
+                }
+
+                // VPN/Proxy blocked — sign out immediately and halt
+                if (!data.success && (data.code === 'FRAUD_BLOCKED' || /vpn|proxy|tor/i.test(data.error || ''))) {
+                    await signOut(auth);
+                    setMongoUser(null);
+                    setCurrentUser(null);
+                    const fraudError = new Error(data.error || 'Access denied. VPN, proxy, or TOR connections are not allowed on this platform.');
+                    fraudError.isFraudBlocked = true;
+                    throw fraudError;
+                }
+
+                if (data.success) {
+                    setMongoUser(data.user);
+                    if (data.twoFactorRequired) {
+                        setTwoFactorRequired(true);
+                    } else {
+                        setTwoFactorRequired(false);
+                    }
+                } else {
+                    throw new Error(data.error || 'Database Synchronization Error.');
+                }
+            } catch (error) {
+                console.error("MongoDB Sync Failed:", error);
+                throw error;
+            } finally {
+                activeSyncRef.current = null;
+            }
+        })();
+
+        activeSyncRef.current = syncPromise;
+        return syncPromise;
     };
 
     const loginWithGoogle = async () => {
@@ -482,6 +510,8 @@ export const AuthProvider = ({ children }) => {
         resetPassword,
         confirmResetPassword,
         logout,
+        banModal,
+        closeBanModal,
         getSocket: () => socketRef.current
     };
 

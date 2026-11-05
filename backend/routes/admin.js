@@ -165,8 +165,16 @@ router.put('/users/:id/ban', requirePermission('manage_users'), async (req, res)
       return res.status(403).json({ success: false, error: 'Cannot modify primary admin' });
     }
 
-    const user = await User.findByIdAndUpdate(req.params.id, { isBanned }, { returnDocument: 'after' });
-    await createLog(req.dbUser._id, isBanned ? 'BAN_USER' : 'UNBAN_USER', user._id, { reason: req.body.reason || 'No reason provided' });
+    const { reason } = req.body;
+    const updateData = {
+      isBanned: Boolean(isBanned),
+      banReason: isBanned ? (reason || 'manual_admin') : null,
+      bannedAt: isBanned ? new Date() : null,
+      fraudStatus: isBanned ? 'blocked' : 'clean',
+    };
+
+    const user = await User.findByIdAndUpdate(req.params.id, updateData, { returnDocument: 'after' });
+    await createLog(req.dbUser._id, isBanned ? 'BAN_USER' : 'UNBAN_USER', user._id, { reason: reason || 'No reason provided' });
 
     if (isBanned) {
       await notify(user._id, 'account_banned', 'Account Suspended', 'Your account has been suspended by an administrator.');

@@ -613,7 +613,13 @@
     "enterValid2FACode": "Bitte gib einen gültigen 6-stelligen Code ein.",
     "authenticatedSuccess": "Erfolgreich authentifiziert!",
     "invalid2FACode": "Ungültiger 2FA-Code.",
-    "failedToLogout": "Abmeldung fehlgeschlagen."
+    "failedToLogout": "Abmeldung fehlgeschlagen.",
+    "bannedModalTitle": "Konto gesperrt",
+    "bannedModalMultiAccount": "Dein Konto wurde wegen bestätigtem Mehrfachkonto-Missbrauch automatisch gesperrt. Mehrere Konten derselben Person sind gemäß den Nutzungsbedingungen nicht gestattet.",
+    "bannedModalGeneral": "Dein Konto wurde wegen eines Verstoßes gegen unsere Nutzungsbedingungen gesperrt.",
+    "bannedModalAppealHeading": "Glaubst du, das ist ein Fehler?",
+    "bannedModalAppeal": "Wenn du der Meinung bist, dass diese Sperre irrtümlich erfolgt ist, wende dich bitte an unser Support-Team. Unsere Administratoren werden deinen Fall prüfen und dein Konto bei Bestätigung wiederherstellen.",
+    "contactSupport": "Support kontaktieren"
   },
   "resetPassword": {
     "title": "Neues Passwort festlegen",
