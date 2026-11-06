@@ -11,21 +11,19 @@ const loadDisplay = () => import(displayUrl);
 
 // ─── Live Feed primary/secondary rules ───────────────────────────────────────
 
-test('single-step Direct Offer: primary is the offer title, secondary is "Direct Offer"', async () => {
+test('single-step Direct Offer shows only the offer title', async () => {
   const { getEarningDisplay } = await loadDisplay();
   const display = getEarningDisplay({ transactionType: 'direct_offer_reward', metadata: { offerTitle: 'QA Offer' } });
-  assert.deepEqual(display, { primary: 'QA Offer', secondary: 'Direct Offer' });
+  assert.deepEqual(display, { primary: 'QA Offer', secondary: '' });
 });
 
-test('multi-step Direct Offer: primary is the paid goal only; parent title is NOT the secondary', async () => {
+test('multi-step Direct Offer shows only the paid goal and humanizes a raw goal key', async () => {
   const { getEarningDisplay } = await loadDisplay();
   const display = getEarningDisplay({
     transactionType: 'direct_offer_reward',
-    metadata: { offerTitle: 'QA Multi Step Offer', stepLabel: 'Register' },
+    metadata: { offerTitle: 'QA Multi Step Offer', goalKey: 'fight__20_battles', stepLabel: 'fight__20_battles' },
   });
-  assert.equal(display.primary, 'Register');
-  assert.equal(display.secondary, 'Direct Offer');
-  assert.notEqual(display.secondary, 'QA Multi Step Offer');
+  assert.deepEqual(display, { primary: 'Fight 20 Battles', secondary: '' });
 });
 
 test('offerwall: campaign title primary with provider secondary only when different', async () => {
@@ -63,7 +61,7 @@ test('legacy rows strip the old generic suffix and never fall back to "Task: Com
   const { getEarningDisplay } = await loadDisplay();
   assert.deepEqual(
     getEarningDisplay({ transactionType: 'direct_offer_reward', description: 'QA Offer - Offer Reward' }),
-    { primary: 'QA Offer', secondary: 'Direct Offer' }
+    { primary: 'QA Offer', secondary: '' }
   );
   assert.deepEqual(
     getEarningDisplay({ transactionType: 'offer_reward', description: 'Offer Reward' }),

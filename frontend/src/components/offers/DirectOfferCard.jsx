@@ -8,6 +8,7 @@ import { GoodpicksSupportModal } from './GoodpicksModal';
 import { ProofUploadView } from './ProofUploadView';
 import { formatGoalTimeLimit } from '../../utils/goalTimeLimit';
 import { isOfferClickLimitReached } from '../../utils/offerClickLimit';
+import { formatGoalLabel } from '../../utils/offerGoalDisplay.js';
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
@@ -24,7 +25,7 @@ const isRequirementCompleted = (requirement) => {
 
 const formatCoins = (amount) => Number(amount || 0).toLocaleString('de-DE');
 const formatGoalRequirement = (goal, isDe = false) => {
-  const label = (isDe && goal.labelDe) ? goal.labelDe : (goal.label || goal.goalKey || 'Complete step');
+  const label = formatGoalLabel(goal, isDe ? 'de' : 'en');
   return isDe
     ? `${label} \u2192 ${formatCoins(goal.rewardAmount)} Coins erhalten`
     : `${label} \u2192 receive ${formatCoins(goal.rewardAmount)} coins`;

@@ -9,6 +9,7 @@ import {
 } from 'react-icons/fi';
 import { writeClipboardText } from '../../utils/clipboard';
 import { createAdminApi } from '../../utils/adminApi';
+import { getEnabledGoalRewardTotal, formatGoalLabel } from '../../utils/offerGoalDisplay.js';
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
@@ -148,6 +149,8 @@ const OfferFormModal = ({ offer, onClose, onSaved, adminApi }) => {
   const [error, setError] = useState('');
   const [showMapping, setShowMapping] = useState(false);
   const isManual = form.trackingMode === 'manual';
+  const hasEnabledGoals = !isManual && form.goals.some((goal) => goal && goal.enabled !== false);
+  const calculatedGoalReward = getEnabledGoalRewardTotal(form.goals);
 
   const set = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.value }));
   const setMapping = (k) => (e) => setForm((f) => ({ ...f, postbackMapping: { ...f.postbackMapping, [k]: e.target.value } }));
@@ -172,7 +175,7 @@ const OfferFormModal = ({ offer, onClose, onSaved, adminApi }) => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ...form,
-          rewardAmount: Number(form.rewardAmount),
+          rewardAmount: hasEnabledGoals ? calculatedGoalReward : Number(form.rewardAmount),
           advertiserPayoutAmount: Number(form.advertiserPayoutAmount) || 0,
           expirationDate: form.expirationDate || null,
           requirements: form.requirementType === 'paragraph'
@@ -286,8 +289,18 @@ const OfferFormModal = ({ offer, onClose, onSaved, adminApi }) => {
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className={labelCls}>Reward (Coins) *</label>
-              <input type="number" className={inputCls} value={form.rewardAmount} onChange={set('rewardAmount')} required min="1" placeholder="e.g. 500" />
+              <label className={labelCls}>{hasEnabledGoals ? 'Total Reward (Coins)' : 'Reward (Coins) *'}</label>
+              <input
+                type="number"
+                className={inputCls}
+                value={hasEnabledGoals ? calculatedGoalReward : form.rewardAmount}
+                onChange={hasEnabledGoals ? undefined : set('rewardAmount')}
+                readOnly={hasEnabledGoals}
+                required
+                min="1"
+                placeholder="e.g. 500"
+              />
+              {hasEnabledGoals && <p className="mt-1 text-[11px] text-slate-500">Calculated automatically from enabled step rewards.</p>}
             </div>
             <div>
               <label className={labelCls}>Advertiser Payout (USD)</label>
@@ -516,7 +529,7 @@ const OfferFormModal = ({ offer, onClose, onSaved, adminApi }) => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-xs font-semibold text-slate-300">Multi-step Goals <span className="text-slate-600 font-normal">(optional)</span></p>
-                <p className="text-[11px] text-slate-500 mt-0.5">Leave empty for a single reward. When set, the postback <code>event_type</code> selects the goal and its reward.</p>
+                <p className="text-[11px] text-slate-500 mt-0.5">Add a reward for each enabled step; the total is calculated above. In the postback, <code>event_type</code> can contain the Goal Key or the partner Event ID.</p>
               </div>
               <button
                 type="button"
@@ -559,7 +572,7 @@ const OfferFormModal = ({ offer, onClose, onSaved, adminApi }) => {
                       </div>
                       <div>
                         <label className={labelCls}>Label</label>
-                        <input className={inputCls} value={goal.label} onChange={e => setForm(f => ({ ...f, goals: f.goals.map((g, i) => i === idx ? { ...g, label: e.target.value } : g) }))} placeholder="e.g. Complete registration" />
+                        <input className={inputCls} value={goal.label} onChange={e => setForm(f => ({ ...f, goals: f.goals.map((g, i) => i === idx ? { ...g, label: e.target.value } : g) }))} placeholder="e.g. Fight 20 Battles" />
                       </div>
                       <div>
                         <label className={labelCls}>Label (German)</label>
@@ -573,6 +586,11 @@ const OfferFormModal = ({ offer, onClose, onSaved, adminApi }) => {
                         <label className={labelCls}>External Aliases <span className="text-slate-600 font-normal">(comma separated)</span></label>
                         <input className={inputCls} value={goal.externalEventAliases || ''} onChange={e => setForm(f => ({ ...f, goals: f.goals.map((g, i) => i === idx ? { ...g, externalEventAliases: e.target.value } : g) }))} placeholder="e.g. GE-269, Event 269" />
                       </div>
+                      <p className="col-span-2 text-[11px] text-slate-500">
+                        {goal.externalEventId
+                          ? `Postback event “${goal.externalEventId}” or “${goal.goalKey || 'goal_key'}” maps to “${formatGoalLabel(goal)}”.`
+                          : `Postback event “${goal.goalKey || 'goal_key'}” maps to “${formatGoalLabel(goal)}”. Add the partner Event ID if they send a different value.`}
+                      </p>
                       <div>
                         <label className={labelCls}>Reward (Coins) *</label>
                         <input type="number" min="0" className={inputCls} value={goal.rewardAmount} onChange={e => setForm(f => ({ ...f, goals: f.goals.map((g, i) => i === idx ? { ...g, rewardAmount: e.target.value } : g) }))} placeholder="e.g. 250" />

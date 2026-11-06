@@ -222,8 +222,8 @@ test('Featured Direct Offer component selects DE with English fallback', () => {
   assert.match(card, DE_TITLE);
   assert.match(card, DE_DESC);
   assert.match(card, /isDe&&Array\.isArray\(offer\.requirementsDe\)&&offer\.requirementsDe\.length>0\)?\?offer\.requirementsDe:\(?offer\.requirements/);
-  // Goal label prefers labelDe, else base label
-  assert.match(card, /isDe&&goal\.labelDe\)?\?goal\.labelDe:\(goal\.label\|\|goal\.goalKey/);
+  // Goal labels use the shared formatter, with the selected locale passed in.
+  assert.match(card, /formatGoalLabel\(goal,isDe\?'de':'en'\)/);
 });
 
 test('Goodpicks component selects DE with English fallback', () => {

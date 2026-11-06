@@ -81,5 +81,6 @@ test('manual custom-offer rewards include the actual offer title', () => {
 
 test('frontend history keeps Offer Reward only as a legacy fallback', () => {
   const profile = read('frontend/src/pages/Profile.jsx');
-  assert.match(profile, /title:\s*tx\.description \|\| 'Offer Reward'/);
+  assert.match(profile, /getEarningDisplay\(tx\)/);
+  assert.match(profile, /title=\{transactionDescription\}/);
 });

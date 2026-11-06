@@ -18,6 +18,7 @@ import TransactionHistory from '../components/wallet/TransactionHistory';
 import CoinDisplay from '../components/CoinDisplay';
 import CoinIcon from '../components/CoinIcon';
 import UserAvatar from '../components/UserAvatar';
+import { getEarningDisplay } from '../utils/earningDisplay';
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
@@ -2743,7 +2744,9 @@ const Profile = () => {
           .filter(tx => tx.status === 'completed' && tx.amount > 0)
           .map(tx => ({
             _id: tx._id,
-            title: tx.description || 'Offer Reward',
+            title: tx.transactionType === 'direct_offer_reward'
+              ? getEarningDisplay(tx).primary
+              : (tx.description || 'Offer Reward'),
             rewardAmount: tx.amount,
             completedAt: tx.createdAt,
             source: 'offerwall',
@@ -3579,6 +3582,9 @@ const Profile = () => {
                               const isPending = tx.status === 'pending';
                               const isRefundRejected = /^Withdrawal Refund/i.test(tx.description || '') || /Request rejected/i.test(tx.description || '');
                               const isRejected = tx.status === 'rejected' || tx.status === 'failed' || isRefundRejected;
+                              const transactionDescription = tx.transactionType === 'direct_offer_reward'
+                                ? getEarningDisplay(tx).primary
+                                : tx.description;
                               return (
                                 <div
                                   key={tx._id}
@@ -3606,9 +3612,9 @@ const Profile = () => {
                                   <span
                                     style={{ fontFamily: 'Poppins, sans-serif', fontWeight: 500 }}
                                     className={`${isDarkMode ? 'text-white' : 'text-[#1e293b]'} text-[9.5px] md:text-[16px] leading-[13px] md:leading-[26px] line-clamp-2 pr-0.5`}
-                                    title={tx.description}
+                                    title={transactionDescription}
                                   >
-                                    {tx.description}
+                                    {transactionDescription}
                                   </span>
                                   <div
                                     style={{ fontFamily: 'Poppins, sans-serif', fontWeight: 600, color: 'rgba(190, 146, 0, 1)' }}

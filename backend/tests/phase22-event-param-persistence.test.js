@@ -204,6 +204,21 @@ test('incoming event_id=Game Event 269 resolves to the configured internal goal'
   assert.equal(resolution.goalKey, 'fight_20_battles');
 });
 
+test('lowercase compact partner event ID and internal goal key both resolve the same step', () => {
+  const offer = new DirectOffer(baseOfferPayload({
+    goals: [{
+      goalKey: 'fight_20_battles',
+      label: 'Fight 20 Battles',
+      rewardAmount: 250,
+      externalEventId: 'GameEvent269',
+    }],
+  }));
+  const snapshot = buildGoalsSnapshot(offer.goals);
+
+  assert.equal(resolveGoal({ goalsSnapshot: snapshot, eventType: 'gameevent269' }).goalKey, 'fight_20_battles');
+  assert.equal(resolveGoal({ goalsSnapshot: snapshot, eventType: 'fight_20_battles' }).goalKey, 'fight_20_battles');
+});
+
 test('unknown and ambiguous external events still fail safely', () => {
   const snapshot = buildGoalsSnapshot(new DirectOffer(baseOfferPayload()).goals);
 

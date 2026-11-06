@@ -12,6 +12,8 @@ const clean = (value) => String(value ?? '').trim();
 
 // Legacy descriptions sometimes carry the old generic suffix, e.g.
 // "QA Offer - Offer Reward"; strip it for display fallbacks.
+import { formatGoalLabel } from './offerGoalDisplay.js';
+
 const cleanDescription = (value) =>
   clean(value).replace(/\s*-\s*(offer reward|direct offer reward)\s*$/i, '').trim();
 
@@ -30,7 +32,10 @@ export const getEarningDisplay = (tx = {}) => {
   const description = cleanDescription(tx.description);
   const providerName = clean(meta.providerName) || clean(meta.providerId);
   const offerTitle = clean(meta.offerTitle) || (type === 'custom_offer_reward' ? stripCustomPrefix(description) : '');
-  const stepLabel = clean(meta.stepLabel) || clean(meta.goalLabel);
+  const rawStepLabel = clean(meta.stepLabel) || clean(meta.goalLabel);
+  const stepLabel = rawStepLabel
+    ? formatGoalLabel({ goalKey: meta.goalKey, label: rawStepLabel })
+    : '';
 
   const finish = (primary, secondary, lastResort = '') => {
     let p = clean(primary);
@@ -41,9 +46,9 @@ export const getEarningDisplay = (tx = {}) => {
   };
 
   if (type === 'direct_offer_reward') {
-    if (stepLabel) return finish(stepLabel, 'Direct Offer');
+    if (stepLabel) return finish(stepLabel);
     const title = offerTitle || (isGenericDescription(description) ? '' : description);
-    return finish(title, 'Direct Offer');
+    return finish(title);
   }
 
   if (type === 'custom_offer_reward') {

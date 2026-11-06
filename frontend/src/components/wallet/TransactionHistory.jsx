@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../../contexts/AuthContext';
 import CoinDisplay from '../CoinDisplay';
+import { getEarningDisplay } from '../../utils/earningDisplay';
 import {
   FiZap, FiStar, FiUsers, FiArrowDownCircle, FiShield,
   FiTag, FiAward, FiFilter, FiRefreshCw, FiLoader,
@@ -206,8 +207,12 @@ const TransactionHistory = ({ refreshKey = 0, onStatsLoaded }) => {
               const displayStatus = isRefundRejected ? 'rejected' : tx.status;
               const statusC = STATUS_COLORS[displayStatus] || STATUS_COLORS.completed;
               const preferDescription = ['direct_offer_reward', 'chargeback'].includes(tx.transactionType) && Boolean(tx.description);
-              const primaryLabel = preferDescription ? tx.description : config.label;
-              const secondaryDescription = tx.description && tx.description !== primaryLabel ? tx.description : null;
+              const primaryLabel = tx.transactionType === 'direct_offer_reward'
+                ? getEarningDisplay(tx).primary
+                : (preferDescription ? tx.description : config.label);
+              const secondaryDescription = tx.transactionType === 'direct_offer_reward'
+                ? null
+                : (tx.description && tx.description !== primaryLabel ? tx.description : null);
 
               return (
                 <motion.div
