@@ -7,6 +7,7 @@ import { BsQrCode } from 'react-icons/bs';
 import { formatGoalTimeLimit } from '../../utils/goalTimeLimit';
 import { isOfferClickLimitReached } from '../../utils/offerClickLimit';
 import { ProofUploadView } from './ProofUploadView';
+import { closeReservedOfferTab, hasManualOfferStarted, navigateReservedOfferTab, reserveOfferTab, resolveProofInstructions } from '../../utils/manualOfferState.js';
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
@@ -294,9 +295,12 @@ const renderOfferCover = (offer) => {
 };
 
 // ─── Goodpicks Offer Details Modal (Screenshot 2) ───────────────────────────
-export const GoodpicksDetailModal = ({ offer, onClose, token }) => {
+export const GoodpicksDetailModal = ({ offer, onClose, token, onOfferStateChange }) => {
   const { t, i18n } = useTranslation();
-  const isDe = i18n.language?.startsWith('de');
+  const selectedLanguage = typeof window !== 'undefined' && window.__taskmintCurrentLang
+    ? window.__taskmintCurrentLang
+    : (i18n.resolvedLanguage || i18n.language || 'en');
+  const isDe = selectedLanguage.startsWith('de');
   const isFr = i18n.language?.startsWith('fr');
   const isUr = i18n.language?.startsWith('ur');
   const baseTitle = (isDe && offer.titleDe) ? offer.titleDe : offer.title;
@@ -313,16 +317,14 @@ export const GoodpicksDetailModal = ({ offer, onClose, token }) => {
   const [loading, setLoading] = useState(false);
   const [showSupportModal, setShowSupportModal] = useState(false);
   const [actionError, setActionError] = useState('');
-  const [proofStarted, setProofStarted] = useState(false);
+  const [proofStarted, setProofStarted] = useState(() => hasManualOfferStarted(offer));
   const [proofMessage, setProofMessage] = useState(null);
   const [submissionStatus, setSubmissionStatus] = useState(offer?.submissionStatus || null);
 
   if (!offer) return null;
 
   const isManual = offer.trackingMode === 'manual';
-  const proofInstructions = isDe && offer.proofInstructionsDe
-    ? offer.proofInstructionsDe
-    : offer.proofInstructions;
+  const proofInstructions = resolveProofInstructions(offer, selectedLanguage);
   const rewardFormatted = (offer.rewardAmount || 0).toLocaleString('de-DE');
   const limitReached = isOfferClickLimitReached(offer);
 
@@ -337,6 +339,7 @@ export const GoodpicksDetailModal = ({ offer, onClose, token }) => {
         setActionError('This offer has reached its click limit.');
         return;
       }
+      const pendingTab = isManual ? reserveOfferTab() : null;
       try {
         setLoading(true);
         setActionError('');
@@ -347,19 +350,28 @@ export const GoodpicksDetailModal = ({ offer, onClose, token }) => {
         });
         const data = await res.json();
         if (data.success && data.url) {
-          window.open(data.url, '_blank', 'noopener,noreferrer');
+          const opened = isManual
+            ? navigateReservedOfferTab(pendingTab, data.url)
+            : Boolean(window.open(data.url, '_blank', 'noopener,noreferrer'));
           if (isManual) {
             setProofStarted(true);
             if (data.submissionStatus) setSubmissionStatus(data.submissionStatus);
+            if (!opened) setActionError('Allow pop-ups, then use Start Offer Again to open this offer.');
+            if (onOfferStateChange) onOfferStateChange(offer._id, {
+              submissionStatus: data.submissionStatus || 'started',
+              clickStatus: 'clicked',
+            });
           }
           return;
         }
+        closeReservedOfferTab(pendingTab);
         if (data.limitReached) {
           setActionError('This offer has reached its click limit.');
         } else {
           setActionError(data.error || 'Could not start this offer.');
         }
       } catch (err) {
+        closeReservedOfferTab(pendingTab);
         console.error('Failed to start tracked offer:', err);
         setActionError('Could not start this offer.');
       } finally {
@@ -785,7 +797,7 @@ export const GoodpicksDetailModal = ({ offer, onClose, token }) => {
           </div>
         )}
         {isManual && proofStarted && submissionStatus !== 'pending' && submissionStatus !== 'approved' && (
-          <div style={{ background: '#0e1726', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '14px', padding: '12px' }} className="shrink-0">
+          <div className="rounded-[16px] border border-[#EAE4D7] bg-[#F9F7F1] p-3 sm:p-4 shrink-0">
             <ProofUploadView
               offer={offer}
               token={token}
@@ -808,6 +820,17 @@ export const GoodpicksDetailModal = ({ offer, onClose, token }) => {
           </div>
         )}
 
+        {isManual && submissionStatus === 'pending' && (
+          <div style={{ textAlign: 'center', color: '#075985', fontSize: '12px', fontWeight: 600 }}>
+            {isDe ? 'Nachweis eingereicht – wartet auf Prüfung.' : 'Proof submitted – awaiting admin review.'}
+          </div>
+        )}
+        {isManual && submissionStatus === 'approved' && (
+          <div style={{ textAlign: 'center', color: '#047857', fontSize: '12px', fontWeight: 600 }}>
+            {isDe ? 'Dieses Angebot wurde bereits genehmigt.' : 'This offer has already been approved.'}
+          </div>
+        )}
+
         {/* Start Offer Button */}
         <button
           onClick={handleStartOffer}
@@ -822,16 +845,17 @@ export const GoodpicksDetailModal = ({ offer, onClose, token }) => {
             fontWeight: 600,
             fontSize: '15px',
             border: 'none',
-            cursor: (loading || limitReached) ? 'not-allowed' : 'pointer',
-            opacity: (loading || limitReached) ? 0.7 : 1,
+            cursor: (loading || limitReached || (isManual && ['pending', 'approved'].includes(submissionStatus))) ? 'not-allowed' : 'pointer',
+            opacity: (loading || limitReached || (isManual && ['pending', 'approved'].includes(submissionStatus))) ? 0.7 : 1,
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             gap: '8px',
           }}
-          className="hover:bg-[#151B24] transition-all shadow-md shrink-0"
+          className="hover:bg-[#151B24] transition-all shadow-md shrink-0 disabled:opacity-60"
+          disabled={loading || limitReached || (isManual && ['pending', 'approved'].includes(submissionStatus))}
         >
-          {limitReached ? 'Click limit reached' : t('goodpicks.startOffer')}
+          {loading ? <FiLoader className="animate-spin" /> : limitReached ? 'Click limit reached' : (isManual && proofStarted) ? t('goodpicks.startOfferAgain') : t('goodpicks.startOffer')}
         </button>
 
         {/* General Offer Rules Section */}
@@ -1824,6 +1848,10 @@ export const GoodpicksOfferwallModal = ({ onClose, token }) => {
           offer={selectedOffer}
           onClose={() => setSelectedOffer(null)}
           token={token}
+          onOfferStateChange={(offerId, nextState) => {
+            setOffers(prev => prev.map(item => item._id === offerId ? { ...item, ...nextState } : item));
+            setSelectedOffer(prev => prev?._id === offerId ? { ...prev, ...nextState } : prev);
+          }}
         />
       )}
 

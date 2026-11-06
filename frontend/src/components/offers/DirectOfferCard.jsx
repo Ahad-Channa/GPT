@@ -9,6 +9,7 @@ import { ProofUploadView } from './ProofUploadView';
 import { formatGoalTimeLimit } from '../../utils/goalTimeLimit';
 import { isOfferClickLimitReached } from '../../utils/offerClickLimit';
 import { formatGoalLabel } from '../../utils/offerGoalDisplay.js';
+import { closeReservedOfferTab, hasManualOfferStarted, navigateReservedOfferTab, reserveOfferTab, resolveProofInstructions } from '../../utils/manualOfferState.js';
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
@@ -247,8 +248,11 @@ export const DirectOfferCard = ({ offer, onClick }) => {
 
 // ─── Modal shown when user clicks a card ─────────────────────────────────────
 export const DirectOfferModal = ({ offer, token, placement = 'featured', onClose, onClicked }) => {
-  const { i18n } = useTranslation();
-  const isDe = i18n.language?.startsWith('de');
+  const { i18n, t } = useTranslation();
+  const selectedLanguage = typeof window !== 'undefined' && window.__taskmintCurrentLang
+    ? window.__taskmintCurrentLang
+    : (i18n.resolvedLanguage || i18n.language || 'en');
+  const isDe = selectedLanguage.startsWith('de');
   const title = (isDe && offer.titleDe) ? offer.titleDe : offer.title;
   const description = (isDe && offer.descriptionDe) ? offer.descriptionDe : offer.description;
   const requirements = (isDe && Array.isArray(offer.requirementsDe) && offer.requirementsDe.length > 0)
@@ -257,13 +261,11 @@ export const DirectOfferModal = ({ offer, token, placement = 'featured', onClose
   const [loading, setLoading] = useState(false);
   const [showSupportModal, setShowSupportModal] = useState(false);
   const [actionError, setActionError] = useState('');
-  const [proofStarted, setProofStarted] = useState(false);
+  const [proofStarted, setProofStarted] = useState(() => hasManualOfferStarted(offer));
   const [proofMessage, setProofMessage] = useState(null);
   const [submissionStatus, setSubmissionStatus] = useState(offer.submissionStatus || null);
   const isManual = offer.trackingMode === 'manual';
-  const proofInstructions = isDe && offer.proofInstructionsDe
-    ? offer.proofInstructionsDe
-    : offer.proofInstructions;
+  const proofInstructions = resolveProofInstructions(offer, selectedLanguage);
   const isExpired = offer.expirationDate && new Date(offer.expirationDate) < new Date();
   const limitReached = isOfferClickLimitReached(offer);
   const rewardVal = offer.rewardAmount ?? offer.points ?? offer.reward ?? 0;
@@ -283,6 +285,7 @@ export const DirectOfferModal = ({ offer, token, placement = 'featured', onClose
 
   const handleGoToOffer = async () => {
     if (isExpired || limitReached) return;
+    const pendingTab = isManual ? reserveOfferTab() : null;
     setLoading(true);
     setActionError('');
     try {
@@ -294,19 +297,28 @@ export const DirectOfferModal = ({ offer, token, placement = 'featured', onClose
         });
         const data = await res.json();
         if (data.success && data.url) {
-          window.open(data.url, '_blank', 'noopener,noreferrer');
+          const opened = isManual
+            ? navigateReservedOfferTab(pendingTab, data.url)
+            : Boolean(window.open(data.url, '_blank', 'noopener,noreferrer'));
           if (isManual) {
             setProofStarted(true);
             if (data.submissionStatus) setSubmissionStatus(data.submissionStatus);
+            if (!opened) setActionError('Allow pop-ups, then use Start Offer Again to open this offer.');
           }
-          if (onClicked) onClicked(offer._id);
+          if (onClicked) onClicked(offer._id, { submissionStatus: data.submissionStatus || 'started' });
         } else if (data.limitReached) {
+          closeReservedOfferTab(pendingTab);
           setActionError('This offer has reached its click limit.');
         } else {
+          closeReservedOfferTab(pendingTab);
           setActionError(data.error || 'Could not start this offer.');
         }
+      } else {
+        closeReservedOfferTab(pendingTab);
+        setActionError('Sign in again to start this offer.');
       }
     } catch (err) {
+      closeReservedOfferTab(pendingTab);
       console.error('Failed to process click:', err);
       setActionError('Could not start this offer.');
     } finally {
@@ -552,10 +564,7 @@ export const DirectOfferModal = ({ offer, token, placement = 'featured', onClose
         )}
 
         {isManual && proofStarted && submissionStatus !== 'pending' && submissionStatus !== 'approved' && (
-          <div
-            className="rounded-[14px] p-3 shrink-0"
-            style={{ background: '#0e1726', border: '1px solid rgba(255,255,255,0.08)' }}
-          >
+          <div className="rounded-[16px] border border-[#EAE4D7] bg-[#F9F7F1] p-3 sm:p-4 shrink-0">
             <ProofUploadView
               offer={offer}
               token={token}
@@ -570,12 +579,6 @@ export const DirectOfferModal = ({ offer, token, placement = 'featured', onClose
         {proofMessage?.message && (
           <div className={`text-center text-[12px] font-semibold shrink-0 ${proofMessage.type === 'error' ? 'text-rose-700' : 'text-emerald-700'}`}>
             {proofMessage.message}
-          </div>
-        )}
-
-        {isManual && !proofStarted && submissionStatus !== 'pending' && submissionStatus !== 'approved' && (
-          <div className="text-center text-[11px] text-[#64748B] shrink-0">
-            {isDe ? 'Starte das Angebot, um danach den Nachweis einzureichen.' : 'Start the offer, then submit your proof here.'}
           </div>
         )}
 
@@ -602,7 +605,7 @@ export const DirectOfferModal = ({ offer, token, placement = 'featured', onClose
           ) : limitReached ? (
             'Click limit reached'
           ) : (
-            'Start Offer'
+            isManual && proofStarted ? t('offers.startOfferAgain') : t('offers.startOffer')
           )}
         </button>
 

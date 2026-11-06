@@ -361,6 +361,10 @@ const Earn = () => {
               offer={selectedOffer}
               token={token}
               onClose={() => setSelectedOffer(null)}
+              onSubmitted={(submissionStatus) => {
+                setCustomOffers(prev => prev.map(item => item._id === selectedOffer._id ? { ...item, submissionStatus } : item));
+                setSelectedOffer(prev => prev ? { ...prev, submissionStatus } : prev);
+              }}
             />
           )}
         </AnimatePresence>
@@ -372,9 +376,18 @@ const Earn = () => {
               token={token}
               placement="featured"
               onClose={() => setSelectedDirectOffer(null)}
-              onClicked={(offerId) => setDirectOffers(prev =>
-                prev.map(o => o._id === offerId ? { ...o, clickStatus: 'clicked' } : o)
-              )}
+              onClicked={(offerId, state = {}) => {
+                setDirectOffers(prev => prev.map(o => o._id === offerId ? {
+                  ...o,
+                  clickStatus: 'clicked',
+                  submissionStatus: state.submissionStatus || o.submissionStatus,
+                } : o));
+                setSelectedDirectOffer(prev => prev?._id === offerId ? {
+                  ...prev,
+                  clickStatus: 'clicked',
+                  submissionStatus: state.submissionStatus || prev.submissionStatus,
+                } : prev);
+              }}
             />
           )}
         </AnimatePresence>
