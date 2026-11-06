@@ -1568,7 +1568,7 @@ const ClickedOfferRow = ({ offer, index = 0 }) => {
         style={{ fontFamily: 'Poppins, sans-serif', fontWeight: 500 }}
         className={`${isDarkMode ? 'text-slate-300' : 'text-[#1e293b]'} text-[10px] md:text-[16px] leading-tight md:leading-[26px]`}
       >
-        {offer.createdAt ? new Date(offer.createdAt).toLocaleDateString(i18n.language === 'de' ? 'de-DE' : (i18n.language === 'fr' ? 'fr-FR' : 'en-US'), { month: 'short', day: 'numeric', year: 'numeric' }) : 'N/A'}
+        {(offer.startedAt || offer.createdAt) ? new Date(offer.startedAt || offer.createdAt).toLocaleDateString(i18n.language === 'de' ? 'de-DE' : (i18n.language === 'fr' ? 'fr-FR' : 'en-US'), { month: 'short', day: 'numeric', year: 'numeric' }) : 'N/A'}
       </span>
 
       {/* Reward */}
@@ -2676,7 +2676,7 @@ const Profile = () => {
   const [showCustomization, setShowCustomization] = useState(false);
   const [activeTab, setActiveTab] = useState('started_offers');
   const [token, setToken] = useState(null);
-  const [customOffers, setCustomOffers] = useState([]);
+  const [startedOffersData, setStartedOffersData] = useState([]);
   const [loadingOffers, setLoadingOffers] = useState(false);
   const [profileStats, setProfileStats] = useState({ totalTasksCompleted: 0, earnings30Days: 0, totalEarnedLifetime: 0 });
   const [startedPage, setStartedPage] = useState(1);
@@ -2721,14 +2721,39 @@ const Profile = () => {
     try {
       const freshToken = currentUser ? await currentUser.getIdToken() : token;
 
-      const [customRes, walletRes] = await Promise.all([
+      const [customRes, walletRes, directRes] = await Promise.all([
         fetch(`${API}/custom-offers`, { headers: { Authorization: `Bearer ${freshToken}` } }),
         fetch(`${API}/wallet/history?type=offer_reward%2Ccustom_offer_reward&limit=50`, { headers: { Authorization: `Bearer ${freshToken}` } }),
+        fetch(`${API}/direct-offers?placement=all`, { headers: { Authorization: `Bearer ${freshToken}` } }),
       ]);
-      const [customData, walletData] = await Promise.all([customRes.json(), walletRes.json()]);
+      const [customData, walletData, directData] = await Promise.all([customRes.json(), walletRes.json(), directRes.json()]);
 
       if (customData.success) {
-        setCustomOffers(customData.offers);
+        const customStarted = customData.offers
+          .filter(o => o.submissionStatus === 'started' || o.submissionStatus === 'rejected')
+          .map(o => ({ ...o, startedAt: o.createdAt, source: 'custom' }));
+
+        const directStarted = (directData.success ? directData.offers : [])
+          .filter(offer => {
+            const manualStarted = offer.trackingMode === 'manual'
+              && ['started', 'rejected'].includes(offer.submissionStatus);
+            const hasEnabledGoals = (offer.goals || []).some(goal => goal.enabled !== false);
+            const hasIncompleteGoals = hasEnabledGoals
+              && (offer.goals || []).some(goal => goal.enabled !== false
+                && !(offer.completedGoalKeys || []).includes(goal.goalKey));
+            const trackedClick = ['clicked', 'pending', 'rejected'].includes(offer.clickStatus)
+              || (offer.clickStatus === 'approved' && hasIncompleteGoals);
+            return manualStarted || trackedClick;
+          })
+          .map(offer => ({
+            ...offer,
+            title: i18n.language === 'de' && offer.titleDe ? offer.titleDe : offer.title,
+            startedAt: offer.startedAt || offer.createdAt,
+            source: 'direct',
+          }));
+
+        setStartedOffersData([...customStarted, ...directStarted]
+          .sort((a, b) => new Date(b.startedAt || 0) - new Date(a.startedAt || 0)));
 
         const approvedCustom = customData.offers
           .filter(o => o.submissionStatus === 'approved')
@@ -2802,7 +2827,7 @@ const Profile = () => {
     if (token) fetchHeldOffers();
   }, [token]);
 
-  const startedOffers = customOffers.filter(o => o.submissionStatus === 'started' || o.submissionStatus === 'rejected');
+  const startedOffers = startedOffersData;
   const totalStartedPages = Math.ceil(startedOffers.length / itemsPerPage);
   const totalCompletedPages = Math.ceil(completedOffers.length / itemsPerPage);
   const totalHeldPages = Math.ceil(heldOffers.length / itemsPerPage);
@@ -3322,7 +3347,7 @@ const Profile = () => {
                   {loadingOffers ? (
                     <div className="flex justify-center py-12"><FiLoader className="animate-spin text-2xl text-emerald-600" /></div>
                   ) : (() => {
-                    const startedOffers = customOffers.filter(o => o.submissionStatus === 'started' || o.submissionStatus === 'rejected');
+                    const startedOffers = startedOffersData;
                     if (startedOffers.length === 0) {
                       return (
                         <p className="text-center py-12 text-slate-500 font-bold text-base">{t('profile.emptyStartedOffers', 'No clicked offers yet. Browse the Earn page to start new offers!')}</p>
@@ -3352,7 +3377,7 @@ const Profile = () => {
                             <div className="flex flex-col">
                               {paginatedStarted.map((offer, idx) => (
                                 <ClickedOfferRow
-                                  key={offer._id}
+                                  key={`${offer.source || 'custom'}-${offer._id}`}
                                   offer={offer}
                                   index={idx}
                                 />

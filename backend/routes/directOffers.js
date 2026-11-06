@@ -95,13 +95,33 @@ router.get('/', verifyToken, async (req, res) => {
     const placement = PLACEMENTS.includes(req.query.placement) ? req.query.placement : 'featured';
     const user = await User.findOne({ firebaseUid: req.user.uid }).select('_id').lean();
 
-    const offers = await DirectOffer.find({
+    let offers = await DirectOffer.find({
       isActive: true,
       $and: [
         { $or: [{ expirationDate: null }, { expirationDate: { $gt: now } }] },
         buildPlacementClause(placement),
       ],
     }).select('-postbackSecretKey -holdEnabled -holdDays -holdThreshold').lean();
+
+    // The Profile's Started Offers tab requests placement=all. Keep previously
+    // started offers in that response even if an admin later deactivates or
+    // expires them, so historical user progress does not disappear.
+    if (user && placement === 'all') {
+      const [priorClicks, priorManualSubmissions] = await Promise.all([
+        ClickLog.find({ userId: user._id, offerId: { $ne: null } }).distinct('offerId'),
+        CustomOfferSubmission.find({ userId: user._id, offerType: 'direct_offer' }).distinct('directOfferId'),
+      ]);
+      const alreadyListed = new Set(offers.map((offer) => offer._id.toString()));
+      const historicalIds = [...priorClicks, ...priorManualSubmissions]
+        .filter(Boolean)
+        .filter((offerId) => !alreadyListed.has(offerId.toString()));
+      if (historicalIds.length) {
+        const historicalOffers = await DirectOffer.find({ _id: { $in: historicalIds } })
+          .select('-postbackSecretKey -holdEnabled -holdDays -holdThreshold')
+          .lean();
+        offers = [...offers, ...historicalOffers];
+      }
+    }
 
     if (!user) {
       return res.status(200).json({
@@ -123,7 +143,7 @@ router.get('/', verifyToken, async (req, res) => {
     const [userClicks, creditedGoalConversions] = await Promise.all([
       ClickLog.find({ userId: user._id })
         .sort({ createdAt: -1 })
-        .select('offerId status clickId')
+        .select('offerId status clickId createdAt')
         .lean(),
       Conversion.find(buildActiveGoalConversionQuery(user._id))
         .select('offerId campaignId goalKey internalStatus processingState rewardTransactionId')
@@ -149,7 +169,7 @@ router.get('/', verifyToken, async (req, res) => {
         userId: user._id,
         offerType: 'direct_offer',
         directOfferId: { $in: manualOfferIds },
-      }).select('directOfferId status adminNote clickId').lean()
+      }).select('directOfferId status adminNote clickId createdAt').lean()
       : [];
 
     const submissionMap = {};
@@ -168,6 +188,7 @@ router.get('/', verifyToken, async (req, res) => {
         clickId: click ? click.clickId : null,
         submissionStatus: submission ? submission.status : null,
         adminNote: submission ? submission.adminNote : '',
+        startedAt: submission?.createdAt || click?.createdAt || null,
         completedGoalKeys: resolveCompletedGoalKeys(offer, completedByOffer),
       };
     });

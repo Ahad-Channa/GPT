@@ -73,17 +73,18 @@ test('legacy rows strip the old generic suffix and never fall back to "Task: Com
 
 test('direct-offer notification names the source and uses actual hold duration', () => {
   const source = read('backend/services/rewards/rewardService.js');
-  assert.match(source, /You earned \+.*coins from \$\{displayName\}/);
-  assert.match(source, /You completed an offer from \$\{displayName\} for \+/);
-  assert.match(source, /The reward is placed on hold for \$\{holdDays\} days\./);
+  assert.match(source, /rewardLabel: stepLabel \|\| offerTitle \|\| description/);
+  assert.match(source, /You earned \+.*coins for completing "\$\{rewardLabel\}"/);
+  assert.match(source, /It is on hold for \$\{holdDays\} days\./);
   assert.match(source, /rewardTx\?\.holdUntil/);
 });
 
 test('offerwall transaction carries providerName and uses actual hold duration', () => {
   const source = read('backend/routes/offerwalls.js');
   assert.match(source, /providerName: provider\.label \|\| providerId/);
-  assert.match(source, /holdDaysRemaining/);
-  assert.match(source, /You completed an offer from \$\{providerName\} for \+/);
+  assert.match(source, /offerTitle: offerTitle \|\| null/);
+  assert.match(source, /holdDays: holdDaysRemaining/);
+  assert.match(source, /You earned \+\$\{platformCoins\} coins for "\$\{offerTitle\}" via \$\{providerName\}/);
 });
 
 test('custom offer transaction carries offerTitle and uses actual hold duration', () => {
