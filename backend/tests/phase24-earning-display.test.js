@@ -8,6 +8,8 @@ const repoRoot = path.resolve(__dirname, '..', '..');
 const read = (relativePath) => fs.readFileSync(path.join(repoRoot, relativePath), 'utf8');
 const displayUrl = pathToFileURL(path.join(repoRoot, 'frontend/src/utils/earningDisplay.js')).href;
 const loadDisplay = () => import(displayUrl);
+const localizerUrl = pathToFileURL(path.join(repoRoot, 'frontend/src/utils/notificationLocalizer.js')).href;
+const loadLocalizer = () => import(localizerUrl);
 
 // ─── Live Feed primary/secondary rules ───────────────────────────────────────
 
@@ -37,6 +39,10 @@ test('offerwall: campaign title primary with provider secondary only when differ
     getEarningDisplay({ transactionType: 'offer_reward', metadata: { providerName: 'Lootably' } }),
     { primary: 'Lootably', secondary: '' }
   );
+  assert.deepEqual(
+    getEarningDisplay({ transactionType: 'offer_reward', metadata: { campaignTitle: 'Game Install', stepLabel: 'Reach Level 5', providerName: 'Lootably' } }),
+    { primary: 'Reach Level 5', secondary: '' }
+  );
   // Same label on both lines collapses to one.
   assert.deepEqual(
     getEarningDisplay({ transactionType: 'offer_reward', metadata: { campaignTitle: 'CPX Research', providerName: 'CPX Research' } }),
@@ -44,16 +50,16 @@ test('offerwall: campaign title primary with provider secondary only when differ
   );
 });
 
-test('manual/custom offer: primary is the offer title, secondary is "Custom Offer"', async () => {
+test('manual/custom offer: display only the actual offer title', async () => {
   const { getEarningDisplay } = await loadDisplay();
   assert.deepEqual(
     getEarningDisplay({ transactionType: 'custom_offer_reward', metadata: { offerTitle: 'Manual Offer' } }),
-    { primary: 'Manual Offer', secondary: 'Custom Offer' }
+    { primary: 'Manual Offer', secondary: '' }
   );
   // Legacy description-only row.
   assert.deepEqual(
     getEarningDisplay({ transactionType: 'custom_offer_reward', description: 'Custom Offer Reward: Legacy Manual Offer' }),
-    { primary: 'Legacy Manual Offer', secondary: 'Custom Offer' }
+    { primary: 'Legacy Manual Offer', secondary: '' }
   );
 });
 
@@ -83,8 +89,65 @@ test('offerwall transaction carries providerName and uses actual hold duration',
   const source = read('backend/routes/offerwalls.js');
   assert.match(source, /providerName: provider\.label \|\| providerId/);
   assert.match(source, /offerTitle: offerTitle \|\| null/);
+  assert.match(source, /stepLabel: stepLabel \|\| null/);
   assert.match(source, /holdDays: holdDaysRemaining/);
-  assert.match(source, /You earned \+\$\{platformCoins\} coins for "\$\{offerTitle\}" via \$\{providerName\}/);
+  assert.match(source, /const rewardLabel = stepLabel \|\| offerTitle/);
+  assert.match(source, /You earned \+\$\{platformCoins\} coins for "\$\{rewardLabel\}" via \$\{providerName\}/);
+  assert.match(source, /router\.post\(`\/postback\/\$\{providerId\}`/);
+});
+
+test('offerwall postbacks accept safe offer and step names from query or form body', () => {
+  const { readOfferTitle, readStepLabel } = require('../routes/offerwalls').__testInternals;
+  assert.equal(readOfferTitle({ offer_name: 'Query Campaign' }), 'Query Campaign');
+  assert.equal(readOfferTitle({}, { campaignTitle: 'Body Campaign' }), 'Body Campaign');
+  assert.equal(readStepLabel({ event_name: 'Reach Level 5' }), 'Reach Level 5');
+  assert.equal(readOfferTitle({ offer_name: '<script>alert(1)</script>' }), '<script>alert(1)</script>');
+  assert.equal(readOfferTitle({ offer_name: 'bad\nvalue' }), '');
+});
+
+test('older generic reward notifications are enriched from their own linked transaction', () => {
+  const source = read('backend/routes/notifications.js');
+  assert.match(source, /Transaction\.find\(\{ _id: \{ \$in: linkedIds \}, userId: user\._id \}\)/);
+  assert.match(source, /buildOfferRewardMessage\(transaction\)/);
+  assert.match(source, /notification\.message = message/);
+  assert.match(source, /Legacy offerwall notifications did not store txId/);
+});
+
+test('linked offer rewards produce specific notifications with the actual hold period', () => {
+  const { buildOfferRewardMessage } = require('../services/notifications/offerRewardMessage');
+  assert.equal(
+    buildOfferRewardMessage({
+      transactionType: 'direct_offer_reward', amount: 5000, status: 'hold',
+      description: 'Offer - generic', holdUntil: new Date('2026-12-01T00:00:00Z'), createdAt: new Date('2026-11-01T00:00:00Z'),
+      metadata: { offerTitle: 'Dragon City', stepLabel: 'Reach Level 10', holdDays: 30 },
+    }),
+    'You earned +5,000 coins for completing "Reach Level 10". It is on hold for 30 days.'
+  );
+  assert.equal(
+    buildOfferRewardMessage({
+      transactionType: 'offer_reward', amount: 250, status: 'completed',
+      metadata: { offerTitle: 'Survey 42', providerName: 'CPX Research' },
+    }),
+    'You earned +250 coins for "Survey 42" via CPX Research. The reward is available now.'
+  );
+});
+
+test('reward notifications localize offer name, step, and hold duration', async () => {
+  const { localizeNotification } = await loadLocalizer();
+  const notification = {
+    title: 'Offer Reward on Hold',
+    message: 'You earned +5,000 coins for completing "Reach Level 10". It is on hold for 30 days.',
+  };
+  assert.match(localizeNotification(notification, 'de').message, /Reach Level 10.*30 Tage/);
+  assert.match(localizeNotification(notification, 'fr').message, /Reach Level 10.*30 jours/);
+  assert.match(localizeNotification(notification, 'ur').message, /Reach Level 10.*30 دن/);
+});
+
+test('transaction history uses resolved offer names instead of generic earning categories', () => {
+  const source = read('frontend/src/components/wallet/TransactionHistory.jsx');
+  assert.match(source, /const isOfferReward = \['offer_reward', 'custom_offer_reward', 'direct_offer_reward'\]/);
+  assert.match(source, /earningDisplay\.primary/);
+  assert.match(source, /const secondaryDescription = isOfferReward\s*\? null/);
 });
 
 test('custom offer transaction carries offerTitle and uses actual hold duration', () => {

@@ -53,10 +53,11 @@ export const getEarningDisplay = (tx = {}) => {
 
   if (type === 'custom_offer_reward') {
     const title = offerTitle || (isGenericDescription(description) ? '' : description);
-    return finish(title, 'Custom Offer');
+    return finish(title);
   }
 
   if (type === 'offer_reward') {
+    if (stepLabel) return finish(stepLabel);
     const campaign = clean(meta.campaignTitle) || clean(meta.offerTitle) || clean(meta.campaign);
     const primary = campaign || providerName || (isGenericDescription(description) ? '' : description);
     const secondary = campaign && providerName ? providerName : '';

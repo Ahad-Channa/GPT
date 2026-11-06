@@ -206,11 +206,13 @@ const TransactionHistory = ({ refreshKey = 0, onStatsLoaded }) => {
               const isRefundRejected = /^Withdrawal Refund/i.test(tx.description || '') || /Request rejected/i.test(tx.description || '');
               const displayStatus = isRefundRejected ? 'rejected' : tx.status;
               const statusC = STATUS_COLORS[displayStatus] || STATUS_COLORS.completed;
+              const isOfferReward = ['offer_reward', 'custom_offer_reward', 'direct_offer_reward'].includes(tx.transactionType);
+              const earningDisplay = isOfferReward ? getEarningDisplay(tx) : null;
               const preferDescription = ['direct_offer_reward', 'chargeback'].includes(tx.transactionType) && Boolean(tx.description);
-              const primaryLabel = tx.transactionType === 'direct_offer_reward'
-                ? getEarningDisplay(tx).primary
+              const primaryLabel = isOfferReward
+                ? (earningDisplay.primary || tx.description || config.label)
                 : (preferDescription ? tx.description : config.label);
-              const secondaryDescription = tx.transactionType === 'direct_offer_reward'
+              const secondaryDescription = isOfferReward
                 ? null
                 : (tx.description && tx.description !== primaryLabel ? tx.description : null);
 

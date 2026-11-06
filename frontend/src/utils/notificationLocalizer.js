@@ -316,6 +316,7 @@ export function localizeNotification(notif, lang = 'en') {
   let title = notif.title || '';
   let message = notif.message || '';
   let metadata = notif.metadata ? { ...notif.metadata } : {};
+  message = localizeOfferRewardMessage(message, lang) || message;
 
   if (isUr) {
     if (metadata.link && !metadata.linkText) {
@@ -513,5 +514,37 @@ export function localizeNotification(notif, lang = 'en') {
   }
 
   return { title, message, metadata };
+}
+
+function localizeOfferRewardMessage(message, lang) {
+  let match = message.match(/^You earned \+([\d,.]+) coins for completing "(.+?)"\.(?: It is on hold for (\d+) days\.| The reward is available now\.)$/i);
+  let amount; let label; let holdDays; let provider = '';
+  if (match) {
+    [, amount, label, holdDays] = match;
+  } else {
+    match = message.match(/^You earned \+([\d,.]+) coins for "(.+?)"(?: via (.+?))?\.(?: It is on hold for (\d+) days\.| The reward is available now\.)$/i);
+    if (match) {
+      [, amount, label, provider, holdDays] = match;
+    } else {
+      match = message.match(/^You earned \+([\d,.]+) coins from (.+?)\.(?: The reward is on hold for (\d+) days\.| The reward is available now\.)$/i);
+      if (!match) return '';
+      [, amount, provider, holdDays] = match;
+    }
+  }
+
+  const isHeld = Boolean(holdDays);
+  if (lang === 'de') {
+    const earning = label ? `für „${label}“${provider ? ` über ${provider}` : ''}` : `von ${provider}`;
+    return `Du hast +${amount} Coins ${earning} verdient.${isHeld ? ` Die Belohnung wird ${holdDays} Tage zurückgehalten.` : ' Die Belohnung ist jetzt verfügbar.'}`;
+  }
+  if (lang === 'fr') {
+    const earning = label ? `pour « ${label} »${provider ? ` via ${provider}` : ''}` : `via ${provider}`;
+    return `Vous avez gagné +${amount} pièces ${earning}.${isHeld ? ` La récompense est bloquée pendant ${holdDays} jours.` : ' La récompense est disponible maintenant.'}`;
+  }
+  if (lang === 'ur') {
+    const earning = label ? `"${label}"${provider ? ` کے ذریعے ${provider}` : ''}` : `${provider} سے`;
+    return `آپ نے ${earning} کے لیے +${amount} کوائنز کمائے۔${isHeld ? ` انعام ${holdDays} دنوں کے لیے ہولڈ پر ہے۔` : ' انعام اب دستیاب ہے۔'}`;
+  }
+  return '';
 }
 

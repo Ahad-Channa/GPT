@@ -32,11 +32,24 @@ const sanitizeOfferTitle = (value) => (
     : ''
 );
 
-const readOfferTitle = (query = {}) => {
+const readOfferTitle = (...sources) => {
   const titleKeys = ['offer_name', 'offer_title', 'campaign_name', 'campaign_title', 'offerName', 'offerTitle', 'campaignName', 'campaignTitle'];
-  for (const key of titleKeys) {
-    const value = sanitizeOfferTitle(query[key]);
-    if (value) return value;
+  for (const source of sources) {
+    for (const key of titleKeys) {
+      const value = sanitizeOfferTitle(source?.[key]);
+      if (value) return value;
+    }
+  }
+  return '';
+};
+
+const readStepLabel = (...sources) => {
+  const stepKeys = ['step_name', 'goal_name', 'event_name', 'stepName', 'goalName', 'eventName'];
+  for (const source of sources) {
+    for (const key of stepKeys) {
+      const value = sanitizeOfferTitle(source?.[key]);
+      if (value) return value;
+    }
   }
   return '';
 };
@@ -80,6 +93,7 @@ const writeLegacyLootablyPostbackLog = async ({
         status: mappedFields.status || '',
         payout: mappedFields.payout ?? null,
         offerTitle: mappedFields.offerTitle || '',
+        stepLabel: mappedFields.stepLabel || '',
         extra: mappedFields.extra || {},
       },
       sourceIp: req.ip || req.headers['x-forwarded-for'] || '',
@@ -122,6 +136,7 @@ const handleLegacyOfferwallPostback = async (providerId, req, res, params) => {
       transactionId: typeof transactionId === 'string' ? transactionId : '',
       payout: typeof providerUnits === 'string' ? providerUnits : null,
       offerTitle: typeof params.offerTitle === 'string' ? params.offerTitle : '',
+      stepLabel: typeof params.stepLabel === 'string' ? params.stepLabel : '',
     };
 
     const settings = await Settings.getSingleton();
@@ -315,6 +330,7 @@ const handleLegacyOfferwallPostback = async (providerId, req, res, params) => {
     const txStatus = holdDecision.status;
     const holdDate = holdDecision.holdUntil;
     const offerTitle = sanitizeOfferTitle(params.offerTitle);
+    const stepLabel = sanitizeOfferTitle(params.stepLabel);
 
     const updatedUser = await User.findOneAndUpdate(
       { _id: user._id },
@@ -333,7 +349,7 @@ const handleLegacyOfferwallPostback = async (providerId, req, res, params) => {
       sourceType: 'offer',
       amount: platformCoins,
       balanceAfter: updatedUser.walletBalance,
-      description: offerTitle || provider.label || 'Offer Reward',
+      description: stepLabel || offerTitle || provider.label || 'Offer Reward',
       status: txStatus,
       holdUntil: holdDate,
       externalId,
@@ -342,6 +358,7 @@ const handleLegacyOfferwallPostback = async (providerId, req, res, params) => {
         providerName: provider.label || providerId,
         offerTitle: offerTitle || null,
         campaignTitle: offerTitle || null,
+        stepLabel: stepLabel || null,
         providerUnits,
         conversionRatio: provider.conversionRatio,
         holdApplied: holdDecision.status === 'hold',
@@ -355,12 +372,13 @@ const handleLegacyOfferwallPostback = async (providerId, req, res, params) => {
       ? Math.max(1, Math.ceil((new Date(holdDate).getTime() - Date.now()) / (1000 * 60 * 60 * 24)))
       : 0;
     const providerName = provider.label || providerId;
+    const rewardLabel = stepLabel || offerTitle;
     const notifMsg = txStatus === 'hold'
-      ? offerTitle
-        ? `You earned +${platformCoins} coins for "${offerTitle}" via ${providerName}. It is on hold for ${holdDaysRemaining} days.`
+      ? rewardLabel
+        ? `You earned +${platformCoins} coins for "${rewardLabel}" via ${providerName}. It is on hold for ${holdDaysRemaining} days.`
         : `You earned +${platformCoins} coins from ${providerName}. The reward is on hold for ${holdDaysRemaining} days.`
-      : offerTitle
-        ? `You earned +${platformCoins} coins for "${offerTitle}" via ${providerName}. The reward is available now.`
+      : rewardLabel
+        ? `You earned +${platformCoins} coins for "${rewardLabel}" via ${providerName}. The reward is available now.`
         : `You earned +${platformCoins} coins from ${providerName}. The reward is available now.`;
 
     await notify(
@@ -370,9 +388,11 @@ const handleLegacyOfferwallPostback = async (providerId, req, res, params) => {
       notifMsg,
       {
         amount: platformCoins,
+        txId: offerTx._id,
         providerId,
         providerName,
         offerTitle: offerTitle || null,
+        stepLabel: stepLabel || null,
         holdDays: holdDaysRemaining,
         holdUntil: holdDate || null,
       }
@@ -382,7 +402,7 @@ const handleLegacyOfferwallPostback = async (providerId, req, res, params) => {
     await notifyAdmins({
       category: 'offerwalls',
       type: 'offer_completed',
-      message: `User ${user.displayName || user._id} completed ${offerTitle ? `"${offerTitle}" on ` : 'an offer on '}${provider.label} for ${platformCoins} Coins.`,
+      message: `User ${user.displayName || user._id} completed ${rewardLabel ? `"${rewardLabel}" on ` : 'an offer on '}${provider.label} for ${platformCoins} Coins.`,
       permissionRequired: 'manage_offerwalls',
       metadata: { userId: user._id, transactionId: offerTx._id, providerId }
     });
@@ -514,86 +534,31 @@ const handleLegacyOfferwallPostback = async (providerId, req, res, params) => {
 };
 
 // 3b. Provider-Specific Routes
-
-router.get('/postback/cpx', (req, res) => {
-  // CPX: user_id, reward, trans_id, hash
-  handleLegacyOfferwallPostback('cpx', req, res, {
-    userId: req.query.user_id,
-    providerUnits: req.query.reward,
-    transactionId: req.query.trans_id,
-    secretParam: req.query.hash,
-    offerTitle: readOfferTitle(req.query),
-  });
+const requestRewardLabels = (req) => ({
+  offerTitle: readOfferTitle(req.query, req.body),
+  stepLabel: readStepLabel(req.query, req.body),
 });
 
-router.get('/postback/adgem', (req, res) => {
-  handleLegacyOfferwallPostback('adgem', req, res, {
-    userId: req.query.user_id,
-    providerUnits: req.query.amount,
-    transactionId: req.query.oid,
-    secretParam: req.query.verifier,
-    offerTitle: readOfferTitle(req.query),
-  });
-});
+const providerRouteParams = {
+  cpx: (req) => ({ userId: req.query.user_id ?? req.body?.user_id, providerUnits: req.query.reward ?? req.body?.reward, transactionId: req.query.trans_id ?? req.body?.trans_id, secretParam: req.query.hash ?? req.body?.hash }),
+  adgem: (req) => ({ userId: req.query.user_id ?? req.body?.user_id, providerUnits: req.query.amount ?? req.body?.amount, transactionId: req.query.oid ?? req.body?.oid, secretParam: req.query.verifier ?? req.body?.verifier }),
+  lootably: (req) => ({ userId: req.query.user_id ?? req.body?.user_id, providerUnits: req.query.revenue ?? req.body?.revenue, transactionId: req.query.transaction_id ?? req.body?.transaction_id, secretParam: req.query.security_token ?? req.body?.security_token }),
+  torox: (req) => ({ userId: req.query.user_id ?? req.body?.user_id, providerUnits: req.query.reward ?? req.body?.reward, transactionId: req.query.txid ?? req.body?.txid, secretParam: req.query.secret ?? req.body?.secret }),
+  primeearn: (req) => ({ userId: req.query.user_id ?? req.body?.user_id, providerUnits: req.query.amount ?? req.body?.amount, transactionId: req.query.offer_id ?? req.body?.offer_id, secretParam: req.query.token ?? req.body?.token }),
+  ayet: (req) => ({ userId: req.query.uid ?? req.body?.uid, providerUnits: req.query.payout ?? req.body?.payout, transactionId: req.query.sid ?? req.body?.sid, secretParam: req.query.signature ?? req.body?.signature }),
+  adtowall: (req) => ({ userId: req.query.user_id ?? req.body?.user_id, providerUnits: req.query.points ?? req.body?.points, transactionId: req.query.transaction_id ?? req.body?.transaction_id, secretParam: req.query.secret ?? req.body?.secret }),
+  revu: (req) => ({ userId: req.query.pub_user_id ?? req.body?.pub_user_id, providerUnits: req.query.amount ?? req.body?.amount, transactionId: req.query.ref ?? req.body?.ref, secretParam: req.query.hash ?? req.body?.hash }),
+};
 
-router.get('/postback/lootably', (req, res) => {
-  handleLegacyOfferwallPostback('lootably', req, res, {
-    userId: req.query.user_id,
-    providerUnits: req.query.revenue,
-    transactionId: req.query.transaction_id,
-    secretParam: req.query.security_token,
-    offerTitle: readOfferTitle(req.query),
+for (const [providerId, getParams] of Object.entries(providerRouteParams)) {
+  const handler = (req, res) => handleLegacyOfferwallPostback(providerId, req, res, {
+    ...getParams(req),
+    ...requestRewardLabels(req),
   });
-});
+  router.get(`/postback/${providerId}`, handler);
+  router.post(`/postback/${providerId}`, handler);
+}
 
-router.get('/postback/torox', (req, res) => {
-  handleLegacyOfferwallPostback('torox', req, res, {
-    userId: req.query.user_id,
-    providerUnits: req.query.reward,
-    transactionId: req.query.txid,
-    secretParam: req.query.secret,
-    offerTitle: readOfferTitle(req.query),
-  });
-});
-
-router.get('/postback/primeearn', (req, res) => {
-  handleLegacyOfferwallPostback('primeearn', req, res, {
-    userId: req.query.user_id,
-    providerUnits: req.query.amount,
-    transactionId: req.query.offer_id,
-    secretParam: req.query.token,
-    offerTitle: readOfferTitle(req.query),
-  });
-});
-
-router.get('/postback/ayet', (req, res) => {
-  handleLegacyOfferwallPostback('ayet', req, res, {
-    userId: req.query.uid,
-    providerUnits: req.query.payout,
-    transactionId: req.query.sid,
-    secretParam: req.query.signature,
-    offerTitle: readOfferTitle(req.query),
-  });
-});
-
-router.get('/postback/adtowall', (req, res) => {
-  handleLegacyOfferwallPostback('adtowall', req, res, {
-    userId: req.query.user_id,
-    providerUnits: req.query.points,
-    transactionId: req.query.transaction_id,
-    secretParam: req.query.secret,
-    offerTitle: readOfferTitle(req.query),
-  });
-});
-
-router.get('/postback/revu', (req, res) => {
-  handleLegacyOfferwallPostback('revu', req, res, {
-    userId: req.query.pub_user_id,
-    providerUnits: req.query.amount,
-    transactionId: req.query.ref,
-    secretParam: req.query.hash,
-    offerTitle: readOfferTitle(req.query),
-  });
-});
+router.__testInternals = { readOfferTitle, readStepLabel, sanitizeOfferTitle };
 
 module.exports = router;
