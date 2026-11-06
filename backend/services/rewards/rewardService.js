@@ -422,7 +422,9 @@ const processReward = async ({
         rewardTx,
         referralTransaction,
         walletApplied: holdDecision.walletCredit > 0,
-        displayName: description,
+        rewardLabel: stepLabel || offerTitle || description,
+        offerTitle,
+        stepLabel,
       });
       return { ok: true, duplicate: false, conversion: finalized || applyUpdate(claimed, { $set: { processingState: 'processed', rewardTransactionId: rewardTx._id } }), rewardTransaction: rewardTx, referralTransaction, walletBalance: effectiveUser.walletBalance, strategy };
     } catch (error) {
@@ -434,20 +436,31 @@ const processReward = async ({
   for (const effect of sideEffects) {
     try {
       const isHeld = effect.rewardTx.status === 'hold';
-      const displayName = String(effect.displayName || '').trim() || 'this offer';
+      const rewardLabel = (String(effect.rewardLabel || '').trim() || 'this offer').slice(0, 150);
       // Use the actual transaction hold window (holdUntil) rather than a fixed 30.
       const holdUntil = effect.rewardTx?.holdUntil ? new Date(effect.rewardTx.holdUntil) : null;
       const holdDays = holdUntil
         ? Math.max(1, Math.ceil((holdUntil.getTime() - Date.now()) / (1000 * 60 * 60 * 24)))
         : 0;
+      const notificationMessage = isHeld
+        ? `You earned +${effect.rewardAmount.toLocaleString()} coins for completing "${rewardLabel}". It is on hold for ${holdDays} days.`
+        : `You earned +${effect.rewardAmount.toLocaleString()} coins for completing "${rewardLabel}". The reward is available now.`;
+
       await (hooks.notify || notify)(
         effect.user._id,
         'direct_offer_reward',
         isHeld ? 'Offer Reward on Hold' : 'Offer Completed!',
-        isHeld
-          ? `You completed an offer from ${displayName} for +${effect.rewardAmount.toLocaleString()} coins. The reward is placed on hold for ${holdDays} days.`
-          : `You earned +${effect.rewardAmount.toLocaleString()} coins from ${displayName}.`,
-        { txId: effect.rewardTx._id, amount: effect.rewardAmount }
+        notificationMessage,
+        {
+          txId: effect.rewardTx._id,
+          amount: effect.rewardAmount,
+          offerTitle: effect.offerTitle || null,
+          stepLabel: effect.stepLabel || null,
+          rewardLabel,
+          holdDays,
+          holdUntil: holdUntil ? holdUntil.toISOString() : null,
+          isHeld,
+        }
       );
       if (effect.walletApplied) {
         (hooks.emitWalletUpdate || emitWalletUpdate)(effect.user.firebaseUid, effect.user.walletBalance);

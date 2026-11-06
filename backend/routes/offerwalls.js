@@ -26,6 +26,21 @@ const PROVIDER_SECRET_MAP = {
 const isSafePostbackScalar = (value, maxLength = 128) =>
   typeof value === 'string' && value.trim().length > 0 && value.trim().length <= maxLength;
 
+const sanitizeOfferTitle = (value) => (
+  isSafePostbackScalar(value, 160) && !/[\u0000-\u001f\u007f]/.test(value)
+    ? value.trim()
+    : ''
+);
+
+const readOfferTitle = (query = {}) => {
+  const titleKeys = ['offer_name', 'offer_title', 'campaign_name', 'campaign_title', 'offerName', 'offerTitle', 'campaignName', 'campaignTitle'];
+  for (const key of titleKeys) {
+    const value = sanitizeOfferTitle(query[key]);
+    if (value) return value;
+  }
+  return '';
+};
+
 const parseLegacyProviderUnits = (value) => {
   if (!isSafePostbackScalar(value, 64) || !/^-?\d+(\.\d+)?$/.test(value.trim())) return null;
   const parsed = Number(value.trim());
@@ -64,6 +79,7 @@ const writeLegacyLootablyPostbackLog = async ({
         transactionId: mappedFields.transactionId || '',
         status: mappedFields.status || '',
         payout: mappedFields.payout ?? null,
+        offerTitle: mappedFields.offerTitle || '',
         extra: mappedFields.extra || {},
       },
       sourceIp: req.ip || req.headers['x-forwarded-for'] || '',
@@ -105,6 +121,7 @@ const handleLegacyOfferwallPostback = async (providerId, req, res, params) => {
     const baseMappedFields = {
       transactionId: typeof transactionId === 'string' ? transactionId : '',
       payout: typeof providerUnits === 'string' ? providerUnits : null,
+      offerTitle: typeof params.offerTitle === 'string' ? params.offerTitle : '',
     };
 
     const settings = await Settings.getSingleton();
@@ -297,6 +314,7 @@ const handleLegacyOfferwallPostback = async (providerId, req, res, params) => {
     const creditBalance = holdDecision.walletCredit;
     const txStatus = holdDecision.status;
     const holdDate = holdDecision.holdUntil;
+    const offerTitle = sanitizeOfferTitle(params.offerTitle);
 
     const updatedUser = await User.findOneAndUpdate(
       { _id: user._id },
@@ -315,13 +333,15 @@ const handleLegacyOfferwallPostback = async (providerId, req, res, params) => {
       sourceType: 'offer',
       amount: platformCoins,
       balanceAfter: updatedUser.walletBalance,
-      description: provider.label || 'Offer Reward',
+      description: offerTitle || provider.label || 'Offer Reward',
       status: txStatus,
       holdUntil: holdDate,
       externalId,
       metadata: {
         providerId,
         providerName: provider.label || providerId,
+        offerTitle: offerTitle || null,
+        campaignTitle: offerTitle || null,
         providerUnits,
         conversionRatio: provider.conversionRatio,
         holdApplied: holdDecision.status === 'hold',
@@ -335,23 +355,34 @@ const handleLegacyOfferwallPostback = async (providerId, req, res, params) => {
       ? Math.max(1, Math.ceil((new Date(holdDate).getTime() - Date.now()) / (1000 * 60 * 60 * 24)))
       : 0;
     const providerName = provider.label || providerId;
-    const notifMsg = txStatus === 'hold' 
-      ? `You completed an offer from ${providerName} for +${platformCoins} coins. The reward is placed on hold for ${holdDaysRemaining} days.`
-      : `You earned +${platformCoins} coins from ${providerName}.`;
+    const notifMsg = txStatus === 'hold'
+      ? offerTitle
+        ? `You earned +${platformCoins} coins for "${offerTitle}" via ${providerName}. It is on hold for ${holdDaysRemaining} days.`
+        : `You earned +${platformCoins} coins from ${providerName}. The reward is on hold for ${holdDaysRemaining} days.`
+      : offerTitle
+        ? `You earned +${platformCoins} coins for "${offerTitle}" via ${providerName}. The reward is available now.`
+        : `You earned +${platformCoins} coins from ${providerName}. The reward is available now.`;
 
     await notify(
       user._id,
       'offer_reward',
       notifTitle,
       notifMsg,
-      { amount: platformCoins, providerId }
+      {
+        amount: platformCoins,
+        providerId,
+        providerName,
+        offerTitle: offerTitle || null,
+        holdDays: holdDaysRemaining,
+        holdUntil: holdDate || null,
+      }
     );
 
     // Add Admin Notification
     await notifyAdmins({
       category: 'offerwalls',
       type: 'offer_completed',
-      message: `User ${user.displayName || user._id} completed an offer on ${provider.label} for ${platformCoins} Coins.`,
+      message: `User ${user.displayName || user._id} completed ${offerTitle ? `"${offerTitle}" on ` : 'an offer on '}${provider.label} for ${platformCoins} Coins.`,
       permissionRequired: 'manage_offerwalls',
       metadata: { userId: user._id, transactionId: offerTx._id, providerId }
     });
@@ -359,7 +390,7 @@ const handleLegacyOfferwallPostback = async (providerId, req, res, params) => {
     await logLootably({
       userId: user._id,
       transaction: offerTx,
-      mappedFields: { ...baseMappedFields, transactionId: normalizedTransactionId, payout: providerUnits, status: 'approved' },
+      mappedFields: { ...baseMappedFields, transactionId: normalizedTransactionId, payout: providerUnits, offerTitle, status: 'approved' },
       processingResult: 'accepted',
       security: { checked: true, passed: true },
     });
@@ -491,6 +522,7 @@ router.get('/postback/cpx', (req, res) => {
     providerUnits: req.query.reward,
     transactionId: req.query.trans_id,
     secretParam: req.query.hash,
+    offerTitle: readOfferTitle(req.query),
   });
 });
 
@@ -500,6 +532,7 @@ router.get('/postback/adgem', (req, res) => {
     providerUnits: req.query.amount,
     transactionId: req.query.oid,
     secretParam: req.query.verifier,
+    offerTitle: readOfferTitle(req.query),
   });
 });
 
@@ -509,6 +542,7 @@ router.get('/postback/lootably', (req, res) => {
     providerUnits: req.query.revenue,
     transactionId: req.query.transaction_id,
     secretParam: req.query.security_token,
+    offerTitle: readOfferTitle(req.query),
   });
 });
 
@@ -518,6 +552,7 @@ router.get('/postback/torox', (req, res) => {
     providerUnits: req.query.reward,
     transactionId: req.query.txid,
     secretParam: req.query.secret,
+    offerTitle: readOfferTitle(req.query),
   });
 });
 
@@ -527,6 +562,7 @@ router.get('/postback/primeearn', (req, res) => {
     providerUnits: req.query.amount,
     transactionId: req.query.offer_id,
     secretParam: req.query.token,
+    offerTitle: readOfferTitle(req.query),
   });
 });
 
@@ -536,6 +572,7 @@ router.get('/postback/ayet', (req, res) => {
     providerUnits: req.query.payout,
     transactionId: req.query.sid,
     secretParam: req.query.signature,
+    offerTitle: readOfferTitle(req.query),
   });
 });
 
@@ -545,6 +582,7 @@ router.get('/postback/adtowall', (req, res) => {
     providerUnits: req.query.points,
     transactionId: req.query.transaction_id,
     secretParam: req.query.secret,
+    offerTitle: readOfferTitle(req.query),
   });
 });
 
@@ -554,6 +592,7 @@ router.get('/postback/revu', (req, res) => {
     providerUnits: req.query.amount,
     transactionId: req.query.ref,
     secretParam: req.query.hash,
+    offerTitle: readOfferTitle(req.query),
   });
 });
 
