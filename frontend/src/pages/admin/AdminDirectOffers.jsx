@@ -10,6 +10,11 @@ import {
 import { writeClipboardText } from '../../utils/clipboard';
 import { createAdminApi } from '../../utils/adminApi';
 import { getEnabledGoalRewardTotal, formatGoalLabel } from '../../utils/offerGoalDisplay.js';
+import {
+  buildConfiguredPostbackExample,
+  getEnabledPostbackGoals,
+  maskPostbackSecret,
+} from '../../utils/postbackGuide.js';
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
@@ -542,6 +547,9 @@ const OfferFormModal = ({ offer, onClose, onSaved, adminApi }) => {
             </div>
             {form.goals.length > 0 && (
               <div className="space-y-3">
+                <div className="rounded-lg border border-amber-500/20 bg-amber-500/10 px-3 py-2 text-[11px] text-amber-200">
+                  After changing a Goal Key, Event ID, alias, or reward, create a fresh user click before testing. Existing clicks keep their trusted click-time configuration.
+                </div>
                 {form.goals.map((goal, idx) => (
                   <div key={idx} className="border border-white/10 rounded-lg p-2.5 space-y-2 bg-white/[0.02]">
                     <div className="flex items-center justify-between">
@@ -594,6 +602,9 @@ const OfferFormModal = ({ offer, onClose, onSaved, adminApi }) => {
                       <div>
                         <label className={labelCls}>Reward (Coins) *</label>
                         <input type="number" min="0" className={inputCls} value={goal.rewardAmount} onChange={e => setForm(f => ({ ...f, goals: f.goals.map((g, i) => i === idx ? { ...g, rewardAmount: e.target.value } : g) }))} placeholder="e.g. 250" />
+                        {goal.enabled !== false && Number(goal.rewardAmount) === 0 && (
+                          <p className="mt-1 text-[10px] text-amber-300">This enabled step credits 0 coins.</p>
+                        )}
                       </div>
                       <div>
                         <label className={labelCls}>Payout Metadata (USD)</label>
@@ -1432,12 +1443,88 @@ const AdminDirectOffers = () => {
                         </button>
                       </div>
                       {postbackPreviews[offer._id] && (
-                        <input
-                          readOnly
-                          value={postbackPreviews[offer._id]}
-                          onFocus={(e) => e.target.select()}
-                          className="w-full bg-white border border-slate-200 rounded-lg px-2 py-1.5 text-[10px] font-mono text-slate-700"
-                        />
+                        <div className="space-y-3 rounded-xl border border-indigo-200 bg-indigo-50/60 p-3">
+                          <div>
+                            <p className="mb-1 text-[11px] font-semibold text-slate-800">1. Original generated postback URL — keep unchanged</p>
+                            <input
+                              readOnly
+                              value={postbackPreviews[offer._id]}
+                              onFocus={(e) => e.target.select()}
+                              className="w-full bg-white border border-slate-200 rounded-lg px-2 py-1.5 text-[10px] font-mono text-slate-700"
+                            />
+                            <p className="mt-1 text-[10px] text-slate-500">
+                              The advertiser replaces the placeholders. Keep the real secret private; use the masked examples below in screenshots.
+                            </p>
+                          </div>
+
+                          {getEnabledPostbackGoals(offer).length > 0 && (
+                            <>
+                              <div>
+                                <p className="mb-1 text-[11px] font-semibold text-slate-800">2. Step and event mapping</p>
+                                <div className="overflow-x-auto rounded-lg border border-slate-200 bg-white">
+                                  <table className="w-full min-w-[680px] text-left text-[10px] text-slate-700">
+                                    <thead className="bg-slate-100 text-slate-900">
+                                      <tr>
+                                        <th className="px-2 py-1.5">User-facing step</th>
+                                        <th className="px-2 py-1.5">Event parameter</th>
+                                        <th className="px-2 py-1.5">Partner Event ID</th>
+                                        <th className="px-2 py-1.5">Internal Goal Key</th>
+                                        <th className="px-2 py-1.5">Reward</th>
+                                      </tr>
+                                    </thead>
+                                    <tbody>
+                                      {getEnabledPostbackGoals(offer).map((goal) => (
+                                        <tr key={goal.goalKey} className="border-t border-slate-100">
+                                          <td className="px-2 py-1.5 font-semibold text-slate-900">{formatGoalLabel(goal)}</td>
+                                          <td className="px-2 py-1.5 font-mono">{offer.postbackMapping?.eventTypeParam || 'event_type'}</td>
+                                          <td className="px-2 py-1.5 font-mono">{goal.externalEventId || 'Not configured'}</td>
+                                          <td className="px-2 py-1.5 font-mono">{goal.goalKey}</td>
+                                          <td className="px-2 py-1.5">{Number(goal.rewardAmount || 0).toLocaleString()} coins</td>
+                                        </tr>
+                                      ))}
+                                    </tbody>
+                                  </table>
+                                </div>
+                              </div>
+
+                              <div className="space-y-2">
+                                <p className="text-[11px] font-semibold text-slate-800">3. Correctly configured examples</p>
+                                {getEnabledPostbackGoals(offer).map((goal, index) => (
+                                  <div key={goal.goalKey} className="rounded-lg border border-slate-200 bg-white p-2">
+                                    <p className="mb-1 text-[10px] font-semibold text-slate-800">
+                                      Step {index + 1}: {formatGoalLabel(goal)}
+                                    </p>
+                                    <input
+                                      readOnly
+                                      value={buildConfiguredPostbackExample(postbackPreviews[offer._id], goal, index)}
+                                      onFocus={(e) => e.target.select()}
+                                      className="w-full rounded border border-slate-200 bg-slate-50 px-2 py-1.5 font-mono text-[10px] text-slate-700"
+                                    />
+                                    <p className="mt-1 text-[10px] text-slate-500">
+                                      The internal key <code>{goal.goalKey}</code> is also accepted as this step&apos;s event value.
+                                    </p>
+                                  </div>
+                                ))}
+                              </div>
+
+                              <div className="rounded-lg border border-emerald-200 bg-emerald-50 p-2.5">
+                                <p className="text-[11px] font-semibold text-emerald-900">4. Test and verify each step</p>
+                                <ol className="mt-1 list-decimal space-y-1 pl-4 text-[10px] text-emerald-900/80">
+                                  <li>Save the final step configuration, then start the offer from a user account to create a fresh Click ID.</li>
+                                  <li>Copy that Click ID from Click Logs and replace <code>FRESH_CLICK_ID</code> in one example.</li>
+                                  <li>Use a new transaction ID for every step. Send the first postback once.</li>
+                                  <li>Confirm Postback Logs shows <strong>accepted</strong>, Conversions shows the expected Goal Key, and the reward ledger/wallet shows the exact configured coins.</li>
+                                  <li>Repeat with the same Click ID and a new transaction ID for the next step.</li>
+                                  <li>Replay one completed step and confirm it is duplicate and does not credit coins again.</li>
+                                </ol>
+                              </div>
+
+                              <div className="text-[10px] text-slate-500">
+                                Screenshot-safe template: <code className="break-all">{maskPostbackSecret(postbackPreviews[offer._id])}</code>
+                              </div>
+                            </>
+                          )}
+                        </div>
                       )}
                       <p className="text-[11px] text-slate-600">
                         Send this URL to your advertiser. Their system will replace the placeholders automatically when a conversion happens.
