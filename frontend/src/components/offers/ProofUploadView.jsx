@@ -36,6 +36,7 @@ const compressImage = (file) => {
 export const ProofUploadView = ({ offer, token, API, submitUrl, onSubmitted, setResult, onCancel }) => {
   const [proof, setProof] = useState('');
   const [proofImages, setProofImages] = useState([]);
+  const [previewImage, setPreviewImage] = useState(null);
   const [submitting, setSubmitting] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef(null);
@@ -244,36 +245,50 @@ export const ProofUploadView = ({ offer, token, API, submitUrl, onSubmitted, set
                 background: '#FFFFFF', border: '1px solid #EAE4D7', borderRadius: '10px'
               }}
             >
-              <a
-                href={img.base64}
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label={`Open uploaded proof ${img.name} in a new tab`}
-                className="flex items-center gap-2.5 rounded-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#24324D]"
-                onClick={(event) => event.stopPropagation()}
-              >
-                {img.base64.startsWith('data:image') ? (
+              {img.base64.startsWith('data:image') ? (
+                <button
+                  type="button"
+                  aria-label={`Preview uploaded proof ${img.name}`}
+                  className="flex items-center gap-2.5 rounded-lg text-left bg-transparent border-0 cursor-zoom-in focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#24324D]"
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    setPreviewImage(img);
+                  }}
+                >
                   <img 
                     src={img.base64} 
-                    alt=""
+                    alt={`Preview of ${img.name}`}
                     className="w-10 h-10 rounded-lg object-cover border border-[#EAE4D7]"
                   />
-                ) : (
+                  <span
+                    className="text-[12px]"
+                    style={{ fontFamily: '"Poppins", sans-serif', fontWeight: 600, color: '#24324D', maxWidth: '200px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}
+                  >
+                    {img.name}
+                  </span>
+                </button>
+              ) : (
+                <a
+                  href={img.base64}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={`Open uploaded proof ${img.name} in a new tab`}
+                  className="flex items-center gap-2.5 rounded-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#24324D]"
+                  onClick={(event) => event.stopPropagation()}
+                >
                   <div 
                     className="w-10 h-10 rounded-lg bg-[#EEF2F7] flex items-center justify-center text-[10px] text-[#475569]"
                   >
                     PDF
                   </div>
-                )}
-                <div style={{ display: 'flex', flexDirection: 'column' }}>
                   <span 
                     className="text-[12px]"
                     style={{ fontFamily: '"Poppins", sans-serif', fontWeight: 600, color: '#24324D', maxWidth: '200px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}
                   >
                     {img.name}
                   </span>
-                </div>
-              </a>
+                </a>
+              )}
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                 <span 
                   className="text-[12px] lg:text-[12px]"
@@ -348,6 +363,36 @@ export const ProofUploadView = ({ offer, token, API, submitUrl, onSubmitted, set
           <span>{submitting ? 'Submitting...' : 'Submit Proof'}</span>
         </button>
       </div>
+
+      {previewImage && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label={`Image preview: ${previewImage.name}`}
+          className="fixed inset-0 z-[100001] flex items-center justify-center bg-black/80 p-4"
+          onClick={(event) => {
+            event.stopPropagation();
+            setPreviewImage(null);
+          }}
+        >
+          <div className="relative max-h-full max-w-full" onClick={(event) => event.stopPropagation()}>
+            <button
+              type="button"
+              aria-label="Close image preview"
+              className="absolute -right-3 -top-3 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-white text-[#24324D] shadow-lg"
+              onClick={() => setPreviewImage(null)}
+            >
+              <FiX size={20} />
+            </button>
+            <img
+              src={previewImage.base64}
+              alt={previewImage.name}
+              className="max-h-[85vh] max-w-[90vw] rounded-xl bg-white object-contain shadow-2xl"
+            />
+            <p className="mt-2 text-center text-sm text-white">{previewImage.name}</p>
+          </div>
+        </div>
+      )}
     </motion.form>
   );
 };
