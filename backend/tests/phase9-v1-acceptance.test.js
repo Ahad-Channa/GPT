@@ -97,11 +97,13 @@ const makeAdapters = ({ clickLog = makeClick(), existingConversions = [] } = {})
   const logs = [];
   const uniqueTransactions = new Set(conversions
     .filter((conversion) => conversion.providerTransactionId)
-    .map((conversion) => `${conversion.providerId}:${conversion.providerTransactionId}`));
+    .map((conversion) => `${conversion.providerId}:${conversion.providerTransactionId}:${conversion.goalKey || ''}`));
 
   const conversionModel = {
     async create(payload) {
-      const uniqueKey = payload.providerTransactionId ? `${payload.providerId}:${payload.providerTransactionId}` : '';
+      const uniqueKey = payload.providerTransactionId
+        ? `${payload.providerId}:${payload.providerTransactionId}:${payload.goalKey || ''}`
+        : '';
       if (uniqueKey && uniqueTransactions.has(uniqueKey)) {
         const error = new Error('duplicate conversion transaction');
         error.code = 11000;
@@ -119,17 +121,14 @@ const makeAdapters = ({ clickLog = makeClick(), existingConversions = [] } = {})
       return conversion;
     },
     async findOne(query) {
-      return conversions.find((conversion) =>
-        conversion.providerId === query.providerId &&
-        conversion.providerTransactionId === query.providerTransactionId
-      ) || null;
+      return conversions.find((conversion) => Object.entries(query).every(([key, value]) =>
+        String(conversion[key] ?? '') === String(value ?? '')
+      )) || null;
     },
     async findOneAndUpdate(query, update) {
-      const conversion = conversions.find((item) =>
-        item.providerId === query.providerId &&
-        item.providerTransactionId === query.providerTransactionId &&
-        item.internalStatus === query.internalStatus
-      );
+      const conversion = conversions.find((item) => Object.entries(query).every(([key, value]) =>
+        String(item[key] ?? '') === String(value ?? '')
+      ));
       if (!conversion) return null;
       if (update.$set) {
         for (const [key, value] of Object.entries(update.$set)) {
@@ -637,4 +636,84 @@ test('Phase 9 full mock provider proof covers click, signed conversion, reward, 
   assert.equal(adapters.conversions[0].processingState, 'reversed');
   assert.equal(adapters.logs.length, 2);
   assert.equal(JSON.stringify(adapters.logs).includes('phase9-secret'), false);
+});
+
+test('direct offer cannot be credited again after chargeback by changing provider transaction ID', async () => {
+  const user = asDoc({
+    _id: new mongoose.Types.ObjectId(),
+    firebaseUid: 'phase9-direct-replay-user',
+    walletBalance: 1000,
+    totalEarned: 0,
+    isBanned: false,
+    appliedFinancialTransactionIds: [],
+    releasedEarningHoldTransactionIds: [],
+  });
+  const click = makeClick({
+    clickId: 'phase9-direct-replay-click',
+    userId: user._id,
+    providerId: 'direct',
+    providerType: 'direct_offer',
+    campaignType: 'direct_offer',
+    offerId: new mongoose.Types.ObjectId(),
+    rewardAmount: 432,
+    rewardSnapshot: { amount: 432, currency: 'coins', source: 'direct-offer' },
+  });
+  const adapters = makeAdapters({ clickLog: click });
+  const signedConfig = providerConfig({
+    providerId: 'direct',
+    type: 'direct',
+    security: {
+      method: 'sha256',
+      signatureParam: 'sig',
+      hashTemplate: '{clickId}:{transactionId}:{secret}',
+      secretValue: 'phase9-secret',
+    },
+  });
+  const hooks = {
+    notify: async () => {},
+    emitWalletUpdate: () => {},
+    processVipLevelUp: async () => {},
+  };
+  const transactions = [];
+  const financialModels = makeFinancialModels({
+    user,
+    click,
+    conversions: adapters.conversions,
+    transactions,
+    settings: { referralConfig: { holdDays: 0, globalPercentage: 5 }, earningHoldConfig: { enabled: false } },
+  });
+  const send = async (transactionId, state) => processPostback({
+    providerConfig: signedConfig,
+    req: makeReq({
+      query: approvedQuery({
+        cid: click.clickId,
+        tx: transactionId,
+        state,
+        sig: crypto.createHash('sha256')
+          .update(`${click.clickId}:${transactionId}:phase9-secret`)
+          .digest('hex'),
+        secret: undefined,
+      }),
+    }),
+    route: '/api/direct-offers/postback',
+    clickLogModel: adapters.clickLogModel,
+    conversionModel: adapters.conversionModel,
+    postbackLogModel: adapters.postbackLogModel,
+  });
+
+  const initial = await send('phase9-direct-replay-tx', 'approved');
+  assert.equal(initial.ok, true);
+  assert.equal((await processReward({ conversion: initial.conversion, models: financialModels, hooks })).ok, true);
+  assert.equal(user.walletBalance, 1432);
+
+  const reversal = await send('phase9-direct-replay-tx', 'chargeback');
+  assert.equal(reversal.internalStatus, 'reversed');
+  assert.equal((await processReversal({ conversion: reversal.conversion, models: financialModels, hooks })).ok, true);
+  assert.equal(user.walletBalance, 1000);
+
+  const changedTransactionReplay = await send('phase9-direct-replay-tx-new-id', 'approved');
+  assert.equal(changedTransactionReplay.isDuplicate, true);
+  assert.equal(changedTransactionReplay.shouldProcessFinancial, false);
+  assert.equal(adapters.conversions.length, 1);
+  assert.equal(user.walletBalance, 1000);
 });

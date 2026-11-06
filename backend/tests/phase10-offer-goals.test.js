@@ -128,9 +128,10 @@ const applyUpdate = (doc, update = {}) => {
 const makeConversionModel = (state) => ({
   async create(payload) {
     const duplicate = state.conversions.some((c) =>
-      c.providerId === payload.providerId &&
-      c.providerTransactionId === payload.providerTransactionId &&
-      (c.goalKey || null) === (payload.goalKey || null));
+      (payload.idempotencyKey && c.idempotencyKey === payload.idempotencyKey) ||
+      (c.providerId === payload.providerId &&
+        c.providerTransactionId === payload.providerTransactionId &&
+        (c.goalKey || null) === (payload.goalKey || null)));
     if (duplicate) {
       const error = new Error('duplicate key');
       error.code = 11000;
@@ -141,10 +142,9 @@ const makeConversionModel = (state) => ({
     return doc;
   },
   async findOne(query) {
-    return state.conversions.find((c) =>
-      c.providerId === query.providerId &&
-      c.providerTransactionId === query.providerTransactionId &&
-      (c.goalKey || null) === (query.goalKey || null)) || null;
+    return state.conversions.find((c) => Object.entries(query).every(([key, value]) =>
+      String(c[key] ?? '') === String(value ?? '')
+    )) || null;
   },
   async findOneAndUpdate(query, update) {
     const doc = state.conversions.find((c) =>
@@ -155,6 +155,36 @@ const makeConversionModel = (state) => ({
       c.internalStatus === query.internalStatus);
     return applyUpdate(doc, update) || null;
   },
+});
+
+test('reversed Direct Offer click-goal cannot be recredited with a changed transaction ID', async () => {
+  const state = { conversions: [] };
+  const model = makeConversionModel(state);
+  const originalArgs = baseConversionArgs('deposit');
+
+  const original = await createOrResolveConversion({ ...originalArgs, conversionModel: model });
+  original.conversion.internalStatus = 'reversed';
+  original.conversion.processingState = 'reversed';
+
+  const replay = await createOrResolveConversion({
+    ...originalArgs,
+    mapped: { ...originalArgs.mapped, transactionId: 'attacker-changed-tx' },
+    conversionModel: model,
+  });
+  assert.equal(replay.isDuplicate, true);
+  assert.equal(replay.shouldProcess, false);
+  assert.equal(state.conversions.length, 1);
+
+  // A different, configured goal on the same click remains independently payable.
+  const secondGoal = await createOrResolveConversion({
+    ...originalArgs,
+    mapped: { ...originalArgs.mapped, transactionId: 'attacker-changed-tx' },
+    goalKey: 'level5',
+    conversionModel: model,
+  });
+  assert.equal(secondGoal.isDuplicate, false);
+  assert.equal(secondGoal.conversion.goalKey, 'level5');
+  assert.equal(state.conversions.length, 2);
 });
 
 const baseConversionArgs = (goalKey) => {
