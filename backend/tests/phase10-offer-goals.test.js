@@ -8,9 +8,11 @@ const DirectOffer = require('../models/DirectOffer');
 const ClickLog = require('../models/ClickLog');
 const Conversion = require('../models/Conversion');
 const {
+  assertUnambiguousGoalMappings,
   buildGoalsSnapshot,
   normalizeGoals,
   resolveGoal,
+  sumEnabledGoalRewards,
 } = require('../utils/offerGoals');
 const { processReward, rewardExternalId } = require('../services/rewards/rewardService');
 const { createOrResolveConversion } = require('../services/tracking/conversionService');
@@ -56,6 +58,37 @@ test('resolveGoal ignores disabled goals and rejects unknown goals', () => {
   const matched = resolveGoal({ goalsSnapshot: snapshot, eventType: 'deposit' });
   assert.equal(matched.matched, true);
   assert.equal(matched.amount, 100);
+});
+
+test('separator variants resolve one configured goal without fuzzy matching', () => {
+  const snapshot = buildGoalsSnapshot([{
+    goalKey: 'fight_20_battles',
+    externalEventId: 'Game Event 269',
+    rewardAmount: 5000,
+    enabled: true,
+  }]);
+
+  assert.equal(resolveGoal({ goalsSnapshot: snapshot, eventType: 'gameevent269' }).goalKey, 'fight_20_battles');
+  assert.equal(resolveGoal({ goalsSnapshot: snapshot, eventType: 'fight__20-battles' }).goalKey, 'fight_20_battles');
+  assert.equal(resolveGoal({ goalsSnapshot: snapshot, eventType: 'gameevent26' }).matched, false);
+});
+
+test('ambiguous canonical event mappings are rejected before an offer is saved', () => {
+  assert.throws(
+    () => assertUnambiguousGoalMappings(normalizeGoals([
+      { goalKey: 'step_one', externalEventId: 'Game Event 269', rewardAmount: 100 },
+      { goalKey: 'step_two', externalEventId: 'game_event_269', rewardAmount: 200 },
+    ])),
+    /conflicts with goal/
+  );
+});
+
+test('enabled multi-step reward total ignores disabled goals', () => {
+  assert.equal(sumEnabledGoalRewards([
+    { rewardAmount: 5000, enabled: true },
+    { rewardAmount: 2500, enabled: true },
+    { rewardAmount: 9000, enabled: false },
+  ]), 7500);
 });
 
 // ─── Part B: schema ───────────────────────────────────────────────────────────

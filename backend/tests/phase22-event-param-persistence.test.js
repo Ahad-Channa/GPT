@@ -117,6 +117,7 @@ test('admin create persists eventTypeParam through real Mongoose casting/seriali
   });
 
   assert.ok(created);
+  assert.equal(created.rewardAmount, 250);
   assert.equal(created.postbackMapping.eventTypeParam, 'event_id');
   assert.equal(created.toObject().postbackMapping.eventTypeParam, 'event_id');
   assert.ok(DirectOffer.schema.path('postbackMapping.eventTypeParam'));
@@ -217,6 +218,23 @@ test('lowercase compact partner event ID and internal goal key both resolve the 
 
   assert.equal(resolveGoal({ goalsSnapshot: snapshot, eventType: 'gameevent269' }).goalKey, 'fight_20_battles');
   assert.equal(resolveGoal({ goalsSnapshot: snapshot, eventType: 'fight_20_battles' }).goalKey, 'fight_20_battles');
+});
+
+test('compact partner event ID resolves a click snapshot that stored a spaced event ID', () => {
+  const offer = new DirectOffer(baseOfferPayload({
+    goals: [{
+      goalKey: 'fight_20_battles',
+      label: 'Fight 20 Battles',
+      rewardAmount: 250,
+      externalEventId: 'Game Event 269',
+    }],
+  }));
+  const snapshot = buildGoalsSnapshot(offer.goals);
+
+  const resolution = resolveGoal({ goalsSnapshot: snapshot, eventType: 'gameevent269' });
+  assert.equal(resolution.matched, true);
+  assert.equal(resolution.goalKey, 'fight_20_battles');
+  assert.equal(resolution.amount, 250);
 });
 
 test('unknown and ambiguous external events still fail safely', () => {

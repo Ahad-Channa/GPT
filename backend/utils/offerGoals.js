@@ -21,6 +21,14 @@ const normalizeEventValue = (value) => String(value || '').trim().replace(/\s+/g
 const normalizeEventLookupValue = (value) =>
   normalizeEventValue(value).toLowerCase();
 
+// Partner dashboards commonly render the same event identifier with different
+// separators (for example `Game Event 269`, `GameEvent269`, or
+// `game_event_269`). This canonical form treats only spaces, underscores, and
+// hyphens as interchangeable. It deliberately does not perform partial or
+// semantic matching.
+const normalizeEventCanonicalValue = (value) =>
+  normalizeEventLookupValue(value).replace(/[\s_-]+/g, '');
+
 const normalizeEventAliases = (aliases) => {
   const source = Array.isArray(aliases)
     ? aliases
@@ -102,6 +110,45 @@ const normalizeGoals = (goals) => {
 
 const getEnabledGoals = (goals) => (Array.isArray(goals) ? goals : []).filter((goal) => goal && goal.enabled !== false);
 
+const sumEnabledGoalRewards = (goals) => getEnabledGoals(goals).reduce((total, goal) => {
+  const amount = toSafeAmount(goal.rewardAmount);
+  return amount === null ? total : total + amount;
+}, 0);
+
+// Reject configurations where two enabled goals become indistinguishable after
+// the safe separator normalization above. Without this validation a compact
+// partner value could resolve to more than one step.
+const assertUnambiguousGoalMappings = (goals) => {
+  const seen = new Map();
+
+  for (const goal of getEnabledGoals(goals)) {
+    const goalKey = String(goal.goalKey || '').trim();
+    const values = [
+      goalKey,
+      goal.externalEventId,
+      ...normalizeEventAliases(goal.externalEventAliases),
+    ];
+
+    for (const value of values) {
+      const canonical = normalizeEventCanonicalValue(value);
+      if (!canonical) continue;
+
+      const existing = seen.get(canonical);
+      if (existing && existing.goalKey !== goalKey) {
+        const error = new Error(
+          `Event value "${normalizeEventValue(value)}" conflicts with goal "${existing.goalKey}" after separator normalization.`
+        );
+        error.statusCode = 400;
+        throw error;
+      }
+
+      seen.set(canonical, { goalKey, value: normalizeEventValue(value) });
+    }
+  }
+
+  return goals;
+};
+
 // Immutable click-time snapshot of enabled goals. Returns null when the offer has
 // no enabled goals so single-step offers keep storing exactly what they did before.
 const buildGoalsSnapshot = (goals) => {
@@ -163,6 +210,7 @@ const unmatchedResult = (hasGoals, goalKey, reason) => ({
 //   2. exact externalEventId
 //   3. exact alias
 //   4. safe normalized fallback (trim/lowercase/collapse whitespace)
+//   5. separator-insensitive fallback (spaces/underscores/hyphens only)
 // Ambiguous or unknown events never reward.
 const resolveGoal = ({ goalsSnapshot, eventType } = {}) => {
   const entries = Object.entries(goalsSnapshot && typeof goalsSnapshot === 'object' ? goalsSnapshot : {});
@@ -225,17 +273,37 @@ const resolveGoal = ({ goalsSnapshot, eventType } = {}) => {
     return unmatchedResult(true, goalKey, 'Ambiguous goal mapping.');
   }
 
+  // 5. Safe separator-insensitive fallback. This supports common partner
+  // variants such as `Game Event 269` and `gameevent269`, but only when exactly
+  // one configured goal matches.
+  const canonicalEvent = normalizeEventCanonicalValue(rawEvent);
+  const canonicalMatches = collectMatches(entries, (goal, key) => {
+    if (normalizeEventCanonicalValue(key) === canonicalEvent) return true;
+    if (normalizeEventCanonicalValue(goal.externalEventId) === canonicalEvent) return true;
+    return normalizeEventAliases(goal.externalEventAliases)
+      .some((alias) => normalizeEventCanonicalValue(alias) === canonicalEvent);
+  });
+  if (canonicalMatches.length === 1) {
+    return matchedResult(true, canonicalMatches[0].goalKey, canonicalMatches[0].goal);
+  }
+  if (canonicalMatches.length > 1) {
+    return unmatchedResult(true, goalKey, 'Ambiguous goal mapping.');
+  }
+
   return unmatchedResult(true, goalKey, 'Unknown or disabled goal.');
 };
 
 module.exports = {
   GOAL_KEY_RE,
+  assertUnambiguousGoalMappings,
   buildGoalsSnapshot,
   getEnabledGoals,
   normalizeEventAliases,
+  normalizeEventCanonicalValue,
   normalizeEventLookupValue,
   normalizeEventValue,
   normalizeGoals,
   parseTimeLimitDays,
   resolveGoal,
+  sumEnabledGoalRewards,
 };
