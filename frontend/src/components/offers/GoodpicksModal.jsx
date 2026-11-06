@@ -820,17 +820,6 @@ export const GoodpicksDetailModal = ({ offer, onClose, token, onOfferStateChange
           </div>
         )}
 
-        {isManual && submissionStatus === 'pending' && (
-          <div style={{ textAlign: 'center', color: '#075985', fontSize: '12px', fontWeight: 600 }}>
-            {isDe ? 'Nachweis eingereicht – wartet auf Prüfung.' : 'Proof submitted – awaiting admin review.'}
-          </div>
-        )}
-        {isManual && submissionStatus === 'approved' && (
-          <div style={{ textAlign: 'center', color: '#047857', fontSize: '12px', fontWeight: 600 }}>
-            {isDe ? 'Dieses Angebot wurde bereits genehmigt.' : 'This offer has already been approved.'}
-          </div>
-        )}
-
         {/* Start Offer Button */}
         <button
           onClick={handleStartOffer}
