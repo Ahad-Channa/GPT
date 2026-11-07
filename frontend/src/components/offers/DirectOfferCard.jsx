@@ -261,6 +261,8 @@ export const DirectOfferModal = ({ offer, token, placement = 'featured', onClose
   const [loading, setLoading] = useState(false);
   const [showSupportModal, setShowSupportModal] = useState(false);
   const [actionError, setActionError] = useState('');
+  const [actionMessage, setActionMessage] = useState('');
+  const [startedClickId, setStartedClickId] = useState(offer.clickId || '');
   const [proofStarted, setProofStarted] = useState(() => hasManualOfferStarted(offer));
   const [proofMessage, setProofMessage] = useState(null);
   const [submissionStatus, setSubmissionStatus] = useState(offer.submissionStatus || null);
@@ -285,9 +287,13 @@ export const DirectOfferModal = ({ offer, token, placement = 'featured', onClose
 
   const handleGoToOffer = async () => {
     if (isExpired || limitReached) return;
-    const pendingTab = isManual ? reserveOfferTab() : null;
+    // Open the destination tab synchronously during the user gesture. Opening
+    // it after the awaited API request is commonly blocked by browser popup
+    // protection, which leaves a successfully logged click with no destination.
+    const pendingTab = token ? reserveOfferTab() : null;
     setLoading(true);
     setActionError('');
+    setActionMessage('');
     try {
       if (token) {
         const res = await fetch(`${API}/direct-offers/click/${offer._id}`, {
@@ -296,14 +302,18 @@ export const DirectOfferModal = ({ offer, token, placement = 'featured', onClose
           body: JSON.stringify({ placement }),
         });
         const data = await res.json();
-        if (data.success && data.url) {
-          const opened = isManual
-            ? navigateReservedOfferTab(pendingTab, data.url)
-            : Boolean(window.open(data.url, '_blank', 'noopener,noreferrer'));
+        if (res.ok && data.success && data.url) {
+          const opened = navigateReservedOfferTab(pendingTab, data.url);
+          setStartedClickId(data.clickId || '');
+          setActionMessage(data.alreadyApproved
+            ? 'This offer was already credited. Its tracking link has been reopened.'
+            : 'Offer click recorded.');
+          if (!opened) {
+            setActionError('The click was recorded, but the destination tab was blocked. Allow pop-ups before starting another click.');
+          }
           if (isManual) {
             setProofStarted(true);
             if (data.submissionStatus) setSubmissionStatus(data.submissionStatus);
-            if (!opened) setActionError('Allow pop-ups, then use Start Offer Again to open this offer.');
           }
           if (onClicked) onClicked(offer._id, { submissionStatus: data.submissionStatus || 'started' });
         } else if (data.limitReached) {
@@ -579,6 +589,13 @@ export const DirectOfferModal = ({ offer, token, placement = 'featured', onClose
         {proofMessage?.message && (
           <div className={`text-center text-[12px] font-semibold shrink-0 ${proofMessage.type === 'error' ? 'text-rose-700' : 'text-emerald-700'}`}>
             {proofMessage.message}
+          </div>
+        )}
+
+        {actionMessage && (
+          <div role="status" className="text-center text-[12px] font-semibold text-emerald-700 shrink-0">
+            {actionMessage}
+            {startedClickId && <div className="mt-1 break-all font-mono font-normal">Click ID: {startedClickId}</div>}
           </div>
         )}
 
