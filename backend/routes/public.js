@@ -316,5 +316,19 @@ router.get('/cookies', async (req, res) => {
   }
 });
 
+// ── GET /api/public/support-email ─────────────────────────────────────────
+// Returns configured platform support email for banned modal, etc.
+router.get('/support-email', async (req, res) => {
+  try {
+    const settings = await Settings.findOne({}) || {};
+    const supportEmail = settings.supportEmail || 'support@taskmint.me';
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+    res.status(200).json({ success: true, supportEmail });
+  } catch (err) {
+    console.error('[/api/public/support-email] Error:', err);
+    res.status(200).json({ success: true, supportEmail: 'support@taskmint.me' });
+  }
+});
+
 module.exports = router;
 

@@ -9,6 +9,21 @@ export default function BannedAccountModal() {
   const { banModal, closeBanModal } = useAuth();
   const { isDarkMode } = useTheme();
   const { t } = useTranslation();
+  const [supportEmail, setSupportEmail] = React.useState('support@taskmint.me');
+
+  React.useEffect(() => {
+    if (banModal?.isOpen) {
+      const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+      fetch(`${API}/public/support-email`)
+        .then((res) => res.json())
+        .then((data) => {
+          if (data?.success && data?.supportEmail) {
+            setSupportEmail(data.supportEmail);
+          }
+        })
+        .catch(() => {});
+    }
+  }, [banModal?.isOpen]);
 
   if (!banModal?.isOpen) return null;
 
@@ -97,13 +112,13 @@ export default function BannedAccountModal() {
 
             {/* Action Buttons */}
             <div className="flex flex-col sm:flex-row items-center gap-3 w-full">
-              <a
-                href="mailto:contact@taskmint.me?subject=Account%20Suspension%20Appeal"
-                className="w-full sm:flex-1 py-3 px-5 rounded-xl font-semibold text-sm bg-red-600 hover:bg-red-700 text-white transition-colors flex items-center justify-center gap-2 shadow-md shadow-red-600/20"
+              <div
+                className="w-full sm:flex-1 py-3 px-5 rounded-xl font-semibold text-sm bg-red-600 text-white flex items-center justify-center gap-2 shadow-md shadow-red-600/20 select-all cursor-default"
+                title="Support Email"
               >
-                <FiMail className="w-4 h-4" />
-                {t('auth.contactSupport', 'Contact Support')}
-              </a>
+                <FiMail className="w-4 h-4 shrink-0" />
+                <span className="truncate">{supportEmail}</span>
+              </div>
               <button
                 type="button"
                 onClick={closeBanModal}

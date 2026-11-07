@@ -2873,4 +2873,43 @@ router.delete('/cookies/:id', async (req, res) => {
   }
 });
 
+// ── GET /api/admin/support-email ──────────────────────────────────────────
+router.get('/support-email', verifyToken, requireAdmin, async (req, res) => {
+  try {
+    const settings = await Settings.getSingleton();
+    res.json({ success: true, supportEmail: settings.supportEmail || 'support@taskmint.me' });
+  } catch (err) {
+    console.error('[/api/admin/support-email GET] Error:', err);
+    res.status(500).json({ success: false, error: 'Failed to fetch support email' });
+  }
+});
+
+// ── PUT /api/admin/support-email ──────────────────────────────────────────
+router.put('/support-email', verifyToken, requireAdmin, async (req, res) => {
+  try {
+    const { supportEmail } = req.body;
+    if (!supportEmail || typeof supportEmail !== 'string') {
+      return res.status(400).json({ success: false, error: 'Support email is required' });
+    }
+    const cleanEmail = supportEmail.trim().toLowerCase();
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(cleanEmail)) {
+      return res.status(400).json({ success: false, error: 'Please enter a valid email address' });
+    }
+    const settings = await Settings.getSingleton();
+    const oldEmail = settings.supportEmail;
+    settings.supportEmail = cleanEmail;
+    await settings.save();
+
+    if (req.dbUser) {
+      await createLog(req.dbUser._id, 'update_support_email', null, { oldEmail, newEmail: cleanEmail });
+    }
+
+    res.json({ success: true, supportEmail: cleanEmail, message: 'Support email updated successfully' });
+  } catch (err) {
+    console.error('[/api/admin/support-email PUT] Error:', err);
+    res.status(500).json({ success: false, error: 'Failed to update support email' });
+  }
+});
+
 module.exports = router;

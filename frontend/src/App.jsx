@@ -38,6 +38,7 @@ import VipPage from './pages/VipPage';
 import AdminBooks from './pages/admin/AdminBooks';
 import AdminLegalPages from './pages/admin/AdminLegalPages';
 import AdminCookies from './pages/admin/AdminCookies';
+import AdminSupportEmail from './pages/admin/AdminSupportEmail';
 import LegalPage from './pages/LegalPage';
 import NotificationPanel from './components/NotificationPanel';
 import BannedAccountModal from './components/BannedAccountModal';
@@ -303,6 +304,7 @@ function App() {
           <Route path="settings" element={<AdminSettings />} />
           <Route path="legal-pages" element={<AdminLegalPages />} />
           <Route path="cookies" element={<AdminCookies />} />
+          <Route path="support-email" element={<AdminSupportEmail />} />
         </Route>
       </Routes>
     </>
