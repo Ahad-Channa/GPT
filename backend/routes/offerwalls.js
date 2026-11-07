@@ -1,5 +1,6 @@
 const express = require('express');
 const crypto = require('crypto');
+const mongoose = require('mongoose');
 const router = express.Router();
 const Settings = require('../models/Settings');
 const User = require('../models/User');
@@ -11,6 +12,7 @@ const { emitWalletUpdate, emitToUser } = require('../utils/walletEvents');
 const { processVipLevelUp } = require('../utils/vipUtils');
 const { getEarningHoldDecision } = require('../utils/earningTypes');
 const { sanitizePostbackPayload } = require('../services/tracking/postbackSanitizer');
+const { createOne, withSession } = require('../services/rewards/atomicRunner');
 
 const PROVIDER_SECRET_MAP = {
   cpx:       'CPX_HASH_KEY',
@@ -113,6 +115,148 @@ const writeLegacyLootablyPostbackLog = async ({
   } catch (error) {
     console.error('[Reward Engine] Failed to write Lootably PostbackLog:', error);
   }
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Atomic ledger + wallet writes for legacy offerwall callbacks.
+//
+// The wallet balance and the Transaction ledger row must change together, and a
+// duplicate provider callback must never change the wallet. Both are enforced by
+// running the writes in ONE MongoDB transaction and relying on the unique
+// Transaction.externalId index: if the ledger insert loses a race (E11000) the
+// transaction aborts and the wallet increment rolls back.
+//
+// There is deliberately NO non-transactional fallback here (unlike runAtomic):
+// two separate writes could leave the ledger and balance inconsistent. If the
+// deployment does not support transactions the callback fails with a 500 and the
+// provider retries, instead of silently half-applying.
+// ─────────────────────────────────────────────────────────────────────────────
+const runLegacyTransaction = async (operation) => {
+  if (mongoose.connection.readyState !== 1) throw new Error('MongoDB is not connected.');
+  const session = await mongoose.startSession();
+  try {
+    let value;
+    await session.withTransaction(async () => {
+      value = await operation(session);
+    });
+    return value;
+  } finally {
+    await session.endSession();
+  }
+};
+
+const isDuplicateKeyError = (error) => error?.code === 11000;
+
+// Thrown inside a transaction so it aborts (rolling back the wallet change)
+// rather than committing; caught by the caller and reported as a duplicate.
+const duplicateCallbackSignal = (cause) =>
+  Object.assign(new Error('Duplicate offerwall callback.'), { legacyDuplicate: true, cause });
+
+const creditLegacyOfferReward = async ({
+  models = {},
+  runInTransaction = runLegacyTransaction,
+  userId,
+  externalId,
+  creditBalance,
+  totalEarnedIncrement,
+  transactionPayload,
+}) => {
+  const TransactionModel = models.Transaction || Transaction;
+  const UserModel = models.User || User;
+
+  try {
+    return await runInTransaction(async (session) => {
+      const existingTx = await withSession(TransactionModel.findOne({ externalId }), session);
+      if (existingTx) return { duplicate: true, transaction: existingTx };
+
+      const updatedUser = await UserModel.findOneAndUpdate(
+        { _id: userId },
+        { $inc: { walletBalance: creditBalance, totalEarned: totalEarnedIncrement } },
+        { new: true, session }
+      );
+      if (!updatedUser) throw new Error('User not found for offerwall credit.');
+
+      let offerTx;
+      try {
+        offerTx = await createOne(
+          TransactionModel,
+          { ...transactionPayload, userId, externalId, balanceAfter: updatedUser.walletBalance },
+          session
+        );
+      } catch (error) {
+        if (isDuplicateKeyError(error)) throw duplicateCallbackSignal(error);
+        throw error;
+      }
+      return { duplicate: false, updatedUser, transaction: offerTx };
+    });
+  } catch (error) {
+    if (error?.legacyDuplicate) {
+      const existing = await TransactionModel.findOne({ externalId });
+      return { duplicate: true, transaction: existing };
+    }
+    throw error;
+  }
+};
+
+// Claims the original reward (and its linked referral/bonus rows) by flipping
+// status to 'reversed' with a conditional update, so exactly one of several
+// concurrent chargebacks deducts the wallet. Amounts and targets are unchanged
+// from the previous behaviour: the postback user is debited the original amount
+// and each linked row is debited from its own user.
+const reverseLegacyOfferTransaction = async ({
+  models = {},
+  runInTransaction = runLegacyTransaction,
+  userId,
+  originalExternalId,
+}) => {
+  const TransactionModel = models.Transaction || Transaction;
+  const UserModel = models.User || User;
+
+  return runInTransaction(async (session) => {
+    const originalTx = await TransactionModel.findOneAndUpdate(
+      { externalId: originalExternalId, status: { $ne: 'reversed' } },
+      { $set: { status: 'reversed' } },
+      { new: true, session }
+    );
+    if (!originalTx) {
+      const existing = await withSession(TransactionModel.findOne({ externalId: originalExternalId }), session);
+      return { reversed: false, originalTx: existing || null, linkedTxs: [] };
+    }
+
+    await UserModel.findByIdAndUpdate(
+      userId,
+      { $inc: { walletBalance: -Math.abs(originalTx.amount) } },
+      { session }
+    );
+
+    const linkedCandidates = await withSession(
+      TransactionModel.find({ linkedTransactionId: originalTx._id, status: { $ne: 'reversed' } }),
+      session
+    );
+    const linkedTxs = [];
+    for (const candidate of linkedCandidates) {
+      // new:false returns the pre-update row so we know whether it was on hold.
+      const linkedTx = await TransactionModel.findOneAndUpdate(
+        { _id: candidate._id, status: { $ne: 'reversed' } },
+        { $set: { status: 'reversed' } },
+        { new: false, session }
+      );
+      if (!linkedTx) continue;
+      if (linkedTx.transactionType === 'referral_reward') {
+        if (linkedTx.status === 'hold') {
+          await UserModel.findByIdAndUpdate(linkedTx.userId, { $inc: { referralEarnings: -linkedTx.amount } }, { session });
+        } else {
+          await UserModel.findByIdAndUpdate(linkedTx.userId, { $inc: { walletBalance: -linkedTx.amount, referralEarnings: -linkedTx.amount } }, { session });
+        }
+        // Decrement commissionGenerated from the referred user
+        await UserModel.findByIdAndUpdate(userId, { $inc: { commissionGenerated: -linkedTx.amount } }, { session });
+      } else {
+        await UserModel.findByIdAndUpdate(linkedTx.userId, { $inc: { walletBalance: -linkedTx.amount } }, { session });
+      }
+      linkedTxs.push(linkedTx);
+    }
+    return { reversed: true, originalTx, linkedTxs };
+  });
 };
 
 // Legacy offerwall compatibility handler.
@@ -253,37 +397,15 @@ const handleLegacyOfferwallPostback = async (providerId, req, res, params) => {
     // CHARGEBACK HANDLING: If the offerwall returns negative, it's reversing an offer.
     if (platformCoins < 0) {
       const originalTxId = req.query.original_transaction_id || externalId;
-      const originalTx = await Transaction.findOne({ externalId: originalTxId });
+      // Cascading chargeback (original reward + linked referral/bonus rows) in
+      // one transaction; only the callback that wins the status flip debits.
+      const { reversed, originalTx } = await reverseLegacyOfferTransaction({
+        userId: user._id,
+        originalExternalId: originalTxId,
+      });
 
-      if (originalTx && originalTx.status !== 'reversed') {
-        const { notifyAdmins } = require('../utils/adminNotify'); // require locally to prevent circular dep initially or rely on file top require
-        // Ensure cascading chargeback logic runs exactly like manual admin chargebacks
-        originalTx.status = 'reversed';
-        await originalTx.save();
-
-        await User.findByIdAndUpdate(user._id, {
-          $inc: { walletBalance: -Math.abs(originalTx.amount) }
-        });
-
-        // Search for linked referrals or bonuses
-        const linkedTxs = await Transaction.find({ linkedTransactionId: originalTx._id, status: { $ne: 'reversed' } });
-        for (const linkedTx of linkedTxs) {
-          if (linkedTx.transactionType === 'referral_reward') {
-            if (linkedTx.status === 'hold') {
-              await User.findByIdAndUpdate(linkedTx.userId, { $inc: { referralEarnings: -linkedTx.amount } });
-            } else {
-              await User.findByIdAndUpdate(linkedTx.userId, { $inc: { walletBalance: -linkedTx.amount, referralEarnings: -linkedTx.amount } });
-            }
-            // Decrement commissionGenerated from the referred user
-            await User.findByIdAndUpdate(user._id, { $inc: { commissionGenerated: -linkedTx.amount } });
-          } else {
-            await User.findByIdAndUpdate(linkedTx.userId, { $inc: { walletBalance: -linkedTx.amount } });
-          }
-          linkedTx.status = 'reversed';
-          await linkedTx.save();
-        }
-
-        // Send notifications
+      if (reversed) {
+        // Send notifications (once, only for the winning callback)
         await notify(user._id, 'chargeback', 'Offer Chargebacked', `An offer was automatically reversed: -${Math.abs(originalTx.amount)} coins`, { amount: -Math.abs(originalTx.amount) });
         await notifyAdmins({
           category: 'security',
@@ -308,21 +430,9 @@ const handleLegacyOfferwallPostback = async (providerId, req, res, params) => {
       return res.status(200).send('1');
     }
 
-    // 8. Normal Positive Postback: Check Transaction.findOne({ externalId }) — if exists → return "1"
-    const existingTx = await Transaction.findOne({ externalId });
-    if (existingTx) {
-      await logLootably({
-        userId: user._id,
-        transaction: existingTx,
-        mappedFields: { ...baseMappedFields, transactionId: normalizedTransactionId, payout: providerUnits, status: 'duplicate' },
-        processingResult: 'duplicate',
-        isDuplicate: true,
-        security: { checked: true, passed: true },
-      });
-      return res.status(200).send('1');
-    }
-
-    // 10. Atomic: User.findOneAndUpdate $inc walletBalance by platformCoins
+    // 8-11. Normal Positive Postback: the duplicate check, wallet credit and
+    // ledger insert run in ONE transaction keyed on the unique externalId, so a
+    // duplicate (including a concurrent one) never changes the wallet.
     const holdDecision = getEarningHoldDecision(settings, platformCoins, new Date(), {
       providerConfig: provider,
     });
@@ -332,39 +442,49 @@ const handleLegacyOfferwallPostback = async (providerId, req, res, params) => {
     const offerTitle = sanitizeOfferTitle(params.offerTitle);
     const stepLabel = sanitizeOfferTitle(params.stepLabel);
 
-    const updatedUser = await User.findOneAndUpdate(
-      { _id: user._id },
-      { $inc: { walletBalance: creditBalance, totalEarned: platformCoins } },
-      { new: true }
-    );
+    const credit = await creditLegacyOfferReward({
+      userId: user._id,
+      externalId,
+      creditBalance,
+      totalEarnedIncrement: platformCoins,
+      transactionPayload: {
+        transactionType: 'offer_reward',
+        sourceType: 'offer',
+        amount: platformCoins,
+        description: stepLabel || offerTitle || provider.label || 'Offer Reward',
+        status: txStatus,
+        holdUntil: holdDate,
+        metadata: {
+          providerId,
+          providerName: provider.label || providerId,
+          offerTitle: offerTitle || null,
+          campaignTitle: offerTitle || null,
+          stepLabel: stepLabel || null,
+          providerUnits,
+          conversionRatio: provider.conversionRatio,
+          holdApplied: holdDecision.status === 'hold',
+          holdDays: holdDecision.holdDays,
+        },
+      },
+    });
+
+    if (credit.duplicate) {
+      await logLootably({
+        userId: user._id,
+        transaction: credit.transaction,
+        mappedFields: { ...baseMappedFields, transactionId: normalizedTransactionId, payout: providerUnits, status: 'duplicate' },
+        processingResult: 'duplicate',
+        isDuplicate: true,
+        security: { checked: true, passed: true },
+      });
+      return res.status(200).send('1');
+    }
+
+    const { updatedUser, transaction: offerTx } = credit;
     // Push live balance to user's browser
     emitWalletUpdate(user.firebaseUid, updatedUser.walletBalance);
     // Check VIP level-up (fire-and-forget) — pass updatedUser so totalEarned is the new value
     processVipLevelUp(updatedUser, platformCoins, emitToUser);
-
-    // 11. Create Transaction
-    const offerTx = await Transaction.create({
-      userId: user._id,
-      transactionType: 'offer_reward',
-      sourceType: 'offer',
-      amount: platformCoins,
-      balanceAfter: updatedUser.walletBalance,
-      description: stepLabel || offerTitle || provider.label || 'Offer Reward',
-      status: txStatus,
-      holdUntil: holdDate,
-      externalId,
-      metadata: {
-        providerId,
-        providerName: provider.label || providerId,
-        offerTitle: offerTitle || null,
-        campaignTitle: offerTitle || null,
-        stepLabel: stepLabel || null,
-        providerUnits,
-        conversionRatio: provider.conversionRatio,
-        holdApplied: holdDecision.status === 'hold',
-        holdDays: holdDecision.holdDays,
-      },
-    });
 
     // 12. Send Offer Reward Notification
     const notifTitle = txStatus === 'hold' ? 'Offer Reward on Hold' : 'Offer Credited';
@@ -559,6 +679,12 @@ for (const [providerId, getParams] of Object.entries(providerRouteParams)) {
   router.post(`/postback/${providerId}`, handler);
 }
 
-router.__testInternals = { readOfferTitle, readStepLabel, sanitizeOfferTitle };
+router.__testInternals = {
+  readOfferTitle,
+  readStepLabel,
+  sanitizeOfferTitle,
+  creditLegacyOfferReward,
+  reverseLegacyOfferTransaction,
+};
 
 module.exports = router;
