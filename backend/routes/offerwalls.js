@@ -1,5 +1,4 @@
 const express = require('express');
-const crypto = require('crypto');
 const mongoose = require('mongoose');
 const router = express.Router();
 const Settings = require('../models/Settings');
@@ -14,16 +13,18 @@ const { getEarningHoldDecision } = require('../utils/earningTypes');
 const { sanitizePostbackPayload } = require('../services/tracking/postbackSanitizer');
 const { createOne, withSession } = require('../services/rewards/atomicRunner');
 
-const PROVIDER_SECRET_MAP = {
-  cpx:       'CPX_HASH_KEY',
-  adgem:     'ADGEM_API_KEY',
-  lootably:  'LOOTABLY_SECRET',
-  torox:     'TOROX_SECRET',
-  primeearn: 'PRIMEEARN_SECRET',
-  ayet:      'AYET_SECRET',
-  adtowall:  'ADTOWALL_SECRET',
-  revu:      'REVU_SECRET',
-};
+const OfferwallRewardIdentity = require('../models/OfferwallRewardIdentity');
+const {
+  REJECTED_RESPONSE,
+  adapterLegacyIdMatchesNew,
+  getDisabledResponse,
+  resolveEnabledAdapter,
+} = require('../services/offerwalls/adapters');
+const { recordDisabledRouteHit, recordReplayAlert } = require('../services/offerwalls/notices');
+
+// Every legacy provider route. A route can move money ONLY through an enabled,
+// verified adapter (services/offerwalls/adapters.js); otherwise it fails closed.
+const LEGACY_PROVIDER_IDS = ['cpx', 'adgem', 'lootably', 'torox', 'primeearn', 'ayet', 'adtowall', 'revu'];
 
 const isSafePostbackScalar = (value, maxLength = 128) =>
   typeof value === 'string' && value.trim().length > 0 && value.trim().length <= maxLength;
@@ -66,14 +67,15 @@ const legacyPostbackRoute = (providerId) => `/api/offerwalls/postback/${provider
 
 const sanitizeLegacyQuery = (query = {}) => {
   const safeQuery = { ...query };
-  if (Object.prototype.hasOwnProperty.call(safeQuery, 'security_token')) {
-    safeQuery.security_token = '[REDACTED]';
+  for (const key of ['security_token', 'hash', 'shash', 'signature']) {
+    if (Object.prototype.hasOwnProperty.call(safeQuery, key)) safeQuery[key] = '[REDACTED]';
   }
   return sanitizePostbackPayload(safeQuery);
 };
 
-const writeLegacyLootablyPostbackLog = async ({
+const writeLegacyPostbackLog = async ({
   req,
+  providerId,
   userId,
   transaction,
   mappedFields = {},
@@ -84,8 +86,8 @@ const writeLegacyLootablyPostbackLog = async ({
 }) => {
   try {
     await PostbackLog.create({
-      providerId: 'lootably',
-      route: legacyPostbackRoute('lootably'),
+      providerId,
+      route: legacyPostbackRoute(providerId),
       method: req.method || 'GET',
       sanitizedQuery: sanitizeLegacyQuery(req.query || {}),
       sanitizedBody: sanitizePostbackPayload(req.body || {}),
@@ -103,7 +105,7 @@ const writeLegacyLootablyPostbackLog = async ({
       security: {
         checked: security.checked !== false,
         passed: Boolean(security.passed),
-        method: 'shared_secret',
+        method: security.method || '',
         reason: security.reason || '',
       },
       processingResult,
@@ -113,18 +115,21 @@ const writeLegacyLootablyPostbackLog = async ({
       transactionId: transaction?._id || transaction || null,
     });
   } catch (error) {
-    console.error('[Reward Engine] Failed to write Lootably PostbackLog:', error);
+    console.error('[Reward Engine] Failed to write legacy offerwall PostbackLog:', error);
   }
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Atomic ledger + wallet writes for legacy offerwall callbacks.
+// Atomic ledger + wallet + identity writes for legacy offerwall callbacks.
 //
-// The wallet balance and the Transaction ledger row must change together, and a
-// duplicate provider callback must never change the wallet. Both are enforced by
-// running the writes in ONE MongoDB transaction and relying on the unique
-// Transaction.externalId index: if the ledger insert loses a race (E11000) the
-// transaction aborts and the wallet increment rolls back.
+// The wallet balance, the Transaction ledger row and the completion-identity row
+// must change together, and a duplicate or replayed callback must never change the
+// wallet. This is enforced by running the writes in ONE MongoDB transaction and
+// relying on two unique indexes (Transaction.externalId and the
+// OfferwallRewardIdentity {providerId,userId,identityKey} index): if either insert
+// loses a race (E11000) the callback throws, the transaction ABORTS and the wallet
+// increment rolls back, and only THEN is the duplicate classified (outside the
+// transaction, from committed data).
 //
 // There is deliberately NO non-transactional fallback here (unlike runAtomic):
 // two separate writes could leave the ledger and balance inconsistent. If the
@@ -148,9 +153,21 @@ const runLegacyTransaction = async (operation) => {
 const isDuplicateKeyError = (error) => error?.code === 11000;
 
 // Thrown inside a transaction so it aborts (rolling back the wallet change)
-// rather than committing; caught by the caller and reported as a duplicate.
+// rather than committing; caught by the caller and classified after the abort.
 const duplicateCallbackSignal = (cause) =>
   Object.assign(new Error('Duplicate offerwall callback.'), { legacyDuplicate: true, cause });
+
+// Rows written by this handler carry the identity key; rows written by the older
+// handler do not. Legacy rows are matched only when legacyIdMatchesNew is true.
+const isLegacyLedgerRow = (tx) => !tx?.metadata?.offerwallIdentityKey;
+
+const classifyIdentity = ({ identity, externalId }) => {
+  if (identity?.status === 'reversed') return { blocked: true, reason: 'reversed_replay', identity };
+  if (identity && identity.firstExternalId && identity.firstExternalId !== externalId) {
+    return { blocked: true, reason: 'changed_id_duplicate', identity };
+  }
+  return null;
+};
 
 const creditLegacyOfferReward = async ({
   models = {},
@@ -160,14 +177,59 @@ const creditLegacyOfferReward = async ({
   creditBalance,
   totalEarnedIncrement,
   transactionPayload,
+  providerId = null,
+  identityKey = null,
+  legacyIdMatchesNew = false,
 }) => {
   const TransactionModel = models.Transaction || Transaction;
   const UserModel = models.User || User;
+  const IdentityModel = models.OfferwallRewardIdentity || OfferwallRewardIdentity;
+  const identityFilter = identityKey ? { providerId, userId, identityKey } : null;
 
   try {
     return await runInTransaction(async (session) => {
       const existingTx = await withSession(TransactionModel.findOne({ externalId }), session);
-      if (existingTx) return { duplicate: true, transaction: existingTx };
+      const identity = identityFilter
+        ? await withSession(IdentityModel.findOne(identityFilter), session)
+        : null;
+
+      if (existingTx) {
+        if (!identityFilter) return { duplicate: true, reason: 'same_external_id', transaction: existingTx };
+
+        if (isLegacyLedgerRow(existingTx)) {
+          // A row from the older handler. Without proof that its stored ID means the
+          // same thing as the new ID, we neither match it nor claim any protection.
+          if (!legacyIdMatchesNew) {
+            return { blocked: true, reason: 'legacy_match_unavailable', transaction: existingTx };
+          }
+          if (!identity && existingTx.status === 'reversed') {
+            await IdentityModel.updateOne(
+              identityFilter,
+              {
+                $setOnInsert: {
+                  firstExternalId: externalId,
+                  firstTransactionId: existingTx._id || null,
+                  status: 'reversed',
+                  source: 'lazy',
+                  reversedAt: new Date(),
+                },
+              },
+              { upsert: true, session }
+            );
+            return { blocked: true, reason: 'reversed_replay', transaction: existingTx };
+          }
+        }
+        if (identity?.status === 'reversed') {
+          return { blocked: true, reason: 'reversed_replay', identity, transaction: existingTx };
+        }
+        return { duplicate: true, reason: 'same_external_id', transaction: existingTx };
+      }
+
+      if (identity) {
+        const verdict = classifyIdentity({ identity, externalId });
+        if (verdict) return verdict;
+        return { duplicate: true, reason: 'same_external_id', transaction: null };
+      }
 
       const updatedUser = await UserModel.findOneAndUpdate(
         { _id: userId },
@@ -180,9 +242,31 @@ const creditLegacyOfferReward = async ({
       try {
         offerTx = await createOne(
           TransactionModel,
-          { ...transactionPayload, userId, externalId, balanceAfter: updatedUser.walletBalance },
+          {
+            ...transactionPayload,
+            userId,
+            externalId,
+            balanceAfter: updatedUser.walletBalance,
+            metadata: {
+              ...(transactionPayload.metadata || {}),
+              ...(identityKey ? { offerwallIdentityKey: identityKey } : {}),
+            },
+          },
           session
         );
+        if (identityFilter) {
+          await createOne(
+            IdentityModel,
+            {
+              ...identityFilter,
+              firstExternalId: externalId,
+              firstTransactionId: offerTx._id || null,
+              status: 'credited',
+              source: 'live',
+            },
+            session
+          );
+        }
       } catch (error) {
         if (isDuplicateKeyError(error)) throw duplicateCallbackSignal(error);
         throw error;
@@ -190,11 +274,17 @@ const creditLegacyOfferReward = async ({
       return { duplicate: false, updatedUser, transaction: offerTx };
     });
   } catch (error) {
-    if (error?.legacyDuplicate) {
-      const existing = await TransactionModel.findOne({ externalId });
-      return { duplicate: true, transaction: existing };
-    }
-    throw error;
+    if (!error?.legacyDuplicate) throw error;
+
+    // The transaction has aborted (wallet increment rolled back). Classify from
+    // committed data.
+    const existing = await TransactionModel.findOne({ externalId });
+    if (!identityFilter) return { duplicate: true, reason: 'same_external_id', transaction: existing };
+    const identity = await IdentityModel.findOne(identityFilter);
+    const verdict = classifyIdentity({ identity, externalId });
+    if (verdict) return { ...verdict, transaction: existing };
+    if (existing || identity) return { duplicate: true, reason: 'same_external_id', transaction: existing };
+    throw error.cause || error; // unexplained duplicate key -> 500, provider retries
   }
 };
 
@@ -203,81 +293,179 @@ const creditLegacyOfferReward = async ({
 // concurrent chargebacks deducts the wallet. Amounts and targets are unchanged
 // from the previous behaviour: the postback user is debited the original amount
 // and each linked row is debited from its own user.
+//
+// When an identityKey is supplied the identity is also tombstoned ('reversed') in
+// the SAME transaction, even if the original ledger row is missing or already
+// reversed, so a reversal that arrives before its credit still blocks that credit.
 const reverseLegacyOfferTransaction = async ({
   models = {},
   runInTransaction = runLegacyTransaction,
   userId,
   originalExternalId,
+  providerId = null,
+  identityKey = null,
 }) => {
   const TransactionModel = models.Transaction || Transaction;
   const UserModel = models.User || User;
+  const IdentityModel = models.OfferwallRewardIdentity || OfferwallRewardIdentity;
 
   return runInTransaction(async (session) => {
+    let result;
     const originalTx = await TransactionModel.findOneAndUpdate(
       { externalId: originalExternalId, status: { $ne: 'reversed' } },
       { $set: { status: 'reversed' } },
       { new: true, session }
     );
+
     if (!originalTx) {
       const existing = await withSession(TransactionModel.findOne({ externalId: originalExternalId }), session);
-      return { reversed: false, originalTx: existing || null, linkedTxs: [] };
-    }
-
-    await UserModel.findByIdAndUpdate(
-      userId,
-      { $inc: { walletBalance: -Math.abs(originalTx.amount) } },
-      { session }
-    );
-
-    const linkedCandidates = await withSession(
-      TransactionModel.find({ linkedTransactionId: originalTx._id, status: { $ne: 'reversed' } }),
-      session
-    );
-    const linkedTxs = [];
-    for (const candidate of linkedCandidates) {
-      // new:false returns the pre-update row so we know whether it was on hold.
-      const linkedTx = await TransactionModel.findOneAndUpdate(
-        { _id: candidate._id, status: { $ne: 'reversed' } },
-        { $set: { status: 'reversed' } },
-        { new: false, session }
+      result = { reversed: false, originalTx: existing || null, linkedTxs: [] };
+    } else {
+      await UserModel.findByIdAndUpdate(
+        userId,
+        { $inc: { walletBalance: -Math.abs(originalTx.amount) } },
+        { session }
       );
-      if (!linkedTx) continue;
-      if (linkedTx.transactionType === 'referral_reward') {
-        if (linkedTx.status === 'hold') {
-          await UserModel.findByIdAndUpdate(linkedTx.userId, { $inc: { referralEarnings: -linkedTx.amount } }, { session });
+
+      const linkedCandidates = await withSession(
+        TransactionModel.find({ linkedTransactionId: originalTx._id, status: { $ne: 'reversed' } }),
+        session
+      );
+      const linkedTxs = [];
+      for (const candidate of linkedCandidates) {
+        // new:false returns the pre-update row so we know whether it was on hold.
+        const linkedTx = await TransactionModel.findOneAndUpdate(
+          { _id: candidate._id, status: { $ne: 'reversed' } },
+          { $set: { status: 'reversed' } },
+          { new: false, session }
+        );
+        if (!linkedTx) continue;
+        if (linkedTx.transactionType === 'referral_reward') {
+          if (linkedTx.status === 'hold') {
+            await UserModel.findByIdAndUpdate(linkedTx.userId, { $inc: { referralEarnings: -linkedTx.amount } }, { session });
+          } else {
+            await UserModel.findByIdAndUpdate(linkedTx.userId, { $inc: { walletBalance: -linkedTx.amount, referralEarnings: -linkedTx.amount } }, { session });
+          }
+          // Decrement commissionGenerated from the referred user
+          await UserModel.findByIdAndUpdate(userId, { $inc: { commissionGenerated: -linkedTx.amount } }, { session });
         } else {
-          await UserModel.findByIdAndUpdate(linkedTx.userId, { $inc: { walletBalance: -linkedTx.amount, referralEarnings: -linkedTx.amount } }, { session });
+          await UserModel.findByIdAndUpdate(linkedTx.userId, { $inc: { walletBalance: -linkedTx.amount } }, { session });
         }
-        // Decrement commissionGenerated from the referred user
-        await UserModel.findByIdAndUpdate(userId, { $inc: { commissionGenerated: -linkedTx.amount } }, { session });
-      } else {
-        await UserModel.findByIdAndUpdate(linkedTx.userId, { $inc: { walletBalance: -linkedTx.amount } }, { session });
+        linkedTxs.push(linkedTx);
       }
-      linkedTxs.push(linkedTx);
+      result = { reversed: true, originalTx, linkedTxs };
     }
-    return { reversed: true, originalTx, linkedTxs };
+
+    if (identityKey) {
+      await IdentityModel.updateOne(
+        { providerId, userId, identityKey },
+        {
+          $set: { status: 'reversed', reversedAt: new Date() },
+          $setOnInsert: {
+            firstExternalId: originalExternalId,
+            firstTransactionId: result.originalTx?._id || null,
+            source: 'lazy',
+          },
+        },
+        { upsert: true, session }
+      );
+    }
+    return result;
   });
+};
+
+// A route that is disabled / has no verified adapter never touches a wallet or
+// ledger. It answers with a status chosen from the provider's documented retry
+// behaviour, and keeps bookkeeping bounded: one counter row per provider-hour and
+// one admin alert per provider per UTC day.
+const respondRouteDisabled = async ({ providerId, res, options = {}, notifyAdmins: notifyAdminsFn = notifyAdmins }) => {
+  const { status, body } = getDisabledResponse(providerId);
+  try {
+    const hit = await recordDisabledRouteHit({ models: options.models, providerId });
+    if (hit.firstHitOfHour) {
+      console.warn(`[Reward Engine] ${providerId} callback refused: no verified adapter is enabled for this provider.`);
+    }
+    if (hit.firstAlertOfDay) {
+      await notifyAdminsFn({
+        category: 'offerwalls',
+        type: 'offerwall_route_disabled',
+        message: `Offerwall callbacks from ${providerId} are being refused because no verified adapter is enabled. Completions are not credited until it is verified.`,
+        permissionRequired: 'manage_offerwalls',
+        metadata: { providerId },
+      });
+    }
+  } catch (error) {
+    console.error('[Reward Engine] Failed to record disabled-route hit:', error.message);
+  }
+  return res.status(status).send(body);
+};
+
+const defaultHandlerDeps = {
+  Settings,
+  User,
+  notify,
+  notifyAdmins,
+  emitWalletUpdate,
+  processVipLevelUp,
+  writePostbackLog: writeLegacyPostbackLog,
+};
+
+const BLOCK_MESSAGES = {
+  reversed_replay: 'a callback for an already-reversed completion was blocked',
+  changed_id_duplicate: 'a second callback for an already-credited completion arrived under a different transaction ID and was blocked',
+  legacy_match_unavailable: 'a callback collided with a pre-existing legacy ledger row; replay protection is NOT available for that row (old and new IDs are not proven to match)',
 };
 
 // Legacy offerwall compatibility handler.
 //
-// These existing provider routes do not currently resolve a stored ClickLog, so
-// Phase 4 intentionally keeps them isolated instead of treating provider-supplied
-// user IDs as the new generic standard. Later phases should migrate offerwall
-// traffic only after outbound offerwall clicks are tracked through clickService.
-// Phase 6 reward/reversal services require exact Conversion linkage, which these
-// legacy routes do not have yet; Phase 10 should migrate them once tracked clicks
-// exist for each provider.
-const handleLegacyOfferwallPostback = async (providerId, req, res, params) => {
-  const shouldLogLootably = providerId === 'lootably';
-  const logLootably = (payload) => shouldLogLootably
-    ? writeLegacyLootablyPostbackLog({ req, ...payload })
-    : Promise.resolve();
+// These routes do not resolve a stored ClickLog, so a provider-issued completion
+// ID (bound to an authenticated callback) is the only identity available. A genuinely
+// new provider-signed callback with a NEW base ID for the same task is a new
+// completion and is NOT linkable to an earlier one unless the provider supplies a
+// stable shared task ID.
+const handleLegacyOfferwallPostback = async (providerId, req, res, params = {}, options = {}) => {
+  // Side-effect dependencies are injectable so the whole flow can be exercised
+  // without a database. Production always uses the module defaults.
+  const {
+    Settings, User, notify, notifyAdmins, emitWalletUpdate, processVipLevelUp, writePostbackLog,
+  } = { ...defaultHandlerDeps, ...(options.deps || {}) };
+  const logPostback = (payload) => writePostbackLog({ req, providerId, ...payload });
 
   try {
-    const { userId, providerUnits, transactionId, secretParam } = params;
+    // 0. Fail closed: no enabled, verified adapter -> no money movement at all.
+    const adapter = resolveEnabledAdapter(providerId, options.adapterOptions);
+    if (!adapter) return await respondRouteDisabled({ providerId, res, options, notifyAdmins });
+
+    const adapterEnv = options.adapterOptions?.env;
+
+    // 1. Authenticate with the provider's documented mechanism, then parse.
+    const verification = adapter.verify(req, { env: adapterEnv || process.env });
+    if (!verification.passed) {
+      console.warn(`[Reward Engine] ${providerId} callback rejected: ${verification.reason}`);
+      await logPostback({
+        mappedFields: { status: 'rejected' },
+        processingResult: 'rejected',
+        rejectionReason: verification.reason,
+        security: { checked: true, passed: false, method: adapter.id, reason: verification.reason },
+      });
+      return res.status(REJECTED_RESPONSE.status).send(REJECTED_RESPONSE.body);
+    }
+    const parsed = adapter.parse(req);
+    if (!parsed.ok) {
+      await logPostback({
+        mappedFields: { status: 'rejected' },
+        processingResult: 'rejected',
+        rejectionReason: parsed.reason,
+        security: { checked: true, passed: true, method: adapter.id },
+      });
+      return res.status(REJECTED_RESPONSE.status).send(REJECTED_RESPONSE.body);
+    }
+
+    const providerUnits = parsed.providerUnits;
+    const normalizedTransactionId = parsed.transactionId;
+    const security = { checked: true, passed: true, method: adapter.id };
     const baseMappedFields = {
-      transactionId: typeof transactionId === 'string' ? transactionId : '',
+      transactionId: normalizedTransactionId,
       payout: typeof providerUnits === 'string' ? providerUnits : null,
       offerTitle: typeof params.offerTitle === 'string' ? params.offerTitle : '',
       stepLabel: typeof params.stepLabel === 'string' ? params.stepLabel : '',
@@ -288,120 +476,55 @@ const handleLegacyOfferwallPostback = async (providerId, req, res, params) => {
 
     // 2. If provider.enabled === false → return "1" silently (ignores unexpected postbacks)
     if (!provider || !provider.enabled) {
-      await logLootably({
+      await logPostback({
         mappedFields: { ...baseMappedFields, status: 'ignored' },
         processingResult: 'ignored',
         rejectionReason: 'Provider disabled or not configured.',
-        security: { checked: false, passed: false, reason: 'Provider disabled or not configured.' },
+        security,
       });
       return res.status(200).send('1');
     }
 
-    if (
-      !isSafePostbackScalar(userId) ||
-      !isSafePostbackScalar(transactionId) ||
-      !isSafePostbackScalar(secretParam, 256)
-    ) {
-      console.warn(`[Reward Engine] ${providerId} postback rejected because required values are malformed.`);
-      await logLootably({
-        mappedFields: { ...baseMappedFields, status: 'rejected' },
-        processingResult: 'rejected',
-        rejectionReason: 'Required values are malformed.',
-        security: { checked: true, passed: false, reason: 'Required values are malformed.' },
-      });
-      return res.status(401).send('0');
-    }
-    const normalizedUserId = userId.trim();
-    const normalizedTransactionId = transactionId.trim();
-    const normalizedSecretParam = secretParam.trim();
-
-    // 3. Validate hash/secret
-    const envSecretKey = PROVIDER_SECRET_MAP[providerId];
-    const envSecret = process.env[envSecretKey];
-
-    if (!envSecret) {
-      console.warn(`[Reward Engine] ${providerId} postback rejected because ${envSecretKey} is not configured.`);
-      await logLootably({
-        mappedFields: { ...baseMappedFields, transactionId: normalizedTransactionId, payout: providerUnits, status: 'rejected' },
-        processingResult: 'rejected',
-        rejectionReason: `${envSecretKey} is not configured.`,
-        security: { checked: true, passed: false, reason: `${envSecretKey} is not configured.` },
-      });
-      return res.status(401).send('0');
-    } else {
-      // Provider specific validation
-      if (providerId === 'cpx') {
-        // CPX MD5 validation: MD5(trans_id + "-" + secure_hash)
-        const expectedHash = crypto.createHash('md5')
-          .update(`${normalizedTransactionId}-${envSecret}`)
-          .digest('hex');
-          
-        if (normalizedSecretParam !== expectedHash) {
-          console.error(`[Reward Engine] CPX MD5 signature mismatch! Expected: ${expectedHash}, Got: ${normalizedSecretParam}`);
-          return res.status(401).send('0');
-        }
-      } else {
-        // Fallback for others that use a direct secret match until implemented individually
-        if (normalizedSecretParam !== envSecret) {
-          console.warn(`[Reward Engine] ${providerId} invalid secret attempt.`);
-          await logLootably({
-            mappedFields: { ...baseMappedFields, transactionId: normalizedTransactionId, payout: providerUnits, status: 'rejected' },
-            processingResult: 'rejected',
-            rejectionReason: 'Invalid security token.',
-            security: { checked: true, passed: false, reason: 'Invalid security token.' },
-          });
-          return res.status(401).send('0');
-        }
-      }
-    }
-
-    // 6. Convert: platformCoins = Math.floor(providerUnits * provider.conversionRatio)
-    const parsedProviderUnits = parseLegacyProviderUnits(providerUnits);
-    if (parsedProviderUnits === null) {
-      console.warn(`[Reward Engine] ${providerId} postback rejected because provider units are malformed.`);
-      await logLootably({
-        mappedFields: { ...baseMappedFields, transactionId: normalizedTransactionId, payout: providerUnits, status: 'rejected' },
-        processingResult: 'rejected',
-        rejectionReason: 'Provider units are malformed.',
-        security: { checked: true, passed: true },
-      });
-      return res.status(401).send('0');
-    }
-
-    const platformCoins = Math.floor(parsedProviderUnits * provider.conversionRatio);
-    if (isNaN(platformCoins) || platformCoins === 0) {
-      await logLootably({
-        mappedFields: { ...baseMappedFields, transactionId: normalizedTransactionId, payout: providerUnits, status: 'ignored' },
+    // States that are acknowledged but never credit or reverse (e.g. pending).
+    if (parsed.kind === 'ignore') {
+      await logPostback({
+        mappedFields: { ...baseMappedFields, status: 'ignored' },
         processingResult: 'ignored',
-        rejectionReason: 'Computed platform coins were zero or invalid.',
-        security: { checked: true, passed: true },
+        rejectionReason: 'Callback state does not change the wallet.',
+        security,
       });
-      return res.status(200).send('1'); // bad amount, silently ignore
+      return res.status(200).send('1');
     }
 
     // 7. Build externalId = `${providerId}:${transactionId}`
     const externalId = `${providerId}:${normalizedTransactionId}`;
+    const identityKey = parsed.baseId;
 
     // Find User early to support chargebacks
-    const user = await User.findById(normalizedUserId);
+    const user = mongoose.isValidObjectId(parsed.userId) ? await User.findById(parsed.userId) : null;
     if (!user) {
-      await logLootably({
-        mappedFields: { ...baseMappedFields, transactionId: normalizedTransactionId, payout: providerUnits, status: 'ignored' },
+      await logPostback({
+        mappedFields: { ...baseMappedFields, status: 'ignored' },
         processingResult: 'ignored',
         rejectionReason: 'User not found.',
-        security: { checked: true, passed: true },
+        security,
       });
       return res.status(200).send('1');
     }
 
-    // CHARGEBACK HANDLING: If the offerwall returns negative, it's reversing an offer.
-    if (platformCoins < 0) {
-      const originalTxId = req.query.original_transaction_id || externalId;
-      // Cascading chargeback (original reward + linked referral/bonus rows) in
-      // one transaction; only the callback that wins the status flip debits.
+    // CHARGEBACK HANDLING: the adapter says this callback reverses a completion.
+    if (parsed.kind === 'reversal') {
+      const originalTxId = `${providerId}:${parsed.baseId}`;
+      // Cascading chargeback (original reward + linked referral/bonus rows) and the
+      // identity tombstone in one transaction; only the callback that wins the
+      // status flip debits.
       const { reversed, originalTx } = await reverseLegacyOfferTransaction({
+        models: options.models,
+        runInTransaction: options.runInTransaction,
         userId: user._id,
         originalExternalId: originalTxId,
+        providerId,
+        identityKey,
       });
 
       if (reversed) {
@@ -414,25 +537,49 @@ const handleLegacyOfferwallPostback = async (providerId, req, res, params) => {
           permissionRequired: 'manage_offerwalls'
         });
       }
-      await logLootably({
+      await logPostback({
         userId: user._id,
         transaction: originalTx,
         mappedFields: {
           ...baseMappedFields,
-          transactionId: normalizedTransactionId,
-          payout: providerUnits,
           status: 'reversed',
           extra: { originalTransactionId: originalTxId },
         },
         processingResult: 'accepted',
-        security: { checked: true, passed: true },
+        security,
       });
       return res.status(200).send('1');
     }
 
-    // 8-11. Normal Positive Postback: the duplicate check, wallet credit and
-    // ledger insert run in ONE transaction keyed on the unique externalId, so a
-    // duplicate (including a concurrent one) never changes the wallet.
+    // 6. Convert: platformCoins = Math.floor(providerUnits * provider.conversionRatio)
+    const parsedProviderUnits = parseLegacyProviderUnits(providerUnits);
+    if (parsedProviderUnits === null) {
+      console.warn(`[Reward Engine] ${providerId} postback rejected because provider units are malformed.`);
+      await logPostback({
+        mappedFields: { ...baseMappedFields, status: 'rejected' },
+        processingResult: 'rejected',
+        rejectionReason: 'Provider units are malformed.',
+        security,
+      });
+      return res.status(REJECTED_RESPONSE.status).send(REJECTED_RESPONSE.body);
+    }
+
+    const platformCoins = Math.floor(parsedProviderUnits * provider.conversionRatio);
+    if (isNaN(platformCoins) || platformCoins <= 0) {
+      await logPostback({
+        mappedFields: { ...baseMappedFields, status: 'ignored' },
+        processingResult: 'ignored',
+        rejectionReason: 'Computed platform coins were zero, negative or invalid.',
+        security,
+      });
+      return res.status(200).send('1'); // bad amount, silently ignore
+    }
+
+    // 8-11. Normal Positive Postback: the duplicate/identity checks, wallet credit
+    // and ledger + identity inserts run in ONE transaction keyed on the unique
+    // externalId and identity indexes, so a duplicate, a replay of a reversed
+    // completion, or a changed-ID retry (including concurrent ones) never changes
+    // the wallet.
     const holdDecision = getEarningHoldDecision(settings, platformCoins, new Date(), {
       providerConfig: provider,
     });
@@ -443,10 +590,15 @@ const handleLegacyOfferwallPostback = async (providerId, req, res, params) => {
     const stepLabel = sanitizeOfferTitle(params.stepLabel);
 
     const credit = await creditLegacyOfferReward({
+      models: options.models,
+      runInTransaction: options.runInTransaction,
       userId: user._id,
       externalId,
       creditBalance,
       totalEarnedIncrement: platformCoins,
+      providerId,
+      identityKey,
+      legacyIdMatchesNew: adapterLegacyIdMatchesNew(adapter),
       transactionPayload: {
         transactionType: 'offer_reward',
         sourceType: 'offer',
@@ -468,14 +620,55 @@ const handleLegacyOfferwallPostback = async (providerId, req, res, params) => {
       },
     });
 
-    if (credit.duplicate) {
-      await logLootably({
+    if (credit.blocked) {
+      // No credit. One idempotent alert record (T1 + T2) and one admin notification,
+      // however many times, or how concurrently, the provider retries this T2.
+      const alert = await recordReplayAlert({
+        models: options.models,
+        providerId,
+        userId: user._id,
+        identityKey,
+        blockedExternalId: externalId,
+        reason: credit.reason,
+        firstExternalId: credit.identity?.firstExternalId || credit.transaction?.externalId || '',
+        firstTransactionId: credit.identity?.firstTransactionId || credit.transaction?._id || null,
+      });
+      if (alert.firstTime) {
+        await notifyAdmins({
+          category: 'security',
+          type: 'offerwall_replay_blocked',
+          message: `${provider.label || providerId}: ${BLOCK_MESSAGES[credit.reason] || 'a callback was blocked'} (user ${user.displayName || user._id}).`,
+          permissionRequired: 'manage_offerwalls',
+          metadata: {
+            providerId,
+            userId: user._id,
+            identityKey,
+            blockedExternalId: externalId,
+            firstExternalId: credit.identity?.firstExternalId || credit.transaction?.externalId || '',
+            reason: credit.reason,
+          },
+        });
+      }
+      await logPostback({
         userId: user._id,
         transaction: credit.transaction,
-        mappedFields: { ...baseMappedFields, transactionId: normalizedTransactionId, payout: providerUnits, status: 'duplicate' },
+        mappedFields: { ...baseMappedFields, status: 'duplicate', extra: { blockedReason: credit.reason } },
         processingResult: 'duplicate',
         isDuplicate: true,
-        security: { checked: true, passed: true },
+        rejectionReason: credit.reason === 'legacy_match_unavailable' ? 'legacy_match_unavailable' : `blocked:${credit.reason}`,
+        security,
+      });
+      return res.status(200).send('1');
+    }
+
+    if (credit.duplicate) {
+      await logPostback({
+        userId: user._id,
+        transaction: credit.transaction,
+        mappedFields: { ...baseMappedFields, status: 'duplicate' },
+        processingResult: 'duplicate',
+        isDuplicate: true,
+        security,
       });
       return res.status(200).send('1');
     }
@@ -527,7 +720,7 @@ const handleLegacyOfferwallPostback = async (providerId, req, res, params) => {
       metadata: { userId: user._id, transactionId: offerTx._id, providerId }
     });
 
-    await logLootably({
+    await logPostback({
       userId: user._id,
       transaction: offerTx,
       mappedFields: { ...baseMappedFields, transactionId: normalizedTransactionId, payout: providerUnits, offerTitle, status: 'approved' },
@@ -639,10 +832,10 @@ const handleLegacyOfferwallPostback = async (providerId, req, res, params) => {
     return res.status(200).send('1');
   } catch (err) {
     console.error(`[Reward Engine] ${providerId} postback error:`, err);
-    await logLootably({
+    await logPostback({
       mappedFields: {
-        transactionId: typeof params?.transactionId === 'string' ? params.transactionId : '',
-        payout: typeof params?.providerUnits === 'string' ? params.providerUnits : null,
+        transactionId: '',
+        payout: null,
         status: 'error',
       },
       processingResult: 'error',
@@ -659,22 +852,12 @@ const requestRewardLabels = (req) => ({
   stepLabel: readStepLabel(req.query, req.body),
 });
 
-const providerRouteParams = {
-  cpx: (req) => ({ userId: req.query.user_id ?? req.body?.user_id, providerUnits: req.query.reward ?? req.body?.reward, transactionId: req.query.trans_id ?? req.body?.trans_id, secretParam: req.query.hash ?? req.body?.hash }),
-  adgem: (req) => ({ userId: req.query.user_id ?? req.body?.user_id, providerUnits: req.query.amount ?? req.body?.amount, transactionId: req.query.oid ?? req.body?.oid, secretParam: req.query.verifier ?? req.body?.verifier }),
-  lootably: (req) => ({ userId: req.query.user_id ?? req.body?.user_id, providerUnits: req.query.revenue ?? req.body?.revenue, transactionId: req.query.transaction_id ?? req.body?.transaction_id, secretParam: req.query.security_token ?? req.body?.security_token }),
-  torox: (req) => ({ userId: req.query.user_id ?? req.body?.user_id, providerUnits: req.query.reward ?? req.body?.reward, transactionId: req.query.txid ?? req.body?.txid, secretParam: req.query.secret ?? req.body?.secret }),
-  primeearn: (req) => ({ userId: req.query.user_id ?? req.body?.user_id, providerUnits: req.query.amount ?? req.body?.amount, transactionId: req.query.offer_id ?? req.body?.offer_id, secretParam: req.query.token ?? req.body?.token }),
-  ayet: (req) => ({ userId: req.query.uid ?? req.body?.uid, providerUnits: req.query.payout ?? req.body?.payout, transactionId: req.query.sid ?? req.body?.sid, secretParam: req.query.signature ?? req.body?.signature }),
-  adtowall: (req) => ({ userId: req.query.user_id ?? req.body?.user_id, providerUnits: req.query.points ?? req.body?.points, transactionId: req.query.transaction_id ?? req.body?.transaction_id, secretParam: req.query.secret ?? req.body?.secret }),
-  revu: (req) => ({ userId: req.query.pub_user_id ?? req.body?.pub_user_id, providerUnits: req.query.amount ?? req.body?.amount, transactionId: req.query.ref ?? req.body?.ref, secretParam: req.query.hash ?? req.body?.hash }),
-};
-
-for (const [providerId, getParams] of Object.entries(providerRouteParams)) {
-  const handler = (req, res) => handleLegacyOfferwallPostback(providerId, req, res, {
-    ...getParams(req),
-    ...requestRewardLabels(req),
-  });
+// Every legacy provider route is registered, but money moves only through an
+// enabled, verified adapter; otherwise the handler fails closed (see
+// services/offerwalls/adapters.js). Provider-specific field mapping and signature
+// verification live in the adapters, not here.
+for (const providerId of LEGACY_PROVIDER_IDS) {
+  const handler = (req, res) => handleLegacyOfferwallPostback(providerId, req, res, requestRewardLabels(req));
   router.get(`/postback/${providerId}`, handler);
   router.post(`/postback/${providerId}`, handler);
 }
@@ -685,6 +868,8 @@ router.__testInternals = {
   sanitizeOfferTitle,
   creditLegacyOfferReward,
   reverseLegacyOfferTransaction,
+  handleLegacyOfferwallPostback,
+  respondRouteDisabled,
 };
 
 module.exports = router;
