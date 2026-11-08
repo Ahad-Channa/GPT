@@ -108,6 +108,38 @@ const normalizeGoals = (goals) => {
   return normalized;
 };
 
+// Rejects (HTTP 400) any ENABLED goal whose coin reward would be saved as zero or
+// is not a number. normalizeGoals() otherwise silently drops non-numeric rewards
+// and floors fractions, and a 0-coin enabled goal can be saved but later fails at
+// reward time ("Invalid trusted goal reward amount"). This validates the RAW admin
+// input and uses the same flooring as storage (toSafeAmount), so coin rounding is
+// unchanged: 1.9 is still accepted and stored as 1, while 0.5 (stored as 0) is not.
+// Disabled goals and goals the normalizer ignores anyway (invalid goalKey) are skipped.
+const assertEnabledGoalRewards = (rawGoals) => {
+  if (!Array.isArray(rawGoals)) return rawGoals;
+
+  rawGoals.forEach((raw, index) => {
+    if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return;
+    const goalKey = String(raw.goalKey || raw.key || '').trim();
+    if (!GOAL_KEY_RE.test(goalKey)) return;
+    if (raw.enabled !== undefined && !raw.enabled) return;
+
+    const stored = typeof raw.rewardAmount === 'string' && raw.rewardAmount.trim() === ''
+      ? null
+      : toSafeAmount(raw.rewardAmount);
+    if (stored === null || stored < 1) {
+      const name = String(raw.label || raw.title || goalKey).trim().slice(0, MAX_LABEL_LENGTH) || goalKey;
+      const error = new Error(
+        `Step ${index + 1} ("${name}") is enabled but its coin reward must be a number of at least 1. ` +
+        'Enter the coins users receive for this step, or disable the step.'
+      );
+      error.statusCode = 400;
+      throw error;
+    }
+  });
+  return rawGoals;
+};
+
 const getEnabledGoals = (goals) => (Array.isArray(goals) ? goals : []).filter((goal) => goal && goal.enabled !== false);
 
 const sumEnabledGoalRewards = (goals) => getEnabledGoals(goals).reduce((total, goal) => {
@@ -295,6 +327,7 @@ const resolveGoal = ({ goalsSnapshot, eventType } = {}) => {
 
 module.exports = {
   GOAL_KEY_RE,
+  assertEnabledGoalRewards,
   assertUnambiguousGoalMappings,
   buildGoalsSnapshot,
   getEnabledGoals,

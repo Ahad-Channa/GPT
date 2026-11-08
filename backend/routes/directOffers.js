@@ -66,6 +66,23 @@ const resolveClickPlacement = (offer, requested) => {
 
 const isManualOffer = (offer) => offer && offer.trackingMode === 'manual';
 
+// Removes the admin-only USD tracking fields from an offer before it is sent to
+// users: the offer-level advertiserPayoutAmount and each step's payoutAmount
+// ("Payout Metadata"). Coin rewards (rewardAmount, goals[].rewardAmount) are kept.
+// Pure: returns a new object and leaves the input untouched.
+const stripAdminOnlyPayoutFields = (offer) => {
+  if (!offer || typeof offer !== 'object') return offer;
+  const { advertiserPayoutAmount, ...rest } = offer;
+  if (Array.isArray(rest.goals)) {
+    rest.goals = rest.goals.map((goal) => {
+      if (!goal || typeof goal !== 'object') return goal;
+      const { payoutAmount, ...publicGoal } = goal;
+      return publicGoal;
+    });
+  }
+  return rest;
+};
+
 const manualSubmissionFilter = (offerId, userId) => ({
   offerType: 'direct_offer',
   directOfferId: offerId,
@@ -122,6 +139,10 @@ router.get('/', verifyToken, async (req, res) => {
         offers = [...offers, ...historicalOffers];
       }
     }
+
+    // Advertiser payout figures are admin-only tracking records; users must never
+    // receive them. (The admin UI reads them from /api/admin/direct-offers.)
+    offers = offers.map(stripAdminOnlyPayoutFields);
 
     if (!user) {
       return res.status(200).json({
@@ -588,6 +609,7 @@ router.__testInternals = {
   buildDirectOfferProviderConfig,
   buildPlacementClause,
   resolveClickPlacement,
+  stripAdminOnlyPayoutFields,
 };
 
 module.exports = router;

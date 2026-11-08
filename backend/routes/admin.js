@@ -28,6 +28,7 @@ const {
   parseMaxTotalClicks,
 } = require('../utils/directOfferInput');
 const {
+  assertEnabledGoalRewards,
   assertUnambiguousGoalMappings,
   getEnabledGoals,
   normalizeGoals,
@@ -3519,6 +3520,9 @@ router.post('/direct-offers', requirePermission('manage_offerwalls'), async (req
     }
 
     const normalizedTrackingMode = normalizeTrackingMode(trackingMode);
+    // Reject enabled steps with a zero/invalid coin reward before they are normalized
+    // (manual offers ignore goals entirely, so they are not validated here).
+    if (normalizedTrackingMode !== 'manual') assertEnabledGoalRewards(goals);
     const normalizedGoals = assertUnambiguousGoalMappings(normalizeGoals(goals));
     const enabledGoals = normalizedTrackingMode === 'manual' ? [] : getEnabledGoals(normalizedGoals);
     const authoritativeRewardAmount = enabledGoals.length
@@ -3583,6 +3587,7 @@ router.put('/direct-offers/:id', requirePermission('manage_offerwalls'), async (
       trackingMode, proofInstructions, proofInstructionsDe,
     } = req.body;
 
+    if (goals !== undefined && trackingMode !== 'manual') assertEnabledGoalRewards(goals);
     const normalizedGoals = goals !== undefined
       ? assertUnambiguousGoalMappings(normalizeGoals(goals))
       : undefined;

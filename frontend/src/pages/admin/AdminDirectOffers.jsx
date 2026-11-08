@@ -42,6 +42,15 @@ const PRESET_ICONS = [
 
 const MAX_GOALS = 25;
 
+// An enabled step must credit a whole-number coin reward of at least 1. This
+// mirrors the backend rule (assertEnabledGoalRewards); the backend stays the
+// authority. Coin rounding is unchanged: fractions are floored on the server.
+const isValidGoalReward = (value) => {
+  if (value === '' || value === null || value === undefined) return false;
+  const amount = Number(value);
+  return Number.isFinite(amount) && Math.floor(amount) >= 1;
+};
+
 const normalizeClientGoals = (goals) => (Array.isArray(goals) ? goals : [])
   .filter(g => g && g.goalKey)
   .map(g => ({
@@ -171,6 +180,12 @@ const OfferFormModal = ({ offer, onClose, onSaved, adminApi }) => {
     if (form.holdEnabled && (!Number.isInteger(parsedHoldThreshold) || parsedHoldThreshold < 0)) {
       return setError('Hold threshold must be a non-negative integer.');
     }
+    if (!isManual) {
+      const badGoalIndex = form.goals.findIndex((goal) => goal && goal.enabled !== false && !isValidGoalReward(goal.rewardAmount));
+      if (badGoalIndex !== -1) {
+        return setError(`Goal #${badGoalIndex + 1} is enabled but has no coin reward. Enter at least 1 coin or disable the step.`);
+      }
+    }
     setLoading(true);
     try {
       const path = isEdit ? `/admin/direct-offers/${offer._id}` : '/admin/direct-offers';
@@ -292,24 +307,35 @@ const OfferFormModal = ({ offer, onClose, onSaved, adminApi }) => {
             <label className={labelCls}>Description (German)</label>
             <textarea className={inputCls} rows={2} value={form.descriptionDe} onChange={set('descriptionDe')} placeholder="Optional manual German description..." />
           </div>
-          <div className="grid grid-cols-2 gap-3">
+          <div>
+            <label className={labelCls}>{hasEnabledGoals ? 'Total Reward (Coins)' : 'Reward (Coins) *'}</label>
+            <input
+              type="number"
+              className={inputCls}
+              value={hasEnabledGoals ? calculatedGoalReward : form.rewardAmount}
+              onChange={hasEnabledGoals ? undefined : set('rewardAmount')}
+              readOnly={hasEnabledGoals}
+              required
+              min="1"
+              step="1"
+              placeholder="e.g. 500"
+            />
+            {hasEnabledGoals ? (
+              <p className="mt-1 text-[11px] text-slate-500">Calculated automatically from the enabled step rewards below. It cannot be edited here; change the step rewards instead.</p>
+            ) : (
+              <p className="mt-1 text-[11px] text-slate-500">The coins the user receives. This is the only reward amount that affects the user&apos;s wallet.</p>
+            )}
+          </div>
+          <div className="border border-white/10 rounded-lg p-3 space-y-2 bg-white/[0.02]">
+            <p className="text-xs font-semibold text-slate-300">Optional advertiser tracking <span className="text-slate-600 font-normal">(admin only)</span></p>
+            <p className="text-[11px] text-slate-500">
+              USD amounts are your own records of what the advertiser pays you. They are optional, are not shown to users,
+              and never change the coins a user receives or their wallet.
+            </p>
             <div>
-              <label className={labelCls}>{hasEnabledGoals ? 'Total Reward (Coins)' : 'Reward (Coins) *'}</label>
-              <input
-                type="number"
-                className={inputCls}
-                value={hasEnabledGoals ? calculatedGoalReward : form.rewardAmount}
-                onChange={hasEnabledGoals ? undefined : set('rewardAmount')}
-                readOnly={hasEnabledGoals}
-                required
-                min="1"
-                placeholder="e.g. 500"
-              />
-              {hasEnabledGoals && <p className="mt-1 text-[11px] text-slate-500">Calculated automatically from enabled step rewards.</p>}
-            </div>
-            <div>
-              <label className={labelCls}>Advertiser Payout (USD)</label>
-              <input type="number" step="0.01" className={inputCls} value={form.advertiserPayoutAmount} onChange={set('advertiserPayoutAmount')} placeholder="e.g. 2.50" />
+              <label className={labelCls}>Advertiser Payout (USD) <span className="text-slate-600 font-normal">(optional · record only)</span></label>
+              <input type="number" min="0" step="0.01" className={inputCls} value={form.advertiserPayoutAmount} onChange={set('advertiserPayoutAmount')} placeholder="e.g. 2.50" />
+              <p className="mt-1 text-[11px] text-slate-500">Shown only on this admin offer card. Not used to calculate any reward.</p>
             </div>
           </div>
           <div>
@@ -601,14 +627,19 @@ const OfferFormModal = ({ offer, onClose, onSaved, adminApi }) => {
                       </p>
                       <div>
                         <label className={labelCls}>Reward (Coins) *</label>
-                        <input type="number" min="0" className={inputCls} value={goal.rewardAmount} onChange={e => setForm(f => ({ ...f, goals: f.goals.map((g, i) => i === idx ? { ...g, rewardAmount: e.target.value } : g) }))} placeholder="e.g. 250" />
-                        {goal.enabled !== false && Number(goal.rewardAmount) === 0 && (
-                          <p className="mt-1 text-[10px] text-amber-300">This enabled step credits 0 coins.</p>
+                        <input type="number" min="1" step="1" className={inputCls} value={goal.rewardAmount} onChange={e => setForm(f => ({ ...f, goals: f.goals.map((g, i) => i === idx ? { ...g, rewardAmount: e.target.value } : g) }))} placeholder="e.g. 250" />
+                        <p className="mt-1 text-[10px] text-slate-500">Coins the user receives for this step. Counts toward the total above.</p>
+                        {goal.enabled !== false && !isValidGoalReward(goal.rewardAmount) && (
+                          <p className="mt-1 text-[10px] text-amber-300">An enabled step needs a reward of at least 1 coin. Enter coins or disable the step; saving is blocked until then.</p>
                         )}
                       </div>
                       <div>
-                        <label className={labelCls}>Payout Metadata (USD)</label>
-                        <input type="number" step="0.01" className={inputCls} value={goal.payoutAmount} onChange={e => setForm(f => ({ ...f, goals: f.goals.map((g, i) => i === idx ? { ...g, payoutAmount: e.target.value } : g) }))} placeholder="e.g. 1.20" />
+                        <label className={labelCls}>Payout Metadata (USD) <span className="text-slate-600 font-normal">(optional · record only)</span></label>
+                        <input type="number" min="0" step="1" className={inputCls} value={goal.payoutAmount} onChange={e => setForm(f => ({ ...f, goals: f.goals.map((g, i) => i === idx ? { ...g, payoutAmount: e.target.value } : g) }))} placeholder="e.g. 1" />
+                        <p className="mt-1 text-[10px] text-slate-500">
+                          Optional admin note of what the advertiser pays for this step, in whole USD (cents are not stored). It is saved with the step and only pre-fills the
+                          {' '}<code>{'{PAYOUT}'}</code> value in the example postback URL on the offer card. It is not shown to users and never changes the coins they receive.
+                        </p>
                       </div>
                       <div>
                         <label className={labelCls}>Time (days) <span className="text-slate-600 font-normal">(display only)</span></label>
@@ -1353,7 +1384,7 @@ const AdminDirectOffers = () => {
                   {/* Stats row */}
                   <div className="flex flex-wrap gap-4 mt-3 text-xs text-slate-700">
                     <span>💰 <strong className="text-amber-700">{offer.rewardAmount?.toLocaleString()}</strong> coins reward</span>
-                    <span>💵 ${offer.advertiserPayoutAmount || 0} payout</span>
+                    <span title="Admin record only. Does not affect user coins.">💵 ${offer.advertiserPayoutAmount || 0} advertiser payout (record)</span>
                     <span>Placement: <strong className="text-slate-950">{[
                       offer.displayPlacements?.featured !== false ? 'Featured' : null,
                       offer.displayPlacements?.brandedOfferwall ? 'Branded Offerwall' : null,
