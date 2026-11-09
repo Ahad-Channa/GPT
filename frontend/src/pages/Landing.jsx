@@ -102,11 +102,11 @@ const Landing = () => {
               <img
                 src={
                   isDarkMode
-                    ? (isRu ? "/coins/herodarkrussian.jpg" : (isEs ? "/coins/herodarkspanish.png" : (isFr ? "/coins/HeroDarktFranch.png" : (isUr ? "/coins/Hero Urdu Dark Desktop.jpg" : (isDe ? "/coins/HerosectionBlackGerman.png" : "/coins/HerosectionBlackEnglish.png")))))
-                    : (isRu ? "/coins/herolightrussian.jpg" : (isEs ? "/coins/herolightspanish.png" : (isFr ? "/coins/HeroLightFranch.png" : (isUr ? "/coins/Hero Urdu Light Desktop.jpg" : (isDe ? "/coins/Hero section german desktop.png" : "/coins/hero section image.png")))))
+                    ? (isPt ? "/coins/herodarkportu.jpg" : (isRu ? "/coins/herodarkrussian.jpg" : (isEs ? "/coins/herodarkspanish.png" : (isFr ? "/coins/HeroDarktFranch.png" : (isUr ? "/coins/Hero Urdu Dark Desktop.jpg" : (isDe ? "/coins/HerosectionBlackGerman.png" : "/coins/HerosectionBlackEnglish.png"))))))
+                    : (isPt ? "/coins/herolightportu.jpg" : (isRu ? "/coins/herolightrussian.jpg" : (isEs ? "/coins/herolightspanish.png" : (isFr ? "/coins/HeroLightFranch.png" : (isUr ? "/coins/Hero Urdu Light Desktop.jpg" : (isDe ? "/coins/Hero section german desktop.png" : "/coins/hero section image.png"))))))
                 }
                 alt="Hero Background"
-                className={`w-full h-full object-fill ${isUr || isRu ? 'rounded-bl-[36px]' : ''}`}
+                className={`w-full h-full object-fill ${isUr || isRu || isPt ? 'rounded-bl-[36px]' : ''}`}
               />
             </div>
           </div>
@@ -222,8 +222,8 @@ const Landing = () => {
           <div className="lg:hidden relative z-50 px-4 mb-4 mx-auto w-full" style={{ maxWidth: '408px' }}>
             <div
               className={`rounded-3xl p-6 shadow-2xl flex flex-col gap-4 transition-colors duration-300 ${isDarkMode
-                  ? 'bg-[rgba(18,22,28,0.98)] border border-white/10'
-                  : 'bg-white border border-gray-100 shadow-xl'
+                ? 'bg-[rgba(18,22,28,0.98)] border border-white/10'
+                : 'bg-white border border-gray-100 shadow-xl'
                 }`}
             >
               <div className="flex flex-col gap-3 text-left">
@@ -539,11 +539,11 @@ const Landing = () => {
                   <img
                     src={
                       isDarkMode
-                        ? (isRu ? "/coins/herodarkrussianmobile.jpg" : (isEs ? "/coins/herodarkspanishmobile.png" : (isFr ? "/coins/HeroDarktFranchMobile.png" : (isUr ? "/coins/Hero Urdu Dark mobile.jpg" : (isDe ? "/coins/Hero section german mobile Black.png" : "/coins/Hero section Eng mobile Black.png")))))
-                        : (isRu ? "/coins/herolightrussianmobile.jpg" : (isEs ? "/coins/herolightspanishmobile.png" : (isFr ? "/coins/HeroLightFranchMobile.png" : (isUr ? "/coins/Hero Urdu Light Mobile.jpg" : (isDe ? "/coins/Hero section german mobile.png" : "/coins/mobile hero.png")))))
+                        ? (isPt ? "/coins/herodarkportumobile.jpg" : (isRu ? "/coins/herodarkrussianmobile.jpg" : (isEs ? "/coins/herodarkspanishmobile.png" : (isFr ? "/coins/HeroDarktFranchMobile.png" : (isUr ? "/coins/Hero Urdu Dark mobile.jpg" : (isDe ? "/coins/Hero section german mobile Black.png" : "/coins/Hero section Eng mobile Black.png"))))))
+                        : (isPt ? "/coins/herolightportumobile.jpg" : (isRu ? "/coins/herolightrussianmobile.jpg" : (isEs ? "/coins/herolightspanishmobile.png" : (isFr ? "/coins/HeroLightFranchMobile.png" : (isUr ? "/coins/Hero Urdu Light Mobile.jpg" : (isDe ? "/coins/Hero section german mobile.png" : "/coins/mobile hero.png"))))))
                     }
                     alt="Mobile Hero Graphic"
-                    className={`w-full h-auto object-cover ${isUr || isRu ? 'rounded-b-[26px]' : ''}`}
+                    className={`w-full h-auto object-cover ${isUr || isRu || isPt ? 'rounded-b-[26px]' : ''}`}
                     style={{
                       maxWidth: '440px',
                       width: '100%',
@@ -901,28 +901,34 @@ const Landing = () => {
             <img
               src={
                 isMobile
-                  ? (isRu
-                    ? "/coins/whychoseusrussianmobile.jpg"
-                    : (isEs
-                      ? "/coins/whychoseusspanishmobile.png"
-                      : (isUr
-                        ? "/coins/why chose us Urdu Light Mobile.jpg"
-                        : (isDe ? "/coins/Germanwhychosusmobile.png" : (isFr ? "/coins/whychoseusmobile.png" : "/coins/whychosemobile.png")))))
-                  : (isDarkMode
-                    ? (isRu
-                      ? "/coins/whychoseusdarkrussian.jpg"
-                      : (isEs
-                        ? "/coins/whychoseusdarkspanish.png"
-                        : (isUr
-                          ? "/coins/why chose us Urdu Dark Desktop.jpg"
-                          : (isDe ? "/coins/WhycoseusBlackGerman.png" : (isFr ? "/coins/whychoseusdark.png" : "/coins/WhycoseusBlackEnglish.png")))))
+                  ? (isPt
+                    ? "/coins/whychoseusportumobile.jpg"
                     : (isRu
-                      ? "/coins/whychoseuslightrussian.jpg"
+                      ? "/coins/whychoseusrussianmobile.jpg"
                       : (isEs
-                        ? "/coins/whychoseuslightspanish.png"
+                        ? "/coins/whychoseusspanishmobile.png"
                         : (isUr
-                          ? "/coins/why chose us Urdu Light Desktop.png"
-                          : (isDe ? "/coins/Germanwhychosus.png" : (isFr ? "/coins/whychoseuslight.png" : "/coins/why chose us.png")))))
+                          ? "/coins/why chose us Urdu Light Mobile.jpg"
+                          : (isDe ? "/coins/Germanwhychosusmobile.png" : (isFr ? "/coins/whychoseusmobile.png" : "/coins/whychosemobile.png"))))))
+                  : (isDarkMode
+                    ? (isPt
+                      ? "/coins/whychoseusdarkportu.jpg"
+                      : (isRu
+                        ? "/coins/whychoseusdarkrussian.jpg"
+                        : (isEs
+                          ? "/coins/whychoseusdarkspanish.png"
+                          : (isUr
+                            ? "/coins/why chose us Urdu Dark Desktop.jpg"
+                            : (isDe ? "/coins/WhycoseusBlackGerman.png" : (isFr ? "/coins/whychoseusdark.png" : "/coins/WhycoseusBlackEnglish.png"))))))
+                    : (isPt
+                      ? "/coins/whychoseuslightportu.jpg"
+                      : (isRu
+                        ? "/coins/whychoseuslightrussian.jpg"
+                        : (isEs
+                          ? "/coins/whychoseuslightspanish.png"
+                          : (isUr
+                            ? "/coins/why chose us Urdu Light Desktop.png"
+                            : (isDe ? "/coins/Germanwhychosus.png" : (isFr ? "/coins/whychoseuslight.png" : "/coins/why chose us.png"))))))
                   )
               }
               alt="Why Choose Us"
@@ -1015,32 +1021,37 @@ const Landing = () => {
               className="grid grid-cols-1 lg:grid-cols-3 mx-auto w-full px-0"
               style={!isMobile ? { width: 1328, maxWidth: '100%', height: 368, gap: 22 } : { maxWidth: 440, height: 'auto', gap: 20 }}
             >
-              {(isRu
+              {(isPt
                 ? (isDarkMode
-                  ? ['/coins/sew1darkrussian.png', '/coins/sew2darkrussian.png', '/coins/sew3darkrussian.png']
-                  : ['/coins/sew1lightrussian.png', '/coins/sew2lightrussian.png', '/coins/sew3lightrussian.png']
+                  ? ['/coins/sew1darkportu.png', '/coins/sew2darkportu.png', '/coins/sew3darkportu.png']
+                  : ['/coins/sew1lightportu.png', '/coins/sew2lightportu.png', '/coins/sew3lightportu.png']
                 )
-                : isEs
-                ? (isDarkMode
-                  ? ['/coins/sew1darkspanihs.png', '/coins/sew2darkspanihs.png', '/coins/sew3darkspanihs.png']
-                  : ['/coins/sew1lightspanihs.png', '/coins/sew2lightspanihs.png', '/coins/sew3lightspanihs.png']
-                )
-                : isFr
-                ? (isDarkMode
-                  ? ['/coins/sew1darkfranch.png', '/coins/sew2darkfranch.png', '/coins/sew3darkfranch.png']
-                  : ['/coins/sew1lightfranch.png', '/coins/sew2lightfranch.png', '/coins/sew3lightfranch.png']
-                )
-                : isUr
+                : isRu
                   ? (isDarkMode
-                    ? ['/coins/sew1 Urdu light.png', '/coins/sew2  Urdu dark.png', '/coins/sew3  Urdu dark.png']
-                    : ['/coins/sew1 Urdu light.png', '/coins/sew2  Urdu light.png', '/coins/sew3 Urdu light.png']
+                    ? ['/coins/sew1darkrussian.png', '/coins/sew2darkrussian.png', '/coins/sew3darkrussian.png']
+                    : ['/coins/sew1lightrussian.png', '/coins/sew2lightrussian.png', '/coins/sew3lightrussian.png']
                   )
-                  : isDe
-                    ? ['/coins/sew1german.png', '/coins/sew2german.png', '/coins/sew3german.png']
-                    : (isDarkMode
-                      ? ['/coins/sewBlackenglish.png', '/coins/sew2Blackenglish.png', '/coins/sew3Blackenglish.png']
-                      : ['/coins/sew1.png', '/coins/Mask group.png', '/coins/sew3.png']
+                  : isEs
+                    ? (isDarkMode
+                      ? ['/coins/sew1darkspanihs.png', '/coins/sew2darkspanihs.png', '/coins/sew3darkspanihs.png']
+                      : ['/coins/sew1lightspanihs.png', '/coins/sew2lightspanihs.png', '/coins/sew3lightspanihs.png']
                     )
+                    : isFr
+                      ? (isDarkMode
+                        ? ['/coins/sew1darkfranch.png', '/coins/sew2darkfranch.png', '/coins/sew3darkfranch.png']
+                        : ['/coins/sew1lightfranch.png', '/coins/sew2lightfranch.png', '/coins/sew3lightfranch.png']
+                      )
+                      : isUr
+                        ? (isDarkMode
+                          ? ['/coins/sew1 Urdu light.png', '/coins/sew2  Urdu dark.png', '/coins/sew3  Urdu dark.png']
+                          : ['/coins/sew1 Urdu light.png', '/coins/sew2  Urdu light.png', '/coins/sew3 Urdu light.png']
+                        )
+                        : isDe
+                          ? ['/coins/sew1german.png', '/coins/sew2german.png', '/coins/sew3german.png']
+                          : (isDarkMode
+                            ? ['/coins/sewBlackenglish.png', '/coins/sew2Blackenglish.png', '/coins/sew3Blackenglish.png']
+                            : ['/coins/sew1.png', '/coins/Mask group.png', '/coins/sew3.png']
+                          )
               ).map((imgSrc, idx) => (
                 <img
                   key={idx}

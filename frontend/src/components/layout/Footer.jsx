@@ -23,6 +23,7 @@ const Footer = () => {
   const isEs = i18n?.language?.startsWith('es');
   const isUr = i18n?.language === 'ur' || i18n?.language?.startsWith('ur');
   const isRu = i18n?.language?.startsWith('ru');
+  const isPt = i18n?.language?.startsWith('pt');
   const [isMobile, setIsMobile] = useState(
     typeof window !== 'undefined' ? window.innerWidth < 1024 : false
   );
@@ -370,7 +371,12 @@ const Footer = () => {
               <img
                 src={
                   isMobile
-                    ? (isRu
+                    ? (isPt
+                        ? (isDarkMode
+                            ? "/coins/footherdarkportumobile.jpg"
+                            : "/coins/footherlightportumobile.jpg"
+                          )
+                        : isRu
                         ? (isDarkMode
                             ? "/coins/footherdarkrussianmobile.jpg"
                             : "/coins/footherlightrussianmobile.jpg"
@@ -385,7 +391,12 @@ const Footer = () => {
                             : (isEs ? "/coins/footerlightspanishmobile.png" : (isFr ? "/coins/footherlightmobilefranch.png" : (isDe ? "/coins/image copy 19 german.png" : "/coins/image copy 19.png")))
                           )
                       )
-                    : (isRu
+                    : (isPt
+                        ? (isDarkMode
+                            ? "/coins/footherdarkportu.jpg"
+                            : "/coins/footherlightportu.jpg"
+                          )
+                        : isRu
                         ? (isDarkMode
                             ? "/coins/footherdarkrussian.jpg"
                             : "/coins/footherlightrussian.jpg"
