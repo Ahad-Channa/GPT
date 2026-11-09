@@ -108,13 +108,40 @@ const normalizeGoals = (goals) => {
   return normalized;
 };
 
-// Rejects (HTTP 400) any ENABLED goal whose coin reward would be saved as zero or
-// is not a number. normalizeGoals() otherwise silently drops non-numeric rewards
-// and floors fractions, and a 0-coin enabled goal can be saved but later fails at
-// reward time ("Invalid trusted goal reward amount"). This validates the RAW admin
-// input and uses the same flooring as storage (toSafeAmount), so coin rounding is
-// unchanged: 1.9 is still accepted and stored as 1, while 0.5 (stored as 0) is not.
-// Disabled goals and goals the normalizer ignores anyway (invalid goalKey) are skipped.
+// Strict whole-number coin parser. Returns the integer, or null when the value is
+// not a whole number of at least 1. NOTHING is rounded or floored: 1.9, "1.9",
+// 0.5, 0, negatives, blanks, NaN/Infinity, exponent strings ("1e2"), booleans,
+// arrays and objects are all rejected. Strings must be plain digits.
+const parseCoinReward = (value) => {
+  let amount;
+  if (typeof value === 'number') {
+    amount = value;
+  } else if (typeof value === 'string') {
+    const trimmed = value.trim();
+    if (!/^\d+$/.test(trimmed)) return null;
+    amount = Number(trimmed);
+  } else {
+    return null;
+  }
+  return Number.isSafeInteger(amount) && amount >= 1 ? amount : null;
+};
+
+// Offer-level (single-step / manual) coin reward. Throws HTTP 400 instead of
+// silently converting the value.
+const assertCoinRewardAmount = (value) => {
+  const parsed = parseCoinReward(value);
+  if (parsed === null) {
+    const error = new Error('rewardAmount must be a whole number of at least 1 (fractions such as 1.9 are not allowed).');
+    error.statusCode = 400;
+    throw error;
+  }
+  return parsed;
+};
+
+// Rejects (HTTP 400) any ENABLED goal whose coin reward is not a whole number of
+// at least 1. This validates the RAW admin input, so a value is never silently
+// floored (1.9 -> 1) or silently dropped (blank / non-numeric). Disabled goals and
+// goals the normalizer ignores anyway (invalid goalKey) are skipped.
 const assertEnabledGoalRewards = (rawGoals) => {
   if (!Array.isArray(rawGoals)) return rawGoals;
 
@@ -124,14 +151,11 @@ const assertEnabledGoalRewards = (rawGoals) => {
     if (!GOAL_KEY_RE.test(goalKey)) return;
     if (raw.enabled !== undefined && !raw.enabled) return;
 
-    const stored = typeof raw.rewardAmount === 'string' && raw.rewardAmount.trim() === ''
-      ? null
-      : toSafeAmount(raw.rewardAmount);
-    if (stored === null || stored < 1) {
+    if (parseCoinReward(raw.rewardAmount) === null) {
       const name = String(raw.label || raw.title || goalKey).trim().slice(0, MAX_LABEL_LENGTH) || goalKey;
       const error = new Error(
-        `Step ${index + 1} ("${name}") is enabled but its coin reward must be a number of at least 1. ` +
-        'Enter the coins users receive for this step, or disable the step.'
+        `Step ${index + 1} ("${name}") is enabled but its coin reward must be a whole number of at least 1 ` +
+        '(fractions such as 1.9 are not allowed). Enter the coins users receive for this step, or disable the step.'
       );
       error.statusCode = 400;
       throw error;
@@ -327,6 +351,7 @@ const resolveGoal = ({ goalsSnapshot, eventType } = {}) => {
 
 module.exports = {
   GOAL_KEY_RE,
+  assertCoinRewardAmount,
   assertEnabledGoalRewards,
   assertUnambiguousGoalMappings,
   buildGoalsSnapshot,
@@ -336,6 +361,7 @@ module.exports = {
   normalizeEventLookupValue,
   normalizeEventValue,
   normalizeGoals,
+  parseCoinReward,
   parseTimeLimitDays,
   resolveGoal,
   sumEnabledGoalRewards,

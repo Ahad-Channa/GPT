@@ -15,7 +15,9 @@ const Conversion = require('../models/Conversion');
 const CustomOfferSubmission = require('../models/CustomOfferSubmission');
 const User = require('../models/User');
 const AdminLog = require('../models/AdminLog');
-const { assertEnabledGoalRewards, normalizeGoals, sumEnabledGoalRewards } = require('../utils/offerGoals');
+const {
+  assertCoinRewardAmount, assertEnabledGoalRewards, normalizeGoals, parseCoinReward, sumEnabledGoalRewards,
+} = require('../utils/offerGoals');
 
 const { stripAdminOnlyPayoutFields } = directOffersRouter.__testInternals;
 const repoRoot = path.resolve(__dirname, '..', '..');
@@ -78,11 +80,18 @@ const offerBody = (overrides = {}) => ({
 });
 
 // Runs `fn` with the admin user + stores stubbed, capturing the DirectOffer write.
-const withAdminMocks = async (fn) => {
+// `stored` is what DirectOffer.findById(...).select(...).lean() returns on the update path
+// (undefined means "not found"). `captured.findByIdCalls` counts reads of the stored offer.
+const withAdminMocks = async (fn, { stored } = {}) => {
   const originals = {
-    findOne: User.findOne, logCreate: AdminLog.create, create: DirectOffer.create, update: DirectOffer.findByIdAndUpdate,
+    findOne: User.findOne, logCreate: AdminLog.create, create: DirectOffer.create, update: DirectOffer.findByIdAndUpdate, findById: DirectOffer.findById,
   };
-  const captured = { created: null, updated: null, writes: 0 };
+  const captured = { created: null, updated: null, writes: 0, findByIdCalls: 0 };
+  DirectOffer.findById = () => {
+    captured.findByIdCalls += 1;
+    const link = { select: () => link, lean: async () => stored || null };
+    return link;
+  };
   User.findOne = () => Promise.resolve(ADMIN);
   AdminLog.create = async () => ({});
   DirectOffer.create = async (payload) => { captured.created = payload; captured.writes += 1; return { _id: 'new-offer', ...payload }; };
@@ -94,6 +103,7 @@ const withAdminMocks = async (fn) => {
     AdminLog.create = originals.logCreate;
     DirectOffer.create = originals.create;
     DirectOffer.findByIdAndUpdate = originals.update;
+    DirectOffer.findById = originals.findById;
   }
 };
 
@@ -145,7 +155,7 @@ test('update: an edit without goals leaves rewardAmount alone unless one is expl
   });
 });
 
-test('step rounding is unchanged: fractional coins are still floored, never rounded up', () => {
+test('storage-layer normalizeGoals is unchanged (fractional coins can no longer reach it because requests are rejected first)', () => {
   const stored = normalizeGoals([{ goalKey: 'a', rewardAmount: 1.9 }, { goalKey: 'b', rewardAmount: 2.2 }]);
   assert.deepEqual(stored.map((g) => g.rewardAmount), [1, 2]);
   assert.equal(sumEnabledGoalRewards(stored), 3);
@@ -153,22 +163,23 @@ test('step rounding is unchanged: fractional coins are still floored, never roun
 
 // ── Enabled-goal validation ─────────────────────────────────────────────────
 test('assertEnabledGoalRewards rejects an enabled step with zero, negative, blank or non-numeric coins', () => {
-  for (const bad of [0, '0', -5, '', '   ', 'abc', null, undefined, NaN, 0.5, '0.9']) {
+  for (const bad of [0, '0', -5, '', '   ', 'abc', null, undefined, NaN, Infinity, 0.5, '0.9', 1.9, '1.9', 2.5, '1e2', true, []]) {
     assert.throws(
       () => assertEnabledGoalRewards([goal({ rewardAmount: bad })]),
-      (error) => error.statusCode === 400 && /Step 1 \("Deposit"\) is enabled/.test(error.message) && /at least 1/.test(error.message),
+      (error) => error.statusCode === 400 && /Step 1 \("Deposit"\) is enabled/.test(error.message) && /whole number of at least 1/.test(error.message),
       `expected ${JSON.stringify(bad)} to be rejected`
     );
   }
 });
 
-test('assertEnabledGoalRewards accepts valid rewards, disabled zero-reward steps, and keeps flooring (1.9 -> accepted)', () => {
+test('assertEnabledGoalRewards accepts whole-number rewards and ignores disabled steps (even fractional ones)', () => {
   assert.doesNotThrow(() => assertEnabledGoalRewards([
     goal({ goalKey: 'ok', rewardAmount: 1 }),
-    goal({ goalKey: 'frac', rewardAmount: 1.9 }),
+    goal({ goalKey: 'big', rewardAmount: 5000 }),
     goal({ goalKey: 'str', rewardAmount: '250' }),
     goal({ goalKey: 'off', rewardAmount: 0, enabled: false }),
     goal({ goalKey: 'off2', rewardAmount: '', enabled: false }),
+    goal({ goalKey: 'off3', rewardAmount: 1.9, enabled: false }),
   ]));
   assert.doesNotThrow(() => assertEnabledGoalRewards([]));
   assert.doesNotThrow(() => assertEnabledGoalRewards(undefined));
@@ -186,7 +197,7 @@ test('create: an enabled zero-coin step is rejected with a clear 400 and nothing
     const res = await post(offerBody({ goals: [goal({ goalKey: 'a', rewardAmount: 100 }), goal({ goalKey: 'b', label: 'Level 5', rewardAmount: 0 })] }));
     assert.equal(res.statusCode, 400);
     assert.equal(res.body.success, false);
-    assert.match(res.body.error, /Step 2 \("Level 5"\) is enabled but its coin reward must be a number of at least 1/);
+    assert.match(res.body.error, /Step 2 \("Level 5"\) is enabled but its coin reward must be a whole number of at least 1/);
     assert.equal(captured.writes, 0);
   });
 });
@@ -223,6 +234,159 @@ test('manual offers ignore goals as before and are not blocked by step validatio
     const res = await post(offerBody({ trackingMode: 'manual', rewardAmount: 50, goals: [goal({ rewardAmount: 0 })] }));
     assert.equal(res.statusCode, 201);
     assert.equal(captured.created.rewardAmount, 50);
+  });
+});
+
+// ── Whole-number coin rewards ───────────────────────────────────────────────
+test('parseCoinReward accepts only whole numbers of at least 1 and never rounds', () => {
+  for (const [input, expected] of [[1, 1], [250, 250], ['250', 250], [' 7 ', 7], [5000, 5000]]) {
+    assert.equal(parseCoinReward(input), expected, JSON.stringify(input));
+  }
+  for (const bad of [1.9, '1.9', 0.5, '0.5', 2.0000001, 0, '0', -1, '-1', '', '   ', 'abc', '1e2', '0x10', NaN, Infinity, -Infinity, null, undefined, true, false, [], [5], {}, Number.MAX_SAFE_INTEGER + 2]) {
+    assert.equal(parseCoinReward(bad), null, String(JSON.stringify(bad)));
+  }
+});
+
+test('assertCoinRewardAmount returns the integer or throws a 400 without converting', () => {
+  assert.equal(assertCoinRewardAmount('321'), 321);
+  for (const bad of [1.9, '1.9', 0.5, 0, -3, '', 'x', null, undefined]) {
+    assert.throws(() => assertCoinRewardAmount(bad), (error) => error.statusCode === 400 && /whole number of at least 1/.test(error.message), String(JSON.stringify(bad)));
+  }
+});
+
+test('create: a fractional enabled step reward (1.9, "1.9", 0.5) is rejected with a 400 and nothing is written', async () => {
+  await withAdminMocks(async (captured) => {
+    for (const bad of [1.9, '1.9', 0.5]) {
+      const res = await post(offerBody({ goals: [goal({ goalKey: 'a', rewardAmount: 100 }), goal({ goalKey: 'b', label: 'Level 5', rewardAmount: bad })] }));
+      assert.equal(res.statusCode, 400, JSON.stringify(bad));
+      assert.match(res.body.error, /Step 2 \("Level 5"\) is enabled but its coin reward must be a whole number of at least 1/);
+    }
+    assert.equal(captured.writes, 0);
+  });
+});
+
+test('update: a fractional enabled step reward (1.9, "1.9", 0.5) is rejected with a 400 and nothing is written', async () => {
+  await withAdminMocks(async (captured) => {
+    for (const bad of [1.9, '1.9', 0.5]) {
+      const res = await put({ goals: [goal({ goalKey: 'a', rewardAmount: bad })] });
+      assert.equal(res.statusCode, 400, JSON.stringify(bad));
+      assert.match(res.body.error, /whole number of at least 1/);
+    }
+    assert.equal(captured.writes, 0);
+    assert.equal(captured.findByIdCalls, 0);
+  });
+});
+
+test('create: a single-step reward must be a whole number (1.9, "1.9", 0.5, 0, negative, blank are all 400)', async () => {
+  await withAdminMocks(async (captured) => {
+    for (const bad of [1.9, '1.9', 0.5, 0, -10, '', 'abc', undefined]) {
+      const res = await post(offerBody({ rewardAmount: bad }));
+      assert.equal(res.statusCode, 400, String(JSON.stringify(bad)));
+      assert.match(res.body.error, /rewardAmount must be a whole number of at least 1/);
+    }
+    assert.equal(captured.writes, 0);
+  });
+});
+
+test('create: a manual offer and an all-steps-disabled offer also need a whole-number reward', async () => {
+  await withAdminMocks(async (captured) => {
+    const manual = await post(offerBody({ trackingMode: 'manual', rewardAmount: 1.9, goals: [] }));
+    assert.equal(manual.statusCode, 400);
+    const disabledSteps = await post(offerBody({ rewardAmount: 2.5, goals: [goal({ rewardAmount: 40, enabled: false })] }));
+    assert.equal(disabledSteps.statusCode, 400);
+    assert.equal(captured.writes, 0);
+  });
+});
+
+test('update: a single-step reward must be a whole number; a valid value saves unchanged', async () => {
+  await withAdminMocks(async (captured) => {
+    for (const bad of [1.9, '1.9', 0.5, 0, -2]) {
+      const res = await put({ rewardAmount: bad });
+      assert.equal(res.statusCode, 400, JSON.stringify(bad));
+    }
+    assert.equal(captured.writes, 0);
+
+    const ok = await put({ rewardAmount: 321 });
+    assert.equal(ok.statusCode, 200);
+    assert.equal(captured.updated.update.rewardAmount, 321);
+  }, { stored: { trackingMode: 'postback', goals: [], rewardAmount: 100 } });
+});
+
+test('valid whole-number rewards still save and total correctly on create and update (numbers and numeric strings)', async () => {
+  await withAdminMocks(async (captured) => {
+    const created = await post(offerBody({ rewardAmount: 1, goals: [goal({ goalKey: 'a', rewardAmount: 100 }), goal({ goalKey: 'b', rewardAmount: '250' }), goal({ goalKey: 'c', rewardAmount: 1.9, enabled: false })] }));
+    assert.equal(created.statusCode, 201);
+    assert.equal(captured.created.rewardAmount, 350);
+    assert.deepEqual(captured.created.goals.filter((g) => g.enabled).map((g) => g.rewardAmount), [100, 250]);
+
+    const updated = await put({ rewardAmount: 99999, goals: [goal({ goalKey: 'a', rewardAmount: 7 }), goal({ goalKey: 'b', rewardAmount: 3 })] });
+    assert.equal(updated.statusCode, 200);
+    assert.equal(captured.updated.update.rewardAmount, 10);
+    assert.equal(captured.findByIdCalls, 0, 'goals were sent, so the stored offer is not read');
+  });
+});
+
+test('update WITHOUT goals on an existing multi-step offer keeps the calculated step total and ignores a conflicting rewardAmount', async () => {
+  const stored = {
+    trackingMode: 'postback',
+    rewardAmount: 350,
+    goals: [
+      { goalKey: 'register', rewardAmount: 100, enabled: true },
+      { goalKey: 'deposit', rewardAmount: 250, enabled: true },
+      { goalKey: 'later', rewardAmount: 9000, enabled: false },
+    ],
+  };
+  await withAdminMocks(async (captured) => {
+    for (const conflicting of [5, 99999, 1.9, '1.9', 0, -4, 'abc']) {
+      captured.updated = null;
+      const res = await put({ title: 'Renamed', rewardAmount: conflicting });
+      assert.equal(res.statusCode, 200, JSON.stringify(conflicting));
+      assert.equal(captured.updated.update.rewardAmount, 350, `submitted ${JSON.stringify(conflicting)} must not overwrite the calculated total`);
+      assert.equal('goals' in captured.updated.update, false, 'stored goals are not touched');
+      assert.equal(captured.updated.update.title, 'Renamed');
+    }
+  }, { stored });
+});
+
+test('update WITHOUT goals: stored offer with only disabled steps, or manual mode, takes the submitted reward as a standalone whole number', async () => {
+  const disabledOnly = { trackingMode: 'postback', rewardAmount: 40, goals: [{ goalKey: 'a', rewardAmount: 40, enabled: false }] };
+  await withAdminMocks(async (captured) => {
+    assert.equal((await put({ rewardAmount: 1.9 })).statusCode, 400);
+    const ok = await put({ rewardAmount: 500 });
+    assert.equal(ok.statusCode, 200);
+    assert.equal(captured.updated.update.rewardAmount, 500);
+  }, { stored: disabledOnly });
+
+  const manualStored = { trackingMode: 'manual', rewardAmount: 40, goals: [{ goalKey: 'a', rewardAmount: 40, enabled: true }] };
+  await withAdminMocks(async (captured) => {
+    assert.equal((await put({ rewardAmount: 2.5 })).statusCode, 400);
+    const ok = await put({ rewardAmount: 75 });
+    assert.equal(ok.statusCode, 200);
+    assert.equal(captured.updated.update.rewardAmount, 75);
+  }, { stored: manualStored });
+
+  // Switching a stored multi-step offer to manual in the same request makes the reward standalone.
+  const multi = { trackingMode: 'postback', rewardAmount: 350, goals: [{ goalKey: 'a', rewardAmount: 350, enabled: true }] };
+  await withAdminMocks(async (captured) => {
+    assert.equal((await put({ trackingMode: 'manual', rewardAmount: 1.9 })).statusCode, 400);
+    const ok = await put({ trackingMode: 'manual', rewardAmount: 60 });
+    assert.equal(ok.statusCode, 200);
+    assert.equal(captured.updated.update.rewardAmount, 60);
+  }, { stored: multi });
+});
+
+test('update without goals: an unknown offer id is a 404, and omitting rewardAmount reads nothing and writes no reward', async () => {
+  await withAdminMocks(async (captured) => {
+    const res = await put({ rewardAmount: 100 });
+    assert.equal(res.statusCode, 404);
+    assert.equal(captured.writes, 0);
+  }, { stored: undefined });
+
+  await withAdminMocks(async (captured) => {
+    const res = await put({ title: 'Only a title' });
+    assert.equal(res.statusCode, 200);
+    assert.equal(captured.findByIdCalls, 0);
+    assert.equal('rewardAmount' in captured.updated.update, false);
   });
 });
 
@@ -364,7 +528,12 @@ test('admin form blocks saving an enabled step without coins before calling the 
   const source = read('frontend/src/pages/admin/AdminDirectOffers.jsx');
   assert.match(source, /const isValidGoalReward = /);
   assert.match(source, /goal\.enabled !== false && !isValidGoalReward\(goal\.rewardAmount\)/);
-  assert.match(source, /is enabled but has no coin reward/);
+  assert.match(source, /const isValidCoinReward = /);
+  assert.match(source, /Number\.isSafeInteger\(amount\) && amount >= 1/);
+  assert.doesNotMatch(source, /Math\.floor\(amount\) >= 1/, 'the UI must not accept fractions by flooring');
+  assert.match(source, /is enabled but its coin reward must be a whole number of at least 1/);
+  assert.match(source, /!hasEnabledGoals && !isValidCoinReward\(form\.rewardAmount\)/);
+  assert.match(source, /Reward \(Coins\) must be a whole number of at least 1/);
 });
 
 test('reward calculation and wallet code are untouched by this requirement', () => {

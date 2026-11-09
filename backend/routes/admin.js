@@ -28,6 +28,7 @@ const {
   parseMaxTotalClicks,
 } = require('../utils/directOfferInput');
 const {
+  assertCoinRewardAmount,
   assertEnabledGoalRewards,
   assertUnambiguousGoalMappings,
   getEnabledGoals,
@@ -3525,9 +3526,12 @@ router.post('/direct-offers', requirePermission('manage_offerwalls'), async (req
     if (normalizedTrackingMode !== 'manual') assertEnabledGoalRewards(goals);
     const normalizedGoals = assertUnambiguousGoalMappings(normalizeGoals(goals));
     const enabledGoals = normalizedTrackingMode === 'manual' ? [] : getEnabledGoals(normalizedGoals);
+    // Single-step, manual and all-steps-disabled offers use the submitted coin reward,
+    // which must be a whole number of at least 1 (never silently converted). With
+    // enabled steps the submitted total is ignored and recalculated from the steps.
     const authoritativeRewardAmount = enabledGoals.length
       ? sumEnabledGoalRewards(normalizedGoals)
-      : Number(rewardAmount);
+      : assertCoinRewardAmount(rewardAmount);
 
     if (!Number.isFinite(authoritativeRewardAmount) || authoritativeRewardAmount <= 0) {
       return res.status(400).json({
@@ -3592,9 +3596,29 @@ router.put('/direct-offers/:id', requirePermission('manage_offerwalls'), async (
       ? assertUnambiguousGoalMappings(normalizeGoals(goals))
       : undefined;
     const enabledGoals = normalizedGoals === undefined ? [] : getEnabledGoals(normalizedGoals);
-    const authoritativeRewardAmount = enabledGoals.length
-      ? sumEnabledGoalRewards(normalizedGoals)
-      : (rewardAmount !== undefined ? Number(rewardAmount) : undefined);
+
+    // "goals omitted" does not mean "no enabled goals". When only a reward is sent,
+    // look at the STORED offer: a stored multi-step offer keeps its calculated total
+    // (the submitted value is ignored); only a genuinely single-step / manual offer,
+    // or one without enabled steps, takes the submitted reward as a standalone value.
+    let storedMultiStepTotal;
+    if (goals === undefined && rewardAmount !== undefined) {
+      const stored = await DirectOffer.findById(req.params.id).select('trackingMode goals rewardAmount').lean();
+      if (!stored) return res.status(404).json({ success: false, error: 'Direct offer not found' });
+      const effectiveMode = trackingMode !== undefined ? normalizeTrackingMode(trackingMode) : normalizeTrackingMode(stored.trackingMode);
+      if (effectiveMode !== 'manual' && getEnabledGoals(stored.goals).length) {
+        storedMultiStepTotal = sumEnabledGoalRewards(stored.goals);
+      }
+    }
+
+    let authoritativeRewardAmount;
+    if (enabledGoals.length) {
+      authoritativeRewardAmount = sumEnabledGoalRewards(normalizedGoals);
+    } else if (storedMultiStepTotal !== undefined) {
+      authoritativeRewardAmount = storedMultiStepTotal;
+    } else if (rewardAmount !== undefined) {
+      authoritativeRewardAmount = assertCoinRewardAmount(rewardAmount);
+    }
 
     if (enabledGoals.length && (!Number.isFinite(authoritativeRewardAmount) || authoritativeRewardAmount <= 0)) {
       return res.status(400).json({

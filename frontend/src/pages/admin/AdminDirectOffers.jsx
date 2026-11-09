@@ -42,14 +42,18 @@ const PRESET_ICONS = [
 
 const MAX_GOALS = 25;
 
-// An enabled step must credit a whole-number coin reward of at least 1. This
-// mirrors the backend rule (assertEnabledGoalRewards); the backend stays the
-// authority. Coin rounding is unchanged: fractions are floored on the server.
-const isValidGoalReward = (value) => {
-  if (value === '' || value === null || value === undefined) return false;
-  const amount = Number(value);
-  return Number.isFinite(amount) && Math.floor(amount) >= 1;
+// Coin rewards must be whole numbers of at least 1. This mirrors the backend rule
+// (parseCoinReward in backend/utils/offerGoals.js); the backend stays the
+// authority. Nothing is rounded: 1.9, "1.9", 0.5, 0, blanks and "1e2" are rejected.
+// The HTML step="1" attribute is only a hint, so it is NOT relied upon.
+const isValidCoinReward = (value) => {
+  let amount;
+  if (typeof value === 'number') amount = value;
+  else if (typeof value === 'string' && /^\d+$/.test(value.trim())) amount = Number(value.trim());
+  else return false;
+  return Number.isSafeInteger(amount) && amount >= 1;
 };
+const isValidGoalReward = isValidCoinReward;
 
 const normalizeClientGoals = (goals) => (Array.isArray(goals) ? goals : [])
   .filter(g => g && g.goalKey)
@@ -183,8 +187,13 @@ const OfferFormModal = ({ offer, onClose, onSaved, adminApi }) => {
     if (!isManual) {
       const badGoalIndex = form.goals.findIndex((goal) => goal && goal.enabled !== false && !isValidGoalReward(goal.rewardAmount));
       if (badGoalIndex !== -1) {
-        return setError(`Goal #${badGoalIndex + 1} is enabled but has no coin reward. Enter at least 1 coin or disable the step.`);
+        return setError(`Goal #${badGoalIndex + 1} is enabled but its coin reward must be a whole number of at least 1 (no decimals such as 1.9). Enter the coins or disable the step.`);
       }
+    }
+    // Single-step, manual, and all-steps-disabled offers use the typed reward.
+    // (With enabled steps the total is calculated and the typed value is ignored.)
+    if (!hasEnabledGoals && !isValidCoinReward(form.rewardAmount)) {
+      return setError('Reward (Coins) must be a whole number of at least 1 (no decimals such as 1.9).');
     }
     setLoading(true);
     try {
@@ -323,7 +332,7 @@ const OfferFormModal = ({ offer, onClose, onSaved, adminApi }) => {
             {hasEnabledGoals ? (
               <p className="mt-1 text-[11px] text-slate-500">Calculated automatically from the enabled step rewards below. It cannot be edited here; change the step rewards instead.</p>
             ) : (
-              <p className="mt-1 text-[11px] text-slate-500">The coins the user receives. This is the only reward amount that affects the user&apos;s wallet.</p>
+              <p className="mt-1 text-[11px] text-slate-500">Whole coins only (no decimals). The coins the user receives. This is the only reward amount that affects the user&apos;s wallet.</p>
             )}
           </div>
           <div className="border border-white/10 rounded-lg p-3 space-y-2 bg-white/[0.02]">
@@ -628,9 +637,9 @@ const OfferFormModal = ({ offer, onClose, onSaved, adminApi }) => {
                       <div>
                         <label className={labelCls}>Reward (Coins) *</label>
                         <input type="number" min="1" step="1" className={inputCls} value={goal.rewardAmount} onChange={e => setForm(f => ({ ...f, goals: f.goals.map((g, i) => i === idx ? { ...g, rewardAmount: e.target.value } : g) }))} placeholder="e.g. 250" />
-                        <p className="mt-1 text-[10px] text-slate-500">Coins the user receives for this step. Counts toward the total above.</p>
+                        <p className="mt-1 text-[10px] text-slate-500">Whole coins only. The coins the user receives for this step; counts toward the total above.</p>
                         {goal.enabled !== false && !isValidGoalReward(goal.rewardAmount) && (
-                          <p className="mt-1 text-[10px] text-amber-300">An enabled step needs a reward of at least 1 coin. Enter coins or disable the step; saving is blocked until then.</p>
+                          <p className="mt-1 text-[10px] text-amber-300">An enabled step needs a whole-number reward of at least 1 coin (no decimals). Enter coins or disable the step; saving is blocked until then.</p>
                         )}
                       </div>
                       <div>
