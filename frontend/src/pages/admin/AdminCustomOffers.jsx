@@ -18,7 +18,7 @@ const isIconUrl = (icon) => icon && (icon.startsWith('http') || icon.startsWith(
 
 const OfferModal = ({ offer, onClose, onSaved, token }) => {
   const isEditing = Boolean(offer);
-  const [activeTab, setActiveTab] = useState('en'); // 'en' | 'de' | 'fr' | 'es' | 'ur' | 'ru'
+  const [activeTab, setActiveTab] = useState('en'); // 'en' | 'de' | 'fr' | 'es' | 'ur' | 'ru' | 'pt'
   const [form, setForm] = useState({
     title: offer?.title || '',
     titleDe: offer?.titleDe || '',
@@ -26,12 +26,14 @@ const OfferModal = ({ offer, onClose, onSaved, token }) => {
     titleFr: offer?.titleFr || '',
     titleEs: offer?.titleEs || '',
     titleRu: offer?.titleRu || '',
+    titlePt: offer?.titlePt || '',
     description: offer?.description || '',
     descriptionDe: offer?.descriptionDe || '',
     descriptionUr: offer?.descriptionUr || '',
     descriptionFr: offer?.descriptionFr || '',
     descriptionEs: offer?.descriptionEs || '',
     descriptionRu: offer?.descriptionRu || '',
+    descriptionPt: offer?.descriptionPt || '',
     rewardAmount: offer?.rewardAmount || '',
     externalLink: offer?.externalLink || '',
     trackingType: offer?.trackingType || 'manual_approval',
@@ -56,6 +58,9 @@ const OfferModal = ({ offer, onClose, onSaved, token }) => {
     requirementsRu: Array.isArray(offer?.requirementsRu)
       ? offer.requirementsRu.join('\n')
       : (offer?.requirementsRu || ''),
+    requirementsPt: Array.isArray(offer?.requirementsPt)
+      ? offer.requirementsPt.join('\n')
+      : (offer?.requirementsPt || ''),
     requirementType: offer?.requirementType || 'bullets',
     platforms: offer?.platforms || { desktop: true, android: true, ios: true },
   });
@@ -99,6 +104,9 @@ const OfferModal = ({ offer, onClose, onSaved, token }) => {
           requirementsRu: form.requirementType === 'paragraph'
             ? [(form.requirementsRu || '').trim()].filter(Boolean)
             : (form.requirementsRu || '').split('\n').map(r => r.trim()).filter(Boolean),
+          requirementsPt: form.requirementType === 'paragraph'
+            ? [(form.requirementsPt || '').trim()].filter(Boolean)
+            : (form.requirementsPt || '').split('\n').map(r => r.trim()).filter(Boolean),
           requirementType: form.requirementType,
           platforms: form.platforms,
         }),
@@ -170,11 +178,11 @@ const OfferModal = ({ offer, onClose, onSaved, token }) => {
               </label>
               <span className="text-[11px] text-gray-400">Switch tabs to provide translations</span>
             </div>
-            <div className="flex items-center gap-1.5 p-1 bg-gray-100 rounded-xl border border-gray-200">
+            <div className="flex items-center gap-1.5 p-1 bg-gray-100 rounded-xl border border-gray-200 overflow-x-auto custom-scrollbar">
               <button
                 type="button"
                 onClick={() => setActiveTab('en')}
-                className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-lg text-xs font-bold transition-all ${
+                className={`flex-1 shrink-0 whitespace-nowrap flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-lg text-xs font-bold transition-all ${
                   activeTab === 'en'
                     ? 'bg-white text-gray-900 shadow-sm border border-gray-200'
                     : 'text-gray-500 hover:text-gray-800'
@@ -187,7 +195,7 @@ const OfferModal = ({ offer, onClose, onSaved, token }) => {
               <button
                 type="button"
                 onClick={() => setActiveTab('de')}
-                className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-lg text-xs font-bold transition-all ${
+                className={`flex-1 shrink-0 whitespace-nowrap flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-lg text-xs font-bold transition-all ${
                   activeTab === 'de'
                     ? 'bg-white text-gray-900 shadow-sm border border-gray-200'
                     : 'text-gray-500 hover:text-gray-800'
@@ -202,7 +210,7 @@ const OfferModal = ({ offer, onClose, onSaved, token }) => {
               <button
                 type="button"
                 onClick={() => setActiveTab('fr')}
-                className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-lg text-xs font-bold transition-all ${
+                className={`flex-1 shrink-0 whitespace-nowrap flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-lg text-xs font-bold transition-all ${
                   activeTab === 'fr'
                     ? 'bg-white text-gray-900 shadow-sm border border-gray-200'
                     : 'text-gray-500 hover:text-gray-800'
@@ -217,7 +225,7 @@ const OfferModal = ({ offer, onClose, onSaved, token }) => {
               <button
                 type="button"
                 onClick={() => setActiveTab('es')}
-                className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-lg text-xs font-bold transition-all ${
+                className={`flex-1 shrink-0 whitespace-nowrap flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-lg text-xs font-bold transition-all ${
                   activeTab === 'es'
                     ? 'bg-white text-gray-900 shadow-sm border border-gray-200'
                     : 'text-gray-500 hover:text-gray-800'
@@ -232,7 +240,7 @@ const OfferModal = ({ offer, onClose, onSaved, token }) => {
               <button
                 type="button"
                 onClick={() => setActiveTab('ur')}
-                className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-lg text-xs font-bold transition-all ${
+                className={`flex-1 shrink-0 whitespace-nowrap flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-lg text-xs font-bold transition-all ${
                   activeTab === 'ur'
                     ? 'bg-white text-gray-900 shadow-sm border border-gray-200'
                     : 'text-gray-500 hover:text-gray-800'
@@ -247,7 +255,7 @@ const OfferModal = ({ offer, onClose, onSaved, token }) => {
               <button
                 type="button"
                 onClick={() => setActiveTab('ru')}
-                className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-lg text-xs font-bold transition-all ${
+                className={`flex-1 shrink-0 whitespace-nowrap flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-lg text-xs font-bold transition-all ${
                   activeTab === 'ru'
                     ? 'bg-white text-gray-900 shadow-sm border border-gray-200'
                     : 'text-gray-500 hover:text-gray-800'
@@ -257,6 +265,21 @@ const OfferModal = ({ offer, onClose, onSaved, token }) => {
                 <span>Русский</span>
                 {Boolean(form.titleRu) && (
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" title="Russian translated" />
+                )}
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveTab('pt')}
+                className={`flex-1 shrink-0 whitespace-nowrap flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-lg text-xs font-bold transition-all ${
+                  activeTab === 'pt'
+                    ? 'bg-white text-gray-900 shadow-sm border border-gray-200'
+                    : 'text-gray-500 hover:text-gray-800'
+                }`}
+              >
+                <span>🇵🇹</span>
+                <span>Português</span>
+                {Boolean(form.titlePt) && (
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" title="Portuguese translated" />
                 )}
               </button>
             </div>
@@ -535,6 +558,56 @@ const OfferModal = ({ offer, onClose, onSaved, token }) => {
                     form.requirementType === 'paragraph'
                       ? "напр. Зарегистрируйтесь и внесите депозит 50 €, затем сделайте ставки на 100 €."
                       : "напр. Зарегистрироваться → получить 10 Монет\nВнести 50 € → получить 50 000 Монет\nСделать ставок на 200 € → получить 10 000 Монет"
+                  }
+                  rows={form.requirementType === 'paragraph' ? 2 : 3}
+                  className="w-full bg-white border border-gray-300 rounded-xl px-3.5 py-2 text-gray-900 text-sm placeholder-gray-400 focus:outline-none focus:border-[#1E2538] focus:ring-1 focus:ring-[#1E2538]/20 resize-none transition-all"
+                />
+              </div>
+            </div>
+          )}
+
+          {/* Tab: Portuguese Content */}
+          {activeTab === 'pt' && (
+            <div className="space-y-4">
+              <div>
+                <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1.5">
+                  🇵🇹 Title (Portuguese / Português)
+                </label>
+                <input
+                  value={form.titlePt}
+                  onChange={set('titlePt')}
+                  placeholder="ex. Registe-se no CryptoGame e alcance o Nível 5"
+                  className="w-full bg-white border border-gray-300 rounded-xl px-3.5 py-2 text-gray-900 text-sm placeholder-gray-400 focus:outline-none focus:border-[#1E2538] focus:ring-1 focus:ring-[#1E2538]/20 transition-all"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1.5">
+                  🇵🇹 Description (Portuguese / Português)
+                </label>
+                <textarea
+                  value={form.descriptionPt}
+                  onChange={set('descriptionPt')}
+                  placeholder="Descreva as etapas para concluir a oferta e receber recompensas..."
+                  rows={2}
+                  className="w-full bg-white border border-gray-300 rounded-xl px-3.5 py-2 text-gray-900 text-sm placeholder-gray-400 focus:outline-none focus:border-[#1E2538] focus:ring-1 focus:ring-[#1E2538]/20 resize-none transition-all"
+                />
+              </div>
+
+              <div>
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                    🇵🇹 Requirements (Portuguese / Português)
+                  </label>
+                  <span className="text-[11px] text-gray-400">Formato: {form.requirementType === 'paragraph' ? 'Parágrafo' : 'Marcadores'}</span>
+                </div>
+                <textarea
+                  value={form.requirementsPt}
+                  onChange={set('requirementsPt')}
+                  placeholder={
+                    form.requirementType === 'paragraph'
+                      ? "ex. Registe-se e deposite 50 €, depois aposte 100 € em jogos elegíveis."
+                      : "ex. Registar conta → receber 10 Moedas\nDepositar 50 € → receber 50.000 Moedas\nApostar 200 € → receber 10.000 Moedas"
                   }
                   rows={form.requirementType === 'paragraph' ? 2 : 3}
                   className="w-full bg-white border border-gray-300 rounded-xl px-3.5 py-2 text-gray-900 text-sm placeholder-gray-400 focus:outline-none focus:border-[#1E2538] focus:ring-1 focus:ring-[#1E2538]/20 resize-none transition-all"
@@ -902,6 +975,11 @@ const AdminCustomOffers = () => {
                       {offer.titleRu && (
                         <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold bg-red-50 text-red-700 border border-red-200" title={`RU: ${offer.titleRu}`}>
                           🇷🇺 RU
+                        </span>
+                      )}
+                      {offer.titlePt && (
+                        <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold bg-emerald-50 text-emerald-800 border border-emerald-200" title={`PT: ${offer.titlePt}`}>
+                          🇵🇹 PT
                         </span>
                       )}
                       <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border ${

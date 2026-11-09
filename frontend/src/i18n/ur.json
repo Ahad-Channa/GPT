@@ -552,7 +552,8 @@
     "impressum": "امپریسم (Impressum)",
     "support": "سپورٹ و رہنمائی",
     "leaveReview": "رائے دیں",
-    "copyright": "© {{year}} TaskMint"
+    "copyright": "© {{year}} TaskMint",
+    "changeToLightMode": "لائٹ موڈ آن کریں"
   },
   "policies": {
     "title": "پالیسیاں",

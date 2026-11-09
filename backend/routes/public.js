@@ -287,6 +287,8 @@ router.get('/legal/:slug', async (req, res) => {
         content_ur: page.content_ur,
         title_ru: page.title_ru,
         content_ru: page.content_ru,
+        title_pt: page.title_pt,
+        content_pt: page.content_pt,
         updatedAt: page.updatedAt,
       },
     });

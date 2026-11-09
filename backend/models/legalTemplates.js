@@ -288,7 +288,47 @@ Musterstraße 123
 Наш сайт содержит ссылки на внешние сторонние веб-сайты, на содержание которых мы не имеем влияния. Соответствующий поставщик или оператор всегда несет ответственность за содержание связанных страниц.
 
 ### Авторское право
-Контент и материалы, созданные операторами сайта на этих страницах, защищены авторским правом. Загрузка и копирование материалов разрешены только для частного некоммерческого использования.`
+Контент и материалы, созданные операторами сайта на этих страницах, защищены авторским правом. Загрузка и копирование материалов разрешены только для частного некоммерческого использования.`,
+    title_pt: "Informações Legais (Impressum)",
+    content_pt: `# Informações Legais (Impressum)
+
+### Informações de acordo com a legislação (§ 5 TMG / DDG):
+TaskMint Platform / TaskMint GmbH
+Musterstraße 123
+10115 Berlim
+Alemanha
+
+### Representado por:
+Diretor Executivo: Max Mustermann
+
+### Contacto:
+E-mail: support@taskmint.me
+Website: www.taskmint.me
+
+### Registo Comercial:
+Tribunal de Registo: Amtsgericht Charlottenburg (Berlim)
+Número de Registo: HRB 123456 B
+
+### Número de Identificação Fiscal (NIF / USt-IdNr.):
+De acordo com o § 27 a da lei alemã sobre o imposto sobre o volume de negócios:
+DE 123 456 789
+
+---
+
+### Resolução de Litígios Online
+A Comissão Europeia disponibiliza uma plataforma para resolução de litígios online (RLL): https://ec.europa.eu/consumers/odr
+O nosso endereço de e-mail pode ser encontrado acima.
+
+Não estamos dispostos nem somos obrigados a participar em processos de resolução de litígios perante uma comissão de arbitragem de consumo.
+
+### Responsabilidade pelo Conteúdo
+Como prestador de serviços, somos responsáveis pelo nosso próprio conteúdo nestas páginas de acordo com a legislação geral. No entanto, não somos obrigados a monitorizar informações de terceiros transmitidas ou armazenadas, nem a investigar circunstâncias que indiquem atividades ilegais.
+
+### Responsabilidade por Hiperligações
+O nosso website contém links para sites externos de terceiros sobre cujos conteúdos não temos qualquer influência. O respetivo fornecedor ou operador é sempre responsável pelos conteúdos das páginas hiperligadas.
+
+### Direitos de Autor
+Os conteúdos e obras criados pelos operadores do site nestas páginas estão sujeitos à legislação de direitos de autor. O download e cópias deste site são permitidos apenas para uso privado e não comercial.`
   },
 
   'terms-of-use': {
@@ -509,7 +549,27 @@ TaskMint پر موجود تمام مواد، لوگوز، ٹریڈ مارکس ا
 - Пользователь обязан предоставлять точные и корректные платежные реквизиты.
 
 ### 5. Прекращение действия
-Мы оставляем за собой право приостановить или заблокировать учетную запись любого пользователя при нарушении данных Условий.`
+Мы оставляем за собой право приостановить или заблокировать учетную запись любого пользователя при нарушении данных Условий.`,
+    title_pt: "Termos de Uso",
+    content_pt: `# Termos de Uso
+
+### 1. Aceitação dos Termos
+Ao aceder ou utilizar a plataforma TaskMint, concorda em ficar vinculado a estes Termos de Uso e a todas as leis e regulamentos aplicáveis.
+
+### 2. Elegibilidade e Criação de Conta
+- É permitida apenas uma conta por pessoa. A criação de múltiplas contas é estritamente proibida.
+- É proibido o uso de VPN, proxies ou emuladores para contornar restrições geográficas ou manipular ofertas.
+
+### 3. Realização de Ofertas e Recompensas
+- As moedas são creditadas após verificação bem-sucedida pelas redes de ofertas e anunciantes.
+- Qualquer tentativa de fraude ou manipulação resultará no cancelamento das recompensas e encerramento da conta.
+
+### 4. Levantamentos
+- Os pedidos de levantamento são processados no prazo habitual de 1 a 3 dias úteis.
+- O utilizador é responsável por fornecer informações de pagamento corretas.
+
+### 5. Rescisão
+Reservamo-nos o direito de suspender ou encerrar qualquer conta que viole estes Termos.`
   },
 
   'privacy-policy': {
@@ -748,7 +808,28 @@ Musterstraße 123
 Мы используем необходимые и функциональные файлы cookie. Подробную информацию читайте в нашей Политике использования файлов cookie.
 
 ### 5. Контакты
-По всем вопросам защиты данных обращайтесь: privacy@taskmint.me.`
+По всем вопросам защиты данных обращайтесь: privacy@taskmint.me.`,
+    title_pt: "Política de Privacidade",
+    content_pt: `# Política de Privacidade
+
+### 1. Responsável pelo Tratamento de Dados
+O responsável pelo tratamento dos seus dados pessoais nos termos do RGPD é a TaskMint GmbH, Musterstraße 123, 10115 Berlim, Alemanha.
+
+### 2. Dados Recolhidos e Finalidade
+Recolhemos dados para:
+- Criação e gestão segura da conta
+- Verificação e atribuição de recompensas pelas tarefas concluídas
+- Prevenção de fraude e deteção de contas múltiplas
+- Processamento de levantamentos de fundos
+
+### 3. Direitos do Utilizador (RGPD)
+Cumprimos integralmente o Regulamento Geral sobre a Proteção de Dados (RGPD). Tem o direito de aceder, retificar ou eliminar os seus dados pessoais a qualquer momento.
+
+### 4. Ficheiros Cookie
+Utilizamos cookies estritamente necessários e de funcionalidade. Consulte a nossa Política de Cookies para mais informações.
+
+### 5. Contacto
+Para quaisquer questões sobre privacidade, contacte: privacy@taskmint.me.`
   },
   'affiliate-policy': {
     title_en: 'Affiliate & Referral Policy',
@@ -941,7 +1022,20 @@ TaskMint ایفیلی ایٹ اور ریفرل پروگرام میں خوش آم
 - Нарушение правил партнерской программы влечет за собой аннулирование начислений и блокировку аккаунта.
 
 ### 3. Удержание средств
-- Реферальные начисления могут подлежать временному удержанию для проверки добросовестности выполненных заданий.`
+- Реферальные начисления могут подлежать временному удержанию для проверки добросовестности выполненных заданий.`,
+    title_pt: "Política de Afiliados e Referências",
+    content_pt: `# Política de Afiliados e Referências
+
+### 1. Visão Geral do Programa
+O programa de afiliados da TaskMint permite que os utilizadores ganhem uma percentagem das recompensas obtidas pelos amigos convidados ao realizarem ofertas na plataforma.
+
+### 2. Regras de Conduta e Divulgação
+- É estritamente proibido o envio de spam com links de referência em fóruns, redes sociais ou mensagens privadas.
+- O auto-referenciamento (criar contas para si próprio através do seu próprio link) é expressamente proibido.
+- A violação destas regras resultará no cancelamento dos saldos acumulados e na suspensão imediata da conta.
+
+### 3. Retenção e Verificação
+- Os ganhos de comissões de referência podem estar sujeitos a um período de retenção para verificação antifraude das ofertas concluídas pelos afiliados.`
   },
   'cookie-policy': {
     title_en: 'Cookie Policy',
@@ -1084,7 +1178,21 @@ Puedes cambiar tus preferencias de cookies en cualquier momento a través del pa
 - **Функциональные (Functional)**: Сохраняют ваши языковые предпочтения (\`i18nextLng\`) и настройки темы оформления.
 
 ### 3. Управление файлами cookie
-Вы можете изменить свои предпочтения в любое время через меню «Настройки файлов cookie» в нижней части страницы.`
+Вы можете изменить свои предпочтения в любое время через меню «Настройки файлов cookie» в нижней части страницы.`,
+    title_pt: "Política de Cookies",
+    content_pt: `# Política de Cookies
+
+*(Em vigor desde: 17 de julho de 2026)*
+
+### 1. O que são Cookies?
+Os cookies são pequenos ficheiros de texto guardados no seu dispositivo quando visita a nossa plataforma web.
+
+### 2. Categorias de Cookies Utilizados
+- **Estritamente Necessários (Essential)**: Essenciais para o funcionamento básico do website, autenticação e proteção contra fraudes (\`__tm_did\`, \`firebase:authUser\`, \`taskmint_cookie_consent\`).
+- **Funcionais (Functional)**: Guardam as suas preferências de idioma (\`i18nextLng\`) e preferência de tema (Modo Claro ou Escuro).
+
+### 3. Gestão de Cookies
+Pode alterar as suas preferências de cookies a qualquer momento através do link "Definições de Cookies" no rodapé da página.`
   }
 };
 

@@ -239,7 +239,7 @@ const VipPage = () => {
 
             {/* Top Status Card (rgba(34, 39, 48, 1) in dark mode) */}
             <div
-              className="w-full shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between rounded-[24px] sm:rounded-[30px] p-3.5 sm:pt-[10px] sm:pr-[10px] sm:pb-[10px] sm:pl-[15px] gap-3.5 sm:gap-0 box-border min-h-[105px] sm:min-h-[114px]"
+              className="w-full shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between rounded-[24px] sm:rounded-[30px] p-3.5 sm:pt-[10px] sm:pr-[24px] sm:pb-[10px] sm:pl-[20px] gap-3.5 sm:gap-0 box-border min-h-[105px] sm:min-h-[114px]"
               style={{
                 background: isDarkMode ? 'rgba(34, 39, 48, 1)' : '#FFFFFF'
               }}
@@ -306,10 +306,10 @@ const VipPage = () => {
               </div>
 
               {/* Right Side: Total Earned & Rank Level Boxes */}
-              <div className="flex items-center justify-between sm:justify-end gap-2.5 w-full sm:w-auto">
+              <div className="flex items-center justify-between sm:justify-end gap-2.5 sm:gap-3 w-full sm:w-auto shrink-0">
                 {/* Total Earned Box */}
                 <div
-                  className="flex-1 sm:flex-initial sm:w-[136px] h-[52px] rounded-[17px] py-1.5 px-3 flex flex-col items-center justify-center gap-0.5 box-border"
+                  className="flex-1 sm:flex-initial sm:w-auto sm:min-w-[136px] h-[52px] rounded-[17px] py-1.5 px-3 sm:px-4 flex flex-col items-center justify-center gap-0.5 box-border shrink-0"
                   style={{
                     background: isDarkMode ? 'rgba(23, 26, 29, 1)' : 'rgba(249, 247, 241, 1)',
                   }}
@@ -343,7 +343,7 @@ const VipPage = () => {
 
                 {/* Rank Level Box */}
                 <div
-                  className="flex-1 sm:flex-initial sm:w-[109px] h-[52px] rounded-[17px] py-1.5 px-3 flex flex-col items-center justify-center gap-0.5 box-border"
+                  className="flex-1 sm:flex-initial sm:w-auto sm:min-w-[110px] h-[52px] rounded-[17px] py-1.5 px-3.5 sm:px-4 flex flex-col items-center justify-center gap-0.5 box-border shrink-0"
                   style={{
                     background: isDarkMode ? 'rgba(23, 26, 29, 1)' : 'rgba(249, 247, 241, 1)',
                   }}

@@ -1511,7 +1511,7 @@ const TabBtn = ({ active, onClick, icon, label, className = '' }) => {
         borderRadius: '80px',
         opacity: 1,
       }}
-      className={`flex items-center justify-start md:justify-center gap-1.5 sm:gap-2 px-2.5 sm:px-4 py-2 h-[35px] md:h-[37px] text-[12px] sm:text-[13px] md:text-[14px] transition-all cursor-pointer w-full md:w-auto min-w-0 ${active
+      className={`flex items-center justify-start md:justify-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 md:px-3.5 py-2 h-[35px] md:h-[37px] text-[12px] sm:text-[13px] md:text-[13.5px] lg:text-[14px] transition-all cursor-pointer w-full md:w-auto shrink-0 ${active
         ? 'bg-[#24324D] text-white shadow-sm'
         : (isDarkMode ? 'text-white hover:bg-white/10 bg-transparent' : 'text-[#000000] hover:bg-black/5 bg-transparent')
         } ${className}`}
@@ -1530,7 +1530,7 @@ const TabBtn = ({ active, onClick, icon, label, className = '' }) => {
           className: `w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0 ${active ? 'text-white' : (isDarkMode ? 'text-white' : 'text-black')}`,
         })
       ) : null}
-      <span className="truncate">{label}</span>
+      <span className="truncate md:whitespace-nowrap">{label}</span>
     </button>
   );
 };
@@ -3282,7 +3282,7 @@ const Profile = () => {
         >
           {/* Tab pill bar navigation (Mobile: 2-column grid: 2 per line, last 1 on 3rd line; Desktop: flex row) */}
           <div
-            className="w-full max-w-[839px] mx-auto grid grid-cols-2 md:flex md:flex-nowrap items-center justify-start md:justify-center gap-2 md:gap-[5px] h-auto md:h-[37px]"
+            className="w-full max-w-[1050px] mx-auto grid grid-cols-2 md:flex md:flex-wrap lg:flex-nowrap items-center justify-start md:justify-center gap-2 md:gap-[6px] h-auto md:h-[37px]"
           >
             <TabBtn active={activeTab === 'started_offers'} onClick={() => setActiveTab('started_offers')} icon="/coins/profilestarted.png" label={t('profile.startedOffers', 'Started Offers')} />
             <TabBtn active={activeTab === 'completed_offers'} onClick={() => setActiveTab('completed_offers')} icon="/coins/image copy 3.png" label={t('profile.completedOffers', 'Completed Offers')} />

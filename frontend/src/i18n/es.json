@@ -552,7 +552,8 @@
     "impressum": "Aviso Legal (Impressum)",
     "support": "Soporte",
     "leaveReview": "Deja una opinión",
-    "copyright": "© {{year}} TaskMint"
+    "copyright": "© {{year}} TaskMint",
+    "changeToLightMode": "Cambiar a modo claro"
   },
   "policies": {
     "title": "Políticas",

@@ -323,6 +323,7 @@ const Header = ({ onChatToggle, chatOpen, fullWidth }) => {
   const isFrench = i18n.language?.startsWith('fr');
   const isSpanish = i18n.language?.startsWith('es');
   const isUrdu = i18n.language === 'ur' || i18n.language?.startsWith('ur');
+  const isPortuguese = i18n.language?.startsWith('pt');
   const { currentUser, mongoUser, logout, isAdmin } = useAuth();
   const { unreadCount, togglePanel, hasUnreadChat, setHasUnreadChat } = useNotifications();
 
@@ -842,7 +843,7 @@ const Header = ({ onChatToggle, chatOpen, fullWidth }) => {
 
       {/* Group 2: Main Links (Desktop) */}
       <div
-        className={`hidden lg:flex items-center relative ${isSpanish ? '-left-[85px]' : (isUrdu ? '-left-[60px]' : (isFrench ? '-left-[60px]' : (isGerman ? '-left-[75px]' : '-left-[70px]')))}`}
+        className={`hidden lg:flex items-center relative ${isPortuguese ? '-left-[82px]' : (isSpanish ? '-left-[85px]' : (isUrdu ? '-left-[60px]' : (isFrench ? '-left-[60px]' : (isGerman ? '-left-[75px]' : '-left-[70px]'))))}`}
         style={{
           width: 'auto',
           height: '20px',

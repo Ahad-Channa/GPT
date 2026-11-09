@@ -552,7 +552,8 @@
     "impressum": "Impressum",
     "support": "Support",
     "leaveReview": "Bewertung schreiben",
-    "copyright": "© {{year}} TaskMint"
+    "copyright": "© {{year}} TaskMint",
+    "changeToLightMode": "Light Mode aktivieren"
   },
   "policies": {
     "title": "Richtlinien",

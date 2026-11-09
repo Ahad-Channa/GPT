@@ -20,7 +20,7 @@ const isIconUrl = (icon) => icon && (icon.startsWith('http') || icon.startsWith(
 // ─── Modal for Create & Edit ────────────────────────────────────────────────
 const GoodpickModal = ({ offer, onClose, onSaved, token, currentUser }) => {
   const isEditing = Boolean(offer);
-  const [activeTab, setActiveTab] = useState('en'); // 'en' | 'de' | 'fr' | 'es' | 'ur' | 'ru'
+  const [activeTab, setActiveTab] = useState('en'); // 'en' | 'de' | 'fr' | 'es' | 'ur' | 'ru' | 'pt'
 
   const [form, setForm] = useState({
     title: offer?.title || '',
@@ -29,12 +29,14 @@ const GoodpickModal = ({ offer, onClose, onSaved, token, currentUser }) => {
     titleFr: offer?.titleFr || '',
     titleEs: offer?.titleEs || '',
     titleRu: offer?.titleRu || '',
+    titlePt: offer?.titlePt || '',
     description: offer?.description || '',
     descriptionDe: offer?.descriptionDe || '',
     descriptionUr: offer?.descriptionUr || '',
     descriptionFr: offer?.descriptionFr || '',
     descriptionEs: offer?.descriptionEs || '',
     descriptionRu: offer?.descriptionRu || '',
+    descriptionPt: offer?.descriptionPt || '',
     rewardAmount: offer?.rewardAmount || '',
     externalLink: offer?.externalLink || '',
     expirationDate: offer?.expirationDate ? new Date(offer.expirationDate).toISOString().slice(0, 16) : '',
@@ -58,6 +60,9 @@ const GoodpickModal = ({ offer, onClose, onSaved, token, currentUser }) => {
     requirementsRu: Array.isArray(offer?.requirementsRu)
       ? offer.requirementsRu.join('\n')
       : (offer?.requirementsRu || ''),
+    requirementsPt: Array.isArray(offer?.requirementsPt)
+      ? offer.requirementsPt.join('\n')
+      : (offer?.requirementsPt || ''),
     requirementType: offer?.requirementType || 'bullets',
     platforms: offer?.platforms || { desktop: true, android: true, ios: true },
   });
@@ -104,6 +109,9 @@ const GoodpickModal = ({ offer, onClose, onSaved, token, currentUser }) => {
           requirementsRu: form.requirementType === 'paragraph'
             ? [(form.requirementsRu || '').trim()].filter(Boolean)
             : (form.requirementsRu || '').split('\n').map((r) => r.trim()).filter(Boolean),
+          requirementsPt: form.requirementType === 'paragraph'
+            ? [(form.requirementsPt || '').trim()].filter(Boolean)
+            : (form.requirementsPt || '').split('\n').map((r) => r.trim()).filter(Boolean),
           requirementType: form.requirementType,
           platforms: form.platforms,
         }),
@@ -178,15 +186,14 @@ const GoodpickModal = ({ offer, onClose, onSaved, token, currentUser }) => {
               </label>
               <span className="text-[11px] text-gray-400">Switch tabs to provide translations</span>
             </div>
-            <div className="flex items-center gap-1.5 p-1 bg-gray-100 rounded-xl border border-gray-200">
+            <div className="flex items-center gap-1.5 p-1 bg-gray-100 rounded-xl border border-gray-200 overflow-x-auto custom-scrollbar">
               <button
                 type="button"
                 onClick={() => setActiveTab('en')}
-                className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-lg text-xs font-bold transition-all ${
-                  activeTab === 'en'
+                className={`flex-1 shrink-0 whitespace-nowrap flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-lg text-xs font-bold transition-all ${activeTab === 'en'
                     ? 'bg-white text-gray-900 shadow-sm border border-gray-200'
                     : 'text-gray-500 hover:text-gray-800'
-                }`}
+                  }`}
               >
                 <span>🇬🇧</span>
                 <span>English</span>
@@ -195,11 +202,10 @@ const GoodpickModal = ({ offer, onClose, onSaved, token, currentUser }) => {
               <button
                 type="button"
                 onClick={() => setActiveTab('de')}
-                className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-lg text-xs font-bold transition-all ${
-                  activeTab === 'de'
+                className={`flex-1 shrink-0 whitespace-nowrap flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-lg text-xs font-bold transition-all ${activeTab === 'de'
                     ? 'bg-white text-gray-900 shadow-sm border border-gray-200'
                     : 'text-gray-500 hover:text-gray-800'
-                }`}
+                  }`}
               >
                 <span>🇩🇪</span>
                 <span>Deutsch</span>
@@ -210,11 +216,10 @@ const GoodpickModal = ({ offer, onClose, onSaved, token, currentUser }) => {
               <button
                 type="button"
                 onClick={() => setActiveTab('fr')}
-                className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-lg text-xs font-bold transition-all ${
-                  activeTab === 'fr'
+                className={`flex-1 shrink-0 whitespace-nowrap flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-lg text-xs font-bold transition-all ${activeTab === 'fr'
                     ? 'bg-white text-gray-900 shadow-sm border border-gray-200'
                     : 'text-gray-500 hover:text-gray-800'
-                }`}
+                  }`}
               >
                 <span>🇫🇷</span>
                 <span>Français</span>
@@ -225,11 +230,10 @@ const GoodpickModal = ({ offer, onClose, onSaved, token, currentUser }) => {
               <button
                 type="button"
                 onClick={() => setActiveTab('es')}
-                className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-lg text-xs font-bold transition-all ${
-                  activeTab === 'es'
+                className={`flex-1 shrink-0 whitespace-nowrap flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-lg text-xs font-bold transition-all ${activeTab === 'es'
                     ? 'bg-white text-gray-900 shadow-sm border border-gray-200'
                     : 'text-gray-500 hover:text-gray-800'
-                }`}
+                  }`}
               >
                 <span>🇪🇸</span>
                 <span>Español</span>
@@ -240,11 +244,10 @@ const GoodpickModal = ({ offer, onClose, onSaved, token, currentUser }) => {
               <button
                 type="button"
                 onClick={() => setActiveTab('ur')}
-                className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-lg text-xs font-bold transition-all ${
-                  activeTab === 'ur'
+                className={`flex-1 shrink-0 whitespace-nowrap flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-lg text-xs font-bold transition-all ${activeTab === 'ur'
                     ? 'bg-white text-gray-900 shadow-sm border border-gray-200'
                     : 'text-gray-500 hover:text-gray-800'
-                }`}
+                  }`}
               >
                 <span>🇵🇰</span>
                 <span>اردو</span>
@@ -255,16 +258,29 @@ const GoodpickModal = ({ offer, onClose, onSaved, token, currentUser }) => {
               <button
                 type="button"
                 onClick={() => setActiveTab('ru')}
-                className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-lg text-xs font-bold transition-all ${
-                  activeTab === 'ru'
+                className={`flex-1 shrink-0 whitespace-nowrap flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-lg text-xs font-bold transition-all ${activeTab === 'ru'
                     ? 'bg-white text-gray-900 shadow-sm border border-gray-200'
                     : 'text-gray-500 hover:text-gray-800'
-                }`}
+                  }`}
               >
                 <span>🇷🇺</span>
                 <span>Русский</span>
                 {Boolean(form.titleRu) && (
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" title="Russian translated" />
+                )}
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveTab('pt')}
+                className={`flex-1 shrink-0 whitespace-nowrap flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-lg text-xs font-bold transition-all ${activeTab === 'pt'
+                    ? 'bg-white text-gray-900 shadow-sm border border-gray-200'
+                    : 'text-gray-500 hover:text-gray-800'
+                  }`}
+              >
+                <span>🇵🇹</span>
+                <span>Português</span>
+                {Boolean(form.titlePt) && (
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" title="Portuguese translated" />
                 )}
               </button>
             </div>
@@ -309,22 +325,20 @@ const GoodpickModal = ({ offer, onClose, onSaved, token, currentUser }) => {
                     <button
                       type="button"
                       onClick={() => setForm((f) => ({ ...f, requirementType: 'bullets' }))}
-                      className={`px-2.5 py-0.5 rounded-md text-[11px] font-semibold transition-all ${
-                        form.requirementType === 'bullets'
+                      className={`px-2.5 py-0.5 rounded-md text-[11px] font-semibold transition-all ${form.requirementType === 'bullets'
                           ? 'bg-[#1E2538] text-white shadow-sm'
                           : 'text-gray-600 hover:text-gray-900'
-                      }`}
+                        }`}
                     >
                       Bullet Points
                     </button>
                     <button
                       type="button"
                       onClick={() => setForm((f) => ({ ...f, requirementType: 'paragraph' }))}
-                      className={`px-2.5 py-0.5 rounded-md text-[11px] font-semibold transition-all ${
-                        form.requirementType === 'paragraph'
+                      className={`px-2.5 py-0.5 rounded-md text-[11px] font-semibold transition-all ${form.requirementType === 'paragraph'
                           ? 'bg-[#1E2538] text-white shadow-sm'
                           : 'text-gray-600 hover:text-gray-900'
-                      }`}
+                        }`}
                     >
                       Paragraph
                     </button>
@@ -601,6 +615,56 @@ const GoodpickModal = ({ offer, onClose, onSaved, token, currentUser }) => {
             </div>
           )}
 
+          {/* Tab: Portuguese Content */}
+          {activeTab === 'pt' && (
+            <div className="space-y-4">
+              <div>
+                <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1.5">
+                  🇵🇹 Title (Portuguese / Português)
+                </label>
+                <input
+                  value={form.titlePt}
+                  onChange={set('titlePt')}
+                  placeholder="ex. Treehouse Fishing"
+                  className="w-full bg-white border border-gray-300 rounded-xl px-3.5 py-2 text-gray-900 text-sm placeholder-gray-400 focus:outline-none focus:border-[#1E2538] focus:ring-1 focus:ring-[#1E2538]/20 transition-all"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1.5">
+                  🇵🇹 Description (Portuguese / Português)
+                </label>
+                <textarea
+                  value={form.descriptionPt}
+                  onChange={set('descriptionPt')}
+                  placeholder="Breve descrição da tarefa para o cartão e modal..."
+                  rows={2}
+                  className="w-full bg-white border border-gray-300 rounded-xl px-3.5 py-2 text-gray-900 text-sm placeholder-gray-400 focus:outline-none focus:border-[#1E2538] focus:ring-1 focus:ring-[#1E2538]/20 resize-none transition-all"
+                />
+              </div>
+
+              <div>
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                    🇵🇹 Requirements (Portuguese / Português)
+                  </label>
+                  <span className="text-[11px] text-gray-400">Formato: {form.requirementType === 'paragraph' ? 'Parágrafo' : 'Marcadores'}</span>
+                </div>
+                <textarea
+                  value={form.requirementsPt}
+                  onChange={set('requirementsPt')}
+                  placeholder={
+                    form.requirementType === 'paragraph'
+                      ? 'ex. Conclua esta tarefa descarregando a aplicação e registando-se no seu dispositivo.'
+                      : 'ex. Registar conta → receber 10 Moedas\nDescarregar aplicação → receber 5.000 Moedas'
+                  }
+                  rows={form.requirementType === 'paragraph' ? 2 : 3}
+                  className="w-full bg-white border border-gray-300 rounded-xl px-3.5 py-2 text-gray-900 text-sm placeholder-gray-400 focus:outline-none focus:border-[#1E2538] focus:ring-1 focus:ring-[#1E2538]/20 resize-none transition-all"
+                />
+              </div>
+            </div>
+          )}
+
           {/* Icon Picker */}
           <div>
             <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-2">
@@ -612,11 +676,10 @@ const GoodpickModal = ({ offer, onClose, onSaved, token, currentUser }) => {
                   key={emoji}
                   type="button"
                   onClick={() => setForm((f) => ({ ...f, icon: f.icon === emoji ? '' : emoji }))}
-                  className={`h-9 rounded-lg text-xl flex items-center justify-center transition-all ${
-                    form.icon === emoji
+                  className={`h-9 rounded-lg text-xl flex items-center justify-center transition-all ${form.icon === emoji
                       ? 'bg-white border-2 border-[#1E2538] shadow-sm scale-110'
                       : 'hover:bg-gray-200/70 border border-transparent'
-                  }`}
+                    }`}
                 >
                   {emoji}
                 </button>
@@ -979,6 +1042,11 @@ const AdminGoodpicksOffers = () => {
                                   🇷🇺 RU
                                 </span>
                               )}
+                              {offer.titlePt && (
+                                <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold bg-emerald-50 text-emerald-800 border border-emerald-200" title={`PT: ${offer.titlePt}`}>
+                                  🇵🇹 PT
+                                </span>
+                              )}
                             </div>
                             <p className="text-gray-500 text-xs truncate mt-0.5">{offer.description}</p>
                             {offer.externalLink && (
@@ -1034,8 +1102,8 @@ const AdminGoodpicksOffers = () => {
                           {Array.isArray(offer.requirements) && offer.requirements.length > 0
                             ? `${offer.requirements.length} requirement(s)`
                             : typeof offer.requirements === 'string'
-                            ? offer.requirements
-                            : 'Standard'}
+                              ? offer.requirements
+                              : 'Standard'}
                         </span>
                       </td>
 
@@ -1044,11 +1112,10 @@ const AdminGoodpicksOffers = () => {
                         <button
                           onClick={() => handleToggle(offer)}
                           disabled={isBusy}
-                          className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold uppercase transition-all ${
-                            offer.isActive
+                          className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold uppercase transition-all ${offer.isActive
                               ? 'bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100'
                               : 'bg-gray-100 text-gray-500 border border-gray-200 hover:bg-gray-200'
-                          }`}
+                            }`}
                         >
                           {offer.isActive ? (
                             <>

@@ -7,11 +7,11 @@ import { motion } from 'framer-motion';
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
 const PAGE_TITLES = {
-  'impressum': { en: 'Impressum', de: 'Impressum', fr: 'Mentions Légales', es: 'Aviso Legal', ur: 'امپریسم (قانونی معلومات)', ru: 'Выходные данные (Impressum)' },
-  'terms-of-use': { en: 'Terms of Service', de: 'Nutzungsbedingungen', fr: "Conditions d'Utilisation", es: 'Términos de Servicio', ur: 'استعمال کی شرائط', ru: 'Условия использования' },
-  'privacy-policy': { en: 'Privacy Policy', de: 'Datenschutzerklärung', fr: 'Politique de Confidentialité', es: 'Política de Privacidad', ur: 'پرائیویسی پالیسی', ru: 'Политика конфиденциальности' },
-  'affiliate-policy': { en: 'Affiliate Policy', de: 'Partnerprogramm-Richtlinie', fr: "Politique d'Affiliation", es: 'Política de Afiliados', ur: 'ایفیلی ایٹ پالیسی', ru: 'Партнерская политика' },
-  'cookie-policy': { en: 'Cookie Policy', de: 'Cookie-Richtlinie', fr: 'Politique relative aux Cookies', es: 'Política de Cookies', ur: 'کوکی پالیسی', ru: 'Политика файлов cookie' },
+  'impressum': { en: 'Impressum', de: 'Impressum', fr: 'Mentions Légales', es: 'Aviso Legal', ur: 'امپریسم (قانونی معلومات)', ru: 'Выходные данные (Impressum)', pt: 'Informações Legais (Impressum)' },
+  'terms-of-use': { en: 'Terms of Service', de: 'Nutzungsbedingungen', fr: "Conditions d'Utilisation", es: 'Términos de Servicio', ur: 'استعمال کی شرائط', ru: 'Условия использования', pt: 'Termos de Serviço' },
+  'privacy-policy': { en: 'Privacy Policy', de: 'Datenschutzerklärung', fr: 'Politique de Confidentialité', es: 'Política de Privacidad', ur: 'پرائیویسی پالیسی', ru: 'Политика конфиденциальности', pt: 'Política de Privacidade' },
+  'affiliate-policy': { en: 'Affiliate Policy', de: 'Partnerprogramm-Richtlinie', fr: "Politique d'Affiliation", es: 'Política de Afiliados', ur: 'ایفیلی ایٹ پالیسی', ru: 'Партнерская политика', pt: 'Política de Afiliados' },
+  'cookie-policy': { en: 'Cookie Policy', de: 'Cookie-Richtlinie', fr: 'Politique relative aux Cookies', es: 'Política de Cookies', ur: 'کوکی پالیسی', ru: 'Политика файлов cookie', pt: 'Política de Cookies' },
 };
 
 const formatInline = (text, isDarkMode, lineIdx = 0) => {
@@ -152,6 +152,7 @@ export default function LegalModal({ isOpen, onClose, initialSlug = 'impressum' 
   const isEs = i18n?.language?.startsWith('es');
   const isUr = i18n?.language === 'ur' || i18n?.language?.startsWith('ur');
   const isRu = i18n?.language?.startsWith('ru');
+  const isPt = i18n?.language?.startsWith('pt');
 
   const [cache, setCache] = useState({});
   const [loading, setLoading] = useState(false);
@@ -225,8 +226,10 @@ export default function LegalModal({ isOpen, onClose, initialSlug = 'impressum' 
         ? (currentPage.title_es || currentPage.title_en)
         : isRu
         ? (currentPage.title_ru || currentPage.title_en)
+        : isPt
+        ? (currentPage.title_pt || currentPage.title_en)
         : (currentPage.title_en || currentPage.title_de))
-    : PAGE_TITLES[activeSlug]?.[isUr ? 'ur' : isDe ? 'de' : isFr ? 'fr' : isEs ? 'es' : isRu ? 'ru' : 'en'] || 'Legal';
+    : PAGE_TITLES[activeSlug]?.[isUr ? 'ur' : isDe ? 'de' : isFr ? 'fr' : isEs ? 'es' : isRu ? 'ru' : isPt ? 'pt' : 'en'] || 'Legal';
 
   const content = currentPage
     ? (isUr
@@ -239,6 +242,8 @@ export default function LegalModal({ isOpen, onClose, initialSlug = 'impressum' 
         ? (currentPage.content_es || currentPage.content_en || '')
         : isRu
         ? (currentPage.content_ru || currentPage.content_en || '')
+        : isPt
+        ? (currentPage.content_pt || currentPage.content_en || '')
         : (currentPage.content_en || currentPage.content_de || ''))
     : '';
 

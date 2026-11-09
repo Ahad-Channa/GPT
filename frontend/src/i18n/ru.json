@@ -552,7 +552,8 @@
     "impressum": "Выходные данные (Impressum)",
     "support": "Поддержка",
     "leaveReview": "Оставить отзыв",
-    "copyright": "© {{year}} TaskMint"
+    "copyright": "© {{year}} TaskMint",
+    "changeToLightMode": "Переключить на светлую тему"
   },
   "policies": {
     "title": "Политики",
@@ -693,4 +694,3 @@
     "taskCompletedText": "Задание: выполнено"
   }
 }
-

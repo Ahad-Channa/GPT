@@ -158,7 +158,7 @@ const Footer = () => {
                   letterSpacing: 0
                 }}
               >
-                {t('footer.changeToDarkMode', 'Change to dark mode')}
+                {isDarkMode ? t('footer.changeToLightMode', 'Change to light mode') : t('footer.changeToDarkMode', 'Change to dark mode')}
               </span>
               <div
                 className={`rounded-full flex items-center shrink-0 cursor-pointer transition-colors duration-300 ${isDarkMode ? 'justify-end' : 'justify-start'}`}

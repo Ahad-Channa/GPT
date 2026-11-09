@@ -552,7 +552,8 @@
     "impressum": "Mentions Légales",
     "support": "Assistance",
     "leaveReview": "Donner un avis",
-    "copyright": "© {{year}} TaskMint"
+    "copyright": "© {{year}} TaskMint",
+    "changeToLightMode": "Activer le mode clair"
   },
   "policies": {
     "title": "Politiques",

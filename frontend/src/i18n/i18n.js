@@ -8,6 +8,7 @@ import fr from './fr.json';
 import es from './es.json';
 import ur from './ur.json';
 import ru from './ru.json';
+import pt from './pt.json';
 
 const hasFunctionalConsent = () => {
   if (typeof window === 'undefined') return false;
@@ -31,6 +32,7 @@ const getInitialLanguage = () => {
       if (saved.startsWith('fr')) return 'fr';
       if (saved.startsWith('es')) return 'es';
       if (saved.startsWith('ru')) return 'ru';
+      if (saved.startsWith('pt')) return 'pt';
       if (saved.startsWith('en')) return 'en';
     }
   }
@@ -50,7 +52,8 @@ i18n
       fr: { translation: fr },
       es: { translation: es },
       ur: { translation: ur },
-      ru: { translation: ru }
+      ru: { translation: ru },
+      pt: { translation: pt }
     },
     fallbackLng: 'en',
     lng: getInitialLanguage(),

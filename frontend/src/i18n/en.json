@@ -129,7 +129,8 @@
     "ur": "UR",
     "fr": "FR",
     "ru": "RU",
-    "es": "ES"
+    "es": "ES",
+    "pt": "PT"
   },
   "offers": {
     "requirements": "Requirements",
@@ -552,7 +553,8 @@
     "impressum": "Impressum",
     "support": "Support",
     "leaveReview": "Leave a review",
-    "copyright": "© {{year}} TaskMint"
+    "copyright": "© {{year}} TaskMint",
+    "changeToLightMode": "Change to light mode"
   },
   "policies": {
     "title": "Policies",
