@@ -103,10 +103,10 @@ const Landing = () => {
                 src={
                   isDarkMode
                     ? (isPt ? "/coins/herodarkportu.jpg" : (isRu ? "/coins/herodarkrussian.jpg" : (isEs ? "/coins/herodarkspanish.png" : (isFr ? "/coins/HeroDarktFranch.png" : (isUr ? "/coins/Hero Urdu Dark Desktop.jpg" : (isDe ? "/coins/HerosectionBlackGerman.png" : "/coins/HerosectionBlackEnglish.png"))))))
-                    : (isPt ? "/coins/herolightportu.jpg" : (isRu ? "/coins/herolightrussian.jpg" : (isEs ? "/coins/herolightspanish.png" : (isFr ? "/coins/HeroLightFranch.png" : (isUr ? "/coins/Hero Urdu Light Desktop.jpg" : (isDe ? "/coins/Hero section german desktop.png" : "/coins/hero section image.png"))))))
+                    : (isPt ? "/coins/hero light portu1.jpg" : (isRu ? "/coins/hero light russian1.jpg" : (isEs ? "/coins/herolightspanish.png" : (isFr ? "/coins/hero light french1.jpg" : (isUr ? "/coins/hero light urdu1.jpg" : (isDe ? "/coins/Hero section german desktop.png" : "/coins/hero section image.png"))))))
                 }
                 alt="Hero Background"
-                className={`w-full h-full object-fill ${isUr || isRu || isPt ? 'rounded-bl-[36px]' : ''}`}
+                className={`w-full h-full object-fill ${isUr || isRu || isPt || isFr ? 'rounded-bl-[36px]' : ''}`}
               />
             </div>
           </div>
@@ -895,7 +895,7 @@ const Landing = () => {
 
           {/* Image (Second on mobile, First on Desktop) */}
           <div
-            className={`order-2 lg:order-1 flex-shrink-0 w-full lg:w-[640px] h-auto lg:h-[558px] px-0 mt-6 lg:mt-0 flex ${isMobile && (isDe || isUr || isFr || isEs || isRu) ? 'justify-start' : 'justify-center'} lg:justify-start overflow-hidden rounded-[24px] lg:rounded-[32px]`}
+            className={`order-2 lg:order-1 flex-shrink-0 w-full lg:w-[640px] h-auto lg:h-[558px] px-0 mt-6 lg:mt-0 flex ${isMobile && (isDe || isUr || isFr || isEs || isRu || isPt) ? 'justify-start' : 'justify-center'} lg:justify-start overflow-hidden rounded-[24px] lg:rounded-[32px]`}
             style={isMobile ? { width: '100%', maxWidth: '100%' } : {}}
           >
             <img
@@ -921,7 +921,7 @@ const Landing = () => {
                             ? "/coins/why chose us Urdu Dark Desktop.jpg"
                             : (isDe ? "/coins/WhycoseusBlackGerman.png" : (isFr ? "/coins/whychoseusdark.png" : "/coins/WhycoseusBlackEnglish.png"))))))
                     : (isPt
-                      ? "/coins/whychoseuslightportu.jpg"
+                      ? "/coins/whychoseus hero light portu1.png"
                       : (isRu
                         ? "/coins/whychoseuslightrussian.jpg"
                         : (isEs
