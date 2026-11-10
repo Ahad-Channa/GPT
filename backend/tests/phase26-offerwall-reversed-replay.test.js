@@ -17,11 +17,13 @@ const {
 const { recordDisabledRouteHit, recordReplayAlert } = require('../services/offerwalls/notices');
 const { classifyLegacyRows, runBackfill } = require('../scripts/backfill-offerwall-identities');
 const { compareAyetLegacyMapping, parseCsv } = require('../scripts/compare-ayet-legacy-mapping');
+const { parseLootablyWebhook, verifyLootablyWebhook } = require('../services/offerwalls/lootablyWebhook');
 
 const {
   creditLegacyOfferReward,
   reverseLegacyOfferTransaction,
   handleLegacyOfferwallPostback,
+  handleLootablyWebhook,
 } = offerwallsRouter.__testInternals;
 
 // ── In-memory world ─────────────────────────────────────────────────────────
@@ -57,6 +59,7 @@ const makeWorld = () => {
     identities: [],
     alerts: [],
     notices: [],
+    receipts: [],
     nextId: 1,
     blindIdentityFindOnce: false,
     adminNotifications: [],
@@ -147,6 +150,7 @@ const makeWorld = () => {
   };
   world.Alert = uniqueUpsertModel(() => world.alerts, ['providerId', 'userId', 'identityKey', 'blockedExternalId']);
   world.Notice = uniqueUpsertModel(() => world.notices, ['providerId', 'kind', 'bucket']);
+  world.Receipt = uniqueUpsertModel(() => world.receipts, ['providerId', 'webhookId']);
 
   let queue = Promise.resolve();
   world.runInTransaction = (operation) => {
@@ -175,6 +179,7 @@ const makeWorld = () => {
     OfferwallRewardIdentity: world.Identity,
     OfferwallReplayAlert: world.Alert,
     OfferwallRouteNotice: world.Notice,
+    OfferwallWebhookReceipt: world.Receipt,
   };
   world.deps = {
     Settings: {
@@ -184,6 +189,7 @@ const makeWorld = () => {
           earningHoldConfig: { enabled: false },
           referralConfig: {},
           offerwallProviders: [
+            { id: 'lootably', label: 'Lootably', enabled: true, conversionRatio: 100 },
             { id: 'primeearn', label: 'PrimeEarn', enabled: true, conversionRatio: 100 },
             { id: 'ayet', label: 'Ayet Studios', enabled: true, conversionRatio: 100 },
           ],
@@ -219,9 +225,14 @@ const adapterOptions = (registry = enabledRegistry()) => ({
   env: {
     OFFERWALL_ADAPTER_PRIMEEARN_ENABLED: 'true',
     OFFERWALL_ADAPTER_AYET_ENABLED: 'true',
+    OFFERWALL_ADAPTER_LOOTABLY_ENABLED: 'true',
     PRIMEEARN_SECRET: SALT,
     PRIMEEARN_POSTBACK_BASE_URL: BASE_URL,
     AYET_API_KEY: AYET_KEY,
+    LOOTABLY_WEBHOOK_SECRET: 'lootably-test-webhook-secret',
+    LOOTABLY_PLACEMENT_ID: 'placement-test-123',
+    LOOTABLY_CURRENCY_REWARD_IS_COINS: 'true',
+    LOOTABLY_WEBHOOK_ALLOWED_IPS: '203.0.113.10',
   },
 });
 
@@ -250,9 +261,66 @@ const ayetReq = (params, { key = AYET_KEY, header } = {}) => {
   return { method: 'GET', originalUrl: '/api/offerwalls/postback/ayet', query: { ...params }, body: {}, headers, ip: '51.79.101.241', get: () => '' };
 };
 
+const lootablyReq = ({
+  event = 'approved',
+  webhookId = 'wh-default',
+  transactionId = 'loot-tx-1',
+  userId = USER_ID,
+  offerType = 'multistep',
+  goalId = 'goal-install',
+  currencyReward = 120,
+  secret = 'lootably-test-webhook-secret',
+  placementId = 'placement-test-123',
+  sourceIp = '203.0.113.10',
+  eventHeader = event,
+} = {}) => ({
+  method: 'POST',
+  path: '/webhook/lootably',
+  originalUrl: '/api/offerwalls/webhook/lootably',
+  body: {
+    event,
+    data: {
+      placementID: placementId,
+      userID: userId,
+      transactionID: transactionId,
+      conversionTime: '2026-11-10T12:00:00.000Z',
+      ip: '198.51.100.20',
+      countryCode: 'US',
+      offerName: 'Sample App',
+      offerID: 'offer-10',
+      revenue: 1.2,
+      currencyReward,
+      offerType,
+      ...(offerType === 'multistep' ? { goalID: goalId, goalDescription: 'Install and open' } : {}),
+    },
+  },
+  headers: {
+    'content-type': 'application/json',
+    'x-lootably-webhook-secret': secret,
+    'x-lootably-webhook-id': webhookId,
+    'x-lootably-webhook-timestamp': '2026-11-10T12:00:00.000Z',
+    'x-lootably-webhook-type': eventHeader,
+  },
+  socket: { remoteAddress: sourceIp },
+  query: {},
+  get: () => '',
+});
+
 const run = async (world, providerId, req, overrides = {}) => {
   const res = makeRes();
   await handleLegacyOfferwallPostback(providerId, req, res, {}, {
+    adapterOptions: adapterOptions(),
+    models: world.models,
+    runInTransaction: world.runInTransaction,
+    deps: world.deps,
+    ...overrides,
+  });
+  return res;
+};
+
+const runLootably = async (world, req, overrides = {}) => {
+  const res = makeRes();
+  await handleLootablyWebhook(req, res, {
     adapterOptions: adapterOptions(),
     models: world.models,
     runInTransaction: world.runInTransaction,
@@ -273,13 +341,15 @@ const rewards = (world) => world.txs.filter((tx) => tx.transactionType === 'offe
 // ── Defaults: everything disabled, legacy matching off ──────────────────────
 test('every adapter is disabled by default and cannot be enabled by an env flag alone', () => {
   const registry = buildAdapters();
-  assert.deepEqual(Object.keys(registry).sort(), ['ayet', 'primeearn']);
+  assert.deepEqual(Object.keys(registry).sort(), ['ayet', 'lootably', 'primeearn']);
   for (const adapter of Object.values(registry)) {
-    assert.ok(Object.values(adapter.confirmations).every((v) => v === false), `${adapter.id} confirmations must start false`);
     assert.equal(adapter.legacyIdMatchesNew, false);
     assert.equal(isAdapterEnabled(adapter, { [`OFFERWALL_ADAPTER_${adapter.id.toUpperCase()}_ENABLED`]: 'true' }), false);
     assert.equal(resolveEnabledAdapter(adapter.id, { env: { [`OFFERWALL_ADAPTER_${adapter.id.toUpperCase()}_ENABLED`]: 'true' } }), null);
   }
+  assert.equal(registry.lootably.confirmations.transactionIdStableAcrossEvents, true);
+  assert.equal(registry.lootably.confirmations.rejectedAfterApprovalMeansReversal, true);
+  assert.equal(registry.lootably.confirmations.currencyRewardIsTaskMintCoins, true);
   assert.equal(ADAPTERS.primeearn.legacyIdMatchesNewAllowed, false);
 });
 
@@ -289,6 +359,144 @@ test('an adapter is enabled only when every confirmation is true AND the env fla
   assert.equal(isAdapterEnabled(registry.ayet, {}), false);
   registry.ayet.confirmations.reversalCallbacksSigned = false;
   assert.equal(isAdapterEnabled(registry.ayet, { OFFERWALL_ADAPTER_AYET_ENABLED: 'true' }), false);
+});
+
+test('Lootably requires the webhook secret, placement, exact IP allowlist and coin-unit confirmation', () => {
+  const lootably = buildAdapters().lootably;
+  const base = {
+    OFFERWALL_ADAPTER_LOOTABLY_ENABLED: 'true',
+    LOOTABLY_WEBHOOK_SECRET: 'secret',
+    LOOTABLY_PLACEMENT_ID: 'placement-1',
+    LOOTABLY_WEBHOOK_ALLOWED_IPS: '203.0.113.10',
+  };
+  assert.equal(isAdapterEnabled(lootably, base), false);
+  assert.equal(isAdapterEnabled(lootably, { ...base, LOOTABLY_CURRENCY_REWARD_IS_COINS: 'true' }), true);
+  assert.equal(isAdapterEnabled(lootably, { ...base, LOOTABLY_CURRENCY_REWARD_IS_COINS: 'true', LOOTABLY_WEBHOOK_ALLOWED_IPS: '' }), false);
+});
+
+test('Lootably webhook authentication checks the header, configured placement, event, path and source IP', () => {
+  const req = lootablyReq();
+  const env = {
+    LOOTABLY_WEBHOOK_SECRET: 'lootably-test-webhook-secret',
+    LOOTABLY_PLACEMENT_ID: 'placement-test-123',
+    LOOTABLY_WEBHOOK_ALLOWED_IPS: '203.0.113.10',
+  };
+  assert.equal(verifyLootablyWebhook(req, { env }).passed, true);
+  assert.equal(verifyLootablyWebhook(lootablyReq({ secret: 'wrong' }), { env }).passed, false);
+  assert.equal(verifyLootablyWebhook(lootablyReq({ sourceIp: '203.0.113.11' }), { env }).passed, false);
+  assert.equal(verifyLootablyWebhook(lootablyReq({ placementId: 'other-placement' }), { env }).passed, false);
+  assert.equal(verifyLootablyWebhook(lootablyReq({ eventHeader: 'rejected' }), { env }).passed, false);
+  assert.equal(verifyLootablyWebhook({ ...req, method: 'GET', path: '/postback/lootably' }, { env }).passed, false);
+  assert.equal(verifyLootablyWebhook(req, { env: { ...env, LOOTABLY_WEBHOOK_ALLOWED_IPS: '' } }).passed, false);
+});
+
+test('Lootably parses per-step completion identity and maps webhook states without trusting query parameters', () => {
+  const approved = parseLootablyWebhook(lootablyReq({ transactionId: 'T1', goalId: 'goal-a', currencyReward: 125 }));
+  assert.equal(approved.ok, true);
+  assert.equal(approved.kind, 'credit');
+  assert.equal(approved.platformCoins, 125);
+  assert.equal(approved.baseId, 'webhook:T1:goal-a');
+  assert.equal(approved.stepLabel, 'Install and open');
+
+  assert.equal(parseLootablyWebhook(lootablyReq({ event: 'pending' })).kind, 'ignore');
+  assert.equal(parseLootablyWebhook(lootablyReq({ event: 'rejected' })).kind, 'reversal');
+  assert.equal(parseLootablyWebhook(lootablyReq({ currencyReward: 1.5 })).ok, false);
+  assert.equal(parseLootablyWebhook(lootablyReq({ offerType: 'multistep', goalId: '' })).ok, false);
+});
+
+test('Lootably webhook credits once, reverses the same step once, and permits a fresh conversion or a different step', async () => {
+  const world = makeWorld();
+
+  const first = await runLootably(world, lootablyReq({ webhookId: 'wh-approved-1', transactionId: 'T1', goalId: 'goal-a', currencyReward: 125 }));
+  assert.equal(first.statusCode, 200);
+  assert.equal(first.body, '1');
+  assert.equal(wallet(world), 1125, 'currencyReward is already the placement currency, not multiplied by the admin ratio');
+  assert.equal(world.txs.filter((tx) => tx.transactionType === 'offer_reward').length, 1);
+
+  const sameWebhook = await runLootably(world, lootablyReq({ webhookId: 'wh-approved-1', transactionId: 'T1', goalId: 'goal-a', currencyReward: 125 }));
+  assert.equal(sameWebhook.statusCode, 200);
+  assert.equal(wallet(world), 1125);
+
+  const retryWithNewWebhookId = await runLootably(world, lootablyReq({ webhookId: 'wh-approved-2', transactionId: 'T1', goalId: 'goal-a', currencyReward: 125 }));
+  assert.equal(retryWithNewWebhookId.body, '1');
+  assert.equal(wallet(world), 1125, 'transaction identity also dedupes a re-delivery with a different webhook ID');
+
+  const rejected = await runLootably(world, lootablyReq({ event: 'rejected', webhookId: 'wh-rejected-1', transactionId: 'T1', goalId: 'goal-a', currencyReward: 125 }));
+  assert.equal(rejected.body, '1');
+  assert.equal(wallet(world), 1000);
+
+  await runLootably(world, lootablyReq({ event: 'rejected', webhookId: 'wh-rejected-2', transactionId: 'T1', goalId: 'goal-a', currencyReward: 125 }));
+  assert.equal(wallet(world), 1000, 'repeated rejection never deducts twice');
+
+  await runLootably(world, lootablyReq({ webhookId: 'wh-replay-after-reversal', transactionId: 'T1', goalId: 'goal-a', currencyReward: 125 }));
+  assert.equal(wallet(world), 1000, 'an approved callback for the reversed same transaction remains blocked');
+
+  await runLootably(world, lootablyReq({ webhookId: 'wh-new-completion', transactionId: 'T2', goalId: 'goal-a', currencyReward: 125 }));
+  assert.equal(wallet(world), 1125, 'a new provider conversion can be rewarded after the user restarts the offer');
+
+  await runLootably(world, lootablyReq({ webhookId: 'wh-another-goal', transactionId: 'T3', goalId: 'goal-b', currencyReward: 115 }));
+  assert.equal(wallet(world), 1240, 'a distinct approved goal remains independently rewardable');
+  assert.equal(world.receipts.length, 7);
+});
+
+test('concurrent Lootably delivery retries credit once, and an early rejection tombstone blocks a late approval', async () => {
+  const world = makeWorld();
+  const retries = await Promise.all(Array.from({ length: 10 }, (_, index) => runLootably(
+    world,
+    lootablyReq({ webhookId: `wh-parallel-${index}`, transactionId: 'T-parallel', goalId: 'goal-a', currencyReward: 77 })
+  )));
+  assert.ok(retries.every((res) => res.statusCode === 200 && res.body === '1'));
+  assert.equal(wallet(world), 1077);
+  assert.equal(rewards(world).length, 1);
+
+  const earlyReject = await runLootably(world, lootablyReq({
+    event: 'rejected', webhookId: 'wh-early-reject', transactionId: 'T-out-of-order', goalId: 'goal-b',
+  }));
+  assert.equal(earlyReject.body, '1');
+  const lateApproval = await runLootably(world, lootablyReq({
+    webhookId: 'wh-late-approval', transactionId: 'T-out-of-order', goalId: 'goal-b', currencyReward: 80,
+  }));
+  assert.equal(lateApproval.body, '1');
+  assert.equal(wallet(world), 1077, 'the rejected completion remains tombstoned when approval arrives later');
+  assert.equal(rewards(world).length, 1);
+});
+
+test('Lootably webhook rejects bad credentials and malformed callbacks without wallet or ledger writes', async () => {
+  const world = makeWorld();
+  const badSecret = await runLootably(world, lootablyReq({ webhookId: 'wh-bad-secret', secret: 'wrong' }));
+  assert.equal(badSecret.statusCode, 400);
+  const wrongIp = await runLootably(world, lootablyReq({ webhookId: 'wh-bad-ip', sourceIp: '203.0.113.99' }));
+  assert.equal(wrongIp.statusCode, 400);
+  const fractionalCoins = await runLootably(world, lootablyReq({ webhookId: 'wh-fraction', currencyReward: 1.2 }));
+  assert.equal(fractionalCoins.statusCode, 400);
+  assert.equal(wallet(world), 1000);
+  assert.equal(world.txs.length, 0);
+  assert.equal(world.receipts.length, 0);
+});
+
+test('Lootably webhook returns retryable 503 while unconfirmed or unconfigured and does not move money', async () => {
+  const world = makeWorld();
+  const res = await runLootably(world, lootablyReq(), { adapterOptions: undefined });
+  assert.equal(res.statusCode, 503);
+  assert.equal(res.body, '0');
+  assert.equal(world.settingsCalls, 0);
+  assert.equal(wallet(world), 1000);
+  assert.equal(world.txs.length, 0);
+});
+
+test('Lootably legacy GET callback stays blocked when the webhook adapter is enabled', async () => {
+  const world = makeWorld();
+  const res = await run(world, 'lootably', {
+    method: 'GET',
+    path: '/postback/lootably',
+    query: { userID: USER_ID, transactionID: 'editable', currencyReward: '100' },
+    body: {},
+    headers: {},
+  });
+  assert.equal(res.statusCode, 200);
+  assert.equal(res.body, '0');
+  assert.equal(wallet(world), 1000);
+  assert.equal(world.txs.length, 0);
 });
 
 // ── Fail closed ─────────────────────────────────────────────────────────────
@@ -846,4 +1054,5 @@ test('legacy routes do not read provider secrets inline or fall back to non-tran
   assert.match(source, /resolveEnabledAdapter\(providerId/);
   assert.doesNotMatch(source, /require\('\.\/directOffers'\)|DirectOffer/);
   assert.match(source, /router\.post\(`\/postback\/\$\{providerId\}`/);
+  assert.match(source, /router\.post\('\/webhook\/lootably', handleLootablyWebhook\)/);
 });

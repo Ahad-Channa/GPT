@@ -878,7 +878,7 @@ router.get('/settings', requirePermission('manage_withdrawals'), async (req, res
       const envSecretMap = {
         cpx: 'CPX_HASH_KEY',
         adgem: 'ADGEM_API_KEY',
-        lootably: 'LOOTABLY_SECRET',
+        lootably: 'LOOTABLY_WEBHOOK_SECRET',
         torox: 'TOROX_SECRET',
         primeearn: 'PRIMEEARN_SECRET',
         ayet: 'AYET_SECRET',
@@ -886,6 +886,15 @@ router.get('/settings', requirePermission('manage_withdrawals'), async (req, res
         revu: 'REVU_SECRET',
       };
       pObj.secretConfigured = !!process.env[envSecretMap[p.id]];
+      if (p.id === 'lootably') {
+        pObj.webhookConfigured = Boolean(
+          process.env.LOOTABLY_WEBHOOK_SECRET &&
+          process.env.LOOTABLY_PLACEMENT_ID &&
+          process.env.LOOTABLY_CURRENCY_REWARD_IS_COINS === 'true' &&
+          String(process.env.LOOTABLY_WEBHOOK_ALLOWED_IPS || '').split(',').some((ip) => ip.trim())
+        );
+        pObj.webhookEnabled = process.env.OFFERWALL_ADAPTER_LOOTABLY_ENABLED === 'true';
+      }
       const providerConfig = providerConfigMap.get(pObj.id);
       pObj.providerConfig = providerConfig ? {
         configured: true,
@@ -1057,7 +1066,7 @@ router.get('/offerwall-providers', requirePermission('manage_offerwalls'), async
     const envSecretMap = {
       cpx: 'CPX_HASH_KEY',
       adgem: 'ADGEM_API_KEY',
-      lootably: 'LOOTABLY_SECRET',
+      lootably: 'LOOTABLY_WEBHOOK_SECRET',
       torox: 'TOROX_SECRET',
       primeearn: 'PRIMEEARN_SECRET',
       ayet: 'AYET_SECRET',
@@ -1068,9 +1077,19 @@ router.get('/offerwall-providers', requirePermission('manage_offerwalls'), async
     const providers = settings.offerwallProviders.map((provider) => {
       const pObj = hydrateOfferwallProviderSettings(provider);
       const providerConfig = providerConfigMap.get(pObj.id);
+      const lootablyWebhookConfigured = pObj.id === 'lootably' && Boolean(
+        process.env.LOOTABLY_WEBHOOK_SECRET &&
+        process.env.LOOTABLY_PLACEMENT_ID &&
+        process.env.LOOTABLY_CURRENCY_REWARD_IS_COINS === 'true' &&
+        String(process.env.LOOTABLY_WEBHOOK_ALLOWED_IPS || '').split(',').some((ip) => ip.trim())
+      );
       return {
         ...pObj,
         secretConfigured: !!process.env[envSecretMap[pObj.id]],
+        ...(pObj.id === 'lootably' ? {
+          webhookConfigured: lootablyWebhookConfigured,
+          webhookEnabled: process.env.OFFERWALL_ADAPTER_LOOTABLY_ENABLED === 'true',
+        } : {}),
         providerConfig: providerConfig ? {
           configured: true,
           enabled: Boolean(providerConfig.enabled),

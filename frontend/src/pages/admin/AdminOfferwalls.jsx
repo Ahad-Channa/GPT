@@ -96,6 +96,7 @@ const ProviderCard = ({ provider, onUpdate, loadingProvider }) => {
   const supportsIframeUrl = IFRAME_URL_PROVIDERS.has(provider.id);
   const supportsOfferwallUrl = OFFERWALL_URL_PROVIDERS.has(provider.id);
   const supportsPlacementId = PLACEMENT_ID_PROVIDERS.has(provider.id);
+  const usesProviderCurrency = provider.id === 'lootably';
 
   const handleRatioChange = (val) => {
     setRatio(val);
@@ -125,7 +126,7 @@ const ProviderCard = ({ provider, onUpdate, loadingProvider }) => {
     }
     const trimmedLabel = label.trim();
     return {
-      conversionRatio: Number(ratio),
+      ...(!usesProviderCurrency ? { conversionRatio: Number(ratio) } : {}),
       ...(parsedOrder === undefined ? {} : { order: parsedOrder }),
       holdEnabled,
       holdDays: Number.isInteger(parsedHoldDays) && parsedHoldDays >= 0 ? parsedHoldDays : 0,
@@ -146,7 +147,7 @@ const ProviderCard = ({ provider, onUpdate, loadingProvider }) => {
   };
 
   const handleSaveRatio = () => {
-    if (isNaN(Number(ratio)) || Number(ratio) <= 0) {
+    if (!usesProviderCurrency && (isNaN(Number(ratio)) || Number(ratio) <= 0)) {
       toast.error('Conversion ratio must be a positive number');
       return;
     }
@@ -193,6 +194,13 @@ const ProviderCard = ({ provider, onUpdate, loadingProvider }) => {
                 <FiAlertTriangle /> Missing Secret in .env
               </p>
             )}
+            {provider.id === 'lootably' && (
+              <p style={{ color: provider.webhookConfigured && provider.webhookEnabled ? '#059669' : '#B45309', fontSize: '0.72rem', margin: '3px 0 0', fontWeight: 600 }}>
+                {provider.webhookConfigured
+                  ? (provider.webhookEnabled ? 'Secure webhook active' : 'Webhook configured; server activation is off')
+                  : 'Webhook setup incomplete; rewards stay disabled'}
+              </p>
+            )}
             <p style={{ color: readiness === 'generic_tracking_ready' ? '#34d399' : '#94a3b8', fontSize: '0.68rem', margin: '2px 0 0' }}>
               {readinessLabel}{provider.providerConfig?.securityMethod ? ` · ${provider.providerConfig.securityMethod}` : ''}
             </p>
@@ -214,6 +222,25 @@ const ProviderCard = ({ provider, onUpdate, loadingProvider }) => {
         </button>
       </div>
 
+      {usesProviderCurrency ? (
+        <div style={{ marginTop: '1rem', padding: '0.85rem', background: '#EFF6FF', border: '1px solid #BFDBFE', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.75rem' }}>
+          <div>
+            <p style={{ color: '#1E3A8A', fontWeight: 700, fontSize: '0.78rem', margin: 0 }}>Lootably reward currency</p>
+            <p style={{ color: '#1E40AF', fontSize: '0.72rem', lineHeight: 1.5, margin: '0.35rem 0 0' }}>
+              Lootably sends the configured placement currency reward directly as TaskMint coins. Set the Lootably placement currency and user split so each reward is a whole number of coins. The User Split Ratio below is not used for Lootably.
+            </p>
+          </div>
+          {dirty && (
+            <button
+              onClick={handleSaveRatio}
+              disabled={isLoading}
+              style={{ height: '40px', padding: '0 1.25rem', borderRadius: '10px', background: '#1E2538', border: 'none', color: 'white', fontSize: '0.82rem', fontWeight: 700, cursor: isLoading ? 'not-allowed' : 'pointer', flexShrink: 0 }}
+            >
+              {isLoading ? <FiLoader className="spin" /> : 'Save'}
+            </button>
+          )}
+        </div>
+      ) : (
       <div style={{ display: 'flex', alignItems: 'flex-end', gap: '0.75rem', marginTop: '1rem' }}>
         <div style={{ flex: 1 }}>
           <label style={{ display: 'block', fontSize: '0.7rem', color: '#6B7280', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.35rem' }}>
@@ -248,6 +275,7 @@ const ProviderCard = ({ provider, onUpdate, loadingProvider }) => {
           </button>
         )}
       </div>
+      )}
       <div style={{ marginTop: '1rem' }}>
         <label style={{ display: 'block', fontSize: '0.7rem', color: '#6B7280', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.35rem' }}>
           Display Order
@@ -465,21 +493,22 @@ const AdminOfferwalls = () => {
     return String(a.id).localeCompare(String(b.id));
   });
 
-  // Goodpicks is a branded Direct Offer (category 'gaming') but also appears in
-  // the user-side Surveys section, so it is shown in both admin tabs without
-  // changing its category.
+  // Goodpicks is a branded Direct Offer (category 'gaming') and Lootably is a
+  // mixed survey/gaming wall. Show both in the admin Surveys tab while keeping
+  // their configured categories unchanged; Lootably also stays in Gaming & App.
   const visibleProviders = sortedProviders.filter((p) => {
     if (activeTab === 'all') return true;
     const isSurvey = p.category === 'surveys';
     const isGoodpicks = p.id === 'goodpicks';
-    if (activeTab === 'surveys') return isSurvey || isGoodpicks;
+    const isLootably = p.id === 'lootably';
+    if (activeTab === 'surveys') return isSurvey || isGoodpicks || isLootably;
     return !isSurvey || isGoodpicks; // gaming & app
   });
 
   const tabCounts = {
     all: sortedProviders.length,
     gaming: sortedProviders.filter((p) => p.category !== 'surveys' || p.id === 'goodpicks').length,
-    surveys: sortedProviders.filter((p) => p.category === 'surveys' || p.id === 'goodpicks').length,
+    surveys: sortedProviders.filter((p) => p.category === 'surveys' || p.id === 'goodpicks' || p.id === 'lootably').length,
   };
 
   if (!canManage) {

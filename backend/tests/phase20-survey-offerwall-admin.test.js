@@ -73,16 +73,24 @@ test('Surveys set matches the user-facing section (goodpicks + surveys) and excl
   assert.match(adminSource, /Gaming&App/);
   assert.match(adminSource, /constisSurvey=p\.category==='surveys'/);
   assert.match(adminSource, /constisGoodpicks=p\.id==='goodpicks'/);
-  assert.match(adminSource, /activeTab==='surveys'\)returnisSurvey\|\|isGoodpicks/);
+  assert.match(adminSource, /activeTab==='surveys'\)returnisSurvey\|\|isGoodpicks\|\|isLootably/);
 });
 
 test('Goodpicks appears in both admin tabs without a category change', () => {
   const source = read('frontend/src/pages/admin/AdminOfferwalls.jsx');
-  // Surveys tab: category surveys OR goodpicks; Gaming tab: non-surveys OR goodpicks.
-  assert.match(source, /activeTab === 'surveys'\) return isSurvey \|\| isGoodpicks/);
+  // Surveys tab: category surveys OR Goodpicks OR mixed Lootably. Gaming keeps Lootably.
+  assert.match(source, /activeTab === 'surveys'\) return isSurvey \|\| isGoodpicks \|\| isLootably/);
   assert.match(source, /return !isSurvey \|\| isGoodpicks/);
   // Underlying category untouched (Settings default remains gaming).
   assert.match(read('backend/models/Settings.js'), /id: 'goodpicks'[\s\S]{0,120}category: 'gaming'/);
+});
+
+test('Lootably appears in both admin tabs without changing its mixed category', () => {
+  const source = read('frontend/src/pages/admin/AdminOfferwalls.jsx');
+  assert.match(source, /const isLootably = p\.id === 'lootably'/);
+  assert.match(source, /activeTab === 'surveys'\) return isSurvey \|\| isGoodpicks \|\| isLootably/);
+  assert.match(source, /surveys: sortedProviders\.filter\(\(p\) => p\.category === 'surveys' \|\| p\.id === 'goodpicks' \|\| p\.id === 'lootably'\)/);
+  assert.match(read('backend/models/Settings.js'), /id: 'lootably'[\s\S]{0,180}category: 'mixed'/);
 });
 
 test('survey providers never appear in Gaming & App even when reordered first', async () => {
@@ -243,4 +251,15 @@ test('offerwallUrl and placementId apply only to Lootably', async () => {
     assert.equal(lootably.offerwallUrl, 'https://lootably.example/ow');
     assert.equal(lootably.placementId, 'place-123');
   });
+});
+
+test('Lootably admin card explains direct coin rewards and shows webhook activation state', () => {
+  const adminUi = read('frontend/src/pages/admin/AdminOfferwalls.jsx');
+  const adminApi = read('backend/routes/admin.js');
+  assert.match(adminUi, /Lootably sends the configured placement currency reward directly as TaskMint coins/);
+  assert.match(adminUi, /provider\.webhookConfigured && provider\.webhookEnabled/);
+  assert.match(adminApi, /LOOTABLY_WEBHOOK_SECRET/);
+  assert.match(adminApi, /LOOTABLY_WEBHOOK_ALLOWED_IPS/);
+  assert.match(adminApi, /LOOTABLY_CURRENCY_REWARD_IS_COINS === 'true'/);
+  assert.match(adminApi, /OFFERWALL_ADAPTER_LOOTABLY_ENABLED === 'true'/);
 });

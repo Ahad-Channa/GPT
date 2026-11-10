@@ -1,6 +1,7 @@
 const crypto = require('crypto');
 
 const { getClientIp } = require('../../utils/geo');
+const { parseLootablyWebhook, readAllowedIps, verifyLootablyWebhook } = require('./lootablyWebhook');
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Legacy offerwall provider adapters (fail-closed registry).
@@ -202,6 +203,28 @@ const ayetParse = (req) => {
 // (a sample is not enough). `legacyIdMatchesNewAllowed:false` means it can never be
 // honoured (PrimeEarn's old handler stored offer_id, a different thing).
 const buildAdapters = () => ({
+  // Lootably documents the JSON webhook, event IDs and conversion transaction
+  // IDs. Activation also requires placement-specific env config, an exact source
+  // IP allowlist, and an explicit acknowledgement that placement currency is coins.
+  lootably: {
+    id: 'lootably',
+    verify: verifyLootablyWebhook,
+    parse: parseLootablyWebhook,
+    isConfigured: (env = process.env) => Boolean(
+      String(env.LOOTABLY_WEBHOOK_SECRET || '').trim() &&
+      String(env.LOOTABLY_PLACEMENT_ID || '').trim() &&
+      env.LOOTABLY_CURRENCY_REWARD_IS_COINS === 'true' &&
+      readAllowedIps(env).length > 0
+    ),
+    legacyIdMatchesNew: false,
+    legacyIdMatchesNewAllowed: false,
+    confirmations: {
+      webhookFormatDocumented: true,
+      transactionIdStableAcrossEvents: true,
+      rejectedAfterApprovalMeansReversal: true,
+      currencyRewardIsTaskMintCoins: true,
+    },
+  },
   primeearn: {
     id: 'primeearn',
     verify: primeEarnVerify,
@@ -236,7 +259,8 @@ const isAdapterEnabled = (adapter, env = process.env) => {
   if (!adapter) return false;
   const confirmed = Object.values(adapter.confirmations || {}).every((value) => value === true);
   const flag = env[`OFFERWALL_ADAPTER_${String(adapter.id).toUpperCase()}_ENABLED`] === 'true';
-  return confirmed && flag;
+  const configured = typeof adapter.isConfigured !== 'function' || adapter.isConfigured(env);
+  return confirmed && flag && configured;
 };
 
 // Returns the adapter only if it exists AND is enabled. `registry` is injectable for tests.

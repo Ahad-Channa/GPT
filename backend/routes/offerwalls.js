@@ -14,6 +14,8 @@ const { sanitizePostbackPayload } = require('../services/tracking/postbackSaniti
 const { createOne, withSession } = require('../services/rewards/atomicRunner');
 
 const OfferwallRewardIdentity = require('../models/OfferwallRewardIdentity');
+const OfferwallWebhookReceipt = require('../models/OfferwallWebhookReceipt');
+const { LOOTABLY_WEBHOOK_PATH } = require('../services/offerwalls/lootablyWebhook');
 const {
   REJECTED_RESPONSE,
   adapterLegacyIdMatchesNew,
@@ -47,7 +49,7 @@ const readOfferTitle = (...sources) => {
 };
 
 const readStepLabel = (...sources) => {
-  const stepKeys = ['step_name', 'goal_name', 'event_name', 'stepName', 'goalName', 'eventName'];
+  const stepKeys = ['step_name', 'goal_name', 'event_name', 'stepName', 'goalName', 'eventName', 'goalDescription'];
   for (const source of sources) {
     for (const key of stepKeys) {
       const value = sanitizeOfferTitle(source?.[key]);
@@ -64,6 +66,7 @@ const parseLegacyProviderUnits = (value) => {
 };
 
 const legacyPostbackRoute = (providerId) => `/api/offerwalls/postback/${providerId}`;
+const lootablyWebhookRoute = '/api/offerwalls/webhook/lootably';
 
 const sanitizeLegacyQuery = (query = {}) => {
   const safeQuery = { ...query };
@@ -87,7 +90,7 @@ const writeLegacyPostbackLog = async ({
   try {
     await PostbackLog.create({
       providerId,
-      route: legacyPostbackRoute(providerId),
+      route: req?.__postbackRoute || legacyPostbackRoute(providerId),
       method: req.method || 'GET',
       sanitizedQuery: sanitizeLegacyQuery(req.query || {}),
       sanitizedBody: sanitizePostbackPayload(req.body || {}),
@@ -378,8 +381,8 @@ const reverseLegacyOfferTransaction = async ({
 // ledger. It answers with a status chosen from the provider's documented retry
 // behaviour, and keeps bookkeeping bounded: one counter row per provider-hour and
 // one admin alert per provider per UTC day.
-const respondRouteDisabled = async ({ providerId, res, options = {}, notifyAdmins: notifyAdminsFn = notifyAdmins }) => {
-  const { status, body } = getDisabledResponse(providerId);
+const respondRouteDisabled = async ({ providerId, res, options = {}, notifyAdmins: notifyAdminsFn = notifyAdmins, disabledResponse = null }) => {
+  const { status, body } = disabledResponse || getDisabledResponse(providerId);
   try {
     const hit = await recordDisabledRouteHit({ models: options.models, providerId });
     if (hit.firstHitOfHour) {
@@ -432,6 +435,12 @@ const handleLegacyOfferwallPostback = async (providerId, req, res, params = {}, 
   const logPostback = (payload) => writePostbackLog({ req, providerId, ...payload });
 
   try {
+    // Lootably must use the authenticated JSON webhook only. Keep the old GET
+    // postback endpoint disabled even after the webhook adapter is enabled.
+    if (providerId === 'lootably' && req?.path !== LOOTABLY_WEBHOOK_PATH) {
+      return await respondRouteDisabled({ providerId, res, options, notifyAdmins });
+    }
+
     // 0. Fail closed: no enabled, verified adapter -> no money movement at all.
     const adapter = resolveEnabledAdapter(providerId, options.adapterOptions);
     if (!adapter) return await respondRouteDisabled({ providerId, res, options, notifyAdmins });
@@ -553,7 +562,17 @@ const handleLegacyOfferwallPostback = async (providerId, req, res, params = {}, 
 
     // 6. Convert: platformCoins = Math.floor(providerUnits * provider.conversionRatio)
     const parsedProviderUnits = parseLegacyProviderUnits(providerUnits);
-    if (parsedProviderUnits === null) {
+    const explicitPlatformCoins = parsed.platformCoins;
+    if (explicitPlatformCoins !== undefined && (!Number.isSafeInteger(explicitPlatformCoins) || explicitPlatformCoins < 1)) {
+      await logPostback({
+        mappedFields: { ...baseMappedFields, status: 'rejected' },
+        processingResult: 'rejected',
+        rejectionReason: 'Explicit platform coin reward is malformed.',
+        security,
+      });
+      return res.status(REJECTED_RESPONSE.status).send(REJECTED_RESPONSE.body);
+    }
+    if (explicitPlatformCoins === undefined && parsedProviderUnits === null) {
       console.warn(`[Reward Engine] ${providerId} postback rejected because provider units are malformed.`);
       await logPostback({
         mappedFields: { ...baseMappedFields, status: 'rejected' },
@@ -564,7 +583,9 @@ const handleLegacyOfferwallPostback = async (providerId, req, res, params = {}, 
       return res.status(REJECTED_RESPONSE.status).send(REJECTED_RESPONSE.body);
     }
 
-    const platformCoins = Math.floor(parsedProviderUnits * provider.conversionRatio);
+    const platformCoins = explicitPlatformCoins === undefined
+      ? Math.floor(parsedProviderUnits * provider.conversionRatio)
+      : explicitPlatformCoins;
     if (isNaN(platformCoins) || platformCoins <= 0) {
       await logPostback({
         mappedFields: { ...baseMappedFields, status: 'ignored' },
@@ -613,7 +634,7 @@ const handleLegacyOfferwallPostback = async (providerId, req, res, params = {}, 
           campaignTitle: offerTitle || null,
           stepLabel: stepLabel || null,
           providerUnits,
-          conversionRatio: provider.conversionRatio,
+          conversionRatio: explicitPlatformCoins === undefined ? provider.conversionRatio : 1,
           holdApplied: holdDecision.status === 'hold',
           holdDays: holdDecision.holdDays,
         },
@@ -846,11 +867,74 @@ const handleLegacyOfferwallPostback = async (providerId, req, res, params = {}, 
   }
 };
 
+// Lootably's Conversion Webhook has provider-issued event IDs and a separate
+// webhook secret header. Keep receipts after the financial handler succeeds; the
+// conversion identity/ledger indexes remain the authoritative money idempotency
+// keys if receipt persistence itself needs a retry.
+const handleLootablyWebhook = async (req, res, options = {}) => {
+  req.__postbackRoute = lootablyWebhookRoute;
+  const adapter = resolveEnabledAdapter('lootably', options.adapterOptions);
+  if (!adapter) {
+    return respondRouteDisabled({
+      providerId: 'lootably',
+      res,
+      options,
+      notifyAdmins: options.deps?.notifyAdmins || notifyAdmins,
+      disabledResponse: { status: 503, body: '0' },
+    });
+  }
+
+  const verification = adapter.verify(req, { env: options.adapterOptions?.env || process.env });
+  if (!verification.passed) {
+    return handleLegacyOfferwallPostback('lootably', req, res, requestRewardLabels(req), options);
+  }
+
+  const ReceiptModel = options.models?.OfferwallWebhookReceipt || OfferwallWebhookReceipt;
+  const receiptFilter = { providerId: 'lootably', webhookId: verification.webhookId };
+  try {
+    const priorReceipt = await ReceiptModel.findOne(receiptFilter);
+    if (priorReceipt) return res.status(200).send('1');
+  } catch (error) {
+    console.error('[Lootably Webhook] Unable to check webhook receipt:', error.message);
+    return res.status(503).send('0');
+  }
+
+  const captured = {
+    statusCode: 500,
+    body: '0',
+    status(code) { this.statusCode = code; return this; },
+    send(body) { this.body = body; return this; },
+  };
+  await handleLegacyOfferwallPostback('lootably', req, captured, requestRewardLabels(req), options);
+
+  if (captured.statusCode === 200 && captured.body === '1') {
+    try {
+      await ReceiptModel.create({
+        ...receiptFilter,
+        event: verification.event,
+        transactionId: String(req.body?.data?.transactionID || '').slice(0, 160),
+        receivedAt: new Date(),
+      });
+    } catch (error) {
+      if (error?.code !== 11000) {
+        // Provider retries are safe: transaction and identity keys prevent a
+        // repeated event from changing the balance a second time.
+        console.error('[Lootably Webhook] Unable to save webhook receipt:', error.message);
+        return res.status(503).send('0');
+      }
+    }
+  }
+
+  return res.status(captured.statusCode).send(captured.body);
+};
+
 // 3b. Provider-Specific Routes
 const requestRewardLabels = (req) => ({
-  offerTitle: readOfferTitle(req.query, req.body),
-  stepLabel: readStepLabel(req.query, req.body),
+  offerTitle: readOfferTitle(req.query, req.body?.data, req.body),
+  stepLabel: readStepLabel(req.query, req.body?.data, req.body),
 });
+
+router.post('/webhook/lootably', handleLootablyWebhook);
 
 // Every legacy provider route is registered, but money moves only through an
 // enabled, verified adapter; otherwise the handler fails closed (see
@@ -869,6 +953,7 @@ router.__testInternals = {
   creditLegacyOfferReward,
   reverseLegacyOfferTransaction,
   handleLegacyOfferwallPostback,
+  handleLootablyWebhook,
   respondRouteDisabled,
 };
 
