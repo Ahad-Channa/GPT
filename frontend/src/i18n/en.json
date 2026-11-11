@@ -693,5 +693,21 @@
     "taskCustomTask": "Task: custom task",
     "taskOfferwall": "Task: offerwall task",
     "taskCompletedText": "Task: completed"
+  },
+  "heroGraphic": {
+    "earnFromSurveys": "Earn from Surveys",
+    "questionNumber": "Question 01",
+    "questionTitle": "Do you use Android?",
+    "selectOnlyOne": "SELECT ONLY ONE",
+    "optionYes": "Yes",
+    "optionNo": "No",
+    "btnBack": "Back",
+    "btnNext": "Next",
+    "earnByPlayingGames": "Earn by Playing Games",
+    "fastPayoutsTitle": "Fast Payouts",
+    "fastPayoutsSubtitle": "Withdraw your earnings quickly and securely",
+    "joinFreeTitle": "Join Free Earn More",
+    "joinFreeSubtitle": "Yes, it is 100% free to join and start earning.",
+    "freeBadge": "FREE"
   }
 }

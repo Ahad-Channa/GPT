@@ -692,5 +692,21 @@
     "taskCustomTask": "Tâche : tâche personnalisée",
     "taskOfferwall": "Tâche : tâche mur d'offres",
     "taskCompletedText": "Tâche : complétée"
+  },
+  "heroGraphic": {
+    "earnFromSurveys": "Gagnez de l'argent avec des sondages",
+    "questionNumber": "Question 01",
+    "questionTitle": "Utilisez-vous Android ?",
+    "selectOnlyOne": "CHOISISSEZ UNE RÉPONSE",
+    "optionYes": "Oui",
+    "optionNo": "Non",
+    "btnBack": "Retour",
+    "btnNext": "Suivant",
+    "earnByPlayingGames": "Gagnez de l'argent en jouant à des jeux",
+    "fastPayoutsTitle": "Paiements rapides",
+    "fastPayoutsSubtitle": "Retirez vos gains rapidement et en toute sécurité",
+    "joinFreeTitle": "Inscrivez-vous gratuitement et gagnez plus",
+    "joinFreeSubtitle": "Oui, l'inscription est 100% gratuite pour commencer à gagner.",
+    "freeBadge": "GRATUIT"
   }
 }

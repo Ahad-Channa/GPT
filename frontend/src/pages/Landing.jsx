@@ -96,18 +96,280 @@ const Landing = () => {
             style={{ maxWidth: '1328px' }}
           >
             <div
-              className="absolute top-0 pointer-events-none"
+              className="absolute top-0 pointer-events-none select-none"
               style={{ width: 755, height: 587, right: '-30px' }}
             >
               <img
-                src={
-                  isDarkMode
-                    ? (isPt ? "/coins/herodarkportu.jpg" : (isRu ? "/coins/herodarkrussian.jpg" : (isEs ? "/coins/herodarkspanish.png" : (isFr ? "/coins/HeroDarktFranch.png" : (isUr ? "/coins/Hero Urdu Dark Desktop.jpg" : (isDe ? "/coins/HerosectionBlackGerman.png" : "/coins/HerosectionBlackEnglish.png"))))))
-                    : (isPt ? "/coins/hero light portu1.jpg" : (isRu ? "/coins/hero light russian1.jpg" : (isEs ? "/coins/herolightspanish.png" : (isFr ? "/coins/hero light french1.jpg" : (isUr ? "/coins/hero light urdu1.jpg" : (isDe ? "/coins/Hero section german desktop.png" : "/coins/hero section image.png"))))))
-                }
+                src={isDarkMode ? "/coins/hero_base_dark.png" : "/coins/hero_base_light.png"}
                 alt="Hero Background"
-                className={`w-full h-full object-fill ${isUr || isRu || isPt || isFr ? 'rounded-bl-[36px]' : ''}`}
+                className="w-full h-full object-fill rounded-bl-[36px]"
               />
+
+              {/* 1. Earn from surveys tab */}
+              <div
+                className="absolute flex items-center justify-center font-bold text-center"
+                style={{
+                  left: '22.95%',
+                  top: '32.9%',
+                  transform: 'translate(-50%, -50%)',
+                  fontFamily: '"Poppins", sans-serif',
+                  fontWeight: 700,
+                  fontSize: (() => {
+                    const l = (t('heroGraphic.earnFromSurveys') || '').length;
+                    return l <= 18 ? '13.5px' : (l <= 28 ? '12.5px' : '11.5px');
+                  })(),
+                  color: isDarkMode ? '#FFFFFF' : '#1E242B',
+                }}
+              >
+                <span className="whitespace-nowrap px-1">{t('heroGraphic.earnFromSurveys')}</span>
+              </div>
+
+              {/* 2. Earn by playing games tab */}
+              <div
+                className="absolute flex items-center justify-center font-bold text-center"
+                style={{
+                  left: '67.77%',
+                  top: '23.55%',
+                  transform: 'translate(-50%, -50%)',
+                  fontFamily: '"Poppins", sans-serif',
+                  fontWeight: 700,
+                  fontSize: (() => {
+                    const l = (t('heroGraphic.earnByPlayingGames') || '').length;
+                    return l <= 22 ? '13.5px' : (l <= 32 ? '12.5px' : '11.5px');
+                  })(),
+                  color: isDarkMode ? '#FFFFFF' : '#1E242B',
+                }}
+              >
+                <span className="whitespace-nowrap px-1">{t('heroGraphic.earnByPlayingGames')}</span>
+              </div>
+
+              {/* 3. Survey Card Question & Options */}
+              <div
+                className="absolute flex flex-col justify-between overflow-hidden"
+                style={{
+                  left: '7.19%',
+                  top: '43.0%',
+                  width: '26.0%',
+                  height: '25.0%',
+                  fontFamily: '"Poppins", sans-serif',
+                }}
+              >
+                <div>
+                  <div
+                    className="leading-tight"
+                    style={{
+                      fontFamily: '"Poppins", sans-serif',
+                      fontWeight: 700,
+                      fontSize: '11.5px',
+                      color: isDarkMode ? '#A1A7B4' : '#6B7280'
+                    }}
+                  >
+                    {t('heroGraphic.questionNumber')}
+                  </div>
+                  <div
+                    className="leading-snug mt-1"
+                    style={{
+                      fontFamily: '"Poppins", sans-serif',
+                      fontWeight: 700,
+                      fontSize: (() => {
+                        const l = (t('heroGraphic.questionTitle') || '').length;
+                        return l <= 20 ? '14.5px' : (l <= 28 ? '13px' : '11.5px');
+                      })(),
+                      color: isDarkMode ? '#FFFFFF' : '#111827'
+                    }}
+                  >
+                    {t('heroGraphic.questionTitle')}
+                  </div>
+                </div>
+
+                <div>
+                  <div
+                    className="tracking-wider uppercase mb-1.5"
+                    style={{
+                      fontFamily: '"Poppins", sans-serif',
+                      fontWeight: 700,
+                      fontSize: (() => {
+                        const l = (t('heroGraphic.selectOnlyOne') || '').length;
+                        return l <= 16 ? '9.5px' : (l <= 22 ? '8.5px' : '7.5px');
+                      })(),
+                      letterSpacing: '0.06em',
+                      color: isDarkMode ? '#A1A7B4' : '#8A92A0'
+                    }}
+                  >
+                    {t('heroGraphic.selectOnlyOne')}
+                  </div>
+                  <div className="flex items-center gap-2 mb-1.5">
+                    <span
+                      className="w-3.5 h-3.5 rounded-full border flex-shrink-0"
+                      style={{ borderColor: isDarkMode ? '#6B7280' : '#C4C8D0' }}
+                    />
+                    <span
+                      className="leading-none"
+                      style={{
+                        fontFamily: '"Poppins", sans-serif',
+                        fontWeight: 600,
+                        fontSize: '12.5px',
+                        color: isDarkMode ? '#E5E7EB' : '#1F2937'
+                      }}
+                    >
+                      {t('heroGraphic.optionYes')}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span
+                      className="w-3.5 h-3.5 rounded-full border flex-shrink-0"
+                      style={{ borderColor: isDarkMode ? '#6B7280' : '#C4C8D0' }}
+                    />
+                    <span
+                      className="leading-none"
+                      style={{
+                        fontFamily: '"Poppins", sans-serif',
+                        fontWeight: 600,
+                        fontSize: '12.5px',
+                        color: isDarkMode ? '#E5E7EB' : '#1F2937'
+                      }}
+                    >
+                      {t('heroGraphic.optionNo')}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* 4. Survey Back Button */}
+              <div
+                className="absolute flex items-center justify-center text-center"
+                style={{
+                  left: '26.0%',
+                  top: '73.68%',
+                  transform: 'translate(-50%, -50%)',
+                  fontFamily: '"Poppins", sans-serif',
+                  fontWeight: 700,
+                  fontSize: (() => {
+                    const l = (t('heroGraphic.btnBack') || '').length;
+                    return l <= 5 ? '13px' : (l <= 7 ? '11.5px' : '10px');
+                  })(),
+                  color: '#1E242B',
+                }}
+              >
+                <span className="whitespace-nowrap px-1">{t('heroGraphic.btnBack')}</span>
+              </div>
+
+              {/* 5. Survey Next Button */}
+              <div
+                className="absolute flex items-center justify-center text-center text-white"
+                style={{
+                  left: '34.69%',
+                  top: '73.68%',
+                  transform: 'translate(-50%, -50%)',
+                  fontFamily: '"Poppins", sans-serif',
+                  fontWeight: 700,
+                  fontSize: (() => {
+                    const l = (t('heroGraphic.btnNext') || '').length;
+                    return l <= 5 ? '13px' : (l <= 7 ? '11.5px' : '10px');
+                  })(),
+                }}
+              >
+                <span className="whitespace-nowrap px-1">{t('heroGraphic.btnNext')}</span>
+              </div>
+
+              {/* 6. Fast Payouts Card Text */}
+              <div
+                className="absolute flex flex-col justify-center overflow-hidden"
+                style={{
+                  left: '57.0%',
+                  top: '65.16%',
+                  width: '35.0%',
+                  height: '6.81%',
+                  fontFamily: '"Poppins", sans-serif',
+                }}
+              >
+                <div
+                  className="font-bold leading-tight"
+                  style={{
+                    fontFamily: '"Poppins", sans-serif',
+                    fontSize: (() => {
+                      const l = (t('heroGraphic.fastPayoutsTitle') || '').length;
+                      return l <= 18 ? '15px' : '13.5px';
+                    })(),
+                    color: isDarkMode ? '#FFFFFF' : '#111827'
+                  }}
+                >
+                  {t('heroGraphic.fastPayoutsTitle')}
+                </div>
+                <div
+                  className="leading-snug mt-0.5"
+                  style={{
+                    fontFamily: '"Poppins", sans-serif',
+                    fontSize: (() => {
+                      const l = (t('heroGraphic.fastPayoutsSubtitle') || '').length;
+                      return l <= 45 ? '10px' : '9px';
+                    })(),
+                    color: isDarkMode ? '#9CA3AF' : '#6B7280'
+                  }}
+                >
+                  {t('heroGraphic.fastPayoutsSubtitle')}
+                </div>
+              </div>
+
+              {/* 7. Join Free Badge "FREE" translation */}
+              <div
+                className="absolute flex items-center justify-center text-center select-none"
+                style={{
+                  left: '52.16%',
+                  top: '84.88%',
+                  transform: 'translate(-50%, -50%)',
+                  fontFamily: '"Poppins", sans-serif',
+                  fontWeight: 800,
+                  fontSize: (() => {
+                    const l = (t('heroGraphic.freeBadge') || '').length;
+                    return l <= 4 ? '13px' : (l <= 7 ? '11.5px' : '10px');
+                  })(),
+                  letterSpacing: '0.04em',
+                  color: '#24324D',
+                }}
+              >
+                <span className="whitespace-nowrap uppercase">{t('heroGraphic.freeBadge')}</span>
+              </div>
+
+              {/* 8. Join Free Card Text */}
+              <div
+                className="absolute flex flex-col justify-center overflow-hidden"
+                style={{
+                  left: '57.0%',
+                  top: '79.64%',
+                  width: '34.5%',
+                  height: '8.09%',
+                  paddingRight: '6px',
+                  fontFamily: '"Poppins", sans-serif',
+                }}
+              >
+                <div
+                  className="font-bold leading-tight"
+                  style={{
+                    fontFamily: '"Poppins", sans-serif',
+                    fontSize: (() => {
+                      const l = (t('heroGraphic.joinFreeTitle') || '').length;
+                      return l <= 22 ? '15px' : (l <= 32 ? '13px' : '11px');
+                    })(),
+                    color: isDarkMode ? '#FFFFFF' : '#111827'
+                  }}
+                >
+                  {t('heroGraphic.joinFreeTitle')}
+                </div>
+                <div
+                  className="leading-snug mt-0.5"
+                  style={{
+                    fontFamily: '"Poppins", sans-serif',
+                    fontSize: (() => {
+                      const l = (t('heroGraphic.joinFreeSubtitle') || '').length;
+                      return l <= 50 ? '10px' : '9px';
+                    })(),
+                    color: isDarkMode ? '#9CA3AF' : '#6B7280'
+                  }}
+                >
+                  {t('heroGraphic.joinFreeSubtitle')}
+                </div>
+              </div>
             </div>
           </div>
         )}
@@ -536,20 +798,267 @@ const Landing = () => {
                 <div
                   className="w-[calc(100%+2rem)] -mx-4 flex justify-center items-center mt-8 overflow-hidden"
                 >
-                  <img
-                    src={
-                      isDarkMode
-                        ? (isPt ? "/coins/herodarkportumobile.jpg" : (isRu ? "/coins/herodarkrussianmobile.jpg" : (isEs ? "/coins/herodarkspanishmobile.png" : (isFr ? "/coins/HeroDarktFranchMobile.png" : (isUr ? "/coins/Hero Urdu Dark mobile.jpg" : (isDe ? "/coins/Hero section german mobile Black.png" : "/coins/Hero section Eng mobile Black.png"))))))
-                        : (isPt ? "/coins/herolightportumobile.jpg" : (isRu ? "/coins/herolightrussianmobile.jpg" : (isEs ? "/coins/herolightspanishmobile.png" : (isFr ? "/coins/HeroLightFranchMobile.png" : (isUr ? "/coins/Hero Urdu Light Mobile.jpg" : (isDe ? "/coins/Hero section german mobile.png" : "/coins/mobile hero.png"))))))
-                    }
-                    alt="Mobile Hero Graphic"
-                    className={`w-full h-auto object-cover ${isUr || isRu || isPt ? 'rounded-b-[26px]' : ''}`}
-                    style={{
-                      maxWidth: '440px',
-                      width: '100%',
-                      opacity: 1,
-                    }}
-                  />
+                  <div
+                    className="relative pointer-events-none select-none"
+                    style={{ maxWidth: '440px', width: '100%' }}
+                  >
+                    <img
+                      src={isDarkMode ? "/coins/hero_mobile_base_dark.png" : "/coins/hero_mobile_base_light.png"}
+                      alt="Mobile Hero Graphic"
+                      className="w-full h-auto object-cover"
+                    />
+
+                    {/* 1. Earn by playing games tab */}
+                    <div
+                      className="absolute flex items-center justify-center font-bold text-center"
+                      style={{
+                        left: '57.9%',
+                        top: '8.79%',
+                        transform: 'translate(-50%, -50%)',
+                        fontFamily: '"Poppins", sans-serif',
+                        fontWeight: 700,
+                        fontSize: (() => {
+                          const l = (t('heroGraphic.earnByPlayingGames') || '').length;
+                          return l <= 22 ? '13px' : (l <= 32 ? '11px' : '9.5px');
+                        })(),
+                        color: '#1E242B',
+                      }}
+                    >
+                      <span className="whitespace-nowrap px-1">{t('heroGraphic.earnByPlayingGames')}</span>
+                    </div>
+
+                    {/* 2. Earn from surveys tab */}
+                    <div
+                      className="absolute flex items-center justify-center font-bold text-center"
+                      style={{
+                        left: '30.3%',
+                        top: '52.3%',
+                        transform: 'translate(-50%, -50%)',
+                        maxWidth: '38%',
+                        fontFamily: '"Poppins", sans-serif',
+                        fontWeight: 700,
+                        fontSize: (() => {
+                          const l = (t('heroGraphic.earnFromSurveys') || '').length;
+                          return l <= 18 ? '12px' : (l <= 26 ? '10.5px' : (l <= 32 ? '9px' : '8px'));
+                        })(),
+                        color: isDarkMode ? '#FFFFFF' : '#1E242B',
+                      }}
+                    >
+                      <span className="whitespace-nowrap px-0.5">{t('heroGraphic.earnFromSurveys')}</span>
+                    </div>
+
+                    {/* 3. Survey Card Questions & Options */}
+                    <div
+                      className="absolute flex flex-col justify-between overflow-hidden"
+                      style={{
+                        left: '10.0%',
+                        top: '61.5%',
+                        width: '42.0%',
+                        height: '23.0%',
+                        fontFamily: '"Poppins", sans-serif',
+                      }}
+                    >
+                      <div>
+                        <div
+                          className="leading-tight"
+                          style={{
+                            fontFamily: '"Poppins", sans-serif',
+                            fontWeight: 700,
+                            fontSize: '10px',
+                            color: isDarkMode ? '#A1A7B4' : '#6B7280',
+                          }}
+                        >
+                          {t('heroGraphic.questionNumber')}
+                        </div>
+                        <div
+                          className="leading-snug mt-1"
+                          style={{
+                            fontFamily: '"Poppins", sans-serif',
+                            fontWeight: 700,
+                            fontSize: (() => {
+                              const l = (t('heroGraphic.questionTitle') || '').length;
+                              return l <= 20 ? '13.5px' : (l <= 28 ? '12px' : '10.5px');
+                            })(),
+                            color: isDarkMode ? '#FFFFFF' : '#111827',
+                          }}
+                        >
+                          {t('heroGraphic.questionTitle')}
+                        </div>
+                      </div>
+
+                      <div>
+                        <div
+                          className="tracking-wider uppercase mb-1"
+                          style={{
+                            fontFamily: '"Poppins", sans-serif',
+                            fontWeight: 700,
+                            fontSize: '8px',
+                            letterSpacing: '0.06em',
+                            color: isDarkMode ? '#A1A7B4' : '#8A92A0',
+                          }}
+                        >
+                          {t('heroGraphic.selectOnlyOne')}
+                        </div>
+                        <div className="flex items-center gap-1.5 mb-1">
+                          <span
+                            className="w-2.5 h-2.5 rounded-full border flex-shrink-0"
+                            style={{ borderColor: isDarkMode ? '#6B7280' : '#C4C8D0' }}
+                          />
+                          <span
+                            className="leading-none"
+                            style={{
+                              fontFamily: '"Poppins", sans-serif',
+                              fontWeight: 600,
+                              fontSize: '11px',
+                              color: isDarkMode ? '#E5E7EB' : '#1F2937',
+                            }}
+                          >
+                            {t('heroGraphic.optionYes')}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                          <span
+                            className="w-2.5 h-2.5 rounded-full border flex-shrink-0"
+                            style={{ borderColor: isDarkMode ? '#6B7280' : '#C4C8D0' }}
+                          />
+                          <span
+                            className="leading-none"
+                            style={{
+                              fontFamily: '"Poppins", sans-serif',
+                              fontWeight: 600,
+                              fontSize: '11px',
+                              color: isDarkMode ? '#E5E7EB' : '#1F2937',
+                            }}
+                          >
+                            {t('heroGraphic.optionNo')}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* 4. Survey Back Button */}
+                    <div
+                      className="absolute flex items-center justify-center text-center"
+                      style={{
+                        left: '30.06%',
+                        top: '89.84%',
+                        transform: 'translate(-50%, -50%)',
+                        fontFamily: '"Poppins", sans-serif',
+                        fontWeight: 700,
+                        fontSize: '11px',
+                        color: '#1E242B',
+                      }}
+                    >
+                      <span className="whitespace-nowrap px-0.5">{t('heroGraphic.btnBack')}</span>
+                    </div>
+
+                    {/* 5. Survey Next Button */}
+                    <div
+                      className="absolute flex items-center justify-center text-center text-white"
+                      style={{
+                        left: '44.89%',
+                        top: '89.84%',
+                        transform: 'translate(-50%, -50%)',
+                        fontFamily: '"Poppins", sans-serif',
+                        fontWeight: 700,
+                        fontSize: '11px',
+                      }}
+                    >
+                      <span className="whitespace-nowrap px-0.5">{t('heroGraphic.btnNext')}</span>
+                    </div>
+
+                    {/* 6. Fast Payouts Card Text */}
+                    <div
+                      className="absolute flex flex-col justify-center overflow-hidden"
+                      style={{
+                        left: '62.5%',
+                        top: '51.8%',
+                        width: '31.5%',
+                        height: '8.5%',
+                        fontFamily: '"Poppins", sans-serif',
+                      }}
+                    >
+                      <div
+                        className="font-bold leading-tight"
+                        style={{
+                          fontFamily: '"Poppins", sans-serif',
+                          fontSize: (() => {
+                            const l = (t('heroGraphic.fastPayoutsTitle') || '').length;
+                            return l <= 16 ? '12.5px' : '11px';
+                          })(),
+                          color: isDarkMode ? '#FFFFFF' : '#111827',
+                        }}
+                      >
+                        {t('heroGraphic.fastPayoutsTitle')}
+                      </div>
+                      <div
+                        className="leading-tight mt-0.5"
+                        style={{
+                          fontFamily: '"Poppins", sans-serif',
+                          fontSize: '8.5px',
+                          color: isDarkMode ? '#9CA3AF' : '#6B7280',
+                        }}
+                      >
+                        {t('heroGraphic.fastPayoutsSubtitle')}
+                      </div>
+                    </div>
+
+                    {/* 7. Join Free Badge "FREE" */}
+                    <div
+                      className="absolute flex items-center justify-center text-center select-none"
+                      style={{
+                        left: '68.24%',
+                        top: '69.49%',
+                        transform: 'translate(-50%, -50%)',
+                        fontFamily: '"Poppins", sans-serif',
+                        fontWeight: 800,
+                        fontSize: (() => {
+                          const l = (t('heroGraphic.freeBadge') || '').length;
+                          return l <= 4 ? '10px' : (l <= 7 ? '8.5px' : '7.5px');
+                        })(),
+                        letterSpacing: '0.04em',
+                        color: '#24324D',
+                      }}
+                    >
+                      <span className="whitespace-nowrap uppercase">{t('heroGraphic.freeBadge')}</span>
+                    </div>
+
+                    {/* 8. Join Free Card Text */}
+                    <div
+                      className="absolute flex flex-col justify-center overflow-hidden"
+                      style={{
+                        left: '62.5%',
+                        top: '73.2%',
+                        width: '31.5%',
+                        height: '9.0%',
+                        fontFamily: '"Poppins", sans-serif',
+                      }}
+                    >
+                      <div
+                        className="font-bold leading-tight"
+                        style={{
+                          fontFamily: '"Poppins", sans-serif',
+                          fontSize: (() => {
+                            const l = (t('heroGraphic.joinFreeTitle') || '').length;
+                            return l <= 20 ? '12.5px' : (l <= 30 ? '11px' : '9.5px');
+                          })(),
+                          color: isDarkMode ? '#FFFFFF' : '#111827',
+                        }}
+                      >
+                        {t('heroGraphic.joinFreeTitle')}
+                      </div>
+                      <div
+                        className="leading-tight mt-0.5"
+                        style={{
+                          fontFamily: '"Poppins", sans-serif',
+                          fontSize: '8.5px',
+                          color: isDarkMode ? '#9CA3AF' : '#6B7280',
+                        }}
+                      >
+                        {t('heroGraphic.joinFreeSubtitle')}
+                      </div>
+                    </div>
+                  </div>
                 </div>
               )}
             </div>

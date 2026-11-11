@@ -692,5 +692,21 @@
     "taskCustomTask": "ٹاسک: کسٹم ٹاسک",
     "taskOfferwall": "ٹاسک: آفر وال ٹاسک",
     "taskCompletedText": "ٹاسک: مکمل شدہ"
+  },
+  "heroGraphic": {
+    "earnFromSurveys": "سروے سے پیسے کمائیں",
+    "questionNumber": "سوال 01",
+    "questionTitle": "کیا آپ اینڈرائیڈ استعمال کرتے ہیں؟",
+    "selectOnlyOne": "صرف ایک منتخب کریں",
+    "optionYes": "ہاں",
+    "optionNo": "نہیں",
+    "btnBack": "پیچھے",
+    "btnNext": "آگے",
+    "earnByPlayingGames": "گیمز کھیل کر پیسے کمائیں",
+    "fastPayoutsTitle": "تیز ترین ادائیگی",
+    "fastPayoutsSubtitle": "اپنی کمائی جلدی اور محفوظ طریقے سے نکالیں",
+    "joinFreeTitle": "مفت شامل ہوں اور زیادہ کمائیں",
+    "joinFreeSubtitle": "جی ہاں، کمانا شروع کرنے کے لیے رجسٹریشن 100% مفت ہے۔",
+    "freeBadge": "مفت"
   }
 }

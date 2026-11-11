@@ -692,5 +692,21 @@
     "taskCustomTask": "Задание: специальное задание",
     "taskOfferwall": "Задание: задание с оффервола",
     "taskCompletedText": "Задание: выполнено"
+  },
+  "heroGraphic": {
+    "earnFromSurveys": "Заработок на опросах",
+    "questionNumber": "Вопрос 01",
+    "questionTitle": "Вы используете Android?",
+    "selectOnlyOne": "ВЫБЕРИТЕ ОДИН ОТВЕТ",
+    "optionYes": "Да",
+    "optionNo": "Нет",
+    "btnBack": "Назад",
+    "btnNext": "Далее",
+    "earnByPlayingGames": "Заработок на играх",
+    "fastPayoutsTitle": "Быстрые выплаты",
+    "fastPayoutsSubtitle": "Выводите свои доходы быстро и безопасно",
+    "joinFreeTitle": "Регистрируйтесь бесплатно и зарабатывайте больше",
+    "joinFreeSubtitle": "Да, регистрация на 100% бесплатна для начала заработка.",
+    "freeBadge": "БЕСПЛАТНО"
   }
 }

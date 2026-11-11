@@ -692,5 +692,21 @@
     "taskCustomTask": "Aufgabe: Sonderangebot",
     "taskOfferwall": "Aufgabe: Offerwall-Aufgabe",
     "taskCompletedText": "Aufgabe: Abgeschlossen"
+  },
+  "heroGraphic": {
+    "earnFromSurveys": "Geld verdienen mit Umfragen",
+    "questionNumber": "Frage 01",
+    "questionTitle": "Nutzen Sie Android?",
+    "selectOnlyOne": "WÄHLEN SIE EINE ANTWORT",
+    "optionYes": "Ja",
+    "optionNo": "Nein",
+    "btnBack": "Zurück",
+    "btnNext": "Weiter",
+    "earnByPlayingGames": "Geld verdienen durch Spiele spielen",
+    "fastPayoutsTitle": "Schnelle Auszahlungen",
+    "fastPayoutsSubtitle": "Zahlen Sie Ihre Gewinne schnell und sicher aus",
+    "joinFreeTitle": "Kostenlos beitreten und mehr verdienen",
+    "joinFreeSubtitle": "Ja, die Anmeldung ist 100% kostenlos, um mit dem Verdienen zu beginnen.",
+    "freeBadge": "GRATIS"
   }
 }
