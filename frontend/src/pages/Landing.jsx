@@ -1404,60 +1404,65 @@ const Landing = () => {
 
           {/* Image (Second on mobile, First on Desktop) */}
           <div
-            className={`order-2 lg:order-1 flex-shrink-0 w-full lg:w-[640px] h-auto lg:h-[558px] px-0 mt-6 lg:mt-0 flex ${isMobile && (isDe || isUr || isFr || isEs || isRu || isPt) ? 'justify-start' : 'justify-center'} lg:justify-start overflow-hidden rounded-[24px] lg:rounded-[32px]`}
+            className="order-2 lg:order-1 relative flex-shrink-0 w-full lg:w-[640px] h-auto lg:h-[558px] px-0 mt-6 lg:mt-0 flex justify-center lg:justify-start overflow-hidden rounded-[24px] lg:rounded-[32px] select-none"
             style={isMobile ? { width: '100%', maxWidth: '100%' } : {}}
           >
             <img
               src={
                 isMobile
-                  ? (isPt
-                    ? "/coins/whychoseusportumobile.jpg"
-                    : (isRu
-                      ? "/coins/whychoseusrussianmobile.jpg"
-                      : (isEs
-                        ? "/coins/whychoseusspanishmobile.png"
-                        : (isUr
-                          ? "/coins/why chose us Urdu Light Mobile.jpg"
-                          : (isDe ? "/coins/Germanwhychosusmobile.png" : (isFr ? "/coins/whychoseusmobile.png" : "/coins/whychosemobile.png"))))))
-                  : (isDarkMode
-                    ? (isPt
-                      ? "/coins/whychoseusdarkportu.jpg"
-                      : (isRu
-                        ? "/coins/whychoseusdarkrussian.jpg"
-                        : (isEs
-                          ? "/coins/whychoseusdarkspanish.png"
-                          : (isUr
-                            ? "/coins/why chose us Urdu Dark Desktop.jpg"
-                            : (isDe ? "/coins/WhycoseusBlackGerman.png" : (isFr ? "/coins/whychoseusdark.png" : "/coins/WhycoseusBlackEnglish.png"))))))
-                    : (isPt
-                      ? "/coins/whychoseus hero light portu1.png"
-                      : (isRu
-                        ? "/coins/whychoseuslightrussian.jpg"
-                        : (isEs
-                          ? "/coins/whychoseuslightspanish.png"
-                          : (isUr
-                            ? "/coins/why chose us Urdu Light Desktop.png"
-                            : (isDe ? "/coins/Germanwhychosus.png" : (isFr ? "/coins/whychoseuslight.png" : "/coins/why chose us.png"))))))
-                  )
+                  ? "/coins/whychoseus1mobile.png"
+                  : (isDarkMode ? "/coins/whychoseus1dark.png" : "/coins/whychoseus1.png")
               }
               alt="Why Choose Us"
-              className="w-full h-auto object-cover rounded-[24px] lg:rounded-[32px]"
-              style={
-                isMobile
-                  ? {
-                    width: isDe ? 'calc(100% + 18px)' : '100%',
-                    maxWidth: isDe ? 'none' : undefined,
-                    opacity: 1
-                  }
-                  : {
-                    width: '100%',
-                    height: '100%',
-                    position: 'relative',
-                    left: (isDe || isUr || isFr || isEs || isRu) ? '0px' : '-16px',
-                    clipPath: (isDe || isUr || isFr || isEs || isRu) ? 'inset(0 0 0 0 round 32px)' : undefined
-                  }
-              }
+              className="w-full h-auto lg:h-full object-cover rounded-[24px] lg:rounded-[32px] block"
             />
+
+            {/* Top Earners Tab Overlay */}
+            <div
+              className={`absolute z-10 font-bold tracking-tight text-center pointer-events-none whitespace-nowrap select-none ${
+                isDarkMode && !isMobile ? 'text-white' : 'text-[#181d24]'
+              } ${
+                isMobile
+                  ? ((t('whyChooseUs.topEarners') || '').length > 13
+                      ? 'text-[11px] sm:text-[13px]'
+                      : 'text-[13px] sm:text-[15px]')
+                  : ((t('whyChooseUs.topEarners') || '').length > 13
+                      ? 'text-[14px] lg:text-[15px] xl:text-[16px]'
+                      : 'text-[16px] lg:text-[18px] xl:text-[19px]')
+              }`}
+              style={{
+                left: isMobile ? '53.6%' : (isDarkMode ? '54.8%' : '58.2%'),
+                top: isMobile ? '59.9%' : '59.8%',
+                transform: 'translate(-50%, -50%)',
+              }}
+              dir={isUr ? 'rtl' : 'ltr'}
+            >
+              {t('whyChooseUs.topEarners') || 'Top Earners'}
+            </div>
+
+            {/* Bottom Text Overlay ("Your journey starts here.") */}
+            <div
+              className={`absolute z-10 font-semibold leading-tight pointer-events-none select-none text-center whitespace-nowrap ${
+                isDarkMode && !isMobile ? 'text-[#f8fafc]' : 'text-[#0f172a]'
+              } ${
+                isMobile
+                  ? ((t('whyChooseUs.yourJourneyStartsHere') || '').length > 22
+                      ? 'text-[10px] sm:text-[12px]'
+                      : 'text-[12px] sm:text-[13px]')
+                  : ((t('whyChooseUs.yourJourneyStartsHere') || '').length > 25
+                      ? 'text-[13px] lg:text-[14px] xl:text-[15px]'
+                      : 'text-[14px] lg:text-[16px] xl:text-[17px]')
+              }`}
+              style={{
+                left: isMobile ? '53.6%' : (isDarkMode ? '54.8%' : '58.2%'),
+                top: isMobile ? 'calc(78.0% - 8px)' : 'calc(80.3% - 8px)',
+                transform: 'translate(-50%, -50%)',
+                maxWidth: isMobile ? '80%' : '70%',
+              }}
+              dir={isUr ? 'rtl' : 'ltr'}
+            >
+              {t('whyChooseUs.yourJourneyStartsHere') || 'Your journey starts here.'}
+            </div>
           </div>
         </section>
 

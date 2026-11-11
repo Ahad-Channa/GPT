@@ -61,7 +61,9 @@
     "referralSystem": "Referral System",
     "referralSystemDesc": "Refer friends and earn a share of their income.",
     "liveActivity": "Live Activity",
-    "liveActivityDesc": "See real-time earnings across the platform"
+    "liveActivityDesc": "See real-time earnings across the platform",
+    "topEarners": "Top Earners",
+    "yourJourneyStartsHere": "Your journey starts here."
   },
   "startEarningWith": {
     "title": "Start Earning With",

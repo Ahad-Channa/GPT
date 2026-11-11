@@ -61,7 +61,9 @@
     "referralSystem": "Sistema de Referidos",
     "referralSystemDesc": "Invita amigos y gana un porcentaje de sus ingresos.",
     "liveActivity": "Actividad en Vivo",
-    "liveActivityDesc": "Observa las ganancias en tiempo real en la plataforma"
+    "liveActivityDesc": "Observa las ganancias en tiempo real en la plataforma",
+    "topEarners": "Mejores ganancias",
+    "yourJourneyStartsHere": "Tu aventura comienza aquí."
   },
   "startEarningWith": {
     "title": "Empieza a Ganar Con",

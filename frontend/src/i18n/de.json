@@ -61,7 +61,9 @@
     "referralSystem": "Freunde werben",
     "referralSystemDesc": "Empfiehl Freunde und verdiene mit.",
     "liveActivity": "Live-Aktivität",
-    "liveActivityDesc": "Echtzeit-Verdienste der Plattform sehen."
+    "liveActivityDesc": "Echtzeit-Verdienste der Plattform sehen.",
+    "topEarners": "Spitzenverdiener",
+    "yourJourneyStartsHere": "Deine Reise beginnt hier."
   },
   "startEarningWith": {
     "title": "Verdiene mit",

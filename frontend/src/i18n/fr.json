@@ -61,7 +61,9 @@
     "referralSystem": "Système de Parrainage",
     "referralSystemDesc": "Invitez vos amis et touchez une part de leurs gains.",
     "liveActivity": "Activité en Direct",
-    "liveActivityDesc": "Suivez les gains en temps réel sur la plateforme"
+    "liveActivityDesc": "Suivez les gains en temps réel sur la plateforme",
+    "topEarners": "Meilleurs gains",
+    "yourJourneyStartsHere": "Votre aventure commence ici."
   },
   "startEarningWith": {
     "title": "Commencez à Gagner Avec",
