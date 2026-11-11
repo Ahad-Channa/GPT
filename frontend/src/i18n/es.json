@@ -319,7 +319,11 @@
     "placingOrder": "Enviando Pedido...",
     "shippingTimeframe": "Tras la confirmación, el libro será enviado en un plazo de 3 a 5 días hábiles",
     "orderSubmitted": "¡Pedido Enviado!",
-    "orderProcessing": "Nuestro equipo procesará tu pedido en 1 a 3 días hábiles. Revisa tus transacciones para más información."
+    "orderProcessing": "Nuestro equipo procesará tu pedido en 1 a 3 días hábiles. Revisa tus transacciones para más información.",
+    "bookCardSignatureLine1": "Firma personal",
+    "bookCardSignatureLine2": "disponible",
+    "bookCardShippingLine1": "Envío solo",
+    "bookCardShippingLine2": "dentro de Alemania"
   },
   "leaderboard": {
     "pageTitle": "Clasificación",

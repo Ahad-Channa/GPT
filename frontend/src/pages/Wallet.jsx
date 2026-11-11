@@ -776,7 +776,7 @@ const Wallet = () => {
               <div className="flex flex-col">
                 {/* Banner Area Image */}
                 <div
-                  className="w-full flex items-center justify-center overflow-hidden"
+                  className="relative w-full flex items-center justify-center overflow-hidden select-none pointer-events-none"
                   style={{
                     width: '100%',
                     maxWidth: '416px',
@@ -786,10 +786,85 @@ const Wallet = () => {
                   }}
                 >
                   <img
-                    src={isDe ? "/coins/bookcardbox3german.png" : "/coins/bookcardbox3.png"}
+                    src="/coins/bookcardbox3_base.png"
                     alt="Your Books"
                     className="w-full h-full object-contain"
                   />
+
+                  {/* Box 1 & Box 2: Personal Signature & Shipping Germany */}
+                  {(() => {
+                    const l1 = (t('withdraw.bookCardSignatureLine1', 'Personal signature') || '').length;
+                    const l2 = (t('withdraw.bookCardSignatureLine2', 'possible') || '').length;
+                    const l3 = (t('withdraw.bookCardShippingLine1', 'Shipping only') || '').length;
+                    const l4 = (t('withdraw.bookCardShippingLine2', 'within Germany') || '').length;
+                    const maxL = Math.max(l1, l2, l3, l4);
+                    const unifiedFontSize = maxL <= 14 ? '13px' : (maxL <= 18 ? '12.5px' : (maxL <= 22 ? '11px' : '10px'));
+                    return (
+                      <>
+                        {/* Box 1: Personal Signature */}
+                        <div
+                          className="absolute flex flex-col justify-center overflow-hidden"
+                          style={{
+                            left: '13.8%',
+                            top: '72.0%',
+                            width: '34.0%',
+                            height: '22.0%',
+                            fontFamily: '"Poppins", sans-serif',
+                          }}
+                        >
+                          <span
+                            className="font-bold whitespace-nowrap leading-tight"
+                            style={{
+                              fontSize: unifiedFontSize,
+                              color: '#111827'
+                            }}
+                          >
+                            {t('withdraw.bookCardSignatureLine1', 'Personal signature')}
+                          </span>
+                          <span
+                            className="font-bold whitespace-nowrap leading-tight mt-0.5"
+                            style={{
+                              fontSize: unifiedFontSize,
+                              color: '#111827'
+                            }}
+                          >
+                            {t('withdraw.bookCardSignatureLine2', 'possible')}
+                          </span>
+                        </div>
+
+                        {/* Box 2: Shipping only within Germany */}
+                        <div
+                          className="absolute flex flex-col justify-center overflow-hidden"
+                          style={{
+                            left: '61.5%',
+                            top: '72.0%',
+                            width: '34.0%',
+                            height: '22.0%',
+                            fontFamily: '"Poppins", sans-serif',
+                          }}
+                        >
+                          <span
+                            className="font-bold whitespace-nowrap leading-tight"
+                            style={{
+                              fontSize: unifiedFontSize,
+                              color: '#111827'
+                            }}
+                          >
+                            {t('withdraw.bookCardShippingLine1', 'Shipping only')}
+                          </span>
+                          <span
+                            className="font-bold whitespace-nowrap leading-tight mt-0.5"
+                            style={{
+                              fontSize: unifiedFontSize,
+                              color: '#111827'
+                            }}
+                          >
+                            {t('withdraw.bookCardShippingLine2', 'within Germany')}
+                          </span>
+                        </div>
+                      </>
+                    );
+                  })()}
                 </div>
 
                 {/* Content */}

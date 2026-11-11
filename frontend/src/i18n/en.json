@@ -320,7 +320,11 @@
     "placingOrder": "Placing Order...",
     "shippingTimeframe": "After ordering, the book will be shipped within 3-5 business days",
     "orderSubmitted": "Order Submitted!",
-    "orderProcessing": "Our team will process your order within 1-3 business days. Check transaction for info"
+    "orderProcessing": "Our team will process your order within 1-3 business days. Check transaction for info",
+    "bookCardSignatureLine1": "Personal signature",
+    "bookCardSignatureLine2": "possible",
+    "bookCardShippingLine1": "Shipping only",
+    "bookCardShippingLine2": "within Germany"
   },
   "leaderboard": {
     "pageTitle": "Leaderboard",

@@ -319,7 +319,11 @@
     "placingOrder": "Validation de la commande...",
     "shippingTimeframe": "Après commande, le livre sera expédié sous 3 à 5 jours ouvrés",
     "orderSubmitted": "Commande Validée !",
-    "orderProcessing": "Notre équipe traitera votre commande sous 1 à 3 jours ouvrés. Suivez les transactions pour les infos."
+    "orderProcessing": "Notre équipe traitera votre commande sous 1 à 3 jours ouvrés. Suivez les transactions pour les infos.",
+    "bookCardSignatureLine1": "Dédicace personnelle",
+    "bookCardSignatureLine2": "possible",
+    "bookCardShippingLine1": "Livraison uniquement",
+    "bookCardShippingLine2": "en Allemagne"
   },
   "leaderboard": {
     "pageTitle": "Classement",

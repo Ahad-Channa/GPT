@@ -319,7 +319,11 @@
     "placingOrder": "Bestellung wird aufgegeben...",
     "shippingTimeframe": "Nach der Bestellung wird das Buch innerhalb von 3–5 Werktagen versendet.",
     "orderSubmitted": "Bestellung aufgegeben!",
-    "orderProcessing": "Unser Team wird deine Bestellung innerhalb von 1–3 Werktagen bearbeiten. Details findest du im Transaktionsverlauf."
+    "orderProcessing": "Unser Team wird deine Bestellung innerhalb von 1–3 Werktagen bearbeiten. Details findest du im Transaktionsverlauf.",
+    "bookCardSignatureLine1": "Persönliche Widmung",
+    "bookCardSignatureLine2": "möglich",
+    "bookCardShippingLine1": "Versand nur",
+    "bookCardShippingLine2": "innerhalb Deutschlands"
   },
   "leaderboard": {
     "pageTitle": "Bestenliste",

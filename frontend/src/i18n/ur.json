@@ -319,7 +319,11 @@
     "placingOrder": "آرڈر بک ہو رہا ہے...",
     "shippingTimeframe": "آرڈر کے بعد کتاب 3 سے 5 کاروباری دنوں کے اندر روانہ کر دی جائے گی",
     "orderSubmitted": "آرڈر موصول ہو گیا!",
-    "orderProcessing": "ہماری ٹیم 1 سے 3 کاروباری دنوں میں آپ کے آرڈر پر کارروائی کرے گی۔ تفصیلات کے لیے ٹرانزیکشن ہسٹری چیک کریں"
+    "orderProcessing": "ہماری ٹیم 1 سے 3 کاروباری دنوں میں آپ کے آرڈر پر کارروائی کرے گی۔ تفصیلات کے لیے ٹرانزیکشن ہسٹری چیک کریں",
+    "bookCardSignatureLine1": "ذاتی دستخط",
+    "bookCardSignatureLine2": "ممکن ہیں",
+    "bookCardShippingLine1": "ترسیل صرف",
+    "bookCardShippingLine2": "جرمنی کے اندر"
   },
   "leaderboard": {
     "pageTitle": "لیڈر بورڈ",

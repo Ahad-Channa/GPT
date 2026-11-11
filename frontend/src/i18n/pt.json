@@ -320,7 +320,11 @@
     "placingOrder": "A registar encomenda...",
     "shippingTimeframe": "Após a encomenda, o livro será enviado no prazo de 3 a 5 dias úteis",
     "orderSubmitted": "Encomenda Submetida!",
-    "orderProcessing": "A nossa equipa processará a sua encomenda no prazo de 1 a 3 dias úteis. Verifique as transações para informações."
+    "orderProcessing": "A nossa equipa processará a sua encomenda no prazo de 1 a 3 dias úteis. Verifique as transações para informações.",
+    "bookCardSignatureLine1": "Dedicatória pessoal",
+    "bookCardSignatureLine2": "possível",
+    "bookCardShippingLine1": "Envio apenas",
+    "bookCardShippingLine2": "para a Alemanha"
   },
   "leaderboard": {
     "pageTitle": "Classificação",
