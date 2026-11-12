@@ -923,10 +923,14 @@ const Leaderboard = () => {
                 >
                   <div
                     className={`flex items-center shadow-sm ${
-                      isEn
-                        ? 'w-[246px]'
-                        : 'w-auto min-w-[280px] min-[360px]:min-w-[310px] max-w-[calc(100vw-32px)]'
-                    } h-[41px] p-[5px_6px] gap-[5px] rounded-[1000px] md:w-auto md:h-auto md:p-1 md:gap-0 md:rounded-[50px] transition-colors duration-300`}
+                      enabledPeriods.length === 1
+                        ? 'w-auto min-w-0 h-auto p-1 gap-0 rounded-[50px] max-w-[calc(100vw-32px)]'
+                        : `${
+                            isEn
+                              ? 'w-[246px]'
+                              : 'w-auto min-w-[280px] min-[360px]:min-w-[310px] max-w-[calc(100vw-32px)]'
+                          } h-[41px] p-[5px_6px] gap-[5px] rounded-[1000px] md:w-auto md:min-w-0 md:h-auto md:p-1 md:gap-0 md:rounded-[50px]`
+                    } transition-colors duration-300`}
                     style={{
                       background: isDarkMode ? 'rgba(34, 39, 48, 1)' : '#FFFFFF',
                       border: isDarkMode ? '1px solid rgba(255, 255, 255, 0.06)' : '1px solid rgba(0, 0, 0, 0.06)',
@@ -942,9 +946,13 @@ const Leaderboard = () => {
                           key={period}
                           type="button"
                           onClick={() => setActiveTab(period)}
-                          className={`transition-all duration-200 cursor-pointer flex-1 md:flex-initial flex items-center justify-center select-none h-full md:h-[31px] md:min-w-[71px] rounded-[40px] ${
-                            isEn ? 'px-2' : 'px-2 min-[360px]:px-3'
-                          } md:px-[18px] py-0 md:py-[11px]`}
+                          className={`transition-all duration-200 cursor-pointer flex items-center justify-center select-none rounded-[40px] ${
+                            enabledPeriods.length === 1
+                              ? 'flex-initial h-[31px] min-w-[71px] px-[18px] py-[11px]'
+                              : `flex-1 md:flex-initial h-full md:h-[31px] md:min-w-[71px] ${
+                                  isEn ? 'px-2' : 'px-2 min-[360px]:px-3'
+                                } md:px-[18px] py-0 md:py-[11px]`
+                          }`}
                           style={{
                             background: isActive
                               ? (isDarkMode ? 'rgba(14, 15, 12, 1)' : 'rgba(36, 50, 77, 1)')
@@ -956,7 +964,7 @@ const Leaderboard = () => {
                             style={{
                               fontFamily: '"Bricolage Grotesque", sans-serif',
                               fontWeight: 700,
-                              fontSize: isEn ? '14px' : '13px',
+                              fontSize: (isEn || enabledPeriods.length === 1) ? '14px' : '13px',
                               lineHeight: '100%',
                               letterSpacing: '0%',
                               color: isActive
