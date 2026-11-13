@@ -10,6 +10,7 @@ import {
 import { writeClipboardText } from '../../utils/clipboard';
 import { createAdminApi } from '../../utils/adminApi';
 import { getEnabledGoalRewardTotal, formatGoalLabel } from '../../utils/offerGoalDisplay.js';
+import { buildDirectOfferTextPayload } from '../../utils/directOfferPayload.js';
 import {
   buildConfiguredPostbackExample,
   getEnabledPostbackGoals,
@@ -46,16 +47,22 @@ const LOCALE_NAMES = { en: 'English', de: 'Deutsch', fr: 'Français', ur: 'ار�
 const supportedLocales = () => Object.keys(i18n.options?.resources || { en: {}, de: {}, fr: {}, ur: {} });
 const seedTranslations = (offer) => {
   const map = offer?.translations && typeof offer.translations === 'object' ? { ...offer.translations } : {};
-  for (const locale of supportedLocales()) if (!map[locale] && offer) {
+  for (const locale of supportedLocales()) {
+    if (!offer) continue;
     const suffix = locale === 'en' ? '' : locale.charAt(0).toUpperCase() + locale.slice(1);
     const legacyRequirements = offer[`requirements${suffix}`];
+    const existing = map[locale] && typeof map[locale] === 'object' ? map[locale] : {};
     const text = {
-      title: offer[`title${suffix}`] || '',
-      description: offer[`description${suffix}`] || '',
-      requirements: Array.isArray(legacyRequirements) ? legacyRequirements : [],
-      proofInstructions: offer[`proofInstructions${suffix}`] || '',
+      title: existing.title || offer[`title${suffix}`] || '',
+      description: existing.description || offer[`description${suffix}`] || '',
+      requirements: Array.isArray(existing.requirements) && existing.requirements.length > 0
+        ? existing.requirements
+        : (Array.isArray(legacyRequirements) ? legacyRequirements : []),
+      proofInstructions: existing.proofInstructions || offer[`proofInstructions${suffix}`] || '',
     };
-    if (Object.values(text).some((value) => Array.isArray(value) ? value.length > 0 : Boolean(value))) map[locale] = text;
+    if (Object.values(text).some((value) => Array.isArray(value) ? value.length > 0 : Boolean(value))) {
+      map[locale] = text;
+    }
   }
   return map;
 };
@@ -235,32 +242,16 @@ const OfferFormModal = ({ offer, onClose, onSaved, adminApi }) => {
     try {
       const path = isEdit ? `/admin/direct-offers/${offer._id}` : '/admin/direct-offers';
       const method = isEdit ? 'PUT' : 'POST';
+      const textPayload = buildDirectOfferTextPayload({ form, translations });
       const res = await adminApi(path, {
         method,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ...form,
-          translations: Object.fromEntries(Object.entries(translations).map(([locale, text]) => [locale, {
-            ...text,
-            requirements: Array.isArray(text.requirements) ? text.requirements : String(text.requirements || '').split('\n').map((value) => value.trim()).filter(Boolean),
-          }])),
-          title: translations.en?.title || form.title,
-          description: translations.en?.description || form.description,
-          proofInstructions: translations.en?.proofInstructions || form.proofInstructions,
-          titleDe: translations.de?.title || form.titleDe,
-          descriptionDe: translations.de?.description || form.descriptionDe,
-          proofInstructionsDe: translations.de?.proofInstructions || form.proofInstructionsDe,
-          requirements: Array.isArray(translations.en?.requirements) ? translations.en.requirements : String(translations.en?.requirements || form.requirements).split('\n').map((value) => value.trim()).filter(Boolean),
-          requirementsDe: Array.isArray(translations.de?.requirements) ? translations.de.requirements : String(translations.de?.requirements || form.requirementsDe).split('\n').map((value) => value.trim()).filter(Boolean),
+          ...textPayload,
           rewardAmount: hasEnabledGoals ? calculatedGoalReward : Number(form.rewardAmount),
           advertiserPayoutAmount: Number(form.advertiserPayoutAmount) || 0,
           expirationDate: form.expirationDate || null,
-          requirements: form.requirementType === 'paragraph'
-            ? [form.requirements.trim()].filter(Boolean)
-            : form.requirements.split('\n').map(r => r.trim()).filter(Boolean),
-          requirementsDe: form.requirementType === 'paragraph'
-            ? [form.requirementsDe.trim()].filter(Boolean)
-            : form.requirementsDe.split('\n').map(r => r.trim()).filter(Boolean),
           requirementType: form.requirementType,
           allowedCountries: form.allowedCountries.split(',').map(c => c.trim()).filter(Boolean),
           displayPlacements: form.displayPlacements,

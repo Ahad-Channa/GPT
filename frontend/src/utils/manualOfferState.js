@@ -4,10 +4,8 @@ export const hasManualOfferStarted = (offer = {}) =>
   ['started', 'rejected'].includes(String(offer.submissionStatus || '').toLowerCase()) ||
   String(offer.clickStatus || '').toLowerCase() === 'clicked';
 
-export const resolveProofInstructions = (offer = {}, language = 'en') => {
-  const localized = String(getOfferTranslation(offer, language).proofInstructions || '').trim();
-  return localized || String(offer.proofInstructions || '').trim();
-};
+export const resolveProofInstructions = (offer = {}, language = 'en') =>
+  String(getOfferTranslation(offer, language).proofInstructions || '').trim();
 
 export const reserveOfferTab = () => {
   if (typeof window === 'undefined') return null;

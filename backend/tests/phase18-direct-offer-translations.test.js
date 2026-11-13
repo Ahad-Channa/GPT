@@ -4,6 +4,7 @@ const express = require('express');
 const fs = require('node:fs');
 const http = require('node:http');
 const path = require('node:path');
+const { pathToFileURL } = require('node:url');
 
 process.env.FIREBASE_PROJECT_ID = process.env.FIREBASE_PROJECT_ID || 'your-project-id';
 
@@ -17,6 +18,9 @@ const repoRoot = path.resolve(__dirname, '..', '..');
 const read = (relativePath) => fs.readFileSync(path.join(repoRoot, relativePath), 'utf8');
 // Collapse whitespace so assertions are semantic and tolerate formatting changes.
 const compact = (source) => source.replace(/\s+/g, '');
+const loadOfferTranslations = () => import(pathToFileURL(path.join(repoRoot, 'frontend/src/utils/offerTranslations.js')).href);
+const loadDirectOfferPayload = () => import(pathToFileURL(path.join(repoRoot, 'frontend/src/utils/directOfferPayload.js')).href);
+const loadOfferGoalDisplay = () => import(pathToFileURL(path.join(repoRoot, 'frontend/src/utils/offerGoalDisplay.js')).href);
 
 // ─── Model + normalizer round-trip ────────────────────────────────────────────
 
@@ -209,46 +213,215 @@ test('admin edit preserves translations and unrelated live edits do not drop the
   });
 });
 
-// ─── Frontend fallback selection (semantic source-scan) ───────────────────────
+// ─── Admin save payload: localized requirements + deliberate legacy fields ───
 
-// Fallback "shape" regexes tolerate optional parentheses around the isDe condition.
-const DE_TITLE = /isDe&&offer\.titleDe\)?\?offer\.titleDe:offer\.title/;
-const DE_DESC = /isDe&&offer\.descriptionDe\)?\?offer\.descriptionDe/;
+test('saving localized requirements keeps every locale and derives legacy fields from them', async () => {
+  const { buildDirectOfferTextPayload } = await loadDirectOfferPayload();
 
-test('Featured Direct Offer component selects DE with English fallback', () => {
-  const card = compact(read('frontend/src/components/offers/DirectOfferCard.jsx'));
+  const payload = buildDirectOfferTextPayload({
+    form: {
+      title: 'Legacy EN title',
+      description: 'Legacy EN description',
+      requirements: 'Legacy EN requirement',
+      titleDe: 'Legacy DE title',
+      descriptionDe: 'Legacy DE description',
+      requirementsDe: 'Legacy DE requirement',
+      requirementType: 'bullets',
+    },
+    translations: {
+      en: { title: 'English title', description: 'English description', requirements: 'Do X\nDo Y' },
+      de: { title: 'Deutscher Titel', description: 'Deutsche Beschreibung', requirements: ['Mach X', 'Mach Y'] },
+      fr: { title: 'Titre FR', description: 'Description FR', requirements: 'Une\nDeux' },
+    },
+  });
 
-  assert.match(card, /i18n\.language\?\.startsWith\('de'\)/);
-  assert.match(card, DE_TITLE);
-  assert.match(card, DE_DESC);
-  assert.match(card, /isDe&&Array\.isArray\(offer\.requirementsDe\)&&offer\.requirementsDe\.length>0\)?\?offer\.requirementsDe:\(?offer\.requirements/);
-  // Goal labels use the shared formatter, with the selected locale passed in.
-  assert.match(card, /formatGoalLabel\(goal,isDe\?'de':'en'\)/);
+  assert.equal(payload.title, 'English title');
+  assert.equal(payload.titleDe, 'Deutscher Titel');
+  assert.deepEqual(payload.translations.en.requirements, ['Do X', 'Do Y']);
+  assert.deepEqual(payload.translations.de.requirements, ['Mach X', 'Mach Y']);
+  assert.deepEqual(payload.translations.fr.requirements, ['Une', 'Deux']);
+  assert.deepEqual(payload.requirements, ['Do X', 'Do Y']);
+  assert.deepEqual(payload.requirementsDe, ['Mach X', 'Mach Y']);
 });
 
-test('Goodpicks component selects DE with English fallback', () => {
+test('saving legacy offers seeds requirements into translations without losing titleDe/descriptionDe/requirementsDe', async () => {
+  const { buildDirectOfferTextPayload } = await loadDirectOfferPayload();
+
+  const payload = buildDirectOfferTextPayload({
+    form: {
+      title: 'English legacy title',
+      description: 'English legacy description',
+      requirements: 'First EN\nSecond EN',
+      titleDe: 'Deutscher Alt-Titel',
+      descriptionDe: 'Deutsche Alt-Beschreibung',
+      requirementsDe: 'Erste DE\nZweite DE',
+      requirementType: 'bullets',
+    },
+    translations: {
+      en: { title: 'English legacy title', description: 'English legacy description' },
+      de: { title: 'Deutscher Alt-Titel', description: 'Deutsche Alt-Beschreibung' },
+    },
+  });
+
+  assert.deepEqual(payload.translations.en.requirements, ['First EN', 'Second EN']);
+  assert.deepEqual(payload.translations.de.requirements, ['Erste DE', 'Zweite DE']);
+  assert.deepEqual(payload.requirements, payload.translations.en.requirements);
+  assert.deepEqual(payload.requirementsDe, payload.translations.de.requirements);
+  assert.equal(payload.descriptionDe, 'Deutsche Alt-Beschreibung');
+});
+
+test('saving an intentionally empty localized requirements list does not resurrect legacy text', async () => {
+  const { buildDirectOfferTextPayload } = await loadDirectOfferPayload();
+
+  const payload = buildDirectOfferTextPayload({
+    form: { requirements: 'Old EN requirement', requirementsDe: 'Old DE requirement', requirementType: 'bullets' },
+    translations: { en: { requirements: '' }, de: { requirements: [] } },
+  });
+
+  assert.deepEqual(payload.translations.en.requirements, []);
+  assert.deepEqual(payload.translations.de.requirements, []);
+  assert.deepEqual(payload.requirements, []);
+  assert.deepEqual(payload.requirementsDe, []);
+});
+
+// ─── Field-level translation lookup (no cross-language English fallback) ──────
+
+test('a partially translated offer never borrows English text in another selected language', async () => {
+  const { getOfferTranslation } = await loadOfferTranslations();
+
+  const display = getOfferTranslation({
+    title: 'English title',
+    description: 'English description',
+    requirements: ['English requirement'],
+    proofInstructions: 'English proof instructions',
+    translations: { de: { title: 'Deutscher Titel' } },
+  }, 'de');
+
+  assert.deepEqual(display, {
+    title: 'Deutscher Titel',
+    description: '',
+    requirements: [],
+    proofInstructions: '',
+  });
+});
+
+test('locale variants fall back only within the same language', async () => {
+  const { getOfferTranslation } = await loadOfferTranslations();
+
+  assert.deepEqual(
+    getOfferTranslation({
+      title: 'English title',
+      description: 'English description',
+      translations: { de: { title: 'Deutscher Titel', description: 'Deutsche Beschreibung' } },
+    }, 'de-DE'),
+    {
+      title: 'Deutscher Titel',
+      description: 'Deutsche Beschreibung',
+      requirements: [],
+      proofInstructions: '',
+    }
+  );
+});
+
+test('legacy titleDe, descriptionDe and requirementsDe still work for German', async () => {
+  const { getOfferTranslation } = await loadOfferTranslations();
+  const offer = {
+    title: 'English title',
+    description: 'English description',
+    requirements: ['English requirement'],
+    proofInstructions: 'English proof',
+    titleDe: 'Deutscher Titel',
+    descriptionDe: 'Deutsche Beschreibung',
+    requirementsDe: ['Deutsche Voraussetzung'],
+    proofInstructionsDe: 'Deutscher Nachweis',
+  };
+
+  assert.deepEqual(getOfferTranslation(offer, 'de'), {
+    title: 'Deutscher Titel',
+    description: 'Deutsche Beschreibung',
+    requirements: ['Deutsche Voraussetzung'],
+    proofInstructions: 'Deutscher Nachweis',
+  });
+  assert.deepEqual(getOfferTranslation(offer, 'en'), {
+    title: 'English title',
+    description: 'English description',
+    requirements: ['English requirement'],
+    proofInstructions: 'English proof',
+  });
+});
+
+test('an untranslated non-English locale returns an empty state instead of English offer text', async () => {
+  const { getOfferTranslation } = await loadOfferTranslations();
+
+  assert.deepEqual(
+    getOfferTranslation({ title: 'English title', description: 'English description' }, 'fr'),
+    { title: '', description: '', requirements: [], proofInstructions: '' }
+  );
+});
+
+test('goal lookup also uses field-level fallback without borrowing English fields', async () => {
+  const { getGoalTranslation } = await loadOfferTranslations();
+
+  assert.deepEqual(
+    getGoalTranslation({
+      label: 'Deposit',
+      description: 'English goal description',
+      translations: { de: { label: 'Einzahlung' } },
+    }, 'de'),
+    { label: 'Einzahlung', description: '' }
+  );
+});
+
+test('formatGoalLabel does not borrow an English goal label for another language', async () => {
+  const { formatGoalLabel } = await loadOfferGoalDisplay();
+
+  assert.equal(
+    formatGoalLabel({ goalKey: 'fight_20_battles', label: 'English only label' }, 'de'),
+    'Fight 20 Battles'
+  );
+});
+
+// ─── Component integration ───────────────────────────────────────────────────
+
+test('DirectOfferCard uses localized offer text without unconditional English fallbacks', () => {
+  const card = compact(read('frontend/src/components/offers/DirectOfferCard.jsx'));
+
+  assert.match(card, /getOfferTranslation\(offer,i18n\.resolvedLanguage\|\|i18n\.language\)/);
+  assert.match(card, /getOfferTranslation\(offer,selectedLanguage\)/);
+  assert.doesNotMatch(card, /offerText\.title\|\|offer\.title/);
+  assert.doesNotMatch(card, /offerText\.description\|\|offer\.description/);
+  assert.doesNotMatch(card, /offerText\.requirements\|\|offer\.requirements/);
+  assert.match(card, /offers\.translationUnavailable/);
+});
+
+test('admin save uses one deliberate text payload and no duplicate requirements keys', () => {
+  const admin = read('frontend/src/pages/admin/AdminDirectOffers.jsx');
+
+  assert.match(admin, /buildDirectOfferTextPayload\(\{\s*form,\s*translations\s*\}\)/);
+  const bodyStart = admin.indexOf('body: JSON.stringify({');
+  const bodyEnd = admin.indexOf('const data = await res.json();', bodyStart);
+  assert.ok(bodyStart > -1 && bodyEnd > bodyStart);
+  const body = admin.slice(bodyStart, bodyEnd);
+  assert.doesNotMatch(body, /\brequirements\s*:/);
+  assert.doesNotMatch(body, /\brequirementsDe\s*:/);
+});
+
+test('Goodpicks component keeps its existing selected-language fallbacks', () => {
   const goodpicks = compact(read('frontend/src/components/offers/GoodpicksModal.jsx'));
 
   assert.match(goodpicks, /i18n\.language\?\.startsWith\('de'\)/);
-  assert.match(goodpicks, DE_TITLE);
-  assert.match(goodpicks, DE_DESC);
+  assert.match(goodpicks, /isDe&&offer\.titleDe\)?\?offer\.titleDe:offer\.title/);
+  assert.match(goodpicks, /isDe&&offer\.descriptionDe\)?\?offer\.descriptionDe/);
   assert.match(goodpicks, /isDe&&Array\.isArray\(offer\?\.requirementsDe\)&&offer\.requirementsDe\.length>0\)?\?offer\.requirementsDe:\(?offer\.requirements/);
-  assert.match(goodpicks, /isDe&&goal\.labelDe\)?\?goal\.labelDe:\(goal\.label\|\|goal\.goalKey/);
 });
 
 test('English mode never prefers German and admin exposes manual EN/DE fields', () => {
-  // Every German-preference occurrence must be gated by `isDe &&`.
-  for (const file of [
-    'frontend/src/components/offers/DirectOfferCard.jsx',
-    'frontend/src/components/offers/GoodpicksModal.jsx',
-  ]) {
-    const source = compact(read(file));
-    const gatedTitle = (source.match(/isDe&&offer\.titleDe\)?\?offer\.titleDe:offer\.title/g) || []).length;
-    const anyTitle = (source.match(/offer\.titleDe\)?\?offer\.titleDe:offer\.title/g) || []).length;
-    assert.ok(anyTitle > 0, `${file} must select DE title`);
-    assert.equal(gatedTitle, anyTitle, `${file}: all DE title selections must be isDe-gated`);
-    assert.match(source, /isDe&&/);
-  }
+  const goodpicks = compact(read('frontend/src/components/offers/GoodpicksModal.jsx'));
+  const gatedTitle = (goodpicks.match(/isDe&&offer\.titleDe\)?\?offer\.titleDe:offer\.title/g) || []).length;
+  const anyTitle = (goodpicks.match(/offer\.titleDe\)?\?offer\.titleDe:offer\.title/g) || []).length;
+  assert.ok(anyTitle > 0, 'Goodpicks must select DE title');
+  assert.equal(gatedTitle, anyTitle, 'Goodpicks: all DE title selections must be isDe-gated');
+  assert.match(goodpicks, /isDe&&/);
 
   const admin = read('frontend/src/pages/admin/AdminDirectOffers.jsx');
   for (const field of ['titleDe', 'descriptionDe', 'requirementsDe', 'labelDe']) {

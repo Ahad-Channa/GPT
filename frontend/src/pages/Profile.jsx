@@ -2748,7 +2748,8 @@ const Profile = () => {
           })
           .map(offer => ({
             ...offer,
-            title: getOfferTranslation(offer, i18n.resolvedLanguage || i18n.language).title || offer.title,
+            title: getOfferTranslation(offer, i18n.resolvedLanguage || i18n.language).title
+              || t('offers.translationUnavailable', 'Translation unavailable'),
             startedAt: offer.startedAt || offer.createdAt,
             source: 'direct',
           }));

@@ -16,8 +16,10 @@ export const humanizeGoalKey = (value) => {
 
 export const formatGoalLabel = (goal, language = 'en') => {
   const key = String(goal?.goalKey || goal?.key || '').trim();
+  const isEnglish = String(language || 'en').toLowerCase().split(/[-_]/)[0] === 'en';
   const localizedLabel = String(getGoalTranslation(goal, language).label || '').trim();
-  const label = localizedLabel || String(goal?.label || '').trim();
+  // English may use the stored English label; other languages must not borrow it.
+  const label = localizedLabel || (isEnglish ? String(goal?.label || '').trim() : '');
 
   if (label && (!key || compactKey(label) !== compactKey(key))) return label;
   return humanizeGoalKey(key || label) || 'Complete step';

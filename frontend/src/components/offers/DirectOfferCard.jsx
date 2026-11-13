@@ -47,10 +47,10 @@ const isGoalCompleted = (offer, goal) => {
   return goalState === true || goalState?.completed === true || goalState?.credited === true || goalState?.status === 'approved';
 };
 
-const requirementText = (requirements) => {
+const requirementText = (requirements, fallback) => {
   if (Array.isArray(requirements) && requirements.length > 0) return requirements.join(' ');
   if (typeof requirements === 'string' && requirements.trim()) return requirements;
-  return 'Complete the requirements to earn rewards.';
+  return fallback;
 };
 
 // Status badge config
@@ -63,9 +63,9 @@ const STATUS_CONFIG = {
 
 // ─── Small Card shown in the grid ────────────────────────────────────────────
 export const DirectOfferCard = ({ offer, onClick }) => {
-  const { i18n } = useTranslation();
-  const isDe = i18n.language?.startsWith('de');
-  const title = getOfferTranslation(offer, i18n.resolvedLanguage || i18n.language).title || offer.title;
+  const { i18n, t } = useTranslation();
+  const offerText = getOfferTranslation(offer, i18n.resolvedLanguage || i18n.language);
+  const title = offerText.title || t('offers.translationUnavailable', 'Translation unavailable');
   const isExpired = offer.expirationDate && new Date(offer.expirationDate) < new Date();
   const coverImgSrc = offer.coverImage || (isIconUrl(offer.icon) ? offer.icon : null);
   const emojiIcon = !coverImgSrc && offer.icon ? offer.icon : null;
@@ -255,9 +255,9 @@ export const DirectOfferModal = ({ offer, token, placement = 'featured', onClose
     : (i18n.resolvedLanguage || i18n.language || 'en');
   const isDe = selectedLanguage.startsWith('de');
   const offerText = getOfferTranslation(offer, selectedLanguage);
-  const title = offerText.title || offer.title;
-  const description = offerText.description || offer.description;
-  const requirements = offerText.requirements || offer.requirements;
+  const title = offerText.title || t('offers.translationUnavailable', 'Translation unavailable');
+  const description = offerText.description;
+  const requirements = offerText.requirements;
   const [loading, setLoading] = useState(false);
   const [showSupportModal, setShowSupportModal] = useState(false);
   const [actionError, setActionError] = useState('');
@@ -283,7 +283,7 @@ export const DirectOfferModal = ({ offer, token, placement = 'featured', onClose
       completed: isGoalCompleted(offer, goal),
       timeLimitDays: goal.timeLimitDays,
     }))
-    : [requirementText(requirements)];
+    : [requirementText(requirements, t('offers.defaultRequirement'))];
 
   const handleGoToOffer = async () => {
     if (isExpired || limitReached) return;
@@ -445,7 +445,7 @@ export const DirectOfferModal = ({ offer, token, placement = 'featured', onClose
                 {title}
               </h2>
               <p className="text-[12px] sm:text-[13px] text-[#4A4C46] mt-1 leading-relaxed m-0 font-normal">
-                {description || 'Complete this offer by sending it to your Android device from here'}
+                {description || t('offers.defaultDescription')}
               </p>
             </div>
           </div>
@@ -498,7 +498,7 @@ export const DirectOfferModal = ({ offer, token, placement = 'featured', onClose
                     ? displayRequirements.join(' ')
                     : typeof displayRequirements === 'string'
                     ? displayRequirements
-                    : 'Complete the requirements to earn rewards.'}
+                    : t('offers.defaultRequirement')}
                 </p>
               </div>
             ) : displayRequirements && displayRequirements.length > 0 ? (
@@ -535,7 +535,7 @@ export const DirectOfferModal = ({ offer, token, placement = 'featured', onClose
               >
                 <div className="w-5 h-5 rounded-full border-2 border-[#D1CCC2] bg-white shrink-0" />
                 <span className="text-[13px] font-medium text-[#1E293B]">
-                  Complete the required tasks → receive rewards
+                  {t('offers.defaultRequirementTask')}
                 </span>
               </div>
             )}
