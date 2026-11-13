@@ -2,6 +2,8 @@
 // DirectOffer. Shared by the public direct-offer postback route and the admin
 // manual conversion actions so both resolve conversions from one mapping and
 // one security definition (no parallel credit paths).
+const DIRECT_OFFER_SOURCE_LABEL = 'Goodpicks';
+
 const buildDirectOfferProviderConfig = (offer) => {
   const mapping = (offer && offer.postbackMapping) || {};
   return {
@@ -44,4 +46,4 @@ const buildDirectOfferProviderConfig = (offer) => {
   };
 };
 
-module.exports = { buildDirectOfferProviderConfig };
+module.exports = { buildDirectOfferProviderConfig, DIRECT_OFFER_SOURCE_LABEL };

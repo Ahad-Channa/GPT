@@ -75,6 +75,113 @@ test('legacy rows strip the old generic suffix and never fall back to "Task: Com
   );
 });
 
+// ─── Live Feed source/detail rules ───────────────────────────────────────────
+
+test('live feed: direct single-step shows Goodpicks then the offer title', async () => {
+  const { getLiveFeedDisplay } = await loadDisplay();
+  assert.deepEqual(
+    getLiveFeedDisplay({
+      transactionType: 'direct_offer_reward',
+      metadata: { providerId: 'direct', offerTitle: 'QA Offer' },
+    }),
+    { sourceLine: 'Goodpicks', detailLine: 'QA Offer' }
+  );
+});
+
+test('live feed: direct multi-step shows Goodpicks then the credited step', async () => {
+  const { getLiveFeedDisplay } = await loadDisplay();
+  assert.deepEqual(
+    getLiveFeedDisplay({
+      transactionType: 'direct_offer_reward',
+      metadata: {
+        providerId: 'direct',
+        providerName: 'Goodpicks',
+        offerTitle: 'Plarium Vikings',
+        goalKey: 'fight_20_battles',
+        stepLabel: 'Fight 20 Battles',
+      },
+    }),
+    { sourceLine: 'Goodpicks', detailLine: 'Fight 20 Battles' }
+  );
+});
+
+test('live feed: Lootably single-step shows Offerwall provider then the offer title', async () => {
+  const { getLiveFeedDisplay } = await loadDisplay();
+  assert.deepEqual(
+    getLiveFeedDisplay({
+      transactionType: 'offer_reward',
+      metadata: { providerId: 'lootably', providerName: 'Lootably', offerTitle: 'Survey X' },
+    }),
+    { sourceLine: 'Offerwall: Lootably', detailLine: 'Survey X' }
+  );
+});
+
+test('live feed: Lootably multi-step shows the credited step, not the total offer name', async () => {
+  const { getLiveFeedDisplay } = await loadDisplay();
+  assert.deepEqual(
+    getLiveFeedDisplay({
+      transactionType: 'offer_reward',
+      metadata: {
+        providerId: 'lootably',
+        providerName: 'Lootably',
+        offerTitle: 'Game Install',
+        campaignTitle: 'Game Install',
+        stepLabel: 'Reach Level 5',
+      },
+    }),
+    { sourceLine: 'Offerwall: Lootably', detailLine: 'Reach Level 5' }
+  );
+});
+
+test('live feed: raw step IDs are humanized for display only', async () => {
+  const { getLiveFeedDisplay } = await loadDisplay();
+  assert.deepEqual(
+    getLiveFeedDisplay({
+      transactionType: 'offer_reward',
+      metadata: { providerName: 'Lootably', offerTitle: 'Plarium', stepLabel: 'fight_20_battles' },
+    }),
+    { sourceLine: 'Offerwall: Lootably', detailLine: 'Fight 20 Battles' }
+  );
+});
+
+test('live feed: provider-only rows get a safe Offer detail instead of provider twice', async () => {
+  const { getLiveFeedDisplay } = await loadDisplay();
+  assert.deepEqual(
+    getLiveFeedDisplay({ transactionType: 'offer_reward', metadata: { providerName: 'Lootably' } }),
+    { sourceLine: 'Offerwall: Lootably', detailLine: 'Offer' }
+  );
+  assert.deepEqual(
+    getLiveFeedDisplay({
+      transactionType: 'offer_reward',
+      metadata: { providerName: 'Lootably', offerTitle: 'Lootably' },
+    }),
+    { sourceLine: 'Offerwall: Lootably', detailLine: 'Offer' }
+  );
+});
+
+test('live feed: other provider names stay dynamic', async () => {
+  const { getLiveFeedDisplay } = await loadDisplay();
+  assert.deepEqual(
+    getLiveFeedDisplay({
+      transactionType: 'offer_reward',
+      metadata: { providerName: 'CPX Research', offerTitle: 'Survey 42' },
+    }),
+    { sourceLine: 'Offerwall: CPX Research', detailLine: 'Survey 42' }
+  );
+});
+
+test('live feed: legacy direct rows map providerId direct to Goodpicks', async () => {
+  const { getLiveFeedDisplay } = await loadDisplay();
+  assert.deepEqual(
+    getLiveFeedDisplay({
+      transactionType: 'direct_offer_reward',
+      description: 'QA Offer - Offer Reward',
+      metadata: { providerId: 'direct' },
+    }),
+    { sourceLine: 'Goodpicks', detailLine: 'QA Offer' }
+  );
+});
+
 // ─── Backend notification / metadata wiring ──────────────────────────────────
 
 test('direct-offer notification names the source and uses actual hold duration', () => {
@@ -100,7 +207,9 @@ test('offerwall postbacks accept safe offer and step names from query or form bo
   const { readOfferTitle, readStepLabel } = require('../routes/offerwalls').__testInternals;
   assert.equal(readOfferTitle({ offer_name: 'Query Campaign' }), 'Query Campaign');
   assert.equal(readOfferTitle({}, { campaignTitle: 'Body Campaign' }), 'Body Campaign');
+  assert.equal(readOfferTitle({ offerName: 'Lootably Campaign' }), 'Lootably Campaign');
   assert.equal(readStepLabel({ event_name: 'Reach Level 5' }), 'Reach Level 5');
+  assert.equal(readStepLabel({ goalDescription: 'Lootably Step' }), 'Lootably Step');
   assert.equal(readOfferTitle({ offer_name: '<script>alert(1)</script>' }), '<script>alert(1)</script>');
   assert.equal(readOfferTitle({ offer_name: 'bad\nvalue' }), '');
 });
@@ -158,10 +267,22 @@ test('custom offer transaction carries offerTitle and uses actual hold duration'
   assert.match(source, /placed on hold for \$\{customHoldDays\} days/);
 });
 
-test('Live Feed uses the shared resolver and drops the generic fallbacks', () => {
+test('Live Feed renders source before detail visibly inline, not only in the hover tooltip', () => {
   const bar = read('frontend/src/components/LiveEarningsBar.jsx');
-  assert.match(bar, /getEarningDisplay\(tx\)/);
+  assert.match(bar, /getLiveFeedDisplay\(tx\)/);
+  assert.match(bar, /task = liveDisplay\.sourceLine/);
+  assert.match(bar, /taskCategory = liveDisplay\.detailLine/);
+  assert.match(bar, /details\.hasOfferDetails/);
+  assert.match(bar, /details\.sourceLine/);
+  assert.match(bar, /details\.detailLine/);
   assert.doesNotMatch(bar, /'Task: Completed offer'/);
+
+  const inlineIndex = bar.indexOf('Visible provider/source');
+  const tooltipIndex = bar.indexOf('Floating Hover Tooltip');
+  assert.ok(inlineIndex > -1, 'visible inline detail block must exist');
+  assert.ok(tooltipIndex > -1, 'expanded tooltip must still exist');
+  assert.ok(inlineIndex < tooltipIndex, 'inline source/detail must render before the hover tooltip');
+  assert.doesNotMatch(bar.slice(inlineIndex, tooltipIndex), /hidden md:block/);
 
   const ticker = read('frontend/src/components/LiveEarningsTicker.jsx');
   assert.match(ticker, /getEarningDisplay\(earning\)\.primary/);

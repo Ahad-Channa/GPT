@@ -9,6 +9,7 @@ const { emitToUser, emitWalletUpdate } = require('../../utils/walletEvents');
 const { processVipLevelUp } = require('../../utils/vipUtils');
 const { getEarningHoldDecision, REAL_OFFER_EARNING_TYPES } = require('../../utils/earningTypes');
 const { findCreditedConversionForClickLog } = require('../tracking/conversionService');
+const { DIRECT_OFFER_SOURCE_LABEL } = require('../tracking/directOfferProvider');
 const { createOne, runAtomic, withSession } = require('./atomicRunner');
 
 const ACTIVE_CREDIT_STATUSES = ['completed', 'hold'];
@@ -336,6 +337,7 @@ const processReward = async ({
           metadata: {
             clickId: claimed.clickId,
             providerId: claimed.providerId,
+            providerName: isDirectOffer ? DIRECT_OFFER_SOURCE_LABEL : (claimed.providerId || null),
             advertiserTransactionId: claimed.providerTransactionId,
             advertiserPayout: claimed.payout?.amount || 0,
             goalKey: claimed.goalKey || null,

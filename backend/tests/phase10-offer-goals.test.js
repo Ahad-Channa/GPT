@@ -420,6 +420,8 @@ test('goal conversion rewards the trusted click-time goal amount, not the base r
   assert.equal(state.transactions.length, 1);
   assert.equal(state.transactions[0].amount, 250);
   assert.equal(state.transactions[0].metadata.goalKey, 'deposit');
+  assert.equal(state.transactions[0].metadata.stepLabel, 'Deposit');
+  assert.equal(state.transactions[0].metadata.providerName, 'Goodpicks');
   assert.equal(user.walletBalance, 260);
 });
 

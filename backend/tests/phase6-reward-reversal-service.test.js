@@ -258,6 +258,7 @@ test('approved reward is processed once with deterministic transaction identity'
   assert.equal(state.transactions.length, 1);
   assert.equal(state.transactions[0].externalId, rewardExternalId(state.conversion._id));
   assert.equal(state.transactions[0].amount, 777);
+  assert.equal(state.transactions[0].metadata.providerName, 'Goodpicks');
   assert.equal(state.user.walletBalance, 877);
   assert.equal(state.user.totalEarned, 1277);
   assert.equal(state.conversion.processingState, 'processed');

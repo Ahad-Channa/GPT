@@ -5,7 +5,7 @@ import PublicProfileModal from './PublicProfileModal';
 import UserAvatar from './UserAvatar';
 import { useTheme } from '../contexts/ThemeContext';
 import { io } from 'socket.io-client';
-import { getEarningDisplay } from '../utils/earningDisplay';
+import { getEarningDisplay, getLiveFeedDisplay } from '../utils/earningDisplay';
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 const SOCKET_URL = import.meta.env.VITE_API_URL
@@ -172,6 +172,7 @@ const LiveEarningsBar = () => {
     let offerwall = 'System';
     let task = 'Completed Task';
     let taskCategory = 'Task: System Bonus';
+    let hasOfferDetails = false;
 
     if (tx.transactionType === 'daily_bonus') {
       task = 'Daily Bonus';
@@ -198,11 +199,18 @@ const LiveEarningsBar = () => {
       offerwall = 'Rewards';
       taskCategory = 'Task: Redeemed Promo Code';
     } else {
-      // Offer-style earnings: compact primary/secondary from structured metadata.
-      // This intentionally avoids the generic "Task: Completed offer" text.
-      const display = getEarningDisplay(tx);
-      task = display.primary || tx.description || '';
-      taskCategory = display.secondary || '';
+      // Offer-style earnings: a visible two-line provider/offer block inside the
+      // chip. getEarningDisplay() stays untouched for transaction history.
+      const liveDisplay = getLiveFeedDisplay(tx);
+      if (liveDisplay) {
+        task = liveDisplay.sourceLine;
+        taskCategory = liveDisplay.detailLine;
+        hasOfferDetails = true;
+      } else {
+        const display = getEarningDisplay(tx);
+        task = display.primary || tx.description || '';
+        taskCategory = display.secondary || '';
+      }
     }
 
     const amountStr = rawAmount.toLocaleString('de-DE');
@@ -214,6 +222,9 @@ const LiveEarningsBar = () => {
       offerwall,
       task,
       taskCategory,
+      sourceLine: task,
+      detailLine: taskCategory,
+      hasOfferDetails,
       color: 'rgba(231, 171, 24, 1)',
     };
   };
@@ -469,6 +480,41 @@ const LiveEarningsBar = () => {
                           )}
                         </div>
                       </div>
+
+                      {/* Visible provider/source + offer or credited step */}
+                      {details.hasOfferDetails && (
+                        <div
+                          className="flex flex-col justify-center min-w-0"
+                          title={`${details.sourceLine} — ${details.detailLine}`}
+                          style={{
+                            maxWidth: 'clamp(130px, 26vw, 210px)',
+                            paddingLeft: '8px',
+                            borderLeft: `1px solid ${isDarkMode ? 'rgba(255, 255, 255, 0.12)' : 'rgba(14, 15, 12, 0.12)'}`,
+                            gap: '2px',
+                          }}
+                        >
+                          <span
+                            className="truncate text-[9px] sm:text-[10px] leading-[12px]"
+                            style={{
+                              fontFamily: 'Poppins, sans-serif',
+                              fontWeight: 600,
+                              color: isDarkMode ? 'rgba(255, 255, 255, 0.92)' : 'rgba(14, 15, 12, 0.9)',
+                            }}
+                          >
+                            {details.sourceLine}
+                          </span>
+                          <span
+                            className="truncate text-[9px] sm:text-[10px] leading-[12px]"
+                            style={{
+                              fontFamily: 'Poppins, sans-serif',
+                              fontWeight: 500,
+                              color: isDarkMode ? 'rgba(255, 255, 255, 0.64)' : 'rgba(14, 15, 12, 0.62)',
+                            }}
+                          >
+                            {details.detailLine}
+                          </span>
+                        </div>
+                      )}
                     </motion.div>
                   );
                 })}

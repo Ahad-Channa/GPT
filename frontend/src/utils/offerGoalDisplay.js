@@ -1,5 +1,5 @@
 const compactKey = (value) => String(value || '').toLowerCase().replace(/[\s_-]+/g, '');
-import { getGoalTranslation } from './offerTranslations';
+import { getGoalTranslation } from './offerTranslations.js';
 
 export const humanizeGoalKey = (value) => {
   const raw = String(value || '').trim();
