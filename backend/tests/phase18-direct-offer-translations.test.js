@@ -372,13 +372,50 @@ test('goal lookup also uses field-level fallback without borrowing English field
   );
 });
 
-test('formatGoalLabel does not borrow an English goal label for another language', async () => {
+test('missing goal labels use the selected locale missing-state text for German, French and Urdu', async () => {
   const { formatGoalLabel } = await loadOfferGoalDisplay();
+  const messages = {
+    de: require(path.join(repoRoot, 'frontend/src/i18n/de.json')),
+    fr: require(path.join(repoRoot, 'frontend/src/i18n/fr.json')),
+    ur: require(path.join(repoRoot, 'frontend/src/i18n/ur.json')),
+  };
+
+  for (const locale of ['de', 'fr', 'ur']) {
+    assert.equal(
+      formatGoalLabel(
+        { goalKey: 'fight_20_battles', label: 'English only label' },
+        locale,
+        messages[locale].offers.missingGoalLabel
+      ),
+      messages[locale].offers.missingGoalLabel
+    );
+  }
 
   assert.equal(
-    formatGoalLabel({ goalKey: 'fight_20_battles', label: 'English only label' }, 'de'),
-    'Fight 20 Battles'
+    formatGoalLabel({ goalKey: 'fight_20_battles', label: 'English only label' }, 'en'),
+    'English only label'
   );
+});
+
+test('translated goal labels still win over the localized missing state', async () => {
+  const { formatGoalLabel } = await loadOfferGoalDisplay();
+  const messages = {
+    de: require(path.join(repoRoot, 'frontend/src/i18n/de.json')),
+    fr: require(path.join(repoRoot, 'frontend/src/i18n/fr.json')),
+    ur: require(path.join(repoRoot, 'frontend/src/i18n/ur.json')),
+  };
+
+  const labels = { de: '20 Kämpfe', fr: '20 combats', ur: '20 لڑائیاں' };
+  for (const locale of ['de', 'fr', 'ur']) {
+    assert.equal(
+      formatGoalLabel(
+        { goalKey: 'fight_20_battles', label: 'English only label', translations: { [locale]: { label: labels[locale] } } },
+        locale,
+        messages[locale].offers.missingGoalLabel
+      ),
+      labels[locale]
+    );
+  }
 });
 
 // ─── Component integration ───────────────────────────────────────────────────
@@ -392,6 +429,56 @@ test('DirectOfferCard uses localized offer text without unconditional English fa
   assert.doesNotMatch(card, /offerText\.description\|\|offer\.description/);
   assert.doesNotMatch(card, /offerText\.requirements\|\|offer\.requirements/);
   assert.match(card, /offers\.translationUnavailable/);
+
+  // All modal headings/instructions/status text come from i18n.
+  assert.match(card, /formatGoalRequirement\(goal,selectedLanguage,t\)/);
+  assert.match(card, /t\('offers\.goalRewardInstruction'/);
+  assert.match(card, /t\('offers\.missingGoalLabel'\)/);
+  assert.match(card, /t\('offers\.requirements'\)/);
+  assert.match(card, /t\('offers\.generalRules'\)/);
+  assert.match(card, /t\('offers\.proofInstructions'\)/);
+  assert.match(card, /t\('offers\.statusInProgress'\)/);
+  assert.doesNotMatch(card, /isDe/);
+  assert.doesNotMatch(card, /'Proof Instructions'/);
+  assert.doesNotMatch(card, /'General Offer Rules'/);
+  assert.doesNotMatch(card, /'Offer Expired'/);
+  assert.doesNotMatch(card, /'Click limit reached'/);
+});
+
+test('direct-offer modal translations exist and differ from English for German, French and Urdu', () => {
+  const english = require(path.join(repoRoot, 'frontend/src/i18n/en.json'));
+  const messages = {
+    de: require(path.join(repoRoot, 'frontend/src/i18n/de.json')),
+    fr: require(path.join(repoRoot, 'frontend/src/i18n/fr.json')),
+    ur: require(path.join(repoRoot, 'frontend/src/i18n/ur.json')),
+  };
+  const requiredKeys = [
+    'requirements',
+    'generalRules',
+    'goalRewardInstruction',
+    'missingGoalLabel',
+    'proofInstructions',
+    'proofPending',
+    'offerApproved',
+    'statusRejected',
+    'clickLimitReached',
+    'clickIdLabel',
+    'actionCouldNotStart',
+    'rule1',
+    'rule6',
+  ];
+
+  for (const locale of ['de', 'fr', 'ur']) {
+    for (const key of requiredKeys) {
+      assert.equal(typeof messages[locale].offers[key], 'string', `${locale} is missing offers.${key}`);
+      assert.ok(messages[locale].offers[key].trim(), `${locale}.offers.${key} is empty`);
+    }
+    for (const key of ['requirements', 'generalRules', 'goalRewardInstruction', 'missingGoalLabel', 'proofInstructions', 'proofPending', 'offerApproved', 'statusRejected', 'clickLimitReached', 'clickIdLabel', 'actionCouldNotStart']) {
+      assert.notEqual(messages[locale].offers[key], english.offers[key], `${locale}.offers.${key} must not reuse English`);
+    }
+    assert.match(messages[locale].offers.goalRewardInstruction, /\{\{label\}\}/);
+    assert.match(messages[locale].offers.goalRewardInstruction, /\{\{coins\}\}/);
+  }
 });
 
 test('admin save uses one deliberate text payload and no duplicate requirements keys', () => {

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import i18n from '../../i18n/i18n';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FiX, FiCheck, FiChevronDown, FiExternalLink, FiLoader } from 'react-icons/fi';
 import { FaAndroid, FaApple, FaDesktop } from 'react-icons/fa';
@@ -201,7 +202,8 @@ const isIconUrl = (icon) => icon && (icon.startsWith('http') || icon.startsWith(
 
 const formatCoins = (amount) => Number(amount || 0).toLocaleString('de-DE');
 const formatDirectGoalRequirement = (goal, isDe = false) => {
-  const label = formatGoalLabel(goal, isDe ? 'de' : 'en');
+  const language = isDe ? 'de' : 'en';
+  const label = formatGoalLabel(goal, language, i18n.t('offers.missingGoalLabel', { lng: language }));
   return isDe
     ? `${label} \u2192 ${formatCoins(goal.rewardAmount)} Coins erhalten`
     : `${label} \u2192 receive ${formatCoins(goal.rewardAmount)} coins`;

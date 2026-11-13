@@ -14,7 +14,7 @@ export const humanizeGoalKey = (value) => {
   return words.replace(/\b([a-z])/g, (match) => match.toUpperCase());
 };
 
-export const formatGoalLabel = (goal, language = 'en') => {
+export const formatGoalLabel = (goal, language = 'en', fallbackLabel = '') => {
   const key = String(goal?.goalKey || goal?.key || '').trim();
   const isEnglish = String(language || 'en').toLowerCase().split(/[-_]/)[0] === 'en';
   const localizedLabel = String(getGoalTranslation(goal, language).label || '').trim();
@@ -22,7 +22,9 @@ export const formatGoalLabel = (goal, language = 'en') => {
   const label = localizedLabel || (isEnglish ? String(goal?.label || '').trim() : '');
 
   if (label && (!key || compactKey(label) !== compactKey(key))) return label;
-  return humanizeGoalKey(key || label) || 'Complete step';
+  if (isEnglish) return humanizeGoalKey(key || label) || fallbackLabel || 'Complete step';
+  // Non-English callers pass the localized missing-label text from i18n.
+  return fallbackLabel || '';
 };
 
 export const getEnabledGoalRewardTotal = (goals) =>

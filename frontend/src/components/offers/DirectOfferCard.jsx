@@ -26,11 +26,9 @@ const isRequirementCompleted = (requirement) => {
 };
 
 const formatCoins = (amount) => Number(amount || 0).toLocaleString('de-DE');
-const formatGoalRequirement = (goal, language = 'en') => {
-  const label = formatGoalLabel(goal, language);
-  return String(language).startsWith('de')
-    ? `${label} \u2192 ${formatCoins(goal.rewardAmount)} Coins erhalten`
-    : `${label} \u2192 receive ${formatCoins(goal.rewardAmount)} coins`;
+const formatGoalRequirement = (goal, language, t) => {
+  const label = formatGoalLabel(goal, language, t('offers.missingGoalLabel'));
+  return t('offers.goalRewardInstruction', { label, coins: formatCoins(goal.rewardAmount) });
 };
 
 const getEnabledGoals = (offer) =>
@@ -54,12 +52,12 @@ const requirementText = (requirements, fallback) => {
 };
 
 // Status badge config
-const STATUS_CONFIG = {
-  clicked: { label: 'In Progress', color: 'text-amber-400', bg: 'bg-amber-500/10  border-amber-500/20' },
-  pending: { label: 'Pending', color: 'text-amber-400', bg: 'bg-amber-500/10  border-amber-500/20' },
-  approved: { label: 'Approved ✓', color: 'text-emerald-400', bg: 'bg-emerald-500/10 border-emerald-500/20' },
-  rejected: { label: 'Rejected', color: 'text-rose-400', bg: 'bg-rose-500/10   border-rose-500/20' },
-};
+const getStatusConfig = (t) => ({
+  clicked: { label: t('offers.statusInProgress'), color: 'text-amber-400', bg: 'bg-amber-500/10  border-amber-500/20' },
+  pending: { label: t('offers.statusPending'), color: 'text-amber-400', bg: 'bg-amber-500/10  border-amber-500/20' },
+  approved: { label: t('offers.statusApproved'), color: 'text-emerald-400', bg: 'bg-emerald-500/10 border-emerald-500/20' },
+  rejected: { label: t('offers.statusRejected'), color: 'text-rose-400', bg: 'bg-rose-500/10   border-rose-500/20' },
+});
 
 // ─── Small Card shown in the grid ────────────────────────────────────────────
 export const DirectOfferCard = ({ offer, onClick }) => {
@@ -69,7 +67,7 @@ export const DirectOfferCard = ({ offer, onClick }) => {
   const isExpired = offer.expirationDate && new Date(offer.expirationDate) < new Date();
   const coverImgSrc = offer.coverImage || (isIconUrl(offer.icon) ? offer.icon : null);
   const emojiIcon = !coverImgSrc && offer.icon ? offer.icon : null;
-  const statusCfg = offer.clickStatus ? STATUS_CONFIG[offer.clickStatus] : null;
+  const statusCfg = offer.clickStatus ? getStatusConfig(t)[offer.clickStatus] : null;
   const rewardVal = offer.rewardAmount ?? offer.points ?? offer.reward ?? 1250000;
 
   return (
@@ -253,7 +251,6 @@ export const DirectOfferModal = ({ offer, token, placement = 'featured', onClose
   const selectedLanguage = typeof window !== 'undefined' && window.__taskmintCurrentLang
     ? window.__taskmintCurrentLang
     : (i18n.resolvedLanguage || i18n.language || 'en');
-  const isDe = selectedLanguage.startsWith('de');
   const offerText = getOfferTranslation(offer, selectedLanguage);
   const title = offerText.title || t('offers.translationUnavailable', 'Translation unavailable');
   const description = offerText.description;
@@ -279,7 +276,7 @@ export const DirectOfferModal = ({ offer, token, placement = 'featured', onClose
   const displayRequirementType = hasGoalRows ? 'bullets' : 'paragraph';
   const displayRequirements = hasGoalRows
     ? enabledGoals.map((goal) => ({
-      label: formatGoalRequirement(goal, selectedLanguage),
+      label: formatGoalRequirement(goal, selectedLanguage, t),
       completed: isGoalCompleted(offer, goal),
       timeLimitDays: goal.timeLimitDays,
     }))
@@ -306,10 +303,10 @@ export const DirectOfferModal = ({ offer, token, placement = 'featured', onClose
           const opened = navigateReservedOfferTab(pendingTab, data.url);
           setStartedClickId(data.clickId || '');
           setActionMessage(data.alreadyApproved
-            ? 'This offer was already credited. Its tracking link has been reopened.'
-            : 'Offer click recorded.');
+            ? t('offers.actionAlreadyCredited')
+            : t('offers.actionClickRecorded'));
           if (!opened) {
-            setActionError('The click was recorded, but the destination tab was blocked. Allow pop-ups before starting another click.');
+            setActionError(t('offers.actionTabBlocked'));
           }
           if (isManual) {
             setProofStarted(true);
@@ -318,19 +315,19 @@ export const DirectOfferModal = ({ offer, token, placement = 'featured', onClose
           if (onClicked) onClicked(offer._id, { submissionStatus: data.submissionStatus || 'started' });
         } else if (data.limitReached) {
           closeReservedOfferTab(pendingTab);
-          setActionError('This offer has reached its click limit.');
+          setActionError(t('offers.clickLimitReached'));
         } else {
           closeReservedOfferTab(pendingTab);
-          setActionError(data.error || 'Could not start this offer.');
+          setActionError(data.error || t('offers.actionCouldNotStart'));
         }
       } else {
         closeReservedOfferTab(pendingTab);
-        setActionError('Sign in again to start this offer.');
+        setActionError(t('offers.actionSignInAgain'));
       }
     } catch (err) {
       closeReservedOfferTab(pendingTab);
       console.error('Failed to process click:', err);
-      setActionError('Could not start this offer.');
+      setActionError(t('offers.actionCouldNotStart'));
     } finally {
       setLoading(false);
     }
@@ -399,11 +396,11 @@ export const DirectOfferModal = ({ offer, token, placement = 'featured', onClose
                 padding: 0,
               }}
               className="hover:opacity-80 transition-opacity"
-              title="Support"
+              title={t('offers.support')}
             >
               <img
                 src="/coins/image copy 13.png"
-                alt="Support"
+                alt={t('offers.support')}
                 className="w-[24px] h-[24px] object-contain"
               />
             </button>
@@ -483,7 +480,7 @@ export const DirectOfferModal = ({ offer, token, placement = 'featured', onClose
             className="text-[15px] font-bold text-[#0E0F0C] m-0"
             style={{ fontFamily: '"Bricolage Grotesque", sans-serif' }}
           >
-            Requirements
+            {t('offers.requirements')}
           </h3>
 
           {/* Requirements Content */}
@@ -551,7 +548,7 @@ export const DirectOfferModal = ({ offer, token, placement = 'featured', onClose
               className="text-[13px] font-bold text-[#0E0F0C] m-0 mb-1"
               style={{ fontFamily: '"Bricolage Grotesque", sans-serif' }}
             >
-              {isDe ? 'Nachweis-Anweisungen' : 'Proof Instructions'}
+              {t('offers.proofInstructions')}
             </h4>
             <p className="text-[12px] text-[#334155] m-0 whitespace-pre-wrap leading-relaxed">{proofInstructions}</p>
           </div>
@@ -559,17 +556,17 @@ export const DirectOfferModal = ({ offer, token, placement = 'featured', onClose
 
         {isManual && submissionStatus === 'pending' && (
           <div className="text-center text-[12px] font-semibold text-[#0369A1] shrink-0">
-            {isDe ? 'Nachweis eingereicht – wartet auf Prüfung.' : 'Proof submitted – awaiting admin review.'}
+            {t('offers.proofPending')}
           </div>
         )}
         {isManual && submissionStatus === 'approved' && (
           <div className="text-center text-[12px] font-semibold text-emerald-700 shrink-0">
-            {isDe ? 'Dieses Angebot wurde bereits genehmigt.' : 'This offer has already been approved.'}
+            {t('offers.offerApproved')}
           </div>
         )}
         {isManual && submissionStatus === 'rejected' && offer.adminNote && (
           <div className="text-center text-[12px] font-semibold text-rose-700 shrink-0">
-            {isDe ? 'Abgelehnt' : 'Rejected'}: {offer.adminNote}
+            {t('offers.statusRejected')}: {offer.adminNote}
           </div>
         )}
 
@@ -595,7 +592,7 @@ export const DirectOfferModal = ({ offer, token, placement = 'featured', onClose
         {actionMessage && (
           <div role="status" className="text-center text-[12px] font-semibold text-emerald-700 shrink-0">
             {actionMessage}
-            {startedClickId && <div className="mt-1 break-all font-mono font-normal">Click ID: {startedClickId}</div>}
+            {startedClickId && <div className="mt-1 break-all font-mono font-normal">{t('offers.clickIdLabel')} {startedClickId}</div>}
           </div>
         )}
 
@@ -618,9 +615,9 @@ export const DirectOfferModal = ({ offer, token, placement = 'featured', onClose
           {loading ? (
             <FiLoader className="animate-spin text-lg" />
           ) : isExpired ? (
-            'Offer Expired'
+            t('offers.offerExpired')
           ) : limitReached ? (
-            'Click limit reached'
+            t('offers.clickLimitReached')
           ) : (
             isManual && proofStarted ? t('offers.startOfferAgain') : t('offers.startOffer')
           )}
@@ -635,15 +632,15 @@ export const DirectOfferModal = ({ offer, token, placement = 'featured', onClose
             className="text-[13px] font-bold text-[#0E0F0C] m-0"
             style={{ fontFamily: '"Bricolage Grotesque", sans-serif' }}
           >
-            General Offer Rules
+            {t('offers.generalRules')}
           </h4>
           <ul className="text-[11px] sm:text-[12px] text-[#4A4C46] space-y-0.5 pl-4 list-disc font-normal leading-relaxed m-0">
-            <li>Use a genuine device. Emulators are not allowed.</li>
-            <li>VPNs and proxies are not allowed. Your real location must be used.</li>
-            <li>Complete the offer yourself and follow the stated requirements.</li>
-            <li>Offers may be limited to new users/customers where specified. Existing users may not be eligible.</li>
-            <li>Follow the individual offer requirements and any stated completion deadline.</li>
-            <li>Rewards are only granted when the offer requirements are successfully verified.</li>
+            <li>{t('offers.rule1')}</li>
+            <li>{t('offers.rule2')}</li>
+            <li>{t('offers.rule3')}</li>
+            <li>{t('offers.rule4')}</li>
+            <li>{t('offers.rule5')}</li>
+            <li>{t('offers.rule6')}</li>
           </ul>
         </div>
 

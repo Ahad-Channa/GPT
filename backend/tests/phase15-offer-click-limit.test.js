@@ -195,7 +195,7 @@ test('frontend click handlers honor limitReached without opening the advertiser 
   const card = read('frontend/src/components/offers/DirectOfferCard.jsx');
   assert.match(card, /isOfferClickLimitReached\(offer\)/);
   assert.match(card, /data\.limitReached/);
-  assert.match(card, /This offer has reached its click limit\./);
+  assert.match(card, /t\('offers\.clickLimitReached'\)/);
   assert.match(card, /disabled=\{loading \|\| isExpired \|\| limitReached\}/);
 
   const goodpicks = read('frontend/src/components/offers/GoodpicksModal.jsx');
