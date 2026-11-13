@@ -1,4 +1,5 @@
 const compactKey = (value) => String(value || '').toLowerCase().replace(/[\s_-]+/g, '');
+import { getGoalTranslation } from './offerTranslations';
 
 export const humanizeGoalKey = (value) => {
   const raw = String(value || '').trim();
@@ -15,9 +16,7 @@ export const humanizeGoalKey = (value) => {
 
 export const formatGoalLabel = (goal, language = 'en') => {
   const key = String(goal?.goalKey || goal?.key || '').trim();
-  const localizedLabel = language.startsWith('de')
-    ? String(goal?.labelDe || '').trim()
-    : '';
+  const localizedLabel = String(getGoalTranslation(goal, language).label || '').trim();
   const label = localizedLabel || String(goal?.label || '').trim();
 
   if (label && (!key || compactKey(label) !== compactKey(key))) return label;

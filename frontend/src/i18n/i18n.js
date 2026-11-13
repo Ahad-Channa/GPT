@@ -7,6 +7,13 @@ import de from './de.json';
 import fr from './fr.json';
 import ur from './ur.json';
 
+const resources = {
+  en: { translation: en },
+  de: { translation: de },
+  fr: { translation: fr },
+  ur: { translation: ur },
+};
+
 const hasFunctionalConsent = () => {
   if (typeof window === 'undefined') return false;
   try {
@@ -24,10 +31,8 @@ const getInitialLanguage = () => {
   if (hasFunctionalConsent()) {
     const saved = localStorage.getItem('i18nextLng');
     if (saved) {
-      if (saved.startsWith('ur')) return 'ur';
-      if (saved.startsWith('de')) return 'de';
-      if (saved.startsWith('fr')) return 'fr';
-      if (saved.startsWith('en')) return 'en';
+      const match = Object.keys(resources).find((code) => saved.toLowerCase() === code.toLowerCase() || saved.toLowerCase().startsWith(`${code.toLowerCase()}-`));
+      if (match) return match;
     }
   }
   // Default without functional consent: English
@@ -40,12 +45,7 @@ i18n
   .use(LanguageDetector)
   .use(initReactI18next)
   .init({
-    resources: {
-      en: { translation: en },
-      de: { translation: de },
-      fr: { translation: fr },
-      ur: { translation: ur }
-    },
+    resources,
     fallbackLng: 'en',
     lng: getInitialLanguage(),
     interpolation: {

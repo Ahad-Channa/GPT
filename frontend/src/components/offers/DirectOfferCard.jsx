@@ -10,6 +10,7 @@ import { formatGoalTimeLimit } from '../../utils/goalTimeLimit';
 import { isOfferClickLimitReached } from '../../utils/offerClickLimit';
 import { formatGoalLabel } from '../../utils/offerGoalDisplay.js';
 import { closeReservedOfferTab, hasManualOfferStarted, navigateReservedOfferTab, reserveOfferTab, resolveProofInstructions } from '../../utils/manualOfferState.js';
+import { getOfferTranslation } from '../../utils/offerTranslations';
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
@@ -25,9 +26,9 @@ const isRequirementCompleted = (requirement) => {
 };
 
 const formatCoins = (amount) => Number(amount || 0).toLocaleString('de-DE');
-const formatGoalRequirement = (goal, isDe = false) => {
-  const label = formatGoalLabel(goal, isDe ? 'de' : 'en');
-  return isDe
+const formatGoalRequirement = (goal, language = 'en') => {
+  const label = formatGoalLabel(goal, language);
+  return String(language).startsWith('de')
     ? `${label} \u2192 ${formatCoins(goal.rewardAmount)} Coins erhalten`
     : `${label} \u2192 receive ${formatCoins(goal.rewardAmount)} coins`;
 };
@@ -64,7 +65,7 @@ const STATUS_CONFIG = {
 export const DirectOfferCard = ({ offer, onClick }) => {
   const { i18n } = useTranslation();
   const isDe = i18n.language?.startsWith('de');
-  const title = (isDe && offer.titleDe) ? offer.titleDe : offer.title;
+  const title = getOfferTranslation(offer, i18n.resolvedLanguage || i18n.language).title || offer.title;
   const isExpired = offer.expirationDate && new Date(offer.expirationDate) < new Date();
   const coverImgSrc = offer.coverImage || (isIconUrl(offer.icon) ? offer.icon : null);
   const emojiIcon = !coverImgSrc && offer.icon ? offer.icon : null;
@@ -253,11 +254,10 @@ export const DirectOfferModal = ({ offer, token, placement = 'featured', onClose
     ? window.__taskmintCurrentLang
     : (i18n.resolvedLanguage || i18n.language || 'en');
   const isDe = selectedLanguage.startsWith('de');
-  const title = (isDe && offer.titleDe) ? offer.titleDe : offer.title;
-  const description = (isDe && offer.descriptionDe) ? offer.descriptionDe : offer.description;
-  const requirements = (isDe && Array.isArray(offer.requirementsDe) && offer.requirementsDe.length > 0)
-    ? offer.requirementsDe
-    : offer.requirements;
+  const offerText = getOfferTranslation(offer, selectedLanguage);
+  const title = offerText.title || offer.title;
+  const description = offerText.description || offer.description;
+  const requirements = offerText.requirements || offer.requirements;
   const [loading, setLoading] = useState(false);
   const [showSupportModal, setShowSupportModal] = useState(false);
   const [actionError, setActionError] = useState('');
@@ -279,7 +279,7 @@ export const DirectOfferModal = ({ offer, token, placement = 'featured', onClose
   const displayRequirementType = hasGoalRows ? 'bullets' : 'paragraph';
   const displayRequirements = hasGoalRows
     ? enabledGoals.map((goal) => ({
-      label: formatGoalRequirement(goal, isDe),
+      label: formatGoalRequirement(goal, selectedLanguage),
       completed: isGoalCompleted(offer, goal),
       timeLimitDays: goal.timeLimitDays,
     }))

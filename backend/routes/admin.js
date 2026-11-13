@@ -51,6 +51,7 @@ const { processReversal } = require('../services/rewards/reversalService');
 const { createOrResolveConversion, findCreditedConversionForClickLog } = require('../services/tracking/conversionService');
 const { buildDirectOfferProviderConfig } = require('../services/tracking/directOfferProvider');
 const { syncManualProofSubmissionStatus } = require('../services/tracking/manualProofService');
+const { normalizeOfferTranslations } = require('../utils/offerTranslations');
 
 const PROVIDER_TYPES = ['offerwall', 'direct', 'affiliate_network', 'advertiser', 'internal'];
 const SECURITY_METHODS = ['none', 'shared_secret', 'md5', 'sha1', 'sha256', 'sha512', 'hmac', 'token', 'custom_adapter'];
@@ -3533,6 +3534,7 @@ router.post('/direct-offers', requirePermission('manage_offerwalls'), async (req
       platforms, requirements, requirementsDe, requirementType, postbackMapping, allowedCountries, displayPlacements, goals,
       maxTotalClicks, holdEnabled, holdDays, holdThreshold,
       trackingMode, proofInstructions, proofInstructionsDe,
+      translations,
     } = req.body;
 
     if (!title || !description || !advertiserUrl) {
@@ -3584,6 +3586,7 @@ router.post('/direct-offers', requirePermission('manage_offerwalls'), async (req
       platforms: platforms || { desktop: true, android: true, ios: true },
       requirements: requirements || [],
       requirementsDe: Array.isArray(requirementsDe) ? requirementsDe : [],
+      translations: normalizeOfferTranslations(translations),
       requirementType: requirementType === 'paragraph' ? 'paragraph' : 'bullets',
       goals: normalizedGoals,
       postbackMapping: postbackMapping || {},
@@ -3608,6 +3611,7 @@ router.put('/direct-offers/:id', requirePermission('manage_offerwalls'), async (
       platforms, requirements, requirementsDe, requirementType, postbackMapping, allowedCountries, displayPlacements, goals,
       maxTotalClicks, holdEnabled, holdDays, holdThreshold,
       trackingMode, proofInstructions, proofInstructionsDe,
+      translations,
     } = req.body;
 
     if (goals !== undefined && trackingMode !== 'manual') assertEnabledGoalRewards(goals);
@@ -3671,6 +3675,7 @@ router.put('/direct-offers/:id', requirePermission('manage_offerwalls'), async (
         ...(platforms !== undefined && { platforms }),
         ...(requirements !== undefined && { requirements }),
         ...(requirementsDe !== undefined && { requirementsDe }),
+        ...(translations !== undefined && { translations: normalizeOfferTranslations(translations) }),
         ...(requirementType !== undefined && { requirementType: requirementType === 'paragraph' ? 'paragraph' : 'bullets' }),
         ...(normalizedGoals !== undefined && { goals: normalizedGoals }),
         ...(postbackMapping !== undefined && { postbackMapping }),

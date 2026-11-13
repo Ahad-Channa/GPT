@@ -18,11 +18,9 @@ const LanguageToggle = ({
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef(null);
 
-  const currentLang = i18n.language?.startsWith('ur')
-    ? 'ur'
-    : (i18n.language?.startsWith('de')
-        ? 'de'
-        : (i18n.language?.startsWith('fr') ? 'fr' : 'en'));
+  const currentLang = Object.keys(i18n.options?.resources || {}).find((code) =>
+    String(i18n.resolvedLanguage || i18n.language || 'en').toLowerCase().startsWith(code.toLowerCase())
+  ) || 'en';
 
   const selectLanguage = (lang) => {
     i18n.changeLanguage(lang);
@@ -302,6 +300,14 @@ const LanguageToggle = ({
                 />
               </div>
             </button>
+            {Object.keys(i18n.options?.resources || {}).filter((lang) => !['en', 'de', 'fr', 'ur'].includes(lang)).map((lang) => (
+              <button key={lang} type="button" onClick={() => selectLanguage(lang)} className="flex items-center justify-between w-full py-2 cursor-pointer bg-transparent border-0 hover:opacity-75 transition-opacity">
+                <span style={{ fontFamily: 'Poppins, sans-serif', fontWeight: currentLang === lang ? 600 : 400, fontSize: '15px', color: currentLang === lang ? (isDarkMode ? '#FFFFFF' : '#0E0F0C') : (isDarkMode ? '#9CA3AF' : '#8E8E93') }}>
+                  {new Intl.DisplayNames([lang], { type: 'language' }).of(lang) || lang}
+                </span>
+                <span className="text-xs uppercase text-slate-400">{lang}</span>
+              </button>
+            ))}
           </motion.div>
         )}
       </AnimatePresence>

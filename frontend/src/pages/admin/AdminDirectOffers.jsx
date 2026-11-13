@@ -15,6 +15,7 @@ import {
   getEnabledPostbackGoals,
   maskPostbackSecret,
 } from '../../utils/postbackGuide.js';
+import i18n from '../../i18n/i18n';
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
@@ -41,6 +42,23 @@ const PRESET_ICONS = [
 ];
 
 const MAX_GOALS = 25;
+const LOCALE_NAMES = { en: 'English', de: 'Deutsch', fr: 'Français', ur: 'اردو' };
+const supportedLocales = () => Object.keys(i18n.options?.resources || { en: {}, de: {}, fr: {}, ur: {} });
+const seedTranslations = (offer) => {
+  const map = offer?.translations && typeof offer.translations === 'object' ? { ...offer.translations } : {};
+  for (const locale of supportedLocales()) if (!map[locale] && offer) {
+    const suffix = locale === 'en' ? '' : locale.charAt(0).toUpperCase() + locale.slice(1);
+    const legacyRequirements = offer[`requirements${suffix}`];
+    const text = {
+      title: offer[`title${suffix}`] || '',
+      description: offer[`description${suffix}`] || '',
+      requirements: Array.isArray(legacyRequirements) ? legacyRequirements : [],
+      proofInstructions: offer[`proofInstructions${suffix}`] || '',
+    };
+    if (Object.values(text).some((value) => Array.isArray(value) ? value.length > 0 : Boolean(value))) map[locale] = text;
+  }
+  return map;
+};
 
 // Coin rewards must be whole numbers of at least 1. This mirrors the backend rule
 // (parseCoinReward in backend/utils/offerGoals.js); the backend stays the
@@ -63,6 +81,7 @@ const normalizeClientGoals = (goals) => (Array.isArray(goals) ? goals : [])
     labelDe: g.labelDe || '',
     description: g.description || '',
     descriptionDe: g.descriptionDe || '',
+    translations: g.translations || {},
     externalEventId: g.externalEventId || '',
     externalEventAliases: Array.isArray(g.externalEventAliases) ? g.externalEventAliases.join(', ') : (g.externalEventAliases || ''),
     rewardAmount: g.rewardAmount ?? '',
@@ -123,6 +142,8 @@ const CountryTagInput = ({ value, onChange, inputCls }) => {
 // ─── Create / Edit Offer Modal ────────────────────────────────────────────────
 const OfferFormModal = ({ offer, onClose, onSaved, adminApi }) => {
   const isEdit = Boolean(offer);
+  const [activeLanguage, setActiveLanguage] = useState('en');
+  const [translations, setTranslations] = useState(() => seedTranslations(offer));
   const [form, setForm] = useState({
     title: offer?.title || '',
     titleDe: offer?.titleDe || '',
@@ -171,11 +192,26 @@ const OfferFormModal = ({ offer, onClose, onSaved, adminApi }) => {
   const calculatedGoalReward = getEnabledGoalRewardTotal(form.goals);
 
   const set = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.value }));
+  const localized = translations[activeLanguage] || {};
+  const setLocalized = (field, value) => setTranslations((current) => ({
+    ...current,
+    [activeLanguage]: { ...(current[activeLanguage] || {}), [field]: value },
+  }));
+  const setGoalLocalized = (index, field, value) => setForm((current) => ({
+    ...current,
+    goals: current.goals.map((goal, goalIndex) => goalIndex === index ? {
+      ...goal,
+      translations: { ...(goal.translations || {}), [activeLanguage]: { ...(goal.translations?.[activeLanguage] || {}), [field]: value } },
+    } : goal),
+  }));
   const setMapping = (k) => (e) => setForm((f) => ({ ...f, postbackMapping: { ...f.postbackMapping, [k]: e.target.value } }));
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+    if (!String(translations.en?.title || '').trim() || !String(translations.en?.description || '').trim()) {
+      return setError('Please add the English title and description before saving.');
+    }
     const parsedHoldDays = Number(form.holdDays);
     const parsedHoldThreshold = Number(form.holdThreshold);
     if (form.holdEnabled && (!Number.isInteger(parsedHoldDays) || parsedHoldDays < 0)) {
@@ -204,6 +240,18 @@ const OfferFormModal = ({ offer, onClose, onSaved, adminApi }) => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ...form,
+          translations: Object.fromEntries(Object.entries(translations).map(([locale, text]) => [locale, {
+            ...text,
+            requirements: Array.isArray(text.requirements) ? text.requirements : String(text.requirements || '').split('\n').map((value) => value.trim()).filter(Boolean),
+          }])),
+          title: translations.en?.title || form.title,
+          description: translations.en?.description || form.description,
+          proofInstructions: translations.en?.proofInstructions || form.proofInstructions,
+          titleDe: translations.de?.title || form.titleDe,
+          descriptionDe: translations.de?.description || form.descriptionDe,
+          proofInstructionsDe: translations.de?.proofInstructions || form.proofInstructionsDe,
+          requirements: Array.isArray(translations.en?.requirements) ? translations.en.requirements : String(translations.en?.requirements || form.requirements).split('\n').map((value) => value.trim()).filter(Boolean),
+          requirementsDe: Array.isArray(translations.de?.requirements) ? translations.de.requirements : String(translations.de?.requirements || form.requirementsDe).split('\n').map((value) => value.trim()).filter(Boolean),
           rewardAmount: hasEnabledGoals ? calculatedGoalReward : Number(form.rewardAmount),
           advertiserPayoutAmount: Number(form.advertiserPayoutAmount) || 0,
           expirationDate: form.expirationDate || null,
@@ -222,6 +270,7 @@ const OfferFormModal = ({ offer, onClose, onSaved, adminApi }) => {
             labelDe: g.labelDe,
             description: g.description,
             descriptionDe: g.descriptionDe,
+            translations: g.translations || {},
             externalEventId: g.externalEventId,
             externalEventAliases: String(g.externalEventAliases || '')
               .split(',')
@@ -277,6 +326,19 @@ const OfferFormModal = ({ offer, onClose, onSaved, adminApi }) => {
             </div>
           )}
 
+          <section className="rounded-xl border border-indigo-500/20 bg-indigo-500/[0.04] p-3 space-y-3">
+            <div className="flex items-center justify-between gap-3">
+              <div><p className="text-xs font-semibold text-white">Offer text by language</p><p className="text-[11px] text-slate-500">Choose one language at a time. Website languages are loaded dynamically.</p></div>
+              <select className="bg-[#182338] border border-white/10 rounded-lg px-3 py-2 text-sm text-white" value={activeLanguage} onChange={(e) => setActiveLanguage(e.target.value)}>
+                {supportedLocales().map((locale) => <option key={locale} value={locale}>{LOCALE_NAMES[locale] || locale}</option>)}
+              </select>
+            </div>
+            <div><label className={labelCls}>Offer Title {activeLanguage === 'en' ? '*' : ''}</label><input className={inputCls} value={localized.title || ''} onChange={(e) => setLocalized('title', e.target.value)} required={activeLanguage === 'en'} placeholder="Offer title" /></div>
+            <div><label className={labelCls}>Description {activeLanguage === 'en' ? '*' : ''}</label><textarea className={inputCls} rows={3} value={localized.description || ''} onChange={(e) => setLocalized('description', e.target.value)} required={activeLanguage === 'en'} placeholder="Description shown to users" /></div>
+            <div><label className={labelCls}>Requirements</label><textarea className={inputCls} rows={3} value={Array.isArray(localized.requirements) ? localized.requirements.join('\n') : (localized.requirements || '')} onChange={(e) => setLocalized('requirements', e.target.value)} placeholder="One requirement per line" /></div>
+            {isManual && <div><label className={labelCls}>Proof Instructions</label><textarea className={inputCls} rows={2} value={localized.proofInstructions || ''} onChange={(e) => setLocalized('proofInstructions', e.target.value)} placeholder="Instructions shown when submitting proof" /></div>}
+          </section>
+
           <div>
             <label className={labelCls}>Offer Type</label>
             <div className="grid grid-cols-2 gap-2">
@@ -300,51 +362,27 @@ const OfferFormModal = ({ offer, onClose, onSaved, adminApi }) => {
               ))}
             </div>
           </div>
-          <div>
-            <label className={labelCls}>Offer Title *</label>
-            <input className={inputCls} value={form.title} onChange={set('title')} required placeholder="e.g. Stake Casino — Deposit & Play" />
-          </div>
-          <div>
-            <label className={labelCls}>Title (German)</label>
-            <input className={inputCls} value={form.titleDe} onChange={set('titleDe')} placeholder="Optional manual German title" />
-          </div>
-          <div>
-            <label className={labelCls}>Description *</label>
-            <textarea className={inputCls} rows={3} value={form.description} onChange={set('description')} required placeholder="Describe what the user needs to do..." />
-          </div>
-          <div>
-            <label className={labelCls}>Description (German)</label>
-            <textarea className={inputCls} rows={2} value={form.descriptionDe} onChange={set('descriptionDe')} placeholder="Optional manual German description..." />
-          </div>
-          <div>
-            <label className={labelCls}>{hasEnabledGoals ? 'Total Reward (Coins)' : 'Reward (Coins) *'}</label>
-            <input
-              type="number"
-              className={inputCls}
-              value={hasEnabledGoals ? calculatedGoalReward : form.rewardAmount}
-              onChange={hasEnabledGoals ? undefined : set('rewardAmount')}
-              readOnly={hasEnabledGoals}
-              required
-              min="1"
-              step="1"
-              placeholder="e.g. 500"
-            />
-            {hasEnabledGoals ? (
-              <p className="mt-1 text-[11px] text-slate-500">Calculated automatically from the enabled step rewards below. It cannot be edited here; change the step rewards instead.</p>
-            ) : (
-              <p className="mt-1 text-[11px] text-slate-500">Whole coins only (no decimals). The coins the user receives. This is the only reward amount that affects the user&apos;s wallet.</p>
-            )}
-          </div>
-          <div className="border border-white/10 rounded-lg p-3 space-y-2 bg-white/[0.02]">
-            <p className="text-xs font-semibold text-slate-300">Optional advertiser tracking <span className="text-slate-600 font-normal">(admin only)</span></p>
-            <p className="text-[11px] text-slate-500">
-              USD amounts are your own records of what the advertiser pays you. They are optional, are not shown to users,
-              and never change the coins a user receives or their wallet.
-            </p>
+
+          <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className={labelCls}>Advertiser Payout (USD) <span className="text-slate-600 font-normal">(optional · record only)</span></label>
-              <input type="number" min="0" step="0.01" className={inputCls} value={form.advertiserPayoutAmount} onChange={set('advertiserPayoutAmount')} placeholder="e.g. 2.50" />
-              <p className="mt-1 text-[11px] text-slate-500">Shown only on this admin offer card. Not used to calculate any reward.</p>
+              <label className={labelCls}>{hasEnabledGoals ? 'Total Reward (Coins)' : 'Reward (Coins) *'}</label>
+              <input
+                type="number"
+                className={inputCls}
+                value={hasEnabledGoals ? calculatedGoalReward : form.rewardAmount}
+                onChange={hasEnabledGoals ? undefined : set('rewardAmount')}
+                readOnly={hasEnabledGoals}
+                required
+                min="1"
+                placeholder="e.g. 500"
+              />
+              {hasEnabledGoals && <p className="mt-1 text-[11px] text-slate-500">Calculated automatically from enabled step rewards.</p>}
+            </div>
+            <div>
+              <label className={labelCls}>Advertiser Payout (USD)</label>
+              <input type="number" step="0.01" className={inputCls} value={form.advertiserPayoutAmount} onChange={set('advertiserPayoutAmount')} placeholder="e.g. 2.50" />
+              <p className="mt-1 text-[11px] text-slate-500">Optional internal record of the expected advertiser payment for this offer. Admin only; it is not shown to users and does not affect coin rewards.</p>
+
             </div>
           </div>
           <div>
@@ -391,62 +429,7 @@ const OfferFormModal = ({ offer, onClose, onSaved, adminApi }) => {
                 </button>
               </div>
             </div>
-            <textarea
-              className={inputCls}
-              rows={form.requirementType === 'paragraph' ? 2 : 3}
-              value={form.requirements}
-              onChange={set('requirements')}
-              placeholder={
-                form.requirementType === 'paragraph'
-                  ? "Register and deposit €50, then wager €100."
-                  : "Register on the platform\nMake a deposit of at least $10\nPlay 5 rounds"
-              }
-            />
           </div>
-          <div>
-            <label className={labelCls}>Requirements (German)</label>
-            <textarea
-              className={inputCls}
-              rows={form.requirementType === 'paragraph' ? 2 : 3}
-              value={form.requirementsDe}
-              onChange={set('requirementsDe')}
-              placeholder={
-                form.requirementType === 'paragraph'
-                  ? 'Optional German paragraph.'
-                  : 'Optional German steps, one per line'
-              }
-            />
-          </div>
-          {isManual && (
-            <div className="border border-emerald-500/20 bg-emerald-500/[0.04] rounded-lg p-3 space-y-3">
-              <div>
-                <p className="text-xs font-semibold text-emerald-300">Manual Proof Instructions</p>
-                <p className="text-[11px] text-slate-500 mt-0.5">
-                  Shown only for Manual Offers. German text is used when German is selected, with English fallback.
-                </p>
-              </div>
-              <div>
-                <label className={labelCls}>Proof Instructions (English)</label>
-                <textarea
-                  className={inputCls}
-                  rows={2}
-                  value={form.proofInstructions}
-                  onChange={set('proofInstructions')}
-                  placeholder="Please submit proof of completion through support and include your username."
-                />
-              </div>
-              <div>
-                <label className={labelCls}>Proof Instructions (German)</label>
-                <textarea
-                  className={inputCls}
-                  rows={2}
-                  value={form.proofInstructionsDe}
-                  onChange={set('proofInstructionsDe')}
-                  placeholder="Bitte reiche den Nachweis über den Support ein und gib deinen Benutzernamen an."
-                />
-              </div>
-            </div>
-          )}
 
           <div className="grid grid-cols-2 gap-3">
             <div>
@@ -574,7 +557,7 @@ const OfferFormModal = ({ offer, onClose, onSaved, adminApi }) => {
               <button
                 type="button"
                 disabled={form.goals.length >= MAX_GOALS}
-                onClick={() => setForm(f => ({ ...f, goals: [...f.goals, { goalKey: '', label: '', labelDe: '', description: '', descriptionDe: '', externalEventId: '', externalEventAliases: '', rewardAmount: '', payoutAmount: '', timeLimitDays: '', enabled: true }] }))}
+                onClick={() => setForm(f => ({ ...f, goals: [...f.goals, { goalKey: '', label: '', labelDe: '', description: '', descriptionDe: '', translations: {}, externalEventId: '', externalEventAliases: '', rewardAmount: '', payoutAmount: '', timeLimitDays: '', enabled: true }] }))}
                 className="shrink-0 flex items-center gap-1 px-2.5 py-1 rounded-lg bg-indigo-500/20 border border-indigo-500/40 text-[11px] font-semibold text-indigo-300 hover:bg-indigo-500/30 disabled:opacity-40"
               >
                 <FiPlus /> Add Goal
@@ -613,13 +596,9 @@ const OfferFormModal = ({ offer, onClose, onSaved, adminApi }) => {
                         <label className={labelCls}>Goal Key * <span className="text-slate-600 font-normal">(event_type value)</span></label>
                         <input className={inputCls} value={goal.goalKey} onChange={e => setForm(f => ({ ...f, goals: f.goals.map((g, i) => i === idx ? { ...g, goalKey: e.target.value } : g) }))} placeholder="e.g. registration, deposit, level_5" />
                       </div>
-                      <div>
-                        <label className={labelCls}>Label</label>
-                        <input className={inputCls} value={goal.label} onChange={e => setForm(f => ({ ...f, goals: f.goals.map((g, i) => i === idx ? { ...g, label: e.target.value } : g) }))} placeholder="e.g. Fight 20 Battles" />
-                      </div>
-                      <div>
-                        <label className={labelCls}>Label (German)</label>
-                        <input className={inputCls} value={goal.labelDe || ''} onChange={e => setForm(f => ({ ...f, goals: f.goals.map((g, i) => i === idx ? { ...g, labelDe: e.target.value } : g) }))} placeholder="Optional German goal label" />
+                      <div className="col-span-2">
+                        <label className={labelCls}>Step label ({LOCALE_NAMES[activeLanguage] || activeLanguage})</label>
+                        <input className={inputCls} value={getGoalTranslation(goal, activeLanguage).label || ''} onChange={e => setGoalLocalized(idx, 'label', e.target.value)} placeholder="e.g. Fight 20 Battles" />
                       </div>
                       <div>
                         <label className={labelCls}>External Event ID <span className="text-slate-600 font-normal">(partner value)</span></label>
@@ -643,12 +622,14 @@ const OfferFormModal = ({ offer, onClose, onSaved, adminApi }) => {
                         )}
                       </div>
                       <div>
+
                         <label className={labelCls}>Payout Metadata (USD) <span className="text-slate-600 font-normal">(optional · record only)</span></label>
                         <input type="number" min="0" step="1" className={inputCls} value={goal.payoutAmount} onChange={e => setForm(f => ({ ...f, goals: f.goals.map((g, i) => i === idx ? { ...g, payoutAmount: e.target.value } : g) }))} placeholder="e.g. 1" />
                         <p className="mt-1 text-[10px] text-slate-500">
                           Optional admin note of what the advertiser pays for this step, in whole USD (cents are not stored). It is saved with the step and only pre-fills the
                           {' '}<code>{'{PAYOUT}'}</code> value in the example postback URL on the offer card. It is not shown to users and never changes the coins they receive.
                         </p>
+
                       </div>
                       <div>
                         <label className={labelCls}>Time (days) <span className="text-slate-600 font-normal">(display only)</span></label>
@@ -656,12 +637,8 @@ const OfferFormModal = ({ offer, onClose, onSaved, adminApi }) => {
                       </div>
                     </div>
                     <div>
-                      <label className={labelCls}>Description</label>
-                      <input className={inputCls} value={goal.description} onChange={e => setForm(f => ({ ...f, goals: f.goals.map((g, i) => i === idx ? { ...g, description: e.target.value } : g) }))} placeholder="Optional description shown to admins" />
-                    </div>
-                    <div>
-                      <label className={labelCls}>Description (German)</label>
-                      <input className={inputCls} value={goal.descriptionDe || ''} onChange={e => setForm(f => ({ ...f, goals: f.goals.map((g, i) => i === idx ? { ...g, descriptionDe: e.target.value } : g) }))} placeholder="Optional German goal description" />
+                      <label className={labelCls}>Step description ({LOCALE_NAMES[activeLanguage] || activeLanguage})</label>
+                      <input className={inputCls} value={getGoalTranslation(goal, activeLanguage).description || ''} onChange={e => setGoalLocalized(idx, 'description', e.target.value)} placeholder="Optional step description" />
                     </div>
                   </div>
                 ))}

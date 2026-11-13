@@ -10,6 +10,7 @@ const directOfferGoalSchema = new mongoose.Schema(
     labelDe: { type: String, trim: true, default: '' },
     description: { type: String, trim: true, default: '' },
     descriptionDe: { type: String, trim: true, default: '' },
+    translations: { type: Map, of: mongoose.Schema.Types.Mixed, default: {} },
     // External partner event identifier (e.g. Plarium "Game Event 269").
     externalEventId: { type: String, trim: true, default: '' },
     externalEventAliases: { type: [String], default: [] },
@@ -28,6 +29,8 @@ const directOfferSchema = new mongoose.Schema(
     titleDe: { type: String, default: '' },
     description: { type: String, required: true },
     descriptionDe: { type: String, default: '' },
+    // Locale-keyed records allow new website languages without schema edits.
+    translations: { type: Map, of: mongoose.Schema.Types.Mixed, default: {} },
     // 'postback' keeps the original automatic S2S tracking. 'manual' uses the
     // manual proof submission workflow instead and never accepts postbacks.
     // Historical documents without this field are treated as postback.
@@ -72,6 +75,7 @@ const directOfferSchema = new mongoose.Schema(
     },
     requirements: [{ type: String }], // Step-by-step description of what user must do
     requirementsDe: { type: [String], default: [] },
+    translations: { type: Map, of: mongoose.Schema.Types.Mixed, default: {} },
     requirementType: { 
       type: String, 
       enum: ['bullets', 'paragraph'], 

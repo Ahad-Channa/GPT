@@ -118,7 +118,7 @@ router.get('/', verifyToken, async (req, res) => {
         { $or: [{ expirationDate: null }, { expirationDate: { $gt: now } }] },
         buildPlacementClause(placement),
       ],
-    }).select('-postbackSecretKey -holdEnabled -holdDays -holdThreshold').lean();
+    }).select('-postbackSecretKey -holdEnabled -holdDays -holdThreshold -advertiserPayoutAmount -goals.payoutAmount').lean();
 
     // The Profile's Started Offers tab requests placement=all. Keep previously
     // started offers in that response even if an admin later deactivates or
@@ -134,7 +134,7 @@ router.get('/', verifyToken, async (req, res) => {
         .filter((offerId) => !alreadyListed.has(offerId.toString()));
       if (historicalIds.length) {
         const historicalOffers = await DirectOffer.find({ _id: { $in: historicalIds } })
-          .select('-postbackSecretKey -holdEnabled -holdDays -holdThreshold')
+          .select('-postbackSecretKey -holdEnabled -holdDays -holdThreshold -advertiserPayoutAmount -goals.payoutAmount')
           .lean();
         offers = [...offers, ...historicalOffers];
       }

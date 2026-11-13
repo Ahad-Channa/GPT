@@ -13,6 +13,18 @@ const MAX_DESCRIPTION_LENGTH = 500;
 const MAX_EVENT_VALUE_LENGTH = 120;
 const MAX_EVENT_ALIASES = 20;
 const MAX_GOALS = 25;
+const normalizeGoalTranslations = (input) => {
+  if (!input || typeof input !== 'object' || Array.isArray(input)) return {};
+  const result = {};
+  for (const [locale, fields] of Object.entries(input)) {
+    if (!/^[a-z]{2,3}(?:-[a-z0-9]{2,8})*$/i.test(locale) || !fields || typeof fields !== 'object') continue;
+    result[locale] = {
+      label: String(fields.label || '').trim().slice(0, MAX_LABEL_LENGTH),
+      description: String(fields.description || '').trim().slice(0, MAX_DESCRIPTION_LENGTH),
+    };
+  }
+  return result;
+};
 
 const normalizeEventValue = (value) => String(value || '').trim().replace(/\s+/g, ' ');
 
@@ -51,6 +63,14 @@ const toSafeAmount = (value) => {
   const num = Number(value);
   if (!Number.isFinite(num) || num < 0) return null;
   return Math.floor(num);
+};
+
+// USD reference values may include cents; unlike coin rewards, do not floor
+// them to whole numbers. Normalize to the precision supported by the form.
+const toUsdAmount = (value) => {
+  const num = Number(value);
+  if (!Number.isFinite(num) || num < 0) return null;
+  return Math.round((num + Number.EPSILON) * 100) / 100;
 };
 
 // Display-only goal time in days. Optional: blank/absent -> null. When present
@@ -94,10 +114,11 @@ const normalizeGoals = (goals) => {
       labelDe: String(raw.labelDe || raw.titleDe || '').trim().slice(0, MAX_LABEL_LENGTH),
       description: String(raw.description || '').trim().slice(0, MAX_DESCRIPTION_LENGTH),
       descriptionDe: String(raw.descriptionDe || '').trim().slice(0, MAX_DESCRIPTION_LENGTH),
+      translations: normalizeGoalTranslations(raw.translations),
       externalEventId: normalizeEventValue(raw.externalEventId).slice(0, MAX_EVENT_VALUE_LENGTH),
       externalEventAliases: normalizeEventAliases(raw.externalEventAliases),
       rewardAmount,
-      payoutAmount: toSafeAmount(raw.payoutAmount) || 0,
+      payoutAmount: toUsdAmount(raw.payoutAmount) ?? 0,
       timeLimitDays: parseTimeLimitDays(raw.timeLimitDays),
       enabled: raw.enabled === undefined ? true : Boolean(raw.enabled),
     });
@@ -217,7 +238,7 @@ const buildGoalsSnapshot = (goals) => {
     if (amount === null) continue;
     snapshot[goal.goalKey] = {
       amount,
-      payoutAmount: toSafeAmount(goal.payoutAmount) || 0,
+      payoutAmount: toUsdAmount(goal.payoutAmount) ?? 0,
       label: goal.label || goal.goalKey,
       labelDe: goal.labelDe || '',
       externalEventId: normalizeEventValue(goal.externalEventId),

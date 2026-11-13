@@ -1,13 +1,12 @@
+import { getOfferTranslation } from './offerTranslations';
+
 export const hasManualOfferStarted = (offer = {}) =>
   ['started', 'rejected'].includes(String(offer.submissionStatus || '').toLowerCase()) ||
   String(offer.clickStatus || '').toLowerCase() === 'clicked';
 
 export const resolveProofInstructions = (offer = {}, language = 'en') => {
-  const english = String(offer.proofInstructions || '').trim();
-  const german = String(offer.proofInstructionsDe || '').trim();
-  return String(language || 'en').toLowerCase().startsWith('de') && german
-    ? german
-    : english;
+  const localized = String(getOfferTranslation(offer, language).proofInstructions || '').trim();
+  return localized || String(offer.proofInstructions || '').trim();
 };
 
 export const reserveOfferTab = () => {
