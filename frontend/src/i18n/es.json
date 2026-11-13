@@ -69,7 +69,10 @@
     "title": "Empieza a Ganar Con",
     "subtitle": "Múltiples formas de acumular monedas. Elige lo que mejor se adapte a ti.",
     "subtitleMobileLine1": "Múltiples formas de acumular monedas. Elige",
-    "subtitleMobileLine2": "lo que mejor se adapte a ti."
+    "subtitleMobileLine2": "lo que mejor se adapte a ti.",
+    "surveysTitle": "Encuestas",
+    "surveysDesc": "Comparte tu opinión sobre diversos temas y recibe recompensas al instante.",
+    "coffeeQuestion": "¿Te gusta el café?"
   },
   "faqSection": {
     "title": "Preguntas",

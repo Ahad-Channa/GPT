@@ -1535,42 +1535,242 @@ const Landing = () => {
               className="grid grid-cols-1 lg:grid-cols-3 mx-auto w-full px-0"
               style={!isMobile ? { width: 1328, maxWidth: '100%', height: 368, gap: 22 } : { maxWidth: 440, height: 'auto', gap: 20 }}
             >
+              {/* Card 1: Surveys (Base image + dynamic i18n overlays across all languages) */}
+              <div
+                className="relative w-full mx-auto rounded-[24px] overflow-hidden select-none"
+                style={!isMobile ? { maxWidth: '100%', width: 428, height: 368, clipPath: 'inset(0 round 24px)' } : { width: '100%', maxWidth: '100%', aspectRatio: '856 / 736', clipPath: 'inset(0 round 24px)' }}
+              >
+                <img
+                  src={isDarkMode ? '/coins/sew1desiblack.png' : '/coins/sew1desi.png'}
+                  alt="Start Earning Option 1"
+                  className="w-full h-full object-cover block"
+                />
+
+                {/* Heading & Below Description */}
+                <div
+                  className="absolute pointer-events-none"
+                  style={{
+                    top: isDarkMode ? '6.2%' : '6.8%',
+                    left: '5.7%',
+                    right: '5.7%',
+                    textAlign: isUr ? 'right' : 'left',
+                  }}
+                  dir={isUr ? 'rtl' : 'ltr'}
+                >
+                  <div
+                    style={{
+                      fontFamily: '"Bricolage Grotesque", sans-serif',
+                      fontWeight: 700,
+                      letterSpacing: '-0.02em',
+                      lineHeight: 1.12,
+                      fontSize: isMobile
+                        ? 'clamp(22px, 6.2vw, 29px)'
+                        : ((t('startEarningWith.surveysTitle') || '').length > 10 ? '28px' : '31px'),
+                      color: isDarkMode ? '#FFFFFF' : '#0E0F0C',
+                    }}
+                  >
+                    {t('startEarningWith.surveysTitle', 'Surveys')}
+                  </div>
+                  <div
+                    className="mt-2"
+                    style={{
+                      fontFamily: '"Poppins", sans-serif',
+                      fontWeight: 500,
+                      lineHeight: 1.38,
+                      fontSize: isMobile
+                        ? 'clamp(11.5px, 3.2vw, 14.5px)'
+                        : ((t('startEarningWith.surveysDesc') || '').length > 74 ? '13.5px' : '15px'),
+                      color: isDarkMode ? 'rgba(255, 255, 255, 0.78)' : '#0E0F0C',
+                      maxWidth: isUr ? '100%' : '88%',
+                    }}
+                  >
+                    {t('startEarningWith.surveysDesc', 'Share your opinion on various topics and get rewarded instantly.')}
+                  </div>
+                </div>
+
+                {/* Question 01 Pill */}
+                <div
+                  className="absolute flex items-center justify-center text-center pointer-events-none whitespace-nowrap"
+                  style={{
+                    left: isDarkMode ? '23.58%' : '22.84%',
+                    top: isDarkMode ? '38.96%' : '41.37%',
+                    transform: 'translate(-50%, -50%)',
+                    fontFamily: '"Poppins", sans-serif',
+                    fontWeight: 600,
+                    fontSize: isMobile
+                      ? 'clamp(8px, 2.25vw, 10.5px)'
+                      : ((t('heroGraphic.questionNumber') || '').length > 10 ? '9.5px' : '10.5px'),
+                    color: '#0E0F0C',
+                    maxWidth: '17%',
+                  }}
+                  dir={isUr ? 'rtl' : 'ltr'}
+                >
+                  {t('heroGraphic.questionNumber', 'Question 01')}
+                </div>
+
+                {/* Question Prompt */}
+                <div
+                  className="absolute pointer-events-none leading-tight"
+                  style={{
+                    left: isDarkMode ? '14.5%' : '14.5%',
+                    right: '11%',
+                    top: isDarkMode ? '46.2%' : '48.4%',
+                    transform: 'translateY(-50%)',
+                    fontFamily: '"Poppins", sans-serif',
+                    fontWeight: 500,
+                    fontSize: isMobile ? 'clamp(11px, 3.1vw, 14.5px)' : '14.5px',
+                    color: isDarkMode ? '#FFFFFF' : '#0E0F0C',
+                    textAlign: isUr ? 'right' : 'left',
+                  }}
+                  dir={isUr ? 'rtl' : 'ltr'}
+                >
+                  {t('startEarningWith.coffeeQuestion', 'Do you like coffee?')}
+                </div>
+
+                {/* SELECT ONLY ONE */}
+                <div
+                  className="absolute pointer-events-none uppercase tracking-wider"
+                  style={{
+                    left: isDarkMode ? '16.2%' : '16.7%',
+                    right: '8%',
+                    top: isDarkMode ? '57.6%' : '60.1%',
+                    fontFamily: '"Poppins", sans-serif',
+                    fontWeight: 600,
+                    fontSize: isMobile ? 'clamp(7.5px, 2vw, 9.5px)' : '9.5px',
+                    color: isDarkMode ? 'rgba(255, 255, 255, 0.52)' : '#8E929B',
+                    textAlign: 'left',
+                  }}
+                  dir={isUr ? 'rtl' : 'ltr'}
+                >
+                  {t('heroGraphic.selectOnlyOne', 'SELECT ONLY ONE')}
+                </div>
+
+                {/* Option Yes */}
+                <div
+                  className="absolute flex items-center gap-2 pointer-events-none"
+                  style={{
+                    left: isDarkMode ? '16.2%' : '16.6%',
+                    top: isDarkMode ? '65.4%' : '67.9%',
+                    transform: 'translateY(-50%)',
+                    fontFamily: '"Poppins", sans-serif',
+                    fontWeight: 500,
+                    fontSize: isMobile ? 'clamp(10px, 2.7vw, 12.5px)' : '12.5px',
+                    color: isDarkMode ? '#FFFFFF' : '#0E0F0C',
+                  }}
+                >
+                  <span
+                    className="rounded-full shrink-0"
+                    style={{
+                      width: isMobile ? '11px' : '12px',
+                      height: isMobile ? '11px' : '12px',
+                      border: isDarkMode ? '1.5px solid rgba(255, 255, 255, 0.7)' : '1.5px solid #0E0F0C',
+                    }}
+                  />
+                  <span dir={isUr ? 'rtl' : 'ltr'}>{t('heroGraphic.optionYes', 'Yes')}</span>
+                </div>
+
+                {/* Option No */}
+                <div
+                  className="absolute flex items-center gap-2 pointer-events-none"
+                  style={{
+                    left: isDarkMode ? '16.2%' : '16.6%',
+                    top: isDarkMode ? '72.4%' : '74.9%',
+                    transform: 'translateY(-50%)',
+                    fontFamily: '"Poppins", sans-serif',
+                    fontWeight: 500,
+                    fontSize: isMobile ? 'clamp(10px, 2.7vw, 12.5px)' : '12.5px',
+                    color: isDarkMode ? '#FFFFFF' : '#0E0F0C',
+                  }}
+                >
+                  <span
+                    className="rounded-full shrink-0"
+                    style={{
+                      width: isMobile ? '11px' : '12px',
+                      height: isMobile ? '11px' : '12px',
+                      border: isDarkMode ? '1.5px solid rgba(255, 255, 255, 0.7)' : '1.5px solid #0E0F0C',
+                    }}
+                  />
+                  <span dir={isUr ? 'rtl' : 'ltr'}>{t('heroGraphic.optionNo', 'No')}</span>
+                </div>
+
+                {/* Back Button Label */}
+                <div
+                  className="absolute flex items-center justify-center text-center pointer-events-none whitespace-nowrap"
+                  style={{
+                    left: isDarkMode ? '76.22%' : '76.55%',
+                    top: isDarkMode ? '86.80%' : '90.15%',
+                    transform: 'translate(-50%, -50%)',
+                    fontFamily: '"Poppins", sans-serif',
+                    fontWeight: 500,
+                    lineHeight: 1,
+                    fontSize: isMobile
+                      ? 'clamp(10px, 2.8vw, 12.5px)'
+                      : ((t('heroGraphic.btnBack') || '').length > 6 ? '11.2px' : '12.5px'),
+                    color: '#0E0F0C',
+                  }}
+                  dir={isUr ? 'rtl' : 'ltr'}
+                >
+                  {t('heroGraphic.btnBack', 'Back')}
+                </div>
+
+                {/* Next Button Label */}
+                <div
+                  className="absolute flex items-center justify-center text-center pointer-events-none whitespace-nowrap"
+                  style={{
+                    left: isDarkMode ? '91.43%' : '91.65%',
+                    top: isDarkMode ? '86.82%' : '90.15%',
+                    transform: 'translate(-50%, -50%)',
+                    fontFamily: '"Poppins", sans-serif',
+                    fontWeight: 500,
+                    lineHeight: 1,
+                    fontSize: isMobile
+                      ? 'clamp(10px, 2.8vw, 12.5px)'
+                      : ((t('heroGraphic.btnNext') || '').length > 6 ? '11.2px' : '12.5px'),
+                    color: '#FFFFFF',
+                  }}
+                  dir={isUr ? 'rtl' : 'ltr'}
+                >
+                  {t('heroGraphic.btnNext', 'Next')}
+                </div>
+              </div>
+
+              {/* Cards 2 & 3 */}
               {(isPt
                 ? (isDarkMode
-                  ? ['/coins/sew1darkportu.png', '/coins/sew2darkportu.png', '/coins/sew3darkportu.png']
-                  : ['/coins/sew1lightportu.png', '/coins/sew2lightportu.png', '/coins/sew3lightportu.png']
+                  ? ['/coins/sew2darkportu.png', '/coins/sew3darkportu.png']
+                  : ['/coins/sew2lightportu.png', '/coins/sew3lightportu.png']
                 )
                 : isRu
                   ? (isDarkMode
-                    ? ['/coins/sew1darkrussian.png', '/coins/sew2darkrussian.png', '/coins/sew3darkrussian.png']
-                    : ['/coins/sew1lightrussian.png', '/coins/sew2lightrussian.png', '/coins/sew3lightrussian.png']
+                    ? ['/coins/sew2darkrussian.png', '/coins/sew3darkrussian.png']
+                    : ['/coins/sew2lightrussian.png', '/coins/sew3lightrussian.png']
                   )
                   : isEs
                     ? (isDarkMode
-                      ? ['/coins/sew1darkspanihs.png', '/coins/sew2darkspanihs.png', '/coins/sew3darkspanihs.png']
-                      : ['/coins/sew1lightspanihs.png', '/coins/sew2lightspanihs.png', '/coins/sew3lightspanihs.png']
+                      ? ['/coins/sew2darkspanihs.png', '/coins/sew3darkspanihs.png']
+                      : ['/coins/sew2lightspanihs.png', '/coins/sew3lightspanihs.png']
                     )
                     : isFr
                       ? (isDarkMode
-                        ? ['/coins/sew1darkfranch.png', '/coins/sew2darkfranch.png', '/coins/sew3darkfranch.png']
-                        : ['/coins/sew1lightfranch.png', '/coins/sew2lightfranch.png', '/coins/sew3lightfranch.png']
+                        ? ['/coins/sew2darkfranch.png', '/coins/sew3darkfranch.png']
+                        : ['/coins/sew2lightfranch.png', '/coins/sew3lightfranch.png']
                       )
                       : isUr
                         ? (isDarkMode
-                          ? ['/coins/sew1 Urdu light.png', '/coins/sew2  Urdu dark.png', '/coins/sew3  Urdu dark.png']
-                          : ['/coins/sew1 Urdu light.png', '/coins/sew2  Urdu light.png', '/coins/sew3 Urdu light.png']
+                          ? ['/coins/sew2  Urdu dark.png', '/coins/sew3  Urdu dark.png']
+                          : ['/coins/sew2  Urdu light.png', '/coins/sew3 Urdu light.png']
                         )
                         : isDe
-                          ? ['/coins/sew1german.png', '/coins/sew2german.png', '/coins/sew3german.png']
+                          ? ['/coins/sew2german.png', '/coins/sew3german.png']
                           : (isDarkMode
-                            ? ['/coins/sewBlackenglish.png', '/coins/sew2Blackenglish.png', '/coins/sew3Blackenglish.png']
-                            : ['/coins/sew1.png', '/coins/Mask group.png', '/coins/sew3.png']
+                            ? ['/coins/sew2Blackenglish.png', '/coins/sew3Blackenglish.png']
+                            : ['/coins/Mask group.png', '/coins/sew3.png']
                           )
               ).map((imgSrc, idx) => (
                 <img
-                  key={idx}
+                  key={idx + 1}
                   src={imgSrc}
-                  alt={`Start Earning Option ${idx + 1}`}
+                  alt={`Start Earning Option ${idx + 2}`}
                   className="w-full object-cover sm:object-contain mx-auto rounded-[24px]"
                   style={!isMobile ? { maxWidth: '100%', width: 428, height: 368, clipPath: 'inset(0 round 24px)' } : { width: '100%', maxWidth: '100%', height: 'auto', clipPath: 'inset(0 round 24px)' }}
                 />
