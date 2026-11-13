@@ -776,7 +776,7 @@ const Wallet = () => {
               <div className="flex flex-col">
                 {/* Banner Area Image */}
                 <div
-                  className="relative w-full flex items-center justify-center overflow-hidden select-none pointer-events-none"
+                  className="relative w-full flex items-center justify-center overflow-hidden"
                   style={{
                     width: '100%',
                     maxWidth: '416px',
@@ -788,7 +788,7 @@ const Wallet = () => {
                   <img
                     src="/coins/bookcardbox3_base.png"
                     alt="Your Books"
-                    className="w-full h-full object-contain"
+                    className="w-full h-full object-contain pointer-events-none select-none"
                   />
 
                   {/* Box 1 & Box 2: Personal Signature & Shipping Germany */}
@@ -803,7 +803,7 @@ const Wallet = () => {
                       <>
                         {/* Box 1: Personal Signature */}
                         <div
-                          className="absolute flex flex-col justify-center overflow-hidden"
+                          className="absolute flex flex-col justify-center overflow-hidden pointer-events-auto select-text cursor-text"
                           style={{
                             left: '13.8%',
                             top: '72.0%',
@@ -834,7 +834,7 @@ const Wallet = () => {
 
                         {/* Box 2: Shipping only within Germany */}
                         <div
-                          className="absolute flex flex-col justify-center overflow-hidden"
+                          className="absolute flex flex-col justify-center overflow-hidden pointer-events-auto select-text cursor-text"
                           style={{
                             left: '61.5%',
                             top: '72.0%',

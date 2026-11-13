@@ -72,7 +72,13 @@
     "subtitleMobileLine2": "Wähle, was zu dir passt.",
     "surveysTitle": "Umfragen",
     "surveysDesc": "Teile deine Meinung zu verschiedenen Themen und erhalte sofort Belohnungen!",
-    "coffeeQuestion": "Magst du Kaffee?"
+    "coffeeQuestion": "Magst du Kaffee?",
+    "appsGamesTitle": "Apps & Spiele",
+    "appsGamesDesc": "Lade Apps herunter oder spiele neue Spiele. Erreiche Meilensteine und verdiene große Belohnungen.",
+    "featuredOffersTitle": "Besondere Angebote",
+    "featuredOffersDesc": "Melden Sie sich für Dienste oder Testversionen an, um die höchsten Vergütungen zu erhalten.",
+    "highestPaying": "HÖCHSTE ZAHLUNG",
+    "instantWithdrawal": "SOFORTIGE AUSZAHLUNG"
   },
   "faqSection": {
     "title": "Häufig gestellte",

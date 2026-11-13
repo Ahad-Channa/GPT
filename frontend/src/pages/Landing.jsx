@@ -92,22 +92,22 @@ const Landing = () => {
         {/* Absolute Right Hero Image (Locked to 1328px content container) */}
         {!isMobile && (
           <div
-            className="absolute top-0 left-1/2 -translate-x-1/2 w-full pointer-events-none z-0"
+            className="absolute top-0 left-1/2 -translate-x-1/2 w-full pointer-events-none z-20"
             style={{ maxWidth: '1328px' }}
           >
             <div
-              className="absolute top-0 pointer-events-none select-none"
+              className="absolute top-0 pointer-events-none"
               style={{ width: 755, height: 587, right: '-30px' }}
             >
               <img
                 src={isDarkMode ? "/coins/hero_base_dark.png" : "/coins/hero_base_light.png"}
                 alt="Hero Background"
-                className="w-full h-full object-fill rounded-bl-[36px]"
+                className="w-full h-full object-fill rounded-bl-[36px] pointer-events-none select-none"
               />
 
               {/* 1. Earn from surveys tab */}
               <div
-                className="absolute flex items-center justify-center font-bold text-center"
+                className="absolute flex items-center justify-center font-bold text-center pointer-events-auto"
                 style={{
                   left: '22.95%',
                   top: '32.9%',
@@ -126,7 +126,7 @@ const Landing = () => {
 
               {/* 2. Earn by playing games tab */}
               <div
-                className="absolute flex items-center justify-center font-bold text-center"
+                className="absolute flex items-center justify-center font-bold text-center pointer-events-auto"
                 style={{
                   left: '67.77%',
                   top: '23.55%',
@@ -145,7 +145,7 @@ const Landing = () => {
 
               {/* 3. Survey Card Question & Options */}
               <div
-                className="absolute flex flex-col justify-between overflow-hidden"
+                className="absolute flex flex-col justify-between overflow-hidden pointer-events-auto"
                 style={{
                   left: '7.19%',
                   top: '43.0%',
@@ -237,7 +237,7 @@ const Landing = () => {
 
               {/* 4. Survey Back Button */}
               <div
-                className="absolute flex items-center justify-center text-center"
+                className="absolute flex items-center justify-center text-center pointer-events-auto"
                 style={{
                   left: '26.0%',
                   top: '73.68%',
@@ -256,7 +256,7 @@ const Landing = () => {
 
               {/* 5. Survey Next Button */}
               <div
-                className="absolute flex items-center justify-center text-center text-white"
+                className="absolute flex items-center justify-center text-center text-white pointer-events-auto"
                 style={{
                   left: '34.69%',
                   top: '73.68%',
@@ -274,7 +274,7 @@ const Landing = () => {
 
               {/* 6. Fast Payouts Card Text */}
               <div
-                className="absolute flex flex-col justify-center overflow-hidden"
+                className="absolute flex flex-col justify-center overflow-hidden pointer-events-auto"
                 style={{
                   left: '57.0%',
                   top: '65.16%',
@@ -313,7 +313,7 @@ const Landing = () => {
 
               {/* 7. Join Free Badge "FREE" translation */}
               <div
-                className="absolute flex items-center justify-center text-center select-none"
+                className="absolute flex items-center justify-center text-center pointer-events-auto"
                 style={{
                   left: '52.16%',
                   top: '84.88%',
@@ -333,7 +333,7 @@ const Landing = () => {
 
               {/* 8. Join Free Card Text */}
               <div
-                className="absolute flex flex-col justify-center overflow-hidden"
+                className="absolute flex flex-col justify-center overflow-hidden pointer-events-auto"
                 style={{
                   left: '57.0%',
                   top: '79.64%',
@@ -799,18 +799,18 @@ const Landing = () => {
                   className="w-[calc(100%+2rem)] -mx-4 flex justify-center items-center mt-8 overflow-hidden"
                 >
                   <div
-                    className="relative pointer-events-none select-none"
+                    className="relative pointer-events-none"
                     style={{ maxWidth: '440px', width: '100%' }}
                   >
                     <img
                       src={isDarkMode ? "/coins/hero_mobile_base_dark.png" : "/coins/hero_mobile_base_light.png"}
                       alt="Mobile Hero Graphic"
-                      className="w-full h-auto object-cover"
+                      className="w-full h-auto object-cover pointer-events-none select-none"
                     />
 
                     {/* 1. Earn by playing games tab */}
                     <div
-                      className="absolute flex items-center justify-center font-bold text-center"
+                      className="absolute flex items-center justify-center font-bold text-center pointer-events-auto"
                       style={{
                         left: '57.9%',
                         top: '8.79%',
@@ -829,7 +829,7 @@ const Landing = () => {
 
                     {/* 2. Earn from surveys tab */}
                     <div
-                      className="absolute flex items-center justify-center font-bold text-center"
+                      className="absolute flex items-center justify-center font-bold text-center pointer-events-auto"
                       style={{
                         left: '30.3%',
                         top: '52.3%',
@@ -849,7 +849,7 @@ const Landing = () => {
 
                     {/* 3. Survey Card Questions & Options */}
                     <div
-                      className="absolute flex flex-col justify-between overflow-hidden"
+                      className="absolute flex flex-col justify-between overflow-hidden pointer-events-auto"
                       style={{
                         left: '10.0%',
                         top: '61.5%',
@@ -938,7 +938,7 @@ const Landing = () => {
 
                     {/* 4. Survey Back Button */}
                     <div
-                      className="absolute flex items-center justify-center text-center"
+                      className="absolute flex items-center justify-center text-center pointer-events-auto"
                       style={{
                         left: '30.06%',
                         top: '89.84%',
@@ -954,7 +954,7 @@ const Landing = () => {
 
                     {/* 5. Survey Next Button */}
                     <div
-                      className="absolute flex items-center justify-center text-center text-white"
+                      className="absolute flex items-center justify-center text-center text-white pointer-events-auto"
                       style={{
                         left: '44.89%',
                         top: '89.84%',
@@ -969,7 +969,7 @@ const Landing = () => {
 
                     {/* 6. Fast Payouts Card Text */}
                     <div
-                      className="absolute flex flex-col justify-center overflow-hidden"
+                      className="absolute flex flex-col justify-center overflow-hidden pointer-events-auto"
                       style={{
                         left: '62.5%',
                         top: '51.8%',
@@ -1005,7 +1005,7 @@ const Landing = () => {
 
                     {/* 7. Join Free Badge "FREE" */}
                     <div
-                      className="absolute flex items-center justify-center text-center select-none"
+                      className="absolute flex items-center justify-center text-center pointer-events-auto"
                       style={{
                         left: '68.24%',
                         top: '69.49%',
@@ -1025,7 +1025,7 @@ const Landing = () => {
 
                     {/* 8. Join Free Card Text */}
                     <div
-                      className="absolute flex flex-col justify-center overflow-hidden"
+                      className="absolute flex flex-col justify-center overflow-hidden pointer-events-auto"
                       style={{
                         left: '62.5%',
                         top: '73.2%',
@@ -1404,7 +1404,7 @@ const Landing = () => {
 
           {/* Image (Second on mobile, First on Desktop) */}
           <div
-            className="order-2 lg:order-1 relative flex-shrink-0 w-full lg:w-[640px] h-auto lg:h-[558px] px-0 mt-6 lg:mt-0 flex justify-center lg:justify-start overflow-hidden rounded-[24px] lg:rounded-[32px] select-none"
+            className="order-2 lg:order-1 relative flex-shrink-0 w-full lg:w-[640px] h-auto lg:h-[558px] px-0 mt-6 lg:mt-0 flex justify-center lg:justify-start overflow-hidden rounded-[24px] lg:rounded-[32px]"
             style={isMobile ? { width: '100%', maxWidth: '100%' } : {}}
           >
             <img
@@ -1414,12 +1414,12 @@ const Landing = () => {
                   : (isDarkMode ? "/coins/whychoseus1dark.png" : "/coins/whychoseus1.png")
               }
               alt="Why Choose Us"
-              className="w-full h-auto lg:h-full object-cover rounded-[24px] lg:rounded-[32px] block"
+              className="w-full h-auto lg:h-full object-cover rounded-[24px] lg:rounded-[32px] block pointer-events-none select-none"
             />
 
             {/* Top Earners Tab Overlay */}
             <div
-              className={`absolute z-10 font-bold tracking-tight text-center pointer-events-none whitespace-nowrap select-none ${
+              className={`absolute z-10 font-bold tracking-tight text-center pointer-events-auto whitespace-nowrap ${
                 isDarkMode && !isMobile ? 'text-white' : 'text-[#181d24]'
               } ${
                 isMobile
@@ -1442,7 +1442,7 @@ const Landing = () => {
 
             {/* Bottom Text Overlay ("Your journey starts here.") */}
             <div
-              className={`absolute z-10 font-semibold leading-tight pointer-events-none select-none text-center whitespace-nowrap ${
+              className={`absolute z-10 font-semibold leading-tight pointer-events-auto text-center whitespace-nowrap ${
                 isDarkMode && !isMobile ? 'text-[#f8fafc]' : 'text-[#0f172a]'
               } ${
                 isMobile
@@ -1537,18 +1537,18 @@ const Landing = () => {
             >
               {/* Card 1: Surveys (Base image + dynamic i18n overlays across all languages) */}
               <div
-                className="relative w-full mx-auto rounded-[24px] overflow-hidden select-none"
+                className="relative w-full mx-auto rounded-[24px] overflow-hidden"
                 style={!isMobile ? { maxWidth: '100%', width: 428, height: 368, clipPath: 'inset(0 round 24px)' } : { width: '100%', maxWidth: '100%', aspectRatio: '856 / 736', clipPath: 'inset(0 round 24px)' }}
               >
                 <img
                   src={isDarkMode ? '/coins/sew1desiblack.png' : '/coins/sew1desi.png'}
                   alt="Start Earning Option 1"
-                  className="w-full h-full object-cover block"
+                  className="w-full h-full object-cover block pointer-events-none select-none"
                 />
 
                 {/* Heading & Below Description */}
                 <div
-                  className="absolute pointer-events-none"
+                  className="absolute pointer-events-auto"
                   style={{
                     top: isDarkMode ? '6.2%' : '6.8%',
                     left: '5.7%',
@@ -1590,7 +1590,7 @@ const Landing = () => {
 
                 {/* Question 01 Pill */}
                 <div
-                  className="absolute flex items-center justify-center text-center pointer-events-none whitespace-nowrap"
+                  className="absolute flex items-center justify-center text-center pointer-events-auto whitespace-nowrap"
                   style={{
                     left: isDarkMode ? '23.58%' : '22.84%',
                     top: isDarkMode ? '38.96%' : '41.37%',
@@ -1610,7 +1610,7 @@ const Landing = () => {
 
                 {/* Question Prompt */}
                 <div
-                  className="absolute pointer-events-none leading-tight"
+                  className="absolute pointer-events-auto leading-tight"
                   style={{
                     left: isDarkMode ? '14.5%' : '14.5%',
                     right: '11%',
@@ -1629,7 +1629,7 @@ const Landing = () => {
 
                 {/* SELECT ONLY ONE */}
                 <div
-                  className="absolute pointer-events-none uppercase tracking-wider"
+                  className="absolute pointer-events-auto uppercase tracking-wider"
                   style={{
                     left: isDarkMode ? '16.2%' : '16.7%',
                     right: '8%',
@@ -1647,7 +1647,7 @@ const Landing = () => {
 
                 {/* Option Yes */}
                 <div
-                  className="absolute flex items-center gap-2 pointer-events-none"
+                  className="absolute flex items-center gap-2 pointer-events-auto"
                   style={{
                     left: isDarkMode ? '16.2%' : '16.6%',
                     top: isDarkMode ? '65.4%' : '67.9%',
@@ -1671,7 +1671,7 @@ const Landing = () => {
 
                 {/* Option No */}
                 <div
-                  className="absolute flex items-center gap-2 pointer-events-none"
+                  className="absolute flex items-center gap-2 pointer-events-auto"
                   style={{
                     left: isDarkMode ? '16.2%' : '16.6%',
                     top: isDarkMode ? '72.4%' : '74.9%',
@@ -1695,7 +1695,7 @@ const Landing = () => {
 
                 {/* Back Button Label */}
                 <div
-                  className="absolute flex items-center justify-center text-center pointer-events-none whitespace-nowrap"
+                  className="absolute flex items-center justify-center text-center pointer-events-auto whitespace-nowrap"
                   style={{
                     left: isDarkMode ? '76.22%' : '76.55%',
                     top: isDarkMode ? '86.80%' : '90.15%',
@@ -1715,7 +1715,7 @@ const Landing = () => {
 
                 {/* Next Button Label */}
                 <div
-                  className="absolute flex items-center justify-center text-center pointer-events-none whitespace-nowrap"
+                  className="absolute flex items-center justify-center text-center pointer-events-auto whitespace-nowrap"
                   style={{
                     left: isDarkMode ? '91.43%' : '91.65%',
                     top: isDarkMode ? '86.82%' : '90.15%',
@@ -1734,47 +1734,161 @@ const Landing = () => {
                 </div>
               </div>
 
-              {/* Cards 2 & 3 */}
-              {(isPt
-                ? (isDarkMode
-                  ? ['/coins/sew2darkportu.png', '/coins/sew3darkportu.png']
-                  : ['/coins/sew2lightportu.png', '/coins/sew3lightportu.png']
-                )
-                : isRu
-                  ? (isDarkMode
-                    ? ['/coins/sew2darkrussian.png', '/coins/sew3darkrussian.png']
-                    : ['/coins/sew2lightrussian.png', '/coins/sew3lightrussian.png']
-                  )
-                  : isEs
-                    ? (isDarkMode
-                      ? ['/coins/sew2darkspanihs.png', '/coins/sew3darkspanihs.png']
-                      : ['/coins/sew2lightspanihs.png', '/coins/sew3lightspanihs.png']
-                    )
-                    : isFr
-                      ? (isDarkMode
-                        ? ['/coins/sew2darkfranch.png', '/coins/sew3darkfranch.png']
-                        : ['/coins/sew2lightfranch.png', '/coins/sew3lightfranch.png']
-                      )
-                      : isUr
-                        ? (isDarkMode
-                          ? ['/coins/sew2  Urdu dark.png', '/coins/sew3  Urdu dark.png']
-                          : ['/coins/sew2  Urdu light.png', '/coins/sew3 Urdu light.png']
-                        )
-                        : isDe
-                          ? ['/coins/sew2german.png', '/coins/sew3german.png']
-                          : (isDarkMode
-                            ? ['/coins/sew2Blackenglish.png', '/coins/sew3Blackenglish.png']
-                            : ['/coins/Mask group.png', '/coins/sew3.png']
-                          )
-              ).map((imgSrc, idx) => (
+              {/* Card 2: Apps & Games (Base image + dynamic i18n overlays across all languages) */}
+              <div
+                className="relative w-full mx-auto rounded-[24px] overflow-hidden"
+                style={!isMobile ? { maxWidth: '100%', width: 428, height: 368, clipPath: 'inset(0 round 24px)' } : { width: '100%', maxWidth: '100%', aspectRatio: '856 / 736', clipPath: 'inset(0 round 24px)' }}
+              >
                 <img
-                  key={idx + 1}
-                  src={imgSrc}
-                  alt={`Start Earning Option ${idx + 2}`}
-                  className="w-full object-cover sm:object-contain mx-auto rounded-[24px]"
-                  style={!isMobile ? { maxWidth: '100%', width: 428, height: 368, clipPath: 'inset(0 round 24px)' } : { width: '100%', maxWidth: '100%', height: 'auto', clipPath: 'inset(0 round 24px)' }}
+                  src={isDarkMode ? '/coins/sew2blackdesi.png' : '/coins/sew2desi.png'}
+                  alt="Start Earning Option 2"
+                  className="w-full h-full object-cover block pointer-events-none select-none"
                 />
-              ))}
+
+                {/* Heading & Below Description */}
+                <div
+                  className="absolute pointer-events-auto"
+                  style={{
+                    top: isDarkMode ? '6.2%' : '6.8%',
+                    left: '5.7%',
+                    right: '5.7%',
+                    textAlign: isUr ? 'right' : 'left',
+                  }}
+                  dir={isUr ? 'rtl' : 'ltr'}
+                >
+                  <div
+                    style={{
+                      fontFamily: '"Bricolage Grotesque", sans-serif',
+                      fontWeight: 700,
+                      letterSpacing: '-0.02em',
+                      lineHeight: 1.12,
+                      fontSize: isMobile
+                        ? 'clamp(22px, 6.2vw, 29px)'
+                        : ((t('startEarningWith.appsGamesTitle') || '').length > 15 ? '26px' : '31px'),
+                      color: isDarkMode ? '#FFFFFF' : '#0E0F0C',
+                    }}
+                  >
+                    {t('startEarningWith.appsGamesTitle', 'Apps & Games')}
+                  </div>
+                  <div
+                    className="mt-2"
+                    style={{
+                      fontFamily: '"Poppins", sans-serif',
+                      fontWeight: 500,
+                      lineHeight: 1.38,
+                      fontSize: isMobile
+                        ? 'clamp(11.5px, 3.2vw, 14.5px)'
+                        : ((t('startEarningWith.appsGamesDesc') || '').length > 74 ? '13.5px' : '15px'),
+                      color: isDarkMode ? 'rgba(255, 255, 255, 0.78)' : '#0E0F0C',
+                      maxWidth: isUr ? '100%' : '88%',
+                    }}
+                  >
+                    {t('startEarningWith.appsGamesDesc', 'Download apps or play new games. Reach milestones to earn big.')}
+                  </div>
+                </div>
+              </div>
+
+              {/* Card 3: Featured Offers (Base image + dynamic i18n overlays across all languages) */}
+              <div
+                className="relative w-full mx-auto rounded-[24px] overflow-hidden"
+                style={!isMobile ? { maxWidth: '100%', width: 428, height: 368, clipPath: 'inset(0 round 24px)' } : { width: '100%', maxWidth: '100%', aspectRatio: '856 / 736', clipPath: 'inset(0 round 24px)' }}
+              >
+                <img
+                  src={isDarkMode ? '/coins/sew3blackdesi.png' : '/coins/sew3desi.png'}
+                  alt="Start Earning Option 3"
+                  className="w-full h-full object-cover block pointer-events-none select-none"
+                />
+
+                {/* Heading & Below Description */}
+                <div
+                  className="absolute pointer-events-auto"
+                  style={{
+                    top: isDarkMode ? '6.2%' : '6.8%',
+                    left: '5.7%',
+                    right: '5.7%',
+                    textAlign: isUr ? 'right' : 'left',
+                  }}
+                  dir={isUr ? 'rtl' : 'ltr'}
+                >
+                  <div
+                    style={{
+                      fontFamily: '"Bricolage Grotesque", sans-serif',
+                      fontWeight: 700,
+                      letterSpacing: '-0.02em',
+                      lineHeight: 1.12,
+                      fontSize: isMobile
+                        ? 'clamp(22px, 6.2vw, 29px)'
+                        : ((t('startEarningWith.featuredOffersTitle') || '').length > 17 ? '26px' : '31px'),
+                      color: isDarkMode ? '#FFFFFF' : '#0E0F0C',
+                    }}
+                  >
+                    {t('startEarningWith.featuredOffersTitle', 'Featured Offers')}
+                  </div>
+                  <div
+                    className="mt-2"
+                    style={{
+                      fontFamily: '"Poppins", sans-serif',
+                      fontWeight: 500,
+                      lineHeight: 1.38,
+                      fontSize: isMobile
+                        ? 'clamp(11.5px, 3.2vw, 14.5px)'
+                        : ((t('startEarningWith.featuredOffersDesc') || '').length > 74 ? '13.5px' : '15px'),
+                      color: isDarkMode ? 'rgba(255, 255, 255, 0.78)' : '#0E0F0C',
+                      maxWidth: isUr ? '100%' : '90%',
+                    }}
+                  >
+                    {t('startEarningWith.featuredOffersDesc', 'Sign up for services or trials to earn the highest paying rewards.')}
+                  </div>
+                </div>
+
+                {/* Left Card Badge: Highest Paying */}
+                <div
+                  className="absolute flex items-center justify-center text-center pointer-events-auto"
+                  style={{
+                    left: '28.7%',
+                    top: isDarkMode ? '78%' : '77%',
+                    transform: 'translate(-50%, -50%)',
+                    width: '38%',
+                    maxWidth: '160px',
+                    fontFamily: '"Poppins", sans-serif',
+                    fontWeight: 700,
+                    lineHeight: 1.15,
+                    fontSize: isMobile
+                      ? 'clamp(10px, 2.8vw, 13px)'
+                      : ((t('startEarningWith.highestPaying') || '').length > 16 ? '11px' : '13px'),
+                    color: isDarkMode ? '#3B3CCB' : '#4649B8',
+                    textTransform: isUr ? 'none' : 'uppercase',
+                    letterSpacing: '-0.01em',
+                  }}
+                  dir={isUr ? 'rtl' : 'ltr'}
+                >
+                  {t('startEarningWith.highestPaying', 'HIGHEST PAYING')}
+                </div>
+
+                {/* Right Card Badge: Instant Withdrawal */}
+                <div
+                  className="absolute flex items-center pointer-events-auto"
+                  style={{
+                    left: isDarkMode ? '67.2%' : '66.2%',
+                    top: isDarkMode ? '54.2%' : '51.2%',
+                    transform: 'translateY(-50%)',
+                    right: '4%',
+                    fontFamily: '"Poppins", sans-serif',
+                    fontWeight: 700,
+                    lineHeight: 1.15,
+                    fontSize: isMobile
+                      ? 'clamp(10px, 2.8vw, 13px)'
+                      : ((t('startEarningWith.instantWithdrawal') || '').length > 16 ? '11px' : '13px'),
+                    color: isDarkMode ? '#3B3CCB' : '#4649B8',
+                    textTransform: isUr ? 'none' : 'uppercase',
+                    letterSpacing: '-0.01em',
+                    textAlign: isUr ? 'center' : 'left',
+                  }}
+                  dir={isUr ? 'rtl' : 'ltr'}
+                >
+                  {t('startEarningWith.instantWithdrawal', 'INSTANT WITHDRAWAL')}
+                </div>
+              </div>
             </div>
           </div>
         </section>

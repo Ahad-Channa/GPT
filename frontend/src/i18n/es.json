@@ -72,7 +72,13 @@
     "subtitleMobileLine2": "lo que mejor se adapte a ti.",
     "surveysTitle": "Encuestas",
     "surveysDesc": "Comparte tu opinión sobre diversos temas y recibe recompensas al instante.",
-    "coffeeQuestion": "¿Te gusta el café?"
+    "coffeeQuestion": "¿Te gusta el café?",
+    "appsGamesTitle": "Aplicaciones y Juegos",
+    "appsGamesDesc": "Descarga aplicaciones o juega a nuevos juegos. Alcanza objetivos para ganar a lo grande.",
+    "featuredOffersTitle": "Ofertas destacadas",
+    "featuredOffersDesc": "Regístrate en servicios o pruebas para obtener las recompensas más altas.",
+    "highestPaying": "LAS MEJOR PAGADAS",
+    "instantWithdrawal": "RETIRO INMEDIATO"
   },
   "faqSection": {
     "title": "Preguntas",

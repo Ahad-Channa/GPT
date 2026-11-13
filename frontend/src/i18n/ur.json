@@ -72,7 +72,13 @@
     "subtitleMobileLine2": "جو آپ کے لیے موزوں ہو اسے منتخب کریں۔",
     "surveysTitle": "سروے",
     "surveysDesc": "مختلف موضوعات پر اپنی رائے دیں اور فوری انعامات پائیں۔",
-    "coffeeQuestion": "کیا آپ کو کافی پسند ہے؟"
+    "coffeeQuestion": "کیا آپ کو کافی پسند ہے؟",
+    "appsGamesTitle": "ایپس اور گیمز",
+    "appsGamesDesc": "ایپس ڈاؤن لوڈ کریں یا نئی گیمز کھیلیں۔ بڑی کمائی کے لیے سنگ میل عبور کریں۔",
+    "featuredOffersTitle": "نمایاں آفرز",
+    "featuredOffersDesc": "سب سے زیادہ ادائیگی والے انعامات حاصل کرنے کے لیے سروسز یا ٹرائلز جوائن کریں۔",
+    "highestPaying": "سب سے زیادہ ادائیگی",
+    "instantWithdrawal": "فوری کیش آؤٹ"
   },
   "faqSection": {
     "title": "اکثر پوچھے جانے والے",

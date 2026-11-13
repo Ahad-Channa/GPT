@@ -72,7 +72,13 @@
     "subtitleMobileLine2": "what works best for you.",
     "surveysTitle": "Surveys",
     "surveysDesc": "Share your opinion on various topics and get rewarded instantly.",
-    "coffeeQuestion": "Do you like coffee?"
+    "coffeeQuestion": "Do you like coffee?",
+    "appsGamesTitle": "Apps & Games",
+    "appsGamesDesc": "Download apps or play new games. Reach milestones to earn big.",
+    "featuredOffersTitle": "Featured Offers",
+    "featuredOffersDesc": "Sign up for services or trials to earn the highest paying rewards.",
+    "highestPaying": "HIGHEST PAYING",
+    "instantWithdrawal": "INSTANT WITHDRAWAL"
   },
   "faqSection": {
     "title": "Frequently",
