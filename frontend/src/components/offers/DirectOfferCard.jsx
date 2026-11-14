@@ -9,6 +9,7 @@ import { ProofUploadView } from './ProofUploadView';
 import { formatGoalTimeLimit } from '../../utils/goalTimeLimit';
 import { isOfferClickLimitReached } from '../../utils/offerClickLimit';
 import { formatGoalLabel } from '../../utils/offerGoalDisplay.js';
+import { formatOfferAmount } from '../../utils/offerNumberFormat.js';
 import { closeReservedOfferTab, hasManualOfferStarted, navigateReservedOfferTab, reserveOfferTab, resolveProofInstructions } from '../../utils/manualOfferState.js';
 import { getOfferTranslation } from '../../utils/offerTranslations';
 
@@ -25,10 +26,9 @@ const isRequirementCompleted = (requirement) => {
   return requirement.completed === true || requirement.credited === true || requirement.status === 'approved';
 };
 
-const formatCoins = (amount) => Number(amount || 0).toLocaleString('de-DE');
 const formatGoalRequirement = (goal, language, t) => {
   const label = formatGoalLabel(goal, language, t('offers.missingGoalLabel'));
-  return t('offers.goalRewardInstruction', { label, coins: formatCoins(goal.rewardAmount) });
+  return t('offers.goalRewardInstruction', { label, coins: formatOfferAmount(goal.rewardAmount, language) });
 };
 
 const getEnabledGoals = (offer) =>
@@ -62,7 +62,8 @@ const getStatusConfig = (t) => ({
 // ─── Small Card shown in the grid ────────────────────────────────────────────
 export const DirectOfferCard = ({ offer, onClick }) => {
   const { i18n, t } = useTranslation();
-  const offerText = getOfferTranslation(offer, i18n.resolvedLanguage || i18n.language);
+  const language = i18n.resolvedLanguage || i18n.language;
+  const offerText = getOfferTranslation(offer, language);
   const title = offerText.title || t('offers.translationUnavailable', 'Translation unavailable');
   const isExpired = offer.expirationDate && new Date(offer.expirationDate) < new Date();
   const coverImgSrc = offer.coverImage || (isIconUrl(offer.icon) ? offer.icon : null);
@@ -236,7 +237,7 @@ export const DirectOfferCard = ({ offer, onClick }) => {
                 alignItems: 'center',
               }}
             >
-              {rewardVal.toLocaleString('de-DE')}
+              {formatOfferAmount(rewardVal, language)}
             </span>
           </div>
         )}
@@ -468,7 +469,7 @@ export const DirectOfferModal = ({ offer, token, placement = 'featured', onClose
                 className="font-bold text-[14px] sm:text-[15px]"
                 style={{ color: 'rgba(231, 171, 24, 1)' }}
               >
-                {rewardVal.toLocaleString('de-DE')}
+                {formatOfferAmount(rewardVal, selectedLanguage)}
               </span>
             </div>
           </div>

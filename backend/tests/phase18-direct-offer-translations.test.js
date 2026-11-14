@@ -21,6 +21,7 @@ const compact = (source) => source.replace(/\s+/g, '');
 const loadOfferTranslations = () => import(pathToFileURL(path.join(repoRoot, 'frontend/src/utils/offerTranslations.js')).href);
 const loadDirectOfferPayload = () => import(pathToFileURL(path.join(repoRoot, 'frontend/src/utils/directOfferPayload.js')).href);
 const loadOfferGoalDisplay = () => import(pathToFileURL(path.join(repoRoot, 'frontend/src/utils/offerGoalDisplay.js')).href);
+const loadOfferNumberFormat = () => import(pathToFileURL(path.join(repoRoot, 'frontend/src/utils/offerNumberFormat.js')).href);
 
 // ─── Model + normalizer round-trip ────────────────────────────────────────────
 
@@ -423,7 +424,7 @@ test('translated goal labels still win over the localized missing state', async 
 test('DirectOfferCard uses localized offer text without unconditional English fallbacks', () => {
   const card = compact(read('frontend/src/components/offers/DirectOfferCard.jsx'));
 
-  assert.match(card, /getOfferTranslation\(offer,i18n\.resolvedLanguage\|\|i18n\.language\)/);
+  assert.match(card, /getOfferTranslation\(offer,language\)/);
   assert.match(card, /getOfferTranslation\(offer,selectedLanguage\)/);
   assert.doesNotMatch(card, /offerText\.title\|\|offer\.title/);
   assert.doesNotMatch(card, /offerText\.description\|\|offer\.description/);
@@ -479,6 +480,35 @@ test('direct-offer modal translations exist and differ from English for German, 
     assert.match(messages[locale].offers.goalRewardInstruction, /\{\{label\}\}/);
     assert.match(messages[locale].offers.goalRewardInstruction, /\{\{coins\}\}/);
   }
+});
+
+test('coin amounts use the active locale for English, German, French and Urdu', async () => {
+  const { formatOfferAmount, resolveNumberLocale } = await loadOfferNumberFormat();
+  const value = 1250000;
+
+  assert.equal(formatOfferAmount(value, 'en'), '1,250,000');
+  assert.equal(formatOfferAmount(value, 'de'), '1.250.000');
+  assert.equal(formatOfferAmount(value, 'fr').replace(/\s/g, ' '), '1 250 000');
+  assert.equal(formatOfferAmount(value, 'ur'), value.toLocaleString('ur'));
+
+  // Region variants use their base language; unsupported values fall back safely.
+  assert.equal(resolveNumberLocale('de-DE'), 'de');
+  assert.equal(resolveNumberLocale('ur-PK'), 'ur');
+  assert.equal(resolveNumberLocale('es'), 'en');
+  assert.equal(formatOfferAmount(value, 'de-DE'), value.toLocaleString('de'));
+  assert.equal(formatOfferAmount('1250000', 'fr').replace(/\s/g, ' '), '1 250 000');
+  assert.equal(formatOfferAmount(value, 'not-a-locale'), '1,250,000');
+  assert.equal(formatOfferAmount(Number.NaN, 'en'), '0');
+});
+
+test('DirectOfferCard formats goal rewards and totals with the active locale', () => {
+  const card = compact(read('frontend/src/components/offers/DirectOfferCard.jsx'));
+
+  assert.match(card, /formatOfferAmount\(goal\.rewardAmount,language\)/);
+  assert.match(card, /formatOfferAmount\(rewardVal,language\)/);
+  assert.match(card, /formatOfferAmount\(rewardVal,selectedLanguage\)/);
+  assert.doesNotMatch(card, /toLocaleString\('de-DE'\)/);
+  assert.doesNotMatch(card, /de-DE/);
 });
 
 test('admin save uses one deliberate text payload and no duplicate requirements keys', () => {
