@@ -1,4 +1,4 @@
-import { getOfferTranslation } from './offerTranslations';
+import { getOfferTranslation } from './offerTranslations.js';
 
 export const hasManualOfferStarted = (offer = {}) =>
   ['started', 'rejected'].includes(String(offer.submissionStatus || '').toLowerCase()) ||
@@ -6,6 +6,24 @@ export const hasManualOfferStarted = (offer = {}) =>
 
 export const resolveProofInstructions = (offer = {}, language = 'en') =>
   String(getOfferTranslation(offer, language).proofInstructions || '').trim();
+
+const hasText = (value) => String(value ?? '').trim().length > 0;
+
+// True when the offer has proof instructions in at least one language, even if
+// not in the requested one. Used to show a "translation unavailable" notice
+// instead of silently hiding the instructions area.
+export const hasAnyProofInstructions = (offer = {}) =>
+  hasText(offer.proofInstructions) ||
+  hasText(offer.proofInstructionsDe) ||
+  Object.values(offer.translations && typeof offer.translations === 'object' ? offer.translations : {})
+    .some((entry) => hasText(entry?.proofInstructions));
+
+// { text, unavailable }: `unavailable` is true when instructions exist in some
+// other language but not in the selected one. No other language is borrowed.
+export const getProofInstructionsView = (offer = {}, language = 'en') => {
+  const text = resolveProofInstructions(offer, language);
+  return { text, unavailable: !text && hasAnyProofInstructions(offer) };
+};
 
 export const reserveOfferTab = () => {
   if (typeof window === 'undefined') return null;

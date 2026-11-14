@@ -9,7 +9,7 @@ import { formatGoalTimeLimit } from '../../utils/goalTimeLimit';
 import { isOfferClickLimitReached } from '../../utils/offerClickLimit';
 import { formatGoalLabel } from '../../utils/offerGoalDisplay.js';
 import { ProofUploadView } from './ProofUploadView';
-import { closeReservedOfferTab, hasManualOfferStarted, navigateReservedOfferTab, reserveOfferTab, resolveProofInstructions } from '../../utils/manualOfferState.js';
+import { closeReservedOfferTab, hasManualOfferStarted, getProofInstructionsView, navigateReservedOfferTab, reserveOfferTab } from '../../utils/manualOfferState.js';
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
@@ -327,7 +327,7 @@ export const GoodpicksDetailModal = ({ offer, onClose, token, onOfferStateChange
   if (!offer) return null;
 
   const isManual = offer.trackingMode === 'manual';
-  const proofInstructions = resolveProofInstructions(offer, selectedLanguage);
+  const proofView = getProofInstructionsView(offer, selectedLanguage);
   const rewardFormatted = (offer.rewardAmount || 0).toLocaleString('de-DE');
   const limitReached = isOfferClickLimitReached(offer);
 
@@ -765,7 +765,7 @@ export const GoodpicksDetailModal = ({ offer, onClose, token, onOfferStateChange
           )}
         </div>
 
-        {isManual && proofInstructions && (
+        {isManual && (proofView.text || proofView.unavailable) && (
           <div
             style={{
               background: '#EFF6FF',
@@ -776,10 +776,10 @@ export const GoodpicksDetailModal = ({ offer, onClose, token, onOfferStateChange
             className="shrink-0"
           >
             <p style={{ fontFamily: '"Poppins", sans-serif', fontWeight: 700, fontSize: '13px', color: '#0F172A', margin: '0 0 4px' }}>
-              {isDe ? 'Nachweis-Anweisungen' : 'Proof Instructions'}
+              {t('offers.proofInstructions', 'Proof Instructions')}
             </p>
             <p style={{ fontFamily: '"Poppins", sans-serif', fontSize: '12px', color: '#334155', margin: 0, whiteSpace: 'pre-wrap' }}>
-              {proofInstructions}
+              {proofView.text || t('offers.translationUnavailable', 'Translation unavailable')}
             </p>
           </div>
         )}

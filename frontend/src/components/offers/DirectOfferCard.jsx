@@ -10,7 +10,7 @@ import { formatGoalTimeLimit } from '../../utils/goalTimeLimit';
 import { isOfferClickLimitReached } from '../../utils/offerClickLimit';
 import { formatGoalLabel } from '../../utils/offerGoalDisplay.js';
 import { formatOfferAmount } from '../../utils/offerNumberFormat.js';
-import { closeReservedOfferTab, hasManualOfferStarted, navigateReservedOfferTab, reserveOfferTab, resolveProofInstructions } from '../../utils/manualOfferState.js';
+import { closeReservedOfferTab, hasManualOfferStarted, getProofInstructionsView, navigateReservedOfferTab, reserveOfferTab } from '../../utils/manualOfferState.js';
 import { getOfferTranslation } from '../../utils/offerTranslations';
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
@@ -265,7 +265,7 @@ export const DirectOfferModal = ({ offer, token, placement = 'featured', onClose
   const [proofMessage, setProofMessage] = useState(null);
   const [submissionStatus, setSubmissionStatus] = useState(offer.submissionStatus || null);
   const isManual = offer.trackingMode === 'manual';
-  const proofInstructions = resolveProofInstructions(offer, selectedLanguage);
+  const proofView = getProofInstructionsView(offer, selectedLanguage);
   const isExpired = offer.expirationDate && new Date(offer.expirationDate) < new Date();
   const limitReached = isOfferClickLimitReached(offer);
   const rewardVal = offer.rewardAmount ?? offer.points ?? offer.reward ?? 0;
@@ -540,7 +540,7 @@ export const DirectOfferModal = ({ offer, token, placement = 'featured', onClose
           </div>
         </div>
 
-        {isManual && proofInstructions && (
+        {isManual && (proofView.text || proofView.unavailable) && (
           <div
             style={{ background: 'rgba(239, 246, 255, 0.9)', border: '1px solid rgba(59, 130, 246, 0.25)' }}
             className="rounded-[14px] p-3 shrink-0"
@@ -551,7 +551,7 @@ export const DirectOfferModal = ({ offer, token, placement = 'featured', onClose
             >
               {t('offers.proofInstructions')}
             </h4>
-            <p className="text-[12px] text-[#334155] m-0 whitespace-pre-wrap leading-relaxed">{proofInstructions}</p>
+            <p className="text-[12px] text-[#334155] m-0 whitespace-pre-wrap leading-relaxed">{proofView.text || t('offers.translationUnavailable', 'Translation unavailable')}</p>
           </div>
         )}
 
