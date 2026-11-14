@@ -24,6 +24,11 @@ const clickLogSchema = new mongoose.Schema(
       default: null,
       index: true,
     },
+    // One canonical direct-offer click per user and offer. The unique index
+    // below makes concurrent Start requests collapse onto the same click.
+    directOfferClaimKey: {
+      type: String,
+    },
     userId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
@@ -141,5 +146,16 @@ clickLogSchema.index({ userId: 1, createdAt: -1 });
 clickLogSchema.index({ providerId: 1, createdAt: -1 });
 clickLogSchema.index({ providerId: 1, userId: 1, createdAt: -1 });
 clickLogSchema.index({ campaignType: 1, campaignId: 1, createdAt: -1 });
+clickLogSchema.index({ userId: 1, offerId: 1, createdAt: -1 });
+// Direct-offer click uniqueness is enforced by the claim key, not by the
+// global maxTotalClicks cap. Existing historical clicks have no claim key and
+// therefore do not block index creation.
+clickLogSchema.index(
+  { directOfferClaimKey: 1 },
+  {
+    unique: true,
+    partialFilterExpression: { directOfferClaimKey: { $type: 'string' } },
+  }
+);
 
 module.exports = mongoose.model('ClickLog', clickLogSchema);

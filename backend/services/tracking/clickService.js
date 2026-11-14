@@ -28,6 +28,16 @@ const MAX_CLICK_ID_ATTEMPTS = 5;
 
 const generateClickId = () => crypto.randomBytes(24).toString('base64url');
 
+const buildDirectOfferClaimKey = (userId, offerId) =>
+  userId && offerId ? `${userId}:${offerId}` : null;
+
+const isDuplicateDirectOfferClaimError = (error) =>
+  error?.code === 11000 && (
+    error?.keyPattern?.directOfferClaimKey ||
+    error?.keyValue?.directOfferClaimKey ||
+    /directOfferClaimKey/.test(String(error?.message || ''))
+  );
+
 const isDuplicateClickIdError = (error) =>
   error?.code === 11000 && (
     error?.keyPattern?.clickId ||
@@ -124,6 +134,27 @@ const buildRedirectUrl = ({ destinationUrl, clickId, userId, offerId, clickIdPar
   return parsed.toString();
 };
 
+// Returns the canonical direct-offer click for a user/offer pair. The unique
+// claim key prevents new duplicates; this lookup also keeps historical duplicate
+// data from spawning another click.
+const findExistingDirectOfferClick = async ({
+  userId,
+  offerId,
+  clickLogModel = ClickLog,
+} = {}) => {
+  if (!userId || !offerId || typeof clickLogModel?.findOne !== 'function') return null;
+  return clickLogModel.findOne(
+    {
+      userId,
+      offerId,
+      providerType: 'direct_offer',
+      campaignType: 'direct_offer',
+    },
+    null,
+    { sort: { createdAt: 1 } }
+  );
+};
+
 const assertDirectOfferAvailable = ({ offer, country, platform, now = new Date() }) => {
   if (!offer || !offer.isActive) {
     const error = new Error('Offer not found or inactive');
@@ -166,6 +197,7 @@ const createClick = async ({
   goalsSnapshot = null,
   destinationUrl,
   clickIdParam = 'click_id',
+  claimKey = null,
   clickLogModel = ClickLog,
 }) => {
   if (!user?._id) throw new Error('User association is required.');
@@ -203,10 +235,33 @@ const createClick = async ({
         offerTitle: String(offerTitle || '').slice(0, 250),
         rewardSnapshot,
         goalsSnapshot,
+        ...(claimKey ? { directOfferClaimKey: claimKey } : {}),
       });
 
-      return { clickLog, clickId, redirectUrl };
+      return { clickLog, clickId, redirectUrl, reused: false };
     } catch (error) {
+      if (isDuplicateDirectOfferClaimError(error)) {
+        const existing = await findExistingDirectOfferClick({
+          userId: user._id,
+          offerId: offerId || campaignId,
+          clickLogModel,
+        });
+        if (existing) {
+          return {
+            clickLog: existing,
+            clickId: existing.clickId,
+            redirectUrl: existing.redirectUrl || buildRedirectUrl({
+              destinationUrl,
+              clickId: existing.clickId,
+              userId: user._id,
+              offerId: offerId || campaignId,
+              clickIdParam,
+            }),
+            reused: true,
+          };
+        }
+      }
+
       if (!isDuplicateClickIdError(error) || attempt === MAX_CLICK_ID_ATTEMPTS) {
         throw error;
       }
@@ -230,6 +285,10 @@ const createDirectOfferClick = async ({
   const platform = detectPlatform(userAgent);
 
   assertDirectOfferAvailable({ offer, country: geo.country, platform, now });
+
+  const claimKey = offer.trackingMode === 'manual'
+    ? null
+    : buildDirectOfferClaimKey(user._id, offer._id);
 
   return createClick({
     user,
@@ -263,6 +322,7 @@ const createDirectOfferClick = async ({
     goalsSnapshot: offer.trackingMode === 'manual' ? null : buildGoalsSnapshot(offer.goals),
     destinationUrl: offer.advertiserUrl,
     clickIdParam: offer.postbackMapping?.clickIdParam || 'click_id',
+    claimKey,
     clickLogModel,
   });
 };
@@ -303,13 +363,16 @@ const releaseDirectOfferClickSlot = async ({ offerId, offerModel = DirectOffer }
 
 module.exports = {
   assertDirectOfferAvailable,
+  buildDirectOfferClaimKey,
   buildRedirectUrl,
   createClick,
   createDirectOfferClick,
   detectDevice,
   detectPlatform,
+  findExistingDirectOfferClick,
   generateClickId,
   isDuplicateClickIdError,
+  isDuplicateDirectOfferClaimError,
   releaseDirectOfferClickSlot,
   reserveDirectOfferClickSlot,
   sanitizeTrackingParams,

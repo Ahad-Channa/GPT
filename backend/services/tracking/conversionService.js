@@ -143,18 +143,24 @@ const conversionIdentityFilter = (providerId, providerTransactionId, goalKey) =>
 });
 
 // Direct Offers may receive a caller-controlled transaction ID in their public
-// postback URL. Keep one conversion per tracked click and step as a second,
-// stable idempotency boundary; changing txn_id must not create a fresh reward.
-const getDirectOfferClickGoalIdentity = ({ providerConfig, clickLog, goalKey } = {}) => {
+// postback URL. Keep one reward per user + offer + goal, independent of which
+// click ID the advertiser sends back. Changing txn_id or creating another click
+// must not create a fresh reward; different configured goals remain independent.
+const getDirectOfferRewardIdentity = ({ providerConfig, clickLog, goalKey } = {}) => {
   if (String(providerConfig?.providerId || '').toLowerCase() !== 'direct' || !clickLog?._id) return null;
+  const userId = clickLog.userId || null;
+  const offerId = clickLog.offerId || clickLog.campaignId || null;
+  if (!userId || !offerId) return null;
+
   const normalizedGoalKey = goalKey || null;
   return {
-    idempotencyKey: `direct-offer:${clickLog._id}:${normalizedGoalKey || 'single'}`,
+    idempotencyKey: `direct-offer-reward:${userId}:${offerId}:${normalizedGoalKey || 'single'}`,
     query: {
       providerId: 'direct',
-      clickLogId: clickLog._id,
+      userId,
       goalKey: normalizedGoalKey,
     },
+    offerId: String(offerId),
   };
 };
 
@@ -162,9 +168,21 @@ const findDirectOfferClickGoalConversion = async ({ identity, conversionModel })
   if (!identity || typeof conversionModel?.findOne !== 'function') return null;
   const byKey = await conversionModel.findOne({ idempotencyKey: identity.idempotencyKey });
   if (byKey) return byKey;
-  // The click/goal lookup also protects conversions created before the stable
-  // idempotency key was introduced.
-  return conversionModel.findOne(identity.query);
+
+  // User + offer + goal lookup protects conversions created before the stable
+  // reward-scoped idempotency key was introduced. offerId is the current field;
+  // campaignId covers older rows written before it was populated.
+  const byOffer = await conversionModel.findOne({ ...identity.query, offerId: identity.offerId });
+  if (byOffer) return byOffer;
+  return conversionModel.findOne({ ...identity.query, campaignId: identity.offerId });
+};
+
+const conversionBelongsToClick = (conversion, clickLog) => {
+  if (!conversion || !clickLog) return false;
+  return (
+    String(conversion.clickLogId || '') === String(clickLog._id || '') ||
+    String(conversion.clickId || '') === String(clickLog.clickId || '')
+  );
 };
 
 const createOrResolveConversion = async ({
@@ -178,22 +196,32 @@ const createOrResolveConversion = async ({
   rewardAmount = null,
   conversionModel = Conversion,
 }) => {
-  const directOfferIdentity = getDirectOfferClickGoalIdentity({ providerConfig, clickLog, goalKey });
+  const directOfferIdentity = getDirectOfferRewardIdentity({ providerConfig, clickLog, goalKey });
   const existingDirectConversion = await findDirectOfferClickGoalConversion({
     identity: directOfferIdentity,
     conversionModel,
   });
 
-  if (
-    existingDirectConversion &&
-    String(existingDirectConversion.providerTransactionId || '') !== String(mapped.transactionId || '')
-  ) {
-    return {
-      conversion: existingDirectConversion,
-      isDuplicate: true,
-      shouldProcess: false,
-      transition: 'direct_click_goal_already_recorded',
-    };
+  if (existingDirectConversion) {
+    if (!conversionBelongsToClick(existingDirectConversion, clickLog)) {
+      return {
+        conversion: existingDirectConversion,
+        isDuplicate: true,
+        shouldProcess: false,
+        transition: 'direct_offer_goal_already_rewarded',
+      };
+    }
+
+    if (
+      String(existingDirectConversion.providerTransactionId || '') !== String(mapped.transactionId || '')
+    ) {
+      return {
+        conversion: existingDirectConversion,
+        isDuplicate: true,
+        shouldProcess: false,
+        transition: 'direct_click_goal_already_recorded',
+      };
+    }
   }
 
   const payload = {
@@ -245,6 +273,14 @@ const createOrResolveConversion = async ({
         existing = await findDirectOfferClickGoalConversion({ identity: directOfferIdentity, conversionModel });
       }
       if (existing) {
+        if (directOfferIdentity && !conversionBelongsToClick(existing, clickLog)) {
+          return {
+            conversion: existing,
+            isDuplicate: true,
+            shouldProcess: false,
+            transition: 'direct_offer_goal_already_rewarded',
+          };
+        }
         if (
           directOfferIdentity &&
           String(existing.providerTransactionId || '') !== String(mapped.transactionId || '')

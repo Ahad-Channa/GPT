@@ -154,6 +154,7 @@ conversionSchema.index(
 );
 
 conversionSchema.index({ providerId: 1, clickId: 1, eventType: 1, createdAt: -1 });
+conversionSchema.index({ providerId: 1, userId: 1, offerId: 1, goalKey: 1 });
 conversionSchema.index({ userId: 1, createdAt: -1 });
 conversionSchema.index({ campaignType: 1, campaignId: 1, createdAt: -1 });
 conversionSchema.index({ rewardTransactionId: 1 }, { sparse: true });

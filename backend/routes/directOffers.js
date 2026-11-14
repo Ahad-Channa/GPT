@@ -13,6 +13,7 @@ const { processVipLevelUp } = require('../utils/vipUtils');
 const {
   buildRedirectUrl,
   createDirectOfferClick,
+  findExistingDirectOfferClick,
   releaseDirectOfferClickSlot,
   reserveDirectOfferClickSlot,
 } = require('../services/tracking/clickService');
@@ -255,20 +256,28 @@ router.post('/click/:offerId', verifyToken, fraudCheck('offer_click', 'full'), a
       return startManualOfferClick({ req, res, user, offer, placement });
     }
 
-    // Check if user already has an approved click (prevent double-earn attempt)
-    const existingApproved = await ClickLog.findOne({
-      offerId: offer._id, userId: user._id, status: 'approved',
+    // One canonical click per user and offer. Returning the existing click keeps
+    // unfinished multi-step goals on the original tracked click and prevents a
+    // second click ID from becoming another rewardable attempt.
+    const existingClick = await findExistingDirectOfferClick({
+      userId: user._id,
+      offerId: offer._id,
     });
-    if (existingApproved) {
-      // Already approved — just return the URL so they can revisit
-      const redirectUrl = buildRedirectUrl({
+    if (existingClick) {
+      const redirectUrl = existingClick.redirectUrl || buildRedirectUrl({
         destinationUrl: offer.advertiserUrl,
-        clickId: existingApproved.clickId,
+        clickId: existingClick.clickId,
         userId: user._id,
         offerId: offer._id,
         clickIdParam: offer.postbackMapping?.clickIdParam || 'click_id',
       });
-      return res.status(200).json({ success: true, url: redirectUrl, clickId: existingApproved.clickId, alreadyApproved: true });
+      return res.status(200).json({
+        success: true,
+        url: redirectUrl,
+        clickId: existingClick.clickId,
+        alreadyApproved: existingClick.status === 'approved',
+        alreadyStarted: true,
+      });
     }
 
     // Atomically reserve one total-click slot. This is the ONLY place totalClicks
@@ -296,7 +305,16 @@ router.post('/click/:offerId', verifyToken, fraudCheck('offer_click', 'full'), a
       throw error;
     }
 
-    return res.status(200).json({ success: true, url: clickResult.redirectUrl, clickId: clickResult.clickId });
+    if (clickResult.reused) {
+      await releaseDirectOfferClickSlot({ offerId: offer._id });
+    }
+
+    return res.status(200).json({
+      success: true,
+      url: clickResult.redirectUrl,
+      clickId: clickResult.clickId,
+      alreadyStarted: Boolean(clickResult.reused),
+    });
   } catch (error) {
     console.error('[POST /api/direct-offers/click/:offerId] Error:', error);
     return res.status(error.statusCode || 500).json({ success: false, error: error.statusCode ? error.message : 'Failed to process click' });

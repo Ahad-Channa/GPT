@@ -6,6 +6,7 @@ const ClickLog = require('../models/ClickLog');
 const DirectOffer = require('../models/DirectOffer');
 const {
   assertDirectOfferAvailable,
+  buildDirectOfferClaimKey,
   buildRedirectUrl,
   createClick,
   createDirectOfferClick,
@@ -92,6 +93,7 @@ test('createDirectOfferClick creates a legacy-compatible direct-offer ClickLog',
   assert.equal(clickLog.providerType, 'direct_offer');
   assert.equal(clickLog.campaignType, 'direct_offer');
   assert.equal(clickLog.campaignId.toString(), offerId.toString());
+  assert.equal(clickLog.directOfferClaimKey, buildDirectOfferClaimKey(userId, offerId));
   assert.equal(clickLog.country, 'US');
   assert.equal(clickLog.rewardSnapshot.amount, 500);
   assert.equal(clickLog.trackingParams.placement, 'featured');
