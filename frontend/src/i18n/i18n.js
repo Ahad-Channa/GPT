@@ -1,18 +1,20 @@
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
 import LanguageDetector from 'i18next-browser-languagedetector';
+import {
+  DEFAULT_LOCALE,
+  buildLocaleRegistry,
+  createOverloadHandler,
+  createMissingKeyHandler,
+  resolveSupportedLocale,
+} from './localeRegistry.js';
 
-import en from './en.json';
-import de from './de.json';
-import fr from './fr.json';
-import ur from './ur.json';
+// Every ./<code>.json file is a supported language (see localeRegistry.js).
+const { resources, codes: supportedLanguageCodes } = buildLocaleRegistry(
+  import.meta.glob('./*.json', { eager: true })
+);
 
-const resources = {
-  en: { translation: en },
-  de: { translation: de },
-  fr: { translation: fr },
-  ur: { translation: ur },
-};
+export const supportedLanguages = supportedLanguageCodes;
 
 const hasFunctionalConsent = () => {
   if (typeof window === 'undefined') return false;
@@ -27,16 +29,13 @@ const hasFunctionalConsent = () => {
 };
 
 const getInitialLanguage = () => {
-  if (typeof window === 'undefined') return 'en';
+  if (typeof window === 'undefined') return DEFAULT_LOCALE;
   if (hasFunctionalConsent()) {
     const saved = localStorage.getItem('i18nextLng');
-    if (saved) {
-      const match = Object.keys(resources).find((code) => saved.toLowerCase() === code.toLowerCase() || saved.toLowerCase().startsWith(`${code.toLowerCase()}-`));
-      if (match) return match;
-    }
+    if (saved) return resolveSupportedLocale(saved, supportedLanguageCodes);
   }
-  // Default without functional consent: English
-  return 'en';
+  // Default without functional consent: the default locale
+  return DEFAULT_LOCALE;
 };
 
 const canPersist = hasFunctionalConsent();
@@ -46,11 +45,17 @@ i18n
   .use(initReactI18next)
   .init({
     resources,
-    fallbackLng: 'en',
+    supportedLngs: supportedLanguageCodes,
+    // Deliberate missing-translation policy (details in localeRegistry.js):
+    // no silent English fallback; a missing key shows localized
+    // "translation unavailable" text instead.
+    fallbackLng: false,
     lng: getInitialLanguage(),
     interpolation: {
       escapeValue: false // React already escapes
     },
+    overloadTranslationOptionHandler: createOverloadHandler(() => i18n.language),
+    parseMissingKeyHandler: createMissingKeyHandler(resources, () => i18n.language),
     detection: {
       order: canPersist ? ['localStorage', 'cookie', 'htmlTag'] : [],
       caches: canPersist ? ['localStorage'] : [],
@@ -61,13 +66,13 @@ i18n
 // Global listeners for consent changes
 if (typeof window !== 'undefined') {
   window.addEventListener('taskmint_reset_functional_preferences', () => {
-    i18n.changeLanguage('en');
+    i18n.changeLanguage(DEFAULT_LOCALE);
     localStorage.removeItem('i18nextLng');
     document.cookie = 'i18nextLng=; max-age=0; path=/; SameSite=Lax';
   });
 
   window.addEventListener('taskmint_functional_consent_granted', (e) => {
-    const lang = e.detail?.lang || i18n.language || 'en';
+    const lang = e.detail?.lang || i18n.language || DEFAULT_LOCALE;
     localStorage.setItem('i18nextLng', lang);
     document.cookie = `i18nextLng=${lang}; max-age=31536000; path=/; SameSite=Lax`;
   });

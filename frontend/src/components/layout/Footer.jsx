@@ -77,7 +77,7 @@ const Footer = () => {
                 ? (isDarkMode ? "/coins/image copy 21.png" : "/coins/image copy 18.png")
                 : "/coins/image copy 16.png"
             }
-            alt="Background graphics"
+            alt="" aria-hidden="true"
             className="absolute bottom-0 left-0 w-full h-auto z-0 pointer-events-none object-contain object-left-bottom"
             style={{
               maxHeight: '100%',
@@ -381,7 +381,7 @@ const Footer = () => {
                           )
                       )
                 }
-                alt="Top Earner Graphic"
+                alt="" aria-hidden="true"
                 className="pointer-events-none w-full h-full object-contain lg:object-right"
                 style={{
                   width: isMobile ? 424 : '100%',

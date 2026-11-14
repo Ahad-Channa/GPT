@@ -11,12 +11,15 @@ import { writeClipboardText } from '../../utils/clipboard';
 import { createAdminApi } from '../../utils/adminApi';
 import { getEnabledGoalRewardTotal, formatGoalLabel } from '../../utils/offerGoalDisplay.js';
 import { buildDirectOfferTextPayload } from '../../utils/directOfferPayload.js';
+import { getGoalTranslation } from '../../utils/offerTranslations.js';
 import {
   buildConfiguredPostbackExample,
   getEnabledPostbackGoals,
   maskPostbackSecret,
 } from '../../utils/postbackGuide.js';
-import i18n from '../../i18n/i18n';
+import { supportedLanguages } from '../../i18n/i18n';
+import { REQUIRED_OFFER_LOCALE, getLocaleNativeName } from '../../i18n/localeRegistry.js';
+import { validateOfferText } from '../../utils/offerLocalePolicy.js';
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
@@ -43,8 +46,9 @@ const PRESET_ICONS = [
 ];
 
 const MAX_GOALS = 25;
-const LOCALE_NAMES = { en: 'English', de: 'Deutsch', fr: 'Français', ur: 'اردو' };
-const supportedLocales = () => Object.keys(i18n.options?.resources || { en: {}, de: {}, fr: {}, ur: {} });
+// Languages come from the central locale registry (src/i18n/localeRegistry.js).
+const supportedLocales = () => supportedLanguages;
+const localeLabel = (locale) => getLocaleNativeName(locale);
 const seedTranslations = (offer) => {
   const map = offer?.translations && typeof offer.translations === 'object' ? { ...offer.translations } : {};
   for (const locale of supportedLocales()) {
@@ -149,7 +153,7 @@ const CountryTagInput = ({ value, onChange, inputCls }) => {
 // ─── Create / Edit Offer Modal ────────────────────────────────────────────────
 const OfferFormModal = ({ offer, onClose, onSaved, adminApi }) => {
   const isEdit = Boolean(offer);
-  const [activeLanguage, setActiveLanguage] = useState('en');
+  const [activeLanguage, setActiveLanguage] = useState(REQUIRED_OFFER_LOCALE);
   const [translations, setTranslations] = useState(() => seedTranslations(offer));
   const [form, setForm] = useState({
     title: offer?.title || '',
@@ -200,6 +204,7 @@ const OfferFormModal = ({ offer, onClose, onSaved, adminApi }) => {
 
   const set = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.value }));
   const localized = translations[activeLanguage] || {};
+  const isRequiredLocale = activeLanguage === REQUIRED_OFFER_LOCALE;
   const setLocalized = (field, value) => setTranslations((current) => ({
     ...current,
     [activeLanguage]: { ...(current[activeLanguage] || {}), [field]: value },
@@ -216,8 +221,10 @@ const OfferFormModal = ({ offer, onClose, onSaved, adminApi }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
-    if (!String(translations.en?.title || '').trim() || !String(translations.en?.description || '').trim()) {
-      return setError('Please add the English title and description before saving.');
+    const textCheck = validateOfferText(translations);
+    if (!textCheck.valid) {
+      setActiveLanguage(textCheck.locale);
+      return setError(`Please add the ${localeLabel(textCheck.locale)} ${textCheck.missingFields.join(' and ')} before saving. ${localeLabel(textCheck.locale)} is the required base language; all other languages are optional.`);
     }
     const parsedHoldDays = Number(form.holdDays);
     const parsedHoldThreshold = Number(form.holdThreshold);
@@ -319,13 +326,13 @@ const OfferFormModal = ({ offer, onClose, onSaved, adminApi }) => {
 
           <section className="rounded-xl border border-indigo-500/20 bg-indigo-500/[0.04] p-3 space-y-3">
             <div className="flex items-center justify-between gap-3">
-              <div><p className="text-xs font-semibold text-white">Offer text by language</p><p className="text-[11px] text-slate-500">Choose one language at a time. Website languages are loaded dynamically.</p></div>
+              <div><p className="text-xs font-semibold text-white">Offer text by language</p><p className="text-[11px] text-slate-500">Choose one language at a time. {localeLabel(REQUIRED_OFFER_LOCALE)} title and description are required (base language); every other language is optional. Users in a language with no translation see a “translation unavailable” notice instead of another language’s text.</p></div>
               <select className="bg-[#182338] border border-white/10 rounded-lg px-3 py-2 text-sm text-white" value={activeLanguage} onChange={(e) => setActiveLanguage(e.target.value)}>
-                {supportedLocales().map((locale) => <option key={locale} value={locale}>{LOCALE_NAMES[locale] || locale}</option>)}
+                {supportedLocales().map((locale) => <option key={locale} value={locale}>{localeLabel(locale)}</option>)}
               </select>
             </div>
-            <div><label className={labelCls}>Offer Title {activeLanguage === 'en' ? '*' : ''}</label><input className={inputCls} value={localized.title || ''} onChange={(e) => setLocalized('title', e.target.value)} required={activeLanguage === 'en'} placeholder="Offer title" /></div>
-            <div><label className={labelCls}>Description {activeLanguage === 'en' ? '*' : ''}</label><textarea className={inputCls} rows={3} value={localized.description || ''} onChange={(e) => setLocalized('description', e.target.value)} required={activeLanguage === 'en'} placeholder="Description shown to users" /></div>
+            <div><label className={labelCls}>Offer Title {isRequiredLocale ? '*' : ''}</label><input className={inputCls} value={localized.title || ''} onChange={(e) => setLocalized('title', e.target.value)} required={isRequiredLocale} placeholder="Offer title" /></div>
+            <div><label className={labelCls}>Description {isRequiredLocale ? '*' : ''}</label><textarea className={inputCls} rows={3} value={localized.description || ''} onChange={(e) => setLocalized('description', e.target.value)} required={isRequiredLocale} placeholder="Description shown to users" /></div>
             <div><label className={labelCls}>Requirements</label><textarea className={inputCls} rows={3} value={Array.isArray(localized.requirements) ? localized.requirements.join('\n') : (localized.requirements || '')} onChange={(e) => setLocalized('requirements', e.target.value)} placeholder="One requirement per line" /></div>
             {isManual && <div><label className={labelCls}>Proof Instructions</label><textarea className={inputCls} rows={2} value={localized.proofInstructions || ''} onChange={(e) => setLocalized('proofInstructions', e.target.value)} placeholder="Instructions shown when submitting proof" /></div>}
           </section>
@@ -588,7 +595,7 @@ const OfferFormModal = ({ offer, onClose, onSaved, adminApi }) => {
                         <input className={inputCls} value={goal.goalKey} onChange={e => setForm(f => ({ ...f, goals: f.goals.map((g, i) => i === idx ? { ...g, goalKey: e.target.value } : g) }))} placeholder="e.g. registration, deposit, level_5" />
                       </div>
                       <div className="col-span-2">
-                        <label className={labelCls}>Step label ({LOCALE_NAMES[activeLanguage] || activeLanguage})</label>
+                        <label className={labelCls}>Step label ({localeLabel(activeLanguage)})</label>
                         <input className={inputCls} value={getGoalTranslation(goal, activeLanguage).label || ''} onChange={e => setGoalLocalized(idx, 'label', e.target.value)} placeholder="e.g. Fight 20 Battles" />
                       </div>
                       <div>
@@ -628,7 +635,7 @@ const OfferFormModal = ({ offer, onClose, onSaved, adminApi }) => {
                       </div>
                     </div>
                     <div>
-                      <label className={labelCls}>Step description ({LOCALE_NAMES[activeLanguage] || activeLanguage})</label>
+                      <label className={labelCls}>Step description ({localeLabel(activeLanguage)})</label>
                       <input className={inputCls} value={getGoalTranslation(goal, activeLanguage).description || ''} onChange={e => setGoalLocalized(idx, 'description', e.target.value)} placeholder="Optional step description" />
                     </div>
                   </div>

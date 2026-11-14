@@ -124,6 +124,7 @@
     "liveFeed": "Flux en direct"
   },
   "languageToggle": {
+    "change": "Changer de langue",
     "en": "EN",
     "de": "DE",
     "ur": "UR",
@@ -300,6 +301,7 @@
     "paypalDisclaimer": "***Vérifiez attentivement votre adresse email PayPal. Une fois validé, ce retrait est irréversible. Nous déclinons toute responsabilité en cas d'adresse erronée.",
     "processingFees": "Frais de Traitement ({{percent}}%)",
     "method": "Méthode",
+    "giftCardHint": "La carte cadeau sera envoyée par e-mail sous 1 à 3 jours ouvrables.",
     "giftCard": "Carte Cadeau",
     "destination": "Destinataire",
     "confirmDisclaimer": "Cette action est irréversible. Vos pièces seront déduites immédiatement et la demande sera vérifiée par notre équipe.",

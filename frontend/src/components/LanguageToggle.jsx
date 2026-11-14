@@ -3,6 +3,8 @@ import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTheme } from '../contexts/ThemeContext';
 import { useCookieConsent } from '../contexts/CookieConsentContext';
+import { supportedLanguages } from '../i18n/i18n';
+import { LOCALE_FLAGS, DEFAULT_LOCALE, getLocaleNativeName, resolveSupportedLocale } from '../i18n/localeRegistry.js';
 
 const LanguageToggle = ({
   style,
@@ -11,16 +13,14 @@ const LanguageToggle = ({
   showArrowOnMobile = false,
   dropdownAlign = 'left',
 }) => {
-  const { i18n } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { isDarkMode } = useTheme();
   const cookieConsent = useCookieConsent();
   const hasConsent = cookieConsent?.hasConsent;
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef(null);
 
-  const currentLang = Object.keys(i18n.options?.resources || {}).find((code) =>
-    String(i18n.resolvedLanguage || i18n.language || 'en').toLowerCase().startsWith(code.toLowerCase())
-  ) || 'en';
+  const currentLang = resolveSupportedLocale(i18n.resolvedLanguage || i18n.language, supportedLanguages, DEFAULT_LOCALE);
 
   const selectLanguage = (lang) => {
     i18n.changeLanguage(lang);
@@ -78,7 +78,7 @@ const LanguageToggle = ({
           WebkitTapHighlightColor: 'transparent',
           ...style,
         }}
-        title="Change Language"
+        title={t('languageToggle.change', 'Change language')}
       >
         {/* Flag Icon: 20x20 on mobile, 24x24 on desktop */}
         <div
@@ -89,16 +89,8 @@ const LanguageToggle = ({
           }}
         >
           <img
-            src={
-              currentLang === 'en'
-                ? '/coins/EN.png'
-                : currentLang === 'de'
-                  ? '/coins/DE.svg'
-                  : currentLang === 'fr'
-                    ? '/coins/FR.svg'
-                    : '/coins/PK.svg'
-            }
-            alt={currentLang === 'en' ? 'EN Flag' : currentLang === 'de' ? 'DE Flag' : currentLang === 'fr' ? 'FR Flag' : 'UR Flag'}
+            src={LOCALE_FLAGS[currentLang] || LOCALE_FLAGS[DEFAULT_LOCALE]}
+            alt=""
             className="w-full h-full object-cover"
           />
         </div>
@@ -164,149 +156,44 @@ const LanguageToggle = ({
               boxSizing: 'border-box',
             }}
           >
-            {/* 1. English */}
-            <button
-              type="button"
-              onClick={() => selectLanguage('en')}
-              className="flex items-center justify-between w-full py-1 cursor-pointer bg-transparent border-0 hover:opacity-75 transition-opacity"
-            >
-              <span
-                style={{
-                  fontFamily: 'Poppins, sans-serif',
-                  fontWeight: currentLang === 'en' ? 600 : 400,
-                  fontSize: '15px',
-                  lineHeight: '20px',
-                  color: currentLang === 'en' ? (isDarkMode ? '#FFFFFF' : '#0E0F0C') : (isDarkMode ? '#9CA3AF' : '#8E8E93'),
-                }}
-              >
-                English
-              </span>
-              <div className="w-[24px] h-[24px] rounded-full overflow-hidden shrink-0 flex items-center justify-center">
-                <img
-                  src="/coins/EN.png"
-                  alt="English Flag"
-                  className="w-full h-full object-cover"
-                />
-              </div>
-            </button>
-
-            {/* Divider */}
-            <div
-              style={{
-                width: '100%',
-                height: '1px',
-                background: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.06)',
-                margin: '8px 0',
-                flexShrink: 0,
-              }}
-            />
-
-            {/* 2. German */}
-            <button
-              type="button"
-              onClick={() => selectLanguage('de')}
-              className="flex items-center justify-between w-full py-1 cursor-pointer bg-transparent border-0 hover:opacity-75 transition-opacity"
-            >
-              <span
-                style={{
-                  fontFamily: 'Poppins, sans-serif',
-                  fontWeight: currentLang === 'de' ? 600 : 400,
-                  fontSize: '15px',
-                  lineHeight: '20px',
-                  color: currentLang === 'de' ? (isDarkMode ? '#FFFFFF' : '#0E0F0C') : (isDarkMode ? '#9CA3AF' : '#8E8E93'),
-                }}
-              >
-                Deutsch
-              </span>
-              <div className="w-[24px] h-[24px] rounded-full overflow-hidden shrink-0 flex items-center justify-center">
-                <img
-                  src="/coins/DE.svg"
-                  alt="German Flag"
-                  className="w-full h-full object-cover"
-                />
-              </div>
-            </button>
-
-            {/* Divider */}
-            <div
-              style={{
-                width: '100%',
-                height: '1px',
-                background: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.06)',
-                margin: '8px 0',
-                flexShrink: 0,
-              }}
-            />
-
-            {/* 3. French */}
-            <button
-              type="button"
-              onClick={() => selectLanguage('fr')}
-              className="flex items-center justify-between w-full py-1 cursor-pointer bg-transparent border-0 hover:opacity-75 transition-opacity"
-            >
-              <span
-                style={{
-                  fontFamily: 'Poppins, sans-serif',
-                  fontWeight: currentLang === 'fr' ? 600 : 400,
-                  fontSize: '15px',
-                  lineHeight: '20px',
-                  color: currentLang === 'fr' ? (isDarkMode ? '#FFFFFF' : '#0E0F0C') : (isDarkMode ? '#9CA3AF' : '#8E8E93'),
-                }}
-              >
-                Français
-              </span>
-              <div className="w-[24px] h-[24px] rounded-full overflow-hidden shrink-0 flex items-center justify-center">
-                <img
-                  src="/coins/FR.svg"
-                  alt="French Flag"
-                  className="w-full h-full object-cover"
-                />
-              </div>
-            </button>
-
-            {/* Divider */}
-            <div
-              style={{
-                width: '100%',
-                height: '1px',
-                background: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.06)',
-                margin: '8px 0',
-                flexShrink: 0,
-              }}
-            />
-
-            {/* 4. Urdu */}
-            <button
-              type="button"
-              onClick={() => selectLanguage('ur')}
-              className="flex items-center justify-between w-full py-1 cursor-pointer bg-transparent border-0 hover:opacity-75 transition-opacity"
-            >
-              <span
-                style={{
-                  fontFamily: 'Poppins, sans-serif',
-                  fontWeight: currentLang === 'ur' ? 600 : 400,
-                  fontSize: '15px',
-                  lineHeight: '20px',
-                  color: currentLang === 'ur' ? (isDarkMode ? '#FFFFFF' : '#0E0F0C') : (isDarkMode ? '#9CA3AF' : '#8E8E93'),
-                }}
-              >
-                Urdu (اردو)
-              </span>
-              <div className="w-[24px] h-[24px] rounded-full overflow-hidden shrink-0 flex items-center justify-center">
-                <img
-                  src="/coins/PK.svg"
-                  alt="Urdu Flag"
-                  className="w-full h-full object-cover"
-                />
-              </div>
-            </button>
-            {Object.keys(i18n.options?.resources || {}).filter((lang) => !['en', 'de', 'fr', 'ur'].includes(lang)).map((lang) => (
-              <button key={lang} type="button" onClick={() => selectLanguage(lang)} className="flex items-center justify-between w-full py-2 cursor-pointer bg-transparent border-0 hover:opacity-75 transition-opacity">
-                <span style={{ fontFamily: 'Poppins, sans-serif', fontWeight: currentLang === lang ? 600 : 400, fontSize: '15px', color: currentLang === lang ? (isDarkMode ? '#FFFFFF' : '#0E0F0C') : (isDarkMode ? '#9CA3AF' : '#8E8E93') }}>
-                  {new Intl.DisplayNames([lang], { type: 'language' }).of(lang) || lang}
-                </span>
-                <span className="text-xs uppercase text-slate-400">{lang}</span>
-              </button>
+            {supportedLanguages.map((lang, index) => (
+              <React.Fragment key={lang}>
+                {index > 0 && (
+                  <div
+                    style={{
+                      width: '100%',
+                      height: '1px',
+                      background: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.06)',
+                      margin: '8px 0',
+                      flexShrink: 0,
+                    }}
+                  />
+                )}
+                <button
+                  type="button"
+                  onClick={() => selectLanguage(lang)}
+                  className="flex items-center justify-between w-full py-1 cursor-pointer bg-transparent border-0 hover:opacity-75 transition-opacity"
+                >
+                  <span
+                    style={{
+                      fontFamily: 'Poppins, sans-serif',
+                      fontWeight: currentLang === lang ? 600 : 400,
+                      fontSize: '15px',
+                      lineHeight: '20px',
+                      color: currentLang === lang ? (isDarkMode ? '#FFFFFF' : '#0E0F0C') : (isDarkMode ? '#9CA3AF' : '#8E8E93'),
+                    }}
+                  >
+                    {getLocaleNativeName(lang)}
+                  </span>
+                  {LOCALE_FLAGS[lang] ? (
+                    <div className="w-[24px] h-[24px] rounded-full overflow-hidden shrink-0 flex items-center justify-center">
+                      <img src={LOCALE_FLAGS[lang]} alt="" className="w-full h-full object-cover" />
+                    </div>
+                  ) : (
+                    <span className="text-xs uppercase text-slate-400">{lang}</span>
+                  )}
+                </button>
+              </React.Fragment>
             ))}
           </motion.div>
         )}
