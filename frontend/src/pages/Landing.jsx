@@ -322,9 +322,12 @@ const Landing = () => {
                   fontWeight: 800,
                   fontSize: (() => {
                     const l = (t('heroGraphic.freeBadge') || '').length;
-                    return l <= 4 ? '13px' : (l <= 7 ? '11.5px' : '10px');
+                    return l <= 4 ? '13px' : (l <= 7 ? '11px' : '7.8px');
                   })(),
-                  letterSpacing: '0.04em',
+                  letterSpacing: (() => {
+                    const l = (t('heroGraphic.freeBadge') || '').length;
+                    return l <= 7 ? '0.04em' : '-0.02em';
+                  })(),
                   color: '#24324D',
                 }}
               >
@@ -1014,9 +1017,12 @@ const Landing = () => {
                         fontWeight: 800,
                         fontSize: (() => {
                           const l = (t('heroGraphic.freeBadge') || '').length;
-                          return l <= 4 ? '10px' : (l <= 7 ? '8.5px' : '7.5px');
+                          return l <= 4 ? '10px' : (l <= 7 ? '8.5px' : '5.8px');
                         })(),
-                        letterSpacing: '0.04em',
+                        letterSpacing: (() => {
+                          const l = (t('heroGraphic.freeBadge') || '').length;
+                          return l <= 7 ? '0.04em' : '-0.02em';
+                        })(),
                         color: '#24324D',
                       }}
                     >

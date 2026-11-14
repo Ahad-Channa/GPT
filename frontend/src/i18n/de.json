@@ -568,7 +568,9 @@
     "support": "Support",
     "leaveReview": "Bewertung schreiben",
     "copyright": "© {{year}} TaskMint",
-    "changeToLightMode": "Light Mode aktivieren"
+    "changeToLightMode": "Light Mode aktivieren",
+    "nextTopEarnerTitle": "Wirst du der nächste Top-Verdiener?",
+    "nextTopEarnerDesc": "Aufgaben erledigen, Ränge erklimmen und Preise gewinnen."
   },
   "policies": {
     "title": "Richtlinien",

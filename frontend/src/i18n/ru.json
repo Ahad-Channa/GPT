@@ -568,7 +568,9 @@
     "support": "Поддержка",
     "leaveReview": "Оставить отзыв",
     "copyright": "© {{year}} TaskMint",
-    "changeToLightMode": "Переключить на светлую тему"
+    "changeToLightMode": "Переключить на светлую тему",
+    "nextTopEarnerTitle": "Станете ли вы лидером заработка?",
+    "nextTopEarnerDesc": "Выполняйте задания, поднимайтесь в рейтинге и получайте призы."
   },
   "policies": {
     "title": "Политики",

@@ -226,15 +226,6 @@ const VipPage = () => {
               >
                 {t('vipPage.pageTitle', 'VIP Status')}
               </h1>
-              <span
-                className="text-[12px] sm:text-[13px] font-medium"
-                style={{
-                  fontFamily: '"Poppins", sans-serif',
-                  color: isDarkMode ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.6)',
-                }}
-              >
-                {t('vipPage.pageSubtitle', 'Higher rewards. Bigger perks. More earning power.')}
-              </span>
             </div>
 
             {/* Top Status Card (rgba(34, 39, 48, 1) in dark mode) */}

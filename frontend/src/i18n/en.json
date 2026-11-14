@@ -569,7 +569,9 @@
     "support": "Support",
     "leaveReview": "Leave a review",
     "copyright": "© {{year}} TaskMint",
-    "changeToLightMode": "Change to light mode"
+    "changeToLightMode": "Change to light mode",
+    "nextTopEarnerTitle": "Will You Be The Next Top Earner?",
+    "nextTopEarnerDesc": "Complete tasks, climb the ranks, and win prizes."
   },
   "policies": {
     "title": "Policies",

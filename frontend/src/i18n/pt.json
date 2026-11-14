@@ -569,7 +569,9 @@
     "support": "Suporte",
     "leaveReview": "Deixar uma avaliação",
     "copyright": "© {{year}} TaskMint",
-    "changeToLightMode": "Mudar para modo claro"
+    "changeToLightMode": "Mudar para modo claro",
+    "nextTopEarnerTitle": "Você será o próximo líder de ganhos?",
+    "nextTopEarnerDesc": "Conclua tarefas, suba no ranking e ganhe prêmios."
   },
   "policies": {
     "title": "Políticas",

@@ -568,7 +568,9 @@
     "support": "سپورٹ و رہنمائی",
     "leaveReview": "رائے دیں",
     "copyright": "© {{year}} TaskMint",
-    "changeToLightMode": "لائٹ موڈ آن کریں"
+    "changeToLightMode": "لائٹ موڈ آن کریں",
+    "nextTopEarnerTitle": "کیا آپ اگلے ٹاپ ارنر بنیں گے؟",
+    "nextTopEarnerDesc": "ٹاسک مکمل کریں، رینک میں آگے بڑھیں اور انعامات جیتیں۔"
   },
   "policies": {
     "title": "پالیسیاں",

@@ -97,18 +97,13 @@ const PromoCodeRedeem = ({ onSuccess }) => {
     <>
       <motion.div
         variants={item}
-        className="w-full flex flex-col justify-between shrink-0 shadow-sm"
+        className="w-full flex flex-col justify-between shrink-0 shadow-sm p-4 sm:pt-[36px] sm:pr-[28px] sm:pb-[39px] sm:pl-[30px] gap-4 sm:gap-[25px]"
         style={{
           width: '100%',
           maxWidth: '1328px',
           minHeight: '212px',
           borderRadius: '30px',
           background: isDarkMode ? 'rgba(34, 39, 48, 1)' : 'rgba(249, 247, 241, 1)',
-          paddingTop: '36px',
-          paddingRight: '28px',
-          paddingBottom: '39px',
-          paddingLeft: '30px',
-          gap: '25px',
           boxSizing: 'border-box',
           opacity: 1,
         }}
@@ -160,16 +155,12 @@ const PromoCodeRedeem = ({ onSuccess }) => {
 
         <form
           onSubmit={handleRedeem}
-          className="w-full flex items-center justify-between shadow-none border-none outline-none"
+          className="w-full flex items-center justify-between shadow-none border-none outline-none pl-3.5 sm:pl-[25px] pr-1.5 sm:pr-[10px]"
           style={{
             width: '100%',
             maxWidth: '1270px',
             height: '66px',
             borderRadius: '50px',
-            paddingTop: '8px',
-            paddingRight: '10px',
-            paddingBottom: '9px',
-            paddingLeft: '25px',
             background: isDarkMode ? 'rgba(12, 14, 17, 0.5)' : 'rgba(255, 255, 255, 1)',
             justifyContent: 'space-between',
             boxSizing: 'border-box',
@@ -181,11 +172,10 @@ const PromoCodeRedeem = ({ onSuccess }) => {
             value={code}
             onChange={(e) => setCode(e.target.value.toUpperCase())}
             placeholder={t('withdraw.promoPlaceholder', 'Enter code here')}
-            className={`w-full bg-transparent border-none outline-none p-0 uppercase ${isDarkMode ? 'placeholder:text-white/40' : 'placeholder:text-black/56'}`}
+            className={`w-full min-w-0 bg-transparent border-none outline-none p-0 uppercase text-[12.5px] sm:text-[14px] placeholder:text-[11.5px] sm:placeholder:text-[14px] ${isDarkMode ? 'placeholder:text-white/40' : 'placeholder:text-black/56'}`}
             style={{
               fontFamily: '"Poppins", sans-serif',
               fontWeight: 400,
-              fontSize: '14px',
               lineHeight: '20px',
               letterSpacing: '0%',
               color: isDarkMode ? '#94A3B8' : 'rgba(0, 0, 0, 1)',
@@ -195,7 +185,7 @@ const PromoCodeRedeem = ({ onSuccess }) => {
           <button
             type="submit"
             disabled={loading || !code.trim()}
-            className={`h-[44px] sm:h-[48px] px-8 sm:px-10 rounded-full ${isDarkMode ? 'bg-[rgba(36,50,77,1)] hover:bg-[rgba(45,63,98,1)]' : 'bg-[#1E2538] hover:bg-[#151b29]'} text-white font-semibold text-[15px] flex items-center justify-center shrink-0 transition-all disabled:opacity-40 cursor-pointer disabled:cursor-not-allowed shadow-sm`}
+            className={`h-[44px] sm:h-[48px] px-5 sm:px-10 rounded-full ${isDarkMode ? 'bg-[rgba(36,50,77,1)] hover:bg-[rgba(45,63,98,1)]' : 'bg-[#1E2538] hover:bg-[#151b29]'} text-white font-semibold text-[14px] sm:text-[15px] flex items-center justify-center shrink-0 transition-all disabled:opacity-40 cursor-pointer disabled:cursor-not-allowed shadow-sm ml-2`}
             style={{ fontFamily: '"Poppins", sans-serif' }}
           >
             {loading ? '...' : t('withdraw.promoRedeem', 'Redeem')}
@@ -284,6 +274,7 @@ const DEFAULT_WALLET_SETTINGS = {
 const Wallet = () => {
   const { t, i18n } = useTranslation();
   const isDe = i18n?.language?.startsWith('de');
+  const isUr = i18n?.language === 'ur' || i18n?.language?.startsWith('ur');
   const { currentUser, mongoUser, setMongoUser } = useAuth();
   const { isDarkMode } = useTheme();
   const [showWithdraw, setShowWithdraw] = useState(false);
@@ -780,7 +771,8 @@ const Wallet = () => {
                   style={{
                     width: '100%',
                     maxWidth: '416px',
-                    height: '252px',
+                    aspectRatio: '832 / 504',
+                    maxHeight: '252px',
                     borderRadius: '24px',
                     opacity: 1,
                   }}
@@ -788,7 +780,7 @@ const Wallet = () => {
                   <img
                     src="/coins/bookcardbox3_base.png"
                     alt="Your Books"
-                    className="w-full h-full object-contain pointer-events-none select-none"
+                    className="w-full h-full object-cover pointer-events-none select-none"
                   />
 
                   {/* Box 1 & Box 2: Personal Signature & Shipping Germany */}
@@ -797,35 +789,54 @@ const Wallet = () => {
                     const l2 = (t('withdraw.bookCardSignatureLine2', 'possible') || '').length;
                     const l3 = (t('withdraw.bookCardShippingLine1', 'Shipping only') || '').length;
                     const l4 = (t('withdraw.bookCardShippingLine2', 'within Germany') || '').length;
-                    const maxL = Math.max(l1, l2, l3, l4);
-                    const unifiedFontSize = maxL <= 14 ? '13px' : (maxL <= 18 ? '12.5px' : (maxL <= 22 ? '11px' : '10px'));
+
+                    const getFontSize = (lineLen) => {
+                      if (isUr) {
+                        return lineLen <= 11
+                          ? 'clamp(12px, 3.5vw, 15.5px)'
+                          : 'clamp(11px, 3.2vw, 14.5px)';
+                      }
+                      if (lineLen <= 11) return 'clamp(12px, 3.3vw, 14.5px)';
+                      if (lineLen <= 15) return 'clamp(11px, 3.0vw, 13.5px)';
+                      if (lineLen <= 19) return 'clamp(9.5px, 2.65vw, 12.5px)';
+                      return 'clamp(8.5px, 2.35vw, 11px)';
+                    };
+
+                    const fontSizeBox1 = getFontSize(Math.max(l1, l2));
+                    const fontSizeBox2 = getFontSize(Math.max(l3, l4));
+
                     return (
                       <>
                         {/* Box 1: Personal Signature */}
                         <div
                           className="absolute flex flex-col justify-center overflow-hidden pointer-events-auto select-text cursor-text"
                           style={{
-                            left: '13.8%',
-                            top: '72.0%',
-                            width: '34.0%',
+                            left: '11.8%',
+                            top: '71.8%',
+                            width: '36.5%',
                             height: '22.0%',
                             fontFamily: '"Poppins", sans-serif',
+                            alignItems: isUr ? 'flex-end' : 'flex-start',
+                            textAlign: isUr ? 'right' : 'left',
                           }}
+                          dir={isUr ? 'rtl' : 'ltr'}
                         >
                           <span
-                            className="font-bold whitespace-nowrap leading-tight"
+                            className="font-bold whitespace-nowrap leading-tight tracking-tight w-full"
                             style={{
-                              fontSize: unifiedFontSize,
-                              color: '#111827'
+                              fontSize: fontSizeBox1,
+                              color: '#111827',
+                              textAlign: isUr ? 'right' : 'left',
                             }}
                           >
                             {t('withdraw.bookCardSignatureLine1', 'Personal signature')}
                           </span>
                           <span
-                            className="font-bold whitespace-nowrap leading-tight mt-0.5"
+                            className="font-bold whitespace-nowrap leading-tight tracking-tight mt-[1px] w-full"
                             style={{
-                              fontSize: unifiedFontSize,
-                              color: '#111827'
+                              fontSize: fontSizeBox1,
+                              color: '#111827',
+                              textAlign: isUr ? 'right' : 'left',
                             }}
                           >
                             {t('withdraw.bookCardSignatureLine2', 'possible')}
@@ -836,27 +847,32 @@ const Wallet = () => {
                         <div
                           className="absolute flex flex-col justify-center overflow-hidden pointer-events-auto select-text cursor-text"
                           style={{
-                            left: '61.5%',
-                            top: '72.0%',
-                            width: '34.0%',
+                            left: '59.5%',
+                            top: '71.8%',
+                            width: '36.5%',
                             height: '22.0%',
                             fontFamily: '"Poppins", sans-serif',
+                            alignItems: isUr ? 'flex-end' : 'flex-start',
+                            textAlign: isUr ? 'right' : 'left',
                           }}
+                          dir={isUr ? 'rtl' : 'ltr'}
                         >
                           <span
-                            className="font-bold whitespace-nowrap leading-tight"
+                            className="font-bold whitespace-nowrap leading-tight tracking-tight w-full"
                             style={{
-                              fontSize: unifiedFontSize,
-                              color: '#111827'
+                              fontSize: fontSizeBox2,
+                              color: '#111827',
+                              textAlign: isUr ? 'right' : 'left',
                             }}
                           >
                             {t('withdraw.bookCardShippingLine1', 'Shipping only')}
                           </span>
                           <span
-                            className="font-bold whitespace-nowrap leading-tight mt-0.5"
+                            className="font-bold whitespace-nowrap leading-tight tracking-tight mt-[1px] w-full"
                             style={{
-                              fontSize: unifiedFontSize,
-                              color: '#111827'
+                              fontSize: fontSizeBox2,
+                              color: '#111827',
+                              textAlign: isUr ? 'right' : 'left',
                             }}
                           >
                             {t('withdraw.bookCardShippingLine2', 'within Germany')}

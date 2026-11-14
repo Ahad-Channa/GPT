@@ -568,7 +568,9 @@
     "support": "Assistance",
     "leaveReview": "Donner un avis",
     "copyright": "© {{year}} TaskMint",
-    "changeToLightMode": "Activer le mode clair"
+    "changeToLightMode": "Activer le mode clair",
+    "nextTopEarnerTitle": "Serez-vous le prochain gagnant ?",
+    "nextTopEarnerDesc": "Effectuez des tâches, montez dans le classement et gagnez des prix."
   },
   "policies": {
     "title": "Politiques",

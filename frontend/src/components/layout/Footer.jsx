@@ -381,62 +381,71 @@ const Footer = () => {
               style={{
                 width: isMobile ? 424 : 440,
                 maxWidth: '100%',
-                height: isMobile ? 'auto' : 273,
               }}
             >
-              <img
-                src={
-                  isMobile
-                    ? (isPt
-                        ? (isDarkMode
-                            ? "/coins/footherdarkportumobile.jpg"
-                            : "/coins/footherlightportumobile.jpg"
-                          )
-                        : isRu
-                        ? (isDarkMode
-                            ? "/coins/footherdarkrussianmobile.jpg"
-                            : "/coins/footherlightrussianmobile.jpg"
-                          )
-                        : isUr
-                        ? (isDarkMode
-                            ? "/coins/footer urdu dark mobile.png"
-                            : "/coins/footer urdu light mobil.png"
-                          )
-                        : (isDarkMode
-                            ? (isEs ? "/coins/footerdarkspanishmobile.png" : (isFr ? "/coins/footherdarkmobilefranch.png" : (isDe ? "/coins/wybt german black mobile.png" : "/coins/wybt eng black.png")))
-                            : (isEs ? "/coins/footerlightspanishmobile.png" : (isFr ? "/coins/footherlightmobilefranch.png" : (isDe ? "/coins/image copy 19 german.png" : "/coins/image copy 19.png")))
-                          )
-                      )
-                    : (isPt
-                        ? (isDarkMode
-                            ? "/coins/footherdarkportu.jpg"
-                            : "/coins/footherlightportu.jpg"
-                          )
-                        : isRu
-                        ? (isDarkMode
-                            ? "/coins/footherdarkrussian.jpg"
-                            : "/coins/footherlightrussian.jpg"
-                          )
-                        : isUr
-                        ? (isDarkMode
-                            ? "/coins/footer urdu dark desktop.png"
-                            : "/coins/footer urdu light desktop.png"
-                          )
-                        : (isDarkMode
-                            ? (isEs ? "/coins/footerdarkspanish.png" : (isFr ? "/coins/footherdarkfranch.png" : (isDe ? "/coins/footerimageblackgerman.png" : "/coins/footerimageblackenglish.png")))
-                            : (isEs ? "/coins/footerlightspanish.png" : (isFr ? "/coins/footherlightfranch.png" : (isDe ? "/coins/image copy 17 german.png" : "/coins/image copy 17.png")))
-                          )
-                      )
-                }
-                alt="Top Earner Graphic"
-                className="pointer-events-none w-full h-full object-contain lg:object-right rounded-[20px] lg:rounded-[24px]"
+              <div
+                className="relative overflow-hidden rounded-[20px] lg:rounded-[24px] w-full"
                 style={{
-                  width: isMobile ? 424 : '100%',
-                  height: isMobile ? 'auto' : '100%',
-                  objectFit: 'contain',
-                  objectPosition: isMobile ? 'center' : 'right'
+                  maxWidth: isMobile ? 424 : 397,
+                  aspectRatio: isMobile ? '854 / 398' : '800 / 550',
                 }}
-              />
+              >
+                <img
+                  src={
+                    isMobile
+                      ? (isDarkMode ? '/coins/footer_mobile_base_dark.png' : '/coins/footer_mobile_base_light.png')
+                      : (isDarkMode ? '/coins/footer_base_dark.png' : '/coins/footer_base_light.png')
+                  }
+                  alt="Top Earner Graphic"
+                  className="w-full h-full object-cover block pointer-events-none select-none"
+                />
+
+                {/* Text Overlay */}
+                <div
+                  className="absolute pointer-events-auto flex flex-col justify-start select-text cursor-text z-10"
+                  style={{
+                    top: isMobile ? '14%' : '11%',
+                    left: isMobile ? '7.5%' : '7.2%',
+                    maxWidth: isUr ? (isMobile ? '48%' : '46%') : (isMobile ? '55%' : '52%'),
+                    textAlign: isUr ? 'right' : 'left',
+                    userSelect: 'text',
+                    WebkitUserSelect: 'text',
+                  }}
+                  dir={isUr ? 'rtl' : 'ltr'}
+                >
+                  <h3
+                    className="m-0 font-bold tracking-tight"
+                    style={{
+                      fontFamily: '"Bricolage Grotesque", sans-serif',
+                      fontWeight: 700,
+                      lineHeight: isUr ? 1.3 : 1.15,
+                      letterSpacing: '-0.02em',
+                      color: isDarkMode ? '#FFFFFF' : '#1E2538',
+                      fontSize: isMobile
+                        ? 'clamp(18px, 5.2vw, 24px)'
+                        : 'clamp(20px, 1.75vw, 25.5px)',
+                    }}
+                  >
+                    {t('footer.nextTopEarnerTitle', 'Will You Be The Next Top Earner?')}
+                  </h3>
+
+                  <p
+                    className="m-0 font-medium"
+                    style={{
+                      fontFamily: '"Poppins", sans-serif',
+                      fontWeight: 500,
+                      lineHeight: 1.35,
+                      marginTop: isMobile ? '6px' : '10px',
+                      color: isDarkMode ? 'rgba(255, 255, 255, 0.78)' : '#475467',
+                      fontSize: isMobile
+                        ? 'clamp(11.5px, 3.1vw, 14px)'
+                        : 'clamp(12.5px, 1.05vw, 14.5px)',
+                    }}
+                  >
+                    {t('footer.nextTopEarnerDesc', 'Complete tasks, climb the ranks, and win prizes.')}
+                  </p>
+                </div>
+              </div>
             </div>
           </div>
 
