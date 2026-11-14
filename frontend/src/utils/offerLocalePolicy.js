@@ -13,6 +13,26 @@ const filled = (value) => String(value ?? '').trim().length > 0;
 
 export const getRequiredOfferFields = () => ['title', 'description'];
 
+// Locale map helpers used by the admin editor. Switching languages must only
+// change which entry is displayed; it never merges or clears another locale.
+export const getOfferLocaleText = (translations = {}, locale = REQUIRED_OFFER_LOCALE) => {
+  const text = translations && typeof translations === 'object' ? translations[locale] : null;
+  return text && typeof text === 'object' ? text : {};
+};
+
+export const updateOfferLocaleField = (
+  translations = {},
+  locale = REQUIRED_OFFER_LOCALE,
+  field,
+  value
+) => ({
+  ...(translations && typeof translations === 'object' ? translations : {}),
+  [locale]: {
+    ...getOfferLocaleText(translations, locale),
+    [field]: value,
+  },
+});
+
 // Returns { valid, locale, missingFields }. `locale` is the locale the admin has
 // to complete (so the editor can switch to it).
 export const validateOfferText = (translations = {}, requiredLocale = REQUIRED_OFFER_LOCALE) => {

@@ -216,6 +216,74 @@ test('admin edit preserves translations and unrelated live edits do not drop the
 
 // ─── Admin save payload: localized requirements + deliberate legacy fields ───
 
+test('admin create/edit/load preserves inactive French and Urdu translation data', async () => {
+  const app = express();
+  app.use(express.json());
+  app.use('/api/admin', adminRouter);
+
+  const inactive = {
+    fr: { title: 'Titre', description: 'Description FR', requirements: ['Condition FR'], proofInstructions: 'Preuve FR' },
+    ur: { title: 'عنوان', description: 'تفصیل', requirements: ['شرط'], proofInstructions: 'ثبوت' },
+  };
+  const translations = {
+    en: { title: 'English title', description: 'English description', requirements: ['English requirement'] },
+    de: { title: 'Deutscher Titel', description: 'Deutsche Beschreibung', requirements: ['Deutsche Bedingung'] },
+    ...inactive,
+  };
+
+  let capturedCreate = null;
+  DirectOffer.create = async (payload) => { capturedCreate = payload; return { _id: 'new-offer', ...payload }; };
+  await withMocks(async () => {
+    const res = await request(app, {
+      method: 'POST',
+      path: '/api/admin/direct-offers',
+      headers: { authorization: 'Bearer dev' },
+      body: { ...baseOfferPayload(), translations },
+    });
+    assert.equal(res.statusCode, 201);
+  });
+  assert.deepEqual(capturedCreate.translations.fr, inactive.fr);
+  assert.deepEqual(capturedCreate.translations.ur, inactive.ur);
+
+  let capturedUpdate = null;
+  DirectOffer.findByIdAndUpdate = async (id, update) => { capturedUpdate = { id, update }; return { _id: id, ...update }; };
+  await withMocks(async () => {
+    const res = await request(app, {
+      method: 'PUT',
+      path: '/api/admin/direct-offers/offer-123',
+      headers: { authorization: 'Bearer dev' },
+      body: { ...baseOfferPayload(), translations },
+    });
+    assert.equal(res.statusCode, 200);
+  });
+  assert.deepEqual(capturedUpdate.update.translations.fr, inactive.fr);
+  assert.deepEqual(capturedUpdate.update.translations.ur, inactive.ur);
+
+  const stored = {
+    _id: 'offer-1',
+    ...baseOfferPayload(),
+    translations,
+    postbackSecretKey: 'secret',
+    toObject() { return { ...this }; },
+  };
+  const originalFind = DirectOffer.find;
+  try {
+    DirectOffer.find = () => ({ sort: async () => [stored] });
+    await withMocks(async () => {
+      const res = await request(app, {
+        path: '/api/admin/direct-offers',
+        headers: { authorization: 'Bearer dev' },
+      });
+      assert.equal(res.statusCode, 200);
+      assert.deepEqual(res.body.offers[0].translations.fr, inactive.fr);
+      assert.deepEqual(res.body.offers[0].translations.ur, inactive.ur);
+      assert.equal(res.body.offers[0].postbackSecretKey, undefined);
+    });
+  } finally {
+    DirectOffer.find = originalFind;
+  }
+});
+
 test('saving localized requirements keeps every locale and derives legacy fields from them', async () => {
   const { buildDirectOfferTextPayload } = await loadDirectOfferPayload();
 

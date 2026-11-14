@@ -95,7 +95,7 @@ const LanguageToggle = ({
           />
         </div>
 
-        {/* Text Code (EN / DE / FR / UR): 18x21 on mobile, 20x24 on desktop */}
+        {/* Active language code (release registry controls which codes exist) */}
         <span
           className="flex items-center justify-center shrink-0 w-[18px] h-[21px] text-[14px] leading-[21px] lg:w-[20px] lg:h-[24px] lg:text-[16px] lg:leading-[100%] transition-colors duration-300"
           style={{

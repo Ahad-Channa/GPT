@@ -1,13 +1,15 @@
-// Central language registry.
+// Central language registry and release configuration.
 //
-// Every `src/i18n/<code>.json` file is a supported website language. i18n.js
-// loads them through `import.meta.glob`, and this module turns that module map
-// into the single source of truth used by:
+// Every `src/i18n/<code>.json` file is an available language resource. The
+// LOCALE_CONFIG below decides which of those resources are selectable for the
+// current release. i18n.js loads them through `import.meta.glob`, and this
+// module is the single source of truth used by:
 //   - the i18n resources (i18n.js)
 //   - the language switcher (LanguageToggle.jsx)
 //   - the admin offer editor language selector (AdminDirectOffers.jsx)
 //
-// Adding a language = adding `<code>.json`. No other registration is needed.
+// Adding a language later = add `<code>.json`, add a LOCALE_CONFIG entry with
+// `enabled: true`, and no dropdown/schema/translation-logic changes are needed.
 // This does NOT translate anything automatically: a language that lacks keys
 // shows the localized "translation unavailable" text (see missing-key policy).
 
@@ -18,36 +20,63 @@ export const DEFAULT_LOCALE = 'en';
 // the schema's required title/description). Other languages are optional.
 export const REQUIRED_OFFER_LOCALE = DEFAULT_LOCALE;
 
+// Release configuration. French and Urdu resources are intentionally kept on
+// disk and preserved in offer translations, but they are not selectable in this
+// release. Flip `enabled` here to expose a language later.
+export const LOCALE_CONFIG = Object.freeze({
+  en: { enabled: true, flag: '/coins/EN.png' },
+  de: { enabled: true, flag: '/coins/DE.svg' },
+  fr: { enabled: false, flag: '/coins/FR.svg' },
+  ur: { enabled: false, flag: '/coins/PK.svg' },
+});
+
+export const ENABLED_LOCALE_CODES = Object.freeze(
+  Object.entries(LOCALE_CONFIG)
+    .filter(([, config]) => config.enabled === true)
+    .map(([code]) => code)
+);
+
 // Optional presentation hints. Unknown codes simply render without a flag.
-export const LOCALE_FLAGS = {
-  en: '/coins/EN.png',
-  de: '/coins/DE.svg',
-  fr: '/coins/FR.svg',
-  ur: '/coins/PK.svg',
-};
+export const LOCALE_FLAGS = Object.freeze(
+  Object.fromEntries(
+    Object.entries(LOCALE_CONFIG)
+      .filter(([, config]) => Boolean(config.flag))
+      .map(([code, config]) => [code, config.flag])
+  )
+);
 
 const LOCALE_FILE = /(?:^|\/)([A-Za-z]{2,3}(?:[-_][A-Za-z0-9]+)*)\.json$/;
 
-export const normalizeLocaleCode = (code) => String(code || '').trim().replace('_', '-');
+export const normalizeLocaleCode = (code) => String(code || '').trim().replace('_', '-').toLowerCase();
 
 // modules: { './de.json': { default: {...} } | {...} }
-export const buildLocaleRegistry = (modules = {}) => {
-  const resources = {};
+export const buildLocaleRegistry = (
+  modules = {},
+  { enabledLocales = ENABLED_LOCALE_CODES } = {}
+) => {
+  const availableResources = {};
   for (const [path, mod] of Object.entries(modules)) {
     const match = LOCALE_FILE.exec(path);
     if (!match) continue;
-    const code = normalizeLocaleCode(match[1]).toLowerCase();
+    const code = normalizeLocaleCode(match[1]);
     const messages = mod && typeof mod === 'object' && 'default' in mod ? mod.default : mod;
     if (!messages || typeof messages !== 'object') continue;
-    resources[code] = { translation: messages };
+    availableResources[code] = { translation: messages };
   }
+
   // Default locale first, the rest alphabetically for a stable switcher order.
-  const codes = Object.keys(resources).sort((a, b) => {
+  const sortCodes = (codes) => codes.sort((a, b) => {
     if (a === DEFAULT_LOCALE) return -1;
     if (b === DEFAULT_LOCALE) return 1;
     return a.localeCompare(b);
   });
-  return { resources, codes };
+
+  const allCodes = sortCodes(Object.keys(availableResources));
+  const enabledSet = new Set((enabledLocales || []).map(normalizeLocaleCode));
+  const codes = allCodes.filter((code) => enabledSet.has(code));
+  const resources = Object.fromEntries(codes.map((code) => [code, availableResources[code]]));
+
+  return { resources, codes, allCodes };
 };
 
 // Resolves a stored/detected language ("de-AT", "DE", "xx") to a supported code.

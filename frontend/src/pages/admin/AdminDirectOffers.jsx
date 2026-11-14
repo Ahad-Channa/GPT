@@ -10,7 +10,7 @@ import {
 import { writeClipboardText } from '../../utils/clipboard';
 import { createAdminApi } from '../../utils/adminApi';
 import { getEnabledGoalRewardTotal, formatGoalLabel } from '../../utils/offerGoalDisplay.js';
-import { buildDirectOfferTextPayload, buildGoalTextPayload, createEmptyGoal } from '../../utils/directOfferPayload.js';
+import { buildDirectOfferTextPayload, buildGoalTextPayload, createEmptyGoal, seedOfferTextTranslations } from '../../utils/directOfferPayload.js';
 import { getGoalTranslation } from '../../utils/offerTranslations.js';
 import {
   buildConfiguredPostbackExample,
@@ -20,7 +20,7 @@ import {
 import { supportedLanguages } from '../../i18n/i18n';
 import { REQUIRED_OFFER_LOCALE, getLocaleNativeName } from '../../i18n/localeRegistry.js';
 import OfferEditorErrorBoundary from '../../components/admin/OfferEditorErrorBoundary.jsx';
-import { validateOfferText } from '../../utils/offerLocalePolicy.js';
+import { validateOfferText, getOfferLocaleText, updateOfferLocaleField } from '../../utils/offerLocalePolicy.js';
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
@@ -50,27 +50,6 @@ const MAX_GOALS = 25;
 // Languages come from the central locale registry (src/i18n/localeRegistry.js).
 const supportedLocales = () => supportedLanguages;
 const localeLabel = (locale) => getLocaleNativeName(locale);
-const seedTranslations = (offer) => {
-  const map = offer?.translations && typeof offer.translations === 'object' ? { ...offer.translations } : {};
-  for (const locale of supportedLocales()) {
-    if (!offer) continue;
-    const suffix = locale === 'en' ? '' : locale.charAt(0).toUpperCase() + locale.slice(1);
-    const legacyRequirements = offer[`requirements${suffix}`];
-    const existing = map[locale] && typeof map[locale] === 'object' ? map[locale] : {};
-    const text = {
-      title: existing.title || offer[`title${suffix}`] || '',
-      description: existing.description || offer[`description${suffix}`] || '',
-      requirements: Array.isArray(existing.requirements) && existing.requirements.length > 0
-        ? existing.requirements
-        : (Array.isArray(legacyRequirements) ? legacyRequirements : []),
-      proofInstructions: existing.proofInstructions || offer[`proofInstructions${suffix}`] || '',
-    };
-    if (Object.values(text).some((value) => Array.isArray(value) ? value.length > 0 : Boolean(value))) {
-      map[locale] = text;
-    }
-  }
-  return map;
-};
 
 // Coin rewards must be whole numbers of at least 1. This mirrors the backend rule
 // (parseCoinReward in backend/utils/offerGoals.js); the backend stays the
@@ -155,7 +134,7 @@ const CountryTagInput = ({ value, onChange, inputCls }) => {
 export const OfferFormModal = ({ offer, onClose, onSaved, adminApi, initialLanguage }) => {
   const isEdit = Boolean(offer);
   const [activeLanguage, setActiveLanguage] = useState(() => (supportedLocales().includes(initialLanguage) ? initialLanguage : REQUIRED_OFFER_LOCALE));
-  const [translations, setTranslations] = useState(() => seedTranslations(offer));
+  const [translations, setTranslations] = useState(() => seedOfferTextTranslations(offer, supportedLocales()));
   const [form, setForm] = useState({
     title: offer?.title || '',
     titleDe: offer?.titleDe || '',
@@ -204,16 +183,15 @@ export const OfferFormModal = ({ offer, onClose, onSaved, adminApi, initialLangu
   const calculatedGoalReward = getEnabledGoalRewardTotal(form.goals);
 
   const set = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.value }));
-  const localized = translations[activeLanguage] || {};
+  const localized = getOfferLocaleText(translations, activeLanguage);
   const isRequiredLocale = activeLanguage === REQUIRED_OFFER_LOCALE;
   // Goal label/description are optional in every language. Say what happens when empty.
   const goalTextHint = isRequiredLocale
     ? '(optional · base language: if empty, a readable name is generated from the Goal Key)'
     : `(optional · if empty, ${localeLabel(activeLanguage)} users see a “step details unavailable” notice)`;
-  const setLocalized = (field, value) => setTranslations((current) => ({
-    ...current,
-    [activeLanguage]: { ...(current[activeLanguage] || {}), [field]: value },
-  }));
+  const setLocalized = (field, value) => setTranslations((current) =>
+    updateOfferLocaleField(current, activeLanguage, field, value)
+  );
   const setGoalLocalized = (index, field, value) => setForm((current) => ({
     ...current,
     goals: current.goals.map((goal, goalIndex) => goalIndex === index ? {

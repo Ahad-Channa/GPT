@@ -8,7 +8,8 @@ import {
   resolveSupportedLocale,
 } from './localeRegistry.js';
 
-// Every ./<code>.json file is a supported language (see localeRegistry.js).
+// Every ./<code>.json file is an available language resource. Only locales
+// enabled in localeRegistry.js are exposed by the current release.
 const { resources, codes: supportedLanguageCodes } = buildLocaleRegistry(
   import.meta.glob('./*.json', { eager: true })
 );

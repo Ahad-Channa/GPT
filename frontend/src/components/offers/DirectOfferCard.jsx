@@ -443,7 +443,7 @@ export const DirectOfferModal = ({ offer, token, placement = 'featured', onClose
                 {title}
               </h2>
               <p className="text-[12px] sm:text-[13px] text-[#4A4C46] mt-1 leading-relaxed m-0 font-normal">
-                {description || t('offers.defaultDescription')}
+                {description || t('offers.translationUnavailable', 'Translation unavailable')}
               </p>
             </div>
           </div>

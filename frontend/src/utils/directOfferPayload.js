@@ -1,4 +1,4 @@
-import { REQUIRED_OFFER_LOCALE } from '../i18n/localeRegistry.js';
+import { REQUIRED_OFFER_LOCALE, ENABLED_LOCALE_CODES } from '../i18n/localeRegistry.js';
 
 const hasOwn = (value, key) => Object.prototype.hasOwnProperty.call(value || {}, key);
 
@@ -29,12 +29,44 @@ const pickLocaleField = (raw, field, legacy) => {
   return String(raw[field] ?? '').trim();
 };
 
+// Restores editor state for an existing offer. All stored locale entries are
+// preserved (including inactive fr/ur data); enabled locales also inherit their
+// legacy columns when the generic translation entry does not define a field.
+export const seedOfferTextTranslations = (offer, locales = ENABLED_LOCALE_CODES) => {
+  const map = offer?.translations && typeof offer.translations === 'object'
+    ? { ...offer.translations }
+    : {};
+
+  if (!offer) return map;
+
+  for (const locale of locales) {
+    const suffix = locale === REQUIRED_OFFER_LOCALE ? '' : locale.charAt(0).toUpperCase() + locale.slice(1);
+    const legacyRequirements = offer[`requirements${suffix}`];
+    const existing = map[locale] && typeof map[locale] === 'object' ? map[locale] : {};
+    const text = {
+      title: existing.title || offer[`title${suffix}`] || '',
+      description: existing.description || offer[`description${suffix}`] || '',
+      requirements: Array.isArray(existing.requirements) && existing.requirements.length > 0
+        ? existing.requirements
+        : (Array.isArray(legacyRequirements) ? legacyRequirements : []),
+      proofInstructions: existing.proofInstructions || offer[`proofInstructions${suffix}`] || '',
+    };
+    if (Object.values(text).some((value) => Array.isArray(value) ? value.length > 0 : Boolean(value))) {
+      map[locale] = text;
+    }
+  }
+
+  return map;
+};
+
 // Builds the shared offer-text portion of the admin save payload. Every locale
 // keeps its own requirements inside translations; legacy requirements fields are
-// then populated deliberately from the English/German entries so no later key
-// can overwrite the localized values.
+// then populated deliberately from the required English entry and the German
+// entry so no later key can overwrite localized values. Inactive locale data
+// (e.g. fr/ur) is preserved unchanged in the translations map.
 export const buildDirectOfferTextPayload = ({ form = {}, translations = {} } = {}) => {
-  const locales = new Set(['en', ...Object.keys(translations)]);
+  const requiredLocale = REQUIRED_OFFER_LOCALE;
+  const locales = new Set([requiredLocale, ...Object.keys(translations)]);
   if (form.titleDe || form.descriptionDe || form.requirementsDe || form.proofInstructionsDe) {
     locales.add('de');
   }
@@ -53,18 +85,18 @@ export const buildDirectOfferTextPayload = ({ form = {}, translations = {} } = {
     };
   }
 
-  const en = normalized.en;
+  const required = normalized[requiredLocale];
   const de = normalized.de || { title: '', description: '', requirements: [], proofInstructions: '' };
 
   return {
     translations: normalized,
-    title: en.title,
-    description: en.description,
-    proofInstructions: en.proofInstructions,
+    title: required.title,
+    description: required.description,
+    proofInstructions: required.proofInstructions,
     titleDe: de.title,
     descriptionDe: de.description,
     proofInstructionsDe: de.proofInstructions,
-    requirements: en.requirements,
+    requirements: required.requirements,
     requirementsDe: de.requirements,
   };
 };
