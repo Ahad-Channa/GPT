@@ -10,7 +10,7 @@ import {
 import { writeClipboardText } from '../../utils/clipboard';
 import { createAdminApi } from '../../utils/adminApi';
 import { getEnabledGoalRewardTotal, formatGoalLabel } from '../../utils/offerGoalDisplay.js';
-import { buildDirectOfferTextPayload } from '../../utils/directOfferPayload.js';
+import { buildDirectOfferTextPayload, buildGoalTextPayload, createEmptyGoal } from '../../utils/directOfferPayload.js';
 import { getGoalTranslation } from '../../utils/offerTranslations.js';
 import {
   buildConfiguredPostbackExample,
@@ -19,6 +19,7 @@ import {
 } from '../../utils/postbackGuide.js';
 import { supportedLanguages } from '../../i18n/i18n';
 import { REQUIRED_OFFER_LOCALE, getLocaleNativeName } from '../../i18n/localeRegistry.js';
+import OfferEditorErrorBoundary from '../../components/admin/OfferEditorErrorBoundary.jsx';
 import { validateOfferText } from '../../utils/offerLocalePolicy.js';
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
@@ -151,9 +152,9 @@ const CountryTagInput = ({ value, onChange, inputCls }) => {
 };
 
 // ─── Create / Edit Offer Modal ────────────────────────────────────────────────
-const OfferFormModal = ({ offer, onClose, onSaved, adminApi }) => {
+export const OfferFormModal = ({ offer, onClose, onSaved, adminApi, initialLanguage }) => {
   const isEdit = Boolean(offer);
-  const [activeLanguage, setActiveLanguage] = useState(REQUIRED_OFFER_LOCALE);
+  const [activeLanguage, setActiveLanguage] = useState(() => (supportedLocales().includes(initialLanguage) ? initialLanguage : REQUIRED_OFFER_LOCALE));
   const [translations, setTranslations] = useState(() => seedTranslations(offer));
   const [form, setForm] = useState({
     title: offer?.title || '',
@@ -205,6 +206,10 @@ const OfferFormModal = ({ offer, onClose, onSaved, adminApi }) => {
   const set = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.value }));
   const localized = translations[activeLanguage] || {};
   const isRequiredLocale = activeLanguage === REQUIRED_OFFER_LOCALE;
+  // Goal label/description are optional in every language. Say what happens when empty.
+  const goalTextHint = isRequiredLocale
+    ? '(optional · base language: if empty, a readable name is generated from the Goal Key)'
+    : `(optional · if empty, ${localeLabel(activeLanguage)} users see a “step details unavailable” notice)`;
   const setLocalized = (field, value) => setTranslations((current) => ({
     ...current,
     [activeLanguage]: { ...(current[activeLanguage] || {}), [field]: value },
@@ -264,11 +269,7 @@ const OfferFormModal = ({ offer, onClose, onSaved, adminApi }) => {
           displayPlacements: form.displayPlacements,
           goals: form.goals.map(g => ({
             goalKey: g.goalKey,
-            label: g.label,
-            labelDe: g.labelDe,
-            description: g.description,
-            descriptionDe: g.descriptionDe,
-            translations: g.translations || {},
+            ...buildGoalTextPayload(g),
             externalEventId: g.externalEventId,
             externalEventAliases: String(g.externalEventAliases || '')
               .split(',')
@@ -331,6 +332,11 @@ const OfferFormModal = ({ offer, onClose, onSaved, adminApi }) => {
                 {supportedLocales().map((locale) => <option key={locale} value={locale}>{localeLabel(locale)}</option>)}
               </select>
             </div>
+            <p className="rounded-lg border border-indigo-500/20 bg-indigo-500/10 px-3 py-2 text-[11px] text-indigo-200">
+              {isRequiredLocale
+                ? `${localeLabel(REQUIRED_OFFER_LOCALE)} is the required base language. Its title and description are mandatory because they are stored as the offer’s base record and used for older offers and as the reference text; every other language is optional.`
+                : `Editing ${localeLabel(activeLanguage)} (optional translation). The required base language is ${localeLabel(REQUIRED_OFFER_LOCALE)}; switch back to it to fill the mandatory title and description. If left empty, ${localeLabel(activeLanguage)} users see a “translation unavailable” notice, never another language’s text.`}
+            </p>
             <div><label className={labelCls}>Offer Title {isRequiredLocale ? '*' : ''}</label><input className={inputCls} value={localized.title || ''} onChange={(e) => setLocalized('title', e.target.value)} required={isRequiredLocale} placeholder="Offer title" /></div>
             <div><label className={labelCls}>Description {isRequiredLocale ? '*' : ''}</label><textarea className={inputCls} rows={3} value={localized.description || ''} onChange={(e) => setLocalized('description', e.target.value)} required={isRequiredLocale} placeholder="Description shown to users" /></div>
             <div><label className={labelCls}>Requirements</label><textarea className={inputCls} rows={3} value={Array.isArray(localized.requirements) ? localized.requirements.join('\n') : (localized.requirements || '')} onChange={(e) => setLocalized('requirements', e.target.value)} placeholder="One requirement per line" /></div>
@@ -555,7 +561,7 @@ const OfferFormModal = ({ offer, onClose, onSaved, adminApi }) => {
               <button
                 type="button"
                 disabled={form.goals.length >= MAX_GOALS}
-                onClick={() => setForm(f => ({ ...f, goals: [...f.goals, { goalKey: '', label: '', labelDe: '', description: '', descriptionDe: '', translations: {}, externalEventId: '', externalEventAliases: '', rewardAmount: '', payoutAmount: '', timeLimitDays: '', enabled: true }] }))}
+                onClick={() => setForm(f => ({ ...f, goals: [...f.goals, createEmptyGoal()] }))}
                 className="shrink-0 flex items-center gap-1 px-2.5 py-1 rounded-lg bg-indigo-500/20 border border-indigo-500/40 text-[11px] font-semibold text-indigo-300 hover:bg-indigo-500/30 disabled:opacity-40"
               >
                 <FiPlus /> Add Goal
@@ -595,7 +601,7 @@ const OfferFormModal = ({ offer, onClose, onSaved, adminApi }) => {
                         <input className={inputCls} value={goal.goalKey} onChange={e => setForm(f => ({ ...f, goals: f.goals.map((g, i) => i === idx ? { ...g, goalKey: e.target.value } : g) }))} placeholder="e.g. registration, deposit, level_5" />
                       </div>
                       <div className="col-span-2">
-                        <label className={labelCls}>Step label ({localeLabel(activeLanguage)})</label>
+                        <label className={labelCls}>Step label ({localeLabel(activeLanguage)}) <span className="text-slate-600 font-normal">{goalTextHint}</span></label>
                         <input className={inputCls} value={getGoalTranslation(goal, activeLanguage).label || ''} onChange={e => setGoalLocalized(idx, 'label', e.target.value)} placeholder="e.g. Fight 20 Battles" />
                       </div>
                       <div>
@@ -635,7 +641,7 @@ const OfferFormModal = ({ offer, onClose, onSaved, adminApi }) => {
                       </div>
                     </div>
                     <div>
-                      <label className={labelCls}>Step description ({localeLabel(activeLanguage)})</label>
+                      <label className={labelCls}>Step description ({localeLabel(activeLanguage)}) <span className="text-slate-600 font-normal">{goalTextHint}</span></label>
                       <input className={inputCls} value={getGoalTranslation(goal, activeLanguage).description || ''} onChange={e => setGoalLocalized(idx, 'description', e.target.value)} placeholder="Optional step description" />
                     </div>
                   </div>
@@ -1587,17 +1593,20 @@ const AdminDirectOffers = () => {
       {/* Modals */}
       <AnimatePresence>
         {showCreate && (
-          <OfferFormModal
+          <OfferEditorErrorBoundary onClose={() => setShowCreate(false)}>
+            <OfferFormModal
             offer={null}
             adminApi={adminApi}
             onClose={() => setShowCreate(false)}
             onSaved={(offer) => setOffers(prev => [offer, ...prev])}
           />
+          </OfferEditorErrorBoundary>
         )}
       </AnimatePresence>
       <AnimatePresence>
         {editOffer && (
-          <OfferFormModal
+          <OfferEditorErrorBoundary onClose={() => setEditOffer(null)}>
+            <OfferFormModal
             offer={editOffer}
             adminApi={adminApi}
             onClose={() => setEditOffer(null)}
@@ -1606,6 +1615,7 @@ const AdminDirectOffers = () => {
               setEditOffer(null);
             }}
           />
+          </OfferEditorErrorBoundary>
         )}
       </AnimatePresence>
       <AnimatePresence>

@@ -75,7 +75,7 @@ export const getLocaleNativeName = (code) => {
 // ── Missing-translation policy ────────────────────────────────────────────────
 // 1. The selected language is the only source for UI text. There is NO silent
 //    fallback to English (i18next fallbackLng is disabled).
-// 2. Inline English defaults in `t('key', 'English default')` are honored only
+// 2. Inline English defaults (string or `{ defaultValue }` form) are honored only
 //    when the active language is the default locale. In any other language a
 //    missing key renders the localized `offers.translationUnavailable` text.
 // 3. That single message is the one deliberate exception: if a language does not
@@ -93,24 +93,16 @@ export const getTranslationUnavailableText = (resources, language) => {
   return typeof base === 'string' && base.trim() ? base : 'Translation unavailable';
 };
 
-// i18next `overloadTranslationOptionHandler`: drops an inline English default
-// when the active language is not the default locale.
-export const createOverloadHandler = (getLanguage) => (args) => {
-  const options = typeof args[1] === 'object' && args[1] ? { ...args[1] } : {};
-  if (typeof args[1] === 'string') options.defaultValue = args[1];
-  if (typeof args[2] === 'object' && args[2]) Object.assign(options, args[2]);
-  const language = String(getLanguage() || DEFAULT_LOCALE).toLowerCase();
-  if (language !== DEFAULT_LOCALE && !language.startsWith(`${DEFAULT_LOCALE}-`)) {
-    delete options.defaultValue;
-  }
-  return options;
-};
-
-// i18next `parseMissingKeyHandler`: i18next also calls it when an inline default
-// was used, so pass an allowed default through and otherwise show the localized
-// "translation unavailable" text for the active language.
-export const createMissingKeyHandler = (resources, getLanguage) => (key, defaultValue) => {
-  if (typeof defaultValue === 'string') return defaultValue;
-  const language = resolveSupportedLocale(getLanguage(), Object.keys(resources));
+// i18next `parseMissingKeyHandler`. i18next calls it for every missing key,
+// including when a caller supplied a default (`t('k', 'Default')` and
+// `t('k', { defaultValue: 'Default' })` alike), so one handler covers both call
+// forms. Inline defaults are authored in the default locale, so they are shown
+// only when that locale is active; any other language gets its localized
+// "translation unavailable" text.
+export const createMissingKeyHandler = (resources, getLanguage) => (key, defaultValue, options) => {
+  const requested = String(options?.lng || getLanguage() || DEFAULT_LOCALE).toLowerCase();
+  const isDefaultLocale = requested === DEFAULT_LOCALE || requested.startsWith(`${DEFAULT_LOCALE}-`);
+  if (isDefaultLocale && typeof defaultValue === 'string') return defaultValue;
+  const language = resolveSupportedLocale(requested, Object.keys(resources));
   return getTranslationUnavailableText(resources, language);
 };

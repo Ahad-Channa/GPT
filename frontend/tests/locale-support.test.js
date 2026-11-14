@@ -8,7 +8,6 @@ import {
   DEFAULT_LOCALE,
   REQUIRED_OFFER_LOCALE,
   buildLocaleRegistry,
-  createOverloadHandler,
   getLocaleNativeName,
   createMissingKeyHandler,
   resolveSupportedLocale,
@@ -16,6 +15,8 @@ import {
 import { validateOfferText } from '../src/utils/offerLocalePolicy.js';
 import { buildDirectOfferTextPayload } from '../src/utils/directOfferPayload.js';
 import { getOfferTranslation } from '../src/utils/offerTranslations.js';
+import { buildGoalTextPayload, createEmptyGoal } from '../src/utils/directOfferPayload.js';
+import { getFooterBannerSrc, TEXT_FREE_BANNERS } from '../src/utils/footerBanner.js';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const i18nDir = path.join(here, '../src/i18n');
@@ -38,7 +39,6 @@ const makeI18n = async (resources, lng) => {
     lng,
     fallbackLng: false,
     interpolation: { escapeValue: false },
-    overloadTranslationOptionHandler: createOverloadHandler(() => instance.language),
     parseMissingKeyHandler: createMissingKeyHandler(resources, () => instance.language),
   });
   return instance;
@@ -185,4 +185,82 @@ test('Landing marquee and shared footer do not hardcode "Gift Card" or "Quick Li
   const footer = fs.readFileSync(path.join(srcDir, 'components/layout/Footer.jsx'), 'utf8');
   assert.ok(!/>\s*Quick Links\s*</.test(footer));
   assert.ok(!/alt="Background graphics"|alt="Top Earner Graphic"/.test(footer));
+});
+
+
+// ── Object-form defaults / goal payload / footer banner ───────────────────────
+test('object-form defaultValue cannot leak English into German', async () => {
+  const { resources } = buildLocaleRegistry(loadRealModules());
+  const de = await makeI18n(resources, 'de');
+  const unavailable = resources.de.translation.offers.translationUnavailable;
+  assert.equal(de.t('no.such.key', { defaultValue: 'English only' }), unavailable);
+  assert.equal(de.t('no.such.key', { year: 2026, defaultValue: '© {{year}} English' }), unavailable);
+  assert.equal(de.t('no.such.key', 'English only'), unavailable);
+  // Existing German key still resolves normally even when a default is passed.
+  assert.equal(de.t('footer.quickLinks', { defaultValue: 'Quick Links' }), 'Schnellzugriff');
+});
+
+test('English keeps object-form and string defaults (with interpolation)', async () => {
+  const { resources } = buildLocaleRegistry(loadRealModules());
+  const en = await makeI18n(resources, 'en');
+  assert.equal(en.t('no.such.key', { defaultValue: 'Plain default' }), 'Plain default');
+  assert.equal(en.t('no.such.key', 'String default'), 'String default');
+  assert.equal(en.t('no.such.key', { year: 2026, defaultValue: '© {{year}} TaskMint' }), '© 2026 TaskMint');
+});
+
+test('per-call language override also respects the policy', async () => {
+  const { resources } = buildLocaleRegistry(loadRealModules());
+  const en = await makeI18n(resources, 'en');
+  assert.equal(en.t('no.such.key', { lng: 'de', defaultValue: 'English only' }), resources.de.translation.offers.translationUnavailable);
+});
+
+test('goal payload fills legacy fields from required locale and German, keeping the generic map', () => {
+  const goal = {
+    ...createEmptyGoal(),
+    goalKey: 'level_5',
+    translations: {
+      en: { label: ' Reach level 5 ', description: 'Play on' },
+      de: { label: 'Erreiche Level 5', description: 'Weiterspielen' },
+      es: { label: 'Alcanza el nivel 5', description: '' },
+    },
+  };
+  const out = buildGoalTextPayload(goal);
+  assert.equal(out.label, 'Reach level 5');
+  assert.equal(out.description, 'Play on');
+  assert.equal(out.labelDe, 'Erreiche Level 5');
+  assert.equal(out.descriptionDe, 'Weiterspielen');
+  assert.deepEqual(out.translations, goal.translations);
+  assert.ok(!Object.keys(out).some((k) => /Es$|Fr$|Ur$/.test(k)));
+});
+
+test('goal payload keeps legacy-only goals and handles empty translations', () => {
+  const legacy = buildGoalTextPayload({ goalKey: 'a', label: 'Old', labelDe: 'Alt', description: 'd', descriptionDe: 'dd' });
+  assert.deepEqual(
+    [legacy.label, legacy.labelDe, legacy.description, legacy.descriptionDe],
+    ['Old', 'Alt', 'd', 'dd']
+  );
+  assert.deepEqual(legacy.translations, {});
+  assert.equal(buildGoalTextPayload({ goalKey: 'b', translations: { en: { label: 'New' } }, label: 'Stale' }).label, 'New');
+  assert.equal(buildGoalTextPayload(undefined).label, '');
+});
+
+test('footer banner: localized art only for en/de/ur, text-free for all others', () => {
+  for (const dark of [false, true]) for (const mobile of [false, true]) {
+    const base = { isDarkMode: dark, isMobile: mobile };
+    const expected = TEXT_FREE_BANNERS[dark ? 'dark' : 'light'][mobile ? 'mobile' : 'desktop'];
+    assert.equal(getFooterBannerSrc({ language: 'fr', ...base }), expected);
+    assert.equal(getFooterBannerSrc({ language: 'es', ...base }), expected);
+    assert.notEqual(getFooterBannerSrc({ language: 'en', ...base }), expected);
+    assert.match(getFooterBannerSrc({ language: 'de-AT', ...base }), /german/i);
+    assert.match(getFooterBannerSrc({ language: 'ur', ...base }), /urdu/i);
+    assert.ok(!/german|urdu/i.test(getFooterBannerSrc({ language: 'en', ...base })));
+  }
+});
+
+test('every referenced footer banner asset exists', () => {
+  const pub = path.join(here, '../public');
+  for (const lang of ['en', 'de', 'ur', 'fr']) for (const dark of [false, true]) for (const mobile of [false, true]) {
+    const src = getFooterBannerSrc({ language: lang, isDarkMode: dark, isMobile: mobile });
+    assert.ok(fs.existsSync(path.join(pub, src)), src);
+  }
 });

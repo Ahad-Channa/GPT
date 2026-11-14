@@ -4,7 +4,6 @@ import LanguageDetector from 'i18next-browser-languagedetector';
 import {
   DEFAULT_LOCALE,
   buildLocaleRegistry,
-  createOverloadHandler,
   createMissingKeyHandler,
   resolveSupportedLocale,
 } from './localeRegistry.js';
@@ -54,7 +53,6 @@ i18n
     interpolation: {
       escapeValue: false // React already escapes
     },
-    overloadTranslationOptionHandler: createOverloadHandler(() => i18n.language),
     parseMissingKeyHandler: createMissingKeyHandler(resources, () => i18n.language),
     detection: {
       order: canPersist ? ['localStorage', 'cookie', 'htmlTag'] : [],

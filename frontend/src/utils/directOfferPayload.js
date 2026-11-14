@@ -1,3 +1,5 @@
+import { REQUIRED_OFFER_LOCALE } from '../i18n/localeRegistry.js';
+
 const hasOwn = (value, key) => Object.prototype.hasOwnProperty.call(value || {}, key);
 
 export const normalizeRequirementLines = (value) =>
@@ -66,5 +68,38 @@ export const buildDirectOfferTextPayload = ({ form = {}, translations = {} } = {
     requirementsDe: de.requirements,
   };
 };
+
+export const createEmptyGoal = () => ({
+  goalKey: '',
+  label: '',
+  labelDe: '',
+  description: '',
+  descriptionDe: '',
+  translations: {},
+  externalEventId: '',
+  externalEventAliases: '',
+  rewardAmount: '',
+  payoutAmount: '',
+  timeLimitDays: '',
+  enabled: true,
+});
+
+const goalText = (goal, locale, field) => {
+  const value = goal?.translations?.[locale]?.[field];
+  return typeof value === 'string' ? value.trim() : '';
+};
+
+// Text part of a goal in the save payload. The generic `translations` map is
+// sent untouched (any locale). Legacy columns are kept compatible: label and
+// description come from the required locale, labelDe/descriptionDe from the
+// German translation. A legacy value is only used when that translation is
+// empty, so older offers keep their text.
+export const buildGoalTextPayload = (goal = {}, requiredLocale = REQUIRED_OFFER_LOCALE) => ({
+  label: goalText(goal, requiredLocale, 'label') || String(goal.label || '').trim(),
+  description: goalText(goal, requiredLocale, 'description') || String(goal.description || '').trim(),
+  labelDe: goalText(goal, 'de', 'label') || String(goal.labelDe || '').trim(),
+  descriptionDe: goalText(goal, 'de', 'description') || String(goal.descriptionDe || '').trim(),
+  translations: goal.translations && typeof goal.translations === 'object' ? goal.translations : {},
+});
 
 export default buildDirectOfferTextPayload;
