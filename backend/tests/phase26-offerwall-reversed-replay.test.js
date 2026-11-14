@@ -396,12 +396,35 @@ test('Lootably parses per-step completion identity and maps webhook states witho
   assert.equal(approved.kind, 'credit');
   assert.equal(approved.platformCoins, 125);
   assert.equal(approved.baseId, 'webhook:T1:goal-a');
+  assert.equal(approved.offerTitle, 'Sample App');
   assert.equal(approved.stepLabel, 'Install and open');
+  const singleStep = parseLootablyWebhook(lootablyReq({ offerType: 'singlestep', goalId: '' }));
+  assert.equal(singleStep.ok, true);
+  assert.equal(singleStep.offerTitle, 'Sample App');
+  assert.equal(singleStep.stepLabel, '');
 
   assert.equal(parseLootablyWebhook(lootablyReq({ event: 'pending' })).kind, 'ignore');
   assert.equal(parseLootablyWebhook(lootablyReq({ event: 'rejected' })).kind, 'reversal');
   assert.equal(parseLootablyWebhook(lootablyReq({ currencyReward: 1.5 })).ok, false);
   assert.equal(parseLootablyWebhook(lootablyReq({ offerType: 'multistep', goalId: '' })).ok, false);
+});
+
+test('Lootably single-step webhook persists the real offerName as the offer title', async () => {
+  const world = makeWorld();
+  const res = await runLootably(world, lootablyReq({
+    webhookId: 'wh-single-step',
+    transactionId: 'T-single',
+    offerType: 'singlestep',
+    goalId: '',
+    currencyReward: 140,
+  }));
+
+  assert.equal(res.statusCode, 200);
+  const reward = rewards(world)[0];
+  assert.equal(reward.metadata.offerTitle, 'Sample App');
+  assert.equal(reward.metadata.campaignTitle, 'Sample App');
+  assert.equal(reward.metadata.stepLabel, null);
+  assert.equal(reward.description, 'Sample App');
 });
 
 test('Lootably webhook credits once, reverses the same step once, and permits a fresh conversion or a different step', async () => {
@@ -412,6 +435,12 @@ test('Lootably webhook credits once, reverses the same step once, and permits a 
   assert.equal(first.body, '1');
   assert.equal(wallet(world), 1125, 'currencyReward is already the placement currency, not multiplied by the admin ratio');
   assert.equal(world.txs.filter((tx) => tx.transactionType === 'offer_reward').length, 1);
+  const firstReward = rewards(world)[0];
+  assert.equal(firstReward.metadata.offerTitle, 'Sample App');
+  assert.equal(firstReward.metadata.campaignTitle, 'Sample App');
+  assert.equal(firstReward.metadata.stepLabel, 'Install and open');
+  assert.equal(firstReward.metadata.providerName, 'Lootably');
+  assert.equal(firstReward.description, 'Install and open');
 
   const sameWebhook = await runLootably(world, lootablyReq({ webhookId: 'wh-approved-1', transactionId: 'T1', goalId: 'goal-a', currencyReward: 125 }));
   assert.equal(sameWebhook.statusCode, 200);

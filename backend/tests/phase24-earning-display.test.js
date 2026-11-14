@@ -144,18 +144,98 @@ test('live feed: raw step IDs are humanized for display only', async () => {
   );
 });
 
-test('live feed: provider-only rows get a safe Offer detail instead of provider twice', async () => {
+test('live feed: provider-only rows use an honest unavailable detail instead of provider twice', async () => {
   const { getLiveFeedDisplay } = await loadDisplay();
   assert.deepEqual(
     getLiveFeedDisplay({ transactionType: 'offer_reward', metadata: { providerName: 'Lootably' } }),
-    { sourceLine: 'Offerwall: Lootably', detailLine: 'Offer' }
+    { sourceLine: 'Offerwall: Lootably', detailLine: 'Offer details unavailable' }
   );
   assert.deepEqual(
     getLiveFeedDisplay({
       transactionType: 'offer_reward',
       metadata: { providerName: 'Lootably', offerTitle: 'Lootably' },
     }),
-    { sourceLine: 'Offerwall: Lootably', detailLine: 'Offer' }
+    { sourceLine: 'Offerwall: Lootably', detailLine: 'Offer details unavailable' }
+  );
+});
+
+test('live feed: provider-branded generic descriptions are not used as offer names', async () => {
+  const { getLiveFeedDisplay } = await loadDisplay();
+  assert.deepEqual(
+    getLiveFeedDisplay({
+      transactionType: 'offer_reward',
+      description: 'Lootably Offer Reward',
+      metadata: { providerId: 'lootably', providerName: 'Lootably' },
+    }),
+    { sourceLine: 'Offerwall: Lootably', detailLine: 'Offer details unavailable' }
+  );
+  assert.deepEqual(
+    getLiveFeedDisplay({
+      transactionType: 'offer_reward',
+      description: 'Lootably - Offer Reward',
+      metadata: { providerId: 'lootably', providerName: 'Lootably' },
+    }),
+    { sourceLine: 'Offerwall: Lootably', detailLine: 'Offer details unavailable' }
+  );
+});
+
+test('live feed: a parent offer title never overrides a credited step', async () => {
+  const { getLiveFeedDisplay } = await loadDisplay();
+  assert.deepEqual(
+    getLiveFeedDisplay({
+      transactionType: 'direct_offer_reward',
+      metadata: { providerId: 'direct', offerTitle: 'Plarium', stepLabel: 'fight_20_battles' },
+    }),
+    { sourceLine: 'Goodpicks', detailLine: 'Fight 20 Battles' }
+  );
+});
+
+test('live feed: legacy custom offers are own offers and show Goodpicks plus their title', async () => {
+  const { getLiveFeedDisplay } = await loadDisplay();
+  assert.deepEqual(
+    getLiveFeedDisplay({
+      transactionType: 'custom_offer_reward',
+      description: 'Custom Offer Reward: Legacy Manual Offer',
+      metadata: {},
+    }),
+    { sourceLine: 'Goodpicks', detailLine: 'Legacy Manual Offer' }
+  );
+  assert.deepEqual(
+    getLiveFeedDisplay({
+      transactionType: 'custom_offer_reward',
+      description: 'Reward for custom offer: QA Offer',
+      metadata: {},
+    }),
+    { sourceLine: 'Goodpicks', detailLine: 'QA Offer' }
+  );
+  assert.deepEqual(
+    getLiveFeedDisplay({
+      transactionType: 'custom_offer_reward',
+      metadata: { offerTitle: 'Featured Goodpicks Offer' },
+    }),
+    { sourceLine: 'Goodpicks', detailLine: 'Featured Goodpicks Offer' }
+  );
+});
+
+test('live feed: API-shaped transaction metadata reaches the resolver intact', async () => {
+  const { getLiveFeedDisplay } = await loadDisplay();
+  assert.deepEqual(
+    getLiveFeedDisplay({
+      _id: 'tx-1',
+      transactionType: 'offer_reward',
+      amount: 250,
+      status: 'completed',
+      description: 'Reach Level 5',
+      metadata: {
+        providerId: 'lootably',
+        providerName: 'Lootably',
+        offerTitle: 'Game Install',
+        campaignTitle: 'Game Install',
+        stepLabel: 'Reach Level 5',
+      },
+      userId: { _id: 'user-1', displayName: 'Player' },
+    }),
+    { sourceLine: 'Offerwall: Lootably', detailLine: 'Reach Level 5' }
   );
 });
 
@@ -287,4 +367,11 @@ test('Live Feed renders source before detail visibly inline, not only in the hov
   const ticker = read('frontend/src/components/LiveEarningsTicker.jsx');
   assert.match(ticker, /getEarningDisplay\(earning\)\.primary/);
   assert.doesNotMatch(ticker, /'from an offer'/);
+
+  // REST earnings keep metadata intact, and socket events use the same tx shape.
+  const publicRoute = read('backend/routes/public.js');
+  assert.match(publicRoute, /Transaction\.find\(\{[\s\S]*?\.populate\('userId', 'displayName avatarUrl isPrivate'\)[\s\S]*?\.lean\(\)/);
+  assert.doesNotMatch(publicRoute, /\.select\([^)]*metadata/);
+  assert.match(bar, /socketRef\.current\.on\('newEarning', \(newTx\)/);
+  assert.match(bar, /updateEarnings\(\(prev\)/);
 });

@@ -473,11 +473,18 @@ const handleLegacyOfferwallPostback = async (providerId, req, res, params = {}, 
     const providerUnits = parsed.providerUnits;
     const normalizedTransactionId = parsed.transactionId;
     const security = { checked: true, passed: true, method: adapter.id };
+    // Prefer the adapter's verified payload mapping (e.g. Lootably's real
+    // offerName/goalDescription fields) and keep query/body labels as fallback
+    // for legacy provider callbacks.
+    const rewardLabels = {
+      offerTitle: sanitizeOfferTitle(params.offerTitle) || sanitizeOfferTitle(parsed.offerTitle),
+      stepLabel: sanitizeOfferTitle(params.stepLabel) || sanitizeOfferTitle(parsed.stepLabel),
+    };
     const baseMappedFields = {
       transactionId: normalizedTransactionId,
       payout: typeof providerUnits === 'string' ? providerUnits : null,
-      offerTitle: typeof params.offerTitle === 'string' ? params.offerTitle : '',
-      stepLabel: typeof params.stepLabel === 'string' ? params.stepLabel : '',
+      offerTitle: rewardLabels.offerTitle,
+      stepLabel: rewardLabels.stepLabel,
     };
 
     const settings = await Settings.getSingleton();
@@ -607,8 +614,8 @@ const handleLegacyOfferwallPostback = async (providerId, req, res, params = {}, 
     const creditBalance = holdDecision.walletCredit;
     const txStatus = holdDecision.status;
     const holdDate = holdDecision.holdUntil;
-    const offerTitle = sanitizeOfferTitle(params.offerTitle);
-    const stepLabel = sanitizeOfferTitle(params.stepLabel);
+    const offerTitle = rewardLabels.offerTitle;
+    const stepLabel = rewardLabels.stepLabel;
 
     const credit = await creditLegacyOfferReward({
       models: options.models,

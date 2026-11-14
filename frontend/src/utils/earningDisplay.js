@@ -68,6 +68,7 @@ export const getEarningDisplay = (tx = {}) => {
 };
 
 const DIRECT_OFFER_SOURCE_LABEL = 'Goodpicks';
+const GENERIC_DETAIL_FALLBACK = 'Offer details unavailable';
 
 const GENERIC_STEP_LABEL =
   /^(offer reward|direct offer reward|offer|reward|completed( offer)?|complete step|completed step|step reward|task reward)$/i;
@@ -106,22 +107,32 @@ const resolveLiveProviderName = (meta = {}) => {
   return clean(meta.offerwall);
 };
 
-const isGenericLiveDescription = (value) => {
+const isGenericLiveDescription = (value, provider = '') => {
   const description = clean(value);
-  return isGenericDescription(description) || /^direct offer reward( conversion)?$/i.test(description);
+  if (isGenericDescription(description) || /^direct offer reward( conversion)?$/i.test(description)) {
+    return true;
+  }
+
+  // Legacy offerwall rows sometimes stored the provider name plus a generic
+  // suffix instead of the campaign/step name (e.g. "Lootably Offer Reward").
+  const providerText = clean(provider).replace(/^offerwall:\s*/i, '');
+  if (!providerText) return false;
+  const escapedProvider = providerText.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  return new RegExp(`^${escapedProvider}\\s*(?:[-:|]\\s*)?offer(?:\\s+reward)?$`, 'i').test(description);
 };
 
-const resolveLiveOfferDetail = (tx = {}, meta = {}) => {
+const resolveLiveOfferDetail = (tx = {}, meta = {}, provider = '', type = '') => {
   const step = resolveLiveStepLabel(meta);
   if (step) return step;
 
   const offerTitle = clean(meta.offerTitle) || clean(meta.campaignTitle) || clean(meta.campaign);
   if (offerTitle) return offerTitle;
 
-  const description = cleanDescription(tx.description);
-  if (description && !isGenericLiveDescription(description)) return description;
+  const rawDescription = cleanDescription(tx.description);
+  const description = type === 'custom_offer_reward' ? stripCustomPrefix(rawDescription) : rawDescription;
+  if (description && !isGenericLiveDescription(description, provider)) return description;
 
-  return 'Offer';
+  return GENERIC_DETAIL_FALLBACK;
 };
 
 // Two-line source/detail labels for the live-feed chip. Kept separate from
@@ -129,19 +140,20 @@ const resolveLiveOfferDetail = (tx = {}, meta = {}) => {
 // use the offer/step as their primary label.
 export const getLiveFeedDisplay = (tx = {}) => {
   const type = tx.transactionType || '';
-  if (type !== 'offer_reward' && type !== 'direct_offer_reward') return null;
+  if (type !== 'offer_reward' && type !== 'direct_offer_reward' && type !== 'custom_offer_reward') {
+    return null;
+  }
 
   const meta = tx.metadata || {};
-  const provider = type === 'direct_offer_reward'
-    ? DIRECT_OFFER_SOURCE_LABEL
-    : resolveLiveProviderName(meta);
+  const isOwnOffer = type === 'direct_offer_reward' || type === 'custom_offer_reward';
+  const provider = isOwnOffer ? DIRECT_OFFER_SOURCE_LABEL : resolveLiveProviderName(meta);
   const providerText = provider.replace(/^offerwall:\s*/i, '').trim();
-  const sourceLine = type === 'direct_offer_reward'
+  const sourceLine = isOwnOffer
     ? DIRECT_OFFER_SOURCE_LABEL
     : (providerText ? `Offerwall: ${providerText}` : 'Offerwall');
 
-  let detailLine = resolveLiveOfferDetail(tx, meta);
-  if (provider && detailLine.toLowerCase() === provider.toLowerCase()) detailLine = 'Offer';
+  let detailLine = resolveLiveOfferDetail(tx, meta, provider, type);
+  if (provider && detailLine.toLowerCase() === provider.toLowerCase()) detailLine = GENERIC_DETAIL_FALLBACK;
 
   return { sourceLine, detailLine };
 };
