@@ -497,7 +497,6 @@ const Wallet = () => {
                   className="flex items-center justify-center gap-1.5 mt-0.5"
                   style={{
                     minWidth: '103px',
-                    height: '11px',
                     opacity: 1,
                   }}
                 >
@@ -511,12 +510,13 @@ const Wallet = () => {
                       fontFamily: '"Poppins", sans-serif',
                       fontWeight: 500,
                       fontSize: '16px',
-                      lineHeight: '28px',
+                      lineHeight: '24px',
                       letterSpacing: '0%',
                       color: '#D99806',
                       display: 'flex',
                       alignItems: 'center',
                       gap: '4px',
+                      whiteSpace: 'nowrap',
                     }}
                   >
                     {settings?.coinsPerUSD ? settings.coinsPerUSD.toLocaleString('de-DE') : '1.000'}

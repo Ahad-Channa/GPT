@@ -73,6 +73,15 @@ const legalPageSchema = new mongoose.Schema(
       type: String,
       default: '',
     },
+    // Italian content
+    title_it: {
+      type: String,
+      default: '',
+    },
+    content_it: {
+      type: String,
+      default: '',
+    },
     // Last edited by (admin user ID)
     lastEditedBy: {
       type: mongoose.Schema.Types.ObjectId,
@@ -104,6 +113,8 @@ legalPageSchema.statics.getBySlug = async function (slug) {
       content_ru: template.content_ru || '',
       title_pt: template.title_pt || '',
       content_pt: template.content_pt || '',
+      title_it: template.title_it || '',
+      content_it: template.content_it || '',
     });
   } else {
     let changed = false;
@@ -140,6 +151,11 @@ legalPageSchema.statics.getBySlug = async function (slug) {
       page.content_pt = template.content_pt || '';
       changed = true;
     }
+    if (!page.content_it && template.content_it) {
+      page.title_it = template.title_it || '';
+      page.content_it = template.content_it || '';
+      changed = true;
+    }
     if (slug === 'cookie-policy' && (!page.content_en.includes('__tm_did') || !page.content_de.includes('__tm_did'))) {
       page.content_en = template.content_en;
       page.content_de = template.content_de;
@@ -164,6 +180,10 @@ legalPageSchema.statics.getBySlug = async function (slug) {
       if (!page.content_pt && template.content_pt) {
         page.title_pt = template.title_pt;
         page.content_pt = template.content_pt;
+      }
+      if (!page.content_it && template.content_it) {
+        page.title_it = template.title_it;
+        page.content_it = template.content_it;
       }
       changed = true;
     }

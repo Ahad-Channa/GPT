@@ -10,11 +10,11 @@ import Footer from '../components/layout/Footer';
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
 const TABS = [
-  { slug: 'terms-of-use', labelEn: 'Terms of Service', labelDe: 'Nutzungsbedingungen', labelUr: 'استعمال کی شرائط', labelFr: "Conditions d'Utilisation", labelEs: 'Términos de Servicio' },
-  { slug: 'privacy-policy', labelEn: 'Privacy Policy', labelDe: 'Datenschutzerklärung', labelUr: 'پرائیویسی پالیسی', labelFr: 'Politique de Confidentialité', labelEs: 'Política de Privacidad' },
-  { slug: 'cookie-policy', labelEn: 'Cookie Policy', labelDe: 'Cookie-Richtlinie', labelUr: 'کوکی پالیسی', labelFr: 'Politique de Cookies', labelEs: 'Política de Cookies' },
-  { slug: 'affiliate-policy', labelEn: 'Affiliate Policy', labelDe: 'Affiliate-Richtlinie', labelUr: 'ایفیلی ایٹ پالیسی', labelFr: "Conditions d'Affiliation", labelEs: 'Política de Afiliados' },
-  { slug: 'impressum', labelEn: 'Impressum', labelDe: 'Impressum', labelUr: 'امپریسم (قانونی معلومات)', labelFr: 'Mentions Légales', labelEs: 'Aviso Legal' },
+  { slug: 'terms-of-use', labelEn: 'Terms of Service', labelDe: 'Nutzungsbedingungen', labelUr: 'استعمال کی شرائط', labelFr: "Conditions d'Utilisation", labelEs: 'Términos de Servicio', labelIt: 'Termini di Servizio' },
+  { slug: 'privacy-policy', labelEn: 'Privacy Policy', labelDe: 'Datenschutzerklärung', labelUr: 'پرائیویسی پالیسی', labelFr: 'Politique de Confidentialité', labelEs: 'Política de Privacidad', labelIt: 'Informativa sulla Privacy' },
+  { slug: 'cookie-policy', labelEn: 'Cookie Policy', labelDe: 'Cookie-Richtlinie', labelUr: 'کوکی پالیسی', labelFr: 'Politique de Cookies', labelEs: 'Política de Cookies', labelIt: 'Politica sui Cookie' },
+  { slug: 'affiliate-policy', labelEn: 'Affiliate Policy', labelDe: 'Affiliate-Richtlinie', labelUr: 'ایفیلی ایٹ پالیسی', labelFr: "Conditions d'Affiliation", labelEs: 'Política de Afiliados', labelIt: 'Politica di Affiliazione' },
+  { slug: 'impressum', labelEn: 'Impressum', labelDe: 'Impressum', labelUr: 'امپریسم (قانونی معلومات)', labelFr: 'Mentions Légales', labelEs: 'Aviso Legal', labelIt: 'Note Legali (Impressum)' },
 ];
 
 const SLUG_ALIASES = {
@@ -178,6 +178,7 @@ export default function Policies({ customSlug }) {
   const isFr = i18n?.language?.startsWith('fr');
   const isEs = i18n?.language?.startsWith('es');
   const isUr = i18n?.language === 'ur' || i18n?.language?.startsWith('ur');
+  const isIt = i18n?.language?.startsWith('it');
   const { isDarkMode } = useTheme();
   const { openCookieSettings, cookiesList } = useCookieConsent();
 
@@ -255,8 +256,10 @@ export default function Policies({ customSlug }) {
         ? (currentPage.title_fr || currentPage.title_en)
         : isEs
         ? (currentPage.title_es || currentPage.title_en)
+        : isIt
+        ? (currentPage.title_it || currentPage.title_en)
         : (currentPage.title_en || currentPage.title_de))
-    : (TABS.find(t => t.slug === activeSlug)?.[isUr ? 'labelUr' : isDe ? 'labelDe' : isFr ? 'labelFr' : isEs ? 'labelEs' : 'labelEn'] || 'Policy');
+    : (TABS.find(t => t.slug === activeSlug)?.[isUr ? 'labelUr' : isDe ? 'labelDe' : isFr ? 'labelFr' : isEs ? 'labelEs' : isIt ? 'labelIt' : 'labelEn'] || 'Policy');
 
   const currentContent = currentPage
     ? (isUr
@@ -267,6 +270,8 @@ export default function Policies({ customSlug }) {
         ? (currentPage.content_fr || currentPage.content_en || '')
         : isEs
         ? (currentPage.content_es || currentPage.content_en || '')
+        : isIt
+        ? (currentPage.content_it || currentPage.content_en || '')
         : (currentPage.content_en || currentPage.content_de || ''))
     : '';
 
@@ -283,7 +288,7 @@ export default function Policies({ customSlug }) {
 
   const renderTabButton = (tab, isMobile = false, isRow1 = false) => {
     const isActive = activeSlug === tab.slug;
-    const tabLabel = isUr ? tab.labelUr : isDe ? tab.labelDe : isFr ? tab.labelFr : isEs ? tab.labelEs : tab.labelEn;
+    const tabLabel = isUr ? tab.labelUr : isDe ? tab.labelDe : isFr ? tab.labelFr : isEs ? tab.labelEs : isIt ? tab.labelIt : tab.labelEn;
     return (
       <button
         key={tab.slug}

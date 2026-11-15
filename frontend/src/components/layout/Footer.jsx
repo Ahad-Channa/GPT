@@ -24,6 +24,7 @@ const Footer = () => {
   const isUr = i18n?.language === 'ur' || i18n?.language?.startsWith('ur');
   const isRu = i18n?.language?.startsWith('ru');
   const isPt = i18n?.language?.startsWith('pt');
+  const isIt = i18n?.language?.startsWith('it');
   const [isMobile, setIsMobile] = useState(
     typeof window !== 'undefined' ? window.innerWidth < 1024 : false
   );
@@ -454,13 +455,15 @@ const Footer = () => {
             className={`flex items-center justify-center lg:justify-start flex-wrap lg:flex-nowrap whitespace-nowrap overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none'] w-full mt-6 lg:mt-auto pt-2 lg:pt-4 transition-all duration-300 ${
               isRu
                 ? 'text-[8.5px] sm:text-[9px] md:text-[9.5px] lg:text-[7.8px] xl:text-[8.8px] gap-x-1 sm:gap-x-1 lg:gap-x-[3px] tracking-tight'
-                : isFr
-                  ? 'text-[9px] sm:text-[9.5px] md:text-[10px] lg:text-[9.4px] xl:text-[10.2px] gap-x-1 sm:gap-x-1 lg:gap-x-1 tracking-tight'
-                  : isEs
-                    ? 'text-[9px] sm:text-[9.5px] md:text-[10px] lg:text-[9.6px] xl:text-[10.4px] gap-x-1 sm:gap-x-1.2 lg:gap-x-1.2 tracking-tight'
-                    : (isDe || isPt)
-                      ? 'text-[9.5px] sm:text-[10px] md:text-[10.5px] lg:text-[10px] xl:text-[10.8px] gap-x-1 sm:gap-x-1.5 lg:gap-x-1.5 tracking-tight'
-                      : 'text-[12px] sm:text-[13px] gap-x-2 sm:gap-x-2.5'
+                : isIt
+                  ? 'text-[9px] sm:text-[9.5px] md:text-[10px] lg:text-[9.1px] xl:text-[10.1px] gap-x-1 sm:gap-x-1.2 lg:gap-x-[4px] xl:gap-x-1.2 tracking-tight'
+                  : isFr
+                    ? 'text-[9px] sm:text-[9.5px] md:text-[10px] lg:text-[9.4px] xl:text-[10.2px] gap-x-1 sm:gap-x-1 lg:gap-x-1 tracking-tight'
+                    : isEs
+                      ? 'text-[9px] sm:text-[9.5px] md:text-[10px] lg:text-[9.6px] xl:text-[10.4px] gap-x-1 sm:gap-x-1.2 lg:gap-x-1.2 tracking-tight'
+                      : (isDe || isPt)
+                        ? 'text-[9.5px] sm:text-[10px] md:text-[10.5px] lg:text-[10px] xl:text-[10.8px] gap-x-1 sm:gap-x-1.5 lg:gap-x-1.5 tracking-tight'
+                        : 'text-[12px] sm:text-[13px] gap-x-2 sm:gap-x-2.5'
             }`}
             style={{
               fontFamily: '"Poppins", sans-serif',

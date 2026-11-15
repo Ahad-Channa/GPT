@@ -28,7 +28,9 @@ const LanguageToggle = ({
                 ? 'es'
                 : (i18n.language?.startsWith('ru')
                     ? 'ru'
-                    : (i18n.language?.startsWith('pt') ? 'pt' : 'en')))));
+                    : (i18n.language?.startsWith('pt')
+                        ? 'pt'
+                        : (i18n.language?.startsWith('it') ? 'it' : 'en'))))));
 
   const selectLanguage = (lang) => {
     i18n.changeLanguage(lang);
@@ -110,9 +112,11 @@ const LanguageToggle = ({
                         ? '/coins/RU.svg'
                         : currentLang === 'pt'
                           ? '/coins/PT.svg'
-                          : '/coins/PK.svg'
+                          : currentLang === 'it'
+                            ? '/coins/IT.svg'
+                            : '/coins/PK.svg'
             }
-            alt={currentLang === 'en' ? 'EN Flag' : currentLang === 'de' ? 'DE Flag' : currentLang === 'fr' ? 'FR Flag' : currentLang === 'es' ? 'ES Flag' : currentLang === 'ru' ? 'RU Flag' : currentLang === 'pt' ? 'PT Flag' : 'UR Flag'}
+            alt={currentLang === 'en' ? 'EN Flag' : currentLang === 'de' ? 'DE Flag' : currentLang === 'fr' ? 'FR Flag' : currentLang === 'es' ? 'ES Flag' : currentLang === 'ru' ? 'RU Flag' : currentLang === 'pt' ? 'PT Flag' : currentLang === 'it' ? 'IT Flag' : 'UR Flag'}
             className="w-full h-full object-cover"
           />
         </div>
@@ -421,6 +425,43 @@ const LanguageToggle = ({
                 <img
                   src="/coins/PT.svg"
                   alt="Portuguese Flag"
+                  className="w-full h-full object-cover"
+                />
+              </div>
+            </button>
+
+            {/* Divider */}
+            <div
+              style={{
+                width: '100%',
+                height: '1px',
+                background: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.06)',
+                margin: '8px 0',
+                flexShrink: 0,
+              }}
+            />
+
+            {/* 8. Italian */}
+            <button
+              type="button"
+              onClick={() => selectLanguage('it')}
+              className="flex items-center justify-between w-full py-1 cursor-pointer bg-transparent border-0 hover:opacity-75 transition-opacity"
+            >
+              <span
+                style={{
+                  fontFamily: 'Poppins, sans-serif',
+                  fontWeight: currentLang === 'it' ? 600 : 400,
+                  fontSize: '15px',
+                  lineHeight: '20px',
+                  color: currentLang === 'it' ? (isDarkMode ? '#FFFFFF' : '#0E0F0C') : (isDarkMode ? '#9CA3AF' : '#8E8E93'),
+                }}
+              >
+                Italiano
+              </span>
+              <div className="w-[24px] h-[24px] rounded-full overflow-hidden shrink-0 flex items-center justify-center">
+                <img
+                  src="/coins/IT.svg"
+                  alt="Italian Flag"
                   className="w-full h-full object-cover"
                 />
               </div>

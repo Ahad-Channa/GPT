@@ -136,11 +136,10 @@ export default function DailyBonus() {
                 }}
               >
                 {/* Top Row inside Left Card */}
-                <div className="flex items-center sm:items-start justify-between gap-2 sm:gap-4 w-full">
+                <div className="flex items-center sm:items-start justify-between gap-3 sm:gap-6 w-full">
                   <div
-                    className="flex flex-col justify-center min-w-0"
+                    className="flex flex-col justify-center min-w-0 flex-1 max-w-[490px]"
                     style={{
-                      maxWidth: '371px',
                       opacity: 1,
                     }}
                   >
@@ -163,7 +162,7 @@ export default function DailyBonus() {
                       {t('dailyBonus.pageTitle', 'Daily Bonus')}
                     </h1>
                     <p
-                      className="text-[12px] sm:text-[14px] mt-1 sm:whitespace-nowrap"
+                      className="text-[12px] sm:text-[14px] mt-1"
                       style={{
                         fontFamily: '"Poppins", sans-serif',
                         fontWeight: 400,
