@@ -439,7 +439,25 @@ test('multi-step direct reward stores the completed goal label in the ledger des
   assert.equal(state.transactions[0].metadata.stepLabel, 'Fight 20 Battles');
 });
 
-// ─── Route guard markers ──────────────────────────────────────────────────────
+test('multi-step direct notification humanizes the step label without changing stored IDs', async () => {
+  const { state, models } = makeRewardState({ goalKey: 'fight_20_battles' });
+  state.click.goalsSnapshot.fight_20_battles.label = 'fight_20_battles';
+  const notifications = [];
+  const hooks = {
+    notify: async (...args) => { notifications.push(args); },
+    emitWalletUpdate: () => {},
+    processVipLevelUp: async () => {},
+  };
+
+  const result = await processReward({ conversion: state.conversion, models, hooks });
+
+  assert.equal(result.ok, true);
+  assert.match(notifications[0][3], /Fight 20 Battles/);
+  assert.doesNotMatch(notifications[0][3], /fight_20_battles/);
+  assert.equal(state.transactions[0].metadata.goalKey, 'fight_20_battles');
+  assert.equal(state.transactions[0].metadata.stepLabel, 'fight_20_battles');
+  assert.equal(state.transactions[0].description, 'Plarium Vikings - fight_20_battles');
+});
 
 test('manual start reuses an existing submission/click before reserving a new slot', () => {
   const source = read('backend/routes/directOffers.js');

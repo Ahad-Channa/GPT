@@ -10,6 +10,7 @@ const { notifyAdmins } = require('../utils/adminNotify');
 const { emitWalletUpdate, emitToUser } = require('../utils/walletEvents');
 const { processVipLevelUp } = require('../utils/vipUtils');
 const { getEarningHoldDecision } = require('../utils/earningTypes');
+const { humanizeDisplayLabel } = require('../utils/displayLabels');
 const { sanitizePostbackPayload } = require('../services/tracking/postbackSanitizer');
 const { createOne, withSession } = require('../services/rewards/atomicRunner');
 
@@ -713,7 +714,7 @@ const handleLegacyOfferwallPostback = async (providerId, req, res, params = {}, 
       ? Math.max(1, Math.ceil((new Date(holdDate).getTime() - Date.now()) / (1000 * 60 * 60 * 24)))
       : 0;
     const providerName = provider.label || providerId;
-    const rewardLabel = stepLabel || offerTitle;
+    const rewardLabel = humanizeDisplayLabel(stepLabel || offerTitle);
     const notifMsg = txStatus === 'hold'
       ? rewardLabel
         ? `You earned +${platformCoins} coins for "${rewardLabel}" via ${providerName}. It is on hold for ${holdDaysRemaining} days.`

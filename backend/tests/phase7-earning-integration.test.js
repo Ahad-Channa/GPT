@@ -261,6 +261,41 @@ test('earning hold release credits wallet once and marks walletApplied for later
   assert.deepEqual(user.releasedEarningHoldTransactionIds, ['tx-1']);
 });
 
+test('hold release notification humanizes raw goal labels without changing the stored description', async () => {
+  const now = new Date('2026-08-20T00:00:00.000Z');
+  const user = makeDoc({
+    _id: 'user-humanize',
+    walletBalance: 100,
+    releasedEarningHoldTransactionIds: [],
+  });
+  const description = 'Plarium Vikings - fight_20_battles';
+  const tx = makeDoc({
+    _id: 'tx-humanize',
+    userId: 'user-humanize',
+    transactionType: 'direct_offer_reward',
+    amount: 500,
+    status: 'hold',
+    holdUntil: now,
+    balanceAfter: 100,
+    metadata: { walletApplied: false },
+    description,
+  });
+  const state = { users: [user], transactions: [tx] };
+  const notifications = [];
+
+  const result = await releaseEarningHoldTransaction({
+    tx,
+    now,
+    models: makeHoldReleaseModels(state),
+    hooks: { notify: async (...args) => { notifications.push(args); } },
+  });
+
+  assert.equal(result.released, true);
+  assert.match(notifications[0][3], /Fight 20 Battles/);
+  assert.doesNotMatch(notifications[0][3], /fight_20_battles/);
+  assert.equal(tx.description, description);
+});
+
 test('reversed held reward is not eligible for later hold release', async () => {
   const now = new Date('2026-08-20T00:00:00.000Z');
   const user = makeDoc({

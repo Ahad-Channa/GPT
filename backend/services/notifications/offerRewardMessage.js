@@ -1,5 +1,7 @@
 const OFFER_EARNING_TYPES = new Set(['offer_reward', 'custom_offer_reward', 'direct_offer_reward']);
 
+const { humanizeDisplayLabel, humanizeMachineTokensInText } = require('../../utils/displayLabels');
+
 const clean = (value) => String(value || '').trim();
 
 const getHoldDays = (transaction) => {
@@ -21,21 +23,24 @@ const buildOfferRewardMessage = (transaction) => {
   }
 
   const metadata = transaction.metadata || {};
-  const step = clean(metadata.stepLabel || metadata.goalLabel);
-  const offerTitle = clean(metadata.offerTitle || metadata.campaignTitle || metadata.campaign);
+  const step = humanizeDisplayLabel(metadata.stepLabel || metadata.goalLabel);
+  const offerTitle = humanizeDisplayLabel(metadata.offerTitle || metadata.campaignTitle || metadata.campaign);
   const providerName = clean(metadata.providerName || metadata.providerId);
   let message;
 
   if (transaction.transactionType === 'direct_offer_reward') {
-    const label = step || offerTitle || clean(transaction.description);
+    const label = step || offerTitle || humanizeMachineTokensInText(clean(transaction.description));
     if (!label || /^(direct offer reward|offer reward)$/i.test(label)) return null;
     message = `You earned +${Number(transaction.amount).toLocaleString()} coins for completing "${label}".`;
   } else if (transaction.transactionType === 'custom_offer_reward') {
-    const label = offerTitle || clean(transaction.description).replace(/^(custom offer reward:|reward for custom offer:)/i, '').trim();
+    const label = humanizeDisplayLabel(
+      offerTitle || clean(transaction.description).replace(/^(custom offer reward:|reward for custom offer:)/i, '').trim()
+    );
     if (!label || /^(custom offer reward|offer reward)$/i.test(label)) return null;
     message = `You earned +${Number(transaction.amount).toLocaleString()} coins for "${label}".`;
-  } else if (offerTitle) {
-    message = `You earned +${Number(transaction.amount).toLocaleString()} coins for "${offerTitle}"${providerName ? ` via ${providerName}` : ''}.`;
+  } else if (offerTitle || step) {
+    const label = step || offerTitle;
+    message = `You earned +${Number(transaction.amount).toLocaleString()} coins for "${label}"${providerName ? ` via ${providerName}` : ''}.`;
   } else if (providerName) {
     message = `You earned +${Number(transaction.amount).toLocaleString()} coins from ${providerName}.`;
   } else {

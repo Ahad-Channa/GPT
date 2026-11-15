@@ -10,6 +10,7 @@ const { processVipLevelUp } = require('../../utils/vipUtils');
 const { getEarningHoldDecision, REAL_OFFER_EARNING_TYPES } = require('../../utils/earningTypes');
 const { findCreditedConversionForClickLog } = require('../tracking/conversionService');
 const { DIRECT_OFFER_SOURCE_LABEL } = require('../tracking/directOfferProvider');
+const { humanizeDisplayLabel } = require('../../utils/displayLabels');
 const { createOne, runAtomic, withSession } = require('./atomicRunner');
 
 const ACTIVE_CREDIT_STATUSES = ['completed', 'hold'];
@@ -438,7 +439,9 @@ const processReward = async ({
   for (const effect of sideEffects) {
     try {
       const isHeld = effect.rewardTx.status === 'hold';
-      const rewardLabel = (String(effect.rewardLabel || '').trim() || 'this offer').slice(0, 150);
+      const rewardLabel = humanizeDisplayLabel(
+        (String(effect.rewardLabel || '').trim() || 'this offer').slice(0, 150)
+      );
       // Use the actual transaction hold window (holdUntil) rather than a fixed 30.
       const holdUntil = effect.rewardTx?.holdUntil ? new Date(effect.rewardTx.holdUntil) : null;
       const holdDays = holdUntil

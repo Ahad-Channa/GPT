@@ -278,7 +278,7 @@ test('offerwall transaction carries providerName and uses actual hold duration',
   assert.match(source, /offerTitle: offerTitle \|\| null/);
   assert.match(source, /stepLabel: stepLabel \|\| null/);
   assert.match(source, /holdDays: holdDaysRemaining/);
-  assert.match(source, /const rewardLabel = stepLabel \|\| offerTitle/);
+  assert.match(source, /const rewardLabel = humanizeDisplayLabel\(stepLabel \|\| offerTitle\)/);
   assert.match(source, /You earned \+\$\{platformCoins\} coins for "\$\{rewardLabel\}" via \$\{providerName\}/);
   assert.match(source, /router\.post\(`\/postback\/\$\{providerId\}`/);
 });
@@ -298,8 +298,16 @@ test('older generic reward notifications are enriched from their own linked tran
   const source = read('backend/routes/notifications.js');
   assert.match(source, /Transaction\.find\(\{ _id: \{ \$in: linkedIds \}, userId: user\._id \}\)/);
   assert.match(source, /buildOfferRewardMessage\(transaction\)/);
+  assert.match(source, /humanizeMachineTokensInText\(notification\.message\)/);
   assert.match(source, /notification\.message = message/);
   assert.match(source, /Legacy offerwall notifications did not store txId/);
+});
+
+test('hold-release notification paths humanize stored labels', () => {
+  const job = read('backend/utils/earningHoldJob.js');
+  assert.match(job, /humanizeDisplayLabel\(offerTitle\)/);
+  const admin = read('backend/routes/admin.js');
+  assert.match(admin, /humanizeDisplayLabel\(offerTitle\)/);
 });
 
 test('linked offer rewards produce specific notifications with the actual hold period', () => {
@@ -319,6 +327,68 @@ test('linked offer rewards produce specific notifications with the actual hold p
     }),
     'You earned +250 coins for "Survey 42" via CPX Research. The reward is available now.'
   );
+});
+
+test('reward notification labels humanize raw goal IDs while preserving readable names', () => {
+  const { humanizeDisplayLabel, humanizeMachineTokensInText } = require('../utils/displayLabels');
+  assert.equal(humanizeDisplayLabel('fight_20_battles'), 'Fight 20 Battles');
+  assert.equal(humanizeDisplayLabel('fight__20_battles'), 'Fight 20 Battles');
+  assert.equal(humanizeDisplayLabel('Reach Level 10'), 'Reach Level 10');
+  assert.equal(humanizeDisplayLabel('Lootably Offer Reward'), 'Lootably Offer Reward');
+  assert.equal(humanizeDisplayLabel('Coca-Cola'), 'Coca-Cola');
+  assert.equal(
+    humanizeMachineTokensInText('Your reward for "fight_20_battles" is ready.'),
+    'Your reward for "Fight 20 Battles" is ready.'
+  );
+});
+
+test('offer reward notification builder uses humanized labels for direct and offerwall rewards', () => {
+  const { buildOfferRewardMessage } = require('../services/notifications/offerRewardMessage');
+
+  assert.equal(
+    buildOfferRewardMessage({
+      transactionType: 'direct_offer_reward',
+      amount: 5000,
+      status: 'completed',
+      metadata: { offerTitle: 'Plarium', stepLabel: 'fight_20_battles' },
+    }),
+    'You earned +5,000 coins for completing "Fight 20 Battles". The reward is available now.'
+  );
+  assert.equal(
+    buildOfferRewardMessage({
+      transactionType: 'offer_reward',
+      amount: 250,
+      status: 'completed',
+      metadata: { providerName: 'Lootably', offerTitle: 'Plarium', stepLabel: 'fight_20_battles' },
+    }),
+    'You earned +250 coins for "Fight 20 Battles" via Lootably. The reward is available now.'
+  );
+  assert.equal(
+    buildOfferRewardMessage({
+      transactionType: 'offer_reward',
+      amount: 250,
+      status: 'completed',
+      metadata: { providerName: 'Lootably', offerTitle: 'Reach Level 10' },
+    }),
+    'You earned +250 coins for "Reach Level 10" via Lootably. The reward is available now.'
+  );
+});
+
+test('Linked notification labels are normalized in English and German renderings', async () => {
+  const { localizeNotification } = await loadLocalizer();
+  const notification = {
+    title: 'Offer Reward on Hold',
+    message: 'You earned +5,000 coins for completing "fight_20_battles". It is on hold for 30 days.',
+  };
+
+  const english = localizeNotification(notification, 'en').message;
+  assert.match(english, /Fight 20 Battles/);
+  assert.doesNotMatch(english, /fight_20_battles/);
+
+  const german = localizeNotification(notification, 'de').message;
+  assert.match(german, /Fight 20 Battles/);
+  assert.match(german, /30 Tage/);
+  assert.doesNotMatch(german, /fight_20_battles/);
 });
 
 test('reward notifications localize offer name, step, and hold duration', async () => {

@@ -268,6 +268,7 @@ const lootablyReq = ({
   userId = USER_ID,
   offerType = 'multistep',
   goalId = 'goal-install',
+  goalDescription = 'Install and open',
   currencyReward = 120,
   secret = 'lootably-test-webhook-secret',
   placementId = 'placement-test-123',
@@ -291,7 +292,7 @@ const lootablyReq = ({
       revenue: 1.2,
       currencyReward,
       offerType,
-      ...(offerType === 'multistep' ? { goalID: goalId, goalDescription: 'Install and open' } : {}),
+      ...(offerType === 'multistep' ? { goalID: goalId, goalDescription } : {}),
     },
   },
   headers: {
@@ -425,6 +426,26 @@ test('Lootably single-step webhook persists the real offerName as the offer titl
   assert.equal(reward.metadata.campaignTitle, 'Sample App');
   assert.equal(reward.metadata.stepLabel, null);
   assert.equal(reward.description, 'Sample App');
+});
+
+test('Lootably offerwall notification humanizes raw goal IDs without changing stored metadata', async () => {
+  const world = makeWorld();
+  const res = await runLootably(world, lootablyReq({
+    webhookId: 'wh-humanize-goal',
+    transactionId: 'T-humanize',
+    goalId: 'goal-fight',
+    goalDescription: 'fight_20_battles',
+    currencyReward: 125,
+  }));
+
+  assert.equal(res.statusCode, 200);
+  const notification = world.userNotifications[0];
+  assert.ok(notification, 'user notification must be sent');
+  assert.match(notification[3], /Fight 20 Battles/);
+  assert.doesNotMatch(notification[3], /fight_20_battles/);
+  const reward = rewards(world)[0];
+  assert.equal(reward.metadata.stepLabel, 'fight_20_battles');
+  assert.equal(reward.metadata.offerTitle, 'Sample App');
 });
 
 test('Lootably webhook credits once, reverses the same step once, and permits a fresh conversion or a different step', async () => {

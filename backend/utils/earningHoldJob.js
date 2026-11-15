@@ -3,6 +3,7 @@ const User = require('../models/User');
 const Transaction = require('../models/Transaction');
 const notify = require('./notify');
 const { REAL_OFFER_EARNING_TYPES } = require('./earningTypes');
+const { humanizeDisplayLabel } = require('./displayLabels');
 
 const RELEASE_STALE_MS = 15 * 60 * 1000;
 
@@ -29,7 +30,7 @@ const extractOfferTitle = (description = '') => {
   } else if (description.includes('Manual reward: ')) {
     offerTitle = description.replace('Manual reward: ', '');
   }
-  return offerTitle;
+  return humanizeDisplayLabel(offerTitle);
 };
 
 const releaseEarningHoldTransaction = async ({

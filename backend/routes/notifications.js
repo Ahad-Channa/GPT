@@ -5,6 +5,7 @@ const { verifyToken } = require('../middlewares/authMiddleware');
 const Transaction = require('../models/Transaction');
 const mongoose = require('mongoose');
 const { buildOfferRewardMessage } = require('../services/notifications/offerRewardMessage');
+const { humanizeMachineTokensInText } = require('../utils/displayLabels');
 
 // GET /api/notifications
 // Returns 30 most recent notifications + unreadCount
@@ -87,6 +88,7 @@ router.get('/', verifyToken, async (req, res) => {
 
         const message = buildOfferRewardMessage(transaction);
         if (message) notification.message = message;
+        else notification.message = humanizeMachineTokensInText(notification.message);
       }
     }
 

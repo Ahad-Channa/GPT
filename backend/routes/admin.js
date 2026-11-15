@@ -52,6 +52,7 @@ const { createOrResolveConversion, findCreditedConversionForClickLog } = require
 const { buildDirectOfferProviderConfig } = require('../services/tracking/directOfferProvider');
 const { syncManualProofSubmissionStatus } = require('../services/tracking/manualProofService');
 const { normalizeOfferTranslations } = require('../utils/offerTranslations');
+const { humanizeDisplayLabel } = require('../utils/displayLabels');
 
 const PROVIDER_TYPES = ['offerwall', 'direct', 'affiliate_network', 'advertiser', 'internal'];
 const SECURITY_METHODS = ['none', 'shared_secret', 'md5', 'sha1', 'sha256', 'sha512', 'hmac', 'token', 'custom_adapter'];
@@ -2150,7 +2151,7 @@ router.post('/earnings-holds/release-now', requirePermission('manage_withdrawals
         user._id,
         'earning_released',
         'Held Earnings Released!',
-        `Your held reward for "${offerTitle}" has been released! +${tx.amount} coins have been credited to your wallet.`,
+        `Your held reward for "${humanizeDisplayLabel(offerTitle)}" has been released! +${tx.amount} coins have been credited to your wallet.`,
         { amount: tx.amount, txId: tx._id }
       );
 
