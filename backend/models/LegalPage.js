@@ -91,6 +91,15 @@ const legalPageSchema = new mongoose.Schema(
       type: String,
       default: '',
     },
+    // Turkish content
+    title_tr: {
+      type: String,
+      default: '',
+    },
+    content_tr: {
+      type: String,
+      default: '',
+    },
     // Last edited by (admin user ID)
     lastEditedBy: {
       type: mongoose.Schema.Types.ObjectId,
@@ -126,6 +135,8 @@ legalPageSchema.statics.getBySlug = async function (slug) {
       content_it: template.content_it || '',
       title_pl: template.title_pl || '',
       content_pl: template.content_pl || '',
+      title_tr: template.title_tr || '',
+      content_tr: template.content_tr || '',
     });
   } else {
     let changed = false;
@@ -172,6 +183,11 @@ legalPageSchema.statics.getBySlug = async function (slug) {
       page.content_pl = template.content_pl || '';
       changed = true;
     }
+    if (!page.content_tr && template.content_tr) {
+      page.title_tr = template.title_tr || '';
+      page.content_tr = template.content_tr || '';
+      changed = true;
+    }
     if (slug === 'cookie-policy' && (!page.content_en.includes('__tm_did') || !page.content_de.includes('__tm_did'))) {
       page.content_en = template.content_en;
       page.content_de = template.content_de;
@@ -204,6 +220,10 @@ legalPageSchema.statics.getBySlug = async function (slug) {
       if (!page.content_pl && template.content_pl) {
         page.title_pl = template.title_pl;
         page.content_pl = template.content_pl;
+      }
+      if (!page.content_tr && template.content_tr) {
+        page.title_tr = template.title_tr;
+        page.content_tr = template.content_tr;
       }
       changed = true;
     }

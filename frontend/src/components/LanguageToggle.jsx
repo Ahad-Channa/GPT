@@ -32,7 +32,9 @@ const LanguageToggle = ({
               ? 'pt'
               : (i18n.language?.startsWith('it')
                 ? 'it'
-                : (i18n.language?.startsWith('pl') ? 'pl' : 'en')))))));
+                : (i18n.language?.startsWith('pl')
+                  ? 'pl'
+                  : (i18n.language?.startsWith('tr') ? 'tr' : 'en'))))))));
 
   const selectLanguage = (lang) => {
     i18n.changeLanguage(lang);
@@ -70,10 +72,10 @@ const LanguageToggle = ({
         type="button"
         onClick={() => setIsOpen(prev => !prev)}
         className={`flex items-center justify-center transition-all cursor-pointer select-none border-0 active:scale-95 ${pillOnMobile
-            ? (isDarkMode
-              ? 'bg-[rgba(255,255,255,0.1)] hover:bg-[rgba(255,255,255,0.16)] px-[10px] h-[44px] rounded-[80px] gap-[6px]'
-              : 'bg-white hover:bg-gray-50 px-[10px] h-[44px] rounded-[80px] gap-[6px]')
-            : 'bg-transparent border-0 p-0 gap-[3px]'
+          ? (isDarkMode
+            ? 'bg-[rgba(255,255,255,0.1)] hover:bg-[rgba(255,255,255,0.16)] px-[10px] h-[44px] rounded-[80px] gap-[6px]'
+            : 'bg-white hover:bg-gray-50 px-[10px] h-[44px] rounded-[80px] gap-[6px]')
+          : 'bg-transparent border-0 p-0 gap-[3px]'
           } lg:gap-[10px] lg:w-[106px] lg:h-[49px] lg:pl-[8px] lg:pr-[14px] lg:rounded-[80px] ${isDarkMode
             ? 'lg:bg-[rgba(255,255,255,0.1)] lg:hover:bg-[rgba(255,255,255,0.16)]'
             : 'lg:bg-white lg:hover:bg-gray-50'
@@ -116,9 +118,11 @@ const LanguageToggle = ({
                             ? '/coins/IT.svg'
                             : currentLang === 'pl'
                               ? '/coins/PL.svg'
-                              : '/coins/PK.svg'
+                              : currentLang === 'tr'
+                                ? '/coins/TR.svg'
+                                : '/coins/PK.svg'
             }
-            alt={currentLang === 'en' ? 'EN Flag' : currentLang === 'de' ? 'DE Flag' : currentLang === 'fr' ? 'FR Flag' : currentLang === 'es' ? 'ES Flag' : currentLang === 'ru' ? 'RU Flag' : currentLang === 'pt' ? 'PT Flag' : currentLang === 'it' ? 'IT Flag' : currentLang === 'pl' ? 'PL Flag' : 'UR Flag'}
+            alt={currentLang === 'en' ? 'EN Flag' : currentLang === 'de' ? 'DE Flag' : currentLang === 'fr' ? 'FR Flag' : currentLang === 'es' ? 'ES Flag' : currentLang === 'ru' ? 'RU Flag' : currentLang === 'pt' ? 'PT Flag' : currentLang === 'it' ? 'IT Flag' : currentLang === 'pl' ? 'PL Flag' : currentLang === 'tr' ? 'TR Flag' : 'UR Flag'}
             className="w-full h-full object-cover"
           />
         </div>
@@ -169,8 +173,8 @@ const LanguageToggle = ({
             exit={{ opacity: 0, y: 6, scale: 0.97 }}
             transition={{ duration: 0.15 }}
             className={`absolute z-50 flex flex-col ${dropdownAlign === 'right'
-                ? 'right-0 top-[48px] lg:top-[56px]'
-                : 'left-0 top-[32px] lg:top-[56px]'
+              ? 'right-0 top-[48px] lg:top-[56px]'
+              : 'left-0 top-[32px] lg:top-[56px]'
               }`}
             style={{
               width: '180px',
@@ -500,6 +504,43 @@ const LanguageToggle = ({
                 <img
                   src="/coins/PL.svg"
                   alt="Polish Flag"
+                  className="w-full h-full object-cover"
+                />
+              </div>
+            </button>
+
+            {/* Divider */}
+            <div
+              style={{
+                width: '100%',
+                height: '1px',
+                background: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.06)',
+                margin: '8px 0',
+                flexShrink: 0,
+              }}
+            />
+
+            {/* 10. Turkish */}
+            <button
+              type="button"
+              onClick={() => selectLanguage('tr')}
+              className="flex items-center justify-between w-full py-1 cursor-pointer bg-transparent border-0 hover:opacity-75 transition-opacity"
+            >
+              <span
+                style={{
+                  fontFamily: 'Poppins, sans-serif',
+                  fontWeight: currentLang === 'tr' ? 600 : 400,
+                  fontSize: '15px',
+                  lineHeight: '20px',
+                  color: currentLang === 'tr' ? (isDarkMode ? '#FFFFFF' : '#0E0F0C') : (isDarkMode ? '#9CA3AF' : '#8E8E93'),
+                }}
+              >
+                Türkçe
+              </span>
+              <div className="w-[24px] h-[24px] rounded-full overflow-hidden shrink-0 flex items-center justify-center">
+                <img
+                  src="/coins/TR.svg"
+                  alt="Turkish Flag"
                   className="w-full h-full object-cover"
                 />
               </div>

@@ -11,6 +11,7 @@ const customOfferSchema = new mongoose.Schema(
     titlePt: { type: String, default: '' },
     titleIt: { type: String, default: '' },
     titlePl: { type: String, default: '' },
+    titleTr: { type: String, default: '' },
     description: { type: String, required: true },
     descriptionDe: { type: String, default: '' },
     descriptionUr: { type: String, default: '' },
@@ -20,6 +21,7 @@ const customOfferSchema = new mongoose.Schema(
     descriptionPt: { type: String, default: '' },
     descriptionIt: { type: String, default: '' },
     descriptionPl: { type: String, default: '' },
+    descriptionTr: { type: String, default: '' },
     rewardAmount: { type: Number, required: true },
     externalLink: { type: String, required: true },
     isActive: { type: Boolean, default: true },
@@ -40,6 +42,7 @@ const customOfferSchema = new mongoose.Schema(
     requirementsPt: [{ type: String }],
     requirementsIt: [{ type: String }],
     requirementsPl: [{ type: String }],
+    requirementsTr: [{ type: String }],
     requirementType: { 
       type: String, 
       enum: ['bullets', 'paragraph'], 

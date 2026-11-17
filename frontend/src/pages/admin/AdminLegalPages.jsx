@@ -67,6 +67,8 @@ const AdminLegalPages = () => {
             content_it: p.content_it || '',
             title_pl: p.title_pl || '',
             content_pl: p.content_pl || '',
+            title_tr: p.title_tr || '',
+            content_tr: p.content_tr || '',
           };
         });
         setEditData(ed);
@@ -402,6 +404,7 @@ Musterstraße 123, 10115 Berlin, Germany
                   { key: 'pt', label: '🇵🇹 Português', flag: '🇵🇹' },
                   { key: 'it', label: '🇮🇹 Italiano', flag: '🇮🇹' },
                   { key: 'pl', label: '🇵🇱 Polski', flag: '🇵🇱' },
+                  { key: 'tr', label: '🇹🇷 Türkçe', flag: '🇹🇷' },
                 ].map(({ key, label }) => (
                   <button
                     key={key}
@@ -434,7 +437,7 @@ Musterstraße 123, 10115 Berlin, Germany
                   textTransform: 'uppercase',
                   letterSpacing: '0.05em',
                 }}>
-                  Page Title ({activeLang === 'en' ? 'English' : activeLang === 'de' ? 'German' : activeLang === 'fr' ? 'French' : activeLang === 'es' ? 'Spanish' : activeLang === 'ru' ? 'Russian' : activeLang === 'pt' ? 'Portuguese' : activeLang === 'it' ? 'Italian' : activeLang === 'pl' ? 'Polish' : 'Urdu'}) *
+                  Page Title ({activeLang === 'en' ? 'English' : activeLang === 'de' ? 'German' : activeLang === 'fr' ? 'French' : activeLang === 'es' ? 'Spanish' : activeLang === 'ru' ? 'Russian' : activeLang === 'pt' ? 'Portuguese' : activeLang === 'it' ? 'Italian' : activeLang === 'pl' ? 'Polish' : activeLang === 'tr' ? 'Turkish' : 'Urdu'}) *
                 </label>
                 <input
                   type="text"
@@ -445,20 +448,22 @@ Musterstraße 123, 10115 Berlin, Germany
                     activeLang === 'en'
                       ? `e.g. ${meta.label}`
                       : activeLang === 'de'
-                      ? `z.B. ${meta.label}`
-                      : activeLang === 'fr'
-                      ? `ex. ${meta.label}`
-                      : activeLang === 'es'
-                      ? `ej. ${meta.label}`
-                      : activeLang === 'ru'
-                      ? `напр. ${meta.label}`
-                      : activeLang === 'pt'
-                      ? `ex. ${meta.label}`
-                      : activeLang === 'it'
-                      ? `es. ${meta.label}`
-                      : activeLang === 'pl'
-                      ? `np. ${meta.label}`
-                      : `مثال: ${meta.label}`
+                        ? `z.B. ${meta.label}`
+                        : activeLang === 'fr'
+                          ? `ex. ${meta.label}`
+                          : activeLang === 'es'
+                            ? `ej. ${meta.label}`
+                            : activeLang === 'ru'
+                              ? `напр. ${meta.label}`
+                              : activeLang === 'pt'
+                                ? `ex. ${meta.label}`
+                                : activeLang === 'it'
+                                  ? `es. ${meta.label}`
+                                  : activeLang === 'pl'
+                                    ? `np. ${meta.label}`
+                                    : activeLang === 'tr'
+                                      ? `örn. ${meta.label}`
+                                      : `مثال: ${meta.label}`
                   }
                   className="admin-input"
                   style={{
@@ -485,7 +490,7 @@ Musterstraße 123, 10115 Berlin, Germany
                     textTransform: 'uppercase',
                     letterSpacing: '0.05em',
                   }}>
-                    Page Content ({activeLang === 'en' ? 'English' : activeLang === 'de' ? 'German' : activeLang === 'fr' ? 'French' : activeLang === 'es' ? 'Spanish' : activeLang === 'ru' ? 'Russian' : activeLang === 'pt' ? 'Portuguese' : activeLang === 'it' ? 'Italian' : activeLang === 'pl' ? 'Polish' : 'Urdu'}) *
+                    Page Content ({activeLang === 'en' ? 'English' : activeLang === 'de' ? 'German' : activeLang === 'fr' ? 'French' : activeLang === 'es' ? 'Spanish' : activeLang === 'ru' ? 'Russian' : activeLang === 'pt' ? 'Portuguese' : activeLang === 'it' ? 'Italian' : activeLang === 'pl' ? 'Polish' : activeLang === 'tr' ? 'Turkish' : 'Urdu'}) *
                   </label>
                   <span style={{ fontSize: '0.75rem', color: '#9CA3AF' }}>
                     Full Markdown Supported
@@ -500,20 +505,22 @@ Musterstraße 123, 10115 Berlin, Germany
                     activeLang === 'en'
                       ? 'Enter the full page content here using Markdown formatting (e.g. ## Heading, ### Subtitle, - Bullets, --- Dividers)...'
                       : activeLang === 'de'
-                      ? 'Geben Sie den vollständigen Seiteninhalt hier mit Markdown-Formatierung ein (z.B. ## Überschrift, ### Untertitel, - Aufzählungspunkte, --- Trennlinie)...'
-                      : activeLang === 'fr'
-                      ? 'Entrez le contenu complet de la page ici en utilisant le format Markdown (ex. ## Titre, ### Sous-titre, - Puces, --- Séparateur)...'
-                      : activeLang === 'es'
-                      ? 'Ingrese el contenido completo de la página aquí usando formato Markdown (ej. ## Encabezado, ### Subtítulo, - Viñetas, --- Divisores)...'
-                      : activeLang === 'ru'
-                      ? 'Введите полный текст страницы здесь, используя разметку Markdown (напр. ## Заголовок, ### Подзаголовок, - Пункты списка, --- Разделители)...'
-                      : activeLang === 'pt'
-                      ? 'Introduza o conteúdo completo da página aqui usando a formatação Markdown (ex. ## Título, ### Subtítulo, - Marcadores, --- Divisores)...'
-                      : activeLang === 'it'
-                      ? 'Inserisci il contenuto completo della pagina qui usando la formattazione Markdown (es. ## Titolo, ### Sottotitolo, - Punti elenco, --- Separatori)...'
-                      : activeLang === 'pl'
-                      ? 'Wprowadź pełną treść strony tutaj, używając formatowania Markdown (np. ## Nagłówek, ### Podtytuł, - Punkty, --- Separatory)...'
-                      : 'مارک ڈاؤن فارمیٹنگ کا استعمال کرتے ہوئے صفحہ کا مواد یہاں درج کریں (جیسے ## ہیڈنگ، ### ذیلی عنوان، - نکات، --- لکیر)...'
+                        ? 'Geben Sie den vollständigen Seiteninhalt hier mit Markdown-Formatierung ein (z.B. ## Überschrift, ### Untertitel, - Aufzählungspunkte, --- Trennlinie)...'
+                        : activeLang === 'fr'
+                          ? 'Entrez le contenu complet de la page ici en utilisant le format Markdown (ex. ## Titre, ### Sous-titre, - Puces, --- Séparateur)...'
+                          : activeLang === 'es'
+                            ? 'Ingrese el contenido completo de la página aquí usando formato Markdown (ej. ## Encabezado, ### Subtítulo, - Viñetas, --- Divisores)...'
+                            : activeLang === 'ru'
+                              ? 'Введите полный текст страницы здесь, используя разметку Markdown (напр. ## Заголовок, ### Подзаголовок, - Пункты списка, --- Разделители)...'
+                              : activeLang === 'pt'
+                                ? 'Introduza o conteúdo completo da página aqui usando a formatação Markdown (ex. ## Título, ### Subtítulo, - Marcadores, --- Divisores)...'
+                                : activeLang === 'it'
+                                  ? 'Inserisci il contenuto completo della pagina qui usando la formattazione Markdown (es. ## Titolo, ### Sottotitolo, - Punti elenco, --- Separatori)...'
+                                  : activeLang === 'pl'
+                                    ? 'Wprowadź pełną treść strony tutaj, używając formatowania Markdown (np. ## Nagłówek, ### Podtytuł, - Punkty, --- Separatory)...'
+                                    : activeLang === 'tr'
+                                      ? 'Sayfa içeriğini Markdown biçimlendirmesi kullanarak buraya girin (ör. ## Başlık, ### Alt başlık, - Maddeler, --- Ayırıcılar)...'
+                                      : 'مارک ڈاؤن فارمیٹنگ کا استعمال کرتے ہوئے صفحہ کا مواد یہاں درج کریں (جیسے ## ہیڈنگ، ### ذیلی عنوان، - نکات، --- لکیر)...'
                   }
                   className="admin-input"
                   rows={24}
@@ -571,8 +578,8 @@ Musterstraße 123, 10115 Berlin, Germany
                 border: '1px solid #BFDBFE',
               }}>
                 <p style={{ margin: 0, fontSize: '0.82rem', color: '#1E40AF', lineHeight: '1.5' }}>
-                  <strong>Tip:</strong> You can write content in both English and German. 
-                  Users will automatically see the version matching their language setting. 
+                  <strong>Tip:</strong> You can write content in both English and German.
+                  Users will automatically see the version matching their language setting.
                   If the German version is empty, the English version will be used as fallback.
                 </p>
               </div>

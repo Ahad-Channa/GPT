@@ -293,6 +293,8 @@ router.get('/legal/:slug', async (req, res) => {
         content_it: page.content_it,
         title_pl: page.title_pl,
         content_pl: page.content_pl,
+        title_tr: page.title_tr,
+        content_tr: page.content_tr,
         updatedAt: page.updatedAt,
       },
     });

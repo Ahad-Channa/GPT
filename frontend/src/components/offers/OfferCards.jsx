@@ -181,7 +181,8 @@ export const FeaturedOfferCard = ({ offer, onClick }) => {
   const isPt = i18n.language?.startsWith('pt');
   const isIt = i18n.language?.startsWith('it');
   const isPl = i18n.language?.startsWith('pl');
-  const title = (isUr && offer.titleUr) ? offer.titleUr : ((isDe && offer.titleDe) ? offer.titleDe : ((isFr && offer.titleFr) ? offer.titleFr : ((isEs && offer.titleEs) ? offer.titleEs : ((isRu && offer.titleRu) ? offer.titleRu : ((isPt && offer.titlePt) ? offer.titlePt : ((isIt && offer.titleIt) ? offer.titleIt : ((isPl && offer.titlePl) ? offer.titlePl : offer.title)))))));
+  const isTr = i18n.language?.startsWith('tr');
+  const title = (isUr && offer.titleUr) ? offer.titleUr : ((isDe && offer.titleDe) ? offer.titleDe : ((isFr && offer.titleFr) ? offer.titleFr : ((isEs && offer.titleEs) ? offer.titleEs : ((isRu && offer.titleRu) ? offer.titleRu : ((isPt && offer.titlePt) ? offer.titlePt : ((isIt && offer.titleIt) ? offer.titleIt : ((isPl && offer.titlePl) ? offer.titlePl : ((isTr && offer.titleTr) ? offer.titleTr : offer.title))))))));
   const isExpired = offer.expirationDate && new Date(offer.expirationDate) < new Date();
   const coverImgSrc = offer.coverImage || (isIconUrl(offer.icon) ? offer.icon : null);
   const emojiIcon = !coverImgSrc && offer.icon ? offer.icon : null;
@@ -192,8 +193,8 @@ export const FeaturedOfferCard = ({ offer, onClick }) => {
       variants={item}
       onClick={onClick}
       className={`cursor-pointer flex flex-col shrink-0 transition-colors duration-300 ${isDarkMode
-          ? 'border border-white/5'
-          : 'bg-white shadow-[0_4px_20px_rgba(0,0,0,0.03)] border border-gray-100/80'
+        ? 'border border-white/5'
+        : 'bg-white shadow-[0_4px_20px_rgba(0,0,0,0.03)] border border-gray-100/80'
         } ${isExpired ? 'opacity-50' : ''}`}
       style={{
         width: '181.14px',
@@ -373,8 +374,9 @@ export const FeaturedOfferModal = ({ offer, token, onClose, onSubmitted }) => {
   const isPt = i18n.language?.startsWith('pt');
   const isIt = i18n.language?.startsWith('it');
   const isPl = i18n.language?.startsWith('pl');
-  const title = (isUr && offer.titleUr) ? offer.titleUr : ((isDe && offer.titleDe) ? offer.titleDe : ((isFr && offer.titleFr) ? offer.titleFr : ((isEs && offer.titleEs) ? offer.titleEs : ((isRu && offer.titleRu) ? offer.titleRu : ((isPt && offer.titlePt) ? offer.titlePt : ((isIt && offer.titleIt) ? offer.titleIt : ((isPl && offer.titlePl) ? offer.titlePl : offer.title)))))));
-  const description = (isUr && offer.descriptionUr) ? offer.descriptionUr : ((isDe && offer.descriptionDe) ? offer.descriptionDe : ((isFr && offer.descriptionFr) ? offer.descriptionFr : ((isEs && offer.descriptionEs) ? offer.descriptionEs : ((isRu && offer.descriptionRu) ? offer.descriptionRu : ((isPt && offer.descriptionPt) ? offer.descriptionPt : ((isIt && offer.descriptionIt) ? offer.descriptionIt : ((isPl && offer.descriptionPl) ? offer.descriptionPl : (offer.description || t('offers.defaultDescription')))))))));
+  const isTr = i18n.language?.startsWith('tr');
+  const title = (isUr && offer.titleUr) ? offer.titleUr : ((isDe && offer.titleDe) ? offer.titleDe : ((isFr && offer.titleFr) ? offer.titleFr : ((isEs && offer.titleEs) ? offer.titleEs : ((isRu && offer.titleRu) ? offer.titleRu : ((isPt && offer.titlePt) ? offer.titlePt : ((isIt && offer.titleIt) ? offer.titleIt : ((isPl && offer.titlePl) ? offer.titlePl : ((isTr && offer.titleTr) ? offer.titleTr : offer.title))))))));
+  const description = (isUr && offer.descriptionUr) ? offer.descriptionUr : ((isDe && offer.descriptionDe) ? offer.descriptionDe : ((isFr && offer.descriptionFr) ? offer.descriptionFr : ((isEs && offer.descriptionEs) ? offer.descriptionEs : ((isRu && offer.descriptionRu) ? offer.descriptionRu : ((isPt && offer.descriptionPt) ? offer.descriptionPt : ((isIt && offer.descriptionIt) ? offer.descriptionIt : ((isPl && offer.descriptionPl) ? offer.descriptionPl : ((isTr && offer.descriptionTr) ? offer.descriptionTr : (offer.description || t('offers.defaultDescription'))))))))));
   const requirementsList = (isUr && offer.requirementsUr && offer.requirementsUr.length > 0)
     ? offer.requirementsUr
     : ((isDe && offer.requirementsDe && offer.requirementsDe.length > 0)
@@ -391,7 +393,9 @@ export const FeaturedOfferModal = ({ offer, token, onClose, onSubmitted }) => {
                 ? offer.requirementsIt
                 : ((isPl && offer.requirementsPl && offer.requirementsPl.length > 0)
                   ? offer.requirementsPl
-                  : offer.requirements)))))));
+                  : ((isTr && offer.requirementsTr && offer.requirementsTr.length > 0)
+                    ? offer.requirementsTr
+                    : offer.requirements))))))));
 
   const [loading, setLoading] = useState(false);
   const [showSupportModal, setShowSupportModal] = useState(false);

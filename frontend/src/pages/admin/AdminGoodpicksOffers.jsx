@@ -32,6 +32,7 @@ const GoodpickModal = ({ offer, onClose, onSaved, token, currentUser }) => {
     titlePt: offer?.titlePt || '',
     titleIt: offer?.titleIt || '',
     titlePl: offer?.titlePl || '',
+    titleTr: offer?.titleTr || '',
     description: offer?.description || '',
     descriptionDe: offer?.descriptionDe || '',
     descriptionUr: offer?.descriptionUr || '',
@@ -41,6 +42,7 @@ const GoodpickModal = ({ offer, onClose, onSaved, token, currentUser }) => {
     descriptionPt: offer?.descriptionPt || '',
     descriptionIt: offer?.descriptionIt || '',
     descriptionPl: offer?.descriptionPl || '',
+    descriptionTr: offer?.descriptionTr || '',
     rewardAmount: offer?.rewardAmount || '',
     externalLink: offer?.externalLink || '',
     expirationDate: offer?.expirationDate ? new Date(offer.expirationDate).toISOString().slice(0, 16) : '',
@@ -73,6 +75,9 @@ const GoodpickModal = ({ offer, onClose, onSaved, token, currentUser }) => {
     requirementsPl: Array.isArray(offer?.requirementsPl)
       ? offer.requirementsPl.join('\n')
       : (offer?.requirementsPl || ''),
+    requirementsTr: Array.isArray(offer?.requirementsTr)
+      ? offer.requirementsTr.join('\n')
+      : (offer?.requirementsTr || ''),
     requirementType: offer?.requirementType || 'bullets',
     platforms: offer?.platforms || { desktop: true, android: true, ios: true },
   });
@@ -128,6 +133,9 @@ const GoodpickModal = ({ offer, onClose, onSaved, token, currentUser }) => {
           requirementsPl: form.requirementType === 'paragraph'
             ? [(form.requirementsPl || '').trim()].filter(Boolean)
             : (form.requirementsPl || '').split('\n').map((r) => r.trim()).filter(Boolean),
+          requirementsTr: form.requirementType === 'paragraph'
+            ? [(form.requirementsTr || '').trim()].filter(Boolean)
+            : (form.requirementsTr || '').split('\n').map((r) => r.trim()).filter(Boolean),
           requirementType: form.requirementType,
           platforms: form.platforms,
         }),
@@ -325,6 +333,20 @@ const GoodpickModal = ({ offer, onClose, onSaved, token, currentUser }) => {
                 <span>Polski</span>
                 {Boolean(form.titlePl) && (
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" title="Polish translated" />
+                )}
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveTab('tr')}
+                className={`flex-1 shrink-0 whitespace-nowrap flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-lg text-xs font-bold transition-all ${activeTab === 'tr'
+                    ? 'bg-white text-gray-900 shadow-sm border border-gray-200'
+                    : 'text-gray-500 hover:text-gray-800'
+                  }`}
+              >
+                <span>🇹🇷</span>
+                <span>Türkçe</span>
+                {Boolean(form.titleTr) && (
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" title="Turkish translated" />
                 )}
               </button>
             </div>
@@ -809,6 +831,56 @@ const GoodpickModal = ({ offer, onClose, onSaved, token, currentUser }) => {
             </div>
           )}
 
+          {/* Tab: Turkish Content */}
+          {activeTab === 'tr' && (
+            <div className="space-y-4">
+              <div>
+                <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1.5">
+                  🇹🇷 Title (Turkish / Türkçe)
+                </label>
+                <input
+                  value={form.titleTr}
+                  onChange={set('titleTr')}
+                  placeholder="örn. CoinMaster'da 10. Seviyeye Ulaşın"
+                  className="w-full bg-white border border-gray-300 rounded-xl px-3.5 py-2 text-gray-900 text-sm placeholder-gray-400 focus:outline-none focus:border-[#1E2538] focus:ring-1 focus:ring-[#1E2538]/20 transition-all"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1.5">
+                  🇹🇷 Description (Turkish / Türkçe)
+                </label>
+                <textarea
+                  value={form.descriptionTr}
+                  onChange={set('descriptionTr')}
+                  placeholder="Kart ve modal penceresi için kısa görev açıklaması..."
+                  rows={2}
+                  className="w-full bg-white border border-gray-300 rounded-xl px-3.5 py-2 text-gray-900 text-sm placeholder-gray-400 focus:outline-none focus:border-[#1E2538] focus:ring-1 focus:ring-[#1E2538]/20 resize-none transition-all"
+                />
+              </div>
+
+              <div>
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                    🇹🇷 Requirements (Turkish / Türkçe)
+                  </label>
+                  <span className="text-[11px] text-gray-400">Format: {form.requirementType === 'paragraph' ? 'Paragraf' : 'Madde İşaretleri'}</span>
+                </div>
+                <textarea
+                  value={form.requirementsTr}
+                  onChange={set('requirementsTr')}
+                  placeholder={
+                    form.requirementType === 'paragraph'
+                      ? 'örn. Uygulamayı cihazınıza indirip kaydolarak bu görevi tamamlayın.'
+                      : 'örn. Hesap açın → 10 Puan alın\nUygulamayı indirin → 5.000 Puan alın'
+                  }
+                  rows={form.requirementType === 'paragraph' ? 2 : 3}
+                  className="w-full bg-white border border-gray-300 rounded-xl px-3.5 py-2 text-gray-900 text-sm placeholder-gray-400 focus:outline-none focus:border-[#1E2538] focus:ring-1 focus:ring-[#1E2538]/20 resize-none transition-all"
+                />
+              </div>
+            </div>
+          )}
+
           {/* Icon Picker */}
           <div>
             <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-2">
@@ -1194,6 +1266,16 @@ const AdminGoodpicksOffers = () => {
                               {offer.titleIt && (
                                 <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold bg-emerald-50 text-emerald-800 border border-emerald-200" title={`IT: ${offer.titleIt}`}>
                                   🇮🇹 IT
+                                </span>
+                              )}
+                              {offer.titlePl && (
+                                <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold bg-rose-50 text-rose-700 border border-rose-200" title={`PL: ${offer.titlePl}`}>
+                                  🇵🇱 PL
+                                </span>
+                              )}
+                              {offer.titleTr && (
+                                <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold bg-red-50 text-red-700 border border-red-200" title={`TR: ${offer.titleTr}`}>
+                                  🇹🇷 TR
                                 </span>
                               )}
                             </div>
