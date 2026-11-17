@@ -82,6 +82,15 @@ const legalPageSchema = new mongoose.Schema(
       type: String,
       default: '',
     },
+    // Polish content
+    title_pl: {
+      type: String,
+      default: '',
+    },
+    content_pl: {
+      type: String,
+      default: '',
+    },
     // Last edited by (admin user ID)
     lastEditedBy: {
       type: mongoose.Schema.Types.ObjectId,
@@ -115,6 +124,8 @@ legalPageSchema.statics.getBySlug = async function (slug) {
       content_pt: template.content_pt || '',
       title_it: template.title_it || '',
       content_it: template.content_it || '',
+      title_pl: template.title_pl || '',
+      content_pl: template.content_pl || '',
     });
   } else {
     let changed = false;
@@ -156,6 +167,11 @@ legalPageSchema.statics.getBySlug = async function (slug) {
       page.content_it = template.content_it || '';
       changed = true;
     }
+    if (!page.content_pl && template.content_pl) {
+      page.title_pl = template.title_pl || '';
+      page.content_pl = template.content_pl || '';
+      changed = true;
+    }
     if (slug === 'cookie-policy' && (!page.content_en.includes('__tm_did') || !page.content_de.includes('__tm_did'))) {
       page.content_en = template.content_en;
       page.content_de = template.content_de;
@@ -184,6 +200,10 @@ legalPageSchema.statics.getBySlug = async function (slug) {
       if (!page.content_it && template.content_it) {
         page.title_it = template.title_it;
         page.content_it = template.content_it;
+      }
+      if (!page.content_pl && template.content_pl) {
+        page.title_pl = template.title_pl;
+        page.content_pl = template.content_pl;
       }
       changed = true;
     }

@@ -20,7 +20,7 @@ const isIconUrl = (icon) => icon && (icon.startsWith('http') || icon.startsWith(
 // ─── Modal for Create & Edit ────────────────────────────────────────────────
 const GoodpickModal = ({ offer, onClose, onSaved, token, currentUser }) => {
   const isEditing = Boolean(offer);
-  const [activeTab, setActiveTab] = useState('en'); // 'en' | 'de' | 'fr' | 'es' | 'ur' | 'ru' | 'pt' | 'it'
+  const [activeTab, setActiveTab] = useState('en'); // 'en' | 'de' | 'fr' | 'es' | 'ur' | 'ru' | 'pt' | 'it' | 'pl'
 
   const [form, setForm] = useState({
     title: offer?.title || '',
@@ -31,6 +31,7 @@ const GoodpickModal = ({ offer, onClose, onSaved, token, currentUser }) => {
     titleRu: offer?.titleRu || '',
     titlePt: offer?.titlePt || '',
     titleIt: offer?.titleIt || '',
+    titlePl: offer?.titlePl || '',
     description: offer?.description || '',
     descriptionDe: offer?.descriptionDe || '',
     descriptionUr: offer?.descriptionUr || '',
@@ -39,6 +40,7 @@ const GoodpickModal = ({ offer, onClose, onSaved, token, currentUser }) => {
     descriptionRu: offer?.descriptionRu || '',
     descriptionPt: offer?.descriptionPt || '',
     descriptionIt: offer?.descriptionIt || '',
+    descriptionPl: offer?.descriptionPl || '',
     rewardAmount: offer?.rewardAmount || '',
     externalLink: offer?.externalLink || '',
     expirationDate: offer?.expirationDate ? new Date(offer.expirationDate).toISOString().slice(0, 16) : '',
@@ -68,6 +70,9 @@ const GoodpickModal = ({ offer, onClose, onSaved, token, currentUser }) => {
     requirementsIt: Array.isArray(offer?.requirementsIt)
       ? offer.requirementsIt.join('\n')
       : (offer?.requirementsIt || ''),
+    requirementsPl: Array.isArray(offer?.requirementsPl)
+      ? offer.requirementsPl.join('\n')
+      : (offer?.requirementsPl || ''),
     requirementType: offer?.requirementType || 'bullets',
     platforms: offer?.platforms || { desktop: true, android: true, ios: true },
   });
@@ -120,6 +125,9 @@ const GoodpickModal = ({ offer, onClose, onSaved, token, currentUser }) => {
           requirementsIt: form.requirementType === 'paragraph'
             ? [(form.requirementsIt || '').trim()].filter(Boolean)
             : (form.requirementsIt || '').split('\n').map((r) => r.trim()).filter(Boolean),
+          requirementsPl: form.requirementType === 'paragraph'
+            ? [(form.requirementsPl || '').trim()].filter(Boolean)
+            : (form.requirementsPl || '').split('\n').map((r) => r.trim()).filter(Boolean),
           requirementType: form.requirementType,
           platforms: form.platforms,
         }),
@@ -303,6 +311,20 @@ const GoodpickModal = ({ offer, onClose, onSaved, token, currentUser }) => {
                 <span>Italiano</span>
                 {Boolean(form.titleIt) && (
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" title="Italian translated" />
+                )}
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveTab('pl')}
+                className={`flex-1 shrink-0 whitespace-nowrap flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-lg text-xs font-bold transition-all ${activeTab === 'pl'
+                    ? 'bg-white text-gray-900 shadow-sm border border-gray-200'
+                    : 'text-gray-500 hover:text-gray-800'
+                  }`}
+              >
+                <span>🇵🇱</span>
+                <span>Polski</span>
+                {Boolean(form.titlePl) && (
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" title="Polish translated" />
                 )}
               </button>
             </div>
@@ -729,6 +751,56 @@ const GoodpickModal = ({ offer, onClose, onSaved, token, currentUser }) => {
                     form.requirementType === 'paragraph'
                       ? 'es. Completa questo compito scaricando l\'applicazione e registrandoti sul tuo dispositivo.'
                       : 'es. Registra account → ricevi 10 Monete\nScarica applicazione → ricevi 5.000 Monete'
+                  }
+                  rows={form.requirementType === 'paragraph' ? 2 : 3}
+                  className="w-full bg-white border border-gray-300 rounded-xl px-3.5 py-2 text-gray-900 text-sm placeholder-gray-400 focus:outline-none focus:border-[#1E2538] focus:ring-1 focus:ring-[#1E2538]/20 resize-none transition-all"
+                />
+              </div>
+            </div>
+          )}
+
+          {/* Tab: Polish Content */}
+          {activeTab === 'pl' && (
+            <div className="space-y-4">
+              <div>
+                <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1.5">
+                  🇵🇱 Title (Polish / Polski)
+                </label>
+                <input
+                  value={form.titlePl}
+                  onChange={set('titlePl')}
+                  placeholder="np. Osiągnij poziom 10 w CoinMaster"
+                  className="w-full bg-white border border-gray-300 rounded-xl px-3.5 py-2 text-gray-900 text-sm placeholder-gray-400 focus:outline-none focus:border-[#1E2538] focus:ring-1 focus:ring-[#1E2538]/20 transition-all"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1.5">
+                  🇵🇱 Description (Polish / Polski)
+                </label>
+                <textarea
+                  value={form.descriptionPl}
+                  onChange={set('descriptionPl')}
+                  placeholder="Krótki opis zadania dla karty i okna modalnego..."
+                  rows={2}
+                  className="w-full bg-white border border-gray-300 rounded-xl px-3.5 py-2 text-gray-900 text-sm placeholder-gray-400 focus:outline-none focus:border-[#1E2538] focus:ring-1 focus:ring-[#1E2538]/20 resize-none transition-all"
+                />
+              </div>
+
+              <div>
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                    🇵🇱 Requirements (Polish / Polski)
+                  </label>
+                  <span className="text-[11px] text-gray-400">Format: {form.requirementType === 'paragraph' ? 'Akapit' : 'Lista'}</span>
+                </div>
+                <textarea
+                  value={form.requirementsPl}
+                  onChange={set('requirementsPl')}
+                  placeholder={
+                    form.requirementType === 'paragraph'
+                      ? 'np. Wykonaj to zadanie pobierając aplikację i rejestrując się na urządzeniu.'
+                      : 'np. Zarejestruj konto → odbierz 10 Monet\nPobierz aplikację → odbierz 5 000 Monet'
                   }
                   rows={form.requirementType === 'paragraph' ? 2 : 3}
                   className="w-full bg-white border border-gray-300 rounded-xl px-3.5 py-2 text-gray-900 text-sm placeholder-gray-400 focus:outline-none focus:border-[#1E2538] focus:ring-1 focus:ring-[#1E2538]/20 resize-none transition-all"

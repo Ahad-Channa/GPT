@@ -291,6 +291,7 @@ Musterstraße 123
 Контент и материалы, созданные операторами сайта на этих страницах, защищены авторским правом. Загрузка и копирование материалов разрешены только для частного некоммерческого использования.`,
     title_pt: "Informações Legais (Impressum)",
     title_it: "Note Legali (Impressum)",
+    title_pl: "Nota prawna (Impressum)",
     content_pt: `# Informações Legais (Impressum)
 
 ### Informações de acordo com a legislação (§ 5 TMG / DDG):
@@ -553,6 +554,7 @@ TaskMint پر موجود تمام مواد، لوگوز، ٹریڈ مارکس ا
 Мы оставляем за собой право приостановить или заблокировать учетную запись любого пользователя при нарушении данных Условий.`,
     title_pt: "Termos de Uso",
     title_it: "Termini di Utilizzo",
+    title_pl: "Warunki korzystania",
     content_pt: `# Termos de Uso
 
 ### 1. Aceitação dos Termos
@@ -813,6 +815,7 @@ Musterstraße 123
 По всем вопросам защиты данных обращайтесь: privacy@taskmint.me.`,
     title_pt: "Política de Privacidade",
     title_it: "Informativa sulla Privacy",
+    title_pl: "Polityka prywatności",
     content_pt: `# Política de Privacidade
 
 ### 1. Responsável pelo Tratamento de Dados
@@ -1028,6 +1031,7 @@ TaskMint ایفیلی ایٹ اور ریفرل پروگرام میں خوش آم
 - Реферальные начисления могут подлежать временному удержанию для проверки добросовестности выполненных заданий.`,
     title_pt: "Política de Afiliados e Referências",
     title_it: "Politica di Affiliazione e Referral",
+    title_pl: "Polityka programu partnerskiego",
     content_pt: `# Política de Afiliados e Referências
 
 ### 1. Visão Geral do Programa
@@ -1185,6 +1189,7 @@ Puedes cambiar tus preferencias de cookies en cualquier momento a través del pa
 Вы можете изменить свои предпочтения в любое время через меню «Настройки файлов cookie» в нижней части страницы.`,
     title_pt: "Política de Cookies",
     title_it: "Politica sui Cookie",
+    title_pl: "Polityka plików cookie",
     content_pt: `# Política de Cookies
 
 *(Em vigor desde: 17 de julho de 2026)*

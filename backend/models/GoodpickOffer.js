@@ -10,6 +10,7 @@ const goodpickOfferSchema = new mongoose.Schema(
     titleRu: { type: String, default: '' },
     titlePt: { type: String, default: '' },
     titleIt: { type: String, default: '' },
+    titlePl: { type: String, default: '' },
     description: { type: String, required: true },
     descriptionDe: { type: String, default: '' },
     descriptionUr: { type: String, default: '' },
@@ -18,6 +19,7 @@ const goodpickOfferSchema = new mongoose.Schema(
     descriptionRu: { type: String, default: '' },
     descriptionPt: { type: String, default: '' },
     descriptionIt: { type: String, default: '' },
+    descriptionPl: { type: String, default: '' },
     rewardAmount: { type: Number, required: true },
     externalLink: { type: String, required: true },
     isActive: { type: Boolean, default: true },
@@ -32,6 +34,7 @@ const goodpickOfferSchema = new mongoose.Schema(
     requirementsRu: [{ type: String }],
     requirementsPt: [{ type: String }],
     requirementsIt: [{ type: String }],
+    requirementsPl: [{ type: String }],
     requirementType: { 
       type: String, 
       enum: ['bullets', 'paragraph'], 

@@ -10,11 +10,11 @@ import Footer from '../components/layout/Footer';
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
 const TABS = [
-  { slug: 'terms-of-use', labelEn: 'Terms of Service', labelDe: 'Nutzungsbedingungen', labelUr: 'استعمال کی شرائط', labelFr: "Conditions d'Utilisation", labelEs: 'Términos de Servicio', labelIt: 'Termini di Servizio' },
-  { slug: 'privacy-policy', labelEn: 'Privacy Policy', labelDe: 'Datenschutzerklärung', labelUr: 'پرائیویسی پالیسی', labelFr: 'Politique de Confidentialité', labelEs: 'Política de Privacidad', labelIt: 'Informativa sulla Privacy' },
-  { slug: 'cookie-policy', labelEn: 'Cookie Policy', labelDe: 'Cookie-Richtlinie', labelUr: 'کوکی پالیسی', labelFr: 'Politique de Cookies', labelEs: 'Política de Cookies', labelIt: 'Politica sui Cookie' },
-  { slug: 'affiliate-policy', labelEn: 'Affiliate Policy', labelDe: 'Affiliate-Richtlinie', labelUr: 'ایفیلی ایٹ پالیسی', labelFr: "Conditions d'Affiliation", labelEs: 'Política de Afiliados', labelIt: 'Politica di Affiliazione' },
-  { slug: 'impressum', labelEn: 'Impressum', labelDe: 'Impressum', labelUr: 'امپریسم (قانونی معلومات)', labelFr: 'Mentions Légales', labelEs: 'Aviso Legal', labelIt: 'Note Legali (Impressum)' },
+  { slug: 'terms-of-use', labelEn: 'Terms of Service', labelDe: 'Nutzungsbedingungen', labelUr: 'استعمال کی شرائط', labelFr: "Conditions d'Utilisation", labelEs: 'Términos de Servicio', labelIt: 'Termini di Servizio', labelPl: 'Warunki korzystania' },
+  { slug: 'privacy-policy', labelEn: 'Privacy Policy', labelDe: 'Datenschutzerklärung', labelUr: 'پرائیویسی پالیسی', labelFr: 'Politique de Confidentialité', labelEs: 'Política de Privacidad', labelIt: 'Informativa sulla Privacy', labelPl: 'Polityka prywatności' },
+  { slug: 'cookie-policy', labelEn: 'Cookie Policy', labelDe: 'Cookie-Richtlinie', labelUr: 'کوکی پالیسی', labelFr: 'Politique de Cookies', labelEs: 'Política de Cookies', labelIt: 'Politica sui Cookie', labelPl: 'Polityka cookies' },
+  { slug: 'affiliate-policy', labelEn: 'Affiliate Policy', labelDe: 'Affiliate-Richtlinie', labelUr: 'ایفیلی ایٹ پالیسی', labelFr: "Conditions d'Affiliation", labelEs: 'Política de Afiliados', labelIt: 'Politica di Affiliazione', labelPl: 'Program partnerski' },
+  { slug: 'impressum', labelEn: 'Impressum', labelDe: 'Impressum', labelUr: 'امپریسم (قانونی معلومات)', labelFr: 'Mentions Légales', labelEs: 'Aviso Legal', labelIt: 'Note Legali (Impressum)', labelPl: 'Nota prawna' },
 ];
 
 const SLUG_ALIASES = {
@@ -179,6 +179,7 @@ export default function Policies({ customSlug }) {
   const isEs = i18n?.language?.startsWith('es');
   const isUr = i18n?.language === 'ur' || i18n?.language?.startsWith('ur');
   const isIt = i18n?.language?.startsWith('it');
+  const isPl = i18n?.language?.startsWith('pl');
   const { isDarkMode } = useTheme();
   const { openCookieSettings, cookiesList } = useCookieConsent();
 
@@ -258,8 +259,10 @@ export default function Policies({ customSlug }) {
         ? (currentPage.title_es || currentPage.title_en)
         : isIt
         ? (currentPage.title_it || currentPage.title_en)
+        : isPl
+        ? (currentPage.title_pl || currentPage.title_en)
         : (currentPage.title_en || currentPage.title_de))
-    : (TABS.find(t => t.slug === activeSlug)?.[isUr ? 'labelUr' : isDe ? 'labelDe' : isFr ? 'labelFr' : isEs ? 'labelEs' : isIt ? 'labelIt' : 'labelEn'] || 'Policy');
+    : (TABS.find(t => t.slug === activeSlug)?.[isUr ? 'labelUr' : isDe ? 'labelDe' : isFr ? 'labelFr' : isEs ? 'labelEs' : isIt ? 'labelIt' : isPl ? 'labelPl' : 'labelEn'] || 'Policy');
 
   const currentContent = currentPage
     ? (isUr
@@ -272,6 +275,8 @@ export default function Policies({ customSlug }) {
         ? (currentPage.content_es || currentPage.content_en || '')
         : isIt
         ? (currentPage.content_it || currentPage.content_en || '')
+        : isPl
+        ? (currentPage.content_pl || currentPage.content_en || '')
         : (currentPage.content_en || currentPage.content_de || ''))
     : '';
 
@@ -279,16 +284,16 @@ export default function Policies({ customSlug }) {
   const cleanedContent = currentContent ? currentContent.replace(/^#\s+[^\n]+\n+/, '') : '';
 
   const lastUpdatedDate = currentPage?.updatedAt
-    ? new Date(currentPage.updatedAt).toLocaleDateString(isUr ? 'ur-PK' : isDe ? 'de-DE' : isFr ? 'fr-FR' : isEs ? 'es-ES' : 'en-US', {
+    ? new Date(currentPage.updatedAt).toLocaleDateString(isUr ? 'ur-PK' : isDe ? 'de-DE' : isFr ? 'fr-FR' : isEs ? 'es-ES' : isPl ? 'pl-PL' : 'en-US', {
         month: 'long',
         day: 'numeric',
         year: 'numeric',
       })
-    : (isUr ? '17 جولائی 2026' : isFr ? '17 juillet 2026' : 'July 17, 2026');
+    : (isUr ? '17 جولائی 2026' : isFr ? '17 juillet 2026' : isPl ? '17 lipca 2026' : 'July 17, 2026');
 
   const renderTabButton = (tab, isMobile = false, isRow1 = false) => {
     const isActive = activeSlug === tab.slug;
-    const tabLabel = isUr ? tab.labelUr : isDe ? tab.labelDe : isFr ? tab.labelFr : isEs ? tab.labelEs : isIt ? tab.labelIt : tab.labelEn;
+    const tabLabel = isUr ? tab.labelUr : isDe ? tab.labelDe : isFr ? tab.labelFr : isEs ? tab.labelEs : isIt ? tab.labelIt : isPl ? tab.labelPl : tab.labelEn;
     return (
       <button
         key={tab.slug}

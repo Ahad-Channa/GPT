@@ -25,6 +25,7 @@ const Footer = () => {
   const isRu = i18n?.language?.startsWith('ru');
   const isPt = i18n?.language?.startsWith('pt');
   const isIt = i18n?.language?.startsWith('it');
+  const isPl = i18n?.language?.startsWith('pl');
   const [isMobile, setIsMobile] = useState(
     typeof window !== 'undefined' ? window.innerWidth < 1024 : false
   );
@@ -461,7 +462,7 @@ const Footer = () => {
                     ? 'text-[9px] sm:text-[9.5px] md:text-[10px] lg:text-[9.4px] xl:text-[10.2px] gap-x-1 sm:gap-x-1 lg:gap-x-1 tracking-tight'
                     : isEs
                       ? 'text-[9px] sm:text-[9.5px] md:text-[10px] lg:text-[9.6px] xl:text-[10.4px] gap-x-1 sm:gap-x-1.2 lg:gap-x-1.2 tracking-tight'
-                      : (isDe || isPt)
+                      : (isDe || isPt || isPl)
                         ? 'text-[9.5px] sm:text-[10px] md:text-[10.5px] lg:text-[10px] xl:text-[10.8px] gap-x-1 sm:gap-x-1.5 lg:gap-x-1.5 tracking-tight'
                         : 'text-[12px] sm:text-[13px] gap-x-2 sm:gap-x-2.5'
             }`}

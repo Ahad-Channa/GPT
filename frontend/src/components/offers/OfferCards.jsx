@@ -180,7 +180,8 @@ export const FeaturedOfferCard = ({ offer, onClick }) => {
   const isRu = i18n.language?.startsWith('ru');
   const isPt = i18n.language?.startsWith('pt');
   const isIt = i18n.language?.startsWith('it');
-  const title = (isUr && offer.titleUr) ? offer.titleUr : ((isDe && offer.titleDe) ? offer.titleDe : ((isFr && offer.titleFr) ? offer.titleFr : ((isEs && offer.titleEs) ? offer.titleEs : ((isRu && offer.titleRu) ? offer.titleRu : ((isPt && offer.titlePt) ? offer.titlePt : ((isIt && offer.titleIt) ? offer.titleIt : offer.title))))));
+  const isPl = i18n.language?.startsWith('pl');
+  const title = (isUr && offer.titleUr) ? offer.titleUr : ((isDe && offer.titleDe) ? offer.titleDe : ((isFr && offer.titleFr) ? offer.titleFr : ((isEs && offer.titleEs) ? offer.titleEs : ((isRu && offer.titleRu) ? offer.titleRu : ((isPt && offer.titlePt) ? offer.titlePt : ((isIt && offer.titleIt) ? offer.titleIt : ((isPl && offer.titlePl) ? offer.titlePl : offer.title)))))));
   const isExpired = offer.expirationDate && new Date(offer.expirationDate) < new Date();
   const coverImgSrc = offer.coverImage || (isIconUrl(offer.icon) ? offer.icon : null);
   const emojiIcon = !coverImgSrc && offer.icon ? offer.icon : null;
@@ -190,11 +191,10 @@ export const FeaturedOfferCard = ({ offer, onClick }) => {
     <motion.div
       variants={item}
       onClick={onClick}
-      className={`cursor-pointer flex flex-col shrink-0 transition-colors duration-300 ${
-        isDarkMode
+      className={`cursor-pointer flex flex-col shrink-0 transition-colors duration-300 ${isDarkMode
           ? 'border border-white/5'
           : 'bg-white shadow-[0_4px_20px_rgba(0,0,0,0.03)] border border-gray-100/80'
-      } ${isExpired ? 'opacity-50' : ''}`}
+        } ${isExpired ? 'opacity-50' : ''}`}
       style={{
         width: '181.14px',
         height: '246.53px',
@@ -372,8 +372,9 @@ export const FeaturedOfferModal = ({ offer, token, onClose, onSubmitted }) => {
   const isRu = i18n.language?.startsWith('ru');
   const isPt = i18n.language?.startsWith('pt');
   const isIt = i18n.language?.startsWith('it');
-  const title = (isUr && offer.titleUr) ? offer.titleUr : ((isDe && offer.titleDe) ? offer.titleDe : ((isFr && offer.titleFr) ? offer.titleFr : ((isEs && offer.titleEs) ? offer.titleEs : ((isRu && offer.titleRu) ? offer.titleRu : ((isPt && offer.titlePt) ? offer.titlePt : ((isIt && offer.titleIt) ? offer.titleIt : offer.title))))));
-  const description = (isUr && offer.descriptionUr) ? offer.descriptionUr : ((isDe && offer.descriptionDe) ? offer.descriptionDe : ((isFr && offer.descriptionFr) ? offer.descriptionFr : ((isEs && offer.descriptionEs) ? offer.descriptionEs : ((isRu && offer.descriptionRu) ? offer.descriptionRu : ((isPt && offer.descriptionPt) ? offer.descriptionPt : ((isIt && offer.descriptionIt) ? offer.descriptionIt : (offer.description || t('offers.defaultDescription'))))))));
+  const isPl = i18n.language?.startsWith('pl');
+  const title = (isUr && offer.titleUr) ? offer.titleUr : ((isDe && offer.titleDe) ? offer.titleDe : ((isFr && offer.titleFr) ? offer.titleFr : ((isEs && offer.titleEs) ? offer.titleEs : ((isRu && offer.titleRu) ? offer.titleRu : ((isPt && offer.titlePt) ? offer.titlePt : ((isIt && offer.titleIt) ? offer.titleIt : ((isPl && offer.titlePl) ? offer.titlePl : offer.title)))))));
+  const description = (isUr && offer.descriptionUr) ? offer.descriptionUr : ((isDe && offer.descriptionDe) ? offer.descriptionDe : ((isFr && offer.descriptionFr) ? offer.descriptionFr : ((isEs && offer.descriptionEs) ? offer.descriptionEs : ((isRu && offer.descriptionRu) ? offer.descriptionRu : ((isPt && offer.descriptionPt) ? offer.descriptionPt : ((isIt && offer.descriptionIt) ? offer.descriptionIt : ((isPl && offer.descriptionPl) ? offer.descriptionPl : (offer.description || t('offers.defaultDescription')))))))));
   const requirementsList = (isUr && offer.requirementsUr && offer.requirementsUr.length > 0)
     ? offer.requirementsUr
     : ((isDe && offer.requirementsDe && offer.requirementsDe.length > 0)
@@ -388,7 +389,9 @@ export const FeaturedOfferModal = ({ offer, token, onClose, onSubmitted }) => {
               ? offer.requirementsPt
               : ((isIt && offer.requirementsIt && offer.requirementsIt.length > 0)
                 ? offer.requirementsIt
-                : offer.requirements))))));
+                : ((isPl && offer.requirementsPl && offer.requirementsPl.length > 0)
+                  ? offer.requirementsPl
+                  : offer.requirements)))))));
 
   const [loading, setLoading] = useState(false);
   const [showSupportModal, setShowSupportModal] = useState(false);
@@ -405,7 +408,7 @@ export const FeaturedOfferModal = ({ offer, token, onClose, onSubmitted }) => {
         await fetch(`${API}/custom-offers/${offer._id}/start`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }
-        }).catch(() => {});
+        }).catch(() => { });
       }
       if (offer.externalLink) {
         window.open(offer.externalLink, '_blank', 'noopener,noreferrer');
@@ -547,9 +550,8 @@ export const FeaturedOfferModal = ({ offer, token, onClose, onSubmitted }) => {
           {/* Top Section: Icon + Title (Elevated above bottom of image) */}
           <div className="flex items-center gap-3 sm:gap-4 pr-0 sm:pr-16 w-full">
             <div
-              className={`w-[76px] h-[76px] sm:w-[100px] sm:h-[100px] rounded-[10px] sm:rounded-[11px] ${
-                isDarkMode ? 'bg-[#1C212B]' : 'bg-[#EDE8DE]'
-              } overflow-hidden flex-shrink-0 flex items-center justify-center shadow-sm`}
+              className={`w-[76px] h-[76px] sm:w-[100px] sm:h-[100px] rounded-[10px] sm:rounded-[11px] ${isDarkMode ? 'bg-[#1C212B]' : 'bg-[#EDE8DE]'
+                } overflow-hidden flex-shrink-0 flex items-center justify-center shadow-sm`}
             >
               {coverImgSrc ? (
                 <img src={coverImgSrc} alt={title} className="w-full h-full object-cover" />
@@ -753,8 +755,8 @@ export const FeaturedOfferModal = ({ offer, token, onClose, onSubmitted }) => {
                   {Array.isArray(requirementsList) && requirementsList.length > 0
                     ? requirementsList.join(' ')
                     : typeof requirementsList === 'string'
-                    ? requirementsList
-                    : t('offers.defaultRequirement')}
+                      ? requirementsList
+                      : t('offers.defaultRequirement')}
                 </p>
               </div>
             ) : requirementsList && requirementsList.length > 0 ? (

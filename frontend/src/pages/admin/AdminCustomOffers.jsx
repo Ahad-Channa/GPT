@@ -18,7 +18,7 @@ const isIconUrl = (icon) => icon && (icon.startsWith('http') || icon.startsWith(
 
 const OfferModal = ({ offer, onClose, onSaved, token }) => {
   const isEditing = Boolean(offer);
-  const [activeTab, setActiveTab] = useState('en'); // 'en' | 'de' | 'fr' | 'es' | 'ur' | 'ru' | 'pt' | 'it'
+  const [activeTab, setActiveTab] = useState('en'); // 'en' | 'de' | 'fr' | 'es' | 'ur' | 'ru' | 'pt' | 'it' | 'pl'
   const [form, setForm] = useState({
     title: offer?.title || '',
     titleDe: offer?.titleDe || '',
@@ -28,6 +28,7 @@ const OfferModal = ({ offer, onClose, onSaved, token }) => {
     titleRu: offer?.titleRu || '',
     titlePt: offer?.titlePt || '',
     titleIt: offer?.titleIt || '',
+    titlePl: offer?.titlePl || '',
     description: offer?.description || '',
     descriptionDe: offer?.descriptionDe || '',
     descriptionUr: offer?.descriptionUr || '',
@@ -36,6 +37,7 @@ const OfferModal = ({ offer, onClose, onSaved, token }) => {
     descriptionRu: offer?.descriptionRu || '',
     descriptionPt: offer?.descriptionPt || '',
     descriptionIt: offer?.descriptionIt || '',
+    descriptionPl: offer?.descriptionPl || '',
     rewardAmount: offer?.rewardAmount || '',
     externalLink: offer?.externalLink || '',
     trackingType: offer?.trackingType || 'manual_approval',
@@ -66,6 +68,9 @@ const OfferModal = ({ offer, onClose, onSaved, token }) => {
     requirementsIt: Array.isArray(offer?.requirementsIt)
       ? offer.requirementsIt.join('\n')
       : (offer?.requirementsIt || ''),
+    requirementsPl: Array.isArray(offer?.requirementsPl)
+      ? offer.requirementsPl.join('\n')
+      : (offer?.requirementsPl || ''),
     requirementType: offer?.requirementType || 'bullets',
     platforms: offer?.platforms || { desktop: true, android: true, ios: true },
   });
@@ -115,6 +120,9 @@ const OfferModal = ({ offer, onClose, onSaved, token }) => {
           requirementsIt: form.requirementType === 'paragraph'
             ? [(form.requirementsIt || '').trim()].filter(Boolean)
             : (form.requirementsIt || '').split('\n').map(r => r.trim()).filter(Boolean),
+          requirementsPl: form.requirementType === 'paragraph'
+            ? [(form.requirementsPl || '').trim()].filter(Boolean)
+            : (form.requirementsPl || '').split('\n').map(r => r.trim()).filter(Boolean),
           requirementType: form.requirementType,
           platforms: form.platforms,
         }),
@@ -303,6 +311,21 @@ const OfferModal = ({ offer, onClose, onSaved, token }) => {
                 <span>Italiano</span>
                 {Boolean(form.titleIt) && (
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" title="Italian translated" />
+                )}
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveTab('pl')}
+                className={`flex-1 shrink-0 whitespace-nowrap flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-lg text-xs font-bold transition-all ${
+                  activeTab === 'pl'
+                    ? 'bg-white text-gray-900 shadow-sm border border-gray-200'
+                    : 'text-gray-500 hover:text-gray-800'
+                }`}
+              >
+                <span>🇵🇱</span>
+                <span>Polski</span>
+                {Boolean(form.titlePl) && (
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" title="Polish translated" />
                 )}
               </button>
             </div>
@@ -681,6 +704,56 @@ const OfferModal = ({ offer, onClose, onSaved, token }) => {
                     form.requirementType === 'paragraph'
                       ? "es. Registrati e deposita 50 €, quindi punta 100 € sui giochi idonei."
                       : "es. Registra account → ricevi 10 Monete\nDeposita 50 € → ricevi 50.000 Monete\nPunta 200 € → ricevi 10.000 Monete"
+                  }
+                  rows={form.requirementType === 'paragraph' ? 2 : 3}
+                  className="w-full bg-white border border-gray-300 rounded-xl px-3.5 py-2 text-gray-900 text-sm placeholder-gray-400 focus:outline-none focus:border-[#1E2538] focus:ring-1 focus:ring-[#1E2538]/20 resize-none transition-all"
+                />
+              </div>
+            </div>
+          )}
+
+          {/* Tab: Polish Content */}
+          {activeTab === 'pl' && (
+            <div className="space-y-4">
+              <div>
+                <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1.5">
+                  🇵🇱 Title (Polish / Polski)
+                </label>
+                <input
+                  value={form.titlePl}
+                  onChange={set('titlePl')}
+                  placeholder="np. Zarejestruj się w CryptoGame i osiągnij poziom 5"
+                  className="w-full bg-white border border-gray-300 rounded-xl px-3.5 py-2 text-gray-900 text-sm placeholder-gray-400 focus:outline-none focus:border-[#1E2538] focus:ring-1 focus:ring-[#1E2538]/20 transition-all"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1.5">
+                  🇵🇱 Description (Polish / Polski)
+                </label>
+                <textarea
+                  value={form.descriptionPl}
+                  onChange={set('descriptionPl')}
+                  placeholder="Opisz kroki do ukończenia oferty i otrzymania nagrody..."
+                  rows={2}
+                  className="w-full bg-white border border-gray-300 rounded-xl px-3.5 py-2 text-gray-900 text-sm placeholder-gray-400 focus:outline-none focus:border-[#1E2538] focus:ring-1 focus:ring-[#1E2538]/20 resize-none transition-all"
+                />
+              </div>
+
+              <div>
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                    🇵🇱 Requirements (Polish / Polski)
+                  </label>
+                  <span className="text-[11px] text-gray-400">Format: {form.requirementType === 'paragraph' ? 'Akapit' : 'Lista'}</span>
+                </div>
+                <textarea
+                  value={form.requirementsPl}
+                  onChange={set('requirementsPl')}
+                  placeholder={
+                    form.requirementType === 'paragraph'
+                      ? "np. Zarejestruj się i wpłać 50 zł, a następnie postaw 100 zł w grach."
+                      : "np. Zarejestruj konto → odbierz 10 Monet\nWpłać 50 zł → odbierz 50 000 Monet\nPostaw 200 zł → odbierz 10 000 Monet"
                   }
                   rows={form.requirementType === 'paragraph' ? 2 : 3}
                   className="w-full bg-white border border-gray-300 rounded-xl px-3.5 py-2 text-gray-900 text-sm placeholder-gray-400 focus:outline-none focus:border-[#1E2538] focus:ring-1 focus:ring-[#1E2538]/20 resize-none transition-all"

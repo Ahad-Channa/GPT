@@ -320,6 +320,7 @@ const Header = ({ onChatToggle, chatOpen, fullWidth }) => {
   const { t, i18n } = useTranslation();
   const { isDarkMode } = useTheme();
   const isGerman = i18n.language?.startsWith('de');
+  const isPl = i18n.language?.startsWith('pl');
   const isFrench = i18n.language?.startsWith('fr');
   const isSpanish = i18n.language?.startsWith('es');
   const isUrdu = i18n.language === 'ur' || i18n.language?.startsWith('ur');
@@ -1683,9 +1684,9 @@ const Header = ({ onChatToggle, chatOpen, fullWidth }) => {
                           fontFamily: 'Poppins, sans-serif',
                           fontWeight: 500,
                           fontStyle: 'normal',
-                          fontSize: '12px',
+                          fontSize: isPl ? '10.5px' : '12px',
                           lineHeight: '20px',
-                          letterSpacing: '0%',
+                          letterSpacing: isPl ? '-0.02em' : '0%',
                           textAlign: 'center',
                           color: location.pathname === '/dashboard/affiliates' ? 'rgba(36, 50, 77, 1)' : 'rgba(134, 134, 134, 1)',
                           opacity: 1,
@@ -1751,9 +1752,9 @@ const Header = ({ onChatToggle, chatOpen, fullWidth }) => {
                           fontFamily: 'Poppins, sans-serif',
                           fontWeight: 500,
                           fontStyle: 'normal',
-                          fontSize: '12px',
+                          fontSize: isPl ? '10.5px' : '12px',
                           lineHeight: '20px',
-                          letterSpacing: '0%',
+                          letterSpacing: isPl ? '-0.02em' : '0%',
                           textAlign: 'center',
                           color: location.pathname === '/dashboard/daily-bonus' ? 'rgba(36, 50, 77, 1)' : 'rgba(134, 134, 134, 1)',
                           opacity: 1,
@@ -1819,9 +1820,9 @@ const Header = ({ onChatToggle, chatOpen, fullWidth }) => {
                           fontFamily: 'Poppins, sans-serif',
                           fontWeight: 500,
                           fontStyle: 'normal',
-                          fontSize: '12px',
+                          fontSize: isPl ? '10.5px' : '12px',
                           lineHeight: '20px',
-                          letterSpacing: '0%',
+                          letterSpacing: isPl ? '-0.02em' : '0%',
                           textAlign: 'center',
                           color: location.pathname === '/dashboard/vip' ? 'rgba(36, 50, 77, 1)' : 'rgba(134, 134, 134, 1)',
                           opacity: 1,
@@ -1887,9 +1888,9 @@ const Header = ({ onChatToggle, chatOpen, fullWidth }) => {
                           fontFamily: 'Poppins, sans-serif',
                           fontWeight: 500,
                           fontStyle: 'normal',
-                          fontSize: '12px',
+                          fontSize: isPl ? '10.5px' : '12px',
                           lineHeight: '20px',
-                          letterSpacing: '0%',
+                          letterSpacing: isPl ? '-0.02em' : '0%',
                           textAlign: 'center',
                           color: location.pathname === '/dashboard/profile' ? 'rgba(36, 50, 77, 1)' : 'rgba(134, 134, 134, 1)',
                           opacity: 1,
@@ -1955,9 +1956,9 @@ const Header = ({ onChatToggle, chatOpen, fullWidth }) => {
                           fontFamily: 'Poppins, sans-serif',
                           fontWeight: 500,
                           fontStyle: 'normal',
-                          fontSize: '12px',
+                          fontSize: isPl ? '10.5px' : '12px',
                           lineHeight: '20px',
-                          letterSpacing: '0%',
+                          letterSpacing: isPl ? '-0.02em' : '0%',
                           textAlign: 'center',
                           color: 'rgba(134, 134, 134, 1)',
                           opacity: 1,
