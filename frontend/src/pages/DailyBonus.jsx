@@ -505,27 +505,23 @@ export default function DailyBonus() {
                 />
 
                 {/* Next Reward Tomorrow */}
-                <div className="flex items-center justify-between w-full">
+                <div className="flex items-center justify-between w-full gap-1.5 min-w-0">
                   <span
+                    className="truncate sm:whitespace-normal"
                     style={{
-                      width: 'auto',
                       fontFamily: '"Poppins", sans-serif',
                       fontWeight: 500,
-                      fontSize: '14px',
+                      fontSize: 'clamp(12px, 3.2vw, 14px)',
                       lineHeight: '18px',
-                      letterSpacing: '0%',
                       color: isDarkMode ? 'rgba(255, 255, 255, 0.7)' : '#0E0F0C',
-                      opacity: 1,
-                      whiteSpace: 'nowrap',
                     }}
                   >
                     {t('dailyBonus.nextRewardTomorrow', 'Next Reward Tomorrow')}
                   </span>
                   <div
-                    className="flex items-center gap-1.5"
+                    className="flex items-center gap-1.5 shrink-0"
                     style={{
-                      height: '12.22px',
-                      opacity: 1,
+                      height: '14px',
                     }}
                   >
                     <img
@@ -534,21 +530,18 @@ export default function DailyBonus() {
                       style={{
                         width: '11px',
                         height: '12.22px',
-                        opacity: 1,
                         objectFit: 'contain',
                       }}
                       className="shrink-0"
                     />
                     <span
+                      className="whitespace-nowrap shrink-0"
                       style={{
                         fontFamily: '"Poppins", sans-serif',
                         fontWeight: 500,
-                        fontSize: '14px',
+                        fontSize: 'clamp(12px, 3.2vw, 14px)',
                         lineHeight: '14px',
-                        letterSpacing: '0%',
                         color: '#E5A00D',
-                        opacity: 1,
-                        whiteSpace: 'nowrap',
                       }}
                     >
                       {formatCoins(status.rewardTomorrow || 1000)} {t('dailyBonus.coins', 'Coins')}
@@ -691,9 +684,9 @@ export default function DailyBonus() {
               }}
             >
               {/* Header */}
-              <div className="flex items-center justify-between w-full">
+              <div className="flex items-center justify-between w-full gap-2 min-w-0">
                 <h2
-                  className="text-[20px] sm:text-[27px]"
+                  className="text-[18px] sm:text-[27px] truncate"
                   style={{
                     fontFamily: '"Bricolage Grotesque", sans-serif',
                     fontWeight: 700,
@@ -701,15 +694,13 @@ export default function DailyBonus() {
                     letterSpacing: '-0.02em',
                     color: isDarkMode ? '#FFFFFF' : '#000000',
                     margin: 0,
-                    whiteSpace: 'nowrap',
                   }}
                 >
                   {t('dailyBonus.currentStreakTitle', 'Current Streak')}
                 </h2>
                 <span
-                  className="text-[16px] sm:text-[20px]"
+                  className="text-[15px] sm:text-[20px] shrink-0"
                   style={{
-                    minWidth: '86px',
                     fontFamily: '"Bricolage Grotesque", sans-serif',
                     fontWeight: 700,
                     lineHeight: '1.2',

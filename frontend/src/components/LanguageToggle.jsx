@@ -4,6 +4,19 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useTheme } from '../contexts/ThemeContext';
 import { useCookieConsent } from '../contexts/CookieConsentContext';
 
+const LANGUAGES = [
+  { code: 'en', label: 'English', flag: '/coins/EN.png', alt: 'English Flag', triggerAlt: 'EN Flag' },
+  { code: 'de', label: 'Deutsch', flag: '/coins/DE.svg', alt: 'German Flag', triggerAlt: 'DE Flag' },
+  { code: 'fr', label: 'Français', flag: '/coins/FR.svg', alt: 'French Flag', triggerAlt: 'FR Flag' },
+  { code: 'es', label: 'Español', flag: '/coins/ES.svg', alt: 'Spanish Flag', triggerAlt: 'ES Flag' },
+  { code: 'pt', label: 'Português', flag: '/coins/PT.svg', alt: 'Portuguese Flag', triggerAlt: 'PT Flag' },
+  { code: 'it', label: 'Italiano', flag: '/coins/IT.svg', alt: 'Italian Flag', triggerAlt: 'IT Flag' },
+  { code: 'tr', label: 'Türkçe', flag: '/coins/TR.svg', alt: 'Turkish Flag', triggerAlt: 'TR Flag' },
+  { code: 'pl', label: 'Polski', flag: '/coins/PL.svg', alt: 'Polish Flag', triggerAlt: 'PL Flag' },
+  { code: 'ru', label: 'Русский', flag: '/coins/RU.svg', alt: 'Russian Flag', triggerAlt: 'RU Flag' },
+  { code: 'ur', label: 'Urdu (اردو)', flag: '/coins/PK.svg', alt: 'Urdu Flag', triggerAlt: 'UR Flag' },
+];
+
 const LanguageToggle = ({
   style,
   className = '',
@@ -35,6 +48,8 @@ const LanguageToggle = ({
                 : (i18n.language?.startsWith('pl')
                   ? 'pl'
                   : (i18n.language?.startsWith('tr') ? 'tr' : 'en'))))))));
+
+  const currentLangConfig = LANGUAGES.find(l => l.code === currentLang) || LANGUAGES[0];
 
   const selectLanguage = (lang) => {
     i18n.changeLanguage(lang);
@@ -101,33 +116,13 @@ const LanguageToggle = ({
           }}
         >
           <img
-            src={
-              currentLang === 'en'
-                ? '/coins/EN.png'
-                : currentLang === 'de'
-                  ? '/coins/DE.svg'
-                  : currentLang === 'fr'
-                    ? '/coins/FR.svg'
-                    : currentLang === 'es'
-                      ? '/coins/ES.svg'
-                      : currentLang === 'ru'
-                        ? '/coins/RU.svg'
-                        : currentLang === 'pt'
-                          ? '/coins/PT.svg'
-                          : currentLang === 'it'
-                            ? '/coins/IT.svg'
-                            : currentLang === 'pl'
-                              ? '/coins/PL.svg'
-                              : currentLang === 'tr'
-                                ? '/coins/TR.svg'
-                                : '/coins/PK.svg'
-            }
-            alt={currentLang === 'en' ? 'EN Flag' : currentLang === 'de' ? 'DE Flag' : currentLang === 'fr' ? 'FR Flag' : currentLang === 'es' ? 'ES Flag' : currentLang === 'ru' ? 'RU Flag' : currentLang === 'pt' ? 'PT Flag' : currentLang === 'it' ? 'IT Flag' : currentLang === 'pl' ? 'PL Flag' : currentLang === 'tr' ? 'TR Flag' : 'UR Flag'}
+            src={currentLangConfig.flag}
+            alt={currentLangConfig.triggerAlt}
             className="w-full h-full object-cover"
           />
         </div>
 
-        {/* Text Code (EN / DE / FR / UR): 18x21 on mobile, 20x24 on desktop */}
+        {/* Text Code (EN / DE / FR / UR / TR etc.): 18x21 on mobile, 20x24 on desktop */}
         <span
           className="flex items-center justify-center shrink-0 w-[18px] h-[21px] text-[14px] leading-[21px] lg:w-[20px] lg:h-[24px] lg:text-[16px] lg:leading-[100%] transition-colors duration-300"
           style={{
@@ -187,364 +182,46 @@ const LanguageToggle = ({
               boxSizing: 'border-box',
             }}
           >
-            {/* 1. English */}
-            <button
-              type="button"
-              onClick={() => selectLanguage('en')}
-              className="flex items-center justify-between w-full py-1 cursor-pointer bg-transparent border-0 hover:opacity-75 transition-opacity"
-            >
-              <span
-                style={{
-                  fontFamily: 'Poppins, sans-serif',
-                  fontWeight: currentLang === 'en' ? 600 : 400,
-                  fontSize: '15px',
-                  lineHeight: '20px',
-                  color: currentLang === 'en' ? (isDarkMode ? '#FFFFFF' : '#0E0F0C') : (isDarkMode ? '#9CA3AF' : '#8E8E93'),
-                }}
-              >
-                English
-              </span>
-              <div className="w-[24px] h-[24px] rounded-full overflow-hidden shrink-0 flex items-center justify-center">
-                <img
-                  src="/coins/EN.png"
-                  alt="English Flag"
-                  className="w-full h-full object-cover"
-                />
-              </div>
-            </button>
+            {LANGUAGES.map((item, idx) => (
+              <React.Fragment key={item.code}>
+                <button
+                  type="button"
+                  onClick={() => selectLanguage(item.code)}
+                  className="flex items-center justify-between w-full py-1 cursor-pointer bg-transparent border-0 hover:opacity-75 transition-opacity"
+                >
+                  <span
+                    style={{
+                      fontFamily: 'Poppins, sans-serif',
+                      fontWeight: currentLang === item.code ? 600 : 400,
+                      fontSize: '15px',
+                      lineHeight: '20px',
+                      color: currentLang === item.code ? (isDarkMode ? '#FFFFFF' : '#0E0F0C') : (isDarkMode ? '#9CA3AF' : '#8E8E93'),
+                    }}
+                  >
+                    {item.label}
+                  </span>
+                  <div className="w-[24px] h-[24px] rounded-full overflow-hidden shrink-0 flex items-center justify-center">
+                    <img
+                      src={item.flag}
+                      alt={item.alt}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                </button>
 
-            {/* Divider */}
-            <div
-              style={{
-                width: '100%',
-                height: '1px',
-                background: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.06)',
-                margin: '8px 0',
-                flexShrink: 0,
-              }}
-            />
-
-            {/* 2. German */}
-            <button
-              type="button"
-              onClick={() => selectLanguage('de')}
-              className="flex items-center justify-between w-full py-1 cursor-pointer bg-transparent border-0 hover:opacity-75 transition-opacity"
-            >
-              <span
-                style={{
-                  fontFamily: 'Poppins, sans-serif',
-                  fontWeight: currentLang === 'de' ? 600 : 400,
-                  fontSize: '15px',
-                  lineHeight: '20px',
-                  color: currentLang === 'de' ? (isDarkMode ? '#FFFFFF' : '#0E0F0C') : (isDarkMode ? '#9CA3AF' : '#8E8E93'),
-                }}
-              >
-                Deutsch
-              </span>
-              <div className="w-[24px] h-[24px] rounded-full overflow-hidden shrink-0 flex items-center justify-center">
-                <img
-                  src="/coins/DE.svg"
-                  alt="German Flag"
-                  className="w-full h-full object-cover"
-                />
-              </div>
-            </button>
-
-            {/* Divider */}
-            <div
-              style={{
-                width: '100%',
-                height: '1px',
-                background: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.06)',
-                margin: '8px 0',
-                flexShrink: 0,
-              }}
-            />
-
-            {/* 3. French */}
-            <button
-              type="button"
-              onClick={() => selectLanguage('fr')}
-              className="flex items-center justify-between w-full py-1 cursor-pointer bg-transparent border-0 hover:opacity-75 transition-opacity"
-            >
-              <span
-                style={{
-                  fontFamily: 'Poppins, sans-serif',
-                  fontWeight: currentLang === 'fr' ? 600 : 400,
-                  fontSize: '15px',
-                  lineHeight: '20px',
-                  color: currentLang === 'fr' ? (isDarkMode ? '#FFFFFF' : '#0E0F0C') : (isDarkMode ? '#9CA3AF' : '#8E8E93'),
-                }}
-              >
-                Français
-              </span>
-              <div className="w-[24px] h-[24px] rounded-full overflow-hidden shrink-0 flex items-center justify-center">
-                <img
-                  src="/coins/FR.svg"
-                  alt="French Flag"
-                  className="w-full h-full object-cover"
-                />
-              </div>
-            </button>
-
-            {/* Divider */}
-            <div
-              style={{
-                width: '100%',
-                height: '1px',
-                background: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.06)',
-                margin: '8px 0',
-                flexShrink: 0,
-              }}
-            />
-
-            {/* 4. Spanish */}
-            <button
-              type="button"
-              onClick={() => selectLanguage('es')}
-              className="flex items-center justify-between w-full py-1 cursor-pointer bg-transparent border-0 hover:opacity-75 transition-opacity"
-            >
-              <span
-                style={{
-                  fontFamily: 'Poppins, sans-serif',
-                  fontWeight: currentLang === 'es' ? 600 : 400,
-                  fontSize: '15px',
-                  lineHeight: '20px',
-                  color: currentLang === 'es' ? (isDarkMode ? '#FFFFFF' : '#0E0F0C') : (isDarkMode ? '#9CA3AF' : '#8E8E93'),
-                }}
-              >
-                Español
-              </span>
-              <div className="w-[24px] h-[24px] rounded-full overflow-hidden shrink-0 flex items-center justify-center">
-                <img
-                  src="/coins/ES.svg"
-                  alt="Spanish Flag"
-                  className="w-full h-full object-cover"
-                />
-              </div>
-            </button>
-
-            {/* Divider */}
-            <div
-              style={{
-                width: '100%',
-                height: '1px',
-                background: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.06)',
-                margin: '8px 0',
-                flexShrink: 0,
-              }}
-            />
-
-            {/* 5. Urdu */}
-            <button
-              type="button"
-              onClick={() => selectLanguage('ur')}
-              className="flex items-center justify-between w-full py-1 cursor-pointer bg-transparent border-0 hover:opacity-75 transition-opacity"
-            >
-              <span
-                style={{
-                  fontFamily: 'Poppins, sans-serif',
-                  fontWeight: currentLang === 'ur' ? 600 : 400,
-                  fontSize: '15px',
-                  lineHeight: '20px',
-                  color: currentLang === 'ur' ? (isDarkMode ? '#FFFFFF' : '#0E0F0C') : (isDarkMode ? '#9CA3AF' : '#8E8E93'),
-                }}
-              >
-                Urdu (اردو)
-              </span>
-              <div className="w-[24px] h-[24px] rounded-full overflow-hidden shrink-0 flex items-center justify-center">
-                <img
-                  src="/coins/PK.svg"
-                  alt="Urdu Flag"
-                  className="w-full h-full object-cover"
-                />
-              </div>
-            </button>
-
-            {/* Divider */}
-            <div
-              style={{
-                width: '100%',
-                height: '1px',
-                background: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.06)',
-                margin: '8px 0',
-                flexShrink: 0,
-              }}
-            />
-
-            {/* 6. Russian */}
-            <button
-              type="button"
-              onClick={() => selectLanguage('ru')}
-              className="flex items-center justify-between w-full py-1 cursor-pointer bg-transparent border-0 hover:opacity-75 transition-opacity"
-            >
-              <span
-                style={{
-                  fontFamily: 'Poppins, sans-serif',
-                  fontWeight: currentLang === 'ru' ? 600 : 400,
-                  fontSize: '15px',
-                  lineHeight: '20px',
-                  color: currentLang === 'ru' ? (isDarkMode ? '#FFFFFF' : '#0E0F0C') : (isDarkMode ? '#9CA3AF' : '#8E8E93'),
-                }}
-              >
-                Русский
-              </span>
-              <div className="w-[24px] h-[24px] rounded-full overflow-hidden shrink-0 flex items-center justify-center">
-                <img
-                  src="/coins/RU.svg"
-                  alt="Russian Flag"
-                  className="w-full h-full object-cover"
-                />
-              </div>
-            </button>
-
-            {/* Divider */}
-            <div
-              style={{
-                width: '100%',
-                height: '1px',
-                background: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.06)',
-                margin: '8px 0',
-                flexShrink: 0,
-              }}
-            />
-
-            {/* 7. Portuguese */}
-            <button
-              type="button"
-              onClick={() => selectLanguage('pt')}
-              className="flex items-center justify-between w-full py-1 cursor-pointer bg-transparent border-0 hover:opacity-75 transition-opacity"
-            >
-              <span
-                style={{
-                  fontFamily: 'Poppins, sans-serif',
-                  fontWeight: currentLang === 'pt' ? 600 : 400,
-                  fontSize: '15px',
-                  lineHeight: '20px',
-                  color: currentLang === 'pt' ? (isDarkMode ? '#FFFFFF' : '#0E0F0C') : (isDarkMode ? '#9CA3AF' : '#8E8E93'),
-                }}
-              >
-                Português
-              </span>
-              <div className="w-[24px] h-[24px] rounded-full overflow-hidden shrink-0 flex items-center justify-center">
-                <img
-                  src="/coins/PT.svg"
-                  alt="Portuguese Flag"
-                  className="w-full h-full object-cover"
-                />
-              </div>
-            </button>
-
-            {/* Divider */}
-            <div
-              style={{
-                width: '100%',
-                height: '1px',
-                background: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.06)',
-                margin: '8px 0',
-                flexShrink: 0,
-              }}
-            />
-
-            {/* 8. Italian */}
-            <button
-              type="button"
-              onClick={() => selectLanguage('it')}
-              className="flex items-center justify-between w-full py-1 cursor-pointer bg-transparent border-0 hover:opacity-75 transition-opacity"
-            >
-              <span
-                style={{
-                  fontFamily: 'Poppins, sans-serif',
-                  fontWeight: currentLang === 'it' ? 600 : 400,
-                  fontSize: '15px',
-                  lineHeight: '20px',
-                  color: currentLang === 'it' ? (isDarkMode ? '#FFFFFF' : '#0E0F0C') : (isDarkMode ? '#9CA3AF' : '#8E8E93'),
-                }}
-              >
-                Italiano
-              </span>
-              <div className="w-[24px] h-[24px] rounded-full overflow-hidden shrink-0 flex items-center justify-center">
-                <img
-                  src="/coins/IT.svg"
-                  alt="Italian Flag"
-                  className="w-full h-full object-cover"
-                />
-              </div>
-            </button>
-
-            {/* Divider */}
-            <div
-              style={{
-                width: '100%',
-                height: '1px',
-                background: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.06)',
-                margin: '8px 0',
-                flexShrink: 0,
-              }}
-            />
-
-            {/* 9. Polish */}
-            <button
-              type="button"
-              onClick={() => selectLanguage('pl')}
-              className="flex items-center justify-between w-full py-1 cursor-pointer bg-transparent border-0 hover:opacity-75 transition-opacity"
-            >
-              <span
-                style={{
-                  fontFamily: 'Poppins, sans-serif',
-                  fontWeight: currentLang === 'pl' ? 600 : 400,
-                  fontSize: '15px',
-                  lineHeight: '20px',
-                  color: currentLang === 'pl' ? (isDarkMode ? '#FFFFFF' : '#0E0F0C') : (isDarkMode ? '#9CA3AF' : '#8E8E93'),
-                }}
-              >
-                Polski
-              </span>
-              <div className="w-[24px] h-[24px] rounded-full overflow-hidden shrink-0 flex items-center justify-center">
-                <img
-                  src="/coins/PL.svg"
-                  alt="Polish Flag"
-                  className="w-full h-full object-cover"
-                />
-              </div>
-            </button>
-
-            {/* Divider */}
-            <div
-              style={{
-                width: '100%',
-                height: '1px',
-                background: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.06)',
-                margin: '8px 0',
-                flexShrink: 0,
-              }}
-            />
-
-            {/* 10. Turkish */}
-            <button
-              type="button"
-              onClick={() => selectLanguage('tr')}
-              className="flex items-center justify-between w-full py-1 cursor-pointer bg-transparent border-0 hover:opacity-75 transition-opacity"
-            >
-              <span
-                style={{
-                  fontFamily: 'Poppins, sans-serif',
-                  fontWeight: currentLang === 'tr' ? 600 : 400,
-                  fontSize: '15px',
-                  lineHeight: '20px',
-                  color: currentLang === 'tr' ? (isDarkMode ? '#FFFFFF' : '#0E0F0C') : (isDarkMode ? '#9CA3AF' : '#8E8E93'),
-                }}
-              >
-                Türkçe
-              </span>
-              <div className="w-[24px] h-[24px] rounded-full overflow-hidden shrink-0 flex items-center justify-center">
-                <img
-                  src="/coins/TR.svg"
-                  alt="Turkish Flag"
-                  className="w-full h-full object-cover"
-                />
-              </div>
-            </button>
+                {idx < LANGUAGES.length - 1 && (
+                  <div
+                    style={{
+                      width: '100%',
+                      height: '1px',
+                      background: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.06)',
+                      margin: '8px 0',
+                      flexShrink: 0,
+                    }}
+                  />
+                )}
+              </React.Fragment>
+            ))}
           </motion.div>
         )}
       </AnimatePresence>
@@ -553,4 +230,3 @@ const LanguageToggle = ({
 };
 
 export default LanguageToggle;
-
