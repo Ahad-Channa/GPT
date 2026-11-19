@@ -121,23 +121,48 @@ const isGenericLiveDescription = (value, provider = '') => {
   return new RegExp(`^${escapedProvider}\\s*(?:[-:|]\\s*)?offer(?:\\s+reward)?$`, 'i').test(description);
 };
 
-const resolveLiveOfferDetail = (tx = {}, meta = {}, provider = '', type = '') => {
-  const step = resolveLiveStepLabel(meta);
-  if (step) return step;
+const escapeRegExp = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
+// Descriptions that name no offer: generic copy, privacy-scrubbed copy
+// ("Completed an Offer" / "Earned from <provider>") and provider-branded copy.
+const isNonOfferDescription = (description, provider) =>
+  isGenericLiveDescription(description, provider) ||
+  /^(completed an offer|earned from .+)$/i.test(clean(description));
+
+// The offer name for the feed's second line. It is NEVER the step name and
+// never the provider name; when no offer name can be determined it returns
+// GENERIC_DETAIL_FALLBACK.
+const resolveLiveOfferName = (tx = {}, meta = {}, provider = '', type = '', rawStep = '') => {
   const offerTitle = clean(meta.offerTitle) || clean(meta.campaignTitle) || clean(meta.campaign);
   if (offerTitle) return offerTitle;
 
-  const rawDescription = cleanDescription(tx.description);
-  const description = type === 'custom_offer_reward' ? stripCustomPrefix(rawDescription) : rawDescription;
-  if (description && !isGenericLiveDescription(description, provider)) return description;
+  let description = cleanDescription(tx.description);
+  if (type === 'custom_offer_reward') description = stripCustomPrefix(description);
+  // Direct multi-step rows were stored as "<offer> - <step>"; keep the offer part only.
+  if (rawStep) {
+    const suffix = new RegExp(`\\s*-\\s*${escapeRegExp(rawStep)}\\s*$`, 'i');
+    if (suffix.test(description)) description = description.replace(suffix, '').trim();
+    // Legacy rows whose whole description is the step do not carry an offer name.
+    if (description.toLowerCase() === rawStep.toLowerCase()) description = '';
+  }
+  if (description && !isNonOfferDescription(description, provider)) return description;
 
   return GENERIC_DETAIL_FALLBACK;
 };
 
-// Two-line source/detail labels for the live-feed chip. Kept separate from
+// Two-line source/offer labels for the live-feed chip. Kept separate from
 // getEarningDisplay() because transaction history/profile views intentionally
 // use the offer/step as their primary label.
+//
+// Line 1 = provider ("Goodpicks" for direct/custom offers), line 2 = the offer
+// name, always - also for multi-step offers. The completed step is returned
+// separately as `stepLabel` and only when the offer is multi-step:
+//  - direct: `metadata.goalKey` is set from the trusted goal snapshot only when
+//    the reward came from one of the offer's configured steps; single-step
+//    direct offers and custom offers never carry a goalKey.
+//  - offerwall: providers only send a step/goal name for multi-step offers, so
+//    a usable step label that differs from the offer name marks multi-step.
+// Stored metadata is never modified; labels are formatted for display only.
 export const getLiveFeedDisplay = (tx = {}) => {
   const type = tx.transactionType || '';
   if (type !== 'offer_reward' && type !== 'direct_offer_reward' && type !== 'custom_offer_reward') {
@@ -152,10 +177,26 @@ export const getLiveFeedDisplay = (tx = {}) => {
     ? DIRECT_OFFER_SOURCE_LABEL
     : (providerText ? `Offerwall: ${providerText}` : 'Offerwall');
 
-  let detailLine = resolveLiveOfferDetail(tx, meta, provider, type);
+  const rawStep = clean(meta.stepLabel) || clean(meta.goalLabel);
+  let detailLine = resolveLiveOfferName(tx, meta, provider, type, rawStep);
   if (provider && detailLine.toLowerCase() === provider.toLowerCase()) detailLine = GENERIC_DETAIL_FALLBACK;
 
-  return { sourceLine, detailLine };
+  let stepLabel = resolveLiveStepLabel(meta);
+  if (type === 'direct_offer_reward') {
+    const goalKey = clean(meta.goalKey);
+    if (!goalKey) {
+      stepLabel = '';
+    } else if (!stepLabel) {
+      stepLabel = humanizeGoalKey(goalKey);
+    }
+  } else if (type === 'custom_offer_reward') {
+    stepLabel = '';
+  }
+  if (stepLabel && (stepLabel.toLowerCase() === detailLine.toLowerCase() || stepLabel.toLowerCase() === providerText.toLowerCase())) {
+    stepLabel = '';
+  }
+
+  return { sourceLine, detailLine, isMultiStep: Boolean(stepLabel), stepLabel };
 };
 
 export default getEarningDisplay;

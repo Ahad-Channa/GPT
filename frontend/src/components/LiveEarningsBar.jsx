@@ -173,6 +173,8 @@ const LiveEarningsBar = () => {
     let task = 'Completed Task';
     let taskCategory = 'Task: System Bonus';
     let hasOfferDetails = false;
+    let popup = null; // undefined popup copy => default (task/taskCategory)
+    let hasPopup = true;
 
     if (tx.transactionType === 'daily_bonus') {
       task = 'Daily Bonus';
@@ -206,6 +208,10 @@ const LiveEarningsBar = () => {
         task = liveDisplay.sourceLine;
         taskCategory = liveDisplay.detailLine;
         hasOfferDetails = true;
+        // Hover popup only for multi-step rewards: "Earn" + the completed step.
+        // Single-step offers already show everything in the chip.
+        hasPopup = Boolean(liveDisplay.isMultiStep && liveDisplay.stepLabel);
+        popup = hasPopup ? { title: 'Earn', subtitle: liveDisplay.stepLabel } : null;
       } else {
         const display = getEarningDisplay(tx);
         task = display.primary || tx.description || '';
@@ -225,6 +231,9 @@ const LiveEarningsBar = () => {
       sourceLine: task,
       detailLine: taskCategory,
       hasOfferDetails,
+      hasPopup,
+      popupTitle: popup ? popup.title : task,
+      popupSubtitle: popup ? popup.subtitle : taskCategory,
       color: 'rgba(231, 171, 24, 1)',
     };
   };
@@ -361,6 +370,7 @@ const LiveEarningsBar = () => {
                       transition={{ duration: 0.2 }}
                       onClick={() => tx.userId?._id && setSelectedUserId(tx.userId._id)}
                       onMouseEnter={(e) => {
+                        if (details.hasPopup === false) return;
                         if (typeof window !== 'undefined') {
                           if (window.innerWidth < 768 || (window.matchMedia && !window.matchMedia('(hover: hover) and (pointer: fine)').matches)) {
                             return;
@@ -485,7 +495,6 @@ const LiveEarningsBar = () => {
                       {details.hasOfferDetails && (
                         <div
                           className="flex flex-col justify-center min-w-0"
-                          title={`${details.sourceLine} — ${details.detailLine}`}
                           style={{
                             maxWidth: 'clamp(130px, 26vw, 210px)',
                             paddingLeft: '8px',
@@ -633,7 +642,7 @@ const LiveEarningsBar = () => {
               >
                 {hoveredData.details.isWithdrawal
                   ? 'Withdrawal Completed'
-                  : hoveredData.details.task}
+                  : hoveredData.details.popupTitle}
               </span>
               <span
                 style={{
@@ -650,7 +659,7 @@ const LiveEarningsBar = () => {
               >
                 {hoveredData.details.isWithdrawal
                   ? `Method: ${hoveredData.details.method}`
-                  : (hoveredData.details.taskCategory || '')}
+                  : (hoveredData.details.popupSubtitle || '')}
               </span>
             </div>
           </div>

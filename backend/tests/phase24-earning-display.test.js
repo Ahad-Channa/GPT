@@ -75,190 +75,172 @@ test('legacy rows strip the old generic suffix and never fall back to "Task: Com
   );
 });
 
-// ─── Live Feed source/detail rules ───────────────────────────────────────────
+// ─── Live Feed source/offer rules ────────────────────────────────────────────
+// Line 1 = provider, line 2 = offer name (always). `stepLabel`/`isMultiStep`
+// drive the hover popup ("Earn" + step) and are set for multi-step rewards only.
 
-test('live feed: direct single-step shows Goodpicks then the offer title', async () => {
+const single = (sourceLine, detailLine) => ({ sourceLine, detailLine, isMultiStep: false, stepLabel: '' });
+
+test('live feed 1: direct single-step = Goodpicks + offer name, no popup step', async () => {
   const { getLiveFeedDisplay } = await loadDisplay();
   assert.deepEqual(
     getLiveFeedDisplay({
       transactionType: 'direct_offer_reward',
-      metadata: { providerId: 'direct', offerTitle: 'QA Offer' },
+      description: 'QA Offer',
+      metadata: { providerId: 'direct', providerName: 'Goodpicks', offerTitle: 'QA Offer', goalKey: null, stepLabel: '' },
     }),
-    { sourceLine: 'Goodpicks', detailLine: 'QA Offer' }
+    single('Goodpicks', 'QA Offer')
   );
 });
 
-test('live feed: direct multi-step shows Goodpicks then the credited step', async () => {
+test('live feed 2: direct multi-step = Goodpicks + offer name, completed step only for the popup', async () => {
+  const { getLiveFeedDisplay } = await loadDisplay();
+  const metadata = {
+    providerId: 'direct',
+    providerName: 'Goodpicks',
+    offerTitle: 'Plarium Vikings',
+    goalKey: 'fight_20_battles',
+    stepLabel: 'fight_20_battles',
+  };
+  const tx = { transactionType: 'direct_offer_reward', description: 'Plarium Vikings - fight_20_battles', metadata };
+  assert.deepEqual(getLiveFeedDisplay(tx), {
+    sourceLine: 'Goodpicks',
+    detailLine: 'Plarium Vikings',
+    isMultiStep: true,
+    stepLabel: 'Fight 20 Battles',
+  });
+  // Display only: stored goal key / step label are untouched.
+  assert.equal(metadata.goalKey, 'fight_20_battles');
+  assert.equal(metadata.stepLabel, 'fight_20_battles');
+});
+
+test('live feed 2b: direct multi-step without offerTitle metadata still shows the offer, not the step', async () => {
   const { getLiveFeedDisplay } = await loadDisplay();
   assert.deepEqual(
     getLiveFeedDisplay({
       transactionType: 'direct_offer_reward',
-      metadata: {
-        providerId: 'direct',
-        providerName: 'Goodpicks',
-        offerTitle: 'Plarium Vikings',
-        goalKey: 'fight_20_battles',
-        stepLabel: 'Fight 20 Battles',
-      },
+      description: 'Plarium Vikings - Reach Level 10',
+      metadata: { providerId: 'direct', goalKey: 'level_10', stepLabel: 'Reach Level 10' },
     }),
-    { sourceLine: 'Goodpicks', detailLine: 'Fight 20 Battles' }
+    { sourceLine: 'Goodpicks', detailLine: 'Plarium Vikings', isMultiStep: true, stepLabel: 'Reach Level 10' }
   );
-});
-
-test('live feed: Lootably single-step shows Offerwall provider then the offer title', async () => {
-  const { getLiveFeedDisplay } = await loadDisplay();
-  assert.deepEqual(
-    getLiveFeedDisplay({
-      transactionType: 'offer_reward',
-      metadata: { providerId: 'lootably', providerName: 'Lootably', offerTitle: 'Survey X' },
-    }),
-    { sourceLine: 'Offerwall: Lootably', detailLine: 'Survey X' }
-  );
-});
-
-test('live feed: Lootably multi-step shows the credited step, not the total offer name', async () => {
-  const { getLiveFeedDisplay } = await loadDisplay();
-  assert.deepEqual(
-    getLiveFeedDisplay({
-      transactionType: 'offer_reward',
-      metadata: {
-        providerId: 'lootably',
-        providerName: 'Lootably',
-        offerTitle: 'Game Install',
-        campaignTitle: 'Game Install',
-        stepLabel: 'Reach Level 5',
-      },
-    }),
-    { sourceLine: 'Offerwall: Lootably', detailLine: 'Reach Level 5' }
-  );
-});
-
-test('live feed: raw step IDs are humanized for display only', async () => {
-  const { getLiveFeedDisplay } = await loadDisplay();
-  assert.deepEqual(
-    getLiveFeedDisplay({
-      transactionType: 'offer_reward',
-      metadata: { providerName: 'Lootably', offerTitle: 'Plarium', stepLabel: 'fight_20_battles' },
-    }),
-    { sourceLine: 'Offerwall: Lootably', detailLine: 'Fight 20 Battles' }
-  );
-});
-
-test('live feed: provider-only rows use an honest unavailable detail instead of provider twice', async () => {
-  const { getLiveFeedDisplay } = await loadDisplay();
-  assert.deepEqual(
-    getLiveFeedDisplay({ transactionType: 'offer_reward', metadata: { providerName: 'Lootably' } }),
-    { sourceLine: 'Offerwall: Lootably', detailLine: 'Offer details unavailable' }
-  );
-  assert.deepEqual(
-    getLiveFeedDisplay({
-      transactionType: 'offer_reward',
-      metadata: { providerName: 'Lootably', offerTitle: 'Lootably' },
-    }),
-    { sourceLine: 'Offerwall: Lootably', detailLine: 'Offer details unavailable' }
-  );
-});
-
-test('live feed: provider-branded generic descriptions are not used as offer names', async () => {
-  const { getLiveFeedDisplay } = await loadDisplay();
-  assert.deepEqual(
-    getLiveFeedDisplay({
-      transactionType: 'offer_reward',
-      description: 'Lootably Offer Reward',
-      metadata: { providerId: 'lootably', providerName: 'Lootably' },
-    }),
-    { sourceLine: 'Offerwall: Lootably', detailLine: 'Offer details unavailable' }
-  );
-  assert.deepEqual(
-    getLiveFeedDisplay({
-      transactionType: 'offer_reward',
-      description: 'Lootably - Offer Reward',
-      metadata: { providerId: 'lootably', providerName: 'Lootably' },
-    }),
-    { sourceLine: 'Offerwall: Lootably', detailLine: 'Offer details unavailable' }
-  );
-});
-
-test('live feed: a parent offer title never overrides a credited step', async () => {
-  const { getLiveFeedDisplay } = await loadDisplay();
+  // Legacy multi-step row whose whole description is the step: no offer name is known.
   assert.deepEqual(
     getLiveFeedDisplay({
       transactionType: 'direct_offer_reward',
-      metadata: { providerId: 'direct', offerTitle: 'Plarium', stepLabel: 'fight_20_battles' },
+      description: 'Reach Level 10',
+      metadata: { goalKey: 'level_10', stepLabel: 'Reach Level 10' },
     }),
-    { sourceLine: 'Goodpicks', detailLine: 'Fight 20 Battles' }
+    { sourceLine: 'Goodpicks', detailLine: 'Offer details unavailable', isMultiStep: true, stepLabel: 'Reach Level 10' }
   );
 });
 
-test('live feed: legacy custom offers are own offers and show Goodpicks plus their title', async () => {
+test('live feed 3: offerwall single-step = provider + offer name, no popup step', async () => {
   const { getLiveFeedDisplay } = await loadDisplay();
   assert.deepEqual(
     getLiveFeedDisplay({
-      transactionType: 'custom_offer_reward',
-      description: 'Custom Offer Reward: Legacy Manual Offer',
-      metadata: {},
+      transactionType: 'offer_reward',
+      description: 'Survey X',
+      metadata: { providerId: 'lootably', providerName: 'Lootably', offerTitle: 'Survey X', campaignTitle: 'Survey X', stepLabel: null },
     }),
-    { sourceLine: 'Goodpicks', detailLine: 'Legacy Manual Offer' }
+    single('Offerwall: Lootably', 'Survey X')
   );
+  // A "step" that merely repeats the offer name is not a second step.
   assert.deepEqual(
     getLiveFeedDisplay({
-      transactionType: 'custom_offer_reward',
-      description: 'Reward for custom offer: QA Offer',
-      metadata: {},
+      transactionType: 'offer_reward',
+      metadata: { providerName: 'CPX Research', offerTitle: 'Survey 42', stepLabel: 'Survey 42' },
     }),
-    { sourceLine: 'Goodpicks', detailLine: 'QA Offer' }
-  );
-  assert.deepEqual(
-    getLiveFeedDisplay({
-      transactionType: 'custom_offer_reward',
-      metadata: { offerTitle: 'Featured Goodpicks Offer' },
-    }),
-    { sourceLine: 'Goodpicks', detailLine: 'Featured Goodpicks Offer' }
+    single('Offerwall: CPX Research', 'Survey 42')
   );
 });
 
-test('live feed: API-shaped transaction metadata reaches the resolver intact', async () => {
+test('live feed 4: offerwall multi-step = provider + offer name, humanized step only for the popup', async () => {
   const { getLiveFeedDisplay } = await loadDisplay();
+  assert.deepEqual(
+    getLiveFeedDisplay({
+      transactionType: 'offer_reward',
+      description: 'fight_20_battles',
+      metadata: { providerId: 'lootably', providerName: 'Lootably', offerTitle: 'Plarium', campaignTitle: 'Plarium', stepLabel: 'fight_20_battles' },
+    }),
+    { sourceLine: 'Offerwall: Lootably', detailLine: 'Plarium', isMultiStep: true, stepLabel: 'Fight 20 Battles' }
+  );
   assert.deepEqual(
     getLiveFeedDisplay({
       _id: 'tx-1',
       transactionType: 'offer_reward',
       amount: 250,
-      status: 'completed',
       description: 'Reach Level 5',
-      metadata: {
-        providerId: 'lootably',
-        providerName: 'Lootably',
-        offerTitle: 'Game Install',
-        campaignTitle: 'Game Install',
-        stepLabel: 'Reach Level 5',
-      },
+      metadata: { providerId: 'lootably', providerName: 'Lootably', offerTitle: 'Game Install', stepLabel: 'Reach Level 5' },
       userId: { _id: 'user-1', displayName: 'Player' },
     }),
-    { sourceLine: 'Offerwall: Lootably', detailLine: 'Reach Level 5' }
+    { sourceLine: 'Offerwall: Lootably', detailLine: 'Game Install', isMultiStep: true, stepLabel: 'Reach Level 5' }
+  );
+});
+
+test('live feed 5: legacy/missing metadata falls back safely and never shows the provider as the offer name', async () => {
+  const { getLiveFeedDisplay } = await loadDisplay();
+  const unavailable = single('Offerwall: Lootably', 'Offer details unavailable');
+  assert.deepEqual(getLiveFeedDisplay({ transactionType: 'offer_reward', metadata: { providerName: 'Lootably' } }), unavailable);
+  assert.deepEqual(
+    getLiveFeedDisplay({ transactionType: 'offer_reward', metadata: { providerName: 'Lootably', offerTitle: 'Lootably' } }),
+    unavailable
+  );
+  for (const description of ['Lootably Offer Reward', 'Lootably - Offer Reward', 'Offer Reward', 'Completed an Offer', 'Earned from Lootably']) {
+    assert.deepEqual(
+      getLiveFeedDisplay({ transactionType: 'offer_reward', description, metadata: { providerId: 'lootably', providerName: 'Lootably' } }),
+      unavailable,
+      description
+    );
+  }
+  // Legacy offerwall row: description was the step, no offer title stored -> not shown as offer name.
+  assert.deepEqual(
+    getLiveFeedDisplay({
+      transactionType: 'offer_reward',
+      description: 'Reach Level 5',
+      metadata: { providerName: 'Lootably', stepLabel: 'Reach Level 5' },
+    }),
+    { sourceLine: 'Offerwall: Lootably', detailLine: 'Offer details unavailable', isMultiStep: true, stepLabel: 'Reach Level 5' }
+  );
+  // Privacy-scrubbed / no provider at all.
+  assert.deepEqual(
+    getLiveFeedDisplay({ transactionType: 'offer_reward', description: 'Completed an Offer', metadata: {} }),
+    single('Offerwall', 'Offer details unavailable')
+  );
+  // Legacy direct rows: providerId direct maps to Goodpicks; old generic suffix stripped; no goalKey => single-step.
+  assert.deepEqual(
+    getLiveFeedDisplay({ transactionType: 'direct_offer_reward', description: 'QA Offer - Offer Reward', metadata: { providerId: 'direct' } }),
+    single('Goodpicks', 'QA Offer')
+  );
+  assert.deepEqual(
+    getLiveFeedDisplay({ transactionType: 'direct_offer_reward', description: 'Direct offer reward', metadata: {} }),
+    single('Goodpicks', 'Offer details unavailable')
+  );
+  // Non-offer transactions are not handled here.
+  assert.equal(getLiveFeedDisplay({ transactionType: 'daily_bonus' }), null);
+});
+
+test('live feed: custom offers are Goodpicks offers and never carry a step', async () => {
+  const { getLiveFeedDisplay } = await loadDisplay();
+  assert.deepEqual(
+    getLiveFeedDisplay({ transactionType: 'custom_offer_reward', description: 'Custom Offer Reward: Legacy Manual Offer', metadata: {} }),
+    single('Goodpicks', 'Legacy Manual Offer')
+  );
+  assert.deepEqual(
+    getLiveFeedDisplay({ transactionType: 'custom_offer_reward', description: 'Reward for custom offer: QA Offer', metadata: {} }),
+    single('Goodpicks', 'QA Offer')
+  );
+  assert.deepEqual(
+    getLiveFeedDisplay({ transactionType: 'custom_offer_reward', metadata: { offerTitle: 'Featured Goodpicks Offer', stepLabel: 'x' } }),
+    single('Goodpicks', 'Featured Goodpicks Offer')
   );
 });
 
 test('live feed: other provider names stay dynamic', async () => {
   const { getLiveFeedDisplay } = await loadDisplay();
   assert.deepEqual(
-    getLiveFeedDisplay({
-      transactionType: 'offer_reward',
-      metadata: { providerName: 'CPX Research', offerTitle: 'Survey 42' },
-    }),
-    { sourceLine: 'Offerwall: CPX Research', detailLine: 'Survey 42' }
-  );
-});
-
-test('live feed: legacy direct rows map providerId direct to Goodpicks', async () => {
-  const { getLiveFeedDisplay } = await loadDisplay();
-  assert.deepEqual(
-    getLiveFeedDisplay({
-      transactionType: 'direct_offer_reward',
-      description: 'QA Offer - Offer Reward',
-      metadata: { providerId: 'direct' },
-    }),
-    { sourceLine: 'Goodpicks', detailLine: 'QA Offer' }
+    getLiveFeedDisplay({ transactionType: 'offer_reward', metadata: { providerName: 'CPX Research', offerTitle: 'Survey 42' } }),
+    single('Offerwall: CPX Research', 'Survey 42')
   );
 });
 
@@ -425,6 +407,13 @@ test('Live Feed renders source before detail visibly inline, not only in the hov
   assert.match(bar, /details\.hasOfferDetails/);
   assert.match(bar, /details\.sourceLine/);
   assert.match(bar, /details\.detailLine/);
+  // Hover popup: "Earn" + step for multi-step only; none for single-step offers.
+  assert.match(bar, /hasPopup = Boolean\(liveDisplay\.isMultiStep && liveDisplay\.stepLabel\)/);
+  assert.match(bar, /popup = hasPopup \? \{ title: 'Earn', subtitle: liveDisplay\.stepLabel \} : null/);
+  assert.match(bar, /if \(details\.hasPopup === false\) return;/);
+  assert.match(bar, /hoveredData\.details\.popupTitle/);
+  assert.match(bar, /hoveredData\.details\.popupSubtitle/);
+  assert.doesNotMatch(bar, /title=\{`\$\{details\.sourceLine\}/);
   assert.doesNotMatch(bar, /'Task: Completed offer'/);
 
   const inlineIndex = bar.indexOf('Visible provider/source');
