@@ -20,8 +20,11 @@ const {
 const { buildDirectOfferProviderConfig } = require('../services/tracking/directOfferProvider');
 const {
   buildActiveGoalConversionQuery,
+  buildOfferCreditConversionQuery,
   groupCompletedGoalKeysByOffer,
+  groupOfferCreditState,
   resolveCompletedGoalKeys,
+  resolveOfferLifecycle,
 } = require('../services/tracking/offerGoalCompletion');
 const { processPostback } = require('../services/tracking/conversionService');
 const { upsertManualProofConversion } = require('../services/tracking/manualProofService');
@@ -156,13 +159,15 @@ router.get('/', verifyToken, async (req, res) => {
           submissionStatus: null,
           adminNote: '',
           completedGoalKeys: [],
+          lifecycle: 'available',
+          isCompleted: false,
         })),
       });
     }
 
     // Two bulk queries for the whole list (no per-offer N+1): the user's click
     // logs and the user's credited direct-offer goal Conversions.
-    const [userClicks, creditedGoalConversions] = await Promise.all([
+    const [userClicks, creditedGoalConversions, offerCreditConversions] = await Promise.all([
       ClickLog.find({ userId: user._id })
         .sort({ createdAt: -1 })
         .select('offerId status clickId createdAt')
@@ -170,7 +175,11 @@ router.get('/', verifyToken, async (req, res) => {
       Conversion.find(buildActiveGoalConversionQuery(user._id))
         .select('offerId campaignId goalKey internalStatus processingState rewardTransactionId')
         .lean(),
+      Conversion.find(buildOfferCreditConversionQuery(user._id))
+        .select('offerId campaignId internalStatus processingState rewardTransactionId')
+        .lean(),
     ]);
+    const creditStateByOffer = groupOfferCreditState(offerCreditConversions);
 
     const clickMap = {};
     for (const c of userClicks) {
@@ -203,6 +212,14 @@ router.get('/', verifyToken, async (req, res) => {
     const offersWithStatus = offers.map((offer) => {
       const click = clickMap[offer._id.toString()];
       const submission = submissionMap[offer._id.toString()];
+      const completedGoalKeys = resolveCompletedGoalKeys(offer, completedByOffer);
+      const lifecycle = resolveOfferLifecycle({
+        offer,
+        click,
+        submission,
+        completedGoalKeys,
+        creditState: creditStateByOffer[offer._id.toString()] || null,
+      });
       return {
         ...offer,
         trackingMode: offer.trackingMode === 'manual' ? 'manual' : 'postback',
@@ -211,7 +228,10 @@ router.get('/', verifyToken, async (req, res) => {
         submissionStatus: submission ? submission.status : null,
         adminNote: submission ? submission.adminNote : '',
         startedAt: submission?.createdAt || click?.createdAt || null,
-        completedGoalKeys: resolveCompletedGoalKeys(offer, completedByOffer),
+        completedGoalKeys,
+        // Authoritative server-side state; clients must not re-derive completion.
+        lifecycle,
+        isCompleted: lifecycle === 'completed',
       };
     });
 

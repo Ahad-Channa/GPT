@@ -11,6 +11,7 @@ import { ProviderCard, OfferwallCard, FeaturedOfferCard, FeaturedOfferModal } fr
 import OfferwallModal from '../components/offers/OfferwallModal';
 import { GoodpicksOfferwallModal } from '../components/offers/GoodpicksModal';
 import { DirectOfferCard, DirectOfferModal } from '../components/offers/DirectOfferCard';
+import { isOfferCompleted, markOfferStarted } from '../utils/offerLifecycle.js';
 import { buildOfferwallSections } from '../utils/providerOrder';
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
@@ -144,7 +145,9 @@ const Earn = () => {
         const data = await res.json();
         if (data.success && Array.isArray(data.offers)) {
           const now = new Date();
-          setDirectOffers(data.offers.filter(o => !o.expirationDate || new Date(o.expirationDate) >= now));
+          setDirectOffers(data.offers
+            .filter(o => !o.expirationDate || new Date(o.expirationDate) >= now)
+            .filter(o => !isOfferCompleted(o))); // fully credited offers live only in Goodpicks History
         }
       } catch (err) {
         console.error('Failed to load direct offers:', err);
@@ -377,6 +380,7 @@ const Earn = () => {
               placement="featured"
               onClose={() => setSelectedDirectOffer(null)}
               onClicked={(offerId, state = {}) => {
+                setDirectOffers(prev => markOfferStarted(prev, offerId));
                 setDirectOffers(prev => prev.map(o => o._id === offerId ? {
                   ...o,
                   clickStatus: 'clicked',

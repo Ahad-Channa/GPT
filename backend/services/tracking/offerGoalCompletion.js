@@ -62,8 +62,78 @@ const resolveCompletedGoalKeys = (offer, creditedByOffer = {}) => {
   return [...creditedKeys].filter((key) => enabledKeys.has(key));
 };
 
+// ── Offer lifecycle (single source of truth for Featured / Goodpicks lists) ──
+// Values: 'available' (never started), 'started' (clicked or partly credited),
+// 'pending', 'rejected', 'reversed' (credited then reversed; never re-creditable,
+// anti-replay policy unchanged) and 'completed' (fully credited / approved).
+// Only 'completed' leaves the active lists; every non-'available' value is shown
+// in the user's Goodpicks History. clickStatus === 'approved' alone is NOT
+// completion: the first credited goal of a multi-step offer sets it.
+const OFFER_LIFECYCLES = ['available', 'started', 'pending', 'rejected', 'reversed', 'completed'];
+
+// One bulk query: every direct-offer conversion that ever carried a reward.
+const buildOfferCreditConversionQuery = (userId, providerId = DIRECT_OFFER_PROVIDER_ID) => ({
+  userId,
+  providerId,
+  rewardTransactionId: { $ne: null },
+  internalStatus: { $in: ['approved', 'reversed'] },
+});
+
+const groupOfferCreditState = (conversions = []) => {
+  const byOffer = {};
+  for (const conversion of Array.isArray(conversions) ? conversions : []) {
+    const offerId = goalConversionOfferId(conversion);
+    if (!offerId || conversion.rewardTransactionId == null) continue;
+    const entry = byOffer[offerId] || (byOffer[offerId] = { credited: false, reversed: false });
+    if (conversion.internalStatus === 'reversed' || conversion.processingState === 'reversed') entry.reversed = true;
+    else if (conversion.internalStatus === 'approved' && conversion.processingState === 'processed') entry.credited = true;
+  }
+  return byOffer;
+};
+
+const clickIncompleteState = (click) => {
+  if (click?.status === 'rejected') return 'rejected';
+  if (click?.status === 'pending') return 'pending';
+  return 'started';
+};
+
+const resolveOfferLifecycle = ({ offer, click = null, submission = null, completedGoalKeys = [], creditState = null } = {}) => {
+  if (offer?.trackingMode === 'manual') {
+    const status = submission?.status;
+    if (status === 'approved') return 'completed';
+    if (status === 'pending') return 'pending';
+    if (status === 'rejected') return 'rejected';
+    if (status === 'chargebacked') return 'reversed';
+    if (status === 'started' || click) return 'started';
+    return 'available';
+  }
+
+  if (!click) return 'available';
+
+  const enabledKeys = getEnabledGoalKeys(offer);
+  if (enabledKeys.size > 0) {
+    const credited = new Set(completedGoalKeys);
+    const allCredited = [...enabledKeys].every((key) => credited.has(key));
+    if (allCredited) return 'completed';
+    // Partly credited multi-step offers stay active and resumable.
+    if (credited.size > 0) return 'started';
+    return clickIncompleteState(click);
+  }
+
+  // Single-step: prefer the authoritative conversion state; fall back to the
+  // click status only for legacy rows without conversion data.
+  if (creditState?.credited) return 'completed';
+  if (creditState?.reversed) return 'reversed';
+  if (!creditState && click.status === 'approved') return 'completed';
+  return clickIncompleteState(click);
+};
+
 module.exports = {
   DIRECT_OFFER_PROVIDER_ID,
+  OFFER_LIFECYCLES,
+  buildOfferCreditConversionQuery,
+  groupOfferCreditState,
+  resolveOfferLifecycle,
   buildActiveGoalConversionQuery,
   isActiveCreditedGoalConversion,
   groupCompletedGoalKeysByOffer,

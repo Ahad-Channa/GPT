@@ -114,14 +114,15 @@ test('the active goal query targets only approved, processed, rewarded goal conv
   assert.equal(isActiveCreditedGoalConversion({ internalStatus: 'approved', processingState: 'processed' }), false);
 });
 
-test('direct-offers response attaches completedGoalKeys with a single bulk conversion query (no N+1)', () => {
+test('direct-offers response attaches completedGoalKeys with bulk conversion queries (no N+1)', () => {
   const source = read('backend/routes/directOffers.js');
-  assert.match(source, /completedGoalKeys: resolveCompletedGoalKeys\(offer, completedByOffer\)/);
+  assert.match(source, /const completedGoalKeys = resolveCompletedGoalKeys\(offer, completedByOffer\)/);
   assert.match(source, /buildActiveGoalConversionQuery\(user\._id\)/);
   assert.match(source, /groupCompletedGoalKeysByOffer\(creditedGoalConversions\)/);
 
   const conversionFindCount = (source.match(/Conversion\.find\(/g) || []).length;
-  assert.equal(conversionFindCount, 1, 'expected exactly one bulk Conversion.find');
+  // Goal completion + the credited/reversed state used by the offer lifecycle: two bulk queries per request.
+  assert.equal(conversionFindCount, 2, 'expected exactly two bulk Conversion.find calls');
   assert.doesNotMatch(source, /for\s*\([\s\S]*?Conversion\.find\(/);
 });
 

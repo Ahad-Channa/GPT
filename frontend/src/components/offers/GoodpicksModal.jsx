@@ -1,4 +1,6 @@
 import { useState, useEffect } from 'react';
+import GoodpicksHistoryAction from './GoodpicksHistoryAction.jsx';
+import { buildGoodpicksHistory, filterActiveOffers, markOfferStarted } from '../../utils/offerLifecycle.js';
 import { useTranslation } from 'react-i18next';
 import i18n from '../../i18n/i18n';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -139,60 +141,6 @@ const defaultGoodpicksOffers = [
     platforms: { android: true, ios: false, desktop: false },
     requirements: [
       'Register → receive 10 coins',
-    ],
-    requirementType: 'bullets',
-  },
-];
-
-// Mock clicked and completed Goodpicks offers for History view
-const defaultGoodpicksHistory = [
-  {
-    _id: 'gp_hist_1',
-    title: 'Treehouse Fishing',
-    titleDe: 'Treehouse Fishing',
-    description: 'In mollis, enim eu sollicitudin sodales, libero dolor condimentum sem.',
-    descriptionDe: 'In mollis, enim eu sollicitudin sodales, libero dolor condimentum sem.',
-    rewardAmount: 7000000,
-    status: 'completed',
-    externalLink: 'https://example.com/treehouse-fishing',
-    icon: '/coins/Mask group.png',
-    platforms: { android: true, ios: false, desktop: false },
-    requirements: [
-      'Register → receive 10 coins',
-      'Deposit €50 → receive 50,000 coins',
-      'Deposit €50 → receive 50,000 coins',
-      'Generate €200 in revenue → receive 10,000 coins',
-    ],
-    requirementsDe: [
-      'Registrieren → 10 Coins erhalten',
-      '50 € einzahlen → 50.000 Coins erhalten',
-      '50 € einzahlen → 50.000 Coins erhalten',
-      '200 € Umsatz generieren → 10.000 Coins erhalten',
-    ],
-    requirementType: 'bullets',
-  },
-  {
-    _id: 'gp_hist_2',
-    title: 'Treehouse Fishing',
-    titleDe: 'Treehouse Fishing',
-    description: 'In mollis, enim eu sollicitudin sodales, libero dolor condimentum sem.',
-    descriptionDe: 'In mollis, enim eu sollicitudin sodales, libero dolor condimentum sem.',
-    rewardAmount: 7000000,
-    status: 'clicked',
-    externalLink: 'https://example.com/treehouse-fishing',
-    icon: '/coins/Mask group.png',
-    platforms: { android: true, ios: false, desktop: false },
-    requirements: [
-      'Register → receive 10 coins',
-      'Deposit €50 → receive 50,000 coins',
-      'Deposit €50 → receive 50,000 coins',
-      'Generate €200 in revenue → receive 10,000 coins',
-    ],
-    requirementsDe: [
-      'Registrieren → 10 Coins erhalten',
-      '50 € einzahlen → 50.000 Coins erhalten',
-      '50 € einzahlen → 50.000 Coins erhalten',
-      '200 € Umsatz generieren → 10.000 Coins erhalten',
     ],
     requirementType: 'bullets',
   },
@@ -360,11 +308,12 @@ export const GoodpicksDetailModal = ({ offer, onClose, token, onOfferStateChange
             setProofStarted(true);
             if (data.submissionStatus) setSubmissionStatus(data.submissionStatus);
             if (!opened) setActionError('Allow pop-ups, then use Start Offer Again to open this offer.');
-            if (onOfferStateChange) onOfferStateChange(offer._id, {
-              submissionStatus: data.submissionStatus || 'started',
-              clickStatus: 'clicked',
-            });
           }
+          // Manual and postback offers both enter History on a successful start.
+          if (onOfferStateChange) onOfferStateChange(offer._id, {
+            ...(isManual ? { submissionStatus: data.submissionStatus || 'started' } : {}),
+            clickStatus: 'clicked',
+          });
           return;
         }
         closeReservedOfferTab(pendingTab);
@@ -1129,7 +1078,9 @@ export const GoodpicksOfferwallModal = ({ onClose, token }) => {
   const isFr = i18n.language?.startsWith('fr');
   const isUr = i18n.language?.startsWith('ur');
   const [offers, setOffers] = useState([]);
-  const [historyOffers, setHistoryOffers] = useState(defaultGoodpicksHistory);
+  const [historyOffers, setHistoryOffers] = useState([]);
+  const [historyLoading, setHistoryLoading] = useState(false);
+  const [historyError, setHistoryError] = useState(false);
   const [currentView, setCurrentView] = useState('offers'); // 'offers' | 'history'
   const [showSupportModal, setShowSupportModal] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -1149,7 +1100,8 @@ export const GoodpicksOfferwallModal = ({ onClose, token }) => {
           });
           const data = await res.json();
           if (data.success && data.offers && data.offers.length > 0) {
-            setOffers(data.offers.map(mapDirectOfferForGoodpicks));
+            // Fully credited offers leave the active list (they stay in History).
+            setOffers(filterActiveOffers(data.offers).map(mapDirectOfferForGoodpicks));
             return;
           }
         }
@@ -1169,6 +1121,41 @@ export const GoodpicksOfferwallModal = ({ onClose, token }) => {
     };
     fetchOffers();
   }, [token]);
+
+  // History = the user's started offers from the backend (survives closing the
+  // modal and page reloads). placement=all also returns started offers that were
+  // since deactivated/expired; unstarted offers are dropped by buildGoodpicksHistory.
+  const refreshHistory = async () => {
+    if (!token) return;
+    setHistoryLoading(true);
+    try {
+      const res = await fetch(`${API}/direct-offers?placement=all`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await res.json();
+      if (data.success && Array.isArray(data.offers)) {
+        setHistoryOffers(buildGoodpicksHistory(data.offers.map(mapDirectOfferForGoodpicks)));
+        setHistoryError(false);
+      } else {
+        setHistoryError(true);
+      }
+    } catch (err) {
+      console.warn('Failed to load Goodpicks history:', err);
+      setHistoryError(true);
+    } finally {
+      setHistoryLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    refreshHistory();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [token]);
+
+  useEffect(() => {
+    if (currentView === 'history') refreshHistory();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentView]);
 
   // Filter offers by platform
   const filteredOffers = offers.filter((offer) => {
@@ -1493,31 +1480,9 @@ export const GoodpicksOfferwallModal = ({ onClose, token }) => {
                             </div>
                           </div>
 
-                          {/* 4. Button */}
+                          {/* 4. Status: plain text when completed, details/resume button otherwise */}
                           <div className="flex justify-end">
-                            <button
-                              type="button"
-                              onClick={() => setSelectedOffer(item)}
-                              style={{
-                                width: '105px',
-                                height: '36px',
-                                borderRadius: '10px',
-                                background: '#00A3FF',
-                                color: '#FFFFFF',
-                                fontFamily: '"Poppins", sans-serif',
-                                fontWeight: 600,
-                                fontSize: '13px',
-                                border: 'none',
-                                cursor: 'pointer',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                flexShrink: 0,
-                              }}
-                              className="hover:bg-[#0094EA] active:scale-[0.98] transition-all shadow-sm"
-                            >
-                              {t('goodpicks.seeDetails')}
-                            </button>
+                            <GoodpicksHistoryAction offer={item} onOpen={setSelectedOffer} />
                           </div>
                         </div>
                       </div>
@@ -1525,7 +1490,8 @@ export const GoodpicksOfferwallModal = ({ onClose, token }) => {
                   })
                 ) : (
                   <div className="flex-1 flex flex-col items-center justify-center py-20 text-center">
-                    <p className="text-slate-700 font-bold text-base">{t('goodpicks.historyEmpty')}</p>
+                    {historyLoading && <p className="text-slate-500 text-xs mb-1">{t('goodpicks.historyLoading')}</p>}
+                    <p className="text-slate-700 font-bold text-base">{historyError ? t('goodpicks.historyError') : t('goodpicks.historyEmpty')}</p>
                     <p className="text-slate-500 text-xs mt-1">{t('goodpicks.historyEmptySub')}</p>
                   </div>
                 )}
@@ -1841,8 +1807,13 @@ export const GoodpicksOfferwallModal = ({ onClose, token }) => {
           onClose={() => setSelectedOffer(null)}
           token={token}
           onOfferStateChange={(offerId, nextState) => {
-            setOffers(prev => prev.map(item => item._id === offerId ? { ...item, ...nextState } : item));
-            setSelectedOffer(prev => prev?._id === offerId ? { ...prev, ...nextState } : prev);
+            setOffers(prev => markOfferStarted(prev, offerId, nextState));
+            setSelectedOffer(prev => (prev?._id === offerId ? markOfferStarted([prev], offerId, nextState)[0] : prev));
+            // Show the new History row immediately, then reconcile with the server.
+            setHistoryOffers(prev => (prev.some(item => item._id === offerId)
+              ? prev
+              : buildGoodpicksHistory([...markOfferStarted(offers.filter(item => item._id === offerId), offerId, nextState), ...prev])));
+            refreshHistory();
           }}
         />
       )}
