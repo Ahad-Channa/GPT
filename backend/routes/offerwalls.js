@@ -641,6 +641,8 @@ const handleLegacyOfferwallPostback = async (providerId, req, res, params = {}, 
           offerTitle: offerTitle || null,
           campaignTitle: offerTitle || null,
           stepLabel: stepLabel || null,
+          // Display-only provider hint ('singlestep' | 'multistep') when the adapter supplies it.
+          offerType: ['singlestep', 'multistep'].includes(parsed?.offerType) ? parsed.offerType : null,
           providerUnits,
           conversionRatio: explicitPlatformCoins === undefined ? provider.conversionRatio : 1,
           holdApplied: holdDecision.status === 'hold',

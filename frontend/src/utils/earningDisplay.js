@@ -156,12 +156,22 @@ const resolveLiveOfferName = (tx = {}, meta = {}, provider = '', type = '', rawS
 //
 // Line 1 = provider ("Goodpicks" for direct/custom offers), line 2 = the offer
 // name, always - also for multi-step offers. The completed step is returned
-// separately as `stepLabel` and only when the offer is multi-step:
-//  - direct: `metadata.goalKey` is set from the trusted goal snapshot only when
-//    the reward came from one of the offer's configured steps; single-step
-//    direct offers and custom offers never carry a goalKey.
-//  - offerwall: providers only send a step/goal name for multi-step offers, so
-//    a usable step label that differs from the offer name marks multi-step.
+// separately as `stepLabel`, and `isMultiStep` is true, only for genuinely
+// multi-step offers. Classification, in order of reliability:
+//  - direct: `metadata.enabledGoalCount` (enabled goals in the immutable
+//    click-time snapshot, written when the reward is created). Multi-step only
+//    when a goalKey is present AND count > 1; a one-goal offer also has a
+//    goalKey but is single-step. Count 0 = no goals = single-step.
+//    LEGACY FALLBACK (rows written before enabledGoalCount existed): a goalKey
+//    is treated as multi-step, because the step would otherwise be shown
+//    nowhere in the feed. Old one-goal rows may therefore still show a
+//    redundant popup until they age out of the 20-item feed.
+//  - custom offers: always single-step.
+//  - offerwall: `metadata.offerType` ('singlestep' | 'multistep') when the
+//    provider supplies it (Lootably does). FALLBACK for providers/rows without
+//    it: a usable step label that differs from the offer name marks multi-step
+//    (providers only send step names for multi-step offers, but this is a
+//    heuristic and cannot be verified from the data).
 // Stored metadata is never modified; labels are formatted for display only.
 export const getLiveFeedDisplay = (tx = {}) => {
   const type = tx.transactionType || '';
@@ -184,12 +194,14 @@ export const getLiveFeedDisplay = (tx = {}) => {
   let stepLabel = resolveLiveStepLabel(meta);
   if (type === 'direct_offer_reward') {
     const goalKey = clean(meta.goalKey);
-    if (!goalKey) {
-      stepLabel = '';
-    } else if (!stepLabel) {
-      stepLabel = humanizeGoalKey(goalKey);
-    }
+    const goalCount = meta.enabledGoalCount;
+    const countKnown = Number.isInteger(goalCount) && goalCount >= 0;
+    const isMulti = Boolean(goalKey) && (countKnown ? goalCount > 1 : true);
+    if (!isMulti) stepLabel = '';
+    else if (!stepLabel) stepLabel = humanizeGoalKey(goalKey);
   } else if (type === 'custom_offer_reward') {
+    stepLabel = '';
+  } else if (clean(meta.offerType).toLowerCase() === 'singlestep') {
     stepLabel = '';
   }
   if (stepLabel && (stepLabel.toLowerCase() === detailLine.toLowerCase() || stepLabel.toLowerCase() === providerText.toLowerCase())) {

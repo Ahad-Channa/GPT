@@ -448,6 +448,22 @@ test('Lootably offerwall notification humanizes raw goal IDs without changing st
   assert.equal(reward.metadata.offerTitle, 'Sample App');
 });
 
+test('Lootably stores the provider offerType as display-only metadata without changing identity or amounts', async () => {
+  const worldMulti = makeWorld();
+  const multi = await runLootably(worldMulti, lootablyReq({ webhookId: 'wh-type-multi', transactionId: 'T-type-m', offerType: 'multistep', goalId: 'goal-x', currencyReward: 125 }));
+  assert.equal(multi.statusCode, 200);
+  const multiReward = rewards(worldMulti)[0];
+  assert.equal(multiReward.metadata.offerType, 'multistep');
+  assert.equal(multiReward.amount, 125);
+
+  const worldSingle = makeWorld();
+  const single = await runLootably(worldSingle, lootablyReq({ webhookId: 'wh-type-single', transactionId: 'T-type-s', offerType: 'singlestep', goalId: '', goalDescription: '', currencyReward: 125 }));
+  assert.equal(single.statusCode, 200);
+  const singleReward = rewards(worldSingle)[0];
+  assert.equal(singleReward.metadata.offerType, 'singlestep');
+  assert.equal(singleReward.amount, 125);
+});
+
 test('Lootably webhook credits once, reverses the same step once, and permits a fresh conversion or a different step', async () => {
   const world = makeWorld();
 

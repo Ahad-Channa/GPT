@@ -345,6 +345,13 @@ const processReward = async ({
             offerTitle,
             stepLabel,
             goalLabel: claimed.goalKey ? stepLabel : null,
+            // Display-only: number of enabled goals in the immutable click-time
+            // snapshot (0 = single-reward offer). Used by the Live Feed to tell
+            // a one-goal offer from a genuinely multi-step offer. Never used for
+            // matching, rewards or idempotency.
+            enabledGoalCount: clickLog.goalsSnapshot && typeof clickLog.goalsSnapshot === 'object'
+              ? Object.keys(clickLog.goalsSnapshot).length
+              : 0,
             walletApplied: false,
             holdApplied: holdDecision.status === 'hold',
             holdDays: holdDecision.holdDays,

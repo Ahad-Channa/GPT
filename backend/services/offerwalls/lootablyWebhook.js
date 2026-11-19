@@ -109,6 +109,7 @@ const parseLootablyWebhook = (req) => {
     offerTitle: typeof data.offerName === 'string' ? data.offerName : '',
     stepLabel: typeof data.goalDescription === 'string' ? data.goalDescription : '',
     goalId: offerType === 'multistep' ? goalId.trim() : null,
+    offerType,
     event,
   };
 };

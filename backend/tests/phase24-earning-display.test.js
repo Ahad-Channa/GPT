@@ -244,6 +244,106 @@ test('live feed: other provider names stay dynamic', async () => {
   );
 });
 
+// ─── Live Feed single vs multi-step classification ───────────────────────────
+
+const directTx = (metadata, description = 'Plarium Vikings - Fight 20 Battles') => ({
+  transactionType: 'direct_offer_reward',
+  description,
+  metadata: { providerId: 'direct', providerName: 'Goodpicks', offerTitle: 'Plarium Vikings', ...metadata },
+});
+
+test('live feed direct: zero enabled goals = single-step, no popup', async () => {
+  const { getLiveFeedDisplay } = await loadDisplay();
+  assert.deepEqual(
+    getLiveFeedDisplay(directTx({ goalKey: null, stepLabel: '', enabledGoalCount: 0 }, 'Plarium Vikings')),
+    single('Goodpicks', 'Plarium Vikings')
+  );
+});
+
+test('live feed direct: exactly one enabled goal (has a goalKey) is single-step, no popup', async () => {
+  const { getLiveFeedDisplay } = await loadDisplay();
+  assert.deepEqual(
+    getLiveFeedDisplay(directTx({ goalKey: 'fight_20_battles', stepLabel: 'Fight 20 Battles', enabledGoalCount: 1 })),
+    single('Goodpicks', 'Plarium Vikings')
+  );
+});
+
+test('live feed direct: multiple enabled goals = multi-step, popup shows the credited step', async () => {
+  const { getLiveFeedDisplay } = await loadDisplay();
+  assert.deepEqual(
+    getLiveFeedDisplay(directTx({ goalKey: 'fight_20_battles', stepLabel: 'fight_20_battles', enabledGoalCount: 3 })),
+    { sourceLine: 'Goodpicks', detailLine: 'Plarium Vikings', isMultiStep: true, stepLabel: 'Fight 20 Battles' }
+  );
+  // A goalKey-less row can never be multi-step, whatever the count says.
+  assert.equal(getLiveFeedDisplay(directTx({ goalKey: null, enabledGoalCount: 3 }, 'Plarium Vikings')).isMultiStep, false);
+});
+
+test('live feed direct legacy: rows without enabledGoalCount fall back to "goalKey present = multi-step"', async () => {
+  const { getLiveFeedDisplay } = await loadDisplay();
+  // Documented legacy fallback: the step would otherwise be shown nowhere.
+  assert.deepEqual(
+    getLiveFeedDisplay(directTx({ goalKey: 'level_10', stepLabel: 'Reach Level 10' }, 'Plarium Vikings - Reach Level 10')),
+    { sourceLine: 'Goodpicks', detailLine: 'Plarium Vikings', isMultiStep: true, stepLabel: 'Reach Level 10' }
+  );
+  // Legacy row with no goalKey stays single-step.
+  assert.deepEqual(
+    getLiveFeedDisplay(directTx({}, 'Plarium Vikings')),
+    single('Goodpicks', 'Plarium Vikings')
+  );
+  // A malformed count is treated as absent (legacy fallback), not as 0/1.
+  assert.equal(getLiveFeedDisplay(directTx({ goalKey: 'g1', stepLabel: 'Step', enabledGoalCount: '2' })).isMultiStep, true);
+  assert.equal(getLiveFeedDisplay(directTx({ goalKey: 'g1', stepLabel: 'Step', enabledGoalCount: null })).isMultiStep, true);
+});
+
+test('live feed direct: display classification never mutates stored metadata', async () => {
+  const { getLiveFeedDisplay } = await loadDisplay();
+  const tx = directTx({ goalKey: 'fight_20_battles', stepLabel: 'fight_20_battles', enabledGoalCount: 2 });
+  const before = JSON.stringify(tx);
+  getLiveFeedDisplay(tx);
+  assert.equal(JSON.stringify(tx), before);
+});
+
+test('live feed custom offers stay single-step even with step-like metadata', async () => {
+  const { getLiveFeedDisplay } = await loadDisplay();
+  const out = getLiveFeedDisplay({
+    transactionType: 'custom_offer_reward',
+    metadata: { offerTitle: 'Manual Offer', goalKey: 'a', stepLabel: 'Step A', enabledGoalCount: 5 },
+  });
+  assert.deepEqual(out, single('Goodpicks', 'Manual Offer'));
+});
+
+test('live feed offerwall: provider offerType decides when present', async () => {
+  const { getLiveFeedDisplay } = await loadDisplay();
+  const base = { providerId: 'lootably', providerName: 'Lootably', offerTitle: 'Plarium' };
+  // singlestep: a goalDescription must not create a popup.
+  assert.deepEqual(
+    getLiveFeedDisplay({ transactionType: 'offer_reward', metadata: { ...base, offerType: 'singlestep', stepLabel: 'Install and open' } }),
+    single('Offerwall: Lootably', 'Plarium')
+  );
+  assert.deepEqual(
+    getLiveFeedDisplay({ transactionType: 'offer_reward', metadata: { ...base, offerType: 'multistep', stepLabel: 'fight_20_battles' } }),
+    { sourceLine: 'Offerwall: Lootably', detailLine: 'Plarium', isMultiStep: true, stepLabel: 'Fight 20 Battles' }
+  );
+});
+
+test('live feed offerwall fallback (no offerType, e.g. CPX or legacy rows): step label different from the offer name = multi-step', async () => {
+  const { getLiveFeedDisplay } = await loadDisplay();
+  // LIMITATION (documented in earningDisplay.js): only Lootably supplies a step-count
+  // signal today; other providers fall back to this heuristic.
+  assert.deepEqual(
+    getLiveFeedDisplay({ transactionType: 'offer_reward', metadata: { providerName: 'CPX Research', offerTitle: 'Survey 42' } }),
+    single('Offerwall: CPX Research', 'Survey 42')
+  );
+  assert.deepEqual(
+    getLiveFeedDisplay({ transactionType: 'offer_reward', metadata: { providerName: 'Lootably', offerTitle: 'Plarium', stepLabel: 'Reach Level 5' } }),
+    { sourceLine: 'Offerwall: Lootably', detailLine: 'Plarium', isMultiStep: true, stepLabel: 'Reach Level 5' }
+  );
+  assert.deepEqual(
+    getLiveFeedDisplay({ transactionType: 'offer_reward', metadata: { providerName: 'Lootably', offerTitle: 'Plarium', stepLabel: 'Plarium' } }),
+    single('Offerwall: Lootably', 'Plarium')
+  );
+});
+
 // ─── Backend notification / metadata wiring ──────────────────────────────────
 
 test('direct-offer notification names the source and uses actual hold duration', () => {

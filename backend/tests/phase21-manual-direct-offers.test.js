@@ -471,3 +471,52 @@ test('public postback route explicitly rejects manual offers before processing',
   const source = read('backend/routes/directOffers.js');
   assert.match(source, /if \(isManualOffer\(offer\)\)\s*\{[\s\S]*?return res\.status\(200\)\.send\('0'\)/);
 });
+
+test('direct reward stores display-only enabledGoalCount from the click-time goal snapshot', async () => {
+  // zero goals (single reward)
+  const none = makeRewardState();
+  await processReward({ conversion: none.state.conversion, models: none.models, hooks: noSideEffects });
+  assert.equal(none.state.transactions[0].metadata.enabledGoalCount, 0);
+  assert.equal(none.state.transactions[0].metadata.goalKey, null);
+  assert.equal(none.state.transactions[0].amount, 500);
+
+  // exactly one goal
+  const one = makeRewardState({ goalKey: 'fight_20_battles' });
+  await processReward({ conversion: one.state.conversion, models: one.models, hooks: noSideEffects });
+  assert.equal(one.state.transactions[0].metadata.enabledGoalCount, 1);
+  assert.equal(one.state.transactions[0].metadata.goalKey, 'fight_20_battles');
+  assert.equal(one.state.transactions[0].amount, 250);
+
+  // several goals: the count reflects the whole snapshot, the credited goal is unchanged
+  const many = makeRewardState({ goalKey: 'fight_20_battles' });
+  many.state.click.goalsSnapshot.reach_level_10 = { amount: 300, payoutAmount: 0, label: 'Reach Level 10' };
+  many.state.click.goalsSnapshot.win_5_matches = { amount: 400, payoutAmount: 0, label: 'Win 5 Matches' };
+  await processReward({ conversion: many.state.conversion, models: many.models, hooks: noSideEffects });
+  const tx = many.state.transactions[0];
+  assert.equal(tx.metadata.enabledGoalCount, 3);
+  assert.equal(tx.metadata.goalKey, 'fight_20_battles');
+  assert.equal(tx.metadata.stepLabel, 'Fight 20 Battles');
+  assert.equal(tx.amount, 250);
+  assert.equal(tx.description, 'Plarium Vikings - Fight 20 Battles');
+});
+
+test('stored enabledGoalCount drives the Live Feed classification end to end', async () => {
+  const { getLiveFeedDisplay } = await import(require('node:url').pathToFileURL(path.join(repoRoot, 'frontend/src/utils/earningDisplay.js')).href);
+  const toFeed = (state) => getLiveFeedDisplay({
+    transactionType: state.transactions[0].transactionType,
+    description: state.transactions[0].description,
+    metadata: state.transactions[0].metadata,
+  });
+
+  const one = makeRewardState({ goalKey: 'fight_20_battles' });
+  await processReward({ conversion: one.state.conversion, models: one.models, hooks: noSideEffects });
+  assert.equal(toFeed(one.state).isMultiStep, false);
+  assert.equal(toFeed(one.state).detailLine, 'Plarium Vikings');
+
+  const many = makeRewardState({ goalKey: 'fight_20_battles' });
+  many.state.click.goalsSnapshot.reach_level_10 = { amount: 300, payoutAmount: 0, label: 'Reach Level 10' };
+  await processReward({ conversion: many.state.conversion, models: many.models, hooks: noSideEffects });
+  assert.equal(toFeed(many.state).isMultiStep, true);
+  assert.equal(toFeed(many.state).stepLabel, 'Fight 20 Battles');
+  assert.equal(toFeed(many.state).detailLine, 'Plarium Vikings');
+});
