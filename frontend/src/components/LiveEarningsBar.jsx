@@ -5,6 +5,7 @@ import PublicProfileModal from './PublicProfileModal';
 import UserAvatar from './UserAvatar';
 import { useTheme } from '../contexts/ThemeContext';
 import { io } from 'socket.io-client';
+import { getEarningDisplay, getLiveFeedDisplay } from '../utils/earningDisplay';
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 const SOCKET_URL = import.meta.env.VITE_API_URL
@@ -171,6 +172,9 @@ const LiveEarningsBar = () => {
     let offerwall = 'System';
     let task = 'Completed Task';
     let taskCategory = 'Task: System Bonus';
+    let hasOfferDetails = false;
+    let popup = null; // undefined popup copy => default (task/taskCategory)
+    let hasPopup = true;
 
     if (tx.transactionType === 'daily_bonus') {
       task = 'Daily Bonus';
@@ -197,13 +201,22 @@ const LiveEarningsBar = () => {
       offerwall = 'Rewards';
       taskCategory = 'Task: Redeemed Promo Code';
     } else {
-      if (tx.metadata?.offerwall) {
-        offerwall = tx.metadata.offerwall;
-        taskCategory = `Task: Completed ${tx.metadata.offerwall} offer`;
+      // Offer-style earnings: a visible two-line provider/offer block inside the
+      // chip. getEarningDisplay() stays untouched for transaction history.
+      const liveDisplay = getLiveFeedDisplay(tx);
+      if (liveDisplay) {
+        task = liveDisplay.sourceLine;
+        taskCategory = liveDisplay.detailLine;
+        hasOfferDetails = true;
+        // Hover popup only for multi-step rewards: "Earn" + the completed step.
+        // Single-step offers already show everything in the chip.
+        hasPopup = Boolean(liveDisplay.isMultiStep && liveDisplay.stepLabel);
+        popup = hasPopup ? { title: 'Earn', subtitle: liveDisplay.stepLabel } : null;
       } else {
-        taskCategory = 'Task: Completed offer';
+        const display = getEarningDisplay(tx);
+        task = display.primary || tx.description || '';
+        taskCategory = display.secondary || '';
       }
-      if (tx.description) task = tx.description;
     }
 
     const amountStr = rawAmount.toLocaleString('de-DE');
@@ -215,6 +228,12 @@ const LiveEarningsBar = () => {
       offerwall,
       task,
       taskCategory,
+      sourceLine: task,
+      detailLine: taskCategory,
+      hasOfferDetails,
+      hasPopup,
+      popupTitle: popup ? popup.title : task,
+      popupSubtitle: popup ? popup.subtitle : taskCategory,
       color: 'rgba(231, 171, 24, 1)',
     };
   };
@@ -351,6 +370,7 @@ const LiveEarningsBar = () => {
                       transition={{ duration: 0.2 }}
                       onClick={() => tx.userId?._id && setSelectedUserId(tx.userId._id)}
                       onMouseEnter={(e) => {
+                        if (details.hasPopup === false) return;
                         if (typeof window !== 'undefined') {
                           if (window.innerWidth < 768 || (window.matchMedia && !window.matchMedia('(hover: hover) and (pointer: fine)').matches)) {
                             return;
@@ -470,6 +490,40 @@ const LiveEarningsBar = () => {
                           )}
                         </div>
                       </div>
+
+                      {/* Visible provider/source + offer or credited step */}
+                      {details.hasOfferDetails && (
+                        <div
+                          className="flex flex-col justify-center min-w-0"
+                          style={{
+                            maxWidth: 'clamp(130px, 26vw, 210px)',
+                            paddingLeft: '8px',
+                            borderLeft: `1px solid ${isDarkMode ? 'rgba(255, 255, 255, 0.12)' : 'rgba(14, 15, 12, 0.12)'}`,
+                            gap: '2px',
+                          }}
+                        >
+                          <span
+                            className="truncate text-[9px] sm:text-[10px] leading-[12px]"
+                            style={{
+                              fontFamily: 'Poppins, sans-serif',
+                              fontWeight: 600,
+                              color: isDarkMode ? 'rgba(255, 255, 255, 0.92)' : 'rgba(14, 15, 12, 0.9)',
+                            }}
+                          >
+                            {details.sourceLine}
+                          </span>
+                          <span
+                            className="truncate text-[9px] sm:text-[10px] leading-[12px]"
+                            style={{
+                              fontFamily: 'Poppins, sans-serif',
+                              fontWeight: 500,
+                              color: isDarkMode ? 'rgba(255, 255, 255, 0.64)' : 'rgba(14, 15, 12, 0.62)',
+                            }}
+                          >
+                            {details.detailLine}
+                          </span>
+                        </div>
+                      )}
                     </motion.div>
                   );
                 })}
@@ -588,7 +642,7 @@ const LiveEarningsBar = () => {
               >
                 {hoveredData.details.isWithdrawal
                   ? 'Withdrawal Completed'
-                  : hoveredData.details.task}
+                  : hoveredData.details.popupTitle}
               </span>
               <span
                 style={{
@@ -605,7 +659,7 @@ const LiveEarningsBar = () => {
               >
                 {hoveredData.details.isWithdrawal
                   ? `Method: ${hoveredData.details.method}`
-                  : (hoveredData.details.taskCategory || 'Task completed')}
+                  : (hoveredData.details.popupSubtitle || '')}
               </span>
             </div>
           </div>

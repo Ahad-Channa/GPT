@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { FiDollarSign, FiStar, FiActivity } from 'react-icons/fi';
 import UserAvatar from './UserAvatar';
+import { getEarningDisplay } from '../utils/earningDisplay';
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
@@ -61,7 +62,7 @@ const LiveEarningsTicker = () => {
                 +{earning.amount?.toLocaleString()} <img src="/coin.png" className="w-3 h-3 ml-1" alt="C" onError={(e) => e.target.style.display='none'}/>
               </span>
               <span className="text-slate-500 truncate max-w-[120px]">
-                {earning.description ? earning.description : 'from an offer'}
+                {getEarningDisplay(earning).primary}
               </span>
             </div>
           ))}

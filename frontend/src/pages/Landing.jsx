@@ -2100,7 +2100,7 @@ const Landing = () => {
                     {[
                       { src: "/coins/paypal copy.png", text: "Paypal" },
                       { src: "/coins/LTC.png", text: "Litecoin" },
-                      { src: "/coins/giftcard copy.png", text: "Gift Card" },
+                      { src: "/coins/giftcard copy.png", text: t('withdraw.giftCard', 'Gift Card') },
                       { src: "/coins/amazon copy.png", text: "Amazon" }
                     ].map((item, idx) => (
                       <div key={`${i}-${idx}`} className="flex items-center gap-2">
@@ -2240,7 +2240,7 @@ const Landing = () => {
                   <React.Fragment key={i}>
                     {[
                       { src: "/coins/LTC.png", text: "Litecoin" },
-                      { src: "/coins/giftcard copy.png", text: "Gift Card" },
+                      { src: "/coins/giftcard copy.png", text: t('withdraw.giftCard', 'Gift Card') },
                       { src: "/coins/amazon copy.png", text: "Amazon" },
                       { src: "/coins/paypal copy.png", text: "Paypal" }
                     ].map((item, idx) => (

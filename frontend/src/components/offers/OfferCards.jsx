@@ -9,21 +9,19 @@ import { BsQrCode } from 'react-icons/bs';
 import CoinDisplay from '../CoinDisplay';
 import CoinIcon from '../CoinIcon';
 import { ProofUploadView } from './ProofUploadView';
+import { closeReservedOfferTab, hasManualOfferStarted, navigateReservedOfferTab, reserveOfferTab } from '../../utils/manualOfferState.js';
 import { GoodpicksSupportModal } from './GoodpicksModal';
+import { buildProviderUrl } from '../../utils/providerUrl';
+
+// Re-exported for existing consumers that import it from this module.
+export { buildProviderUrl };
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 const item = { hidden: { opacity: 0, y: 16 }, show: { opacity: 1, y: 0, transition: { duration: 0.4 } } };
 
-export const buildProviderUrl = (provider, userId) => {
-  const CPX_APP_ID = '32283';
-  switch (provider.id) {
-    case 'cpx':
-      return userId
-        ? `https://offers.cpx-research.com/index.php?app_id=${CPX_APP_ID}&ext_user_id=${userId}`
-        : null;
-    default:
-      return provider.iframeUrl || null;
-  }
+const isRequirementCompleted = (requirement) => {
+  if (!requirement || typeof requirement !== 'object') return false;
+  return requirement.completed === true || requirement.credited === true || requirement.status === 'approved';
 };
 
 export const getProviderLogo = (id, isDarkMode = false) => {
@@ -399,6 +397,11 @@ export const FeaturedOfferModal = ({ offer, token, onClose, onSubmitted }) => {
 
   const [loading, setLoading] = useState(false);
   const [showSupportModal, setShowSupportModal] = useState(false);
+  const [submissionStatus, setSubmissionStatus] = useState(offer.submissionStatus || null);
+  const [proofMessage, setProofMessage] = useState(null);
+  const [actionError, setActionError] = useState('');
+  const isManual = offer.trackingType !== 'click';
+  const proofStarted = isManual && hasManualOfferStarted({ ...offer, submissionStatus });
   const isExpired = offer.expirationDate && new Date(offer.expirationDate) < new Date();
   const rewardVal = offer.rewardAmount ?? offer.points ?? offer.reward ?? 0;
   const coverImgSrc = offer.coverImage || (isIconUrl(offer.icon) ? offer.icon : null);
@@ -406,20 +409,33 @@ export const FeaturedOfferModal = ({ offer, token, onClose, onSubmitted }) => {
 
   const handleStartOffer = async () => {
     if (isExpired) return;
+    if (!token) {
+      setActionError('Sign in again to start this offer.');
+      return;
+    }
+    const pendingTab = reserveOfferTab();
     setLoading(true);
+    setActionError('');
     try {
-      if (token) {
-        await fetch(`${API}/custom-offers/${offer._id}/start`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }
-        }).catch(() => { });
-      }
+      const res = await fetch(`${API}/custom-offers/${offer._id}/start`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }
+      });
+      const data = await res.json();
+      if (!res.ok || !data.success) throw new Error(data.error || 'Could not start this offer.');
+      setSubmissionStatus(data.submission?.status || 'started');
+      if (onSubmitted) onSubmitted(data.submission?.status || 'started');
       if (offer.externalLink) {
-        window.open(offer.externalLink, '_blank', 'noopener,noreferrer');
+        if (!navigateReservedOfferTab(pendingTab, offer.externalLink)) {
+          setActionError('Allow pop-ups, then use Start Offer Again to open this offer.');
+        }
+      } else {
+        closeReservedOfferTab(pendingTab);
       }
-      if (onSubmitted) onSubmitted();
     } catch (err) {
+      closeReservedOfferTab(pendingTab);
       console.error('Failed to start offer', err);
+      setActionError(err.message || 'Could not start this offer. Try again.');
     } finally {
       setLoading(false);
     }
@@ -765,7 +781,7 @@ export const FeaturedOfferModal = ({ offer, token, onClose, onSubmitted }) => {
               </div>
             ) : requirementsList && requirementsList.length > 0 ? (
               requirementsList.map((req, i) => {
-                const isCompleted = i === 0;
+                const isCompleted = isRequirementCompleted(req);
                 return (
                   <div
                     key={i}
@@ -830,8 +846,8 @@ export const FeaturedOfferModal = ({ offer, token, onClose, onSubmitted }) => {
                         }}
                       />
                     )}
-                    <span
-                      style={{
+                      <span
+                        style={{
                         fontFamily: '"Poppins", sans-serif',
                         fontWeight: 500,
                         fontSize: '14px',
@@ -839,9 +855,9 @@ export const FeaturedOfferModal = ({ offer, token, onClose, onSubmitted }) => {
                         letterSpacing: '0%',
                         color: isDarkMode ? '#FFFFFF' : '#000000',
                       }}
-                    >
-                      {req}
-                    </span>
+                      >
+                        {typeof req === 'object' ? (req.label || req.title || req.text || '') : req}
+                      </span>
                   </div>
                 );
               })
@@ -909,10 +925,47 @@ export const FeaturedOfferModal = ({ offer, token, onClose, onSubmitted }) => {
           </div>
         </div>
 
+        {isManual && submissionStatus === 'pending' && (
+          <div className="rounded-xl border border-sky-200 bg-sky-50 px-4 py-3 text-sm font-medium text-sky-900">
+            Proof submitted and waiting for review.
+          </div>
+        )}
+        {isManual && submissionStatus === 'approved' && (
+          <div className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-900">
+            This offer has already been approved.
+          </div>
+        )}
+        {isManual && submissionStatus === 'rejected' && offer.adminNote && (
+          <div className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-medium text-rose-900">
+            Proof rejected: {offer.adminNote}
+          </div>
+        )}
+        {proofStarted && !['pending', 'approved'].includes(submissionStatus) && (
+          <div className="rounded-[16px] border border-[#EAE4D7] bg-[#F9F7F1] p-3 sm:p-4 shrink-0">
+            <ProofUploadView
+              offer={offer}
+              token={token}
+              API={API}
+              submitUrl={`${API}/custom-offers/${offer._id}/submit`}
+              setResult={setProofMessage}
+              onSubmitted={() => {
+                setSubmissionStatus('pending');
+                if (onSubmitted) onSubmitted('pending');
+              }}
+            />
+          </div>
+        )}
+        {proofMessage?.message && (
+          <p role="status" className={`m-0 text-center text-xs font-semibold ${proofMessage.type === 'error' ? 'text-rose-700' : 'text-emerald-700'}`}>
+            {proofMessage.message}
+          </p>
+        )}
+        {actionError && <p role="alert" className="m-0 text-center text-xs font-semibold text-rose-700">{actionError}</p>}
+
         {/* Start Offer Button */}
         <button
           onClick={handleStartOffer}
-          disabled={loading || isExpired}
+          disabled={loading || isExpired || (isManual && ['pending', 'approved'].includes(submissionStatus))}
           style={{
             width: '100%',
             maxWidth: '610px',
@@ -951,7 +1004,7 @@ export const FeaturedOfferModal = ({ offer, token, onClose, onSubmitted }) => {
                 transform: 'rotate(0deg)',
               }}
             >
-              {isExpired ? t('offers.offerExpired') : t('offers.startOffer')}
+              {isExpired ? t('offers.offerExpired') : (isManual && proofStarted) ? t('offers.startOfferAgain') : t('offers.startOffer')}
             </span>
           )}
         </button>

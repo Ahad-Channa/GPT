@@ -1,57 +1,185 @@
 const express = require('express');
 const router = express.Router();
-const { v4: uuidv4 } = require('uuid');
 const DirectOffer = require('../models/DirectOffer');
 const ClickLog = require('../models/ClickLog');
+const Conversion = require('../models/Conversion');
+const CustomOfferSubmission = require('../models/CustomOfferSubmission');
 const User = require('../models/User');
-const Transaction = require('../models/Transaction');
-const notify = require('../utils/notify');
-const { emitWalletUpdate } = require('../utils/walletEvents');
+const UserActivityLog = require('../models/UserActivityLog');
+const { emitToUser, emitWalletUpdate } = require('../utils/walletEvents');
 const { verifyToken } = require('../middlewares/authMiddleware');
 const { fraudCheck } = require('../middlewares/fraudCheck');
 const { processVipLevelUp } = require('../utils/vipUtils');
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Helper: Detect device type from User-Agent string
-// ─────────────────────────────────────────────────────────────────────────────
-const detectDevice = (ua = '') => {
-  const s = ua.toLowerCase();
-  if (/tablet|ipad|playbook|silk/.test(s)) return 'tablet';
-  if (/mobile|iphone|ipod|android|blackberry|opera mini|iemobile/.test(s)) return 'mobile';
-  return 'desktop';
-};
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Helper: Extract IP from request (works behind proxies)
-// ─────────────────────────────────────────────────────────────────────────────
-const getIp = (req) =>
-  (req.headers['x-forwarded-for'] || '').split(',')[0].trim() ||
-  req.socket?.remoteAddress ||
-  '';
+const {
+  buildRedirectUrl,
+  createDirectOfferClick,
+  findExistingDirectOfferClick,
+  releaseDirectOfferClickSlot,
+  reserveDirectOfferClickSlot,
+} = require('../services/tracking/clickService');
+const { buildDirectOfferProviderConfig } = require('../services/tracking/directOfferProvider');
+const {
+  buildActiveGoalConversionQuery,
+  buildOfferCreditConversionQuery,
+  groupCompletedGoalKeysByOffer,
+  groupOfferCreditState,
+  resolveCompletedGoalKeys,
+  resolveOfferLifecycle,
+} = require('../services/tracking/offerGoalCompletion');
+const { processPostback } = require('../services/tracking/conversionService');
+const { upsertManualProofConversion } = require('../services/tracking/manualProofService');
+const { processReward } = require('../services/rewards/rewardService');
+const { processReversal } = require('../services/rewards/reversalService');
 
 // ─────────────────────────────────────────────────────────────────────────────
 // GET /api/direct-offers
-// Public (with token): list active direct offers with user's click status
+// Public (with token): list active direct offers with user's click status.
+// ?placement=featured (default) | brandedOfferwall | all
+// Both placements share the same offer records and tracking flow.
 // ─────────────────────────────────────────────────────────────────────────────
+const PLACEMENTS = ['featured', 'brandedOfferwall', 'all'];
+
+const buildPlacementClause = (placement) => {
+  if (placement === 'brandedOfferwall') {
+    return { 'displayPlacements.brandedOfferwall': true };
+  }
+  if (placement === 'all') {
+    return {
+      $or: [
+        { 'displayPlacements.featured': { $ne: false } },
+        { 'displayPlacements.brandedOfferwall': true },
+      ],
+    };
+  }
+  return { 'displayPlacements.featured': { $ne: false } };
+};
+
+// Resolves the placement requested by the frontend and confirms the offer is
+// actually placed there. Featured is the default for backward compatibility.
+const resolveClickPlacement = (offer, requested) => {
+  const placement = String(requested || '').trim() === 'brandedOfferwall' ? 'brandedOfferwall' : 'featured';
+  const placements = (offer && offer.displayPlacements) || {};
+  if (placement === 'brandedOfferwall' && placements.brandedOfferwall !== true) {
+    return { placement, allowed: false };
+  }
+  if (placement === 'featured' && placements.featured === false) {
+    return { placement, allowed: false };
+  }
+  return { placement, allowed: true };
+};
+
+const isManualOffer = (offer) => offer && offer.trackingMode === 'manual';
+
+// Removes the admin-only USD tracking fields from an offer before it is sent to
+// users: the offer-level advertiserPayoutAmount and each step's payoutAmount
+// ("Payout Metadata"). Coin rewards (rewardAmount, goals[].rewardAmount) are kept.
+// Pure: returns a new object and leaves the input untouched.
+const stripAdminOnlyPayoutFields = (offer) => {
+  if (!offer || typeof offer !== 'object') return offer;
+  const { advertiserPayoutAmount, ...rest } = offer;
+  if (Array.isArray(rest.goals)) {
+    rest.goals = rest.goals.map((goal) => {
+      if (!goal || typeof goal !== 'object') return goal;
+      const { payoutAmount, ...publicGoal } = goal;
+      return publicGoal;
+    });
+  }
+  return rest;
+};
+
+const manualSubmissionFilter = (offerId, userId) => ({
+  offerType: 'direct_offer',
+  directOfferId: offerId,
+  userId,
+});
+
+const buildOfferRedirect = ({ offer, clickId, userId }) => buildRedirectUrl({
+  destinationUrl: offer.advertiserUrl,
+  clickId,
+  userId,
+  offerId: offer._id,
+  clickIdParam: offer.postbackMapping?.clickIdParam || 'click_id',
+});
+
+const respondWithManualClick = (res, { offer, userId, clickId, submission, alreadyStarted }) =>
+  res.status(200).json({
+    success: true,
+    url: buildOfferRedirect({ offer, clickId, userId }),
+    clickId,
+    submissionStatus: submission?.status || 'started',
+    alreadyStarted: Boolean(alreadyStarted),
+  });
+
 router.get('/', verifyToken, async (req, res) => {
   try {
     const now = new Date();
+    const placement = PLACEMENTS.includes(req.query.placement) ? req.query.placement : 'featured';
     const user = await User.findOne({ firebaseUid: req.user.uid }).select('_id').lean();
 
-    const offers = await DirectOffer.find({
+    let offers = await DirectOffer.find({
       isActive: true,
-      $or: [{ expirationDate: null }, { expirationDate: { $gt: now } }],
-    }).select('-postbackSecretKey').lean();
+      $and: [
+        { $or: [{ expirationDate: null }, { expirationDate: { $gt: now } }] },
+        buildPlacementClause(placement),
+      ],
+    }).select('-postbackSecretKey -holdEnabled -holdDays -holdThreshold -advertiserPayoutAmount -goals.payoutAmount').lean();
 
-    if (!user) {
-      return res.status(200).json({ success: true, offers: offers.map(o => ({ ...o, clickStatus: null, clickId: null })) });
+    // The Profile's Started Offers tab requests placement=all. Keep previously
+    // started offers in that response even if an admin later deactivates or
+    // expires them, so historical user progress does not disappear.
+    if (user && placement === 'all') {
+      const [priorClicks, priorManualSubmissions] = await Promise.all([
+        ClickLog.find({ userId: user._id, offerId: { $ne: null } }).distinct('offerId'),
+        CustomOfferSubmission.find({ userId: user._id, offerType: 'direct_offer' }).distinct('directOfferId'),
+      ]);
+      const alreadyListed = new Set(offers.map((offer) => offer._id.toString()));
+      const historicalIds = [...priorClicks, ...priorManualSubmissions]
+        .filter(Boolean)
+        .filter((offerId) => !alreadyListed.has(offerId.toString()));
+      if (historicalIds.length) {
+        const historicalOffers = await DirectOffer.find({ _id: { $in: historicalIds } })
+          .select('-postbackSecretKey -holdEnabled -holdDays -holdThreshold -advertiserPayoutAmount -goals.payoutAmount')
+          .lean();
+        offers = [...offers, ...historicalOffers];
+      }
     }
 
-    // Single query for user's click logs instead of N individual queries
-    const userClicks = await ClickLog.find({ userId: user._id })
-      .sort({ createdAt: -1 })
-      .select('offerId status clickId')
-      .lean();
+    // Advertiser payout figures are admin-only tracking records; users must never
+    // receive them. (The admin UI reads them from /api/admin/direct-offers.)
+    offers = offers.map(stripAdminOnlyPayoutFields);
+
+    if (!user) {
+      return res.status(200).json({
+        success: true,
+        offers: offers.map(o => ({
+          ...o,
+          trackingMode: o.trackingMode === 'manual' ? 'manual' : 'postback',
+          clickStatus: null,
+          clickId: null,
+          submissionStatus: null,
+          adminNote: '',
+          completedGoalKeys: [],
+          lifecycle: 'available',
+          isCompleted: false,
+        })),
+      });
+    }
+
+    // Two bulk queries for the whole list (no per-offer N+1): the user's click
+    // logs and the user's credited direct-offer goal Conversions.
+    const [userClicks, creditedGoalConversions, offerCreditConversions] = await Promise.all([
+      ClickLog.find({ userId: user._id })
+        .sort({ createdAt: -1 })
+        .select('offerId status clickId createdAt')
+        .lean(),
+      Conversion.find(buildActiveGoalConversionQuery(user._id))
+        .select('offerId campaignId goalKey internalStatus processingState rewardTransactionId')
+        .lean(),
+      Conversion.find(buildOfferCreditConversionQuery(user._id))
+        .select('offerId campaignId internalStatus processingState rewardTransactionId')
+        .lean(),
+    ]);
+    const creditStateByOffer = groupOfferCreditState(offerCreditConversions);
 
     const clickMap = {};
     for (const c of userClicks) {
@@ -61,12 +189,49 @@ router.get('/', verifyToken, async (req, res) => {
       }
     }
 
+    const completedByOffer = groupCompletedGoalKeysByOffer(creditedGoalConversions);
+
+    const manualOfferIds = offers
+      .filter((offer) => offer.trackingMode === 'manual')
+      .map((offer) => offer._id);
+
+    const submissions = manualOfferIds.length
+      ? await CustomOfferSubmission.find({
+        userId: user._id,
+        offerType: 'direct_offer',
+        directOfferId: { $in: manualOfferIds },
+      }).select('directOfferId status adminNote clickId createdAt').lean()
+      : [];
+
+    const submissionMap = {};
+    for (const submission of submissions) {
+      const offerId = submission.directOfferId?.toString();
+      if (offerId) submissionMap[offerId] = submission;
+    }
+
     const offersWithStatus = offers.map((offer) => {
       const click = clickMap[offer._id.toString()];
+      const submission = submissionMap[offer._id.toString()];
+      const completedGoalKeys = resolveCompletedGoalKeys(offer, completedByOffer);
+      const lifecycle = resolveOfferLifecycle({
+        offer,
+        click,
+        submission,
+        completedGoalKeys,
+        creditState: creditStateByOffer[offer._id.toString()] || null,
+      });
       return {
         ...offer,
+        trackingMode: offer.trackingMode === 'manual' ? 'manual' : 'postback',
         clickStatus: click ? click.status : null,
         clickId: click ? click.clickId : null,
+        submissionStatus: submission ? submission.status : null,
+        adminNote: submission ? submission.adminNote : '',
+        startedAt: submission?.createdAt || click?.createdAt || null,
+        completedGoalKeys,
+        // Authoritative server-side state; clients must not re-derive completion.
+        lifecycle,
+        isCompleted: lifecycle === 'completed',
       };
     });
 
@@ -97,56 +262,309 @@ router.post('/click/:offerId', verifyToken, fraudCheck('offer_click', 'full'), a
       return res.status(400).json({ success: false, error: 'Offer has expired' });
     }
 
-    // Check if user already has an approved click (prevent double-earn attempt)
-    const existingApproved = await ClickLog.findOne({
-      offerId: offer._id, userId: user._id, status: 'approved',
-    });
-    if (existingApproved) {
-      // Already approved — just return the URL so they can revisit
-      return res.status(200).json({ success: true, url: offer.advertiserUrl, alreadyApproved: true });
+    // Placement selected by the frontend (Featured vs Branded Offerwall). Both
+    // placements use this same click/tracking endpoint and offer record.
+    const { placement, allowed } = resolveClickPlacement(
+      offer,
+      req.body?.placement || req.query?.placement
+    );
+    if (!allowed) {
+      return res.status(400).json({ success: false, error: 'Offer is not available in this placement' });
     }
 
-    // Generate a unique clickId
-    const clickId = uuidv4();
-    const ip = getIp(req);
-    const userAgent = req.headers['user-agent'] || '';
-    const device = detectDevice(userAgent);
+    if (isManualOffer(offer)) {
+      return startManualOfferClick({ req, res, user, offer, placement });
+    }
 
-    await ClickLog.create({
-      clickId,
-      offerId: offer._id,
+    // One canonical click per user and offer. Returning the existing click keeps
+    // unfinished multi-step goals on the original tracked click and prevents a
+    // second click ID from becoming another rewardable attempt.
+    const existingClick = await findExistingDirectOfferClick({
       userId: user._id,
-      ip,
-      userAgent,
-      device,
-      country: '',
-      status: 'clicked',
-      rewardAmount: offer.rewardAmount,
+      offerId: offer._id,
     });
-
-    // Increment offer click counter
-    await DirectOffer.findByIdAndUpdate(offer._id, { $inc: { totalClicks: 1 } });
-
-    // Build target URL with click_id appended (use configured param name)
-    const clickIdParam = offer.postbackMapping?.clickIdParam || 'click_id';
-    let targetUrl = offer.advertiserUrl;
-    try {
-      const url = new URL(targetUrl);
-      url.searchParams.set(clickIdParam, clickId);
-      targetUrl = url.toString();
-    } catch {
-      const separator = targetUrl.includes('?') ? '&' : '?';
-      targetUrl = `${targetUrl}${separator}${encodeURIComponent(clickIdParam)}=${clickId}`;
+    if (existingClick) {
+      const redirectUrl = existingClick.redirectUrl || buildRedirectUrl({
+        destinationUrl: offer.advertiserUrl,
+        clickId: existingClick.clickId,
+        userId: user._id,
+        offerId: offer._id,
+        clickIdParam: offer.postbackMapping?.clickIdParam || 'click_id',
+      });
+      return res.status(200).json({
+        success: true,
+        url: redirectUrl,
+        clickId: existingClick.clickId,
+        alreadyApproved: existingClick.status === 'approved',
+        alreadyStarted: true,
+      });
     }
 
-    return res.status(200).json({ success: true, url: targetUrl, clickId });
+    // Atomically reserve one total-click slot. This is the ONLY place totalClicks
+    // is incremented, and it prevents simultaneous requests from exceeding the
+    // optional overall cap. Unlimited offers always reserve.
+    const reservedOffer = await reserveDirectOfferClickSlot({ offerId: offer._id });
+    if (!reservedOffer) {
+      return res.status(409).json({ success: false, error: 'Offer click limit reached.', limitReached: true });
+    }
+
+    let clickResult;
+    try {
+      clickResult = await createDirectOfferClick({
+        user,
+        offer,
+        req,
+        trackingParams: {
+          source: placement === 'brandedOfferwall' ? 'branded_offerwall' : 'featured_offers',
+          placement,
+        },
+      });
+    } catch (error) {
+      // ClickLog creation failed — give the reserved slot back (no net change).
+      await releaseDirectOfferClickSlot({ offerId: offer._id });
+      throw error;
+    }
+
+    if (clickResult.reused) {
+      await releaseDirectOfferClickSlot({ offerId: offer._id });
+    }
+
+    return res.status(200).json({
+      success: true,
+      url: clickResult.redirectUrl,
+      clickId: clickResult.clickId,
+      alreadyStarted: Boolean(clickResult.reused),
+    });
   } catch (error) {
     console.error('[POST /api/direct-offers/click/:offerId] Error:', error);
-    return res.status(500).json({ success: false, error: 'Failed to process click' });
+    return res.status(error.statusCode || 500).json({ success: false, error: error.statusCode ? error.message : 'Failed to process click' });
   }
 });
 
+// Manual offers reuse the existing click lifecycle, but track a proof submission.
+// Repeated Start Offer calls return the already-stored click and never reserve a
+// second maxTotalClicks slot.
+const startManualOfferClick = async ({ req, res, user, offer, placement }) => {
+  const filter = manualSubmissionFilter(offer._id, user._id);
+  let submission;
+
+  try {
+    submission = await CustomOfferSubmission.findOneAndUpdate(
+      filter,
+      {
+        $setOnInsert: {
+          ...filter,
+          status: 'started',
+          clickId: '',
+        },
+      },
+      { upsert: true, new: true, setDefaultsOnInsert: true }
+    );
+  } catch (error) {
+    if (error?.code !== 11000) throw error;
+    submission = await CustomOfferSubmission.findOne(filter);
+  }
+
+  if (!submission) {
+    return res.status(500).json({ success: false, error: 'Failed to start manual offer' });
+  }
+
+  if (submission.clickId) {
+    const existingClick = await ClickLog.findOne({
+      clickId: submission.clickId,
+      offerId: offer._id,
+      userId: user._id,
+    });
+    if (existingClick) {
+      return respondWithManualClick(res, {
+        offer,
+        userId: user._id,
+        clickId: existingClick.clickId,
+        submission,
+        alreadyStarted: true,
+      });
+    }
+  }
+
+  const reservedOffer = await reserveDirectOfferClickSlot({ offerId: offer._id });
+  if (!reservedOffer) {
+    return res.status(409).json({ success: false, error: 'Offer click limit reached.', limitReached: true });
+  }
+
+  let clickResult;
+  try {
+    clickResult = await createDirectOfferClick({
+      user,
+      offer,
+      req,
+      trackingParams: {
+        source: placement === 'brandedOfferwall' ? 'branded_offerwall' : 'featured_offers',
+        placement,
+      },
+    });
+  } catch (error) {
+    await releaseDirectOfferClickSlot({ offerId: offer._id });
+    throw error;
+  }
+
+  const attached = await CustomOfferSubmission.findOneAndUpdate(
+    {
+      _id: submission._id,
+      $or: [
+        { clickId: '' },
+        { clickId: null },
+        { clickId: { $exists: false } },
+      ],
+    },
+    { $set: { clickId: clickResult.clickId, status: 'started' } },
+    { new: true }
+  );
+
+  if (attached) {
+    return respondWithManualClick(res, {
+      offer,
+      userId: user._id,
+      clickId: clickResult.clickId,
+      submission: attached,
+      alreadyStarted: false,
+    });
+  }
+
+  // Another simultaneous Start request won the attachment race. Give back this
+  // request's slot and use the winner's click instead of consuming two clicks.
+  const latest = await CustomOfferSubmission.findById(submission._id);
+  if (latest?.clickId && latest.clickId !== clickResult.clickId) {
+    const winnerClick = await ClickLog.findOne({
+      clickId: latest.clickId,
+      offerId: offer._id,
+      userId: user._id,
+    });
+    if (winnerClick) {
+      await ClickLog.deleteOne({ _id: clickResult.clickLog._id });
+      await releaseDirectOfferClickSlot({ offerId: offer._id });
+      return respondWithManualClick(res, {
+        offer,
+        userId: user._id,
+        clickId: winnerClick.clickId,
+        submission: latest,
+        alreadyStarted: true,
+      });
+    }
+  }
+
+  // No usable winner click (or a stale stored click ID): attach this request's
+  // newly created click and keep the reserved slot.
+  const preservedStatus = ['pending', 'approved', 'rejected', 'chargebacked'].includes(latest?.status)
+    ? latest.status
+    : 'started';
+  const finalized = await CustomOfferSubmission.findByIdAndUpdate(
+    submission._id,
+    { $set: { clickId: clickResult.clickId, status: preservedStatus } },
+    { new: true }
+  );
+
+  return respondWithManualClick(res, {
+    offer,
+    userId: user._id,
+    clickId: clickResult.clickId,
+    submission: finalized || latest || submission,
+    alreadyStarted: false,
+  });
+};
+
 // ─────────────────────────────────────────────────────────────────────────────
+// POST /api/direct-offers/:offerId/submit
+// Authenticated: submit or resubmit proof for a Manual Direct Offer.
+// Creates a pending Conversion so admins use the existing conversion
+// approve/reject/chargeback actions.
+// ─────────────────────────────────────────────────────────────────────────────
+router.post('/:offerId/submit', verifyToken, async (req, res) => {
+  try {
+    const { proofText, proofImage, proofImages } = req.body || {};
+    const user = await User.findOne({ firebaseUid: req.user.uid });
+    if (!user) return res.status(404).json({ success: false, error: 'User not found' });
+
+    const offer = await DirectOffer.findById(req.params.offerId);
+    if (!offer || !offer.isActive) {
+      return res.status(404).json({ success: false, error: 'Offer not found or inactive' });
+    }
+    if (!isManualOffer(offer)) {
+      return res.status(400).json({ success: false, error: 'Proof submission is only available for manual offers' });
+    }
+    if (offer.expirationDate && new Date(offer.expirationDate) < new Date()) {
+      return res.status(400).json({ success: false, error: 'Offer has expired' });
+    }
+
+    const submission = await CustomOfferSubmission.findOne(manualSubmissionFilter(offer._id, user._id));
+    if (!submission) {
+      return res.status(400).json({ success: false, error: 'You must start the offer first before submitting proof.' });
+    }
+    if (submission.status === 'pending' || submission.status === 'approved') {
+      return res.status(400).json({ success: false, error: 'You have already submitted this offer' });
+    }
+    if (submission.status === 'chargebacked') {
+      return res.status(400).json({ success: false, error: 'This offer submission can no longer be resubmitted' });
+    }
+
+    const wasRejected = submission.status === 'rejected';
+    const normalizedProofText = typeof proofText === 'string' ? proofText.trim() : '';
+    const normalizedImages = Array.isArray(proofImages)
+      ? proofImages.filter((image) => typeof image === 'string' && image.trim()).slice(0, 10)
+      : [];
+    if (!normalizedProofText && normalizedImages.length === 0 && !proofImage) {
+      return res.status(400).json({ success: false, error: 'Please provide proof before submitting.' });
+    }
+
+    const clickLog = submission.clickId
+      ? await ClickLog.findOne({ clickId: submission.clickId, offerId: offer._id, userId: user._id })
+      : null;
+    if (!clickLog) {
+      return res.status(400).json({ success: false, error: 'Tracked click was not found. Please start the offer again.' });
+    }
+
+    const conversion = await upsertManualProofConversion({ submission, clickLog, offer });
+
+    submission.proofText = normalizedProofText;
+    if (normalizedImages.length > 0) {
+      submission.proofImages = normalizedImages;
+      submission.proofImage = normalizedImages[0];
+    } else if (typeof proofImage === 'string' && proofImage.trim()) {
+      submission.proofImage = proofImage.trim();
+      submission.proofImages = [proofImage.trim()];
+    } else {
+      submission.proofImage = '';
+      submission.proofImages = [];
+    }
+    submission.status = 'pending';
+    submission.adminNote = '';
+    submission.conversionId = conversion?._id || null;
+    await submission.save();
+
+    try {
+      await UserActivityLog.create({
+        userId: user._id,
+        actionType: 'proof_submit',
+        targetId: offer._id,
+        metadata: {
+          offerTitle: offer.title,
+          sourceType: 'direct_offer',
+          isResubmission: wasRejected,
+        },
+      });
+    } catch (logError) {
+      console.warn('[directOffers submit] activity log failed:', logError.message);
+    }
+
+    return res.status(200).json({ success: true, submission, conversion });
+  } catch (error) {
+    console.error('[/api/direct-offers/:offerId/submit] Error:', error);
+    return res.status(error.statusCode || 500).json({
+      success: false,
+      error: error.statusCode ? error.message : 'Failed to submit proof',
+    });
+  }
+});
+
 // GET /api/direct-offers/postback
 // PUBLIC (no auth) — Called by advertiser's server to confirm a conversion
 //
@@ -161,8 +579,8 @@ router.get('/postback', async (req, res) => {
   const { secret } = req.query;
 
   // Secret is always required — it's our auth mechanism
-  if (!secret) {
-    console.warn('[Postback] Missing secret param:', req.query);
+  if (typeof secret !== 'string' || !secret.trim()) {
+    console.warn('[Postback] Missing or malformed secret param.');
     return res.status(200).send('0');
   }
 
@@ -174,143 +592,62 @@ router.get('/postback', async (req, res) => {
       return res.status(200).send('0');
     }
 
-    // ── Step 2: Read dynamic params using this offer's mapping ───────────
-    const mapping = offer.postbackMapping || {};
-    const clickIdParam   = mapping.clickIdParam   || 'click_id';
-    const statusParam    = mapping.statusParam     || 'status';
-    const payoutParam    = mapping.payoutParam     || 'payout';
-    const approvedValue  = (mapping.approvedValue  || 'approved').toLowerCase();
-    const rejectedValue  = (mapping.rejectedValue  || 'rejected').toLowerCase();
-
-    const clickIdValue  = req.query[clickIdParam];
-    const statusValue   = req.query[statusParam];
-    const payoutValue   = req.query[payoutParam];
-
-    if (!clickIdValue) {
-      console.warn(`[Postback] Missing click ID param "${clickIdParam}":`, req.query);
+    // Manual offers are rewarded only through the manual proof workflow. Even a
+    // valid secret must never be able to reward them through a postback.
+    if (isManualOffer(offer)) {
+      console.warn('[Postback] Rejected postback for manual offer:', offer._id);
       return res.status(200).send('0');
     }
 
-    // ── Step 3: Determine approved vs rejected ───────────────────────────
-    let normalizedStatus;
-    if (statusValue) {
-      const sv = statusValue.toLowerCase();
-      if (sv === approvedValue) {
-        normalizedStatus = 'approved';
-      } else if (sv === rejectedValue) {
-        normalizedStatus = 'rejected';
-      } else {
-        // Unknown status value — default to approved (many networks only fire on success)
-        console.warn(`[Postback] Unknown status value "${statusValue}", treating as approved`);
-        normalizedStatus = 'approved';
-      }
-    } else {
-      // No status param sent — many advertisers only call postback on approval
-      normalizedStatus = 'approved';
+    const result = await processPostback({
+      providerConfig: buildDirectOfferProviderConfig(offer),
+      req,
+      route: '/api/direct-offers/postback',
+      expectedOfferId: offer._id,
+      expectedCampaignId: offer._id,
+    });
+
+    if (result.ok && result.internalStatus === 'pending' && result.clickLog) {
+      await ClickLog.findByIdAndUpdate(result.clickLog._id, { $set: { status: 'pending' } });
     }
 
-    // ── Step 4: Find the click log ───────────────────────────────────────
-    const clickLog = await ClickLog.findOne({ clickId: clickIdValue, offerId: offer._id });
-    if (!clickLog) {
-      console.warn(`[Postback] ClickLog not found for ${clickIdParam}:`, clickIdValue);
-      return res.status(200).send('1'); // Silently OK — may have been already processed
-    }
-
-    // Idempotency: if already processed, silently return success
-    if (clickLog.status === 'approved' || clickLog.status === 'rejected') {
-      console.log('[Postback] Already processed click_id:', clickIdValue, '| Status:', clickLog.status);
-      return res.status(200).send('1');
-    }
-
-    if (normalizedStatus === 'rejected') {
-      clickLog.status = 'rejected';
-      clickLog.convertedAt = new Date();
-      await clickLog.save();
-
+    if (result.ok && result.internalStatus === 'rejected' && result.clickLog) {
+      await ClickLog.findByIdAndUpdate(result.clickLog._id, {
+        $set: { status: 'rejected', convertedAt: new Date() },
+      });
       await DirectOffer.findByIdAndUpdate(offer._id, { $inc: { totalRejected: 1 } });
-      console.log('[Postback] Click rejected. click_id:', clickIdValue);
-      return res.status(200).send('1');
     }
 
-    // ── APPROVAL FLOW ──────────────────────────────────────────────────────
-    const user = await User.findById(clickLog.userId);
-    if (!user) {
-      console.warn('[Postback] User not found for click_id:', clickIdValue);
-      return res.status(200).send('1');
+    if (result.ok && result.shouldProcessFinancial && result.internalStatus === 'approved') {
+      await processReward({
+        conversion: result.conversion,
+        hooks: {
+          emitWalletUpdate,
+          processVipLevelUp: (user, amount) => processVipLevelUp(user, amount, emitToUser),
+        },
+      });
     }
 
-    if (user.isBanned) {
-      clickLog.status = 'rejected';
-      clickLog.convertedAt = new Date();
-      await clickLog.save();
-      console.warn('[Postback] Banned user attempted postback. userId:', user._id);
-      return res.status(200).send('1');
+    if (result.ok && result.shouldProcessFinancial && result.internalStatus === 'reversed') {
+      await processReversal({
+        conversion: result.conversion,
+        hooks: { emitWalletUpdate },
+      });
     }
 
-    const coinsToCredit = clickLog.rewardAmount;
-    const payoutAmount = payoutValue ? parseFloat(payoutValue) || 0 : offer.advertiserPayoutAmount || 0;
-
-    // Credit user wallet
-    const newBalance = user.walletBalance + coinsToCredit;
-
-    await User.findByIdAndUpdate(user._id, {
-      $inc: { walletBalance: coinsToCredit, totalEarned: coinsToCredit },
-    });
-
-    // Create transaction
-    const tx = await Transaction.create({
-      userId: user._id,
-      transactionType: 'direct_offer_reward',
-      amount: coinsToCredit,
-      balanceAfter: newBalance,
-      description: `Direct offer reward: ${offer.title}`,
-      status: 'completed',
-      sourceType: 'offer',
-      sourceId: offer._id,
-      metadata: {
-        offerId: offer._id,
-        offerTitle: offer.title,
-        clickId: clickIdValue,
-        advertiserPayout: payoutAmount,
-      },
-      externalId: `direct:${clickIdValue}`, // Prevents duplicate crediting
-    });
-
-    // Update click log
-    clickLog.status = 'approved';
-    clickLog.convertedAt = new Date();
-    clickLog.advertiserPayout = payoutAmount;
-    clickLog.transactionId = tx._id;
-    await clickLog.save();
-
-    // Update offer stats
-    await DirectOffer.findByIdAndUpdate(offer._id, { $inc: { totalApproved: 1 } });
-
-    // Send notification
-    await notify(
-      user._id,
-      'direct_offer_reward',
-      '🎉 Offer Completed!',
-      `You earned ${coinsToCredit.toLocaleString()} coins from "${offer.title}".`,
-      { txId: tx._id, amount: coinsToCredit, offerTitle: offer.title }
-    );
-
-    // Emit real-time wallet update via socket
-    emitWalletUpdate(user.firebaseUid, newBalance);
-
-    // Process VIP level up if applicable
-    try {
-      await processVipLevelUp(user._id);
-    } catch (vipErr) {
-      console.error('[Postback] VIP level up check failed:', vipErr.message);
-    }
-
-    console.log(`[Postback] ✅ Approved. User: ${user._id} | Offer: ${offer.title} | Coins: +${coinsToCredit}`);
-    return res.status(200).send('1');
+    return res.status(result.response.status).send(result.response.body);
   } catch (error) {
     console.error('[Postback] Unexpected error:', error);
     return res.status(200).send('0');
   }
 });
+
+router.__testInternals = {
+  PLACEMENTS,
+  buildDirectOfferProviderConfig,
+  buildPlacementClause,
+  resolveClickPlacement,
+  stripAdminOnlyPayoutFields,
+};
 
 module.exports = router;

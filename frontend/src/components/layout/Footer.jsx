@@ -19,14 +19,7 @@ const Footer = () => {
   };
   const { t, i18n } = useTranslation();
   const isDe = i18n?.language?.startsWith('de');
-  const isFr = i18n?.language?.startsWith('fr');
-  const isEs = i18n?.language?.startsWith('es');
   const isUr = i18n?.language === 'ur' || i18n?.language?.startsWith('ur');
-  const isRu = i18n?.language?.startsWith('ru');
-  const isPt = i18n?.language?.startsWith('pt');
-  const isIt = i18n?.language?.startsWith('it');
-  const isPl = i18n?.language?.startsWith('pl');
-  const isTr = i18n?.language?.startsWith('tr');
   const [isMobile, setIsMobile] = useState(
     typeof window !== 'undefined' ? window.innerWidth < 1024 : false
   );
@@ -91,7 +84,7 @@ const Footer = () => {
                 ? (isDarkMode ? "/coins/image copy 21.png" : "/coins/image copy 18.png")
                 : "/coins/image copy 16.png"
             }
-            alt="Background graphics"
+            alt="" aria-hidden="true"
             className="absolute bottom-0 left-0 w-full h-auto z-0 pointer-events-none object-contain object-left-bottom"
             style={{
               maxHeight: '100%',

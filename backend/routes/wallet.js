@@ -11,6 +11,11 @@ const { fraudCheck } = require('../middlewares/fraudCheck');
 const notify = require('../utils/notify');
 const { emitWalletUpdate } = require('../utils/walletEvents');
 const { notifyAdmins } = require('../utils/adminNotify');
+const {
+  REAL_OFFER_EARNING_TYPES,
+  getCompletedRealOfferEarningMatch,
+} = require('../utils/earningTypes');
+const { sortOfferwallProviders } = require('../utils/offerwallOrder');
 
 /* ─────────────────────────────────────────────────────────────────
    UTILITY: Fetch live USD rates via CoinGecko (free, no key needed)
@@ -78,10 +83,26 @@ router.get('/settings', verifyToken, async (req, res) => {
   try {
     const settings = await Settings.getSingleton();
     const ltcRateUSD = await getLitecoinRate();
+    const offerwalls = settings.offerwallProviders
+      .filter((p) => p.enabled)
+      .map((provider) => {
+        const pObj = provider.toObject ? provider.toObject() : { ...provider };
+        if (pObj.id === 'lootably') {
+          pObj.placementId = pObj.placementId || process.env.LOOTABLY_PLACEMENT_ID || '';
+          pObj.iframeUrl = pObj.iframeUrl || process.env.LOOTABLY_IFRAME_URL || '';
+          pObj.offerwallUrl = pObj.offerwallUrl || process.env.LOOTABLY_OFFERWALL_URL || '';
+        }
+        // Internal hold policy is admin-only; never expose it publicly.
+        delete pObj.holdEnabled;
+        delete pObj.holdDays;
+        delete pObj.holdThreshold;
+        return pObj;
+      });
+    const orderedOfferwalls = sortOfferwallProviders(offerwalls);
     const settingsPayload = {
       withdrawalFeePercent: settings.withdrawalFeePercent,
       withdrawalMethods: settings.withdrawalMethods.filter((m) => m.enabled),
-      offerwalls: settings.offerwallProviders.filter((p) => p.enabled),
+      offerwalls: orderedOfferwalls,
       coinsPerUSD: settings.coinsPerUSD,
       exchangeRates: { ltcUSD: ltcRateUSD },
     };
@@ -554,7 +575,7 @@ router.get('/daily-bonus-status', verifyToken, async (req, res) => {
           $match: {
             userId: user._id,
             amount: { $gt: 0 },
-            transactionType: { $in: ['offer_reward', 'custom_offer_reward'] },
+            transactionType: { $in: REAL_OFFER_EARNING_TYPES },
             status: 'completed',
             createdAt: { $gte: windowStart }
           }
@@ -652,7 +673,7 @@ router.post('/daily-bonus', verifyToken, async (req, res) => {
         $match: {
           userId: user._id,
           amount: { $gt: 0 },
-          transactionType: { $in: ['offer_reward', 'custom_offer_reward'] },
+          transactionType: { $in: REAL_OFFER_EARNING_TYPES },
           status: 'completed',
           createdAt: { $gte: windowStart }
         }
@@ -850,14 +871,12 @@ router.get('/dashboard-stats', verifyToken, async (req, res) => {
     const user = await User.findOne({ firebaseUid: req.user.uid });
     if (!user) return res.status(404).json({ success: false, error: 'User not found' });
 
-    // Aggregate to count and sum offer_reward transactions
+    // Aggregate to count and sum real offer earning transactions
     const result = await Transaction.aggregate([
       {
-        $match: {
+        $match: getCompletedRealOfferEarningMatch({
           userId: user._id,
-          transactionType: { $in: ['offer_reward', 'custom_offer_reward'] },
-          status: 'completed'
-        }
+        })
       },
       {
         $group: {
@@ -875,6 +894,7 @@ router.get('/dashboard-stats', verifyToken, async (req, res) => {
       {
         $match: {
           userId: user._id,
+          transactionType: { $in: REAL_OFFER_EARNING_TYPES },
           amount: { $gt: 0 },
           status: 'completed',
           createdAt: { $gte: thirtyDaysAgo },
@@ -893,6 +913,7 @@ router.get('/dashboard-stats', verifyToken, async (req, res) => {
       {
         $match: {
           userId: user._id,
+          transactionType: { $in: REAL_OFFER_EARNING_TYPES },
           amount: { $gt: 0 },
           status: 'completed',
           description: { $not: /^Withdrawal Refund/ }

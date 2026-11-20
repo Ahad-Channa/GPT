@@ -3,19 +3,8 @@ import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTheme } from '../contexts/ThemeContext';
 import { useCookieConsent } from '../contexts/CookieConsentContext';
-
-const LANGUAGES = [
-  { code: 'en', label: 'English', flag: '/coins/EN.png', alt: 'English Flag', triggerAlt: 'EN Flag' },
-  { code: 'de', label: 'Deutsch', flag: '/coins/DE.svg', alt: 'German Flag', triggerAlt: 'DE Flag' },
-  { code: 'fr', label: 'Français', flag: '/coins/FR.svg', alt: 'French Flag', triggerAlt: 'FR Flag' },
-  { code: 'es', label: 'Español', flag: '/coins/ES.svg', alt: 'Spanish Flag', triggerAlt: 'ES Flag' },
-  { code: 'pt', label: 'Português', flag: '/coins/PT.svg', alt: 'Portuguese Flag', triggerAlt: 'PT Flag' },
-  { code: 'it', label: 'Italiano', flag: '/coins/IT.svg', alt: 'Italian Flag', triggerAlt: 'IT Flag' },
-  { code: 'tr', label: 'Türkçe', flag: '/coins/TR.svg', alt: 'Turkish Flag', triggerAlt: 'TR Flag' },
-  { code: 'pl', label: 'Polski', flag: '/coins/PL.svg', alt: 'Polish Flag', triggerAlt: 'PL Flag' },
-  { code: 'ru', label: 'Русский', flag: '/coins/RU.svg', alt: 'Russian Flag', triggerAlt: 'RU Flag' },
-  { code: 'ur', label: 'Urdu (اردو)', flag: '/coins/PK.svg', alt: 'Urdu Flag', triggerAlt: 'UR Flag' },
-];
+import { supportedLanguages } from '../i18n/i18n';
+import { LOCALE_FLAGS, DEFAULT_LOCALE, getLocaleNativeName, resolveSupportedLocale } from '../i18n/localeRegistry.js';
 
 const LanguageToggle = ({
   style,
@@ -24,32 +13,14 @@ const LanguageToggle = ({
   showArrowOnMobile = false,
   dropdownAlign = 'left',
 }) => {
-  const { i18n } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { isDarkMode } = useTheme();
   const cookieConsent = useCookieConsent();
   const hasConsent = cookieConsent?.hasConsent;
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef(null);
 
-  const currentLang = i18n.language?.startsWith('ur')
-    ? 'ur'
-    : (i18n.language?.startsWith('de')
-      ? 'de'
-      : (i18n.language?.startsWith('fr')
-        ? 'fr'
-        : (i18n.language?.startsWith('es')
-          ? 'es'
-          : (i18n.language?.startsWith('ru')
-            ? 'ru'
-            : (i18n.language?.startsWith('pt')
-              ? 'pt'
-              : (i18n.language?.startsWith('it')
-                ? 'it'
-                : (i18n.language?.startsWith('pl')
-                  ? 'pl'
-                  : (i18n.language?.startsWith('tr') ? 'tr' : 'en'))))))));
-
-  const currentLangConfig = LANGUAGES.find(l => l.code === currentLang) || LANGUAGES[0];
+  const currentLang = resolveSupportedLocale(i18n.resolvedLanguage || i18n.language, supportedLanguages, DEFAULT_LOCALE);
 
   const selectLanguage = (lang) => {
     i18n.changeLanguage(lang);
@@ -105,7 +76,7 @@ const LanguageToggle = ({
           WebkitTapHighlightColor: 'transparent',
           ...style,
         }}
-        title="Change Language"
+        title={t('languageToggle.change', 'Change language')}
       >
         {/* Flag Icon: 20x20 on mobile, 24x24 on desktop */}
         <div
@@ -116,13 +87,13 @@ const LanguageToggle = ({
           }}
         >
           <img
-            src={currentLangConfig.flag}
-            alt={currentLangConfig.triggerAlt}
+            src={LOCALE_FLAGS[currentLang] || LOCALE_FLAGS[DEFAULT_LOCALE]}
+            alt=""
             className="w-full h-full object-cover"
           />
         </div>
 
-        {/* Text Code (EN / DE / FR / UR / TR etc.): 18x21 on mobile, 20x24 on desktop */}
+        {/* Active language code (release registry controls which codes exist) */}
         <span
           className="flex items-center justify-center shrink-0 w-[18px] h-[21px] text-[14px] leading-[21px] lg:w-[20px] lg:h-[24px] lg:text-[16px] lg:leading-[100%] transition-colors duration-300"
           style={{
@@ -182,34 +153,9 @@ const LanguageToggle = ({
               boxSizing: 'border-box',
             }}
           >
-            {LANGUAGES.map((item, idx) => (
-              <React.Fragment key={item.code}>
-                <button
-                  type="button"
-                  onClick={() => selectLanguage(item.code)}
-                  className="flex items-center justify-between w-full py-1 cursor-pointer bg-transparent border-0 hover:opacity-75 transition-opacity"
-                >
-                  <span
-                    style={{
-                      fontFamily: 'Poppins, sans-serif',
-                      fontWeight: currentLang === item.code ? 600 : 400,
-                      fontSize: '15px',
-                      lineHeight: '20px',
-                      color: currentLang === item.code ? (isDarkMode ? '#FFFFFF' : '#0E0F0C') : (isDarkMode ? '#9CA3AF' : '#8E8E93'),
-                    }}
-                  >
-                    {item.label}
-                  </span>
-                  <div className="w-[24px] h-[24px] rounded-full overflow-hidden shrink-0 flex items-center justify-center">
-                    <img
-                      src={item.flag}
-                      alt={item.alt}
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                </button>
-
-                {idx < LANGUAGES.length - 1 && (
+            {supportedLanguages.map((lang, index) => (
+              <React.Fragment key={lang}>
+                {index > 0 && (
                   <div
                     style={{
                       width: '100%',
@@ -220,6 +166,30 @@ const LanguageToggle = ({
                     }}
                   />
                 )}
+                <button
+                  type="button"
+                  onClick={() => selectLanguage(lang)}
+                  className="flex items-center justify-between w-full py-1 cursor-pointer bg-transparent border-0 hover:opacity-75 transition-opacity"
+                >
+                  <span
+                    style={{
+                      fontFamily: 'Poppins, sans-serif',
+                      fontWeight: currentLang === lang ? 600 : 400,
+                      fontSize: '15px',
+                      lineHeight: '20px',
+                      color: currentLang === lang ? (isDarkMode ? '#FFFFFF' : '#0E0F0C') : (isDarkMode ? '#9CA3AF' : '#8E8E93'),
+                    }}
+                  >
+                    {getLocaleNativeName(lang)}
+                  </span>
+                  {LOCALE_FLAGS[lang] ? (
+                    <div className="w-[24px] h-[24px] rounded-full overflow-hidden shrink-0 flex items-center justify-center">
+                      <img src={LOCALE_FLAGS[lang]} alt="" className="w-full h-full object-cover" />
+                    </div>
+                  ) : (
+                    <span className="text-xs uppercase text-slate-400">{lang}</span>
+                  )}
+                </button>
               </React.Fragment>
             ))}
           </motion.div>

@@ -3,6 +3,17 @@
  * dynamically based on the current active language (e.g., 'de' or 'en').
  */
 
+import { humanizeGoalKey } from './offerGoalDisplay.js';
+
+const humanizeNotificationLabel = (value) => {
+  const raw = String(value ?? '').trim();
+  if (!raw) return '';
+  if (!raw.includes('_') && !(/^[^\s]+$/.test(raw) && /\d/.test(raw) && raw.includes('-'))) {
+    return raw;
+  }
+  return humanizeGoalKey(raw);
+};
+
 // ─── URDU LOCALIZATION ───
 export function localizeUrdu(rawTitle, rawMessage, rawMetadata = {}) {
   let title = rawTitle || '';
@@ -504,6 +515,7 @@ export function localizeNotification(notif, lang = 'en') {
   let title = notif.title || '';
   let message = notif.message || '';
   let metadata = notif.metadata ? { ...notif.metadata } : {};
+  message = localizeOfferRewardMessage(message, lang) || message;
 
   if (isUr) {
     if (metadata.link && !metadata.linkText) {
@@ -709,5 +721,49 @@ export function localizeNotification(notif, lang = 'en') {
   }
 
   return { title, message, metadata };
+}
+
+function localizeOfferRewardMessage(message, lang) {
+  let match = message.match(/^You earned \+([\d,.]+) coins for completing "(.+?)"\.(?: It is on hold for (\d+) days\.| The reward is available now\.)$/i);
+  let amount; let label; let holdDays; let provider = ''; let format = 'direct';
+  if (match) {
+    [, amount, label, holdDays] = match;
+  } else {
+    match = message.match(/^You earned \+([\d,.]+) coins for "(.+?)"(?: via (.+?))?\.(?: It is on hold for (\d+) days\.| The reward is available now\.)$/i);
+    if (match) {
+      format = 'offerwall';
+      [, amount, label, provider, holdDays] = match;
+    } else {
+      match = message.match(/^You earned \+([\d,.]+) coins from (.+?)\.(?: The reward is on hold for (\d+) days\.| The reward is available now\.)$/i);
+      if (!match) return '';
+      format = 'provider';
+      [, amount, provider, holdDays] = match;
+    }
+  }
+
+  const isHeld = Boolean(holdDays);
+  if (label) label = humanizeNotificationLabel(label);
+
+  if (lang === 'en') {
+    const earning = format === 'direct'
+      ? `for completing "${label}"`
+      : format === 'offerwall'
+        ? `for "${label}"${provider ? ` via ${provider}` : ''}`
+        : `from ${provider}`;
+    return `You earned +${amount} coins ${earning}.${isHeld ? ` It is on hold for ${holdDays} days.` : ' The reward is available now.'}`;
+  }
+  if (lang === 'de') {
+    const earning = label ? `für „${label}“${provider ? ` über ${provider}` : ''}` : `von ${provider}`;
+    return `Du hast +${amount} Coins ${earning} verdient.${isHeld ? ` Die Belohnung wird ${holdDays} Tage zurückgehalten.` : ' Die Belohnung ist jetzt verfügbar.'}`;
+  }
+  if (lang === 'fr') {
+    const earning = label ? `pour « ${label} »${provider ? ` via ${provider}` : ''}` : `via ${provider}`;
+    return `Vous avez gagné +${amount} pièces ${earning}.${isHeld ? ` La récompense est bloquée pendant ${holdDays} jours.` : ' La récompense est disponible maintenant.'}`;
+  }
+  if (lang === 'ur') {
+    const earning = label ? `"${label}"${provider ? ` کے ذریعے ${provider}` : ''}` : `${provider} سے`;
+    return `آپ نے ${earning} کے لیے +${amount} کوائنز کمائے۔${isHeld ? ` انعام ${holdDays} دنوں کے لیے ہولڈ پر ہے۔` : ' انعام اب دستیاب ہے۔'}`;
+  }
+  return '';
 }
 

@@ -33,9 +33,10 @@ const compressImage = (file) => {
   });
 };
 
-export const ProofUploadView = ({ offer, token, API, onSubmitted, setResult, onCancel }) => {
+export const ProofUploadView = ({ offer, token, API, submitUrl, onSubmitted, setResult, onCancel }) => {
   const [proof, setProof] = useState('');
   const [proofImages, setProofImages] = useState([]);
+  const [previewImage, setPreviewImage] = useState(null);
   const [submitting, setSubmitting] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef(null);
@@ -93,7 +94,8 @@ export const ProofUploadView = ({ offer, token, API, onSubmitted, setResult, onC
     e.preventDefault();
     setSubmitting(true);
     try {
-      const res = await fetch(`${API}/custom-offers/${offer._id}/submit`, {
+      const endpoint = submitUrl || `${API}/custom-offers/${offer._id}/submit`;
+      const res = await fetch(endpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({ 
@@ -121,7 +123,7 @@ export const ProofUploadView = ({ offer, token, API, onSubmitted, setResult, onC
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -10 }}
       onSubmit={handleSubmit}
-      style={{ display: 'flex', flexDirection: 'column', gap: '10px', width: '100%', flexShrink: 0 }}
+      style={{ display: 'flex', flexDirection: 'column', gap: '12px', width: '100%', flexShrink: 0, color: '#0E0F0C' }}
     >
       {/* Upload Proof Header */}
       <div style={{ width: '100%', height: 'auto', display: 'flex', flexDirection: 'column', gap: '4px', opacity: 1 }}>
@@ -129,8 +131,8 @@ export const ProofUploadView = ({ offer, token, API, onSubmitted, setResult, onC
           className="text-[14px] lg:text-[16px]"
           style={{
             width: '100%', height: 'auto', opacity: 1,
-            fontFamily: '"Barlow Condensed", sans-serif', fontWeight: 700, fontStyle: 'normal',
-            color: 'rgba(255, 255, 255, 1)', margin: 0, lineHeight: '1.2'
+            fontFamily: '"Bricolage Grotesque", sans-serif', fontWeight: 700, fontStyle: 'normal',
+            color: '#0E0F0C', margin: 0, lineHeight: '1.2'
           }}
         >
           Upload Proof
@@ -139,8 +141,8 @@ export const ProofUploadView = ({ offer, token, API, onSubmitted, setResult, onC
           className="text-[11px] lg:text-[11px]"
           style={{
             width: '100%', height: 'auto', opacity: 1,
-            fontFamily: '"Barlow Condensed", sans-serif', fontWeight: 500, fontStyle: 'normal',
-            color: 'rgba(136, 136, 136, 1)', margin: 0, lineHeight: '1.3'
+            fontFamily: '"Poppins", sans-serif', fontWeight: 400, fontStyle: 'normal',
+            color: '#64748B', margin: 0, lineHeight: '1.4'
           }}
         >
           Upload screenshots, receipts, or any files that prove task completion.
@@ -161,10 +163,8 @@ export const ProofUploadView = ({ offer, token, API, onSubmitted, setResult, onC
           paddingLeft: '12px',
           gap: '10px',
           opacity: 1,
-          border: `1px dashed rgba(73, 178, 101, 1)`,
-          background: isDragging ? 'rgba(73, 178, 101, 0.25)' : 'rgba(73, 178, 101, 0.16)',
-          backdropFilter: 'blur(44px)',
-          WebkitBackdropFilter: 'blur(44px)',
+          border: `1px dashed ${isDragging ? '#24324D' : '#B8C2D1'}`,
+          background: isDragging ? '#EEF2F7' : '#FFFFFF',
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
@@ -188,13 +188,13 @@ export const ProofUploadView = ({ offer, token, API, onSubmitted, setResult, onC
         <div style={{ width: '100%', height: 'auto', display: 'flex', flexDirection: 'column', gap: '4px', opacity: 1, alignItems: 'center', justifyContent: 'center' }}>
           <span 
             className="text-[14px] lg:text-[16px]"
-            style={{ fontFamily: '"Barlow Condensed", sans-serif', fontWeight: 600, color: '#fff', lineHeight: 1 }}
+            style={{ fontFamily: '"Poppins", sans-serif', fontWeight: 600, color: '#24324D', lineHeight: 1.3 }}
           >
             Drag & drop files here
           </span>
           <span 
             className="text-[11px] lg:text-[12px]"
-            style={{ fontFamily: '"Barlow Condensed", sans-serif', fontWeight: 500, color: '#888', lineHeight: 1 }}
+            style={{ fontFamily: '"Poppins", sans-serif', fontWeight: 400, color: '#64748B', lineHeight: 1.3 }}
           >
             JPG, PNG. PDF up to 10MB each (max 10 files)
           </span>
@@ -208,11 +208,11 @@ export const ProofUploadView = ({ offer, token, API, onSubmitted, setResult, onC
             padding: '4px 20px',
             gap: '10px',
             opacity: 1,
-            background: 'rgba(39, 112, 58, 1)',
-            boxShadow: '0px 4px 0px 0px rgba(35, 80, 47, 1)',
+            background: '#24324D',
+            boxShadow: '0 3px 0 #18243A',
             color: '#fff',
             border: 'none',
-            fontFamily: '"Barlow Condensed", sans-serif',
+            fontFamily: '"Poppins", sans-serif',
             fontWeight: 600,
             cursor: 'pointer',
             display: 'flex',
@@ -240,45 +240,67 @@ export const ProofUploadView = ({ offer, token, API, onSubmitted, setResult, onC
             <div 
               key={idx} 
               className="p-2 lg:p-[8px_12px]"
-              style={{ 
-                display: 'flex', alignItems: 'center', justifyContent: 'space-between', 
-                background: 'rgba(0, 0, 0, 0.36)', backdropFilter: 'blur(44px)', WebkitBackdropFilter: 'blur(44px)', borderRadius: '8px'
+              style={{
+                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                background: '#FFFFFF', border: '1px solid #EAE4D7', borderRadius: '10px'
               }}
             >
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                {img.base64.startsWith('data:image') ? (
+              {img.base64.startsWith('data:image') ? (
+                <button
+                  type="button"
+                  aria-label={`Preview uploaded proof ${img.name}`}
+                  className="flex items-center gap-2.5 rounded-lg text-left bg-transparent border-0 cursor-zoom-in focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#24324D]"
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    setPreviewImage(img);
+                  }}
+                >
                   <img 
                     src={img.base64} 
-                    alt="preview" 
-                    className="w-[32px] h-[32px] lg:w-[32px] lg:h-[32px] rounded object-cover" 
+                    alt={`Preview of ${img.name}`}
+                    className="w-10 h-10 rounded-lg object-cover border border-[#EAE4D7]"
                   />
-                ) : (
-                  <div 
-                    className="w-[32px] h-[32px] lg:w-[32px] lg:h-[32px] rounded bg-white/10 flex items-center justify-center text-[10px] text-[#888]"
-                  >
-                    PDF
-                  </div>
-                )}
-                <div style={{ display: 'flex', flexDirection: 'column' }}>
-                  <span 
-                    className="text-[15px] lg:text-[14px]"
-                    style={{ fontFamily: '"Barlow Condensed", sans-serif', fontWeight: 600, color: '#fff', maxWidth: '200px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}
+                  <span
+                    className="text-[12px]"
+                    style={{ fontFamily: '"Poppins", sans-serif', fontWeight: 600, color: '#24324D', maxWidth: '200px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}
                   >
                     {img.name}
                   </span>
-                </div>
-              </div>
+                </button>
+              ) : (
+                <a
+                  href={img.base64}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={`Open uploaded proof ${img.name} in a new tab`}
+                  className="flex items-center gap-2.5 rounded-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#24324D]"
+                  onClick={(event) => event.stopPropagation()}
+                >
+                  <div 
+                    className="w-10 h-10 rounded-lg bg-[#EEF2F7] flex items-center justify-center text-[10px] text-[#475569]"
+                  >
+                    PDF
+                  </div>
+                  <span 
+                    className="text-[12px]"
+                    style={{ fontFamily: '"Poppins", sans-serif', fontWeight: 600, color: '#24324D', maxWidth: '200px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}
+                  >
+                    {img.name}
+                  </span>
+                </a>
+              )}
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                 <span 
                   className="text-[12px] lg:text-[12px]"
-                  style={{ fontFamily: '"Barlow Condensed", sans-serif', fontWeight: 500, color: '#888' }}
+                  style={{ fontFamily: '"Poppins", sans-serif', fontWeight: 400, color: '#64748B' }}
                 >
                   {img.sizeStr}
                 </span>
                 <button 
                   type="button" 
                   onClick={() => removeImage(idx)}
-                  style={{ background: 'transparent', border: 'none', color: '#888', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '4px' }}
+                  aria-label={`Remove ${img.name}`}
+                  style={{ background: 'transparent', border: 'none', color: '#64748B', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '8px' }}
                 >
                   <FiX size={16} />
                 </button>
@@ -292,13 +314,13 @@ export const ProofUploadView = ({ offer, token, API, onSubmitted, setResult, onC
       <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', width: '100%' }}>
         <h3 
           className="text-[14px] lg:text-[16px]"
-          style={{ fontFamily: '"Barlow Condensed", sans-serif', fontWeight: 700, color: '#fff', margin: 0, lineHeight: '1.2' }}
+          style={{ fontFamily: '"Bricolage Grotesque", sans-serif', fontWeight: 700, color: '#0E0F0C', margin: 0, lineHeight: '1.2' }}
         >
           Additional Details (Optional)
         </h3>
         <p 
           className="text-[11px] lg:text-[11px]"
-          style={{ fontFamily: '"Barlow Condensed", sans-serif', fontWeight: 500, color: '#888', margin: 0, lineHeight: '1.3' }}
+          style={{ fontFamily: '"Poppins", sans-serif', fontWeight: 400, color: '#64748B', margin: 0, lineHeight: '1.4' }}
         >
           Provide any extra information that can help us verify your completion.
         </p>
@@ -309,10 +331,10 @@ export const ProofUploadView = ({ offer, token, API, onSubmitted, setResult, onC
           rows={4}
           className="w-full h-[70px] lg:h-[109px] text-[15px] lg:text-[14px]"
           style={{
-            background: 'rgba(0, 0, 0, 0.36)', border: '1px solid rgba(73, 178, 101, 1)', 
-            borderRadius: '10px', padding: '12px', color: '#fff', 
-            resize: 'none', boxSizing: 'border-box', fontFamily: '"Barlow Condensed", sans-serif',
-            backdropFilter: 'blur(44px)', WebkitBackdropFilter: 'blur(44px)', opacity: 1, gap: '10px'
+            background: '#FFFFFF', border: '1px solid #D8DEE8',
+            borderRadius: '10px', padding: '12px', color: '#0E0F0C',
+            resize: 'none', boxSizing: 'border-box', fontFamily: '"Poppins", sans-serif',
+            opacity: 1, gap: '10px'
           }}
         />
       </div>
@@ -325,12 +347,12 @@ export const ProofUploadView = ({ offer, token, API, onSubmitted, setResult, onC
           style={{
             borderRadius: '10px',
             padding: '10px 30px',
-            background: 'rgba(73, 178, 101, 1)', color: 'rgba(255, 255, 255, 1)', border: 'none',
-            fontFamily: '"Barlow Condensed", sans-serif', fontWeight: 700, lineHeight: '100%',
+            background: '#24324D', color: '#FFFFFF', border: 'none',
+            fontFamily: '"Bricolage Grotesque", sans-serif', fontWeight: 700, lineHeight: '100%',
             display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px',
             cursor: submitting || (proofImages.length === 0 && !proof.trim()) ? 'not-allowed' : 'pointer',
             opacity: submitting || (proofImages.length === 0 && !proof.trim()) ? 0.5 : 1,
-            boxShadow: '0px 4px 0px 0px rgba(39, 109, 58, 1)'
+            boxShadow: '0 3px 0 #18243A'
           }}
         >
           {submitting ? (
@@ -341,6 +363,36 @@ export const ProofUploadView = ({ offer, token, API, onSubmitted, setResult, onC
           <span>{submitting ? 'Submitting...' : 'Submit Proof'}</span>
         </button>
       </div>
+
+      {previewImage && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label={`Image preview: ${previewImage.name}`}
+          className="fixed inset-0 z-[100001] flex items-center justify-center bg-black/80 p-4"
+          onClick={(event) => {
+            event.stopPropagation();
+            setPreviewImage(null);
+          }}
+        >
+          <div className="relative max-h-full max-w-full" onClick={(event) => event.stopPropagation()}>
+            <button
+              type="button"
+              aria-label="Close image preview"
+              className="absolute -right-3 -top-3 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-white text-[#24324D] shadow-lg"
+              onClick={() => setPreviewImage(null)}
+            >
+              <FiX size={20} />
+            </button>
+            <img
+              src={previewImage.base64}
+              alt={previewImage.name}
+              className="max-h-[85vh] max-w-[90vw] rounded-xl bg-white object-contain shadow-2xl"
+            />
+            <p className="mt-2 text-center text-sm text-white">{previewImage.name}</p>
+          </div>
+        </div>
+      )}
     </motion.form>
   );
 };
