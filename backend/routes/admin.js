@@ -597,16 +597,8 @@ router.put('/users/:id/ban', requirePermission('manage_users'), async (req, res)
       return res.status(403).json({ success: false, error: 'Cannot modify primary admin' });
     }
 
-    const { reason } = req.body;
-    const updateData = {
-      isBanned: Boolean(isBanned),
-      banReason: isBanned ? (reason || 'manual_admin') : null,
-      bannedAt: isBanned ? new Date() : null,
-      fraudStatus: isBanned ? 'blocked' : 'clean',
-    };
-
-    const user = await User.findByIdAndUpdate(req.params.id, updateData, { returnDocument: 'after' });
-    await createLog(req.dbUser._id, isBanned ? 'BAN_USER' : 'UNBAN_USER', user._id, { reason: reason || 'No reason provided' });
+    const user = await User.findByIdAndUpdate(req.params.id, { isBanned }, { returnDocument: 'after' });
+    await createLog(req.dbUser._id, isBanned ? 'BAN_USER' : 'UNBAN_USER', user._id, { reason: req.body.reason || 'No reason provided' });
 
     if (isBanned) {
       await notify(user._id, 'account_banned', 'Account Suspended', 'Your account has been suspended by an administrator.');
@@ -1352,28 +1344,16 @@ router.get('/custom-offers', requirePermission('manage_offerwalls'), async (req,
 
 router.post('/custom-offers', requirePermission('manage_offerwalls'), async (req, res) => {
   try {
-    const { title, titleDe, titleUr, titleFr, titleEs, titleRu, titlePt, titleIt, titlePl, titleTr, description, descriptionDe, descriptionUr, descriptionFr, descriptionEs, descriptionRu, descriptionPt, descriptionIt, descriptionPl, descriptionTr, rewardAmount, externalLink, trackingType, expirationDate, icon, coverImage, requirements, requirementsDe, requirementsUr, requirementsFr, requirementsEs, requirementsRu, requirementsPt, requirementsIt, requirementsPl, requirementsTr, requirementType, platforms } = req.body;
+    const { title, titleDe, titleUr, titleFr, description, descriptionDe, descriptionUr, descriptionFr, rewardAmount, externalLink, trackingType, expirationDate, icon, coverImage, requirements, requirementsDe, requirementsUr, requirementsFr, requirementType, platforms } = req.body;
     const newOffer = new CustomOffer({
       title,
       titleDe: titleDe || '',
       titleUr: titleUr || '',
       titleFr: titleFr || '',
-      titleEs: titleEs || '',
-      titleRu: titleRu || '',
-      titlePt: titlePt || '',
-      titleIt: titleIt || '',
-      titlePl: titlePl || '',
-      titleTr: titleTr || '',
       description,
       descriptionDe: descriptionDe || '',
       descriptionUr: descriptionUr || '',
       descriptionFr: descriptionFr || '',
-      descriptionEs: descriptionEs || '',
-      descriptionRu: descriptionRu || '',
-      descriptionPt: descriptionPt || '',
-      descriptionIt: descriptionIt || '',
-      descriptionPl: descriptionPl || '',
-      descriptionTr: descriptionTr || '',
       rewardAmount,
       externalLink,
       trackingType,
@@ -1384,12 +1364,6 @@ router.post('/custom-offers', requirePermission('manage_offerwalls'), async (req
       requirementsDe: Array.isArray(requirementsDe) ? requirementsDe : [],
       requirementsUr: Array.isArray(requirementsUr) ? requirementsUr : [],
       requirementsFr: Array.isArray(requirementsFr) ? requirementsFr : [],
-      requirementsEs: Array.isArray(requirementsEs) ? requirementsEs : [],
-      requirementsRu: Array.isArray(requirementsRu) ? requirementsRu : [],
-      requirementsPt: Array.isArray(requirementsPt) ? requirementsPt : [],
-      requirementsIt: Array.isArray(requirementsIt) ? requirementsIt : [],
-      requirementsPl: Array.isArray(requirementsPl) ? requirementsPl : [],
-      requirementsTr: Array.isArray(requirementsTr) ? requirementsTr : [],
       requirementType: requirementType === 'paragraph' ? 'paragraph' : 'bullets',
       platforms: platforms || { desktop: true, android: true, ios: true },
     });
@@ -1439,28 +1413,16 @@ router.get('/goodpicks-offers', requirePermission('manage_offerwalls'), async (r
 
 router.post('/goodpicks-offers', requirePermission('manage_offerwalls'), async (req, res) => {
   try {
-    const { title, titleDe, titleUr, titleFr, titleEs, titleRu, titlePt, titleIt, titlePl, titleTr, description, descriptionDe, descriptionUr, descriptionFr, descriptionEs, descriptionRu, descriptionPt, descriptionIt, descriptionPl, descriptionTr, rewardAmount, externalLink, expirationDate, icon, coverImage, requirements, requirementsDe, requirementsUr, requirementsFr, requirementsEs, requirementsRu, requirementsPt, requirementsIt, requirementsPl, requirementsTr, requirementType, platforms } = req.body;
+    const { title, titleDe, titleUr, titleFr, description, descriptionDe, descriptionUr, descriptionFr, rewardAmount, externalLink, expirationDate, icon, coverImage, requirements, requirementsDe, requirementsUr, requirementsFr, requirementType, platforms } = req.body;
     const newOffer = new GoodpickOffer({
       title,
       titleDe: titleDe || '',
       titleUr: titleUr || '',
       titleFr: titleFr || '',
-      titleEs: titleEs || '',
-      titleRu: titleRu || '',
-      titlePt: titlePt || '',
-      titleIt: titleIt || '',
-      titlePl: titlePl || '',
-      titleTr: titleTr || '',
       description,
       descriptionDe: descriptionDe || '',
       descriptionUr: descriptionUr || '',
       descriptionFr: descriptionFr || '',
-      descriptionEs: descriptionEs || '',
-      descriptionRu: descriptionRu || '',
-      descriptionPt: descriptionPt || '',
-      descriptionIt: descriptionIt || '',
-      descriptionPl: descriptionPl || '',
-      descriptionTr: descriptionTr || '',
       rewardAmount,
       externalLink,
       expirationDate: expirationDate || null,
@@ -1470,12 +1432,6 @@ router.post('/goodpicks-offers', requirePermission('manage_offerwalls'), async (
       requirementsDe: Array.isArray(requirementsDe) ? requirementsDe : [],
       requirementsUr: Array.isArray(requirementsUr) ? requirementsUr : [],
       requirementsFr: Array.isArray(requirementsFr) ? requirementsFr : [],
-      requirementsEs: Array.isArray(requirementsEs) ? requirementsEs : [],
-      requirementsRu: Array.isArray(requirementsRu) ? requirementsRu : [],
-      requirementsPt: Array.isArray(requirementsPt) ? requirementsPt : [],
-      requirementsIt: Array.isArray(requirementsIt) ? requirementsIt : [],
-      requirementsPl: Array.isArray(requirementsPl) ? requirementsPl : [],
-      requirementsTr: Array.isArray(requirementsTr) ? requirementsTr : [],
       requirementType: requirementType === 'paragraph' ? 'paragraph' : 'bullets',
       platforms: platforms || { desktop: true, android: true, ios: true },
     });
@@ -4166,7 +4122,7 @@ router.put('/legal-pages/:slug', async (req, res) => {
       return res.status(400).json({ success: false, error: 'Invalid page slug' });
     }
 
-    const { title_en, content_en, title_de, content_de, title_fr, content_fr, title_es, content_es, title_ur, content_ur, title_ru, content_ru, title_pt, content_pt, title_it, content_it, title_pl, content_pl, title_tr, content_tr } = req.body;
+    const { title_en, content_en, title_de, content_de, title_fr, content_fr, title_ur, content_ur } = req.body;
     const adminUser = req.dbUser;
 
     const page = await LegalPage.getBySlug(slug);
@@ -4176,20 +4132,8 @@ router.put('/legal-pages/:slug', async (req, res) => {
     if (content_de !== undefined) page.content_de = content_de;
     if (title_fr !== undefined) page.title_fr = title_fr;
     if (content_fr !== undefined) page.content_fr = content_fr;
-    if (title_es !== undefined) page.title_es = title_es;
-    if (content_es !== undefined) page.content_es = content_es;
     if (title_ur !== undefined) page.title_ur = title_ur;
     if (content_ur !== undefined) page.content_ur = content_ur;
-    if (title_ru !== undefined) page.title_ru = title_ru;
-    if (content_ru !== undefined) page.content_ru = content_ru;
-    if (title_pt !== undefined) page.title_pt = title_pt;
-    if (content_pt !== undefined) page.content_pt = content_pt;
-    if (title_it !== undefined) page.title_it = title_it;
-    if (content_it !== undefined) page.content_it = content_it;
-    if (title_pl !== undefined) page.title_pl = title_pl;
-    if (content_pl !== undefined) page.content_pl = content_pl;
-    if (title_tr !== undefined) page.title_tr = title_tr;
-    if (content_tr !== undefined) page.content_tr = content_tr;
     if (adminUser) page.lastEditedBy = adminUser._id;
 
     await page.save();
@@ -4317,45 +4261,6 @@ router.delete('/cookies/:id', async (req, res) => {
   } catch (error) {
     console.error('[/api/admin/cookies/:id DELETE] Error:', error);
     res.status(500).json({ success: false, error: 'Failed to delete cookie' });
-  }
-});
-
-// ── GET /api/admin/support-email ──────────────────────────────────────────
-router.get('/support-email', verifyToken, requireAdmin, async (req, res) => {
-  try {
-    const settings = await Settings.getSingleton();
-    res.json({ success: true, supportEmail: settings.supportEmail || 'support@taskmint.me' });
-  } catch (err) {
-    console.error('[/api/admin/support-email GET] Error:', err);
-    res.status(500).json({ success: false, error: 'Failed to fetch support email' });
-  }
-});
-
-// ── PUT /api/admin/support-email ──────────────────────────────────────────
-router.put('/support-email', verifyToken, requireAdmin, async (req, res) => {
-  try {
-    const { supportEmail } = req.body;
-    if (!supportEmail || typeof supportEmail !== 'string') {
-      return res.status(400).json({ success: false, error: 'Support email is required' });
-    }
-    const cleanEmail = supportEmail.trim().toLowerCase();
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(cleanEmail)) {
-      return res.status(400).json({ success: false, error: 'Please enter a valid email address' });
-    }
-    const settings = await Settings.getSingleton();
-    const oldEmail = settings.supportEmail;
-    settings.supportEmail = cleanEmail;
-    await settings.save();
-
-    if (req.dbUser) {
-      await createLog(req.dbUser._id, 'update_support_email', null, { oldEmail, newEmail: cleanEmail });
-    }
-
-    res.json({ success: true, supportEmail: cleanEmail, message: 'Support email updated successfully' });
-  } catch (err) {
-    console.error('[/api/admin/support-email PUT] Error:', err);
-    res.status(500).json({ success: false, error: 'Failed to update support email' });
   }
 });
 

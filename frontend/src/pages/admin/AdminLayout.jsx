@@ -5,7 +5,7 @@ import {
   FiGrid, FiUsers, FiShield, FiArrowRight, FiLogOut, FiDollarSign,
   FiActivity, FiSettings, FiTarget, FiTag, FiStar, FiCheckSquare,
   FiAward, FiBook, FiUser, FiMessageSquare, FiHelpCircle, FiBell,
-  FiLink, FiFileText, FiMail
+  FiLink, FiFileText
 } from 'react-icons/fi';
 import { FaTrophy } from 'react-icons/fa6';
 import './Admin.css';
@@ -92,7 +92,6 @@ const AdminLayout = () => {
     ...(isPrimaryAdmin ? [{ to: '/admin/logs', end: false, icon: FiActivity, label: 'Audit Log', badgeKey: 'security' }] : []),
     ...(isPrimaryAdmin || isAdmin ? [{ to: '/admin/legal-pages', end: false, icon: FiFileText, label: 'Legal Pages' }] : []),
     ...(isPrimaryAdmin || isAdmin ? [{ to: '/admin/cookies', end: false, icon: FiCheckSquare, label: 'Cookie Consent' }] : []),
-    ...(isPrimaryAdmin || isAdmin ? [{ to: '/admin/support-email', end: false, icon: FiMail, label: 'Support Email' }] : []),
     ...(isPrimaryAdmin ? [{ to: '/admin/settings', end: false, icon: FiSettings, label: 'Settings', accent: true }] : []),
   ];
 

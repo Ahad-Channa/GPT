@@ -10,11 +10,11 @@ import Footer from '../components/layout/Footer';
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
 const TABS = [
-  { slug: 'terms-of-use', labelEn: 'Terms of Service', labelDe: 'Nutzungsbedingungen', labelUr: 'استعمال کی شرائط', labelFr: "Conditions d'Utilisation", labelEs: 'Términos de Servicio', labelIt: 'Termini di Servizio', labelPl: 'Warunki korzystania', labelTr: 'Kullanım Şartları' },
-  { slug: 'privacy-policy', labelEn: 'Privacy Policy', labelDe: 'Datenschutzerklärung', labelUr: 'پرائیویسی پالیسی', labelFr: 'Politique de Confidentialité', labelEs: 'Política de Privacidad', labelIt: 'Informativa sulla Privacy', labelPl: 'Polityka prywatności', labelTr: 'Gizlilik Politikası' },
-  { slug: 'cookie-policy', labelEn: 'Cookie Policy', labelDe: 'Cookie-Richtlinie', labelUr: 'کوکی پالیسی', labelFr: 'Politique de Cookies', labelEs: 'Política de Cookies', labelIt: 'Politica sui Cookie', labelPl: 'Polityka cookies', labelTr: 'Çerez Politikası' },
-  { slug: 'affiliate-policy', labelEn: 'Affiliate Policy', labelDe: 'Affiliate-Richtlinie', labelUr: 'ایفیلی ایٹ پالیسی', labelFr: "Conditions d'Affiliation", labelEs: 'Política de Afiliados', labelIt: 'Politica di Affiliazione', labelPl: 'Program partnerski', labelTr: 'Ortaklık Politikası' },
-  { slug: 'impressum', labelEn: 'Impressum', labelDe: 'Impressum', labelUr: 'امپریسم (قانونی معلومات)', labelFr: 'Mentions Légales', labelEs: 'Aviso Legal', labelIt: 'Note Legali (Impressum)', labelPl: 'Nota prawna', labelTr: 'Impressum' },
+  { slug: 'terms-of-use', labelEn: 'Terms of Service', labelDe: 'Nutzungsbedingungen', labelUr: 'استعمال کی شرائط', labelFr: "Conditions d'Utilisation" },
+  { slug: 'privacy-policy', labelEn: 'Privacy Policy', labelDe: 'Datenschutzerklärung', labelUr: 'پرائیویسی پالیسی', labelFr: 'Politique de Confidentialité' },
+  { slug: 'cookie-policy', labelEn: 'Cookie Policy', labelDe: 'Cookie-Richtlinie', labelUr: 'کوکی پالیسی', labelFr: 'Politique de Cookies' },
+  { slug: 'affiliate-policy', labelEn: 'Affiliate Policy', labelDe: 'Affiliate-Richtlinie', labelUr: 'ایفیلی ایٹ پالیسی', labelFr: "Conditions d'Affiliation" },
+  { slug: 'impressum', labelEn: 'Impressum', labelDe: 'Impressum', labelUr: 'امپریسم (قانونی معلومات)', labelFr: 'Mentions Légales' },
 ];
 
 const SLUG_ALIASES = {
@@ -176,11 +176,7 @@ export default function Policies({ customSlug }) {
   const { t, i18n } = useTranslation();
   const isDe = i18n?.language?.startsWith('de');
   const isFr = i18n?.language?.startsWith('fr');
-  const isEs = i18n?.language?.startsWith('es');
   const isUr = i18n?.language === 'ur' || i18n?.language?.startsWith('ur');
-  const isIt = i18n?.language?.startsWith('it');
-  const isPl = i18n?.language?.startsWith('pl');
-  const isTr = i18n?.language?.startsWith('tr');
   const { isDarkMode } = useTheme();
   const { openCookieSettings, cookiesList } = useCookieConsent();
 
@@ -251,62 +247,48 @@ export default function Policies({ customSlug }) {
 
   const currentTitle = currentPage
     ? (isUr
-      ? (currentPage.title_ur || currentPage.title_en)
-      : isDe
+        ? (currentPage.title_ur || currentPage.title_en)
+        : isDe
         ? (currentPage.title_de || currentPage.title_en)
         : isFr
-          ? (currentPage.title_fr || currentPage.title_en)
-          : isEs
-            ? (currentPage.title_es || currentPage.title_en)
-            : isIt
-              ? (currentPage.title_it || currentPage.title_en)
-              : isPl
-                ? (currentPage.title_pl || currentPage.title_en)
-                : isTr
-                  ? (currentPage.title_tr || currentPage.title_en)
-                  : (currentPage.title_en || currentPage.title_de))
-    : (TABS.find(t => t.slug === activeSlug)?.[isUr ? 'labelUr' : isDe ? 'labelDe' : isFr ? 'labelFr' : isEs ? 'labelEs' : isIt ? 'labelIt' : isPl ? 'labelPl' : isTr ? 'labelTr' : 'labelEn'] || 'Policy');
+        ? (currentPage.title_fr || currentPage.title_en)
+        : (currentPage.title_en || currentPage.title_de))
+    : (TABS.find(t => t.slug === activeSlug)?.[isUr ? 'labelUr' : isDe ? 'labelDe' : isFr ? 'labelFr' : 'labelEn'] || 'Policy');
 
   const currentContent = currentPage
     ? (isUr
-      ? (currentPage.content_ur || currentPage.content_en || '')
-      : isDe
+        ? (currentPage.content_ur || currentPage.content_en || '')
+        : isDe
         ? (currentPage.content_de || currentPage.content_en || '')
         : isFr
-          ? (currentPage.content_fr || currentPage.content_en || '')
-          : isEs
-            ? (currentPage.content_es || currentPage.content_en || '')
-            : isIt
-              ? (currentPage.content_it || currentPage.content_en || '')
-              : isPl
-                ? (currentPage.content_pl || currentPage.content_en || '')
-                : isTr
-                  ? (currentPage.content_tr || currentPage.content_en || '')
-                  : (currentPage.content_en || currentPage.content_de || ''))
+        ? (currentPage.content_fr || currentPage.content_en || '')
+        : (currentPage.content_en || currentPage.content_de || ''))
     : '';
 
   // Strip duplicate H1 heading from markdown body if card header already displays it
   const cleanedContent = currentContent ? currentContent.replace(/^#\s+[^\n]+\n+/, '') : '';
 
   const lastUpdatedDate = currentPage?.updatedAt
-    ? new Date(currentPage.updatedAt).toLocaleDateString(isUr ? 'ur-PK' : isDe ? 'de-DE' : isFr ? 'fr-FR' : isEs ? 'es-ES' : isPl ? 'pl-PL' : isTr ? 'tr-TR' : 'en-US', {
-      month: 'long',
-      day: 'numeric',
-      year: 'numeric',
-    })
-    : (isUr ? '17 جولائی 2026' : isFr ? '17 juillet 2026' : isPl ? '17 lipca 2026' : isTr ? '17 Temmuz 2026' : 'July 17, 2026');
+    ? new Date(currentPage.updatedAt).toLocaleDateString(isUr ? 'ur-PK' : isDe ? 'de-DE' : isFr ? 'fr-FR' : 'en-US', {
+        month: 'long',
+        day: 'numeric',
+        year: 'numeric',
+      })
+    : (isUr ? '17 جولائی 2026' : isFr ? '17 juillet 2026' : 'July 17, 2026');
 
   const renderTabButton = (tab, isMobile = false, isRow1 = false) => {
     const isActive = activeSlug === tab.slug;
-    const tabLabel = isUr ? tab.labelUr : isDe ? tab.labelDe : isFr ? tab.labelFr : isEs ? tab.labelEs : isIt ? tab.labelIt : isPl ? tab.labelPl : isTr ? tab.labelTr : tab.labelEn;
+    const tabLabel = isUr ? tab.labelUr : isDe ? tab.labelDe : isFr ? tab.labelFr : tab.labelEn;
     return (
       <button
         key={tab.slug}
         type="button"
         onClick={() => handleTabChange(tab.slug)}
-        className={`${isMobile ? 'w-full px-0.5 sm:px-1 py-2' : 'flex-1 min-w-fit px-3 sm:px-6 py-2 sm:py-2.5'
-          } rounded-[40px] cursor-pointer transition-all duration-200 text-center select-none border-none flex items-center justify-center ${isActive ? 'shadow-sm' : 'hover:opacity-75'
-          }`}
+        className={`${
+          isMobile ? 'w-full px-0.5 sm:px-1 py-2' : 'flex-1 min-w-fit px-3 sm:px-6 py-2 sm:py-2.5'
+        } rounded-[40px] cursor-pointer transition-all duration-200 text-center select-none border-none flex items-center justify-center ${
+          isActive ? 'shadow-sm' : 'hover:opacity-75'
+        }`}
         style={{
           fontFamily: '"Bricolage Grotesque", sans-serif',
           fontWeight: 700,
@@ -327,8 +309,8 @@ export default function Policies({ customSlug }) {
             lineHeight: 1,
             fontSize: isMobile
               ? (isDe
-                ? (isRow1 ? 'clamp(7.8px, 2.45vw, 10.5px)' : 'clamp(8.8px, 2.7vw, 11.5px)')
-                : (isRow1 ? 'clamp(10px, 3.1vw, 12.5px)' : 'clamp(10.5px, 3.3vw, 13px)'))
+                  ? (isRow1 ? 'clamp(7.8px, 2.45vw, 10.5px)' : 'clamp(8.8px, 2.7vw, 11.5px)')
+                  : (isRow1 ? 'clamp(10px, 3.1vw, 12.5px)' : 'clamp(10.5px, 3.3vw, 13px)'))
               : undefined,
           }}
         >
@@ -340,13 +322,15 @@ export default function Policies({ customSlug }) {
 
   return (
     <div
-      className={`min-h-screen flex flex-col transition-colors duration-300 ${isDarkMode ? 'bg-[#0E1015] text-white' : 'bg-[#FAFAFA] text-gray-900'
-        }`}
+      className={`min-h-screen flex flex-col transition-colors duration-300 ${
+        isDarkMode ? 'bg-[#0E1015] text-white' : 'bg-[#FAFAFA] text-gray-900'
+      }`}
     >
       {/* Header Container with solid background so nothing scrolls through */}
       <div
-        className={`sticky top-0 z-40 w-full transition-colors duration-300 ${isDarkMode ? 'bg-[#0E1015]' : 'bg-[#FAFAFA]'
-          }`}
+        className={`sticky top-0 z-40 w-full transition-colors duration-300 ${
+          isDarkMode ? 'bg-[#0E1015]' : 'bg-[#FAFAFA]'
+        }`}
       >
         <Header />
       </div>
@@ -585,14 +569,14 @@ export default function Policies({ customSlug }) {
                                         c.category === 'essential'
                                           ? 'rgba(0, 214, 93, 0.15)'
                                           : c.category === 'functional'
-                                            ? 'rgba(59, 130, 246, 0.15)'
-                                            : 'rgba(245, 158, 11, 0.15)',
+                                          ? 'rgba(59, 130, 246, 0.15)'
+                                          : 'rgba(245, 158, 11, 0.15)',
                                       color:
                                         c.category === 'essential'
                                           ? '#00D65D'
                                           : c.category === 'functional'
-                                            ? '#3B82F6'
-                                            : '#F59E0B',
+                                          ? '#3B82F6'
+                                          : '#F59E0B',
                                     }}
                                   >
                                     {c.category}

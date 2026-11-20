@@ -20,29 +20,17 @@ const isIconUrl = (icon) => icon && (icon.startsWith('http') || icon.startsWith(
 // ─── Modal for Create & Edit ────────────────────────────────────────────────
 const GoodpickModal = ({ offer, onClose, onSaved, token, currentUser }) => {
   const isEditing = Boolean(offer);
-  const [activeTab, setActiveTab] = useState('en'); // 'en' | 'de' | 'fr' | 'es' | 'ur' | 'ru' | 'pt' | 'it' | 'pl'
+  const [activeTab, setActiveTab] = useState('en'); // 'en' | 'de' | 'fr' | 'ur'
 
   const [form, setForm] = useState({
     title: offer?.title || '',
     titleDe: offer?.titleDe || '',
     titleUr: offer?.titleUr || '',
     titleFr: offer?.titleFr || '',
-    titleEs: offer?.titleEs || '',
-    titleRu: offer?.titleRu || '',
-    titlePt: offer?.titlePt || '',
-    titleIt: offer?.titleIt || '',
-    titlePl: offer?.titlePl || '',
-    titleTr: offer?.titleTr || '',
     description: offer?.description || '',
     descriptionDe: offer?.descriptionDe || '',
     descriptionUr: offer?.descriptionUr || '',
     descriptionFr: offer?.descriptionFr || '',
-    descriptionEs: offer?.descriptionEs || '',
-    descriptionRu: offer?.descriptionRu || '',
-    descriptionPt: offer?.descriptionPt || '',
-    descriptionIt: offer?.descriptionIt || '',
-    descriptionPl: offer?.descriptionPl || '',
-    descriptionTr: offer?.descriptionTr || '',
     rewardAmount: offer?.rewardAmount || '',
     externalLink: offer?.externalLink || '',
     expirationDate: offer?.expirationDate ? new Date(offer.expirationDate).toISOString().slice(0, 16) : '',
@@ -60,24 +48,6 @@ const GoodpickModal = ({ offer, onClose, onSaved, token, currentUser }) => {
     requirementsFr: Array.isArray(offer?.requirementsFr)
       ? offer.requirementsFr.join('\n')
       : (offer?.requirementsFr || ''),
-    requirementsEs: Array.isArray(offer?.requirementsEs)
-      ? offer.requirementsEs.join('\n')
-      : (offer?.requirementsEs || ''),
-    requirementsRu: Array.isArray(offer?.requirementsRu)
-      ? offer.requirementsRu.join('\n')
-      : (offer?.requirementsRu || ''),
-    requirementsPt: Array.isArray(offer?.requirementsPt)
-      ? offer.requirementsPt.join('\n')
-      : (offer?.requirementsPt || ''),
-    requirementsIt: Array.isArray(offer?.requirementsIt)
-      ? offer.requirementsIt.join('\n')
-      : (offer?.requirementsIt || ''),
-    requirementsPl: Array.isArray(offer?.requirementsPl)
-      ? offer.requirementsPl.join('\n')
-      : (offer?.requirementsPl || ''),
-    requirementsTr: Array.isArray(offer?.requirementsTr)
-      ? offer.requirementsTr.join('\n')
-      : (offer?.requirementsTr || ''),
     requirementType: offer?.requirementType || 'bullets',
     platforms: offer?.platforms || { desktop: true, android: true, ios: true },
   });
@@ -118,24 +88,6 @@ const GoodpickModal = ({ offer, onClose, onSaved, token, currentUser }) => {
           requirementsFr: form.requirementType === 'paragraph'
             ? [(form.requirementsFr || '').trim()].filter(Boolean)
             : (form.requirementsFr || '').split('\n').map((r) => r.trim()).filter(Boolean),
-          requirementsEs: form.requirementType === 'paragraph'
-            ? [(form.requirementsEs || '').trim()].filter(Boolean)
-            : (form.requirementsEs || '').split('\n').map((r) => r.trim()).filter(Boolean),
-          requirementsRu: form.requirementType === 'paragraph'
-            ? [(form.requirementsRu || '').trim()].filter(Boolean)
-            : (form.requirementsRu || '').split('\n').map((r) => r.trim()).filter(Boolean),
-          requirementsPt: form.requirementType === 'paragraph'
-            ? [(form.requirementsPt || '').trim()].filter(Boolean)
-            : (form.requirementsPt || '').split('\n').map((r) => r.trim()).filter(Boolean),
-          requirementsIt: form.requirementType === 'paragraph'
-            ? [(form.requirementsIt || '').trim()].filter(Boolean)
-            : (form.requirementsIt || '').split('\n').map((r) => r.trim()).filter(Boolean),
-          requirementsPl: form.requirementType === 'paragraph'
-            ? [(form.requirementsPl || '').trim()].filter(Boolean)
-            : (form.requirementsPl || '').split('\n').map((r) => r.trim()).filter(Boolean),
-          requirementsTr: form.requirementType === 'paragraph'
-            ? [(form.requirementsTr || '').trim()].filter(Boolean)
-            : (form.requirementsTr || '').split('\n').map((r) => r.trim()).filter(Boolean),
           requirementType: form.requirementType,
           platforms: form.platforms,
         }),
@@ -210,14 +162,15 @@ const GoodpickModal = ({ offer, onClose, onSaved, token, currentUser }) => {
               </label>
               <span className="text-[11px] text-gray-400">Switch tabs to provide translations</span>
             </div>
-            <div className="flex items-center gap-1.5 p-1 bg-gray-100 rounded-xl border border-gray-200 overflow-x-auto custom-scrollbar">
+            <div className="flex items-center gap-1.5 p-1 bg-gray-100 rounded-xl border border-gray-200">
               <button
                 type="button"
                 onClick={() => setActiveTab('en')}
-                className={`flex-1 shrink-0 whitespace-nowrap flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-lg text-xs font-bold transition-all ${activeTab === 'en'
+                className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-lg text-xs font-bold transition-all ${
+                  activeTab === 'en'
                     ? 'bg-white text-gray-900 shadow-sm border border-gray-200'
                     : 'text-gray-500 hover:text-gray-800'
-                  }`}
+                }`}
               >
                 <span>🇬🇧</span>
                 <span>English</span>
@@ -226,10 +179,11 @@ const GoodpickModal = ({ offer, onClose, onSaved, token, currentUser }) => {
               <button
                 type="button"
                 onClick={() => setActiveTab('de')}
-                className={`flex-1 shrink-0 whitespace-nowrap flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-lg text-xs font-bold transition-all ${activeTab === 'de'
+                className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-lg text-xs font-bold transition-all ${
+                  activeTab === 'de'
                     ? 'bg-white text-gray-900 shadow-sm border border-gray-200'
                     : 'text-gray-500 hover:text-gray-800'
-                  }`}
+                }`}
               >
                 <span>🇩🇪</span>
                 <span>Deutsch</span>
@@ -240,10 +194,11 @@ const GoodpickModal = ({ offer, onClose, onSaved, token, currentUser }) => {
               <button
                 type="button"
                 onClick={() => setActiveTab('fr')}
-                className={`flex-1 shrink-0 whitespace-nowrap flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-lg text-xs font-bold transition-all ${activeTab === 'fr'
+                className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-lg text-xs font-bold transition-all ${
+                  activeTab === 'fr'
                     ? 'bg-white text-gray-900 shadow-sm border border-gray-200'
                     : 'text-gray-500 hover:text-gray-800'
-                  }`}
+                }`}
               >
                 <span>🇫🇷</span>
                 <span>Français</span>
@@ -253,100 +208,17 @@ const GoodpickModal = ({ offer, onClose, onSaved, token, currentUser }) => {
               </button>
               <button
                 type="button"
-                onClick={() => setActiveTab('es')}
-                className={`flex-1 shrink-0 whitespace-nowrap flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-lg text-xs font-bold transition-all ${activeTab === 'es'
-                    ? 'bg-white text-gray-900 shadow-sm border border-gray-200'
-                    : 'text-gray-500 hover:text-gray-800'
-                  }`}
-              >
-                <span>🇪🇸</span>
-                <span>Español</span>
-                {Boolean(form.titleEs) && (
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" title="Spanish translated" />
-                )}
-              </button>
-              <button
-                type="button"
                 onClick={() => setActiveTab('ur')}
-                className={`flex-1 shrink-0 whitespace-nowrap flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-lg text-xs font-bold transition-all ${activeTab === 'ur'
+                className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-lg text-xs font-bold transition-all ${
+                  activeTab === 'ur'
                     ? 'bg-white text-gray-900 shadow-sm border border-gray-200'
                     : 'text-gray-500 hover:text-gray-800'
-                  }`}
+                }`}
               >
                 <span>🇵🇰</span>
                 <span>اردو</span>
                 {Boolean(form.titleUr) && (
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" title="Urdu translated" />
-                )}
-              </button>
-              <button
-                type="button"
-                onClick={() => setActiveTab('ru')}
-                className={`flex-1 shrink-0 whitespace-nowrap flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-lg text-xs font-bold transition-all ${activeTab === 'ru'
-                    ? 'bg-white text-gray-900 shadow-sm border border-gray-200'
-                    : 'text-gray-500 hover:text-gray-800'
-                  }`}
-              >
-                <span>🇷🇺</span>
-                <span>Русский</span>
-                {Boolean(form.titleRu) && (
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" title="Russian translated" />
-                )}
-              </button>
-              <button
-                type="button"
-                onClick={() => setActiveTab('pt')}
-                className={`flex-1 shrink-0 whitespace-nowrap flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-lg text-xs font-bold transition-all ${activeTab === 'pt'
-                    ? 'bg-white text-gray-900 shadow-sm border border-gray-200'
-                    : 'text-gray-500 hover:text-gray-800'
-                  }`}
-              >
-                <span>🇵🇹</span>
-                <span>Português</span>
-                {Boolean(form.titlePt) && (
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" title="Portuguese translated" />
-                )}
-              </button>
-              <button
-                type="button"
-                onClick={() => setActiveTab('it')}
-                className={`flex-1 shrink-0 whitespace-nowrap flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-lg text-xs font-bold transition-all ${activeTab === 'it'
-                    ? 'bg-white text-gray-900 shadow-sm border border-gray-200'
-                    : 'text-gray-500 hover:text-gray-800'
-                  }`}
-              >
-                <span>🇮🇹</span>
-                <span>Italiano</span>
-                {Boolean(form.titleIt) && (
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" title="Italian translated" />
-                )}
-              </button>
-              <button
-                type="button"
-                onClick={() => setActiveTab('pl')}
-                className={`flex-1 shrink-0 whitespace-nowrap flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-lg text-xs font-bold transition-all ${activeTab === 'pl'
-                    ? 'bg-white text-gray-900 shadow-sm border border-gray-200'
-                    : 'text-gray-500 hover:text-gray-800'
-                  }`}
-              >
-                <span>🇵🇱</span>
-                <span>Polski</span>
-                {Boolean(form.titlePl) && (
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" title="Polish translated" />
-                )}
-              </button>
-              <button
-                type="button"
-                onClick={() => setActiveTab('tr')}
-                className={`flex-1 shrink-0 whitespace-nowrap flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-lg text-xs font-bold transition-all ${activeTab === 'tr'
-                    ? 'bg-white text-gray-900 shadow-sm border border-gray-200'
-                    : 'text-gray-500 hover:text-gray-800'
-                  }`}
-              >
-                <span>🇹🇷</span>
-                <span>Türkçe</span>
-                {Boolean(form.titleTr) && (
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" title="Turkish translated" />
                 )}
               </button>
             </div>
@@ -391,20 +263,22 @@ const GoodpickModal = ({ offer, onClose, onSaved, token, currentUser }) => {
                     <button
                       type="button"
                       onClick={() => setForm((f) => ({ ...f, requirementType: 'bullets' }))}
-                      className={`px-2.5 py-0.5 rounded-md text-[11px] font-semibold transition-all ${form.requirementType === 'bullets'
+                      className={`px-2.5 py-0.5 rounded-md text-[11px] font-semibold transition-all ${
+                        form.requirementType === 'bullets'
                           ? 'bg-[#1E2538] text-white shadow-sm'
                           : 'text-gray-600 hover:text-gray-900'
-                        }`}
+                      }`}
                     >
                       Bullet Points
                     </button>
                     <button
                       type="button"
                       onClick={() => setForm((f) => ({ ...f, requirementType: 'paragraph' }))}
-                      className={`px-2.5 py-0.5 rounded-md text-[11px] font-semibold transition-all ${form.requirementType === 'paragraph'
+                      className={`px-2.5 py-0.5 rounded-md text-[11px] font-semibold transition-all ${
+                        form.requirementType === 'paragraph'
                           ? 'bg-[#1E2538] text-white shadow-sm'
                           : 'text-gray-600 hover:text-gray-900'
-                        }`}
+                      }`}
                     >
                       Paragraph
                     </button>
@@ -531,56 +405,6 @@ const GoodpickModal = ({ offer, onClose, onSaved, token, currentUser }) => {
             </div>
           )}
 
-          {/* Tab: Spanish Content */}
-          {activeTab === 'es' && (
-            <div className="space-y-4">
-              <div>
-                <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1.5">
-                  🇪🇸 Title (Spanish / Español)
-                </label>
-                <input
-                  value={form.titleEs}
-                  onChange={set('titleEs')}
-                  placeholder="ej. Pesca en la casa del árbol"
-                  className="w-full bg-white border border-gray-300 rounded-xl px-3.5 py-2 text-gray-900 text-sm placeholder-gray-400 focus:outline-none focus:border-[#1E2538] focus:ring-1 focus:ring-[#1E2538]/20 transition-all"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1.5">
-                  🇪🇸 Description (Spanish / Español)
-                </label>
-                <textarea
-                  value={form.descriptionEs}
-                  onChange={set('descriptionEs')}
-                  placeholder="Breve descripción para la tarjeta y la ventana de detalle..."
-                  rows={2}
-                  className="w-full bg-white border border-gray-300 rounded-xl px-3.5 py-2 text-gray-900 text-sm placeholder-gray-400 focus:outline-none focus:border-[#1E2538] focus:ring-1 focus:ring-[#1E2538]/20 resize-none transition-all"
-                />
-              </div>
-
-              <div>
-                <div className="flex items-center justify-between mb-1.5">
-                  <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                    🇪🇸 Requirements (Spanish / Español)
-                  </label>
-                  <span className="text-[11px] text-gray-400">Format: {form.requirementType === 'paragraph' ? 'Paragraph' : 'Bullets'}</span>
-                </div>
-                <textarea
-                  value={form.requirementsEs}
-                  onChange={set('requirementsEs')}
-                  placeholder={
-                    form.requirementType === 'paragraph'
-                      ? "ej. Regístrate e instala la app en tu dispositivo."
-                      : "ej. Registrarse → recibir 10 Monedas\nDepositar 50 € → recibir 50.000 Monedas"
-                  }
-                  rows={form.requirementType === 'paragraph' ? 2 : 3}
-                  className="w-full bg-white border border-gray-300 rounded-xl px-3.5 py-2 text-gray-900 text-sm placeholder-gray-400 focus:outline-none focus:border-[#1E2538] focus:ring-1 focus:ring-[#1E2538]/20 resize-none transition-all"
-                />
-              </div>
-            </div>
-          )}
-
           {/* Tab 3: Urdu Content */}
           {activeTab === 'ur' && (
             <div className="space-y-4">
@@ -631,256 +455,6 @@ const GoodpickModal = ({ offer, onClose, onSaved, token, currentUser }) => {
             </div>
           )}
 
-          {/* Tab: Russian Content */}
-          {activeTab === 'ru' && (
-            <div className="space-y-4">
-              <div>
-                <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1.5">
-                  🇷🇺 Title (Russian / Русский)
-                </label>
-                <input
-                  value={form.titleRu}
-                  onChange={set('titleRu')}
-                  placeholder="напр. Treehouse Fishing"
-                  className="w-full bg-white border border-gray-300 rounded-xl px-3.5 py-2 text-gray-900 text-sm placeholder-gray-400 focus:outline-none focus:border-[#1E2538] focus:ring-1 focus:ring-[#1E2538]/20 transition-all"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1.5">
-                  🇷🇺 Description (Russian / Русский)
-                </label>
-                <textarea
-                  value={form.descriptionRu}
-                  onChange={set('descriptionRu')}
-                  placeholder="Краткое описание задания для карточки и модального окна..."
-                  rows={2}
-                  className="w-full bg-white border border-gray-300 rounded-xl px-3.5 py-2 text-gray-900 text-sm placeholder-gray-400 focus:outline-none focus:border-[#1E2538] focus:ring-1 focus:ring-[#1E2538]/20 resize-none transition-all"
-                />
-              </div>
-
-              <div>
-                <div className="flex items-center justify-between mb-1.5">
-                  <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                    🇷🇺 Requirements (Russian / Русский)
-                  </label>
-                  <span className="text-[11px] text-gray-400">Формат: {form.requirementType === 'paragraph' ? 'Абзац' : 'По пунктам'}</span>
-                </div>
-                <textarea
-                  value={form.requirementsRu}
-                  onChange={set('requirementsRu')}
-                  placeholder={
-                    form.requirementType === 'paragraph'
-                      ? 'напр. Завершите это задание, загрузив приложение и зарегистрировавшись на устройстве.'
-                      : 'напр. Зарегистрироваться → получить 10 Монет\nСкачать приложение → получить 5 000 Монет'
-                  }
-                  rows={form.requirementType === 'paragraph' ? 2 : 3}
-                  className="w-full bg-white border border-gray-300 rounded-xl px-3.5 py-2 text-gray-900 text-sm placeholder-gray-400 focus:outline-none focus:border-[#1E2538] focus:ring-1 focus:ring-[#1E2538]/20 resize-none transition-all"
-                />
-              </div>
-            </div>
-          )}
-
-          {/* Tab: Portuguese Content */}
-          {activeTab === 'pt' && (
-            <div className="space-y-4">
-              <div>
-                <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1.5">
-                  🇵🇹 Title (Portuguese / Português)
-                </label>
-                <input
-                  value={form.titlePt}
-                  onChange={set('titlePt')}
-                  placeholder="ex. Treehouse Fishing"
-                  className="w-full bg-white border border-gray-300 rounded-xl px-3.5 py-2 text-gray-900 text-sm placeholder-gray-400 focus:outline-none focus:border-[#1E2538] focus:ring-1 focus:ring-[#1E2538]/20 transition-all"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1.5">
-                  🇵🇹 Description (Portuguese / Português)
-                </label>
-                <textarea
-                  value={form.descriptionPt}
-                  onChange={set('descriptionPt')}
-                  placeholder="Breve descrição da tarefa para o cartão e modal..."
-                  rows={2}
-                  className="w-full bg-white border border-gray-300 rounded-xl px-3.5 py-2 text-gray-900 text-sm placeholder-gray-400 focus:outline-none focus:border-[#1E2538] focus:ring-1 focus:ring-[#1E2538]/20 resize-none transition-all"
-                />
-              </div>
-
-              <div>
-                <div className="flex items-center justify-between mb-1.5">
-                  <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                    🇵🇹 Requirements (Portuguese / Português)
-                  </label>
-                  <span className="text-[11px] text-gray-400">Formato: {form.requirementType === 'paragraph' ? 'Parágrafo' : 'Marcadores'}</span>
-                </div>
-                <textarea
-                  value={form.requirementsPt}
-                  onChange={set('requirementsPt')}
-                  placeholder={
-                    form.requirementType === 'paragraph'
-                      ? 'ex. Conclua esta tarefa descarregando a aplicação e registando-se no seu dispositivo.'
-                      : 'ex. Registar conta → receber 10 Moedas\nDescarregar aplicação → receber 5.000 Moedas'
-                  }
-                  rows={form.requirementType === 'paragraph' ? 2 : 3}
-                  className="w-full bg-white border border-gray-300 rounded-xl px-3.5 py-2 text-gray-900 text-sm placeholder-gray-400 focus:outline-none focus:border-[#1E2538] focus:ring-1 focus:ring-[#1E2538]/20 resize-none transition-all"
-                />
-              </div>
-            </div>
-          )}
-
-          {/* Tab: Italian Content */}
-          {activeTab === 'it' && (
-            <div className="space-y-4">
-              <div>
-                <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1.5">
-                  🇮🇹 Title (Italian / Italiano)
-                </label>
-                <input
-                  value={form.titleIt}
-                  onChange={set('titleIt')}
-                  placeholder="es. Raggiungi il livello 10 in CoinMaster"
-                  className="w-full bg-white border border-gray-300 rounded-xl px-3.5 py-2 text-gray-900 text-sm placeholder-gray-400 focus:outline-none focus:border-[#1E2538] focus:ring-1 focus:ring-[#1E2538]/20 transition-all"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1.5">
-                  🇮🇹 Description (Italian / Italiano)
-                </label>
-                <textarea
-                  value={form.descriptionIt}
-                  onChange={set('descriptionIt')}
-                  placeholder="Breve descrizione del compito per la card e la modale..."
-                  rows={2}
-                  className="w-full bg-white border border-gray-300 rounded-xl px-3.5 py-2 text-gray-900 text-sm placeholder-gray-400 focus:outline-none focus:border-[#1E2538] focus:ring-1 focus:ring-[#1E2538]/20 resize-none transition-all"
-                />
-              </div>
-
-              <div>
-                <div className="flex items-center justify-between mb-1.5">
-                  <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                    🇮🇹 Requirements (Italian / Italiano)
-                  </label>
-                  <span className="text-[11px] text-gray-400">Formato: {form.requirementType === 'paragraph' ? 'Paragrafo' : 'Elenco'}</span>
-                </div>
-                <textarea
-                  value={form.requirementsIt}
-                  onChange={set('requirementsIt')}
-                  placeholder={
-                    form.requirementType === 'paragraph'
-                      ? 'es. Completa questo compito scaricando l\'applicazione e registrandoti sul tuo dispositivo.'
-                      : 'es. Registra account → ricevi 10 Monete\nScarica applicazione → ricevi 5.000 Monete'
-                  }
-                  rows={form.requirementType === 'paragraph' ? 2 : 3}
-                  className="w-full bg-white border border-gray-300 rounded-xl px-3.5 py-2 text-gray-900 text-sm placeholder-gray-400 focus:outline-none focus:border-[#1E2538] focus:ring-1 focus:ring-[#1E2538]/20 resize-none transition-all"
-                />
-              </div>
-            </div>
-          )}
-
-          {/* Tab: Polish Content */}
-          {activeTab === 'pl' && (
-            <div className="space-y-4">
-              <div>
-                <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1.5">
-                  🇵🇱 Title (Polish / Polski)
-                </label>
-                <input
-                  value={form.titlePl}
-                  onChange={set('titlePl')}
-                  placeholder="np. Osiągnij poziom 10 w CoinMaster"
-                  className="w-full bg-white border border-gray-300 rounded-xl px-3.5 py-2 text-gray-900 text-sm placeholder-gray-400 focus:outline-none focus:border-[#1E2538] focus:ring-1 focus:ring-[#1E2538]/20 transition-all"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1.5">
-                  🇵🇱 Description (Polish / Polski)
-                </label>
-                <textarea
-                  value={form.descriptionPl}
-                  onChange={set('descriptionPl')}
-                  placeholder="Krótki opis zadania dla karty i okna modalnego..."
-                  rows={2}
-                  className="w-full bg-white border border-gray-300 rounded-xl px-3.5 py-2 text-gray-900 text-sm placeholder-gray-400 focus:outline-none focus:border-[#1E2538] focus:ring-1 focus:ring-[#1E2538]/20 resize-none transition-all"
-                />
-              </div>
-
-              <div>
-                <div className="flex items-center justify-between mb-1.5">
-                  <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                    🇵🇱 Requirements (Polish / Polski)
-                  </label>
-                  <span className="text-[11px] text-gray-400">Format: {form.requirementType === 'paragraph' ? 'Akapit' : 'Lista'}</span>
-                </div>
-                <textarea
-                  value={form.requirementsPl}
-                  onChange={set('requirementsPl')}
-                  placeholder={
-                    form.requirementType === 'paragraph'
-                      ? 'np. Wykonaj to zadanie pobierając aplikację i rejestrując się na urządzeniu.'
-                      : 'np. Zarejestruj konto → odbierz 10 Monet\nPobierz aplikację → odbierz 5 000 Monet'
-                  }
-                  rows={form.requirementType === 'paragraph' ? 2 : 3}
-                  className="w-full bg-white border border-gray-300 rounded-xl px-3.5 py-2 text-gray-900 text-sm placeholder-gray-400 focus:outline-none focus:border-[#1E2538] focus:ring-1 focus:ring-[#1E2538]/20 resize-none transition-all"
-                />
-              </div>
-            </div>
-          )}
-
-          {/* Tab: Turkish Content */}
-          {activeTab === 'tr' && (
-            <div className="space-y-4">
-              <div>
-                <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1.5">
-                  🇹🇷 Title (Turkish / Türkçe)
-                </label>
-                <input
-                  value={form.titleTr}
-                  onChange={set('titleTr')}
-                  placeholder="örn. CoinMaster'da 10. Seviyeye Ulaşın"
-                  className="w-full bg-white border border-gray-300 rounded-xl px-3.5 py-2 text-gray-900 text-sm placeholder-gray-400 focus:outline-none focus:border-[#1E2538] focus:ring-1 focus:ring-[#1E2538]/20 transition-all"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1.5">
-                  🇹🇷 Description (Turkish / Türkçe)
-                </label>
-                <textarea
-                  value={form.descriptionTr}
-                  onChange={set('descriptionTr')}
-                  placeholder="Kart ve modal penceresi için kısa görev açıklaması..."
-                  rows={2}
-                  className="w-full bg-white border border-gray-300 rounded-xl px-3.5 py-2 text-gray-900 text-sm placeholder-gray-400 focus:outline-none focus:border-[#1E2538] focus:ring-1 focus:ring-[#1E2538]/20 resize-none transition-all"
-                />
-              </div>
-
-              <div>
-                <div className="flex items-center justify-between mb-1.5">
-                  <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                    🇹🇷 Requirements (Turkish / Türkçe)
-                  </label>
-                  <span className="text-[11px] text-gray-400">Format: {form.requirementType === 'paragraph' ? 'Paragraf' : 'Madde İşaretleri'}</span>
-                </div>
-                <textarea
-                  value={form.requirementsTr}
-                  onChange={set('requirementsTr')}
-                  placeholder={
-                    form.requirementType === 'paragraph'
-                      ? 'örn. Uygulamayı cihazınıza indirip kaydolarak bu görevi tamamlayın.'
-                      : 'örn. Hesap açın → 10 Puan alın\nUygulamayı indirin → 5.000 Puan alın'
-                  }
-                  rows={form.requirementType === 'paragraph' ? 2 : 3}
-                  className="w-full bg-white border border-gray-300 rounded-xl px-3.5 py-2 text-gray-900 text-sm placeholder-gray-400 focus:outline-none focus:border-[#1E2538] focus:ring-1 focus:ring-[#1E2538]/20 resize-none transition-all"
-                />
-              </div>
-            </div>
-          )}
-
           {/* Icon Picker */}
           <div>
             <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-2">
@@ -892,10 +466,11 @@ const GoodpickModal = ({ offer, onClose, onSaved, token, currentUser }) => {
                   key={emoji}
                   type="button"
                   onClick={() => setForm((f) => ({ ...f, icon: f.icon === emoji ? '' : emoji }))}
-                  className={`h-9 rounded-lg text-xl flex items-center justify-center transition-all ${form.icon === emoji
+                  className={`h-9 rounded-lg text-xl flex items-center justify-center transition-all ${
+                    form.icon === emoji
                       ? 'bg-white border-2 border-[#1E2538] shadow-sm scale-110'
                       : 'hover:bg-gray-200/70 border border-transparent'
-                    }`}
+                  }`}
                 >
                   {emoji}
                 </button>
@@ -1253,39 +828,9 @@ const AdminGoodpicksOffers = () => {
                                   🇫🇷 FR
                                 </span>
                               )}
-                              {offer.titleEs && (
-                                <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold bg-amber-50 text-amber-700 border border-amber-200" title={`ES: ${offer.titleEs}`}>
-                                  🇪🇸 ES
-                                </span>
-                              )}
                               {offer.titleUr && (
                                 <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200" title={`UR: ${offer.titleUr}`}>
                                   🇵🇰 UR
-                                </span>
-                              )}
-                              {offer.titleRu && (
-                                <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold bg-red-50 text-red-700 border border-red-200" title={`RU: ${offer.titleRu}`}>
-                                  🇷🇺 RU
-                                </span>
-                              )}
-                              {offer.titlePt && (
-                                <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold bg-emerald-50 text-emerald-800 border border-emerald-200" title={`PT: ${offer.titlePt}`}>
-                                  🇵🇹 PT
-                                </span>
-                              )}
-                              {offer.titleIt && (
-                                <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold bg-emerald-50 text-emerald-800 border border-emerald-200" title={`IT: ${offer.titleIt}`}>
-                                  🇮🇹 IT
-                                </span>
-                              )}
-                              {offer.titlePl && (
-                                <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold bg-rose-50 text-rose-700 border border-rose-200" title={`PL: ${offer.titlePl}`}>
-                                  🇵🇱 PL
-                                </span>
-                              )}
-                              {offer.titleTr && (
-                                <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold bg-red-50 text-red-700 border border-red-200" title={`TR: ${offer.titleTr}`}>
-                                  🇹🇷 TR
                                 </span>
                               )}
                             </div>
@@ -1343,8 +888,8 @@ const AdminGoodpicksOffers = () => {
                           {Array.isArray(offer.requirements) && offer.requirements.length > 0
                             ? `${offer.requirements.length} requirement(s)`
                             : typeof offer.requirements === 'string'
-                              ? offer.requirements
-                              : 'Standard'}
+                            ? offer.requirements
+                            : 'Standard'}
                         </span>
                       </td>
 
@@ -1353,10 +898,11 @@ const AdminGoodpicksOffers = () => {
                         <button
                           onClick={() => handleToggle(offer)}
                           disabled={isBusy}
-                          className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold uppercase transition-all ${offer.isActive
+                          className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold uppercase transition-all ${
+                            offer.isActive
                               ? 'bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100'
                               : 'bg-gray-100 text-gray-500 border border-gray-200 hover:bg-gray-200'
-                            }`}
+                          }`}
                         >
                           {offer.isActive ? (
                             <>

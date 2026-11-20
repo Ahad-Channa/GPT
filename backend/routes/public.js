@@ -283,20 +283,8 @@ router.get('/legal/:slug', async (req, res) => {
         content_de: page.content_de,
         title_fr: page.title_fr,
         content_fr: page.content_fr,
-        title_es: page.title_es,
-        content_es: page.content_es,
         title_ur: page.title_ur,
         content_ur: page.content_ur,
-        title_ru: page.title_ru,
-        content_ru: page.content_ru,
-        title_pt: page.title_pt,
-        content_pt: page.content_pt,
-        title_it: page.title_it,
-        content_it: page.content_it,
-        title_pl: page.title_pl,
-        content_pl: page.content_pl,
-        title_tr: page.title_tr,
-        content_tr: page.content_tr,
         updatedAt: page.updatedAt,
       },
     });
@@ -323,20 +311,6 @@ router.get('/cookies', async (req, res) => {
   } catch (err) {
     console.error('[/api/public/cookies] Error:', err);
     res.status(500).json({ success: false, error: 'Failed to fetch cookies' });
-  }
-});
-
-// ── GET /api/public/support-email ─────────────────────────────────────────
-// Returns configured platform support email for banned modal, etc.
-router.get('/support-email', async (req, res) => {
-  try {
-    const settings = await Settings.findOne({}) || {};
-    const supportEmail = settings.supportEmail || 'support@taskmint.me';
-    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
-    res.status(200).json({ success: true, supportEmail });
-  } catch (err) {
-    console.error('[/api/public/support-email] Error:', err);
-    res.status(200).json({ success: true, supportEmail: 'support@taskmint.me' });
   }
 });
 

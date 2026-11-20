@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { Routes, Route, Navigate, useParams, useLocation } from 'react-router-dom';
+import { Routes, Route, Navigate, useParams } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { useAuth } from './contexts/AuthContext';
 import { useTheme } from './contexts/ThemeContext';
@@ -44,29 +44,13 @@ import VipPage from './pages/VipPage';
 import AdminBooks from './pages/admin/AdminBooks';
 import AdminLegalPages from './pages/admin/AdminLegalPages';
 import AdminCookies from './pages/admin/AdminCookies';
-import AdminSupportEmail from './pages/admin/AdminSupportEmail';
 import LegalPage from './pages/LegalPage';
 import NotificationPanel from './components/NotificationPanel';
-import BannedAccountModal from './components/BannedAccountModal';
 import CookieConsentBanner from './components/cookie/CookieConsentBanner';
 import CookieSettingsModal from './components/cookie/CookieSettingsModal';
 import { useCookieConsent } from './contexts/CookieConsentContext';
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
-
-const ScrollToTop = () => {
-  const { pathname, search, hash } = useLocation();
-
-  useEffect(() => {
-    if (!hash) {
-      window.scrollTo(0, 0);
-      document.documentElement.scrollTop = 0;
-      document.body.scrollTop = 0;
-    }
-  }, [pathname, search, hash]);
-
-  return null;
-};
 
 const PrivateRoute = ({ children }) => {
   const { currentUser } = useAuth();
@@ -182,8 +166,6 @@ function App() {
         }}
       />
       <NotificationPanel />
-      <BannedAccountModal />
-      <ScrollToTop />
       <Routes>
         <Route path="/" element={<Landing />} />
         <Route path="/r/:code" element={<ReferralRedirect />} />
@@ -316,7 +298,6 @@ function App() {
           <Route path="settings" element={<AdminSettings />} />
           <Route path="legal-pages" element={<AdminLegalPages />} />
           <Route path="cookies" element={<AdminCookies />} />
-          <Route path="support-email" element={<AdminSupportEmail />} />
         </Route>
       </Routes>
     </>

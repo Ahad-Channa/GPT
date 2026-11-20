@@ -87,14 +87,6 @@ const userSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
-    banReason: {
-      type: String,
-      default: null,
-    },
-    bannedAt: {
-      type: Date,
-      default: null,
-    },
     // Referrals and Fraud
     referredBy: {
       type: mongoose.Schema.Types.ObjectId,

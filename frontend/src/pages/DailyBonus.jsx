@@ -136,10 +136,11 @@ export default function DailyBonus() {
                 }}
               >
                 {/* Top Row inside Left Card */}
-                <div className="flex items-center sm:items-start justify-between gap-3 sm:gap-6 w-full">
+                <div className="flex items-center sm:items-start justify-between gap-2 sm:gap-4 w-full">
                   <div
-                    className="flex flex-col justify-center min-w-0 flex-1 max-w-[490px]"
+                    className="flex flex-col justify-center min-w-0"
                     style={{
+                      maxWidth: '371px',
                       opacity: 1,
                     }}
                   >
@@ -162,7 +163,7 @@ export default function DailyBonus() {
                       {t('dailyBonus.pageTitle', 'Daily Bonus')}
                     </h1>
                     <p
-                      className="text-[12px] sm:text-[14px] mt-1"
+                      className="text-[12px] sm:text-[14px] mt-1 sm:whitespace-nowrap"
                       style={{
                         fontFamily: '"Poppins", sans-serif',
                         fontWeight: 400,
@@ -505,23 +506,27 @@ export default function DailyBonus() {
                 />
 
                 {/* Next Reward Tomorrow */}
-                <div className="flex items-center justify-between w-full gap-1.5 min-w-0">
+                <div className="flex items-center justify-between w-full">
                   <span
-                    className="truncate sm:whitespace-normal"
                     style={{
+                      width: 'auto',
                       fontFamily: '"Poppins", sans-serif',
                       fontWeight: 500,
-                      fontSize: 'clamp(12px, 3.2vw, 14px)',
+                      fontSize: '14px',
                       lineHeight: '18px',
+                      letterSpacing: '0%',
                       color: isDarkMode ? 'rgba(255, 255, 255, 0.7)' : '#0E0F0C',
+                      opacity: 1,
+                      whiteSpace: 'nowrap',
                     }}
                   >
                     {t('dailyBonus.nextRewardTomorrow', 'Next Reward Tomorrow')}
                   </span>
                   <div
-                    className="flex items-center gap-1.5 shrink-0"
+                    className="flex items-center gap-1.5"
                     style={{
-                      height: '14px',
+                      height: '12.22px',
+                      opacity: 1,
                     }}
                   >
                     <img
@@ -530,18 +535,21 @@ export default function DailyBonus() {
                       style={{
                         width: '11px',
                         height: '12.22px',
+                        opacity: 1,
                         objectFit: 'contain',
                       }}
                       className="shrink-0"
                     />
                     <span
-                      className="whitespace-nowrap shrink-0"
                       style={{
                         fontFamily: '"Poppins", sans-serif',
                         fontWeight: 500,
-                        fontSize: 'clamp(12px, 3.2vw, 14px)',
+                        fontSize: '14px',
                         lineHeight: '14px',
+                        letterSpacing: '0%',
                         color: '#E5A00D',
+                        opacity: 1,
+                        whiteSpace: 'nowrap',
                       }}
                     >
                       {formatCoins(status.rewardTomorrow || 1000)} {t('dailyBonus.coins', 'Coins')}
@@ -684,9 +692,9 @@ export default function DailyBonus() {
               }}
             >
               {/* Header */}
-              <div className="flex items-center justify-between w-full gap-2 min-w-0">
+              <div className="flex items-center justify-between w-full">
                 <h2
-                  className="text-[18px] sm:text-[27px] truncate"
+                  className="text-[20px] sm:text-[27px]"
                   style={{
                     fontFamily: '"Bricolage Grotesque", sans-serif',
                     fontWeight: 700,
@@ -694,13 +702,15 @@ export default function DailyBonus() {
                     letterSpacing: '-0.02em',
                     color: isDarkMode ? '#FFFFFF' : '#000000',
                     margin: 0,
+                    whiteSpace: 'nowrap',
                   }}
                 >
                   {t('dailyBonus.currentStreakTitle', 'Current Streak')}
                 </h2>
                 <span
-                  className="text-[15px] sm:text-[20px] shrink-0"
+                  className="text-[16px] sm:text-[20px]"
                   style={{
+                    minWidth: '86px',
                     fontFamily: '"Bricolage Grotesque", sans-serif',
                     fontWeight: 700,
                     lineHeight: '1.2',
