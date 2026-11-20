@@ -35,10 +35,12 @@ const settingsSchema = new mongoose.Schema(
       ],
     },
     // Coins-per-USD rate — how many platform coins = $1 USD
-    // e.g. 100 = 100 coins per dollar
+    // e.g. 1000 = 1,000 coins per dollar. This only drives withdrawals and
+    // display; it is NOT used by offerwall crediting. The default applies to
+    // new installs only: an existing stored value is never overwritten.
     coinsPerUSD: {
       type: Number,
-      default: 100,
+      default: 1000,
     },
     // Block A — Reward Engine (Daily Bonus config)
     rewardEngine: {

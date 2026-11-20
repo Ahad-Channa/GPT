@@ -6,6 +6,7 @@ import {
   FiBox, FiToggleLeft, FiToggleRight,
   FiAlertCircle, FiLoader, FiAlertTriangle
 } from 'react-icons/fi';
+import { getConversionControl, describeMultiplierExample } from '../../utils/offerwallConversion';
 
 const NumberInput = ({ value, onChange, min, max, step = 1, prefix, suffix, disabled }) => (
   <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
@@ -96,7 +97,8 @@ const ProviderCard = ({ provider, onUpdate, loadingProvider }) => {
   const supportsIframeUrl = IFRAME_URL_PROVIDERS.has(provider.id);
   const supportsOfferwallUrl = OFFERWALL_URL_PROVIDERS.has(provider.id);
   const supportsPlacementId = PLACEMENT_ID_PROVIDERS.has(provider.id);
-  const usesProviderCurrency = provider.id === 'lootably';
+  const conversionControl = getConversionControl(provider.id);
+  const usesRatio = conversionControl.showRatioInput;
 
   const handleRatioChange = (val) => {
     setRatio(val);
@@ -126,7 +128,7 @@ const ProviderCard = ({ provider, onUpdate, loadingProvider }) => {
     }
     const trimmedLabel = label.trim();
     return {
-      ...(!usesProviderCurrency ? { conversionRatio: Number(ratio) } : {}),
+      ...(usesRatio ? { conversionRatio: Number(ratio) } : {}),
       ...(parsedOrder === undefined ? {} : { order: parsedOrder }),
       holdEnabled,
       holdDays: Number.isInteger(parsedHoldDays) && parsedHoldDays >= 0 ? parsedHoldDays : 0,
@@ -147,8 +149,8 @@ const ProviderCard = ({ provider, onUpdate, loadingProvider }) => {
   };
 
   const handleSaveRatio = () => {
-    if (!usesProviderCurrency && (isNaN(Number(ratio)) || Number(ratio) <= 0)) {
-      toast.error('Conversion ratio must be a positive number');
+    if (usesRatio && (isNaN(Number(ratio)) || Number(ratio) <= 0)) {
+      toast.error('Multiplier must be a positive number');
       return;
     }
     const updates = buildUpdates({ enabled });
@@ -222,12 +224,12 @@ const ProviderCard = ({ provider, onUpdate, loadingProvider }) => {
         </button>
       </div>
 
-      {usesProviderCurrency ? (
-        <div style={{ marginTop: '1rem', padding: '0.85rem', background: '#EFF6FF', border: '1px solid #BFDBFE', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.75rem' }}>
+      {!usesRatio ? (
+        <div data-testid="conversion-note" style={{ marginTop: '1rem', padding: '0.85rem', background: '#EFF6FF', border: '1px solid #BFDBFE', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.75rem' }}>
           <div>
-            <p style={{ color: '#1E3A8A', fontWeight: 700, fontSize: '0.78rem', margin: 0 }}>Lootably reward currency</p>
+            <p style={{ color: '#1E3A8A', fontWeight: 700, fontSize: '0.78rem', margin: 0 }}>{conversionControl.title}</p>
             <p style={{ color: '#1E40AF', fontSize: '0.72rem', lineHeight: 1.5, margin: '0.35rem 0 0' }}>
-              Lootably sends the configured placement currency reward directly as TaskMint coins. Set the Lootably placement currency and user split so each reward is a whole number of coins. The User Split Ratio below is not used for Lootably.
+              {conversionControl.note}
             </p>
           </div>
           {dirty && (
@@ -244,7 +246,7 @@ const ProviderCard = ({ provider, onUpdate, loadingProvider }) => {
       <div style={{ display: 'flex', alignItems: 'flex-end', gap: '0.75rem', marginTop: '1rem' }}>
         <div style={{ flex: 1 }}>
           <label style={{ display: 'block', fontSize: '0.7rem', color: '#6B7280', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.35rem' }}>
-            User Split Ratio
+            Provider-specific multiplier
           </label>
           <NumberInput
             value={ratio}
@@ -426,9 +428,13 @@ const ProviderCard = ({ provider, onUpdate, loadingProvider }) => {
         )}
       </div>
 
-      {Number(ratio) > 0 && enabled && (
-        <div style={{ fontSize: '0.75rem', color: '#6B7280', marginTop: '0.75rem', padding: '0.5rem 0.75rem', background: '#F9FAFB', border: '1px solid #F3F4F6', borderRadius: '8px', fontFamily: "'Barlow', system-ui, sans-serif", fontFeatureSettings: "'zero' 0" }}>
-          <strong style={{ color: '#374151' }}>Formula:</strong> 1.00 Network Unit &times; {Number(ratio) || 1} = <span style={{ color: '#2563EB', fontWeight: 600 }}>{Math.round(1 * (Number(ratio) || 1))} Coins to user</span>.
+      {conversionControl.showFormula && (
+        <div data-testid="conversion-formula" style={{ fontSize: '0.75rem', color: '#6B7280', marginTop: '0.75rem', padding: '0.5rem 0.75rem', background: '#F9FAFB', border: '1px solid #F3F4F6', borderRadius: '8px', fontFamily: "'Barlow', system-ui, sans-serif", fontFeatureSettings: "'zero' 0" }}>
+          <p style={{ margin: 0 }}>{conversionControl.note}</p>
+          {Number(ratio) > 0 && (
+            <p style={{ margin: '0.35rem 0 0' }}>{describeMultiplierExample(ratio)}</p>
+          )}
+          <p style={{ margin: '0.35rem 0 0', color: '#B45309', fontWeight: 600 }}>{conversionControl.integrationStatus}</p>
         </div>
       )}
     </motion.div>

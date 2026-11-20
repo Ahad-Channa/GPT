@@ -256,7 +256,9 @@ test('offerwallUrl and placementId apply only to Lootably', async () => {
 test('Lootably admin card explains direct coin rewards and shows webhook activation state', () => {
   const adminUi = read('frontend/src/pages/admin/AdminOfferwalls.jsx');
   const adminApi = read('backend/routes/admin.js');
-  assert.match(adminUi, /Lootably sends the configured placement currency reward directly as TaskMint coins/);
+  const conversionUi = read('frontend/src/utils/offerwallConversion.js');
+  assert.match(conversionUi, /Lootably credits its currencyReward directly as TaskMint coins/);
+  assert.match(adminUi, /getConversionControl/);
   assert.match(adminUi, /provider\.webhookConfigured && provider\.webhookEnabled/);
   assert.match(adminApi, /LOOTABLY_WEBHOOK_SECRET/);
   assert.match(adminApi, /LOOTABLY_WEBHOOK_ALLOWED_IPS/);

@@ -24,6 +24,7 @@ const {
   resolveEnabledAdapter,
 } = require('../services/offerwalls/adapters');
 const { recordDisabledRouteHit, recordReplayAlert } = require('../services/offerwalls/notices');
+const { convertProviderUnitsToCoins } = require('../utils/offerwallConversion');
 
 // Every legacy provider route. A route can move money ONLY through an enabled,
 // verified adapter (services/offerwalls/adapters.js); otherwise it fails closed.
@@ -592,7 +593,7 @@ const handleLegacyOfferwallPostback = async (providerId, req, res, params = {}, 
     }
 
     const platformCoins = explicitPlatformCoins === undefined
-      ? Math.floor(parsedProviderUnits * provider.conversionRatio)
+      ? convertProviderUnitsToCoins(parsedProviderUnits, provider.conversionRatio)
       : explicitPlatformCoins;
     if (isNaN(platformCoins) || platformCoins <= 0) {
       await logPostback({
