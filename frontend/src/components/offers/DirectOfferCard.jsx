@@ -12,6 +12,7 @@ import { formatGoalLabel } from '../../utils/offerGoalDisplay.js';
 import { formatOfferAmount } from '../../utils/offerNumberFormat.js';
 import { closeReservedOfferTab, hasManualOfferStarted, getProofInstructionsView, navigateReservedOfferTab, reserveOfferTab } from '../../utils/manualOfferState.js';
 import { getOfferTranslation } from '../../utils/offerTranslations';
+import { getOfferBadgeStatus } from '../../utils/offerLifecycle.js';
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
@@ -68,7 +69,8 @@ export const DirectOfferCard = ({ offer, onClick }) => {
   const isExpired = offer.expirationDate && new Date(offer.expirationDate) < new Date();
   const coverImgSrc = offer.coverImage || (isIconUrl(offer.icon) ? offer.icon : null);
   const emojiIcon = !coverImgSrc && offer.icon ? offer.icon : null;
-  const statusCfg = offer.clickStatus ? getStatusConfig(t)[offer.clickStatus] : null;
+  const badgeStatus = getOfferBadgeStatus(offer);
+  const statusCfg = badgeStatus ? getStatusConfig(t)[badgeStatus] : null;
   const rewardVal = offer.rewardAmount ?? offer.points ?? offer.reward ?? 1250000;
 
   return (

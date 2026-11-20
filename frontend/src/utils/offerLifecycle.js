@@ -17,6 +17,20 @@ export const isOfferCompleted = (offer) => getOfferLifecycle(offer) === 'complet
 
 export const isOfferStarted = (offer) => getOfferLifecycle(offer) !== 'available';
 
+// Card status badge key ('clicked' | 'pending' | 'approved' | 'rejected' | null).
+// `clickStatus: 'approved'` only means *a* reward was credited (the first goal of
+// a multi-step offer sets it), so 'approved' is shown only when the backend says
+// the whole offer is completed. Offers without a lifecycle keep the raw status.
+export const getOfferBadgeStatus = (offer) => {
+  const status = offer?.clickStatus || null;
+  if (!offer || !KNOWN.includes(offer.lifecycle)) return status;
+  if (offer.lifecycle === 'completed') return 'approved';
+  if (status !== 'approved') return status;
+  if (offer.lifecycle === 'started') return 'clicked';
+  if (offer.lifecycle === 'pending' || offer.lifecycle === 'rejected') return offer.lifecycle;
+  return null;
+};
+
 // Active/Featured lists: everything except fully completed offers. Partly
 // credited multi-step offers (lifecycle 'started') stay.
 export const filterActiveOffers = (offers) =>
