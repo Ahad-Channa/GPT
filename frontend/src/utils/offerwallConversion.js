@@ -23,7 +23,7 @@ export const getConversionControl = (providerId) => {
       showRatioInput: false,
       showFormula: false,
       title: 'Lootably reward currency',
-      note: 'Lootably credits its currencyReward directly as TaskMint coins. The ratio on this page is not used. Set the placement’s Pre-Split Currency Conversion Rate and Currency Split to User (%) in Lootably so currencyReward is a whole number of TaskMint coins.',
+      note: 'Lootably credits its currencyReward directly as TaskMint coins. The ratio on this page is not used. No conversion ratio is applied to Lootably. Set the placement’s Pre-Split Currency Conversion Rate and Currency Split to User (%) in Lootably so currencyReward is a whole number of TaskMint coins.',
     };
   }
   if (providerId === 'goodpicks') {

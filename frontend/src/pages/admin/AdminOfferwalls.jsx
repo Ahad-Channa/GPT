@@ -548,7 +548,7 @@ const AdminOfferwalls = () => {
           Offerwalls Management
         </h1>
         <p className="admin-page-sub">
-          Enable or disable providers, and adjust the conversion ratio (User Split) for each network.
+          Manage provider settings and coin conversion behavior.
         </p>
       </div>
 
