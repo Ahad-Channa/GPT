@@ -57,17 +57,15 @@ const LanguageToggle = ({
       <button
         type="button"
         onClick={() => setIsOpen(prev => !prev)}
-        className={`flex items-center justify-center transition-all cursor-pointer select-none border-0 active:scale-95 ${
-          pillOnMobile
-            ? (isDarkMode
-                ? 'bg-[rgba(255,255,255,0.1)] hover:bg-[rgba(255,255,255,0.16)] px-[10px] h-[44px] rounded-[80px] gap-[6px]'
-                : 'bg-white hover:bg-gray-50 px-[10px] h-[44px] rounded-[80px] gap-[6px]')
-            : 'bg-transparent border-0 p-0 gap-[3px]'
-        } lg:gap-[10px] lg:w-[106px] lg:h-[49px] lg:pl-[8px] lg:pr-[14px] lg:rounded-[80px] ${
-          isDarkMode
+        className={`flex items-center justify-center transition-all cursor-pointer select-none border-0 active:scale-95 ${pillOnMobile
+          ? (isDarkMode
+            ? 'bg-[rgba(255,255,255,0.1)] hover:bg-[rgba(255,255,255,0.16)] px-[10px] h-[44px] rounded-[80px] gap-[6px]'
+            : 'bg-white hover:bg-gray-50 px-[10px] h-[44px] rounded-[80px] gap-[6px]')
+          : 'bg-transparent border-0 p-0 gap-[3px]'
+          } lg:gap-[10px] lg:w-[106px] lg:h-[49px] lg:pl-[8px] lg:pr-[14px] lg:rounded-[80px] ${isDarkMode
             ? 'lg:bg-[rgba(255,255,255,0.1)] lg:hover:bg-[rgba(255,255,255,0.16)]'
             : 'lg:bg-white lg:hover:bg-gray-50'
-        }`}
+          }`}
         style={{
           border: 'none',
           outline: 'none',
@@ -140,11 +138,10 @@ const LanguageToggle = ({
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 6, scale: 0.97 }}
             transition={{ duration: 0.15 }}
-            className={`absolute z-50 flex flex-col ${
-              dropdownAlign === 'right'
-                ? 'right-0 top-[48px] lg:top-[56px]'
-                : 'left-0 top-[32px] lg:top-[56px]'
-            }`}
+            className={`absolute z-50 flex flex-col ${dropdownAlign === 'right'
+              ? 'right-0 top-[48px] lg:top-[56px]'
+              : 'left-0 top-[32px] lg:top-[56px]'
+              }`}
             style={{
               width: '180px',
               maxWidth: 'calc(100vw - 32px)',
@@ -203,4 +200,3 @@ const LanguageToggle = ({
 };
 
 export default LanguageToggle;
-

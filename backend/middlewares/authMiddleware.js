@@ -22,10 +22,13 @@ const verifyToken = async (req, res, next) => {
     if (userRecord && userRecord.role !== 'admin' && !userRecord.fraudExempt && (userRecord.isBanned || userRecord.fraudStatus === 'blocked')) {
       return res.status(403).json({
         success: false,
-        error: userRecord.isBanned
-          ? 'Forbidden: Account has been banned'
-          : 'Access denied: Account is blocked due to security violations',
+        error: userRecord.banReason === 'auto_multi_account'
+          ? 'Your account has been suspended for violating our Terms of Service (multiple accounts detected).'
+          : (userRecord.isBanned
+              ? 'Forbidden: Account has been banned'
+              : 'Access denied: Account is blocked due to security violations'),
         isBanned: userRecord.isBanned,
+        banReason: userRecord.banReason || (userRecord.isBanned ? 'manual_admin' : 'fraud_blocked'),
         isBlocked: userRecord.fraudStatus === 'blocked',
       });
     }

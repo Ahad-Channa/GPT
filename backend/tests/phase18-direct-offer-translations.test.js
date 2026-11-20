@@ -594,19 +594,24 @@ test('admin save uses one deliberate text payload and no duplicate requirements 
 test('Goodpicks component keeps its existing selected-language fallbacks', () => {
   const goodpicks = compact(read('frontend/src/components/offers/GoodpicksModal.jsx'));
 
-  assert.match(goodpicks, /i18n\.language\?\.startsWith\('de'\)/);
-  assert.match(goodpicks, /isDe&&offer\.titleDe\)?\?offer\.titleDe:offer\.title/);
-  assert.match(goodpicks, /isDe&&offer\.descriptionDe\)?\?offer\.descriptionDe/);
-  assert.match(goodpicks, /isDe&&Array\.isArray\(offer\?\.requirementsDe\)&&offer\.requirementsDe\.length>0\)?\?offer\.requirementsDe:\(?offer\.requirements/);
+  assert.match(goodpicks, /isDe=selectedLanguage\.startsWith\('de'\)/);
+  // German fields are only selected behind the German-language condition.
+  assert.match(goodpicks, /\(isDe&&offer\.titleDe\)\?offer\.titleDe:/);
+  assert.match(goodpicks, /\(isDe&&offer\.descriptionDe\)\?offer\.descriptionDe:/);
+  assert.match(goodpicks, /\(isDe&&offer\.requirementsDe&&offer\.requirementsDe\.length>0\)\?offer\.requirementsDe:/);
 });
 
 test('English mode never prefers German and admin exposes manual EN/DE fields', () => {
   const goodpicks = compact(read('frontend/src/components/offers/GoodpicksModal.jsx'));
-  const gatedTitle = (goodpicks.match(/isDe&&offer\.titleDe\)?\?offer\.titleDe:offer\.title/g) || []).length;
-  const anyTitle = (goodpicks.match(/offer\.titleDe\)?\?offer\.titleDe:offer\.title/g) || []).length;
-  assert.ok(anyTitle > 0, 'Goodpicks must select DE title');
-  assert.equal(gatedTitle, anyTitle, 'Goodpicks: all DE title selections must be isDe-gated');
-  assert.match(goodpicks, /isDe&&/);
+  // Every German field selection must be guarded by isDe, so English never picks German fields.
+  for (const field of ['titleDe', 'descriptionDe', 'requirementsDe']) {
+    const selections = (goodpicks.match(new RegExp(`\\?offer\\.${field}:`, 'g')) || []).length;
+    const gated = (goodpicks.match(new RegExp(`isDe&&.{0,120}?\\)?\\?offer\\.${field}:`, 'g')) || []).length;
+    assert.ok(selections > 0, `Goodpicks must select ${field}`);
+    assert.equal(gated, selections, `Goodpicks: all ${field} selections must be isDe-gated`);
+  }
+  // English is not a German-selecting branch.
+  assert.doesNotMatch(goodpicks, /isEn&&offer\.\w+De/);
 
   const admin = read('frontend/src/pages/admin/AdminDirectOffers.jsx');
   for (const field of ['titleDe', 'descriptionDe', 'requirementsDe', 'labelDe']) {

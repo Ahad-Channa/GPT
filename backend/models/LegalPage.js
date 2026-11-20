@@ -37,12 +37,66 @@ const legalPageSchema = new mongoose.Schema(
       type: String,
       default: '',
     },
+    // Spanish content
+    title_es: {
+      type: String,
+      default: '',
+    },
+    content_es: {
+      type: String,
+      default: '',
+    },
     // Urdu content
     title_ur: {
       type: String,
       default: '',
     },
     content_ur: {
+      type: String,
+      default: '',
+    },
+    // Russian content
+    title_ru: {
+      type: String,
+      default: '',
+    },
+    content_ru: {
+      type: String,
+      default: '',
+    },
+    // Portuguese content
+    title_pt: {
+      type: String,
+      default: '',
+    },
+    content_pt: {
+      type: String,
+      default: '',
+    },
+    // Italian content
+    title_it: {
+      type: String,
+      default: '',
+    },
+    content_it: {
+      type: String,
+      default: '',
+    },
+    // Polish content
+    title_pl: {
+      type: String,
+      default: '',
+    },
+    content_pl: {
+      type: String,
+      default: '',
+    },
+    // Turkish content
+    title_tr: {
+      type: String,
+      default: '',
+    },
+    content_tr: {
       type: String,
       default: '',
     },
@@ -69,8 +123,20 @@ legalPageSchema.statics.getBySlug = async function (slug) {
       content_de: template.content_de || '',
       title_fr: template.title_fr || '',
       content_fr: template.content_fr || '',
+      title_es: template.title_es || '',
+      content_es: template.content_es || '',
       title_ur: template.title_ur || '',
       content_ur: template.content_ur || '',
+      title_ru: template.title_ru || '',
+      content_ru: template.content_ru || '',
+      title_pt: template.title_pt || '',
+      content_pt: template.content_pt || '',
+      title_it: template.title_it || '',
+      content_it: template.content_it || '',
+      title_pl: template.title_pl || '',
+      content_pl: template.content_pl || '',
+      title_tr: template.title_tr || '',
+      content_tr: template.content_tr || '',
     });
   } else {
     let changed = false;
@@ -87,9 +153,39 @@ legalPageSchema.statics.getBySlug = async function (slug) {
       page.content_fr = template.content_fr || '';
       changed = true;
     }
+    if (!page.content_es && template.content_es) {
+      page.title_es = template.title_es || '';
+      page.content_es = template.content_es || '';
+      changed = true;
+    }
     if (!page.content_ur && template.content_ur) {
       page.title_ur = template.title_ur || '';
       page.content_ur = template.content_ur || '';
+      changed = true;
+    }
+    if (!page.content_ru && template.content_ru) {
+      page.title_ru = template.title_ru || '';
+      page.content_ru = template.content_ru || '';
+      changed = true;
+    }
+    if (!page.content_pt && template.content_pt) {
+      page.title_pt = template.title_pt || '';
+      page.content_pt = template.content_pt || '';
+      changed = true;
+    }
+    if (!page.content_it && template.content_it) {
+      page.title_it = template.title_it || '';
+      page.content_it = template.content_it || '';
+      changed = true;
+    }
+    if (!page.content_pl && template.content_pl) {
+      page.title_pl = template.title_pl || '';
+      page.content_pl = template.content_pl || '';
+      changed = true;
+    }
+    if (!page.content_tr && template.content_tr) {
+      page.title_tr = template.title_tr || '';
+      page.content_tr = template.content_tr || '';
       changed = true;
     }
     if (slug === 'cookie-policy' && (!page.content_en.includes('__tm_did') || !page.content_de.includes('__tm_did'))) {
@@ -101,9 +197,33 @@ legalPageSchema.statics.getBySlug = async function (slug) {
         page.title_fr = template.title_fr;
         page.content_fr = template.content_fr;
       }
+      if (!page.content_es && template.content_es) {
+        page.title_es = template.title_es;
+        page.content_es = template.content_es;
+      }
       if (!page.content_ur && template.content_ur) {
         page.title_ur = template.title_ur;
         page.content_ur = template.content_ur;
+      }
+      if (!page.content_ru && template.content_ru) {
+        page.title_ru = template.title_ru;
+        page.content_ru = template.content_ru;
+      }
+      if (!page.content_pt && template.content_pt) {
+        page.title_pt = template.title_pt;
+        page.content_pt = template.content_pt;
+      }
+      if (!page.content_it && template.content_it) {
+        page.title_it = template.title_it;
+        page.content_it = template.content_it;
+      }
+      if (!page.content_pl && template.content_pl) {
+        page.title_pl = template.title_pl;
+        page.content_pl = template.content_pl;
+      }
+      if (!page.content_tr && template.content_tr) {
+        page.title_tr = template.title_tr;
+        page.content_tr = template.content_tr;
       }
       changed = true;
     }

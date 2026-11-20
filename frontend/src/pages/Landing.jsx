@@ -27,7 +27,13 @@ const Landing = () => {
   const { t, i18n } = useTranslation();
   const isDe = i18n?.language?.startsWith('de');
   const isFr = i18n?.language?.startsWith('fr');
+  const isEs = i18n?.language?.startsWith('es');
   const isUr = i18n?.language === 'ur' || i18n?.language?.startsWith('ur');
+  const isRu = i18n?.language?.startsWith('ru');
+  const isPt = i18n?.language?.startsWith('pt');
+  const isIt = i18n?.language?.startsWith('it');
+  const isPl = i18n?.language?.startsWith('pl');
+  const isTr = i18n?.language?.startsWith('tr');
   const [stats, setStats] = useState({ totalUsers: 0, totalPaidOut: 0 });
   const [openFaq, setOpenFaq] = useState(null);
   const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' ? window.innerWidth < 1024 : false);
@@ -89,7 +95,7 @@ const Landing = () => {
         {/* Absolute Right Hero Image (Locked to 1328px content container) */}
         {!isMobile && (
           <div
-            className="absolute top-0 left-1/2 -translate-x-1/2 w-full pointer-events-none z-0"
+            className="absolute top-0 left-1/2 -translate-x-1/2 w-full pointer-events-none z-20"
             style={{ maxWidth: '1328px' }}
           >
             <div
@@ -97,14 +103,279 @@ const Landing = () => {
               style={{ width: 755, height: 587, right: '-30px' }}
             >
               <img
-                src={
-                  isDarkMode
-                    ? (isUr ? "/coins/Hero Urdu Dark Desktop.jpg" : (isDe ? "/coins/HerosectionBlackGerman.png" : "/coins/HerosectionBlackEnglish.png"))
-                    : (isUr ? "/coins/Hero Urdu Light Desktop.jpg" : (isDe ? "/coins/Hero section german desktop.png" : "/coins/hero section image.png"))
-                }
+                src={isDarkMode ? "/coins/hero_base_dark.png" : "/coins/hero_base_light.png"}
                 alt="Hero Background"
-                className={`w-full h-full object-fill ${isUr ? 'rounded-bl-[36px]' : ''}`}
+                className="w-full h-full object-fill rounded-bl-[36px] pointer-events-none select-none"
               />
+
+              {/* 1. Earn from surveys tab */}
+              <div
+                className="absolute flex items-center justify-center font-bold text-center pointer-events-auto"
+                style={{
+                  left: '22.95%',
+                  top: '32.9%',
+                  transform: 'translate(-50%, -50%)',
+                  fontFamily: '"Poppins", sans-serif',
+                  fontWeight: 700,
+                  fontSize: (() => {
+                    const l = (t('heroGraphic.earnFromSurveys') || '').length;
+                    return l <= 18 ? '13.5px' : (l <= 28 ? '12.5px' : '11.5px');
+                  })(),
+                  color: isDarkMode ? '#FFFFFF' : '#1E242B',
+                }}
+              >
+                <span className="whitespace-nowrap px-1">{t('heroGraphic.earnFromSurveys')}</span>
+              </div>
+
+              {/* 2. Earn by playing games tab */}
+              <div
+                className="absolute flex items-center justify-center font-bold text-center pointer-events-auto"
+                style={{
+                  left: '67.77%',
+                  top: '23.55%',
+                  transform: 'translate(-50%, -50%)',
+                  fontFamily: '"Poppins", sans-serif',
+                  fontWeight: 700,
+                  fontSize: (() => {
+                    const l = (t('heroGraphic.earnByPlayingGames') || '').length;
+                    return l <= 22 ? '13.5px' : (l <= 32 ? '12.5px' : '11.5px');
+                  })(),
+                  color: isDarkMode ? '#FFFFFF' : '#1E242B',
+                }}
+              >
+                <span className="whitespace-nowrap px-1">{t('heroGraphic.earnByPlayingGames')}</span>
+              </div>
+
+              {/* 3. Survey Card Question & Options */}
+              <div
+                className="absolute flex flex-col justify-between overflow-hidden pointer-events-auto"
+                style={{
+                  left: '7.19%',
+                  top: '43.0%',
+                  width: '26.0%',
+                  height: '25.0%',
+                  fontFamily: '"Poppins", sans-serif',
+                }}
+              >
+                <div>
+                  <div
+                    className="leading-tight"
+                    style={{
+                      fontFamily: '"Poppins", sans-serif',
+                      fontWeight: 700,
+                      fontSize: '11.5px',
+                      color: isDarkMode ? '#A1A7B4' : '#6B7280'
+                    }}
+                  >
+                    {t('heroGraphic.questionNumber')}
+                  </div>
+                  <div
+                    className="leading-snug mt-1"
+                    style={{
+                      fontFamily: '"Poppins", sans-serif',
+                      fontWeight: 700,
+                      fontSize: (() => {
+                        const l = (t('heroGraphic.questionTitle') || '').length;
+                        return l <= 20 ? '14.5px' : (l <= 28 ? '13px' : '11.5px');
+                      })(),
+                      color: isDarkMode ? '#FFFFFF' : '#111827'
+                    }}
+                  >
+                    {t('heroGraphic.questionTitle')}
+                  </div>
+                </div>
+
+                <div>
+                  <div
+                    className="tracking-wider uppercase mb-1.5"
+                    style={{
+                      fontFamily: '"Poppins", sans-serif',
+                      fontWeight: 700,
+                      fontSize: (() => {
+                        const l = (t('heroGraphic.selectOnlyOne') || '').length;
+                        return l <= 16 ? '9.5px' : (l <= 22 ? '8.5px' : '7.5px');
+                      })(),
+                      letterSpacing: '0.06em',
+                      color: isDarkMode ? '#A1A7B4' : '#8A92A0'
+                    }}
+                  >
+                    {t('heroGraphic.selectOnlyOne')}
+                  </div>
+                  <div className="flex items-center gap-2 mb-1.5">
+                    <span
+                      className="w-3.5 h-3.5 rounded-full border flex-shrink-0"
+                      style={{ borderColor: isDarkMode ? '#6B7280' : '#C4C8D0' }}
+                    />
+                    <span
+                      className="leading-none"
+                      style={{
+                        fontFamily: '"Poppins", sans-serif',
+                        fontWeight: 600,
+                        fontSize: '12.5px',
+                        color: isDarkMode ? '#E5E7EB' : '#1F2937'
+                      }}
+                    >
+                      {t('heroGraphic.optionYes')}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span
+                      className="w-3.5 h-3.5 rounded-full border flex-shrink-0"
+                      style={{ borderColor: isDarkMode ? '#6B7280' : '#C4C8D0' }}
+                    />
+                    <span
+                      className="leading-none"
+                      style={{
+                        fontFamily: '"Poppins", sans-serif',
+                        fontWeight: 600,
+                        fontSize: '12.5px',
+                        color: isDarkMode ? '#E5E7EB' : '#1F2937'
+                      }}
+                    >
+                      {t('heroGraphic.optionNo')}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* 4. Survey Back Button */}
+              <div
+                className="absolute flex items-center justify-center text-center pointer-events-auto"
+                style={{
+                  left: '26.0%',
+                  top: '73.68%',
+                  transform: 'translate(-50%, -50%)',
+                  fontFamily: '"Poppins", sans-serif',
+                  fontWeight: 700,
+                  fontSize: (() => {
+                    const l = (t('heroGraphic.btnBack') || '').length;
+                    return l <= 5 ? '13px' : (l <= 7 ? '11.5px' : '10px');
+                  })(),
+                  color: '#1E242B',
+                }}
+              >
+                <span className="whitespace-nowrap px-1">{t('heroGraphic.btnBack')}</span>
+              </div>
+
+              {/* 5. Survey Next Button */}
+              <div
+                className="absolute flex items-center justify-center text-center text-white pointer-events-auto"
+                style={{
+                  left: '34.69%',
+                  top: '73.68%',
+                  transform: 'translate(-50%, -50%)',
+                  fontFamily: '"Poppins", sans-serif',
+                  fontWeight: 700,
+                  fontSize: (() => {
+                    const l = (t('heroGraphic.btnNext') || '').length;
+                    return l <= 5 ? '13px' : (l <= 7 ? '11.5px' : '10px');
+                  })(),
+                }}
+              >
+                <span className="whitespace-nowrap px-1">{t('heroGraphic.btnNext')}</span>
+              </div>
+
+              {/* 6. Fast Payouts Card Text */}
+              <div
+                className="absolute flex flex-col justify-center overflow-hidden pointer-events-auto"
+                style={{
+                  left: '57.0%',
+                  top: '65.16%',
+                  width: '35.0%',
+                  height: '6.81%',
+                  fontFamily: '"Poppins", sans-serif',
+                }}
+              >
+                <div
+                  className="font-bold leading-tight"
+                  style={{
+                    fontFamily: '"Poppins", sans-serif',
+                    fontSize: (() => {
+                      const l = (t('heroGraphic.fastPayoutsTitle') || '').length;
+                      return l <= 18 ? '15px' : '13.5px';
+                    })(),
+                    color: isDarkMode ? '#FFFFFF' : '#111827'
+                  }}
+                >
+                  {t('heroGraphic.fastPayoutsTitle')}
+                </div>
+                <div
+                  className="leading-snug mt-0.5"
+                  style={{
+                    fontFamily: '"Poppins", sans-serif',
+                    fontSize: (() => {
+                      const l = (t('heroGraphic.fastPayoutsSubtitle') || '').length;
+                      return l <= 45 ? '10px' : '9px';
+                    })(),
+                    color: isDarkMode ? '#9CA3AF' : '#6B7280'
+                  }}
+                >
+                  {t('heroGraphic.fastPayoutsSubtitle')}
+                </div>
+              </div>
+
+              {/* 7. Join Free Badge "FREE" translation */}
+              <div
+                className="absolute flex items-center justify-center text-center pointer-events-auto"
+                style={{
+                  left: '52.16%',
+                  top: '84.88%',
+                  transform: 'translate(-50%, -50%)',
+                  fontFamily: '"Poppins", sans-serif',
+                  fontWeight: 800,
+                  fontSize: (() => {
+                    const l = (t('heroGraphic.freeBadge') || '').length;
+                    return l <= 4 ? '13px' : (l <= 7 ? '11px' : '7.8px');
+                  })(),
+                  letterSpacing: (() => {
+                    const l = (t('heroGraphic.freeBadge') || '').length;
+                    return l <= 7 ? '0.04em' : '-0.02em';
+                  })(),
+                  color: '#24324D',
+                }}
+              >
+                <span className="whitespace-nowrap uppercase">{t('heroGraphic.freeBadge')}</span>
+              </div>
+
+              {/* 8. Join Free Card Text */}
+              <div
+                className="absolute flex flex-col justify-center overflow-hidden pointer-events-auto"
+                style={{
+                  left: '57.0%',
+                  top: '79.64%',
+                  width: '34.5%',
+                  height: '8.09%',
+                  paddingRight: '6px',
+                  fontFamily: '"Poppins", sans-serif',
+                }}
+              >
+                <div
+                  className="font-bold leading-tight"
+                  style={{
+                    fontFamily: '"Poppins", sans-serif',
+                    fontSize: (() => {
+                      const l = (t('heroGraphic.joinFreeTitle') || '').length;
+                      return l <= 22 ? '15px' : (l <= 32 ? '13px' : '11px');
+                    })(),
+                    color: isDarkMode ? '#FFFFFF' : '#111827'
+                  }}
+                >
+                  {t('heroGraphic.joinFreeTitle')}
+                </div>
+                <div
+                  className="leading-snug mt-0.5"
+                  style={{
+                    fontFamily: '"Poppins", sans-serif',
+                    fontSize: (() => {
+                      const l = (t('heroGraphic.joinFreeSubtitle') || '').length;
+                      return l <= 50 ? '10px' : '9px';
+                    })(),
+                    color: isDarkMode ? '#9CA3AF' : '#6B7280'
+                  }}
+                >
+                  {t('heroGraphic.joinFreeSubtitle')}
+                </div>
+              </div>
             </div>
           </div>
         )}
@@ -137,8 +408,8 @@ const Landing = () => {
                 xmlns="http://www.w3.org/2000/svg"
                 className="object-contain"
               >
-                <path fillRule="evenodd" clipRule="evenodd" d="M5.26177 0H23.2747C26.1674 0 28.5344 2.36695 28.5344 5.25967V23.2726C28.5344 26.1653 26.1674 28.5344 23.2747 28.5344H5.26177C2.36695 28.5344 0 26.1653 0 23.2726V5.25967C0 2.36695 2.36695 0 5.26177 0ZM13.9124 14.8943C13.2431 14.6071 12.768 13.8935 11.9298 13.6992C10.6904 13.412 10.3631 14.6451 11.0197 15.3335C11.461 15.7917 12.2908 16.2499 12.7892 16.7313C13.1375 17.067 14.2059 18.1079 14.5945 18.3212C14.8922 17.2739 16.0197 15.4792 16.6215 14.6388C18.7372 11.6891 21.4462 10.0759 24.4909 7.99191C24.89 7.71741 26.009 7.11565 26.1843 6.71658C25.4073 6.37663 23.2684 7.18533 21.4398 8.07003C21.0999 7.23178 20.2743 6.63634 19.3199 6.63634H8.6359C7.37746 6.63634 6.34707 7.66674 6.34707 8.92517V19.6092C6.34707 20.8676 7.37746 21.8959 8.6359 21.8959H19.3199C20.363 21.8959 21.2498 21.1865 21.5222 20.2257L16.4483 20.2067H8.6359C8.3044 20.2067 8.03624 19.9386 8.03624 19.6092V8.92517C8.03624 8.59367 8.3044 8.32552 8.6359 8.32552H19.3199C19.6282 8.32552 19.8837 8.55989 19.9153 8.86183C19.4719 9.10887 19.1024 9.33269 18.8512 9.50794C17.2401 10.6186 16.0978 11.7609 14.9766 13.3001C14.605 13.8111 14.3115 14.4044 13.9124 14.8943Z" fill="#00A247"/>
-                <path fillRule="evenodd" clipRule="evenodd" d="M155.229 4.91809V9.59077H160.499V10.8767H155.229V20.317C155.229 22.4179 155.668 23.8939 158.084 23.8939C158.836 23.8939 159.684 23.6426 160.468 23.2668L161 24.521C160.029 24.9897 159.057 25.3043 158.084 25.3043C154.79 25.3043 153.724 23.3597 153.724 20.317V10.8767H150.432V9.59077H153.724V5.07434L155.229 4.91809ZM135.816 9.59289V12.3526C137.007 10.22 139.171 9.34162 141.336 9.30995C145.476 9.30995 148.331 11.85 148.331 16.1469V25.0847H146.794V16.1786C146.794 12.6651 144.63 10.7838 141.272 10.8154C138.074 10.8471 135.848 13.2605 135.848 16.4615V25.0847H134.311V9.59289H135.816ZM130.422 4.54225C130.422 6.17231 127.945 6.17231 127.945 4.54225C127.945 2.9122 130.422 2.9122 130.422 4.54225ZM129.921 9.52954V25.0847H128.384V9.52954H129.921ZM122.518 25.0847V15.8027C122.518 12.8234 120.51 10.7204 117.563 10.7204C114.615 10.7204 112.575 12.9163 112.575 15.8956V25.0847H111.038V15.8956C111.038 12.9163 109.001 10.7521 106.053 10.7521C103.103 10.7521 101.098 12.9163 101.098 15.8956V25.0847H99.5604V9.59289H101.003L101.034 12.1647C102.1 10.125 104.077 9.27828 106.085 9.27828C108.437 9.27828 110.914 10.3446 111.824 13.1043C112.763 10.5642 115.179 9.27828 117.563 9.27828C121.357 9.27828 124.055 11.9451 124.055 15.8027V25.0847H122.518ZM86.6699 3.16135V15.8344L91.8768 9.62245H96.4544V9.84204L90.1517 16.8986L97.3328 24.8039V25.0847H92.7234L86.6699 18.0915V25.0847H82.8439V3.16135H86.6699ZM77.637 13.7314C76.5391 12.6967 75.2848 12.3526 73.811 12.3526C71.991 12.3526 70.988 12.9163 70.988 13.8897C70.988 14.8927 71.8981 15.4564 73.8744 15.5831C76.7903 15.771 80.4917 16.4298 80.4917 20.5366C80.4917 23.2668 78.2641 25.6189 73.8427 25.6189C71.3955 25.6189 68.9505 25.2114 66.6912 22.8592L68.5725 20.1291C69.6705 21.3538 72.1789 22.2617 73.9039 22.2934C75.3482 22.325 76.6974 21.5734 76.6974 20.4437C76.6974 19.3774 75.819 18.9382 73.6231 18.8116C70.7051 18.5941 67.2233 17.5257 67.2233 14.0143C67.2233 10.4396 70.9247 9.18537 73.7477 9.18537C76.1632 9.18537 77.9812 9.65412 79.7696 11.2229L77.637 13.7314ZM60.6376 9.62245H64.3073V25.0847H60.7009L60.513 22.8276C59.6347 24.6455 57.2191 25.5239 55.4941 25.5556C50.9164 25.5873 47.5275 22.7642 47.5275 17.3377C47.5275 12.0063 51.0727 9.21493 55.5891 9.2466C57.6583 9.2466 59.6347 10.2179 60.513 11.755L60.6376 9.62245ZM51.3535 17.3377C51.3535 20.2875 53.3932 22.0442 55.9333 22.0442C61.9552 22.0442 61.9552 12.6651 55.9333 12.6651C53.3932 12.6651 51.3535 14.3901 51.3535 17.3377ZM41.2543 5.26438V9.65412H45.5195V12.948H41.2227V19.6287C41.2227 21.1025 42.0398 21.8246 43.2307 21.8246C43.8261 21.8246 44.5166 21.6346 45.0803 21.3538L46.1466 24.6139C45.0508 25.0552 44.1407 25.2431 42.9794 25.2726C39.6243 25.3993 37.4284 23.4863 37.4284 19.6287V12.948H34.542V9.65412H37.4284V5.67189L41.2543 5.26438Z" fill={isDarkMode ? "#FFFFFF" : "#383F47"}/>
+                <path fillRule="evenodd" clipRule="evenodd" d="M5.26177 0H23.2747C26.1674 0 28.5344 2.36695 28.5344 5.25967V23.2726C28.5344 26.1653 26.1674 28.5344 23.2747 28.5344H5.26177C2.36695 28.5344 0 26.1653 0 23.2726V5.25967C0 2.36695 2.36695 0 5.26177 0ZM13.9124 14.8943C13.2431 14.6071 12.768 13.8935 11.9298 13.6992C10.6904 13.412 10.3631 14.6451 11.0197 15.3335C11.461 15.7917 12.2908 16.2499 12.7892 16.7313C13.1375 17.067 14.2059 18.1079 14.5945 18.3212C14.8922 17.2739 16.0197 15.4792 16.6215 14.6388C18.7372 11.6891 21.4462 10.0759 24.4909 7.99191C24.89 7.71741 26.009 7.11565 26.1843 6.71658C25.4073 6.37663 23.2684 7.18533 21.4398 8.07003C21.0999 7.23178 20.2743 6.63634 19.3199 6.63634H8.6359C7.37746 6.63634 6.34707 7.66674 6.34707 8.92517V19.6092C6.34707 20.8676 7.37746 21.8959 8.6359 21.8959H19.3199C20.363 21.8959 21.2498 21.1865 21.5222 20.2257L16.4483 20.2067H8.6359C8.3044 20.2067 8.03624 19.9386 8.03624 19.6092V8.92517C8.03624 8.59367 8.3044 8.32552 8.6359 8.32552H19.3199C19.6282 8.32552 19.8837 8.55989 19.9153 8.86183C19.4719 9.10887 19.1024 9.33269 18.8512 9.50794C17.2401 10.6186 16.0978 11.7609 14.9766 13.3001C14.605 13.8111 14.3115 14.4044 13.9124 14.8943Z" fill="#00A247" />
+                <path fillRule="evenodd" clipRule="evenodd" d="M155.229 4.91809V9.59077H160.499V10.8767H155.229V20.317C155.229 22.4179 155.668 23.8939 158.084 23.8939C158.836 23.8939 159.684 23.6426 160.468 23.2668L161 24.521C160.029 24.9897 159.057 25.3043 158.084 25.3043C154.79 25.3043 153.724 23.3597 153.724 20.317V10.8767H150.432V9.59077H153.724V5.07434L155.229 4.91809ZM135.816 9.59289V12.3526C137.007 10.22 139.171 9.34162 141.336 9.30995C145.476 9.30995 148.331 11.85 148.331 16.1469V25.0847H146.794V16.1786C146.794 12.6651 144.63 10.7838 141.272 10.8154C138.074 10.8471 135.848 13.2605 135.848 16.4615V25.0847H134.311V9.59289H135.816ZM130.422 4.54225C130.422 6.17231 127.945 6.17231 127.945 4.54225C127.945 2.9122 130.422 2.9122 130.422 4.54225ZM129.921 9.52954V25.0847H128.384V9.52954H129.921ZM122.518 25.0847V15.8027C122.518 12.8234 120.51 10.7204 117.563 10.7204C114.615 10.7204 112.575 12.9163 112.575 15.8956V25.0847H111.038V15.8956C111.038 12.9163 109.001 10.7521 106.053 10.7521C103.103 10.7521 101.098 12.9163 101.098 15.8956V25.0847H99.5604V9.59289H101.003L101.034 12.1647C102.1 10.125 104.077 9.27828 106.085 9.27828C108.437 9.27828 110.914 10.3446 111.824 13.1043C112.763 10.5642 115.179 9.27828 117.563 9.27828C121.357 9.27828 124.055 11.9451 124.055 15.8027V25.0847H122.518ZM86.6699 3.16135V15.8344L91.8768 9.62245H96.4544V9.84204L90.1517 16.8986L97.3328 24.8039V25.0847H92.7234L86.6699 18.0915V25.0847H82.8439V3.16135H86.6699ZM77.637 13.7314C76.5391 12.6967 75.2848 12.3526 73.811 12.3526C71.991 12.3526 70.988 12.9163 70.988 13.8897C70.988 14.8927 71.8981 15.4564 73.8744 15.5831C76.7903 15.771 80.4917 16.4298 80.4917 20.5366C80.4917 23.2668 78.2641 25.6189 73.8427 25.6189C71.3955 25.6189 68.9505 25.2114 66.6912 22.8592L68.5725 20.1291C69.6705 21.3538 72.1789 22.2617 73.9039 22.2934C75.3482 22.325 76.6974 21.5734 76.6974 20.4437C76.6974 19.3774 75.819 18.9382 73.6231 18.8116C70.7051 18.5941 67.2233 17.5257 67.2233 14.0143C67.2233 10.4396 70.9247 9.18537 73.7477 9.18537C76.1632 9.18537 77.9812 9.65412 79.7696 11.2229L77.637 13.7314ZM60.6376 9.62245H64.3073V25.0847H60.7009L60.513 22.8276C59.6347 24.6455 57.2191 25.5239 55.4941 25.5556C50.9164 25.5873 47.5275 22.7642 47.5275 17.3377C47.5275 12.0063 51.0727 9.21493 55.5891 9.2466C57.6583 9.2466 59.6347 10.2179 60.513 11.755L60.6376 9.62245ZM51.3535 17.3377C51.3535 20.2875 53.3932 22.0442 55.9333 22.0442C61.9552 22.0442 61.9552 12.6651 55.9333 12.6651C53.3932 12.6651 51.3535 14.3901 51.3535 17.3377ZM41.2543 5.26438V9.65412H45.5195V12.948H41.2227V19.6287C41.2227 21.1025 42.0398 21.8246 43.2307 21.8246C43.8261 21.8246 44.5166 21.6346 45.0803 21.3538L46.1466 24.6139C45.0508 25.0552 44.1407 25.2431 42.9794 25.2726C39.6243 25.3993 37.4284 23.4863 37.4284 19.6287V12.948H34.542V9.65412H37.4284V5.67189L41.2543 5.26438Z" fill={isDarkMode ? "#FFFFFF" : "#383F47"} />
               </svg>
             </div>
 
@@ -218,19 +489,17 @@ const Landing = () => {
         {!currentUser && mobileMenuOpen && (
           <div className="lg:hidden relative z-50 px-4 mb-4 mx-auto w-full" style={{ maxWidth: '408px' }}>
             <div
-              className={`rounded-3xl p-6 shadow-2xl flex flex-col gap-4 transition-colors duration-300 ${
-                isDarkMode
-                  ? 'bg-[rgba(18,22,28,0.98)] border border-white/10'
-                  : 'bg-white border border-gray-100 shadow-xl'
-              }`}
+              className={`rounded-3xl p-6 shadow-2xl flex flex-col gap-4 transition-colors duration-300 ${isDarkMode
+                ? 'bg-[rgba(18,22,28,0.98)] border border-white/10'
+                : 'bg-white border border-gray-100 shadow-xl'
+                }`}
             >
               <div className="flex flex-col gap-3 text-left">
                 <a
                   href="#hero"
                   onClick={() => setMobileMenuOpen(false)}
-                  className={`py-2 px-3 font-medium text-[16px] rounded-xl transition-colors ${
-                    isDarkMode ? 'text-white hover:bg-white/10' : 'text-[#1E1E1E] hover:bg-gray-50'
-                  }`}
+                  className={`py-2 px-3 font-medium text-[16px] rounded-xl transition-colors ${isDarkMode ? 'text-white hover:bg-white/10' : 'text-[#1E1E1E] hover:bg-gray-50'
+                    }`}
                   style={{ fontFamily: 'Poppins, sans-serif' }}
                 >
                   {t('nav.home')}
@@ -238,9 +507,8 @@ const Landing = () => {
                 <a
                   href="#earn"
                   onClick={() => setMobileMenuOpen(false)}
-                  className={`py-2 px-3 font-medium text-[16px] rounded-xl transition-colors ${
-                    isDarkMode ? 'text-white hover:bg-white/10' : 'text-[#1E1E1E] hover:bg-gray-50'
-                  }`}
+                  className={`py-2 px-3 font-medium text-[16px] rounded-xl transition-colors ${isDarkMode ? 'text-white hover:bg-white/10' : 'text-[#1E1E1E] hover:bg-gray-50'
+                    }`}
                   style={{ fontFamily: 'Poppins, sans-serif' }}
                 >
                   {t('nav.earn')}
@@ -248,9 +516,8 @@ const Landing = () => {
                 <a
                   href="#how-it-works"
                   onClick={() => setMobileMenuOpen(false)}
-                  className={`py-2 px-3 font-medium text-[16px] rounded-xl transition-colors ${
-                    isDarkMode ? 'text-white hover:bg-white/10' : 'text-[#1E1E1E] hover:bg-gray-50'
-                  }`}
+                  className={`py-2 px-3 font-medium text-[16px] rounded-xl transition-colors ${isDarkMode ? 'text-white hover:bg-white/10' : 'text-[#1E1E1E] hover:bg-gray-50'
+                    }`}
                   style={{ fontFamily: 'Poppins, sans-serif' }}
                 >
                   {t('nav.howItWorks')}
@@ -258,9 +525,8 @@ const Landing = () => {
                 <a
                   href="#features"
                   onClick={() => setMobileMenuOpen(false)}
-                  className={`py-2 px-3 font-medium text-[16px] rounded-xl transition-colors ${
-                    isDarkMode ? 'text-white hover:bg-white/10' : 'text-[#1E1E1E] hover:bg-gray-50'
-                  }`}
+                  className={`py-2 px-3 font-medium text-[16px] rounded-xl transition-colors ${isDarkMode ? 'text-white hover:bg-white/10' : 'text-[#1E1E1E] hover:bg-gray-50'
+                    }`}
                   style={{ fontFamily: 'Poppins, sans-serif' }}
                 >
                   {t('nav.features')}
@@ -268,9 +534,8 @@ const Landing = () => {
                 <a
                   href="#faq"
                   onClick={() => setMobileMenuOpen(false)}
-                  className={`py-2 px-3 font-medium text-[16px] rounded-xl transition-colors ${
-                    isDarkMode ? 'text-white hover:bg-white/10' : 'text-[#1E1E1E] hover:bg-gray-50'
-                  }`}
+                  className={`py-2 px-3 font-medium text-[16px] rounded-xl transition-colors ${isDarkMode ? 'text-white hover:bg-white/10' : 'text-[#1E1E1E] hover:bg-gray-50'
+                    }`}
                   style={{ fontFamily: 'Poppins, sans-serif' }}
                 >
                   {t('nav.faq')}
@@ -358,17 +623,17 @@ const Landing = () => {
             >
               <div
                 className={isMobile ? "flex flex-col items-center text-center mx-auto w-full gap-6" : "flex flex-col text-left"}
-                style={!isMobile ? { width: isFr ? 664 : 608, gap: 24 } : { maxWidth: 424 }}
+                style={!isMobile ? { width: (isPt || isIt || isPl || isTr) ? 580 : (isRu ? 580 : ((isFr || isEs) ? 664 : 608)), gap: 24 } : { maxWidth: 424 }}
               >
                 <h1
                   className="m-0 transition-colors duration-300"
                   style={!isMobile ? {
                     width: '100%',
-                    maxWidth: isFr ? 664 : 608,
+                    maxWidth: (isPt || isIt || isPl || isTr) ? 580 : (isRu ? 580 : ((isFr || isEs) ? 664 : 608)),
                     fontFamily: '"Bricolage Grotesque", sans-serif',
                     fontWeight: 700,
-                    fontSize: isFr ? 45 : 55,
-                    lineHeight: isFr ? '52px' : '60px',
+                    fontSize: isIt ? 41 : (isPt ? 38 : ((isPl || isTr) ? 37 : ((isEs || isRu) ? 42 : (isFr ? 45 : 55)))),
+                    lineHeight: isIt ? '47px' : (isPt ? '44px' : ((isPl || isTr) ? '43px' : ((isEs || isRu) ? '48px' : (isFr ? '52px' : '60px')))),
                     letterSpacing: '-0.02em',
                     color: isDarkMode ? '#FFFFFF' : 'rgba(14, 15, 12, 1)'
                   } : {
@@ -376,8 +641,8 @@ const Landing = () => {
                     maxWidth: 424,
                     fontFamily: '"Bricolage Grotesque", sans-serif',
                     fontWeight: 700,
-                    fontSize: 'clamp(42px, 14vw, 64px)',
-                    lineHeight: 'clamp(38px, 12.5vw, 56px)',
+                    fontSize: (isFr || isEs || isRu || isPt || isIt || isPl || isTr) ? 'clamp(30px, 8.5vw, 40px)' : 'clamp(42px, 14vw, 64px)',
+                    lineHeight: (isFr || isEs || isRu || isPt || isIt || isPl || isTr) ? 'clamp(34px, 9.8vw, 44px)' : 'clamp(38px, 12.5vw, 56px)',
                     letterSpacing: '-0.02em',
                     textAlign: 'center',
                     color: isDarkMode ? '#FFFFFF' : 'rgba(14, 15, 12, 1)'
@@ -385,10 +650,10 @@ const Landing = () => {
                 >
                   {isMobile ? (
                     <>
-                      {t('hero.titleMobileLine1')}<br />
-                      {t('hero.titleMobileLine2')}<br />
-                      {t('hero.titleMobileLine3')}<br />
-                      {t('hero.titleMobileLine4')}
+                      <span className="whitespace-nowrap">{t('hero.titleMobileLine1')}</span><br />
+                      <span className="whitespace-nowrap">{t('hero.titleMobileLine2')}</span><br />
+                      <span className="whitespace-nowrap">{t('hero.titleMobileLine3')}</span><br />
+                      <span className="whitespace-nowrap">{t('hero.titleMobileLine4')}</span>
                     </>
                   ) : (
                     <>
@@ -401,19 +666,21 @@ const Landing = () => {
                   className="m-0 whitespace-pre-line transition-colors duration-300"
                   style={!isMobile ? {
                     width: '100%',
-                    maxWidth: isFr ? 664 : 608,
+                    maxWidth: isIt ? 620 : ((isRu || isPt || isPl || isTr) ? 575 : ((isFr || isEs) ? 664 : 608)),
                     fontFamily: '"Poppins", sans-serif',
                     fontWeight: 500,
-                    fontSize: isFr ? 15.5 : 16,
-                    lineHeight: '26px',
+                    fontSize: isIt ? 15 : ((isRu || isPt || isPl || isTr) ? 14.5 : ((isFr || isEs) ? 15.5 : 16)),
+                    lineHeight: isIt ? '25px' : ((isRu || isPt || isPl || isTr) ? '24px' : '26px'),
                     color: isDarkMode ? 'rgba(255, 255, 255, 0.7)' : 'rgba(14, 15, 12, 1)'
                   } : {
                     width: '100%',
-                    maxWidth: 400,
+                    maxWidth: (isFr || isEs || isRu || isPt || isIt || isPl || isTr) ? 360 : 400,
+                    paddingLeft: 8,
+                    paddingRight: 8,
                     fontFamily: '"Poppins", sans-serif',
                     fontWeight: 500,
-                    fontSize: 'clamp(13px, 3.8vw, 15.5px)',
-                    lineHeight: '26px',
+                    fontSize: (isFr || isEs || isRu || isPt || isIt || isPl || isTr) ? 'clamp(12px, 3.4vw, 14px)' : 'clamp(13px, 3.8vw, 15.5px)',
+                    lineHeight: (isFr || isEs || isRu || isPt || isIt || isPl || isTr) ? '22px' : '26px',
                     letterSpacing: '0%',
                     textAlign: 'center',
                     color: isDarkMode ? 'rgba(255, 255, 255, 0.7)' : 'rgba(14, 15, 12, 1)'
@@ -421,9 +688,9 @@ const Landing = () => {
                 >
                   {isMobile ? (
                     <>
-                      <span className="block">{t('hero.subtitleMobileLine1')}</span>
-                      <span className="block">{t('hero.subtitleMobileLine2')}</span>
-                      <span className="block">{t('hero.subtitleMobileLine3')}</span>
+                      <span className="block whitespace-nowrap">{t('hero.subtitleMobileLine1')}</span>
+                      <span className="block whitespace-nowrap">{t('hero.subtitleMobileLine2')}</span>
+                      <span className="block whitespace-nowrap">{t('hero.subtitleMobileLine3')}</span>
                     </>
                   ) : (
                     t('hero.subtitle')
@@ -431,21 +698,21 @@ const Landing = () => {
                 </p>
 
                 <div
-                  className={isMobile ? "flex items-center justify-center mx-auto gap-3" : "flex items-center gap-3"}
+                  className={isMobile ? "flex items-center justify-center mx-auto gap-2.5 sm:gap-3 w-full max-w-[360px]" : "flex items-center gap-3"}
                   style={{ width: 'auto', minHeight: 49 }}
                 >
                   <button
                     onClick={() => currentUser ? navigate('/dashboard') : setAuthModal({ isOpen: true, tab: 'register' })}
                     className="flex items-center justify-center transition-all hover:bg-[#2A3544] cursor-pointer whitespace-nowrap"
                     style={{
-                      minWidth: 150,
+                      minWidth: isMobile ? 120 : 150,
                       height: 49,
-                      padding: '0 28px',
+                      padding: isMobile ? '0 16px' : '0 28px',
                       borderRadius: 80,
                       backgroundColor: 'rgba(36, 50, 77, 1)',
                       fontFamily: '"Poppins", sans-serif',
                       fontWeight: 500,
-                      fontSize: 16,
+                      fontSize: isMobile ? (isFr || isEs || isRu || isPl || isTr ? 14 : 15) : 16,
                       color: 'rgba(255, 255, 255, 1)'
                     }}
                   >
@@ -455,14 +722,14 @@ const Landing = () => {
                     onClick={() => currentUser ? navigate('/dashboard') : setAuthModal({ isOpen: true, tab: 'login' })}
                     className="flex items-center justify-center transition-all hover:opacity-90 cursor-pointer whitespace-nowrap"
                     style={{
-                      minWidth: 99,
+                      minWidth: isMobile ? 80 : 99,
                       height: 49,
-                      padding: '0 28px',
+                      padding: isMobile ? '0 16px' : '0 28px',
                       borderRadius: 80,
                       backgroundColor: isDarkMode ? 'rgba(255, 255, 255, 1)' : 'rgba(239, 239, 239, 1)',
                       fontFamily: '"Poppins", sans-serif',
                       fontWeight: 500,
-                      fontSize: 16,
+                      fontSize: isMobile ? (isFr || isEs || isRu || isPl || isTr ? 14 : 15) : 16,
                       color: 'rgba(0, 0, 0, 1)'
                     }}
                   >
@@ -474,29 +741,29 @@ const Landing = () => {
               {/* Stats below buttons */}
               <div
                 className={isMobile ? "flex items-center justify-between w-full mx-auto" : "flex items-center"}
-                style={!isMobile ? { minWidth: 460, gap: 48, marginTop: 8 } : { maxWidth: 360, marginTop: 32, gap: 20 }}
+                style={!isMobile ? { minWidth: 460, gap: 48, marginTop: 8 } : { maxWidth: 360, width: '100%', marginTop: 32, gap: (isRu || isPt || isIt || isPl || isTr) ? 8 : ((isFr || isEs) ? 12 : 20), paddingLeft: (isRu || isPt || isIt || isPl || isTr) ? 2 : 4, paddingRight: (isRu || isPt || isIt || isPl || isTr) ? 2 : 4 }}
               >
                 {/* Total Users */}
-                <div className="flex items-center gap-3 sm:gap-4">
+                <div className={`flex items-center ${(isRu || isPt || isIt || isPl || isTr) ? 'gap-2 sm:gap-3' : 'gap-3 sm:gap-4'} min-w-0`}>
                   <img
                     src="/coins/total user.png"
                     alt="Users"
                     className="object-contain flex-shrink-0"
                     style={{
-                      width: isMobile ? 54 : 44,
-                      height: isMobile ? 54 : 44,
+                      width: isMobile ? ((isRu || isPt || isIt || isPl || isTr) ? 38 : ((isFr || isEs) ? 44 : 54)) : 44,
+                      height: isMobile ? ((isRu || isPt || isIt || isPl || isTr) ? 38 : ((isFr || isEs) ? 44 : 54)) : 44,
                     }}
                   />
-                  <div className="flex flex-col justify-center">
+                  <div className="flex flex-col justify-center min-w-0">
                     <span className="uppercase whitespace-nowrap transition-colors duration-300" style={{
-                      fontFamily: '"Poppins", sans-serif', fontWeight: 500, fontSize: 12,
-                      lineHeight: '16px', letterSpacing: '0.08em', color: isDarkMode ? 'rgba(255, 255, 255, 0.6)' : 'rgba(14, 15, 12, 1)',
+                      fontFamily: '"Poppins", sans-serif', fontWeight: 500, fontSize: isMobile ? ((isRu || isPt || isIt || isPl || isTr) ? 9.5 : ((isFr || isEs) ? 10.5 : 11)) : 12,
+                      lineHeight: '16px', letterSpacing: isMobile ? ((isRu || isPt || isIt || isPl || isTr) ? '0.01em' : ((isFr || isEs) ? '0.02em' : '0.04em')) : '0.08em', color: isDarkMode ? 'rgba(255, 255, 255, 0.6)' : 'rgba(14, 15, 12, 1)',
                       marginBottom: 4
                     }}>
                       {t('hero.totalUsers')}
                     </span>
                     <span className="transition-colors duration-300" style={{
-                      fontFamily: '"Bricolage Grotesque", sans-serif', fontWeight: 700, fontSize: 30,
+                      fontFamily: '"Bricolage Grotesque", sans-serif', fontWeight: 700, fontSize: isMobile ? ((isRu || isPt || isIt || isPl || isTr) ? 24 : 26) : 30,
                       lineHeight: '32px', letterSpacing: '-0.02em', color: isDarkMode ? '#FFFFFF' : 'rgba(14, 15, 12, 1)',
                     }}>
                       {stats.totalUsers.toLocaleString('de-DE')}
@@ -505,27 +772,27 @@ const Landing = () => {
                 </div>
 
                 {/* Total Paid */}
-                <div className="flex items-center gap-3 sm:gap-4">
+                <div className={`flex items-center ${(isRu || isPt || isIt || isPl || isTr) ? 'gap-2 sm:gap-3' : 'gap-3 sm:gap-4'} min-w-0`}>
                   <img
                     src="/coins/total paid.png"
                     alt="Paid"
                     className="object-contain flex-shrink-0"
                     style={{
-                      width: isMobile ? 54 : 44,
-                      height: isMobile ? 54 : 44,
+                      width: isMobile ? ((isRu || isPt || isIt || isPl || isTr) ? 38 : ((isFr || isEs) ? 44 : 54)) : 44,
+                      height: isMobile ? ((isRu || isPt || isIt || isPl || isTr) ? 38 : ((isFr || isEs) ? 44 : 54)) : 44,
                       transform: 'translateY(2px)',
                     }}
                   />
-                  <div className="flex flex-col justify-center">
+                  <div className="flex flex-col justify-center min-w-0">
                     <span className="uppercase whitespace-nowrap transition-colors duration-300" style={{
-                      fontFamily: '"Poppins", sans-serif', fontWeight: 500, fontSize: 12,
-                      lineHeight: '16px', letterSpacing: '0.08em', color: isDarkMode ? 'rgba(255, 255, 255, 0.6)' : 'rgba(14, 15, 12, 1)',
+                      fontFamily: '"Poppins", sans-serif', fontWeight: 500, fontSize: isMobile ? ((isRu || isPt || isIt || isPl || isTr) ? 9.5 : ((isFr || isEs) ? 10.5 : 11)) : 12,
+                      lineHeight: '16px', letterSpacing: isMobile ? ((isRu || isPt || isIt || isPl || isTr) ? '0.01em' : ((isFr || isEs) ? '0.02em' : '0.04em')) : '0.08em', color: isDarkMode ? 'rgba(255, 255, 255, 0.6)' : 'rgba(14, 15, 12, 1)',
                       marginBottom: 4
                     }}>
                       {t('hero.totalPaid')}
                     </span>
                     <span className="transition-colors duration-300" style={{
-                      fontFamily: '"Bricolage Grotesque", sans-serif', fontWeight: 700, fontSize: 30,
+                      fontFamily: '"Bricolage Grotesque", sans-serif', fontWeight: 700, fontSize: isMobile ? ((isRu || isPt || isIt || isPl || isTr) ? 24 : 26) : 30,
                       lineHeight: '32px', letterSpacing: '-0.02em', color: isDarkMode ? '#FFFFFF' : 'rgba(14, 15, 12, 1)',
                     }}>
                       ${stats.totalPaidOut.toLocaleString('de-DE', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
@@ -539,20 +806,270 @@ const Landing = () => {
                 <div
                   className="w-[calc(100%+2rem)] -mx-4 flex justify-center items-center mt-8 overflow-hidden"
                 >
-                  <img
-                    src={
-                      isDarkMode
-                        ? (isUr ? "/coins/Hero Urdu Dark mobile.jpg" : (isDe ? "/coins/Hero section german mobile Black.png" : "/coins/Hero section Eng mobile Black.png"))
-                        : (isUr ? "/coins/Hero Urdu Light Mobile.jpg" : (isDe ? "/coins/Hero section german mobile.png" : "/coins/mobile hero.png"))
-                    }
-                    alt="Mobile Hero Graphic"
-                    className={`w-full h-auto object-cover ${isUr ? 'rounded-b-[26px]' : ''}`}
-                    style={{
-                      maxWidth: '440px',
-                      width: '100%',
-                      opacity: 1,
-                    }}
-                  />
+                  <div
+                    className="relative pointer-events-none"
+                    style={{ maxWidth: '440px', width: '100%' }}
+                  >
+                    <img
+                      src={isDarkMode ? "/coins/hero_mobile_base_dark.png" : "/coins/hero_mobile_base_light.png"}
+                      alt="Mobile Hero Graphic"
+                      className="w-full h-auto object-cover pointer-events-none select-none"
+                    />
+
+                    {/* 1. Earn by playing games tab */}
+                    <div
+                      className="absolute flex items-center justify-center font-bold text-center pointer-events-auto"
+                      style={{
+                        left: '57.9%',
+                        top: '8.79%',
+                        transform: 'translate(-50%, -50%)',
+                        fontFamily: '"Poppins", sans-serif',
+                        fontWeight: 700,
+                        fontSize: (() => {
+                          const l = (t('heroGraphic.earnByPlayingGames') || '').length;
+                          return l <= 22 ? '13px' : (l <= 32 ? '11px' : '9.5px');
+                        })(),
+                        color: '#1E242B',
+                      }}
+                    >
+                      <span className="whitespace-nowrap px-1">{t('heroGraphic.earnByPlayingGames')}</span>
+                    </div>
+
+                    {/* 2. Earn from surveys tab */}
+                    <div
+                      className="absolute flex items-center justify-center font-bold text-center pointer-events-auto"
+                      style={{
+                        left: '30.3%',
+                        top: '52.3%',
+                        transform: 'translate(-50%, -50%)',
+                        maxWidth: '38%',
+                        fontFamily: '"Poppins", sans-serif',
+                        fontWeight: 700,
+                        fontSize: (() => {
+                          const l = (t('heroGraphic.earnFromSurveys') || '').length;
+                          return l <= 18 ? '12px' : (l <= 26 ? '10.5px' : (l <= 32 ? '9px' : '8px'));
+                        })(),
+                        color: isDarkMode ? '#FFFFFF' : '#1E242B',
+                      }}
+                    >
+                      <span className="whitespace-nowrap px-0.5">{t('heroGraphic.earnFromSurveys')}</span>
+                    </div>
+
+                    {/* 3. Survey Card Questions & Options */}
+                    <div
+                      className="absolute flex flex-col justify-between overflow-hidden pointer-events-auto"
+                      style={{
+                        left: '10.0%',
+                        top: '61.5%',
+                        width: '42.0%',
+                        height: '23.0%',
+                        fontFamily: '"Poppins", sans-serif',
+                      }}
+                    >
+                      <div>
+                        <div
+                          className="leading-tight"
+                          style={{
+                            fontFamily: '"Poppins", sans-serif',
+                            fontWeight: 700,
+                            fontSize: '10px',
+                            color: isDarkMode ? '#A1A7B4' : '#6B7280',
+                          }}
+                        >
+                          {t('heroGraphic.questionNumber')}
+                        </div>
+                        <div
+                          className="leading-snug mt-1"
+                          style={{
+                            fontFamily: '"Poppins", sans-serif',
+                            fontWeight: 700,
+                            fontSize: (() => {
+                              const l = (t('heroGraphic.questionTitle') || '').length;
+                              return l <= 20 ? '13.5px' : (l <= 28 ? '12px' : '10.5px');
+                            })(),
+                            color: isDarkMode ? '#FFFFFF' : '#111827',
+                          }}
+                        >
+                          {t('heroGraphic.questionTitle')}
+                        </div>
+                      </div>
+
+                      <div>
+                        <div
+                          className="tracking-wider uppercase mb-1"
+                          style={{
+                            fontFamily: '"Poppins", sans-serif',
+                            fontWeight: 700,
+                            fontSize: '8px',
+                            letterSpacing: '0.06em',
+                            color: isDarkMode ? '#A1A7B4' : '#8A92A0',
+                          }}
+                        >
+                          {t('heroGraphic.selectOnlyOne')}
+                        </div>
+                        <div className="flex items-center gap-1.5 mb-1">
+                          <span
+                            className="w-2.5 h-2.5 rounded-full border flex-shrink-0"
+                            style={{ borderColor: isDarkMode ? '#6B7280' : '#C4C8D0' }}
+                          />
+                          <span
+                            className="leading-none"
+                            style={{
+                              fontFamily: '"Poppins", sans-serif',
+                              fontWeight: 600,
+                              fontSize: '11px',
+                              color: isDarkMode ? '#E5E7EB' : '#1F2937',
+                            }}
+                          >
+                            {t('heroGraphic.optionYes')}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                          <span
+                            className="w-2.5 h-2.5 rounded-full border flex-shrink-0"
+                            style={{ borderColor: isDarkMode ? '#6B7280' : '#C4C8D0' }}
+                          />
+                          <span
+                            className="leading-none"
+                            style={{
+                              fontFamily: '"Poppins", sans-serif',
+                              fontWeight: 600,
+                              fontSize: '11px',
+                              color: isDarkMode ? '#E5E7EB' : '#1F2937',
+                            }}
+                          >
+                            {t('heroGraphic.optionNo')}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* 4. Survey Back Button */}
+                    <div
+                      className="absolute flex items-center justify-center text-center pointer-events-auto"
+                      style={{
+                        left: '30.06%',
+                        top: '89.84%',
+                        transform: 'translate(-50%, -50%)',
+                        fontFamily: '"Poppins", sans-serif',
+                        fontWeight: 700,
+                        fontSize: '11px',
+                        color: '#1E242B',
+                      }}
+                    >
+                      <span className="whitespace-nowrap px-0.5">{t('heroGraphic.btnBack')}</span>
+                    </div>
+
+                    {/* 5. Survey Next Button */}
+                    <div
+                      className="absolute flex items-center justify-center text-center text-white pointer-events-auto"
+                      style={{
+                        left: '44.89%',
+                        top: '89.84%',
+                        transform: 'translate(-50%, -50%)',
+                        fontFamily: '"Poppins", sans-serif',
+                        fontWeight: 700,
+                        fontSize: '11px',
+                      }}
+                    >
+                      <span className="whitespace-nowrap px-0.5">{t('heroGraphic.btnNext')}</span>
+                    </div>
+
+                    {/* 6. Fast Payouts Card Text */}
+                    <div
+                      className="absolute flex flex-col justify-center overflow-hidden pointer-events-auto"
+                      style={{
+                        left: '62.5%',
+                        top: '51.8%',
+                        width: '31.5%',
+                        height: '8.5%',
+                        fontFamily: '"Poppins", sans-serif',
+                      }}
+                    >
+                      <div
+                        className="font-bold leading-tight"
+                        style={{
+                          fontFamily: '"Poppins", sans-serif',
+                          fontSize: (() => {
+                            const l = (t('heroGraphic.fastPayoutsTitle') || '').length;
+                            return l <= 16 ? '12.5px' : '11px';
+                          })(),
+                          color: isDarkMode ? '#FFFFFF' : '#111827',
+                        }}
+                      >
+                        {t('heroGraphic.fastPayoutsTitle')}
+                      </div>
+                      <div
+                        className="leading-tight mt-0.5"
+                        style={{
+                          fontFamily: '"Poppins", sans-serif',
+                          fontSize: '8.5px',
+                          color: isDarkMode ? '#9CA3AF' : '#6B7280',
+                        }}
+                      >
+                        {t('heroGraphic.fastPayoutsSubtitle')}
+                      </div>
+                    </div>
+
+                    {/* 7. Join Free Badge "FREE" */}
+                    <div
+                      className="absolute flex items-center justify-center text-center pointer-events-auto"
+                      style={{
+                        left: '68.24%',
+                        top: '69.49%',
+                        transform: 'translate(-50%, -50%)',
+                        fontFamily: '"Poppins", sans-serif',
+                        fontWeight: 800,
+                        fontSize: (() => {
+                          const l = (t('heroGraphic.freeBadge') || '').length;
+                          return l <= 4 ? '10px' : (l <= 7 ? '8.5px' : '5.8px');
+                        })(),
+                        letterSpacing: (() => {
+                          const l = (t('heroGraphic.freeBadge') || '').length;
+                          return l <= 7 ? '0.04em' : '-0.02em';
+                        })(),
+                        color: '#24324D',
+                      }}
+                    >
+                      <span className="whitespace-nowrap uppercase">{t('heroGraphic.freeBadge')}</span>
+                    </div>
+
+                    {/* 8. Join Free Card Text */}
+                    <div
+                      className="absolute flex flex-col justify-center overflow-hidden pointer-events-auto"
+                      style={{
+                        left: '62.5%',
+                        top: '73.2%',
+                        width: '31.5%',
+                        height: '9.0%',
+                        fontFamily: '"Poppins", sans-serif',
+                      }}
+                    >
+                      <div
+                        className="font-bold leading-tight"
+                        style={{
+                          fontFamily: '"Poppins", sans-serif',
+                          fontSize: (() => {
+                            const l = (t('heroGraphic.joinFreeTitle') || '').length;
+                            return l <= 20 ? '12.5px' : (l <= 30 ? '11px' : '9.5px');
+                          })(),
+                          color: isDarkMode ? '#FFFFFF' : '#111827',
+                        }}
+                      >
+                        {t('heroGraphic.joinFreeTitle')}
+                      </div>
+                      <div
+                        className="leading-tight mt-0.5"
+                        style={{
+                          fontFamily: '"Poppins", sans-serif',
+                          fontSize: '8.5px',
+                          color: isDarkMode ? '#9CA3AF' : '#6B7280',
+                        }}
+                      >
+                        {t('heroGraphic.joinFreeSubtitle')}
+                      </div>
+                    </div>
+                  </div>
                 </div>
               )}
             </div>
@@ -898,42 +1415,61 @@ const Landing = () => {
 
           {/* Image (Second on mobile, First on Desktop) */}
           <div
-            className={`order-2 lg:order-1 flex-shrink-0 w-full lg:w-[640px] h-auto lg:h-[558px] px-0 mt-6 lg:mt-0 flex ${isMobile && (isDe || isUr) ? 'justify-start' : 'justify-center'} lg:justify-start overflow-hidden rounded-[24px] lg:rounded-[32px]`}
+            className="order-2 lg:order-1 relative flex-shrink-0 w-full lg:w-[640px] h-auto lg:h-[558px] px-0 mt-6 lg:mt-0 flex justify-center lg:justify-start overflow-hidden rounded-[24px] lg:rounded-[32px]"
             style={isMobile ? { width: '100%', maxWidth: '100%' } : {}}
           >
             <img
               src={
                 isMobile
-                  ? (isUr
-                      ? "/coins/why chose us Urdu Light Mobile.jpg"
-                      : (isDe ? "/coins/Germanwhychosusmobile.png" : "/coins/whychosemobile.png"))
-                  : (isDarkMode
-                      ? (isUr
-                          ? "/coins/why chose us Urdu Dark Desktop.jpg"
-                          : (isDe ? "/coins/WhycoseusBlackGerman.png" : "/coins/WhycoseusBlackEnglish.png"))
-                      : (isUr
-                          ? "/coins/why chose us Urdu Light Desktop.png"
-                          : (isDe ? "/coins/Germanwhychosus.png" : "/coins/why chose us.png"))
-                    )
+                  ? "/coins/whychoseus1mobile.png"
+                  : (isDarkMode ? "/coins/whychoseus1dark.png" : "/coins/whychoseus1.png")
               }
               alt="Why Choose Us"
-              className="w-full h-auto object-cover rounded-[24px] lg:rounded-[32px]"
-              style={
-                isMobile
-                  ? {
-                    width: isDe ? 'calc(100% + 18px)' : '100%',
-                    maxWidth: isDe ? 'none' : undefined,
-                    opacity: 1
-                  }
-                  : {
-                    width: '100%',
-                    height: '100%',
-                    position: 'relative',
-                    left: (isDe || isUr) ? '0px' : '-16px',
-                    clipPath: (isDe || isUr) ? 'inset(0 0 0 0 round 32px)' : undefined
-                  }
-              }
+              className="w-full h-auto lg:h-full object-cover rounded-[24px] lg:rounded-[32px] block pointer-events-none select-none"
             />
+
+            {/* Top Earners Tab Overlay */}
+            <div
+              className={`absolute z-10 font-bold tracking-tight text-center pointer-events-auto whitespace-nowrap ${isDarkMode && !isMobile ? 'text-white' : 'text-[#181d24]'
+                } ${isMobile
+                  ? ((t('whyChooseUs.topEarners') || '').length > 13
+                    ? 'text-[11px] sm:text-[13px]'
+                    : 'text-[13px] sm:text-[15px]')
+                  : ((t('whyChooseUs.topEarners') || '').length > 13
+                    ? 'text-[14px] lg:text-[15px] xl:text-[16px]'
+                    : 'text-[16px] lg:text-[18px] xl:text-[19px]')
+                }`}
+              style={{
+                left: isMobile ? '53.6%' : (isDarkMode ? '54.8%' : '58.2%'),
+                top: isMobile ? '59.9%' : '59.8%',
+                transform: 'translate(-50%, -50%)',
+              }}
+              dir={isUr ? 'rtl' : 'ltr'}
+            >
+              {t('whyChooseUs.topEarners') || 'Top Earners'}
+            </div>
+
+            {/* Bottom Text Overlay ("Your journey starts here.") */}
+            <div
+              className={`absolute z-10 font-semibold leading-tight pointer-events-auto text-center whitespace-nowrap ${isDarkMode && !isMobile ? 'text-[#f8fafc]' : 'text-[#0f172a]'
+                } ${isMobile
+                  ? ((t('whyChooseUs.yourJourneyStartsHere') || '').length > 22
+                    ? 'text-[10px] sm:text-[12px]'
+                    : 'text-[12px] sm:text-[13px]')
+                  : ((t('whyChooseUs.yourJourneyStartsHere') || '').length > 25
+                    ? 'text-[13px] lg:text-[14px] xl:text-[15px]'
+                    : 'text-[14px] lg:text-[16px] xl:text-[17px]')
+                }`}
+              style={{
+                left: isMobile ? '53.6%' : (isDarkMode ? '54.8%' : '58.2%'),
+                top: isMobile ? 'calc(78.0% - 8px)' : 'calc(80.3% - 8px)',
+                transform: 'translate(-50%, -50%)',
+                maxWidth: isMobile ? '80%' : '70%',
+              }}
+              dir={isUr ? 'rtl' : 'ltr'}
+            >
+              {t('whyChooseUs.yourJourneyStartsHere') || 'Your journey starts here.'}
+            </div>
           </div>
         </section>
 
@@ -1006,26 +1542,360 @@ const Landing = () => {
               className="grid grid-cols-1 lg:grid-cols-3 mx-auto w-full px-0"
               style={!isMobile ? { width: 1328, maxWidth: '100%', height: 368, gap: 22 } : { maxWidth: 440, height: 'auto', gap: 20 }}
             >
-              {(isUr
-                ? (isDarkMode
-                    ? ['/coins/sew1 Urdu light.png', '/coins/sew2  Urdu dark.png', '/coins/sew3  Urdu dark.png']
-                    : ['/coins/sew1 Urdu light.png', '/coins/sew2  Urdu light.png', '/coins/sew3 Urdu light.png']
-                  )
-                : isDe
-                ? ['/coins/sew1german.png', '/coins/sew2german.png', '/coins/sew3german.png']
-                : (isDarkMode
-                    ? ['/coins/sewBlackenglish.png', '/coins/sew2Blackenglish.png', '/coins/sew3Blackenglish.png']
-                    : ['/coins/sew1.png', '/coins/Mask group.png', '/coins/sew3.png']
-                  )
-              ).map((imgSrc, idx) => (
+              {/* Card 1: Surveys (Base image + dynamic i18n overlays across all languages) */}
+              <div
+                className="relative w-full mx-auto rounded-[24px] overflow-hidden"
+                style={!isMobile ? { maxWidth: '100%', width: 428, height: 368, clipPath: 'inset(0 round 24px)' } : { width: '100%', maxWidth: '100%', aspectRatio: '856 / 736', clipPath: 'inset(0 round 24px)' }}
+              >
                 <img
-                  key={idx}
-                  src={imgSrc}
-                  alt={`Start Earning Option ${idx + 1}`}
-                  className="w-full object-cover sm:object-contain mx-auto"
-                  style={!isMobile ? { maxWidth: '100%', width: 428, height: 368 } : { width: '100%', maxWidth: '100%', height: 'auto' }}
+                  src={isDarkMode ? '/coins/sew1desiblack.png' : '/coins/sew1desi.png'}
+                  alt="Start Earning Option 1"
+                  className="w-full h-full object-cover block pointer-events-none select-none"
                 />
-              ))}
+
+                {/* Heading & Below Description */}
+                <div
+                  className="absolute pointer-events-auto"
+                  style={{
+                    top: isDarkMode ? '6.2%' : '6.8%',
+                    left: '5.7%',
+                    right: '5.7%',
+                    textAlign: isUr ? 'right' : 'left',
+                  }}
+                  dir={isUr ? 'rtl' : 'ltr'}
+                >
+                  <div
+                    style={{
+                      fontFamily: '"Bricolage Grotesque", sans-serif',
+                      fontWeight: 700,
+                      letterSpacing: '-0.02em',
+                      lineHeight: 1.12,
+                      fontSize: isMobile
+                        ? 'clamp(22px, 6.2vw, 29px)'
+                        : ((t('startEarningWith.surveysTitle') || '').length > 10 ? '28px' : '31px'),
+                      color: isDarkMode ? '#FFFFFF' : '#0E0F0C',
+                    }}
+                  >
+                    {t('startEarningWith.surveysTitle', 'Surveys')}
+                  </div>
+                  <div
+                    className="mt-2"
+                    style={{
+                      fontFamily: '"Poppins", sans-serif',
+                      fontWeight: 500,
+                      lineHeight: 1.38,
+                      fontSize: isMobile
+                        ? 'clamp(11.5px, 3.2vw, 14.5px)'
+                        : ((t('startEarningWith.surveysDesc') || '').length > 74 ? '13.5px' : '15px'),
+                      color: isDarkMode ? 'rgba(255, 255, 255, 0.78)' : '#0E0F0C',
+                      maxWidth: isUr ? '100%' : '88%',
+                    }}
+                  >
+                    {t('startEarningWith.surveysDesc', 'Share your opinion on various topics and get rewarded instantly.')}
+                  </div>
+                </div>
+
+                {/* Question 01 Pill */}
+                <div
+                  className="absolute flex items-center justify-center text-center pointer-events-auto whitespace-nowrap"
+                  style={{
+                    left: isDarkMode ? '23.58%' : '22.84%',
+                    top: isDarkMode ? '38.96%' : '41.37%',
+                    transform: 'translate(-50%, -50%)',
+                    fontFamily: '"Poppins", sans-serif',
+                    fontWeight: 600,
+                    fontSize: isMobile
+                      ? 'clamp(8px, 2.25vw, 10.5px)'
+                      : ((t('heroGraphic.questionNumber') || '').length > 10 ? '9.5px' : '10.5px'),
+                    color: '#0E0F0C',
+                    maxWidth: '17%',
+                  }}
+                  dir={isUr ? 'rtl' : 'ltr'}
+                >
+                  {t('heroGraphic.questionNumber', 'Question 01')}
+                </div>
+
+                {/* Question Prompt */}
+                <div
+                  className="absolute pointer-events-auto leading-tight"
+                  style={{
+                    left: isDarkMode ? '14.5%' : '14.5%',
+                    right: '11%',
+                    top: isDarkMode ? '46.2%' : '48.4%',
+                    transform: 'translateY(-50%)',
+                    fontFamily: '"Poppins", sans-serif',
+                    fontWeight: 500,
+                    fontSize: isMobile ? 'clamp(11px, 3.1vw, 14.5px)' : '14.5px',
+                    color: isDarkMode ? '#FFFFFF' : '#0E0F0C',
+                    textAlign: isUr ? 'right' : 'left',
+                  }}
+                  dir={isUr ? 'rtl' : 'ltr'}
+                >
+                  {t('startEarningWith.coffeeQuestion', 'Do you like coffee?')}
+                </div>
+
+                {/* SELECT ONLY ONE */}
+                <div
+                  className="absolute pointer-events-auto uppercase tracking-wider"
+                  style={{
+                    left: isDarkMode ? '16.2%' : '16.7%',
+                    right: '8%',
+                    top: isDarkMode ? '57.6%' : '60.1%',
+                    fontFamily: '"Poppins", sans-serif',
+                    fontWeight: 600,
+                    fontSize: isMobile ? 'clamp(7.5px, 2vw, 9.5px)' : '9.5px',
+                    color: isDarkMode ? 'rgba(255, 255, 255, 0.52)' : '#8E929B',
+                    textAlign: 'left',
+                  }}
+                  dir={isUr ? 'rtl' : 'ltr'}
+                >
+                  {t('heroGraphic.selectOnlyOne', 'SELECT ONLY ONE')}
+                </div>
+
+                {/* Option Yes */}
+                <div
+                  className="absolute flex items-center gap-2 pointer-events-auto"
+                  style={{
+                    left: isDarkMode ? '16.2%' : '16.6%',
+                    top: isDarkMode ? '65.4%' : '67.9%',
+                    transform: 'translateY(-50%)',
+                    fontFamily: '"Poppins", sans-serif',
+                    fontWeight: 500,
+                    fontSize: isMobile ? 'clamp(10px, 2.7vw, 12.5px)' : '12.5px',
+                    color: isDarkMode ? '#FFFFFF' : '#0E0F0C',
+                  }}
+                >
+                  <span
+                    className="rounded-full shrink-0"
+                    style={{
+                      width: isMobile ? '11px' : '12px',
+                      height: isMobile ? '11px' : '12px',
+                      border: isDarkMode ? '1.5px solid rgba(255, 255, 255, 0.7)' : '1.5px solid #0E0F0C',
+                    }}
+                  />
+                  <span dir={isUr ? 'rtl' : 'ltr'}>{t('heroGraphic.optionYes', 'Yes')}</span>
+                </div>
+
+                {/* Option No */}
+                <div
+                  className="absolute flex items-center gap-2 pointer-events-auto"
+                  style={{
+                    left: isDarkMode ? '16.2%' : '16.6%',
+                    top: isDarkMode ? '72.4%' : '74.9%',
+                    transform: 'translateY(-50%)',
+                    fontFamily: '"Poppins", sans-serif',
+                    fontWeight: 500,
+                    fontSize: isMobile ? 'clamp(10px, 2.7vw, 12.5px)' : '12.5px',
+                    color: isDarkMode ? '#FFFFFF' : '#0E0F0C',
+                  }}
+                >
+                  <span
+                    className="rounded-full shrink-0"
+                    style={{
+                      width: isMobile ? '11px' : '12px',
+                      height: isMobile ? '11px' : '12px',
+                      border: isDarkMode ? '1.5px solid rgba(255, 255, 255, 0.7)' : '1.5px solid #0E0F0C',
+                    }}
+                  />
+                  <span dir={isUr ? 'rtl' : 'ltr'}>{t('heroGraphic.optionNo', 'No')}</span>
+                </div>
+
+                {/* Back Button Label */}
+                <div
+                  className="absolute flex items-center justify-center text-center pointer-events-auto whitespace-nowrap"
+                  style={{
+                    left: isDarkMode ? '76.22%' : '76.55%',
+                    top: isDarkMode ? '86.80%' : '90.15%',
+                    transform: 'translate(-50%, -50%)',
+                    fontFamily: '"Poppins", sans-serif',
+                    fontWeight: 500,
+                    lineHeight: 1,
+                    fontSize: isMobile
+                      ? 'clamp(10px, 2.8vw, 12.5px)'
+                      : ((t('heroGraphic.btnBack') || '').length > 6 ? '11.2px' : '12.5px'),
+                    color: '#0E0F0C',
+                  }}
+                  dir={isUr ? 'rtl' : 'ltr'}
+                >
+                  {t('heroGraphic.btnBack', 'Back')}
+                </div>
+
+                {/* Next Button Label */}
+                <div
+                  className="absolute flex items-center justify-center text-center pointer-events-auto whitespace-nowrap"
+                  style={{
+                    left: isDarkMode ? '91.43%' : '91.65%',
+                    top: isDarkMode ? '86.82%' : '90.15%',
+                    transform: 'translate(-50%, -50%)',
+                    fontFamily: '"Poppins", sans-serif',
+                    fontWeight: 500,
+                    lineHeight: 1,
+                    fontSize: isMobile
+                      ? 'clamp(10px, 2.8vw, 12.5px)'
+                      : ((t('heroGraphic.btnNext') || '').length > 6 ? '11.2px' : '12.5px'),
+                    color: '#FFFFFF',
+                  }}
+                  dir={isUr ? 'rtl' : 'ltr'}
+                >
+                  {t('heroGraphic.btnNext', 'Next')}
+                </div>
+              </div>
+
+              {/* Card 2: Apps & Games (Base image + dynamic i18n overlays across all languages) */}
+              <div
+                className="relative w-full mx-auto rounded-[24px] overflow-hidden"
+                style={!isMobile ? { maxWidth: '100%', width: 428, height: 368, clipPath: 'inset(0 round 24px)' } : { width: '100%', maxWidth: '100%', aspectRatio: '856 / 736', clipPath: 'inset(0 round 24px)' }}
+              >
+                <img
+                  src={isDarkMode ? '/coins/sew2blackdesi.png' : '/coins/sew2desi.png'}
+                  alt="Start Earning Option 2"
+                  className="w-full h-full object-cover block pointer-events-none select-none"
+                />
+
+                {/* Heading & Below Description */}
+                <div
+                  className="absolute pointer-events-auto"
+                  style={{
+                    top: isDarkMode ? '6.2%' : '6.8%',
+                    left: '5.7%',
+                    right: '5.7%',
+                    textAlign: isUr ? 'right' : 'left',
+                  }}
+                  dir={isUr ? 'rtl' : 'ltr'}
+                >
+                  <div
+                    style={{
+                      fontFamily: '"Bricolage Grotesque", sans-serif',
+                      fontWeight: 700,
+                      letterSpacing: '-0.02em',
+                      lineHeight: 1.12,
+                      fontSize: isMobile
+                        ? 'clamp(22px, 6.2vw, 29px)'
+                        : ((t('startEarningWith.appsGamesTitle') || '').length > 15 ? '26px' : '31px'),
+                      color: isDarkMode ? '#FFFFFF' : '#0E0F0C',
+                    }}
+                  >
+                    {t('startEarningWith.appsGamesTitle', 'Apps & Games')}
+                  </div>
+                  <div
+                    className="mt-2"
+                    style={{
+                      fontFamily: '"Poppins", sans-serif',
+                      fontWeight: 500,
+                      lineHeight: 1.38,
+                      fontSize: isMobile
+                        ? 'clamp(11.5px, 3.2vw, 14.5px)'
+                        : ((t('startEarningWith.appsGamesDesc') || '').length > 74 ? '13.5px' : '15px'),
+                      color: isDarkMode ? 'rgba(255, 255, 255, 0.78)' : '#0E0F0C',
+                      maxWidth: isUr ? '100%' : '88%',
+                    }}
+                  >
+                    {t('startEarningWith.appsGamesDesc', 'Download apps or play new games. Reach milestones to earn big.')}
+                  </div>
+                </div>
+              </div>
+
+              {/* Card 3: Featured Offers (Base image + dynamic i18n overlays across all languages) */}
+              <div
+                className="relative w-full mx-auto rounded-[24px] overflow-hidden"
+                style={!isMobile ? { maxWidth: '100%', width: 428, height: 368, clipPath: 'inset(0 round 24px)' } : { width: '100%', maxWidth: '100%', aspectRatio: '856 / 736', clipPath: 'inset(0 round 24px)' }}
+              >
+                <img
+                  src={isDarkMode ? '/coins/sew3blackdesi.png' : '/coins/sew3desi.png'}
+                  alt="Start Earning Option 3"
+                  className="w-full h-full object-cover block pointer-events-none select-none"
+                />
+
+                {/* Heading & Below Description */}
+                <div
+                  className="absolute pointer-events-auto"
+                  style={{
+                    top: isDarkMode ? '6.2%' : '6.8%',
+                    left: '5.7%',
+                    right: '5.7%',
+                    textAlign: isUr ? 'right' : 'left',
+                  }}
+                  dir={isUr ? 'rtl' : 'ltr'}
+                >
+                  <div
+                    style={{
+                      fontFamily: '"Bricolage Grotesque", sans-serif',
+                      fontWeight: 700,
+                      letterSpacing: '-0.02em',
+                      lineHeight: 1.12,
+                      fontSize: isMobile
+                        ? 'clamp(22px, 6.2vw, 29px)'
+                        : ((t('startEarningWith.featuredOffersTitle') || '').length > 17 ? '26px' : '31px'),
+                      color: isDarkMode ? '#FFFFFF' : '#0E0F0C',
+                    }}
+                  >
+                    {t('startEarningWith.featuredOffersTitle', 'Featured Offers')}
+                  </div>
+                  <div
+                    className="mt-2"
+                    style={{
+                      fontFamily: '"Poppins", sans-serif',
+                      fontWeight: 500,
+                      lineHeight: 1.38,
+                      fontSize: isMobile
+                        ? 'clamp(11.5px, 3.2vw, 14.5px)'
+                        : ((t('startEarningWith.featuredOffersDesc') || '').length > 74 ? '13.5px' : '15px'),
+                      color: isDarkMode ? 'rgba(255, 255, 255, 0.78)' : '#0E0F0C',
+                      maxWidth: isUr ? '100%' : '90%',
+                    }}
+                  >
+                    {t('startEarningWith.featuredOffersDesc', 'Sign up for services or trials to earn the highest paying rewards.')}
+                  </div>
+                </div>
+
+                {/* Left Card Badge: Highest Paying */}
+                <div
+                  className="absolute flex items-center justify-center text-center pointer-events-auto"
+                  style={{
+                    left: '28.7%',
+                    top: isDarkMode ? '78%' : '77%',
+                    transform: 'translate(-50%, -50%)',
+                    width: '38%',
+                    maxWidth: '160px',
+                    fontFamily: '"Poppins", sans-serif',
+                    fontWeight: 700,
+                    lineHeight: 1.15,
+                    fontSize: isMobile
+                      ? 'clamp(10px, 2.8vw, 13px)'
+                      : ((t('startEarningWith.highestPaying') || '').length > 16 ? '11px' : '13px'),
+                    color: isDarkMode ? '#3B3CCB' : '#4649B8',
+                    textTransform: isUr ? 'none' : 'uppercase',
+                    letterSpacing: '-0.01em',
+                  }}
+                  dir={isUr ? 'rtl' : 'ltr'}
+                >
+                  {t('startEarningWith.highestPaying', 'HIGHEST PAYING')}
+                </div>
+
+                {/* Right Card Badge: Instant Withdrawal */}
+                <div
+                  className="absolute flex items-center pointer-events-auto"
+                  style={{
+                    left: isDarkMode ? '67.2%' : '66.2%',
+                    top: isDarkMode ? '54.2%' : '51.2%',
+                    transform: 'translateY(-50%)',
+                    right: '4%',
+                    fontFamily: '"Poppins", sans-serif',
+                    fontWeight: 700,
+                    lineHeight: 1.15,
+                    fontSize: isMobile
+                      ? 'clamp(10px, 2.8vw, 13px)'
+                      : ((t('startEarningWith.instantWithdrawal') || '').length > 16 ? '11px' : '13px'),
+                    color: isDarkMode ? '#3B3CCB' : '#4649B8',
+                    textTransform: isUr ? 'none' : 'uppercase',
+                    letterSpacing: '-0.01em',
+                    textAlign: isUr ? 'center' : 'left',
+                  }}
+                  dir={isUr ? 'rtl' : 'ltr'}
+                >
+                  {t('startEarningWith.instantWithdrawal', 'INSTANT WITHDRAWAL')}
+                </div>
+              </div>
             </div>
           </div>
         </section>
@@ -1090,8 +1960,8 @@ const Landing = () => {
                       gap: isOpen ? 16 : 0,
                       background: isDarkMode
                         ? (isOpen
-                            ? 'rgba(43, 51, 64, 0.4)'
-                            : 'linear-gradient(0deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.06)), linear-gradient(0deg, rgba(43, 51, 64, 0.1), rgba(43, 51, 64, 0.1))')
+                          ? 'rgba(43, 51, 64, 0.4)'
+                          : 'linear-gradient(0deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.06)), linear-gradient(0deg, rgba(43, 51, 64, 0.1), rgba(43, 51, 64, 0.1))')
                         : (isOpen ? 'rgba(246, 245, 237, 1)' : 'transparent'),
                       border: 'none',
                     }}

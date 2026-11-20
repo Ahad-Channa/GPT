@@ -279,7 +279,7 @@ const DailyBonusChip = () => {
         style={{
           gap: '1px',
           opacity: 1,
-          transform: 'rotate(0deg)',
+          transform: 'translateY(-3px)',
         }}
       >
         <span
@@ -320,8 +320,11 @@ const Header = ({ onChatToggle, chatOpen, fullWidth }) => {
   const { t, i18n } = useTranslation();
   const { isDarkMode } = useTheme();
   const isGerman = i18n.language?.startsWith('de');
+  const isPl = i18n.language?.startsWith('pl');
   const isFrench = i18n.language?.startsWith('fr');
+  const isSpanish = i18n.language?.startsWith('es');
   const isUrdu = i18n.language === 'ur' || i18n.language?.startsWith('ur');
+  const isPortuguese = i18n.language?.startsWith('pt');
   const { currentUser, mongoUser, logout, isAdmin } = useAuth();
   const { unreadCount, togglePanel, hasUnreadChat, setHasUnreadChat } = useNotifications();
 
@@ -611,6 +614,9 @@ const Header = ({ onChatToggle, chatOpen, fullWidth }) => {
                     width: '18px',
                     height: '12px',
                     opacity: 1,
+                    position: 'relative',
+                    top: '-2.5px',
+                    left: '2.5px',
                     transform: isMobileDropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)',
                     objectFit: 'contain',
                     filter: isDarkMode ? 'brightness(0) invert(1)' : 'brightness(0)',
@@ -838,11 +844,11 @@ const Header = ({ onChatToggle, chatOpen, fullWidth }) => {
 
       {/* Group 2: Main Links (Desktop) */}
       <div
-        className={`hidden lg:flex items-center relative ${isUrdu ? 'left-0' : (isGerman || isFrench ? '-left-[90px]' : '-left-[70px]')}`}
+        className={`hidden lg:flex items-center relative ${isPortuguese ? '-left-[82px]' : (isSpanish ? '-left-[85px]' : (isUrdu ? '-left-[60px]' : (isFrench ? '-left-[60px]' : (isGerman ? '-left-[75px]' : '-left-[70px]'))))}`}
         style={{
           width: 'auto',
           height: '20px',
-          gap: isFrench ? '24px' : (isGerman ? '32px' : '40px'),
+          gap: (isFrench || isSpanish) ? '24px' : (isGerman ? '32px' : '40px'),
           whiteSpace: 'nowrap',
           opacity: 1,
           transform: 'rotate(0deg)',
@@ -1061,6 +1067,9 @@ const Header = ({ onChatToggle, chatOpen, fullWidth }) => {
                   width: '18px',
                   height: '12px',
                   opacity: 1,
+                  position: 'relative',
+                  top: '-2.5px',
+                  left: '2.5px',
                   transform: isDropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)',
                   objectFit: 'contain',
                   filter: isDarkMode ? 'brightness(0) invert(1)' : 'brightness(0)',
@@ -1675,9 +1684,9 @@ const Header = ({ onChatToggle, chatOpen, fullWidth }) => {
                           fontFamily: 'Poppins, sans-serif',
                           fontWeight: 500,
                           fontStyle: 'normal',
-                          fontSize: '12px',
+                          fontSize: isPl ? '10.5px' : '12px',
                           lineHeight: '20px',
-                          letterSpacing: '0%',
+                          letterSpacing: isPl ? '-0.02em' : '0%',
                           textAlign: 'center',
                           color: location.pathname === '/dashboard/affiliates' ? 'rgba(36, 50, 77, 1)' : 'rgba(134, 134, 134, 1)',
                           opacity: 1,
@@ -1743,9 +1752,9 @@ const Header = ({ onChatToggle, chatOpen, fullWidth }) => {
                           fontFamily: 'Poppins, sans-serif',
                           fontWeight: 500,
                           fontStyle: 'normal',
-                          fontSize: '12px',
+                          fontSize: isPl ? '10.5px' : '12px',
                           lineHeight: '20px',
-                          letterSpacing: '0%',
+                          letterSpacing: isPl ? '-0.02em' : '0%',
                           textAlign: 'center',
                           color: location.pathname === '/dashboard/daily-bonus' ? 'rgba(36, 50, 77, 1)' : 'rgba(134, 134, 134, 1)',
                           opacity: 1,
@@ -1811,9 +1820,9 @@ const Header = ({ onChatToggle, chatOpen, fullWidth }) => {
                           fontFamily: 'Poppins, sans-serif',
                           fontWeight: 500,
                           fontStyle: 'normal',
-                          fontSize: '12px',
+                          fontSize: isPl ? '10.5px' : '12px',
                           lineHeight: '20px',
-                          letterSpacing: '0%',
+                          letterSpacing: isPl ? '-0.02em' : '0%',
                           textAlign: 'center',
                           color: location.pathname === '/dashboard/vip' ? 'rgba(36, 50, 77, 1)' : 'rgba(134, 134, 134, 1)',
                           opacity: 1,
@@ -1879,9 +1888,9 @@ const Header = ({ onChatToggle, chatOpen, fullWidth }) => {
                           fontFamily: 'Poppins, sans-serif',
                           fontWeight: 500,
                           fontStyle: 'normal',
-                          fontSize: '12px',
+                          fontSize: isPl ? '10.5px' : '12px',
                           lineHeight: '20px',
-                          letterSpacing: '0%',
+                          letterSpacing: isPl ? '-0.02em' : '0%',
                           textAlign: 'center',
                           color: location.pathname === '/dashboard/profile' ? 'rgba(36, 50, 77, 1)' : 'rgba(134, 134, 134, 1)',
                           opacity: 1,
@@ -1947,9 +1956,9 @@ const Header = ({ onChatToggle, chatOpen, fullWidth }) => {
                           fontFamily: 'Poppins, sans-serif',
                           fontWeight: 500,
                           fontStyle: 'normal',
-                          fontSize: '12px',
+                          fontSize: isPl ? '10.5px' : '12px',
                           lineHeight: '20px',
-                          letterSpacing: '0%',
+                          letterSpacing: isPl ? '-0.02em' : '0%',
                           textAlign: 'center',
                           color: 'rgba(134, 134, 134, 1)',
                           opacity: 1,

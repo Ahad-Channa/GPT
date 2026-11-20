@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
+  <defs>
+    <clipPath id="circle-es">
+      <circle cx="12" cy="12" r="12"/>
+    </clipPath>
+  </defs>
+  <g clip-path="url(#circle-es)">
+    <!-- Red top stripe (1/4) -->
+    <rect width="24" height="6" y="0" fill="#AA151B"/>
+    <!-- Yellow middle stripe (2/4) -->
+    <rect width="24" height="12" y="6" fill="#F1BF00"/>
+    <!-- Red bottom stripe (1/4) -->
+    <rect width="24" height="6" y="18" fill="#AA151B"/>
+    <!-- Simplified Spanish Coat of Arms shield -->
+    <g transform="translate(6, 8.5) scale(0.45)">
+      <!-- Left pillar -->
+      <rect x="-3" y="1" width="1.5" height="12" rx="0.5" fill="#8B0000"/>
+      <!-- Right pillar -->
+      <rect x="13.5" y="1" width="1.5" height="12" rx="0.5" fill="#8B0000"/>
+      <!-- Crown top -->
+      <path d="M 2 1 L 5 -2 L 6 0 L 7 -2 L 10 1 Z" fill="#AA151B"/>
+      <!-- Shield body -->
+      <path d="M 2 2 H 10 V 9 Q 10 13 6 15 Q 2 13 2 9 Z" fill="#AA151B"/>
+      <path d="M 3 3 H 9 V 8.5 Q 9 12 6 13.8 Q 3 12 3 8.5 Z" fill="#F1BF00"/>
+      <!-- Inner shield quarters -->
+      <rect x="3.5" y="3.5" width="2.2" height="4.5" fill="#AA151B"/>
+      <rect x="6.3" y="3.5" width="2.2" height="4.5" fill="#C0C0C0"/>
+      <circle cx="6" cy="8" r="1" fill="#0038A8"/>
+    </g>
+  </g>
+</svg>
+
