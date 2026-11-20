@@ -50,16 +50,42 @@ const getEnabledGoalKeys = (offer) =>
       .map((goal) => goal.goalKey)
   );
 
-// Returns the credited goal keys for one offer, intersected with the goals that
-// are currently enabled on the offer. Empty for single-step offers.
-const resolveCompletedGoalKeys = (offer, creditedByOffer = {}) => {
-  const enabledKeys = getEnabledGoalKeys(offer);
-  if (enabledKeys.size === 0) return [];
+// Goal keys that a given user's click is obligated to complete.
+//
+// Policy: the click-time `goalsSnapshot` is authoritative. Admin edits to the
+// offer's goals after the click neither add, remove nor disable obligations for
+// that existing click (this matches postback matching, which also resolves goals
+// from the click's snapshot). New clicks snapshot the then-current enabled goals.
+//
+//   snapshot is a non-empty object  -> its keys (multi-step at click time)
+//   snapshot is null / {}           -> [] : proven single-step (new clicks store an
+//                                      explicit null when the offer had no goals)
+//   snapshot is undefined / invalid -> LEGACY fallback: the field is absent, so it
+//                                      is unknown how the click started. Use the
+//                                      offer's currently enabled goals (the
+//                                      pre-snapshot behavior). An unknown snapshot
+//                                      is never treated as proof of single-step.
+//   no click supplied               -> same legacy fallback (callers without click data)
+const getExpectedGoalKeys = (offer, click = null) => {
+  const snapshot = click ? click.goalsSnapshot : undefined;
+  if (snapshot === null) return new Set();
+  if (snapshot && typeof snapshot === 'object' && !Array.isArray(snapshot)) {
+    return new Set(Object.keys(snapshot));
+  }
+  return getEnabledGoalKeys(offer);
+};
+
+// Returns the credited goal keys for one offer, intersected with the goals the
+// user's click is obligated to complete (see getExpectedGoalKeys). Empty for
+// single-step clicks.
+const resolveCompletedGoalKeys = (offer, creditedByOffer = {}, click = null) => {
+  const expectedKeys = getExpectedGoalKeys(offer, click);
+  if (expectedKeys.size === 0) return [];
   const offerId = offer?._id ? String(offer._id) : '';
   const credited = creditedByOffer[offerId];
   if (!credited) return [];
   const creditedKeys = credited instanceof Set ? credited : new Set(credited);
-  return [...creditedKeys].filter((key) => enabledKeys.has(key));
+  return [...creditedKeys].filter((key) => expectedKeys.has(key));
 };
 
 // ── Offer lifecycle (single source of truth for Featured / Goodpicks lists) ──
@@ -110,10 +136,10 @@ const resolveOfferLifecycle = ({ offer, click = null, submission = null, complet
 
   if (!click) return 'available';
 
-  const enabledKeys = getEnabledGoalKeys(offer);
-  if (enabledKeys.size > 0) {
+  const expectedKeys = getExpectedGoalKeys(offer, click);
+  if (expectedKeys.size > 0) {
     const credited = new Set(completedGoalKeys);
-    const allCredited = [...enabledKeys].every((key) => credited.has(key));
+    const allCredited = [...expectedKeys].every((key) => credited.has(key));
     if (allCredited) return 'completed';
     // Partly credited multi-step offers stay active and resumable.
     if (credited.size > 0) return 'started';
@@ -138,4 +164,5 @@ module.exports = {
   isActiveCreditedGoalConversion,
   groupCompletedGoalKeysByOffer,
   resolveCompletedGoalKeys,
+  getExpectedGoalKeys,
 };

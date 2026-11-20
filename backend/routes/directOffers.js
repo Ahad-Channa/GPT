@@ -170,7 +170,7 @@ router.get('/', verifyToken, async (req, res) => {
     const [userClicks, creditedGoalConversions, offerCreditConversions] = await Promise.all([
       ClickLog.find({ userId: user._id })
         .sort({ createdAt: -1 })
-        .select('offerId status clickId createdAt')
+        .select('offerId status clickId createdAt goalsSnapshot')
         .lean(),
       Conversion.find(buildActiveGoalConversionQuery(user._id))
         .select('offerId campaignId goalKey internalStatus processingState rewardTransactionId')
@@ -212,7 +212,7 @@ router.get('/', verifyToken, async (req, res) => {
     const offersWithStatus = offers.map((offer) => {
       const click = clickMap[offer._id.toString()];
       const submission = submissionMap[offer._id.toString()];
-      const completedGoalKeys = resolveCompletedGoalKeys(offer, completedByOffer);
+      const completedGoalKeys = resolveCompletedGoalKeys(offer, completedByOffer, click);
       const lifecycle = resolveOfferLifecycle({
         offer,
         click,

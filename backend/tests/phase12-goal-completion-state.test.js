@@ -116,7 +116,7 @@ test('the active goal query targets only approved, processed, rewarded goal conv
 
 test('direct-offers response attaches completedGoalKeys with bulk conversion queries (no N+1)', () => {
   const source = read('backend/routes/directOffers.js');
-  assert.match(source, /const completedGoalKeys = resolveCompletedGoalKeys\(offer, completedByOffer\)/);
+  assert.match(source, /const completedGoalKeys = resolveCompletedGoalKeys\(offer, completedByOffer(?:, click)?\)/);
   assert.match(source, /buildActiveGoalConversionQuery\(user\._id\)/);
   assert.match(source, /groupCompletedGoalKeysByOffer\(creditedGoalConversions\)/);
 
