@@ -1,7 +1,7 @@
 const LEGAL_TEMPLATES = {
   'impressum': {
-    title_en: 'Impressum (Legal Notice)',
-    content_en: `# Impressum (Legal Notice)
+    title_en: 'Legal Notice',
+    content_en: `# Legal Notice
 
 ### Information pursuant to Section 5 of the German Telemedia Act (TMG):
 TaskMint Platform / TaskMint GmbH
@@ -154,8 +154,8 @@ Notre site contient des liens vers des sites tiers externes sur lesquels nous n'
 ### Droits d'auteur
 Les contenus et œuvres créés par les exploitants de ce site sont soumis au droit d'auteur. Toute reproduction, modification, distribution ou exploitation hors des limites du droit d'auteur nécessite l'accord écrit préalable de l'auteur concerné.`,
 
-        title_es: 'Aviso Legal (Impressum)',
-    content_es: `# Aviso Legal (Impressum)
+    title_es: 'Aviso Legal',
+    content_es: `# Aviso Legal
 
 ### Información legal conforme a la normativa aplicable:
 TaskMint Platform / TaskMint GmbH
@@ -241,8 +241,8 @@ Germany
 
 ### کاپی رائٹ
 سائٹ آپریٹرز کی طرف سے تخلیق کردہ مواد اور کام جرمن کاپی رائٹ قانون کے تحت محفوظ ہیں۔`,
-    title_ru: "Выходные данные (Impressum)",
-    content_ru: `# Выходные данные (Impressum)
+    title_ru: "Выходные данные",
+    content_ru: `# Выходные данные
 
 ### Информация в соответствии с законодательством (§ 5 TMG / DDG):
 TaskMint Platform / TaskMint GmbH
@@ -289,11 +289,11 @@ Musterstraße 123
 
 ### Авторское право
 Контент и материалы, созданные операторами сайта на этих страницах, защищены авторским правом. Загрузка и копирование материалов разрешены только для частного некоммерческого использования.`,
-    title_pt: "Informações Legais (Impressum)",
-    title_it: "Note Legali (Impressum)",
-    title_pl: "Nota prawna (Impressum)",
-    title_tr: "Yasal Bildirim (Impressum)",
-    content_pt: `# Informações Legais (Impressum)
+    title_pt: "Informações Legais",
+    title_it: "Note Legali",
+    title_pl: "Nota prawna",
+    title_tr: "Yasal Bildirim",
+    content_pt: `# Informações Legais
 
 ### Informações de acordo com a legislação (§ 5 TMG / DDG):
 TaskMint Platform / TaskMint GmbH
@@ -894,24 +894,24 @@ TaskMint reserves the right to modify commission rates, referral bonus structure
 
 ### 7. Contact Us
 If you have questions regarding the Affiliate Program or wish to report unauthorized promotion, please contact us at **contact@taskmint.me**.`,
-    title_de: 'Partnerprogramm- & Empfehlungsrichtlinie',
-    content_de: `# Partnerprogramm- & Empfehlungsrichtlinie (Affiliate Policy)
+    title_de: 'Affiliate-Richtlinien',
+    content_de: `# Affiliate-Richtlinien (Affiliate Policy)
 
 *(Gültig ab: 17. Juli 2026 | Zuletzt aktualisiert: 17. Oktober 2026)*
 
-Willkommen beim Partner- und Empfehlungsprogramm von TaskMint. Diese Richtlinie regelt die Teilnahme an unserem Empfehlungsprogramm und definiert die verbindlichen Verhaltens-, Werbe- und Transparenzpflichten aller Partner und Nutzer.
+Willkommen beim Affiliate- und Empfehlungsprogramm von TaskMint. Diese Richtlinie regelt die Teilnahme an unserem Empfehlungsprogramm und definiert die verbindlichen Verhaltens-, Werbe- und Transparenzpflichten aller Affiliates und Nutzer.
 
 ---
 
 ### 1. Teilnahmeberechtigung & Registrierung
 - **Berechtigung:** Teilnahmeberechtigt sind alle registrierten TaskMint-Nutzer mit einem verifizierten Konto in ordnungsgemäßem Zustand, die mindestens 18 Jahre alt sind.
 - **Empfehlungslink:** Jeder Nutzer erhält im Benutzerkonto einen individuellen Empfehlungslink und Empfehlungscode.
-- **Zuordnung:** Registriert sich ein Neukunde über Ihren Link oder gibt Ihren Code ein, wird dieser Ihrem Partnerkonto als geworbener Nutzer zugeordnet.
+- **Zuordnung:** Registriert sich ein Neukunde über Ihren Link oder gibt Ihren Code ein, wird dieser Ihrem Affiliate-Konto als geworbener Nutzer zugeordnet.
 
 ---
 
 ### 2. Vergütung & Provisionsmodell
-- **Provisionsbasis:** Partner erhalten eine anteilige Gutschrift an Coins auf Basis der erfolgreich abgeschlossenen Angebote und Umfragen ihrer geworbenen Nutzer gemäß den im Dashboard ausgewiesenen Stufen.
+- **Provisionsbasis:** Affiliates erhalten eine anteilige Gutschrift an Coins auf Basis der erfolgreich abgeschlossenen Angebote und Umfragen ihrer geworbenen Nutzer gemäß den im Dashboard ausgewiesenen Stufen.
 - **Gutschrift & Haltefristen:** Die Auszahlung von Empfehlungsprämien unterliegt den für die jeweiligen Partnernetzwerke geltenden Prüf- und Haltefristen (Hold Periods) zur Betrugsprävention.
 - **Stufen:** Mit steigender Anzahl aktiver Empfehlungen können höhere Provisionsstufen freigeschaltet werden.
 
@@ -925,18 +925,18 @@ Gemäß § 5a Abs. 4 des Gesetzes gegen den unlauteren Wettbewerb (UWG) sowie in
 ---
 
 ### 4. Unzulässige Werbemaßnahmen & Betrugsverbot
-Zum Schutz unserer Plattform und Partner sind folgende Praktiken ausdrücklich untersagt:
+Zum Schutz unserer Plattform und Affiliates sind folgende Praktiken ausdrücklich untersagt:
 - **Verbot von Spam (§ 7 UWG):** Das unaufgeforderte Versenden von Massen-E-Mails, Direktnachrichten oder das Spammen von Foren, Social-Media-Kommentaren und Chatkanälen ist streng untersagt.
 - **Irreführende Versprechungen:** Das Werben mit falschen oder unrealistischen Verdienstversprechen (z. B. *"Garantierter Sofortverdienst von 500 € am Tag"*) ist verboten.
 - **Eigenwerbung & Mehrfachkonten:** Das Werben eigener Konten, die Nutzung von VPNs, Proxies oder Emulatoren zur Manipulation von Empfehlungen gilt als schwerer Betrug.
-- **Brand Bidding (SEA / Google Ads):** Das Buchen von Anzeigen auf die Marke "TaskMint" oder Tippfehler in Suchmaschinen ist Partnern untersagt.
+- **Brand Bidding (SEA / Google Ads):** Das Buchen von Anzeigen auf die Marke "TaskMint" oder Tippfehler in Suchmaschinen ist Affiliates untersagt.
 - **Cookie-Stuffing:** Das automatisierte Setzen von Cookies über unsichtbare iFrames, Pop-Unders oder Skripte ist unzulässig.
 
 ---
 
 ### 5. Prüfung, Sperrung & Aberkennung
 - TaskMint überwacht Empfehlungsaktivitäten kontinuierlich mit automatisierten Betrugserkennungssystemen.
-- Bei Verstößen gegen diese Richtlinie oder unsere Nutzungsbedingungen behält sich TaskMint das Recht vor, das Partnerkonto zu sperren, geworbene Konten zu entkoppeln und unrechtmäßig erworbene Vergütungen einzubehalten.
+- Bei Verstößen gegen diese Richtlinie oder unsere Nutzungsbedingungen behält sich TaskMint das Recht vor, das Affiliate-Konto zu sperren, geworbene Konten zu entkoppeln und unrechtmäßig erworbene Vergütungen einzubehalten.
 
 ---
 
@@ -946,7 +946,7 @@ TaskMint behält sich vor, die Konditionen, Vergütungssätze und diese Richtlin
 ---
 
 ### 7. Kontakt
-Bei Fragen zu unserem Partnerprogramm wenden Sie sich bitte an **contact@taskmint.me**.
+Bei Fragen zu unserem Affiliate-Programm wenden Sie sich bitte an **contact@taskmint.me**.
 `,
     title_fr: 'Politique d\'Affiliation & de Parrainage',
     content_fr: `# Politique d'Affiliation & de Parrainage

@@ -12,6 +12,31 @@
   <link
     href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;500;600;700;800&family=Barlow+Condensed:wght@400;500;600;700&family=Barlow:wght@300;400;500;600;700;800;900&family=IBM+Plex+Sans:wght@400;500;600;700&family=Poppins:wght@400;500;600;700&family=Bricolage+Grotesque:opsz,wght@12..96,400..800&display=swap"
     rel="stylesheet" />
+  <style>
+    html, body {
+      background-color: #FAFAFA;
+    }
+    html.dark, html.dark body {
+      background-color: #0C0E11;
+    }
+  </style>
+  <script>
+    (function () {
+      try {
+        var raw = localStorage.getItem('taskmint_cookie_consent');
+        var parsed = raw ? JSON.parse(raw) : null;
+        if (parsed && parsed.functional) {
+          var saved = localStorage.getItem('taskmint_theme');
+          if (saved === 'dark') {
+            document.documentElement.classList.add('dark');
+            document.documentElement.style.backgroundColor = '#0C0E11';
+            return;
+          }
+        }
+      } catch (e) {}
+      document.documentElement.style.backgroundColor = '#FAFAFA';
+    })();
+  </script>
 </head>
 
 <body>
