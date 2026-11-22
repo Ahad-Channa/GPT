@@ -5,16 +5,54 @@ import {
   FiPlus,
   FiEdit2,
   FiTrash2,
-  FiCheck,
   FiX,
   FiSearch,
   FiAlertCircle,
   FiEye,
   FiEyeOff,
+  FiGlobe,
 } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+
+const LANGUAGES = [
+  { code: 'en', label: 'English', flag: '🇬🇧', isDefault: true, qKey: 'question', aKey: 'answer' },
+  { code: 'de', label: 'Deutsch', flag: '🇩🇪', qKey: 'questionDe', aKey: 'answerDe' },
+  { code: 'fr', label: 'Français', flag: '🇫🇷', qKey: 'questionFr', aKey: 'answerFr' },
+  { code: 'es', label: 'Español', flag: '🇪🇸', qKey: 'questionEs', aKey: 'answerEs' },
+  { code: 'ru', label: 'Русский', flag: '🇷🇺', qKey: 'questionRu', aKey: 'answerRu' },
+  { code: 'pt', label: 'Português', flag: '🇵🇹', qKey: 'questionPt', aKey: 'answerPt' },
+  { code: 'it', label: 'Italiano', flag: '🇮🇹', qKey: 'questionIt', aKey: 'answerIt' },
+  { code: 'pl', label: 'Polski', flag: '🇵🇱', qKey: 'questionPl', aKey: 'answerPl' },
+  { code: 'tr', label: 'Türkçe', flag: '🇹🇷', qKey: 'questionTr', aKey: 'answerTr' },
+  { code: 'ur', label: 'اردو', flag: '🇵🇰', dir: 'rtl', qKey: 'questionUr', aKey: 'answerUr' },
+];
+
+const INITIAL_FORM = {
+  question: '',
+  answer: '',
+  questionDe: '',
+  answerDe: '',
+  questionUr: '',
+  answerUr: '',
+  questionFr: '',
+  answerFr: '',
+  questionEs: '',
+  answerEs: '',
+  questionRu: '',
+  answerRu: '',
+  questionPt: '',
+  answerPt: '',
+  questionIt: '',
+  answerIt: '',
+  questionPl: '',
+  answerPl: '',
+  questionTr: '',
+  answerTr: '',
+  order: 0,
+  isActive: true,
+};
 
 const AdminFaqs = () => {
   const { currentUser } = useAuth();
@@ -26,14 +64,10 @@ const AdminFaqs = () => {
   const [modalOpen, setModalOpen] = useState(false);
   const [editingFaq, setEditingFaq] = useState(null);
   const [saving, setSaving] = useState(false);
+  const [activeLang, setActiveLang] = useState('en');
 
   // Form State
-  const [formData, setFormData] = useState({
-    question: '',
-    answer: '',
-    order: 0,
-    isActive: true,
-  });
+  const [formData, setFormData] = useState(INITIAL_FORM);
 
   useEffect(() => {
     fetchFaqs();
@@ -62,9 +96,9 @@ const AdminFaqs = () => {
 
   const openCreateModal = () => {
     setEditingFaq(null);
+    setActiveLang('en');
     setFormData({
-      question: '',
-      answer: '',
+      ...INITIAL_FORM,
       order: faqs.length,
       isActive: true,
     });
@@ -73,9 +107,28 @@ const AdminFaqs = () => {
 
   const openEditModal = (faq) => {
     setEditingFaq(faq);
+    setActiveLang('en');
     setFormData({
       question: faq.question || '',
       answer: faq.answer || '',
+      questionDe: faq.questionDe || '',
+      answerDe: faq.answerDe || '',
+      questionUr: faq.questionUr || '',
+      answerUr: faq.answerUr || '',
+      questionFr: faq.questionFr || '',
+      answerFr: faq.answerFr || '',
+      questionEs: faq.questionEs || '',
+      answerEs: faq.answerEs || '',
+      questionRu: faq.questionRu || '',
+      answerRu: faq.answerRu || '',
+      questionPt: faq.questionPt || '',
+      answerPt: faq.answerPt || '',
+      questionIt: faq.questionIt || '',
+      answerIt: faq.answerIt || '',
+      questionPl: faq.questionPl || '',
+      answerPl: faq.answerPl || '',
+      questionTr: faq.questionTr || '',
+      answerTr: faq.answerTr || '',
       order: faq.order ?? 0,
       isActive: faq.isActive ?? true,
     });
@@ -85,12 +138,14 @@ const AdminFaqs = () => {
   const closeModal = () => {
     setModalOpen(false);
     setEditingFaq(null);
+    setActiveLang('en');
   };
 
   const handleSave = async (e) => {
     e.preventDefault();
     if (!formData.question.trim() || !formData.answer.trim()) {
-      toast.error('Question and Answer are required');
+      toast.error('English Question and Answer are required');
+      setActiveLang('en');
       return;
     }
 
@@ -176,8 +231,12 @@ const AdminFaqs = () => {
   const filteredFaqs = faqs.filter(
     (f) =>
       f.question.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      f.answer.toLowerCase().includes(searchQuery.toLowerCase())
+      f.answer.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (f.questionDe && f.questionDe.toLowerCase().includes(searchQuery.toLowerCase())) ||
+      (f.questionUr && f.questionUr.toLowerCase().includes(searchQuery.toLowerCase()))
   );
+
+  const currentLangObj = LANGUAGES.find((l) => l.code === activeLang) || LANGUAGES[0];
 
   return (
     <div>
@@ -198,7 +257,7 @@ const AdminFaqs = () => {
             FAQ Management
           </h1>
           <p className="admin-page-sub">
-            Add, update, or remove questions and dropdown answers displayed on the dedicated FAQ page.
+            Add, update, or translate questions and dropdown answers for the dedicated FAQ page.
           </p>
         </div>
 
@@ -298,104 +357,154 @@ const AdminFaqs = () => {
         </div>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-          {filteredFaqs.map((faq, index) => (
-            <div
-              key={faq._id}
-              className="admin-card"
-              style={{
-                padding: '1.25rem',
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '0.75rem',
-                borderLeft: faq.isActive ? '4px solid #00D65D' : '4px solid #6B7280',
-                opacity: faq.isActive ? 1 : 0.7,
-              }}
-            >
-              <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '1rem' }}>
-                <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.75rem', flex: 1 }}>
-                  <span
-                    style={{
-                      background: 'rgba(255, 255, 255, 0.08)',
-                      padding: '4px 10px',
-                      borderRadius: '6px',
-                      fontSize: '0.8rem',
-                      fontWeight: 600,
-                    }}
-                  >
-                    #{faq.order ?? index + 1}
-                  </span>
-                  <div>
-                    <h3 style={{ margin: 0, fontSize: '1.05rem', fontWeight: 600 }}>{faq.question}</h3>
-                    <p
+          {filteredFaqs.map((faq, index) => {
+            // Count translations
+            const translatedCount = LANGUAGES.filter(
+              (l) => !l.isDefault && (faq[l.qKey] || faq[l.aKey])
+            ).length;
+
+            return (
+              <div
+                key={faq._id}
+                className="admin-card"
+                style={{
+                  padding: '1.25rem',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '0.75rem',
+                  borderLeft: faq.isActive ? '4px solid #00D65D' : '4px solid #6B7280',
+                  opacity: faq.isActive ? 1 : 0.7,
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '1rem' }}>
+                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.75rem', flex: 1 }}>
+                    <span
                       style={{
-                        margin: '8px 0 0',
-                        fontSize: '0.9rem',
-                        color: 'rgba(255, 255, 255, 0.7)',
-                        lineHeight: 1.5,
-                        whiteSpace: 'pre-wrap',
+                        background: 'rgba(255, 255, 255, 0.08)',
+                        padding: '4px 10px',
+                        borderRadius: '6px',
+                        fontSize: '0.8rem',
+                        fontWeight: 600,
                       }}
                     >
-                      {faq.answer}
-                    </p>
+                      #{faq.order ?? index + 1}
+                    </span>
+                    <div style={{ flex: 1 }}>
+                      <h3 style={{ margin: 0, fontSize: '1.05rem', fontWeight: 600 }}>{faq.question}</h3>
+                      <p
+                        style={{
+                          margin: '8px 0 0',
+                          fontSize: '0.9rem',
+                          color: 'rgba(255, 255, 255, 0.7)',
+                          lineHeight: 1.5,
+                          whiteSpace: 'pre-wrap',
+                        }}
+                      >
+                        {faq.answer}
+                      </p>
+
+                      {/* Language badges */}
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '10px', flexWrap: 'wrap' }}>
+                        <span
+                          style={{
+                            fontSize: '0.72rem',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '4px',
+                            color: '#6B7280',
+                            fontWeight: 600,
+                          }}
+                        >
+                          <FiGlobe size={12} /> Translations:
+                        </span>
+                        {LANGUAGES.map((lang) => {
+                          const hasContent = Boolean(faq[lang.qKey] && faq[lang.aKey]);
+                          if (!hasContent && !lang.isDefault) return null;
+                          return (
+                            <span
+                              key={lang.code}
+                              title={`${lang.label} translated`}
+                              style={{
+                                fontSize: '0.75rem',
+                                padding: '2px 8px',
+                                borderRadius: '12px',
+                                background: lang.isDefault
+                                  ? 'rgba(59, 130, 246, 0.15)'
+                                  : 'rgba(0, 214, 93, 0.15)',
+                                color: lang.isDefault ? '#60A5FA' : '#00D65D',
+                                fontWeight: 600,
+                              }}
+                            >
+                              {lang.flag} {lang.label}
+                            </span>
+                          );
+                        })}
+                        {translatedCount === 0 && (
+                          <span style={{ fontSize: '0.72rem', color: '#6B7280', fontStyle: 'italic' }}>
+                            English only
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Actions */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', shrink: 0 }}>
+                    <button
+                      onClick={() => handleToggleStatus(faq)}
+                      title={faq.isActive ? 'Hide FAQ' : 'Show FAQ'}
+                      style={{
+                        background: faq.isActive ? 'rgba(0, 214, 93, 0.12)' : 'rgba(239, 68, 68, 0.12)',
+                        color: faq.isActive ? '#00D65D' : '#EF4444',
+                        border: 'none',
+                        borderRadius: '8px',
+                        padding: '8px 12px',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 4,
+                        fontSize: '0.8rem',
+                        fontWeight: 600,
+                      }}
+                    >
+                      {faq.isActive ? <FiEye size={14} /> : <FiEyeOff size={14} />}
+                      {faq.isActive ? 'Active' : 'Inactive'}
+                    </button>
+
+                    <button
+                      onClick={() => openEditModal(faq)}
+                      title="Edit FAQ & Translations"
+                      style={{
+                        background: 'rgba(255, 255, 255, 0.08)',
+                        color: 'inherit',
+                        border: 'none',
+                        borderRadius: '8px',
+                        padding: '8px 10px',
+                        cursor: 'pointer',
+                      }}
+                    >
+                      <FiEdit2 size={15} />
+                    </button>
+
+                    <button
+                      onClick={() => handleDelete(faq._id)}
+                      title="Delete FAQ"
+                      style={{
+                        background: 'rgba(239, 68, 68, 0.1)',
+                        color: '#EF4444',
+                        border: 'none',
+                        borderRadius: '8px',
+                        padding: '8px 10px',
+                        cursor: 'pointer',
+                      }}
+                    >
+                      <FiTrash2 size={15} />
+                    </button>
                   </div>
                 </div>
-
-                {/* Actions */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', shrink: 0 }}>
-                  <button
-                    onClick={() => handleToggleStatus(faq)}
-                    title={faq.isActive ? 'Hide FAQ' : 'Show FAQ'}
-                    style={{
-                      background: faq.isActive ? 'rgba(0, 214, 93, 0.12)' : 'rgba(239, 68, 68, 0.12)',
-                      color: faq.isActive ? '#00D65D' : '#EF4444',
-                      border: 'none',
-                      borderRadius: '8px',
-                      padding: '8px 12px',
-                      cursor: 'pointer',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: 4,
-                      fontSize: '0.8rem',
-                      fontWeight: 600,
-                    }}
-                  >
-                    {faq.isActive ? <FiEye size={14} /> : <FiEyeOff size={14} />}
-                    {faq.isActive ? 'Active' : 'Inactive'}
-                  </button>
-
-                  <button
-                    onClick={() => openEditModal(faq)}
-                    title="Edit FAQ"
-                    style={{
-                      background: 'rgba(255, 255, 255, 0.08)',
-                      color: 'inherit',
-                      border: 'none',
-                      borderRadius: '8px',
-                      padding: '8px 10px',
-                      cursor: 'pointer',
-                    }}
-                  >
-                    <FiEdit2 size={15} />
-                  </button>
-
-                  <button
-                    onClick={() => handleDelete(faq._id)}
-                    title="Delete FAQ"
-                    style={{
-                      background: 'rgba(239, 68, 68, 0.1)',
-                      color: '#EF4444',
-                      border: 'none',
-                      borderRadius: '8px',
-                      padding: '8px 10px',
-                      cursor: 'pointer',
-                    }}
-                  >
-                    <FiTrash2 size={15} />
-                  </button>
-                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
 
@@ -405,8 +514,8 @@ const AdminFaqs = () => {
           style={{
             position: 'fixed',
             inset: 0,
-            background: 'rgba(0, 0, 0, 0.6)',
-            backdropFilter: 'blur(4px)',
+            background: 'rgba(0, 0, 0, 0.65)',
+            backdropFilter: 'blur(5px)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
@@ -418,7 +527,9 @@ const AdminFaqs = () => {
             className="admin-card"
             style={{
               width: '100%',
-              maxWidth: 550,
+              maxWidth: 620,
+              maxHeight: '90vh',
+              overflowY: 'auto',
               padding: '1.75rem',
               borderRadius: '16px',
               position: 'relative',
@@ -426,9 +537,14 @@ const AdminFaqs = () => {
             }}
           >
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
-              <h2 style={{ margin: 0, fontSize: '1.25rem', fontWeight: 700 }}>
-                {editingFaq ? 'Edit FAQ' : 'Add New FAQ'}
-              </h2>
+              <div>
+                <h2 style={{ margin: 0, fontSize: '1.25rem', fontWeight: 700 }}>
+                  {editingFaq ? 'Edit FAQ' : 'Add New FAQ'}
+                </h2>
+                <p style={{ margin: '4px 0 0', fontSize: '0.8rem', color: '#9CA3AF' }}>
+                  Provide question & answer in English, then switch tabs to add other languages.
+                </p>
+              </div>
               <button
                 onClick={closeModal}
                 style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#6B7280' }}
@@ -437,17 +553,90 @@ const AdminFaqs = () => {
               </button>
             </div>
 
+            {/* Language Tabs Selector */}
+            <div style={{ marginBottom: '1.25rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
+                <label style={{ fontSize: '0.78rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                  Language / Translations
+                </label>
+                <span style={{ fontSize: '0.75rem', color: '#9CA3AF' }}>Switch tabs to provide translations</span>
+              </div>
+              <div
+                style={{
+                  display: 'flex',
+                  gap: '6px',
+                  padding: '6px',
+                  background: 'rgba(255, 255, 255, 0.05)',
+                  borderRadius: '12px',
+                  border: '1px solid rgba(255, 255, 255, 0.1)',
+                  overflowX: 'auto',
+                }}
+              >
+                {LANGUAGES.map((lang) => {
+                  const isSelected = activeLang === lang.code;
+                  const hasTranslation = Boolean(formData[lang.qKey] && formData[lang.aKey]);
+
+                  return (
+                    <button
+                      key={lang.code}
+                      type="button"
+                      onClick={() => setActiveLang(lang.code)}
+                      style={{
+                        flex: '1 0 auto',
+                        whiteSpace: 'nowrap',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '6px',
+                        padding: '6px 12px',
+                        borderRadius: '8px',
+                        fontSize: '0.8rem',
+                        fontWeight: isSelected ? 700 : 500,
+                        border: isSelected ? '1px solid rgba(0, 214, 93, 0.5)' : '1px solid transparent',
+                        background: isSelected ? '#00D65D' : 'transparent',
+                        color: isSelected ? '#0A0D12' : 'inherit',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s ease',
+                      }}
+                    >
+                      <span>{lang.flag}</span>
+                      <span>{lang.label}</span>
+                      {hasTranslation && !isSelected && (
+                        <span
+                          style={{
+                            width: 6,
+                            height: 6,
+                            borderRadius: '50%',
+                            background: '#00D65D',
+                            display: 'inline-block',
+                          }}
+                          title="Translated"
+                        />
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
             <form onSubmit={handleSave} style={{ display: 'flex', flexDirection: 'column', gap: '1.1rem' }}>
               <div>
                 <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, marginBottom: '6px' }}>
-                  Question
+                  Question ({currentLangObj.label}) {currentLangObj.isDefault ? '*' : '(Optional)'}
                 </label>
                 <input
                   type="text"
-                  required
-                  placeholder="e.g. How do I earn money?"
-                  value={formData.question}
-                  onChange={(e) => setFormData({ ...formData, question: e.target.value })}
+                  required={currentLangObj.isDefault}
+                  dir={currentLangObj.dir || 'ltr'}
+                  placeholder={
+                    currentLangObj.isDefault
+                      ? 'e.g. How do I earn money?'
+                      : `Enter ${currentLangObj.label} translation for question...`
+                  }
+                  value={formData[currentLangObj.qKey] || ''}
+                  onChange={(e) =>
+                    setFormData({ ...formData, [currentLangObj.qKey]: e.target.value })
+                  }
                   style={{
                     width: '100%',
                     padding: '10px 14px',
@@ -464,14 +653,21 @@ const AdminFaqs = () => {
 
               <div>
                 <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, marginBottom: '6px' }}>
-                  Answer (Dropdown Content)
+                  Answer / Dropdown ({currentLangObj.label}) {currentLangObj.isDefault ? '*' : '(Optional)'}
                 </label>
                 <textarea
-                  required
+                  required={currentLangObj.isDefault}
                   rows={4}
-                  placeholder="e.g. By completing offers, surveys, and tasks on the platform."
-                  value={formData.answer}
-                  onChange={(e) => setFormData({ ...formData, answer: e.target.value })}
+                  dir={currentLangObj.dir || 'ltr'}
+                  placeholder={
+                    currentLangObj.isDefault
+                      ? 'e.g. By completing offers, surveys, and tasks on the platform.'
+                      : `Enter ${currentLangObj.label} translation for answer...`
+                  }
+                  value={formData[currentLangObj.aKey] || ''}
+                  onChange={(e) =>
+                    setFormData({ ...formData, [currentLangObj.aKey]: e.target.value })
+                  }
                   style={{
                     width: '100%',
                     padding: '10px 14px',

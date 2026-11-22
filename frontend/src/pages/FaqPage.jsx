@@ -7,11 +7,14 @@ import Footer from '../components/layout/Footer';
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
 const FaqPage = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { isDarkMode } = useTheme();
   const [openFaq, setOpenFaq] = useState(null);
   const [faqs, setFaqs] = useState([]);
   const [loading, setLoading] = useState(true);
+
+  const lang = i18n?.language?.split('-')[0] || 'en';
+  const isUrdu = lang === 'ur';
 
   // Default fallback FAQs from translation in case none have been added yet in admin
   const defaultFaqs = [
@@ -44,6 +47,42 @@ const FaqPage = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const getLocalizedFaq = (faq) => {
+    let q = faq.question || faq.q || '';
+    let a = faq.answer || faq.a || '';
+
+    if (lang === 'de') {
+      q = faq.questionDe || q;
+      a = faq.answerDe || a;
+    } else if (lang === 'ur') {
+      q = faq.questionUr || q;
+      a = faq.answerUr || a;
+    } else if (lang === 'fr') {
+      q = faq.questionFr || q;
+      a = faq.answerFr || a;
+    } else if (lang === 'es') {
+      q = faq.questionEs || q;
+      a = faq.answerEs || a;
+    } else if (lang === 'ru') {
+      q = faq.questionRu || q;
+      a = faq.answerRu || a;
+    } else if (lang === 'pt') {
+      q = faq.questionPt || q;
+      a = faq.answerPt || a;
+    } else if (lang === 'it') {
+      q = faq.questionIt || q;
+      a = faq.answerIt || a;
+    } else if (lang === 'pl') {
+      q = faq.questionPl || q;
+      a = faq.answerPl || a;
+    } else if (lang === 'tr') {
+      q = faq.questionTr || q;
+      a = faq.answerTr || a;
+    }
+
+    return { question: q, answer: a };
   };
 
   const displayFaqs = faqs.length > 0 ? faqs : defaultFaqs;
@@ -102,13 +141,13 @@ const FaqPage = () => {
             <div className="flex flex-col items-center lg:items-start w-full max-w-[424px] lg:max-w-[652px] lg:w-[55%] lg:-translate-y-[20px] gap-3">
               {displayFaqs.map((faq, i) => {
                 const isOpen = openFaq === i;
-                const questionText = faq.question || faq.q;
-                const answerText = faq.answer || faq.a;
+                const localized = getLocalizedFaq(faq);
 
                 return (
                   <div
                     key={faq._id || i}
                     onClick={() => setOpenFaq(isOpen ? null : i)}
+                    dir={isUrdu ? 'rtl' : 'ltr'}
                     className="flex flex-col justify-start cursor-pointer transition-all duration-300 overflow-hidden w-full max-w-[424px] lg:max-w-[652px]"
                     style={{
                       borderRadius: 20,
@@ -132,7 +171,7 @@ const FaqPage = () => {
                           color: isDarkMode ? '#FFFFFF' : '#0E0F0C',
                         }}
                       >
-                        {questionText}
+                        {localized.question}
                       </span>
                       <div
                         className="transition-transform duration-300 flex items-center justify-center shrink-0 ml-2"
@@ -163,7 +202,7 @@ const FaqPage = () => {
                             whiteSpace: 'pre-line',
                           }}
                         >
-                          {answerText}
+                          {localized.answer}
                         </p>
                       </div>
                     )}

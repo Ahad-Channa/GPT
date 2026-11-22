@@ -2959,7 +2959,20 @@ router.get('/faqs', verifyToken, requireAdmin, async (req, res) => {
 // ── POST /api/admin/faqs ─────────────────────────────────────────────────
 router.post('/faqs', verifyToken, requireAdmin, async (req, res) => {
   try {
-    const { question, answer, order, isActive } = req.body;
+    const {
+      question, answer,
+      questionDe, answerDe,
+      questionUr, answerUr,
+      questionFr, answerFr,
+      questionEs, answerEs,
+      questionRu, answerRu,
+      questionPt, answerPt,
+      questionIt, answerIt,
+      questionPl, answerPl,
+      questionTr, answerTr,
+      order, isActive
+    } = req.body;
+
     if (!question || !question.trim()) {
       return res.status(400).json({ success: false, error: 'Question is required' });
     }
@@ -2970,6 +2983,24 @@ router.post('/faqs', verifyToken, requireAdmin, async (req, res) => {
     const newFaq = new Faq({
       question: question.trim(),
       answer: answer.trim(),
+      questionDe: questionDe ? questionDe.trim() : '',
+      answerDe: answerDe ? answerDe.trim() : '',
+      questionUr: questionUr ? questionUr.trim() : '',
+      answerUr: answerUr ? answerUr.trim() : '',
+      questionFr: questionFr ? questionFr.trim() : '',
+      answerFr: answerFr ? answerFr.trim() : '',
+      questionEs: questionEs ? questionEs.trim() : '',
+      answerEs: answerEs ? answerEs.trim() : '',
+      questionRu: questionRu ? questionRu.trim() : '',
+      answerRu: answerRu ? answerRu.trim() : '',
+      questionPt: questionPt ? questionPt.trim() : '',
+      answerPt: answerPt ? answerPt.trim() : '',
+      questionIt: questionIt ? questionIt.trim() : '',
+      answerIt: answerIt ? answerIt.trim() : '',
+      questionPl: questionPl ? questionPl.trim() : '',
+      answerPl: answerPl ? answerPl.trim() : '',
+      questionTr: questionTr ? questionTr.trim() : '',
+      answerTr: answerTr ? answerTr.trim() : '',
       order: typeof order === 'number' ? order : 0,
       isActive: isActive !== undefined ? Boolean(isActive) : true,
     });
@@ -2985,7 +3016,20 @@ router.post('/faqs', verifyToken, requireAdmin, async (req, res) => {
 // ── PUT /api/admin/faqs/:id ──────────────────────────────────────────────
 router.put('/faqs/:id', verifyToken, requireAdmin, async (req, res) => {
   try {
-    const { question, answer, order, isActive } = req.body;
+    const {
+      question, answer,
+      questionDe, answerDe,
+      questionUr, answerUr,
+      questionFr, answerFr,
+      questionEs, answerEs,
+      questionRu, answerRu,
+      questionPt, answerPt,
+      questionIt, answerIt,
+      questionPl, answerPl,
+      questionTr, answerTr,
+      order, isActive
+    } = req.body;
+
     const faq = await Faq.findById(req.params.id);
     if (!faq) {
       return res.status(404).json({ success: false, error: 'FAQ not found' });
@@ -2993,6 +3037,26 @@ router.put('/faqs/:id', verifyToken, requireAdmin, async (req, res) => {
 
     if (question !== undefined) faq.question = question.trim();
     if (answer !== undefined) faq.answer = answer.trim();
+
+    if (questionDe !== undefined) faq.questionDe = questionDe.trim();
+    if (answerDe !== undefined) faq.answerDe = answerDe.trim();
+    if (questionUr !== undefined) faq.questionUr = questionUr.trim();
+    if (answerUr !== undefined) faq.answerUr = answerUr.trim();
+    if (questionFr !== undefined) faq.questionFr = questionFr.trim();
+    if (answerFr !== undefined) faq.answerFr = answerFr.trim();
+    if (questionEs !== undefined) faq.questionEs = questionEs.trim();
+    if (answerEs !== undefined) faq.answerEs = answerEs.trim();
+    if (questionRu !== undefined) faq.questionRu = questionRu.trim();
+    if (answerRu !== undefined) faq.answerRu = answerRu.trim();
+    if (questionPt !== undefined) faq.questionPt = questionPt.trim();
+    if (answerPt !== undefined) faq.answerPt = answerPt.trim();
+    if (questionIt !== undefined) faq.questionIt = questionIt.trim();
+    if (answerIt !== undefined) faq.answerIt = answerIt.trim();
+    if (questionPl !== undefined) faq.questionPl = questionPl.trim();
+    if (answerPl !== undefined) faq.answerPl = answerPl.trim();
+    if (questionTr !== undefined) faq.questionTr = questionTr.trim();
+    if (answerTr !== undefined) faq.answerTr = answerTr.trim();
+
     if (order !== undefined) faq.order = Number(order);
     if (isActive !== undefined) faq.isActive = Boolean(isActive);
 
