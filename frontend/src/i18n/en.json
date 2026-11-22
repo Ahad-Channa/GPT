@@ -152,6 +152,7 @@
     "support": "Support",
     "clickIdLabel": "Click ID:",
     "actionAlreadyCredited": "This offer was already credited. Its tracking link has been reopened.",
+    "actionAlreadyCompleted": "This offer is already completed. There is nothing left to earn.",
     "actionClickRecorded": "Offer click recorded.",
     "actionTabBlocked": "The click was recorded, but the destination tab was blocked. Allow pop-ups before starting another click.",
     "actionCouldNotStart": "Could not start this offer.",

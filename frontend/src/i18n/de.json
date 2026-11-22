@@ -152,6 +152,7 @@
     "support": "Support",
     "clickIdLabel": "Klick-ID:",
     "actionAlreadyCredited": "Dieses Angebot wurde bereits gutgeschrieben. Der Tracking-Link wurde erneut geöffnet.",
+    "actionAlreadyCompleted": "Dieses Angebot ist bereits abgeschlossen. Es gibt nichts mehr zu verdienen.",
     "actionClickRecorded": "Angebotsklick erfasst.",
     "actionTabBlocked": "Der Klick wurde erfasst, aber der Ziel-Tab wurde blockiert. Erlaube Pop-ups, bevor du einen weiteren Klick startest.",
     "actionCouldNotStart": "Dieses Angebot konnte nicht gestartet werden.",

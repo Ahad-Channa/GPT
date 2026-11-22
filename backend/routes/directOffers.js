@@ -25,6 +25,7 @@ const {
   groupOfferCreditState,
   resolveCompletedGoalKeys,
   resolveOfferLifecycle,
+  resolveUserOfferLifecycle,
 } = require('../services/tracking/offerGoalCompletion');
 const { processPostback } = require('../services/tracking/conversionService');
 const { upsertManualProofConversion } = require('../services/tracking/manualProofService');
@@ -284,6 +285,27 @@ router.post('/click/:offerId', verifyToken, fraudCheck('offer_click', 'full'), a
       offerId: offer._id,
     });
     if (existingClick) {
+      // Never a second click ID. Whether re-opening the ORIGINAL tracking link is
+      // useful depends on real completion: a multi-step offer with remaining goals
+      // must stay resumable on this click, but a fully credited offer has nothing
+      // left to earn, so no link is returned. clickStatus 'approved' alone is not
+      // completion (the first credited goal sets it).
+      const lifecycle = await resolveUserOfferLifecycle({
+        offer,
+        click: existingClick,
+        userId: user._id,
+        conversionModel: Conversion,
+      });
+      if (lifecycle === 'completed') {
+        return res.status(200).json({
+          success: true,
+          clickId: existingClick.clickId,
+          alreadyStarted: true,
+          alreadyApproved: true,
+          alreadyCompleted: true,
+          lifecycle,
+        });
+      }
       const redirectUrl = existingClick.redirectUrl || buildRedirectUrl({
         destinationUrl: offer.advertiserUrl,
         clickId: existingClick.clickId,
@@ -297,6 +319,8 @@ router.post('/click/:offerId', verifyToken, fraudCheck('offer_click', 'full'), a
         clickId: existingClick.clickId,
         alreadyApproved: existingClick.status === 'approved',
         alreadyStarted: true,
+        alreadyCompleted: false,
+        lifecycle,
       });
     }
 
@@ -367,6 +391,35 @@ const startManualOfferClick = async ({ req, res, user, offer, placement }) => {
 
   if (!submission) {
     return res.status(500).json({ success: false, error: 'Failed to start manual offer' });
+  }
+
+  // Approved (credited) manual offers have nothing left to do: never hand the
+  // advertiser URL out again and never create another click or reserve a slot.
+  // Started / pending / rejected keep the stored click and the proof workflow.
+  if (submission.status === 'approved') {
+    return res.status(200).json({
+      success: true,
+      clickId: submission.clickId || '',
+      submissionStatus: 'approved',
+      alreadyStarted: true,
+      alreadyApproved: true,
+      alreadyCompleted: true,
+      lifecycle: 'completed',
+    });
+  }
+
+  // Chargebacked (reversed) manual offers can never be restarted or re-credited:
+  // no advertiser URL, no new click, no slot. The chargeback state is untouched.
+  if (submission.status === 'chargebacked') {
+    return res.status(409).json({
+      success: false,
+      error: 'This offer can no longer be started.',
+      clickId: submission.clickId || '',
+      submissionStatus: 'chargebacked',
+      alreadyStarted: true,
+      alreadyReversed: true,
+      lifecycle: 'reversed',
+    });
   }
 
   if (submission.clickId) {

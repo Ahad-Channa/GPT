@@ -154,7 +154,25 @@ const resolveOfferLifecycle = ({ offer, click = null, submission = null, complet
   return clickIncompleteState(click);
 };
 
+// Lifecycle of ONE offer for ONE user, using the same rule as the offers list.
+// Used by the click endpoint to decide whether re-opening the tracking link has
+// any purpose. Read-only; never changes clicks, conversions or rewards.
+const resolveUserOfferLifecycle = async ({ offer, click, userId, conversionModel, submission = null }) => {
+  if (!offer || !conversionModel) return resolveOfferLifecycle({ offer, click, submission });
+  const rows = await conversionModel
+    .find({
+      ...buildOfferCreditConversionQuery(userId),
+      $or: [{ offerId: offer._id }, { campaignId: offer._id }],
+    })
+    .select('offerId campaignId goalKey internalStatus processingState rewardTransactionId')
+    .lean();
+  const completedGoalKeys = resolveCompletedGoalKeys(offer, groupCompletedGoalKeysByOffer(rows));
+  const creditState = groupOfferCreditState(rows)[String(offer._id)] || null;
+  return resolveOfferLifecycle({ offer, click, submission, completedGoalKeys, creditState });
+};
+
 module.exports = {
+  resolveUserOfferLifecycle,
   DIRECT_OFFER_PROVIDER_ID,
   OFFER_LIFECYCLES,
   buildOfferCreditConversionQuery,

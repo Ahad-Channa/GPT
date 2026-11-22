@@ -300,6 +300,13 @@ export const GoodpicksDetailModal = ({ offer, onClose, token, onOfferStateChange
           body: JSON.stringify({ placement: 'brandedOfferwall' }),
         });
         const data = await res.json();
+        if (data.success && data.alreadyCompleted) {
+          // Fully credited: do not reopen the tracking link.
+          closeReservedOfferTab(pendingTab);
+          if (data.submissionStatus) setSubmissionStatus(data.submissionStatus);
+          setActionError(t('offers.actionAlreadyCompleted'));
+          return;
+        }
         if (data.success && data.url) {
           const opened = isManual
             ? navigateReservedOfferTab(pendingTab, data.url)

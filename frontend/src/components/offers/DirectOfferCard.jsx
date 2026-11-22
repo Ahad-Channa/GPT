@@ -302,12 +302,19 @@ export const DirectOfferModal = ({ offer, token, placement = 'featured', onClose
           body: JSON.stringify({ placement }),
         });
         const data = await res.json();
-        if (res.ok && data.success && data.url) {
+        if (res.ok && data.success && data.alreadyCompleted) {
+          // Fully credited: nothing left to earn, so do not reopen the tracking link.
+          closeReservedOfferTab(pendingTab);
+          setStartedClickId(data.clickId || '');
+          if (data.submissionStatus) setSubmissionStatus(data.submissionStatus);
+          setActionMessage(t('offers.actionAlreadyCompleted'));
+          if (onClicked) onClicked(offer._id, { submissionStatus: data.submissionStatus || submissionStatus });
+        } else if (res.ok && data.success && data.url) {
           const opened = navigateReservedOfferTab(pendingTab, data.url);
           setStartedClickId(data.clickId || '');
-          setActionMessage(data.alreadyApproved
-            ? t('offers.actionAlreadyCredited')
-            : t('offers.actionClickRecorded'));
+          // Resuming the original click (same click ID) is valid for unfinished
+          // multi-step offers, so do not claim "already credited" here.
+          setActionMessage(t('offers.actionClickRecorded'));
           if (!opened) {
             setActionError(t('offers.actionTabBlocked'));
           }
