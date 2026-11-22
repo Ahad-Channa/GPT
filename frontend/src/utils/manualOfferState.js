@@ -1,4 +1,4 @@
-import { getOfferTranslation } from './offerTranslations.js';
+import { getOfferDisplayText } from './offerTranslations.js';
 
 // Offers the user started in this browser session. Keeps the proof area visible
 // when a popup is closed and reopened before the offers list has been refetched.
@@ -16,7 +16,7 @@ export const hasManualOfferStarted = (offer = {}) =>
     !['pending', 'approved', 'chargebacked'].includes(String(offer.submissionStatus || '').toLowerCase()));
 
 export const resolveProofInstructions = (offer = {}, language = 'en') =>
-  String(getOfferTranslation(offer, language).proofInstructions || '').trim();
+  String(getOfferDisplayText(offer, language).proofInstructions || '').trim();
 
 const hasText = (value) => String(value ?? '').trim().length > 0;
 
@@ -29,8 +29,9 @@ export const hasAnyProofInstructions = (offer = {}) =>
   Object.values(offer.translations && typeof offer.translations === 'object' ? offer.translations : {})
     .some((entry) => hasText(entry?.proofInstructions));
 
-// { text, unavailable }: `unavailable` is true when instructions exist in some
-// other language but not in the selected one. No other language is borrowed.
+// { text, unavailable }: text falls back to the required English instructions.
+// `unavailable` is only true when instructions exist solely in some third
+// language (neither the selected one nor English).
 export const getProofInstructionsView = (offer = {}, language = 'en') => {
   const text = resolveProofInstructions(offer, language);
   return { text, unavailable: !text && hasAnyProofInstructions(offer) };

@@ -327,6 +327,17 @@ const createDirectOfferClick = async ({
   });
 };
 
+// True when the optional overall click cap (maxTotalClicks) is used up. Same
+// meaning as the atomic check in reserveDirectOfferClickSlot below: null/missing
+// cap = unlimited. Used to hide such offers from users who have not started them.
+const isClickCapReached = (offer) => {
+  const max = offer?.maxTotalClicks;
+  if (max === null || max === undefined) return false;
+  const limit = Number(max);
+  if (!Number.isFinite(limit) || limit < 1) return false;
+  return (Number(offer?.totalClicks) || 0) >= limit;
+};
+
 // Atomically reserve one total-click slot on a DirectOffer. This is the ONLY
 // authoritative increment of totalClicks. Returns the updated offer when a slot
 // was reserved, or null when the (optional) overall cap is already reached.
@@ -362,6 +373,7 @@ const releaseDirectOfferClickSlot = async ({ offerId, offerModel = DirectOffer }
 };
 
 module.exports = {
+  isClickCapReached,
   assertDirectOfferAvailable,
   buildDirectOfferClaimKey,
   buildRedirectUrl,

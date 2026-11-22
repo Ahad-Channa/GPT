@@ -153,3 +153,29 @@ test('Home and Earn Featured lists hide completed direct offers via the shared h
     assert.match(src, /markOfferStarted\(prev, offerId\)/, file);
   }
 });
+
+// ── History platform badges ─────────────────────────────────────────────────
+const renderBadges = (platforms) =>
+  m.renderToString(m.createElement(m.GoodpicksPlatformBadges, { platforms })).replace(/<!-- -->/g, '');
+const platformsIn = (html) => [...html.matchAll(/data-platform="(\w+)"/g)].map((match) => match[1]);
+
+test('History shows every supported platform, not just one (PC + Android + iOS)', () => {
+  assert.deepEqual(platformsIn(renderBadges({ desktop: true, android: true, ios: true })), ['desktop', 'android', 'ios']);
+});
+
+test('History shows only the enabled platforms', () => {
+  assert.deepEqual(platformsIn(renderBadges({ android: true, ios: false, desktop: false })), ['android']);
+  assert.deepEqual(platformsIn(renderBadges({ ios: true })), ['ios']);
+  assert.deepEqual(platformsIn(renderBadges({ desktop: true, ios: true })), ['desktop', 'ios']);
+});
+
+test('History shows no platform badge (and no invented Android icon) when no platform is set', () => {
+  assert.equal(renderBadges({}), '');
+  assert.equal(renderBadges(undefined), '');
+});
+
+test('History rows use the multi-platform badges component', () => {
+  const modal = read('src/components/offers/GoodpicksModal.jsx');
+  assert.match(modal, /<GoodpicksPlatformBadges platforms=\{item\.platforms\} \/>/);
+  assert.doesNotMatch(modal, /item\.platforms\?\.desktop \? 'Desktop' : item\.platforms\?\.ios \? 'iOS' : 'Android'/);
+});

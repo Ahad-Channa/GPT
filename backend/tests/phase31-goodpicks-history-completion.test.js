@@ -167,8 +167,8 @@ test('6. History lists started offers once, survives refresh/reopen, completed a
   assert.doesNotMatch(completedBranch(), /onClick|onOpen/);
 });
 
-test('Approved badge is driven by lifecycle, not raw clickStatus', () => {
+test('Featured cards show no status badge at all (so no raw clickStatus badge can appear)', () => {
   const card = read('frontend/src/components/offers/DirectOfferCard.jsx');
-  assert.match(card, /getOfferBadgeStatus\(offer\)/);
+  assert.doesNotMatch(card, /getOfferBadgeStatus|getStatusConfig|statusCfg/);
   assert.doesNotMatch(card, /getStatusConfig\(t\)\[offer\.clickStatus\]/);
 });

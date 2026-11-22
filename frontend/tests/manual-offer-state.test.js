@@ -16,19 +16,19 @@ test('legacy clicked manual offer can be started again', () => {
   assert.equal(hasManualOfferStarted({ clickStatus: null }), false);
 });
 
-test('proof instructions never borrow another language (German with only English is empty)', () => {
+test('proof instructions: the selected language wins, otherwise the required English text is shown', () => {
   const offer = { proofInstructions: 'Send proof to support.', proofInstructionsDe: 'Senden Sie den Nachweis.' };
   assert.equal(resolveProofInstructions(offer, 'en'), 'Send proof to support.');
   assert.equal(resolveProofInstructions(offer, 'en-US'), 'Send proof to support.');
   assert.equal(resolveProofInstructions(offer, 'de'), 'Senden Sie den Nachweis.');
-  assert.equal(resolveProofInstructions({ proofInstructions: 'English only' }, 'de'), '');
+  assert.equal(resolveProofInstructions({ proofInstructions: 'English only' }, 'de'), 'English only');
 });
 
 const loadLocale = (code) => JSON.parse(fs.readFileSync(new URL(`../src/i18n/${code}.json`, import.meta.url), 'utf8'));
 
-test('German user with only English proof instructions gets an "unavailable" view, not a blank area', async () => {
+test('German user with only English proof instructions sees the English text (no blank area, no notice)', async () => {
   const offer = { proofInstructions: 'Send proof to support.' };
-  assert.deepEqual(getProofInstructionsView(offer, 'de'), { text: '', unavailable: true });
+  assert.deepEqual(getProofInstructionsView(offer, 'de'), { text: 'Send proof to support.', unavailable: false });
   assert.deepEqual(getProofInstructionsView(offer, 'en'), { text: 'Send proof to support.', unavailable: false });
   assert.deepEqual(getProofInstructionsView({ translations: { fr: { proofInstructions: 'Preuve' } } }, 'de'), { text: '', unavailable: true });
   // No instructions in any language: nothing to show, nothing to flag.

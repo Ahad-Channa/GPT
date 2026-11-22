@@ -19,7 +19,7 @@ import CoinDisplay from '../components/CoinDisplay';
 import CoinIcon from '../components/CoinIcon';
 import UserAvatar from '../components/UserAvatar';
 import { getEarningDisplay } from '../utils/earningDisplay';
-import { getOfferTranslation } from '../utils/offerTranslations';
+import { getOfferDisplayText } from '../utils/offerTranslations';
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
@@ -2748,7 +2748,7 @@ const Profile = () => {
           })
           .map(offer => ({
             ...offer,
-            title: getOfferTranslation(offer, i18n.resolvedLanguage || i18n.language).title
+            title: getOfferDisplayText(offer, i18n.resolvedLanguage || i18n.language).title
               || t('offers.translationUnavailable', 'Translation unavailable'),
             startedAt: offer.startedAt || offer.createdAt,
             source: 'direct',

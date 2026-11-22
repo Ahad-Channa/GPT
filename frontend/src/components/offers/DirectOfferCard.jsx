@@ -11,7 +11,7 @@ import { isOfferClickLimitReached } from '../../utils/offerClickLimit';
 import { formatGoalLabel } from '../../utils/offerGoalDisplay.js';
 import { formatOfferAmount } from '../../utils/offerNumberFormat.js';
 import { closeReservedOfferTab, hasManualOfferStarted, getProofInstructionsView, navigateReservedOfferTab, rememberManualOfferStarted, reserveOfferTab } from '../../utils/manualOfferState.js';
-import { getOfferTranslation } from '../../utils/offerTranslations';
+import { getOfferDisplayText } from '../../utils/offerTranslations';
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
@@ -55,7 +55,7 @@ const requirementText = (requirements, fallback) => {
 export const DirectOfferCard = ({ offer, onClick }) => {
   const { i18n, t } = useTranslation();
   const language = i18n.resolvedLanguage || i18n.language;
-  const offerText = getOfferTranslation(offer, language);
+  const offerText = getOfferDisplayText(offer, language);
   const title = offerText.title || t('offers.translationUnavailable', 'Translation unavailable');
   const isExpired = offer.expirationDate && new Date(offer.expirationDate) < new Date();
   const coverImgSrc = offer.coverImage || (isIconUrl(offer.icon) ? offer.icon : null);
@@ -236,7 +236,7 @@ export const DirectOfferModal = ({ offer, token, placement = 'featured', onClose
   // The live i18n language is the single source of truth. (A stale window global
   // used to override it and showed German proof instructions in English.)
   const selectedLanguage = i18n.resolvedLanguage || i18n.language || 'en';
-  const offerText = getOfferTranslation(offer, selectedLanguage);
+  const offerText = getOfferDisplayText(offer, selectedLanguage);
   const title = offerText.title || t('offers.translationUnavailable', 'Translation unavailable');
   const description = offerText.description;
   const requirements = offerText.requirements;
@@ -296,9 +296,8 @@ export const DirectOfferModal = ({ offer, token, placement = 'featured', onClose
           if (onClicked) onClicked(offer._id, { submissionStatus: data.submissionStatus || submissionStatus });
         } else if (res.ok && data.success && data.url) {
           const opened = navigateReservedOfferTab(pendingTab, data.url);
-          // Resuming the original click (same click ID) is valid for unfinished
-          // multi-step offers, so do not claim "already credited" here.
-          setActionMessage(t('offers.actionClickRecorded'));
+          // No "click recorded" banner: the popup stays clean after Start. (Resuming
+          // the original click is valid for unfinished multi-step offers.)
           if (!opened) {
             setActionError(t('offers.actionTabBlocked'));
           }

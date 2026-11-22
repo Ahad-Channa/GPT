@@ -1,5 +1,5 @@
 const compactKey = (value) => String(value || '').toLowerCase().replace(/[\s_-]+/g, '');
-import { getGoalTranslation } from './offerTranslations.js';
+import { getGoalDisplayText } from './offerTranslations.js';
 
 export const humanizeGoalKey = (value) => {
   const raw = String(value || '').trim();
@@ -17,9 +17,9 @@ export const humanizeGoalKey = (value) => {
 export const formatGoalLabel = (goal, language = 'en', fallbackLabel = '') => {
   const key = String(goal?.goalKey || goal?.key || '').trim();
   const isEnglish = String(language || 'en').toLowerCase().split(/[-_]/)[0] === 'en';
-  const localizedLabel = String(getGoalTranslation(goal, language).label || '').trim();
-  // English may use the stored English label; other languages must not borrow it.
-  const label = localizedLabel || (isEnglish ? String(goal?.label || '').trim() : '');
+  // Selected language first, then the required English label (stored or translated).
+  const localizedLabel = String(getGoalDisplayText(goal, language).label || '').trim();
+  const label = localizedLabel || String(goal?.label || '').trim();
 
   if (label && (!key || compactKey(label) !== compactKey(key))) return label;
   if (isEnglish) return humanizeGoalKey(key || label) || fallbackLabel || 'Complete step';

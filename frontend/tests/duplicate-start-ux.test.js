@@ -67,3 +67,10 @@ test('Featured offer cards never show a progress/status badge: only the coin rew
   assert.doesNotMatch(card, /statusInProgress|statusPending|statusApproved/);
   assert.match(card, /formatOfferAmount\(rewardVal, language\)/);
 });
+
+test('starting an offer does not show an "Offer click recorded." banner', () => {
+  const card = read('src/components/offers/DirectOfferCard.jsx');
+  assert.doesNotMatch(card, /actionClickRecorded/);
+  // the completed-offer notice is still shown
+  assert.match(card, /t\('offers\.actionAlreadyCompleted'\)/);
+});

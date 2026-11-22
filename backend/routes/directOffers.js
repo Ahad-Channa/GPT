@@ -16,6 +16,7 @@ const {
   findExistingDirectOfferClick,
   releaseDirectOfferClickSlot,
   reserveDirectOfferClickSlot,
+  isClickCapReached,
 } = require('../services/tracking/clickService');
 const { buildDirectOfferProviderConfig } = require('../services/tracking/directOfferProvider');
 const {
@@ -149,6 +150,13 @@ router.get('/', verifyToken, async (req, res) => {
     // receive them. (The admin UI reads them from /api/admin/direct-offers.)
     offers = offers.map(stripAdminOnlyPayoutFields);
 
+    // An offer whose total-click cap is used up is invisible to users who have not
+    // started it (nothing is deleted; raising the cap makes it reappear). Users who
+    // already hold a click keep seeing it below so they can still finish it.
+    if (!user) {
+      offers = offers.filter((offer) => !isClickCapReached(offer));
+    }
+
     if (!user) {
       return res.status(200).json({
         success: true,
@@ -236,7 +244,11 @@ router.get('/', verifyToken, async (req, res) => {
       };
     });
 
-    res.status(200).json({ success: true, offers: offersWithStatus });
+    const visibleOffers = offersWithStatus.filter(
+      (offer) => !(isClickCapReached(offer) && offer.lifecycle === 'available')
+    );
+
+    res.status(200).json({ success: true, offers: visibleOffers });
   } catch (error) {
     console.error('[/api/direct-offers] Error:', error);
     res.status(500).json({ success: false, error: 'Failed to fetch direct offers' });

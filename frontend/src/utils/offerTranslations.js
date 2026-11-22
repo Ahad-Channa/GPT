@@ -92,3 +92,31 @@ export const getGoalTranslation = (goal = {}, locale = 'en') => {
     description: pickTextField(map, candidates, 'description') ?? String(legacy.description || '').trim(),
   };
 };
+
+// ── User-facing display text (English fallback) ─────────────────────────────
+// English is the required base language of every offer, so a user-facing screen
+// shows the English text for any field that has no translation in the selected
+// language instead of an "unavailable" notice. The strict resolvers above are
+// unchanged and still used by the admin editor, where an empty German field must
+// stay empty.
+const BASE_LOCALE = 'en';
+const isBaseLocale = (locale) => localeCandidates(locale).includes(BASE_LOCALE);
+
+export const getOfferDisplayText = (offer = {}, locale = BASE_LOCALE) => {
+  const own = getOfferTranslation(offer, locale);
+  if (isBaseLocale(locale)) return own;
+  const base = getOfferTranslation(offer, BASE_LOCALE);
+  return {
+    title: own.title || base.title,
+    description: own.description || base.description,
+    requirements: own.requirements && own.requirements.length > 0 ? own.requirements : base.requirements,
+    proofInstructions: own.proofInstructions || base.proofInstructions,
+  };
+};
+
+export const getGoalDisplayText = (goal = {}, locale = BASE_LOCALE) => {
+  const own = getGoalTranslation(goal, locale);
+  if (isBaseLocale(locale)) return own;
+  const base = getGoalTranslation(goal, BASE_LOCALE);
+  return { label: own.label || base.label, description: own.description || base.description };
+};

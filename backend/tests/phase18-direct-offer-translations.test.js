@@ -441,7 +441,7 @@ test('goal lookup also uses field-level fallback without borrowing English field
   );
 });
 
-test('missing goal labels use the selected locale missing-state text for German, French and Urdu', async () => {
+test('goal labels fall back to the required English label; the localized missing-state text is only for labels missing in every language', async () => {
   const { formatGoalLabel } = await loadOfferGoalDisplay();
   const messages = {
     de: require(path.join(repoRoot, 'frontend/src/i18n/de.json')),
@@ -450,12 +450,18 @@ test('missing goal labels use the selected locale missing-state text for German,
   };
 
   for (const locale of ['de', 'fr', 'ur']) {
+    // English label exists: shown instead of a notice (English is the base language).
     assert.equal(
       formatGoalLabel(
         { goalKey: 'fight_20_battles', label: 'English only label' },
         locale,
         messages[locale].offers.missingGoalLabel
       ),
+      'English only label'
+    );
+    // No label in any language: the localized missing-state text.
+    assert.equal(
+      formatGoalLabel({ goalKey: '', label: '' }, locale, messages[locale].offers.missingGoalLabel),
       messages[locale].offers.missingGoalLabel
     );
   }
@@ -489,11 +495,11 @@ test('translated goal labels still win over the localized missing state', async 
 
 // ─── Component integration ───────────────────────────────────────────────────
 
-test('DirectOfferCard uses localized offer text without unconditional English fallbacks', () => {
+test('DirectOfferCard uses the display resolver (selected language, then required English) and no ad-hoc fallbacks', () => {
   const card = compact(read('frontend/src/components/offers/DirectOfferCard.jsx'));
 
-  assert.match(card, /getOfferTranslation\(offer,language\)/);
-  assert.match(card, /getOfferTranslation\(offer,selectedLanguage\)/);
+  assert.match(card, /getOfferDisplayText\(offer,language\)/);
+  assert.match(card, /getOfferDisplayText\(offer,selectedLanguage\)/);
   assert.doesNotMatch(card, /offerText\.title\|\|offer\.title/);
   assert.doesNotMatch(card, /offerText\.description\|\|offer\.description/);
   assert.doesNotMatch(card, /offerText\.requirements\|\|offer\.requirements/);
@@ -506,7 +512,8 @@ test('DirectOfferCard uses localized offer text without unconditional English fa
   assert.match(card, /t\('offers\.requirements'\)/);
   assert.match(card, /t\('offers\.generalRules'\)/);
   assert.match(card, /t\('offers\.proofInstructions'\)/);
-  assert.match(card, /t\('offers\.statusInProgress'\)/);
+  // Cards no longer show a progress/status badge.
+  assert.doesNotMatch(card, /statusInProgress/);
   assert.doesNotMatch(card, /isDe/);
   assert.doesNotMatch(card, /'Proof Instructions'/);
   assert.doesNotMatch(card, /'General Offer Rules'/);
