@@ -37,9 +37,11 @@ import VipPage from './pages/VipPage';
 
 import AdminBooks from './pages/admin/AdminBooks';
 import AdminLegalPages from './pages/admin/AdminLegalPages';
+import AdminFaqs from './pages/admin/AdminFaqs';
 import AdminCookies from './pages/admin/AdminCookies';
 import AdminSupportEmail from './pages/admin/AdminSupportEmail';
 import LegalPage from './pages/LegalPage';
+import FaqPage from './pages/FaqPage';
 import NotificationPanel from './components/NotificationPanel';
 import BannedAccountModal from './components/BannedAccountModal';
 import CookieConsentBanner from './components/cookie/CookieConsentBanner';
@@ -193,6 +195,7 @@ function App() {
         <Route path="/privacy-policy" element={<LegalPage customSlug="privacy-policy" />} />
         <Route path="/affiliate-policy" element={<LegalPage customSlug="affiliate-policy" />} />
         <Route path="/cookie-policy" element={<LegalPage customSlug="cookie-policy" />} />
+        <Route path="/faq" element={<FaqPage />} />
         <Route
           path="/dashboard"
           element={
@@ -303,6 +306,7 @@ function App() {
           <Route path="logs" element={<AdminLogs />} />
           <Route path="settings" element={<AdminSettings />} />
           <Route path="legal-pages" element={<AdminLegalPages />} />
+          <Route path="faqs" element={<AdminFaqs />} />
           <Route path="cookies" element={<AdminCookies />} />
           <Route path="support-email" element={<AdminSupportEmail />} />
         </Route>

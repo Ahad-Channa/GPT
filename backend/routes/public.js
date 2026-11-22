@@ -3,6 +3,7 @@ const router = express.Router();
 const User = require('../models/User');
 const Transaction = require('../models/Transaction');
 const Settings = require('../models/Settings');
+const Faq = require('../models/Faq');
 
 // ── Obfuscator Helper ────────────────────────────────────────────────────────
 // Sanitizes transaction descriptions for private profiles.
@@ -335,6 +336,18 @@ router.get('/support-email', async (req, res) => {
   } catch (err) {
     console.error('[/api/public/support-email] Error:', err);
     res.status(200).json({ success: true, supportEmail: 'support@taskmint.me' });
+  }
+});
+
+// ── GET /api/public/faqs ─────────────────────────────────────────────────
+router.get('/faqs', async (req, res) => {
+  try {
+    const faqs = await Faq.find({ isActive: true }).sort({ order: 1, createdAt: 1 }).lean();
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+    res.status(200).json({ success: true, faqs });
+  } catch (err) {
+    console.error('[/api/public/faqs] Error:', err);
+    res.status(500).json({ success: false, error: 'Failed to fetch FAQs' });
   }
 });
 

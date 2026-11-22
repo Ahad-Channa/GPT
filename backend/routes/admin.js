@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const User = require('../models/User');
+const Faq = require('../models/Faq');
 const Transaction = require('../models/Transaction');
 const Settings = require('../models/Settings');
 const PromoCode = require('../models/PromoCode');
@@ -2941,6 +2942,79 @@ router.put('/support-email', verifyToken, requireAdmin, async (req, res) => {
   } catch (err) {
     console.error('[/api/admin/support-email PUT] Error:', err);
     res.status(500).json({ success: false, error: 'Failed to update support email' });
+  }
+});
+
+// ── GET /api/admin/faqs ──────────────────────────────────────────────────
+router.get('/faqs', verifyToken, requireAdmin, async (req, res) => {
+  try {
+    const faqs = await Faq.find().sort({ order: 1, createdAt: -1 });
+    res.json({ success: true, faqs });
+  } catch (err) {
+    console.error('[/api/admin/faqs GET] Error:', err);
+    res.status(500).json({ success: false, error: 'Failed to fetch FAQs' });
+  }
+});
+
+// ── POST /api/admin/faqs ─────────────────────────────────────────────────
+router.post('/faqs', verifyToken, requireAdmin, async (req, res) => {
+  try {
+    const { question, answer, order, isActive } = req.body;
+    if (!question || !question.trim()) {
+      return res.status(400).json({ success: false, error: 'Question is required' });
+    }
+    if (!answer || !answer.trim()) {
+      return res.status(400).json({ success: false, error: 'Answer is required' });
+    }
+
+    const newFaq = new Faq({
+      question: question.trim(),
+      answer: answer.trim(),
+      order: typeof order === 'number' ? order : 0,
+      isActive: isActive !== undefined ? Boolean(isActive) : true,
+    });
+
+    await newFaq.save();
+    res.json({ success: true, faq: newFaq, message: 'FAQ added successfully' });
+  } catch (err) {
+    console.error('[/api/admin/faqs POST] Error:', err);
+    res.status(500).json({ success: false, error: 'Failed to create FAQ' });
+  }
+});
+
+// ── PUT /api/admin/faqs/:id ──────────────────────────────────────────────
+router.put('/faqs/:id', verifyToken, requireAdmin, async (req, res) => {
+  try {
+    const { question, answer, order, isActive } = req.body;
+    const faq = await Faq.findById(req.params.id);
+    if (!faq) {
+      return res.status(404).json({ success: false, error: 'FAQ not found' });
+    }
+
+    if (question !== undefined) faq.question = question.trim();
+    if (answer !== undefined) faq.answer = answer.trim();
+    if (order !== undefined) faq.order = Number(order);
+    if (isActive !== undefined) faq.isActive = Boolean(isActive);
+
+    await faq.save();
+    res.json({ success: true, faq, message: 'FAQ updated successfully' });
+  } catch (err) {
+    console.error('[/api/admin/faqs/:id PUT] Error:', err);
+    res.status(500).json({ success: false, error: 'Failed to update FAQ' });
+  }
+});
+
+// ── DELETE /api/admin/faqs/:id ───────────────────────────────────────────
+router.delete('/faqs/:id', verifyToken, requireAdmin, async (req, res) => {
+  try {
+    const faq = await Faq.findByIdAndDelete(req.params.id);
+    if (!faq) {
+      return res.status(404).json({ success: false, error: 'FAQ not found' });
+    }
+    res.json({ success: true, message: 'FAQ deleted successfully' });
+  } catch (err) {
+    console.error('[/api/admin/faqs/:id DELETE] Error:', err);
+    res.status(500).json({ success: false, error: 'Failed to delete FAQ' });
   }
 });
 
