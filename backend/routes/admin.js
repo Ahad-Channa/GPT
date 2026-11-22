@@ -21,6 +21,7 @@ const { requireAdmin, requirePrimaryAdmin, requirePermission } = require('../mid
 const notify = require('../utils/notify');
 const { notifyAdmins } = require('../utils/adminNotify');
 const { emitWalletUpdate, emitToUser } = require('../utils/walletEvents');
+const { broadcastNewEarning } = require('../utils/earningFeed');
 const { processVipLevelUp } = require('../utils/vipUtils');
 const {
   normalizeDisplayPlacements,
@@ -1551,6 +1552,7 @@ router.put('/custom-offers/submissions/:id', requirePermission('manage_offerwall
         },
       });
 
+      broadcastNewEarning({ transaction: offerTx, user: freshUser });
       await createLog(req.dbUser._id, 'APPROVE_CUSTOM_OFFER', freshUser._id, { offerTitle: submission.offerId.title, submissionId: submission._id });
       
       const notifTitle = txStatus === 'hold' ? 'Offer Approved & Held' : 'Custom Offer Approved!';
@@ -3172,6 +3174,7 @@ router.post('/proofs/:type/:id/:action', requirePermission('manage_offerwalls'),
             sourceId: submission.offerId._id,
           });
 
+          broadcastNewEarning({ transaction: offerTx, user });
           await notify(user._id, 'offer_approved', 'Offer Approved', `Your proof for "${submission.offerId.title}" was approved! +${offerAmount} coins.`);
           // Check VIP level-up
           processVipLevelUp(user, offerAmount, emitToUser);

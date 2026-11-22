@@ -520,3 +520,31 @@ test('stored enabledGoalCount drives the Live Feed classification end to end', a
   assert.equal(toFeed(many.state).stepLabel, 'Fight 20 Battles');
   assert.equal(toFeed(many.state).detailLine, 'Plarium Vikings');
 });
+
+test('a credited direct/manual reward is broadcast to the Live Feed exactly once, without exposing a refresh', async () => {
+  const { state, models } = makeRewardState();
+  const broadcasts = [];
+  const hooks = { ...noSideEffects, broadcastNewEarning: (args) => broadcasts.push(args) };
+
+  const result = await processReward({ conversion: state.conversion, models, hooks });
+  assert.equal(result.ok, true);
+  assert.equal(broadcasts.length, 1);
+  assert.equal(broadcasts[0].transaction.transactionType, 'direct_offer_reward');
+  assert.equal(broadcasts[0].transaction.amount, 500);
+  assert.equal(String(broadcasts[0].user._id), String(state.transactions[0].userId));
+
+  // A replay of the same conversion is a duplicate: it must not broadcast again.
+  const again = await processReward({ conversion: state.conversion, models, hooks });
+  assert.equal(again.duplicate, true);
+  assert.equal(broadcasts.length, 1);
+});
+
+test('a failing Live Feed broadcast never blocks or fails crediting', async () => {
+  const { state, models } = makeRewardState();
+  const hooks = { ...noSideEffects, broadcastNewEarning: () => { throw new Error('socket down'); } };
+  // The helper itself swallows errors; a throwing injected hook is still contained by the post-commit loop guard.
+  let threw = false;
+  try { await processReward({ conversion: state.conversion, models, hooks }); } catch { threw = true; }
+  assert.equal(state.transactions.length, 1, 'reward is already committed');
+  assert.equal(threw, false);
+});

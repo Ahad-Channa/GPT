@@ -6,6 +6,7 @@ const Transaction = require('../../models/Transaction');
 const User = require('../../models/User');
 const notify = require('../../utils/notify');
 const { emitToUser, emitWalletUpdate } = require('../../utils/walletEvents');
+const { broadcastNewEarning } = require('../../utils/earningFeed');
 const { processVipLevelUp } = require('../../utils/vipUtils');
 const { getEarningHoldDecision, REAL_OFFER_EARNING_TYPES } = require('../../utils/earningTypes');
 const { findCreditedConversionForClickLog } = require('../tracking/conversionService');
@@ -444,6 +445,12 @@ const processReward = async ({
   }, { runInTransaction });
 
   for (const effect of sideEffects) {
+    // Real-time Live Feed update for every open browser (no refresh needed).
+    try {
+      (hooks.broadcastNewEarning || broadcastNewEarning)({ transaction: effect.rewardTx, user: effect.user });
+    } catch (error) {
+      console.warn('[rewardService] Live Feed broadcast failed:', error.message);
+    }
     try {
       const isHeld = effect.rewardTx.status === 'hold';
       const rewardLabel = humanizeDisplayLabel(

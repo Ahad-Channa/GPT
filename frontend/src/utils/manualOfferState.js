@@ -1,8 +1,19 @@
 import { getOfferTranslation } from './offerTranslations.js';
 
+// Offers the user started in this browser session. Keeps the proof area visible
+// when a popup is closed and reopened before the offers list has been refetched.
+// The server (submissionStatus / clickStatus) stays authoritative after a reload.
+const locallyStartedManualOffers = new Set();
+
+export const rememberManualOfferStarted = (offerId) => {
+  if (offerId) locallyStartedManualOffers.add(String(offerId));
+};
+
 export const hasManualOfferStarted = (offer = {}) =>
   ['started', 'rejected'].includes(String(offer.submissionStatus || '').toLowerCase()) ||
-  String(offer.clickStatus || '').toLowerCase() === 'clicked';
+  String(offer.clickStatus || '').toLowerCase() === 'clicked' ||
+  (Boolean(offer._id) && locallyStartedManualOffers.has(String(offer._id)) &&
+    !['pending', 'approved', 'chargebacked'].includes(String(offer.submissionStatus || '').toLowerCase()));
 
 export const resolveProofInstructions = (offer = {}, language = 'en') =>
   String(getOfferTranslation(offer, language).proofInstructions || '').trim();

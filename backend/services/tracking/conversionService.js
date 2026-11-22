@@ -148,8 +148,12 @@ const conversionIdentityFilter = (providerId, providerTransactionId, goalKey) =>
 // must not create a fresh reward; different configured goals remain independent.
 const getDirectOfferRewardIdentity = ({ providerConfig, clickLog, goalKey } = {}) => {
   if (String(providerConfig?.providerId || '').toLowerCase() !== 'direct' || !clickLog?._id) return null;
-  const userId = clickLog.userId || null;
-  const offerId = clickLog.offerId || clickLog.campaignId || null;
+  // Callers such as the admin click approval load the click with
+  // .populate('offerId'); reduce a populated document (or user) to its id so the
+  // identity key and the ObjectId queries below never receive a stringified doc.
+  const refId = (ref) => (ref && ref._id ? ref._id : ref) || null;
+  const userId = refId(clickLog.userId);
+  const offerId = refId(clickLog.offerId) || refId(clickLog.campaignId);
   if (!userId || !offerId) return null;
 
   const normalizedGoalKey = goalKey || null;

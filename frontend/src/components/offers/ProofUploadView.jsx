@@ -1,4 +1,5 @@
 import React, { useState, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { motion } from 'framer-motion';
 import { FiTrash2, FiLoader, FiX } from 'react-icons/fi';
 
@@ -364,7 +365,7 @@ export const ProofUploadView = ({ offer, token, API, submitUrl, onSubmitted, set
         </button>
       </div>
 
-      {previewImage && (
+      {previewImage && typeof document !== 'undefined' && createPortal(
         <div
           role="dialog"
           aria-modal="true"
@@ -391,7 +392,8 @@ export const ProofUploadView = ({ offer, token, API, submitUrl, onSubmitted, set
             />
             <p className="mt-2 text-center text-sm text-white">{previewImage.name}</p>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </motion.form>
   );

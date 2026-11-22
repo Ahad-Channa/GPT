@@ -10,9 +10,8 @@ import { formatGoalTimeLimit } from '../../utils/goalTimeLimit';
 import { isOfferClickLimitReached } from '../../utils/offerClickLimit';
 import { formatGoalLabel } from '../../utils/offerGoalDisplay.js';
 import { formatOfferAmount } from '../../utils/offerNumberFormat.js';
-import { closeReservedOfferTab, hasManualOfferStarted, getProofInstructionsView, navigateReservedOfferTab, reserveOfferTab } from '../../utils/manualOfferState.js';
+import { closeReservedOfferTab, hasManualOfferStarted, getProofInstructionsView, navigateReservedOfferTab, rememberManualOfferStarted, reserveOfferTab } from '../../utils/manualOfferState.js';
 import { getOfferTranslation } from '../../utils/offerTranslations';
-import { getOfferBadgeStatus } from '../../utils/offerLifecycle.js';
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
@@ -52,14 +51,6 @@ const requirementText = (requirements, fallback) => {
   return fallback;
 };
 
-// Status badge config
-const getStatusConfig = (t) => ({
-  clicked: { label: t('offers.statusInProgress'), color: 'text-amber-400', bg: 'bg-amber-500/10  border-amber-500/20' },
-  pending: { label: t('offers.statusPending'), color: 'text-amber-400', bg: 'bg-amber-500/10  border-amber-500/20' },
-  approved: { label: t('offers.statusApproved'), color: 'text-emerald-400', bg: 'bg-emerald-500/10 border-emerald-500/20' },
-  rejected: { label: t('offers.statusRejected'), color: 'text-rose-400', bg: 'bg-rose-500/10   border-rose-500/20' },
-});
-
 // ─── Small Card shown in the grid ────────────────────────────────────────────
 export const DirectOfferCard = ({ offer, onClick }) => {
   const { i18n, t } = useTranslation();
@@ -69,8 +60,6 @@ export const DirectOfferCard = ({ offer, onClick }) => {
   const isExpired = offer.expirationDate && new Date(offer.expirationDate) < new Date();
   const coverImgSrc = offer.coverImage || (isIconUrl(offer.icon) ? offer.icon : null);
   const emojiIcon = !coverImgSrc && offer.icon ? offer.icon : null;
-  const badgeStatus = getOfferBadgeStatus(offer);
-  const statusCfg = badgeStatus ? getStatusConfig(t)[badgeStatus] : null;
   const rewardVal = offer.rewardAmount ?? offer.points ?? offer.reward ?? 1250000;
 
   return (
@@ -194,55 +183,48 @@ export const DirectOfferCard = ({ offer, onClick }) => {
           {title}
         </p>
 
-        {/* Status OR reward */}
-        {statusCfg ? (
-          <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded border mt-1 w-fit ${statusCfg.color} ${statusCfg.bg}`}
-            style={{ fontFamily: '"Poppins", sans-serif' }}>
-            {statusCfg.label}
-          </span>
-        ) : (
-          <div
-            className="flex items-center"
+        {/* Always the reward only: no progress/status badge on cards (clicked or not) */}
+        <div
+          className="flex items-center"
+          style={{
+            width: 'fit-content',
+            height: '19.67px',
+            borderRadius: '10px',
+            paddingTop: '4px',
+            paddingRight: '8px',
+            paddingBottom: '4px',
+            paddingLeft: '6px',
+            gap: '4px',
+            background: 'rgba(249, 247, 241, 1)',
+            boxSizing: 'border-box',
+          }}
+        >
+          <img
+            src="/coins/procoinicon.png"
+            alt="Coin"
             style={{
-              width: 'fit-content',
-              height: '19.67px',
-              borderRadius: '10px',
-              paddingTop: '4px',
-              paddingRight: '8px',
-              paddingBottom: '4px',
-              paddingLeft: '6px',
-              gap: '4px',
-              background: 'rgba(249, 247, 241, 1)',
-              boxSizing: 'border-box',
+              width: '9px',
+              height: '10px',
+              opacity: 1,
+              flexShrink: 0,
+              objectFit: 'contain',
+            }}
+          />
+          <span
+            style={{
+              fontFamily: '"Poppins", sans-serif',
+              fontWeight: 700,
+              fontSize: '12px',
+              lineHeight: '1',
+              letterSpacing: '0%',
+              color: 'rgba(231, 171, 24, 1)',
+              display: 'inline-flex',
+              alignItems: 'center',
             }}
           >
-            <img
-              src="/coins/procoinicon.png"
-              alt="Coin"
-              style={{
-                width: '9px',
-                height: '10px',
-                opacity: 1,
-                flexShrink: 0,
-                objectFit: 'contain',
-              }}
-            />
-            <span
-              style={{
-                fontFamily: '"Poppins", sans-serif',
-                fontWeight: 700,
-                fontSize: '12px',
-                lineHeight: '1',
-                letterSpacing: '0%',
-                color: 'rgba(231, 171, 24, 1)',
-                display: 'inline-flex',
-                alignItems: 'center',
-              }}
-            >
-              {formatOfferAmount(rewardVal, language)}
-            </span>
-          </div>
-        )}
+            {formatOfferAmount(rewardVal, language)}
+          </span>
+        </div>
       </div>
     </motion.div>
   );
@@ -251,9 +233,9 @@ export const DirectOfferCard = ({ offer, onClick }) => {
 // ─── Modal shown when user clicks a card ─────────────────────────────────────
 export const DirectOfferModal = ({ offer, token, placement = 'featured', onClose, onClicked }) => {
   const { i18n, t } = useTranslation();
-  const selectedLanguage = typeof window !== 'undefined' && window.__taskmintCurrentLang
-    ? window.__taskmintCurrentLang
-    : (i18n.resolvedLanguage || i18n.language || 'en');
+  // The live i18n language is the single source of truth. (A stale window global
+  // used to override it and showed German proof instructions in English.)
+  const selectedLanguage = i18n.resolvedLanguage || i18n.language || 'en';
   const offerText = getOfferTranslation(offer, selectedLanguage);
   const title = offerText.title || t('offers.translationUnavailable', 'Translation unavailable');
   const description = offerText.description;
@@ -262,7 +244,6 @@ export const DirectOfferModal = ({ offer, token, placement = 'featured', onClose
   const [showSupportModal, setShowSupportModal] = useState(false);
   const [actionError, setActionError] = useState('');
   const [actionMessage, setActionMessage] = useState('');
-  const [startedClickId, setStartedClickId] = useState(offer.clickId || '');
   const [proofStarted, setProofStarted] = useState(() => hasManualOfferStarted(offer));
   const [proofMessage, setProofMessage] = useState(null);
   const [submissionStatus, setSubmissionStatus] = useState(offer.submissionStatus || null);
@@ -285,6 +266,11 @@ export const DirectOfferModal = ({ offer, token, placement = 'featured', onClose
     }))
     : [requirementText(requirements, t('offers.defaultRequirement'))];
 
+  // Once a manual offer is started the proof area stays visible and "Start Offer
+  // Again" becomes a separate, secondary action (in case the user never really
+  // started it the first time).
+  const startAgainIsSecondary = isManual && proofStarted && !['pending', 'approved'].includes(submissionStatus);
+
   const handleGoToOffer = async () => {
     if (isExpired || limitReached) return;
     // Open the destination tab synchronously during the user gesture. Opening
@@ -305,13 +291,11 @@ export const DirectOfferModal = ({ offer, token, placement = 'featured', onClose
         if (res.ok && data.success && data.alreadyCompleted) {
           // Fully credited: nothing left to earn, so do not reopen the tracking link.
           closeReservedOfferTab(pendingTab);
-          setStartedClickId(data.clickId || '');
           if (data.submissionStatus) setSubmissionStatus(data.submissionStatus);
           setActionMessage(t('offers.actionAlreadyCompleted'));
           if (onClicked) onClicked(offer._id, { submissionStatus: data.submissionStatus || submissionStatus });
         } else if (res.ok && data.success && data.url) {
           const opened = navigateReservedOfferTab(pendingTab, data.url);
-          setStartedClickId(data.clickId || '');
           // Resuming the original click (same click ID) is valid for unfinished
           // multi-step offers, so do not claim "already credited" here.
           setActionMessage(t('offers.actionClickRecorded'));
@@ -319,6 +303,7 @@ export const DirectOfferModal = ({ offer, token, placement = 'featured', onClose
             setActionError(t('offers.actionTabBlocked'));
           }
           if (isManual) {
+            rememberManualOfferStarted(offer._id);
             setProofStarted(true);
             if (data.submissionStatus) setSubmissionStatus(data.submissionStatus);
           }
@@ -359,7 +344,7 @@ export const DirectOfferModal = ({ offer, token, placement = 'featured', onClose
         style={{
           width: '626px',
           maxWidth: '96vw',
-          height: '687px',
+          height: 'auto',
           maxHeight: '94vh',
           background: '#FFFFFF',
           borderRadius: '25px',
@@ -371,7 +356,6 @@ export const DirectOfferModal = ({ offer, token, placement = 'featured', onClose
           transform: 'rotate(0deg)',
           display: 'flex',
           flexDirection: 'column',
-          justifyContent: 'space-between',
           gap: '10px',
         }}
         className="relative shadow-2xl overflow-y-auto hide-scrollbar"
@@ -602,7 +586,6 @@ export const DirectOfferModal = ({ offer, token, placement = 'featured', onClose
         {actionMessage && (
           <div role="status" className="text-center text-[12px] font-semibold text-emerald-700 shrink-0">
             {actionMessage}
-            {startedClickId && <div className="mt-1 break-all font-mono font-normal">{t('offers.clickIdLabel')} {startedClickId}</div>}
           </div>
         )}
 
@@ -614,13 +597,21 @@ export const DirectOfferModal = ({ offer, token, placement = 'featured', onClose
         <button
           onClick={handleGoToOffer}
           disabled={loading || isExpired || limitReached}
-          style={{
+          style={startAgainIsSecondary ? {
+            fontFamily: '"Bricolage Grotesque", sans-serif',
+            background: 'transparent',
+            color: '#24324D',
+            border: '1.5px solid #24324D',
+            borderRadius: '12px',
+          } : {
             fontFamily: '"Bricolage Grotesque", sans-serif',
             background: '#24324D',
             color: '#FFFFFF',
             borderRadius: '12px',
           }}
-          className="w-full h-[46px] font-bold text-[15px] flex items-center justify-center gap-2 cursor-pointer border-none shadow-md hover:bg-[#1A253A] transition-all disabled:opacity-50 shrink-0"
+          className={startAgainIsSecondary
+            ? 'w-full h-[40px] font-semibold text-[13px] flex items-center justify-center gap-2 cursor-pointer hover:bg-[#F1EEE6] transition-all disabled:opacity-50 shrink-0'
+            : 'w-full h-[46px] font-bold text-[15px] flex items-center justify-center gap-2 cursor-pointer border-none shadow-md hover:bg-[#1A253A] transition-all disabled:opacity-50 shrink-0'}
         >
           {loading ? (
             <FiLoader className="animate-spin text-lg" />

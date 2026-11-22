@@ -49,3 +49,17 @@ test('offer cards render the unavailable notice for manual offers instead of hid
     assert.match(src, /proofView\.text \|\| t\('offers\.translationUnavailable'/, file);
   }
 });
+
+test('a manual offer started in this session keeps its proof area after the popup is closed and reopened', async () => {
+  const { hasManualOfferStarted, rememberManualOfferStarted } = await import('../src/utils/manualOfferState.js');
+  const stale = { _id: 'offer-stale', trackingMode: 'manual', submissionStatus: null, clickStatus: null };
+  assert.equal(hasManualOfferStarted(stale), false);
+  rememberManualOfferStarted('offer-stale');
+  assert.equal(hasManualOfferStarted(stale), true, 'stale list data must not hide the proof area');
+  // once submitted / approved the upload area is no longer offered
+  assert.equal(hasManualOfferStarted({ ...stale, submissionStatus: 'pending' }), false);
+  assert.equal(hasManualOfferStarted({ ...stale, submissionStatus: 'approved' }), false);
+  assert.equal(hasManualOfferStarted({ ...stale, submissionStatus: 'chargebacked' }), false);
+  // other offers are unaffected
+  assert.equal(hasManualOfferStarted({ _id: 'other' }), false);
+});

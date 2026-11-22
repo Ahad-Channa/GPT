@@ -188,7 +188,10 @@ test('transaction history and public recent earnings support reward and reversal
 
   const publicSource = read('backend/routes/public.js');
   assert.match(publicSource, /REAL_OFFER_EARNING_TYPES/);
-  assert.match(publicSource, /metadata = \{ offerwall: scrubbed\.metadata\.offerwall \}/);
+  // The private-user scrubber now lives in a shared helper used by both the REST feed and the live broadcast.
+  assert.match(publicSource, /scrubTransaction\(tx\)/);
+  assert.match(publicSource, /require\('\.\.\/utils\/earningFeed'\)/);
+  assert.match(read('backend/utils/earningFeed.js'), /metadata = \{ offerwall: scrubbed\.metadata\.offerwall \}/);
   assert.doesNotMatch(publicSource, /postbackSecret|secretValue|authorization/i);
 });
 

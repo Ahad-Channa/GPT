@@ -37,3 +37,33 @@ test('manual flows also set the submission status when the server says the offer
   assert.match(read('src/components/offers/DirectOfferCard.jsx'), /data\.alreadyCompleted\) \{[\s\S]{0,300}setSubmissionStatus\(data\.submissionStatus\)/);
   assert.match(read('src/components/offers/GoodpicksModal.jsx'), /data\.alreadyCompleted\) \{[\s\S]{0,300}setSubmissionStatus\(data\.submissionStatus\)/);
 });
+
+test('offer modal never shows the internal click ID and has no stretched layout gaps', () => {
+  const card = read('src/components/offers/DirectOfferCard.jsx');
+  assert.doesNotMatch(card, /clickIdLabel|startedClickId/);
+  const modalStyle = card.slice(card.indexOf("width: '626px'"), card.indexOf("className=\"relative shadow-2xl"));
+  assert.doesNotMatch(modalStyle, /justifyContent:\s*'space-between'/);
+  assert.doesNotMatch(modalStyle, /687px/);
+  assert.match(modalStyle, /height: 'auto'/);
+  assert.match(modalStyle, /maxHeight: '94vh'/);
+});
+
+test('manual popups: live i18n language, remembered start, secondary start-again, portal image preview', () => {
+  for (const file of ['src/components/offers/DirectOfferCard.jsx', 'src/components/offers/GoodpicksModal.jsx']) {
+    const src = read(file);
+    assert.doesNotMatch(src, /__taskmintCurrentLang/, `${file}: stale window language override`);
+    assert.match(src, /const selectedLanguage = i18n\.resolvedLanguage \|\| i18n\.language \|\| 'en'/, file);
+    assert.match(src, /rememberManualOfferStarted\(offer\._id\)/, file);
+    assert.match(src, /startAgainIsSecondary = isManual && proofStarted/, file);
+  }
+  const proof = read('src/components/offers/ProofUploadView.jsx');
+  assert.match(proof, /createPortal\(/);
+  assert.match(proof, /document\.body/);
+});
+
+test('Featured offer cards never show a progress/status badge: only the coin reward', () => {
+  const card = read('src/components/offers/DirectOfferCard.jsx');
+  assert.doesNotMatch(card, /getStatusConfig|statusCfg|badgeStatus|getOfferBadgeStatus/);
+  assert.doesNotMatch(card, /statusInProgress|statusPending|statusApproved/);
+  assert.match(card, /formatOfferAmount\(rewardVal, language\)/);
+});

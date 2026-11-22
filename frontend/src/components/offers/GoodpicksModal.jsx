@@ -11,7 +11,7 @@ import { formatGoalTimeLimit } from '../../utils/goalTimeLimit';
 import { isOfferClickLimitReached } from '../../utils/offerClickLimit';
 import { formatGoalLabel } from '../../utils/offerGoalDisplay.js';
 import { ProofUploadView } from './ProofUploadView';
-import { closeReservedOfferTab, hasManualOfferStarted, getProofInstructionsView, navigateReservedOfferTab, reserveOfferTab } from '../../utils/manualOfferState.js';
+import { closeReservedOfferTab, hasManualOfferStarted, getProofInstructionsView, navigateReservedOfferTab, rememberManualOfferStarted, reserveOfferTab } from '../../utils/manualOfferState.js';
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
@@ -248,9 +248,9 @@ const renderOfferCover = (offer) => {
 // ─── Goodpicks Offer Details Modal (Screenshot 2) ───────────────────────────
 export const GoodpicksDetailModal = ({ offer, onClose, token, onOfferStateChange }) => {
   const { t, i18n } = useTranslation();
-  const selectedLanguage = typeof window !== 'undefined' && window.__taskmintCurrentLang
-    ? window.__taskmintCurrentLang
-    : (i18n.resolvedLanguage || i18n.language || 'en');
+  // The live i18n language is the single source of truth. (A stale window global
+  // used to override it and showed German proof instructions in English.)
+  const selectedLanguage = i18n.resolvedLanguage || i18n.language || 'en';
   const isDe = selectedLanguage.startsWith('de');
   const isFr = i18n.language?.startsWith('fr');
   const isUr = i18n.language?.startsWith('ur');
@@ -278,6 +278,10 @@ export const GoodpicksDetailModal = ({ offer, onClose, token, onOfferStateChange
   const proofView = getProofInstructionsView(offer, selectedLanguage);
   const rewardFormatted = (offer.rewardAmount || 0).toLocaleString('de-DE');
   const limitReached = isOfferClickLimitReached(offer);
+
+  // Once a manual offer is started the proof area stays visible and "Start Offer
+  // Again" becomes a separate, secondary action.
+  const startAgainIsSecondary = isManual && proofStarted && !['pending', 'approved'].includes(submissionStatus);
 
   const handleStartOffer = async () => {
     // Tracked direct-offer click (Branded Offerwall placement) — no frontend reward logic.
@@ -312,6 +316,7 @@ export const GoodpicksDetailModal = ({ offer, onClose, token, onOfferStateChange
             ? navigateReservedOfferTab(pendingTab, data.url)
             : Boolean(window.open(data.url, '_blank', 'noopener,noreferrer'));
           if (isManual) {
+            rememberManualOfferStarted(offer._id);
             setProofStarted(true);
             if (data.submissionStatus) setSubmissionStatus(data.submissionStatus);
             if (!opened) setActionError('Allow pop-ups, then use Start Offer Again to open this offer.');
@@ -785,14 +790,14 @@ export const GoodpicksDetailModal = ({ offer, onClose, token, onOfferStateChange
           disabled={loading || limitReached}
           style={{
             width: '100%',
-            height: '48px',
+            height: startAgainIsSecondary ? '40px' : '48px',
             borderRadius: '12px',
-            background: '#1E2530',
-            color: '#FFFFFF',
+            background: startAgainIsSecondary ? 'transparent' : '#1E2530',
+            color: startAgainIsSecondary ? '#1E2530' : '#FFFFFF',
+            border: startAgainIsSecondary ? '1.5px solid #1E2530' : 'none',
             fontFamily: '"Poppins", sans-serif',
             fontWeight: 600,
-            fontSize: '15px',
-            border: 'none',
+            fontSize: startAgainIsSecondary ? '13px' : '15px',
             cursor: (loading || limitReached || (isManual && ['pending', 'approved'].includes(submissionStatus))) ? 'not-allowed' : 'pointer',
             opacity: (loading || limitReached || (isManual && ['pending', 'approved'].includes(submissionStatus))) ? 0.7 : 1,
             display: 'flex',
@@ -800,7 +805,7 @@ export const GoodpicksDetailModal = ({ offer, onClose, token, onOfferStateChange
             justifyContent: 'center',
             gap: '8px',
           }}
-          className="hover:bg-[#151B24] transition-all shadow-md shrink-0 disabled:opacity-60"
+          className={`${startAgainIsSecondary ? 'hover:bg-[#F1EEE6]' : 'hover:bg-[#151B24] shadow-md'} transition-all shrink-0 disabled:opacity-60`}
           disabled={loading || limitReached || (isManual && ['pending', 'approved'].includes(submissionStatus))}
         >
           {loading ? <FiLoader className="animate-spin" /> : limitReached ? 'Click limit reached' : (isManual && proofStarted) ? t('goodpicks.startOfferAgain') : t('goodpicks.startOffer')}

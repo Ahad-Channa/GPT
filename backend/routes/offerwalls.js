@@ -8,6 +8,7 @@ const PostbackLog = require('../models/PostbackLog');
 const notify = require('../utils/notify');
 const { notifyAdmins } = require('../utils/adminNotify');
 const { emitWalletUpdate, emitToUser } = require('../utils/walletEvents');
+const { broadcastNewEarning } = require('../utils/earningFeed');
 const { processVipLevelUp } = require('../utils/vipUtils');
 const { getEarningHoldDecision } = require('../utils/earningTypes');
 const { humanizeDisplayLabel } = require('../utils/displayLabels');
@@ -708,6 +709,8 @@ const handleLegacyOfferwallPostback = async (providerId, req, res, params = {}, 
     const { updatedUser, transaction: offerTx } = credit;
     // Push live balance to user's browser
     emitWalletUpdate(user.firebaseUid, updatedUser.walletBalance);
+    // Real-time Live Feed update for every open browser (no refresh needed).
+    broadcastNewEarning({ transaction: offerTx, user: updatedUser });
     // Check VIP level-up (fire-and-forget) — pass updatedUser so totalEarned is the new value
     processVipLevelUp(updatedUser, platformCoins, emitToUser);
 
