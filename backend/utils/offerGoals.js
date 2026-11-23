@@ -185,6 +185,42 @@ const assertEnabledGoalRewards = (rawGoals) => {
   return rawGoals;
 };
 
+// normalizeGoals() silently skips goals with an empty/invalid or duplicate Goal Key,
+// so an admin could save an offer and find a step missing. Reject those on save
+// (HTTP 400) and name the step instead. Applies to every submitted step, enabled or not.
+const assertValidGoalKeys = (rawGoals) => {
+  if (!Array.isArray(rawGoals)) return rawGoals;
+
+  const seen = new Map();
+  rawGoals.forEach((raw, index) => {
+    if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return;
+    const goalKey = String(raw.goalKey || raw.key || '').trim();
+    const stepNumber = index + 1;
+
+    if (!goalKey) {
+      const error = new Error(`Step ${stepNumber} has no Goal Key. Enter one (for example register or level_10), or remove the step.`);
+      error.statusCode = 400;
+      throw error;
+    }
+    if (!GOAL_KEY_RE.test(goalKey)) {
+      const error = new Error(
+        `Step ${stepNumber}: Goal Key "${goalKey.slice(0, 40)}" is not valid. Use only letters, numbers, _ or -, start with a letter, ` +
+        'no spaces, max 64 characters (for example register or level_10).'
+      );
+      error.statusCode = 400;
+      throw error;
+    }
+    const dedupeKey = goalKey.toLowerCase();
+    if (seen.has(dedupeKey)) {
+      const error = new Error(`Step ${stepNumber}: Goal Key "${goalKey}" is already used by step ${seen.get(dedupeKey)}. Each step needs its own Goal Key.`);
+      error.statusCode = 400;
+      throw error;
+    }
+    seen.set(dedupeKey, stepNumber);
+  });
+  return rawGoals;
+};
+
 const getEnabledGoals = (goals) => (Array.isArray(goals) ? goals : []).filter((goal) => goal && goal.enabled !== false);
 
 const sumEnabledGoalRewards = (goals) => getEnabledGoals(goals).reduce((total, goal) => {
@@ -374,6 +410,7 @@ module.exports = {
   GOAL_KEY_RE,
   assertCoinRewardAmount,
   assertEnabledGoalRewards,
+  assertValidGoalKeys,
   assertUnambiguousGoalMappings,
   buildGoalsSnapshot,
   getEnabledGoals,
