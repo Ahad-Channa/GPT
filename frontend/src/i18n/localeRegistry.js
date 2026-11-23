@@ -20,14 +20,22 @@ export const DEFAULT_LOCALE = 'en';
 // the schema's required title/description). Other languages are optional.
 export const REQUIRED_OFFER_LOCALE = DEFAULT_LOCALE;
 
-// Release configuration. French and Urdu resources are intentionally kept on
-// disk and preserved in offer translations, but they are not selectable in this
-// release. Flip `enabled` here to expose a language later.
+// Release configuration. All 10 languages are selectable: they appear in the
+// site language switcher and in the admin offer / multi-step goal editors. A
+// language with no offer text falls back to English for offer content, and
+// every UI key a language lacks carries English text in its file. Set
+// `enabled: false` to hide a language again.
 export const LOCALE_CONFIG = Object.freeze({
   en: { enabled: true, flag: '/coins/EN.png' },
   de: { enabled: true, flag: '/coins/DE.svg' },
-  fr: { enabled: false, flag: '/coins/FR.svg' },
-  ur: { enabled: false, flag: '/coins/PK.svg' },
+  fr: { enabled: true, flag: '/coins/FR.svg' },
+  es: { enabled: true, flag: '/coins/ES.svg' },
+  it: { enabled: true, flag: '/coins/IT.svg' },
+  pl: { enabled: true, flag: '/coins/PL.svg' },
+  pt: { enabled: true, flag: '/coins/PT.svg' },
+  ru: { enabled: true, flag: '/coins/RU.svg' },
+  tr: { enabled: true, flag: '/coins/TR.svg' },
+  ur: { enabled: true, flag: '/coins/PK.svg' },
 });
 
 export const ENABLED_LOCALE_CODES = Object.freeze(

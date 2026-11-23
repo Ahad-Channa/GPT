@@ -6,12 +6,12 @@ import { useTranslation } from 'react-i18next';
 import CoinDisplay from '../CoinDisplay';
 import { GoodpicksSupportModal } from './GoodpicksModal';
 import { ProofUploadView } from './ProofUploadView';
-import { formatGoalTimeLimit } from '../../utils/goalTimeLimit';
+import { formatGoalTimeLimit, formatGoalTimeLimitText } from '../../utils/goalTimeLimit';
 import { isOfferClickLimitReached } from '../../utils/offerClickLimit';
 import { formatGoalLabel } from '../../utils/offerGoalDisplay.js';
 import { formatOfferAmount } from '../../utils/offerNumberFormat.js';
 import { closeReservedOfferTab, hasManualOfferStarted, getProofInstructionsView, navigateReservedOfferTab, rememberManualOfferStarted, reserveOfferTab } from '../../utils/manualOfferState.js';
-import { getOfferDisplayText } from '../../utils/offerTranslations';
+import { getOfferDisplayLocale, getOfferDisplayText } from '../../utils/offerTranslations';
 import OfferQrSection from './OfferQrSection.jsx';
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
@@ -239,6 +239,8 @@ export const DirectOfferModal = ({ offer, token, placement = 'featured', onClose
   // used to override it and showed German proof instructions in English.)
   const selectedLanguage = i18n.resolvedLanguage || i18n.language || 'en';
   const offerText = getOfferDisplayText(offer, selectedLanguage);
+  // Language of the offer text actually shown (English when the offer has no text in the selected one).
+  const displayLocale = getOfferDisplayLocale(offer, selectedLanguage);
   const title = offerText.title || t('offers.translationUnavailable', 'Translation unavailable');
   const description = offerText.description;
   const requirements = offerText.requirements;
@@ -515,7 +517,7 @@ export const DirectOfferModal = ({ offer, token, placement = 'featured', onClose
                       className="ml-auto shrink-0 px-2 py-0.5 rounded-full text-[11px] font-bold"
                       style={{ background: '#202C44', color: '#FFFFFF' }}
                     >
-                      {formatGoalTimeLimit(req.timeLimitDays)}
+                      {formatGoalTimeLimitText(req.timeLimitDays, displayLocale)}
                     </span>
                   )}
                 </div>

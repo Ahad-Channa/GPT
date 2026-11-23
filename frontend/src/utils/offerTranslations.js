@@ -120,3 +120,14 @@ export const getGoalDisplayText = (goal = {}, locale = BASE_LOCALE) => {
   const base = getGoalTranslation(goal, BASE_LOCALE);
   return { label: own.label || base.label, description: own.description || base.description };
 };
+
+// Language of the offer text that is actually shown to the user: the selected
+// language when the offer has its own text in it, otherwise English (the same
+// fallback getOfferDisplayText applies). Use it for text that must not mix
+// languages with the offer, such as the goal time label.
+export const getOfferDisplayLocale = (offer = {}, locale = BASE_LOCALE) => {
+  if (isBaseLocale(locale)) return BASE_LOCALE;
+  const own = getOfferTranslation(offer, locale);
+  const hasOwnText = Boolean(own.title || own.description || (own.requirements && own.requirements.length > 0));
+  return hasOwnText ? localeCandidates(locale)[localeCandidates(locale).length - 1] : BASE_LOCALE;
+};

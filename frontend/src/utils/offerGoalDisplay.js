@@ -1,5 +1,6 @@
 const compactKey = (value) => String(value || '').toLowerCase().replace(/[\s_-]+/g, '');
 import { getGoalDisplayText } from './offerTranslations.js';
+import { formatOfferAmount } from './offerNumberFormat.js';
 
 export const humanizeGoalKey = (value) => {
   const raw = String(value || '').trim();
@@ -33,3 +34,10 @@ export const getEnabledGoalRewardTotal = (goals) =>
     const amount = Number(goal.rewardAmount);
     return Number.isSafeInteger(amount) && amount > 0 ? total + amount : total;
   }, 0);
+
+// "<label> → receive N coins" in the selected language (text from i18n so every
+// enabled language, and its English fallback, reads correctly).
+export const formatGoalRewardInstruction = (goal, language, t) => {
+  const label = formatGoalLabel(goal, language, t('offers.missingGoalLabel'));
+  return t('offers.goalRewardInstruction', { label, coins: formatOfferAmount(goal?.rewardAmount, language) });
+};

@@ -163,7 +163,8 @@
     "rule4": "Certaines offres sont réservées aux nouveaux utilisateurs uniquement.",
     "rule5": "Respectez les critères spécifiques de l'offre et les délais impartis.",
     "rule6": "Les récompenses ne sont créditées qu'après vérification réussie.",
-    "scanQrCode": "Scannez le code QR pour commencer directement sur votre smartphone."
+    "scanQrCode": "Scannez le code QR pour commencer directement sur votre smartphone.",
+    "actionAlreadyCompleted": "This offer is already completed. There is nothing left to earn."
   },
   "goodpicks": {
     "support": "ASSISTANCE",
@@ -199,7 +200,10 @@
     "tryAnotherPlatform": "Essayez une autre plateforme ou revenez bientôt !",
     "supportPopupPart1": "Pour toute question ou assistance, veuillez contacter le ",
     "supportPopupHighlight": "Support en direct Taskmint",
-    "supportPopupPart2": ". Notre équipe d'assistance se fera un plaisir de vous aider."
+    "supportPopupPart2": ". Notre équipe d'assistance se fera un plaisir de vous aider.",
+    "completed": "Completed",
+    "historyLoading": "Loading history…",
+    "historyError": "History could not be loaded."
   },
   "affiliates": {
     "pageTitle": "Programme d'Affiliation",
@@ -553,7 +557,8 @@
     "emptyCompletedOffers": "Aucune offre complétée. Terminez une offre pour recevoir votre récompense !",
     "emptyHeldOffers": "Aucun gain en attente actuellement.",
     "emptyTransactionHistory": "Aucune transaction enregistrée.",
-    "emptyChargebacks": "Aucune opposition trouvée sur votre compte."
+    "emptyChargebacks": "Aucune opposition trouvée sur votre compte.",
+    "txDirectOffer": "Direct Offer"
   },
   "footer": {
     "tagline": "Complétez des tâches. Gagnez des récompenses.",

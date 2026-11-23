@@ -163,7 +163,8 @@
     "rule4": "جہاں واضح ہو وہاں آفرز صرف نئے صارفین کے لیے ہو سکتی ہیں۔ پرانے صارفین اہل نہیں ہوں گے۔",
     "rule5": "ہر آفر کی الگ شرائط اور مکمل کرنے کی آخری تاریخ کی پابندی کریں۔",
     "rule6": "انعامات صرف تب ملتے ہیں جب آفر کے تمام مراحل کی کامیابی سے تصدیق ہو جائے۔",
-    "scanQrCode": "اپنے اسمارٹ فون پر براہ راست شروع کرنے کے لیے QR کوڈ اسکین کریں۔"
+    "scanQrCode": "اپنے اسمارٹ فون پر براہ راست شروع کرنے کے لیے QR کوڈ اسکین کریں۔",
+    "actionAlreadyCompleted": "This offer is already completed. There is nothing left to earn."
   },
   "goodpicks": {
     "support": "سپورٹ",
@@ -199,7 +200,10 @@
     "tryAnotherPlatform": "کوئی دوسرا پلیٹ فارم منتخب کریں یا جلد دوبارہ چیک کریں!",
     "supportPopupPart1": "کسی بھی سوال یا رہنمائی کے لیے برائے مہربانی ",
     "supportPopupHighlight": "Taskmint لائیو سپورٹ",
-    "supportPopupPart2": " سے رابطہ کریں۔ ہماری سپورٹ ٹیم آپ کی مدد کرنے میں خوشی محسوس کرے گی۔"
+    "supportPopupPart2": " سے رابطہ کریں۔ ہماری سپورٹ ٹیم آپ کی مدد کرنے میں خوشی محسوس کرے گی۔",
+    "completed": "Completed",
+    "historyLoading": "Loading history…",
+    "historyError": "History could not be loaded."
   },
   "affiliates": {
     "pageTitle": "ایفیلی ایٹ پروگرام",
@@ -553,7 +557,8 @@
     "emptyCompletedOffers": "ابھی تک کوئی آفر مکمل نہیں ہوئی۔ اپنا انعام حاصل کرنے کے لیے شروع کردہ آفر مکمل کریں!",
     "emptyHeldOffers": "اس وقت کوئی کمائی ہولڈ پر نہیں ہے۔",
     "emptyTransactionHistory": "کوئی ٹرانزیکشن ہسٹری نہیں ملی۔",
-    "emptyChargebacks": "آپ کے اکاؤنٹ پر کوئی چارج بیکس موجود نہیں ہیں۔"
+    "emptyChargebacks": "آپ کے اکاؤنٹ پر کوئی چارج بیکس موجود نہیں ہیں۔",
+    "txDirectOffer": "Direct Offer"
   },
   "footer": {
     "tagline": "کام مکمل کریں۔ انعامات حاصل کریں۔",

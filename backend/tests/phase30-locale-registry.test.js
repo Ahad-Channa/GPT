@@ -18,31 +18,30 @@ const localeModules = () => ({
   './ur.json': { default: { nav: { home: 'ہوم' } } },
 });
 
-test('release registry exposes only English and German in dropdowns', async () => {
+const ALL_LOCALES = ['en', 'de', 'fr', 'es', 'it', 'pl', 'pt', 'ru', 'tr', 'ur'];
+
+test('release registry exposes all 10 languages in dropdowns', async () => {
   const { buildLocaleRegistry, ENABLED_LOCALE_CODES, LOCALE_CONFIG } = await loadRegistry();
   const { codes, allCodes, resources } = buildLocaleRegistry(localeModules());
 
-  assert.deepEqual([...ENABLED_LOCALE_CODES], ['en', 'de']);
-  assert.equal(LOCALE_CONFIG.en.enabled, true);
-  assert.equal(LOCALE_CONFIG.de.enabled, true);
-  assert.equal(LOCALE_CONFIG.fr.enabled, false);
-  assert.equal(LOCALE_CONFIG.ur.enabled, false);
-  assert.deepEqual(codes, ['en', 'de']);
+  assert.deepEqual([...ENABLED_LOCALE_CODES].sort(), [...ALL_LOCALES].sort());
+  assert.equal(ENABLED_LOCALE_CODES[0], 'en');
+  for (const locale of ALL_LOCALES) assert.equal(LOCALE_CONFIG[locale].enabled, true, locale);
+  // Only the locale files supplied exist here, and all of those are enabled.
+  assert.deepEqual(codes, ['en', 'de', 'fr', 'ur']);
   assert.ok(resources.en);
   assert.ok(resources.de);
-  assert.equal(resources.fr, undefined);
-  assert.equal(resources.ur, undefined);
+  assert.ok(resources.fr);
+  assert.ok(resources.ur);
   assert.ok(allCodes.includes('fr'));
   assert.ok(allCodes.includes('ur'));
 
   const en = require(path.join(repoRoot, 'frontend/src/i18n/en.json'));
   const de = require(path.join(repoRoot, 'frontend/src/i18n/de.json'));
-  const actual = buildLocaleRegistry({
-    './en.json': { default: en },
-    './de.json': { default: de },
-    './fr.json': { default: require(path.join(repoRoot, 'frontend/src/i18n/fr.json')) },
-    './ur.json': { default: require(path.join(repoRoot, 'frontend/src/i18n/ur.json')) },
-  });
+  const actual = buildLocaleRegistry(Object.fromEntries(
+    ALL_LOCALES.map((locale) => [`./${locale}.json`, { default: require(path.join(repoRoot, `frontend/src/i18n/${locale}.json`)) }])
+  ));
+  assert.deepEqual([...actual.codes].sort(), [...ALL_LOCALES].sort());
   assert.equal(actual.resources.en.translation.nav.home, en.nav.home);
   assert.equal(actual.resources.de.translation.nav.home, de.nav.home);
 
@@ -63,7 +62,9 @@ test('a future locale can be enabled centrally without changing translation logi
   const { buildLocaleRegistry, resolveSupportedLocale } = await loadRegistry();
   const modules = localeModules();
 
-  const release = buildLocaleRegistry(modules);
+  // A narrower release (e.g. only English and German) is still just configuration.
+  const release = buildLocaleRegistry(modules, { enabledLocales: ['en', 'de'] });
+  assert.deepEqual(release.codes, ['en', 'de']);
   assert.equal(resolveSupportedLocale('fr', release.codes, 'en'), 'en');
   assert.equal(resolveSupportedLocale('ur-PK', release.codes, 'en'), 'en');
 

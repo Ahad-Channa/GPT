@@ -188,7 +188,7 @@ export const OfferFormModal = ({ offer, onClose, onSaved, adminApi, initialLangu
   // Goal label/description are optional in every language. Say what happens when empty.
   const goalTextHint = isRequiredLocale
     ? '(optional · base language: if empty, a readable name is generated from the Goal Key)'
-    : `(optional · if empty, ${localeLabel(activeLanguage)} users see a “step details unavailable” notice)`;
+    : `(optional · if empty, ${localeLabel(activeLanguage)} users see the English text)`;
   const setLocalized = (field, value) => setTranslations((current) =>
     updateOfferLocaleField(current, activeLanguage, field, value)
   );
@@ -637,7 +637,24 @@ export const OfferFormModal = ({ offer, onClose, onSaved, adminApi, initialLangu
                       </div>
                     </div>
 
-                    <p className="text-[10px] uppercase tracking-wide text-indigo-300/80 font-semibold pt-2">3 · What the user sees ({localeLabel(activeLanguage)})</p>
+                    <div className="flex items-center justify-between gap-2 pt-2">
+                      <p className="text-[10px] uppercase tracking-wide text-indigo-300/80 font-semibold">3 · What the user sees ({localeLabel(activeLanguage)})</p>
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-[10px] text-slate-500">Language</span>
+                        <select
+                          aria-label={`Step ${idx + 1} language`}
+                          className="bg-[#182338] border border-white/10 rounded-lg px-2 py-1 text-[11px] text-white"
+                          value={activeLanguage}
+                          onChange={(e) => setActiveLanguage(e.target.value)}
+                        >
+                          {supportedLocales().map((locale) => {
+                            const filled = Boolean(getGoalTranslation(goal, locale).label || getGoalTranslation(goal, locale).description);
+                            return <option key={locale} value={locale}>{localeLabel(locale)}{filled ? ' ✓' : ''}</option>;
+                          })}
+                        </select>
+                      </div>
+                    </div>
+                    <p className="text-[10px] text-slate-500 -mt-1">Same language as the switcher at the top of the form. Text you entered in other languages is kept (✓ = this step has text in that language). If a language is empty, users see the English text.</p>
                     <div className="grid grid-cols-1 gap-2">
                       <div>
                         <label className={labelCls}>Step label ({localeLabel(activeLanguage)}) <span className="text-slate-600 font-normal">{goalTextHint}</span></label>
