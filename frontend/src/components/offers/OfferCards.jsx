@@ -314,6 +314,7 @@ export const FeaturedOfferCard = ({ offer, onClick }) => {
           className="flex items-center transition-colors duration-300"
           style={{
             width: 'fit-content',
+            alignSelf: 'flex-start',
             height: '19.67px',
             borderRadius: '10px',
             paddingTop: '4px',
@@ -321,7 +322,7 @@ export const FeaturedOfferCard = ({ offer, onClick }) => {
             paddingBottom: '4px',
             paddingLeft: '6px',
             gap: '4px',
-            background: isDarkMode ? 'rgba(12, 14, 17, 0.8)' : 'rgba(249, 247, 241, 1)',
+            background: isDarkMode ? 'rgba(12, 14, 17, 0.8)' : 'rgba(255, 243, 214, 1)',
             boxSizing: 'border-box',
           }}
         >

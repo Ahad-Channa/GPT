@@ -189,6 +189,7 @@ export const DirectOfferCard = ({ offer, onClick }) => {
           className="flex items-center"
           style={{
             width: 'fit-content',
+            alignSelf: 'flex-start',
             height: '19.67px',
             borderRadius: '10px',
             paddingTop: '4px',
@@ -196,7 +197,7 @@ export const DirectOfferCard = ({ offer, onClick }) => {
             paddingBottom: '4px',
             paddingLeft: '6px',
             gap: '4px',
-            background: 'rgba(249, 247, 241, 1)',
+            background: 'rgba(255, 243, 214, 1)',
             boxSizing: 'border-box',
           }}
         >
