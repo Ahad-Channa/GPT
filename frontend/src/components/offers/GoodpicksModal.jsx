@@ -7,7 +7,7 @@ import i18n from '../../i18n/i18n';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FiX, FiCheck, FiChevronDown, FiExternalLink, FiLoader } from 'react-icons/fi';
 import { FaAndroid, FaApple, FaDesktop } from 'react-icons/fa';
-import { BsQrCode } from 'react-icons/bs';
+import OfferQrSection from './OfferQrSection.jsx';
 import { formatGoalTimeLimit } from '../../utils/goalTimeLimit';
 import { isOfferClickLimitReached } from '../../utils/offerClickLimit';
 import { formatGoalLabel } from '../../utils/offerGoalDisplay.js';
@@ -880,75 +880,7 @@ export const GoodpicksDetailModal = ({ offer, onClose, token, onOfferStateChange
           </div>
         </div>
 
-        {/* Smartphone QR Code Section (Whole layout: width: 100%, minHeight: 116px, padding: 16px 20px, borderRadius: 20px, gap: 30px) */}
-        <div
-          style={{
-            width: '100%',
-            maxWidth: '100%',
-            minHeight: '116px',
-            background: '#FFFFFF',
-            borderRadius: '20px',
-            padding: '16px 20px',
-            transform: 'rotate(0deg)',
-            opacity: 1,
-            gap: '24px',
-            display: 'flex',
-            alignItems: 'center',
-            boxSizing: 'border-box',
-            boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
-          }}
-          className="w-full shrink-0"
-        >
-          {/* QR Box: width: 76px, height: 76px, angle: 0deg, opacity: 1, borderRadius: 10px */}
-          <div
-            style={{
-              width: '76px',
-              height: '76px',
-              transform: 'rotate(0deg)',
-              opacity: 1,
-              borderRadius: '10px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              flexShrink: 0,
-              boxSizing: 'border-box',
-              overflow: 'hidden',
-            }}
-          >
-            <BsQrCode size={76} className="text-[#000000]" />
-          </div>
-
-          {/* Text Layout: width: 230px, height: 38px, angle: 0deg, opacity: 1 */}
-          <div
-            style={{
-              width: '230px',
-              maxWidth: '100%',
-              minHeight: '38px',
-              transform: 'rotate(0deg)',
-              opacity: 1,
-              display: 'flex',
-              flexDirection: 'column',
-              justifyContent: 'center',
-              boxSizing: 'border-box',
-            }}
-          >
-            <p
-              style={{
-                fontFamily: '"IBM Plex Sans", "Poppins", sans-serif',
-                fontWeight: 500,
-                fontSize: '13px',
-                lineHeight: '18px',
-                letterSpacing: '0%',
-                color: '#000000',
-                margin: 0,
-                padding: 0,
-                whiteSpace: 'pre-line',
-              }}
-            >
-              {t('goodpicks.scanQrCode')}
-            </p>
-          </div>
-        </div>
+        <OfferQrSection platforms={offer.platforms} />
 
         {/* Support Popup Modal */}
         {showSupportModal && (

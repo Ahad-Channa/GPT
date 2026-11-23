@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useTheme } from '../../contexts/ThemeContext';
 import { FiMonitor, FiInbox, FiStar, FiZap, FiExternalLink, FiCheckCircle, FiSend, FiLoader, FiX } from 'react-icons/fi';
 import { FaApple, FaAndroid, FaDesktop } from 'react-icons/fa';
-import { BsQrCode } from 'react-icons/bs';
+import OfferQrSection from './OfferQrSection.jsx';
 
 import CoinDisplay from '../CoinDisplay';
 import CoinIcon from '../CoinIcon';
@@ -1060,74 +1060,7 @@ export const FeaturedOfferModal = ({ offer, token, onClose, onSubmitted }) => {
           </div>
         </div>
 
-        {/* Smartphone QR Code Section (Whole layout: 336px x 76px, gap: 30px) */}
-        <div
-          style={{
-            width: '336px',
-            maxWidth: '100%',
-            height: '76px',
-            transform: 'rotate(0deg)',
-            opacity: 1,
-            gap: '30px',
-            display: 'flex',
-            alignItems: 'center',
-            margin: '0 auto',
-            paddingTop: '6px',
-            paddingBottom: '4px',
-            boxSizing: 'border-box',
-          }}
-          className="shrink-0"
-        >
-          {/* QR Box: 76px x 76px, angle: 0deg, opacity: 1, borderRadius: 10px */}
-          <div
-            style={{
-              width: '76px',
-              height: '76px',
-              transform: 'rotate(0deg)',
-              opacity: 1,
-              borderRadius: '10px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              flexShrink: 0,
-              boxSizing: 'border-box',
-              background: isDarkMode ? '#FFFFFF' : 'transparent',
-              padding: isDarkMode ? '4px' : '0',
-            }}
-          >
-            <BsQrCode size={isDarkMode ? 68 : 76} className="text-[#000000]" />
-          </div>
-
-          {/* Text Layout: 230px x 38px, angle: 0deg, opacity: 1 */}
-          <div
-            style={{
-              width: '230px',
-              minHeight: '38px',
-              transform: 'rotate(0deg)',
-              opacity: 1,
-              display: 'flex',
-              flexDirection: 'column',
-              justifyContent: 'center',
-              boxSizing: 'border-box',
-            }}
-          >
-            <p
-              style={{
-                fontFamily: '"IBM Plex Sans", "Poppins", sans-serif',
-                fontWeight: 500,
-                fontSize: '16px',
-                lineHeight: '20px',
-                letterSpacing: '0%',
-                color: isDarkMode ? '#FFFFFF' : '#000000',
-                margin: 0,
-                padding: 0,
-                whiteSpace: 'pre-line',
-              }}
-            >
-              {t('offers.scanQrCode')}
-            </p>
-          </div>
-        </div>
+        <OfferQrSection platforms={offer.platforms} isDarkMode={isDarkMode} textKey="offers.scanQrCode" />
 
         {/* Support Popup Modal */}
         {showSupportModal && (

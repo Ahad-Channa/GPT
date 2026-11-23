@@ -12,6 +12,7 @@ import { formatGoalLabel } from '../../utils/offerGoalDisplay.js';
 import { formatOfferAmount } from '../../utils/offerNumberFormat.js';
 import { closeReservedOfferTab, hasManualOfferStarted, getProofInstructionsView, navigateReservedOfferTab, rememberManualOfferStarted, reserveOfferTab } from '../../utils/manualOfferState.js';
 import { getOfferDisplayText } from '../../utils/offerTranslations';
+import OfferQrSection from './OfferQrSection.jsx';
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
@@ -643,6 +644,8 @@ export const DirectOfferModal = ({ offer, token, placement = 'featured', onClose
             <li>{t('offers.rule6')}</li>
           </ul>
         </div>
+
+        <OfferQrSection platforms={offer.platforms} />
 
         {/* Support Popup Modal */}
         {showSupportModal && (
