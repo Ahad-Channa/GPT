@@ -64,7 +64,25 @@ const parseMaxTotalClicks = (value) => {
   return num;
 };
 
+// Cover image: empty -> null; an uploaded image data URL (png/jpeg/webp/gif, at
+// most ~2 MB of base64) or, for existing offers, an http(s) URL. Anything else
+// is rejected with HTTP 400.
+const MAX_COVER_DATA_URL_LENGTH = 2.5 * 1024 * 1024;
+const parseCoverImageInput = (value) => {
+  if (value === undefined || value === null || value === '') return null;
+  const text = typeof value === 'string' ? value.trim() : '';
+  const isDataUrl = /^data:image\/(png|jpeg|webp|gif);base64,[A-Za-z0-9+/=]+$/.test(text);
+  const isHttpUrl = /^https?:\/\/\S+$/i.test(text);
+  if ((!isDataUrl && !isHttpUrl) || (isDataUrl && text.length > MAX_COVER_DATA_URL_LENGTH)) {
+    const error = new Error('Cover image must be an uploaded PNG, JPG, WebP or GIF image under 2 MB.');
+    error.statusCode = 400;
+    throw error;
+  }
+  return text;
+};
+
 module.exports = {
+  parseCoverImageInput,
   normalizeDisplayPlacements,
   parseAllowedCountriesInput,
   parseMaxTotalClicks,

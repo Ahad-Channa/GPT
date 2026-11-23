@@ -8,16 +8,17 @@ import {
   FiChevronDown, FiChevronUp, FiSettings, FiFileText, FiBookOpen
 } from 'react-icons/fi';
 import { writeClipboardText } from '../../utils/clipboard';
+import { readImageAsDataUrl } from '../../utils/imageUpload.js';
 import { createAdminApi } from '../../utils/adminApi';
-import { getEnabledGoalRewardTotal, formatGoalLabel } from '../../utils/offerGoalDisplay.js';
+import { getEnabledGoalRewardTotal, formatGoalLabel, formatGoalRewardInstruction } from '../../utils/offerGoalDisplay.js';
 import { buildDirectOfferTextPayload, buildGoalTextPayload, createEmptyGoal, seedOfferTextTranslations } from '../../utils/directOfferPayload.js';
-import { getGoalTranslation } from '../../utils/offerTranslations.js';
+import { getGoalTranslation, getGoalEditorText } from '../../utils/offerTranslations.js';
 import {
   buildConfiguredPostbackExample,
   getEnabledPostbackGoals,
   maskPostbackSecret,
 } from '../../utils/postbackGuide.js';
-import { supportedLanguages } from '../../i18n/i18n';
+import i18n, { supportedLanguages } from '../../i18n/i18n';
 import { REQUIRED_OFFER_LOCALE, getLocaleNativeName } from '../../i18n/localeRegistry.js';
 import OfferEditorErrorBoundary from '../../components/admin/OfferEditorErrorBoundary.jsx';
 import { validateOfferText, getOfferLocaleText, updateOfferLocaleField } from '../../utils/offerLocalePolicy.js';
@@ -39,12 +40,6 @@ const Badge = ({ status }) => {
     </span>
   );
 };
-
-const PRESET_ICONS = [
-  '🎮', '🏆', '💰', '🎯', '🎁', '💎', '🔥', '⚡',
-  '🚀', '📱', '🛒', '🎵', '💪', '🌟', '🎲', '📺',
-  '🏨', '✈️', '🛍️', '🎰', '🏦', '🎬',
-];
 
 const MAX_GOALS = 25;
 // Languages come from the central locale registry (src/i18n/localeRegistry.js).
@@ -428,23 +423,42 @@ export const OfferFormModal = ({ offer, onClose, onSaved, adminApi, initialLangu
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className={labelCls}>Icon / Emoji</label>
-              <input className={inputCls} value={form.icon} onChange={set('icon')} placeholder="🎰 or image URL" />
-              <div className="flex flex-wrap gap-1 mt-1">
-                {PRESET_ICONS.map(e => (
-                  <button key={e} type="button" onClick={() => setForm(f => ({ ...f, icon: e }))}
-                    className={`text-lg p-0.5 rounded hover:bg-white/10 ${form.icon === e ? 'bg-white/20' : ''}`}>{e}</button>
-                ))}
-              </div>
-            </div>
-            <div>
-              <label className={labelCls}>Cover Image URL</label>
-              <input className={inputCls} value={form.coverImage} onChange={set('coverImage')} placeholder="https://..." />
-              {form.coverImage && (
-                <img src={form.coverImage} alt="preview" className="mt-1 w-16 h-16 object-cover rounded-lg border border-white/10" />
+          <div>
+            <label className={labelCls}>Cover Image</label>
+            <div className="flex items-center gap-3">
+              {form.coverImage ? (
+                <img src={form.coverImage} alt="Cover preview" className="w-16 h-16 object-cover rounded-lg border border-white/10" />
+              ) : (
+                <div className="w-16 h-16 rounded-lg border border-dashed border-white/20 flex items-center justify-center text-[10px] text-slate-500">No image</div>
               )}
+              <div className="flex flex-col gap-1.5">
+                <label className="inline-flex items-center justify-center px-3 py-1.5 rounded-lg text-xs font-semibold bg-indigo-500/20 text-indigo-200 border border-indigo-500/30 cursor-pointer hover:bg-indigo-500/30">
+                  {form.coverImage ? 'Replace image' : 'Upload image'}
+                  <input
+                    type="file"
+                    accept="image/png,image/jpeg,image/webp,image/gif"
+                    className="hidden"
+                    onChange={async (e) => {
+                      const file = e.target.files?.[0];
+                      e.target.value = '';
+                      if (!file) return;
+                      try {
+                        const dataUrl = await readImageAsDataUrl(file);
+                        setForm((f) => ({ ...f, coverImage: dataUrl }));
+                        setError('');
+                      } catch (err) {
+                        setError(err.message || 'Could not upload the image.');
+                      }
+                    }}
+                  />
+                </label>
+                {form.coverImage && (
+                  <button type="button" onClick={() => setForm((f) => ({ ...f, coverImage: '' }))} className="text-xs text-rose-300 hover:text-rose-200 text-left">
+                    Remove image
+                  </button>
+                )}
+                <span className="text-[10px] text-slate-500">PNG, JPG, WebP or GIF, up to 5 MB. Resized automatically.</span>
+              </div>
             </div>
           </div>
           <div>
@@ -658,12 +672,21 @@ export const OfferFormModal = ({ offer, onClose, onSaved, adminApi, initialLangu
                     <div className="grid grid-cols-1 gap-2">
                       <div>
                         <label className={labelCls}>Step label ({localeLabel(activeLanguage)}) <span className="text-slate-600 font-normal">{goalTextHint}</span></label>
-                        <input className={inputCls} value={getGoalTranslation(goal, activeLanguage).label || ''} onChange={e => setGoalLocalized(idx, 'label', e.target.value)} placeholder="e.g. Fight 20 Battles" />
+                        <input className={inputCls} value={getGoalEditorText(goal, activeLanguage).label} onChange={e => setGoalLocalized(idx, 'label', e.target.value)} placeholder="e.g. Fight 20 Battles" />
                       </div>
                       <div>
                         <label className={labelCls}>Step description ({localeLabel(activeLanguage)}) <span className="text-slate-600 font-normal">{goalTextHint}</span></label>
-                        <input className={inputCls} value={getGoalTranslation(goal, activeLanguage).description || ''} onChange={e => setGoalLocalized(idx, 'description', e.target.value)} placeholder="Optional step description" />
+                        <input className={inputCls} value={getGoalEditorText(goal, activeLanguage).description} onChange={e => setGoalLocalized(idx, 'description', e.target.value)} placeholder="Optional step description" />
                       </div>
+                    </div>
+                    <div data-testid="step-preview" className="rounded-lg border border-emerald-500/20 bg-emerald-500/5 px-3 py-2">
+                      <p className="text-[10px] uppercase tracking-wide text-emerald-300/80 font-semibold mb-1">Preview · how the user sees this step ({localeLabel(activeLanguage)})</p>
+                      <p className="text-sm text-white">
+                        {formatGoalRewardInstruction({ ...goal, rewardAmount: Number(goal.rewardAmount) || 0 }, activeLanguage, i18n.getFixedT(activeLanguage))}
+                      </p>
+                      {!getGoalTranslation(goal, activeLanguage).label && activeLanguage !== REQUIRED_OFFER_LOCALE && (
+                        <p className="text-[10px] text-amber-300/80 mt-1">No label in this language: users see the English text.</p>
+                      )}
                     </div>
                   </div>
                 ))}

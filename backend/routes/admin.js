@@ -27,6 +27,7 @@ const {
   normalizeDisplayPlacements,
   parseAllowedCountriesInput,
   parseMaxTotalClicks,
+  parseCoverImageInput,
 } = require('../utils/directOfferInput');
 const {
   assertCoinRewardAmount,
@@ -3585,7 +3586,7 @@ router.post('/direct-offers', requirePermission('manage_offerwalls'), async (req
       isActive: isActive !== undefined ? Boolean(isActive) : true,
       expirationDate: expirationDate || null,
       icon: icon || null,
-      coverImage: coverImage || null,
+      coverImage: parseCoverImageInput(coverImage),
       displayPlacements: normalizeDisplayPlacements(displayPlacements),
       allowedCountries: parseAllowedCountriesInput(allowedCountries),
       platforms: platforms || { desktop: true, android: true, ios: true },
@@ -3674,7 +3675,7 @@ router.put('/direct-offers/:id', requirePermission('manage_offerwalls'), async (
         ...(isActive !== undefined && { isActive: Boolean(isActive) }),
         ...(expirationDate !== undefined && { expirationDate: expirationDate || null }),
         ...(icon !== undefined && { icon }),
-        ...(coverImage !== undefined && { coverImage }),
+        ...(coverImage !== undefined && { coverImage: parseCoverImageInput(coverImage) }),
         ...(displayPlacements !== undefined && { displayPlacements: normalizeDisplayPlacements(displayPlacements) }),
         ...(allowedCountries !== undefined && { allowedCountries: parseAllowedCountriesInput(allowedCountries) }),
         ...(platforms !== undefined && { platforms }),

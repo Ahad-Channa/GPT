@@ -15,6 +15,15 @@ export const humanizeGoalKey = (value) => {
   return words.replace(/\b([a-z])/g, (match) => match.toUpperCase());
 };
 
+// Display-only cleanup of admin-typed step text: underscores become spaces and
+// "50 euro" / "50 EUR" / "50 euros" become "50 €". Nothing is stored or changed.
+export const cleanGoalLabelText = (value) =>
+  String(value || '')
+    .replace(/_+/g, ' ')
+    .replace(/(\d+(?:[.,]\d+)?)\s*(?:euros?|eur)\b/gi, '$1 €')
+    .replace(/\s{2,}/g, ' ')
+    .trim();
+
 export const formatGoalLabel = (goal, language = 'en', fallbackLabel = '') => {
   const key = String(goal?.goalKey || goal?.key || '').trim();
   const isEnglish = String(language || 'en').toLowerCase().split(/[-_]/)[0] === 'en';
@@ -22,7 +31,7 @@ export const formatGoalLabel = (goal, language = 'en', fallbackLabel = '') => {
   const localizedLabel = String(getGoalDisplayText(goal, language).label || '').trim();
   const label = localizedLabel || String(goal?.label || '').trim();
 
-  if (label && (!key || compactKey(label) !== compactKey(key))) return label;
+  if (label && (!key || compactKey(label) !== compactKey(key))) return cleanGoalLabelText(label);
   if (isEnglish) return humanizeGoalKey(key || label) || fallbackLabel || 'Complete step';
   // Non-English callers pass the localized missing-label text from i18n.
   return fallbackLabel || '';

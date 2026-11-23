@@ -22,3 +22,13 @@ test('calculates the total from enabled step rewards only', () => {
     { rewardAmount: 'invalid', enabled: true },
   ]), 750);
 });
+
+test('goal labels show no underscores and use the € symbol instead of the word euro', async () => {
+  const { cleanGoalLabelText, formatGoalLabel } = await import('../src/utils/offerGoalDisplay.js');
+  assert.equal(cleanGoalLabelText('fight_italiano'), 'fight italiano');
+  assert.equal(cleanGoalLabelText('Deposit 50 euro'), 'Deposit 50 €');
+  assert.equal(cleanGoalLabelText('Einzahlung 10,50 EUR'), 'Einzahlung 10,50 €');
+  assert.equal(cleanGoalLabelText('Deposit 20 euros'), 'Deposit 20 €');
+  assert.equal(cleanGoalLabelText('Deposit €20'), 'Deposit €20');
+  assert.equal(formatGoalLabel({ goalKey: 'g1', label: 'fight_italiano' }, 'en'), 'fight italiano');
+});

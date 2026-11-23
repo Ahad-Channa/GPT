@@ -42,8 +42,8 @@ test('the strict resolvers are unchanged: the admin editor still sees an empty G
 
 test('goal labels fall back to English for German, and a German label still wins', () => {
   assert.equal(getGoalDisplayText({ label: 'Deposit' }, 'de').label, 'Deposit');
-  assert.equal(formatGoalLabel({ goalKey: 'deposit_50', label: 'Deposit 50 EUR' }, 'de', 'Label fehlt'), 'Deposit 50 EUR');
-  assert.equal(formatGoalLabel({ goalKey: 'deposit_50', label: 'Deposit 50 EUR', labelDe: '50 EUR einzahlen' }, 'de'), '50 EUR einzahlen');
+  assert.equal(formatGoalLabel({ goalKey: 'deposit_50', label: 'Deposit 50 EUR' }, 'de', 'Label fehlt'), 'Deposit 50 €');
+  assert.equal(formatGoalLabel({ goalKey: 'deposit_50', label: 'Deposit 50 EUR', labelDe: '50 EUR einzahlen' }, 'de'), '50 € einzahlen');
   // nothing in either language: still the localized "missing" text
   assert.equal(formatGoalLabel({ goalKey: '', label: '' }, 'de', 'Label fehlt'), 'Label fehlt');
 });

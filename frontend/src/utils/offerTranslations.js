@@ -81,6 +81,25 @@ const legacyGoalFields = (goal, language) => {
   return {};
 };
 
+// Raw text for the admin editor inputs. Unlike getGoalTranslation it never trims:
+// a controlled input fed trimmed text swallows every space typed at the end of a
+// word, so "Deposit 50" could never become "Deposit 50 €". Trimming still happens
+// when the offer is saved (directOfferPayload.js).
+export const getGoalEditorText = (goal = {}, locale = 'en') => {
+  const candidates = localeCandidates(locale);
+  const map = normalizedTranslationMap(goal.translations);
+  const language = candidates[candidates.length - 1];
+  const legacy = legacyGoalFields(goal, language);
+  const read = (field) => {
+    for (const candidate of candidates) {
+      const entry = map[candidate];
+      if (entry && hasOwn(entry, field)) return String(entry[field] ?? '');
+    }
+    return String(legacy[field] || '');
+  };
+  return { label: read('label'), description: read('description') };
+};
+
 export const getGoalTranslation = (goal = {}, locale = 'en') => {
   const candidates = localeCandidates(locale);
   const language = candidates[candidates.length - 1];
