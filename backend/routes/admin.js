@@ -592,7 +592,7 @@ router.get('/users/:id/transactions', requirePermission('manage_users'), async (
 
 router.put('/users/:id/ban', requirePermission('manage_users'), async (req, res) => {
   try {
-    const { isBanned } = req.body;
+    const { isBanned, reason } = req.body;
     const userToUpdate = await User.findById(req.params.id);
     if (!userToUpdate) return res.status(404).json({ success: false, error: 'User not found' });
 
@@ -601,8 +601,15 @@ router.put('/users/:id/ban', requirePermission('manage_users'), async (req, res)
       return res.status(403).json({ success: false, error: 'Cannot modify primary admin' });
     }
 
-    const user = await User.findByIdAndUpdate(req.params.id, { isBanned }, { returnDocument: 'after' });
-    await createLog(req.dbUser._id, isBanned ? 'BAN_USER' : 'UNBAN_USER', user._id, { reason: req.body.reason || 'No reason provided' });
+    const updateData = {
+      isBanned: Boolean(isBanned),
+      banReason: isBanned ? (reason || 'manual_admin') : null,
+      bannedAt: isBanned ? new Date() : null,
+      fraudStatus: isBanned ? 'blocked' : 'clean',
+    };
+
+    const user = await User.findByIdAndUpdate(req.params.id, updateData, { returnDocument: 'after' });
+    await createLog(req.dbUser._id, isBanned ? 'BAN_USER' : 'UNBAN_USER', user._id, { reason: reason || 'No reason provided' });
 
     if (isBanned) {
       await notify(user._id, 'account_banned', 'Account Suspended', 'Your account has been suspended by an administrator.');
