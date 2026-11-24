@@ -53,6 +53,18 @@ Read this first, then continue. Last updated 2026-11-24.
 - Held rewards count as "credited" for completion (unchanged behavior). Needs a product decision if that should change.
 - Final checks before telling the client it is done: Android offer shows QR, PC-only offer does not, multi-step offer with 2+ steps saves both, language dropdown in each step, History shows "Abgeschlossen" for completed offers.
 
+## Client conversation status (as of 2026-11-24)
+- Delivery: the user asked Harun to release/complete the current order (it has run long, payment is pending). The user takes responsibility for fixing bugs in the existing project after release (things that do not work as agreed), and stays available.
+- New request from Harun (not started, no price given yet): three extra features integrated into TaskMint and the postback system.
+  1. Cash reward spin: logic behind the reward wheel.
+  2. Pack opening: users get packs based on qualified earnings; each pack reveals 3 random cards of different rarity.
+  3. Collection album: collected/missing cards, progress, complete the 100-card collection.
+  - A separate designer delivers the pack-opening animation, album design and 100 AI card images (50 Common, 30 Rare, 20 Super Rare).
+  - Harun asked: can you do it, what do you charge, what do you need from me/the designer. He is calculating total costs.
+- The user sent Harun (in German, one message) a "yes, I can" answer plus these questions before pricing: spin prize (cash or coins), who sets odds, how a spin is earned; what "qualified earnings" means and the earnings per pack (do held/reversed rewards count); drop odds per rarity and duplicate handling; whether an admin panel for cards/odds/pack rules is needed; from the designer: image format/size, animation format (Lottie/video/CSS), card list with names and IDs.
+- Design notes for later (when Harun answers): decide spin results and pack rolls on the server only (never in the browser), keep them idempotent and logged, tie pack eligibility to credited conversions the same way offer completion does (`internalStatus==='approved'`, `processingState==='processed'`, `rewardTransactionId != null`), and agree milestone payments separately from the current order.
+- Next step when the user is back: wait for Harun's answers, then estimate effort and give a fixed price with a timeline. Do not start coding these features before the scope and payment are agreed.
+
 ## Working rules used in this project
 - Do not commit, push or deploy without being asked.
 - Do not touch reward calculation, holds, reversal/idempotency, click identity, or manual-offer logic unless that is the task.
