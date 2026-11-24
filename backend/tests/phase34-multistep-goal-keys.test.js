@@ -50,13 +50,11 @@ test('create and update routes validate Goal Keys before normalizing', () => {
   assert.equal((admin.match(/assertValidGoalKeys\(goals\)/g) || []).length, 2);
 });
 
-test('admin form validates the same rules before saving and explains each field group', () => {
+test('admin form validates the same rules before saving, with the key rule shared from goalKey.js', () => {
   const form = read('frontend/src/pages/admin/AdminDirectOffers.jsx');
-  assert.match(form, /\^\[A-Za-z\]\[A-Za-z0-9_-\]\{0,63\}\$/);
+  const keyUtil = read('frontend/src/utils/goalKey.js');
+  assert.match(keyUtil, /\^\[A-Za-z\]\[A-Za-z0-9_-\]\{0,63\}\$/);
+  assert.match(form, /GOAL_KEY_PATTERN\.test\(key\)/);
   assert.match(form, /has no Goal Key/);
   assert.match(form, /is already used by step/);
-  for (const heading of ['1 · How the partner reports this step', '2 · Reward and timing', '3 · What the user sees']) {
-    assert.ok(form.includes(heading), heading);
-  }
-  assert.match(form, /Goal #\{idx \+ 1\} of \{form\.goals\.length\}/);
 });

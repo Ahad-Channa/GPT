@@ -13,6 +13,7 @@ import { createAdminApi } from '../../utils/adminApi';
 import { getEnabledGoalRewardTotal, formatGoalLabel, formatGoalRewardInstruction } from '../../utils/offerGoalDisplay.js';
 import { buildDirectOfferTextPayload, buildGoalTextPayload, createEmptyGoal, seedOfferTextTranslations } from '../../utils/directOfferPayload.js';
 import { getGoalTranslation, getGoalEditorText } from '../../utils/offerTranslations.js';
+import { GOAL_KEY_PATTERN, slugifyGoalKey } from '../../utils/goalKey.js';
 import {
   buildConfiguredPostbackExample,
   getEnabledPostbackGoals,
@@ -42,6 +43,8 @@ const Badge = ({ status }) => {
 };
 
 const MAX_GOALS = 25;
+// Every step gets its own colour (border + header) so fields never get mixed up between steps.
+const GOAL_COLORS = ['#6366F1', '#10B981', '#F59E0B', '#EC4899', '#06B6D4', '#8B5CF6', '#EF4444', '#84CC16', '#F97316', '#14B8A6'];
 // Languages come from the central locale registry (src/i18n/localeRegistry.js).
 const supportedLocales = () => supportedLanguages;
 const localeLabel = (locale) => getLocaleNativeName(locale);
@@ -189,10 +192,19 @@ export const OfferFormModal = ({ offer, onClose, onSaved, adminApi, initialLangu
   );
   const setGoalLocalized = (index, field, value) => setForm((current) => ({
     ...current,
-    goals: current.goals.map((goal, goalIndex) => goalIndex === index ? {
-      ...goal,
-      translations: { ...(goal.translations || {}), [activeLanguage]: { ...(goal.translations?.[activeLanguage] || {}), [field]: value } },
-    } : goal),
+    goals: current.goals.map((goal, goalIndex) => {
+      if (goalIndex !== index) return goal;
+      const next = {
+        ...goal,
+        translations: { ...(goal.translations || {}), [activeLanguage]: { ...(goal.translations?.[activeLanguage] || {}), [field]: value } },
+      };
+      // New steps get their Goal Key from the English label until the admin edits the key.
+      if (field === 'label' && goal.keyAuto && activeLanguage === REQUIRED_OFFER_LOCALE) {
+        const others = current.goals.filter((_, i) => i !== index).map((g) => g.goalKey);
+        next.goalKey = slugifyGoalKey(value, others);
+      }
+      return next;
+    }),
   }));
   const setMapping = (k) => (e) => setForm((f) => ({ ...f, postbackMapping: { ...f.postbackMapping, [k]: e.target.value } }));
 
@@ -213,25 +225,31 @@ export const OfferFormModal = ({ offer, onClose, onSaved, adminApi, initialLangu
       return setError('Hold threshold must be a non-negative integer.');
     }
     if (!isManual) {
-      // Same rules as the server (offerGoals.js) so no step is silently dropped on save.
+      // Collect every problem so the admin can fix them in one go. Key rules mirror the
+      // server (offerGoals.js) so no step is silently dropped on save.
+      const goalErrors = [];
       const seenKeys = new Map();
-      for (let i = 0; i < form.goals.length; i += 1) {
-        const key = String(form.goals[i]?.goalKey || '').trim();
-        if (!key) return setError(`Step ${i + 1} has no Goal Key. Enter one (for example register or level_10), or remove the step.`);
-        if (!/^[A-Za-z][A-Za-z0-9_-]{0,63}$/.test(key)) {
-          return setError(`Step ${i + 1}: Goal Key "${key}" is not valid. Use only letters, numbers, _ or -, start with a letter, no spaces, max 64 characters (for example register or level_10).`);
+      form.goals.forEach((goal, i) => {
+        const n = i + 1;
+        const enabled = goal?.enabled !== false;
+        const key = String(goal?.goalKey || '').trim();
+        if (!key) {
+          goalErrors.push(`Step ${n} has no Goal Key. Enter one (for example register or level_10), or remove the step.`);
+        } else if (!GOAL_KEY_PATTERN.test(key)) {
+          goalErrors.push(`Step ${n}: Goal Key "${key}" is not valid. Use only letters, numbers, _ or -, start with a letter, no spaces, max 64 characters (for example register or level_10).`);
+        } else if (seenKeys.has(key.toLowerCase())) {
+          goalErrors.push(`Step ${n}: Goal Key "${key}" is already used by step ${seenKeys.get(key.toLowerCase())}. Each step needs its own Goal Key.`);
+        } else {
+          seenKeys.set(key.toLowerCase(), n);
         }
-        if (seenKeys.has(key.toLowerCase())) {
-          return setError(`Step ${i + 1}: Goal Key "${key}" is already used by step ${seenKeys.get(key.toLowerCase())}. Each step needs its own Goal Key.`);
+        if (enabled && !String(getGoalTranslation(goal, REQUIRED_OFFER_LOCALE).label || '').trim()) {
+          goalErrors.push(`Step ${n}: the ${localeLabel(REQUIRED_OFFER_LOCALE)} step label is missing.`);
         }
-        seenKeys.set(key.toLowerCase(), i + 1);
-      }
-    }
-    if (!isManual) {
-      const badGoalIndex = form.goals.findIndex((goal) => goal && goal.enabled !== false && !isValidGoalReward(goal.rewardAmount));
-      if (badGoalIndex !== -1) {
-        return setError(`Goal #${badGoalIndex + 1} is enabled but its coin reward must be a whole number of at least 1 (no decimals such as 1.9). Enter the coins or disable the step.`);
-      }
+        if (enabled && !isValidGoalReward(goal?.rewardAmount)) {
+          goalErrors.push(`Goal #${n} is enabled but its coin reward must be a whole number of at least 1 (no decimals such as 1.9). Enter the coins or disable the step.`);
+        }
+      });
+      if (goalErrors.length > 0) return setError(goalErrors.join('\n'));
     }
     // Single-step, manual, and all-steps-disabled offers use the typed reward.
     // (With enabled steps the total is calculated and the typed value is ignored.)
@@ -568,7 +586,7 @@ export const OfferFormModal = ({ offer, onClose, onSaved, adminApi, initialLangu
               <button
                 type="button"
                 disabled={form.goals.length >= MAX_GOALS}
-                onClick={() => setForm(f => ({ ...f, goals: [...f.goals, createEmptyGoal()] }))}
+                onClick={() => setForm(f => ({ ...f, goals: [...f.goals, { ...createEmptyGoal(), keyAuto: true }] }))}
                 className="shrink-0 flex items-center gap-1 px-2.5 py-1 rounded-lg bg-indigo-500/20 border border-indigo-500/40 text-[11px] font-semibold text-indigo-300 hover:bg-indigo-500/30 disabled:opacity-40"
               >
                 <FiPlus /> Add Goal
@@ -579,16 +597,27 @@ export const OfferFormModal = ({ offer, onClose, onSaved, adminApi, initialLangu
                 <div className="rounded-lg border border-amber-500/20 bg-amber-500/10 px-3 py-2 text-[11px] text-amber-200">
                   After changing a Goal Key, Event ID, alias, or reward, create a fresh user click before testing. Existing clicks keep their trusted click-time configuration.
                 </div>
-                {form.goals.map((goal, idx) => (
-                  <div key={idx} className="border border-white/10 rounded-lg p-2.5 space-y-2 bg-white/[0.02]">
+                {form.goals.map((goal, idx) => {
+                  const stepColor = GOAL_COLORS[idx % GOAL_COLORS.length];
+                  const updateGoal = (patch) => setForm(f => ({ ...f, goals: f.goals.map((g, i) => i === idx ? { ...g, ...patch } : g) }));
+                  return (
+                  <div
+                    key={idx}
+                    data-testid="goal-step"
+                    className="rounded-xl p-3 space-y-3 bg-white/[0.02]"
+                    style={{ border: `2px solid ${stepColor}`, boxShadow: `inset 5px 0 0 ${stepColor}` }}
+                  >
                     <div className="flex items-center justify-between">
-                      <span className="text-[11px] font-semibold text-slate-400">Goal #{idx + 1} of {form.goals.length}{goal.goalKey ? ` · ${goal.goalKey}` : ''}</span>
+                      <span className="inline-flex items-center gap-2 text-[12px] font-bold" style={{ color: stepColor }}>
+                        <span className="inline-block w-2.5 h-2.5 rounded-full" style={{ background: stepColor }} />
+                        Step {idx + 1} of {form.goals.length}
+                      </span>
                       <div className="flex items-center gap-2">
                         <label className="flex items-center gap-1 text-[11px] text-slate-400 cursor-pointer">
                           <input
                             type="checkbox"
                             checked={goal.enabled}
-                            onChange={e => setForm(f => ({ ...f, goals: f.goals.map((g, i) => i === idx ? { ...g, enabled: e.target.checked } : g) }))}
+                            onChange={e => updateGoal({ enabled: e.target.checked })}
                             className="accent-indigo-500"
                           />
                           Enabled
@@ -602,83 +631,45 @@ export const OfferFormModal = ({ offer, onClose, onSaved, adminApi, initialLangu
                         </button>
                       </div>
                     </div>
-                    <p className="text-[10px] uppercase tracking-wide text-indigo-300/80 font-semibold pt-1">1 · How the partner reports this step</p>
-                    <div className="grid grid-cols-2 gap-2">
-                      <div>
-                        <label className={labelCls}>Goal Key * <span className="text-slate-600 font-normal">(event_type value)</span></label>
-                        <input className={inputCls} value={goal.goalKey} onChange={e => setForm(f => ({ ...f, goals: f.goals.map((g, i) => i === idx ? { ...g, goalKey: e.target.value } : g) }))} placeholder="e.g. registration, deposit, level_5" />
-                        <p className="mt-1 text-[10px] text-slate-500">Our internal name for this step. Letters, numbers, _ or - only; start with a letter; no spaces; unique per step.</p>
+
+                    <div>
+                      <div className="flex items-center justify-between gap-2 mb-1">
+                        <label className={`${labelCls} mb-0`}>Step label ({localeLabel(activeLanguage)}) *</label>
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-[10px] text-slate-500">Language</span>
+                          <select
+                            aria-label={`Step ${idx + 1} language`}
+                            className="bg-[#182338] border border-white/10 rounded-lg px-2 py-1 text-[11px] text-white"
+                            value={activeLanguage}
+                            onChange={(e) => setActiveLanguage(e.target.value)}
+                          >
+                            {supportedLocales().map((locale) => {
+                              const filled = Boolean(getGoalTranslation(goal, locale).label);
+                              return <option key={locale} value={locale}>{localeLabel(locale)}{filled ? ' ✓' : ''}</option>;
+                            })}
+                          </select>
+                        </div>
                       </div>
-                      <div>
-                        <label className={labelCls}>External Event ID <span className="text-slate-600 font-normal">(partner value)</span></label>
-                        <input className={inputCls} value={goal.externalEventId || ''} onChange={e => setForm(f => ({ ...f, goals: f.goals.map((g, i) => i === idx ? { ...g, externalEventId: e.target.value } : g) }))} placeholder="e.g. Game Event 269" />
-                        <p className="mt-1 text-[10px] text-slate-500">Only if the partner sends their own event name instead of the Goal Key.</p>
-                      </div>
-                      <div className="col-span-2">
-                        <label className={labelCls}>External Aliases <span className="text-slate-600 font-normal">(comma separated)</span></label>
-                        <input className={inputCls} value={goal.externalEventAliases || ''} onChange={e => setForm(f => ({ ...f, goals: f.goals.map((g, i) => i === idx ? { ...g, externalEventAliases: e.target.value } : g) }))} placeholder="e.g. GE-269, Event 269" />
-                        <p className="mt-1 text-[10px] text-slate-500">Optional extra names the partner might send for this same step.</p>
-                      </div>
-                      <p className="col-span-2 text-[11px] text-slate-500">
-                        {goal.externalEventId
-                          ? `Postback event “${goal.externalEventId}” or “${goal.goalKey || 'goal_key'}” maps to “${formatGoalLabel(goal)}”.`
-                          : `Postback event “${goal.goalKey || 'goal_key'}” maps to “${formatGoalLabel(goal)}”. Add the partner Event ID if they send a different value.`}
-                      </p>
+                      <input className={inputCls} value={getGoalEditorText(goal, activeLanguage).label} onChange={e => setGoalLocalized(idx, 'label', e.target.value)} placeholder="e.g. Fight 20 Battles" />
+                      <p className="mt-1 text-[10px] text-slate-500">What the user sees for this step. Same language as the switcher at the top. ✓ = text exists in that language; empty languages show the English text.</p>
                     </div>
 
-                    <p className="text-[10px] uppercase tracking-wide text-indigo-300/80 font-semibold pt-2">2 · Reward and timing</p>
                     <div className="grid grid-cols-2 gap-2">
                       <div>
                         <label className={labelCls}>Reward (Coins) *</label>
-                        <input type="number" min="1" step="1" className={inputCls} value={goal.rewardAmount} onChange={e => setForm(f => ({ ...f, goals: f.goals.map((g, i) => i === idx ? { ...g, rewardAmount: e.target.value } : g) }))} placeholder="e.g. 250" />
-                        <p className="mt-1 text-[10px] text-slate-500">Whole coins only. The coins the user receives for this step; counts toward the total above.</p>
+                        <input type="number" min="1" step="1" className={inputCls} value={goal.rewardAmount} onChange={e => updateGoal({ rewardAmount: e.target.value })} placeholder="e.g. 250" />
+                        <p className="mt-1 text-[10px] text-slate-500">Whole coins the user receives for this step.</p>
                         {goal.enabled !== false && !isValidGoalReward(goal.rewardAmount) && (
                           <p className="mt-1 text-[10px] text-amber-300">An enabled step needs a whole-number reward of at least 1 coin (no decimals). Enter coins or disable the step; saving is blocked until then.</p>
                         )}
                       </div>
                       <div>
-                        <label className={labelCls}>Time (days) <span className="text-slate-600 font-normal">(display only)</span></label>
-                        <input type="number" min="1" step="1" className={inputCls} value={goal.timeLimitDays ?? ''} onChange={e => setForm(f => ({ ...f, goals: f.goals.map((g, i) => i === idx ? { ...g, timeLimitDays: e.target.value } : g) }))} placeholder="e.g. 3" />
-                        <p className="mt-1 text-[10px] text-slate-500">Optional. Shown to the user as a hint; it is not enforced.</p>
-                      </div>
-                      <div className="col-span-2">
-                        <label className={labelCls}>Payout Metadata (USD) <span className="text-slate-600 font-normal">(optional · record only)</span></label>
-                        <input type="number" min="0" step="1" className={inputCls} value={goal.payoutAmount} onChange={e => setForm(f => ({ ...f, goals: f.goals.map((g, i) => i === idx ? { ...g, payoutAmount: e.target.value } : g) }))} placeholder="e.g. 1" />
-                        <p className="mt-1 text-[10px] text-slate-500">
-                          Optional admin note of what the advertiser pays for this step, in whole USD (cents are not stored). It is saved with the step and only pre-fills the
-                          {' '}<code>{'{PAYOUT}'}</code> value in the example postback URL on the offer card. It is not shown to users and never changes the coins they receive.
-                        </p>
+                        <label className={labelCls}>Goal Key * <span className="text-slate-600 font-normal">(event_type value)</span></label>
+                        <input className={inputCls} value={goal.goalKey} onChange={e => updateGoal({ goalKey: e.target.value, keyAuto: false })} placeholder="created from the label" />
+                        <p className="mt-1 text-[10px] text-slate-500">{goal.keyAuto ? 'Created automatically from the English label. You can change it.' : 'Letters, numbers, _ or -; start with a letter; unique per step.'}</p>
                       </div>
                     </div>
 
-                    <div className="flex items-center justify-between gap-2 pt-2">
-                      <p className="text-[10px] uppercase tracking-wide text-indigo-300/80 font-semibold">3 · What the user sees ({localeLabel(activeLanguage)})</p>
-                      <div className="flex items-center gap-1.5">
-                        <span className="text-[10px] text-slate-500">Language</span>
-                        <select
-                          aria-label={`Step ${idx + 1} language`}
-                          className="bg-[#182338] border border-white/10 rounded-lg px-2 py-1 text-[11px] text-white"
-                          value={activeLanguage}
-                          onChange={(e) => setActiveLanguage(e.target.value)}
-                        >
-                          {supportedLocales().map((locale) => {
-                            const filled = Boolean(getGoalTranslation(goal, locale).label || getGoalTranslation(goal, locale).description);
-                            return <option key={locale} value={locale}>{localeLabel(locale)}{filled ? ' ✓' : ''}</option>;
-                          })}
-                        </select>
-                      </div>
-                    </div>
-                    <p className="text-[10px] text-slate-500 -mt-1">Same language as the switcher at the top of the form. Text you entered in other languages is kept (✓ = this step has text in that language). If a language is empty, users see the English text.</p>
-                    <div className="grid grid-cols-1 gap-2">
-                      <div>
-                        <label className={labelCls}>Step label ({localeLabel(activeLanguage)}) <span className="text-slate-600 font-normal">{goalTextHint}</span></label>
-                        <input className={inputCls} value={getGoalEditorText(goal, activeLanguage).label} onChange={e => setGoalLocalized(idx, 'label', e.target.value)} placeholder="e.g. Fight 20 Battles" />
-                      </div>
-                      <div>
-                        <label className={labelCls}>Step description ({localeLabel(activeLanguage)}) <span className="text-slate-600 font-normal">{goalTextHint}</span></label>
-                        <input className={inputCls} value={getGoalEditorText(goal, activeLanguage).description} onChange={e => setGoalLocalized(idx, 'description', e.target.value)} placeholder="Optional step description" />
-                      </div>
-                    </div>
                     <div data-testid="step-preview" className="rounded-lg border border-emerald-500/20 bg-emerald-500/5 px-3 py-2">
                       <p className="text-[10px] uppercase tracking-wide text-emerald-300/80 font-semibold mb-1">Preview · how the user sees this step ({localeLabel(activeLanguage)})</p>
                       <p className="text-sm text-white">
@@ -688,8 +679,40 @@ export const OfferFormModal = ({ offer, onClose, onSaved, adminApi, initialLangu
                         <p className="text-[10px] text-amber-300/80 mt-1">No label in this language: users see the English text.</p>
                       )}
                     </div>
+
+                    <details data-testid="goal-advanced" className="rounded-lg border border-white/10 bg-white/[0.02]">
+                      <summary className="cursor-pointer select-none px-3 py-2 text-[11px] font-semibold text-slate-400">Advanced (optional)</summary>
+                      <div className="grid grid-cols-2 gap-2 p-3 pt-1">
+                        <div>
+                          <label className={labelCls}>External Event ID <span className="text-slate-600 font-normal">(partner value)</span></label>
+                          <input className={inputCls} value={goal.externalEventId || ''} onChange={e => updateGoal({ externalEventId: e.target.value })} placeholder="e.g. Game Event 269" />
+                          <p className="mt-1 text-[10px] text-slate-500">Only if the partner sends their own event name instead of the Goal Key.</p>
+                        </div>
+                        <div>
+                          <label className={labelCls}>External Aliases <span className="text-slate-600 font-normal">(comma separated)</span></label>
+                          <input className={inputCls} value={goal.externalEventAliases || ''} onChange={e => updateGoal({ externalEventAliases: e.target.value })} placeholder="e.g. GE-269, Event 269" />
+                          <p className="mt-1 text-[10px] text-slate-500">Extra names the partner might send for this step.</p>
+                        </div>
+                        <p className="col-span-2 text-[11px] text-slate-500">
+                          {goal.externalEventId
+                            ? `Postback event “${goal.externalEventId}” or “${goal.goalKey || 'goal_key'}” maps to “${formatGoalLabel(goal)}”.`
+                            : `Postback event “${goal.goalKey || 'goal_key'}” maps to “${formatGoalLabel(goal)}”. Add the partner Event ID if they send a different value.`}
+                        </p>
+                        <div>
+                          <label className={labelCls}>Time (days) <span className="text-slate-600 font-normal">(display only)</span></label>
+                          <input type="number" min="1" step="1" className={inputCls} value={goal.timeLimitDays ?? ''} onChange={e => updateGoal({ timeLimitDays: e.target.value })} placeholder="e.g. 3" />
+                          <p className="mt-1 text-[10px] text-slate-500">Shown to the user as a hint; not enforced.</p>
+                        </div>
+                        <div>
+                          <label className={labelCls}>Payout Metadata (USD) <span className="text-slate-600 font-normal">(optional · record only)</span></label>
+                          <input type="number" min="0" step="1" className={inputCls} value={goal.payoutAmount} onChange={e => updateGoal({ payoutAmount: e.target.value })} placeholder="e.g. 1" />
+                          <p className="mt-1 text-[10px] text-slate-500">Admin note of what the advertiser pays, whole USD. Only pre-fills <code>{'{PAYOUT}'}</code> in the example postback URL; never shown to users and never changes their coins.</p>
+                        </div>
+                      </div>
+                    </details>
                   </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </div>
@@ -759,7 +782,7 @@ export const OfferFormModal = ({ offer, onClose, onSaved, adminApi, initialLangu
           </div>
           )}
 
-          {error && <p className="text-rose-400 text-sm">{error}</p>}
+          {error && <p className="text-rose-400 text-sm whitespace-pre-line">{error}</p>}
 
           <div className="flex gap-3 pt-2">
             <button type="button" onClick={onClose} className="flex-1 py-2 rounded-lg bg-white/5 border border-white/10 text-slate-400 hover:text-white text-sm font-semibold transition-colors">
