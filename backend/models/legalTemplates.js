@@ -1,7 +1,7 @@
 const LEGAL_TEMPLATES = {
   'impressum': {
-    title_en: 'Impressum (Legal Notice)',
-    content_en: `# Impressum (Legal Notice)
+    title_en: 'Legal Notice',
+    content_en: `# Legal Notice
 
 ### Information pursuant to Section 5 of the German Telemedia Act (TMG):
 TaskMint Platform / TaskMint GmbH
@@ -154,6 +154,45 @@ Notre site contient des liens vers des sites tiers externes sur lesquels nous n'
 ### Droits d'auteur
 Les contenus et œuvres créés par les exploitants de ce site sont soumis au droit d'auteur. Toute reproduction, modification, distribution ou exploitation hors des limites du droit d'auteur nécessite l'accord écrit préalable de l'auteur concerné.`,
 
+    title_es: 'Aviso Legal',
+    content_es: `# Aviso Legal
+
+### Información legal conforme a la normativa aplicable:
+TaskMint Platform / TaskMint GmbH
+Musterstraße 123
+10115 Berlín
+Alemania
+
+### Representado por:
+Director General: Max Mustermann
+
+### Información de contacto:
+Teléfono: +49 (0) 30 1234567
+Correo electrónico: contact@taskmint.me
+Sitio web: https://taskmint.me
+
+### Registro mercantil:
+Inscripción en el Registro Mercantil
+Tribunal de Registro: Amtsgericht Charlottenburg (Berlín)
+Número de registro: HRB 123456 B
+
+### Número de identificación fiscal:
+NIF según el artículo 27a de la Ley del IVA:
+DE 123 456 789
+
+### Responsable del contenido:
+Max Mustermann
+Musterstraße 123
+10115 Berlín
+Alemania
+
+---
+
+### Exclusión de responsabilidad:
+Los contenidos de nuestras páginas han sido elaborados con el mayor esmero. No obstante, no podemos asumir garantía alguna por la exactitud, integridad y actualidad de los mismos.
+
+### Responsabilidad por enlaces:
+Nuestra oferta contiene enlaces a sitios web externos de terceros, sobre cuyos contenidos no ejercemos influencia alguna. Por ello, no podemos asumir responsabilidad por dichos contenidos ajenos.`,
     title_ur: 'امپریسم (قانونی معلومات)',
     content_ur: `# امپریسم (قانونی معلومات)
 
@@ -201,7 +240,98 @@ Germany
 ہماری ویب سائٹ پر بیرونی تیسرے فریق کی ویب سائٹس کے لنکس موجود ہیں جن کے مواد پر ہمارا کوئی اثر نہیں ہے۔ متعلقہ لنکس والے صفحات کے مواد کے لیے ہمیشہ ان کا فراہم کنندہ یا آپریٹر ذمہ دار ہے۔
 
 ### کاپی رائٹ
-سائٹ آپریٹرز کی طرف سے تخلیق کردہ مواد اور کام جرمن کاپی رائٹ قانون کے تحت محفوظ ہیں۔`
+سائٹ آپریٹرز کی طرف سے تخلیق کردہ مواد اور کام جرمن کاپی رائٹ قانون کے تحت محفوظ ہیں۔`,
+    title_ru: "Выходные данные",
+    content_ru: `# Выходные данные
+
+### Информация в соответствии с законодательством (§ 5 TMG / DDG):
+TaskMint Platform / TaskMint GmbH
+Musterstraße 123
+10115 Berlin
+Германия
+
+### Представитель:
+Генеральный директор: Max Mustermann
+
+### Контактная информация:
+Телефон: +49 (0) 30 1234567
+Электронная почта: contact@taskmint.me
+Веб-сайт: https://taskmint.me
+
+### Запись в Торговом реестре:
+Внесено в Торговый реестр (Handelsregister)
+Регистрационный суд: Amtsgericht Charlottenburg (Берлин)
+Регистрационный номер: HRB 123456 B
+
+### Идентификационный номер плательщика НДС:
+Идентификационный номер плательщика НДС (§ 27a UStG):
+DE 123 456 789
+
+### Ответственный за содержание (§ 18 ч. 2 MStV):
+Max Mustermann
+Musterstraße 123
+10115 Berlin
+Германия
+
+---
+
+### Онлайн-разрешение споров
+Европейская комиссия предоставляет платформу для онлайн-разрешения споров (ODR): https://ec.europa.eu/consumers/odr
+Наш адрес электронной почты указан выше.
+
+Мы не готовы и не обязаны участвовать в разбирательствах по разрешению споров в потребительском арбитражном совете.
+
+### Ответственность за контент
+Как поставщик услуг, мы несем ответственность за собственный контент на этих страницах в соответствии с общим законодательством. Однако мы не обязаны отслеживать передаваемую или хранимую стороннюю информацию или расследовать обстоятельства, указывающие на незаконную деятельность.
+
+### Ответственность за ссылки
+Наш сайт содержит ссылки на внешние сторонние веб-сайты, на содержание которых мы не имеем влияния. Соответствующий поставщик или оператор всегда несет ответственность за содержание связанных страниц.
+
+### Авторское право
+Контент и материалы, созданные операторами сайта на этих страницах, защищены авторским правом. Загрузка и копирование материалов разрешены только для частного некоммерческого использования.`,
+    title_pt: "Informações Legais",
+    title_it: "Note Legali",
+    title_pl: "Nota prawna",
+    title_tr: "Yasal Bildirim",
+    content_pt: `# Informações Legais
+
+### Informações de acordo com a legislação (§ 5 TMG / DDG):
+TaskMint Platform / TaskMint GmbH
+Musterstraße 123
+10115 Berlim
+Alemanha
+
+### Representado por:
+Diretor Executivo: Max Mustermann
+
+### Contacto:
+E-mail: support@taskmint.me
+Website: www.taskmint.me
+
+### Registo Comercial:
+Tribunal de Registo: Amtsgericht Charlottenburg (Berlim)
+Número de Registo: HRB 123456 B
+
+### Número de Identificação Fiscal (NIF / USt-IdNr.):
+De acordo com o § 27 a da lei alemã sobre o imposto sobre o volume de negócios:
+DE 123 456 789
+
+---
+
+### Resolução de Litígios Online
+A Comissão Europeia disponibiliza uma plataforma para resolução de litígios online (RLL): https://ec.europa.eu/consumers/odr
+O nosso endereço de e-mail pode ser encontrado acima.
+
+Não estamos dispostos nem somos obrigados a participar em processos de resolução de litígios perante uma comissão de arbitragem de consumo.
+
+### Responsabilidade pelo Conteúdo
+Como prestador de serviços, somos responsáveis pelo nosso próprio conteúdo nestas páginas de acordo com a legislação geral. No entanto, não somos obrigados a monitorizar informações de terceiros transmitidas ou armazenadas, nem a investigar circunstâncias que indiquem atividades ilegais.
+
+### Responsabilidade por Hiperligações
+O nosso website contém links para sites externos de terceiros sobre cujos conteúdos não temos qualquer influência. O respetivo fornecedor ou operador é sempre responsável pelos conteúdos das páginas hiperligadas.
+
+### Direitos de Autor
+Os conteúdos e obras criados pelos operadores do site nestas páginas estão sujeitos à legislação de direitos de autor. O download e cópias deste site são permitidos apenas para uso privado e não comercial.`
   },
 
   'terms-of-use': {
@@ -615,24 +745,24 @@ TaskMint reserves the right to modify commission rates, referral bonus structure
 
 ### 7. Contact Us
 If you have questions regarding the Affiliate Program or wish to report unauthorized promotion, please contact us at **contact@taskmint.me**.`,
-    title_de: 'Partnerprogramm- & Empfehlungsrichtlinie',
-    content_de: `# Partnerprogramm- & Empfehlungsrichtlinie (Affiliate Policy)
+    title_de: 'Affiliate-Richtlinien',
+    content_de: `# Affiliate-Richtlinien (Affiliate Policy)
 
 *(Gültig ab: 17. Juli 2026 | Zuletzt aktualisiert: 17. Oktober 2026)*
 
-Willkommen beim Partner- und Empfehlungsprogramm von TaskMint. Diese Richtlinie regelt die Teilnahme an unserem Empfehlungsprogramm und definiert die verbindlichen Verhaltens-, Werbe- und Transparenzpflichten aller Partner und Nutzer.
+Willkommen beim Affiliate- und Empfehlungsprogramm von TaskMint. Diese Richtlinie regelt die Teilnahme an unserem Empfehlungsprogramm und definiert die verbindlichen Verhaltens-, Werbe- und Transparenzpflichten aller Affiliates und Nutzer.
 
 ---
 
 ### 1. Teilnahmeberechtigung & Registrierung
 - **Berechtigung:** Teilnahmeberechtigt sind alle registrierten TaskMint-Nutzer mit einem verifizierten Konto in ordnungsgemäßem Zustand, die mindestens 18 Jahre alt sind.
 - **Empfehlungslink:** Jeder Nutzer erhält im Benutzerkonto einen individuellen Empfehlungslink und Empfehlungscode.
-- **Zuordnung:** Registriert sich ein Neukunde über Ihren Link oder gibt Ihren Code ein, wird dieser Ihrem Partnerkonto als geworbener Nutzer zugeordnet.
+- **Zuordnung:** Registriert sich ein Neukunde über Ihren Link oder gibt Ihren Code ein, wird dieser Ihrem Affiliate-Konto als geworbener Nutzer zugeordnet.
 
 ---
 
 ### 2. Vergütung & Provisionsmodell
-- **Provisionsbasis:** Partner erhalten eine anteilige Gutschrift an Coins auf Basis der erfolgreich abgeschlossenen Angebote und Umfragen ihrer geworbenen Nutzer gemäß den im Dashboard ausgewiesenen Stufen.
+- **Provisionsbasis:** Affiliates erhalten eine anteilige Gutschrift an Coins auf Basis der erfolgreich abgeschlossenen Angebote und Umfragen ihrer geworbenen Nutzer gemäß den im Dashboard ausgewiesenen Stufen.
 - **Gutschrift & Haltefristen:** Die Auszahlung von Empfehlungsprämien unterliegt den für die jeweiligen Partnernetzwerke geltenden Prüf- und Haltefristen (Hold Periods) zur Betrugsprävention.
 - **Stufen:** Mit steigender Anzahl aktiver Empfehlungen können höhere Provisionsstufen freigeschaltet werden.
 
@@ -646,18 +776,18 @@ Gemäß § 5a Abs. 4 des Gesetzes gegen den unlauteren Wettbewerb (UWG) sowie in
 ---
 
 ### 4. Unzulässige Werbemaßnahmen & Betrugsverbot
-Zum Schutz unserer Plattform und Partner sind folgende Praktiken ausdrücklich untersagt:
+Zum Schutz unserer Plattform und Affiliates sind folgende Praktiken ausdrücklich untersagt:
 - **Verbot von Spam (§ 7 UWG):** Das unaufgeforderte Versenden von Massen-E-Mails, Direktnachrichten oder das Spammen von Foren, Social-Media-Kommentaren und Chatkanälen ist streng untersagt.
 - **Irreführende Versprechungen:** Das Werben mit falschen oder unrealistischen Verdienstversprechen (z. B. *"Garantierter Sofortverdienst von 500 € am Tag"*) ist verboten.
 - **Eigenwerbung & Mehrfachkonten:** Das Werben eigener Konten, die Nutzung von VPNs, Proxies oder Emulatoren zur Manipulation von Empfehlungen gilt als schwerer Betrug.
-- **Brand Bidding (SEA / Google Ads):** Das Buchen von Anzeigen auf die Marke "TaskMint" oder Tippfehler in Suchmaschinen ist Partnern untersagt.
+- **Brand Bidding (SEA / Google Ads):** Das Buchen von Anzeigen auf die Marke "TaskMint" oder Tippfehler in Suchmaschinen ist Affiliates untersagt.
 - **Cookie-Stuffing:** Das automatisierte Setzen von Cookies über unsichtbare iFrames, Pop-Unders oder Skripte ist unzulässig.
 
 ---
 
 ### 5. Prüfung, Sperrung & Aberkennung
 - TaskMint überwacht Empfehlungsaktivitäten kontinuierlich mit automatisierten Betrugserkennungssystemen.
-- Bei Verstößen gegen diese Richtlinie oder unsere Nutzungsbedingungen behält sich TaskMint das Recht vor, das Partnerkonto zu sperren, geworbene Konten zu entkoppeln und unrechtmäßig erworbene Vergütungen einzubehalten.
+- Bei Verstößen gegen diese Richtlinie oder unsere Nutzungsbedingungen behält sich TaskMint das Recht vor, das Affiliate-Konto zu sperren, geworbene Konten zu entkoppeln und unrechtmäßig erworbene Vergütungen einzubehalten.
 
 ---
 
@@ -667,7 +797,7 @@ TaskMint behält sich vor, die Konditionen, Vergütungssätze und diese Richtlin
 ---
 
 ### 7. Kontakt
-Bei Fragen zu unserem Partnerprogramm wenden Sie sich bitte an **contact@taskmint.me**.
+Bei Fragen zu unserem Affiliate-Programm wenden Sie sich bitte an **contact@taskmint.me**.
 `,
     title_fr: 'Politique d\'Affiliation & de Parrainage',
     content_fr: `# Politique d'Affiliation & de Parrainage

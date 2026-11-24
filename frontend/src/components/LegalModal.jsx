@@ -7,11 +7,11 @@ import { motion } from 'framer-motion';
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
 const PAGE_TITLES = {
-  'impressum': { en: 'Impressum', de: 'Impressum', fr: 'Mentions Légales', ur: 'امپریسم (قانونی معلومات)' },
-  'terms-of-use': { en: 'Terms of Service', de: 'Nutzungsbedingungen', fr: "Conditions d'Utilisation", ur: 'استعمال کی شرائط' },
-  'privacy-policy': { en: 'Privacy Policy', de: 'Datenschutzerklärung', fr: 'Politique de Confidentialité', ur: 'پرائیویسی پالیسی' },
-  'affiliate-policy': { en: 'Affiliate Policy', de: 'Partnerprogramm-Richtlinie', fr: "Politique d'Affiliation", ur: 'ایفیلی ایٹ پالیسی' },
-  'cookie-policy': { en: 'Cookie Policy', de: 'Cookie-Richtlinie', fr: 'Politique relative aux Cookies', ur: 'کوکی پالیسی' },
+  'impressum': { en: 'Legal Notice', de: 'Impressum', fr: 'Mentions Légales', es: 'Aviso Legal', ur: 'قانونی معلومات', ru: 'Выходные данные', pt: 'Informações Legais', it: 'Note Legali', tr: 'Yasal Bildirim', pl: 'Nota prawna' },
+  'terms-of-use': { en: 'Terms of Service', de: 'Nutzungsbedingungen', fr: "Conditions d'Utilisation", es: 'Términos de Servicio', ur: 'استعمال کی شرائط', ru: 'Условия использования', pt: 'Termos de Serviço', it: 'Termini di Servizio' },
+  'privacy-policy': { en: 'Privacy Policy', de: 'Datenschutzerklärung', fr: 'Politique de Confidentialité', es: 'Política de Privacidad', ur: 'پرائیویسی پالیسی', ru: 'Политика конфиденциальности', pt: 'Política de Privacidade', it: 'Informativa sulla Privacy' },
+  'affiliate-policy': { en: 'Affiliate Policy', de: 'Affiliate-Richtlinien', fr: "Politique d'Affiliation", es: 'Política de Afiliados', ur: 'ایفیلی ایٹ پالیسی', ru: 'Партнерская политика', pt: 'Política de Afiliados', it: 'Politica di Affiliazione' },
+  'cookie-policy': { en: 'Cookie Policy', de: 'Cookie-Richtlinie', fr: 'Politique relative aux Cookies', es: 'Política de Cookies', ur: 'کوکی پالیسی', ru: 'Политика файлов cookie', pt: 'Política de Cookies', it: 'Politica sui Cookie' },
 };
 
 const formatInline = (text, isDarkMode, lineIdx = 0) => {

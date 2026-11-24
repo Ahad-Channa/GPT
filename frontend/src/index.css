@@ -9,14 +9,19 @@
 
 @layer base {
   body {
-    background-color: #05100a;
-    color: #c8d6ef;
+    background-color: #FAFAFA;
+    color: #111827;
     font-family: 'Barlow', system-ui, sans-serif;
     font-feature-settings: 'cv01' 0, 'zero' 0; /* Disable slashed zeros in Barlow and others */
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     overflow-x: hidden;
     overflow-y: auto;
+  }
+
+  html.dark body {
+    background-color: #0C0E11;
+    color: #FFFFFF;
   }
 
   .clean-numbers {

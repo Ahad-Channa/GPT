@@ -2,6 +2,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const router = express.Router();
 const User = require('../models/User');
+const Faq = require('../models/Faq');
 const Transaction = require('../models/Transaction');
 const Settings = require('../models/Settings');
 const PromoCode = require('../models/PromoCode');
@@ -4288,5 +4289,142 @@ router._phase8AdminHelpers = {
   validateSecurityConfig,
   validateStatusMappings,
 };
+
+// ── GET /api/admin/faqs ──────────────────────────────────────────────────
+router.get('/faqs', verifyToken, requireAdmin, async (req, res) => {
+  try {
+    const faqs = await Faq.find().sort({ order: 1, createdAt: -1 });
+    res.json({ success: true, faqs });
+  } catch (err) {
+    console.error('[/api/admin/faqs GET] Error:', err);
+    res.status(500).json({ success: false, error: 'Failed to fetch FAQs' });
+  }
+});
+
+// ── POST /api/admin/faqs ─────────────────────────────────────────────────
+router.post('/faqs', verifyToken, requireAdmin, async (req, res) => {
+  try {
+    const {
+      question, answer,
+      questionDe, answerDe,
+      questionUr, answerUr,
+      questionFr, answerFr,
+      questionEs, answerEs,
+      questionRu, answerRu,
+      questionPt, answerPt,
+      questionIt, answerIt,
+      questionPl, answerPl,
+      questionTr, answerTr,
+      order, isActive
+    } = req.body;
+
+    if (!question || !question.trim()) {
+      return res.status(400).json({ success: false, error: 'Question is required' });
+    }
+    if (!answer || !answer.trim()) {
+      return res.status(400).json({ success: false, error: 'Answer is required' });
+    }
+
+    const newFaq = new Faq({
+      question: question.trim(),
+      answer: answer.trim(),
+      questionDe: questionDe ? questionDe.trim() : '',
+      answerDe: answerDe ? answerDe.trim() : '',
+      questionUr: questionUr ? questionUr.trim() : '',
+      answerUr: answerUr ? answerUr.trim() : '',
+      questionFr: questionFr ? questionFr.trim() : '',
+      answerFr: answerFr ? answerFr.trim() : '',
+      questionEs: questionEs ? questionEs.trim() : '',
+      answerEs: answerEs ? answerEs.trim() : '',
+      questionRu: questionRu ? questionRu.trim() : '',
+      answerRu: answerRu ? answerRu.trim() : '',
+      questionPt: questionPt ? questionPt.trim() : '',
+      answerPt: answerPt ? answerPt.trim() : '',
+      questionIt: questionIt ? questionIt.trim() : '',
+      answerIt: answerIt ? answerIt.trim() : '',
+      questionPl: questionPl ? questionPl.trim() : '',
+      answerPl: answerPl ? answerPl.trim() : '',
+      questionTr: questionTr ? questionTr.trim() : '',
+      answerTr: answerTr ? answerTr.trim() : '',
+      order: typeof order === 'number' ? order : 0,
+      isActive: isActive !== undefined ? Boolean(isActive) : true,
+    });
+
+    await newFaq.save();
+    res.json({ success: true, faq: newFaq, message: 'FAQ added successfully' });
+  } catch (err) {
+    console.error('[/api/admin/faqs POST] Error:', err);
+    res.status(500).json({ success: false, error: 'Failed to create FAQ' });
+  }
+});
+
+// ── PUT /api/admin/faqs/:id ──────────────────────────────────────────────
+router.put('/faqs/:id', verifyToken, requireAdmin, async (req, res) => {
+  try {
+    const {
+      question, answer,
+      questionDe, answerDe,
+      questionUr, answerUr,
+      questionFr, answerFr,
+      questionEs, answerEs,
+      questionRu, answerRu,
+      questionPt, answerPt,
+      questionIt, answerIt,
+      questionPl, answerPl,
+      questionTr, answerTr,
+      order, isActive
+    } = req.body;
+
+    const faq = await Faq.findById(req.params.id);
+    if (!faq) {
+      return res.status(404).json({ success: false, error: 'FAQ not found' });
+    }
+
+    if (question !== undefined) faq.question = question.trim();
+    if (answer !== undefined) faq.answer = answer.trim();
+
+    if (questionDe !== undefined) faq.questionDe = questionDe.trim();
+    if (answerDe !== undefined) faq.answerDe = answerDe.trim();
+    if (questionUr !== undefined) faq.questionUr = questionUr.trim();
+    if (answerUr !== undefined) faq.answerUr = answerUr.trim();
+    if (questionFr !== undefined) faq.questionFr = questionFr.trim();
+    if (answerFr !== undefined) faq.answerFr = answerFr.trim();
+    if (questionEs !== undefined) faq.questionEs = questionEs.trim();
+    if (answerEs !== undefined) faq.answerEs = answerEs.trim();
+    if (questionRu !== undefined) faq.questionRu = questionRu.trim();
+    if (answerRu !== undefined) faq.answerRu = answerRu.trim();
+    if (questionPt !== undefined) faq.questionPt = questionPt.trim();
+    if (answerPt !== undefined) faq.answerPt = answerPt.trim();
+    if (questionIt !== undefined) faq.questionIt = questionIt.trim();
+    if (answerIt !== undefined) faq.answerIt = answerIt.trim();
+    if (questionPl !== undefined) faq.questionPl = questionPl.trim();
+    if (answerPl !== undefined) faq.answerPl = answerPl.trim();
+    if (questionTr !== undefined) faq.questionTr = questionTr.trim();
+    if (answerTr !== undefined) faq.answerTr = answerTr.trim();
+
+    if (order !== undefined) faq.order = Number(order);
+    if (isActive !== undefined) faq.isActive = Boolean(isActive);
+
+    await faq.save();
+    res.json({ success: true, faq, message: 'FAQ updated successfully' });
+  } catch (err) {
+    console.error('[/api/admin/faqs/:id PUT] Error:', err);
+    res.status(500).json({ success: false, error: 'Failed to update FAQ' });
+  }
+});
+
+// ── DELETE /api/admin/faqs/:id ───────────────────────────────────────────
+router.delete('/faqs/:id', verifyToken, requireAdmin, async (req, res) => {
+  try {
+    const faq = await Faq.findByIdAndDelete(req.params.id);
+    if (!faq) {
+      return res.status(404).json({ success: false, error: 'FAQ not found' });
+    }
+    res.json({ success: true, message: 'FAQ deleted successfully' });
+  } catch (err) {
+    console.error('[/api/admin/faqs/:id DELETE] Error:', err);
+    res.status(500).json({ success: false, error: 'Failed to delete FAQ' });
+  }
+});
 
 module.exports = router;

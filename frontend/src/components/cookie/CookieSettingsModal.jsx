@@ -421,7 +421,7 @@ const CookieSettingsModal = () => {
                 {isUrdu
                   ? 'ریفرل اور ایفیلی ایٹ لنکس کو ٹریک کرنے کے لیے تاکہ دوستوں اور پارٹنرز کو سائن اپ پر ان کے کمائے گئے بونس مل سکیں۔'
                   : isGerman
-                  ? 'Dient der korrekten Zuordnung von Empfehlungs- und Partnerlinks, damit Freunde und Partner ihre verdienten Registrierungsboni erhalten.'
+                  ? 'Dient der korrekten Zuordnung von Empfehlungs- und Affiliatelinks, damit Freunde und Affiliates ihre verdienten Registrierungsboni erhalten.'
                   : isFrench
                   ? "Permet de suivre les liens d'affiliation et de parrainage afin que vos amis et partenaires reçoivent leurs commissions lors de l'inscription."
                   : 'Used to track affiliate and referral links so that friends and partners receive their earned commission bonuses upon signup.'}

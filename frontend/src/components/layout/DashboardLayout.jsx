@@ -34,11 +34,7 @@ const DashboardLayout = ({ children, showLiveBar = true, fullWidth = false }) =>
   }, [chatOpen, hasConsent]);
 
   useEffect(() => {
-    const originalBg = document.body.style.backgroundColor;
     document.body.style.backgroundColor = isDarkMode ? 'rgba(12, 14, 17, 1)' : '#FAFAFA';
-    return () => {
-      document.body.style.backgroundColor = originalBg;
-    };
   }, [isDarkMode]);
 
   return (

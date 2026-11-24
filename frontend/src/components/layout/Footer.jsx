@@ -35,7 +35,7 @@ const Footer = () => {
 
   const resourceLinks = [
     { nameKey: 'nav.features', defaultName: 'Features', href: '/#features' },
-    { nameKey: 'nav.faq', defaultName: 'FAQ', href: '/#faq' },
+    { nameKey: 'nav.faq', defaultName: 'FAQ', path: '/faq' },
     { nameKey: 'footer.support', defaultName: 'Support', href: 'mailto:contact@taskmint.me' }
   ];
 

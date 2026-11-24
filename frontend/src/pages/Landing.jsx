@@ -27,7 +27,13 @@ const Landing = () => {
   const { t, i18n } = useTranslation();
   const isDe = i18n?.language?.startsWith('de');
   const isFr = i18n?.language?.startsWith('fr');
+  const isEs = i18n?.language?.startsWith('es');
   const isUr = i18n?.language === 'ur' || i18n?.language?.startsWith('ur');
+  const isRu = i18n?.language?.startsWith('ru');
+  const isPt = i18n?.language?.startsWith('pt');
+  const isIt = i18n?.language?.startsWith('it');
+  const isPl = i18n?.language?.startsWith('pl');
+  const isTr = i18n?.language?.startsWith('tr');
   const [stats, setStats] = useState({ totalUsers: 0, totalPaidOut: 0 });
   const [openFaq, setOpenFaq] = useState(null);
   const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' ? window.innerWidth < 1024 : false);
@@ -70,11 +76,7 @@ const Landing = () => {
   }, []);
 
   useEffect(() => {
-    const originalBg = document.body.style.backgroundColor;
     document.body.style.backgroundColor = isDarkMode ? 'rgba(12, 14, 17, 1)' : '#FAFAFA';
-    return () => {
-      document.body.style.backgroundColor = originalBg;
-    };
   }, [isDarkMode]);
 
   return (
@@ -358,17 +360,17 @@ const Landing = () => {
             >
               <div
                 className={isMobile ? "flex flex-col items-center text-center mx-auto w-full gap-6" : "flex flex-col text-left"}
-                style={!isMobile ? { width: isFr ? 664 : 608, gap: 24 } : { maxWidth: 424 }}
+                style={!isMobile ? { width: (isPt || isIt || isPl || isTr || isDe) ? 580 : (isRu ? 580 : ((isFr || isEs) ? 664 : 608)), gap: 24 } : { maxWidth: 424 }}
               >
                 <h1
                   className="m-0 transition-colors duration-300"
                   style={!isMobile ? {
                     width: '100%',
-                    maxWidth: isFr ? 664 : 608,
+                    maxWidth: (isPt || isIt || isPl || isTr || isDe) ? 580 : (isRu ? 580 : ((isFr || isEs) ? 664 : 608)),
                     fontFamily: '"Bricolage Grotesque", sans-serif',
                     fontWeight: 700,
-                    fontSize: isFr ? 45 : 55,
-                    lineHeight: isFr ? '52px' : '60px',
+                    fontSize: isDe ? 43 : (isIt ? 41 : (isPt ? 38 : ((isPl || isTr) ? 37 : ((isEs || isRu) ? 42 : (isFr ? 45 : 55))))),
+                    lineHeight: isDe ? '49px' : (isIt ? '47px' : (isPt ? '44px' : ((isPl || isTr) ? '43px' : ((isEs || isRu) ? '48px' : (isFr ? '52px' : '60px'))))),
                     letterSpacing: '-0.02em',
                     color: isDarkMode ? '#FFFFFF' : 'rgba(14, 15, 12, 1)'
                   } : {
@@ -376,8 +378,8 @@ const Landing = () => {
                     maxWidth: 424,
                     fontFamily: '"Bricolage Grotesque", sans-serif',
                     fontWeight: 700,
-                    fontSize: 'clamp(42px, 14vw, 64px)',
-                    lineHeight: 'clamp(38px, 12.5vw, 56px)',
+                    fontSize: (isFr || isEs || isRu || isPt || isIt || isPl || isTr || isDe) ? 'clamp(30px, 8.5vw, 40px)' : 'clamp(42px, 14vw, 64px)',
+                    lineHeight: (isFr || isEs || isRu || isPt || isIt || isPl || isTr || isDe) ? 'clamp(34px, 9.8vw, 44px)' : 'clamp(38px, 12.5vw, 56px)',
                     letterSpacing: '-0.02em',
                     textAlign: 'center',
                     color: isDarkMode ? '#FFFFFF' : 'rgba(14, 15, 12, 1)'
@@ -401,19 +403,21 @@ const Landing = () => {
                   className="m-0 whitespace-pre-line transition-colors duration-300"
                   style={!isMobile ? {
                     width: '100%',
-                    maxWidth: isFr ? 664 : 608,
+                    maxWidth: isIt ? 620 : ((isRu || isPt || isPl || isTr || isDe) ? 575 : ((isFr || isEs) ? 664 : 608)),
                     fontFamily: '"Poppins", sans-serif',
                     fontWeight: 500,
-                    fontSize: isFr ? 15.5 : 16,
-                    lineHeight: '26px',
+                    fontSize: isIt ? 15 : ((isRu || isPt || isPl || isTr || isDe) ? 14.5 : ((isFr || isEs) ? 15.5 : 16)),
+                    lineHeight: isIt ? '25px' : ((isRu || isPt || isPl || isTr || isDe) ? '24px' : '26px'),
                     color: isDarkMode ? 'rgba(255, 255, 255, 0.7)' : 'rgba(14, 15, 12, 1)'
                   } : {
                     width: '100%',
-                    maxWidth: 400,
+                    maxWidth: (isFr || isEs || isRu || isPt || isIt || isPl || isTr || isDe) ? 360 : 400,
+                    paddingLeft: 8,
+                    paddingRight: 8,
                     fontFamily: '"Poppins", sans-serif',
                     fontWeight: 500,
-                    fontSize: 'clamp(13px, 3.8vw, 15.5px)',
-                    lineHeight: '26px',
+                    fontSize: (isFr || isEs || isRu || isPt || isIt || isPl || isTr || isDe) ? 'clamp(12px, 3.4vw, 14px)' : 'clamp(13px, 3.8vw, 15.5px)',
+                    lineHeight: (isFr || isEs || isRu || isPt || isIt || isPl || isTr || isDe) ? '22px' : '26px',
                     letterSpacing: '0%',
                     textAlign: 'center',
                     color: isDarkMode ? 'rgba(255, 255, 255, 0.7)' : 'rgba(14, 15, 12, 1)'
