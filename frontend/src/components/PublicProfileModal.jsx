@@ -9,6 +9,7 @@ import VipBadge from './VipBadge';
 import UserAvatar from './UserAvatar';
 import { getLevelFromEarned, getLevelLabel } from '../utils/vipLevels';
 import { useTheme } from '../contexts/ThemeContext';
+import { getTransactionLines } from '../utils/earningDisplay';
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
@@ -1143,7 +1144,10 @@ const PublicProfileModal = ({ userId, onClose }) => {
                     return (
                       <div className="flex flex-col gap-2">
                         {pageOffers.map((offer) => {
-                          const { heading, subText } = parseOfferDescription(offer, t);
+                          const offerLines = getTransactionLines(offer);
+                          const parsedLines = offerLines ? null : parseOfferDescription(offer, t);
+                          const heading = offerLines ? offerLines.primary : parsedLines.heading;
+                          const subText = offerLines ? offerLines.secondary : parsedLines.subText;
 
                           return (
                             <div

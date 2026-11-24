@@ -60,3 +60,20 @@ test('profile recent-activity amounts and dates share one right edge', () => {
   assert.match(block, /alignItems: 'flex-end'/);
   assert.doesNotMatch(block, /alignItems: 'flex-start'/);
 });
+
+test('transaction lists use the live-feed lines: source, then offer name plus step', async () => {
+  const { getTransactionLines } = await import('../src/utils/earningDisplay.js');
+  assert.deepEqual(
+    getTransactionLines({ transactionType: 'direct_offer_reward', metadata: { providerId: 'direct', offerTitle: 'pc test', goalKey: 'g2', enabledGoalCount: 3, stepLabel: 'Deposit 50 €' } }),
+    { primary: 'Goodpicks', secondary: 'pc test - Deposit 50 €' },
+  );
+  assert.deepEqual(
+    getTransactionLines({ transactionType: 'direct_offer_reward', metadata: { providerId: 'direct', offerTitle: 'pc test', enabledGoalCount: 1 } }),
+    { primary: 'Goodpicks', secondary: 'pc test' },
+  );
+  assert.equal(getTransactionLines({ transactionType: 'withdrawal' }), null);
+  const modal = fs.readFileSync(path.join(root, 'src', 'components', 'PublicProfileModal.jsx'), 'utf8');
+  const wallet = fs.readFileSync(path.join(root, 'src', 'components', 'wallet', 'TransactionHistory.jsx'), 'utf8');
+  assert.match(modal, /getTransactionLines\(offer\)/);
+  assert.match(wallet, /getTransactionLines\(tx\)/);
+});

@@ -211,4 +211,17 @@ export const getLiveFeedDisplay = (tx = {}) => {
   return { sourceLine, detailLine, isMultiStep: Boolean(stepLabel), stepLabel };
 };
 
+// Same two lines as the live feed, for transaction lists (profile Recent
+// Activity, wallet history): line 1 = "Goodpicks" / "Offerwall: <name>",
+// line 2 = offer name, plus " - <step>" for multi-step offers, so it stays two
+// lines. Returns null for non-offer transactions (callers keep their own text).
+export const getTransactionLines = (tx = {}) => {
+  const live = getLiveFeedDisplay(tx);
+  if (!live) return null;
+  return {
+    primary: live.sourceLine,
+    secondary: live.stepLabel ? `${live.detailLine} - ${live.stepLabel}` : live.detailLine,
+  };
+};
+
 export default getEarningDisplay;

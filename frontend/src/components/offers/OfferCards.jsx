@@ -322,7 +322,7 @@ export const FeaturedOfferCard = ({ offer, onClick }) => {
             paddingBottom: '4px',
             paddingLeft: '6px',
             gap: '4px',
-            background: isDarkMode ? 'rgba(12, 14, 17, 0.8)' : 'rgba(255, 243, 214, 1)',
+            background: isDarkMode ? 'rgba(12, 14, 17, 0.8)' : 'rgba(249, 247, 241, 1)',
             boxSizing: 'border-box',
           }}
         >

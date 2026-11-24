@@ -65,6 +65,44 @@ Read this first, then continue. Last updated 2026-11-24.
 - Design notes for later (when Harun answers): decide spin results and pack rolls on the server only (never in the browser), keep them idempotent and logged, tie pack eligibility to credited conversions the same way offer completion does (`internalStatus==='approved'`, `processingState==='processed'`, `rewardTransactionId != null`), and agree milestone payments separately from the current order.
 - Next step when the user is back: wait for Harun's answers, then estimate effort and give a fixed price with a timeline. Do not start coding these features before the scope and payment are agreed.
 
+## Session of 2026-11-24: main merge, design safety, UI fixes (READ BEFORE DEPLOYING TO taskmint.me)
+
+### Branches and servers
+- `delivery-postback-clean` (my work, 86 commits ahead of `main`, 3 behind). `main` = the designer's/client's live design (taskmint.me). `merge-main-test` (pushed, tip `4e75997`) = trial merge of `origin/main` into my branch. `backup-before-main-merge` = pre-merge `dd03f62`. Test worktree: `Documents\GitHub\GPT-merge-test` (node_modules symlinked from the main folder).
+- Staging server `/var/www/taskmint-staging` (PM2 `taskmint-staging-backend` id 41, `taskmint-ssl-frontend` id 42) still runs `delivery-postback-clean` (`4fe200b`); `merge-main-test` was pushed but NOT yet checked out there. Never run `pm2 restart all` (many unrelated apps). taskmint.me (live) is the client's site; nothing of mine is on it.
+- Nothing from this session is committed. Uncommitted on `delivery-postback-clean`: `PublicProfileModal.jsx`, `DirectOfferCard.jsx`, `OfferCards.jsx`, `TransactionHistory.jsx`, `earningDisplay.js`, `frontend/tests/cover-image-upload.test.js` (plus earlier uncommitted items listed below).
+
+### CRITICAL: do not overwrite taskmint.me with this branch yet
+- The client (Harun, German only) found design differences between taskmint.me (`main`) and the staging host, and fears hidden, unagreed design changes and old bugs coming back. Rule from him: **never change design without being told; keep taskmint.me's look.**
+- Verified: `merge-main-test` does NOT contain all of `main`'s newer UI. Example `frontend/src/pages/DailyBonus.jsx`: `main` has the newer mobile fixes (`clamp(12px,3.2vw,14px)`, `truncate`, `shrink-0`, `min-w-0`, progress bar on the header line); the merge test has the older version. Cause: an earlier merge of `main` was reverted (`a5b64cf`), so git treats those `main` changes as already merged and does not bring them back. `git diff --stat origin/main origin/merge-main-test -- frontend/src` still shows 76 files different; some are my intended features, some are lost `main` fixes.
+- Known visible diffs of my branch vs `main` on offer cards: (1) coin pill background was yellow `rgba(255,243,214)` from old commit `6a19804`, `main` uses `rgba(249,247,241)`; I restored `main`'s colour in `DirectOfferCard.jsx` and `OfferCards.jsx` (uncommitted). (2) Number format: `main` shows `4.200` (`toLocaleString('de-DE')`), my branch uses `formatOfferAmount(..., language)` (shows `4,200` in English). Not changed yet; ask the user/Harun. (3) `main` shows an "In Progress/Pending" status pill on clicked cards; my branch shows only the reward. Not changed yet.
+- Required next step (agreed in principle, not started): build a per-file comparison against `origin/main` in three groups: (a) my intended features to keep, (b) `main` fixes lost in the merge to restore (use `git apply -R --3way` on the `a5b64cf` revert hunks or take `main`'s version of the file), (c) pure design differences to reset to `main` unless Harun approves. Then build + tests in the test worktree, deploy to staging, let Harun compare staging against taskmint.me, and only after his approval go live. Never merge to `main` or deploy to taskmint.me without the user's explicit go-ahead.
+
+### Restored on the test branch (files from `main` that must stay)
+`backend/utils/fraudMultiAccount.js`, `User.js` (banReason, bannedAt), `Settings.js` (supportEmail), `authMiddleware.js`, `routes/auth.js` (enforceMultiAccountCheck), admin ban route sets banReason/bannedAt/fraudStatus, `BannedAccountModal.jsx`, `AdminSupportEmail.jsx`, `App.jsx`, `AuthContext.jsx`, `AuthModal.jsx`, `AdminLayout.jsx`; `Landing.jsx` got `isEs/isRu/isPt/isIt/isPl/isTr`.
+
+### Offerwall crediting risk (decision still open)
+`main`'s adapter registry is fail-closed: CPX, AdGem, Torox, AdToWall, Revu, PrimeEarn, Ayet postbacks will not credit coins until verified adapters exist (only Lootably if `OFFERWALL_ADAPTER_<ID>_ENABLED` env flags are set). Either finish verified adapters or keep the legacy path before any live deploy. Do not enable providers or invent rates.
+
+### Done this session (all uncommitted unless noted)
+- Coin conversion: `backend/utils/offerwallConversion.js` (`convertProviderUnitsToCoins`, tolerance snap, still floor), used in `backend/routes/offerwalls.js`; `Settings.coinsPerUSD` default 1000; admin Offerwalls shows provider-specific multiplier only where it applies (`frontend/src/utils/offerwallConversion.js`, `AdminOfferwalls.jsx`). Live DB/provider rates/Lootably settings were never touched. Tests: `phase28-offerwall-conversion`, `frontend/tests/offerwall-conversion.test.js`.
+- Goal labels: `cleanGoalLabelText` in `offerGoalDisplay.js` (underscores to spaces, "50 euro" to "50 €"); Italian `offers.*` keys translated in `it.json`. English is the fallback for missing offer text in every language.
+- Direct offer form (`AdminDirectOffers.jsx`): emoji/icon picker and cover-URL removed; cover image is an upload (`frontend/src/utils/imageUpload.js`, resized to webp, saved as data URL in `coverImage`; server validation `parseCoverImageInput` in `backend/utils/directOfferInput.js`, used in `backend/routes/admin.js`); step label input no longer swallows spaces (`getGoalEditorText` in `offerTranslations.js`); each step has a user preview (`data-testid="step-preview"`).
+- Profile "Recent Activity": right column aligned to the right edge (`PublicProfileModal.jsx`). Recent Activity and the wallet `TransactionHistory.jsx` now use `getTransactionLines` (`earningDisplay.js`): line 1 = "Goodpicks" or "Offerwall: <name>", line 2 = offer name plus " - <step>" for multi-step. Still the old text in `frontend/src/pages/PublicProfile.jsx` and the lists in `Profile.jsx` (~lines 2775, 3613); ask the client whether to change them.
+- Tests: new ones in `frontend/tests/cover-image-upload.test.js`, `backend/tests/phase29-cover-image-input.test.js`. Pre-existing failures (verified on a clean HEAD): backend phase22/27/8 ones (see list above), frontend `locale-support` (registry, marquee keys) and `offer-editor-smoke` (3 tests searching the old form text "Goal #1").
+
+### Deploy test branch on staging (when the user says so)
+```
+cd /var/www/taskmint-staging && git status -sb && git fetch origin
+git checkout merge-main-test && git pull --ff-only origin merge-main-test
+cd backend && npm install && cd ../frontend && npm install && npm run build && cd ..
+pm2 restart taskmint-staging-backend && pm2 restart taskmint-ssl-frontend
+```
+Rollback: `git checkout delivery-postback-clean`, reinstall, rebuild, restart the same two processes. The profile alignment fix and the transaction-lines change are NOT on `merge-main-test`; commit them on `delivery-postback-clean` first, then bring them into the test branch.
+
+### Communication rules
+- The user speaks Roman Urdu: explain to the user in Roman Urdu. Harun only reads German: anything meant for him must be written in German, copy-paste ready, short and polite. Harun is picky about unrequested design changes; always say exactly what changed.
+
 ## Working rules used in this project
 - Do not commit, push or deploy without being asked.
 - Do not touch reward calculation, holds, reversal/idempotency, click identity, or manual-offer logic unless that is the task.

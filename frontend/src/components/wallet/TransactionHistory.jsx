@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../../contexts/AuthContext';
 import CoinDisplay from '../CoinDisplay';
-import { getEarningDisplay } from '../../utils/earningDisplay';
+import { getEarningDisplay, getTransactionLines } from '../../utils/earningDisplay';
 import {
   FiZap, FiStar, FiUsers, FiArrowDownCircle, FiShield,
   FiTag, FiAward, FiFilter, FiRefreshCw, FiLoader,
@@ -209,12 +209,13 @@ const TransactionHistory = ({ refreshKey = 0, onStatsLoaded }) => {
               const isOfferReward = ['offer_reward', 'custom_offer_reward', 'direct_offer_reward'].includes(tx.transactionType);
               const earningDisplay = isOfferReward ? getEarningDisplay(tx) : null;
               const preferDescription = ['direct_offer_reward', 'chargeback'].includes(tx.transactionType) && Boolean(tx.description);
+              const offerLines = isOfferReward ? getTransactionLines(tx) : null;
               const primaryLabel = isOfferReward
-                ? (earningDisplay.primary || tx.description || config.label)
+                ? (offerLines?.primary || earningDisplay.primary || tx.description || config.label)
                 : (preferDescription ? tx.description : config.label);
               const secondaryDescription = isOfferReward
-                ? null
-                : (tx.description && tx.description !== primaryLabel ? tx.description : null);
+                ? (offerLines?.secondary || null)
+                :(tx.description && tx.description !== primaryLabel ? tx.description : null);
 
               return (
                 <motion.div
