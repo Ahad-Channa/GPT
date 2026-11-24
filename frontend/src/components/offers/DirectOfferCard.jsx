@@ -197,7 +197,7 @@ export const DirectOfferCard = ({ offer, onClick }) => {
             paddingBottom: '4px',
             paddingLeft: '6px',
             gap: '4px',
-            background: 'rgba(255, 243, 214, 1)',
+            background: 'rgba(249, 247, 241, 1)',
             boxSizing: 'border-box',
           }}
         >
