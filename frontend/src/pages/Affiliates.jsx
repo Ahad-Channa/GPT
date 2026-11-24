@@ -949,7 +949,7 @@ const Affiliates = () => {
 
             {/* Inner Card for Table Content (Rows container: rgba(21, 24, 29, 1) in dark, white in light) */}
             <div
-              className={`rounded-[16px] sm:rounded-[24px] p-2 xs:p-2.5 sm:p-6 md:p-8 w-full shadow-xs border transition-colors ${
+              className={`rounded-[16px] sm:rounded-[24px] p-2 xs:p-2.5 sm:p-6 md:p-8 w-full shadow-xs border transition-colors flex-1 flex flex-col min-h-[300px] sm:min-h-[450px] ${
                 isDarkMode ? 'border-white/5' : 'bg-white border-[#E5E7EB]/60'
               }`}
               style={{
@@ -958,7 +958,7 @@ const Affiliates = () => {
             >
               {/* Tab 1: Recent Affiliate Earnings */}
               {activeTab === 'recent' && (
-                <div>
+                <div className="flex-1 flex flex-col">
                   {referrals.loading ? (
                     <div className="animate-pulse space-y-4 py-6">
                       <div className="h-6 bg-gray-200/70 rounded w-full"></div>
@@ -968,7 +968,7 @@ const Affiliates = () => {
                   ) : referrals.error ? (
                     <p className="text-rose-500 text-center py-8 font-medium">{referrals.error}</p>
                   ) : referrals.dataList.length === 0 ? (
-                    <div className={`text-center py-12 ${isDarkMode ? 'text-white/60' : 'text-[#6B7280]'} font-medium text-sm sm:text-base`}>
+                    <div className={`flex-1 flex items-center justify-center text-center py-20 sm:py-32 ${isDarkMode ? 'text-white/60' : 'text-[#6B7280]'} font-medium text-sm sm:text-base`}>
                       {t('affiliates.noRecentEarnings', 'No referral earnings yet.')}
                     </div>
                   ) : (
@@ -1103,7 +1103,7 @@ const Affiliates = () => {
 
               {/* Tab 2: Referred Users */}
               {activeTab === 'users' && (
-                <div>
+                <div className="flex-1 flex flex-col">
                   {referredUsersData.loading ? (
                     <div className="animate-pulse space-y-4 py-6">
                       <div className="h-6 bg-gray-200/70 rounded w-full"></div>
@@ -1113,7 +1113,7 @@ const Affiliates = () => {
                   ) : referredUsersData.error ? (
                     <p className="text-rose-500 text-center py-8 font-medium">{referredUsersData.error}</p>
                   ) : referredUsersData.users.length === 0 ? (
-                    <div className={`text-center py-12 ${isDarkMode ? 'text-white/60' : 'text-[#6B7280]'} font-medium text-sm sm:text-base`}>
+                    <div className={`flex-1 flex items-center justify-center text-center py-20 sm:py-32 ${isDarkMode ? 'text-white/60' : 'text-[#6B7280]'} font-medium text-sm sm:text-base`}>
                       {t('affiliates.noReferredUsers', 'No referred users yet.')}
                     </div>
                   ) : (
@@ -1246,7 +1246,7 @@ const Affiliates = () => {
 
               {/* Tab 3: Pending Affiliate Earnings */}
               {activeTab === 'pending' && (
-                <div>
+                <div className="flex-1 flex flex-col">
                   {holdsLoading ? (
                     <div className="animate-pulse space-y-4 py-6">
                       <div className="h-6 bg-gray-200/70 rounded w-full"></div>
@@ -1254,7 +1254,7 @@ const Affiliates = () => {
                       <div className="h-14 bg-gray-200/70 rounded w-full"></div>
                     </div>
                   ) : currentPendingHolds.length === 0 ? (
-                    <div className={`text-center py-12 ${isDarkMode ? 'text-white/60' : 'text-[#6B7280]'} font-medium text-sm sm:text-base`}>
+                    <div className={`flex-1 flex items-center justify-center text-center py-20 sm:py-32 ${isDarkMode ? 'text-white/60' : 'text-[#6B7280]'} font-medium text-sm sm:text-base`}>
                       {t('affiliates.noPendingHolds', 'No affiliate earnings on hold right now.')}
                     </div>
                   ) : (

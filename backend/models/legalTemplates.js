@@ -462,6 +462,31 @@ TaskMint est fourni "en l'état" sans garantie d'aucune sorte.
 ### 6. Contact
 Pour toute question : **contact@taskmint.me**.`,
 
+        title_es: 'Términos de Servicio',
+    content_es: `# Términos de Servicio de TaskMint
+
+Bienvenido a TaskMint. Al acceder o utilizar nuestra plataforma, aceptas quedar vinculado por estos Términos de Servicio.
+
+---
+
+## 1. Aceptación de los Términos
+Al registrarte y utilizar TaskMint, confirmas que tienes al menos 18 años o la mayoría de edad legal en tu jurisdicción y que estás plenamente facultado para aceptar estos términos.
+
+## 2. Cuenta de Usuario
+- Eres responsable de mantener la confidencialidad de tus credenciales de acceso.
+- Solo se permite una cuenta por persona y hogar. El uso de cuentas múltiples dará lugar a la suspensión inmediata.
+- El uso de emuladores, VPNs, servidores proxy o herramientas automatizadas está estrictamente prohibido.
+
+## 3. Ganancias y Tareas
+- Las recompensas se otorgan exclusivamente tras la verificación exitosa de las condiciones de cada oferta o encuesta.
+- TaskMint se reserva el derecho de anular o revertir recompensas en caso de fraude, devolución de cargo o incumplimiento de las reglas.
+
+## 4. Retiros
+- Los pagos se procesan a través de los métodos habilitados en la plataforma (PayPal, criptomonedas, vales de regalo).
+- Es tu responsabilidad ingresar información de pago correcta. No nos hacemos responsables de pagos enviados a direcciones erróneas ingresadas por el usuario.
+
+## 5. Contacto
+Para cualquier pregunta sobre estos términos, contáctanos en [contact@taskmint.me](mailto:contact@taskmint.me).`,
     title_ur: 'استعمال کی شرائط',
     content_ur: `# استعمال کی شرائط
 
@@ -502,7 +527,55 @@ TaskMint ("پلیٹ فارم"، "ہم"، یا "ہمارا") میں خوش آمد
 TaskMint پر موجود تمام مواد، لوگوز، ٹریڈ مارکس اور سافٹ ویئر TaskMint کی ملکیتی ملکیت ہیں اور کاپی رائٹ قوانین کے تحت محفوظ ہیں۔
 
 ### 7. رابطہ کریں
-اگر آپ کے پاس استعمال کی ان شرائط سے متعلق کوئی سوالات ہیں تو ہم سے **contact@taskmint.me** پر رابطہ کریں۔`
+اگر آپ کے پاس استعمال کی ان شرائط سے متعلق کوئی سوالات ہیں تو ہم سے **contact@taskmint.me** پر رابطہ کریں۔`,
+    title_ru: "Условия использования",
+    content_ru: `# Условия использования
+
+*Последнее обновление: 2026*
+
+Добро пожаловать в TaskMint! Используя нашу платформу, вы соглашаетесь со следующими условиями:
+
+### 1. Право на использование
+Для использования TaskMint вам должно быть не менее 18 лет или не менее 13 лет с согласия родителей или законных опекунов.
+
+### 2. Учетные записи пользователей
+- Вы несете полную ответственность за сохранность учетных данных своего аккаунта.
+- Разрешена только одна учетная запись на человека. Создание мультиаккаунтов строго запрещено.
+- Запрещено использование VPN, прокси-серверов или эмуляторов для обхода региональных ограничений.
+
+### 3. Выполнение офферов и начисление вознаграждений
+- Монеты начисляются только после успешной верификации выполнения условий офферволами и рекламодателями.
+- Любые попытки мошенничества приводят к немедленной блокировке аккаунта без выплаты средств.
+
+### 4. Вывод средств
+- Запросы на вывод средств обрабатываются в течение 1–3 рабочих дней.
+- Пользователь обязан предоставлять точные и корректные платежные реквизиты.
+
+### 5. Прекращение действия
+Мы оставляем за собой право приостановить или заблокировать учетную запись любого пользователя при нарушении данных Условий.`,
+    title_pt: "Termos de Uso",
+    title_it: "Termini di Utilizzo",
+    title_pl: "Warunki korzystania",
+    title_tr: "Kullanım Şartları",
+    content_pt: `# Termos de Uso
+
+### 1. Aceitação dos Termos
+Ao aceder ou utilizar a plataforma TaskMint, concorda em ficar vinculado a estes Termos de Uso e a todas as leis e regulamentos aplicáveis.
+
+### 2. Elegibilidade e Criação de Conta
+- É permitida apenas uma conta por pessoa. A criação de múltiplas contas é estritamente proibida.
+- É proibido o uso de VPN, proxies ou emuladores para contornar restrições geográficas ou manipular ofertas.
+
+### 3. Realização de Ofertas e Recompensas
+- As moedas são creditadas após verificação bem-sucedida pelas redes de ofertas e anunciantes.
+- Qualquer tentativa de fraude ou manipulação resultará no cancelamento das recompensas e encerramento da conta.
+
+### 4. Levantamentos
+- Os pedidos de levantamento são processados no prazo habitual de 1 a 3 dias úteis.
+- O utilizador é responsável por fornecer informações de pagamento corretas.
+
+### 5. Rescisão
+Reservamo-nos o direito de suspender ou encerrar qualquer conta que viole estes Termos.`
   },
 
   'privacy-policy': {
@@ -644,6 +717,33 @@ Vous disposez des droits suivants concernant vos données :
 
 Pour exercer vos droits, contactez-nous à : **contact@taskmint.me**.`,
 
+        title_es: 'Política de Privacidad',
+    content_es: `# Política de Privacidad de TaskMint
+
+En TaskMint nos comprometemos a proteger y respetar tu privacidad. Esta política describe cómo recopilamos, utilizamos y protegemos tus datos personales.
+
+---
+
+## 1. Datos que recopilamos
+- **Datos de cuenta:** Nombre de usuario, dirección de correo electrónico y contraseña encriptada.
+- **Datos de actividad:** Tareas completadas, puntos ganados e historial de retiros.
+- **Datos técnicos:** Dirección IP, tipo de dispositivo, navegador y registros del sistema para la prevención del fraude.
+
+## 2. Finalidad del tratamiento
+Utilizamos tus datos para:
+- Administrar tu cuenta y facilitar el acceso a la plataforma.
+- Acreditar y procesar recompensas y retiros solicitados.
+- Detectar y prevenir actividades fraudulentas o abusivas.
+- Proporcionar soporte técnico y resolver incidencias.
+
+## 3. Seguridad de los datos
+Implementamos medidas técnicas y organizativas adecuadas para proteger tu información contra accesos no autorizados, pérdida o alteración.
+
+## 4. Tus derechos
+De acuerdo con el RGPD y demás normativas aplicables, tienes derecho a acceder, rectificar o solicitar la supresión de tus datos personales, así como a limitar su tratamiento.
+
+## 5. Contacto
+Para ejercer tus derechos de privacidad, escribe a [contact@taskmint.me](mailto:contact@taskmint.me).`,
     title_ur: 'پرائیویسی پالیسی',
     content_ur: `# پرائیویسی پالیسی (ڈیٹا پروٹیکشن)
 
@@ -689,7 +789,56 @@ Musterstraße 123
 - اعتراض کرنے کا حق (Art. 21 GDPR)
 
 ### 7. ڈیٹا پروٹیکشن رابطہ
-اپنے حقوق کے استعمال یا ڈیٹا سے متعلق کسی بھی سوال کے لیے **contact@taskmint.me** پر رابطہ کریں۔`
+اپنے حقوق کے استعمال یا ڈیٹا سے متعلق کسی بھی سوال کے لیے **contact@taskmint.me** پر رابطہ کریں۔`,
+    title_ru: "Политика конфиденциальности",
+    content_ru: `# Политика конфиденциальности (Защита данных)
+
+*Последнее обновление: 2026*
+
+В TaskMint мы уделяем первостепенное внимание защите вашей конфиденциальности и персональных данных.
+
+### 1. Сбор информации
+Мы собираем информацию, которую вы предоставляете нам напрямую (email, имя пользователя), а также технические метаданные (IP-адрес, тип браузера, безопасные идентификаторы устройства для защиты от мошенничества).
+
+### 2. Использование данных
+Ваши данные используются исключительно для:
+- Предоставления услуг и безопасной авторизации
+- Начисления монет за выполнение заданий
+- Предотвращения мошеннических действий и мультиаккаунтов
+- Обработки запросов на вывод средств
+
+### 3. Права пользователей (GDPR)
+Мы полностью соблюдаем Общий регламент по защите данных (GDPR). Вы имеете право на доступ, исправление или удаление ваших персональных данных в любое время.
+
+### 4. Файлы Cookie
+Мы используем необходимые и функциональные файлы cookie. Подробную информацию читайте в нашей Политике использования файлов cookie.
+
+### 5. Контакты
+По всем вопросам защиты данных обращайтесь: privacy@taskmint.me.`,
+    title_pt: "Política de Privacidade",
+    title_it: "Informativa sulla Privacy",
+    title_pl: "Polityka prywatności",
+    title_tr: "Gizlilik Politikası",
+    content_pt: `# Política de Privacidade
+
+### 1. Responsável pelo Tratamento de Dados
+O responsável pelo tratamento dos seus dados pessoais nos termos do RGPD é a TaskMint GmbH, Musterstraße 123, 10115 Berlim, Alemanha.
+
+### 2. Dados Recolhidos e Finalidade
+Recolhemos dados para:
+- Criação e gestão segura da conta
+- Verificação e atribuição de recompensas pelas tarefas concluídas
+- Prevenção de fraude e deteção de contas múltiplas
+- Processamento de levantamentos de fundos
+
+### 3. Direitos do Utilizador (RGPD)
+Cumprimos integralmente o Regulamento Geral sobre a Proteção de Dados (RGPD). Tem o direito de aceder, retificar ou eliminar os seus dados pessoais a qualquer momento.
+
+### 4. Ficheiros Cookie
+Utilizamos cookies estritamente necessários e de funcionalidade. Consulte a nossa Política de Cookies para mais informações.
+
+### 5. Contacto
+Para quaisquer questões sobre privacidade, contacte: privacy@taskmint.me.`
   },
   'affiliate-policy': {
     title_en: 'Affiliate & Referral Policy',
@@ -819,6 +968,25 @@ Tout membre actif et en règle de TaskMint peut participer au programme de parra
 ### 3. Conditions de paiement
 Les commissions d'affiliation s'ajoutent à votre solde principal et sont soumises aux mêmes règles de retrait standard.`,
 
+        title_es: 'Política de Afiliados y Referidos',
+    content_es: `# Política de Afiliados de TaskMint
+
+El Programa de Afiliados de TaskMint te permite invitar a nuevos usuarios y ganar comisiones de por vida sobre sus ganancias verificadas.
+
+---
+
+## 1. Cómo funciona
+- Comparte tu enlace único de referido con amigos y en tus redes.
+- Cuando un nuevo usuario se registra a través de tu enlace, pasa a formar parte de tu red de afiliados.
+- Recibirás una comisión porcentual de sus ganancias válidas en ofertas y encuestas.
+
+## 2. Reglas del Programa
+- Está prohibido el auto-referido (crear cuentas adicionales con tu propio enlace).
+- Está prohibido el uso de spam, publicidad engañosa o incentivos no autorizados para conseguir registros.
+- Cualquier violación provocará la retención de las comisiones y la suspensión del programa de afiliados.
+
+## 3. Pagos de Comisiones
+Las comisiones acumuladas se suman automáticamente a tu saldo de monedas y están sujetas a los mismos requisitos de retiro generales.`,
     title_ur: 'ایفیلی ایٹ و ریفرل پالیسی',
     content_ur: `# ایفیلی ایٹ و ریفرل پالیسی
 
@@ -848,7 +1016,38 @@ TaskMint ایفیلی ایٹ اور ریفرل پروگرام میں خوش آم
 - **برانڈ بڈنگ:** سرچ انجنوں میں TaskMint کے برانڈ نام پر اشتہارات چلانا منع ہے۔
 
 ### 5. رابطہ
-ریفرل پروگرام کے متعلق کسی بھی سوال کے لیے **contact@taskmint.me** پر رابطہ کریں۔`
+ریفرل پروگرام کے متعلق کسی بھی سوال کے لیے **contact@taskmint.me** پر رابطہ کریں۔`,
+    title_ru: "Партнерская и реферальная политика",
+    content_ru: `# Партнерская и реферальная политика
+
+*(Действует с: 2026)*
+
+### 1. Обзор программы
+Партнерская программа TaskMint дает возможность пользователям получать процент от вознаграждений приглашенных ими партнеров за выполнение офферов.
+
+### 2. Правила привлечения
+- Запрещается спам реферальными ссылками в любых формах.
+- Запрещается самостоятельная регистрация по своей реферальной ссылке.
+- Нарушение правил партнерской программы влечет за собой аннулирование начислений и блокировку аккаунта.
+
+### 3. Удержание средств
+- Реферальные начисления могут подлежать временному удержанию для проверки добросовестности выполненных заданий.`,
+    title_pt: "Política de Afiliados e Referências",
+    title_it: "Politica di Affiliazione e Referral",
+    title_pl: "Polityka programu partnerskiego",
+    title_tr: "Ortaklık ve Tavsiye Politikası",
+    content_pt: `# Política de Afiliados e Referências
+
+### 1. Visão Geral do Programa
+O programa de afiliados da TaskMint permite que os utilizadores ganhem uma percentagem das recompensas obtidas pelos amigos convidados ao realizarem ofertas na plataforma.
+
+### 2. Regras de Conduta e Divulgação
+- É estritamente proibido o envio de spam com links de referência em fóruns, redes sociais ou mensagens privadas.
+- O auto-referenciamento (criar contas para si próprio através do seu próprio link) é expressamente proibido.
+- A violação destas regras resultará no cancelamento dos saldos acumulados e na suspensão imediata da conta.
+
+### 3. Retenção e Verificação
+- Os ganhos de comissões de referência podem estar sujeitos a um período de retenção para verificação antifraude das ofertas concluídas pelos afiliados.`
   },
   'cookie-policy': {
     title_en: 'Cookie Policy',
@@ -932,6 +1131,23 @@ Les cookies sont de petits fichiers texte enregistrés sur votre terminal lors d
 ### 3. Gestion de vos préférences
 Vous pouvez à tout moment modifier vos préférences via notre outil de gestion du consentement aux cookies disponible en bas de page.`,
 
+        title_es: 'Política de Cookies',
+    content_es: `# Política de Cookies de TaskMint
+
+Este sitio web utiliza cookies y tecnologías similares para garantizar el funcionamiento correcto de la plataforma y mejorar tu experiencia.
+
+---
+
+## 1. ¿Qué son las cookies?
+Las cookies son pequeños archivos de texto que se almacenan en tu dispositivo cuando visitas un sitio web.
+
+## 2. Tipos de cookies que utilizamos
+- **Cookies Esenciales:** Necesarias para el funcionamiento básico del sitio, la autenticación y la seguridad de las sesiones.
+- **Cookies Funcionales:** Permiten recordar tus preferencias, como el idioma seleccionado o el tema visual (modo claro/oscuro).
+- **Cookies Analíticas:** Nos ayudan a comprender el uso de la plataforma de forma agregada y anónima para introducir mejoras.
+
+## 3. Gestión del consentimiento
+Puedes cambiar tus preferencias de cookies en cualquier momento a través del panel de Ajustes de Cookies accesible en el pie de página.`,
     title_ur: 'کوکی پالیسی',
     content_ur: `# کوکی پالیسی
 
@@ -960,7 +1176,38 @@ Vous pouvez à tout moment modifier vos préférences via notre outil de gestion
 ---
 
 ### 4. رابطہ
-کوکیز کے استعمال کے متعلق کسی بھی سوال کے لیے **contact@taskmint.me** پر رابطہ کریں۔`
+کوکیز کے استعمال کے متعلق کسی بھی سوال کے لیے **contact@taskmint.me** پر رابطہ کریں۔`,
+    title_ru: "Политика использования файлов cookie",
+    content_ru: `# Политика использования файлов cookie
+
+*(Действует с: 17 июля 2026 г.)*
+
+### 1. Что такое файлы cookie?
+Файлы cookie — это небольшие текстовые файлы, сохраняемые на вашем устройстве при посещении нашего сайта.
+
+### 2. Категории используемых файлов cookie
+- **Необходимые (Essential)**: Обеспечивают базовое функционирование сайта, вход в систему и защиту от мошенничества (\`__tm_did\`, \`firebase:authUser\`, \`taskmint_cookie_consent\`).
+- **Функциональные (Functional)**: Сохраняют ваши языковые предпочтения (\`i18nextLng\`) и настройки темы оформления.
+
+### 3. Управление файлами cookie
+Вы можете изменить свои предпочтения в любое время через меню «Настройки файлов cookie» в нижней части страницы.`,
+    title_pt: "Política de Cookies",
+    title_it: "Politica sui Cookie",
+    title_pl: "Polityka plików cookie",
+    title_tr: "Çerez Politikası",
+    content_pt: `# Política de Cookies
+
+*(Em vigor desde: 17 de julho de 2026)*
+
+### 1. O que são Cookies?
+Os cookies são pequenos ficheiros de texto guardados no seu dispositivo quando visita a nossa plataforma web.
+
+### 2. Categorias de Cookies Utilizados
+- **Estritamente Necessários (Essential)**: Essenciais para o funcionamento básico do website, autenticação e proteção contra fraudes (\`__tm_did\`, \`firebase:authUser\`, \`taskmint_cookie_consent\`).
+- **Funcionais (Functional)**: Guardam as suas preferências de idioma (\`i18nextLng\`) e preferência de tema (Modo Claro ou Escuro).
+
+### 3. Gestão de Cookies
+Pode alterar as suas preferências de cookies a qualquer momento através do link "Definições de Cookies" no rodapé da página.`
   }
 };
 
