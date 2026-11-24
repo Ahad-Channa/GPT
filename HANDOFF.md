@@ -1,6 +1,6 @@
 # TaskMint: project handoff (for a new Claude chat or a new developer)
 
-Read this first, then continue. Last updated 2026-11-24.
+Read this first, then continue. Last updated 2026-11-25. **The newest state is in the last section: "Session of 2026-11-25".**
 
 ## Project
 - TaskMint: rewards/offerwall site. Frontend `frontend/` (React + Vite), backend `backend/` (Node/Express + MongoDB).
@@ -86,7 +86,7 @@ Read this first, then continue. Last updated 2026-11-24.
 ### Offerwall crediting risk (decision still open)
 `main`'s adapter registry is fail-closed: CPX, AdGem, Torox, AdToWall, Revu, PrimeEarn, Ayet postbacks will not credit coins until verified adapters exist (only Lootably if `OFFERWALL_ADAPTER_<ID>_ENABLED` env flags are set). Either finish verified adapters or keep the legacy path before any live deploy. Do not enable providers or invent rates.
 
-### Done this session (all uncommitted unless noted)
+### Done on 2026-11-24 (now committed; contained in `merge-main-test`)
 - Coin conversion: `backend/utils/offerwallConversion.js` (`convertProviderUnitsToCoins`, tolerance snap, still floor), used in `backend/routes/offerwalls.js`; `Settings.coinsPerUSD` default 1000; admin Offerwalls shows provider-specific multiplier only where it applies (`frontend/src/utils/offerwallConversion.js`, `AdminOfferwalls.jsx`). Live DB/provider rates/Lootably settings were never touched. Tests: `phase28-offerwall-conversion`, `frontend/tests/offerwall-conversion.test.js`.
 - Goal labels: `cleanGoalLabelText` in `offerGoalDisplay.js` (underscores to spaces, "50 euro" to "50 €"); Italian `offers.*` keys translated in `it.json`. English is the fallback for missing offer text in every language.
 - Direct offer form (`AdminDirectOffers.jsx`): emoji/icon picker and cover-URL removed; cover image is an upload (`frontend/src/utils/imageUpload.js`, resized to webp, saved as data URL in `coverImage`; server validation `parseCoverImageInput` in `backend/utils/directOfferInput.js`, used in `backend/routes/admin.js`); step label input no longer swallows spaces (`getGoalEditorText` in `offerTranslations.js`); each step has a user preview (`data-testid="step-preview"`).
@@ -100,10 +100,47 @@ git checkout merge-main-test && git pull --ff-only origin merge-main-test
 cd backend && npm install && cd ../frontend && npm install && npm run build && cd ..
 pm2 restart taskmint-staging-backend && pm2 restart taskmint-ssl-frontend
 ```
-Rollback: `git checkout delivery-postback-clean`, reinstall, rebuild, restart the same two processes. The profile alignment fix and the transaction-lines change are NOT on `merge-main-test`; commit them on `delivery-postback-clean` first, then bring them into the test branch.
+Rollback: `git checkout delivery-postback-clean`, reinstall, rebuild, restart the same two processes. (The profile alignment fix and transaction-lines change are now on `merge-main-test` too.)
 
 ### Communication rules
 - The user speaks Roman Urdu: explain to the user in Roman Urdu. Harun only reads German: anything meant for him must be written in German, copy-paste ready, short and polite. Harun is picky about unrequested design changes; always say exactly what changed.
+
+## Session of 2026-11-25 (LATEST: read this for the current state)
+
+### Servers and branches
+- `merge-main-test` (tip `22d2f18`) was deployed on staging on 2026-11-24 evening (`git pull --ff-only`, `npm install` in both folders, frontend build ok, `taskmint-staging-backend` and `taskmint-ssl-frontend` restarted, both online). Logs were clean: only Mongoose "`new` option deprecated" warnings and one expected 403 "Offer is not available on this device" (an offer's Platforms setting blocked that device). taskmint.me (live) is untouched.
+- `delivery-postback-clean` (tip `5834c06`) is pushed and contained in `merge-main-test`. The 27 files changed on both sides vs `main` (list above) still need a line-by-line review against taskmint.me; Harun compares staging with taskmint.me before anything goes live.
+- Staging checks for Harun: Daily Bonus progress bar on the header line; admin Approve Click; Live Feed updates without refresh; Goodpicks History shows "Abgeschlossen" and all platform icons.
+
+### Fixes made since the last handoff (all committed, all in `merge-main-test`)
+- **Admin "Approve Click" hang** (infinite spinner): root cause was the `Transaction` `post('save')` hook (daily-bonus timer) writing the User outside the reward DB transaction, which deadlocks on a real replica set. Fixed in `backend/models/Transaction.js` (`initDailyBonusTimer`, uses `doc.$session()`). It only triggered when the user's daily-bonus timer was unset or older than 24h, so it could hit any reward. Test: `backend/tests/phase36-transaction-hook-session.test.js`. Reproduced and verified on a real in-memory MongoDB replica set (see "Tooling").
+- Approve Click earlier failed with a CastError because the route populated `offerId`; fixed in `getDirectOfferRewardIdentity` (`backend/services/tracking/conversionService.js`). Test `phase33`.
+- **Live Feed in real time:** `backend/utils/earningFeed.js` (`broadcastNewEarning`, shared `scrubTransaction` for private users) is called from `processReward`, the offerwall route and custom-offer approvals; the frontend already listened for the socket event `newEarning`. Test `phase34`.
+- **Click cap hides offers:** `isClickCapReached` (`clickService.js`); `GET /api/direct-offers` hides capped offers from users who have not started them (started users still see them). Test `phase35`.
+- **Duplicate-start UX:** completed offers (postback, manual approved, chargebacked manual) no longer return the advertiser URL (`alreadyCompleted`); tests `phase31`, `phase32`.
+- **Manual proof popup:** proof area stays visible after start (`rememberManualOfferStarted`), "Start Offer Again" is a secondary button, uploaded-image preview opens via portal, language comes from live i18n (stale `window.__taskmintCurrentLang` removed).
+- **Cards/popup (client requests):** no status badge on Featured cards (reward only), no "Offer click recorded." banner, no Click ID line, popup no longer stretches (`height: auto`).
+- **English fallback** for missing offer text in any language (`getOfferDisplayText`/`getGoalDisplayText` in `offerTranslations.js`; the admin editor stays strict).
+- **Goodpicks History:** server `lifecycle`; History rows show one badge per supported platform (`GoodpicksPlatformBadges.jsx`).
+- **Verified dry run (real in-memory Mongo), 3-step postback offer:** after step 1 and 2 `lifecycle` is `started`, after step 3 `completed` (wallet = sum of steps, History source returns it as completed). Replaying a txn, or a new txn for a finished step, answers `1` but credits nothing; an unknown `event_type` answers `0`. Note: the postback answers `1` for duplicates too, so check wallet and Postback Logs.
+
+### Tooling note
+- Repo tests use fakes (no real DB). DB-level bugs (transactions, locks) were reproduced with `mongodb-memory-server` installed in a temp folder outside the repo (`MongoMemoryReplSet`, then run the real route handler). Do not add it to the repo without asking.
+- Test totals vary by branch; re-run `npm test` (backend) and `node --test tests/*.test.js` + `npm run build` (frontend) and record exact numbers here. Last seen on `delivery-postback-clean` before the merge: backend 543 pass / 4 fail, frontend 3 known `locale-support` failures.
+
+### Harun: current conversation state
+- **Existing Fiverr order:** it is long overdue and the user asked Harun to release it. Harun says he will close it only after the whole project is finished, and fears the user may withdraw. The user's position: not leaving, no advance payment was ever requested for the new work, only the old order's release. Recommended: agree a short final acceptance checklist so "done" is defined and no new extras creep in. A German reply was drafted in chat; confirm whether it was sent.
+- **Pending request from Harun:** a step-by-step guide to create a multi-step offer and test its postback. Written (German Word file): `C:\Users\farru\Documents\TaskMint-Multi-Step-Anleitung.docx` (on the home laptop, not in the repo; if needed, ask Claude to recreate it from the admin Postback panel and `frontend/src/utils/postbackGuide.js`). Per-step example URLs in the admin show the secret as `{OFFER_SECRET}`; the full URL with the real secret comes from "Show & Copy Advertiser Postback URL". Every step needs a new `txn_id`; `event_type` = Goal Key (or the partner Event ID).
+- **New features (not started):** Cash Reward Spin, Pack Opening, Collection Album. Facts from Harun: rewards are always coins; one spin per day if the user has at least $5 qualifying earnings that day; one pack per $5 qualifying revenue (held and approved count, bonuses do not); 3 random cards per pack; 100 cards (50 Common, 30 Rare, 20 Super Rare); duplicates do not add progress; completing the album pays $250 cash once per user; rarity odds 69.16 / 29.64 / 1.20 %, meant to give an average completion near $10,000; only the probabilities need an admin page (cards and images are static); the designer provides the Rive animation, album design and 100 PNGs; Harun will show the page designs on his host. My simulation with his odds: mean about $10,000, median about $9,400, fastest 10% under about $6,200, fastest simulated user about $2,800 (a lucky user can win the $250 early).
+- **Still unanswered by Harun:** what "$5 qualifying revenue" means (user coins at 1000 coins = $1, or the advertiser payout), whether the 3 cards of a pack must differ in rarity, what happens to packs when a reward is reversed, the time zone for "one day", how the $250 is paid out, and the spin prizes and odds.
+- **Pricing:** the user's day rate is $25; estimate 13 to 19 working days; floor $625 (probabilities admin page included), target $750. Quotes discussed: $850, then $700 (spin $180 + packs/album/admin $520), then a final draft of $650. Harun says his budget is very small, rejects "reduced scope" and upfront payment, and has not named a budget. Payment only through Fiverr escrow. Do not start coding before scope and payment are agreed.
+- **Other:** Harun asked for the user's website (itskode.com; the user is in Pakistan and runs a UK-registered company, mainly for payment gateways), asked for an email identity check (the user must check their inbox and reply with their name), and suspects AI-written messages (advice: answer honestly that a translation/writing tool is used; decisions and work are the user's).
+
+### Next steps
+1. The user sends Harun the guide, the short reply about the order, and decides the final price.
+2. When Harun gives a budget and answers the questions: agree scope and payment in writing, then build the features (server-side random, idempotent, logged; pack eligibility from credited conversions only; probabilities in an admin page).
+3. Harun compares `merge-main-test` on staging with taskmint.me; fix the differences; go live only after his explicit approval.
+4. Re-run all tests and record exact totals.
 
 ## Working rules used in this project
 - Do not commit, push or deploy without being asked.
