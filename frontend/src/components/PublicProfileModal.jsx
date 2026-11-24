@@ -1225,7 +1225,7 @@ const PublicProfileModal = ({ userId, onClose }) => {
                                   height: '31px',
                                   display: 'flex',
                                   flexDirection: 'column',
-                                  alignItems: 'flex-start',
+                                  alignItems: 'flex-end',
                                   justifyContent: 'space-between',
                                   gap: '13px',
                                   boxSizing: 'border-box',
