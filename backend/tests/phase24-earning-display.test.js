@@ -488,7 +488,8 @@ test('transaction history uses resolved offer names instead of generic earning c
   const source = read('frontend/src/components/wallet/TransactionHistory.jsx');
   assert.match(source, /const isOfferReward = \['offer_reward', 'custom_offer_reward', 'direct_offer_reward'\]/);
   assert.match(source, /earningDisplay\.primary/);
-  assert.match(source, /const secondaryDescription = isOfferReward\s*\? null/);
+  assert.match(source, /getTransactionLines\(tx\)/);
+  assert.match(source, /const secondaryDescription = isOfferReward\s*\? \(offerLines\?\.secondary \|\| null\)/);
 });
 
 test('custom offer transaction carries offerTitle and uses actual hold duration', () => {
