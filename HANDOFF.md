@@ -1,6 +1,6 @@
 # TaskMint: project handoff (for a new Claude chat or a new developer)
 
-Read this first, then continue. Last updated 2026-11-25. **The newest state is in the last section: "Session of 2026-11-25".**
+Read this first, then continue. Last updated 2026-11-26. **The newest state is in the last section: "Session of 2026-11-26" (read it first; it changes how the frontend is handled).**
 
 ## Project
 - TaskMint: rewards/offerwall site. Frontend `frontend/` (React + Vite), backend `backend/` (Node/Express + MongoDB).
@@ -105,7 +105,7 @@ Rollback: `git checkout delivery-postback-clean`, reinstall, rebuild, restart th
 ### Communication rules
 - The user speaks Roman Urdu: explain to the user in Roman Urdu. Harun only reads German: anything meant for him must be written in German, copy-paste ready, short and polite. Harun is picky about unrequested design changes; always say exactly what changed.
 
-## Session of 2026-11-25 (LATEST: read this for the current state)
+## Session of 2026-11-25 (older; superseded where it conflicts with 2026-11-26 below)
 
 ### Servers and branches
 - `merge-main-test` (tip `22d2f18`) was deployed on staging on 2026-11-24 evening (`git pull --ff-only`, `npm install` in both folders, frontend build ok, `taskmint-staging-backend` and `taskmint-ssl-frontend` restarted, both online). Logs were clean: only Mongoose "`new` option deprecated" warnings and one expected 403 "Offer is not available on this device" (an offer's Platforms setting blocked that device). taskmint.me (live) is untouched.
@@ -141,6 +141,46 @@ Rollback: `git checkout delivery-postback-clean`, reinstall, rebuild, restart th
 2. When Harun gives a budget and answers the questions: agree scope and payment in writing, then build the features (server-side random, idempotent, logged; pack eligibility from credited conversions only; probabilities in an admin page).
 3. Harun compares `merge-main-test` on staging with taskmint.me; fix the differences; go live only after his explicit approval.
 4. Re-run all tests and record exact totals.
+
+## Session of 2026-11-26 (LATEST: read this first)
+
+### The rule from Harun (changes everything about the frontend)
+- taskmint.me (`origin/main`) is the client's live site and has many frontend improvements made by a separate designer/developer while we worked on postback. **Harun wants his frontend exactly as it is on main; only our backend/postback work (and the minimum frontend needed to use it) may be added.** He found, on staging, that Footer (legal links cut off in French and other languages, banner text not translated, rows not on one line), Landing hero cards (baked images instead of translated text), and other pages were the old versions. He is afraid that deploying our branch overwrites his improvements. Never do a "whole branch" overwrite; never change his design without being told.
+- Why it happened: an earlier merge of `main` was reverted (`a5b64cf`), so git thought main's newer changes were already merged. The only reliable way is a 3-way merge with the explicit old fork point `30e729c` as the base (`git merge-file base ours theirs`, all three normalised to LF).
+
+### What was done (commit `df0d169` on `merge-main-test`, pushed to origin)
+- Worked in a separate worktree `C:\Users\farru\Documents\GitHub\GPT-merge-test` (branch `merge-main-test`, same branch the staging server runs). Recreate with `git worktree add ../GPT-merge-test merge-main-test`, then link `node_modules` with `mklink /J frontend\node_modules <main folder>\frontend\node_modules` (and backend). Remove with `git worktree remove`. The folder `GPT-main` stays on `delivery-postback-clean`.
+- Classification of every `frontend/src` file that differed from main:
+  - **Taken unchanged from main (design):** `Footer.jsx`, `Landing.jsx`, `LanguageToggle.jsx`, `i18n/i18n.js`. Together with files already restored earlier, these are now **identical to main**: Footer, Landing, DailyBonus, Header, Wallet, Leaderboard, Affiliates, VipPage, Policies, LanguageToggle.
+  - **Our new files (30, not on main):** admin Direct Offers / Postback Logs / Conversions / Providers / Testing Guides pages, `GoodpicksHistoryAction`, `GoodpicksPlatformBadges`, `OfferQrSection`, `offerLifecycle`, `offerTranslations`, `earningDisplay`, `postbackGuide`, etc.
+  - **19 main files with our feature wiring (small): ** `Home` (108 changed lines), `Earn` (162), `GoodpicksModal` (532), `DirectOfferCard` (361), `OfferCards` (174, custom-offer start), `ProofUploadView` (137), `LiveEarningsBar` (67), `OfferwallModal` (85), `AdminOfferwalls` (337, conversion wording), `Profile` (54), `notificationLocalizer` (51), `TransactionHistory` (17), `App` (12, admin routes), `AdminLayout` (11, menu), `AdminGoodpicksOffers` (11, notice), `WithdrawalModal` (9), `AdminSettings` (8), `PublicProfileModal` (6), `LiveEarningsTicker` (3). In shared files main's style wins; our direct-offer / History / lifecycle code stays. Harun should get this list.
+- **Locale files:** main's files are the base; only our still-used feature keys were added (`offers.*`, `goodpicks.*`, `withdraw.giftCardHint`, `profile.*`); 7 unused keys of ours were dropped. For en/de/fr/ur main's ~40 keys that our files lacked (e.g. `nextTopEarnerTitle`, `nextTopEarnerDesc`, `changeToLightMode`) came back.
+- **`i18n.js` is main's** (fallback to English for UI keys like taskmint.me). Our `localeRegistry.js` stays but is used only by the admin offer editor (`AdminDirectOffers` imports `ENABLED_LOCALE_CODES`).
+- **Backend:** main's changes that were missing were restored: `Settings.supportEmail`, and the Es/Ru/Pt/It/Pl/Tr fields for Goodpicks offers and legal pages in `routes/admin.js` and `routes/public.js` (conflicts kept our test-helper export and the `earningTypes` import).
+- **Bugs fixed on the way:** Live Feed popup now shows only the completed step (the "Earn" heading was removed at Harun's request); a provider event id like `fight_20_battles` shows as "Fight 20 Battles" (it showed lowercase; fix is in `resolveLiveStepLabel` in `earningDisplay.js`).
+- **Tests:** backend 573 pass / 4 fail, frontend 82 pass / 4 fail, frontend build ok. The 8 failures also failed on the previous `merge-main-test`: backend "admin form explains the USD fields...", "frontend direct-offer start only opens backend returned URLs", "offerwall reward shows the provider name...", "reward calculation and wallet code are untouched..."; frontend "Add Goal render path works with English/German selected", "goal label/description state is clear per language", "registry registers every locale file...". Tests that pinned our old design (German "Schnellzugriff", Landing/Footer alts, profile `flex-end`, old goal-label chain) were updated on purpose.
+
+### Choices deliberately left as main has them (tell Harun, he decides)
+- German footer shows "Quick Links" (English term); we had made it "Schnellzugriff".
+- Landing marquee shows "Gift Card" in every language (hardcoded on main); we had localised it ("Carte Cadeau").
+- Live Feed hover pill says "Earnd" (typo, also on main).
+- Profile "Recent Activity" alignment is main's.
+- UI language fallback is main's (English fallback for missing keys); our "translation unavailable" policy now applies only to offer text via `getOfferDisplayText`.
+- Images: many old unused files remain in `frontend/public/coins` (main deleted them, we left them; harmless).
+
+### Deploy state
+- `origin/merge-main-test` = `df0d169`. Staging server ran `22d2f18` until the user deploys; check with `git log --oneline -1` there. Commands: `cd /var/www/taskmint-staging && git fetch origin && git checkout merge-main-test && git pull --ff-only origin merge-main-test`, `cd backend && npm install`, `cd ../frontend && npm install && npm run build`, `pm2 restart taskmint-staging-backend` and `pm2 restart taskmint-ssl-frontend` (never `pm2 restart all`), hard refresh. Rollback: checkout `22d2f18`.
+- `delivery-postback-clean` still has the OLD frontend (our own design). The line to deploy is `merge-main-test`. Do new frontend work on `merge-main-test` (worktree) so it keeps main's design; bring changes back to `delivery-postback-clean` only if asked. Nothing is on taskmint.me.
+
+### Harun: conversation state (as of 2026-11-26)
+- His latest messages: Landing/Footer are not the improved versions; "Earn" in the Live Feed popup must go (done); he has not looked at mobile yet; "only transfer your own work" (done as described above). Pending from us: a short German report listing the 19 main files we touched and the deliberate choices above; he must check desktop and mobile on staging, then approve.
+- Still open from before: the Fiverr order release (he closes it only when everything is finished), the multi-step test guide (German Word file `C:\Users\farru\Documents\TaskMint-Multi-Step-Anleitung.docx` on the home laptop, not in the repo), and the new features (spin / packs / album): his rules, our simulation numbers, the 6 unanswered questions, pricing talk ($25 day rate; floor $625; quotes $850 -> $700 -> $650) and "no advance payment, Fiverr escrow only" are in the 2026-11-25 section above. Do not code those before scope and payment are agreed.
+
+### Next steps
+1. User deploys `df0d169` on staging and sends Harun the German report (offer to draft it: files touched + the 5 deliberate choices).
+2. Harun checks desktop and mobile in all languages and lists remaining differences; fix them on `merge-main-test` with main's design winning.
+3. Only after his explicit approval: plan the go-live (never overwrite taskmint.me with a whole branch; merge/cherry-pick our reviewed changes onto main's code).
+4. Keep this file updated; record exact test totals after each change.
 
 ## Working rules used in this project
 - Do not commit, push or deploy without being asked.
