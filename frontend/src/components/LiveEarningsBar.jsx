@@ -208,10 +208,10 @@ const LiveEarningsBar = () => {
         task = liveDisplay.sourceLine;
         taskCategory = liveDisplay.detailLine;
         hasOfferDetails = true;
-        // Hover popup only for multi-step rewards: "Earn" + the completed step.
-        // Single-step offers already show everything in the chip.
+        // Hover popup only for multi-step rewards, and it shows only the completed
+        // step (no "Earn" heading). Single-step offers already show everything in the chip.
         hasPopup = Boolean(liveDisplay.isMultiStep && liveDisplay.stepLabel);
-        popup = hasPopup ? { title: 'Earn', subtitle: liveDisplay.stepLabel } : null;
+        popup = hasPopup ? { title: liveDisplay.stepLabel, subtitle: '' } : null;
       } else {
         const display = getEarningDisplay(tx);
         task = display.primary || tx.description || '';
@@ -644,23 +644,25 @@ const LiveEarningsBar = () => {
                   ? 'Withdrawal Completed'
                   : hoveredData.details.popupTitle}
               </span>
-              <span
-                style={{
-                  fontFamily: '"Poppins", sans-serif',
-                  fontWeight: 500,
-                  fontSize: '13px',
-                  lineHeight: '18px',
-                  letterSpacing: '0%',
-                  color: isDarkMode ? 'rgba(255, 255, 255, 0.7)' : '#000000',
-                  whiteSpace: 'normal',
-                  wordBreak: 'break-word',
-                  display: 'block',
-                }}
-              >
-                {hoveredData.details.isWithdrawal
-                  ? `Method: ${hoveredData.details.method}`
-                  : (hoveredData.details.popupSubtitle || '')}
-              </span>
+              {(hoveredData.details.isWithdrawal || hoveredData.details.popupSubtitle) && (
+                <span
+                  style={{
+                    fontFamily: '"Poppins", sans-serif',
+                    fontWeight: 500,
+                    fontSize: '13px',
+                    lineHeight: '18px',
+                    letterSpacing: '0%',
+                    color: isDarkMode ? 'rgba(255, 255, 255, 0.7)' : '#000000',
+                    whiteSpace: 'normal',
+                    wordBreak: 'break-word',
+                    display: 'block',
+                  }}
+                >
+                  {hoveredData.details.isWithdrawal
+                    ? `Method: ${hoveredData.details.method}`
+                    : hoveredData.details.popupSubtitle}
+                </span>
+              )}
             </div>
           </div>
         </div>

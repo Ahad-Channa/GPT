@@ -1158,14 +1158,13 @@ const PublicProfileModal = ({ userId, onClose }) => {
                               }}
                               className="p-3.5 px-4 flex items-center justify-between gap-4"
                             >
-                              {/* Left: Combined layout height 31px, gap 13px */}
+                              {/* Left: Combined layout */}
                               <div
                                 style={{
-                                  height: '31px',
                                   display: 'flex',
                                   flexDirection: 'column',
-                                  justifyContent: 'space-between',
-                                  gap: '13px',
+                                  justifyContent: 'center',
+                                  gap: '4px',
                                   boxSizing: 'border-box',
                                   flex: '1',
                                   minWidth: '0',
@@ -1173,7 +1172,6 @@ const PublicProfileModal = ({ userId, onClose }) => {
                               >
                                 <div
                                   style={{
-                                    height: '10px',
                                     display: 'flex',
                                     alignItems: 'center',
                                     overflow: 'visible',
@@ -1184,13 +1182,14 @@ const PublicProfileModal = ({ userId, onClose }) => {
                                       fontFamily: '"Bricolage Grotesque", sans-serif',
                                       fontWeight: 700,
                                       fontSize: '15px',
-                                      lineHeight: '1',
+                                      lineHeight: '1.25',
                                       letterSpacing: '-0.02em',
                                       color: isDarkMode ? '#FFFFFF' : '#000000',
                                       whiteSpace: 'nowrap',
                                       overflow: 'hidden',
                                       textOverflow: 'ellipsis',
                                       display: 'block',
+                                      paddingBottom: '2px',
                                     }}
                                   >
                                     {heading}
@@ -1198,7 +1197,6 @@ const PublicProfileModal = ({ userId, onClose }) => {
                                 </div>
                                 <div
                                   style={{
-                                    height: '8px',
                                     display: 'flex',
                                     alignItems: 'center',
                                     overflow: 'visible',
@@ -1209,13 +1207,14 @@ const PublicProfileModal = ({ userId, onClose }) => {
                                       fontFamily: '"Poppins", sans-serif',
                                       fontWeight: 500,
                                       fontSize: '12px',
-                                      lineHeight: '1',
+                                      lineHeight: '1.35',
                                       letterSpacing: '0%',
                                       color: isDarkMode ? 'rgba(255, 255, 255, 0.6)' : '#000000',
                                       whiteSpace: 'nowrap',
                                       overflow: 'hidden',
                                       textOverflow: 'ellipsis',
                                       display: 'block',
+                                      paddingBottom: '3px',
                                     }}
                                   >
                                     {subText}
@@ -1223,22 +1222,20 @@ const PublicProfileModal = ({ userId, onClose }) => {
                                 </div>
                               </div>
 
-                              {/* Right: Combined layout height 31px, gap 13px, anchored to right */}
+                              {/* Right: Combined layout anchored to right */}
                               <div
                                 style={{
-                                  height: '31px',
                                   display: 'flex',
                                   flexDirection: 'column',
-                                  alignItems: 'flex-end',
-                                  justifyContent: 'space-between',
-                                  gap: '13px',
+                                  alignItems: 'flex-start',
+                                  justifyContent: 'center',
+                                  gap: '4px',
                                   boxSizing: 'border-box',
                                   flexShrink: 0,
                                 }}
                               >
                                 <div
                                   style={{
-                                    height: '13px',
                                     display: 'flex',
                                     alignItems: 'center',
                                     gap: '6px',
@@ -1253,7 +1250,6 @@ const PublicProfileModal = ({ userId, onClose }) => {
                                   <div
                                     style={{
                                       width: 'auto',
-                                      height: '13px',
                                       display: 'flex',
                                       alignItems: 'center',
                                       overflow: 'visible',
@@ -1264,11 +1260,12 @@ const PublicProfileModal = ({ userId, onClose }) => {
                                         fontFamily: '"Bricolage Grotesque", sans-serif',
                                         fontWeight: 700,
                                         fontSize: '20px',
-                                        lineHeight: '1',
+                                        lineHeight: '1.2',
                                         letterSpacing: '-0.02em',
                                         color: isDarkMode ? '#E5A00D' : '#B8860B',
                                         whiteSpace: 'nowrap',
                                         display: 'block',
+                                        paddingBottom: '1px',
                                       }}
                                     >
                                       {offer.amount > 0 ? '+' : ''}{formatCoins(offer.amount)}
@@ -1278,7 +1275,6 @@ const PublicProfileModal = ({ userId, onClose }) => {
                                 <div
                                   style={{
                                     width: 'auto',
-                                    height: '8px',
                                     display: 'flex',
                                     alignItems: 'center',
                                     overflow: 'visible',
@@ -1289,11 +1285,12 @@ const PublicProfileModal = ({ userId, onClose }) => {
                                       fontFamily: '"Poppins", sans-serif',
                                       fontWeight: 400,
                                       fontSize: '12px',
-                                      lineHeight: '1',
+                                      lineHeight: '1.35',
                                       letterSpacing: '0%',
                                       color: isDarkMode ? 'rgba(255, 255, 255, 0.6)' : '#000000',
                                       whiteSpace: 'nowrap',
                                       display: 'block',
+                                      paddingBottom: '3px',
                                     }}
                                   >
                                     {formatDate(offer.createdAt, dateLocale)}

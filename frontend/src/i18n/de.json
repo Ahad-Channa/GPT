@@ -61,13 +61,24 @@
     "referralSystem": "Freunde werben",
     "referralSystemDesc": "Empfiehl Freunde und verdiene mit.",
     "liveActivity": "Live-Aktivität",
-    "liveActivityDesc": "Echtzeit-Verdienste der Plattform sehen."
+    "liveActivityDesc": "Echtzeit-Verdienste der Plattform sehen.",
+    "topEarners": "Spitzenverdiener",
+    "yourJourneyStartsHere": "Deine Reise beginnt hier."
   },
   "startEarningWith": {
     "title": "Verdiene mit",
     "subtitle": "Viele Wege, Coins zu sammeln. Wähle, was zu dir passt.",
     "subtitleMobileLine1": "Viele Wege, Coins zu sammeln.",
-    "subtitleMobileLine2": "Wähle, was zu dir passt."
+    "subtitleMobileLine2": "Wähle, was zu dir passt.",
+    "surveysTitle": "Umfragen",
+    "surveysDesc": "Teile deine Meinung zu verschiedenen Themen und erhalte sofort Belohnungen!",
+    "coffeeQuestion": "Magst du Kaffee?",
+    "appsGamesTitle": "Apps & Spiele",
+    "appsGamesDesc": "Lade Apps herunter oder spiele neue Spiele. Erreiche Meilensteine und verdiene große Belohnungen.",
+    "featuredOffersTitle": "Besondere Angebote",
+    "featuredOffersDesc": "Melden Sie sich für Dienste oder Testversionen an, um die höchsten Vergütungen zu erhalten.",
+    "highestPaying": "HÖCHSTE ZAHLUNG",
+    "instantWithdrawal": "SOFORTIGE AUSZAHLUNG"
   },
   "faqSection": {
     "title": "Häufig gestellte",
@@ -124,39 +135,20 @@
     "liveFeed": "Live-Feed"
   },
   "languageToggle": {
-    "change": "Sprache ändern",
     "en": "EN",
     "de": "DE",
     "ur": "UR",
-    "fr": "FR"
+    "fr": "FR",
+    "ru": "RU",
+    "es": "ES"
   },
   "offers": {
     "requirements": "Voraussetzungen",
     "defaultRequirement": "Erfülle die Anforderungen, um Prämien zu erhalten.",
     "defaultRequirementTask": "Aufgaben abschließen → Prämien erhalten",
     "defaultDescription": "Schließe dieses Angebot auf deinem Android-Gerät ab",
-    "translationUnavailable": "Übersetzung nicht verfügbar",
     "startOffer": "Angebot starten",
-    "startOfferAgain": "Angebot erneut starten",
     "offerExpired": "Angebot abgelaufen",
-    "goalRewardInstruction": "{{label}} → {{coins}} Coins erhalten",
-    "missingGoalLabel": "Schrittdetails nicht verfügbar",
-    "statusInProgress": "In Bearbeitung",
-    "statusPending": "Ausstehend",
-    "statusApproved": "Genehmigt ✓",
-    "statusRejected": "Abgelehnt",
-    "clickLimitReached": "Klicklimit erreicht",
-    "proofInstructions": "Nachweis-Anweisungen",
-    "proofPending": "Nachweis eingereicht – wartet auf Prüfung.",
-    "offerApproved": "Dieses Angebot wurde bereits genehmigt.",
-    "support": "Support",
-    "clickIdLabel": "Klick-ID:",
-    "actionAlreadyCredited": "Dieses Angebot wurde bereits gutgeschrieben. Der Tracking-Link wurde erneut geöffnet.",
-    "actionAlreadyCompleted": "Dieses Angebot ist bereits abgeschlossen. Es gibt nichts mehr zu verdienen.",
-    "actionClickRecorded": "Angebotsklick erfasst.",
-    "actionTabBlocked": "Der Klick wurde erfasst, aber der Ziel-Tab wurde blockiert. Erlaube Pop-ups, bevor du einen weiteren Klick startest.",
-    "actionCouldNotStart": "Dieses Angebot konnte nicht gestartet werden.",
-    "actionSignInAgain": "Melde dich erneut an, um dieses Angebot zu starten.",
     "generalRules": "Allgemeine Regeln",
     "rule1": "Nutze ein echtes Gerät. Emulatoren sind nicht gestattet.",
     "rule2": "Keine VPNs/Proxies. Dein echter Standort ist erforderlich.",
@@ -164,7 +156,21 @@
     "rule4": "Gilt teils nur für Neukunden. Bestandskunden nicht berechtigt.",
     "rule5": "Beachte die einzelnen Aufgaben und eventuelle Fristen.",
     "rule6": "Gutschrift erfolgt erst nach erfolgreicher Prüfung der Aufgabe.",
-    "scanQrCode": "QR-Code scannen, um direkt am Smartphone zu starten."
+    "scanQrCode": "QR-Code scannen, um direkt am Smartphone zu starten.",
+    "translationUnavailable": "Übersetzung nicht verfügbar",
+    "startOfferAgain": "Angebot erneut starten",
+    "goalRewardInstruction": "{{label}} → {{coins}} Coins erhalten",
+    "missingGoalLabel": "Schrittdetails nicht verfügbar",
+    "statusRejected": "Abgelehnt",
+    "clickLimitReached": "Klicklimit erreicht",
+    "proofInstructions": "Nachweis-Anweisungen",
+    "proofPending": "Nachweis eingereicht – wartet auf Prüfung.",
+    "offerApproved": "Dieses Angebot wurde bereits genehmigt.",
+    "support": "Support",
+    "actionAlreadyCompleted": "Dieses Angebot ist bereits abgeschlossen. Es gibt nichts mehr zu verdienen.",
+    "actionTabBlocked": "Der Klick wurde erfasst, aber der Ziel-Tab wurde blockiert. Erlaube Pop-ups, bevor du einen weiteren Klick startest.",
+    "actionCouldNotStart": "Dieses Angebot konnte nicht gestartet werden.",
+    "actionSignInAgain": "Melde dich erneut an, um dieses Angebot zu starten."
   },
   "goodpicks": {
     "support": "HILFE",
@@ -182,11 +188,7 @@
     "lowestReward": "Niedrigste Prämie",
     "newest": "Neueste",
     "seeDetails": "Details ansehen",
-    "completed": "Abgeschlossen",
-    "historyLoading": "Verlauf wird geladen…",
-    "historyError": "Verlauf konnte nicht geladen werden.",
     "startOffer": "Angebot starten",
-    "startOfferAgain": "Angebot erneut starten",
     "requirements": "Voraussetzungen",
     "defaultRequirement": "Erfülle alle Schritte in der App für deine Prämie.",
     "defaultDescription": "In mollis, enim eu sollicitudin sodales, libero dolor condimentum sem.",
@@ -203,7 +205,11 @@
     "tryAnotherPlatform": "Wähle eine andere Plattform oder schau bald wieder rein!",
     "supportPopupPart1": "Bei Fragen oder für Hilfe wende dich bitte an den ",
     "supportPopupHighlight": "Taskmint Live-Support",
-    "supportPopupPart2": ". Unser Support-Team hilft dir gerne bei deinen Anliegen weiter."
+    "supportPopupPart2": ". Unser Support-Team hilft dir gerne bei deinen Anliegen weiter.",
+    "completed": "Abgeschlossen",
+    "historyLoading": "Verlauf wird geladen…",
+    "historyError": "Verlauf konnte nicht geladen werden.",
+    "startOfferAgain": "Angebot erneut starten"
   },
   "affiliates": {
     "pageTitle": "Affiliate-Programm",
@@ -305,7 +311,6 @@
     "paypalDisclaimer": "***Bitte überprüfe deine PayPal-E-Mail-Adresse genau. Sobald die Auszahlung bearbeitet wurde, kann dieser Vorgang nicht rückgängig gemacht werden. Wir haften nicht für verlorene Prämien durch fehlerhafte Adressen.",
     "processingFees": "Bearbeitungsgebühr ({{percent}} %)",
     "method": "Methode",
-    "giftCardHint": "Die Gutscheinkarte wird innerhalb von 1–3 Werktagen per E-Mail gesendet.",
     "giftCard": "Gutscheinkarte",
     "destination": "Empfänger",
     "confirmDisclaimer": "Dieser Vorgang ist unwiderruflich. Dein Guthaben wird sofort abgezogen und die Anfrage von unserem Team geprüft.",
@@ -343,7 +348,12 @@
     "placingOrder": "Bestellung wird aufgegeben...",
     "shippingTimeframe": "Nach der Bestellung wird das Buch innerhalb von 3–5 Werktagen versendet.",
     "orderSubmitted": "Bestellung aufgegeben!",
-    "orderProcessing": "Unser Team wird deine Bestellung innerhalb von 1–3 Werktagen bearbeiten. Details findest du im Transaktionsverlauf."
+    "orderProcessing": "Unser Team wird deine Bestellung innerhalb von 1–3 Werktagen bearbeiten. Details findest du im Transaktionsverlauf.",
+    "bookCardSignatureLine1": "Persönliche Widmung",
+    "bookCardSignatureLine2": "möglich",
+    "bookCardShippingLine1": "Versand nur",
+    "bookCardShippingLine2": "innerhalb Deutschlands",
+    "giftCardHint": "Die Gutscheinkarte wird innerhalb von 1–3 Werktagen per E-Mail gesendet."
   },
   "leaderboard": {
     "pageTitle": "Bestenliste",
@@ -544,7 +554,6 @@
     "statusRejected": "Abgelehnt",
     "txOfferReward": "Angebotsbelohnung",
     "txCustomOffer": "Benutzerdefiniertes Angebot",
-    "txDirectOffer": "Direktes Angebot",
     "txDailyBonus": "Täglicher Bonus",
     "txPromoCode": "Gutscheincode",
     "txReferral": "Empfehlung",
@@ -558,14 +567,15 @@
     "emptyCompletedOffers": "Noch keine abgeschlossenen Angebote. Schließe ein begonnenes Angebot ab, um deine Belohnung zu erhalten!",
     "emptyHeldOffers": "Derzeit keine einbehaltenen Einnahmen.",
     "emptyTransactionHistory": "Kein Transaktionsverlauf gefunden.",
-    "emptyChargebacks": "Keine Rückbuchungen auf deinem Konto vorhanden."
+    "emptyChargebacks": "Keine Rückbuchungen auf deinem Konto vorhanden.",
+    "txDirectOffer": "Direktes Angebot"
   },
   "footer": {
     "tagline": "Aufgaben erledigen. Prämien verdienen.",
     "tagline1": "Aufgaben erledigen.",
     "tagline2": "Prämien verdienen.",
     "changeToDarkMode": "Dark Mode aktivieren",
-    "quickLinks": "Schnellzugriff",
+    "quickLinks": "Quick Links",
     "resources": "Ressourcen",
     "blog": "Blog",
     "termsOfUse": "Nutzungsbedingungen",
@@ -577,7 +587,10 @@
     "impressum": "Impressum",
     "support": "Support",
     "leaveReview": "Bewertung schreiben",
-    "copyright": "© {{year}} TaskMint"
+    "copyright": "© {{year}} TaskMint",
+    "changeToLightMode": "Light Mode aktivieren",
+    "nextTopEarnerTitle": "Wirst du der nächste Top-Verdiener?",
+    "nextTopEarnerDesc": "Aufgaben erledigen, Ränge erklimmen und Preise gewinnen."
   },
   "policies": {
     "title": "Richtlinien",
@@ -640,7 +653,13 @@
     "enterValid2FACode": "Bitte gib einen gültigen 6-stelligen Code ein.",
     "authenticatedSuccess": "Erfolgreich authentifiziert!",
     "invalid2FACode": "Ungültiger 2FA-Code.",
-    "failedToLogout": "Abmeldung fehlgeschlagen."
+    "failedToLogout": "Abmeldung fehlgeschlagen.",
+    "bannedModalTitle": "Konto gesperrt",
+    "bannedModalMultiAccount": "Dein Konto wurde wegen bestätigtem Mehrfachkonto-Missbrauch automatisch gesperrt. Mehrere Konten derselben Person sind gemäß den Nutzungsbedingungen nicht gestattet.",
+    "bannedModalGeneral": "Dein Konto wurde wegen eines Verstoßes gegen unsere Nutzungsbedingungen gesperrt.",
+    "bannedModalAppealHeading": "Glaubst du, das ist ein Fehler?",
+    "bannedModalAppeal": "Wenn du der Meinung bist, dass diese Sperre irrtümlich erfolgt ist, wende dich bitte an unser Support-Team. Unsere Administratoren werden deinen Fall prüfen und dein Konto bei Bestätigung wiederherstellen.",
+    "contactSupport": "Support kontaktieren"
   },
   "resetPassword": {
     "title": "Neues Passwort festlegen",
@@ -710,5 +729,21 @@
     "taskCustomTask": "Aufgabe: Sonderangebot",
     "taskOfferwall": "Aufgabe: Offerwall-Aufgabe",
     "taskCompletedText": "Aufgabe: Abgeschlossen"
+  },
+  "heroGraphic": {
+    "earnFromSurveys": "Geld verdienen mit Umfragen",
+    "questionNumber": "Frage 01",
+    "questionTitle": "Nutzen Sie Android?",
+    "selectOnlyOne": "WÄHLEN SIE EINE ANTWORT",
+    "optionYes": "Ja",
+    "optionNo": "Nein",
+    "btnBack": "Zurück",
+    "btnNext": "Weiter",
+    "earnByPlayingGames": "Geld verdienen durch Spiele spielen",
+    "fastPayoutsTitle": "Schnelle Auszahlungen",
+    "fastPayoutsSubtitle": "Zahlen Sie Ihre Gewinne schnell und sicher aus",
+    "joinFreeTitle": "Kostenlos beitreten und mehr verdienen",
+    "joinFreeSubtitle": "Ja, die Anmeldung ist 100% kostenlos, um mit dem Verdienen zu beginnen.",
+    "freeBadge": "GRATIS"
   }
 }

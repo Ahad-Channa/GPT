@@ -45,13 +45,13 @@ test('release registry exposes all 10 languages in dropdowns', async () => {
   assert.equal(actual.resources.en.translation.nav.home, en.nav.home);
   assert.equal(actual.resources.de.translation.nav.home, de.nav.home);
 
+  // i18n.js and LanguageToggle.jsx are the client's own (main); they list every language explicitly.
   const i18nSource = read('frontend/src/i18n/i18n.js');
-  assert.match(i18nSource, /buildLocaleRegistry/);
-  assert.match(i18nSource, /supportedLngs: supportedLanguageCodes/);
-
   const toggle = read('frontend/src/components/LanguageToggle.jsx');
-  assert.match(toggle, /supportedLanguages\.map/);
-  assert.doesNotMatch(toggle, /Object\.keys\(i18n\.options/);
+  for (const code of ALL_LOCALES) {
+    assert.match(i18nSource, new RegExp(`from './${code}\\.json'`), `i18n.js loads ${code}`);
+    assert.match(toggle, new RegExp(`code: '${code}'`), `LanguageToggle lists ${code}`);
+  }
 
   const admin = read('frontend/src/pages/admin/AdminDirectOffers.jsx');
   assert.match(admin, /supportedLocales = \(\) => supportedLanguages/);

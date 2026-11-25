@@ -86,9 +86,13 @@ const resolveLiveStepLabel = (meta = {}) => {
   const raw = clean(meta.stepLabel) || clean(meta.goalLabel);
   if (!raw || GENERIC_STEP_LABEL.test(raw)) return '';
 
+  // A raw event id ("fight_20_battles") becomes "Fight 20 Battles". This must come
+  // before formatGoalLabel, which only swaps underscores for spaces and would leave
+  // the text lowercase.
+  if (isMachineLabel(raw)) return humanizeGoalKey(raw);
+
   const formatted = formatGoalLabel({ goalKey: meta.goalKey, label: raw });
-  if (formatted && formatted !== raw) return formatted;
-  return isMachineLabel(raw) ? humanizeGoalKey(raw) : raw;
+  return formatted && formatted !== raw ? formatted : raw;
 };
 
 const resolveLiveProviderName = (meta = {}) => {

@@ -1,20 +1,17 @@
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
 import LanguageDetector from 'i18next-browser-languagedetector';
-import {
-  DEFAULT_LOCALE,
-  buildLocaleRegistry,
-  createMissingKeyHandler,
-  resolveSupportedLocale,
-} from './localeRegistry.js';
 
-// Every ./<code>.json file is an available language resource. Only locales
-// enabled in localeRegistry.js are exposed by the current release.
-const { resources, codes: supportedLanguageCodes } = buildLocaleRegistry(
-  import.meta.glob('./*.json', { eager: true })
-);
-
-export const supportedLanguages = supportedLanguageCodes;
+import en from './en.json';
+import de from './de.json';
+import fr from './fr.json';
+import es from './es.json';
+import ur from './ur.json';
+import ru from './ru.json';
+import pt from './pt.json';
+import it from './it.json';
+import pl from './pl.json';
+import tr from './tr.json';
 
 const hasFunctionalConsent = () => {
   if (typeof window === 'undefined') return false;
@@ -29,13 +26,24 @@ const hasFunctionalConsent = () => {
 };
 
 const getInitialLanguage = () => {
-  if (typeof window === 'undefined') return DEFAULT_LOCALE;
+  if (typeof window === 'undefined') return 'en';
   if (hasFunctionalConsent()) {
     const saved = localStorage.getItem('i18nextLng');
-    if (saved) return resolveSupportedLocale(saved, supportedLanguageCodes);
+    if (saved) {
+      if (saved.startsWith('ur')) return 'ur';
+      if (saved.startsWith('de')) return 'de';
+      if (saved.startsWith('fr')) return 'fr';
+      if (saved.startsWith('es')) return 'es';
+      if (saved.startsWith('ru')) return 'ru';
+      if (saved.startsWith('pt')) return 'pt';
+      if (saved.startsWith('it')) return 'it';
+      if (saved.startsWith('pl')) return 'pl';
+      if (saved.startsWith('tr')) return 'tr';
+      if (saved.startsWith('en')) return 'en';
+    }
   }
-  // Default without functional consent: the default locale
-  return DEFAULT_LOCALE;
+  // Default without functional consent: English
+  return 'en';
 };
 
 const canPersist = hasFunctionalConsent();
@@ -44,17 +52,23 @@ i18n
   .use(LanguageDetector)
   .use(initReactI18next)
   .init({
-    resources,
-    supportedLngs: supportedLanguageCodes,
-    // Deliberate missing-translation policy (details in localeRegistry.js):
-    // no silent English fallback; a missing key shows localized
-    // "translation unavailable" text instead.
-    fallbackLng: false,
+    resources: {
+      en: { translation: en },
+      de: { translation: de },
+      fr: { translation: fr },
+      es: { translation: es },
+      ur: { translation: ur },
+      ru: { translation: ru },
+      pt: { translation: pt },
+      it: { translation: it },
+      pl: { translation: pl },
+      tr: { translation: tr }
+    },
+    fallbackLng: 'en',
     lng: getInitialLanguage(),
     interpolation: {
       escapeValue: false // React already escapes
     },
-    parseMissingKeyHandler: createMissingKeyHandler(resources, () => i18n.language),
     detection: {
       order: canPersist ? ['localStorage', 'cookie', 'htmlTag'] : [],
       caches: canPersist ? ['localStorage'] : [],
@@ -65,13 +79,13 @@ i18n
 // Global listeners for consent changes
 if (typeof window !== 'undefined') {
   window.addEventListener('taskmint_reset_functional_preferences', () => {
-    i18n.changeLanguage(DEFAULT_LOCALE);
+    i18n.changeLanguage('en');
     localStorage.removeItem('i18nextLng');
     document.cookie = 'i18nextLng=; max-age=0; path=/; SameSite=Lax';
   });
 
   window.addEventListener('taskmint_functional_consent_granted', (e) => {
-    const lang = e.detail?.lang || i18n.language || DEFAULT_LOCALE;
+    const lang = e.detail?.lang || i18n.language || 'en';
     localStorage.setItem('i18nextLng', lang);
     document.cookie = `i18nextLng=${lang}; max-age=31536000; path=/; SameSite=Lax`;
   });

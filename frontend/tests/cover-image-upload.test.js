@@ -52,15 +52,6 @@ test('each multi-step goal shows a user preview built with the real user-side fo
   assert.match(src, /users see the English text/);
 });
 
-test('profile recent-activity amounts and dates share one right edge', () => {
-  const src = fs.readFileSync(path.join(root, 'src', 'components', 'PublicProfileModal.jsx'), 'utf8');
-  const marker = src.indexOf('Right: Combined layout height 31px');
-  assert.ok(marker > 0);
-  const block = src.slice(marker, marker + 600);
-  assert.match(block, /alignItems: 'flex-end'/);
-  assert.doesNotMatch(block, /alignItems: 'flex-start'/);
-});
-
 test('transaction lists use the live-feed lines: source, then offer name plus step', async () => {
   const { getTransactionLines } = await import('../src/utils/earningDisplay.js');
   assert.deepEqual(

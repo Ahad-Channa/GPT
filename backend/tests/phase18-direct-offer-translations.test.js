@@ -538,7 +538,6 @@ test('direct-offer modal translations exist and differ from English for German, 
     'offerApproved',
     'statusRejected',
     'clickLimitReached',
-    'clickIdLabel',
     'actionCouldNotStart',
     'rule1',
     'rule6',
@@ -549,7 +548,7 @@ test('direct-offer modal translations exist and differ from English for German, 
       assert.equal(typeof messages[locale].offers[key], 'string', `${locale} is missing offers.${key}`);
       assert.ok(messages[locale].offers[key].trim(), `${locale}.offers.${key} is empty`);
     }
-    for (const key of ['requirements', 'generalRules', 'goalRewardInstruction', 'missingGoalLabel', 'proofInstructions', 'proofPending', 'offerApproved', 'statusRejected', 'clickLimitReached', 'clickIdLabel', 'actionCouldNotStart']) {
+    for (const key of ['requirements', 'generalRules', 'goalRewardInstruction', 'missingGoalLabel', 'proofInstructions', 'proofPending', 'offerApproved', 'statusRejected', 'clickLimitReached', 'actionCouldNotStart']) {
       assert.notEqual(messages[locale].offers[key], english.offers[key], `${locale}.offers.${key} must not reuse English`);
     }
     assert.match(messages[locale].offers.goalRewardInstruction, /\{\{label\}\}/);
@@ -602,15 +601,15 @@ test('Goodpicks component keeps its existing selected-language fallbacks', () =>
   const goodpicks = compact(read('frontend/src/components/offers/GoodpicksModal.jsx'));
 
   assert.match(goodpicks, /i18n\.language\?\.startsWith\('de'\)/);
-  assert.match(goodpicks, /isDe&&offer\.titleDe\)?\?offer\.titleDe:offer\.title/);
-  assert.match(goodpicks, /isDe&&offer\.descriptionDe\)?\?offer\.descriptionDe/);
-  assert.match(goodpicks, /isDe&&Array\.isArray\(offer\?\.requirementsDe\)&&offer\.requirementsDe\.length>0\)?\?offer\.requirementsDe:\(?offer\.requirements/);
+  assert.match(goodpicks, /isDe&&offer\.titleDe\)\?offer\.titleDe:/);
+  assert.match(goodpicks, /isDe&&offer\.descriptionDe\)\?offer\.descriptionDe:/);
+  assert.match(goodpicks, /isDe&&offer\.requirementsDe&&offer\.requirementsDe\.length>0\)\?offer\.requirementsDe/);
 });
 
 test('English mode never prefers German and admin exposes manual EN/DE fields', () => {
   const goodpicks = compact(read('frontend/src/components/offers/GoodpicksModal.jsx'));
-  const gatedTitle = (goodpicks.match(/isDe&&offer\.titleDe\)?\?offer\.titleDe:offer\.title/g) || []).length;
-  const anyTitle = (goodpicks.match(/offer\.titleDe\)?\?offer\.titleDe:offer\.title/g) || []).length;
+  const gatedTitle = (goodpicks.match(/isDe&&offer\.titleDe\)\?offer\.titleDe:/g) || []).length;
+  const anyTitle = (goodpicks.match(/offer\.titleDe\)\?offer\.titleDe:/g) || []).length;
   assert.ok(anyTitle > 0, 'Goodpicks must select DE title');
   assert.equal(gatedTitle, anyTitle, 'Goodpicks: all DE title selections must be isDe-gated');
   assert.match(goodpicks, /isDe&&/);

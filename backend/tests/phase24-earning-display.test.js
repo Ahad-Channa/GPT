@@ -508,9 +508,10 @@ test('Live Feed renders source before detail visibly inline, not only in the hov
   assert.match(bar, /details\.hasOfferDetails/);
   assert.match(bar, /details\.sourceLine/);
   assert.match(bar, /details\.detailLine/);
-  // Hover popup: "Earn" + step for multi-step only; none for single-step offers.
+  // Hover popup: only the completed step (no "Earn" heading), multi-step only; none for single-step offers.
   assert.match(bar, /hasPopup = Boolean\(liveDisplay\.isMultiStep && liveDisplay\.stepLabel\)/);
-  assert.match(bar, /popup = hasPopup \? \{ title: 'Earn', subtitle: liveDisplay\.stepLabel \} : null/);
+  assert.match(bar, /popup = hasPopup \? \{ title: liveDisplay\.stepLabel, subtitle: '' \} : null/);
+  assert.doesNotMatch(bar, /title: 'Earn'/);
   assert.match(bar, /if \(details\.hasPopup === false\) return;/);
   assert.match(bar, /hoveredData\.details\.popupTitle/);
   assert.match(bar, /hoveredData\.details\.popupSubtitle/);

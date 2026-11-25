@@ -19,8 +19,8 @@ import {
   getEnabledPostbackGoals,
   maskPostbackSecret,
 } from '../../utils/postbackGuide.js';
-import i18n, { supportedLanguages } from '../../i18n/i18n';
-import { REQUIRED_OFFER_LOCALE, getLocaleNativeName } from '../../i18n/localeRegistry.js';
+import i18n from '../../i18n/i18n';
+import { REQUIRED_OFFER_LOCALE, getLocaleNativeName, ENABLED_LOCALE_CODES as supportedLanguages } from '../../i18n/localeRegistry.js';
 import OfferEditorErrorBoundary from '../../components/admin/OfferEditorErrorBoundary.jsx';
 import { validateOfferText, getOfferLocaleText, updateOfferLocaleField } from '../../utils/offerLocalePolicy.js';
 

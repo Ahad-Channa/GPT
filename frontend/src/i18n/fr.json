@@ -61,13 +61,24 @@
     "referralSystem": "Système de Parrainage",
     "referralSystemDesc": "Invitez vos amis et touchez une part de leurs gains.",
     "liveActivity": "Activité en Direct",
-    "liveActivityDesc": "Suivez les gains en temps réel sur la plateforme"
+    "liveActivityDesc": "Suivez les gains en temps réel sur la plateforme",
+    "topEarners": "Meilleurs gains",
+    "yourJourneyStartsHere": "Votre aventure commence ici."
   },
   "startEarningWith": {
     "title": "Commencez à Gagner Avec",
     "subtitle": "Plusieurs façons de cumuler vos pièces. Choisissez ce qui vous convient le mieux.",
     "subtitleMobileLine1": "Plusieurs façons de cumuler vos pièces. Choisissez",
-    "subtitleMobileLine2": "ce qui vous convient le mieux."
+    "subtitleMobileLine2": "ce qui vous convient le mieux.",
+    "surveysTitle": "Sondages",
+    "surveysDesc": "Partagez votre avis sur divers sujets et soyez récompensé instantanément.",
+    "coffeeQuestion": "Aimez-vous le café ?",
+    "appsGamesTitle": "Applications et Jeux",
+    "appsGamesDesc": "Téléchargez des applications ou jouez à de nouveaux jeux. Atteignez des objectifs pour gagner gros.",
+    "featuredOffersTitle": "Offres vedettes",
+    "featuredOffersDesc": "Inscrivez-vous à des services ou à des essais pour obtenir les récompenses les plus élevées.",
+    "highestPaying": "LES MIEUX PAYÉES",
+    "instantWithdrawal": "RETRAIT IMMÉDIAT"
   },
   "faqSection": {
     "title": "Questions",
@@ -94,7 +105,7 @@
   "earn": {
     "pageTitle": "Gagner des Pièces",
     "pageSubtitle": "Complétez des sondages, jouez à des jeux et découvrez les offres en vedette pour gagner.",
-    "totalUsers": "TOTAL UTILISATEURS :",
+    "totalUsers": "UTILISATEURS :",
     "totalPaid": "TOTAL PAYÉ :",
     "featuredOffers": "Offres en Vedette",
     "featuredOffersSubtitle": "Tâches directes à forte récompense.",
@@ -124,38 +135,20 @@
     "liveFeed": "Flux en direct"
   },
   "languageToggle": {
-    "change": "Changer de langue",
     "en": "EN",
     "de": "DE",
     "ur": "UR",
-    "fr": "FR"
+    "fr": "FR",
+    "ru": "RU",
+    "es": "ES"
   },
   "offers": {
     "requirements": "Conditions",
     "defaultRequirement": "Remplissez les conditions requises pour obtenir la récompense.",
     "defaultRequirementTask": "Complétez les tâches demandées → recevez vos récompenses",
     "defaultDescription": "Complétez cette offre en l'ouvrant sur votre appareil Android d'ici",
-    "translationUnavailable": "Traduction indisponible",
     "startOffer": "Commencer l'offre",
-    "startOfferAgain": "Relancer l'offre",
     "offerExpired": "Offre expirée",
-    "goalRewardInstruction": "{{label}} → recevez {{coins}} pièces",
-    "missingGoalLabel": "Détails de l'étape indisponibles",
-    "statusInProgress": "En cours",
-    "statusPending": "En attente",
-    "statusApproved": "Approuvée ✓",
-    "statusRejected": "Rejetée",
-    "clickLimitReached": "Limite de clics atteinte",
-    "proofInstructions": "Instructions de preuve",
-    "proofPending": "Preuve soumise – en attente de validation.",
-    "offerApproved": "Cette offre a déjà été approuvée.",
-    "support": "Assistance",
-    "clickIdLabel": "ID de clic :",
-    "actionAlreadyCredited": "Cette offre a déjà été créditée. Son lien de suivi a été rouvert.",
-    "actionClickRecorded": "Clic sur l'offre enregistré.",
-    "actionTabBlocked": "Le clic a été enregistré, mais l'onglet de destination a été bloqué. Autorisez les pop-ups avant de recommencer.",
-    "actionCouldNotStart": "Impossible de démarrer cette offre.",
-    "actionSignInAgain": "Reconnectez-vous pour démarrer cette offre.",
     "generalRules": "Règles Générales des Offres",
     "rule1": "Utilisez un appareil réel. Les émulateurs sont strictement interdits.",
     "rule2": "VPN et proxys interdits. Votre localisation réelle doit être utilisée.",
@@ -164,6 +157,19 @@
     "rule5": "Respectez les critères spécifiques de l'offre et les délais impartis.",
     "rule6": "Les récompenses ne sont créditées qu'après vérification réussie.",
     "scanQrCode": "Scannez le code QR pour commencer directement sur votre smartphone.",
+    "translationUnavailable": "Traduction indisponible",
+    "startOfferAgain": "Relancer l'offre",
+    "goalRewardInstruction": "{{label}} → recevez {{coins}} pièces",
+    "missingGoalLabel": "Détails de l'étape indisponibles",
+    "statusRejected": "Rejetée",
+    "clickLimitReached": "Limite de clics atteinte",
+    "proofInstructions": "Instructions de preuve",
+    "proofPending": "Preuve soumise – en attente de validation.",
+    "offerApproved": "Cette offre a déjà été approuvée.",
+    "support": "Assistance",
+    "actionTabBlocked": "Le clic a été enregistré, mais l'onglet de destination a été bloqué. Autorisez les pop-ups avant de recommencer.",
+    "actionCouldNotStart": "Impossible de démarrer cette offre.",
+    "actionSignInAgain": "Reconnectez-vous pour démarrer cette offre.",
     "actionAlreadyCompleted": "This offer is already completed. There is nothing left to earn."
   },
   "goodpicks": {
@@ -183,7 +189,6 @@
     "newest": "Plus Récentes",
     "seeDetails": "Voir Détails",
     "startOffer": "Commencer",
-    "startOfferAgain": "Relancer l'offre",
     "requirements": "Conditions",
     "defaultRequirement": "Complétez toutes les étapes dans l'application pour être récompensé.",
     "defaultDescription": "Suivez les étapes demandées pour obtenir vos pièces TaskMint.",
@@ -201,6 +206,7 @@
     "supportPopupPart1": "Pour toute question ou assistance, veuillez contacter le ",
     "supportPopupHighlight": "Support en direct Taskmint",
     "supportPopupPart2": ". Notre équipe d'assistance se fera un plaisir de vous aider.",
+    "startOfferAgain": "Relancer l'offre",
     "completed": "Completed",
     "historyLoading": "Loading history…",
     "historyError": "History could not be loaded."
@@ -305,7 +311,6 @@
     "paypalDisclaimer": "***Vérifiez attentivement votre adresse email PayPal. Une fois validé, ce retrait est irréversible. Nous déclinons toute responsabilité en cas d'adresse erronée.",
     "processingFees": "Frais de Traitement ({{percent}}%)",
     "method": "Méthode",
-    "giftCardHint": "La carte cadeau sera envoyée par e-mail sous 1 à 3 jours ouvrables.",
     "giftCard": "Carte Cadeau",
     "destination": "Destinataire",
     "confirmDisclaimer": "Cette action est irréversible. Vos pièces seront déduites immédiatement et la demande sera vérifiée par notre équipe.",
@@ -343,7 +348,12 @@
     "placingOrder": "Validation de la commande...",
     "shippingTimeframe": "Après commande, le livre sera expédié sous 3 à 5 jours ouvrés",
     "orderSubmitted": "Commande Validée !",
-    "orderProcessing": "Notre équipe traitera votre commande sous 1 à 3 jours ouvrés. Suivez les transactions pour les infos."
+    "orderProcessing": "Notre équipe traitera votre commande sous 1 à 3 jours ouvrés. Suivez les transactions pour les infos.",
+    "bookCardSignatureLine1": "Dédicace personnelle",
+    "bookCardSignatureLine2": "possible",
+    "bookCardShippingLine1": "Livraison uniquement",
+    "bookCardShippingLine2": "en Allemagne",
+    "giftCardHint": "La carte cadeau sera envoyée par e-mail sous 1 à 3 jours ouvrables."
   },
   "leaderboard": {
     "pageTitle": "Classement",
@@ -577,7 +587,10 @@
     "impressum": "Mentions Légales",
     "support": "Assistance",
     "leaveReview": "Donner un avis",
-    "copyright": "© {{year}} TaskMint"
+    "copyright": "© {{year}} TaskMint",
+    "changeToLightMode": "Activer le mode clair",
+    "nextTopEarnerTitle": "Serez-vous le prochain gagnant ?",
+    "nextTopEarnerDesc": "Effectuez des tâches, montez dans le classement et gagnez des prix."
   },
   "policies": {
     "title": "Politiques",
@@ -640,7 +653,13 @@
     "enterValid2FACode": "Veuillez entrer un code à 6 chiffres valide.",
     "authenticatedSuccess": "Authentification réussie !",
     "invalid2FACode": "Code 2FA invalide.",
-    "failedToLogout": "Échec de la déconnexion."
+    "failedToLogout": "Échec de la déconnexion.",
+    "bannedModalTitle": "Compte Suspendu",
+    "bannedModalMultiAccount": "Votre compte a été automatiquement suspendu pour violation de nos Conditions d'Utilisation en raison d'un abus confirmé de comptes multiples. La création de plusieurs comptes par un même utilisateur est interdite.",
+    "bannedModalGeneral": "Votre compte a été suspendu pour violation de nos Conditions d'Utilisation.",
+    "bannedModalAppealHeading": "Vous pensez qu'il s'agit d'une erreur ?",
+    "bannedModalAppeal": "Si vous pensez que cette suspension est une erreur, veuillez contacter notre équipe d'assistance. Nos administrateurs examineront votre dossier et rétabliront votre compte après vérification.",
+    "contactSupport": "Contacter le Support"
   },
   "resetPassword": {
     "title": "Nouveau Mot de Passe",
@@ -710,5 +729,21 @@
     "taskCustomTask": "Tâche : tâche personnalisée",
     "taskOfferwall": "Tâche : tâche mur d'offres",
     "taskCompletedText": "Tâche : complétée"
+  },
+  "heroGraphic": {
+    "earnFromSurveys": "Gagnez de l'argent avec des sondages",
+    "questionNumber": "Question 01",
+    "questionTitle": "Utilisez-vous Android ?",
+    "selectOnlyOne": "CHOISISSEZ UNE RÉPONSE",
+    "optionYes": "Oui",
+    "optionNo": "Non",
+    "btnBack": "Retour",
+    "btnNext": "Suivant",
+    "earnByPlayingGames": "Gagnez de l'argent en jouant à des jeux",
+    "fastPayoutsTitle": "Paiements rapides",
+    "fastPayoutsSubtitle": "Retirez vos gains rapidement et en toute sécurité",
+    "joinFreeTitle": "Inscrivez-vous gratuitement et gagnez plus",
+    "joinFreeSubtitle": "Oui, l'inscription est 100% gratuite pour commencer à gagner.",
+    "freeBadge": "GRATUIT"
   }
 }

@@ -256,7 +256,13 @@ export const GoodpicksDetailModal = ({ offer, onClose, token, onOfferStateChange
   const selectedLanguage = i18n.resolvedLanguage || i18n.language || 'en';
   const isDe = selectedLanguage.startsWith('de');
   const isFr = i18n.language?.startsWith('fr');
+  const isEs = i18n.language?.startsWith('es');
   const isUr = i18n.language?.startsWith('ur');
+  const isRu = i18n.language?.startsWith('ru');
+  const isPt = i18n.language?.startsWith('pt');
+  const isIt = i18n.language?.startsWith('it');
+  const isPl = i18n.language?.startsWith('pl');
+  const isTr = i18n.language?.startsWith('tr');
   // Direct offers keep their text in the generic translations map (any language, English fallback);
   // legacy Goodpicks content keeps its per-language fields below.
   const directText = offer.__direct ? getOfferDisplayText(offer, selectedLanguage) : null;
@@ -268,9 +274,8 @@ export const GoodpicksDetailModal = ({ offer, onClose, token, onOfferStateChange
       timeLimitDays: goal.timeLimitDays,
     }))
     : [];
-  const baseTitle = (isDe && offer.titleDe) ? offer.titleDe : offer.title;
-  const title = directText?.title || ((isUr && offer.titleUr) ? offer.titleUr : ((isFr && offer.titleFr) ? offer.titleFr : baseTitle));
-  const description = directText?.description || ((isUr && offer.descriptionUr) ? offer.descriptionUr : ((isDe && offer.descriptionDe) ? offer.descriptionDe : ((isFr && offer.descriptionFr) ? offer.descriptionFr : (offer.description || t('goodpicks.defaultDescription')))));
+  const title = directText?.title || ((isUr && offer.titleUr) ? offer.titleUr : ((isDe && offer.titleDe) ? offer.titleDe : ((isFr && offer.titleFr) ? offer.titleFr : ((isEs && offer.titleEs) ? offer.titleEs : ((isRu && offer.titleRu) ? offer.titleRu : ((isPt && offer.titlePt) ? offer.titlePt : ((isIt && offer.titleIt) ? offer.titleIt : ((isPl && offer.titlePl) ? offer.titlePl : ((isTr && offer.titleTr) ? offer.titleTr : offer.title)))))))));
+  const description = directText?.description || ((isUr && offer.descriptionUr) ? offer.descriptionUr : ((isDe && offer.descriptionDe) ? offer.descriptionDe : ((isFr && offer.descriptionFr) ? offer.descriptionFr : ((isEs && offer.descriptionEs) ? offer.descriptionEs : ((isRu && offer.descriptionRu) ? offer.descriptionRu : ((isPt && offer.descriptionPt) ? offer.descriptionPt : ((isIt && offer.descriptionIt) ? offer.descriptionIt : ((isPl && offer.descriptionPl) ? offer.descriptionPl : ((isTr && offer.descriptionTr) ? offer.descriptionTr : (offer.description || t('goodpicks.defaultDescription')))))))))));
   const requirementsList = directGoalRows.length > 0
     ? directGoalRows
     : (directText?.requirements && directText.requirements.length > 0)
@@ -281,7 +286,19 @@ export const GoodpicksDetailModal = ({ offer, onClose, token, onOfferStateChange
       ? offer.requirementsDe
       : ((isFr && offer.requirementsFr && offer.requirementsFr.length > 0)
         ? offer.requirementsFr
-        : offer.requirements));
+        : ((isEs && offer.requirementsEs && offer.requirementsEs.length > 0)
+          ? offer.requirementsEs
+          : ((isRu && offer.requirementsRu && offer.requirementsRu.length > 0)
+            ? offer.requirementsRu
+            : ((isPt && offer.requirementsPt && offer.requirementsPt.length > 0)
+              ? offer.requirementsPt
+              : ((isIt && offer.requirementsIt && offer.requirementsIt.length > 0)
+                ? offer.requirementsIt
+                : ((isPl && offer.requirementsPl && offer.requirementsPl.length > 0)
+                  ? offer.requirementsPl
+                  : ((isTr && offer.requirementsTr && offer.requirementsTr.length > 0)
+                    ? offer.requirementsTr
+                    : offer.requirements))))))));
 
   const [loading, setLoading] = useState(false);
   const [showSupportModal, setShowSupportModal] = useState(false);
@@ -1039,7 +1056,13 @@ export const GoodpicksOfferwallModal = ({ onClose, token }) => {
   const listLanguage = i18n.resolvedLanguage || i18n.language || 'en';
   const isDe = i18n.language?.startsWith('de');
   const isFr = i18n.language?.startsWith('fr');
+  const isEs = i18n.language?.startsWith('es');
   const isUr = i18n.language?.startsWith('ur');
+  const isRu = i18n.language?.startsWith('ru');
+  const isPt = i18n.language?.startsWith('pt');
+  const isIt = i18n.language?.startsWith('it');
+  const isPl = i18n.language?.startsWith('pl');
+  const isTr = i18n.language?.startsWith('tr');
   const [offers, setOffers] = useState([]);
   const [historyOffers, setHistoryOffers] = useState([]);
   const [historyLoading, setHistoryLoading] = useState(false);
@@ -1314,9 +1337,8 @@ export const GoodpicksOfferwallModal = ({ onClose, token }) => {
                 {historyOffers && historyOffers.length > 0 ? (
                   historyOffers.map((item) => {
                     const itemText = item.__direct ? getOfferDisplayText(item, listLanguage) : null;
-                    const baseItemTitle = (isDe && item.titleDe) ? item.titleDe : item.title;
-                    const itemTitle = itemText?.title || ((isUr && item.titleUr) ? item.titleUr : ((isFr && item.titleFr) ? item.titleFr : baseItemTitle));
-                    const itemDesc = itemText?.description || ((isUr && item.descriptionUr) ? item.descriptionUr : ((isDe && item.descriptionDe) ? item.descriptionDe : ((isFr && item.descriptionFr) ? item.descriptionFr : (item.description || t('goodpicks.defaultDescription')))));
+                    const itemTitle = itemText?.title || ((isUr && item.titleUr) ? item.titleUr : ((isDe && item.titleDe) ? item.titleDe : ((isFr && item.titleFr) ? item.titleFr : ((isEs && item.titleEs) ? item.titleEs : ((isRu && item.titleRu) ? item.titleRu : ((isPt && item.titlePt) ? item.titlePt : ((isIt && item.titleIt) ? item.titleIt : ((isPl && item.titlePl) ? item.titlePl : ((isTr && item.titleTr) ? item.titleTr : item.title)))))))));
+                    const itemDesc = itemText?.description || ((isUr && item.descriptionUr) ? item.descriptionUr : ((isDe && item.descriptionDe) ? item.descriptionDe : ((isFr && item.descriptionFr) ? item.descriptionFr : ((isEs && item.descriptionEs) ? item.descriptionEs : ((isRu && item.descriptionRu) ? item.descriptionRu : ((isPt && item.descriptionPt) ? item.descriptionPt : ((isIt && item.descriptionIt) ? item.descriptionIt : ((isPl && item.descriptionPl) ? item.descriptionPl : ((isTr && item.descriptionTr) ? item.descriptionTr : (item.description || t('goodpicks.defaultDescription')))))))))));
                     const rewardStr = (item.rewardAmount || 0).toLocaleString('de-DE');
 
                     return (
@@ -1517,9 +1539,8 @@ export const GoodpicksOfferwallModal = ({ onClose, token }) => {
                     {sortedOffers.map((offer) => {
                       const rewardStr = (offer.rewardAmount || 0).toLocaleString('de-DE');
                       const cardText = offer.__direct ? getOfferDisplayText(offer, listLanguage) : null;
-                      const baseCardTitle = (isDe && offer.titleDe) ? offer.titleDe : offer.title;
-                      const cardTitle = cardText?.title || ((isUr && offer.titleUr) ? offer.titleUr : ((isFr && offer.titleFr) ? offer.titleFr : baseCardTitle));
-                      const cardDesc = cardText?.description || ((isUr && offer.descriptionUr) ? offer.descriptionUr : ((isDe && offer.descriptionDe) ? offer.descriptionDe : ((isFr && offer.descriptionFr) ? offer.descriptionFr : (offer.description || t('goodpicks.defaultDescription')))));
+                      const cardTitle = cardText?.title || ((isUr && offer.titleUr) ? offer.titleUr : ((isDe && offer.titleDe) ? offer.titleDe : ((isFr && offer.titleFr) ? offer.titleFr : ((isEs && offer.titleEs) ? offer.titleEs : ((isRu && offer.titleRu) ? offer.titleRu : ((isPt && offer.titlePt) ? offer.titlePt : ((isIt && offer.titleIt) ? offer.titleIt : ((isPl && offer.titlePl) ? offer.titlePl : ((isTr && offer.titleTr) ? offer.titleTr : offer.title)))))))));
+                      const cardDesc = cardText?.description || ((isUr && offer.descriptionUr) ? offer.descriptionUr : ((isDe && offer.descriptionDe) ? offer.descriptionDe : ((isFr && offer.descriptionFr) ? offer.descriptionFr : ((isEs && offer.descriptionEs) ? offer.descriptionEs : ((isRu && offer.descriptionRu) ? offer.descriptionRu : ((isPt && offer.descriptionPt) ? offer.descriptionPt : ((isIt && offer.descriptionIt) ? offer.descriptionIt : ((isPl && offer.descriptionPl) ? offer.descriptionPl : ((isTr && offer.descriptionTr) ? offer.descriptionTr : (offer.description || t('goodpicks.defaultDescription')))))))))));
 
                       return (
                         <div

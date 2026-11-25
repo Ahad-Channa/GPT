@@ -61,13 +61,24 @@
     "referralSystem": "ریفرل سسٹم",
     "referralSystemDesc": "دوستوں کو مدعو کریں اور ان کی کمائی میں سے حصہ پائیں۔",
     "liveActivity": "لائیو سرگرمیاں",
-    "liveActivityDesc": "پلیٹ فارم پر جاری لائیو کمائی کی سرگرمیاں دیکھیں۔"
+    "liveActivityDesc": "پلیٹ فارم پر جاری لائیو کمائی کی سرگرمیاں دیکھیں۔",
+    "topEarners": "بہترین کمائی کرنے والے",
+    "yourJourneyStartsHere": "آپ کا سفر یہاں سے شروع ہوتا ہے۔"
   },
   "startEarningWith": {
     "title": "ان کے ذریعے کمانا شروع کریں",
     "subtitle": "کوائنز جمع کرنے کے متعدد آسان طریقے۔ جو آپ کے لیے بہترین ہو وہ منتخب کریں۔",
     "subtitleMobileLine1": "کوائنز جمع کرنے کے متعدد طریقے۔",
-    "subtitleMobileLine2": "جو آپ کے لیے موزوں ہو اسے منتخب کریں۔"
+    "subtitleMobileLine2": "جو آپ کے لیے موزوں ہو اسے منتخب کریں۔",
+    "surveysTitle": "سروے",
+    "surveysDesc": "مختلف موضوعات پر اپنی رائے دیں اور فوری انعامات پائیں۔",
+    "coffeeQuestion": "کیا آپ کو کافی پسند ہے؟",
+    "appsGamesTitle": "ایپس اور گیمز",
+    "appsGamesDesc": "ایپس ڈاؤن لوڈ کریں یا نئی گیمز کھیلیں۔ بڑی کمائی کے لیے سنگ میل عبور کریں۔",
+    "featuredOffersTitle": "نمایاں آفرز",
+    "featuredOffersDesc": "سب سے زیادہ ادائیگی والے انعامات حاصل کرنے کے لیے سروسز یا ٹرائلز جوائن کریں۔",
+    "highestPaying": "سب سے زیادہ ادائیگی",
+    "instantWithdrawal": "فوری کیش آؤٹ"
   },
   "faqSection": {
     "title": "اکثر پوچھے جانے والے",
@@ -124,38 +135,20 @@
     "liveFeed": "لائیو فیڈ"
   },
   "languageToggle": {
-    "change": "زبان تبدیل کریں",
     "en": "EN",
     "de": "DE",
     "ur": "UR",
-    "fr": "FR"
+    "fr": "FR",
+    "ru": "RU",
+    "es": "ES"
   },
   "offers": {
     "requirements": "شرائط و ضوابط",
     "defaultRequirement": "انعام حاصل کرنے کے لیے شرائط مکمل کریں۔",
     "defaultRequirementTask": "مطلوبہ ٹاسک مکمل کریں ← انعامات حاصل کریں",
     "defaultDescription": "یہ آفر یہاں سے اپنے اینڈرائیڈ ڈیوائس پر بھیج کر مکمل کریں",
-    "translationUnavailable": "ترجمہ دستیاب نہیں ہے",
     "startOffer": "آفر شروع کریں",
-    "startOfferAgain": "آفر دوبارہ شروع کریں",
     "offerExpired": "آفر کی مدت ختم ہو چکی ہے",
-    "goalRewardInstruction": "{{label}} → {{coins}} کوائنز حاصل کریں",
-    "missingGoalLabel": "مرحلے کی تفصیلات دستیاب نہیں ہیں",
-    "statusInProgress": "جاری ہے",
-    "statusPending": "زیر التوا",
-    "statusApproved": "منظور شدہ ✓",
-    "statusRejected": "مسترد",
-    "clickLimitReached": "کلک کی حد پوری ہو گئی ہے",
-    "proofInstructions": "ثبوت کی ہدایات",
-    "proofPending": "ثبوت جمع ہو گیا – ایڈمن کے جائزے کا انتظار ہے۔",
-    "offerApproved": "یہ آفر پہلے ہی منظور ہو چکی ہے۔",
-    "support": "سپورٹ",
-    "clickIdLabel": "کلک آئی ڈی:",
-    "actionAlreadyCredited": "یہ آفر پہلے ہی کریڈٹ ہو چکی ہے۔ اس کا ٹریکنگ لنک دوبارہ کھول دیا گیا ہے۔",
-    "actionClickRecorded": "آفر کا کلک ریکارڈ ہو گیا۔",
-    "actionTabBlocked": "کلک ریکارڈ ہو گیا، لیکن منزل کا ٹیب بلاک ہو گیا۔ دوبارہ کوشش کرنے سے پہلے پاپ اپ کی اجازت دیں۔",
-    "actionCouldNotStart": "یہ آفر شروع نہیں ہو سکی۔",
-    "actionSignInAgain": "یہ آفر شروع کرنے کے لیے دوبارہ سائن ان کریں۔",
     "generalRules": "عام آفر قوانین",
     "rule1": "اصلی ڈیوائس استعمال کریں۔ ایمولیٹرز کی قطعی اجازت نہیں ہے۔",
     "rule2": "VPN اور پراکسی ممنوع ہیں۔ آپ کا اصل مقام استعمال ہونا چاہیے۔",
@@ -164,6 +157,19 @@
     "rule5": "ہر آفر کی الگ شرائط اور مکمل کرنے کی آخری تاریخ کی پابندی کریں۔",
     "rule6": "انعامات صرف تب ملتے ہیں جب آفر کے تمام مراحل کی کامیابی سے تصدیق ہو جائے۔",
     "scanQrCode": "اپنے اسمارٹ فون پر براہ راست شروع کرنے کے لیے QR کوڈ اسکین کریں۔",
+    "translationUnavailable": "ترجمہ دستیاب نہیں ہے",
+    "startOfferAgain": "آفر دوبارہ شروع کریں",
+    "goalRewardInstruction": "{{label}} → {{coins}} کوائنز حاصل کریں",
+    "missingGoalLabel": "مرحلے کی تفصیلات دستیاب نہیں ہیں",
+    "statusRejected": "مسترد",
+    "clickLimitReached": "کلک کی حد پوری ہو گئی ہے",
+    "proofInstructions": "ثبوت کی ہدایات",
+    "proofPending": "ثبوت جمع ہو گیا – ایڈمن کے جائزے کا انتظار ہے۔",
+    "offerApproved": "یہ آفر پہلے ہی منظور ہو چکی ہے۔",
+    "support": "سپورٹ",
+    "actionTabBlocked": "کلک ریکارڈ ہو گیا، لیکن منزل کا ٹیب بلاک ہو گیا۔ دوبارہ کوشش کرنے سے پہلے پاپ اپ کی اجازت دیں۔",
+    "actionCouldNotStart": "یہ آفر شروع نہیں ہو سکی۔",
+    "actionSignInAgain": "یہ آفر شروع کرنے کے لیے دوبارہ سائن ان کریں۔",
     "actionAlreadyCompleted": "This offer is already completed. There is nothing left to earn."
   },
   "goodpicks": {
@@ -183,7 +189,6 @@
     "newest": "تازہ ترین",
     "seeDetails": "تفصیلات دیکھیں",
     "startOffer": "آفر شروع کریں",
-    "startOfferAgain": "آفر دوبارہ شروع کریں",
     "requirements": "شرائط و ضوابط",
     "defaultRequirement": "انعامات حاصل کرنے کے لیے ایپ کے اندر تمام مراحل مکمل کریں۔",
     "defaultDescription": "آفر مکمل کریں اور فوری کوائنز حاصل کریں۔",
@@ -201,6 +206,7 @@
     "supportPopupPart1": "کسی بھی سوال یا رہنمائی کے لیے برائے مہربانی ",
     "supportPopupHighlight": "Taskmint لائیو سپورٹ",
     "supportPopupPart2": " سے رابطہ کریں۔ ہماری سپورٹ ٹیم آپ کی مدد کرنے میں خوشی محسوس کرے گی۔",
+    "startOfferAgain": "آفر دوبارہ شروع کریں",
     "completed": "Completed",
     "historyLoading": "Loading history…",
     "historyError": "History could not be loaded."
@@ -305,7 +311,6 @@
     "paypalDisclaimer": "***براہ کرم اپنے پے پال ای میل ایڈریس کی دوبارہ جانچ کریں۔ ادائیگی پروسیس ہونے کے بعد، یہ عمل واپس نہیں کیا جا سکتا۔ غلط ایڈریس کی وجہ سے ضائع ہونے والے فنڈز کے ہم ذمہ دار نہیں ہیں۔",
     "processingFees": "پروسیسنگ فیس ({{percent}}%)",
     "method": "طریقہ کار",
-    "giftCardHint": "گفٹ کارڈ 1 سے 3 کاروباری دنوں میں ای میل کیا جائے گا۔",
     "giftCard": "گفٹ کارڈ",
     "destination": "منزل / ایڈریس",
     "confirmDisclaimer": "یہ عمل ناقابل واپسی ہے۔ آپ کے بیلنس سے کوائنز فوری طور پر کاٹ لیے جائیں گے اور ہماری ٹیم اس درخواست کا جائزہ لے گی۔",
@@ -343,7 +348,12 @@
     "placingOrder": "آرڈر بک ہو رہا ہے...",
     "shippingTimeframe": "آرڈر کے بعد کتاب 3 سے 5 کاروباری دنوں کے اندر روانہ کر دی جائے گی",
     "orderSubmitted": "آرڈر موصول ہو گیا!",
-    "orderProcessing": "ہماری ٹیم 1 سے 3 کاروباری دنوں میں آپ کے آرڈر پر کارروائی کرے گی۔ تفصیلات کے لیے ٹرانزیکشن ہسٹری چیک کریں"
+    "orderProcessing": "ہماری ٹیم 1 سے 3 کاروباری دنوں میں آپ کے آرڈر پر کارروائی کرے گی۔ تفصیلات کے لیے ٹرانزیکشن ہسٹری چیک کریں",
+    "bookCardSignatureLine1": "ذاتی دستخط",
+    "bookCardSignatureLine2": "ممکن ہیں",
+    "bookCardShippingLine1": "ترسیل صرف",
+    "bookCardShippingLine2": "جرمنی کے اندر",
+    "giftCardHint": "گفٹ کارڈ 1 سے 3 کاروباری دنوں میں ای میل کیا جائے گا۔"
   },
   "leaderboard": {
     "pageTitle": "لیڈر بورڈ",
@@ -577,7 +587,10 @@
     "impressum": "قانونی معلومات",
     "support": "سپورٹ و رہنمائی",
     "leaveReview": "رائے دیں",
-    "copyright": "© {{year}} TaskMint"
+    "copyright": "© {{year}} TaskMint",
+    "changeToLightMode": "لائٹ موڈ آن کریں",
+    "nextTopEarnerTitle": "کیا آپ اگلے ٹاپ ارنر بنیں گے؟",
+    "nextTopEarnerDesc": "ٹاسک مکمل کریں، رینک میں آگے بڑھیں اور انعامات جیتیں۔"
   },
   "policies": {
     "title": "پالیسیاں",
@@ -640,7 +653,13 @@
     "enterValid2FACode": "براہ کرم ایک درست 6 ہندسوں کا کوڈ درج کریں۔",
     "authenticatedSuccess": "کامیابی سے تصدیق ہو گئی!",
     "invalid2FACode": "غلط 2FA کوڈ۔",
-    "failedToLogout": "لاگ آؤٹ کرنے میں ناکامی۔"
+    "failedToLogout": "لاگ آؤٹ کرنے میں ناکامی۔",
+    "bannedModalTitle": "اکاؤنٹ معطل کر دیا گیا ہے",
+    "bannedModalMultiAccount": "آپ کا اکاؤنٹ سروس کی شرائط کی خلاف ورزی اور متعدد اکاؤنٹس کے استعمال کی تصدیق پر خودکار طور پر معطل کر دیا گیا ہے۔ ایک ہی صارف کے ایک سے زائد اکاؤنٹس کی اجازت نہیں ہے۔",
+    "bannedModalGeneral": "آپ کا اکاؤنٹ سروس کی شرائط کی خلاف ورزی پر معطل کر دیا گیا ہے۔",
+    "bannedModalAppealHeading": "کیا آپ کو لگتا ہے کہ یہ غلطی سے ہوا ہے؟",
+    "bannedModalAppeal": "اگر آپ کو لگتا ہے کہ یہ معطلی غلطی سے ہوئی ہے تو براہ کرم ہماری سپورٹ ٹیم سے رابطہ کریں۔ ہمارے ایڈمنز آپ کے کیس کا جائزہ لیں گے اور تصدیق کے بعد اکاؤنٹ بحال کر دیں گے۔",
+    "contactSupport": "سپورٹ سے رابطہ کریں"
   },
   "resetPassword": {
     "title": "نیا پاس ورڈ سیٹ کریں",
@@ -710,5 +729,21 @@
     "taskCustomTask": "ٹاسک: کسٹم ٹاسک",
     "taskOfferwall": "ٹاسک: آفر وال ٹاسک",
     "taskCompletedText": "ٹاسک: مکمل شدہ"
+  },
+  "heroGraphic": {
+    "earnFromSurveys": "سروے سے پیسے کمائیں",
+    "questionNumber": "سوال 01",
+    "questionTitle": "کیا آپ اینڈرائیڈ استعمال کرتے ہیں؟",
+    "selectOnlyOne": "صرف ایک منتخب کریں",
+    "optionYes": "ہاں",
+    "optionNo": "نہیں",
+    "btnBack": "پیچھے",
+    "btnNext": "آگے",
+    "earnByPlayingGames": "گیمز کھیل کر پیسے کمائیں",
+    "fastPayoutsTitle": "تیز ترین ادائیگی",
+    "fastPayoutsSubtitle": "اپنی کمائی جلدی اور محفوظ طریقے سے نکالیں",
+    "joinFreeTitle": "مفت شامل ہوں اور زیادہ کمائیں",
+    "joinFreeSubtitle": "جی ہاں، کمانا شروع کرنے کے لیے رجسٹریشن 100% مفت ہے۔",
+    "freeBadge": "مفت"
   }
 }

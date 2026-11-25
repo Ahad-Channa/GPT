@@ -48,6 +48,12 @@ const settingsSchema = new mongoose.Schema(
       default: 'support@taskmint.me',
       trim: true,
     },
+    // Platform support email (shown in banned modal, etc.)
+    supportEmail: {
+      type: String,
+      default: 'support@taskmint.me',
+      trim: true,
+    },
     // Block A — Reward Engine (Daily Bonus config)
     rewardEngine: {
       dailyBonusEarnGate: {
