@@ -1,4 +1,3 @@
-const compactKey = (value) => String(value || '').toLowerCase().replace(/[\s_-]+/g, '');
 import { getGoalDisplayText } from './offerTranslations.js';
 import { formatOfferAmount } from './offerNumberFormat.js';
 
@@ -31,9 +30,14 @@ export const formatGoalLabel = (goal, language = 'en', fallbackLabel = '') => {
   const localizedLabel = String(getGoalDisplayText(goal, language).label || '').trim();
   const label = localizedLabel || String(goal?.label || '').trim();
 
-  if (label && (!key || compactKey(label) !== compactKey(key))) return cleanGoalLabelText(label);
-  if (isEnglish) return humanizeGoalKey(key || label) || fallbackLabel || 'Complete step';
-  // Non-English callers pass the localized missing-label text from i18n.
+  if (label) {
+    // A label that is literally the machine key ("fight_20_battles") is made readable.
+    // Any other admin-typed label is shown in every language, even when the Goal Key
+    // was generated from it ("Register" -> register).
+    return label === key && /[_-]/.test(label) ? humanizeGoalKey(label) : cleanGoalLabelText(label);
+  }
+  if (isEnglish) return humanizeGoalKey(key) || fallbackLabel || 'Complete step';
+  // No label in any language: non-English callers pass the localized missing-label text.
   return fallbackLabel || '';
 };
 

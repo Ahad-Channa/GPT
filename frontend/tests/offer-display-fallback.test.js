@@ -55,3 +55,14 @@ test('user-facing screens use the fallback resolver; only the admin editor stays
   assert.match(read('src/utils/manualOfferState.js'), /getOfferDisplayText\(offer, language\)\.proofInstructions/);
   assert.doesNotMatch(read('src/pages/admin/AdminDirectOffers.jsx'), /getOfferDisplayText|getGoalDisplayText/);
 });
+
+test('English step label is shown in every language even when the Goal Key was generated from it', () => {
+  for (const [goalKey, label] of [['register', 'Register'], ['fight_10_battles', 'Fight 10 Battles'], ['reach_level_10', 'Reach Level 10']]) {
+    const goal = { goalKey, translations: { en: { label } } };
+    for (const language of ['en', 'de', 'fr', 'es', 'it', 'pl', 'pt', 'ru', 'tr', 'ur']) {
+      assert.equal(formatGoalLabel(goal, language, 'Label fehlt'), label, `${language} ${goalKey}`);
+    }
+    assert.equal(formatGoalLabel({ goalKey, label }, 'de', 'Label fehlt'), label);
+  }
+  assert.equal(formatGoalLabel({ goalKey: 'fight_20_battles', label: 'fight_20_battles' }, 'de', 'Label fehlt'), 'Fight 20 Battles');
+});
