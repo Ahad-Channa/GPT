@@ -16,6 +16,7 @@ const {
   REAL_OFFER_EARNING_TYPES,
   getActiveRealOfferEarningMatch,
   getCompletedRealOfferEarningMatch,
+  getEarningHoldDecision,
 } = require('../utils/earningTypes');
 const { sortOfferwallProviders } = require('../utils/offerwallOrder');
 
@@ -691,6 +692,7 @@ router.post('/daily-bonus', verifyToken, async (req, res) => {
 
     const rewardAmount = getRewardForDay(streak);
     const newLongestStreak = Math.max(user.dailyBonusLongestStreak || 0, streak);
+    const holdDecision = getEarningHoldDecision(settings, rewardAmount, now);
 
     // 4. ATOMIC update — optimistic lock on lastDailyBonusClaim prevents double-claims
     const updatedUser = await User.findOneAndUpdate(
@@ -698,7 +700,7 @@ router.post('/daily-bonus', verifyToken, async (req, res) => {
       {
         // NOTE: totalEarned is intentionally NOT incremented here.
         // Daily bonuses are not real earnings and must not count toward VIP progress.
-        $inc: { walletBalance: rewardAmount },
+        $inc: { walletBalance: holdDecision.walletCredit },
         $set: {
           lastDailyBonusClaim: now,
           dailyBonusStreak: streak,
@@ -713,7 +715,9 @@ router.post('/daily-bonus', verifyToken, async (req, res) => {
       return res.status(409).json({ success: false, error: 'Claim concurrent conflict. Try again.' });
     }
 
-    emitWalletUpdate(updatedUser.firebaseUid, updatedUser.walletBalance);
+    if (holdDecision.walletCredit > 0) {
+      emitWalletUpdate(updatedUser.firebaseUid, updatedUser.walletBalance);
+    }
 
     // 5. Archive Transaction
     await Transaction.create({
@@ -722,17 +726,23 @@ router.post('/daily-bonus', verifyToken, async (req, res) => {
       amount: rewardAmount,
       balanceAfter: updatedUser.walletBalance,
       description: `Daily Bonus Claim (Streak: ${streak} Days)`,
-      status: 'completed',
+      status: holdDecision.status,
+      holdUntil: holdDecision.holdUntil,
+      ...(holdDecision.status === 'hold' && { metadata: { walletApplied: false } }),
     });
 
     const nextClaimAt = nextUtcMidnight(now).toISOString();
 
     res.status(200).json({
       success: true,
-      message: `Claimed +${rewardAmount} Coins!`,
+      message: holdDecision.status === 'hold'
+        ? `Claimed +${rewardAmount} Coins (on hold for ${holdDecision.holdDays} day(s))!`
+        : `Claimed +${rewardAmount} Coins!`,
       rewardAmount,
       streak,
       balance: updatedUser.walletBalance,
+      status: holdDecision.status,
+      holdUntil: holdDecision.holdUntil,
       nextClaimAt
     });
   } catch (error) {

@@ -3,9 +3,11 @@ const router  = express.Router();
 const admin   = require('../config/firebase');
 const User    = require('../models/User');
 const Transaction = require('../models/Transaction');
+const Settings    = require('../models/Settings');
 const VipConfig   = require('../models/VipConfig');
 const VipClaim    = require('../models/VipClaim');
 const { VIP_LEVELS, getLevelFromEarned, getNextLevel, getLevelLabel, getDynamicVipLevels } = require('../utils/vipUtils');
+const { getEarningHoldDecision } = require('../utils/earningTypes');
 const { emitWalletUpdate } = require('../utils/walletEvents');
 const notify = require('../utils/notify');
 
@@ -171,12 +173,19 @@ router.post('/claim/:levelKey', requireAuth, async (req, res) => {
     const reward = config?.rewardAmount || 0;
     if (reward <= 0) return res.status(400).json({ success: false, error: 'No reward configured for this level' });
 
-    // Credit wallet
-    const updated = await User.findByIdAndUpdate(
-      user._id,
-      { $inc: { walletBalance: reward } },
-      { new: true }
-    );
+    const settings = await Settings.getSingleton();
+    const holdDecision = getEarningHoldDecision(settings, reward, new Date());
+
+    // Credit wallet only when not held
+    let newBalance = user.walletBalance || 0;
+    if (holdDecision.walletCredit > 0) {
+      const updated = await User.findByIdAndUpdate(
+        user._id,
+        { $inc: { walletBalance: holdDecision.walletCredit } },
+        { new: true }
+      );
+      if (updated) newBalance = updated.walletBalance;
+    }
 
     // Record claim
     await VipClaim.create({ userId: user._id, levelKey, amount: reward });
@@ -187,10 +196,16 @@ router.post('/claim/:levelKey', requireAuth, async (req, res) => {
       transactionType: 'vip_reward',
       sourceType: 'system',
       amount: reward,
-      balanceAfter: updated.walletBalance,
+      balanceAfter: newBalance,
       description: `VIP Bonus — ${getLevelLabel(lvl)}`,
-      status: 'completed',
-      metadata: { levelKey, tier: lvl.tier, rank: lvl.rank },
+      status: holdDecision.status,
+      holdUntil: holdDecision.holdUntil,
+      metadata: {
+        levelKey,
+        tier: lvl.tier,
+        rank: lvl.rank,
+        ...(holdDecision.status === 'hold' && { walletApplied: false }),
+      },
     });
 
     // Notify user
@@ -201,9 +216,17 @@ router.post('/claim/:levelKey', requireAuth, async (req, res) => {
     );
 
     // Push updated wallet balance
-    emitWalletUpdate(user.firebaseUid, updated.walletBalance);
+    if (holdDecision.walletCredit > 0) {
+      emitWalletUpdate(user.firebaseUid, newBalance);
+    }
 
-    res.json({ success: true, rewardAmount: reward, newBalance: updated.walletBalance });
+    res.json({
+      success: true,
+      rewardAmount: reward,
+      newBalance,
+      status: holdDecision.status,
+      holdUntil: holdDecision.holdUntil,
+    });
   } catch (err) {
     console.error('[VIP] claim error:', err);
     res.status(500).json({ success: false, error: 'Server error' });

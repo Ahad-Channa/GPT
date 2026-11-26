@@ -7,7 +7,7 @@ const Settings = require('../models/Settings');
 const LeaderboardCycle = require('../models/Leaderboard');
 const notify = require('../utils/notify');
 const { emitWalletUpdate, emitToUser } = require('../utils/walletEvents');
-const { REAL_OFFER_EARNING_TYPES } = require('../utils/earningTypes');
+const { REAL_OFFER_EARNING_TYPES, getEarningHoldDecision } = require('../utils/earningTypes');
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -229,13 +229,16 @@ async function resetLeaderboard(period) {
     if (reward > 0) {
       const user = await User.findById(entry.userId);
       if (user) {
-        user.walletBalance += reward;
-        // NOTE: totalEarned is intentionally NOT incremented here.
-        // Leaderboard prizes are bonuses and must not count toward VIP progress.
-        await user.save();
+        const holdDecision = getEarningHoldDecision(settings, reward, cycleEnd);
+        if (holdDecision.walletCredit > 0) {
+          user.walletBalance += holdDecision.walletCredit;
+          // NOTE: totalEarned is intentionally NOT incremented here.
+          // Leaderboard prizes are bonuses and must not count toward VIP progress.
+          await user.save();
 
-        // Push live wallet balance to winner's open browser tabs
-        emitWalletUpdate(user.firebaseUid, user.walletBalance);
+          // Push live wallet balance to winner's open browser tabs
+          emitWalletUpdate(user.firebaseUid, user.walletBalance);
+        }
 
         const rewardTx = await Transaction.create({
           userId: user._id,
@@ -243,8 +246,10 @@ async function resetLeaderboard(period) {
           amount: reward,
           balanceAfter: user.walletBalance,
           description: `${period.charAt(0).toUpperCase() + period.slice(1)} Leaderboard Reward — Rank #${entry.rank}`,
-          status: 'completed',
+          status: holdDecision.status,
+          holdUntil: holdDecision.holdUntil,
           sourceType: 'leaderboard',
+          ...(holdDecision.status === 'hold' && { metadata: { walletApplied: false } }),
         });
 
         // Persist notification in DB

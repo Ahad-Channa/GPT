@@ -4,6 +4,17 @@ const REAL_OFFER_EARNING_TYPES = Object.freeze([
   'direct_offer_reward',
 ]);
 
+const BONUS_HOLDABLE_TYPES = Object.freeze([
+  'daily_bonus',
+  'leaderboard_reward',
+  'vip_reward',
+]);
+
+const EARNING_HOLD_RELEASE_TYPES = Object.freeze([
+  ...REAL_OFFER_EARNING_TYPES,
+  ...BONUS_HOLDABLE_TYPES,
+]);
+
 const REAL_EARNING_REVERSAL_TYPES = Object.freeze([
   'chargeback',
 ]);
@@ -22,6 +33,9 @@ const NET_REAL_EARNING_TYPES = Object.freeze([
 
 const isRealOfferEarningType = (transactionType) =>
   REAL_OFFER_EARNING_TYPES.includes(transactionType);
+
+const isBonusHoldableType = (transactionType) =>
+  BONUS_HOLDABLE_TYPES.includes(transactionType);
 
 const isRealEarningReversalType = (transactionType) =>
   REAL_EARNING_REVERSAL_TYPES.includes(transactionType);
@@ -103,13 +117,16 @@ const getCompletedRealOfferEarningMatch = (extra = {}) => ({
 
 module.exports = {
   ACTIVE_EARNING_STATUSES,
+  BONUS_HOLDABLE_TYPES,
   COMPLETED_EARNING_STATUS,
+  EARNING_HOLD_RELEASE_TYPES,
   NET_REAL_EARNING_TYPES,
   REAL_EARNING_REVERSAL_TYPES,
   REAL_OFFER_EARNING_TYPES,
   getEarningHoldDecision,
   getActiveRealOfferEarningMatch,
   getCompletedRealOfferEarningMatch,
+  isBonusHoldableType,
   isRealEarningReversalType,
   isRealOfferEarningType,
   resolveEarningHoldConfig,

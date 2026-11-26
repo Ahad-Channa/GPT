@@ -2,14 +2,14 @@ const cron = require('node-cron');
 const User = require('../models/User');
 const Transaction = require('../models/Transaction');
 const notify = require('./notify');
-const { REAL_OFFER_EARNING_TYPES } = require('./earningTypes');
+const { REAL_OFFER_EARNING_TYPES, EARNING_HOLD_RELEASE_TYPES } = require('./earningTypes');
 const { humanizeDisplayLabel } = require('./displayLabels');
 
 const RELEASE_STALE_MS = 15 * 60 * 1000;
 
 const buildReleaseClaimQuery = (txId, now) => ({
   _id: txId,
-  transactionType: { $in: REAL_OFFER_EARNING_TYPES },
+  transactionType: { $in: EARNING_HOLD_RELEASE_TYPES },
   status: 'hold',
   holdUntil: { $lte: now },
   'metadata.walletApplied': { $ne: true },
@@ -164,7 +164,7 @@ const releaseEligibleEarningHolds = async ({
 } = {}) => {
   const transactionModel = models.Transaction || Transaction;
   const eligibleHolds = await transactionModel.find({
-    transactionType: { $in: REAL_OFFER_EARNING_TYPES },
+    transactionType: { $in: EARNING_HOLD_RELEASE_TYPES },
     status: 'hold',
     holdUntil: { $lte: now },
     'metadata.walletApplied': { $ne: true },
