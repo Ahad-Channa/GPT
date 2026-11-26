@@ -5,6 +5,7 @@ import { FiUsers, FiDollarSign, FiActivity, FiBriefcase } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 import CoinDisplay from '../../components/CoinDisplay';
 import UserActivityChart from '../../components/admin/UserActivityChart';
+import UsersByCountryCard from '../../components/admin/UsersByCountryCard';
 
 const AdminOverview = () => {
   const { currentUser, isPrimaryAdmin, isSupportAgent, mongoUser } = useAuth();
@@ -48,6 +49,7 @@ const AdminOverview = () => {
     economyTotal: 0
   });
   const [userActivity, setUserActivity] = useState([]);
+  const [usersByCountry, setUsersByCountry] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -64,6 +66,7 @@ const AdminOverview = () => {
       if (data.success) {
         setStats(data.stats);
         setUserActivity(Array.isArray(data.userActivity) ? data.userActivity : []);
+        setUsersByCountry(Array.isArray(data.usersByCountry) ? data.usersByCountry : []);
       } else {
         toast.error('Failed to load overview stats');
       }
@@ -138,7 +141,10 @@ const AdminOverview = () => {
             ))}
           </div>
 
-          <UserActivityChart data={userActivity} />
+          <div className="admin-analytics-grid">
+            <UserActivityChart data={userActivity} />
+            <UsersByCountryCard data={usersByCountry} />
+          </div>
         </>
       )}
     </div>

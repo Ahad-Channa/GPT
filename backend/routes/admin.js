@@ -1817,6 +1817,55 @@ router.get('/overview-stats', requirePrimaryAdmin, async (req, res) => {
       console.error('Overview userActivity aggregation warning:', activityErr);
     }
 
+    let usersByCountry = [];
+    try {
+      const countryAgg = await User.aggregate([
+        {
+          $project: {
+            country: {
+              $let: {
+                vars: { trimmed: { $trim: { input: { $ifNull: ['$lastCountry', ''] } } } },
+                in: {
+                  $cond: [
+                    { $or: [{ $eq: ['$$trimmed', ''] }, { $eq: [{ $toLower: '$$trimmed' }, 'unknown'] }] },
+                    '__OTHER__',
+                    '$$trimmed'
+                  ]
+                }
+              }
+            }
+          }
+        },
+        { $group: { _id: '$country', count: { $sum: 1 } } },
+        { $sort: { count: -1, _id: 1 } }
+      ]);
+
+      const knownCountries = countryAgg.filter((r) => r._id !== '__OTHER__');
+      const unknownEntry = countryAgg.find((r) => r._id === '__OTHER__');
+      const topCountries = knownCountries.slice(0, 5);
+      const overflowCount =
+        knownCountries.slice(5).reduce((sum, r) => sum + r.count, 0) +
+        (unknownEntry ? unknownEntry.count : 0);
+
+      const denominator = totalUsers > 0 ? totalUsers : 1;
+      usersByCountry = topCountries.map((r) => ({
+        country: r._id,
+        count: r.count,
+        percentage: Number(((r.count / denominator) * 100).toFixed(1)),
+      }));
+
+      if (overflowCount > 0) {
+        usersByCountry.push({
+          country: 'Others',
+          count: overflowCount,
+          percentage: Number(((overflowCount / denominator) * 100).toFixed(1)),
+          isOther: true,
+        });
+      }
+    } catch (countryErr) {
+      console.error('Overview usersByCountry aggregation warning:', countryErr);
+    }
+
     res.json({
       success: true,
       stats: {
@@ -1826,7 +1875,8 @@ router.get('/overview-stats', requirePrimaryAdmin, async (req, res) => {
         pendingOffers,
         economyTotal
       },
-      userActivity
+      userActivity,
+      usersByCountry
     });
   } catch (e) {
     res.status(500).json({ success: false, error: 'Failed to fetch overview stats' });
