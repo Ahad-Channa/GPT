@@ -16,6 +16,7 @@ const FraudLog = require('../models/FraudLog');
 const ProviderConfig = require('../models/ProviderConfig');
 const Conversion = require('../models/Conversion');
 const PostbackLog = require('../models/PostbackLog');
+const UserActivityLog = require('../models/UserActivityLog');
 const adminFirebase = require('../config/firebase');
 const { verifyToken } = require('../middlewares/authMiddleware');
 const { requireAdmin, requirePrimaryAdmin, requirePermission } = require('../middlewares/adminMiddleware');
@@ -2396,6 +2397,258 @@ router.get('/overview-stats', requirePrimaryAdmin, async (req, res) => {
     ]);
     const economyTotal = economyObj.length > 0 ? economyObj[0].total : 0;
 
+    // Last 7 days (UTC) User Activity: cumulative Total Users & daily unique Active Users
+    const now = new Date();
+    const dayKeys = [];
+    for (let offset = 6; offset >= 0; offset -= 1) {
+      const d = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() - offset));
+      dayKeys.push(d.toISOString().slice(0, 10));
+    }
+    const windowStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() - 6, 0, 0, 0, 0));
+
+    let userActivity = dayKeys.map((date) => ({ date, totalUsers, activeUsers: 0 }));
+    const currentWindowActiveSet = new Set();
+
+    try {
+      const [
+        dailyNewUsersAgg,
+        dailyUpdatedUsersAgg,
+        activityLogAgg,
+        clickLogAgg,
+        transactionAgg
+      ] = await Promise.all([
+        User.aggregate([
+          { $match: { createdAt: { $gte: windowStart } } },
+          {
+            $group: {
+              _id: { $dateToString: { format: '%Y-%m-%d', date: '$createdAt' } },
+              count: { $sum: 1 },
+              userIds: { $addToSet: '$_id' }
+            }
+          }
+        ]),
+        User.aggregate([
+          { $match: { isBanned: { $ne: true }, updatedAt: { $gte: windowStart } } },
+          {
+            $group: {
+              _id: { $dateToString: { format: '%Y-%m-%d', date: '$updatedAt' } },
+              userIds: { $addToSet: '$_id' }
+            }
+          }
+        ]),
+        UserActivityLog.aggregate([
+          { $match: { createdAt: { $gte: windowStart } } },
+          {
+            $group: {
+              _id: { $dateToString: { format: '%Y-%m-%d', date: '$createdAt' } },
+              userIds: { $addToSet: '$userId' }
+            }
+          }
+        ]),
+        ClickLog.aggregate([
+          { $match: { createdAt: { $gte: windowStart } } },
+          {
+            $group: {
+              _id: { $dateToString: { format: '%Y-%m-%d', date: '$createdAt' } },
+              userIds: { $addToSet: '$userId' }
+            }
+          }
+        ]),
+        Transaction.aggregate([
+          { $match: { createdAt: { $gte: windowStart } } },
+          {
+            $group: {
+              _id: { $dateToString: { format: '%Y-%m-%d', date: '$createdAt' } },
+              userIds: { $addToSet: '$userId' }
+            }
+          }
+        ])
+      ]);
+
+      const newCountByDay = {};
+      const activeSetsByDay = {};
+      dayKeys.forEach((key) => {
+        newCountByDay[key] = 0;
+        activeSetsByDay[key] = new Set();
+      });
+
+      const addActiveUsers = (rows) => {
+        rows.forEach((row) => {
+          const daySet = activeSetsByDay[row._id];
+          if (!daySet || !Array.isArray(row.userIds)) return;
+          row.userIds.forEach((id) => {
+            if (id) daySet.add(String(id));
+          });
+        });
+      };
+
+      dailyNewUsersAgg.forEach((row) => {
+        if (Object.prototype.hasOwnProperty.call(newCountByDay, row._id)) {
+          newCountByDay[row._id] = row.count || 0;
+        }
+      });
+
+      addActiveUsers(dailyNewUsersAgg);
+      addActiveUsers(dailyUpdatedUsersAgg);
+      addActiveUsers(activityLogAgg);
+      addActiveUsers(clickLogAgg);
+      addActiveUsers(transactionAgg);
+
+      const windowNewTotal = dayKeys.reduce((sum, key) => sum + newCountByDay[key], 0);
+      let runningTotal = Math.max(0, totalUsers - windowNewTotal);
+
+      userActivity = dayKeys.map((key) => {
+        runningTotal += newCountByDay[key];
+        activeSetsByDay[key].forEach((id) => currentWindowActiveSet.add(id));
+        return {
+          date: key,
+          totalUsers: runningTotal,
+          activeUsers: Math.min(runningTotal, activeSetsByDay[key].size)
+        };
+      });
+    } catch (activityErr) {
+      console.error('Overview userActivity aggregation warning:', activityErr);
+    }
+
+    let usersByCountry = [];
+    try {
+      const countryAgg = await User.aggregate([
+        {
+          $project: {
+            country: {
+              $let: {
+                vars: { trimmed: { $trim: { input: { $ifNull: ['$lastCountry', ''] } } } },
+                in: {
+                  $cond: [
+                    { $or: [{ $eq: ['$$trimmed', ''] }, { $eq: [{ $toLower: '$$trimmed' }, 'unknown'] }] },
+                    '__OTHER__',
+                    '$$trimmed'
+                  ]
+                }
+              }
+            }
+          }
+        },
+        { $group: { _id: '$country', count: { $sum: 1 } } },
+        { $sort: { count: -1, _id: 1 } }
+      ]);
+
+      const knownCountries = countryAgg.filter((r) => r._id !== '__OTHER__');
+      const unknownEntry = countryAgg.find((r) => r._id === '__OTHER__');
+      const topCountries = knownCountries.slice(0, 5);
+      const overflowCount =
+        knownCountries.slice(5).reduce((sum, r) => sum + r.count, 0) +
+        (unknownEntry ? unknownEntry.count : 0);
+
+      const denominator = totalUsers > 0 ? totalUsers : 1;
+      usersByCountry = topCountries.map((r) => ({
+        country: r._id,
+        count: r.count,
+        percentage: Number(((r.count / denominator) * 100).toFixed(1)),
+      }));
+
+      if (overflowCount > 0) {
+        usersByCountry.push({
+          country: 'Others',
+          count: overflowCount,
+          percentage: Number(((overflowCount / denominator) * 100).toFixed(1)),
+          isOther: true,
+        });
+      }
+    } catch (countryErr) {
+      console.error('Overview usersByCountry aggregation warning:', countryErr);
+    }
+
+    const totalUsersSeries = userActivity.map((d) => d.totalUsers);
+    const activeUsersSeries = userActivity.map((d) => d.activeUsers);
+    const calcGrowthPct = (firstVal, lastVal) => {
+      if (firstVal > 0) return Number((((lastVal - firstVal) / firstVal) * 100).toFixed(1));
+      return lastVal > 0 ? 100 : 0;
+    };
+
+    const currentActiveCount = Math.min(totalUsers, currentWindowActiveSet.size);
+    const summaryMetrics = {
+      totalUsers: {
+        value: totalUsers,
+        changePct: calcGrowthPct(totalUsersSeries[0] || 0, totalUsersSeries[totalUsersSeries.length - 1] || 0),
+        series: totalUsersSeries,
+      },
+      activeUsers: {
+        value: currentActiveCount,
+        changePct: 0,
+        series: activeUsersSeries,
+      },
+      totalEarnings: {
+        value: 0,
+        changePct: 0,
+        series: dayKeys.map(() => 0),
+      },
+    };
+
+    try {
+      const prevWindowStart = new Date(windowStart.getTime() - 7 * 24 * 60 * 60 * 1000);
+      const [
+        prevUserIds,
+        prevActivityIds,
+        prevClickIds,
+        prevTxIds,
+        totalEarnedAgg,
+        dailyEarningsAgg
+      ] = await Promise.all([
+        User.distinct('_id', {
+          $or: [
+            { createdAt: { $gte: prevWindowStart, $lt: windowStart } },
+            { isBanned: { $ne: true }, updatedAt: { $gte: prevWindowStart, $lt: windowStart } }
+          ]
+        }),
+        UserActivityLog.distinct('userId', { createdAt: { $gte: prevWindowStart, $lt: windowStart } }),
+        ClickLog.distinct('userId', { createdAt: { $gte: prevWindowStart, $lt: windowStart } }),
+        Transaction.distinct('userId', { createdAt: { $gte: prevWindowStart, $lt: windowStart } }),
+        User.aggregate([{ $group: { _id: null, total: { $sum: '$totalEarned' } } }]),
+        Transaction.aggregate([
+          { $match: { status: 'completed', amount: { $gt: 0 }, createdAt: { $gte: windowStart } } },
+          {
+            $group: {
+              _id: { $dateToString: { format: '%Y-%m-%d', date: '$createdAt' } },
+              total: { $sum: '$amount' }
+            }
+          }
+        ])
+      ]);
+
+      const prevActiveSet = new Set();
+      [prevUserIds, prevActivityIds, prevClickIds, prevTxIds].forEach((ids) => {
+        ids.forEach((id) => {
+          if (id) prevActiveSet.add(String(id));
+        });
+      });
+      summaryMetrics.activeUsers.changePct = calcGrowthPct(prevActiveSet.size, currentActiveCount);
+
+      const totalEarnings = totalEarnedAgg.length > 0 ? totalEarnedAgg[0].total : 0;
+      const earningsByDay = {};
+      dayKeys.forEach((k) => { earningsByDay[k] = 0; });
+      dailyEarningsAgg.forEach((row) => {
+        if (Object.prototype.hasOwnProperty.call(earningsByDay, row._id)) {
+          earningsByDay[row._id] = row.total || 0;
+        }
+      });
+
+      const windowEarningsTotal = dayKeys.reduce((sum, k) => sum + earningsByDay[k], 0);
+      let runningEarn = Math.max(0, totalEarnings - windowEarningsTotal);
+      const earningsSeries = dayKeys.map((k) => {
+        runningEarn += earningsByDay[k];
+        return runningEarn;
+      });
+
+      summaryMetrics.totalEarnings = {
+        value: totalEarnings,
+        changePct: calcGrowthPct(earningsSeries[0] || 0, earningsSeries[earningsSeries.length - 1] || 0),
+        series: earningsSeries,
+      };
+    } catch (summaryErr) {
+      console.error('Overview summaryMetrics aggregation warning:', summaryErr);
+    }
+
     res.json({
       success: true,
       stats: {
@@ -2404,7 +2657,10 @@ router.get('/overview-stats', requirePrimaryAdmin, async (req, res) => {
         totalPendingWithdrawal,
         pendingOffers,
         economyTotal
-      }
+      },
+      userActivity,
+      usersByCountry,
+      summaryMetrics
     });
   } catch (e) {
     res.status(500).json({ success: false, error: 'Failed to fetch overview stats' });
