@@ -4,6 +4,7 @@ import { Navigate } from 'react-router-dom';
 import { FiUsers, FiDollarSign, FiActivity, FiBriefcase } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 import CoinDisplay from '../../components/CoinDisplay';
+import UserActivityChart from '../../components/admin/UserActivityChart';
 
 const AdminOverview = () => {
   const { currentUser, isPrimaryAdmin, isSupportAgent, mongoUser } = useAuth();
@@ -46,6 +47,7 @@ const AdminOverview = () => {
     pendingOffers: 0,
     economyTotal: 0
   });
+  const [userActivity, setUserActivity] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -61,6 +63,7 @@ const AdminOverview = () => {
       const data = await res.json();
       if (data.success) {
         setStats(data.stats);
+        setUserActivity(Array.isArray(data.userActivity) ? data.userActivity : []);
       } else {
         toast.error('Failed to load overview stats');
       }
@@ -117,22 +120,26 @@ const AdminOverview = () => {
           <p className="text-sm font-medium">Loading statistics...</p>
         </div>
       ) : (
-        <div className="admin-stat-grid">
-          {statCards.map((card, i) => (
-            <div key={i} className="admin-stat-card">
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
-                <span className="admin-stat-label">{card.label}</span>
-                <div className={`w-9 h-9 rounded-xl flex items-center justify-center ${card.iconBg}`}>
-                  <card.icon style={{ fontSize: '17px' }} />
+        <>
+          <div className="admin-stat-grid">
+            {statCards.map((card, i) => (
+              <div key={i} className="admin-stat-card">
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
+                  <span className="admin-stat-label">{card.label}</span>
+                  <div className={`w-9 h-9 rounded-xl flex items-center justify-center ${card.iconBg}`}>
+                    <card.icon style={{ fontSize: '17px' }} />
+                  </div>
+                </div>
+                <div className="admin-stat-value" style={{ color: card.color }}>{card.value}</div>
+                <div style={{ fontSize: '0.72rem', color: '#6B7280', marginTop: '0.35rem', letterSpacing: '0.04em', textTransform: 'uppercase', fontWeight: 500 }}>
+                  {card.unit}
                 </div>
               </div>
-              <div className="admin-stat-value" style={{ color: card.color }}>{card.value}</div>
-              <div style={{ fontSize: '0.72rem', color: '#6B7280', marginTop: '0.35rem', letterSpacing: '0.04em', textTransform: 'uppercase', fontWeight: 500 }}>
-                {card.unit}
-              </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+
+          <UserActivityChart data={userActivity} />
+        </>
       )}
     </div>
   );

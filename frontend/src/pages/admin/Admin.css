@@ -685,3 +685,107 @@
 .log-row--open td {
   background: #F9FAFB !important;
 }
+
+/* ── User Activity Chart Card ────────────────── */
+.admin-activity-card {
+  background: #FFFFFF;
+  border: 1px solid #E5E7EB;
+  border-radius: 16px;
+  padding: 1.5rem;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.02);
+}
+
+.admin-activity-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, #1E2538, #3B82F6);
+}
+
+.admin-activity-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.admin-activity-title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #0E0F0C;
+  font-family: 'Bricolage Grotesque', sans-serif;
+  letter-spacing: -0.01em;
+  line-height: 1.25;
+}
+
+.admin-activity-sub {
+  font-size: 0.72rem;
+  color: #6B7280;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  font-weight: 500;
+  margin-top: 0.15rem;
+}
+
+.admin-activity-legend {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  flex-wrap: wrap;
+}
+
+.admin-activity-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: #374151;
+}
+
+.admin-activity-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 9999px;
+  flex-shrink: 0;
+}
+
+.admin-activity-canvas {
+  position: relative;
+  width: 100%;
+}
+
+.admin-activity-tooltip {
+  position: absolute;
+  pointer-events: none;
+  background: #FFFFFF;
+  border: 1px solid #E5E7EB;
+  border-radius: 12px;
+  padding: 0.7rem 0.9rem;
+  min-width: 175px;
+  box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.12), 0 4px 10px -4px rgba(15, 23, 42, 0.06);
+  z-index: 10;
+}
+
+.admin-activity-tooltip-date {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #0E0F0C;
+  margin-bottom: 0.45rem;
+  font-family: 'Bricolage Grotesque', sans-serif;
+}
+
+.admin-activity-tooltip-row {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 0.76rem;
+  line-height: 1.6;
+}

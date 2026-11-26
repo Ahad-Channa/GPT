@@ -12,6 +12,7 @@ const GoodpickOffer = require('../models/GoodpickOffer');
 const DirectOffer = require('../models/DirectOffer');
 const ClickLog = require('../models/ClickLog');
 const FraudLog = require('../models/FraudLog');
+const UserActivityLog = require('../models/UserActivityLog');
 const adminFirebase = require('../config/firebase');
 const { verifyToken } = require('../middlewares/authMiddleware');
 const { requireAdmin, requirePrimaryAdmin, requirePermission } = require('../middlewares/adminMiddleware');
@@ -1705,6 +1706,117 @@ router.get('/overview-stats', requirePrimaryAdmin, async (req, res) => {
     ]);
     const economyTotal = economyObj.length > 0 ? economyObj[0].total : 0;
 
+    // Last 7 days (UTC) User Activity: cumulative Total Users & daily unique Active Users
+    const now = new Date();
+    const dayKeys = [];
+    for (let offset = 6; offset >= 0; offset -= 1) {
+      const d = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() - offset));
+      dayKeys.push(d.toISOString().slice(0, 10));
+    }
+    const windowStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() - 6, 0, 0, 0, 0));
+
+    let userActivity = dayKeys.map((date) => ({ date, totalUsers, activeUsers: 0 }));
+
+    try {
+      const [
+        dailyNewUsersAgg,
+        dailyUpdatedUsersAgg,
+        activityLogAgg,
+        clickLogAgg,
+        transactionAgg
+      ] = await Promise.all([
+        User.aggregate([
+          { $match: { createdAt: { $gte: windowStart } } },
+          {
+            $group: {
+              _id: { $dateToString: { format: '%Y-%m-%d', date: '$createdAt' } },
+              count: { $sum: 1 },
+              userIds: { $addToSet: '$_id' }
+            }
+          }
+        ]),
+        User.aggregate([
+          { $match: { isBanned: { $ne: true }, updatedAt: { $gte: windowStart } } },
+          {
+            $group: {
+              _id: { $dateToString: { format: '%Y-%m-%d', date: '$updatedAt' } },
+              userIds: { $addToSet: '$_id' }
+            }
+          }
+        ]),
+        UserActivityLog.aggregate([
+          { $match: { createdAt: { $gte: windowStart } } },
+          {
+            $group: {
+              _id: { $dateToString: { format: '%Y-%m-%d', date: '$createdAt' } },
+              userIds: { $addToSet: '$userId' }
+            }
+          }
+        ]),
+        ClickLog.aggregate([
+          { $match: { createdAt: { $gte: windowStart } } },
+          {
+            $group: {
+              _id: { $dateToString: { format: '%Y-%m-%d', date: '$createdAt' } },
+              userIds: { $addToSet: '$userId' }
+            }
+          }
+        ]),
+        Transaction.aggregate([
+          { $match: { createdAt: { $gte: windowStart } } },
+          {
+            $group: {
+              _id: { $dateToString: { format: '%Y-%m-%d', date: '$createdAt' } },
+              userIds: { $addToSet: '$userId' }
+            }
+          }
+        ])
+      ]);
+
+      const newCountByDay = {};
+      const activeSetsByDay = {};
+      dayKeys.forEach((key) => {
+        newCountByDay[key] = 0;
+        activeSetsByDay[key] = new Set();
+      });
+
+      const addActiveUsers = (rows) => {
+        rows.forEach((row) => {
+          const daySet = activeSetsByDay[row._id];
+          if (!daySet || !Array.isArray(row.userIds)) return;
+          row.userIds.forEach((id) => {
+            if (id) daySet.add(String(id));
+          });
+        });
+      };
+
+      dailyNewUsersAgg.forEach((row) => {
+        if (Object.prototype.hasOwnProperty.call(newCountByDay, row._id)) {
+          newCountByDay[row._id] = row.count || 0;
+        }
+      });
+
+      addActiveUsers(dailyNewUsersAgg);
+      addActiveUsers(dailyUpdatedUsersAgg);
+      addActiveUsers(activityLogAgg);
+      addActiveUsers(clickLogAgg);
+      addActiveUsers(transactionAgg);
+
+      const windowNewTotal = dayKeys.reduce((sum, key) => sum + newCountByDay[key], 0);
+      let runningTotal = Math.max(0, totalUsers - windowNewTotal);
+
+      userActivity = dayKeys.map((key) => {
+        runningTotal += newCountByDay[key];
+        return {
+          date: key,
+          totalUsers: runningTotal,
+          activeUsers: Math.min(runningTotal, activeSetsByDay[key].size)
+        };
+      });
+    } catch (activityErr) {
+      console.error('Overview userActivity aggregation warning:', activityErr);
+    }
+
     res.json({
       success: true,
       stats: {
@@ -1713,7 +1825,8 @@ router.get('/overview-stats', requirePrimaryAdmin, async (req, res) => {
         totalPendingWithdrawal,
         pendingOffers,
         economyTotal
-      }
+      },
+      userActivity
     });
   } catch (e) {
     res.status(500).json({ success: false, error: 'Failed to fetch overview stats' });
