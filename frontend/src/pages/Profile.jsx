@@ -2722,7 +2722,7 @@ const Profile = () => {
 
       const [customRes, walletRes, directRes] = await Promise.all([
         fetch(`${API}/custom-offers`, { headers: { Authorization: `Bearer ${freshToken}` } }),
-        fetch(`${API}/wallet/history?type=offer_reward%2Ccustom_offer_reward&limit=50`, { headers: { Authorization: `Bearer ${freshToken}` } }),
+        fetch(`${API}/wallet/history?type=offer_reward%2Ccustom_offer_reward%2Cdirect_offer_reward&limit=50`, { headers: { Authorization: `Bearer ${freshToken}` } }),
         fetch(`${API}/direct-offers?placement=all`, { headers: { Authorization: `Bearer ${freshToken}` } }),
       ]);
       const [customData, walletData, directData] = await Promise.all([customRes.json(), walletRes.json(), directRes.json()]);

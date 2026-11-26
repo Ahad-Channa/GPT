@@ -83,4 +83,5 @@ test('frontend history keeps Offer Reward only as a legacy fallback', () => {
   const profile = read('frontend/src/pages/Profile.jsx');
   assert.match(profile, /getTransactionText\(tx\) \|\| tx\.description/);
   assert.match(profile, /title=\{transactionDescription\}/);
+  assert.match(profile, /wallet\/history\?type=offer_reward%2Ccustom_offer_reward%2Cdirect_offer_reward/);
 });
