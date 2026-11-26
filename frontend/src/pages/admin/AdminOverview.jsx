@@ -6,6 +6,7 @@ import toast from 'react-hot-toast';
 import CoinDisplay from '../../components/CoinDisplay';
 import UserActivityChart from '../../components/admin/UserActivityChart';
 import UsersByCountryCard from '../../components/admin/UsersByCountryCard';
+import SummaryMetricCards from '../../components/admin/SummaryMetricCards';
 
 const AdminOverview = () => {
   const { currentUser, isPrimaryAdmin, isSupportAgent, mongoUser } = useAuth();
@@ -50,6 +51,7 @@ const AdminOverview = () => {
   });
   const [userActivity, setUserActivity] = useState([]);
   const [usersByCountry, setUsersByCountry] = useState([]);
+  const [summaryMetrics, setSummaryMetrics] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -67,6 +69,7 @@ const AdminOverview = () => {
         setStats(data.stats);
         setUserActivity(Array.isArray(data.userActivity) ? data.userActivity : []);
         setUsersByCountry(Array.isArray(data.usersByCountry) ? data.usersByCountry : []);
+        setSummaryMetrics(data.summaryMetrics || null);
       } else {
         toast.error('Failed to load overview stats');
       }
@@ -145,6 +148,8 @@ const AdminOverview = () => {
             <UserActivityChart data={userActivity} />
             <UsersByCountryCard data={usersByCountry} />
           </div>
+
+          <SummaryMetricCards metrics={summaryMetrics} />
         </>
       )}
     </div>

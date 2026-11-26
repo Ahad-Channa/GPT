@@ -1716,6 +1716,7 @@ router.get('/overview-stats', requirePrimaryAdmin, async (req, res) => {
     const windowStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() - 6, 0, 0, 0, 0));
 
     let userActivity = dayKeys.map((date) => ({ date, totalUsers, activeUsers: 0 }));
+    const currentWindowActiveSet = new Set();
 
     try {
       const [
@@ -1807,6 +1808,7 @@ router.get('/overview-stats', requirePrimaryAdmin, async (req, res) => {
 
       userActivity = dayKeys.map((key) => {
         runningTotal += newCountByDay[key];
+        activeSetsByDay[key].forEach((id) => currentWindowActiveSet.add(id));
         return {
           date: key,
           totalUsers: runningTotal,
@@ -1866,6 +1868,96 @@ router.get('/overview-stats', requirePrimaryAdmin, async (req, res) => {
       console.error('Overview usersByCountry aggregation warning:', countryErr);
     }
 
+    const totalUsersSeries = userActivity.map((d) => d.totalUsers);
+    const activeUsersSeries = userActivity.map((d) => d.activeUsers);
+    const calcGrowthPct = (firstVal, lastVal) => {
+      if (firstVal > 0) return Number((((lastVal - firstVal) / firstVal) * 100).toFixed(1));
+      return lastVal > 0 ? 100 : 0;
+    };
+
+    const currentActiveCount = Math.min(totalUsers, currentWindowActiveSet.size);
+    const summaryMetrics = {
+      totalUsers: {
+        value: totalUsers,
+        changePct: calcGrowthPct(totalUsersSeries[0] || 0, totalUsersSeries[totalUsersSeries.length - 1] || 0),
+        series: totalUsersSeries,
+      },
+      activeUsers: {
+        value: currentActiveCount,
+        changePct: 0,
+        series: activeUsersSeries,
+      },
+      totalEarnings: {
+        value: 0,
+        changePct: 0,
+        series: dayKeys.map(() => 0),
+      },
+    };
+
+    try {
+      const prevWindowStart = new Date(windowStart.getTime() - 7 * 24 * 60 * 60 * 1000);
+      const [
+        prevUserIds,
+        prevActivityIds,
+        prevClickIds,
+        prevTxIds,
+        totalEarnedAgg,
+        dailyEarningsAgg
+      ] = await Promise.all([
+        User.distinct('_id', {
+          $or: [
+            { createdAt: { $gte: prevWindowStart, $lt: windowStart } },
+            { isBanned: { $ne: true }, updatedAt: { $gte: prevWindowStart, $lt: windowStart } }
+          ]
+        }),
+        UserActivityLog.distinct('userId', { createdAt: { $gte: prevWindowStart, $lt: windowStart } }),
+        ClickLog.distinct('userId', { createdAt: { $gte: prevWindowStart, $lt: windowStart } }),
+        Transaction.distinct('userId', { createdAt: { $gte: prevWindowStart, $lt: windowStart } }),
+        User.aggregate([{ $group: { _id: null, total: { $sum: '$totalEarned' } } }]),
+        Transaction.aggregate([
+          { $match: { status: 'completed', amount: { $gt: 0 }, createdAt: { $gte: windowStart } } },
+          {
+            $group: {
+              _id: { $dateToString: { format: '%Y-%m-%d', date: '$createdAt' } },
+              total: { $sum: '$amount' }
+            }
+          }
+        ])
+      ]);
+
+      const prevActiveSet = new Set();
+      [prevUserIds, prevActivityIds, prevClickIds, prevTxIds].forEach((ids) => {
+        ids.forEach((id) => {
+          if (id) prevActiveSet.add(String(id));
+        });
+      });
+      summaryMetrics.activeUsers.changePct = calcGrowthPct(prevActiveSet.size, currentActiveCount);
+
+      const totalEarnings = totalEarnedAgg.length > 0 ? totalEarnedAgg[0].total : 0;
+      const earningsByDay = {};
+      dayKeys.forEach((k) => { earningsByDay[k] = 0; });
+      dailyEarningsAgg.forEach((row) => {
+        if (Object.prototype.hasOwnProperty.call(earningsByDay, row._id)) {
+          earningsByDay[row._id] = row.total || 0;
+        }
+      });
+
+      const windowEarningsTotal = dayKeys.reduce((sum, k) => sum + earningsByDay[k], 0);
+      let runningEarn = Math.max(0, totalEarnings - windowEarningsTotal);
+      const earningsSeries = dayKeys.map((k) => {
+        runningEarn += earningsByDay[k];
+        return runningEarn;
+      });
+
+      summaryMetrics.totalEarnings = {
+        value: totalEarnings,
+        changePct: calcGrowthPct(earningsSeries[0] || 0, earningsSeries[earningsSeries.length - 1] || 0),
+        series: earningsSeries,
+      };
+    } catch (summaryErr) {
+      console.error('Overview summaryMetrics aggregation warning:', summaryErr);
+    }
+
     res.json({
       success: true,
       stats: {
@@ -1876,7 +1968,8 @@ router.get('/overview-stats', requirePrimaryAdmin, async (req, res) => {
         economyTotal
       },
       userActivity,
-      usersByCountry
+      usersByCountry,
+      summaryMetrics
     });
   } catch (e) {
     res.status(500).json({ success: false, error: 'Failed to fetch overview stats' });
