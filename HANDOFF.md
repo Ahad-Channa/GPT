@@ -1,6 +1,6 @@
 # TaskMint: project handoff (for a new Claude chat or a new developer)
 
-Read this first, then continue. Last updated 2026-11-26 (Evening update: bonus hold `65094f2`, Profile Completed Offers fix `3c92f13`, and legacy offerwall list display `dcf7377` pushed on `merge-main-test`). **The newest state is in the last section: "Session of 2026-11-26" (read it first; it changes how the frontend is handled).**
+Read this first, then continue. Last updated 2026-11-27 (Click Logs chargeback `e2b7b70`, chargeback/hold-release wallet fix `9fb9da2`, direct-offer test mode `6721d5f`, all pushed on `merge-main-test`). **The newest state is in the last section: "Session of 2026-11-27". The frontend rule from "Session of 2026-11-26" still applies (main's design wins).**
 
 ## Project
 - TaskMint: rewards/offerwall site. Frontend `frontend/` (React + Vite), backend `backend/` (Node/Express + MongoDB).
@@ -142,7 +142,7 @@ Rollback: `git checkout delivery-postback-clean`, reinstall, rebuild, restart th
 3. Harun compares `merge-main-test` on staging with taskmint.me; fix the differences; go live only after his explicit approval.
 4. Re-run all tests and record exact totals.
 
-## Session of 2026-11-26 (LATEST: read this first)
+## Session of 2026-11-26 (frontend rule still valid; newer state in 2026-11-27 below)
 
 ### The rule from Harun (changes everything about the frontend)
 - taskmint.me (`origin/main`) is the client's live site and has many frontend improvements made by a separate designer/developer while we worked on postback. **Harun wants his frontend exactly as it is on main; only our backend/postback work (and the minimum frontend needed to use it) may be added.** He found, on staging, that Footer (legal links cut off in French and other languages, banner text not translated, rows not on one line), Landing hero cards (baked images instead of translated text), and other pages were the old versions. He is afraid that deploying our branch overwrites his improvements. Never do a "whole branch" overwrite; never change his design without being told.
@@ -217,6 +217,48 @@ Rollback: `git checkout delivery-postback-clean`, reinstall, rebuild, restart th
    - Disable non-live offerwalls in Admin -> Offerwalls (or ensure only Goodpicks and Lootably appear on Earn).
 3. **Client Verification:**
    - Send Harun confirmation that Bonus Hold (for Daily, Leaderboard, and VIP bonuses, excluding Promo Codes) is now live on staging alongside the earlier fixes.
+
+## Session of 2026-11-27 (LATEST: read this first)
+
+All work is on `merge-main-test` (worktree `C:\Users\farru\Documents\GitHub\GPT-merge-test`), pushed to origin. `origin/merge-main-test` = `6721d5f`. `delivery-postback-clean` does NOT contain these three commits.
+
+### 1. `e2b7b70` Manual chargeback in admin Click Logs (Harun asked for it)
+- `POST /api/admin/click-logs/:clickId/chargeback` (`manage_offerwalls`, reason required). The old conversions chargeback body was extracted into the shared helper `respondWithConversionChargeback` in `backend/routes/admin.js`; both routes use it, so the money path is `processReversal` (idempotent).
+- Refuses with 400: manual offers ("charge back from the manual proof queue"), clicks with no credited reward, already charged back clicks, and multi-step clicks with more than one credited step ("charge back the specific step from the Conversions page").
+- The Click Logs list returns `chargedBack: true` for reversed clicks. UI (`AdminDirectOffers.jsx`, Click Logs modal): credited click shows "Credited ✓" + amber "↺ Chargeback" button; afterwards "Charged back". Test: `backend/tests/phase39-click-log-chargeback.test.js`.
+
+### 2. `9fb9da2` Chargeback did not take coins from the wallet (bug found by Harun on staging)
+- Case: test user `dssdfsdf`, offer "test 2 acc click limit", 5,000,000 coins. After the chargeback "Lifetime Earned" dropped to 1,003 but the balance stayed 5,001,003.
+- Cause: the reward was on hold and was released with the admin button `POST /api/admin/earnings-holds/release-now`. That route credited the wallet and set status `completed` but left `metadata.walletApplied = false`. `processReversal` uses `status === 'completed' && walletApplied !== false` to decide whether to deduct the wallet, so it only reduced `totalEarned`.
+- Fix: release-now now sets `walletApplied: true` and `releaseState: 'completed'`; `reversalService.js` also treats `metadata.releasedAt` as proof the coins reached the wallet (covers rows released before the fix). The same release-now code exists on `origin/main` (taskmint.me), so the bug is there too until this goes live.
+- NOT repaired automatically: the already-done chargeback of `dssdfsdf` (reversals are idempotent, so it will not run again). The 5,000,000 coins must be removed once by hand in admin (test user only).
+- Tests: 2 new in `backend/tests/phase6-reward-reversal-service.test.js`.
+
+### 3. `6721d5f` Test mode for Direct Offers (Harun: offer visible only to selected users, then live for all)
+- Model `DirectOffer`: `visibility` (`'everyone'` default | `'selected'`) and `allowedUserIds` (User refs). Offers without the field are public (no migration needed).
+- Admin create/edit: fields `visibility` and `allowedUsers` (emails or user IDs; array or text). `resolveDirectOfferVisibility` in `admin.js` rejects unknown users ("Unknown test user(s): ...") and `selected` with no users; max 200. On PUT, if only one of the two is sent, the stored other half is used. Admin responses include `allowedUsers: [{_id, email, displayName}]` (populated via `withAllowedOfferUsers`, which skips non-Mongoose objects so the old mocked tests keep working).
+- User side (`routes/directOffers.js`): list filtered with `buildVisibilityClause(user._id)`; click and manual proof submit return 404 for non-testers (`canUserSeeOffer`); the tester list is never sent to users (`OFFER_PUBLIC_EXCLUDE` includes `-allowedUserIds`). Postbacks are unchanged.
+- Rewards from a test-mode offer get `metadata.testOffer: true` (`rewardService.js`) and are excluded from the public Live Feed (`/api/public/recent-earnings` query and socket `buildNewEarningPayload`). They still count normally for the tester's wallet/stats.
+- Admin UI: "Who can see this offer?" radio (Everyone (live) / Only selected test users) + textarea for emails; card badge "Test · N users"; button "Go live for everyone" (PUT `{ visibility: 'everyone' }`, tester list kept).
+- Scope: only Direct Offers. Main's Goodpicks/custom offers have no test mode (ask Harun if he wants it there too).
+- Tests: `backend/tests/phase40-offer-test-mode.test.js` (6 tests); `phase10-offer-goals.test.js` updated to the shared exclude list. Also verified end to end on a real in-memory replica set (create/validation, tester sees and starts, other user neither sees nor starts, reward hidden from feed, go live, back to test mode, legacy offer public).
+
+### Test totals (after `6721d5f`)
+- Backend 600 tests: 596 pass, 4 fail (pre-existing: "offerwall reward shows the provider name...", "admin form explains the USD fields...", "reward calculation and wallet code are untouched...", "frontend direct-offer start only opens backend returned URLs").
+- Frontend 86 tests (`node --test tests/*.test.js`): 82 pass, 4 fail (pre-existing: locale registry, 2x "Add Goal render path", "goal label/description state"). `npm run build` ok.
+
+### Lootably test (Harun asked for a new one)
+- Cannot be faked from outside: the webhook checks the secret header, placement ID and the IP allowlist (`LOOTABLY_WEBHOOK_ALLOWED_IPS`). It needs a real offer completed through the Lootably offerwall on staging (or a test tool in Lootably's dashboard, if they have one; not confirmed).
+
+### Deploy state
+- Staging must pull `6721d5f`: `cd /var/www/taskmint-staging && git fetch origin && git pull --ff-only origin merge-main-test`, `cd backend && npm install`, `cd ../frontend && npm install && npm run build`, `pm2 restart taskmint-staging-backend`, `pm2 restart taskmint-ssl-frontend` (never `pm2 restart all`), hard refresh. Rollback point: `e2b7b70` (before that `dcf7377`).
+- Nothing of this is on taskmint.me.
+
+### Next steps
+1. User deploys `6721d5f` on staging; removes the 5,000,000 coins from `dssdfsdf` by hand.
+2. German message for Harun (chargeback fix + test mode) was drafted in chat; send it.
+3. Harun tests: Click Logs chargeback, test mode (tester sees, others do not, go live), Lootably real offer.
+4. Open from before: dummy offerwalls on Earn (disable in Admin -> Offerwalls), Harun's desktop/mobile check of main's design, Fiverr order release, new features (spin/packs/album) only after scope and payment are agreed.
 
 ## Working rules used in this project
 - Do not commit, push or deploy without being asked.
