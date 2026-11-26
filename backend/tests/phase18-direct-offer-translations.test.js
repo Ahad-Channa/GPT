@@ -505,12 +505,15 @@ test('DirectOfferCard uses the display resolver (selected language, then require
   assert.doesNotMatch(card, /offerText\.requirements\|\|offer\.requirements/);
   assert.match(card, /offers\.translationUnavailable/);
 
-  // All modal headings/instructions/status text come from i18n.
-  assert.match(card, /formatGoalRequirement\(goal,selectedLanguage,t\)/);
-  assert.match(card, /t\('offers\.goalRewardInstruction'/);
-  assert.match(card, /t\('offers\.missingGoalLabel'\)/);
-  assert.match(card, /t\('offers\.requirements'\)/);
-  assert.match(card, /t\('offers\.generalRules'\)/);
+  // All modal headings/instructions/status text come from i18n. Headings and the
+  // rules box are rendered by the designer modal (OfferCards.jsx), which uses i18n too.
+  assert.match(card, /formatGoalRewardInstruction\(goal,selectedLanguage,t\)/);
+  const goalDisplay = compact(read('frontend/src/utils/offerGoalDisplay.js'));
+  assert.match(goalDisplay, /t\('offers\.goalRewardInstruction'/);
+  assert.match(goalDisplay, /t\('offers\.missingGoalLabel'\)/);
+  const designerModal = compact(read('frontend/src/components/offers/OfferCards.jsx'));
+  assert.match(designerModal, /t\('offers\.requirements'\)/);
+  assert.match(designerModal, /t\('offers\.generalRules'\)/);
   assert.match(card, /t\('offers\.proofInstructions'\)/);
   // Cards no longer show a progress/status badge.
   assert.doesNotMatch(card, /statusInProgress/);
@@ -556,33 +559,29 @@ test('direct-offer modal translations exist and differ from English for German, 
   }
 });
 
-test('coin amounts use the active locale for English, German, French and Urdu', async () => {
+test('coin amounts use the same number style as the designer cards (4.200) in every language', async () => {
   const { formatOfferAmount, resolveNumberLocale } = await loadOfferNumberFormat();
   const value = 1250000;
 
-  assert.equal(formatOfferAmount(value, 'en'), '1,250,000');
-  assert.equal(formatOfferAmount(value, 'de'), '1.250.000');
-  assert.equal(formatOfferAmount(value, 'fr').replace(/\s/g, ' '), '1 250 000');
-  assert.equal(formatOfferAmount(value, 'ur'), value.toLocaleString('ur'));
-
-  // Region variants use their base language; unsupported values fall back safely.
-  assert.equal(resolveNumberLocale('de-DE'), 'de');
-  assert.equal(resolveNumberLocale('ur-PK'), 'ur');
-  assert.equal(resolveNumberLocale('es'), 'en');
-  assert.equal(formatOfferAmount(value, 'de-DE'), value.toLocaleString('de'));
-  assert.equal(formatOfferAmount('1250000', 'fr').replace(/\s/g, ' '), '1 250 000');
-  assert.equal(formatOfferAmount(value, 'not-a-locale'), '1,250,000');
+  for (const language of ['en', 'de', 'fr', 'ur', 'es', 'not-a-locale', undefined]) {
+    assert.equal(formatOfferAmount(value, language), value.toLocaleString('de-DE'), String(language));
+  }
+  assert.equal(formatOfferAmount(value, 'en'), '1.250.000');
+  assert.equal(formatOfferAmount('1250000', 'fr'), '1.250.000');
   assert.equal(formatOfferAmount(Number.NaN, 'en'), '0');
+  assert.equal(resolveNumberLocale('en'), 'de-DE');
 });
 
-test('DirectOfferCard formats goal rewards and totals with the active locale', () => {
+test('tracked offers show coin amounts through the designer card/modal and the shared goal formatter', () => {
   const card = compact(read('frontend/src/components/offers/DirectOfferCard.jsx'));
 
-  assert.match(card, /formatOfferAmount\(goal\.rewardAmount,language\)/);
-  assert.match(card, /formatOfferAmount\(rewardVal,language\)/);
-  assert.match(card, /formatOfferAmount\(rewardVal,selectedLanguage\)/);
-  assert.doesNotMatch(card, /toLocaleString\('de-DE'\)/);
-  assert.doesNotMatch(card, /de-DE/);
+  // Pills and totals are drawn by the designer components, never re-implemented here.
+  assert.match(card, /<FeaturedOfferCardoffer=/);
+  assert.match(card, /<FeaturedOfferModal/);
+  assert.doesNotMatch(card, /toLocaleString/);
+  assert.match(card, /formatGoalRewardInstruction\(goal,selectedLanguage,t\)/);
+  const goalDisplay = compact(read('frontend/src/utils/offerGoalDisplay.js'));
+  assert.match(goalDisplay, /formatOfferAmount\(goal\?\.rewardAmount,language\)/);
 });
 
 test('admin save uses one deliberate text payload and no duplicate requirements keys', () => {

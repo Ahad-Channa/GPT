@@ -530,8 +530,7 @@
     "bookCardSignatureLine1": "Disponibile con",
     "bookCardSignatureLine2": "Dedica Firmata",
     "bookCardShippingLine1": "Spedizione fisica",
-    "bookCardShippingLine2": "a domicilio",
-    "giftCardHint": "Gift card will be emailed within 1-3 business days."
+    "bookCardShippingLine2": "a domicilio"
   },
   "leaderboard": {
     "pageTitle": "Classifica Guadagni",

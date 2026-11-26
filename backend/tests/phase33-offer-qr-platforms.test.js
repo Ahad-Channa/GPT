@@ -38,10 +38,11 @@ test('shared component is gated by shouldShowQr and renders nothing for PC-only'
 });
 
 test('Featured (direct + custom) and Goodpicks modals all use the shared QR section, with no inline QR left', () => {
+  // Tracked Featured offers reuse the designer's FeaturedOfferModal (OfferCards.jsx), so
+  // that one file covers both direct and custom Featured offers.
   const files = {
     goodpicks: 'frontend/src/components/offers/GoodpicksModal.jsx',
-    featuredDirect: 'frontend/src/components/offers/DirectOfferCard.jsx',
-    featuredCustom: 'frontend/src/components/offers/OfferCards.jsx',
+    featured: 'frontend/src/components/offers/OfferCards.jsx',
   };
   for (const [name, file] of Object.entries(files)) {
     const src = read(file);

@@ -352,8 +352,7 @@
     "bookCardSignatureLine1": "Dédicace personnelle",
     "bookCardSignatureLine2": "possible",
     "bookCardShippingLine1": "Livraison uniquement",
-    "bookCardShippingLine2": "en Allemagne",
-    "giftCardHint": "La carte cadeau sera envoyée par e-mail sous 1 à 3 jours ouvrables."
+    "bookCardShippingLine2": "en Allemagne"
   },
   "leaderboard": {
     "pageTitle": "Classement",

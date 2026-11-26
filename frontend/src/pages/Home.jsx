@@ -776,10 +776,6 @@ const Home = () => {
             offer={selectedOffer}
             token={token}
             onClose={() => setSelectedOffer(null)}
-            onSubmitted={(submissionStatus) => {
-              setCustomOffers(prev => prev.map(item => item._id === selectedOffer._id ? { ...item, submissionStatus } : item));
-              setSelectedOffer(prev => prev ? { ...prev, submissionStatus } : prev);
-            }}
           />
         )}
 

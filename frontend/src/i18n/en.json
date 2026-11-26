@@ -353,8 +353,7 @@
     "bookCardSignatureLine1": "Personal signature",
     "bookCardSignatureLine2": "possible",
     "bookCardShippingLine1": "Shipping only",
-    "bookCardShippingLine2": "within Germany",
-    "giftCardHint": "Gift card will be emailed within 1-3 business days."
+    "bookCardShippingLine2": "within Germany"
   },
   "leaderboard": {
     "pageTitle": "Leaderboard",

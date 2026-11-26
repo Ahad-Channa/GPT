@@ -8,7 +8,6 @@ import {
   FiClock, FiLoader, FiInbox, FiSend
 } from 'react-icons/fi';
 import { ProviderCard, OfferwallCard, FeaturedOfferCard, FeaturedOfferModal } from '../components/offers/OfferCards';
-import OfferwallModal from '../components/offers/OfferwallModal';
 import { GoodpicksOfferwallModal } from '../components/offers/GoodpicksModal';
 import { DirectOfferCard, DirectOfferModal } from '../components/offers/DirectOfferCard';
 import { isOfferCompleted, markOfferStarted } from '../utils/offerLifecycle.js';
@@ -222,7 +221,7 @@ const Earn = () => {
             transition={{ duration: 0.25 }}
             className="space-y-6"
           >
-            {false && activeProvider ? (
+            {activeProvider ? (
               activeProvider.id === 'goodpicks' ? (
                 <GoodpicksOfferwallModal onClose={() => setActiveProvider(null)} token={token} />
               ) : (
@@ -299,46 +298,22 @@ const Earn = () => {
                         </div>
                       </div>
                     ) : (
-                      <div className="space-y-6">
-                        {directOffers.length > 0 && (
-                          <div className="space-y-3">
-                            <div>
-                              <h2 className="text-lg font-bold text-white flex items-center gap-2">
-                                <FiZap className="text-amber-400" /> Auto-Tracked Offers
-                              </h2>
-                              <p className="text-slate-500 text-xs mt-0.5">Rewarded automatically when the advertiser confirms completion.</p>
-                            </div>
-                            <motion.div variants={container} initial="hidden" animate="show" className="grid grid-cols-2 lg:grid-cols-[repeat(auto-fill,minmax(156px,1fr))] gap-3 lg:gap-4">
-                              {directOffers.map(offer => (
-                                <DirectOfferCard
-                                  key={offer._id}
-                                  offer={offer}
-                                  onClick={() => setSelectedDirectOffer(offer)}
-                                />
-                              ))}
-                            </motion.div>
-                          </div>
-                        )}
-                        {customOffers.length > 0 && (
-                          <div className="space-y-3">
-                            <div>
-                              <h2 className="text-lg font-bold text-white flex items-center gap-2">
-                                <FiExternalLink className="text-indigo-400" /> Manual Offers
-                              </h2>
-                              <p className="text-slate-500 text-xs mt-0.5">Submit proof after completing the offer.</p>
-                            </div>
-                            <motion.div variants={container} initial="hidden" animate="show" className="grid grid-cols-2 lg:grid-cols-[repeat(auto-fill,minmax(156px,1fr))] gap-3 lg:gap-4">
-                              {customOffers.map(offer => (
-                                <FeaturedOfferCard
-                                  key={offer._id}
-                                  offer={offer}
-                                  onClick={() => setSelectedOffer(offer)}
-                                />
-                              ))}
-                            </motion.div>
-                          </div>
-                        )}
-                      </div>
+                      <motion.div variants={container} initial="hidden" animate="show" className="grid grid-cols-2 lg:grid-cols-[repeat(auto-fill,minmax(156px,1fr))] gap-3 lg:gap-4">
+                        {directOffers.map(offer => (
+                          <DirectOfferCard
+                            key={offer._id}
+                            offer={offer}
+                            onClick={() => setSelectedDirectOffer(offer)}
+                          />
+                        ))}
+                        {customOffers.map(offer => (
+                          <FeaturedOfferCard
+                            key={offer._id}
+                            offer={offer}
+                            onClick={() => setSelectedOffer(offer)}
+                          />
+                        ))}
+                      </motion.div>
                     )}
                   </>
                 )}
@@ -348,31 +323,13 @@ const Earn = () => {
         </AnimatePresence>
 
         <AnimatePresence>
-          {activeProvider && (
-            <OfferwallModal
-              provider={activeProvider}
-              userId={mongoUser?._id}
-              token={token}
-              onClose={() => setActiveProvider(null)}
-            />
-          )}
-        </AnimatePresence>
-
-        <AnimatePresence>
           {selectedOffer && (
             <FeaturedOfferModal
               offer={selectedOffer}
               token={token}
               onClose={() => setSelectedOffer(null)}
-              onSubmitted={(submissionStatus) => {
-                setCustomOffers(prev => prev.map(item => item._id === selectedOffer._id ? { ...item, submissionStatus } : item));
-                setSelectedOffer(prev => prev ? { ...prev, submissionStatus } : prev);
-              }}
             />
           )}
-        </AnimatePresence>
-
-        <AnimatePresence>
           {selectedDirectOffer && (
             <DirectOfferModal
               offer={selectedDirectOffer}
@@ -380,8 +337,7 @@ const Earn = () => {
               placement="featured"
               onClose={() => setSelectedDirectOffer(null)}
               onClicked={(offerId, state = {}) => {
-                setDirectOffers(prev => markOfferStarted(prev, offerId));
-                setDirectOffers(prev => prev.map(o => o._id === offerId ? {
+                setDirectOffers(prev => markOfferStarted(prev, offerId).map(o => o._id === offerId ? {
                   ...o,
                   clickStatus: 'clicked',
                   submissionStatus: state.submissionStatus || o.submissionStatus,

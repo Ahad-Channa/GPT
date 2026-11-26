@@ -102,8 +102,11 @@ test('formatGoalTimeLimit renders "ND" only for positive integers', async () => 
 
 test('Direct Offer and Goodpicks goal rows render the time badge from timeLimitDays', () => {
   const card = read('frontend/src/components/offers/DirectOfferCard.jsx');
-  assert.match(card, /formatGoalTimeLimit\(req\.timeLimitDays\)/);
-  assert.match(card, /timeLimitDays: goal\.timeLimitDays/);
+  assert.match(card, /formatGoalTimeLimit\(goal\.timeLimitDays\)/);
+  assert.match(card, /timeLimitText:/);
+  // The designer modal renders the badge from the row's timeLimitText.
+  const designerModal = read('frontend/src/components/offers/OfferCards.jsx');
+  assert.match(designerModal, /req\.timeLimitText/);
   // Phase 2 completion behavior unchanged
   assert.match(card, /isGoalCompleted\(offer, goal\)/);
 

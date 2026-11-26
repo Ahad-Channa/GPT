@@ -352,8 +352,7 @@
     "bookCardSignatureLine1": "Persönliche Widmung",
     "bookCardSignatureLine2": "möglich",
     "bookCardShippingLine1": "Versand nur",
-    "bookCardShippingLine2": "innerhalb Deutschlands",
-    "giftCardHint": "Die Gutscheinkarte wird innerhalb von 1–3 Werktagen per E-Mail gesendet."
+    "bookCardShippingLine2": "innerhalb Deutschlands"
   },
   "leaderboard": {
     "pageTitle": "Bestenliste",

@@ -99,7 +99,7 @@ test('days label follows the language of the shown offer text and falls back to 
 test('Featured and Goodpicks modals use the same display text and localized days label', () => {
   const card = read('frontend/src/components/offers/DirectOfferCard.jsx');
   assert.match(card, /getOfferDisplayLocale\(offer, selectedLanguage\)/);
-  assert.match(card, /formatGoalTimeLimitText\(req\.timeLimitDays, displayLocale\)/);
+  assert.match(card, /formatGoalTimeLimitText\(goal\.timeLimitDays, displayLocale\)/);
 
   const goodpicks = read('frontend/src/components/offers/GoodpicksModal.jsx');
   assert.match(goodpicks, /getOfferDisplayText\(offer, selectedLanguage\)/);

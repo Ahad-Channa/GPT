@@ -69,7 +69,7 @@ const AdminLayout = () => {
     ...(hasPerm('manage_offerwalls') ? [{ to: '/admin/direct-offers', end: false, icon: FiLink, label: 'Direct Offers' }] : []),
     ...(hasPerm('manage_offerwalls') ? [{ to: '/admin/partner-integration', end: false, icon: FiFileText, label: 'Partner Integration' }] : []),
     ...(hasPerm('manage_offerwalls') ? [{ to: '/admin/testing-guides', end: false, icon: FiHelpCircle, label: 'Testing Guides (DE)' }] : []),
-    ...(hasPerm('manage_offerwalls') ? [{ to: '/admin/goodpicks-offers', end: false, icon: FiCheckSquare, label: 'Goodpicks (Legacy)' }] : []),
+    ...(hasPerm('manage_offerwalls') ? [{ to: '/admin/goodpicks-offers', end: false, icon: FiCheckSquare, label: 'Goodpicks Offers' }] : []),
     ...(hasPerm('manage_offerwalls') ? [{ to: '/admin/providers', end: false, icon: FiShield, label: 'Providers' }] : []),
     ...(hasPerm('manage_offerwalls') ? [{ to: '/admin/conversions', end: false, icon: FiActivity, label: 'Conversions' }] : []),
     ...(hasPerm('manage_offerwalls') ? [{ to: '/admin/postback-logs', end: false, icon: FiFileText, label: 'Postback Logs' }] : []),

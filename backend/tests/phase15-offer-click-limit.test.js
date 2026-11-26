@@ -196,7 +196,9 @@ test('frontend click handlers honor limitReached without opening the advertiser 
   assert.match(card, /isOfferClickLimitReached\(offer\)/);
   assert.match(card, /data\.limitReached/);
   assert.match(card, /t\('offers\.clickLimitReached'\)/);
-  assert.match(card, /disabled=\{loading \|\| isExpired \|\| limitReached\}/);
+  assert.match(card, /startDisabled=\{limitReached \|\| manualBusy\}/);
+  assert.match(card, /startLoading=\{loading\}/);
+  assert.match(read('frontend/src/components/offers/OfferCards.jsx'), /disabled=\{isLoading \|\| isExpired \|\| startDisabled\}/);
 
   const goodpicks = read('frontend/src/components/offers/GoodpicksModal.jsx');
   assert.match(goodpicks, /isOfferClickLimitReached\(offer\)/);

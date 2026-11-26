@@ -16,7 +16,6 @@ import { validateOfferText } from '../src/utils/offerLocalePolicy.js';
 import { buildDirectOfferTextPayload } from '../src/utils/directOfferPayload.js';
 import { getOfferTranslation } from '../src/utils/offerTranslations.js';
 import { buildGoalTextPayload, createEmptyGoal } from '../src/utils/directOfferPayload.js';
-import { getFooterBannerSrc, TEXT_FREE_BANNERS } from '../src/utils/footerBanner.js';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const i18nDir = path.join(here, '../src/i18n');
@@ -235,23 +234,3 @@ test('goal payload keeps legacy-only goals and handles empty translations', () =
   assert.equal(buildGoalTextPayload(undefined).label, '');
 });
 
-test('footer banner: localized art only for en/de/ur, text-free for all others', () => {
-  for (const dark of [false, true]) for (const mobile of [false, true]) {
-    const base = { isDarkMode: dark, isMobile: mobile };
-    const expected = TEXT_FREE_BANNERS[dark ? 'dark' : 'light'][mobile ? 'mobile' : 'desktop'];
-    assert.equal(getFooterBannerSrc({ language: 'fr', ...base }), expected);
-    assert.equal(getFooterBannerSrc({ language: 'es', ...base }), expected);
-    assert.notEqual(getFooterBannerSrc({ language: 'en', ...base }), expected);
-    assert.match(getFooterBannerSrc({ language: 'de-AT', ...base }), /german/i);
-    assert.match(getFooterBannerSrc({ language: 'ur', ...base }), /urdu/i);
-    assert.ok(!/german|urdu/i.test(getFooterBannerSrc({ language: 'en', ...base })));
-  }
-});
-
-test('every referenced footer banner asset exists', () => {
-  const pub = path.join(here, '../public');
-  for (const lang of ['en', 'de', 'ur', 'fr']) for (const dark of [false, true]) for (const mobile of [false, true]) {
-    const src = getFooterBannerSrc({ language: lang, isDarkMode: dark, isMobile: mobile });
-    assert.ok(fs.existsSync(path.join(pub, src)), src);
-  }
-});

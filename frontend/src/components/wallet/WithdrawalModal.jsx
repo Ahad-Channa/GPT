@@ -1329,7 +1329,7 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess, filterType }) 
                         opacity: 1,
                       }}
                     >
-                      {method === 'giftcard' ? t('withdraw.giftCard', 'Gift Card') : selectedMethod.label}
+                      {selectedMethod.label}
                     </span>
                     <span
                       className={`text-[9.5px] min-[350px]:text-[10px] min-[370px]:text-[10.5px] min-[400px]:text-[11px] ${
@@ -1346,11 +1346,14 @@ const WithdrawalModal = ({ settings, balance, onClose, onSuccess, filterType }) 
                       }}
                     >
                       {method === 'litecoin' ? (
-                        t('withdraw.ltcHint', selectedConfig.hint)
+                        <>
+                          <span className="whitespace-nowrap">We will send LTC to this address at the live</span>
+                          <span className="block sm:inline whitespace-nowrap"> market rate.</span>
+                        </>
                       ) : method === 'paypal' ? (
                         t('withdraw.paypalHint', selectedConfig.hint)
                       ) : (
-                        t('withdraw.giftCardHint', selectedConfig.hint)
+                        selectedConfig.hint
                       )}
                     </span>
                   </div>
