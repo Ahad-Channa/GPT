@@ -9,8 +9,8 @@ This document records the work completed and tested on the `delivery-postback-cl
 - Working branch: `delivery-postback-clean`
 - Main branch was not modified for this delivery.
 - Staging path used on server: `/var/www/taskmint-staging`
-- Staging frontend URL used for QA: `http://81.17.100.61:5056`
-- Staging backend URL used for QA: `http://81.17.100.61:5055`
+- Staging frontend URL used for QA: `https://taskmint.itskode.com`
+- Staging backend URL used for QA: `https://taskmint.itskode.com`
 - PM2 apps used:
   - `taskmint-staging-backend`
   - `taskmint-staging-frontend`
@@ -238,7 +238,7 @@ Verified:
 Tested using a URL in this format:
 
 ```text
-http://81.17.100.61:5055/api/direct-offers/postback?click_id=CLICK_ID&txn_id=qa-charge-001&status=approved&payout=1&event_type=register&secret=OFFER_SECRET
+https://taskmint.itskode.com/api/direct-offers/postback?click_id=CLICK_ID&txn_id=qa-charge-001&status=approved&payout=1&event_type=register&secret=OFFER_SECRET
 ```
 
 Verified:
