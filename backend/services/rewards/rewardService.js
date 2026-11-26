@@ -356,6 +356,9 @@ const processReward = async ({
             walletApplied: false,
             holdApplied: holdDecision.status === 'hold',
             holdDays: holdDecision.holdDays,
+            // Rewards from a test-mode offer (only visible to selected users)
+            // stay out of the public Live Feed.
+            ...(directOffer?.visibility === 'selected' && { testOffer: true }),
           },
           externalId,
         },

@@ -137,7 +137,9 @@ router.get('/recent-earnings', async (req, res) => {
         {
           transactionType: { $in: validTransactionTypes },
           status: { $in: ['completed', 'hold'] },
-          amount: { $gt: 0 }
+          amount: { $gt: 0 },
+          // Rewards from test-mode offers are not shown publicly.
+          'metadata.testOffer': { $ne: true }
         },
         {
           transactionType: 'withdrawal',

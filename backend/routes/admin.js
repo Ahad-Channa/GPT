@@ -306,7 +306,66 @@ const sanitizeDirectOfferAdmin = (offer) => {
   doc.trackingMode = doc.trackingMode === 'manual' ? 'manual' : 'postback';
   doc.postbackSecretConfigured = Boolean(doc.postbackSecretKey);
   delete doc.postbackSecretKey;
+  doc.visibility = doc.visibility === 'selected' ? 'selected' : 'everyone';
+  // allowedUserIds may be populated ({ _id, email, displayName }) or plain ids.
+  const allowed = Array.isArray(doc.allowedUserIds) ? doc.allowedUserIds : [];
+  doc.allowedUsers = allowed.map((entry) => (
+    entry && typeof entry === 'object' && entry.email !== undefined
+      ? { _id: entry._id, email: entry.email || '', displayName: entry.displayName || '' }
+      : { _id: entry, email: '', displayName: '' }
+  ));
+  doc.allowedUserIds = doc.allowedUsers.map((entry) => entry._id);
   return doc;
+};
+
+const ALLOWED_OFFER_USER_POPULATE = { path: 'allowedUserIds', select: 'email displayName' };
+
+// Adds tester emails to an offer document for the admin UI. Plain objects (or a
+// populate failure) are returned unchanged; the UI then shows user IDs.
+const withAllowedOfferUsers = async (offer) => {
+  if (!offer || typeof offer.populate !== 'function') return offer;
+  try {
+    return await offer.populate(ALLOWED_OFFER_USER_POPULATE);
+  } catch (error) {
+    console.warn('[Admin] Could not load direct-offer test users:', error.message);
+    return offer;
+  }
+};
+const MAX_ALLOWED_OFFER_USERS = 200;
+
+const visibilityError = (message) => {
+  const error = new Error(message);
+  error.statusCode = 400;
+  return error;
+};
+
+// Test-mode visibility for a direct offer. Users are given by email or user ID
+// (array, or text separated by commas/spaces/new lines). Unknown entries are
+// rejected so a typo never silently leaves a tester out.
+const resolveDirectOfferVisibility = async ({ visibility, allowedUsers }) => {
+  const mode = visibility === 'selected' ? 'selected' : 'everyone';
+  const rawList = Array.isArray(allowedUsers) ? allowedUsers : String(allowedUsers || '').split(/[\s,;]+/);
+  const entries = [...new Set(rawList.map((value) => String(value || '').trim()).filter(Boolean))];
+  if (entries.length > MAX_ALLOWED_OFFER_USERS) {
+    throw visibilityError(`At most ${MAX_ALLOWED_OFFER_USERS} test users are allowed.`);
+  }
+
+  const idEntries = entries.filter((value) => /^[a-f0-9]{24}$/i.test(value));
+  const emailEntries = entries.filter((value) => !idEntries.includes(value)).map((value) => value.toLowerCase());
+  const users = entries.length
+    ? await User.find({ $or: [{ _id: { $in: idEntries } }, { email: { $in: emailEntries } }] }).select('_id email').lean()
+    : [];
+  const foundIds = new Set(users.map((user) => String(user._id)));
+  const foundEmails = new Set(users.map((user) => String(user.email || '').toLowerCase()));
+  const unknown = [
+    ...idEntries.filter((value) => !foundIds.has(value.toLowerCase())),
+    ...emailEntries.filter((value) => !foundEmails.has(value)),
+  ];
+  if (unknown.length) throw visibilityError(`Unknown test user(s): ${unknown.join(', ')}`);
+  if (mode === 'selected' && !users.length) {
+    throw visibilityError('Add at least one test user, or make the offer visible to everyone.');
+  }
+  return { visibility: mode, allowedUserIds: users.map((user) => user._id) };
 };
 
 const normalizeTrackingMode = (value, fallback = 'postback') => {
@@ -3769,7 +3828,7 @@ router.delete('/avatars/:id', requirePermission('manage_users'), async (req, res
 // GET /api/admin/direct-offers — List all direct offers
 router.get('/direct-offers', requirePermission('manage_offerwalls'), async (req, res) => {
   try {
-    const offers = await DirectOffer.find().sort({ createdAt: -1 });
+    const offers = await Promise.all((await DirectOffer.find().sort({ createdAt: -1 })).map(withAllowedOfferUsers));
     res.json({ success: true, offers: offers.map(sanitizeDirectOfferAdmin) });
   } catch (error) {
     console.error('[/api/admin/direct-offers GET] Error:', error);
@@ -3855,7 +3914,7 @@ router.post('/direct-offers', requirePermission('manage_offerwalls'), async (req
       platforms, requirements, requirementsDe, requirementType, postbackMapping, allowedCountries, displayPlacements, goals,
       maxTotalClicks, holdEnabled, holdDays, holdThreshold,
       trackingMode, proofInstructions, proofInstructionsDe,
-      translations,
+      translations, visibility, allowedUsers,
     } = req.body;
 
     if (!title || !description || !advertiserUrl) {
@@ -3884,7 +3943,10 @@ router.post('/direct-offers', requirePermission('manage_offerwalls'), async (req
       });
     }
 
-    const offer = await DirectOffer.create({
+    const visibilitySettings = await resolveDirectOfferVisibility({ visibility, allowedUsers });
+
+    const created = await DirectOffer.create({
+      ...visibilitySettings,
       title,
       titleDe: titleDe || '',
       description,
@@ -3914,6 +3976,7 @@ router.post('/direct-offers', requirePermission('manage_offerwalls'), async (req
       maxTotalClicks: parseMaxTotalClicks(maxTotalClicks),
       // postbackSecretKey is auto-generated by the model default
     });
+    const offer = await withAllowedOfferUsers(created);
 
     await createLog(req.dbUser._id, 'CREATE_DIRECT_OFFER', null, { offerId: offer._id, title: offer.title, actionType: 'create' });
     res.status(201).json({ success: true, offer: sanitizeDirectOfferAdmin(offer) });
@@ -3932,8 +3995,20 @@ router.put('/direct-offers/:id', requirePermission('manage_offerwalls'), async (
       platforms, requirements, requirementsDe, requirementType, postbackMapping, allowedCountries, displayPlacements, goals,
       maxTotalClicks, holdEnabled, holdDays, holdThreshold,
       trackingMode, proofInstructions, proofInstructionsDe,
-      translations,
+      translations, visibility, allowedUsers,
     } = req.body;
+
+    // Visibility and the tester list are always saved together; when only one
+    // is sent, the stored other half is used.
+    let visibilitySettings;
+    if (visibility !== undefined || allowedUsers !== undefined) {
+      const stored = await DirectOffer.findById(req.params.id).select('visibility allowedUserIds').lean();
+      if (!stored) return res.status(404).json({ success: false, error: 'Direct offer not found' });
+      visibilitySettings = await resolveDirectOfferVisibility({
+        visibility: visibility !== undefined ? visibility : stored.visibility,
+        allowedUsers: allowedUsers !== undefined ? allowedUsers : (stored.allowedUserIds || []).map(String),
+      });
+    }
 
     if (goals !== undefined && trackingMode !== 'manual') { assertValidGoalKeys(goals); assertEnabledGoalRewards(goals); }
     const normalizedGoals = goals !== undefined
@@ -3971,7 +4046,7 @@ router.put('/direct-offers/:id', requirePermission('manage_offerwalls'), async (
       });
     }
 
-    const offer = await DirectOffer.findByIdAndUpdate(
+    const updated = await DirectOffer.findByIdAndUpdate(
       req.params.id,
       {
         ...(title !== undefined && { title }),
@@ -4001,9 +4076,11 @@ router.put('/direct-offers/:id', requirePermission('manage_offerwalls'), async (
         ...(normalizedGoals !== undefined && { goals: normalizedGoals }),
         ...(postbackMapping !== undefined && { postbackMapping }),
         ...(maxTotalClicks !== undefined && { maxTotalClicks: parseMaxTotalClicks(maxTotalClicks) }),
+        ...(visibilitySettings !== undefined && visibilitySettings),
       },
       { new: true }
     );
+    const offer = await withAllowedOfferUsers(updated);
 
     if (!offer) return res.status(404).json({ success: false, error: 'Direct offer not found' });
 

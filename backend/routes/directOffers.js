@@ -72,6 +72,21 @@ const resolveClickPlacement = (offer, requested) => {
 
 const isManualOffer = (offer) => offer && offer.trackingMode === 'manual';
 
+// Test-mode offers (visibility 'selected') are only for the users on the
+// offer's allowedUserIds list; everyone else neither sees nor can start them.
+const canUserSeeOffer = (offer, userId) => {
+  if (!offer || offer.visibility !== 'selected') return true;
+  if (!userId) return false;
+  return (offer.allowedUserIds || []).some((id) => String(id?._id || id) === String(userId));
+};
+
+const buildVisibilityClause = (userId) => (userId
+  ? { $or: [{ visibility: { $ne: 'selected' } }, { allowedUserIds: userId }] }
+  : { visibility: { $ne: 'selected' } });
+
+// Users never receive the tester list.
+const OFFER_PUBLIC_EXCLUDE = '-postbackSecretKey -holdEnabled -holdDays -holdThreshold -advertiserPayoutAmount -goals.payoutAmount -allowedUserIds';
+
 // Removes the admin-only USD tracking fields from an offer before it is sent to
 // users: the offer-level advertiserPayoutAmount and each step's payoutAmount
 // ("Payout Metadata"). Coin rewards (rewardAmount, goals[].rewardAmount) are kept.
@@ -123,8 +138,9 @@ router.get('/', verifyToken, async (req, res) => {
       $and: [
         { $or: [{ expirationDate: null }, { expirationDate: { $gt: now } }] },
         buildPlacementClause(placement),
+        buildVisibilityClause(user?._id),
       ],
-    }).select('-postbackSecretKey -holdEnabled -holdDays -holdThreshold -advertiserPayoutAmount -goals.payoutAmount').lean();
+    }).select(OFFER_PUBLIC_EXCLUDE).lean();
 
     // The Profile's Started Offers tab requests placement=all. Keep previously
     // started offers in that response even if an admin later deactivates or
@@ -140,7 +156,7 @@ router.get('/', verifyToken, async (req, res) => {
         .filter((offerId) => !alreadyListed.has(offerId.toString()));
       if (historicalIds.length) {
         const historicalOffers = await DirectOffer.find({ _id: { $in: historicalIds } })
-          .select('-postbackSecretKey -holdEnabled -holdDays -holdThreshold -advertiserPayoutAmount -goals.payoutAmount')
+          .select(OFFER_PUBLIC_EXCLUDE)
           .lean();
         offers = [...offers, ...historicalOffers];
       }
@@ -268,7 +284,7 @@ router.post('/click/:offerId', verifyToken, fraudCheck('offer_click', 'full'), a
     if (user.isBanned) return res.status(403).json({ success: false, error: 'Account suspended' });
 
     const offer = await DirectOffer.findById(req.params.offerId);
-    if (!offer || !offer.isActive) {
+    if (!offer || !offer.isActive || !canUserSeeOffer(offer, user._id)) {
       return res.status(404).json({ success: false, error: 'Offer not found or inactive' });
     }
     if (offer.expirationDate && new Date(offer.expirationDate) < new Date()) {
@@ -550,7 +566,7 @@ router.post('/:offerId/submit', verifyToken, async (req, res) => {
     if (!user) return res.status(404).json({ success: false, error: 'User not found' });
 
     const offer = await DirectOffer.findById(req.params.offerId);
-    if (!offer || !offer.isActive) {
+    if (!offer || !offer.isActive || !canUserSeeOffer(offer, user._id)) {
       return res.status(404).json({ success: false, error: 'Offer not found or inactive' });
     }
     if (!isManualOffer(offer)) {
@@ -711,6 +727,8 @@ router.__testInternals = {
   PLACEMENTS,
   buildDirectOfferProviderConfig,
   buildPlacementClause,
+  buildVisibilityClause,
+  canUserSeeOffer,
   resolveClickPlacement,
   stripAdminOnlyPayoutFields,
 };

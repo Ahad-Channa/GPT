@@ -480,7 +480,9 @@ test('one offer record can be clicked from both placements and rejected from pla
 test('public direct-offer responses never expose secrets, internal hold fields, or USD payout metadata', () => {
   const fs = require('node:fs');
   const source = fs.readFileSync(require('node:path').join(__dirname, '..', 'routes', 'directOffers.js'), 'utf8');
-  assert.match(source, /\.select\('-postbackSecretKey -holdEnabled -holdDays -holdThreshold -advertiserPayoutAmount -goals\.payoutAmount'\)/);
+  // One shared exclude list (also hides the test-mode tester list) used by every user query.
+  assert.match(source, /const OFFER_PUBLIC_EXCLUDE = '-postbackSecretKey -holdEnabled -holdDays -holdThreshold -advertiserPayoutAmount -goals\.payoutAmount -allowedUserIds'/);
+  assert.equal((source.match(/\.select\(OFFER_PUBLIC_EXCLUDE\)/g) || []).length, 2);
 });
 
 test('direct offer status mapping supports configured chargeback as reversal', () => {

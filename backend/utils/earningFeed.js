@@ -47,6 +47,7 @@ const buildNewEarningPayload = ({ transaction, user } = {}) => {
   if (!REAL_OFFER_EARNING_TYPES.includes(plain.transactionType)) return null;
   if (!FEED_STATUSES.includes(plain.status)) return null;
   if (!(Number(plain.amount) > 0)) return null;
+  if (plain.metadata?.testOffer === true) return null;
 
   const payload = {
     ...plain,

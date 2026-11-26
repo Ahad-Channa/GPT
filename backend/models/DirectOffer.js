@@ -51,6 +51,11 @@ const directOfferSchema = new mongoose.Schema(
     advertiserPayoutAmount: { type: Number, default: 0 }, // USD you earn from advertiser (record only)
     advertiserUrl: { type: String, required: true }, // Where user is redirected after click
     isActive: { type: Boolean, default: true },
+    // 'everyone' = normal live offer. 'selected' = test mode: only the users in
+    // allowedUserIds see it and can start it (e.g. to check tracking before
+    // going live). Switching back to 'everyone' makes it live for all users.
+    visibility: { type: String, enum: ['everyone', 'selected'], default: 'everyone' },
+    allowedUserIds: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
     expirationDate: { type: Date, default: null },
     icon: { type: String, default: null }, // Emoji or image URL
     coverImage: { type: String, default: null }, // Card cover image URL

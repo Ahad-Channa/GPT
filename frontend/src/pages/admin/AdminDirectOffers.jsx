@@ -161,6 +161,8 @@ export const OfferFormModal = ({ offer, onClose, onSaved, adminApi, initialLangu
     },
     platforms: offer?.platforms || { desktop: true, android: true, ios: true },
     isActive: offer?.isActive !== undefined ? offer.isActive : true,
+    visibility: offer?.visibility === 'selected' ? 'selected' : 'everyone',
+    allowedUsersText: (offer?.allowedUsers || []).map((u) => u.email || u._id).join('\n'),
     goals: normalizeClientGoals(offer?.goals),
     postbackMapping: {
       clickIdParam:       offer?.postbackMapping?.clickIdParam       || 'click_id',
@@ -256,6 +258,10 @@ export const OfferFormModal = ({ offer, onClose, onSaved, adminApi, initialLangu
     if (!hasEnabledGoals && !isValidCoinReward(form.rewardAmount)) {
       return setError('Reward (Coins) must be a whole number of at least 1 (no decimals such as 1.9).');
     }
+    const allowedUsers = String(form.allowedUsersText || '').split(/[\s,;]+/).map((v) => v.trim()).filter(Boolean);
+    if (form.visibility === 'selected' && allowedUsers.length === 0) {
+      return setError('Test mode: add at least one test user (email or user ID), or make the offer visible to everyone.');
+    }
     setLoading(true);
     try {
       const path = isEdit ? `/admin/direct-offers/${offer._id}` : '/admin/direct-offers';
@@ -292,6 +298,9 @@ export const OfferFormModal = ({ offer, onClose, onSaved, adminApi, initialLangu
           holdEnabled: Boolean(form.holdEnabled),
           holdDays: Number.isInteger(parsedHoldDays) && parsedHoldDays >= 0 ? parsedHoldDays : 0,
           holdThreshold: Number.isInteger(parsedHoldThreshold) && parsedHoldThreshold >= 0 ? parsedHoldThreshold : 0,
+          allowedUsersText: undefined,
+          visibility: form.visibility,
+          allowedUsers,
         }),
       });
       const data = await res.json();
@@ -490,6 +499,40 @@ export const OfferFormModal = ({ offer, onClose, onSaved, adminApi, initialLangu
               onChange={(next) => setForm(f => ({ ...f, allowedCountries: next }))}
               inputCls={inputCls}
             />
+          </div>
+          <div>
+            <label className={labelCls}>Who can see this offer?</label>
+            <div className="flex flex-wrap gap-3">
+              {[
+                ['everyone', 'Everyone (live)'],
+                ['selected', 'Only selected test users'],
+              ].map(([value, label]) => (
+                <label key={value} className="flex items-center gap-1.5 text-xs text-slate-300 cursor-pointer">
+                  <input
+                    type="radio"
+                    name="offerVisibility"
+                    checked={form.visibility === value}
+                    onChange={() => setForm(f => ({ ...f, visibility: value }))}
+                    className="accent-indigo-500"
+                  />
+                  {label}
+                </label>
+              ))}
+            </div>
+            {form.visibility === 'selected' && (
+              <div className="mt-2 space-y-1">
+                <textarea
+                  rows={3}
+                  className={inputCls}
+                  value={form.allowedUsersText}
+                  onChange={set('allowedUsersText')}
+                  placeholder={'tester@example.com\nanother@example.com'}
+                />
+                <p className="text-[11px] text-amber-700">
+                  Test mode: only these users (email or user ID, one per line) see and can start the offer. Their rewards are not shown in the public Live Feed. Switch to "Everyone" to make it live for all users.
+                </p>
+              </div>
+            )}
           </div>
           <div>
             <label className={labelCls}>Placements</label>
@@ -1346,6 +1389,22 @@ const AdminDirectOffers = () => {
     } catch { alert('Failed to toggle offer'); }
   };
 
+  // Test mode -> live for everyone (the tester list is kept for a later re-test).
+  const handleGoLive = async (offer) => {
+    if (!adminApi) return;
+    if (!window.confirm(`Make "${offer.title}" visible to ALL users now?`)) return;
+    try {
+      const res = await adminApi(`/admin/direct-offers/${offer._id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ visibility: 'everyone' }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (data.success) setOffers(prev => prev.map(o => o._id === offer._id ? data.offer : o));
+      else alert(data.error || 'Failed to make the offer live');
+    } catch { alert('Failed to make the offer live'); }
+  };
+
   const handleDelete = async (offer) => {
     if (!window.confirm(`Deactivate "${offer.title}"?`)) return;
     if (!adminApi) return;
@@ -1452,6 +1511,14 @@ const AdminDirectOffers = () => {
                         <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${offer.trackingMode === 'manual' ? 'bg-sky-50 text-sky-700 border border-sky-200' : 'bg-violet-50 text-violet-700 border border-violet-200'}`}>
                           {offer.trackingMode === 'manual' ? 'Manual' : 'Postback'}
                         </span>
+                        {offer.visibility === 'selected' && (
+                          <span
+                            className="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase bg-amber-50 text-amber-700 border border-amber-200"
+                            title={(offer.allowedUsers || []).map((u) => u.email || u._id).join(', ')}
+                          >
+                            Test · {(offer.allowedUsers || []).length} user{(offer.allowedUsers || []).length === 1 ? '' : 's'}
+                          </span>
+                        )}
                       </div>
                       <p className="text-slate-600 text-sm mt-1 line-clamp-2">{offer.description}</p>
                     </div>
@@ -1661,6 +1728,14 @@ const AdminDirectOffers = () => {
                   >
                     {offer.isActive ? <><FiToggleRight /> Deactivate</> : <><FiToggleLeft /> Activate</>}
                   </button>
+                  {offer.visibility === 'selected' && (
+                    <button
+                      onClick={() => handleGoLive(offer)}
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-700 hover:bg-emerald-100 text-xs font-semibold transition-colors"
+                    >
+                      Go live for everyone
+                    </button>
+                  )}
                   <a
                     href={offer.advertiserUrl}
                     target="_blank"
