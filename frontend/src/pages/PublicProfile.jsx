@@ -6,6 +6,7 @@ import { motion } from 'framer-motion';
 import { FiStar, FiClock, FiShield, FiAlertTriangle, FiLock } from 'react-icons/fi';
 import CoinDisplay from '../components/CoinDisplay';
 import UserAvatar from '../components/UserAvatar';
+import { getTransactionText } from '../utils/earningDisplay';
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
@@ -155,7 +156,7 @@ const PublicProfile = () => {
                       </div>
                       <div>
                         <p className="text-sm font-semibold text-slate-200">
-                          {offer.description}
+                          {getTransactionText(offer) || offer.description}
                         </p>
                         <p className="text-[11px] text-slate-500 mt-1">
                           {timeAgo(offer.createdAt, i18n?.language === 'fr' ? 'fr-FR' : (i18n?.language === 'de' ? 'de-DE' : 'en-US'))}

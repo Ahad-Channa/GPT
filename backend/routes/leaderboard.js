@@ -15,10 +15,9 @@ const { REAL_OFFER_EARNING_TYPES } = require('../utils/earningTypes');
  * Get the UTC start of the current period window.
  * Used as a fallback when no lastResetAt has been stored yet.
  */
-function getPeriodStart(period) {
+function getPeriodStart(period, now = new Date()) {
   if (period === 'allTime') return new Date(0); // Epoch
 
-  const now = new Date();
   if (period === 'daily') {
     return new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
   }
@@ -51,6 +50,19 @@ function getPeriodEnd(period) {
   }
 }
 
+// The reset cron fires right at the period boundary (00:00 UTC). The cycle being
+// closed is the one that was running shortly before that moment, not the new, still
+// empty one. A manual reset in the middle of a period resolves to the current period.
+const RESET_GRACE_MS = 10 * 60 * 1000;
+
+/** Later of the last reset and the natural start of the period containing `at`. */
+function getCycleStart(period, lastResetAt, at = new Date()) {
+  const naturalStart = getPeriodStart(period, at);
+  return lastResetAt
+    ? new Date(Math.max(new Date(lastResetAt).getTime(), naturalStart.getTime()))
+    : naturalStart;
+}
+
 // ─── Real earning types ───────────────────────────────────────────────────────
 // These are the ONLY types that count toward leaderboard rankings.
 // Excluded: daily_bonus, promo_code, leaderboard_reward (bonuses, not real work).
@@ -66,7 +78,7 @@ const REAL_EARNING_TYPES = REAL_OFFER_EARNING_TYPES;
  * Returns only users with real earnings > 0, padded with 0-earners for display.
  * The padding users are clearly marked coinsEarned: 0.
  */
-async function getLiveRankings(period, limit = 50) {
+async function getLiveRankings(period, limit = 50, window = null) {
   if (period === 'allTime') {
     const users = await User.find({ role: { $ne: 'admin' }, isBanned: false, totalEarned: { $gt: 0 } })
       .sort({ totalEarned: -1 })
@@ -109,12 +121,14 @@ async function getLiveRankings(period, limit = 50) {
   //   • If lastResetAt is set (cron ran), use it so we start exactly at reset time.
   //   • If lastResetAt is null/old (first run or missed cron), fall back to the
   //     natural UTC period boundary — never pulling in a PREVIOUS period's transactions.
-  const settings = await Settings.getSingleton();
-  const storedReset = settings.leaderboardConfig?.[period]?.lastResetAt;
-  const naturalStart = getPeriodStart(period);
-  const cycleStart = storedReset
-    ? new Date(Math.max(new Date(storedReset).getTime(), naturalStart.getTime()))
-    : naturalStart;
+  // A reset passes the window of the cycle it is closing.
+  let createdAt;
+  if (window) {
+    createdAt = { $gte: window.start, $lt: window.end };
+  } else {
+    const settings = await Settings.getSingleton();
+    createdAt = { $gte: getCycleStart(period, settings.leaderboardConfig?.[period]?.lastResetAt) };
+  }
 
   const results = await Transaction.aggregate([
     {
@@ -122,7 +136,7 @@ async function getLiveRankings(period, limit = 50) {
         transactionType: { $in: REAL_EARNING_TYPES },
         amount: { $gt: 0 },
         status: { $in: ['completed', 'hold'] },
-        createdAt: { $gte: cycleStart },
+        createdAt,
       },
     },
     {
@@ -192,17 +206,15 @@ async function resetLeaderboard(period) {
   const cfg = settings.leaderboardConfig?.[period];
   if (!cfg?.enabled) return { skipped: true, reason: `${period} leaderboard is disabled` };
 
-  // Use the same lastResetAt-based cycle start as getLiveRankings.
-  // This ensures the snapshot reflects the REAL cycle window.
-  const storedReset = cfg.lastResetAt;
-  const cycleStart = storedReset ? new Date(storedReset) : getPeriodStart(period);
   const cycleEnd = new Date(); // the actual moment of reset = end of this cycle
+  // The same window is used for the rankings and for the saved snapshot.
+  const cycleStart = getCycleStart(period, cfg.lastResetAt, new Date(cycleEnd.getTime() - RESET_GRACE_MS));
 
   const rewardedRanks = cfg.rewardedRanks || 3;
   const rewardTiersArr = cfg.rewardTiers || [];
 
   const fetchLimit = Math.max(rewardedRanks, cfg.visibleSlots || 25);
-  const allRankings = await getLiveRankings(period, fetchLimit);
+  const allRankings = await getLiveRankings(period, fetchLimit, { start: cycleStart, end: cycleEnd });
 
   // ── CRITICAL GUARD: never reward 0-earners ────────────────────────────────
   // Padded 0-earner entries exist only for display; they must never win prizes.

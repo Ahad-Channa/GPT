@@ -442,7 +442,7 @@ const VipPage = () => {
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4 w-full">
                         {tierLevels.map(lvl => {
                           const isReached = lvl.reached || (lvl.threshold > 0 && earned >= lvl.threshold);
-                          const isClaimed = lvl.claimed || (isReached && (lvl.rewardAmount === 0 || lvl.key === 'bronze_1'));
+                          const isClaimed = lvl.claimed || (isReached && lvl.rewardAmount === 0);
                           const isClaimable = lvl.claimable || (isReached && !isClaimed && lvl.rewardAmount > 0);
 
                           let levelProgressPct = 0;

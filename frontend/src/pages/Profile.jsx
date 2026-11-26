@@ -18,7 +18,7 @@ import TransactionHistory from '../components/wallet/TransactionHistory';
 import CoinDisplay from '../components/CoinDisplay';
 import CoinIcon from '../components/CoinIcon';
 import UserAvatar from '../components/UserAvatar';
-import { getEarningDisplay } from '../utils/earningDisplay';
+import { getTransactionText } from '../utils/earningDisplay';
 import { getOfferDisplayText } from '../utils/offerTranslations';
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
@@ -2769,9 +2769,7 @@ const Profile = () => {
           .filter(tx => tx.status === 'completed' && tx.amount > 0)
           .map(tx => ({
             _id: tx._id,
-            title: tx.transactionType === 'direct_offer_reward'
-              ? getEarningDisplay(tx).primary
-              : (tx.description || 'Offer Reward'),
+            title: getTransactionText(tx) || tx.description || 'Offer Reward',
             rewardAmount: tx.amount,
             completedAt: tx.createdAt,
             source: 'offerwall',
@@ -3607,9 +3605,7 @@ const Profile = () => {
                               const isPending = tx.status === 'pending';
                               const isRefundRejected = /^Withdrawal Refund/i.test(tx.description || '') || /Request rejected/i.test(tx.description || '');
                               const isRejected = tx.status === 'rejected' || tx.status === 'failed' || isRefundRejected;
-                              const transactionDescription = tx.transactionType === 'direct_offer_reward'
-                                ? getEarningDisplay(tx).primary
-                                : tx.description;
+                              const transactionDescription = getTransactionText(tx) || tx.description;
                               return (
                                 <div
                                   key={tx._id}

@@ -228,4 +228,11 @@ export const getTransactionLines = (tx = {}) => {
   };
 };
 
+// One-line form of getTransactionLines for tables with a single description cell.
+// Returns null for non-offer transactions.
+export const getTransactionText = (tx = {}) => {
+  const lines = getTransactionLines(tx);
+  return lines ? `${lines.primary} · ${lines.secondary}` : null;
+};
+
 export default getEarningDisplay;
