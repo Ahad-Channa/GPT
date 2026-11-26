@@ -12,7 +12,9 @@ const notify = require('../utils/notify');
 const { emitWalletUpdate } = require('../utils/walletEvents');
 const { notifyAdmins } = require('../utils/adminNotify');
 const {
+  ACTIVE_EARNING_STATUSES,
   REAL_OFFER_EARNING_TYPES,
+  getActiveRealOfferEarningMatch,
   getCompletedRealOfferEarningMatch,
 } = require('../utils/earningTypes');
 const { sortOfferwallProviders } = require('../utils/offerwallOrder');
@@ -572,13 +574,11 @@ router.get('/daily-bonus-status', verifyToken, async (req, res) => {
     if (!alreadyClaimed) {
       const earnedResult = await Transaction.aggregate([
         {
-          $match: {
+          // Held rewards count too: bigger offers are usually on hold.
+          $match: getActiveRealOfferEarningMatch({
             userId: user._id,
-            amount: { $gt: 0 },
-            transactionType: { $in: REAL_OFFER_EARNING_TYPES },
-            status: 'completed',
             createdAt: { $gte: windowStart }
-          }
+          })
         },
         { $group: { _id: null, total: { $sum: '$amount' } } }
       ]);
@@ -667,16 +667,13 @@ router.post('/daily-bonus', verifyToken, async (req, res) => {
       return 1000;
     };
 
-    // 3. EARN GATE — only count real offer earnings within today's UTC day window
+    // 3. EARN GATE — real offer earnings (credited or on hold) within today's UTC day
     const earnedResult = await Transaction.aggregate([
       {
-        $match: {
+        $match: getActiveRealOfferEarningMatch({
           userId: user._id,
-          amount: { $gt: 0 },
-          transactionType: { $in: REAL_OFFER_EARNING_TYPES },
-          status: 'completed',
           createdAt: { $gte: windowStart }
-        }
+        })
       },
       { $group: { _id: null, total: { $sum: '$amount' } } }
     ]);
@@ -786,7 +783,7 @@ router.post('/redeem-promo', verifyToken, async (req, res) => {
           $match: {
             userId: user._id,
             amount: { $gt: 0 },
-            status: 'completed',
+            status: { $in: [...ACTIVE_EARNING_STATUSES] },
             createdAt: { $gte: sevenDaysAgo },
             description: { $not: /^Withdrawal Refund/ }
           }
