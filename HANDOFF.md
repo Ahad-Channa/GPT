@@ -1,6 +1,6 @@
 # TaskMint: project handoff (for a new Claude chat or a new developer)
 
-Read this first, then continue. Last updated 2026-11-26. **The newest state is in the last section: "Session of 2026-11-26" (read it first; it changes how the frontend is handled).**
+Read this first, then continue. Last updated 2026-11-26 (Evening update: bonus hold implemented & pushed at `65094f2` on `merge-main-test`). **The newest state is in the last section: "Session of 2026-11-26" (read it first; it changes how the frontend is handled).**
 
 ## Project
 - TaskMint: rewards/offerwall site. Frontend `frontend/` (React + Vite), backend `backend/` (Node/Express + MongoDB).
@@ -169,18 +169,50 @@ Rollback: `git checkout delivery-postback-clean`, reinstall, rebuild, restart th
 - Images: many old unused files remain in `frontend/public/coins` (main deleted them, we left them; harmless).
 
 ### Deploy state
-- `origin/merge-main-test` = `df0d169`. Staging server ran `22d2f18` until the user deploys; check with `git log --oneline -1` there. Commands: `cd /var/www/taskmint-staging && git fetch origin && git checkout merge-main-test && git pull --ff-only origin merge-main-test`, `cd backend && npm install`, `cd ../frontend && npm install && npm run build`, `pm2 restart taskmint-staging-backend` and `pm2 restart taskmint-ssl-frontend` (never `pm2 restart all`), hard refresh. Rollback: checkout `22d2f18`.
-- `delivery-postback-clean` still has the OLD frontend (our own design). The line to deploy is `merge-main-test`. Do new frontend work on `merge-main-test` (worktree) so it keeps main's design; bring changes back to `delivery-postback-clean` only if asked. Nothing is on taskmint.me.
+- `origin/merge-main-test` is at commit `65094f2` (pushed). The staging server (`/var/www/taskmint-staging`) ran `4ee1e1a` and needs a pull + backend restart to deploy `65094f2` (backend-only change).
+- The live URL is `https://taskmint.itskode.com/`.
+- Deploy commands for staging whenever new commits are pushed:
+  ```bash
+  cd /var/www/taskmint-staging
+  git pull --ff-only origin merge-main-test
+  git log --oneline -1
+  pm2 restart taskmint-staging-backend
+  cd frontend && npm run build && pm2 restart taskmint-ssl-frontend
+  ```
+  (Never run `pm2 restart all` as unrelated services run on the same VPS).
 
-### Harun: conversation state (as of 2026-11-26)
-- His latest messages: Landing/Footer are not the improved versions; "Earn" in the Live Feed popup must go (done); he has not looked at mobile yet; "only transfer your own work" (done as described above). Pending from us: a short German report listing the 19 main files we touched and the deliberate choices above; he must check desktop and mobile on staging, then approve.
-- Still open from before: the Fiverr order release (he closes it only when everything is finished), the multi-step test guide (German Word file `C:\Users\farru\Documents\TaskMint-Multi-Step-Anleitung.docx` on the home laptop, not in the repo), and the new features (spin / packs / album): his rules, our simulation numbers, the 6 unanswered questions, pricing talk ($25 day rate; floor $625; quotes $850 -> $700 -> $650) and "no advance payment, Fiverr escrow only" are in the 2026-11-25 section above. Do not code those before scope and payment are agreed.
+### Fixes implemented and pushed on `merge-main-test` (commits up to `65094f2`)
+- **`13c3ad4` (Goal step label fallback):** In `offerTranslations.js` / step display, when a Goal Key was generated from the English step label, it displays the English label cleanly in German and other languages instead of showing "nicht verfügbar" or raw keys.
+- **`4a635cc` (Profile popup recent activity):** Right-aligned the coins and date column in `PublicProfileModal.jsx` across both mobile and desktop viewports.
+- **`c38e49a` (VIP Bronze I, Leaderboard reset, Transaction lists):**
+  - **VIP Bronze I Claim:** Fixed the bug where Bronze I was automatically marked as "Claimed" without granting bonus coins. Now displays the "Claim" button properly for users reaching Bronze I.
+  - **Leaderboard Reset Bug:** In `backend/routes/leaderboard.js`, midnight reset (00:00 UTC) previously queried the new empty day, resulting in 0 winners. Fixed to evaluate the ended period (day, week, month) before distributing prizes and archiving.
+  - **Transaction Lists:** Unified profile transaction history and completed offer lists to display `Goodpicks · Offer - Step`.
+- **`4ee1e1a` (Daily bonus & promo code qualifying earnings with Hold):**
+  - Updated Daily Bonus unlock and Promo Code 7-day earning requirement so that offer earnings currently on **hold** count towards the qualification threshold (e.g. user earns 5,000 coins from a large offer with hold; daily bonus unlocks).
+  - Cancelled/rejected earnings and bonus coins do not qualify.
+- **`65094f2` (Platform hold on Daily, Leaderboard, and VIP bonuses; Promo codes excluded):**
+  - Applied `getEarningHoldDecision(settings, rewardAmount, now)` (using the platform-wide `earningHoldConfig` threshold and holdDays) to:
+    * Daily Bonus claims (`POST /api/wallet/daily-bonus` in `backend/routes/wallet.js`)
+    * Leaderboard period reset prizes (`resetLeaderboard` in `backend/routes/leaderboard.js`)
+    * VIP level bonus claims (`POST /api/vip/claim/:levelKey` in `backend/routes/vip.js`)
+  - Promo code redemptions (`POST /api/wallet/redeem-promo`) remain instant credit (`status: 'completed'`) regardless of hold settings, per Harun's request (*"bei promo codes nein, die werden eh immer niedrig sein; ja auch hold bei bonis bitte"*).
+  - Updated `backend/utils/earningTypes.js` (`BONUS_HOLDABLE_TYPES`, `EARNING_HOLD_RELEASE_TYPES`) and `backend/utils/earningHoldJob.js` so the daily hold release job (`releaseEligibleEarningHolds` / `releaseEarningHoldTransaction`) releases matured bonus holds and credits `walletBalance` once, while keeping `REAL_OFFER_EARNING_TYPES` strictly for real offer earnings (so bonuses never count toward VIP progress or leaderboard rankings).
+  - Tests: `backend/tests/phase38-bonus-holds.test.js` (6 new tests). Full backend suite: **590 tests, 586 pass, 4 fail** (only the 4 pre-existing failures).
+
+### Harun: latest feedback & pending requests (as of evening 2026-11-26)
+1. **Hold on Bonuses (Daily Bonus, Leaderboard Bonus, VIP Bonus):**
+   - **DONE (`65094f2`)**: Pushed to `origin/merge-main-test`. Ready to pull and restart `taskmint-staging-backend` on staging.
+2. **Dummy Offerwalls Removal:**
+   - Harun requested removing dummy / design-only offerwall placeholders from the Earn page so only real working offerwalls (**Goodpicks** and **Lootably**) remain visible. (Can be disabled in Admin -> Offerwalls).
 
 ### Next steps
-1. User deploys `df0d169` on staging and sends Harun the German report (offer to draft it: files touched + the 5 deliberate choices).
-2. Harun checks desktop and mobile in all languages and lists remaining differences; fix them on `merge-main-test` with main's design winning.
-3. Only after his explicit approval: plan the go-live (never overwrite taskmint.me with a whole branch; merge/cherry-pick our reviewed changes onto main's code).
-4. Keep this file updated; record exact test totals after each change.
+1. **Deploy `65094f2` to Staging:**
+   - Run `git pull --ff-only origin merge-main-test` and `pm2 restart taskmint-staging-backend` on `/var/www/taskmint-staging`.
+2. **Offerwalls Display:**
+   - Disable non-live offerwalls in Admin -> Offerwalls (or ensure only Goodpicks and Lootably appear on Earn).
+3. **Client Verification:**
+   - Send Harun confirmation that Bonus Hold (for Daily, Leaderboard, and VIP bonuses, excluding Promo Codes) is now live on staging alongside the earlier fixes.
 
 ## Working rules used in this project
 - Do not commit, push or deploy without being asked.
