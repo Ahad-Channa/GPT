@@ -1195,31 +1195,33 @@ const PublicProfileModal = ({ userId, onClose }) => {
                                     {heading}
                                   </span>
                                 </div>
-                                <div
-                                  style={{
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    overflow: 'visible',
-                                  }}
-                                >
-                                  <span
+                                {subText && (
+                                  <div
                                     style={{
-                                      fontFamily: '"Poppins", sans-serif',
-                                      fontWeight: 500,
-                                      fontSize: '12px',
-                                      lineHeight: '1.35',
-                                      letterSpacing: '0%',
-                                      color: isDarkMode ? 'rgba(255, 255, 255, 0.6)' : '#000000',
-                                      whiteSpace: 'nowrap',
-                                      overflow: 'hidden',
-                                      textOverflow: 'ellipsis',
-                                      display: 'block',
-                                      paddingBottom: '3px',
+                                      display: 'flex',
+                                      alignItems: 'center',
+                                      overflow: 'visible',
                                     }}
                                   >
-                                    {subText}
-                                  </span>
-                                </div>
+                                    <span
+                                      style={{
+                                        fontFamily: '"Poppins", sans-serif',
+                                        fontWeight: 500,
+                                        fontSize: '12px',
+                                        lineHeight: '1.35',
+                                        letterSpacing: '0%',
+                                        color: isDarkMode ? 'rgba(255, 255, 255, 0.6)' : '#000000',
+                                        whiteSpace: 'nowrap',
+                                        overflow: 'hidden',
+                                        textOverflow: 'ellipsis',
+                                        display: 'block',
+                                        paddingBottom: '3px',
+                                      }}
+                                    >
+                                      {subText}
+                                    </span>
+                                  </div>
+                                )}
                               </div>
 
                               {/* Right: Combined layout anchored to right */}

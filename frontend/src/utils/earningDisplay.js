@@ -222,9 +222,18 @@ export const getLiveFeedDisplay = (tx = {}) => {
 export const getTransactionLines = (tx = {}) => {
   const live = getLiveFeedDisplay(tx);
   if (!live) return null;
+  const hasOfferName = Boolean(live.detailLine && live.detailLine !== GENERIC_DETAIL_FALLBACK);
+  let secondary = '';
+  if (hasOfferName && live.stepLabel) {
+    secondary = `${live.detailLine} - ${live.stepLabel}`;
+  } else if (hasOfferName) {
+    secondary = live.detailLine;
+  } else if (live.stepLabel) {
+    secondary = live.stepLabel;
+  }
   return {
     primary: live.sourceLine,
-    secondary: live.stepLabel ? `${live.detailLine} - ${live.stepLabel}` : live.detailLine,
+    secondary,
   };
 };
 
@@ -232,7 +241,8 @@ export const getTransactionLines = (tx = {}) => {
 // Returns null for non-offer transactions.
 export const getTransactionText = (tx = {}) => {
   const lines = getTransactionLines(tx);
-  return lines ? `${lines.primary} · ${lines.secondary}` : null;
+  if (!lines) return null;
+  return lines.secondary ? `${lines.primary} · ${lines.secondary}` : lines.primary;
 };
 
 export default getEarningDisplay;

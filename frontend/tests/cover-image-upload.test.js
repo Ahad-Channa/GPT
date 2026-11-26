@@ -53,7 +53,7 @@ test('each multi-step goal shows a user preview built with the real user-side fo
 });
 
 test('transaction lists use the live-feed lines: source, then offer name plus step', async () => {
-  const { getTransactionLines } = await import('../src/utils/earningDisplay.js');
+  const { getTransactionLines, getTransactionText } = await import('../src/utils/earningDisplay.js');
   assert.deepEqual(
     getTransactionLines({ transactionType: 'direct_offer_reward', metadata: { providerId: 'direct', offerTitle: 'pc test', goalKey: 'g2', enabledGoalCount: 3, stepLabel: 'Deposit 50 €' } }),
     { primary: 'Goodpicks', secondary: 'pc test - Deposit 50 €' },
@@ -61,6 +61,15 @@ test('transaction lists use the live-feed lines: source, then offer name plus st
   assert.deepEqual(
     getTransactionLines({ transactionType: 'direct_offer_reward', metadata: { providerId: 'direct', offerTitle: 'pc test', enabledGoalCount: 1 } }),
     { primary: 'Goodpicks', secondary: 'pc test' },
+  );
+  // Legacy offerwall rows without a stored offer name omit "Offer details unavailable" in transaction lists.
+  assert.deepEqual(
+    getTransactionLines({ transactionType: 'offer_reward', description: 'Lootably Offer Reward', metadata: { providerId: 'lootably' } }),
+    { primary: 'Offerwall: Lootably', secondary: '' },
+  );
+  assert.equal(
+    getTransactionText({ transactionType: 'offer_reward', description: 'Lootably Offer Reward', metadata: { providerId: 'lootably' } }),
+    'Offerwall: Lootably',
   );
   assert.equal(getTransactionLines({ transactionType: 'withdrawal' }), null);
   const modal = fs.readFileSync(path.join(root, 'src', 'components', 'PublicProfileModal.jsx'), 'utf8');
