@@ -1004,7 +1004,23 @@ const ClickLogsModal = ({ offer, adminApi, onClose }) => {
                           </button>
                         </div>
                       )}
-                      {click.status === 'approved' && <span className="text-emerald-400 text-xs">Credited ✓</span>}
+                      {click.status === 'approved' && click.chargedBack && (
+                        <span className="text-amber-400 text-xs">Charged back</span>
+                      )}
+                      {click.status === 'approved' && !click.chargedBack && (
+                        <div className="flex items-center gap-2">
+                          <span className="text-emerald-400 text-xs">Credited ✓</span>
+                          {offer.trackingMode !== 'manual' && (
+                            <button
+                              onClick={() => openAction(click.clickId, 'chargeback')}
+                              disabled={actionLoading === click.clickId + 'chargeback'}
+                              className="px-2 py-1 rounded bg-amber-500/15 border border-amber-500/30 text-amber-400 text-xs font-semibold hover:bg-amber-500/25 disabled:opacity-50"
+                            >
+                              {actionLoading === click.clickId + 'chargeback' ? <FiLoader className="animate-spin" /> : '↺ Chargeback'}
+                            </button>
+                          )}
+                        </div>
+                      )}
                       {click.status === 'rejected' && <span className="text-rose-400 text-xs">Rejected</span>}
                     </td>
                   </tr>
@@ -1021,6 +1037,9 @@ const ClickLogsModal = ({ offer, adminApi, onClose }) => {
           <div className="w-full max-w-md rounded-xl border border-white/10 bg-[#12161f] p-5" onClick={(e) => e.stopPropagation()}>
             <h4 className="text-sm font-bold text-white capitalize">{actionPrompt.action} click</h4>
             <p className="mt-1 text-xs text-slate-400">Click ID: <code>{actionPrompt.clickId}</code></p>
+            {actionPrompt.action === 'chargeback' && (
+              <p className="mt-2 text-xs text-amber-300">The credited coins are deducted from the user once. This cannot be undone and the offer cannot be credited again.</p>
+            )}
             <label className="mt-4 block text-xs font-semibold text-slate-300">Reason (required)</label>
             <textarea
               className="admin-input mt-1 w-full"

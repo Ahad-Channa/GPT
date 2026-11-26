@@ -418,6 +418,7 @@ const serializeClickLogAdmin = (click) => ({
   advertiserPayout: click.advertiserPayout,
   convertedAt: click.convertedAt,
   transactionId: click.transactionId,
+  chargedBack: Boolean(click.chargedBack),
   createdAt: click.createdAt,
 });
 
@@ -2938,14 +2939,9 @@ router.post('/conversions/:id/reject', requirePermission('manage_offerwalls'), a
 });
 
 // POST /api/admin/conversions/:id/chargeback — manual reversal through reversal service
-router.post('/conversions/:id/chargeback', requirePermission('manage_offerwalls'), async (req, res) => {
-  try {
-    const reason = parseAdminManualReason(req.body?.reason);
-    if (!reason) return res.status(400).json({ success: false, error: 'A reason is required.' });
-
-    if (!mongoose.Types.ObjectId.isValid(req.params.id)) return res.status(404).json({ success: false, error: 'Conversion not found' });
-    const conversion = await Conversion.findById(req.params.id);
-    if (!conversion) return res.status(404).json({ success: false, error: 'Conversion not found' });
+// Shared manual chargeback: reverses ONE credited conversion through processReversal
+// (the same financial path as provider chargebacks; idempotent) and responds.
+const respondWithConversionChargeback = async ({ req, res, conversion, reason }) => {
     if (!conversion.rewardTransactionId) {
       return res.status(400).json({ success: false, error: 'Only credited conversions can be reversed' });
     }
@@ -3007,6 +3003,17 @@ router.post('/conversions/:id/chargeback', requirePermission('manage_offerwalls'
 
     if (!reversalResult.ok) return res.status(400).json({ success: false, error: reversalResult.reason || 'Conversion could not be reversed', conversion: serializeConversionAdmin(responseConversion) });
     res.json({ success: true, conversion: serializeConversionAdmin(responseConversion), duplicate: Boolean(reversalResult.duplicate) });
+};
+
+router.post('/conversions/:id/chargeback', requirePermission('manage_offerwalls'), async (req, res) => {
+  try {
+    const reason = parseAdminManualReason(req.body?.reason);
+    if (!reason) return res.status(400).json({ success: false, error: 'A reason is required.' });
+
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) return res.status(404).json({ success: false, error: 'Conversion not found' });
+    const conversion = await Conversion.findById(req.params.id);
+    if (!conversion) return res.status(404).json({ success: false, error: 'Conversion not found' });
+    return respondWithConversionChargeback({ req, res, conversion, reason });
   } catch (error) {
     console.error('[/api/admin/conversions/:id/chargeback] Error:', error);
     res.status(500).json({ success: false, error: error.message || 'Failed to chargeback conversion' });
@@ -4094,6 +4101,15 @@ router.get('/click-logs', requirePermission('manage_offerwalls'), async (req, re
       .skip(skip)
       .lean();
 
+    // Clicks whose credited reward was later reversed (chargeback) keep status
+    // 'approved' on the click; flag them so the admin sees "Charged back".
+    const reversedClickIds = new Set((await Conversion.find({
+      clickLogId: { $in: clicks.map((click) => click._id) },
+      internalStatus: 'reversed',
+      reversalTransactionId: { $ne: null },
+    }).select('clickLogId').lean()).map((conversion) => String(conversion.clickLogId)));
+    for (const click of clicks) click.chargedBack = reversedClickIds.has(String(click._id));
+
     const total = await ClickLog.countDocuments(query);
     res.json({
       success: true,
@@ -4200,6 +4216,47 @@ router.post('/click-logs/:clickId/approve', requirePermission('manage_offerwalls
   } catch (error) {
     console.error('[/api/admin/click-logs/:clickId/approve] Error:', error);
     res.status(error.statusCode || 500).json({ success: false, error: error.statusCode ? error.message : 'Failed to approve click' });
+  }
+});
+
+// POST /api/admin/click-logs/:clickId/chargeback — Manual chargeback of a credited click.
+// Reason is required. It reverses the click's credited conversion through the same
+// shared chargeback path as the Conversions page (processReversal, idempotent), so
+// coins are deducted once and the reward can never be credited again.
+router.post('/click-logs/:clickId/chargeback', requirePermission('manage_offerwalls'), async (req, res) => {
+  try {
+    const reason = parseAdminManualReason(req.body?.reason);
+    if (!reason) return res.status(400).json({ success: false, error: 'A reason is required.' });
+
+    const clickLog = await ClickLog.findOne({ clickId: req.params.clickId });
+    if (!clickLog) return res.status(404).json({ success: false, error: 'Click log not found' });
+
+    const offer = clickLog.offerId ? await DirectOffer.findById(clickLog.offerId) : null;
+    if (offer?.trackingMode === 'manual') {
+      return res.status(400).json({ success: false, error: 'Manual offers must be charged back from the manual proof queue.' });
+    }
+
+    const credited = await Conversion.find({
+      clickLogId: clickLog._id,
+      internalStatus: 'approved',
+      processingState: 'processed',
+      rewardTransactionId: { $ne: null },
+    });
+    if (credited.length === 0) {
+      const alreadyReversed = await Conversion.exists({ clickLogId: clickLog._id, internalStatus: 'reversed', reversalTransactionId: { $ne: null } });
+      return res.status(400).json({
+        success: false,
+        error: alreadyReversed ? 'This click was already charged back.' : 'No credited reward found for this click.',
+      });
+    }
+    if (credited.length > 1) {
+      return res.status(400).json({ success: false, error: 'This is a multi-step offer. Charge back the specific step from the Conversions page.' });
+    }
+
+    return respondWithConversionChargeback({ req, res, conversion: credited[0], reason });
+  } catch (error) {
+    console.error('[/api/admin/click-logs/:clickId/chargeback] Error:', error);
+    res.status(500).json({ success: false, error: 'Failed to charge back click' });
   }
 });
 
