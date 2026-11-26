@@ -1,6 +1,6 @@
 # TaskMint: project handoff (for a new Claude chat or a new developer)
 
-Read this first, then continue. Last updated 2026-11-26 (Evening update: bonus hold implemented & pushed at `65094f2` on `merge-main-test`). **The newest state is in the last section: "Session of 2026-11-26" (read it first; it changes how the frontend is handled).**
+Read this first, then continue. Last updated 2026-11-26 (Evening update: bonus hold `65094f2` and Profile Completed Offers fix `3c92f13` pushed on `merge-main-test`). **The newest state is in the last section: "Session of 2026-11-26" (read it first; it changes how the frontend is handled).**
 
 ## Project
 - TaskMint: rewards/offerwall site. Frontend `frontend/` (React + Vite), backend `backend/` (Node/Express + MongoDB).
@@ -169,7 +169,7 @@ Rollback: `git checkout delivery-postback-clean`, reinstall, rebuild, restart th
 - Images: many old unused files remain in `frontend/public/coins` (main deleted them, we left them; harmless).
 
 ### Deploy state
-- `origin/merge-main-test` is at commit `65094f2` (pushed). The staging server (`/var/www/taskmint-staging`) ran `4ee1e1a` and needs a pull + backend restart to deploy `65094f2` (backend-only change).
+- `origin/merge-main-test` is at commit `3c92f13` (pushed). The staging server (`/var/www/taskmint-staging`) needs a pull, frontend rebuild (`npm run build`), and PM2 restart (`taskmint-staging-backend` and `taskmint-ssl-frontend`) to deploy `3c92f13`.
 - The live URL is `https://taskmint.itskode.com/`.
 - Deploy commands for staging whenever new commits are pushed:
   ```bash
@@ -181,7 +181,7 @@ Rollback: `git checkout delivery-postback-clean`, reinstall, rebuild, restart th
   ```
   (Never run `pm2 restart all` as unrelated services run on the same VPS).
 
-### Fixes implemented and pushed on `merge-main-test` (commits up to `65094f2`)
+### Fixes implemented and pushed on `merge-main-test` (commits up to `3c92f13`)
 - **`13c3ad4` (Goal step label fallback):** In `offerTranslations.js` / step display, when a Goal Key was generated from the English step label, it displays the English label cleanly in German and other languages instead of showing "nicht verfügbar" or raw keys.
 - **`4a635cc` (Profile popup recent activity):** Right-aligned the coins and date column in `PublicProfileModal.jsx` across both mobile and desktop viewports.
 - **`c38e49a` (VIP Bronze I, Leaderboard reset, Transaction lists):**
@@ -199,6 +199,8 @@ Rollback: `git checkout delivery-postback-clean`, reinstall, rebuild, restart th
   - Promo code redemptions (`POST /api/wallet/redeem-promo`) remain instant credit (`status: 'completed'`) regardless of hold settings, per Harun's request (*"bei promo codes nein, die werden eh immer niedrig sein; ja auch hold bei bonis bitte"*).
   - Updated `backend/utils/earningTypes.js` (`BONUS_HOLDABLE_TYPES`, `EARNING_HOLD_RELEASE_TYPES`) and `backend/utils/earningHoldJob.js` so the daily hold release job (`releaseEligibleEarningHolds` / `releaseEarningHoldTransaction`) releases matured bonus holds and credits `walletBalance` once, while keeping `REAL_OFFER_EARNING_TYPES` strictly for real offer earnings (so bonuses never count toward VIP progress or leaderboard rankings).
   - Tests: `backend/tests/phase38-bonus-holds.test.js` (6 new tests). Full backend suite: **590 tests, 586 pass, 4 fail** (only the 4 pre-existing failures).
+- **`3c92f13` (Profile "Completed Offers" tab includes `direct_offer_reward`):**
+  - Fixed `fetchOffersData` in `frontend/src/pages/Profile.jsx` (line 2725), which previously requested `/wallet/history?type=offer_reward%2Ccustom_offer_reward&limit=50` without `%2Cdirect_offer_reward`. That caused completed Goodpicks/Direct Offers to count in the top "3 Offers Completed" card (`dashboard-stats`) while the "Completed Offers" tab stayed empty. Now includes `direct_offer_reward`.
 
 ### Harun: latest feedback & pending requests (as of evening 2026-11-26)
 1. **Hold on Bonuses (Daily Bonus, Leaderboard Bonus, VIP Bonus):**
