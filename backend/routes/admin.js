@@ -2182,7 +2182,15 @@ router.post('/earnings-holds/release-now', requirePermission('manage_withdrawals
 
       tx.status = 'completed';
       tx.balanceAfter = user.walletBalance;
-      tx.metadata = { ...tx.metadata, releasedAt: new Date().toISOString(), releasedBy: 'manual_admin' };
+      // walletApplied must become true: a later chargeback uses it to decide
+      // whether the coins have to be taken back out of the wallet.
+      tx.metadata = {
+        ...tx.metadata,
+        walletApplied: true,
+        releaseState: 'completed',
+        releasedAt: new Date().toISOString(),
+        releasedBy: 'manual_admin',
+      };
       await tx.save();
 
       // Extract offer title from tx.description

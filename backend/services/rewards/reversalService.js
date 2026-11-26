@@ -191,7 +191,12 @@ const processReversal = async ({
       const user = await queryOne(userModel.findById(claimed.userId), session);
       if (!user) throw new Error('User not found for reversal.');
       const reversalAmount = -Math.abs(rewardTx.amount);
-      const walletWasApplied = rewardTx.status === 'completed' && rewardTx.metadata?.walletApplied !== false;
+      // A held reward that was released later (cron or admin "release now") is in
+      // the wallet. Older admin releases left walletApplied=false, so releasedAt
+      // also counts as proof that the coins were credited.
+      const walletWasApplied = rewardTx.status === 'completed' && (
+        rewardTx.metadata?.walletApplied !== false || Boolean(rewardTx.metadata?.releasedAt)
+      );
       const walletDelta = walletWasApplied ? reversalAmount : 0;
 
       const { transaction: reversalTx } = await createTransactionIdempotent({

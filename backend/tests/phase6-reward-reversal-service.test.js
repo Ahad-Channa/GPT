@@ -312,6 +312,46 @@ test('direct reward follows earning hold config and held reversal does not deduc
   assert.equal(state.user.totalEarned, 500);
 });
 
+test('reward released by the old admin "release now" (walletApplied left false) is deducted on chargeback', async () => {
+  const state = makeState();
+  state.settings.earningHoldConfig = { enabled: true, threshold: 1, holdDays: 7 };
+  await processReward({
+    conversion: state.conversion,
+    models: makeModels(state),
+    hooks: noSideEffects,
+    runInTransaction: transactionRunner(state),
+  });
+
+  // What /admin/earnings-holds/release-now used to do: credit the wallet and
+  // mark completed, but keep walletApplied=false.
+  const rewardTx = state.transactions.find((tx) => tx.externalId === rewardExternalId(state.conversion._id));
+  rewardTx.status = 'completed';
+  rewardTx.metadata = { ...rewardTx.metadata, releasedAt: new Date().toISOString(), releasedBy: 'manual_admin' };
+  state.user.walletBalance += 777;
+  assert.equal(rewardTx.metadata.walletApplied, false);
+  assert.equal(state.user.walletBalance, 877);
+
+  state.conversion.internalStatus = 'reversed';
+  await processReversal({
+    conversion: state.conversion,
+    models: makeModels(state),
+    hooks: { notify: async () => {}, emitWalletUpdate: () => {} },
+    runInTransaction: transactionRunner(state),
+  });
+
+  const reversalTx = state.transactions.find((tx) => tx.externalId === reversalExternalId(state.conversion._id));
+  assert.equal(reversalTx.metadata.walletApplied, true);
+  assert.equal(state.user.walletBalance, 100);
+  assert.equal(state.user.totalEarned, 500);
+});
+
+test('admin earnings-hold release-now marks the reward as applied to the wallet', () => {
+  const source = fs.readFileSync(path.join(__dirname, '../routes/admin.js'), 'utf8');
+  const start = source.indexOf("router.post('/earnings-holds/release-now'");
+  const block = source.slice(start, source.indexOf('router.', start + 10));
+  assert.match(block, /walletApplied: true/);
+});
+
 test('held reward release and reversal race is retryable and nets correctly after release', async () => {
   const state = makeState();
   state.settings.earningHoldConfig = { enabled: true, threshold: 1, holdDays: 7 };
