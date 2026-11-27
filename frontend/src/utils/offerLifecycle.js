@@ -15,6 +15,14 @@ export const getOfferLifecycle = (offer) =>
 
 export const isOfferCompleted = (offer) => getOfferLifecycle(offer) === 'completed';
 
+// Closed = nothing left to earn: fully completed, or charged back (a charged-back
+// offer can never be credited again). Closed offers leave the active lists and
+// stay only in Goodpicks History.
+export const isOfferClosed = (offer) => {
+  const lifecycle = getOfferLifecycle(offer);
+  return lifecycle === 'completed' || lifecycle === 'reversed';
+};
+
 export const isOfferStarted = (offer) => getOfferLifecycle(offer) !== 'available';
 
 // Card status badge key ('clicked' | 'pending' | 'approved' | 'rejected' | null).
@@ -31,10 +39,10 @@ export const getOfferBadgeStatus = (offer) => {
   return null;
 };
 
-// Active/Featured lists: everything except fully completed offers. Partly
-// credited multi-step offers (lifecycle 'started') stay.
+// Active/Featured lists: everything except closed (completed or charged-back)
+// offers. Partly credited multi-step offers (lifecycle 'started') stay.
 export const filterActiveOffers = (offers) =>
-  (Array.isArray(offers) ? offers : []).filter((offer) => !isOfferCompleted(offer));
+  (Array.isArray(offers) ? offers : []).filter((offer) => !isOfferClosed(offer));
 
 // History = the user's started offers, one row per offer ID, newest first.
 export const buildGoodpicksHistory = (offers) => {

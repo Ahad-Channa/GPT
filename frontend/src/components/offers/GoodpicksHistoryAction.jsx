@@ -8,6 +8,25 @@ export default function GoodpicksHistoryAction({ offer, onOpen }) {
   const { t } = useTranslation();
   const lifecycle = getOfferLifecycle(offer);
 
+  if (lifecycle === 'reversed') {
+    return (
+      <span
+        data-testid="goodpicks-history-chargeback"
+        style={{
+          minWidth: '105px',
+          textAlign: 'center',
+          fontFamily: '"Poppins", sans-serif',
+          fontWeight: 600,
+          fontSize: '13px',
+          color: '#DC2626',
+          cursor: 'default',
+        }}
+      >
+        {t('goodpicks.chargeback')}
+      </span>
+    );
+  }
+
   if (lifecycle === 'completed') {
     return (
       <span

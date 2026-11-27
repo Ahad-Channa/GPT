@@ -8,7 +8,7 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ProviderCard, OfferwallCard, FeaturedOfferCard, FeaturedOfferModal } from '../components/offers/OfferCards';
 import { DirectOfferCard, DirectOfferModal } from '../components/offers/DirectOfferCard';
-import { isOfferCompleted, markOfferStarted } from '../utils/offerLifecycle.js';
+import { isOfferClosed, markOfferStarted } from '../utils/offerLifecycle.js';
 import { buildOfferwallSections } from '../utils/providerOrder';
 import OfferwallModal from '../components/offers/OfferwallModal';
 
@@ -264,7 +264,7 @@ const Home = () => {
           const now = new Date();
           const visibleOffers = directData.offers
             .filter(o => !o.expirationDate || new Date(o.expirationDate) >= now)
-            .filter(o => !isOfferCompleted(o)) // fully credited offers live only in Goodpicks History
+            .filter(o => !isOfferClosed(o)) // completed or charged-back offers live only in Goodpicks History
             .map(o => ({ ...o, __direct: true }));
           homeCache.directOffers = visibleOffers;
           setDirectOffers(visibleOffers);

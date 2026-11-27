@@ -10,7 +10,7 @@ import {
 import { ProviderCard, OfferwallCard, FeaturedOfferCard, FeaturedOfferModal } from '../components/offers/OfferCards';
 import { GoodpicksOfferwallModal } from '../components/offers/GoodpicksModal';
 import { DirectOfferCard, DirectOfferModal } from '../components/offers/DirectOfferCard';
-import { isOfferCompleted, markOfferStarted } from '../utils/offerLifecycle.js';
+import { isOfferClosed, markOfferStarted } from '../utils/offerLifecycle.js';
 import { buildOfferwallSections } from '../utils/providerOrder';
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
@@ -146,7 +146,7 @@ const Earn = () => {
           const now = new Date();
           setDirectOffers(data.offers
             .filter(o => !o.expirationDate || new Date(o.expirationDate) >= now)
-            .filter(o => !isOfferCompleted(o))); // fully credited offers live only in Goodpicks History
+            .filter(o => !isOfferClosed(o))); // completed or charged-back offers live only in Goodpicks History
         }
       } catch (err) {
         console.error('Failed to load direct offers:', err);

@@ -133,7 +133,9 @@ test('reversed / pending / rejected / failed rewards are still not completed; he
   };
   for (const [name, override] of Object.entries(notCounted)) {
     const result = lifecycleFor({ offer, click, conversions: [a, credited({ goalKey: 'b', rewardTransactionId: 'tx2', ...override })] });
-    assert.equal(result.lifecycle, 'started', name);
+    // a charged-back step leaves nothing to earn here -> 'reversed'; others stay 'started'
+    const expected = ['reversed', 'reversalProcessing'].includes(name) ? 'reversed' : 'started';
+    assert.equal(result.lifecycle, expected, name);
     assert.deepEqual(result.completedGoalKeys, ['a'], name);
   }
   // Held rewards finish as processed with a reward transaction: current behavior counts them (unchanged).

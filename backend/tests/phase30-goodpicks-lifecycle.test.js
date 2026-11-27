@@ -74,7 +74,11 @@ test('multi-step: disabled goals never block completion', () => {
 test('multi-step: a reversed goal no longer counts and is not re-creditable', () => {
   const offer = multi([goal('register'), goal('deposit')]);
   const conversions = [credited({ goalKey: 'register' }), reversed({ goalKey: 'deposit', rewardTransactionId: 'tx2' })];
-  assert.equal(lifecycleFor({ offer, click: { status: 'approved' }, conversions }), 'started');
+  // nothing left to earn (one credited, one charged back) -> closed as reversed
+  assert.equal(lifecycleFor({ offer, click: { status: 'approved' }, conversions }), 'reversed');
+  // a step still open keeps the offer active
+  const withOpenStep = multi([goal('register'), goal('deposit'), goal('level')]);
+  assert.equal(lifecycleFor({ offer: withOpenStep, click: { status: 'approved' }, conversions }), 'started');
   // the reversed conversion row is never active-credited
   assert.deepEqual(resolveCompletedGoalKeys(offer, groupCompletedGoalKeysByOffer(conversions)), ['register']);
 });

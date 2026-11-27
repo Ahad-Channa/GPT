@@ -66,8 +66,16 @@ test('English completed history row shows "Completed" as plain text only', async
   assert.doesNotMatch(html, /<button|<a[\s>]|See Details|cursor:\s*pointer/i);
 });
 
-test('started / pending / rejected / reversed rows keep a details-resume button', async () => {
-  for (const lifecycle of ['started', 'pending', 'rejected', 'reversed']) {
+test('charged-back (reversed) history row shows "Chargeback" as plain text only', async () => {
+  for (const language of ['en', 'de']) {
+    const html = await renderAction(offer('a', 'reversed'), language);
+    assert.match(html, />Chargeback</, language);
+    assert.doesNotMatch(html, /<button|<a[\s>]|See Details|Details ansehen|cursor:\s*pointer/i, language);
+  }
+});
+
+test('started / pending / rejected rows keep a details-resume button', async () => {
+  for (const lifecycle of ['started', 'pending', 'rejected']) {
     const html = await renderAction(offer('a', lifecycle), 'en');
     assert.match(html, /<button/, lifecycle);
     assert.match(html, /See Details/, lifecycle);
@@ -77,7 +85,7 @@ test('started / pending / rejected / reversed rows keep a details-resume button'
 });
 
 // ── Shared lifecycle helpers (Home, Earn, Goodpicks) ────────────────────────
-test('active lists drop only fully completed offers; partly credited multi-step stays', () => {
+test('active lists drop completed and charged-back offers; partly credited multi-step stays', () => {
   const list = [
     offer('single-done', 'completed'),
     offer('multi-partial', 'started', { clickStatus: 'approved', completedGoalKeys: ['a'] }), // approved click alone is NOT completion
@@ -86,8 +94,11 @@ test('active lists drop only fully completed offers; partly credited multi-step 
     offer('manual-rejected', 'rejected'),
     offer('reversed', 'reversed'),
   ];
-  assert.deepEqual(m.filterActiveOffers(list).map((o) => o._id), ['multi-partial', 'fresh', 'manual-pending', 'manual-rejected', 'reversed']);
+  assert.deepEqual(m.filterActiveOffers(list).map((o) => o._id), ['multi-partial', 'fresh', 'manual-pending', 'manual-rejected']);
   assert.equal(m.isOfferCompleted(list[1]), false);
+  assert.equal(m.isOfferClosed(list[5]), true);
+  // charged-back offers stay visible in History
+  assert.deepEqual(m.buildGoodpicksHistory([list[5]]).map((o) => o._id), ['reversed']);
 });
 
 test('the client never derives completion from clickStatus (server lifecycle only)', () => {
@@ -145,11 +156,11 @@ test('Goodpicks modal loads History from the API and the mock data is removed', 
   assert.match(modal, /filterActiveOffers\(data\.offers\)/);
 });
 
-test('Home and Earn Featured lists hide completed direct offers via the shared helper', () => {
+test('Home and Earn Featured lists hide completed and charged-back direct offers via the shared helper', () => {
   for (const file of ['src/pages/Home.jsx', 'src/pages/Earn.jsx']) {
     const src = read(file);
-    assert.match(src, /import \{ isOfferCompleted, markOfferStarted \} from '..\/utils\/offerLifecycle\.js'/, file);
-    assert.match(src, /\.filter\(o => !isOfferCompleted\(o\)\)/, file);
+    assert.match(src, /import \{ isOfferClosed, markOfferStarted \} from '..\/utils\/offerLifecycle\.js'/, file);
+    assert.match(src, /\.filter\(o => !isOfferClosed\(o\)\)/, file);
     assert.match(src, /markOfferStarted\(prev, offerId\)/, file);
   }
 });

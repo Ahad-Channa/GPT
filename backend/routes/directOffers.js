@@ -201,7 +201,7 @@ router.get('/', verifyToken, async (req, res) => {
         .select('offerId campaignId goalKey internalStatus processingState rewardTransactionId')
         .lean(),
       Conversion.find(buildOfferCreditConversionQuery(user._id))
-        .select('offerId campaignId internalStatus processingState rewardTransactionId')
+        .select('offerId campaignId goalKey internalStatus processingState rewardTransactionId')
         .lean(),
     ]);
     const creditStateByOffer = groupOfferCreditState(offerCreditConversions);
@@ -324,6 +324,16 @@ router.post('/click/:offerId', verifyToken, fraudCheck('offer_click', 'full'), a
         userId: user._id,
         conversionModel: Conversion,
       });
+      if (lifecycle === 'reversed') {
+        // Charged back: this offer can never be credited again, so never hand
+        // out the tracking link (and never create a new click).
+        return res.status(409).json({
+          success: false,
+          error: 'This offer was charged back and cannot be earned again.',
+          lifecycle,
+          chargedBack: true,
+        });
+      }
       if (lifecycle === 'completed') {
         return res.status(200).json({
           success: true,

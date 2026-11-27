@@ -59,8 +59,8 @@ test('1. single-step credited offer leaves every active list and shows plain com
   assert.equal(isOfferCompleted(done), true);
 
   // Featured (Home), Earn and Goodpicks browse all apply the shared completed filter.
-  assert.match(read('frontend/src/pages/Home.jsx'), /filter\(o => !isOfferCompleted\(o\)\)/);
-  assert.match(read('frontend/src/pages/Earn.jsx'), /filter\(o => !isOfferCompleted\(o\)\)/);
+  assert.match(read('frontend/src/pages/Home.jsx'), /filter\(o => !isOfferClosed\(o\)\)/);
+  assert.match(read('frontend/src/pages/Earn.jsx'), /filter\(o => !isOfferClosed\(o\)\)/);
   assert.match(read('frontend/src/components/offers/GoodpicksModal.jsx'), /setOffers\(filterActiveOffers\(data\.offers\)/);
 
   // Completed row = plain localized text.
@@ -112,7 +112,9 @@ test('4. a reversed goal is not counted as currently completed', async () => {
   const o = apiOffer({ offer, click: { status: 'approved' }, conversions: conv });
   assert.deepEqual(o.completedGoalKeys, ['register']);
   assert.notEqual(o.lifecycle, 'completed');
-  assert.equal(filterActiveOffers([o]).length, 1);
+  // nothing left to earn -> charged back, out of the active lists
+  assert.equal(o.lifecycle, 'reversed');
+  assert.equal(filterActiveOffers([o]).length, 0);
 
   // Every goal reversed -> nothing counted, never completed, no Approved badge.
   const allReversed = apiOffer({
@@ -128,7 +130,8 @@ test('4. a reversed goal is not counted as currently completed', async () => {
   const single = apiOffer({ offer: mk('s'), click: { status: 'approved' }, conversions: [reversed('s')] });
   assert.equal(single.lifecycle, 'reversed');
   assert.equal(getOfferBadgeStatus(single), null);
-  assert.equal(filterActiveOffers([single]).length, 1);
+  // charged back -> never earnable again, so it leaves the active lists (History only)
+  assert.equal(filterActiveOffers([single]).length, 0);
 });
 
 test('5. manual offer: approved submission completes; pending/rejected do not', async () => {

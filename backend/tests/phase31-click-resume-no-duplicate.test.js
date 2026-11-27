@@ -190,15 +190,17 @@ test('reversed single-step offer: still the original click only, never completed
   };
   await withFakes(state, async () => {
     const res = await start(state);
-    assert.equal(res.body.alreadyCompleted, false);
+    // charged back: no tracking link at all, and never a second click
+    assert.equal(res.statusCode, 409);
+    assert.equal(res.body.success, false);
     assert.equal(res.body.lifecycle, 'reversed');
-    assert.equal(res.body.clickId, 'click-original');
+    assert.equal(res.body.url, undefined);
     assert.equal(state.createAttempts, 0, 'a reversal never opens the door to a second click');
   });
 });
 
-test('multi-step with one reversed goal stays resumable on the original click only', async () => {
-  const offer = makeOffer([goal('register'), goal('deposit')]);
+test('multi-step with one reversed goal stays resumable on the original click only while a step is open', async () => {
+  const offer = makeOffer([goal('register'), goal('deposit'), goal('level')]);
   const state = {
     offer,
     click: existingClick(offer, 'approved'),

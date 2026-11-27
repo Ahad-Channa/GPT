@@ -110,9 +110,13 @@ const groupOfferCreditState = (conversions = []) => {
   for (const conversion of Array.isArray(conversions) ? conversions : []) {
     const offerId = goalConversionOfferId(conversion);
     if (!offerId || conversion.rewardTransactionId == null) continue;
-    const entry = byOffer[offerId] || (byOffer[offerId] = { credited: false, reversed: false });
-    if (conversion.internalStatus === 'reversed' || conversion.processingState === 'reversed') entry.reversed = true;
-    else if (conversion.internalStatus === 'approved' && conversion.processingState === 'processed') entry.credited = true;
+    const entry = byOffer[offerId] || (byOffer[offerId] = { credited: false, reversed: false, reversedGoalKeys: [] });
+    if (conversion.internalStatus === 'reversed' || conversion.processingState === 'reversed') {
+      entry.reversed = true;
+      if (conversion.goalKey && !entry.reversedGoalKeys.includes(conversion.goalKey)) {
+        entry.reversedGoalKeys.push(conversion.goalKey);
+      }
+    } else if (conversion.internalStatus === 'approved' && conversion.processingState === 'processed') entry.credited = true;
   }
   return byOffer;
 };
@@ -141,6 +145,14 @@ const resolveOfferLifecycle = ({ offer, click = null, submission = null, complet
     const credited = new Set(completedGoalKeys);
     const allCredited = [...expectedKeys].every((key) => credited.has(key));
     if (allCredited) return 'completed';
+    // A charged-back step can never be credited again. When no step is left to
+    // earn (every expected step is credited or charged back), the offer is closed
+    // as 'reversed'; while some step is still open it stays active.
+    const reversedKeys = new Set(creditState?.reversedGoalKeys || []);
+    const hasReversedStep = [...expectedKeys].some((key) => reversedKeys.has(key));
+    if (hasReversedStep && [...expectedKeys].every((key) => credited.has(key) || reversedKeys.has(key))) {
+      return 'reversed';
+    }
     // Partly credited multi-step offers stay active and resumable.
     if (credited.size > 0) return 'started';
     return clickIncompleteState(click);
