@@ -281,6 +281,17 @@ All work is on `merge-main-test` (worktree `C:\Users\farru\Documents\GitHub\GPT-
 - Still to confirm: dssdfsdf balance repair (`-(5,000,000 - X)`, see section 4) and the German message to Harun about these fixes.
 - Nothing of this is on taskmint.me (`main` untouched).
 
+### 6. `42f4d4d` Approve single steps of multi-step offers in Click Logs (Harun, 2026-11-27)
+- Before: Click Logs refused multi-step offers ("approve from the Conversions page"), but Conversions only lists steps whose postback arrived, so a step could not be credited manually.
+- Now: Approve on a multi-step click opens a "Step to approve" dropdown; credited / charged back / pending steps are disabled. Backend `POST /api/admin/click-logs/:clickId/approve` takes `goalKey`; one step per user + offer + step (`getDirectOfferRewardIdentity`, same as postbacks), amount from the click-time `goalsSnapshot`, credited via `processReward`, transaction id `manual:<clickId>:<goalKey>`. Click lists carry `goalSteps` (state per step) and show "x/y steps credited". Clicks created before the offer had steps cannot be step-approved. Chargeback of a click with several credited steps still goes through the Conversions page.
+- Test `backend/tests/phase42-click-log-step-approve.test.js`. Totals: backend 609 / 605 pass / 4 fail; frontend 88 / 84 pass / 4 fail (all pre-existing); build ok.
+- Deploy: backend restart + frontend build.
+
+### Harun's VIP / daily bonus worry (answered, no code change yet)
+- Double claim is NOT possible: `VipClaim` has a unique index on user + level ("Already claimed"); daily bonus is once per UTC day (`lastDailyBonusClaim`). After a chargeback only `totalEarned` drops (old behavior), so a level shows "Locked" again, but no second bonus is paid.
+- Real gap: a user keeps a bonus reached with an offer that is later charged back. Proposal sent to Harun: on chargeback, cancel that user's VIP/daily bonuses that are still on hold. Waiting for his answer.
+- Harun also wrote "the account still has 0 balance, no minus" while his own screenshot shows dssdfsdf at -39.950; asked which account he means.
+
 ### Next steps (current)
 1. Send Harun the German summary of `0138cbb` / `b29ed0d` and ask him to retest on staging.
 2. Open from before: disable dummy offerwalls (Admin -> Offerwalls, keep Goodpicks and Lootably); remove the admin "Featured Offers" section (waiting for the user's "kar do"); Lootably real-offer test; VIP claim double-request race (offered, not approved); new features (spin/packs/album) only after scope and payment are agreed.
