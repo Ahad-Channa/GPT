@@ -1,6 +1,6 @@
 # TaskMint: project handoff (for a new Claude chat or a new developer)
 
-Read this first, then continue. Last updated 2026-11-27 (office): negative balance, chargeback notification with offer name, Conversions user filter, coin sound (`0138cbb`); before that Click Logs chargeback `e2b7b70`, chargeback/hold-release wallet fix `9fb9da2`, direct-offer test mode `6721d5f`. All pushed on `merge-main-test`. Office worktree path: C:/Users/farrukh.saleeem/Documents/GitHub/GPT-merge-test. **The newest state is in the last section: "Session of 2026-11-27". The frontend rule from "Session of 2026-11-26" still applies (main's design wins).**
+Read this first, then continue. Last updated 2026-11-27 (office, evening): staging tests of `0138cbb` + `b29ed0d` all passed (Conversions filters now apply while typing); before that negative balance, chargeback notification with offer name, Conversions user filter, coin sound (`0138cbb`); before that Click Logs chargeback `e2b7b70`, chargeback/hold-release wallet fix `9fb9da2`, direct-offer test mode `6721d5f`. All pushed on `merge-main-test`. Office worktree path: C:/Users/farrukh.saleeem/Documents/GitHub/GPT-merge-test. **The newest state is in the last section: "Session of 2026-11-27". The frontend rule from "Session of 2026-11-26" still applies (main's design wins).**
 
 ## Project
 - TaskMint: rewards/offerwall site. Frontend `frontend/` (React + Vite), backend `backend/` (Node/Express + MongoDB).
@@ -268,6 +268,22 @@ All work is on `merge-main-test` (worktree `C:\Users\farru\Documents\GitHub\GPT-
 - **Coin sound:** `NotificationContext.jsx` played the sound only for `offer_reward` and `custom_offer_approved`; Goodpicks/direct rewards (`direct_offer_reward`) were silent. Now `COIN_SOUND_TYPES` = offer_reward, direct_offer_reward, custom_offer_approved (also when the reward goes on hold), and the first earning notification of a user with no earlier notifications also sounds. Browsers only play audio after the user has clicked on the page once. Notifications are polled every 5 s.
 - Tests: `backend/tests/phase41-negative-balance-chargeback-notice.test.js`, `frontend/tests/coin-sound-and-chargeback-text.test.js`. Totals: backend 606 / 602 pass / 4 fail; frontend 88 / 84 pass / 4 fail (all 8 pre-existing); build ok.
 - Deploy: pull `0138cbb`, restart `taskmint-staging-backend`, rebuild frontend, restart `taskmint-ssl-frontend`.
+
+### 5. `b29ed0d` Conversions filters apply while typing
+- On staging the user filter looked broken: `AdminConversions.jsx` only applied filters (all of them, not just the new one) when **Refresh** was clicked. Filters now reload the list automatically, 350 ms after the last keystroke or select change. Frontend only. Tests: frontend 84 pass / 4 fail (pre-existing); build ok.
+
+### Staging test result (2026-11-27, done by the user)
+- `0138cbb` + `b29ed0d` deployed on staging and **all tests passed**:
+  1. Minus balance: adjusting testtheway by more than its balance gives a negative balance (no floor at 0).
+  2. Conversions user filter (name / email / ID; no match gives an empty list).
+  3. Chargeback notification names the offer: "Radi Shadow Legends - Register" (multi-step) in EN and DE.
+  4. Coin sound on Goodpicks/direct rewards.
+- Still to confirm: dssdfsdf balance repair (`-(5,000,000 - X)`, see section 4) and the German message to Harun about these fixes.
+- Nothing of this is on taskmint.me (`main` untouched).
+
+### Next steps (current)
+1. Send Harun the German summary of `0138cbb` / `b29ed0d` and ask him to retest on staging.
+2. Open from before: disable dummy offerwalls (Admin -> Offerwalls, keep Goodpicks and Lootably); remove the admin "Featured Offers" section (waiting for the user's "kar do"); Lootably real-offer test; VIP claim double-request race (offered, not approved); new features (spin/packs/album) only after scope and payment are agreed.
 
 ## Working rules used in this project
 - Commit and push tested work to the working branch (`merge-main-test`) without waiting to be asked (user, 2026-11-26). Never push to `main` without an explicit go-ahead. Server deploys are run by the user.
