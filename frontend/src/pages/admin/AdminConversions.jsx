@@ -37,7 +37,12 @@ const AdminConversions = () => {
     }
   }, [currentUser, filters, pagination.limit, pagination.page]);
 
-  useEffect(() => { load(1); }, []);
+  // Apply filters automatically (debounced) instead of waiting for Refresh.
+  useEffect(() => {
+    const timer = setTimeout(() => { load(1); }, 350);
+    return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filters, currentUser]);
 
   const set = (key) => (event) => setFilters(prev => ({ ...prev, [key]: event.target.value }));
 
