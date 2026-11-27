@@ -396,10 +396,15 @@ const Landing = () => {
               className="flex items-center cursor-pointer"
               onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
             >
+              {/* Desktop: drawn at exactly 1:1 (161 x 30 box, logo 161 x 29 at the
+                  top) so it sits on whole pixels in the 80px nav. 28.53 scaled the
+                  vector to 98% and placed it at y=25.73, which blurred the whole
+                  logo on normal (1x) PC screens. Mobile is unchanged. */}
               <svg
                 width={isMobile ? '160' : '161'}
-                height={isMobile ? '28.5' : '28.53'}
-                viewBox="0 0 161 29"
+                height={isMobile ? '28.5' : '30'}
+                viewBox={isMobile ? '0 0 161 29' : '0 0 161 30'}
+                style={{ display: 'block' }}
                 fill="none"
                 xmlns="http://www.w3.org/2000/svg"
                 className="object-contain"
