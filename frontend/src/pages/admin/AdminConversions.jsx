@@ -7,7 +7,7 @@ const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 const AdminConversions = () => {
   const { currentUser } = useAuth();
   const [rows, setRows] = useState([]);
-  const [filters, setFilters] = useState({ providerId: '', internalStatus: '', processingState: '', clickId: '', transactionId: '' });
+  const [filters, setFilters] = useState({ providerId: '', user: '', internalStatus: '', processingState: '', clickId: '', transactionId: '' });
   const [pagination, setPagination] = useState({ page: 1, limit: 25, total: 0, totalPages: 0 });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -106,8 +106,9 @@ const AdminConversions = () => {
         </button>
       </div>
 
-      <div className="admin-card grid grid-cols-1 md:grid-cols-5 gap-3">
+      <div className="admin-card grid grid-cols-1 md:grid-cols-3 xl:grid-cols-6 gap-3">
         <input className="admin-input" value={filters.providerId} onChange={set('providerId')} placeholder="Provider" />
+        <input className="admin-input" value={filters.user} onChange={set('user')} placeholder="User (name, email or ID)" />
         <select className="admin-input" value={filters.internalStatus} onChange={set('internalStatus')}>
           <option value="">Any status</option>
           {['pending', 'approved', 'rejected', 'reversed'].map(v => <option key={v} value={v}>{v}</option>)}

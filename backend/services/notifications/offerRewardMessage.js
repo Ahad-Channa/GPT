@@ -55,4 +55,42 @@ const buildOfferRewardMessage = (transaction) => {
   return message;
 };
 
-module.exports = { buildOfferRewardMessage, getHoldDays };
+const GENERIC_LABEL = /^(offer reward|direct offer reward|custom offer reward|offer completed!?|offer completion|offer)$/i;
+
+// The offer a charged-back reward belonged to: "<offer>" for single-step offers,
+// "<offer> - <step>" for multi-step offers. Display only; nothing is stored.
+const getChargebackOfferLabel = (transaction) => {
+  const metadata = transaction?.metadata || {};
+  const title = humanizeDisplayLabel(metadata.offerTitle || metadata.campaignTitle || metadata.campaign);
+  const rawStep = humanizeDisplayLabel(metadata.stepLabel || metadata.goalLabel);
+  const step = rawStep && !GENERIC_LABEL.test(rawStep) && rawStep.toLowerCase() !== title.toLowerCase() ? rawStep : '';
+  if (title) return step ? `${title} - ${step}` : title;
+
+  const description = humanizeMachineTokensInText(clean(transaction?.description))
+    .replace(/^(custom offer reward:|reward for custom offer:|manual reward:)\s*/i, '')
+    .replace(/\s*-\s*(offer reward|direct offer reward)\s*$/i, '')
+    .trim();
+  if (description && !GENERIC_LABEL.test(description)) return description;
+  return step || clean(metadata.providerName) || 'an offer';
+};
+
+// Notification for a chargeback, naming the offer (and step) so users know which
+// reward was taken back, even weeks later.
+const buildChargebackNotification = (transaction) => {
+  const amount = Math.abs(Number(transaction?.amount) || 0);
+  const label = getChargebackOfferLabel(transaction);
+  const metadata = transaction?.metadata || {};
+  return {
+    title: 'Offer Chargeback',
+    message: `Your reward for "${label}" was charged back: -${amount.toLocaleString('de-DE')} coins.`,
+    metadata: {
+      txId: transaction?._id,
+      amount: -amount,
+      offerLabel: label,
+      offerTitle: metadata.offerTitle || metadata.campaignTitle || null,
+      stepLabel: metadata.stepLabel || metadata.goalLabel || null,
+    },
+  };
+};
+
+module.exports = { buildOfferRewardMessage, buildChargebackNotification, getChargebackOfferLabel, getHoldDays };

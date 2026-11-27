@@ -21,6 +21,7 @@ const adminFirebase = require('../config/firebase');
 const { verifyToken } = require('../middlewares/authMiddleware');
 const { requireAdmin, requirePrimaryAdmin, requirePermission } = require('../middlewares/adminMiddleware');
 const notify = require('../utils/notify');
+const { buildChargebackNotification } = require('../services/notifications/offerRewardMessage');
 const { notifyAdmins } = require('../utils/adminNotify');
 const { emitWalletUpdate, emitToUser } = require('../utils/walletEvents');
 const { broadcastNewEarning } = require('../utils/earningFeed');
@@ -742,7 +743,8 @@ router.put('/users/:id/balance', requirePermission('manage_users'), async (req, 
 
     const amountNum = Number(amount);
     const prevBalance = user.walletBalance;
-    user.walletBalance = Math.max(0, user.walletBalance + amountNum);
+    // No floor at 0: a debt (e.g. a chargeback after the coins were spent) must stay visible.
+    user.walletBalance = (user.walletBalance || 0) + amountNum;
     if (amountNum > 0) {
       user.totalEarned = (user.totalEarned || 0) + amountNum;
     }
@@ -2012,7 +2014,8 @@ router.post('/chargebacks/:transactionId/process', requirePermission('manage_off
       amount: -Math.abs(parentTx.amount),
     });
 
-    await notify(parentTx.userId, 'chargeback', 'Transaction Reversed', `A transaction was reversed and -${Math.abs(parentTx.amount)} coins were deducted.`, { txId: parentTx._id, amount: -Math.abs(parentTx.amount) });
+    const notice = buildChargebackNotification(parentTx);
+    await notify(parentTx.userId, 'chargeback', notice.title, notice.message, notice.metadata);
 
     await notifyAdmins({
       category: 'security',
@@ -2185,7 +2188,7 @@ router.post('/referral-holds/release-now', requirePermission('manage_withdrawals
       // Credit wallet
       // NOTE: walletBalance is credited but totalEarned is intentionally NOT incremented.
       // Affiliate/referral earnings must NOT count toward VIP progress or leaderboard rankings.
-      user.walletBalance = Math.max(0, user.walletBalance + tx.amount);
+      user.walletBalance = (user.walletBalance || 0) + tx.amount; // keeps an existing debt
       await user.save();
 
       emitWalletUpdate(user.firebaseUid, user.walletBalance);
@@ -2234,7 +2237,7 @@ router.post('/earnings-holds/release-now', requirePermission('manage_withdrawals
       const user = await User.findById(tx.userId);
       if (!user) continue;
 
-      user.walletBalance = Math.max(0, (user.walletBalance || 0) + tx.amount);
+      user.walletBalance = (user.walletBalance || 0) + tx.amount; // keeps an existing debt
       await user.save();
 
       emitWalletUpdate(user.firebaseUid, user.walletBalance);
@@ -2759,8 +2762,14 @@ router.get('/conversions', requirePermission('manage_offerwalls'), async (req, r
     if (clickId) filter.clickId = clickId;
     if (transactionId) filter.providerTransactionId = transactionId;
     if (user) {
-      if (!mongoose.Types.ObjectId.isValid(user)) return res.status(400).json({ success: false, error: 'Invalid user filter' });
-      filter.userId = user;
+      if (mongoose.Types.ObjectId.isValid(user)) {
+        filter.userId = user;
+      } else {
+        // Username or email, case-insensitive, partial match.
+        const pattern = new RegExp(user.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i');
+        const matches = await User.find({ $or: [{ displayName: pattern }, { email: pattern }] }).select('_id').limit(50).lean();
+        filter.userId = { $in: matches.map((u) => u._id) };
+      }
     }
     const fromRaw = cleanString(req.query.from, 80);
     const toRaw = cleanString(req.query.to, 80);
@@ -3445,7 +3454,8 @@ router.post('/proofs/:type/:id/chargeback', requirePermission('manage_offerwalls
           amount: -Math.abs(parentTx.amount),
         });
 
-        await notify(targetUserId, 'chargeback', 'Offer Chargeback', `A previously approved offer reward was charged back and -${Math.abs(parentTx.amount)} coins were deducted.`, { txId: parentTx._id, amount: -Math.abs(parentTx.amount) });
+        const notice = buildChargebackNotification(parentTx);
+        await notify(targetUserId, 'chargeback', notice.title, notice.message, notice.metadata);
 
         // Cascade to linked transactions (e.g. referrals)
         const linkedTxs = await Transaction.find({ 

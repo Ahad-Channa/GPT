@@ -198,6 +198,11 @@ export function localizeUrdu(rawTitle, rawMessage, rawMetadata = {}) {
     metadata.linkText = 'وی آئی پی پیج';
   }
 
+  // Chargeback naming the offer (and step)
+  if ((m = message.match(/^Your reward for\s*["„](.*)["“]\s*was charged back:\s*-([\d,.]+)\s*coins\.?$/i))) {
+    message = `"${m[1]}" کا انعام واپس لے لیا گیا: -${m[2]} کوائنز۔`;
+  }
+
   return { title, message, metadata };
 }
 
@@ -314,6 +319,11 @@ export function localizeFrench(rawTitle, rawMessage, rawMetadata = {}) {
     if (metadata.link.includes('vip')) metadata.linkText = 'Page VIP';
   } else if (metadata.linkText === 'VIP page' || metadata.linkText === 'VIP Seite') {
     metadata.linkText = 'Page VIP';
+  }
+
+  // Chargeback naming the offer (and step)
+  if ((m = message.match(/^Your reward for\s*["„](.*)["“]\s*was charged back:\s*-([\d,.]+)\s*coins\.?$/i))) {
+    message = `Ta récompense pour « ${m[1]} » a été annulée (rétrofacturation) : -${m[2]} coins.`;
   }
 
   return { title, message, metadata };
@@ -502,6 +512,11 @@ export function localizeSpanish(rawTitle, rawMessage, rawMetadata = {}) {
     if (metadata.link.includes('vip')) metadata.linkText = 'página VIP';
   } else if (metadata.linkText === 'VIP page' || metadata.linkText === 'VIP Seite' || metadata.linkText === 'Page VIP' || metadata.linkText === 'وی آئی پی پیج') {
     metadata.linkText = 'página VIP';
+  }
+
+  // Chargeback naming the offer (and step)
+  if ((m = message.match(/^Your reward for\s*["„](.*)["“]\s*was charged back:\s*-([\d,.]+)\s*coins\.?$/i))) {
+    message = `Tu recompensa por "${m[1]}" fue revertida: -${m[2]} monedas.`;
   }
 
   return { title, message, metadata };
@@ -718,6 +733,11 @@ export function localizeNotification(notif, lang = 'en') {
     message = `Deine Bestellung für „${m[1]}“ wurde storniert und ${m[2]} Coins wurden erstattet.`;
   } else if ((m = message.match(/^There is an update on your order for\s*["'„](.*?)["'“]\.\s*Status:\s*(.*)$/i))) {
     message = `Es gibt eine Aktualisierung zu deiner Bestellung für „${m[1]}“. Status: ${m[2]}`;
+  }
+
+  // Chargeback naming the offer (and step)
+  if ((m = message.match(/^Your reward for\s*["„](.*)["“]\s*was charged back:\s*-([\d,.]+)\s*coins\.?$/i))) {
+    message = `Deine Belohnung für „${m[1]}“ wurde zurückgebucht: -${m[2]} Coins.`;
   }
 
   return { title, message, metadata };

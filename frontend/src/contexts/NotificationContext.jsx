@@ -10,6 +10,9 @@ const NotificationContext = createContext();
 
 export const useNotifications = () => useContext(NotificationContext);
 
+// Notification types that play the coin sound.
+const COIN_SOUND_TYPES = new Set(['offer_reward', 'direct_offer_reward', 'custom_offer_approved']);
+
 // Synthesized "coin/cash" sound effect for earning notifications
 const playCoinSound = () => {
     try {
@@ -66,12 +69,15 @@ export const NotificationProvider = ({ children }) => {
 
     // Store previous notifications to detect new earnings
     const prevNotifsRef = useRef([]);
+    // True after the first successful load: everything already there is not "new".
+    const loadedOnceRef = useRef(false);
 
     const fetchNotifications = useCallback(async () => {
         if (!currentUser) {
             setNotifications([]);
             setUnreadCount(0);
             prevNotifsRef.current = [];
+            loadedOnceRef.current = false;
             return;
         }
 
@@ -86,14 +92,12 @@ export const NotificationProvider = ({ children }) => {
             if (data.success) {
                 const incoming = data.notifications;
                 
-                // Detect new earning notifications
-                if (prevNotifsRef.current.length > 0) {
+                // Detect new earning notifications (offerwalls, Goodpicks/direct offers,
+                // custom offers). Other notification types stay silent.
+                if (loadedOnceRef.current) {
                     const prevIds = new Set(prevNotifsRef.current.map(n => n._id));
                     const newEarningNotifs = incoming.filter(
-                        n => !prevIds.has(n._id) && (
-                             n.type === 'offer_reward' || 
-                             n.type === 'custom_offer_approved'
-                        )
+                        n => !prevIds.has(n._id) && COIN_SOUND_TYPES.has(n.type)
                     );
                     
                     if (newEarningNotifs.length > 0) {
@@ -102,6 +106,7 @@ export const NotificationProvider = ({ children }) => {
                 }
                 
                 prevNotifsRef.current = incoming;
+                loadedOnceRef.current = true;
                 setNotifications(incoming);
                 setUnreadCount(data.unreadCount);
             }

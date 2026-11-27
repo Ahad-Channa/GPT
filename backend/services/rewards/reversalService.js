@@ -3,6 +3,7 @@ const Transaction = require('../../models/Transaction');
 const User = require('../../models/User');
 const notify = require('../../utils/notify');
 const { emitWalletUpdate } = require('../../utils/walletEvents');
+const { buildChargebackNotification } = require('../notifications/offerRewardMessage');
 const { createOne, runAtomic, withSession } = require('./atomicRunner');
 const { referralExternalId, rewardExternalId } = require('./rewardService');
 
@@ -266,7 +267,7 @@ const processReversal = async ({
         { new: true, session }
       );
 
-      sideEffects.push({ user: effectiveUser, reversalAmount, reversalTx });
+      sideEffects.push({ user: effectiveUser, reversalAmount, reversalTx, rewardTx });
       return { ok: true, duplicate: false, conversion: finalized || claimed, reversalTransaction: reversalTx, referralReversalTransaction, walletBalance: effectiveUser.walletBalance, strategy };
     } catch (error) {
       await conversionModel.findByIdAndUpdate(
@@ -280,12 +281,13 @@ const processReversal = async ({
 
   for (const effect of sideEffects) {
     try {
+      const notice = buildChargebackNotification({ ...(effect.rewardTx?.toObject?.() || effect.rewardTx || {}), amount: effect.reversalAmount });
       await (hooks.notify || notify)(
         effect.user._id,
         'chargeback',
-        'Offer Chargebacked',
-        `A previously approved offer was reversed: ${effect.reversalAmount.toLocaleString()} coins.`,
-        { txId: effect.reversalTx._id, amount: effect.reversalAmount }
+        notice.title,
+        notice.message,
+        { ...notice.metadata, txId: effect.reversalTx._id }
       );
       (hooks.emitWalletUpdate || emitWalletUpdate)(effect.user.firebaseUid, effect.user.walletBalance);
     } catch (error) {

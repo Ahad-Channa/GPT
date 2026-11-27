@@ -12,6 +12,7 @@ const { broadcastNewEarning } = require('../utils/earningFeed');
 const { processVipLevelUp } = require('../utils/vipUtils');
 const { getEarningHoldDecision } = require('../utils/earningTypes');
 const { humanizeDisplayLabel } = require('../utils/displayLabels');
+const { buildChargebackNotification } = require('../services/notifications/offerRewardMessage');
 const { sanitizePostbackPayload } = require('../services/tracking/postbackSanitizer');
 const { createOne, withSession } = require('../services/rewards/atomicRunner');
 
@@ -548,7 +549,8 @@ const handleLegacyOfferwallPostback = async (providerId, req, res, params = {}, 
 
       if (reversed) {
         // Send notifications (once, only for the winning callback)
-        await notify(user._id, 'chargeback', 'Offer Chargebacked', `An offer was automatically reversed: -${Math.abs(originalTx.amount)} coins`, { amount: -Math.abs(originalTx.amount) });
+        const notice = buildChargebackNotification(originalTx);
+        await notify(user._id, 'chargeback', notice.title, notice.message, notice.metadata);
         await notifyAdmins({
           category: 'security',
           type: 'chargeback_processed',
