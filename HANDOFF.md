@@ -299,6 +299,13 @@ All work is on `merge-main-test` (worktree `C:\Users\farru\Documents\GitHub\GPT-
 - Old tests that pinned "reversed stays resumable" (phase30/31/32) were updated to the new rule. New `phase43-vip-renotify-chargeback-offer.test.js`. Totals: backend 615 / 611 pass / 4 fail; frontend 89 / 85 pass / 4 fail (all pre-existing); build ok.
 - Deploy: backend restart + frontend build.
 
+### 8. `116d4e5` Daily bonus 100% after claim, VIP re-notify, single proof message (Harun, 2026-11-28)
+- **Daily bonus:** after a claim, `GET /api/wallet/daily-bonus-status` returned tomorrow's gate with `earned` 0 ("0 / 1.200, earn more"), which looked like a reset after a chargeback. The streak never reset (`lastDailyBonusClaim` is untouched by chargebacks). Now, once claimed, today stays complete: `earned = required` (100%), `rewardToday` = claimed day, `rewardTomorrow` = day streak+1. Harun's rule: claimed stays 100%, user keeps going; users with many chargebacks get banned anyway.
+- **VIP:** the "already notified" skip from `0a8769a` hid valid notifications (dssdfsdf had crossed levels before with the 5M test). Now only claimed levels are skipped.
+- **Manual offer:** "Proof submitted" was shown twice; the success line is hidden while the submission is pending.
+- Tests `phase44-daily-bonus-claimed-display.test.js`, updated `phase43`. Totals: backend 618 / 614 pass / 4 fail; frontend 89 / 85 pass / 4 fail (pre-existing); build ok.
+- Still waiting for the user's go-ahead: offerwall chargeback reduces `totalEarned` (VIP progress) like Goodpicks, and an offerwall chargeback of a held reward must not deduct the wallet (`reverseLegacyOfferTransaction` in `offerwalls.js` ignores hold).
+
 ### Next steps (current)
 1. Send Harun the German summary of `0138cbb` / `b29ed0d` and ask him to retest on staging.
 2. Open from before: disable dummy offerwalls (Admin -> Offerwalls, keep Goodpicks and Lootably); remove the admin "Featured Offers" section (waiting for the user's "kar do"); Lootably real-offer test; VIP claim double-request race (offered, not approved); new features (spin/packs/album) only after scope and payment are agreed.
