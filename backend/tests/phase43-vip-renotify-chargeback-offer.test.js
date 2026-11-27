@@ -62,10 +62,10 @@ test('no VIP notification again for a level that was already claimed (progress d
   assert.equal(emitted.length, 0);
 });
 
-test('no VIP notification again for a level the user was already notified about', async () => {
+test('a level notified before but not claimed is announced again (the claim is still possible)', async () => {
   const { created, emitted } = await runLevelUp({ notifiedKeys: ['bronze_1'] });
-  assert.equal(created.length, 0);
-  assert.equal(emitted.length, 0);
+  assert.equal(created.length, 1);
+  assert.equal(emitted.length, 1);
 });
 
 // ── Charged-back offers are closed ──────────────────────────────────────────

@@ -91,21 +91,15 @@ async function processVipLevelUp(user, added, emitToUser) {
     const VipClaim     = require('../models/VipClaim');
 
     // Progress drops after a chargeback, so a user can cross the same level
-    // again. A level is announced only once: skip levels the user already
-    // claimed or was already notified about (the claim itself stays one per level).
+    // again. A level that was already claimed cannot be claimed again, so it is
+    // not announced again. Reached-but-unclaimed levels are announced (the
+    // claim is still possible).
     const crossedKeys = newLevels.map((lvl) => lvl.key);
-    const [claims, notified] = await Promise.all([
-      VipClaim.find({ userId: user._id, levelKey: { $in: crossedKeys } }).select('levelKey').lean(),
-      Notification.find({ userId: user._id, type: 'vip_level_up', 'metadata.levelKey': { $in: crossedKeys } })
-        .select('metadata.levelKey').lean(),
-    ]);
-    const alreadyKnown = new Set([
-      ...claims.map((claim) => claim.levelKey),
-      ...notified.map((n) => n.metadata?.levelKey).filter(Boolean),
-    ]);
+    const claims = await VipClaim.find({ userId: user._id, levelKey: { $in: crossedKeys } }).select('levelKey').lean();
+    const claimedKeys = new Set(claims.map((claim) => claim.levelKey));
 
     for (const lvl of newLevels) {
-      if (alreadyKnown.has(lvl.key)) continue;
+      if (claimedKeys.has(lvl.key)) continue;
       const config = await VipConfig.findOne({ levelKey: lvl.key });
       const reward = config?.rewardAmount || 0;
       const label  = getLevelLabel(lvl);

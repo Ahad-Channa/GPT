@@ -586,14 +586,18 @@ router.get('/daily-bonus-status', verifyToken, async (req, res) => {
       earnedToday = earnedResult.length > 0 ? earnedResult[0].total : 0;
     }
 
-    // When not yet claimed: the reward/gate shown is for the upcoming claim (nextStreakToClaim)
-    // When already claimed: reward/gate shown is for tomorrow's claim (nextStreakToClaim)
-    const required     = getGateForDay(nextStreakToClaim);
-    const gateUnlocked = earnedToday >= required;
-    const rewardToday  = getRewardForDay(nextStreakToClaim);
+    // Not yet claimed: reward/gate/progress of the upcoming claim (nextStreakToClaim).
+    // Already claimed: today stays complete at 100% with the reward that was just
+    // claimed (day `streak`), even if today's earnings were charged back later.
+    // The streak is not affected by chargebacks; tomorrow is day streak+1.
+    const todayStreakDay = alreadyClaimed ? (streak || 1) : nextStreakToClaim;
+    const required     = getGateForDay(todayStreakDay);
+    if (alreadyClaimed) earnedToday = required;
+    const gateUnlocked = alreadyClaimed || earnedToday >= required;
+    const rewardToday  = getRewardForDay(todayStreakDay);
 
-    // Tomorrow's streak day (the one after the next claim)
-    let nextDayStreak = nextStreakToClaim + 1;
+    // The claim after today's: tomorrow when already claimed, otherwise the day after the next claim
+    let nextDayStreak = todayStreakDay + 1;
     if (nextDayStreak > 30) nextDayStreak = 1;
     const rewardTomorrow = getRewardForDay(nextDayStreak);
 

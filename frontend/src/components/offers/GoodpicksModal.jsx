@@ -807,7 +807,7 @@ export const GoodpicksDetailModal = ({ offer, onClose, token, onOfferStateChange
             />
           </div>
         )}
-        {proofMessage?.message && (
+        {proofMessage?.message && !(proofMessage.type === 'success' && submissionStatus === 'pending') && (
           <div style={{ textAlign: 'center', color: proofMessage.type === 'error' ? '#B91C1C' : '#047857', fontSize: '12px', fontWeight: 600 }}>
             {proofMessage.message}
           </div>
