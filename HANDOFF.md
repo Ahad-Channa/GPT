@@ -287,10 +287,17 @@ All work is on `merge-main-test` (worktree `C:\Users\farru\Documents\GitHub\GPT-
 - Test `backend/tests/phase42-click-log-step-approve.test.js`. Totals: backend 609 / 605 pass / 4 fail; frontend 88 / 84 pass / 4 fail (all pre-existing); build ok.
 - Deploy: backend restart + frontend build.
 
-### Harun's VIP / daily bonus worry (answered, no code change yet)
+### Harun's VIP / daily bonus worry (answered; see section 7 for the follow-up)
 - Double claim is NOT possible: `VipClaim` has a unique index on user + level ("Already claimed"); daily bonus is once per UTC day (`lastDailyBonusClaim`). After a chargeback only `totalEarned` drops (old behavior), so a level shows "Locked" again, but no second bonus is paid.
 - Real gap: a user keeps a bonus reached with an offer that is later charged back. Proposal sent to Harun: on chargeback, cancel that user's VIP/daily bonuses that are still on hold. Waiting for his answer.
 - Harun also wrote "the account still has 0 balance, no minus" while his own screenshot shows dssdfsdf at -39.950; asked which account he means.
+
+### 7. `0a8769a` VIP notified once; charged-back offers leave the lists (Harun, 2026-11-27 evening)
+- Harun: minus works (dssdfsdf went negative after HE adjusted it; our message wrongly said we did). Bonuses are never on hold (small amounts), so "cancel held bonuses on chargeback" is dropped. VIP progress going back after a chargeback is accepted.
+- **VIP:** `processVipLevelUp` (`backend/utils/vipUtils.js`) skips levels already claimed (`VipClaim`) or already notified (`vip_level_up` notification with `metadata.levelKey`). No more "claim your 50 coins" for a level that cannot be claimed again.
+- **Charged-back offers:** `resolveOfferLifecycle` (`offerGoalCompletion.js`) returns `reversed` for single-step chargebacks (as before) and now for multi-step offers with no step left to earn (every step credited or charged back; `groupOfferCreditState` collects `reversedGoalKeys`). Offers with an open step stay active. Frontend `isOfferClosed` (completed or reversed) hides them on Home/Earn/Goodpicks; Goodpicks History shows red "Chargeback" text (`goodpicks.chargeback` in all i18n files). `POST /api/direct-offers/click/:offerId` returns 409 without a link for reversed offers.
+- Old tests that pinned "reversed stays resumable" (phase30/31/32) were updated to the new rule. New `phase43-vip-renotify-chargeback-offer.test.js`. Totals: backend 615 / 611 pass / 4 fail; frontend 89 / 85 pass / 4 fail (all pre-existing); build ok.
+- Deploy: backend restart + frontend build.
 
 ### Next steps (current)
 1. Send Harun the German summary of `0138cbb` / `b29ed0d` and ask him to retest on staging.
