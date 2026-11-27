@@ -5,7 +5,7 @@ import PublicProfileModal from './PublicProfileModal';
 import UserAvatar from './UserAvatar';
 import { useTheme } from '../contexts/ThemeContext';
 import { io } from 'socket.io-client';
-import { getEarningDisplay, getLiveFeedDisplay } from '../utils/earningDisplay';
+import { getBonusFeedDisplay, getEarningDisplay, getLiveFeedDisplay } from '../utils/earningDisplay';
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 const SOCKET_URL = import.meta.env.VITE_API_URL
@@ -140,6 +140,44 @@ const LiveEarningsBar = () => {
     }
   };
 
+  // Desktop: drag the feed with the mouse (touch screens already swipe natively).
+  // A drag of more than a few pixels does not open the user's profile on release.
+  const dragRef = useRef({ active: false, startX: 0, startScroll: 0, moved: false });
+
+  const handlePointerDown = (e) => {
+    if (e.pointerType !== 'mouse' || e.button !== 0) return;
+    const el = scrollContainerRef.current;
+    if (!el) return;
+    dragRef.current = { active: true, startX: e.clientX, startScroll: el.scrollLeft, moved: false };
+  };
+
+  const handlePointerMove = (e) => {
+    const drag = dragRef.current;
+    const el = scrollContainerRef.current;
+    if (!drag.active || !el) return;
+    const dx = e.clientX - drag.startX;
+    if (!drag.moved && Math.abs(dx) > 5) {
+      drag.moved = true;
+      el.style.scrollBehavior = 'auto';
+      if (hoveredData) setHoveredData(null);
+    }
+    if (drag.moved) el.scrollLeft = drag.startScroll - dx;
+  };
+
+  const endDrag = () => {
+    const el = scrollContainerRef.current;
+    if (el) el.style.scrollBehavior = 'smooth';
+    dragRef.current.active = false;
+  };
+
+  const handleClickCapture = (e) => {
+    if (dragRef.current.moved) {
+      e.stopPropagation();
+      e.preventDefault();
+      dragRef.current.moved = false;
+    }
+  };
+
   const handleWheel = (e) => {
     if (scrollContainerRef.current) {
       if (e.deltaY !== 0) {
@@ -176,30 +214,15 @@ const LiveEarningsBar = () => {
     let popup = null; // undefined popup copy => default (task/taskCategory)
     let hasPopup = true;
 
-    if (tx.transactionType === 'daily_bonus') {
-      task = 'Daily Bonus';
+    // Bonuses (Leaderboard, Daily Bonus, VIP, Bonus Code, Affiliate, ...) show
+    // their source and detail inside the chip like offers do, with no popup.
+    const bonusDisplay = getBonusFeedDisplay(tx);
+    if (bonusDisplay) {
       offerwall = 'Rewards';
-      taskCategory = 'Task: Claimed Daily Bonus';
-    } else if (tx.transactionType === 'leaderboard_reward') {
-      task = 'Leaderboard Prize';
-      offerwall = 'Rewards';
-      taskCategory = 'Task: Leaderboard Prize';
-    } else if (tx.transactionType === 'vip_reward') {
-      task = 'VIP Reward';
-      offerwall = 'Rewards';
-      taskCategory = 'Task: VIP Reward';
-    } else if (tx.transactionType === 'mission_reward') {
-      task = 'Mission Reward';
-      offerwall = 'Rewards';
-      taskCategory = 'Task: Completed Mission';
-    } else if (tx.transactionType === 'admin_adjustment') {
-      task = 'Admin Bonus';
-      offerwall = 'System';
-      taskCategory = 'Task: Admin Adjustment';
-    } else if (tx.transactionType === 'promo_code') {
-      task = 'Promo Code';
-      offerwall = 'Rewards';
-      taskCategory = 'Task: Redeemed Promo Code';
+      task = bonusDisplay.sourceLine;
+      taskCategory = bonusDisplay.detailLine;
+      hasOfferDetails = true;
+      hasPopup = false;
     } else {
       // Offer-style earnings: a visible two-line provider/offer block inside the
       // chip. getEarningDisplay() stays untouched for transaction history.
@@ -323,6 +346,12 @@ const LiveEarningsBar = () => {
             ref={scrollContainerRef}
             onWheel={handleWheel}
             onScroll={handleScroll}
+            onPointerDown={handlePointerDown}
+            onPointerMove={handlePointerMove}
+            onPointerUp={endDrag}
+            onPointerLeave={endDrag}
+            onClickCapture={handleClickCapture}
+            onDragStart={(e) => e.preventDefault()}
             className="absolute inset-0 flex items-center gap-[6px] overflow-x-auto overflow-y-hidden whitespace-nowrap hide-scroll pl-1 pr-6 cursor-grab active:cursor-grabbing pointer-events-auto"
             style={{
               scrollbarWidth: 'none',
@@ -512,6 +541,7 @@ const LiveEarningsBar = () => {
                           >
                             {details.sourceLine}
                           </span>
+                          {details.detailLine && (
                           <span
                             className="truncate text-[9px] sm:text-[10px] leading-[12px]"
                             style={{
@@ -522,6 +552,7 @@ const LiveEarningsBar = () => {
                           >
                             {details.detailLine}
                           </span>
+                          )}
                         </div>
                       )}
                     </motion.div>

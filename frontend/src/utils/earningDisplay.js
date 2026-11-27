@@ -215,6 +215,36 @@ export const getLiveFeedDisplay = (tx = {}) => {
   return { sourceLine, detailLine, isMultiStep: Boolean(stepLabel), stepLabel };
 };
 
+// Two-line chip text for bonus-type earnings in the Live Feed (Harun): line 1
+// names the source, line 2 the detail (place, day, VIP level). Text is derived
+// from the stored description/metadata; nothing is changed. Returns null for
+// other transaction types.
+export const getBonusFeedDisplay = (tx = {}) => {
+  const type = tx.transactionType || '';
+  const description = clean(tx.description);
+  const meta = tx.metadata || {};
+
+  if (type === 'leaderboard_reward') {
+    const rank = Number(meta.rank) || Number((description.match(/rank\s*#?\s*(\d+)/i) || [])[1]) || 0;
+    return { sourceLine: 'Leaderboard', detailLine: rank ? `Place ${rank}` : '' };
+  }
+  if (type === 'daily_bonus') {
+    const day = Number(meta.streakDay) || Number((description.match(/streak:\s*(\d+)/i) || [])[1]) || 0;
+    return { sourceLine: 'Daily Bonus', detailLine: day ? `Day ${day}` : '' };
+  }
+  if (type === 'vip_reward') {
+    // Stored as "VIP Bonus — Bronze I"; the part after the dash is the level.
+    const level = clean(description.split(/\s[—–-]\s/).slice(1).join(' - '))
+      || clean([meta.tier, meta.rank].filter(Boolean).join(' '));
+    return { sourceLine: 'VIP', detailLine: level };
+  }
+  if (type === 'promo_code') return { sourceLine: 'Bonus Code', detailLine: '' };
+  if (type === 'referral_reward') return { sourceLine: 'Affiliate Earnings', detailLine: '' };
+  if (type === 'mission_reward') return { sourceLine: 'Mission', detailLine: '' };
+  if (type === 'admin_adjustment') return { sourceLine: 'Bonus', detailLine: '' };
+  return null;
+};
+
 // Same two lines as the live feed, for transaction lists (profile Recent
 // Activity, wallet history): line 1 = "Goodpicks" / "Offerwall: <name>",
 // line 2 = offer name, plus " - <step>" for multi-step offers, so it stays two

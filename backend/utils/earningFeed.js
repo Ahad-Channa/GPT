@@ -22,6 +22,8 @@ function scrubTransaction(tx) {
     scrubbed.description = 'Claimed Daily Bonus';
   } else if (scrubbed.transactionType === 'promo_code') {
     scrubbed.description = 'Redeemed a Promo Code';
+  } else if (scrubbed.transactionType === 'referral_reward') {
+    scrubbed.description = 'Affiliate Earnings';
   } else if (scrubbed.method && scrubbed.method !== 'none' && scrubbed.transactionType !== 'withdrawal') {
     scrubbed.description = `Earned from ${scrubbed.method}`;
   } else if (scrubbed.metadata?.offerwall) {

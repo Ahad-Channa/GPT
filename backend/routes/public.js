@@ -130,7 +130,8 @@ router.get('/recent-earnings', async (req, res) => {
     const limit = Math.min(Math.max(parseInt(req.query.limit) || 20, 1), 50);
     const skip = Math.max(parseInt(req.query.skip) || 0, 0);
 
-    const validTransactionTypes = [...REAL_OFFER_EARNING_TYPES, 'daily_bonus', 'admin_adjustment', 'promo_code', 'leaderboard_reward', 'vip_reward'];
+    // referral_reward = affiliate earnings (shown as "Affiliate Earnings" in the feed).
+    const validTransactionTypes = [...REAL_OFFER_EARNING_TYPES, 'daily_bonus', 'admin_adjustment', 'promo_code', 'leaderboard_reward', 'vip_reward', 'referral_reward'];
 
     let recentEarnings = await Transaction.find({
       $or: [
