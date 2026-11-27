@@ -306,7 +306,13 @@ All work is on `merge-main-test` (worktree `C:\Users\farru\Documents\GitHub\GPT-
 - Tests `phase44-daily-bonus-claimed-display.test.js`, updated `phase43`. Totals: backend 618 / 614 pass / 4 fail; frontend 89 / 85 pass / 4 fail (pre-existing); build ok.
 - Still waiting for the user's go-ahead: offerwall chargeback reduces `totalEarned` (VIP progress) like Goodpicks, and an offerwall chargeback of a held reward must not deduct the wallet (`reverseLegacyOfferTransaction` in `offerwalls.js` ignores hold).
 
+### 9. Offerwall chargebacks work like Goodpicks + Lootably simulation tool (home, 2026-11-27 evening; on `merge-main-test`)
+- Harun: "offerwalls müssen genauso funktionieren wie goodpicks". `reverseLegacyOfferTransaction` (`backend/routes/offerwalls.js`) now uses the `processReversal` rule: `totalEarned` (VIP progress) always goes back; the wallet is debited only if the reward was `completed` and its coins reached the wallet (`walletApplied !== false` or `releasedAt` set). A reward still on hold is reversed without touching the wallet. Held linked (non-referral) rows no longer debit the wallet either. It reads the row with `new: false` to see the pre-chargeback status. Tests: 4 new in `phase25-offerwall-callback-atomicity.test.js`. Backend totals: 622 / 618 pass / 4 fail (pre-existing).
+- `backend/scripts/simulate-lootably-webhook.js`: run ON the staging server in `backend/` to send a real-format Lootably webhook to `127.0.0.1:<PORT>` (secret header from `.env`, `X-Forwarded-For` = first allowed Lootably IP, which works because `trust proxy` is 1). Needs `--yes`, `--user <mongoId>`, `--event approved|rejected|pending`, `--txn <id>`, `--coins N` for approved, optional `--offer`, `--goal`/`--goal-desc` for multi-step. It really credits/charges back that user: staging test users only. Needs Lootably enabled in admin and `OFFERWALL_ADAPTER_LOOTABLY_ENABLED=true`.
+- Security note: if backend port 5055 is reachable from the internet (not only via Nginx), anyone could fake `X-Forwarded-For`; they would still need the webhook secret. Check the firewall when convenient.
+
 ### Next steps (current)
+0. Deploy the chargeback fix on staging, then run the Lootably simulation (credit, then chargeback; once with a held reward) and check wallet, VIP progress, daily bonus, notification and sound.
 1. Send Harun the German summary of `0138cbb` / `b29ed0d` and ask him to retest on staging.
 2. Open from before: disable dummy offerwalls (Admin -> Offerwalls, keep Goodpicks and Lootably); remove the admin "Featured Offers" section (waiting for the user's "kar do"); Lootably real-offer test; VIP claim double-request race (offered, not approved); new features (spin/packs/album) only after scope and payment are agreed.
 
