@@ -694,8 +694,10 @@ module.exports = {
   canTransitionStatus,
   createOrResolveConversion,
   findCreditedConversionForClickLog,
+  findDirectOfferClickGoalConversion,
   findProviderConfig,
   findProviderConfigWithCredentials,
+  getDirectOfferRewardIdentity,
   processPostback,
   providerResponse,
 };

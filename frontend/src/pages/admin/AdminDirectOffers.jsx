@@ -888,11 +888,12 @@ const ClickLogsModal = ({ offer, adminApi, onClose }) => {
 
   useEffect(() => { load(); }, [load]);
 
-  const openAction = (clickId, action) => {
+  const openAction = (clickId, action, steps = null) => {
     if (actionLoading) return;
     setReasonValue('');
     setReasonError('');
-    setActionPrompt({ clickId, action });
+    const openStep = Array.isArray(steps) ? steps.find((step) => step.state === 'open') : null;
+    setActionPrompt({ clickId, action, steps, goalKey: openStep?.goalKey || '' });
   };
 
   const closeAction = () => {
@@ -902,10 +903,14 @@ const ClickLogsModal = ({ offer, adminApi, onClose }) => {
     setReasonError('');
   };
 
-  const handleAction = async (clickId, action, actionReason) => {
+  const handleAction = async (clickId, action, actionReason, goalKey = '') => {
     const trimmed = (actionReason || '').trim();
     if (!trimmed) {
       setReasonError('A reason is required.');
+      return;
+    }
+    if (action === 'approve' && actionPrompt?.steps?.length && !goalKey) {
+      setReasonError('Choose the step to approve.');
       return;
     }
     setActionLoading(clickId + action);
@@ -913,7 +918,7 @@ const ClickLogsModal = ({ offer, adminApi, onClose }) => {
       const res = await adminApi(`/admin/click-logs/${clickId}/${action}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ reason: trimmed }),
+        body: JSON.stringify(goalKey ? { reason: trimmed, goalKey } : { reason: trimmed }),
       });
       const data = await res.json().catch(() => ({}));
       if (data.success) {
@@ -1003,6 +1008,19 @@ const ClickLogsModal = ({ offer, adminApi, onClose }) => {
               <tbody>
                 {clicks.map(click => {
                   const user = click.user || click.userId;
+                  const steps = Array.isArray(click.goalSteps) ? click.goalSteps : [];
+                  const isMultiStep = steps.length > 0;
+                  const creditedSteps = steps.filter(step => step.state === 'credited').length;
+                  const hasOpenStep = steps.some(step => step.state === 'open');
+                  const approveButton = (
+                    <button
+                      onClick={() => openAction(click.clickId, 'approve', isMultiStep ? steps : null)}
+                      disabled={actionLoading === click.clickId + 'approve'}
+                      className="px-2 py-1 rounded bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 text-xs font-semibold hover:bg-emerald-500/25 disabled:opacity-50"
+                    >
+                      {actionLoading === click.clickId + 'approve' ? <FiLoader className="animate-spin" /> : (isMultiStep ? '✓ Approve step' : '✓ Approve')}
+                    </button>
+                  );
                   return (
                   <tr key={click._id} className="border-b border-white/[0.04] hover:bg-white/[0.02]">
                     <td className="py-2 pr-3">
@@ -1024,20 +1042,19 @@ const ClickLogsModal = ({ offer, adminApi, onClose }) => {
                       </div>
                     </td>
                     <td className="py-2 pr-3 text-slate-400 text-xs">{click.device || 'unknown'}</td>
-                    <td className="py-2 pr-3"><Badge status={click.status} /></td>
+                    <td className="py-2 pr-3">
+                      <Badge status={click.status} />
+                      {isMultiStep && (
+                        <div className="mt-1 text-[11px] text-slate-400">{creditedSteps}/{steps.length} steps credited</div>
+                      )}
+                    </td>
                     <td className="py-2 pr-3 text-slate-500 text-xs">{new Date(click.createdAt).toLocaleDateString()}</td>
                     <td className="py-2">
                       {offer.trackingMode === 'manual' ? (
                         <span className="text-sky-300 text-xs">Use Manual Proofs</span>
                       ) : click.status !== 'approved' && click.status !== 'rejected' && (
                         <div className="flex gap-2">
-                          <button
-                            onClick={() => openAction(click.clickId, 'approve')}
-                            disabled={actionLoading === click.clickId + 'approve'}
-                            className="px-2 py-1 rounded bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 text-xs font-semibold hover:bg-emerald-500/25 disabled:opacity-50"
-                          >
-                            {actionLoading === click.clickId + 'approve' ? <FiLoader className="animate-spin" /> : '✓ Approve'}
-                          </button>
+                          {(!isMultiStep || hasOpenStep) && approveButton}
                           <button
                             onClick={() => openAction(click.clickId, 'reject')}
                             disabled={actionLoading === click.clickId + 'reject'}
@@ -1051,8 +1068,9 @@ const ClickLogsModal = ({ offer, adminApi, onClose }) => {
                         <span className="text-amber-400 text-xs">Charged back</span>
                       )}
                       {click.status === 'approved' && !click.chargedBack && (
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 flex-wrap">
                           <span className="text-emerald-400 text-xs">Credited ✓</span>
+                          {offer.trackingMode !== 'manual' && isMultiStep && hasOpenStep && approveButton}
                           {offer.trackingMode !== 'manual' && (
                             <button
                               onClick={() => openAction(click.clickId, 'chargeback')}
@@ -1080,6 +1098,23 @@ const ClickLogsModal = ({ offer, adminApi, onClose }) => {
           <div className="w-full max-w-md rounded-xl border border-white/10 bg-[#12161f] p-5" onClick={(e) => e.stopPropagation()}>
             <h4 className="text-sm font-bold text-white capitalize">{actionPrompt.action} click</h4>
             <p className="mt-1 text-xs text-slate-400">Click ID: <code>{actionPrompt.clickId}</code></p>
+            {actionPrompt.action === 'approve' && actionPrompt.steps?.length > 0 && (
+              <>
+                <label className="mt-4 block text-xs font-semibold text-slate-300">Step to approve</label>
+                <select
+                  className="admin-input mt-1 w-full"
+                  value={actionPrompt.goalKey}
+                  onChange={(e) => { setActionPrompt(prev => ({ ...prev, goalKey: e.target.value })); if (reasonError) setReasonError(''); }}
+                >
+                  {actionPrompt.steps.map(step => (
+                    <option key={step.goalKey} value={step.goalKey} disabled={step.state !== 'open'}>
+                      {step.label} ({step.amount} coins){step.state === 'credited' ? ' - credited' : step.state === 'reversed' ? ' - charged back' : step.state === 'pending' ? ' - pending in Conversions' : ''}
+                    </option>
+                  ))}
+                </select>
+                <p className="mt-1 text-xs text-slate-400">Only this step is credited. Each step can be credited once.</p>
+              </>
+            )}
             {actionPrompt.action === 'chargeback' && (
               <p className="mt-2 text-xs text-amber-300">The credited coins are deducted from the user once. This cannot be undone and the offer cannot be credited again.</p>
             )}
@@ -1105,7 +1140,7 @@ const ClickLogsModal = ({ offer, adminApi, onClose }) => {
               <button
                 type="button"
                 className="px-3 py-2 rounded-lg bg-indigo-600 text-white text-sm inline-flex items-center gap-2 disabled:opacity-50"
-                onClick={() => handleAction(actionPrompt.clickId, actionPrompt.action, reasonValue)}
+                onClick={() => handleAction(actionPrompt.clickId, actionPrompt.action, reasonValue, actionPrompt.goalKey)}
                 disabled={Boolean(actionLoading)}
               >
                 {actionLoading && <FiLoader className="animate-spin" />} Confirm

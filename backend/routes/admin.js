@@ -54,7 +54,12 @@ const fs = require('fs');
 const { validateProviderAdapterKey } = require('../services/tracking/providerAdapterRegistry');
 const { processReward, findExistingClickRewardTransaction } = require('../services/rewards/rewardService');
 const { processReversal } = require('../services/rewards/reversalService');
-const { createOrResolveConversion, findCreditedConversionForClickLog } = require('../services/tracking/conversionService');
+const {
+  createOrResolveConversion,
+  findCreditedConversionForClickLog,
+  findDirectOfferClickGoalConversion,
+  getDirectOfferRewardIdentity,
+} = require('../services/tracking/conversionService');
 const { buildDirectOfferProviderConfig } = require('../services/tracking/directOfferProvider');
 const { syncManualProofSubmissionStatus } = require('../services/tracking/manualProofService');
 const { normalizeOfferTranslations } = require('../utils/offerTranslations');
@@ -479,8 +484,67 @@ const serializeClickLogAdmin = (click) => ({
   convertedAt: click.convertedAt,
   transactionId: click.transactionId,
   chargedBack: Boolean(click.chargedBack),
+  goalSteps: Array.isArray(click.goalSteps) ? click.goalSteps : null,
   createdAt: click.createdAt,
 });
+
+const refIdOf = (ref) => (ref && ref._id ? ref._id : ref) || null;
+
+// State of one multi-step goal for the admin: credited, reversed (charged back),
+// pending (a conversion exists but is not credited) or open (nothing recorded).
+const getGoalConversionState = (conversion) => {
+  if (!conversion) return 'open';
+  if (conversion.internalStatus === 'reversed') return 'reversed';
+  if (
+    conversion.internalStatus === 'approved' &&
+    conversion.processingState === 'processed' &&
+    conversion.rewardTransactionId
+  ) return 'credited';
+  return 'pending';
+};
+
+// Multi-step direct offers pay each step once per user + offer + step (the same
+// identity the postback flow uses). Attach that per-step state to each click so
+// the admin can approve single steps from the Click Logs.
+const attachClickGoalSteps = async (clicks, conversionModel = Conversion) => {
+  const multiStep = clicks.filter((click) => (
+    click.goalsSnapshot && typeof click.goalsSnapshot === 'object' && Object.keys(click.goalsSnapshot).length > 0
+  ));
+  if (multiStep.length === 0) return clicks;
+
+  const clickOfferId = (click) => String(refIdOf(click.offerId) || refIdOf(click.campaignId) || '');
+  const userIds = [...new Set(multiStep.map((click) => String(refIdOf(click.userId) || '')).filter(Boolean))];
+  const offerIds = [...new Set(multiStep.map(clickOfferId).filter(Boolean))];
+  const conversions = await conversionModel.find({
+    providerId: 'direct',
+    userId: { $in: userIds },
+    goalKey: { $ne: null },
+    $or: [{ offerId: { $in: offerIds } }, { campaignId: { $in: offerIds } }],
+  }).select('userId offerId campaignId goalKey internalStatus processingState rewardTransactionId').lean();
+
+  const rank = { open: 0, pending: 1, reversed: 2, credited: 3 };
+  const states = new Map();
+  for (const conversion of conversions) {
+    const state = getGoalConversionState(conversion);
+    for (const offerRef of [conversion.offerId, conversion.campaignId]) {
+      if (!offerRef) continue;
+      const key = `${conversion.userId}:${offerRef}:${conversion.goalKey}`;
+      if (rank[state] > rank[states.get(key) || 'open']) states.set(key, state);
+    }
+  }
+
+  for (const click of multiStep) {
+    const userKey = String(refIdOf(click.userId) || '');
+    const offerKey = clickOfferId(click);
+    click.goalSteps = Object.entries(click.goalsSnapshot).map(([goalKey, goal]) => ({
+      goalKey,
+      label: humanizeDisplayLabel(goal?.label || goalKey),
+      amount: Number(goal?.amount) || 0,
+      state: states.get(`${userKey}:${offerKey}:${goalKey}`) || 'open',
+    }));
+  }
+  return clicks;
+};
 
 const serializeConversionAdmin = (conversion) => {
   const doc = typeof conversion.toObject === 'function' ? conversion.toObject() : conversion;
@@ -4145,6 +4209,8 @@ router.get('/direct-offers/:id/clicks', requirePermission('manage_offerwalls'), 
       .skip(skip)
       .lean();
 
+    await attachClickGoalSteps(clicks);
+
     const total = await ClickLog.countDocuments(query);
     res.json({ success: true, clicks: clicks.map(serializeClickLogAdmin), total, pagination: { page, limit, total, totalPages: Math.ceil(total / limit) } });
   } catch (error) {
@@ -4204,6 +4270,7 @@ router.get('/click-logs', requirePermission('manage_offerwalls'), async (req, re
       reversalTransactionId: { $ne: null },
     }).select('clickLogId').lean()).map((conversion) => String(conversion.clickLogId)));
     for (const click of clicks) click.chargedBack = reversedClickIds.has(String(click._id));
+    await attachClickGoalSteps(clicks);
 
     const total = await ClickLog.countDocuments(query);
     res.json({
@@ -4231,9 +4298,6 @@ router.post('/click-logs/:clickId/approve', requirePermission('manage_offerwalls
 
     const clickLog = await ClickLog.findOne({ clickId: req.params.clickId }).populate('offerId');
     if (!clickLog) return res.status(404).json({ success: false, error: 'Click log not found' });
-    if (clickLog.status === 'approved') {
-      return res.status(400).json({ success: false, error: 'Click already approved' });
-    }
 
     const offer = await DirectOffer.findById(clickLog.offerId?._id || clickLog.offerId);
     if (!offer) return res.status(404).json({ success: false, error: 'Offer not found' });
@@ -4242,8 +4306,95 @@ router.post('/click-logs/:clickId/approve', requirePermission('manage_offerwalls
     }
 
     const enabledGoals = Array.isArray(offer.goals) ? offer.goals.filter((goal) => goal && goal.enabled !== false) : [];
-    if (enabledGoals.length > 0) {
-      return res.status(400).json({ success: false, error: 'This is a multi-step offer. Approve the specific goal from the Conversions page.' });
+    const goalsSnapshot = clickLog.goalsSnapshot && typeof clickLog.goalsSnapshot === 'object'
+      && Object.keys(clickLog.goalsSnapshot).length > 0
+      ? clickLog.goalsSnapshot
+      : null;
+
+    // Multi-step offer: approve ONE step. Each step is credited at most once per
+    // user + offer (same identity as the postback flow), with the click-time
+    // step amount, through the shared processReward path. The click may already
+    // be 'approved' because another step was credited, so no click-status check.
+    if (enabledGoals.length > 0 || goalsSnapshot) {
+      if (clickLog.status === 'rejected') {
+        return res.status(400).json({ success: false, error: 'Click was rejected.' });
+      }
+      if (!goalsSnapshot) {
+        return res.status(400).json({ success: false, error: 'This click was created before the offer had steps, so single steps cannot be approved for it.' });
+      }
+      const goalKey = cleanString(req.body?.goalKey, 120);
+      if (!goalKey) {
+        return res.status(400).json({ success: false, error: 'This is a multi-step offer. Choose the step to approve.' });
+      }
+      const goal = Object.prototype.hasOwnProperty.call(goalsSnapshot, goalKey) ? goalsSnapshot[goalKey] : null;
+      if (!goal) return res.status(400).json({ success: false, error: 'Unknown step for this click.' });
+      const stepLabel = humanizeDisplayLabel(goal.label || goalKey);
+
+      const providerConfig = buildDirectOfferProviderConfig(offer);
+      const existingStep = await findDirectOfferClickGoalConversion({
+        identity: getDirectOfferRewardIdentity({ providerConfig, clickLog, goalKey }),
+        conversionModel: Conversion,
+      });
+      if (existingStep) {
+        const state = getGoalConversionState(existingStep);
+        const error = state === 'credited'
+          ? `Step "${stepLabel}" was already credited.`
+          : state === 'reversed'
+            ? `Step "${stepLabel}" was charged back and cannot be credited again.`
+            : `Step "${stepLabel}" already has a ${existingStep.internalStatus} conversion. Approve it from the Conversions page.`;
+        return res.status(400).json({ success: false, error });
+      }
+
+      const stepConversion = await createOrResolveConversion({
+        providerConfig,
+        mapped: {
+          clickId: clickLog.clickId,
+          transactionId: `manual:${clickLog.clickId}:${goalKey}`,
+          status: 'approved',
+          payout: null,
+          eventType: goalKey,
+          providerUserId: '',
+          extra: {},
+        },
+        internalStatus: 'approved',
+        clickLog,
+        payoutAmount: 0,
+        security: { checked: true, passed: true, method: 'admin_manual', reason: 'Manual admin step approval' },
+        goalKey,
+        rewardAmount: Number(goal.amount),
+      });
+      if (!stepConversion || !stepConversion.conversion) {
+        return res.status(400).json({ success: false, error: 'Could not resolve a conversion for this step.' });
+      }
+      if (stepConversion.shouldProcess === false) {
+        return res.json({ success: true, duplicate: true, message: `Step "${stepLabel}" was already recorded; no additional reward applied.` });
+      }
+
+      const stepReward = await processReward({
+        conversion: stepConversion.conversion,
+        hooks: {
+          emitWalletUpdate,
+          processVipLevelUp: (user, amount) => processVipLevelUp(user, amount, emitToUser),
+        },
+      });
+
+      await createLog(req.dbUser._id, 'MANUAL_APPROVE_CLICK', clickLog.userId, {
+        clickId: req.params.clickId,
+        reason,
+        actionType: 'manual_approve_click_step',
+        goalKey,
+        conversionId: stepConversion.conversion._id,
+        result: stepReward.duplicate ? 'duplicate' : (stepReward.ok ? 'accepted' : 'error'),
+      });
+
+      if (!stepReward.ok) {
+        return res.status(400).json({ success: false, error: stepReward.reason || 'Step could not be approved' });
+      }
+      return res.json({ success: true, duplicate: Boolean(stepReward.duplicate), message: `Step "${stepLabel}" approved` });
+    }
+
+    if (clickLog.status === 'approved') {
+      return res.status(400).json({ success: false, error: 'Click already approved' });
     }
 
     // Double-credit guard: a credited Conversion or an existing reward ledger
