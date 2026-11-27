@@ -806,7 +806,9 @@ const Header = ({ onChatToggle, chatOpen, fullWidth }) => {
           paddingTop: '12px',
           paddingBottom: '12px',
           opacity: 1,
-          transform: 'rotate(0deg)',
+          // No transform here: a transform makes the browser paint this row as a
+          // separate layer, which blurs the logo on 1x desktop screens when the
+          // centered row lands on a half pixel.
         }}
       >
 
@@ -814,10 +816,10 @@ const Header = ({ onChatToggle, chatOpen, fullWidth }) => {
         <div
           className="flex items-center max-w-[350px] w-auto lg:w-[350px]"
           style={{
-            height: '29.952091217041016px',
+            // Whole pixels keep the logo sharp on desktop (was 29.95px).
+            height: '30px',
             gap: '10px',
             opacity: 1,
-            transform: 'rotate(0deg)',
           }}
         >
           <button
@@ -828,7 +830,7 @@ const Header = ({ onChatToggle, chatOpen, fullWidth }) => {
           >
             <svg
               width="161"
-              height="28.53"
+              height="29"
               viewBox="0 0 161 29"
               fill="none"
               xmlns="http://www.w3.org/2000/svg"
