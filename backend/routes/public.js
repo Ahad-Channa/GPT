@@ -9,7 +9,7 @@ const {
 } = require('../utils/earningTypes');
 const Faq = require('../models/Faq');
 
-const { scrubTransaction } = require('../utils/earningFeed');
+const { scrubTransaction, sanitizePublicWithdrawal } = require('../utils/earningFeed');
 
 // ── GET /api/public/user/:id ──────────────────────────────────────────────────
 // Returns a user's public profile data and their recent completed offers.
@@ -164,6 +164,10 @@ router.get('/recent-earnings', async (req, res) => {
       let processedTx = tx;
       if (tx.userId.isPrivate) {
         processedTx = scrubTransaction(tx);
+      }
+      // Withdrawals never expose the payout destination (email / wallet address).
+      if (tx.transactionType === 'withdrawal') {
+        processedTx = sanitizePublicWithdrawal(processedTx);
       }
       return processedTx;
     });

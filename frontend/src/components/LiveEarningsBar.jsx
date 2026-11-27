@@ -5,7 +5,7 @@ import PublicProfileModal from './PublicProfileModal';
 import UserAvatar from './UserAvatar';
 import { useTheme } from '../contexts/ThemeContext';
 import { io } from 'socket.io-client';
-import { getBonusFeedDisplay, getEarningDisplay, getLiveFeedDisplay } from '../utils/earningDisplay';
+import { getBonusFeedDisplay, getEarningDisplay, getLiveFeedDisplay, getWithdrawalFeedDisplay } from '../utils/earningDisplay';
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 const SOCKET_URL = import.meta.env.VITE_API_URL
@@ -192,16 +192,24 @@ const LiveEarningsBar = () => {
     const rawAmount = Math.abs(Number(tx.amount) || 0);
 
     if (tx.isWithdrawal || tx.transactionType === 'withdrawal') {
-      const method = tx.method ? tx.method.charAt(0).toUpperCase() + tx.method.slice(1) : 'Withdrawal';
       const usdValue = rawAmount >= 1000
         ? (rawAmount / 1000).toLocaleString('de-DE', { minimumFractionDigits: 0, maximumFractionDigits: 2 })
         : rawAmount.toLocaleString('de-DE');
+      // Chip shows only the payout name (Litecoin, PayPal, Amazon, Book). No
+      // popup, except a book order, whose hover shows the book title.
+      const withdrawal = getWithdrawalFeedDisplay(tx);
 
       return {
         amountStr: `$${usdValue}`,
         isCoin: false,
         isWithdrawal: true,
-        method,
+        method: withdrawal.label,
+        sourceLine: withdrawal.label,
+        detailLine: '',
+        hasOfferDetails: true,
+        hasPopup: Boolean(withdrawal.bookTitle),
+        popupTitle: withdrawal.bookTitle,
+        popupSubtitle: '',
         color: 'rgba(2, 121, 64, 1)',
       };
     }
@@ -671,11 +679,9 @@ const LiveEarningsBar = () => {
                   display: 'block',
                 }}
               >
-                {hoveredData.details.isWithdrawal
-                  ? 'Withdrawal Completed'
-                  : hoveredData.details.popupTitle}
+                {hoveredData.details.popupTitle}
               </span>
-              {(hoveredData.details.isWithdrawal || hoveredData.details.popupSubtitle) && (
+              {hoveredData.details.popupSubtitle && (
                 <span
                   style={{
                     fontFamily: '"Poppins", sans-serif',
@@ -689,9 +695,7 @@ const LiveEarningsBar = () => {
                     display: 'block',
                   }}
                 >
-                  {hoveredData.details.isWithdrawal
-                    ? `Method: ${hoveredData.details.method}`
-                    : hoveredData.details.popupSubtitle}
+                  {hoveredData.details.popupSubtitle}
                 </span>
               )}
             </div>

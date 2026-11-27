@@ -245,6 +245,22 @@ export const getBonusFeedDisplay = (tx = {}) => {
   return null;
 };
 
+// Live Feed chip for a withdrawal (Harun): only the payout name, no popup,
+// except book orders, whose hover shows the book title.
+const WITHDRAWAL_METHOD_LABELS = { litecoin: 'Litecoin', paypal: 'PayPal', giftcard: 'Gift Card', book: 'Book' };
+
+export const getWithdrawalFeedDisplay = (tx = {}) => {
+  if (tx.transactionType !== 'withdrawal' && !tx.isWithdrawal) return null;
+  const method = clean(tx.method).toLowerCase();
+  const meta = tx.metadata || {};
+  const brand = clean(meta.brand);
+  const label = method === 'giftcard'
+    ? (brand || WITHDRAWAL_METHOD_LABELS.giftcard)
+    : (WITHDRAWAL_METHOD_LABELS[method] || (method ? method.charAt(0).toUpperCase() + method.slice(1) : 'Withdrawal'));
+  const bookTitle = method === 'book' ? clean(meta.bookTitle) : '';
+  return { label, bookTitle };
+};
+
 // Same two lines as the live feed, for transaction lists (profile Recent
 // Activity, wallet history): line 1 = "Goodpicks" / "Offerwall: <name>",
 // line 2 = offer name, plus " - <step>" for multi-step offers, so it stays two

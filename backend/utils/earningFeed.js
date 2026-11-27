@@ -40,6 +40,26 @@ function scrubTransaction(tx) {
   return scrubbed;
 }
 
+// Public Live Feed view of a withdrawal: only the method, the gift card brand
+// and, for book orders, the (public) book title. The payout destination (PayPal
+// email, Litecoin address, gift card email) and the description that repeats it
+// are never sent to other visitors.
+function sanitizePublicWithdrawal(tx) {
+  const doc = tx._doc || tx;
+  const method = doc.method || null;
+  const brand = String(doc.metadata?.brand || '').trim();
+  const bookTitle = method === 'book' ? String(doc.payoutDestination || '').trim() : '';
+  const { payoutDestination, fee, balanceAfter, ...rest } = doc;
+  return {
+    ...rest,
+    description: method === 'book' ? 'Book Order' : 'Withdrawal',
+    metadata: {
+      ...(brand && { brand }),
+      ...(bookTitle && { bookTitle }),
+    },
+  };
+}
+
 const FEED_STATUSES = ['completed', 'hold'];
 
 // Same shape as a populated /recent-earnings row (userId is the public profile).
@@ -77,4 +97,4 @@ const broadcastNewEarning = ({ transaction, user, io = global.__io } = {}) => {
   }
 };
 
-module.exports = { scrubTransaction, buildNewEarningPayload, broadcastNewEarning };
+module.exports = { scrubTransaction, sanitizePublicWithdrawal, buildNewEarningPayload, broadcastNewEarning };

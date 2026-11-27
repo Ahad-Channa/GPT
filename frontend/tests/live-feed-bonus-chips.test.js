@@ -59,3 +59,19 @@ test('backend feed includes affiliate earnings', () => {
   const pub = fs.readFileSync(path.join(here, '../../backend/routes/public.js'), 'utf8');
   assert.match(pub, /'vip_reward', 'referral_reward'\]/);
 });
+
+test('withdrawals show only the payout name; books keep the title for the hover', async () => {
+  const { getWithdrawalFeedDisplay } = await import('../src/utils/earningDisplay.js');
+  assert.deepEqual(getWithdrawalFeedDisplay({ transactionType: 'withdrawal', method: 'litecoin' }), { label: 'Litecoin', bookTitle: '' });
+  assert.deepEqual(getWithdrawalFeedDisplay({ transactionType: 'withdrawal', method: 'paypal' }), { label: 'PayPal', bookTitle: '' });
+  assert.equal(getWithdrawalFeedDisplay({ transactionType: 'withdrawal', method: 'giftcard', metadata: { brand: 'Amazon' } }).label, 'Amazon');
+  assert.equal(getWithdrawalFeedDisplay({ transactionType: 'withdrawal', method: 'giftcard' }).label, 'Gift Card');
+  assert.deepEqual(
+    getWithdrawalFeedDisplay({ transactionType: 'withdrawal', method: 'book', metadata: { bookTitle: 'My Book' } }),
+    { label: 'Book', bookTitle: 'My Book' },
+  );
+  assert.equal(getWithdrawalFeedDisplay({ transactionType: 'daily_bonus' }), null);
+  const src = fs.readFileSync(path.join(here, '../src/components/LiveEarningsBar.jsx'), 'utf8');
+  assert.match(src, /hasPopup: Boolean\(withdrawal\.bookTitle\)/);
+  assert.doesNotMatch(src, /Withdrawal Completed/);
+});
