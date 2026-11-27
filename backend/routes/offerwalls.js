@@ -318,19 +318,31 @@ const reverseLegacyOfferTransaction = async ({
 
   return runInTransaction(async (session) => {
     let result;
+    // new:false returns the row as it was before the flip, so we know whether
+    // the reward was still on hold (coins not in the wallet yet).
     const originalTx = await TransactionModel.findOneAndUpdate(
       { externalId: originalExternalId, status: { $ne: 'reversed' } },
       { $set: { status: 'reversed' } },
-      { new: true, session }
+      { new: false, session }
     );
 
     if (!originalTx) {
       const existing = await withSession(TransactionModel.findOne({ externalId: originalExternalId }), session);
       result = { reversed: false, originalTx: existing || null, linkedTxs: [] };
     } else {
+      // Same rule as Goodpicks (reversalService.processReversal): lifetime
+      // earnings (VIP progress) always go back; the wallet is debited only when
+      // the coins actually reached it. A held reward released later (cron or
+      // admin "release now") counts as credited; older admin releases left
+      // walletApplied=false, so releasedAt is also accepted as proof.
+      const amount = Math.abs(Number(originalTx.amount) || 0);
+      const walletWasApplied = originalTx.status === 'completed' && (
+        originalTx.metadata?.walletApplied !== false || Boolean(originalTx.metadata?.releasedAt)
+      );
+      originalTx.status = 'reversed';
       await UserModel.findByIdAndUpdate(
         userId,
-        { $inc: { walletBalance: -Math.abs(originalTx.amount) } },
+        { $inc: { walletBalance: walletWasApplied ? -amount : 0, totalEarned: -amount } },
         { session }
       );
 
@@ -355,7 +367,8 @@ const reverseLegacyOfferTransaction = async ({
           }
           // Decrement commissionGenerated from the referred user
           await UserModel.findByIdAndUpdate(userId, { $inc: { commissionGenerated: -linkedTx.amount } }, { session });
-        } else {
+        } else if (linkedTx.status !== 'hold') {
+          // A held linked bonus never reached the wallet, so there is nothing to take back.
           await UserModel.findByIdAndUpdate(linkedTx.userId, { $inc: { walletBalance: -linkedTx.amount } }, { session });
         }
         linkedTxs.push(linkedTx);

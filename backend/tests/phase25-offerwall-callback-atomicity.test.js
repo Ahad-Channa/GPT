@@ -302,3 +302,47 @@ test('legacy handler credits and reverses only through the transactional helpers
   assert.match(source, /session\.withTransaction/);
   assert.doesNotMatch(source, /runAtomic\(|strategy:\s*'fallback'/);
 });
+
+// ── Offerwall chargebacks follow the Goodpicks rule (Harun, 2026-11-27) ──────
+const seedSingleReward = (world, tx) => {
+  world.users.set('u1', { _id: 'u1', walletBalance: 1000, totalEarned: 5000 });
+  world.txs.push({ _id: 'orig', userId: 'u1', externalId: 'cpx:txn-1', transactionType: 'offer_reward', amount: 500, ...tx });
+};
+
+test('offerwall chargeback of a credited reward takes coins from the wallet and VIP progress', async () => {
+  const world = makeWorld();
+  seedSingleReward(world, { status: 'completed' });
+  const result = await reverseLegacyOfferTransaction(reverseArgs(world));
+  assert.equal(result.reversed, true);
+  assert.equal(result.originalTx.status, 'reversed');
+  assert.equal(world.users.get('u1').walletBalance, 500);
+  assert.equal(world.users.get('u1').totalEarned, 4500);
+});
+
+test('offerwall chargeback of a reward still on hold leaves the wallet alone but lowers VIP progress', async () => {
+  const world = makeWorld();
+  seedSingleReward(world, { status: 'hold' });
+  const result = await reverseLegacyOfferTransaction(reverseArgs(world));
+  assert.equal(result.reversed, true);
+  assert.equal(world.users.get('u1').walletBalance, 1000);
+  assert.equal(world.users.get('u1').totalEarned, 4500);
+  assert.equal(world.txs[0].status, 'reversed');
+});
+
+test('offerwall chargeback of a hold released by admin (walletApplied=false, releasedAt set) debits the wallet', async () => {
+  const world = makeWorld();
+  seedSingleReward(world, { status: 'completed', metadata: { walletApplied: false, releasedAt: new Date() } });
+  await reverseLegacyOfferTransaction(reverseArgs(world));
+  assert.equal(world.users.get('u1').walletBalance, 500);
+  assert.equal(world.users.get('u1').totalEarned, 4500);
+});
+
+test('a held linked (non-referral) bonus is reversed without touching the wallet', async () => {
+  const world = makeWorld();
+  seedSingleReward(world, { status: 'completed' });
+  world.users.set('b', { _id: 'b', walletBalance: 50 });
+  world.txs.push({ _id: 'bonus', userId: 'b', linkedTransactionId: 'orig', transactionType: 'admin_adjustment', amount: 20, status: 'hold' });
+  await reverseLegacyOfferTransaction(reverseArgs(world));
+  assert.equal(world.users.get('b').walletBalance, 50);
+  assert.equal(world.txs.find((t) => t._id === 'bonus').status, 'reversed');
+});
