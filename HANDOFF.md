@@ -1,6 +1,6 @@
 # TaskMint: project handoff (for a new Claude chat or a new developer)
 
-Read this first, then continue. Last updated 2026-11-27 (Click Logs chargeback `e2b7b70`, chargeback/hold-release wallet fix `9fb9da2`, direct-offer test mode `6721d5f`, all pushed on `merge-main-test`). **The newest state is in the last section: "Session of 2026-11-27". The frontend rule from "Session of 2026-11-26" still applies (main's design wins).**
+Read this first, then continue. Last updated 2026-11-27 (office): negative balance, chargeback notification with offer name, Conversions user filter, coin sound (`0138cbb`); before that Click Logs chargeback `e2b7b70`, chargeback/hold-release wallet fix `9fb9da2`, direct-offer test mode `6721d5f`. All pushed on `merge-main-test`. Office worktree path: C:/Users/farrukh.saleeem/Documents/GitHub/GPT-merge-test. **The newest state is in the last section: "Session of 2026-11-27". The frontend rule from "Session of 2026-11-26" still applies (main's design wins).**
 
 ## Project
 - TaskMint: rewards/offerwall site. Frontend `frontend/` (React + Vite), backend `backend/` (Node/Express + MongoDB).
@@ -260,7 +260,16 @@ All work is on `merge-main-test` (worktree `C:\Users\farru\Documents\GitHub\GPT-
 3. Harun tests: Click Logs chargeback, test mode (tester sees, others do not, go live), Lootably real offer.
 4. Open from before: dummy offerwalls on Earn (disable in Admin -> Offerwalls), Harun's desktop/mobile check of main's design, Fiverr order release, new features (spin/packs/album) only after scope and payment are agreed.
 
+### 4. `0138cbb` Harun's feedback of 2026-11-27 (office)
+- **Negative balance.** Chargebacks via `processReversal` always went below 0 (`$inc`, no floor). The 0 Harun saw came from the manual admin adjustment `PUT /api/admin/users/:id/balance`, which floored the balance at 0 (old code from April, also on main). Removed that floor, and the same floor in `/referral-holds/release-now` and `/earnings-holds/release-now` (releasing a hold on a negative balance would have erased the debt). Withdrawals/avatar purchase already block when the balance is too low.
+- **dssdfsdf repair (manual, admin):** Harun's -5,000,000 adjustment only removed the ~4.9M that was there (floored to 0). After deploy: Admin Logs -> `ADJUST_BALANCE` for dssdfsdf shows `prevBalance` (X); add one more adjustment of `-(5,000,000 - X)` so the balance becomes X - 5,000,000.
+- **Chargeback notification names the offer:** `buildChargebackNotification` / `getChargebackOfferLabel` in `backend/services/notifications/offerRewardMessage.js` ("<offer>" single step, "<offer> - <step>" multi-step, fallback description/provider/"an offer"). Used by `reversalService.js` (Conversions, Click Logs, direct offers), `offerwalls.js` auto-chargeback, and both admin chargeback routes. Title "Offer Chargeback", message `Your reward for "<label>" was charged back: -1.000 coins.`; `notificationLocalizer.js` translates it for de/fr/es/ur. Old notifications keep their old text.
+- **Conversions filter by user:** `GET /api/admin/conversions?user=` accepts an ObjectId or part of a username/email (case-insensitive, max 50 users); new input "User (name, email or ID)" in `AdminConversions.jsx`.
+- **Coin sound:** `NotificationContext.jsx` played the sound only for `offer_reward` and `custom_offer_approved`; Goodpicks/direct rewards (`direct_offer_reward`) were silent. Now `COIN_SOUND_TYPES` = offer_reward, direct_offer_reward, custom_offer_approved (also when the reward goes on hold), and the first earning notification of a user with no earlier notifications also sounds. Browsers only play audio after the user has clicked on the page once. Notifications are polled every 5 s.
+- Tests: `backend/tests/phase41-negative-balance-chargeback-notice.test.js`, `frontend/tests/coin-sound-and-chargeback-text.test.js`. Totals: backend 606 / 602 pass / 4 fail; frontend 88 / 84 pass / 4 fail (all 8 pre-existing); build ok.
+- Deploy: pull `0138cbb`, restart `taskmint-staging-backend`, rebuild frontend, restart `taskmint-ssl-frontend`.
+
 ## Working rules used in this project
-- Do not commit, push or deploy without being asked.
+- Commit and push tested work to the working branch (`merge-main-test`) without waiting to be asked (user, 2026-11-26). Never push to `main` without an explicit go-ahead. Server deploys are run by the user.
 - Do not touch reward calculation, holds, reversal/idempotency, click identity, or manual-offer logic unless that is the task.
 - Report test results with exact totals and name remaining failures.
